@@ -12,6 +12,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Pegasus", "Pegasus\Pegasus.vcxproj", "{98BF1395-48CE-4C98-8921-7890B74889AD}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Editor", "Editor\Editor.vcxproj", "{13712E99-DD06-4C3A-85AE-102B3654679E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{98BF1395-48CE-4C98-8921-7890B74889AD} = {98BF1395-48CE-4C98-8921-7890B74889AD}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
