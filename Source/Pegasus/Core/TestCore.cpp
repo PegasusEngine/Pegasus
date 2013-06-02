@@ -1,4 +1,4 @@
-#include "Core/TestCore.h"
+#include "Pegasus/Core/TestCore.h"
 
 namespace Pegasus {
 namespace Core {
