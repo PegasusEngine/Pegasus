@@ -84,9 +84,6 @@
     <CustomBuild Include="Editor.qrc">
       <Filter>Resources</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\Source\Editor\Editor.ui">
-      <Filter>Forms</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
       <Filter>Forms</Filter>
     </CustomBuild>
@@ -107,9 +104,6 @@
     <ResourceCompile Include="Editor.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GeneratedFiles\ui_Editor.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_TimelineDockWidget.h">
       <Filter>Generated</Filter>
     </ClInclude>

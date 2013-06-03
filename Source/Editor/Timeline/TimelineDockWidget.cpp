@@ -12,10 +12,6 @@ TimelineDockWidget::TimelineDockWidget(QWidget *parent)
 				| QDockWidget::DockWidgetMovable
 				| QDockWidget::DockWidgetFloatable);
 	setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
-
-    // Make the window floating by default and hide it
-    setFloating(true);
-    hide();
 }
 
 //----------------------------------------------------------------------------------------

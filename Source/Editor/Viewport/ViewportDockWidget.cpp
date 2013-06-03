@@ -12,11 +12,6 @@ ViewportDockWidget::ViewportDockWidget(QWidget *parent)
 				| QDockWidget::DockWidgetFloatable);
 	setAllowedAreas(Qt::AllDockWidgetAreas);
 
-    // Make the window floating by default and hide it
-    setFloating(true);
-    //! \todo Hide the window at startup time
-    //hide();
-
     // Create the viewport widget that will contain the renderer
     mViewportWidget = new ViewportWidget(this);
     setWidget(mViewportWidget);
