@@ -10,10 +10,6 @@
       <Extensions>qrc;*</Extensions>
       <ParseFiles>false</ParseFiles>
     </Filter>
-    <Filter Include="Include">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h</Extensions>
-    </Filter>
     <Filter Include="Generated">
       <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
       <Extensions>moc;h;cpp</Extensions>
@@ -33,6 +29,12 @@
       <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
       <Extensions>ui</Extensions>
     </Filter>
+    <Filter Include="Source\Timeline">
+      <UniqueIdentifier>{ed12b966-4510-49a0-998a-7498b2967335}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Viewport">
+      <UniqueIdentifier>{43f6299e-67d4-4bb2-be3c-942f78fadb79}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GeneratedFiles\qrc_Editor.cpp">
@@ -50,6 +52,33 @@
     <ClCompile Include="GeneratedFiles\Dev-Opt\moc_Editor.cpp">
       <Filter>Generated\Dev-Opt</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_TimelineDockWidget.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_TimelineDockWidget.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.cpp">
+      <Filter>Source\Timeline</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ViewportDockWidget.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ViewportDockWidget.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ViewportWidget.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ViewportWidget.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Viewport\ViewportDockWidget.cpp">
+      <Filter>Source\Viewport</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Viewport\ViewportWidget.cpp">
+      <Filter>Source\Viewport</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Editor.qrc">
@@ -58,8 +87,20 @@
     <CustomBuild Include="..\..\..\Source\Editor\Editor.ui">
       <Filter>Forms</Filter>
     </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
+      <Filter>Forms</Filter>
+    </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Editor.h">
-      <Filter>Include</Filter>
+      <Filter>Source</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.h">
+      <Filter>Source\Timeline</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Viewport\ViewportWidget.h">
+      <Filter>Source\Viewport</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Viewport\ViewportDockWidget.h">
+      <Filter>Source\Viewport</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -67,6 +108,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_Editor.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_TimelineDockWidget.h">
       <Filter>Generated</Filter>
     </ClInclude>
   </ItemGroup>

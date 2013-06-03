@@ -33,6 +33,8 @@
     <property name="title">
      <string>&amp;Window</string>
     </property>
+    <addaction name="action_Viewport"/>
+    <addaction name="action_Timeline"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Window"/>
@@ -49,6 +51,16 @@
   <action name="action_Quit">
    <property name="text">
     <string>&amp;Quit</string>
+   </property>
+  </action>
+  <action name="action_Timeline">
+   <property name="text">
+    <string>&amp;Timeline</string>
+   </property>
+  </action>
+  <action name="action_Viewport">
+   <property name="text">
+    <string>&amp;Viewport</string>
    </property>
   </action>
  </widget>
