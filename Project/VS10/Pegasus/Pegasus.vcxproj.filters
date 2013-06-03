@@ -19,5 +19,8 @@
     <ClCompile Include="..\..\..\Source\Pegasus\TestPegasus.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Pegasus\DllMain.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

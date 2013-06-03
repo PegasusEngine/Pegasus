@@ -1,6 +1,21 @@
 #ifndef PEGASUS_TESTPEGASUS_H
 #define PEGASUS_TESTPEGASUS_H
 
+// Test exporting a function
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifdef _PEGASUS_DLL
+__declspec(dllexport) int __cdecl testFunc(int val);
+#else
+__declspec(dllimport) int __cdecl testFunc(int val);
+#endif
+
+#ifdef __cplusplus
+}
+#endif
+
 namespace Pegasus {
 
 class TestPegasus
