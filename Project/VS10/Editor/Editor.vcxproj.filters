@@ -79,6 +79,18 @@
     <ClCompile Include="..\..\..\Source\Editor\Viewport\ViewportWidget.cpp">
       <Filter>Source\Viewport</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_TimelineGraphicsView.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_TimelineGraphicsView.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineGraphicsView.cpp">
+      <Filter>Source\Timeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineBlockGraphicsItem.cpp">
+      <Filter>Source\Timeline</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Editor.qrc">
@@ -98,6 +110,12 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Viewport\ViewportDockWidget.h">
       <Filter>Source\Viewport</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineGraphicsView.h">
+      <Filter>Source\Timeline</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineBlockGraphicsItem.h">
+      <Filter>Source\Timeline</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
