@@ -1,21 +1,66 @@
 #define WIN32_LEAN_AND_MEAN
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #include <windows.h>
+#include <gl/gl.h>
 
 #include "Pegasus/TestPegasus.h"
+
+static unsigned int gFrameCount = 1; // Frame counter
+static float gClearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f}; // Clear color
+static HDC gHDC; //! global device context
+static HGLRC gRC; //! global render context
+static PIXELFORMATDESCRIPTOR gPixelFormat = {
+    sizeof(PIXELFORMATDESCRIPTOR), //! size of structure
+    1, //! default version
+    PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER, //! flags
+    PFD_TYPE_RGBA, //! RGBA color mode
+    32, //! 32 bit color mode
+    0, 0, 0, 0, 0, 0, //! ignore color bits
+    0, //! no alpha buffer
+    0, //! ignore shift bit
+    0, //! no accumulation buffer
+    0, 0, 0, 0, //! ignore accumulation bits
+    24, //! 24 bit z-buffer size
+    8, //! 8 bit stencil-buffer size
+    0, //! no aux buffer
+    PFD_MAIN_PLANE, //! main drawing plane
+    0, //! reserved
+    0, 0, 0}; //! layer masks ignored
+
 
 //! Message pump handler
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch(message)
     {
-    case WM_CREATE:
+    case WM_CREATE: // Window is being created
+        {
+            // Cache global context
+            gHDC = GetDC(hwnd);
+
+            // Setup pixel format for backbuffer
+            int nPixelFormat = ChoosePixelFormat(gHDC, &gPixelFormat);
+            SetPixelFormat(gHDC, nPixelFormat, &gPixelFormat);
+
+            // Make a new opengl context and link it to the window
+            gRC = wglCreateContext(gHDC);
+            wglMakeCurrent(gHDC, gRC);
+        }
         return 0;
-    case WM_CLOSE:
+    case WM_DESTROY: // Window is being destroyed
+        {
+            wglMakeCurrent(gHDC, NULL);
+            wglDeleteContext(gRC);
+        }
+        return 0;
+    case WM_CLOSE: // Someone asked to close the window
         PostQuitMessage(0);
         return 0;
     case WM_PAINT:
+        /*
         // Draw test string in blue text
         {
             PAINTSTRUCT paintStruct;
@@ -32,12 +77,35 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             EndPaint(hwnd, &paintStruct);
         }
         return 0;
+        */
     default:
         break;
     }
 
     // Fall back to OS default
     return (DefWindowProc(hwnd, message, wParam, lParam));
+}
+
+
+void Render()
+{
+    // Update clear color once per second
+    if (gFrameCount % 60 == 0)
+    {
+        gClearColor[0] = (((float) rand()) / ((float) RAND_MAX));
+        gClearColor[1] = (((float) rand()) / ((float) RAND_MAX));
+        gClearColor[2] = (((float) rand()) / ((float) RAND_MAX));
+    }
+    gFrameCount++;
+
+    // Clear screen
+    glClearColor(gClearColor[0], gClearColor[1], gClearColor[2], gClearColor[3]);
+    glClearDepth(0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Present
+    glFlush();
+    SwapBuffers(gHDC);
 }
 
 
@@ -50,9 +118,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     MSG curMsg;
     bool appDone = false;
 
+    // Seed RNG
+    srand((unsigned int) time(NULL));
+
     // Set up our window class
     windowClass.cbSize = sizeof(WNDCLASSEX);
-    windowClass.style = CS_HREDRAW | CS_VREDRAW;
+    windowClass.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
     windowClass.lpfnWndProc = WndProc; // Message pump callback
     windowClass.cbClsExtra = 0;
     windowClass.cbWndExtra = 0;
@@ -100,6 +171,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         }
         else
         {
+            // Draw stuff
+            Render();
+
             // Dispatch it
             TranslateMessage(&curMsg); 
             DispatchMessage(&curMsg);
