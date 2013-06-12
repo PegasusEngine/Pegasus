@@ -9,15 +9,21 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Include\GL">
+      <UniqueIdentifier>{be830b89-097c-409a-b585-c10fc9297658}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\GL">
+      <UniqueIdentifier>{a1f5371a-5199-4e2c-a0b0-c28c66b20ba1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Render\TestRender.h">
-      <Filter>Include</Filter>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Render\GL\GLExtensions.h">
+      <Filter>Include\GL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\TestRender.cpp">
-      <Filter>Source</Filter>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.cpp">
+      <Filter>Source\GL</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

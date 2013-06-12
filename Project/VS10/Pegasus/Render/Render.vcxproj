@@ -27,10 +27,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Render\TestRender.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Render\GL\GLExtensions.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\TestRender.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B1169EA8-9728-4F43-B328-CD2002450798}</ProjectGuid>
