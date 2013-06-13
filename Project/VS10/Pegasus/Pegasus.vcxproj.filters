@@ -14,6 +14,12 @@
     <ClInclude Include="..\..\..\Include\Pegasus\TestPegasus.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Include\Pegasus\Preprocessor.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Include\Pegasus\Pegasus.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Source\Pegasus\TestPegasus.cpp">

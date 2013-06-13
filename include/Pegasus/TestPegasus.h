@@ -6,7 +6,7 @@
 extern "C" {
 #endif
 
-#ifdef _PEGASUS_DLL
+#ifdef PEGASUS_DLL
 __declspec(dllexport) int __cdecl testFunc(int val);
 #else
 __declspec(dllimport) int __cdecl testFunc(int val);

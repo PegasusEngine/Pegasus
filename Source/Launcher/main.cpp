@@ -6,6 +6,7 @@
 #include <windows.h>
 #include <gl/gl.h>
 
+#include "Pegasus/Pegasus.h"
 #include "Pegasus/TestPegasus.h"
 
 static unsigned int gFrameCount = 1; // Frame counter
@@ -113,6 +114,63 @@ void Render()
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                      LPSTR lpCmdLine, int nCmdShow)
 {
+    // Test for Preprocessor.h
+    // Can be removed when not required anymore.
+#if PEGASUS_ENGINE
+    OutputDebugString("PEGASUS_ENGINE on\n");
+#else
+    OutputDebugString("PEGASUS_ENGINE off\n");
+#endif
+
+#if PEGASUS_DEV
+    OutputDebugString("PEGASUS_DEV on\n");
+#else
+    OutputDebugString("PEGASUS_DEV off\n");
+#endif
+
+#if PEGASUS_REL
+    OutputDebugString("PEGASUS_REL on\n");
+#else
+    OutputDebugString("PEGASUS_REL off\n");
+#endif
+
+#if PEGASUS_DEBUG
+    OutputDebugString("PEGASUS_DEBUG on\n");
+#else
+    OutputDebugString("PEGASUS_DEBUG off\n");
+#endif
+
+#if PEGASUS_OPT
+    OutputDebugString("PEGASUS_OPT on\n");
+#else
+    OutputDebugString("PEGASUS_OPT off\n");
+#endif
+
+#if PEGASUS_FINAL
+    OutputDebugString("PEGASUS_FINAL on\n");
+#else
+    OutputDebugString("PEGASUS_FINAL off\n");
+#endif
+
+#if PEGASUS_PROFILE
+    OutputDebugString("PEGASUS_PROFILE on\n");
+#else
+    OutputDebugString("PEGASUS_PROFILE off\n");
+#endif
+
+#if PEGASUS_SMALL
+    OutputDebugString("PEGASUS_SMALL on\n");
+#else
+    OutputDebugString("PEGASUS_SMALL off\n");
+#endif
+
+#if PEGASUS_DLL
+    OutputDebugString("PEGASUS_DLL on\n");
+#else
+    OutputDebugString("PEGASUS_DLL off\n");
+#endif
+
+
     WNDCLASSEX windowClass;
     HWND windowHandle;
     MSG curMsg;
