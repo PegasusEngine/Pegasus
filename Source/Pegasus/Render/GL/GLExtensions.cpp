@@ -3,8 +3,13 @@
 #include "Pegasus/Libs/GLEW/wglew.h"
 
 //! \todo Make this VStudio specific
-//! \todo Make the lib static in rel mode
+#if PEGASUS_DEV
 #pragma comment (lib, "glew32.lib")
+#elif PEGASUS_REL
+#pragma comment (lib, "glew32s.lib")
+#else
+#error The GLEW library needs to be linked in this profile.
+#endif
 
 
 namespace Pegasus {
