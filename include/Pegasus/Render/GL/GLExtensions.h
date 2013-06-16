@@ -1,3 +1,15 @@
+/****************************************************************************************/
+/*                                                                                      */
+/*                                       Pegasus                                        */
+/*                                                                                      */
+/****************************************************************************************/
+
+//! \file	GLExtensions.h
+//! \author	Kevin Boulanger
+//! \date	11th June 2013
+//! \brief	Management of GL and WGL extensions, available throughout the engine
+//!         to check if features are available before using them
+
 #ifndef PEGASUS_RENDER_GLEXTENSIONS_H
 #define PEGASUS_RENDER_GLEXTENSIONS_H
 
@@ -5,6 +17,8 @@ namespace Pegasus {
 namespace Render {
 
 
+//! \class Singleton that manages GL and WGL extensions, available throughout the engine
+//!        to check if features are available before using them
 class GLExtensions
 {
 public:

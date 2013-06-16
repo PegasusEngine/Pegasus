@@ -1,3 +1,15 @@
+/****************************************************************************************/
+/*                                                                                      */
+/*                                       Pegasus                                        */
+/*                                                                                      */
+/****************************************************************************************/
+
+//! \file	GLExtensions.cpp
+//! \author	Kevin Boulanger
+//! \date	11th June 2013
+//! \brief	Management of GL and WGL extensions, available throughout the engine
+//!         to check if features are available before using them
+
 #include "Pegasus/Render/GL/GLExtensions.h"
 #include "Pegasus/Libs/GLEW/glew.h"
 #include "Pegasus/Libs/GLEW/wglew.h"
