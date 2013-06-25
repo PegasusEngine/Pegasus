@@ -33,7 +33,10 @@ public:
     //! Destructor
     ~TimelineGraphicsView();
 
-//    void itemMoved();
+
+    //! Create a new lane and add it at the bottom of the list
+    void AddLane();
+
 
 public slots:
 //    void shuffle();
@@ -68,9 +71,16 @@ protected:
     //void timerEvent(QTimerEvent *event);
     void drawBackground(QPainter *painter, const QRectF &rect);
 
-    void ScaleView(qreal scaleFactor);
+    //void ScaleView(qreal scaleFactor);
 
 private:
+
+    //! Update the bounds of the scene
+    void UpdateSceneRect();
+
+
+    //! Number of lanes used by the view
+    unsigned int mNumLanes;
 
     //! Horizontal scale of the view
     //! 1.0f for a 1:1 ratio, < 1.0f for a compressed block, > 1.0f for an expanded block

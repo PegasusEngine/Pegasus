@@ -6,6 +6,7 @@
 
 TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
 :   QGraphicsView(parent),
+    mNumLanes(0),
     mHorizontalScale(1.0f),
     mZoom(1.0f)/*,
     timerId(0)*/
@@ -20,12 +21,8 @@ TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
     scene->setItemIndexMethod(QGraphicsScene::NoIndex);
 
     // Set the initial bounds of the scene
-    //! \todo Use variables
-    scene->setSceneRect(0.0f,
-                        0.0f,
-                        /***/32.0f * 128.0f + 64.0f,
-                        /***/10.0f * 32.0f + 16.0f);
     setScene(scene);
+    UpdateSceneRect();
 
     // Set the cache mode
     setCacheMode(CacheBackground);
@@ -54,6 +51,14 @@ TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
 
 TimelineGraphicsView::~TimelineGraphicsView()
 {
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineGraphicsView::AddLane()
+{
+    mNumLanes++;
+    UpdateSceneRect();
 }
 
 //----------------------------------------------------------------------------------------
@@ -158,19 +163,54 @@ void TimelineGraphicsView::wheelEvent(QWheelEvent *event)
 }
 #endif
 
+//----------------------------------------------------------------------------------------
 
+void TimelineGraphicsView::drawBackground(QPainter *painter, const QRectF &rect)
+{
+    Q_UNUSED(rect);
+    
+    // Shadow
+    QRectF sceneRect = this->sceneRect();
+    QRectF rightShadow(sceneRect.right(), sceneRect.top() + 5, 5, sceneRect.height());
+    QRectF bottomShadow(sceneRect.left() + 5, sceneRect.bottom(), sceneRect.width(), 5);
+    if (rightShadow.intersects(rect) || rightShadow.contains(rect))
+        painter->fillRect(rightShadow, Qt::darkGray);
+    if (bottomShadow.intersects(rect) || bottomShadow.contains(rect))
+        painter->fillRect(bottomShadow, Qt::darkGray);
 
+    // Fill
+    QLinearGradient gradient(sceneRect.topLeft(), sceneRect.bottomRight());
+    gradient.setColorAt(0, Qt::white);
+    gradient.setColorAt(1, Qt::lightGray);
+    painter->fillRect(rect.intersected(sceneRect), gradient);
+    painter->setBrush(Qt::NoBrush);
+    painter->drawRect(sceneRect);
 
+    // Text
+    /*QRectF textRect(sceneRect.left() + 4, sceneRect.top() + 4,
+                    sceneRect.width() - 4, sceneRect.height() - 4);
+    QString message(tr("Click and drag the nodes around, and zoom with the mouse "
+                       "wheel or the '+' and '-' keys"));
 
-
+    QFont font = painter->font();
+    font.setBold(true);
+    font.setPointSize(14);
+    painter->setFont(font);
+    painter->setPen(Qt::lightGray);
+    painter->drawText(textRect.translated(2, 2), message);
+    painter->setPen(Qt::black);
+    painter->drawText(textRect, message);*/
+}
 
 //----------------------------------------------------------------------------------------
 
-//void TimelineGraphicsView::itemMoved()
-//{
-//    if (!timerId)
-//        timerId = startTimer(1000 / 25);
-//}
+void TimelineGraphicsView::UpdateSceneRect()
+{
+    scene()->setSceneRect(/***/0.0f,
+                          /***/0.0f,
+                          /***/32.0f * /*****/128.0f + 64.0f,
+                          /***/static_cast<float>(mNumLanes) * /****/32.0f + 16.0f);
+}
 
 //----------------------------------------------------------------------------------------
 
@@ -230,46 +270,6 @@ void TimelineGraphicsView::wheelEvent(QWheelEvent *event)
 //        timerId = 0;
 //    }
 //}
-
-
-//----------------------------------------------------------------------------------------
-
-void TimelineGraphicsView::drawBackground(QPainter *painter, const QRectF &rect)
-{
-    Q_UNUSED(rect);
-
-    // Shadow
-    QRectF sceneRect = this->sceneRect();
-    QRectF rightShadow(sceneRect.right(), sceneRect.top() + 5, 5, sceneRect.height());
-    QRectF bottomShadow(sceneRect.left() + 5, sceneRect.bottom(), sceneRect.width(), 5);
-    if (rightShadow.intersects(rect) || rightShadow.contains(rect))
-        painter->fillRect(rightShadow, Qt::darkGray);
-    if (bottomShadow.intersects(rect) || bottomShadow.contains(rect))
-        painter->fillRect(bottomShadow, Qt::darkGray);
-
-    // Fill
-    QLinearGradient gradient(sceneRect.topLeft(), sceneRect.bottomRight());
-    gradient.setColorAt(0, Qt::white);
-    gradient.setColorAt(1, Qt::lightGray);
-    painter->fillRect(rect.intersected(sceneRect), gradient);
-    painter->setBrush(Qt::NoBrush);
-    painter->drawRect(sceneRect);
-
-    // Text
-    QRectF textRect(sceneRect.left() + 4, sceneRect.top() + 4,
-                    sceneRect.width() - 4, sceneRect.height() - 4);
-    QString message(tr("Click and drag the nodes around, and zoom with the mouse "
-                       "wheel or the '+' and '-' keys"));
-
-    QFont font = painter->font();
-    font.setBold(true);
-    font.setPointSize(14);
-    painter->setFont(font);
-    painter->setPen(Qt::lightGray);
-    painter->drawText(textRect.translated(2, 2), message);
-    painter->setPen(Qt::black);
-    painter->drawText(textRect, message);
-}
 
 //----------------------------------------------------------------------------------------
 

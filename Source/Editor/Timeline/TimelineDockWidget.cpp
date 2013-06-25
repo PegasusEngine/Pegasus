@@ -12,6 +12,12 @@ TimelineDockWidget::TimelineDockWidget(QWidget *parent)
 				| QDockWidget::DockWidgetMovable
 				| QDockWidget::DockWidgetFloatable);
 	setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
+
+    //! \todo Temporary! Just to have proper scene rect
+    ui.graphicsView->AddLane();
+    ui.graphicsView->AddLane();
+    ui.graphicsView->AddLane();
+    ui.graphicsView->AddLane();
 }
 
 //----------------------------------------------------------------------------------------
