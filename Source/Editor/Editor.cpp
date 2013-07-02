@@ -1,6 +1,9 @@
 #include "Editor.h"
+#include "ApplicationManager.h"
 #include "Viewport/ViewportDockWidget.h"
 #include "Timeline/TimelineDockWidget.h"
+
+#include "Pegasus/Pegasus.h"
 
 #include <QSplashScreen>
 #include <QAction>
@@ -10,10 +13,12 @@
 #include <QStatusBar>
 #include <QCloseEvent>
 #include <QApplication>
+#include <QFileDialog>
 
 
 Editor::Editor(QWidget *parent)
-    : QMainWindow(parent)
+:   QMainWindow(parent),
+    mApplicationManager(nullptr)
 {
     // Create the splash screen (it becomes visible once this class is initialized,
     // set by the application class)
@@ -45,12 +50,18 @@ Editor::Editor(QWidget *parent)
     //!       Remove the dock widgets initialization from here and move it
     //!       to the callback function called once the engine has initialized.
     CreateDockWidgets();
+
+    // Create the application manager
+    ApplicationManager::CreateInstance();
 }
 
 //----------------------------------------------------------------------------------------
 
 Editor::~Editor()
 {
+    // Destroy the application manager
+    //! \todo Handle the closing of the apps that are still open
+    ApplicationManager::DestroyInstance();
 }
 
 //----------------------------------------------------------------------------------------
@@ -87,10 +98,16 @@ void Editor::CreateActions()
     connect(mActionFileNewScene, SIGNAL(triggered()), this, SLOT(NewScene()));
 
 	mActionFileOpenApp = new QAction(tr("&Open App..."), this);
-	//mActionFileOpenApp->setIcon(QIcon(":/Toolbar/File/Open24.png"));
+	//mActionFileOpenApp->setIcon(QIcon(":/Toolbar/File/OpenApp24.png"));
 	mActionFileOpenApp->setShortcut(tr("Ctrl+O"));
 	mActionFileOpenApp->setStatusTip(tr("Open an existing app"));
 	connect(mActionFileOpenApp, SIGNAL(triggered()), this, SLOT(OpenApp()));
+
+	mActionFileCloseApp = new QAction(tr("&Close App"), this);
+	//mActionFileOpenApp->setIcon(QIcon(":/Toolbar/File/CloseApp24.png"));
+	mActionFileCloseApp->setShortcut(tr("Shift+F4"));
+	mActionFileCloseApp->setStatusTip(tr("Close the current app"));
+	connect(mActionFileCloseApp, SIGNAL(triggered()), this, SLOT(CloseApp()));
 
     mActionFileQuit = new QAction(tr("&Quit"), this);
 	mActionFileQuit->setShortcut(tr("Alt+F4"));
@@ -150,6 +167,7 @@ void Editor::CreateMenu()
     QMenu * fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(mActionFileNewScene);
     fileMenu->addAction(mActionFileOpenApp);
+    fileMenu->addAction(mActionFileCloseApp);
     fileMenu->addSeparator();
     fileMenu->addAction(mActionFileQuit);
 
@@ -187,6 +205,7 @@ void Editor::CreateToolBars()
 	fileToolBar->setAllowedAreas(Qt::TopToolBarArea);
 	fileToolBar->addAction(mActionFileNewScene);
 	fileToolBar->addAction(mActionFileOpenApp);
+    fileToolBar->addAction(mActionFileCloseApp);
 
 	QToolBar * viewToolBar = addToolBar(tr("View"));
 	viewToolBar->setIconSize(QSize(16, 16));
@@ -255,7 +274,30 @@ void Editor::NewScene()
 
 void Editor::OpenApp()
 {
-    //! \todo Open an existing app
+    //! \todo If a scene is open, handle its saving and closing (maybe use closeEvent?)
+
+	// Open the file dialog box
+	//! \todo Manage the current directory
+#if PEGASUS_PLATFORM_WINDOWS
+    QString filter("Pegasus application (*.dll)");
+#else
+#error "Unhandled platform for the Pegasus editor"
+#endif
+    QString fileName = QFileDialog::getOpenFileName(this, "Load application",
+													 QString(/***/"."), filter);
+
+	// Import the file to the current scene
+	if (!fileName.isEmpty())
+    {
+        //! \todo Load the application
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Editor::CloseApp()
+{
+    //! \todo If a scene is open, handle its saving and closing (maybe use closeEvent?)
 }
 
 //----------------------------------------------------------------------------------------

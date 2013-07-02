@@ -5,6 +5,7 @@
 
 class ViewportDockWidget;
 class TimelineDockWidget;
+class ApplicationManager;
 
 class QSplashScreen;
 class QAction;
@@ -81,6 +82,7 @@ private slots:
     //! Slots for the actions of the File menu
     void NewScene();
     void OpenApp();
+    void CloseApp();
     void Quit();
     //@}
 
@@ -120,6 +122,7 @@ private:
     //! Actions triggered when an item of the File menu is selected
     QAction * mActionFileNewScene;
     QAction * mActionFileOpenApp;
+    QAction * mActionFileCloseApp;
     QAction * mActionFileQuit;
     //@}
 
@@ -181,6 +184,10 @@ private:
 
 	//! Menu containing the checkable actions for the dock widgets
 	QMenu * mDockMenu;
+
+
+    //! Application manager, taking take of opening and closing applications
+    ApplicationManager * mApplicationManager;
 };
 
 #endif // EDITOR_H

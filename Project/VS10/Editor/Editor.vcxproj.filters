@@ -91,6 +91,18 @@
     <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineBlockGraphicsItem.cpp">
       <Filter>Source\Timeline</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\ApplicationManager.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Application.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_Application.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_Application.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Editor.qrc">
@@ -117,6 +129,9 @@
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineBlockGraphicsItem.h">
       <Filter>Source\Timeline</Filter>
     </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Application.h">
+      <Filter>Source</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Editor.rc" />
@@ -124,6 +139,9 @@
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_TimelineDockWidget.h">
       <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\ApplicationManager.h">
+      <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
