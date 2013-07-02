@@ -87,6 +87,85 @@
 
 //----------------------------------------------------------------------------------------
 
+// Platform being compiled
+#if defined(WIN64) || defined(_WIN64) || defined(__WIN64__)
+
+#define PEGASUS_PLATFORM_WIN64      1
+#define PEGASUS_PLATFORM_WIN32      0
+#define PEGASUS_PLATFORM_WINDOWS    1
+#define PEGASUS_PLATFORM_MACOS      0
+#define PEGASUS_PLATFORM_LINUX      0
+
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+
+#define PEGASUS_PLATFORM_WIN64      0
+#define PEGASUS_PLATFORM_WIN32      1
+#define PEGASUS_PLATFORM_WINDOWS    1
+#define PEGASUS_PLATFORM_MACOS      0
+#define PEGASUS_PLATFORM_LINUX      0
+
+#elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
+
+#define PEGASUS_PLATFORM_WIN64      0
+#define PEGASUS_PLATFORM_WIN32      0
+#define PEGASUS_PLATFORM_WINDOWS    0
+#define PEGASUS_PLATFORM_MACOS      1
+#define PEGASUS_PLATFORM_LINUX      0
+
+#elif  defined(linux) || defined(__linux) || defined(__linux__)
+
+#define PEGASUS_PLATFORM_WIN64      0
+#define PEGASUS_PLATFORM_WIN32      0
+#define PEGASUS_PLATFORM_WINDOWS    0
+#define PEGASUS_PLATFORM_MACOS      0
+#define PEGASUS_PLATFORM_LINUX      1
+
+#else
+#error "Unable to detect the platform in Pegasus/Preprocessor.h"
+#endif
+
+//----------------------------------------------------------------------------------------
+
+// Compiler
+#ifdef _MSC_VER
+#ifdef __INTEL_COMPILER
+
+#define PEGASUS_COMPILER_MSVC       0
+#define PEGASUS_COMPILER_ICC        1
+#define PEGASUS_COMPILER_GCC        0
+#define PEGASUS_COMPILER_UNKNOWN    0
+
+#else
+
+#define PEGASUS_COMPILER_MSVC       1
+#define PEGASUS_COMPILER_ICC        0
+#define PEGASUS_COMPILER_GCC        0
+#define PEGASUS_COMPILER_UNKNOWN    0
+
+#endif  // __INTEL_COMPILER
+#elif defined __GNUC__
+
+#define PEGASUS_COMPILER_MSVC       0
+#define PEGASUS_COMPILER_ICC        0
+#define PEGASUS_COMPILER_GCC        1
+#define PEGASUS_COMPILER_UNKNOWN    0
+
+#else
+
+#define PEGASUS_COMPILER_MSVC       0
+#define PEGASUS_COMPILER_ICC        0
+#define PEGASUS_COMPILER_GCC        0
+#define PEGASUS_COMPILER_UNKNOWN    1
+
+#endif
+
+// No support for languages other than C++
+#if !defined __cplusplus
+#error "Only C++ compilers are supported for Pegasus"
+#endif
+
+//----------------------------------------------------------------------------------------
+
 // DLL mode for the engine, used when compiling the engine as a dynamic library
 #ifdef _PEGASUS_DLL
 #if PEGASUS_REL

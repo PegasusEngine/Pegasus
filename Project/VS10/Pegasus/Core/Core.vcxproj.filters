@@ -11,12 +11,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\TestCore.h">
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Assertion.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Singleton.h">
       <Filter>Include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Core\TestCore.cpp">
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Assertion.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
