@@ -1,5 +1,16 @@
-#ifndef TIMELINEGRAPHICSVIEW_H
-#define TIMELINEGRAPHICSVIEW_H
+/****************************************************************************************/
+/*                                                                                      */
+/*                                    Pegasus Editor                                    */
+/*                                                                                      */
+/****************************************************************************************/
+
+//! \file	TimelineGraphicsView.h
+//! \author	Kevin Boulanger
+//! \date	10th June 2013
+//! \brief	Graphics view containing the graphics timeline representation
+
+#ifndef EDITOR_TIMELINEGRAPHICSVIEW_H
+#define EDITOR_TIMELINEGRAPHICSVIEW_H
 
 #include <QGraphicsView>
 
@@ -7,7 +18,7 @@
 //! Minimum horizontal scale factor
 #define TIMELINE_GRAPHICS_VIEW_HORIZONTAL_SCALE_MIN     0.1f
 
-//! Maximum zoom factor
+//! Maximum horizontal scale factor
 #define TIMELINE_GRAPHICS_VIEW_HORIZONTAL_SCALE_MAX     10.0f
 
 //! Minimum zoom factor
@@ -18,7 +29,6 @@
 
 //----------------------------------------------------------------------------------------
 
-//! \class TimelineGraphicsView
 //! Graphics view rendering the timeline with all its rendering items.
 class TimelineGraphicsView : public QGraphicsView
 {
@@ -94,4 +104,5 @@ private:
     //Node *centerNode;
 };
 
-#endif // TIMELINEGRAPHICSVIEW_H
+
+#endif  // EDITOR_TIMELINEGRAPHICSVIEW_H

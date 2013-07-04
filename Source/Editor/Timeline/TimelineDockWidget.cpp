@@ -1,4 +1,15 @@
-#include "TimelineDockWidget.h"
+/****************************************************************************************/
+/*                                                                                      */
+/*                                    Pegasus Editor                                    */
+/*                                                                                      */
+/****************************************************************************************/
+
+//! \file	TimelineDockWidget.cpp
+//! \author	Kevin Boulanger
+//! \date	02nd June 2013
+//! \brief	Dock widget containing the timeline graphics view
+
+#include "Timeline/TimelineDockWidget.h"
 
 
 TimelineDockWidget::TimelineDockWidget(QWidget *parent)

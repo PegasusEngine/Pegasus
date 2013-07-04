@@ -103,6 +103,12 @@
     <ClCompile Include="GeneratedFiles\Dev-Opt\moc_Application.cpp">
       <Filter>Generated\Dev-Opt</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ApplicationManager.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ApplicationManager.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Editor.qrc">
@@ -132,6 +138,9 @@
     <CustomBuild Include="..\..\..\Source\Editor\Application.h">
       <Filter>Source</Filter>
     </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\ApplicationManager.h">
+      <Filter>Source</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Editor.rc" />
@@ -139,9 +148,6 @@
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_TimelineDockWidget.h">
       <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Source\Editor\ApplicationManager.h">
-      <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

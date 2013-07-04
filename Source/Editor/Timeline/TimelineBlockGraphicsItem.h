@@ -1,9 +1,20 @@
-#ifndef TIMELINEBLOCKGRAPHICSITEM_H
-#define TIMELINEBLOCKGRAPHICSITEM_H
+/****************************************************************************************/
+/*                                                                                      */
+/*                                    Pegasus Editor                                    */
+/*                                                                                      */
+/****************************************************************************************/
+
+//! \file	TimelineGraphicsItem.h
+//! \author	Kevin Boulanger
+//! \date	11th June 2013
+//! \brief	Graphics item representing one block in the timeline
+
+#ifndef EDITOR_TIMELINEBLOCKGRAPHICSITEM_H
+#define EDITOR_TIMELINEBLOCKGRAPHICSITEM_H
 
 #include <QGraphicsItem>
 
-//! \class TimelineBlockGraphicsItem
+
 //! Graphics item representing one timeline block.
 //! Contains the block rendering properties and the rendering code.
 class TimelineBlockGraphicsItem : public QGraphicsItem
@@ -111,4 +122,5 @@ private:
     float mLength;
 };
 
-#endif // TIMELINEBLOCKGRAPHICSITEM_H
+
+#endif  // EDITOR_TIMELINEBLOCKGRAPHICSITEM_H

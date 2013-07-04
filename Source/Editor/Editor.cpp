@@ -1,3 +1,14 @@
+/****************************************************************************************/
+/*                                                                                      */
+/*                                    Pegasus Editor                                    */
+/*                                                                                      */
+/****************************************************************************************/
+
+//! \file	Editor.h
+//! \author	Kevin Boulanger
+//! \date	02nd June 2013
+//! \brief	Main window of Pegasus Editor
+
 #include "Editor.h"
 #include "ApplicationManager.h"
 #include "Viewport/ViewportDockWidget.h"
@@ -52,16 +63,14 @@ Editor::Editor(QWidget *parent)
     CreateDockWidgets();
 
     // Create the application manager
-    ApplicationManager::CreateInstance();
+    mApplicationManager = new ApplicationManager(this, mViewportDockWidget, this);
 }
 
 //----------------------------------------------------------------------------------------
 
 Editor::~Editor()
 {
-    // Destroy the application manager
     //! \todo Handle the closing of the apps that are still open
-    ApplicationManager::DestroyInstance();
 }
 
 //----------------------------------------------------------------------------------------
@@ -224,11 +233,10 @@ void Editor::CreateToolBars()
 void Editor::CreateDockWidgets()
 {
     // Set the dock widget areas to assign to the four main window corners
-    //! \todo Probably needs to be inverted, as we will want the timeline to use the full width
-    setCorner(Qt::TopLeftCorner    , Qt::LeftDockWidgetArea );
-    setCorner(Qt::TopRightCorner   , Qt::RightDockWidgetArea);
-    setCorner(Qt::BottomLeftCorner , Qt::LeftDockWidgetArea );
-    setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
+    setCorner(Qt::TopLeftCorner    , Qt::TopDockWidgetArea );
+    setCorner(Qt::TopRightCorner   , Qt::TopDockWidgetArea);
+    setCorner(Qt::BottomLeftCorner , Qt::BottomDockWidgetArea );
+    setCorner(Qt::BottomRightCorner, Qt::BottomDockWidgetArea);
 
     // Create the dock widgets and assign their initial position
 
@@ -289,7 +297,8 @@ void Editor::OpenApp()
 	// Import the file to the current scene
 	if (!fileName.isEmpty())
     {
-        //! \todo Load the application
+        mApplicationManager->OpenApplication(fileName);
+        //! \todo Handle errors
     }
 }
 

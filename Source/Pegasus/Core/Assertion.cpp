@@ -71,7 +71,6 @@ void AssertionManager::AssertionError(const char * testStr,
 }
 
 
-
 }   // namespace Core
 }   // namespace Pegasus
 

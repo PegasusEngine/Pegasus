@@ -17,8 +17,8 @@ namespace Pegasus {
 namespace Render {
 
 
-//! \class Singleton that manages GL and WGL extensions, available throughout the engine
-//!        to check if features are available before using them
+//! Singleton that manages GL and WGL extensions, available throughout the engine
+//! to check if features are available before using them
 class GLExtensions
 {
 public:

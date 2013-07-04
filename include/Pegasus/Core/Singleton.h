@@ -16,7 +16,7 @@ namespace Pegasus {
 namespace Core {
 
 
-//! \class Singleton with manual creation/destruction
+//! Singleton with manual creation/destruction.
 //! Base class for an object that has to exist only once in the application.
 //! Creation and destruction have to be handled manually.
 //! \warning \a GetInstance() can return nullptr, so be careful when using the instance pointer
@@ -62,7 +62,7 @@ private:
 
 //----------------------------------------------------------------------------------------
 
-//! \class Singleton with automatic creation
+//! Singleton with automatic creation.
 //! Base class for an object that has to exist for the entire life of the application.
 //! The singleton is created when calling \a GetInstance() for the first time.
 //! \warning \a GetInstance() is not thread-safe

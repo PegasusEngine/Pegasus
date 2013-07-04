@@ -1,3 +1,14 @@
+/****************************************************************************************/
+/*                                                                                      */
+/*                                    Pegasus Editor                                    */
+/*                                                                                      */
+/****************************************************************************************/
+
+//! \file	Editor.h
+//! \author	Kevin Boulanger
+//! \date	02nd June 2013
+//! \brief	Main window of Pegasus Editor
+
 #ifndef EDITOR_H
 #define EDITOR_H
 
@@ -11,11 +22,13 @@ class QSplashScreen;
 class QAction;
 
 
+//! Main window of Pegasus Editor
 class Editor : public QMainWindow
 {
     Q_OBJECT
 
 public:
+
     Editor(QWidget *parent = 0);
     ~Editor();
 
@@ -189,5 +202,6 @@ private:
     //! Application manager, taking take of opening and closing applications
     ApplicationManager * mApplicationManager;
 };
+
 
 #endif // EDITOR_H

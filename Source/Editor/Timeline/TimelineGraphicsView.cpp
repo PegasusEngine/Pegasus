@@ -1,5 +1,16 @@
-#include "TimelineGraphicsView.h"
-#include "TimelineBlockGraphicsItem.h"
+/****************************************************************************************/
+/*                                                                                      */
+/*                                    Pegasus Editor                                    */
+/*                                                                                      */
+/****************************************************************************************/
+
+//! \file	TimelineGraphicsView.cpp
+//! \author	Kevin Boulanger
+//! \date	10th June 2013
+//! \brief	Graphics view containing the graphics timeline representation
+
+#include "Timeline/TimelineGraphicsView.h"
+#include "Timeline/TimelineBlockGraphicsItem.h"
 
 #include <QWheelEvent>
 

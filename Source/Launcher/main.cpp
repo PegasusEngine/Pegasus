@@ -1,3 +1,14 @@
+/****************************************************************************************/
+/*                                                                                      */
+/*                                    Pegasus Editor                                    */
+/*                                                                                      */
+/****************************************************************************************/
+
+//! \file	Main.cpp
+//! \author	Kevin Boulanger, David Worsham
+//! \date	02nd June 2013
+//! \brief	Entry point of Pegasus Launcher, allowing the execution of application in dev mode
+
 #define WIN32_LEAN_AND_MEAN
 
 #include <stdio.h>
@@ -8,6 +19,7 @@
 
 #include "Pegasus/Pegasus.h"
 #include "Pegasus/TestPegasus.h"
+
 
 static unsigned int gFrameCount = 1; // Frame counter
 static float gClearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f}; // Clear color

@@ -1,4 +1,15 @@
-#include "TimelineBlockGraphicsItem.h"
+/****************************************************************************************/
+/*                                                                                      */
+/*                                    Pegasus Editor                                    */
+/*                                                                                      */
+/****************************************************************************************/
+
+//! \file	TimelineGraphicsItem.cpp
+//! \author	Kevin Boulanger
+//! \date	11th June 2013
+//! \brief	Graphics item representing one block in the timeline
+
+#include "Timeline/TimelineBlockGraphicsItem.h"
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>

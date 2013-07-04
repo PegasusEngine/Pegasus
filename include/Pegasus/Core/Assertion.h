@@ -46,7 +46,7 @@
 namespace Pegasus {
 namespace Core {
     
-//! \class Assertion manager
+
 //! Assertion manager (singleton) that redirects the macros to the assertion handler
 class AssertionManager : public AutoSingleton<AssertionManager>
 {

@@ -13,16 +13,29 @@
 #define EDITOR_APPLICATIONMANAGER_H
 
 #include "Application.h"
-#include "Pegasus/Core/Singleton.h"
+
+class Editor;
+class ViewportDockWidget;
 
 
-//! \class Manager for the opened applications in the editor
-class ApplicationManager : public Pegasus::Core::ManualSingleton<ApplicationManager>
+//! Manager for the opened applications in the editor
+class ApplicationManager : public QObject
 {
+    Q_OBJECT
+
 public:
 
-    ApplicationManager();
+    //! Constructor
+    //! \param editor Main window of the editor
+    //! \param viewportDockWidget Viewport dock widget associated with the editor
+    //! \todo Handle multiple dock widgets
+    ApplicationManager(Editor * editor,
+                       ViewportDockWidget * viewportDockWidget,
+                       QObject *parent = 0);
+
+    //! Destructor
     ~ApplicationManager();
+
 
     //! Open a new application
     //! \param fileName Path and name of the library file to open
@@ -40,11 +53,39 @@ public:
     //! \return True if an application is currently opened, false otherwise
     inline bool IsApplicationOpened() const { return mApplication != nullptr; }
 
+    //! Test if an application is running
+    //! \return True if an application is running (only after the loading occurred)
+    inline bool IsApplicationRunning() const { return mIsApplicationRunning; }
+
+    //------------------------------------------------------------------------------------
+    
+private slots:
+
+	//! Called when an error occurred when loading the application
+    //! \param error Error code
+	void LoadingError(Application::Error error);
+
+    //! Called when the application has successfully loaded (not running)
+    void LoadingSucceeded();
+
+    //! Called when the application has finished executing
+    void ApplicationFinished();
+
+    //------------------------------------------------------------------------------------
 
 private:
 
+    //! Editor main window
+    Editor * mEditor;
+
+    //! Viewport dock widget associated with the editor
+    ViewportDockWidget * mViewportDockWidget;
+
     //! Pointer to the opened application, nullptr is not assigned
     Application * mApplication;
+
+    //! True if an application is running (only after the loading occurred)
+    bool mIsApplicationRunning;
 };
 
 
