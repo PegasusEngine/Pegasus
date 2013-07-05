@@ -35,6 +35,9 @@
     <Filter Include="Source\Viewport">
       <UniqueIdentifier>{43f6299e-67d4-4bb2-be3c-942f78fadb79}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Console">
+      <UniqueIdentifier>{16aae7de-1f01-4f87-a7be-bd3e029be8ce}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GeneratedFiles\qrc_Editor.cpp">
@@ -109,6 +112,15 @@
     <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ApplicationManager.cpp">
       <Filter>Generated\Dev-Opt</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ConsoleDockWidget.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ConsoleDockWidget.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Console\ConsoleDockWidget.cpp">
+      <Filter>Source\Console</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Editor.qrc">
@@ -140,6 +152,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\ApplicationManager.h">
       <Filter>Source</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Console\ConsoleDockWidget.h">
+      <Filter>Source\Console</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

@@ -13,6 +13,7 @@
 #include "ApplicationManager.h"
 #include "Viewport/ViewportDockWidget.h"
 #include "Timeline/TimelineDockWidget.h"
+#include "Console/ConsoleDockWidget.h"
 
 #include "Pegasus/Pegasus.h"
 
@@ -154,6 +155,10 @@ void Editor::CreateActions()
 	mActionWindowTimeline->setStatusTip(tr("Open the timeline window"));
 	connect(mActionWindowTimeline, SIGNAL(triggered()), this, SLOT(OpenTimelineWindow()));
 
+    mActionWindowConsole = new QAction(tr("&Console"), this);
+	mActionWindowConsole->setStatusTip(tr("Open the console window"));
+	connect(mActionWindowConsole, SIGNAL(triggered()), this, SLOT(OpenConsoleWindow()));
+
 
     mActionHelpIndex = new QAction(tr("&Index..."), this);
 	mActionHelpIndex->setShortcut(tr("F1"));
@@ -197,6 +202,7 @@ void Editor::CreateMenu()
     //! \todo Temporary. Use the toolbar and dock menus with checkboxes
     windowMenu->addAction(mActionWindowViewport);
     windowMenu->addAction(mActionWindowTimeline);
+    windowMenu->addAction(mActionWindowConsole);
 
     QMenu * helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(mActionHelpIndex);
@@ -238,6 +244,9 @@ void Editor::CreateDockWidgets()
     setCorner(Qt::BottomLeftCorner , Qt::BottomDockWidgetArea );
     setCorner(Qt::BottomRightCorner, Qt::BottomDockWidgetArea);
 
+    // Allow nesting of dock widgets within dock areas
+    setDockNestingEnabled(true);
+
     // Create the dock widgets and assign their initial position
 
     mViewportDockWidget = new ViewportDockWidget(this);
@@ -247,6 +256,10 @@ void Editor::CreateDockWidgets()
     mTimelineDockWidget = new TimelineDockWidget(this);
     //mTimelineDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
     addDockWidget(Qt::BottomDockWidgetArea, mTimelineDockWidget);
+
+    mConsoleDockWidget = new ConsoleDockWidget(this);
+    //mConsoleDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
+    addDockWidget(Qt::BottomDockWidgetArea, mConsoleDockWidget);
 
     // Create and place the view actions for the dock widgets to the dock menu
     // (in alphabetical order)
@@ -356,6 +369,13 @@ void Editor::OpenViewportWindow()
 void Editor::OpenTimelineWindow()
 {
     mTimelineDockWidget->show();
+}
+
+//----------------------------------------------------------------------------------------
+
+void Editor::OpenConsoleWindow()
+{
+    mConsoleDockWidget->show();
 }
 
 //----------------------------------------------------------------------------------------

@@ -16,6 +16,7 @@
 
 class ViewportDockWidget;
 class TimelineDockWidget;
+class ConsoleDockWidget;
 class ApplicationManager;
 
 class QSplashScreen;
@@ -57,6 +58,10 @@ public:
     //! Get the timeline dock widget
     //! \return Pointer to the timeline dock widget
     inline TimelineDockWidget * GetTimelineDockWidget() const { return mTimelineDockWidget; }
+
+    //! Get the console dock widget
+    //! \return Pointer to the console dock widget
+    inline ConsoleDockWidget * GetConsoleDockWidget() const { return mConsoleDockWidget; }
 
     //------------------------------------------------------------------------------------
 
@@ -119,6 +124,7 @@ private slots:
     //! Slots for the actions of the Window menu
     void OpenViewportWindow();
     void OpenTimelineWindow();
+    void OpenConsoleWindow();
     //@}
 
     //@{
@@ -159,6 +165,7 @@ private:
     //! Actions triggered when an item of the Window menu is selected
 	QAction * mActionWindowViewport;
     QAction * mActionWindowTimeline;
+    QAction * mActionWindowConsole;
     //@}
 
     //@{
@@ -190,6 +197,7 @@ private:
     //! Dock widgets
     ViewportDockWidget * mViewportDockWidget;
     TimelineDockWidget * mTimelineDockWidget;
+    ConsoleDockWidget * mConsoleDockWidget;
     //@}
 
 	//! Menu containing the checkable actions for the tool bars
