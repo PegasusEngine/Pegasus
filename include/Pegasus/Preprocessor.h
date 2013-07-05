@@ -178,6 +178,15 @@
 
 //----------------------------------------------------------------------------------------
 
+// Flag for importing/exporting objects from the DLL
+#ifdef PEGASUS_DLL
+#define PEGASUS_SHAREDOBJ __declspec(dllexport)
+#else
+#define PEGASUS_SHAREDOBJ __declspec(dllimport)
+#endif
+
+//----------------------------------------------------------------------------------------
+
 // Flags telling if features are enabled based on the compilation profile.
 // Use those rather than the ones above to help future maintenance.
 
