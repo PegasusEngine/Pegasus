@@ -21,6 +21,11 @@
 #define PG_FAIL()               { Pegasus::Core::AssertionManager::GetInstance().AssertionError(\
                                         "FAILURE", __FILE__, __LINE__); }
 
+//! Use this macro for hard failures, typically code paths that should not be reached,
+//! with a message to explain the failure
+#define PG_FAILSTR(str)         { Pegasus::Core::AssertionManager::GetInstance().AssertionError(\
+                                        "FAILURE: " str, __FILE__, __LINE__); }
+
 //! Use this macro for simple assertion tests, which do not require a message to explain the test
 #define PG_ASSERT(t)            { if (!(t)) Pegasus::Core::AssertionManager::GetInstance().AssertionError(\
                                         #t, __FILE__, __LINE__); }
@@ -32,6 +37,7 @@
 #else
 
 #define PG_FAIL()
+#define PG_FAILSTR(str)
 #define PG_ASSERT(t)
 #define PG_ASSERTSTR(t, str)
 

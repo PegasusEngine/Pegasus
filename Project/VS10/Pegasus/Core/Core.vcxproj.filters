@@ -17,9 +17,15 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Singleton.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Log.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Assertion.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Log.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
