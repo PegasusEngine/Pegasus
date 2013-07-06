@@ -11,51 +11,18 @@
 
 //== Includes ====
 #include "Pegasus/Core/Window/PegasusWindow.h"
+#include "Pegasus/Render/PegasusRenderContext.h"
 #include <windows.h>
-//#include "Pegasus/Libs/GLEW/glew.h"
-//#include "Pegasus/Libs/GLEW/wglew.h"
-
-//#if PEGASUS_DEV
-//#pragma comment (lib, "glew32.lib")
-//#elif PEGASUS_REL
-//#pragma comment (lib, "glew32s.lib")
-//#else
-//#error The GLEW library needs to be linked in this profile.
-//#endif
 
 //== Forward Declarations ====
 
 //== Implementation ====
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 namespace Pegasus {
 namespace Core {
 
 // Internal functions for Windows message handling
 static LRESULT CALLBACK StartupWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
-
-// Global pixel format descriptor for RGBA 32-bits
-//! \todo Support more pixel format types
-static PIXELFORMATDESCRIPTOR sPixelFormat = {
-    sizeof(PIXELFORMATDESCRIPTOR), //! size of structure
-    1, //! default version
-    PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER, //! flags
-    PFD_TYPE_RGBA, //! RGBA color mode
-    32, //! 32 bit color mode
-    0, 0, 0, 0, 0, 0, //! ignore color bits
-    0, //! no alpha buffer
-    0, //! ignore shift bit
-    0, //! no accumulation buffer
-    0, 0, 0, 0, //! ignore accumulation bits
-    24, //! 24 bit z-buffer size
-    8, //! 8 bit stencil-buffer size
-    0, //! no aux buffer
-    PFD_MAIN_PLANE, //! main drawing plane
-    0, //! reserved
-    0, 0, 0}; //! layer masks ignored
 
 // Class/Window names for Pegasus windows
 static const char* PEGASUS_WND_CLASSNAME = "PegasusEngine";
@@ -66,6 +33,7 @@ static const char* PEGASUS_WND_STARTUPWNDNAME = "PegasusEngine_Startup";
 //! Config-based constructor.
 //! \param config Configuration structure used to create this window.
 Window::Window(const Window::WindowConfigPrivate& config)
+    : mRenderContext(NULL)
 {
     // Do the Win32 setup
     CreateWindowInternal(config);
@@ -181,83 +149,19 @@ LRESULT CALLBACK StartupWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
     {
     case WM_CREATE: // Window is being created
         {
-            /*
-            // Cache global context
-            gHDC = GetDC(hwnd);
-    
-            // Setup pixel format for backbuffer
-            int nPixelFormat = ChoosePixelFormat(gHDC, &gPixelFormat);
-            SetPixelFormat(gHDC, nPixelFormat, &gPixelFormat);
-    
-            // Make a new opengl context and link it to the window
-            gRC = wglCreateContext(gHDC);
-            wglMakeCurrent(gHDC, gRC);
-    
-            // Initialize the extensions manager, after OpenGL is initialized
-            GLenum error = glewInit();
-            if (error != GLEW_OK)
-            {
-                //! \todo Proper error handling
-                    OutputDebugString("Failure to init GLEW.\n");
-    
-                return 0;
-            }
-    
-            // Write some temporary debugging information
-            if (GLEW_VERSION_4_3)
-            {
-                OutputDebugString("OpenGL 4.3 is the maximum detected profile.\n");
-            }
-            else if (GLEW_VERSION_3_3)
-            {
-                OutputDebugString("OpenGL 3.3 is the maximum detected profile.\n");
-            }
-            else
-            {
-                OutputDebugString("Error when initializing GLExtensions.\n");
-            }
-    
-            if (glewIsSupported("GL_ARB_draw_indirect"))
-            {
-                OutputDebugString("GL_ARB_draw_indirect detected.\n");
-            }
-            else
-            {
-                OutputDebugString("GL_ARB_draw_indirect NOT detected.\n");
-            }
-            if (glewIsSupported("GL_ATI_fragment_shader"))
-            {
-                OutputDebugString("GL_ATI_fragment_shader detected.\n");
-            }
-            else
-            {
-                OutputDebugString("GL_ATI_fragment_shader NOT detected.\n");
-            }
-            if (wglewIsSupported("WGL_ARB_buffer_region"))
-            {
-                OutputDebugString("WGL_ARB_buffer_region detected.\n");
-            }
-            else
-            {
-                OutputDebugString("WGL_ARB_buffer_region NOT detected.\n");
-            }
-            if (wglewIsSupported("WGL_3DL_stereo_control"))
-            {
-                OutputDebugString("WGL_3DL_stereo_control detected.\n");
-            }
-            else
-            {
-                OutputDebugString("WGL_3DL_stereo_control NOT detected.\n");
-            }
-            */
+            //Render::ContextConfig contextConfig((PG_HWND) hwnd);
+
+            ////! \todo Need real allocators
+            //// Create context
+            //contextConfig.mStartupContext = true;
+            //mRenderContext = new Render::Context(contextConfig);
         }
         return 0;
     case WM_DESTROY: // Window is being destroyed
         {
-            /*
-            wglMakeCurrent(gHDC, NULL);
-            wglDeleteContext(gRC);
-            */
+            ////! \todo Need real allocators
+            //// Destroy context
+            //delete mRenderContext;
         }
         return 0;
     default:
@@ -283,30 +187,24 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
     case WM_CREATE: // Window is being created
         {
-            /*
-            const int attrib[6] = {WGL_CONTEXT_MAJOR_VERSION_ARB, 4, WGL_CONTEXT_MINOR_VERSION_ARB , 3, 0, 0};
-    
-            // Cache global context
-            gHDC = GetDC(hwnd);
-    
-            // Setup pixel format for backbuffer
-            int nPixelFormat = ChoosePixelFormat(gHDC, &gPixelFormat);
-            SetPixelFormat(gHDC, nPixelFormat, &gPixelFormat);
-    
-            // Make a new opengl context and link it to the window
-            gRC = wglCreateContextAttribsARB(gHDC, 0, attrib);
-            wglMakeCurrent(gHDC, gRC);
-            */
+            //Render::ContextConfig contextConfig((PG_HWND) hwnd);
+
+            ////! \todo Need real allocators
+            //// Create context
+            //contextConfig.mStartupContext = false;
+            //mRenderContext = new Render::Context(contextConfig);
         }
         return 0;
     case WM_DESTROY: // Window is being destroyed
         {
-            /*
-            wglMakeCurrent(gHDC, NULL);
-            wglDeleteContext(gRC);
-            */
+            ////! \todo Need real allocators
+            //// Destroy context
+            //delete mRenderContext;
         }
         return 0;
+    case WM_PAINT: // Someone requested a redraw of the window
+        //! \todo We need to call the render() method here
+        break;
     case WM_CLOSE: // Someone asked to close the window
         PostQuitMessage(0);
         return 0;
@@ -323,7 +221,3 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 }   // namespace Core
 }   // namespace Pegasus
-
-#ifdef __cplusplus
-}
-#endif

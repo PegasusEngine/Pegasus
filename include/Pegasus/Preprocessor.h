@@ -4,10 +4,10 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	Preprocessor.h
-//! \author	Kevin Boulanger
-//! \date	12th June 2013
-//! \brief	Preprocessor file for the entire Pegasus engine.
+//! \file   Preprocessor.h
+//! \author Kevin Boulanger
+//! \date   12th June 2013
+//! \brief  Preprocessor file for the entire Pegasus engine.
 //!         This file is included everywhere, using the Visual Studio project option
 //!         C/C++ -> Advanced -> Forced Include File.
 //! \warning All defines must be used using #if, and not #ifdef.
@@ -16,7 +16,6 @@
 
 #ifndef PEGASUS_PREPROCESSOR_H
 #define PEGASUS_PREPROCESSOR_H
-
 
 // Pegasus Engine only define, to differentiate compilation of the engine itself
 // with an actual app
@@ -179,7 +178,7 @@
 //----------------------------------------------------------------------------------------
 
 // Flag for importing/exporting objects from the DLL
-#ifdef PEGASUS_DLL
+#if PEGASUS_DLL
 #define PEGASUS_SHAREDOBJ __declspec(dllexport)
 #else
 #define PEGASUS_SHAREDOBJ __declspec(dllimport)

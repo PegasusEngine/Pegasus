@@ -16,12 +16,13 @@
 #include "Pegasus/Core/Window/PegasusWindowDefs.h"
 
 //== Forward Declarations ====
+namespace Pegasus {
+    namespace Render {
+        class Context;
+    }
+}
 
 //== Interface ====
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 namespace Pegasus {
 namespace Core {
 
@@ -45,6 +46,7 @@ public:
 
     // Getter
     inline PG_HWND GetHandle() const;
+    inline Render::Context* GetRenderContext() const;
 
 private:
     // No copies allowed
@@ -78,9 +80,12 @@ private:
     // Helpers
     void CreateWindowInternal(const WindowConfigPrivate& config);
 
+
     //! Window handle
     PG_HWND mHWND;
 
+    //! Rendering context
+    Render::Context* mRenderContext;
 
     // Only an app can construct these
     friend class Application;
@@ -98,12 +103,17 @@ inline PG_HWND Window::GetHandle() const
 
 //----------------------------------------------------------------------------------------
 
+//! Gets the OGL render context for this window.
+//! \return Render context.
+inline Render::Context* Window::GetRenderContext() const
+{
+    return mRenderContext;
+}
+
+//----------------------------------------------------------------------------------------
+
 
 }   // namespace Core
 }   // namespace Pegasus
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif  // PEGASUS_CORE_PEGASUSWINDOW_H

@@ -83,6 +83,12 @@ GLExtensions::GLExtensions()
 
 //----------------------------------------------------------------------------------------
 
+GLExtensions::~GLExtensions()
+{
+}
+
+//----------------------------------------------------------------------------------------
+
 GLExtensions::Profile GLExtensions::GetMaximumProfile() const
 {
     if (mGLEWInitialized)

@@ -25,10 +25,6 @@ namespace Pegasus{
 }
 
 //== Interface ====
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 namespace Pegasus {
 
 //! \class Configuration structure for a Pegasus app.
@@ -81,6 +77,13 @@ private:
 
     // App helpers
     void StartupAppInternal();
+    void ShutdownAppInternal();
+
+    //! Flag for startup context creation
+    static bool sContextBootstrapped;
+
+    //! Instance counter
+    static unsigned int sNumInstances;
 
     //! Application instance
     Core::PG_HINSTANCE mHINSTANCE;
@@ -94,9 +97,5 @@ private:
 
 
 }   // namespace Pegasus
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif  // PEGASUS_PEGASUSAPP_H

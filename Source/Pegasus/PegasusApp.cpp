@@ -13,18 +13,17 @@
 //== Includes ====
 #include "Pegasus/PegasusApp.h"
 #include "Pegasus/Core/Window/PegasusWindow.h"
+#include "Pegasus/Render/GL/GLExtensions.h"
 #include <windows.h>
-
-#undef AttachWindow // Silly win32
 
 //== Forward Declarations ====
 
 //== Implementation ====
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 namespace Pegasus {
+
+// bootstrapped flag
+bool Application::sContextBootstrapped = false;
+unsigned int Application::sNumInstances = 0;
 
 //! Basic constructor.
 //! \param config Config structure to create this app with.
@@ -40,7 +39,12 @@ Application::Application(const ApplicationConfig& config)
     }
 
     // start up the app, which creates and destroys the dummy window
-    StartupAppInternal();
+    if (!sContextBootstrapped)
+    {
+        StartupAppInternal();
+        sContextBootstrapped = true;
+    }
+    sNumInstances++;
 }
 
 //----------------------------------------------------------------------------------------
@@ -48,6 +52,14 @@ Application::Application(const ApplicationConfig& config)
 //! Basic destructor.
 Application::~Application()
 {
+    // shutdown the extensions manager if need be
+    sNumInstances--;
+    if (sNumInstances == 0 && sContextBootstrapped)
+    {
+        ShutdownAppInternal();
+        sContextBootstrapped = false;
+    }
+
     //! \todo Assert that no windows exist here, to alert the user of them being stupid
 
     // Free windows
@@ -155,14 +167,74 @@ void Application::StartupAppInternal()
     privConfig.mHINSTANCE = mHINSTANCE;
     privConfig.mIsStartupWindow = true;
     newWnd = new Core::Window(privConfig);
+
+    // Init openGL extensions now that we have a context
+    Render::GLExtensions::CreateInstance();
+
+    // Write some temporary debugging information
+    //! \todo Remove this after testing
+    Render::GLExtensions & extensions = Render::GLExtensions::GetInstance();
+    switch (extensions.GetMaximumProfile())
+    {
+    case Render::GLExtensions::PROFILE_GL_3_3:
+        OutputDebugString("OpenGL 3.3 is the maximum detected profile.\n");
+        break;
+
+    case Render::GLExtensions::PROFILE_GL_4_3:
+        OutputDebugString("OpenGL 4.3 is the maximum detected profile.\n");
+        break;
+
+    default:
+        OutputDebugString("Error when initializing GLExtensions.\n");
+        break;
+    }
+    if (extensions.IsGLExtensionSupported("GL_ARB_draw_indirect"))
+    {
+        OutputDebugString("GL_ARB_draw_indirect detected.\n");
+    }
+    else
+    {
+        OutputDebugString("GL_ARB_draw_indirect NOT detected.\n");
+    }
+    if (extensions.IsGLExtensionSupported("GL_ATI_fragment_shader"))
+    {
+        OutputDebugString("GL_ATI_fragment_shader detected.\n");
+    }
+    else
+    {
+        OutputDebugString("GL_ATI_fragment_shader NOT detected.\n");
+    }
+    if (extensions.IsWGLExtensionSupported("WGL_ARB_buffer_region"))
+    {
+        OutputDebugString("WGL_ARB_buffer_region detected.\n");
+    }
+    else
+    {
+        OutputDebugString("WGL_ARB_buffer_region NOT detected.\n");
+    }
+    if (extensions.IsWGLExtensionSupported("WGL_3DL_stereo_control"))
+    {
+        OutputDebugString("WGL_3DL_stereo_control detected.\n");
+    }
+    else
+    {
+        OutputDebugString("WGL_3DL_stereo_control NOT detected.\n");
+    }
+
+    // Destroy the window, it is no longer needed
     delete newWnd;
+}
+
+//----------------------------------------------------------------------------------------
+
+//! shuts down the application.
+void Application::ShutdownAppInternal()
+{
+    // Destroy openGL extensions
+    Render::GLExtensions::DestroyInstance();
 }
 
 //----------------------------------------------------------------------------------------
 
 
 }   // namespace Pegasus
-
-#ifdef __cplusplus
-}
-#endif

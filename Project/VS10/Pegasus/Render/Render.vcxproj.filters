@@ -20,10 +20,16 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\GL\GLExtensions.h">
       <Filter>Include\GL</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Render\PegasusRenderContext.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.cpp">
       <Filter>Source\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\PegasusRenderContext.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
