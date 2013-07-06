@@ -22,9 +22,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Source\Pegasus\DllMain.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Source\Pegasus\PegasusApp.cpp">
       <Filter>Source</Filter>
     </ClCompile>
