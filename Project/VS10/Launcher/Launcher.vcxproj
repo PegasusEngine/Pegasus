@@ -85,11 +85,6 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\Source\Launcher\main.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Pegasus\Pegasus.vcxproj">
-      <Project>{98bf1395-48ce-4c98-8921-7890b74889ad}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -106,27 +106,27 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
     <IntDir>$(SolutionDir)..\..\Build\VS10\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(IntDir)</OutDir>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS10\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">
     <IntDir>$(SolutionDir)..\..\Build\VS10\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(IntDir)</OutDir>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS10\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Debug|Win32'">
     <IntDir>$(SolutionDir)..\..\Build\VS10\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(IntDir)</OutDir>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS10\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Final|Win32'">
     <IntDir>$(SolutionDir)..\..\Build\VS10\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(IntDir)</OutDir>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS10\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Profile|Win32'">
     <IntDir>$(SolutionDir)..\..\Build\VS10\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(IntDir)</OutDir>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS10\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Small|Win32'">
     <IntDir>$(SolutionDir)..\..\Build\VS10\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(IntDir)</OutDir>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS10\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
     <ClCompile>

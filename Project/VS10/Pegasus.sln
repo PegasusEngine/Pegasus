@@ -2,55 +2,31 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pegasus", "Pegasus", "{F99F748E-94E2-4095-936C-60C7EE6B5B24}"
-	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
-		SolutionIsControlled = True
-	EndGlobalSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Editor", "Editor", "{03D32D76-AB97-4CB0-937A-FF17C86AB287}"
-	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
-		SolutionIsControlled = True
-	EndGlobalSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Launcher", "Launcher", "{B460F7CD-5B6E-43D6-AD3D-FDC418941FF6}"
-	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
-		SolutionIsControlled = True
-	EndGlobalSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Core", "Pegasus\Core\Core.vcxproj", "{92FA566D-08A1-4C83-832B-C8D76BD1493B}"
-	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
-		SolutionIsControlled = True
-	EndGlobalSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Render", "Pegasus\Render\Render.vcxproj", "{B1169EA8-9728-4F43-B328-CD2002450798}"
-	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
-		SolutionIsControlled = True
-	EndGlobalSection
 	ProjectSection(ProjectDependencies) = postProject
 		{92FA566D-08A1-4C83-832B-C8D76BD1493B} = {92FA566D-08A1-4C83-832B-C8D76BD1493B}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Pegasus", "Pegasus\Pegasus.vcxproj", "{98BF1395-48CE-4C98-8921-7890B74889AD}"
-	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
-		SolutionIsControlled = True
-	EndGlobalSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Editor", "Editor\Editor.vcxproj", "{13712E99-DD06-4C3A-85AE-102B3654679E}"
-	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
-		SolutionIsControlled = True
-	EndGlobalSection
 	ProjectSection(ProjectDependencies) = postProject
-		{98BF1395-48CE-4C98-8921-7890B74889AD} = {98BF1395-48CE-4C98-8921-7890B74889AD}
+		{92FA566D-08A1-4C83-832B-C8D76BD1493B} = {92FA566D-08A1-4C83-832B-C8D76BD1493B}
+		{B1169EA8-9728-4F43-B328-CD2002450798} = {B1169EA8-9728-4F43-B328-CD2002450798}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Editor", "Editor\Editor.vcxproj", "{13712E99-DD06-4C3A-85AE-102B3654679E}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Launcher", "Launcher\Launcher.vcxproj", "{C8DD5CB8-24C9-4BA1-BDA2-E096C0D8D83C}"
-	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
-		SolutionIsControlled = True
-	EndGlobalSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Apps", "Apps", "{D4FCE857-57CA-42A4-87C5-4213385279F2}"
 EndProject
 Global
-	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
-		SolutionIsControlled = True
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Dev-Debug|Win32 = Dev-Debug|Win32
 		Dev-Opt|Win32 = Dev-Opt|Win32
@@ -109,13 +85,9 @@ Global
 		{C8DD5CB8-24C9-4BA1-BDA2-E096C0D8D83C}.Dev-Opt|Win32.ActiveCfg = Dev-Opt|Win32
 		{C8DD5CB8-24C9-4BA1-BDA2-E096C0D8D83C}.Dev-Opt|Win32.Build.0 = Dev-Opt|Win32
 		{C8DD5CB8-24C9-4BA1-BDA2-E096C0D8D83C}.Rel-Debug|Win32.ActiveCfg = Dev-Debug|Win32
-		{C8DD5CB8-24C9-4BA1-BDA2-E096C0D8D83C}.Rel-Debug|Win32.Build.0 = Dev-Debug|Win32
 		{C8DD5CB8-24C9-4BA1-BDA2-E096C0D8D83C}.Rel-Final|Win32.ActiveCfg = Dev-Opt|Win32
-		{C8DD5CB8-24C9-4BA1-BDA2-E096C0D8D83C}.Rel-Final|Win32.Build.0 = Dev-Opt|Win32
 		{C8DD5CB8-24C9-4BA1-BDA2-E096C0D8D83C}.Rel-Profile|Win32.ActiveCfg = Dev-Opt|Win32
-		{C8DD5CB8-24C9-4BA1-BDA2-E096C0D8D83C}.Rel-Profile|Win32.Build.0 = Dev-Opt|Win32
 		{C8DD5CB8-24C9-4BA1-BDA2-E096C0D8D83C}.Rel-Small|Win32.ActiveCfg = Dev-Opt|Win32
-		{C8DD5CB8-24C9-4BA1-BDA2-E096C0D8D83C}.Rel-Small|Win32.Build.0 = Dev-Opt|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -126,5 +98,32 @@ Global
 		{98BF1395-48CE-4C98-8921-7890B74889AD} = {F99F748E-94E2-4095-936C-60C7EE6B5B24}
 		{13712E99-DD06-4C3A-85AE-102B3654679E} = {03D32D76-AB97-4CB0-937A-FF17C86AB287}
 		{C8DD5CB8-24C9-4BA1-BDA2-E096C0D8D83C} = {B460F7CD-5B6E-43D6-AD3D-FDC418941FF6}
+	EndGlobalSection
+	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
+		SolutionIsControlled = True
+	EndGlobalSection
+	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
+		SolutionIsControlled = True
+	EndGlobalSection
+	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
+		SolutionIsControlled = True
+	EndGlobalSection
+	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
+		SolutionIsControlled = True
+	EndGlobalSection
+	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
+		SolutionIsControlled = True
+	EndGlobalSection
+	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
+		SolutionIsControlled = True
+	EndGlobalSection
+	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
+		SolutionIsControlled = True
+	EndGlobalSection
+	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
+		SolutionIsControlled = True
+	EndGlobalSection
+	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
+		SolutionIsControlled = True
 	EndGlobalSection
 EndGlobal

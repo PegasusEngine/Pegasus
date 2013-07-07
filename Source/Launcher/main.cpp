@@ -78,7 +78,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         OutputDebugString("PEGASUS_DLL off\n");
     #endif
 
-    Pegasus::ApplicationConfig testAppConfig((Pegasus::Core::PG_HINSTANCE) hInstance);
+/*    Pegasus::ApplicationConfig testAppConfig((Pegasus::Core::PG_HINSTANCE) hInstance);
     Pegasus::Application testApp(testAppConfig);
     Pegasus::Core::WindowConfig testWindowConfig;
     Pegasus::Core::Window* testWindow = testApp.AttachWindow(testWindowConfig);
@@ -88,7 +88,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     retVal = testApp.Run();
     testApp.DetachWindow(testWindow);
 
-    return retVal;
+    return retVal;*/
+    return 0;
 }
 
 // unsigned int gFrameCount = 0;

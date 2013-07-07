@@ -34,14 +34,6 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\Source\Pegasus\PegasusApp.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="Core\Core.vcxproj">
-      <Project>{92fa566d-08a1-4c83-832b-c8d76bd1493b}</Project>
-    </ProjectReference>
-    <ProjectReference Include="Render\Render.vcxproj">
-      <Project>{b1169ea8-9728-4f43-b328-cd2002450798}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{98BF1395-48CE-4C98-8921-7890B74889AD}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -106,34 +98,34 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
     <IntDir>$(SolutionDir)..\..\Build\VS10\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)..\..\Bin\VS10\$(PlatformName)\Dev\</OutDir>
-    <TargetName>$(ProjectName)-$(Configuration)</TargetName>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS10\$(PlatformName)\$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)-Debug</TargetName>
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">
     <IntDir>$(SolutionDir)..\..\Build\VS10\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)..\..\Bin\VS10\$(PlatformName)\Dev\</OutDir>
-    <TargetName>$(ProjectName)-$(Configuration)</TargetName>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS10\$(PlatformName)\$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)-Opt</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Debug|Win32'">
     <IntDir>$(SolutionDir)..\..\Build\VS10\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)..\..\Bin\VS10\$(PlatformName)\Rel\</OutDir>
-    <TargetName>$(ProjectName)-$(Configuration)</TargetName>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS10\$(PlatformName)\$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Final|Win32'">
     <IntDir>$(SolutionDir)..\..\Build\VS10\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)..\..\Bin\VS10\$(PlatformName)\Rel\</OutDir>
-    <TargetName>$(ProjectName)-$(Configuration)</TargetName>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS10\$(PlatformName)\$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Profile|Win32'">
     <IntDir>$(SolutionDir)..\..\Build\VS10\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)..\..\Bin\VS10\$(PlatformName)\Rel\</OutDir>
-    <TargetName>$(ProjectName)-$(Configuration)</TargetName>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS10\$(PlatformName)\$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Small|Win32'">
     <IntDir>$(SolutionDir)..\..\Build\VS10\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)..\..\Bin\VS10\$(PlatformName)\Rel\</OutDir>
-    <TargetName>$(ProjectName)-$(Configuration)</TargetName>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS10\$(PlatformName)\$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
     <ClCompile>
@@ -153,11 +145,16 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\GLEW\Win32\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\Pegasus\VS10\$(PlatformName)\$(Configuration)\;$(SolutionDir)..\..\Lib\GLEW\Win32\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Core.lib;Render.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Bscmake>
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
+    <PostBuildEvent>
+      <Command>copy $(SolutionDir)..\..\Lib\Pegasus\VS10\$(PlatformName)\$(Configuration)\$(TargetName)$(TargetExt) $(SolutionDir)..\..\Bin\VS10\$(PlatformName)\Dev\$(TargetName)$(TargetExt)</Command>
+      <Message>Copying the Pegasus DLL to the bin directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">
     <ClCompile>
@@ -180,11 +177,18 @@
       <OptimizeReferences>true</OptimizeReferences>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ProgramDatabaseFile>$(IntDir)$(TargetName).pdb</ProgramDatabaseFile>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\GLEW\Win32\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\Pegasus\VS10\$(PlatformName)\$(Configuration)\;$(SolutionDir)..\..\Lib\GLEW\Win32\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Core.lib;Render.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Bscmake>
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
+    <PostBuildEvent>
+      <Command>copy $(SolutionDir)..\..\Lib\Pegasus\VS10\$(PlatformName)\$(Configuration)\$(TargetName)$(TargetExt) $(SolutionDir)..\..\Bin\VS10\$(PlatformName)\Dev\$(TargetName)$(TargetExt)</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Copying the Pegasus DLL to the bin directory</Message>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Debug|Win32'">
     <ClCompile>
@@ -207,9 +211,8 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\GLEW\Win32\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>
-      </AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\Pegasus\VS10\$(PlatformName)\$(Configuration)\;$(SolutionDir)..\..\Lib\GLEW\Win32\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Core.lib;Render.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Final|Win32'">
@@ -238,9 +241,8 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\GLEW\Win32\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>
-      </AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\Pegasus\VS10\$(PlatformName)\$(Configuration)\;$(SolutionDir)..\..\Lib\GLEW\Win32\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Core.lib;Render.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Profile|Win32'">
@@ -269,9 +271,8 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\GLEW\Win32\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>
-      </AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\Pegasus\VS10\$(PlatformName)\$(Configuration)\;$(SolutionDir)..\..\Lib\GLEW\Win32\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Core.lib;Render.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Small|Win32'">
@@ -300,9 +301,8 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\GLEW\Win32\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>
-      </AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\Pegasus\VS10\$(PlatformName)\$(Configuration)\;$(SolutionDir)..\..\Lib\GLEW\Win32\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Core.lib;Render.lib</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

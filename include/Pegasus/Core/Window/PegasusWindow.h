@@ -28,7 +28,7 @@ namespace Core {
 
 //! \class Configuration structure for a Pegasus window.
 //! \todo We need actual params here
-struct PEGASUS_SHAREDOBJ WindowConfig
+struct /*PEGASUS_SHAREDOBJ*/ WindowConfig
 {
 public:
     // Basic ctor/dtor
@@ -38,7 +38,7 @@ public:
 
 //! \class Class that represents an application window.
 //! \todo we should create a WindowManager for multi windows
-class PEGASUS_SHAREDOBJ Window
+class /*PEGASUS_SHAREDOBJ*/ Window
 {
 public:
     // Dtor
