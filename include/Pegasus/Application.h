@@ -4,39 +4,37 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	PegasusApp.cpp
-//! \author	David Worsham
-//! \date	4th July 2013
-//! \brief	Building block class for a Pegasus application.
+//! \file   PegasusApp.cpp
+//! \author David Worsham
+//! \date   4th July 2013
+//! \brief  Building block class for a Pegasus application.
 //!         Manages access to the Pegasus runtime.
 
-#ifndef PEGASUS_PEGASUSAPP_H
-#define PEGASUS_PEGASUSAPP_H
+#ifndef PEGASUS_APPLICATION_H
+#define PEGASUS_APPLICATION_H
 
-#include "Pegasus/Core/Window/PegasusWindowDefs.h"
+#include "Pegasus/WindowDefs.h"
 
 
 namespace Pegasus{
-    namespace Core {
-        struct WindowConfig;
-        class Window;
-    }
+    struct WindowConfig;
+    class Window;
 }
 
 
 namespace Pegasus {
 
 //! \class Configuration structure for a Pegasus app.
-struct PEGASUS_SHAREDOBJ ApplicationConfig
+struct ApplicationConfig
 {
 public:
     // basic ctor / dtor
-    ApplicationConfig() : mHINSTANCE(0) {}
-    ApplicationConfig(Core::PG_HINSTANCE hinst) : mHINSTANCE(hinst) {}
-    ~ApplicationConfig() {}
+    ApplicationConfig();
+    ApplicationConfig(ApplicationHandle apphandle);
+    ~ApplicationConfig();
 
     //! Opaque application instance
-    Core::PG_HINSTANCE mHINSTANCE;
+    ApplicationHandle mAppHandle;
 };
 
 //! \class Building block class for a Pegasus application.
@@ -48,26 +46,28 @@ public:
 //! \todo We need to manage the list of windows properly, with a map
 //!       of window handles to windows
 //! \todo A lot of stuff to handle multi-windows...
-class PEGASUS_SHAREDOBJ Application
+class Application
 {
 public:
     // Ctor / dtor
-    Application(const ApplicationConfig& config);
+    Application();
     virtual ~Application();
 
     // Window API
-    Core::Window* AttachWindow(const Core::WindowConfig& config);
-    void DetachWindow(Core::Window* wnd);
+    Window* AttachWindow(const WindowConfig& config);
+    void DetachWindow(Window* wnd);
 
     // Update API
     int Run();
-    virtual void Initialize() {}
-    virtual void Shutdown() {}
-    virtual void Render() {}
     //! \todo Set update mode
 
     //! Max number of windows per app
     static const unsigned int MAX_NUM_WINDOWS = 1;
+
+protected:
+    virtual void Initialize(const ApplicationConfig& config);
+    virtual void Shutdown();
+    virtual void Render();
 
 private:
     // No copies allowed
@@ -84,11 +84,14 @@ private:
     //! Instance counter
     static unsigned int sNumInstances;
 
+    //! Initialized flag
+    bool mInitialized;
+
     //! Application instance
-    Core::PG_HINSTANCE mHINSTANCE;
+    ApplicationHandle mAppHandle;
 
     //! App windows
-    Core::Window* mWindows[MAX_NUM_WINDOWS];
+    Window* mWindows[MAX_NUM_WINDOWS];
 
     //! Num app windows
     unsigned int mNumWindows;
@@ -97,4 +100,4 @@ private:
 
 }   // namespace Pegasus
 
-#endif  // PEGASUS_PEGASUSAPP_H
+#endif  // PEGASUS_APPLICATION_H

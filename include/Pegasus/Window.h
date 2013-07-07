@@ -4,15 +4,15 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	PegasusWindow.h
-//! \author	David Worsham
-//! \date	4th July 2013
-//! \brief	Class for a single window in a Pegasus application.
+//! \file   Window.h
+//! \author David Worsham
+//! \date   4th July 2013
+//! \brief  Class for a single window in a Pegasus application.
 
-#ifndef PEGASUS_CORE_PEGASUSWINDOW_H
-#define PEGASUS_CORE_PEGASUSWINDOW_H
+#ifndef PEGASUS_WINDOW_H
+#define PEGASUS_WINDOW_H
 
-#include "Pegasus/Core/Window/PegasusWindowDefs.h"
+#include "Pegasus/WindowDefs.h"
 
 
 namespace Pegasus {
@@ -23,28 +23,27 @@ namespace Pegasus {
 
 
 namespace Pegasus {
-namespace Core {
 
 //! \class Configuration structure for a Pegasus window.
 //! \todo We need actual params here
-struct PEGASUS_SHAREDOBJ WindowConfig
+struct WindowConfig
 {
 public:
     // Basic ctor/dtor
-    WindowConfig() {}
-    ~WindowConfig() {}
+    WindowConfig();
+    ~WindowConfig();
 };
 
 //! \class Class that represents an application window.
 //! \todo we should create a WindowManager for multi windows
-class PEGASUS_SHAREDOBJ Window
+class Window
 {
 public:
     // Dtor
     ~Window();
 
     // Getter
-    inline PG_HWND GetHandle() const;
+    inline WindowHandle GetHandle() const;
     inline Render::Context* GetRenderContext() const;
 
 private:
@@ -57,15 +56,14 @@ private:
     {
     public:
         // Basic ctor/dtor
-        WindowConfigPrivate(const WindowConfig& config)
-            : mBaseConfig(config), mHINSTANCE(0), mIsStartupWindow(false) {}
-        ~WindowConfigPrivate() {}
+        WindowConfigPrivate(const WindowConfig& config);
+        ~WindowConfigPrivate();
 
         //! Base config structure
         WindowConfig mBaseConfig;
 
         //! Opaque application instance
-        Core::PG_HINSTANCE mHINSTANCE;
+        ApplicationHandle mAppHandle;
 
         //! Internal startup window flag
         //! This indicates that the window is a dummy,
@@ -81,7 +79,7 @@ private:
 
 
     //! Window handle
-    PG_HWND mHWND;
+    WindowHandle mHWND;
 
     //! Rendering context
     Render::Context* mRenderContext;
@@ -95,7 +93,7 @@ private:
 
 //! Gets the handle for this window.
 //! \return Window handle.
-inline PG_HWND Window::GetHandle() const
+inline WindowHandle Window::GetHandle() const
 {
     return mHWND;
 }
@@ -112,7 +110,6 @@ inline Render::Context* Window::GetRenderContext() const
 //----------------------------------------------------------------------------------------
 
 
-}   // namespace Core
 }   // namespace Pegasus
 
-#endif  // PEGASUS_CORE_PEGASUSWINDOW_H
+#endif  // PEGASUS_WINDOW_H

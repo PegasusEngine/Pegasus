@@ -9,12 +9,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Include\Window">
-      <UniqueIdentifier>{6942d966-6a2c-48cc-899b-0f3429c4610f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Window">
-      <UniqueIdentifier>{984ed682-0f94-4061-856d-ec783a514e85}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Assertion.h">
@@ -28,24 +22,11 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Window\PegasusWindow.cpp">
-      <Filter>Source\Window</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Assertion.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Log.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Window\PegasusWindow.h">
-      <Filter>Include\Window</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Window\PegasusWindowDefs.h">
-      <Filter>Include\Window</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

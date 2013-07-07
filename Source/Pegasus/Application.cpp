@@ -4,14 +4,14 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	PegasusApp.cpp
-//! \author	David Worsham
-//! \date	4th July 2013
-//! \brief	Building block class for a Pegasus application.
+//! \file   Application.cpp
+//! \author David Worsham
+//! \date   4th July 2013
+//! \brief  Building block class for a Pegasus application.
 //!         Manages access to the Pegasus runtime.
 
-#include "Pegasus/PegasusApp.h"
-#include "Pegasus/Core/Window/PegasusWindow.h"
+#include "Pegasus/Application.h"
+#include "Pegasus/Window.h"
 #include "Pegasus/Render/GL/GLExtensions.h"
 #include <windows.h>
 
@@ -22,31 +22,45 @@ namespace Pegasus {
 bool Application::sContextBootstrapped = false;
 unsigned int Application::sNumInstances = 0;
 
+
 //! Basic constructor.
-//! \param config Config structure to create this app with.
-Application::Application(const ApplicationConfig& config)
-    : mHINSTANCE(config.mHINSTANCE), mNumWindows(0)
+ApplicationConfig::ApplicationConfig()
+    : mAppHandle(NULL)
 {
-    Core::Window* startupWindow = nullptr;
+}
 
-    // Init windows array
-    for (unsigned int i = 0; i < MAX_NUM_WINDOWS; i++)
-    {
-        mWindows[i] = nullptr;
-    }
+//----------------------------------------------------------------------------------------
 
-    // start up the app, which creates and destroys the dummy window
-    if (!sContextBootstrapped)
-    {
-        StartupAppInternal();
-        sContextBootstrapped = true;
-    }
-    sNumInstances++;
+//! Config-based constructor.
+//! \param apphandle Application handle to config with.
+ApplicationConfig::ApplicationConfig(ApplicationHandle apphandle)
+    : mAppHandle(apphandle)
+{
 }
 
 //----------------------------------------------------------------------------------------
 
 //! Basic destructor.
+ApplicationConfig::~ApplicationConfig()
+{
+}
+
+//----------------------------------------------------------------------------------------
+
+//! Basic constructor.
+Application::Application()
+    : mInitialized(false), mAppHandle(NULL), mNumWindows(0)
+{
+    // Init windows array
+    for (unsigned int i = 0; i < MAX_NUM_WINDOWS; i++)
+    {
+        mWindows[i] = nullptr;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+//! Destructor.
 Application::~Application()
 {
     // shutdown the extensions manager if need be
@@ -74,16 +88,16 @@ Application::~Application()
 //! Creates an application window and links it to this app.
 //! \param config Config object used to create the window.
 //! \return The created window, or nullptr if creation failed.
-Core::Window* Application::AttachWindow(const Core::WindowConfig& config)
+Window* Application::AttachWindow(const WindowConfig& config)
 {
-    Core::Window* newWnd = nullptr;
-    Core::Window::WindowConfigPrivate privConfig(config);
+    Window* newWnd = nullptr;
+    Window::WindowConfigPrivate privConfig(config);
 
     // Create window
     //! \todo Assert/log on failure
-    privConfig.mHINSTANCE = mHINSTANCE;
+    privConfig.mAppHandle = mAppHandle;
     privConfig.mIsStartupWindow = false;
-    newWnd = new Core::Window(privConfig);
+    newWnd = new Window(privConfig);
 
     // Assign it
     //! \todo Assert on windows list not full
@@ -99,7 +113,7 @@ Core::Window* Application::AttachWindow(const Core::WindowConfig& config)
 
 //! Destroys a window and unlinks it from this app.
 //! \param wnd The window to destroy.
-void Application::DetachWindow(Core::Window* wnd)
+void Application::DetachWindow(Window* wnd)
 {
     //! \todo Assert window not null
     //! \todo Assert window ID in range
@@ -110,16 +124,13 @@ void Application::DetachWindow(Core::Window* wnd)
 
 //----------------------------------------------------------------------------------------
 
-//! Runs the application loop for this pegasus app.
+//! Runs the application loop for this Pegasus app.
 //! \note This method does not return until the user closes the application.
 //! \return Status code.
 int Application::Run()
 {
     MSG curMsg;
     bool appDone = false;
-
-    // Init app
-    Initialize();
 
     // Run message pump until application exits
     while(!appDone)
@@ -142,11 +153,51 @@ int Application::Run()
         }
     }
 
-    // Shutdown app
-    Shutdown();
-
     // wParam of WM_QUIT is the app exit code
     return curMsg.wParam;
+}
+
+//----------------------------------------------------------------------------------------
+
+//! Initialize this application.
+//! \param config Config structure to create this app with.
+//! \warning All other method calls are invalid until Initialize is called.
+void Application::Initialize(const ApplicationConfig& config)
+{
+    Window* startupWindow = nullptr;
+
+    // Cache off application handle
+    mAppHandle = config.mAppHandle;
+
+    //! \todo Refactor this instance counting junk
+    // start up the app, which creates and destroys the dummy window
+    if (!sContextBootstrapped)
+    {
+        StartupAppInternal();
+        sContextBootstrapped = true;
+    }
+    sNumInstances++;
+
+    //! \todo Assert on init
+    // Initted
+    mInitialized = true;
+}
+
+//----------------------------------------------------------------------------------------
+
+//! Shutdown this application.
+void Application::Shutdown()
+{
+    //! \todo Assert on init
+    // No longer initted
+    mInitialized = false;
+}
+
+//----------------------------------------------------------------------------------------
+
+//! Perform a single frame of rendering.
+void Application::Render()
+{
 }
 
 //----------------------------------------------------------------------------------------
@@ -155,15 +206,15 @@ int Application::Run()
 //! \note Creates the dummy startup window used to initialize the OGL extensions.
 void Application::StartupAppInternal()
 {
-    Core::Window* newWnd = nullptr;
-    Core::WindowConfig baseConfig;
-    Core::Window::WindowConfigPrivate privConfig(baseConfig);
+    Window* newWnd = nullptr;
+    WindowConfig baseConfig;
+    Window::WindowConfigPrivate privConfig(baseConfig);
 
     // Create window and immediately destroy it
     //! \todo Assert/log on failure
-    privConfig.mHINSTANCE = mHINSTANCE;
+    privConfig.mAppHandle = mAppHandle;
     privConfig.mIsStartupWindow = true;
-    newWnd = new Core::Window(privConfig);
+    newWnd = new Window(privConfig);
 
     // Init openGL extensions now that we have a context
     Render::GLExtensions::CreateInstance();

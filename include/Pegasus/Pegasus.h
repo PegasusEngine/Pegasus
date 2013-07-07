@@ -16,18 +16,12 @@
 // Compilation macro definitions
 // (included by the project when compiling engine, but required when compiling an app)
 #include "Pegasus/Preprocessor.h"
-#include "Pegasus/PegasusApp.h" // App skeleton
-#include "Pegasus/Core/Window/PegasusWindow.h" // Window skeleton
 
 // Assertion management, can be used anywhere
 #include "Pegasus/Core/Assertion.h"
 
 // Log messages, can be used anywhere
 #include "Pegasus/Core/Log.h"
-
-//== Forward Declarations ====
-
-//== Interface ====
 
 
 #endif  // PEGASUS_PEGASUS_H

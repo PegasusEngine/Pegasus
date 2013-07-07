@@ -4,7 +4,7 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   PegasusRenderContext.h
+//! \file   RenderContext.h
 //! \author David Worsham
 //! \date   5th July 2013
 //! \brief  Class that encapsulates an OGL rendering context.
@@ -12,7 +12,8 @@
 #ifndef PEGASUS_RENDER_PEGASUSRENDERCONTEXT_H
 #define PEGASUS_RENDER_PEGASUSRENDERCONTEXT_H
 
-#include "Pegasus/Core/Window/PegasusWindowDefs.h"
+#include "Pegasus/WindowDefs.h"
+#include <stdint.h>
 
 
 namespace Pegasus {
@@ -23,11 +24,12 @@ struct ContextConfig
 {
 public:
     // Basic ctor / dtor
-    ContextConfig() : mHWND(0), mStartupContext(false) {}
-    ContextConfig(Core::PG_HWND hwnd) : mHWND(hwnd), mStartupContext(false) {}
+    ContextConfig();
+    ContextConfig(WindowHandle hwnd);
+    ~ContextConfig();
 
     //! Opaque window handle
-    Core::PG_HWND mHWND;
+    WindowHandle mWindowHandle;
 
     //! Startup context flag, indicating how the context should be created
     bool mStartupContext;
@@ -55,13 +57,13 @@ private:
 
     //! Context handle opaque type
     //! Can be converted to a pointer
-    typedef unsigned int PG_HGLRC;
+    typedef uintptr_t RenderContextHandle;
 
     //! Opaque window handle
-    Core::PG_HWND mHWND;
+    WindowHandle mWindowHandle;
 
     //! Opaque context handle
-    PG_HGLRC mHGLRC;
+    RenderContextHandle mRenderContextHandle;
 };
 
 

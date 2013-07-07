@@ -28,11 +28,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\GL\GLExtensions.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Render\PegasusRenderContext.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Render\RenderContext.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\PegasusRenderContext.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\RenderContext.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B1169EA8-9728-4F43-B328-CD2002450798}</ProjectGuid>

@@ -9,13 +9,12 @@
 //! \date	4th July 2013
 //! \brief	Class for a single window in a Pegasus application.
 
-#include "Pegasus/Core/Window/PegasusWindow.h"
-#include "Pegasus/Render/PegasusRenderContext.h"
+#include "Pegasus/Window.h"
+#include "Pegasus/Render/RenderContext.h"
 #include <windows.h>
 
 
 namespace Pegasus {
-namespace Core {
 
 // Internal functions for Windows message handling
 static LRESULT CALLBACK StartupWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -26,6 +25,37 @@ static const char* PEGASUS_WND_CLASSNAME = "PegasusEngine";
 static const char* PEGASUS_WND_STARTUPCLASSNAME = "PegasusEngine_Startup";
 static const char* PEGASUS_WND_WNDNAME = "PegasusEngine";
 static const char* PEGASUS_WND_STARTUPWNDNAME = "PegasusEngine_Startup";
+
+
+//! Basic constructor.
+WindowConfig::WindowConfig()
+{
+}
+
+//----------------------------------------------------------------------------------------
+
+//! Destructor.
+WindowConfig::~WindowConfig()
+{
+}
+
+//----------------------------------------------------------------------------------------
+
+//! Config-based constructor.
+//! \param config Configuration structure to use internally.
+Window::WindowConfigPrivate::WindowConfigPrivate(const WindowConfig& config)
+ : mBaseConfig(config), mAppHandle(NULL), mIsStartupWindow(false)
+{
+}
+
+//----------------------------------------------------------------------------------------
+
+//! Destructor.
+Window::WindowConfigPrivate::~WindowConfigPrivate()
+{
+}
+
+//----------------------------------------------------------------------------------------
 
 //! Config-based constructor.
 //! \param config Configuration structure used to create this window.
@@ -63,7 +93,7 @@ void Window::CreateWindowInternal(const Window::WindowConfigPrivate& config)
         windowClass.lpfnWndProc = StartupWndProc; // Message pump callback
         windowClass.cbClsExtra = 0;
         windowClass.cbWndExtra = 0;
-        windowClass.hInstance = (HINSTANCE) config.mHINSTANCE;
+        windowClass.hInstance = (HINSTANCE) config.mAppHandle;
         windowClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
         windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
         windowClass.hbrBackground = (HBRUSH) GetStockObject(WHITE_BRUSH);
@@ -79,7 +109,7 @@ void Window::CreateWindowInternal(const Window::WindowConfigPrivate& config)
         windowClass.lpfnWndProc = WndProc; // Message pump callback
         windowClass.cbClsExtra = 0;
         windowClass.cbWndExtra = 0;
-        windowClass.hInstance = (HINSTANCE) config.mHINSTANCE;
+        windowClass.hInstance = (HINSTANCE) config.mAppHandle;
         windowClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
         windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
         windowClass.hbrBackground = (HBRUSH) GetStockObject(WHITE_BRUSH);
@@ -107,7 +137,7 @@ void Window::CreateWindowInternal(const Window::WindowConfigPrivate& config)
                                       960, 540,
                                       NULL,
                                       NULL,
-                                      (HINSTANCE) config.mHINSTANCE,
+                                      (HINSTANCE) config.mAppHandle,
                                       NULL);
     }
     else
@@ -121,12 +151,12 @@ void Window::CreateWindowInternal(const Window::WindowConfigPrivate& config)
                                       960, 540,
                                       NULL,
                                       NULL,
-                                      (HINSTANCE) config.mHINSTANCE,
+                                      (HINSTANCE) config.mAppHandle,
                                       NULL);
     }
 
     // cache handle
-    mHWND = (PG_HWND) windowHandle;
+    mHWND = (WindowHandle) windowHandle;
 }
 
 //----------------------------------------------------------------------------------------
@@ -216,5 +246,4 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 //----------------------------------------------------------------------------------------
 
 
-}   // namespace Core
 }   // namespace Pegasus

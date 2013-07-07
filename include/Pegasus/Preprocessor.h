@@ -181,7 +181,7 @@
 #if PEGASUS_REL // No DLL in release mode, so no shared objects
 #define PEGASUS_SHAREDOBJ
 #else
-#if PEGASUS_DLL
+#if PEGASUS_PLATFORM_WINDOWS && PEGASUS_DLL
 #define PEGASUS_SHAREDOBJ __declspec(dllexport)
 #else
 #define PEGASUS_SHAREDOBJ __declspec(dllimport)

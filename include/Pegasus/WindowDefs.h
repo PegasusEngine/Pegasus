@@ -4,32 +4,27 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   PegasusWindowDefs.h
+//! \file   WindowDefs.h
 //! \author David Worsham
 //! \date   4th Junly 2013
 //! \brief  Common typedefs for the windowing system.
 
-#ifndef PEGASUS_CORE_PEGASUSWINDOWDEFS_H
-#define PEGASUS_CORE_PEGASUSWINDOWDEFS_H
+#ifndef PEGASUS_WINDOWDEFS_H
+#define PEGASUS_WINDOWDEFS_H
 
-//== Includes ====
+#include <stdint.h>
 
-//== Forward Declarations ====
-
-//== Interface ====
 namespace Pegasus {
-namespace Core {
 
 //! Application handle opaque type
 //! Can be converted to a pointer
-typedef unsigned int PG_HINSTANCE;
+typedef uintptr_t ApplicationHandle;
 
 //! Window handle opaque type
 //! Can be converted to a pointer
-typedef unsigned int PG_HWND;
+typedef uintptr_t WindowHandle;
 
 
-}   // namespace Core
 }   // namespace Pegasus
 
-#endif  // PEGASUS_CORE_PEGASUSWINDOWDEFS_H
+#endif  // PEGASUS_WINDOWDEFS_H
