@@ -9,15 +9,12 @@
 //! \date   02nd June 2013
 //! \brief  Entry point of Pegasus Launcher, allowing the execution of application in dev mode
 
-//== Includes ====
 #define WIN32_LEAN_AND_MEAN
 
 #include "Pegasus/Pegasus.h"
 #include <windows.h>
 
-//== Forward Declarations ====
 
-//== Implementation ====
 //! Main entry point
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                      LPSTR lpCmdLine, int nCmdShow)

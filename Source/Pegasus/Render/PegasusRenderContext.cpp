@@ -9,15 +9,12 @@
 //! \date   5th July 2013
 //! \brief  Class that encapsulates an OGL rendering context.
 
-//== Includes ====
 #include "Pegasus/Render/PegasusRenderContext.h"
 #include <windows.h>
 #include "Pegasus/Libs/GLEW/glew.h"
 #include "Pegasus/Libs/GLEW/wglew.h"
 
-//== Forward Declarations ====
 
-//== Implementation ====
 namespace Pegasus {
 namespace Render {
 

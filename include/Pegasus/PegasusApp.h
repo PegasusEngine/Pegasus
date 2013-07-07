@@ -13,10 +13,9 @@
 #ifndef PEGASUS_PEGASUSAPP_H
 #define PEGASUS_PEGASUSAPP_H
 
-//== Includes ====
 #include "Pegasus/Core/Window/PegasusWindowDefs.h"
 
-//== Forward Declarations ====
+
 namespace Pegasus{
     namespace Core {
         struct WindowConfig;
@@ -24,11 +23,11 @@ namespace Pegasus{
     }
 }
 
-//== Interface ====
+
 namespace Pegasus {
 
 //! \class Configuration structure for a Pegasus app.
-struct /*PEGASUS_SHAREDOBJ*/ ApplicationConfig
+struct PEGASUS_SHAREDOBJ ApplicationConfig
 {
 public:
     // basic ctor / dtor
@@ -49,7 +48,7 @@ public:
 //! \todo We need to manage the list of windows properly, with a map
 //!       of window handles to windows
 //! \todo A lot of stuff to handle multi-windows...
-class /*PEGASUS_SHAREDOBJ*/ Application
+class PEGASUS_SHAREDOBJ Application
 {
 public:
     // Ctor / dtor

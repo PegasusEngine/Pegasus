@@ -12,12 +12,9 @@
 #ifndef PEGASUS_RENDER_PEGASUSRENDERCONTEXT_H
 #define PEGASUS_RENDER_PEGASUSRENDERCONTEXT_H
 
-//== Includes ====
 #include "Pegasus/Core/Window/PegasusWindowDefs.h"
 
-//== Forward Declarations ====
 
-//== Interface ====
 namespace Pegasus {
 namespace Render {
 

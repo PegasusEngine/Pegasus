@@ -10,15 +10,12 @@
 //! \brief	Building block class for a Pegasus application.
 //!         Manages access to the Pegasus runtime.
 
-//== Includes ====
 #include "Pegasus/PegasusApp.h"
 #include "Pegasus/Core/Window/PegasusWindow.h"
 #include "Pegasus/Render/GL/GLExtensions.h"
 #include <windows.h>
 
-//== Forward Declarations ====
 
-//== Implementation ====
 namespace Pegasus {
 
 // bootstrapped flag

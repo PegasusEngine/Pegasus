@@ -9,14 +9,11 @@
 //! \date	4th July 2013
 //! \brief	Class for a single window in a Pegasus application.
 
-//== Includes ====
 #include "Pegasus/Core/Window/PegasusWindow.h"
 #include "Pegasus/Render/PegasusRenderContext.h"
 #include <windows.h>
 
-//== Forward Declarations ====
 
-//== Implementation ====
 namespace Pegasus {
 namespace Core {
 
