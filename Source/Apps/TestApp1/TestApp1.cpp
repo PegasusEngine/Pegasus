@@ -4,20 +4,19 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   main.cpp
-//! \author Kevin Boulanger, David Worsham
-//! \date   02nd June 2013
-//! \brief  Entry point of Pegasus Launcher, allowing the execution of application in dev mode
+//! \file   TestApp1.cpp
+//! \author Kevin Boulanger
+//! \date   07th July 2013
+//! \brief  Test application 1
 
+#include "TestApp1.h"
+//! \todo Remove the include once OutputDebugString below is not used
 #define WIN32_LEAN_AND_MEAN
-
-#include "Pegasus/Pegasus.h"
-#include <windows.h>
+#include <Windows.h>
 
 
-//! Main entry point
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-                     LPSTR lpCmdLine, int nCmdShow)
+TestApp1::TestApp1()
+:   Pegasus::Application()
 {
     // Test for preprocessor.h
     //! \todo Test all configs, fix bugs, and remove this
@@ -68,46 +67,38 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     #else
         OutputDebugString("PEGASUS_SMALL off\n");
     #endif
-    
-    #if PEGASUS_DLL
-        OutputDebugString("PEGASUS_DLL on\n");
+
+    #if PEGASUSAPP_DLL
+        OutputDebugString("PEGASUSAPP_DLL on\n");
     #else
-        OutputDebugString("PEGASUS_DLL off\n");
+        OutputDebugString("PEGASUSAPP_DLL off\n");
     #endif
-
-/*    Pegasus::ApplicationConfig testAppConfig((Pegasus::Core::PG_HINSTANCE) hInstance);
-    Pegasus::Application testApp(testAppConfig);
-    Pegasus::Core::WindowConfig testWindowConfig;
-    Pegasus::Core::Window* testWindow = testApp.AttachWindow(testWindowConfig);
-    int retVal = 0;
-
-    // Run app
-    retVal = testApp.Run();
-    testApp.DetachWindow(testWindow);
-
-    return retVal;*/
-    return 0;
 }
 
-// unsigned int gFrameCount = 0;
-// float gClearColor[4] = {0.0f, 0.0f, 0.0f, 1.0f};
-//void Render()
-//{
-//    // Update clear color once per second
-//    if (gFrameCount % 60 == 0)
-//    {
-//        gClearColor[0] = (((float) rand()) / ((float) RAND_MAX));
-//        gClearColor[1] = (((float) rand()) / ((float) RAND_MAX));
-//        gClearColor[2] = (((float) rand()) / ((float) RAND_MAX));
-//    }
-//    gFrameCount++;
-//
-//    // Clear screen
-//    glClearColor(gClearColor[0], gClearColor[1], gClearColor[2], gClearColor[3]);
-//    glClearDepth(0.0f);
-//    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//
-//    // Present
-//    glFlush();
-//    SwapBuffers(gHDC);
-//}
+//----------------------------------------------------------------------------------------
+
+TestApp1::~TestApp1()
+{
+
+}
+
+//----------------------------------------------------------------------------------------
+
+void TestApp1::Initialize(const Pegasus::ApplicationConfig& config)
+{
+    Pegasus::Application::Initialize(config);
+}
+
+//----------------------------------------------------------------------------------------
+
+void TestApp1::Shutdown()
+{
+    Pegasus::Application::Shutdown();
+}
+
+//----------------------------------------------------------------------------------------
+
+void TestApp1::Render()
+{
+    //! \todo Render
+}

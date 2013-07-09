@@ -67,7 +67,7 @@ private:
 
         //! Internal startup window flag
         //! This indicates that the window is a dummy,
-        //! for creating the inital render context
+        //! for creating the initial render context
         bool mIsStartupWindow;
     };
 

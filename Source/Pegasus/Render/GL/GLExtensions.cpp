@@ -11,18 +11,19 @@
 //!         to check if features are available before using them
 
 #include "Pegasus/Render/GL/GLExtensions.h"
+
+#if PEGASUS_EMBED_GLEW
+// Use the GLEW static mode to avoid exporting symbols as for a dynamic library
+#define GLEW_STATIC 1
+#endif
+
 #include "Pegasus/Libs/GLEW/glew.h"
 #include "Pegasus/Libs/GLEW/wglew.h"
 
-//! \todo Make this VStudio specific
-#if PEGASUS_DEV
-#pragma comment (lib, "glew32.lib")
-#elif PEGASUS_REL
-#pragma comment (lib, "glew32s.lib")
-#else
-#error The GLEW library needs to be linked in this profile.
+#if PEGASUS_EMBED_GLEW
+// Embed the source code of GLEW to avoid linking to a dynamic library
+#include "Pegasus/Libs/GLEW/glew.c"
 #endif
-
 
 namespace Pegasus {
 namespace Render {

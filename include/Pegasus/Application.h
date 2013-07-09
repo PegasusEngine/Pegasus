@@ -4,14 +4,18 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   PegasusApp.cpp
+//! \file   Application.h
 //! \author David Worsham
-//! \date   4th July 2013
+//! \date   04th July 2013
 //! \brief  Building block class for a Pegasus application.
 //!         Manages access to the Pegasus runtime.
 
 #ifndef PEGASUS_APPLICATION_H
 #define PEGASUS_APPLICATION_H
+
+#if !PEGASUS_INCLUDE_LAUNCHER
+#include "Pegasus/IApplication.h"
+#endif
 
 #include "Pegasus/WindowDefs.h"
 
@@ -46,7 +50,11 @@ public:
 //! \todo We need to manage the list of windows properly, with a map
 //!       of window handles to windows
 //! \todo A lot of stuff to handle multi-windows...
+#if PEGASUS_INCLUDE_LAUNCHER
 class Application
+#else
+class Application : public IApplication
+#endif
 {
 public:
     // Ctor / dtor
@@ -64,10 +72,9 @@ public:
     //! Max number of windows per app
     static const unsigned int MAX_NUM_WINDOWS = 1;
 
-protected:
     virtual void Initialize(const ApplicationConfig& config);
     virtual void Shutdown();
-    virtual void Render();
+    virtual void Render() = 0;
 
 private:
     // No copies allowed

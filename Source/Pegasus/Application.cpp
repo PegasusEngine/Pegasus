@@ -195,13 +195,6 @@ void Application::Shutdown()
 
 //----------------------------------------------------------------------------------------
 
-//! Perform a single frame of rendering.
-void Application::Render()
-{
-}
-
-//----------------------------------------------------------------------------------------
-
 //! Starts up the application.
 //! \note Creates the dummy startup window used to initialize the OGL extensions.
 void Application::StartupAppInternal()

@@ -165,27 +165,28 @@
 
 //----------------------------------------------------------------------------------------
 
-// DLL mode for the engine, used when compiling the engine as a dynamic library
-#ifdef _PEGASUS_DLL
+// DLL mode for the application, used when compiling the app as a dynamic library, in DEV mode
+#ifdef _PEGASUSAPP_DLL
 #if PEGASUS_REL
 #error Pegasus REL mode cannot be compiled as a DLL. This is reserved to DEV mode
 #endif
-#define PEGASUS_DLL             1
+#define PEGASUSAPP_DLL          1
 #else
-#define PEGASUS_DLL             0
+#define PEGASUSAPP_DLL          0
 #endif
 
 //----------------------------------------------------------------------------------------
 
-// Flag for importing/exporting objects from the DLL
-#if PEGASUS_REL // No DLL in release mode, so no shared objects
-#define PEGASUS_SHAREDOBJ
+// Flag for importing/exporting objects or functions from the DLL (app in DEV mode)
+#if PEGASUS_DEV && PEGASUS_PLATFORM_WINDOWS
+#if PEGASUSAPP_DLL
+#define PEGASUSAPP_SHARED __declspec(dllexport)
 #else
-#if PEGASUS_PLATFORM_WINDOWS && PEGASUS_DLL
-#define PEGASUS_SHAREDOBJ __declspec(dllexport)
-#else
-#define PEGASUS_SHAREDOBJ __declspec(dllimport)
+#define PEGASUSAPP_SHARED __declspec(dllimport)
 #endif
+#else
+// No DLL in release mode or in other platforms than Windows
+#define PEGASUSAPP_SHARED
 #endif
 
 //----------------------------------------------------------------------------------------
@@ -193,11 +194,17 @@
 // Flags telling if features are enabled based on the compilation profile.
 // Use those rather than the ones above to help future maintenance.
 
+// Include the entry point when the engine is compiled as an executable
+#define PEGASUS_INCLUDE_LAUNCHER            (!PEGASUS_DEV)
+
 // Enable logging in the console output
 #define PEGASUS_ENABLE_LOG                  (PEGASUS_DEBUG || PEGASUS_OPT)
 
 // Enable the assertion tests
 #define PEGASUS_ENABLE_ASSERT               (PEGASUS_DEBUG || PEGASUS_OPT)
+
+// Use GLEW (GL Extension Wrangler) as embedded source code rather than a dynamic library
+#define PEGASUS_EMBED_GLEW                  (PEGASUS_REL)
 
 
 #endif  // PEGASUS_PREPROCESSOR_H

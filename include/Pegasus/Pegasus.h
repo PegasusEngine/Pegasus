@@ -23,5 +23,8 @@
 // Log messages, can be used anywhere
 #include "Pegasus/Core/Log.h"
 
+// Application base class
+#include "Pegasus/Application.h"
+
 
 #endif  // PEGASUS_PEGASUS_H
