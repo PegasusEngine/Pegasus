@@ -45,7 +45,6 @@ public:
     typedef enum Error
     {
         ERROR_INVALID_FILE_NAME = 0,    //!< Invalid file name (not properly formatted)
-        ERROR_FILE_NOT_FOUND,           //!< Application file not found
         ERROR_INVALID_APPLICATION,      //!< The library of the application does not have the correct entry points
         ERROR_INVALID_INTERFACE,        //!< The library interface does not have the right type
         ERROR_INVALID_VIEWPORT          //!< Invalid viewport given to the application

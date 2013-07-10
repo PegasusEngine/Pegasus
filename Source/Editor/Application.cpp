@@ -11,6 +11,13 @@
 
 #include "Application.h"
 #include "Viewport/ViewportWidget.h"
+#include "Pegasus/Application.h"
+#include <stdio.h>
+
+#if PEGASUS_PLATFORM_WINDOWS
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif  // PEGASUS_PLATFORM_WINDOWS
 
 
 Application::Application(QObject *parent)
@@ -60,10 +67,55 @@ void Application::run()
         return;
     }
 
-    //! \todo Load the DLL. Return ERROR_FILE_NOT_FOUND, ERROR_INVALID_APPLICATION, ERROR_INVALID_INTERFACE if required
+#if PEGASUS_PLATFORM_WINDOWS
+
+    // Load the DLL
+    HMODULE dllModule = LoadLibrary(mFileName.utf16());
+    if (dllModule == NULL)
+    {
+        emit(LoadingError(ERROR_INVALID_APPLICATION));
+        return;
+    }
+
+    // Retrieve the entry point of the application DLL
+    FARPROC createAppProcAddress = GetProcAddress(dllModule, "CreatePegasusApp");
+    if (createAppProcAddress == NULL)
+    {
+        FreeLibrary(dllModule);
+        emit(LoadingError(ERROR_INVALID_INTERFACE));
+        return;
+    }
+
+#else
+#error "Implement the loading of the application library"
+#endif  // PEGASUS_PLATFORM_WINDOWS
+
+    // Cast the procedure into the actual entry point function
+    //! \todo Make the function pointer a declaration in IApplication.h?
+    typedef Pegasus::IApplication * (* CreatePegasusAppFuncPtr) ();
+    CreatePegasusAppFuncPtr CreatePegasusAppFunc = (CreatePegasusAppFuncPtr)createAppProcAddress;
+    
+    // Call the application creation function from the DLL
+    Pegasus::IApplication * application = CreatePegasusAppFunc();
+
+    //! \todo Check that the version of the interface is correct
+
+    //! \todo Call the initialization function of the interface
 
     // Signal the success of the loading
     emit(LoadingSucceeded());
 
     //! \todo Run the main loop
+
+    // Destroy the application object
+    delete application;
+
+#if PEGASUS_PLATFORM_WINDOWS
+
+    // Release the application library
+    FreeLibrary(dllModule);
+
+#else
+#error "Implement the unloading of the application library"
+#endif  // PEGASUS_PLATFORM_WINDOWS
 }

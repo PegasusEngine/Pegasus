@@ -12,6 +12,7 @@
 #ifndef PEGASUS_IAPPLICATION_H
 #define PEGASUS_IAPPLICATION_H
 
+#include "Pegasus/Preprocessor.h"
 
 namespace Pegasus{
     struct WindowConfig;

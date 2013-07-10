@@ -91,12 +91,6 @@ void ApplicationManager::LoadingError(Application::Error error)
                                   tr("Unable to load an application.\nThe provided file name is invalid."));
             break;
 
-        case Application::ERROR_FILE_NOT_FOUND:
-            QMessageBox::critical(mEditor->centralWidget(),
-                                  tr("Open Application"),
-                                  tr("Unable to load an application.\nThe file is not found."));
-            break;
-
         case Application::ERROR_INVALID_APPLICATION:
             QMessageBox::critical(mEditor->centralWidget(),
                                   tr("Open Application"),
@@ -112,7 +106,7 @@ void ApplicationManager::LoadingError(Application::Error error)
         case Application::ERROR_INVALID_VIEWPORT:
             QMessageBox::critical(mEditor->centralWidget(),
                                   tr("Open Application"),
-                                  tr("Unable to load an application.\nThe provided viewport is invalid."));
+                                  tr("Unable to load the application.\nThe provided viewport is invalid."));
             break;
 
         default:

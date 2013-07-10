@@ -304,8 +304,9 @@ void Editor::OpenApp()
 #else
 #error "Unhandled platform for the Pegasus editor"
 #endif
+    //! \todo Use a directory that comes from the preferences
     QString fileName = QFileDialog::getOpenFileName(this, "Load application",
-													 QString(/***/"."), filter);
+													QString("../../../Bin/VS10/Win32/Dev"), filter);
 
 	// Import the file to the current scene
 	if (!fileName.isEmpty())
