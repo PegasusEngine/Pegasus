@@ -11,6 +11,7 @@
 
 #include "Editor.h"
 #include "ApplicationManager.h"
+#include "Settings/SettingsDialog.h"
 #include "Viewport/ViewportDockWidget.h"
 #include "Timeline/TimelineDockWidget.h"
 #include "Console/ConsoleDockWidget.h"
@@ -28,6 +29,10 @@
 #include <QFileDialog>
 
 
+Settings * Editor::sSettings = nullptr;
+
+//----------------------------------------------------------------------------------------
+
 Editor::Editor(QWidget *parent)
 :   QMainWindow(parent),
     mApplicationManager(nullptr)
@@ -38,10 +43,11 @@ Editor::Editor(QWidget *parent)
     //mSplashScreen = new QSplashScreen(Qpixmap(EDITOR_SPLASH_IMAGE_FILE));
     //mSplashScreen->show();
 
-    // Create the options object, read the option values from the operating system
-	// and apply them
-    //! \todo To implement
-	//mOptions = new EditorOptions;
+    // Create the settings object, read the setting values from the settings file and apply them
+	if (sSettings == nullptr)
+    {
+        sSettings = new Settings();
+    }
 
     // Set the title of the main window
     //! \todo Use a constant in the configuration header
@@ -102,19 +108,20 @@ void Editor::CreateActions()
     //! \todo Add support for icons
 
     mActionFileNewScene = new QAction(tr("&New Scene"), this);
-	//mActionFileNewScene->setIcon(QIcon(":/Toolbar/File/NewScene24.png"));
+	mActionFileNewScene->setIcon(QIcon(":/Toolbar/File/NewScene24.png"));
 	mActionFileNewScene->setShortcut(tr("Ctrl+N"));
 	mActionFileNewScene->setStatusTip(tr("Create a new empty scene"));
     connect(mActionFileNewScene, SIGNAL(triggered()), this, SLOT(NewScene()));
 
 	mActionFileOpenApp = new QAction(tr("&Open App..."), this);
-	//mActionFileOpenApp->setIcon(QIcon(":/Toolbar/File/OpenApp24.png"));
+	mActionFileOpenApp->setIcon(QIcon(":/Toolbar/File/OpenApp24.png"));
 	mActionFileOpenApp->setShortcut(tr("Ctrl+O"));
 	mActionFileOpenApp->setStatusTip(tr("Open an existing app"));
 	connect(mActionFileOpenApp, SIGNAL(triggered()), this, SLOT(OpenApp()));
 
 	mActionFileCloseApp = new QAction(tr("&Close App"), this);
-	//mActionFileOpenApp->setIcon(QIcon(":/Toolbar/File/CloseApp24.png"));
+	//! \todo Use the correct icon
+    mActionFileCloseApp->setIcon(QIcon(":/Toolbar/File/SaveScene24.png"));
 	mActionFileCloseApp->setShortcut(tr("Shift+F4"));
 	mActionFileCloseApp->setStatusTip(tr("Close the current app"));
 	connect(mActionFileCloseApp, SIGNAL(triggered()), this, SLOT(CloseApp()));
@@ -133,7 +140,7 @@ void Editor::CreateActions()
 	mActionViewShowFullscreenViewport = new QAction(tr("Show &Fullscreen Viewport"), this);
 	mActionViewShowFullscreenViewport->setCheckable(true);
 	mActionViewShowFullscreenViewport->setChecked(false);
-	//mActionViewShowFullscreenViewport->setIcon(QIcon(":/Toolbar/Viewport/FullScreenViewport24.png"));
+	mActionViewShowFullscreenViewport->setIcon(QIcon(":/Toolbar/View/FullScreenViewport24.png"));
 	mActionViewShowFullscreenViewport->setStatusTip(tr("Open a fullscreen viewport of the scene"));
 	connect(mActionViewShowFullscreenViewport, SIGNAL(triggered()), this, SLOT(ShowFullscreenViewport()));
 
@@ -280,8 +287,39 @@ void Editor::closeEvent(QCloseEvent * event)
     //! \todo Handle the thread management in the viewport
     //! \todo Handle the saving of unsaved files
 
-    //! \todo Temporary
-    event->accept();
+	// If an application thread is not created or has been destroyed
+	//if (!engineThread)
+	//{
+	//	_event->accept();
+	//	return;
+	//}
+	
+	// If an application is running, quit it but do not close the main window
+	//if (engineThread->isRunning())
+	//{
+	//	/***********/hide();
+	//	DestroyN3DDockWidgets();
+	//	N3D_DELETE(n3DInterface);
+
+	//	N3D_Engine::Quit();
+	//	event->ignore();
+	//}
+
+	// Once the application has quit, the thread object can be destroyed and
+	// the window can be closed
+	//else
+	//{
+	//	//N3D_DELETE(n3DInterface);
+	//	N3D_DELETE(engineThread);
+	//	N3D_DELETE(viewportsSceneGraph);
+
+	//	// Save the application settings and destroy the settings object
+	//	if (settings) sSettings->Save();
+	//	delete sSettings;
+    //  sSettings = nullptr;
+
+	//	event->accept();
+	//}
 }
 
 //----------------------------------------------------------------------------------------
@@ -334,7 +372,9 @@ void Editor::Quit()
 
 void Editor::OpenPreferences()
 {
-    //! /todo Open the preference dialog    
+	SettingsDialog * settingsDialog = nullptr;
+    settingsDialog = new SettingsDialog(this);
+	settingsDialog->show();
 }
 
 //----------------------------------------------------------------------------------------

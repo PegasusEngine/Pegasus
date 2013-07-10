@@ -12,6 +12,8 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
+#include "Settings/Settings.h"
+
 #include <QtWidgets/QMainWindow>
 
 class ViewportDockWidget;
@@ -43,9 +45,9 @@ public:
     //! Close the splash screen (if opened)
     void CloseSplashScreen();
 
-    //! Get the application options object
-    //! \return Pointer to the application options object
-    //inline EditorOptions * GetOptions() { return mEditorOptions; }
+    //! Get the editor settings object
+    //! \return Pointer to the editor settings object
+    inline static Settings * GetSettings() { return sSettings; }
 
 	//------------------------------------------------------------------------------------
 
@@ -189,9 +191,8 @@ private:
     //! Splash screen displayed at the startup of the program
 	QSplashScreen * mSplashScreen;
 
-    //! Application options
-    //! \todo Implement app-wide options
-	//EditorOptions * mOptions;
+    //! Editor settings (preferences)
+	static Settings * sSettings;
 
     //@{
     //! Dock widgets

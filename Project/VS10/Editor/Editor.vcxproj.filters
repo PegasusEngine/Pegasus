@@ -38,11 +38,11 @@
     <Filter Include="Source\Console">
       <UniqueIdentifier>{16aae7de-1f01-4f87-a7be-bd3e029be8ce}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Settings">
+      <UniqueIdentifier>{cd1215da-8ff9-42bb-ac20-0f50afa5de1a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="GeneratedFiles\qrc_Editor.cpp">
-      <Filter>Generated</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Source\Editor\Editor.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -121,11 +121,38 @@
     <ClCompile Include="..\..\..\Source\Editor\Console\ConsoleDockWidget.cpp">
       <Filter>Source\Console</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_Resources.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_SettingsDialog.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_SettingsDialog.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Settings\SettingsDialog.cpp">
+      <Filter>Source\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_Settings.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_Settings.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Settings\Settings.cpp">
+      <Filter>Source\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_SettingsAppearancePage.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_SettingsAppearancePage.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Settings\SettingsAppearancePage.cpp">
+      <Filter>Source\Settings</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="Editor.qrc">
-      <Filter>Resources</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
       <Filter>Forms</Filter>
     </CustomBuild>
@@ -155,6 +182,18 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Console\ConsoleDockWidget.h">
       <Filter>Source\Console</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Resources\Resources.qrc">
+      <Filter>Resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Settings\SettingsDialog.h">
+      <Filter>Source\Settings</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Settings\Settings.h">
+      <Filter>Source\Settings</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Settings\SettingsAppearancePage.h">
+      <Filter>Source\Settings</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
