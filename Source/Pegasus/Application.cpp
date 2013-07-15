@@ -11,7 +11,7 @@
 //!         Manages access to the Pegasus runtime.
 
 #include "Pegasus/Application.h"
-#include "Pegasus/Window.h"
+#include "Pegasus/Window/Window.h"
 #include "Pegasus/Render/GL/GLExtensions.h"
 #include <windows.h>
 

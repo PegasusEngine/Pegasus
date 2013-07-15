@@ -17,7 +17,7 @@
 #include "Pegasus/IApplication.h"
 #endif
 
-#include "Pegasus/WindowDefs.h"
+#include "Pegasus/Window/WindowDefs.h"
 
 
 namespace Pegasus{

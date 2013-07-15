@@ -17,12 +17,6 @@
     <ClInclude Include="..\..\..\Include\Pegasus\Pegasus.h">
       <Filter>Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Include\Pegasus\Window.h">
-      <Filter>Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Include\Pegasus\WindowDefs.h">
-      <Filter>Include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\Include\Pegasus\Application.h">
       <Filter>Include</Filter>
     </ClInclude>
@@ -31,13 +25,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Source\Pegasus\Window.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Source\Pegasus\Application.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Source\Pegasus\LauncherWindows.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>

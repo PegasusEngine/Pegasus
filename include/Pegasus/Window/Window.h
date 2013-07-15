@@ -12,7 +12,7 @@
 #ifndef PEGASUS_WINDOW_H
 #define PEGASUS_WINDOW_H
 
-#include "Pegasus/WindowDefs.h"
+#include "Pegasus/Window/WindowDefs.h"
 
 
 namespace Pegasus {

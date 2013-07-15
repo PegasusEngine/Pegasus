@@ -12,7 +12,7 @@
 #ifndef PEGASUS_RENDER_PEGASUSRENDERCONTEXT_H
 #define PEGASUS_RENDER_PEGASUSRENDERCONTEXT_H
 
-#include "Pegasus/WindowDefs.h"
+#include "Pegasus/Window/WindowDefs.h"
 #include <stdint.h>
 
 

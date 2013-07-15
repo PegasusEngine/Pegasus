@@ -9,7 +9,7 @@
 //! \date	4th July 2013
 //! \brief	Class for a single window in a Pegasus application.
 
-#include "Pegasus/Window.h"
+#include "Pegasus/Window/Window.h"
 #include "Pegasus/Render/RenderContext.h"
 #include <windows.h>
 
