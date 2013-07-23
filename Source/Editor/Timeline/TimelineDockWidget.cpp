@@ -19,6 +19,7 @@ TimelineDockWidget::TimelineDockWidget(QWidget *parent)
 
     // Set the dock widget parameters
     setWindowTitle(tr("Timeline"));
+    setObjectName("TimelineDockWidget");
 	setFeatures(  QDockWidget::DockWidgetClosable
 				| QDockWidget::DockWidgetMovable
 				| QDockWidget::DockWidgetFloatable);

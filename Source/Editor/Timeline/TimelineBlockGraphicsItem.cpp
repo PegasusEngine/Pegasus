@@ -4,30 +4,19 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	TimelineGraphicsItem.cpp
+//! \file	TimelineBlockGraphicsItem.cpp
 //! \author	Kevin Boulanger
 //! \date	11th June 2013
 //! \brief	Graphics item representing one block in the timeline
 
 #include "Timeline/TimelineBlockGraphicsItem.h"
+#include "Timeline/TimelineSizes.h"
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 #include <QStyleOption>
 
 
-//! Default length in pixels for one time unit (for a zoom of 1.0f)
-//! \todo Move this value in a more general area
-#define TIMELINE_BLOCK_GRAPHICS_ITEM_TIME_UNIT_WIDTH        128.0f
-
-//! Height in pixels for a timeline lane (for a zoom of 1.0f)
-//! \todo Move this value in a more general area
-#define TIMELINE_BLOCK_GRAPHICS_ITEM_LANE_HEIGHT            24.0f
-
-//! Height in pixels of the space between timeline blocks and the edge of a lane (for a zoom of 1.0f)
-//! \todo Move this value in a more general area
-#define TIMELINE_BLOCK_GRAPHICS_ITEM_LANE_SEPARATOR_HEIGHT  3.0f
-    
 //! Depth of the block when drawn. Positive since it needs to be rendered in front of the grid at least
 #define TIMELINE_BLOCK_GRAPHICS_ITEM_Z_VALUE                10.0f
 
@@ -173,28 +162,10 @@ void TimelineBlockGraphicsItem::SetHorizontalScale(float scale)
 
 QRectF TimelineBlockGraphicsItem::boundingRect() const
 {
-    //! \todo Handle the constants and the shadow size properly
-    const float adjust = 2.0f;
-    return QRectF(0.0f - adjust,
-                  0.0f - adjust,
-                  mLength + adjust,
-                  TIMELINE_BLOCK_GRAPHICS_ITEM_LANE_HEIGHT + 3.0f + adjust);
-}
-
-//----------------------------------------------------------------------------------------
-
-QPainterPath TimelineBlockGraphicsItem::shape() const
-{
-    // By default, returns boundingRect().
-    // This overload allows to not take the shadow into account by the mouse cursor
-    // and for collision detection.
-
-    QPainterPath path;
-    path.addRect(0.0f,
-                 0.0f,
-                 mLength,
-                 TIMELINE_BLOCK_GRAPHICS_ITEM_LANE_HEIGHT);
-    return path;
+    return QRectF(0.0f,
+                  0.0f,
+                  mLength,
+                  TIMELINE_BLOCK_HEIGHT);
 }
 
 //----------------------------------------------------------------------------------------
@@ -220,7 +191,7 @@ void TimelineBlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGraph
     painter->drawRect(0.0f,
                       0.0f,
                       mLength,
-                      TIMELINE_BLOCK_GRAPHICS_ITEM_LANE_HEIGHT);
+                      TIMELINE_BLOCK_HEIGHT);
 
     QFont font = painter->font();
     //font.setBold(true);
@@ -228,11 +199,11 @@ void TimelineBlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGraph
     font.setPixelSize(fontPixelSize);
     painter->setFont(font);
     painter->setPen(Qt::black);
-    const float textMargin = (TIMELINE_BLOCK_GRAPHICS_ITEM_LANE_HEIGHT - (float)fontPixelSize) * 0.5f;
+    const float textMargin = (TIMELINE_BLOCK_HEIGHT - (float)fontPixelSize) * 0.5f;
     QRectF textRect(textMargin,
                     textMargin,
                     mLength - 2.0f * textMargin,
-                    TIMELINE_BLOCK_GRAPHICS_ITEM_LANE_HEIGHT - 2.0f * textMargin);
+                    TIMELINE_BLOCK_HEIGHT - 2.0f * textMargin);
     painter->drawText(textRect, QString("%1").arg(lod));
     
     /*    painter->drawEllipse(-7, -7, 20, 20);
@@ -319,8 +290,7 @@ void TimelineBlockGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *even
     
 void TimelineBlockGraphicsItem::SetLanePositionFromLane()
 {
-    mLanePosition = TIMELINE_BLOCK_GRAPHICS_ITEM_LANE_SEPARATOR_HEIGHT +
-                        mLane * (TIMELINE_BLOCK_GRAPHICS_ITEM_LANE_HEIGHT + 2.0f * TIMELINE_BLOCK_GRAPHICS_ITEM_LANE_SEPARATOR_HEIGHT);
+    mLanePosition = TIMELINE_BLOCK_MARGIN_HEIGHT + mLane * TIMELINE_LANE_HEIGHT;
 }
 
 //----------------------------------------------------------------------------------------
@@ -334,15 +304,14 @@ void TimelineBlockGraphicsItem::SetPositionFromBasePosition()
 
 void TimelineBlockGraphicsItem::SetLengthFromBaseLength()
 {
-    mLength = mBaseLength * (mHorizontalScale * TIMELINE_BLOCK_GRAPHICS_ITEM_TIME_UNIT_WIDTH);
+    mLength = mBaseLength * (mHorizontalScale * TIMELINE_BEAT_WIDTH);
 }
 
 //----------------------------------------------------------------------------------------
 
 void TimelineBlockGraphicsItem::SetLaneFromPosition(float lanePosition)
 {
-    int lane = static_cast<int>(floor((lanePosition - TIMELINE_BLOCK_GRAPHICS_ITEM_LANE_SEPARATOR_HEIGHT)
-                    / (TIMELINE_BLOCK_GRAPHICS_ITEM_LANE_HEIGHT + 2.0f * TIMELINE_BLOCK_GRAPHICS_ITEM_LANE_SEPARATOR_HEIGHT)));
+    int lane = static_cast<int>(floor((lanePosition - TIMELINE_BLOCK_MARGIN_HEIGHT) / TIMELINE_LANE_HEIGHT));
     if (lane < 0)
     {
         lane = 0;
@@ -362,5 +331,5 @@ void TimelineBlockGraphicsItem::SetBasePositionFromPosition()
 
 void TimelineBlockGraphicsItem::SetBaseLengthFromLength()
 {
-    mBaseLength = mLength / (mHorizontalScale * TIMELINE_BLOCK_GRAPHICS_ITEM_TIME_UNIT_WIDTH);
+    mBaseLength = mLength / (mHorizontalScale * TIMELINE_BEAT_WIDTH);
 }

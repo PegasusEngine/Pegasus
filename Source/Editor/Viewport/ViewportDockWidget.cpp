@@ -22,6 +22,7 @@ ViewportDockWidget::ViewportDockWidget(QWidget *parent)
 {
     // Set the dock widget parameters
     setWindowTitle(tr("Viewport"));
+	setObjectName("ViewportDockWidget");
 	setFeatures(  QDockWidget::DockWidgetClosable
 				| QDockWidget::DockWidgetMovable
 				| QDockWidget::DockWidgetFloatable);

@@ -16,6 +16,8 @@
 #include <QStringList>
 #include <QPalette>
 
+class QMainWindow;
+
 
 //! Settings for the entire editor
 class Settings : public QObject
@@ -27,12 +29,17 @@ public:
     //! Constructor reading the parameters from the operating system,
     //! setting the default values for the unknown parameters
     //! and applying the values to the application
-    Settings();
+    //! \param mainWindow Pointer to the main editor window. This allows to save its geometry and the state of the dock widgets
+    Settings(QMainWindow * mainWindow);
 
     //! Destructor
     ~Settings();
 
-    //! Save the settings into a configuration file
+    //! Load the settings from a configuration file or the registry
+    //! \note The function does not fail. If loading of the settings fails, the default values are used
+    void Load();
+
+    //! Save the settings into a configuration file or the registry
     //! \note The function does not fail. If saving of the settings fails, nothing happens
     void Save();
 
@@ -128,6 +135,9 @@ private:
 private:
 
     // Internal variables
+
+    //! Pointer to the main editor window. This allows to save its geometry and the state of the dock widgets
+    QMainWindow * mMainWindow;
 
     //! List of possible widget style names
     QStringList mWidgetStyleNameList;

@@ -4,7 +4,7 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	TimelineGraphicsItem.h
+//! \file	TimelineBlockGraphicsItem.h
 //! \author	Kevin Boulanger
 //! \date	11th June 2013
 //! \brief	Graphics item representing one block in the timeline
@@ -26,8 +26,8 @@ public:
     //! \param basePosition Based position of the block, in time units (1.0f for one beat, >= 0.0f)
     //! \param baseLength Base length of the block, in time units (1.0f for one beat, > 0.0f)
     //! \param baseColor Based color of the block, when not selected
-    //! \param scale Horizontal scale of the block, 1.0f for a 1:1 ratio,
-    //!              < 1.0f for a compressed block, > 1.0f for an expanded block
+    //! \param horizontalScale Horizontal scale of the block, 1.0f for a 1:1 ratio,
+    //!                        < 1.0f for a compressed block, > 1.0f for an expanded block
     TimelineBlockGraphicsItem(unsigned int lane,
                               float basePosition,
                               float baseLength,
@@ -64,8 +64,14 @@ public:
     //! \todo Document those functions
 
     QRectF boundingRect() const;
-    QPainterPath shape() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+
+    // Enable the use of qgraphicsitem_cast
+    //! \todo Use a common repository of indexes to avoid conflicts
+    //! \todo Document those two lines
+    enum { Type = UserType + 10 };
+    int type() const { return Type; }
+
 
 protected:
 

@@ -43,18 +43,11 @@ Editor::Editor(QWidget *parent)
     //mSplashScreen = new QSplashScreen(Qpixmap(EDITOR_SPLASH_IMAGE_FILE));
     //mSplashScreen->show();
 
-    // Create the settings object, read the setting values from the settings file and apply them
-	if (sSettings == nullptr)
-    {
-        sSettings = new Settings();
-    }
-
     // Set the title of the main window
     //! \todo Use a constant in the configuration header
     setWindowTitle(tr("Pegasus Editor"));
 
     // Set the initial window size
-    //! \todo Read from the options
     resize(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
     //setWindowState(windowState() | Qt::WindowMaximized);
 
@@ -68,6 +61,12 @@ Editor::Editor(QWidget *parent)
     //!       Remove the dock widgets initialization from here and move it
     //!       to the callback function called once the engine has initialized.
     CreateDockWidgets();
+
+    // Create the settings object, read the setting values from the settings file and apply them
+	if (sSettings == nullptr)
+    {
+        sSettings = new Settings(this);
+    }
 
     // Create the application manager
     mApplicationManager = new ApplicationManager(this, mViewportDockWidget, this);
@@ -105,8 +104,6 @@ void Editor::CloseSplashScreen()
 
 void Editor::CreateActions()
 {
-    //! \todo Add support for icons
-
     mActionFileNewScene = new QAction(tr("&New Scene"), this);
 	mActionFileNewScene->setIcon(QIcon(":/Toolbar/File/NewScene24.png"));
 	mActionFileNewScene->setShortcut(tr("Ctrl+N"));
@@ -223,6 +220,7 @@ void Editor::CreateMenu()
 void Editor::CreateToolBars()
 {
     QToolBar * fileToolBar = addToolBar(tr("File"));
+    fileToolBar->setObjectName("FileToolBar");
     fileToolBar->setIconSize(QSize(16, 16));
 	fileToolBar->setAllowedAreas(Qt::TopToolBarArea);
 	fileToolBar->addAction(mActionFileNewScene);
@@ -230,6 +228,7 @@ void Editor::CreateToolBars()
     fileToolBar->addAction(mActionFileCloseApp);
 
 	QToolBar * viewToolBar = addToolBar(tr("View"));
+    viewToolBar->setObjectName("ViewToolBar");
 	viewToolBar->setIconSize(QSize(16, 16));
 	viewToolBar->setAllowedAreas(Qt::TopToolBarArea);
 	viewToolBar->addAction(mActionViewShowFullscreenViewport);
@@ -255,6 +254,7 @@ void Editor::CreateDockWidgets()
     setDockNestingEnabled(true);
 
     // Create the dock widgets and assign their initial position
+    //! \todo Use the correct icons for the docks, and add them to the menu and toolbar
 
     mViewportDockWidget = new ViewportDockWidget(this);
     //mViewportDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
@@ -314,9 +314,12 @@ void Editor::closeEvent(QCloseEvent * event)
 	//	N3D_DELETE(viewportsSceneGraph);
 
 	//	// Save the application settings and destroy the settings object
-	//	if (settings) sSettings->Save();
-	//	delete sSettings;
-    //  sSettings = nullptr;
+    if (sSettings != nullptr)
+    {
+        sSettings->Save();
+    }
+    delete sSettings;
+    sSettings = nullptr;
 
 	//	event->accept();
 	//}

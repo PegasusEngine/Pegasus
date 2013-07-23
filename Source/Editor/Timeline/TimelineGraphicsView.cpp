@@ -10,6 +10,8 @@
 //! \brief	Graphics view containing the graphics timeline representation
 
 #include "Timeline/TimelineGraphicsView.h"
+#include "Timeline/TimelineBackgroundBeatGraphicsItem.h"
+#include "Timeline/TimelineBackgroundBeatLineGraphicsItem.h"
 #include "Timeline/TimelineBlockGraphicsItem.h"
 
 #include <QWheelEvent>
@@ -50,6 +52,17 @@ TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
     setTransformationAnchor(AnchorUnderMouse);
 
     //! \todo **** Temporary block to create items to render
+    for (unsigned int b = 0; b < 64; ++b)
+    {
+        TimelineBackgroundBeatGraphicsItem * beatItem = new TimelineBackgroundBeatGraphicsItem(b, 8, mHorizontalScale);
+        scene->addItem(beatItem);
+
+        if (b > 0)
+        {
+            TimelineBackgroundBeatLineGraphicsItem * beatLineItem = new TimelineBackgroundBeatLineGraphicsItem(b, 8, mHorizontalScale);
+            scene->addItem(beatLineItem);
+        }
+    }
     TimelineBlockGraphicsItem * item1 = new TimelineBlockGraphicsItem(0, 0.0f, 1.0f, QColor(192, 128, 128), mHorizontalScale);
     TimelineBlockGraphicsItem * item2 = new TimelineBlockGraphicsItem(2, 2.0f, 4.0f, QColor(128, 192, 128), mHorizontalScale);
     TimelineBlockGraphicsItem * item3 = new TimelineBlockGraphicsItem(3, 0.5f, 2.0f, QColor(128, 128, 192), mHorizontalScale);
@@ -84,10 +97,25 @@ void TimelineGraphicsView::SetHorizontalScale(float scale)
     // (this invalidates the cache of the block graphics items)
     foreach (QGraphicsItem *item, scene()->items())
     {
+        TimelineBackgroundBeatGraphicsItem * backgroundBeatItem = qgraphicsitem_cast<TimelineBackgroundBeatGraphicsItem *>(item);
+        if (backgroundBeatItem != nullptr)
+        {
+            backgroundBeatItem->SetHorizontalScale(mHorizontalScale);
+            continue;
+        }
+
+        TimelineBackgroundBeatLineGraphicsItem * backgroundBeatLineItem = qgraphicsitem_cast<TimelineBackgroundBeatLineGraphicsItem *>(item);
+        if (backgroundBeatLineItem != nullptr)
+        {
+            backgroundBeatLineItem->SetHorizontalScale(mHorizontalScale);
+            continue;
+        }
+
         TimelineBlockGraphicsItem * blockItem = qgraphicsitem_cast<TimelineBlockGraphicsItem *>(item);
-        if (blockItem)
+        if (blockItem != nullptr)
         {
             blockItem->SetHorizontalScale(mHorizontalScale);
+            continue;
         }
     }
 
@@ -219,7 +247,7 @@ void TimelineGraphicsView::UpdateSceneRect()
 {
     scene()->setSceneRect(/***/0.0f,
                           /***/0.0f,
-                          /***/32.0f * /*****/128.0f + 64.0f,
+                          /***/64.0f * /*****/128.0f + 64.0f,
                           /***/static_cast<float>(mNumLanes) * /****/32.0f + 16.0f);
 }
 

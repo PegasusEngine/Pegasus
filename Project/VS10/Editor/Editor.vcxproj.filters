@@ -151,6 +151,12 @@
     <ClCompile Include="..\..\..\Source\Editor\Settings\SettingsAppearancePage.cpp">
       <Filter>Source\Settings</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineBackgroundBeatGraphicsItem.cpp">
+      <Filter>Source\Timeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineBackgroundBeatLineGraphicsItem.cpp">
+      <Filter>Source\Timeline</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -202,6 +208,15 @@
   <ItemGroup>
     <ClInclude Include="GeneratedFiles\ui_TimelineDockWidget.h">
       <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\Timeline\TimelineBackgroundBeatGraphicsItem.h">
+      <Filter>Source\Timeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\Timeline\TimelineSizes.h">
+      <Filter>Source\Timeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\Timeline\TimelineBackgroundBeatLineGraphicsItem.h">
+      <Filter>Source\Timeline</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

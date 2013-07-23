@@ -20,6 +20,7 @@ ConsoleDockWidget::ConsoleDockWidget(QWidget *parent)
 {
     // Set the dock widget parameters
     setWindowTitle(tr("Console"));
+    setObjectName("ConsoleDockWidget");
 	setFeatures(  QDockWidget::DockWidgetClosable
 				| QDockWidget::DockWidgetMovable
 				| QDockWidget::DockWidgetFloatable);

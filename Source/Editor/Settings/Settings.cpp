@@ -14,21 +14,38 @@
 #include <QStyle>
 #include <QSettings>
 #include <QApplication>
+#include <QMainWindow>
 
 
-Settings::Settings()
-:   QObject()
+Settings::Settings(QMainWindow * mainWindow)
+:   QObject(),
+    mMainWindow(mainWindow)
 {
     // Set internal variables
     mWidgetStyleNameList = QStyleFactory::keys();
     //! \todo Assert with !mWidgetStyleNameList.isEmpty()
     mOriginalPalette = QApplication::palette();
 
-    // Create the QSettings object that will read the application settings from file
-    //! \todo Put the filename in a constant, as it is used also for loading
-    QSettings settings("Editor.ini", QSettings::IniFormat);
+    // Load the settings if possible and apply them
+    Load();
+}
 
-    //! \todo Write separate functions rather than a large constructor
+//----------------------------------------------------------------------------------------
+
+Settings::~Settings()
+{
+}
+
+//----------------------------------------------------------------------------------------
+
+void Settings::Load()
+{
+    // Create the QSettings object that will read the application settings from file
+    QSettings settings;
+
+    // Main window geometry and state
+    mMainWindow->restoreGeometry(settings.value("MainWindow/Geometry").toByteArray());
+    mMainWindow->restoreState(settings.value("MainWindow/State").toByteArray());
 
     // Widget style
     //! \todo Select the proper initial style in the combo box
@@ -62,17 +79,16 @@ Settings::Settings()
 
 //----------------------------------------------------------------------------------------
 
-Settings::~Settings()
-{
-}
-//----------------------------------------------------------------------------------------
-
 void Settings::Save()
 {
     // Create the QSettings object that will save the application settings
-    QSettings settings("Editor.ini", QSettings::IniFormat);
+    QSettings settings;
 
     //! \todo Use settings items strings common for loading and saving
+
+    // Main window geometry and state
+    settings.setValue("MainWindow/Geometry", mMainWindow->saveGeometry());
+    settings.setValue("MainWindow/State", mMainWindow->saveState());
 
     // Widget style
     settings.setValue("Appearance/WidgetStyle", mWidgetStyleName);

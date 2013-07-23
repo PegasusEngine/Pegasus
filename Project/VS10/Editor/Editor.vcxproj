@@ -102,6 +102,8 @@
     <ClCompile Include="..\..\..\Source\Editor\Settings\Settings.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Settings\SettingsAppearancePage.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Settings\SettingsDialog.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineBackgroundBeatGraphicsItem.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineBackgroundBeatLineGraphicsItem.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineBlockGraphicsItem.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineGraphicsView.cpp" />
@@ -290,6 +292,9 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_OPT "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings"</Command>
     </CustomBuild>
+    <ClInclude Include="..\..\..\Source\Editor\Timeline\TimelineBackgroundBeatGraphicsItem.h" />
+    <ClInclude Include="..\..\..\Source\Editor\Timeline\TimelineBackgroundBeatLineGraphicsItem.h" />
+    <ClInclude Include="..\..\..\Source\Editor\Timeline\TimelineSizes.h" />
     <ClInclude Include="GeneratedFiles\ui_TimelineDockWidget.h" />
     <CustomBuild Include="..\..\..\Source\Editor\Editor.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
