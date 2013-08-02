@@ -28,7 +28,7 @@ TimelineBackgroundBeatGraphicsItem::TimelineBackgroundBeatGraphicsItem(unsigned 
 {
     if (numLanes == 0)
     {
-        //! \todo Assert for invalid number
+        ED_FAILSTR("Invalid number of lanes (== 0) for the timeline graphics item.");
         mNumLanes = 1;
     }
     else
@@ -38,7 +38,7 @@ TimelineBackgroundBeatGraphicsItem::TimelineBackgroundBeatGraphicsItem(unsigned 
 
     if (horizontalScale <= 0.0f)
     {
-        //! \todo Assert for invalid scale
+        ED_FAILSTR("Invalid horizontal scale (<= 0.0f) for the timeline graphics item.");
         mHorizontalScale = 1.0f;
     }
     else
@@ -69,7 +69,7 @@ void TimelineBackgroundBeatGraphicsItem::SetNumLanes(unsigned int numLanes, bool
 {
     if (numLanes == 0)
     {
-        //! \todo Assert for invalid number
+        ED_FAILSTR("Invalid number of lanes (== 0) for the timeline graphics item.");
         mNumLanes = 1;
     }
     else

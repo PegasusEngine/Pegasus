@@ -86,33 +86,33 @@ void ApplicationManager::LoadingError(Application::Error error)
     switch (error)
     {
         case Application::ERROR_INVALID_FILE_NAME:
-            QMessageBox::critical(mEditor->centralWidget(),
-                                  tr("Open Application"),
-                                  tr("Unable to load an application.\nThe provided file name is invalid."));
+            QMessageBox::warning(mEditor->centralWidget(),
+                                 tr("Open Application"),
+                                 tr("Unable to load an application.\nThe provided file name is invalid."));
             break;
 
         case Application::ERROR_INVALID_APPLICATION:
-            QMessageBox::critical(mEditor->centralWidget(),
-                                  tr("Open Application"),
-                                  tr("Unable to load an application.\nThe provided file is not a Pegasus application."));
+            QMessageBox::warning(mEditor->centralWidget(),
+                                 tr("Open Application"),
+                                 tr("Unable to load an application.\nThe provided file is not a Pegasus application."));
             break;
 
         case Application::ERROR_INVALID_INTERFACE:
-            QMessageBox::critical(mEditor->centralWidget(),
-                                  tr("Open Application"),
-                                  tr("Unable to load an application.\nThe provided file does not have the correct interface."));
+            QMessageBox::warning(mEditor->centralWidget(),
+                                 tr("Open Application"),
+                                 tr("Unable to load an application.\nThe provided file does not have the correct interface."));
             break;
 
         case Application::ERROR_INVALID_VIEWPORT:
-            QMessageBox::critical(mEditor->centralWidget(),
-                                  tr("Open Application"),
-                                  tr("Unable to load the application.\nThe provided viewport is invalid."));
+            QMessageBox::warning(mEditor->centralWidget(),
+                                 tr("Open Application"),
+                                 tr("Unable to load the application.\nThe provided viewport is invalid."));
             break;
 
         default:
-            QMessageBox::critical(mEditor->centralWidget(),
-                                  tr("Open Application"),
-                                  tr("Unknown error."));
+            QMessageBox::warning(mEditor->centralWidget(),
+                                 tr("Open Application"),
+                                 tr("Unknown error."));
             break;
     }
 }

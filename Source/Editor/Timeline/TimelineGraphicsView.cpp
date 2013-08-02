@@ -89,8 +89,8 @@ void TimelineGraphicsView::AddLane()
 
 void TimelineGraphicsView::SetHorizontalScale(float scale)
 {
-    //! \todo Assertion for the range of scales (since item does not perform a full test)
-
+    ED_ASSERTSTR((scale >= TIMELINE_GRAPHICS_VIEW_HORIZONTAL_SCALE_MIN) && (scale <= TIMELINE_GRAPHICS_VIEW_HORIZONTAL_SCALE_MAX),
+                 "Invalid horizontal scale for the timeline graphics view.");
     mHorizontalScale = scale;
 
     // Update the horizontal scale of all the blocks
@@ -130,7 +130,7 @@ void TimelineGraphicsView::MultiplyHorizontalScale(float scaleFactor)
 {
     if (scaleFactor <= 0.0f)
     {
-        //! \todo Assertion error
+        ED_FAILSTR("Invalid horizontal scale factor (<= 0.0f) for the timeline graphics view.");
         return;
     }
 
@@ -150,12 +150,12 @@ void TimelineGraphicsView::SetZoom(float zoom)
     if (zoom < TIMELINE_GRAPHICS_VIEW_ZOOM_MIN)
     {
         zoom = TIMELINE_GRAPHICS_VIEW_ZOOM_MIN;
-        //! \todo Assertion for invalid zoom
+        ED_FAILSTR("Invalid zoom factor (< TIMELINE_GRAPHICS_VIEW_ZOOM_MIN) for the timeline graphics view.");
     }
     else if (zoom > TIMELINE_GRAPHICS_VIEW_ZOOM_MAX)
     {
         zoom = TIMELINE_GRAPHICS_VIEW_ZOOM_MAX;
-        //! \todo Assertion for invalid zoom
+        ED_FAILSTR("Invalid zoom factor (> TIMELINE_GRAPHICS_VIEW_ZOOM_MAX) for the timeline graphics view.");
     }
 
     mZoom = zoom;
@@ -172,7 +172,7 @@ void TimelineGraphicsView::MultiplyZoom(float zoomFactor)
 {
     if (zoomFactor <= 0.0f)
     {
-        //! \todo Assertion error
+        ED_FAILSTR("Invalid zoom multiplier (<= 0.0f) for the timeline graphics view.");
         return;
     }
 

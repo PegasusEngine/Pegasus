@@ -29,6 +29,7 @@
 #include <QFileDialog>
 
 
+Editor * Editor::sInstance = nullptr;
 Settings * Editor::sSettings = nullptr;
 
 //----------------------------------------------------------------------------------------
@@ -37,6 +38,11 @@ Editor::Editor(QWidget *parent)
 :   QMainWindow(parent),
     mApplicationManager(nullptr)
 {
+    sInstance = this;
+
+    // Create the assertion manager
+    mAssertionManager = new AssertionManager(this);
+
     // Create the splash screen (it becomes visible once this class is initialized,
     // set by the application class)
     //! \todo Finish implementing the splash screen
@@ -77,6 +83,12 @@ Editor::Editor(QWidget *parent)
 Editor::~Editor()
 {
     //! \todo Handle the closing of the apps that are still open
+
+    if (mAssertionManager != nullptr)
+    {
+        delete mAssertionManager;
+    }
+    sInstance = nullptr;
 }
 
 //----------------------------------------------------------------------------------------
@@ -347,7 +359,7 @@ void Editor::OpenApp()
 #endif
     //! \todo Use a directory that comes from the preferences
     QString fileName = QFileDialog::getOpenFileName(this, "Load application",
-													QString("../../../Bin/VS10/Win32/Dev"), filter);
+													QString("../../../Bin/VS11/Win32/Dev"), filter);
 
 	// Import the file to the current scene
 	if (!fileName.isEmpty())

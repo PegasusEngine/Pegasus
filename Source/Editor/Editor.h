@@ -16,6 +16,8 @@
 
 #include <QtWidgets/QMainWindow>
 
+class AssertionManager;
+
 class ViewportDockWidget;
 class TimelineDockWidget;
 class ConsoleDockWidget;
@@ -35,7 +37,14 @@ public:
     Editor(QWidget *parent = 0);
     ~Editor();
 
-	//------------------------------------------------------------------------------------
+    //! Return the unique instance of the editor
+    //! \return Reference to the unique instance of the editor
+    inline static Editor & GetInstance() { return *sInstance; }
+
+    //! Get the assertion manager, used by all assertion macros
+    inline AssertionManager & GetAssertionManager() const { return *mAssertionManager; }
+
+    //------------------------------------------------------------------------------------
 
 public:
 
@@ -186,6 +195,19 @@ private:
 
     //! Initial height of the main window
     static const int INITIAL_WINDOW_HEIGHT = 720;
+
+
+    //! Copy constructor, private to prevent any copy of the singleton
+    explicit Editor(const Editor &);
+
+    //! Copy operator, private to prevent any copy of the singleton
+    Editor & operator=(const Editor &);
+
+    //! Unique instance of the editor class
+    static Editor * sInstance;
+
+    //! Unique assertion manager
+    AssertionManager * mAssertionManager;
 
 
     //! Splash screen displayed at the startup of the program

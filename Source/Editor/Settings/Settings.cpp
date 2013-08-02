@@ -23,7 +23,7 @@ Settings::Settings(QMainWindow * mainWindow)
 {
     // Set internal variables
     mWidgetStyleNameList = QStyleFactory::keys();
-    //! \todo Assert with !mWidgetStyleNameList.isEmpty()
+    ED_ASSERTSTR(!mWidgetStyleNameList.isEmpty(), "Invalid list of themes for the UI.");
     mOriginalPalette = QApplication::palette();
 
     // Load the settings if possible and apply them

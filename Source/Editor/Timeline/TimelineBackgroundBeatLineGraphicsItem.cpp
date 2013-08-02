@@ -22,11 +22,11 @@ TimelineBackgroundBeatLineGraphicsItem::TimelineBackgroundBeatLineGraphicsItem(u
 :   QGraphicsItem(),
     mBeat(beat == 0 ? 1 : beat)
 {
-    //! \todo Assert for invalid beat
+    ED_ASSERTSTR(beat > 0, "Invalid beat for the timeline graphics item.");
 
     if (numLanes == 0)
     {
-        //! \todo Assert for invalid number
+        ED_FAILSTR("Invalid number of lanes (== 0) for the timeline graphics item.");
         mNumLanes = 1;
     }
     else
@@ -36,7 +36,7 @@ TimelineBackgroundBeatLineGraphicsItem::TimelineBackgroundBeatLineGraphicsItem(u
 
     if (horizontalScale <= 0.0f)
     {
-        //! \todo Assert for invalid scale
+        ED_FAILSTR("Invalid horizontal scale (<= 0.0f) for the timeline graphics item.");
         mHorizontalScale = 1.0f;
     }
     else
@@ -67,7 +67,7 @@ void TimelineBackgroundBeatLineGraphicsItem::SetNumLanes(unsigned int numLanes, 
 {
     if (numLanes == 0)
     {
-        //! \todo Assert for invalid number
+        ED_FAILSTR("Invalid number of lanes (== 0) for the timeline graphics item.");
         mNumLanes = 1;
     }
     else

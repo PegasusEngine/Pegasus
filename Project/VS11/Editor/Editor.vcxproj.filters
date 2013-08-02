@@ -41,6 +41,11 @@
     <Filter Include="Source\Settings">
       <UniqueIdentifier>{cd1215da-8ff9-42bb-ac20-0f50afa5de1a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+      <ParseFiles>true</ParseFiles>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Source\Editor\Editor.cpp">
@@ -157,6 +162,15 @@
     <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineBackgroundBeatLineGraphicsItem.cpp">
       <Filter>Source\Timeline</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Assertion.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_Assertion.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_Assertion.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -200,6 +214,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Settings\SettingsAppearancePage.h">
       <Filter>Source\Settings</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Assertion.h">
+      <Filter>Source</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
