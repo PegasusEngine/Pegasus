@@ -26,8 +26,8 @@ ApplicationManager::ApplicationManager(Editor * editor,
     mApplication(nullptr),
     mIsApplicationRunning(false)
 {
-    //PG_ASSERT(editor != nullptr);
-    //PG_ASSERT(viewportDockWidget != nullptr);
+    ED_ASSERT(editor != nullptr);
+    ED_ASSERT(viewportDockWidget != nullptr);
 }
 
 //----------------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ ApplicationManager::~ApplicationManager()
 
 void ApplicationManager::OpenApplication(const QString & fileName)
 {
-    //PG_ASSERT(mViewportDockWidget != nullptr);
+    ED_ASSERT(mViewportDockWidget != nullptr);
 
     // Close the previous application is there is one
     if (IsApplicationOpened())
@@ -72,7 +72,7 @@ void ApplicationManager::OpenApplication(const QString & fileName)
 
 void ApplicationManager::CloseApplication()
 {
-    //PG_ASSERTSTR(mApplication != nullptr, "Trying to close an application that is not opened");
+    ED_ASSERTSTR(mApplication != nullptr, "Trying to close an application that is not opened");
 
     //! \todo Implement the application closing
 

@@ -9,8 +9,8 @@
 //! \date	10th July 2013
 //! \brief	Preferences dialog box
 
-#include "SettingsDialog.h"
-#include "SettingsAppearancePage.h"
+#include "Settings/SettingsDialog.h"
+#include "Settings/SettingsAppearancePage.h"
 
 #include <QListWidgetItem>
 #include <QListWidget>

@@ -27,6 +27,16 @@ public:
     ConsoleDockWidget(QWidget *parent);
     ~ConsoleDockWidget();
 
+    //! Set the background color of the text area
+    //! \param color Background color of the text area
+    void SetBackgroundColor(const QColor & color);
+
+    //! Set the default text color of the text area
+    //! \param color Default text color of the text area
+    void SetTextDefaultColor(const QColor & color);
+
+    //------------------------------------------------------------------------------------
+
 private:
 
 	//! Text widget displaying the log messages

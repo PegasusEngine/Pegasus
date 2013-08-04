@@ -9,7 +9,7 @@
 //! \date	10th July 2013
 //! \brief	Settings for the entire editor
 
-#include "Settings.h"
+#include "Settings/Settings.h"
 #include <QStyleFactory>
 #include <QStyle>
 #include <QSettings>
@@ -70,11 +70,11 @@ void Settings::Load()
 
     // Console colors
     mConsoleBackgroundColor = GetConsoleDefaultBackgroundColor();
-    mConsoleTextColor = GetConsoleDefaultTextColor();
+    mConsoleTextDefaultColor = GetConsoleDefaultTextDefaultColor();
     SetConsoleBackgroundColor(settings.value("Appearance/ConsoleBackgroundColor",
                                              mConsoleBackgroundColor).value<QColor>());
-    SetConsoleTextColor(settings.value("Appearance/ConsoleTextColor",
-                                       mConsoleTextColor).value<QColor>());
+    SetConsoleTextDefaultColor(settings.value("Appearance/ConsoleTextDefaultColor",
+                                              mConsoleTextDefaultColor).value<QColor>());
 }
 
 //----------------------------------------------------------------------------------------
@@ -96,7 +96,7 @@ void Settings::Save()
 
     // Neptune 3D console colors
     settings.setValue("Appearance/ConsoleBackgroundColor", mConsoleBackgroundColor);
-    settings.setValue("Appearance/ConsoleTextColor", mConsoleTextColor);
+    settings.setValue("Appearance/ConsoleTextDefaultColor", mConsoleTextDefaultColor);
 }
 
 //----------------------------------------------------------------------------------------
@@ -122,9 +122,9 @@ const QColor & Settings::GetConsoleBackgroundColor() const
 
 //----------------------------------------------------------------------------------------
 
-const QColor & Settings::GetConsoleTextColor() const
+const QColor & Settings::GetConsoleTextDefaultColor() const
 {
-    return mConsoleTextColor;
+    return mConsoleTextDefaultColor;
 }
 
 //----------------------------------------------------------------------------------------
@@ -170,35 +170,31 @@ void Settings::SetUseWidgetStylePalette(bool stylePalette)
 void Settings::SetConsoleBackgroundColor(const QColor & color)
 {
     mConsoleBackgroundColor = color;
-    //! \todo Update the console color
-    //if (ED_MainWindow::GetN3DConsoleDock())
-    //{
-    //    ED_MainWindow::GetN3DConsoleDock()->GetConsole()->SetBackgroundColor(mConsoleBackgroundColor);
-    //}
+
+    ED_ASSERT(Editor::GetInstance().GetConsoleDockWidget());
+    Editor::GetInstance().GetConsoleDockWidget()->SetBackgroundColor(mConsoleBackgroundColor);
 }
 
 //----------------------------------------------------------------------------------------
 
-void Settings::SetConsoleTextColor(const QColor & color)
+void Settings::SetConsoleTextDefaultColor(const QColor & color)
 {
-    mConsoleTextColor = color;
-    //! \todo Update the console color
-    //if (ED_MainWindow::GetN3DConsoleDock())
-    //{
-    //    ED_MainWindow::GetN3DConsoleDock()->GetConsole()->SetTextColor(mConsoleTextColor);
-    //}
+    mConsoleTextDefaultColor = color;
+
+    ED_ASSERT(Editor::GetInstance().GetConsoleDockWidget());
+    Editor::GetInstance().GetConsoleDockWidget()->SetTextDefaultColor(mConsoleTextDefaultColor);
 }
 
 //----------------------------------------------------------------------------------------
 
 QColor Settings::GetConsoleDefaultBackgroundColor() const
 {
-    return Qt::darkBlue;
+    return QColor(Qt::darkBlue).darker(200);
 }
 
 //----------------------------------------------------------------------------------------
 	
-QColor Settings::GetConsoleDefaultTextColor() const
+QColor Settings::GetConsoleDefaultTextDefaultColor() const
 {
     return Qt::yellow;
 }

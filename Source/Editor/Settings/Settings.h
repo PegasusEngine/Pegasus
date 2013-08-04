@@ -64,13 +64,11 @@ public:
 
     //! Get the background color of the console
     //! \return Background color of the console
-    //! \todo Remove?
     const QColor & GetConsoleBackgroundColor() const;
 
-    //! Get the text color of the console
-    //! \return Text color of the console
-    //! \todo Remove?
-    const QColor & GetConsoleTextColor() const;
+    //! Get the default text color of the console
+    //! \return Default text color of the console
+    const QColor & GetConsoleTextDefaultColor() const;
 
 public slots:
 
@@ -87,13 +85,11 @@ public slots:
 
     //! Set the background color of the console
     //! \param color Background color of the console
-    //! \todo Remove?
     void SetConsoleBackgroundColor(const QColor & color);
 
-    //! Set the text color of the console
-    //! \param color Text color of the console
-    //! \todo Remove?
-    void SetConsoleTextColor(const QColor & color);
+    //! Set the default text color of the console
+    //! \param color Default text color of the console
+    void SetConsoleTextDefaultColor(const QColor & color);
 
     //------------------------------------------------------------------------------------
 
@@ -105,9 +101,9 @@ public:
     //! \return Default background color of the console
     QColor GetConsoleDefaultBackgroundColor() const;
 
-    //! Get the default text color of the console
-    //! \return Default text color of the console
-    QColor GetConsoleDefaultTextColor() const;
+    //! Get the default default text color of the console
+    //! \return Default default text color of the console
+    QColor GetConsoleDefaultTextDefaultColor() const;
 
     //------------------------------------------------------------------------------------
 
@@ -123,12 +119,10 @@ private:
     bool mUseWidgetStylePalette;
 
     //! Background color of the console
-    //! \todo Remove?
     QColor mConsoleBackgroundColor;
 
-    //! Text color of the console
-    //! \todo Remove?
-    QColor mConsoleTextColor;
+    //! Default text color of the console
+    QColor mConsoleTextDefaultColor;
 
     //------------------------------------------------------------------------------------
 

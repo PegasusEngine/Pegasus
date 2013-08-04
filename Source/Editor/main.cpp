@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     // Handle the quit message
-    app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
+    app.setQuitOnLastWindowClosed(true);
 
 	// Set application-wide information that will be used for the application settings
 	app.setOrganizationName(EDITOR_ORGANIZATION_NAME);

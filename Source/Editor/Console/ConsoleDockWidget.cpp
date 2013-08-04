@@ -46,20 +46,23 @@ ConsoleDockWidget::ConsoleDockWidget(QWidget *parent)
 	mTextWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	mTextWidget->setUndoRedoEnabled(false);
 	mTextWidget->setLineWrapMode(QPlainTextEdit::NoWrap);
+    mTextWidget->setWordWrapMode(QTextOption::NoWrap);
 	mTextWidget->setReadOnly(true);
-	mTextWidget->setTextInteractionFlags(Qt::NoTextInteraction);
-    QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+	QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     sizePolicy.setHorizontalStretch(0);
     sizePolicy.setVerticalStretch(0);
     sizePolicy.setHeightForWidth(mTextWidget->sizePolicy().hasHeightForWidth());
     mTextWidget->setSizePolicy(sizePolicy);
-    mTextWidget->setMinimumSize(QSize(256, 128));
+    mTextWidget->setMinimumSize(QSize(256, 32));
+
+    //! \todo Add support for limited number of lines
+    //mTextWidget->setMaximumBlockCount(50);
 
     // Set the font of the text widget
-    //! \todo Why is TypeWriter not working?
-	QFont font = mTextWidget->font();
+	QFont font("Courier New");
 	font.setStyleHint(QFont::TypeWriter);
-	font.setPointSize(9);
+    font.setFixedPitch(true);
+	font.setPointSize(8);
 	mTextWidget->setFont(font);
 
     // Set the elements of the layout
@@ -69,9 +72,28 @@ ConsoleDockWidget::ConsoleDockWidget(QWidget *parent)
 
 	// Test message
     /****/
-	mTextWidget->appendPlainText("Hello, world!");
-	mTextWidget->moveCursor(QTextCursor::End);
-	mTextWidget->ensureCursorVisible();
+	for (int i = 0; i < 100; i++)
+    {
+        if ((i / 10) & 1)
+        {
+            static const QString htmlString1("<p style=\"color:");
+            static const QString htmlString2("\">");
+            static const QString htmlString3("</p>");
+            QString htmlString(htmlString1);
+            QColor color(i * 2, (unsigned char)(i * 37), (unsigned char)(i * 137));
+            htmlString.append(color.name());
+            htmlString.append(htmlString2);
+            htmlString.append(QString("Hello, world %1!").arg(i));
+            htmlString.append(htmlString3);
+            mTextWidget->appendHtml(htmlString);
+        }
+        else
+        {
+            mTextWidget->appendHtml(QString("Hello, world %1!").arg(i));
+        }
+    }
+	//mTextWidget->moveCursor(QTextCursor::End);
+	//mTextWidget->ensureCursorVisible();
 }
 
 //----------------------------------------------------------------------------------------
@@ -81,27 +103,28 @@ ConsoleDockWidget::~ConsoleDockWidget()
 
 }
 
-////----------------------------------------------------------------------------------------
-//
-//void ED_Console::SetBackgroundColor(const QColor & _color)
-//{
-//	N3D_ASSERT(textWidget);
-//
-//	QPalette _palette = textWidget->palette();
-//	_palette.setColor(QPalette::Base, _color);
-//	textWidget->setPalette(_palette);
-//}
-//
-////----------------------------------------------------------------------------------------
-//
-//void ED_Console::SetTextColor(const QColor & _color)
-//{
-//	N3D_ASSERT(textWidget);
-//
-//	QPalette _palette = textWidget->palette();
-//	_palette.setColor(QPalette::Text, _color);
-//	textWidget->setPalette(_palette);
-//}
+//----------------------------------------------------------------------------------------
+
+void ConsoleDockWidget::SetBackgroundColor(const QColor & color)
+{
+	ED_ASSERT(mTextWidget);
+
+	QPalette palette = mTextWidget->palette();
+	palette.setColor(QPalette::Base, color);
+	mTextWidget->setPalette(palette);
+}
+
+//----------------------------------------------------------------------------------------
+
+void ConsoleDockWidget::SetTextDefaultColor(const QColor & color)
+{
+	ED_ASSERT(mTextWidget);
+
+	QPalette palette = mTextWidget->palette();
+	palette.setColor(QPalette::Text, color);
+	mTextWidget->setPalette(palette);
+}
+
 ////----------------------------------------------------------------------------------------
 //
 //QSize ED_Console::sizeHint() const

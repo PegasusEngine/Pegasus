@@ -37,7 +37,7 @@ Application::~Application()
 
 void Application::SetFile(const QString & fileName)
 {
-    //PG_ASSERTSTR(!fileName.isEmpty(), "Invalid application to open, the name cannot be an empty string");
+    ED_ASSERTSTR(!fileName.isEmpty(), "Invalid application to open, the name cannot be an empty string");
     mFileName = fileName;
 }
 
@@ -45,7 +45,7 @@ void Application::SetFile(const QString & fileName)
 
 void Application::SetViewport(/**index,*/ ViewportWidget * viewportWidget)
 {
-    //PG_ASSERTSTR(viewportWidget != nullptr, "Invalid viewport widget set for an application");
+    ED_ASSERTSTR(viewportWidget != nullptr, "Invalid viewport widget set for an application");
     mViewportWidget = viewportWidget;
 }
 
@@ -53,14 +53,14 @@ void Application::SetViewport(/**index,*/ ViewportWidget * viewportWidget)
 
 void Application::run()
 {
-    //PG_ASSERTSTR(!mFileName.isEmpty(), "Invalid application to open, the name cannot be an empty string");
+    ED_ASSERTSTR(!mFileName.isEmpty(), "Invalid application to open, the name cannot be an empty string");
     if (mFileName.isEmpty())
     {
         emit(LoadingError(ERROR_INVALID_FILE_NAME));
         return;
     }
 
-    //PG_ASSERTSTR(mViewportWidget != nullptr, "Invalid viewport widget set for an application");
+    ED_ASSERTSTR(mViewportWidget != nullptr, "Invalid viewport widget set for an application");
     if (mViewportWidget == nullptr)
     {
         emit(LoadingError(ERROR_INVALID_VIEWPORT));

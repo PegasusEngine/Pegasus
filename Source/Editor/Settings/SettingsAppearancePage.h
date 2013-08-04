@@ -12,11 +12,7 @@
 #ifndef EDITOR_SETTINGSAPPEARANCEPAGE_H
 #define EDITOR_SETTINGSAPPEARANCEPAGE_H
 
-#include <QWidget>
-
-//class ColorPickerBox;
-//! \todo Implement ColorPickerBox
-typedef QWidget ColorPickerBox;
+class ColorPickerBox;
 
 
 //! Page to configure the appearance settings of the editor
@@ -38,20 +34,20 @@ private slots:
     void SetUseWidgetStylePalette(int state);
 
     //! Set the background color of the console to its default
-    void SetConsoleDefaultBackgroundColor();
+    void SetDefaultConsoleBackgroundColor();
 
-    //! Set the text color of the console to its default
-    void SetConsoleDefaultTextColor();
+    //! Set the default text color of the console to its default
+    void SetDefaultConsoleTextDefaultColor();
 
     //------------------------------------------------------------------------------------
 
 private:
 
     //! Color picker box for the console background color
-    ColorPickerBox * mBackgroundColorPickerBox;
+    ColorPickerBox * mConsoleBackgroundColorPickerBox;
 
     //! Color picker box for the console text color
-    ColorPickerBox * mTextColorPickerBox;
+    ColorPickerBox * mConsoleTextDefaultColorPickerBox;
 };
 
 

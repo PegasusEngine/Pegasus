@@ -14,14 +14,14 @@
 
 #include "Settings/Settings.h"
 
+#include "Console/ConsoleDockWidget.h"
+#include "Timeline/TimelineDockWidget.h"
+#include "Viewport/ViewportDockWidget.h"
+
 #include <QtWidgets/QMainWindow>
 
-class AssertionManager;
-
-class ViewportDockWidget;
-class TimelineDockWidget;
-class ConsoleDockWidget;
 class ApplicationManager;
+class AssertionManager;
 
 class QSplashScreen;
 class QAction;

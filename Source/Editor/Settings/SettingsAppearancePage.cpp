@@ -9,7 +9,8 @@
 //! \date	10th July 2013
 //! \brief	Page to configure the appearance settings of the editor
 
-#include "SettingsAppearancePage.h"
+#include "Settings/SettingsAppearancePage.h"
+#include "Widgets/ColorPickerBox.h"
 #include "Editor.h"
 #include <QGroupBox>
 #include <QLabel>
@@ -56,36 +57,34 @@ SettingsAppearancePage::SettingsAppearancePage(QWidget *parent)
     // Console group box
     QGroupBox * consoleGroup = new QGroupBox(tr("Console"));
     QLabel * backgroundColorLabel = new QLabel(tr("&Background color:"));
-    mBackgroundColorPickerBox = new ColorPickerBox;
-    //mBackgroundColorPickerBox->SetColor(settings->GetConsoleBackgroundColor());
-        //! \todo Implement ColorPickerBox
-    backgroundColorLabel->setBuddy(mBackgroundColorPickerBox);
+    mConsoleBackgroundColorPickerBox = new ColorPickerBox;
+    mConsoleBackgroundColorPickerBox->SetColor(settings->GetConsoleBackgroundColor());
+    backgroundColorLabel->setBuddy(mConsoleBackgroundColorPickerBox);
     QPushButton * backgroundColorDefaultButton = new QPushButton(tr("Set default"));
-    QLabel * textColorLabel = new QLabel(tr("&Text color:"));
-    mTextColorPickerBox = new ColorPickerBox();
-    //mTextColorPickerBox->SetColor(settings->GetConsoleTextColor());
-        //! \todo Implement ColorPickerBox
-    textColorLabel->setBuddy(mTextColorPickerBox);
+    QLabel * textColorLabel = new QLabel(tr("&Text default color:"));
+    mConsoleTextDefaultColorPickerBox = new ColorPickerBox();
+    mConsoleTextDefaultColorPickerBox->SetColor(settings->GetConsoleTextDefaultColor());
+    textColorLabel->setBuddy(mConsoleTextDefaultColorPickerBox);
     QPushButton * textColorDefaultButton = new QPushButton(tr("Set default"));
 
     QGridLayout * consoleLayout = new QGridLayout();
     consoleLayout->addWidget(backgroundColorLabel, 0, 0);
-    consoleLayout->addWidget(mBackgroundColorPickerBox, 0, 1);
+    consoleLayout->addWidget(mConsoleBackgroundColorPickerBox, 0, 1);
     consoleLayout->addWidget(backgroundColorDefaultButton, 0, 2);
     consoleLayout->addWidget(textColorLabel, 1, 0);
-    consoleLayout->addWidget(mTextColorPickerBox, 1, 1);
+    consoleLayout->addWidget(mConsoleTextDefaultColorPickerBox, 1, 1);
     consoleLayout->addWidget(textColorDefaultButton, 1, 2);
     consoleGroup->setLayout(consoleLayout);
 
-    connect(mBackgroundColorPickerBox, SIGNAL(ColorChanged(const QColor &)),
+    connect(mConsoleBackgroundColorPickerBox, SIGNAL(ColorChanged(const QColor &)),
             settings, SLOT(SetConsoleBackgroundColor(const QColor &)));
     connect(backgroundColorDefaultButton, SIGNAL(clicked()),
-            this, SLOT(SetConsoleDefaultBackgroundColor()));
+            this, SLOT(SetDefaultConsoleBackgroundColor()));
 
-    connect(mTextColorPickerBox, SIGNAL(ColorChanged(const QColor &)),
-            settings, SLOT(SetConsoleTextColor(const QColor &)));
+    connect(mConsoleTextDefaultColorPickerBox, SIGNAL(ColorChanged(const QColor &)),
+            settings, SLOT(SetConsoleTextDefaultColor(const QColor &)));
     connect(textColorDefaultButton, SIGNAL(clicked()),
-            this, SLOT(SetConsoleDefaultTextColor()));
+            this, SLOT(SetDefaultConsoleTextDefaultColor()));
 
     // Main layout
     QVBoxLayout * mainLayout = new QVBoxLayout();
@@ -110,18 +109,16 @@ void SettingsAppearancePage::SetUseWidgetStylePalette(int state)
 
 //----------------------------------------------------------------------------------------
 	
-void SettingsAppearancePage::SetConsoleDefaultBackgroundColor()
+void SettingsAppearancePage::SetDefaultConsoleBackgroundColor()
 {
-    //! \todo Implement ColorPickerBox
-	//mBackgroundColorPickerBox->SetColor(
-	//		Editor::GetSettings()->GetConsoleDefaultBackgroundColor());
+	mConsoleBackgroundColorPickerBox->SetColor(
+                    Editor::GetSettings()->GetConsoleDefaultBackgroundColor());
 }
 
 //----------------------------------------------------------------------------------------
 
-void SettingsAppearancePage::SetConsoleDefaultTextColor()
+void SettingsAppearancePage::SetDefaultConsoleTextDefaultColor()
 {
-    //! \todo Implement ColorPickerBox
-	//mTextColorPickerBox->SetColor(
-	//		Editor::GetSettings()->GetConsoleDefaultTextColor());
+	mConsoleTextDefaultColorPickerBox->SetColor(
+                    Editor::GetSettings()->GetConsoleDefaultTextDefaultColor());
 }

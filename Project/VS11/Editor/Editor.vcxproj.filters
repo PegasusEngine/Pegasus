@@ -46,6 +46,9 @@
       <Extensions>h</Extensions>
       <ParseFiles>true</ParseFiles>
     </Filter>
+    <Filter Include="Source\Widgets">
+      <UniqueIdentifier>{78d953bc-706c-4a11-a72a-d0356515d413}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Source\Editor\Editor.cpp">
@@ -171,6 +174,15 @@
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_Assertion.cpp">
       <Filter>Generated\Dev-Debug</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ColorPickerBox.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ColorPickerBox.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Widgets\ColorPickerBox.cpp">
+      <Filter>Source\Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -217,6 +229,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Assertion.h">
       <Filter>Source</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Widgets\ColorPickerBox.h">
+      <Filter>Source\Widgets</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
