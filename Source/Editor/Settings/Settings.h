@@ -15,6 +15,9 @@
 #include <QString>
 #include <QStringList>
 #include <QPalette>
+#include <QMap>
+
+#include "Pegasus/Core/Log.h"
 
 class QMainWindow;
 
@@ -70,6 +73,24 @@ public:
     //! \return Default text color of the console
     const QColor & GetConsoleTextDefaultColor() const;
 
+    //! Get the color associated with a log channel, default text color if not found
+    //! \param logChannel Pegasus log channel to get the color of
+    //! \return Color associated with the log channel, default text color if not found
+    //!         (not a reference since it seems to not work well with the internal QMap)
+    const QColor GetConsoleTextColorForLogChannel(Pegasus::Core::LogChannel logChannel) const;
+
+    //! Set the color associated with a log channel
+    //! \note If the log channel was associated with the default text color,
+    //!       it starts using the custom color. If the color already existed,
+    //!       it is replaced.
+    //! \param logChannel Pegasus log channel to set the color of
+    //! \return color New color associated with the log channel
+    void SetConsoleTextColorForLogChannel(Pegasus::Core::LogChannel logChannel, const QColor & color);
+
+    //! Test if a console log channel has an associated color
+    //! \param logChannel Pegasus log channel to test
+    bool IsConsoleTextColorDefinedForLogChannel(Pegasus::Core::LogChannel logChannel) const;
+
 public slots:
 
     //! Set the name of the widget style
@@ -123,6 +144,12 @@ private:
 
     //! Default text color of the console
     QColor mConsoleTextDefaultColor;
+
+    typedef QMap<Pegasus::Core::LogChannel, QColor> LogChannelColorTable;
+
+    //! Conversion table between a log channel and an associated color
+    //! (contains only the channels that are overridden, not the ones using the text default color)
+    LogChannelColorTable mLogChannelColorTable;
 
     //------------------------------------------------------------------------------------
 

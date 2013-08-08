@@ -75,6 +75,14 @@ void Settings::Load()
                                              mConsoleBackgroundColor).value<QColor>());
     SetConsoleTextDefaultColor(settings.value("Appearance/ConsoleTextDefaultColor",
                                               mConsoleTextDefaultColor).value<QColor>());
+
+    // Console colors for the log channels
+    /*****/
+    //! \todo Handle the color settings
+    mLogChannelColorTable['CRIT'] = QColor(255, 0, 0);
+    mLogChannelColorTable['ERR_'] = QColor(255, 0, 0);
+    mLogChannelColorTable['WARN'] = QColor(255, 128, 0);
+    mLogChannelColorTable['ASRT'] = QColor(255, 128, 0);
 }
 
 //----------------------------------------------------------------------------------------
@@ -94,9 +102,12 @@ void Settings::Save()
     settings.setValue("Appearance/WidgetStyle", mWidgetStyleName);
     settings.setValue("Appearance/UseStylePalette", mUseWidgetStylePalette);
 
-    // Neptune 3D console colors
+    // Console colors
     settings.setValue("Appearance/ConsoleBackgroundColor", mConsoleBackgroundColor);
     settings.setValue("Appearance/ConsoleTextDefaultColor", mConsoleTextDefaultColor);
+
+    // Console log channel colors
+    //! \todo 
 }
 
 //----------------------------------------------------------------------------------------
@@ -125,6 +136,36 @@ const QColor & Settings::GetConsoleBackgroundColor() const
 const QColor & Settings::GetConsoleTextDefaultColor() const
 {
     return mConsoleTextDefaultColor;
+}
+
+//----------------------------------------------------------------------------------------
+
+const QColor Settings::GetConsoleTextColorForLogChannel(Pegasus::Core::LogChannel logChannel) const
+{
+    if (mLogChannelColorTable.contains(logChannel))
+    {
+        return mLogChannelColorTable[logChannel];
+    }
+    else
+    {
+        return mConsoleTextDefaultColor;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Settings::SetConsoleTextColorForLogChannel(Pegasus::Core::LogChannel logChannel, const QColor & color)
+{
+    mLogChannelColorTable[logChannel] = color;    
+
+    //! \todo Update the content of the log console for the channels with custom colors
+}
+
+//----------------------------------------------------------------------------------------
+
+bool Settings::IsConsoleTextColorDefinedForLogChannel(Pegasus::Core::LogChannel logChannel) const
+{
+    return mLogChannelColorTable.contains(logChannel);
 }
 
 //----------------------------------------------------------------------------------------

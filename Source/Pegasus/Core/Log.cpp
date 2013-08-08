@@ -50,7 +50,6 @@ void LogManager::Log(LogChannel channel, const char * msgStr)
     if (mHandler)
     {
         // Handler defined. Call it.
-        PG_ASSERTSTR(channel < NUM_LOG_CHANNELS, "Invalid channel for a log message");
         mHandler(channel, msgStr);
     }
     else

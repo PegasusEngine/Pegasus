@@ -41,13 +41,11 @@
     <Filter Include="Source\Settings">
       <UniqueIdentifier>{cd1215da-8ff9-42bb-ac20-0f50afa5de1a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h</Extensions>
-      <ParseFiles>true</ParseFiles>
-    </Filter>
     <Filter Include="Source\Widgets">
       <UniqueIdentifier>{78d953bc-706c-4a11-a72a-d0356515d413}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Console\ConsoleChannelColorTable">
+      <UniqueIdentifier>{5cc06288-1b58-455b-be46-814bb342c596}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -183,6 +181,24 @@
     <ClCompile Include="..\..\..\Source\Editor\Widgets\ColorPickerBox.cpp">
       <Filter>Source\Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ConsoleChannelColorTableView.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ConsoleChannelColorTableView.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Console\ConsoleChannelColorTable\ConsoleChannelColorTableView.cpp">
+      <Filter>Source\Console\ConsoleChannelColorTable</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ConsoleChannelColorTableModel.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ConsoleChannelColorTableModel.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Console\ConsoleChannelColorTable\ConsoleChannelColorTableModel.cpp">
+      <Filter>Source\Console\ConsoleChannelColorTable</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -232,6 +248,12 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Widgets\ColorPickerBox.h">
       <Filter>Source\Widgets</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Console\ConsoleChannelColorTable\ConsoleChannelColorTableView.h">
+      <Filter>Source\Console\ConsoleChannelColorTable</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Console\ConsoleChannelColorTable\ConsoleChannelColorTableModel.h">
+      <Filter>Source\Console\ConsoleChannelColorTable</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

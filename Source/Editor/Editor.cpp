@@ -74,6 +74,25 @@ Editor::Editor(QWidget *parent)
         sSettings = new Settings(this);
     }
 
+    // Test messages
+    /****/
+    //! \todo Remove
+	for (int i = 0; i < 100; i++)
+    {
+        if ((i / 10) & 1)
+        {
+            if (i == 12) mConsoleDockWidget->AddMessage('CRIT', QString("Hello, world %1!").arg(i));
+            else if (i == 13) mConsoleDockWidget->AddMessage('ERR_', QString("Hello, world %1!").arg(i));
+            else if (i == 14) mConsoleDockWidget->AddMessage('ASRT', QString("Hello, world %1!").arg(i));
+            else if (i == 15) mConsoleDockWidget->AddMessage('WNDW', QString("Hello, world %1!").arg(i));
+            else mConsoleDockWidget->AddMessage('WARN', QString("Hello, world %1!").arg(i));
+        }
+        else
+        {
+            mConsoleDockWidget->AddMessage(QString("Hello, world %1!").arg(i));
+        }
+    }
+
     // Create the application manager
     mApplicationManager = new ApplicationManager(this, mViewportDockWidget, this);
 }

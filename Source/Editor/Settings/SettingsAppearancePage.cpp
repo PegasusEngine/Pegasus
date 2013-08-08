@@ -11,7 +11,9 @@
 
 #include "Settings/SettingsAppearancePage.h"
 #include "Widgets/ColorPickerBox.h"
+#include "Console/ConsoleChannelColorTable/ConsoleChannelColorTableView.h"
 #include "Editor.h"
+
 #include <QGroupBox>
 #include <QLabel>
 #include <QComboBox>
@@ -24,7 +26,7 @@
 SettingsAppearancePage::SettingsAppearancePage(QWidget *parent)
 :   QWidget(parent)
 {
-    Settings * settings = Editor::GetSettings();
+    const Settings * const settings = Editor::GetSettings();
 
     // Interface style group box
     QGroupBox * interfaceStyleGroup = new QGroupBox(tr("Interface style"));
@@ -66,6 +68,7 @@ SettingsAppearancePage::SettingsAppearancePage(QWidget *parent)
     mConsoleTextDefaultColorPickerBox->SetColor(settings->GetConsoleTextDefaultColor());
     textColorLabel->setBuddy(mConsoleTextDefaultColorPickerBox);
     QPushButton * textColorDefaultButton = new QPushButton(tr("Set default"));
+    ConsoleChannelColorTableView * colorTableView = new ConsoleChannelColorTableView;
 
     QGridLayout * consoleLayout = new QGridLayout();
     consoleLayout->addWidget(backgroundColorLabel, 0, 0);
@@ -74,6 +77,7 @@ SettingsAppearancePage::SettingsAppearancePage(QWidget *parent)
     consoleLayout->addWidget(textColorLabel, 1, 0);
     consoleLayout->addWidget(mConsoleTextDefaultColorPickerBox, 1, 1);
     consoleLayout->addWidget(textColorDefaultButton, 1, 2);
+    consoleLayout->addWidget(colorTableView, 2, 0);
     consoleGroup->setLayout(consoleLayout);
 
     connect(mConsoleBackgroundColorPickerBox, SIGNAL(ColorChanged(const QColor &)),
