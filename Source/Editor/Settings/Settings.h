@@ -128,6 +128,24 @@ public:
 
     //------------------------------------------------------------------------------------
 
+public:
+
+    //! Invalid log channel, used for the default text color or unmatched tags
+    static const Pegasus::Core::LogChannel INVALID_LOG_CHANNEL = 0;
+
+    //! Convert a Pegasus log channel into a string
+    //! \param logChannel Pegasus log channel
+    //! \return 4-character string representing the log channel
+    static QString ConvertLogChannelToString(Pegasus::Core::LogChannel logChannel);
+
+    //! Convert a log channel string to a Pegasus log channel
+    //! \param name 4-character channel name
+    //! \return Converted log channel, INVALID_LOG_CHANNEL if the input format is invalid
+    //!         (also throws an assertion error) or if the log channel is unknown (no assert)
+    static Pegasus::Core::LogChannel ConvertStringToLogChannel(const QString & channelName);
+
+    //------------------------------------------------------------------------------------
+
 private:
 
     // Appearance settings

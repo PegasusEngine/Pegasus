@@ -10,6 +10,7 @@
 //! \brief	Table model to show the colors associated with the log channels
 
 #include "Console/ConsoleChannelColorTable/ConsoleChannelColorTableModel.h"
+#include "Settings/Settings.h"
 
 #include "Pegasus/Core/Log.h"
 
@@ -42,7 +43,7 @@ QVariant ConsoleChannelColorTableModel::data(const QModelIndex & index, int role
         {
             // Show the log channel name
             const Pegasus::Core::LogChannel logChannel = Pegasus::Core::sLogChannels[index.row()];
-            return ConsoleDockWidget::ConvertLogChannelToString(logChannel);
+            return Settings::ConvertLogChannelToString(logChannel);
         }
         else if (index.column() == 1)
         {

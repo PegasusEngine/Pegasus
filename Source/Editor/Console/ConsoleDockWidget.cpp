@@ -10,6 +10,7 @@
 //! \brief	Dock widget containing the console with log messages
 
 #include "Console/ConsoleDockWidget.h"
+#include "Settings/Settings.h"
 
 #include <QPlainTextEdit>
 #include <QHBoxLayout>
@@ -18,11 +19,6 @@
 #include <QTextBlock>
 #include <QTime>
 
-
-//! Invalid log channel, used for the default text color or unmatched tags
-static const Pegasus::Core::LogChannel INVALID_LOG_CHANNEL = 0;
-
-//----------------------------------------------------------------------------------------
 
 ConsoleDockWidget::ConsoleDockWidget(QWidget *parent)
 :   QDockWidget(parent)
@@ -108,7 +104,7 @@ ConsoleDockWidget::~ConsoleDockWidget()
 void ConsoleDockWidget::AddMessage(const QString & message)
 {
     // Set the invalid category to the message
-    AddMessage(INVALID_LOG_CHANNEL, message);
+    AddMessage(Settings::INVALID_LOG_CHANNEL, message);
 }
 
 //----------------------------------------------------------------------------------------
@@ -127,7 +123,7 @@ void ConsoleDockWidget::AddMessage(Pegasus::Core::LogChannel logChannel, const Q
     // Get the current time and convert it into a string
     QString timeString(QTime::currentTime().toString("hh:mm:ss:zzz "));
 
-    if (   (logChannel != INVALID_LOG_CHANNEL)
+    if (   (logChannel != Settings::INVALID_LOG_CHANNEL)
         && (settings != nullptr)
         && (settings->IsConsoleTextColorDefinedForLogChannel(logChannel)) )
     {
@@ -137,17 +133,17 @@ void ConsoleDockWidget::AddMessage(Pegasus::Core::LogChannel logChannel, const Q
                                 + htmlString2
                                 + timeString
                                 + "["
-                                + ConvertLogChannelToString(logChannel)
+                                + Settings::ConvertLogChannelToString(logChannel)
                                 + "] "
                                 + message
                                 + htmlString3);
     }
-    else if (logChannel != INVALID_LOG_CHANNEL)
+    else if (logChannel != Settings::INVALID_LOG_CHANNEL)
     {
         // Standard message with default text color
         mTextWidget->appendPlainText(  timeString 
                                      +  "["
-                                     + ConvertLogChannelToString(logChannel)
+                                     + Settings::ConvertLogChannelToString(logChannel)
                                      + "] "
                                      + message);
     }
@@ -183,18 +179,6 @@ void ConsoleDockWidget::SetTextDefaultColor(const QColor & color)
 	QPalette palette = mTextWidget->palette();
 	palette.setColor(QPalette::Text, color);
 	mTextWidget->setPalette(palette);
-}
-
-//----------------------------------------------------------------------------------------
-
-QString ConsoleDockWidget::ConvertLogChannelToString(Pegasus::Core::LogChannel logChannel)
-{
-    ED_ASSERTSTR(logChannel != 0, "Invalid log channel");
-
-    return QString("%1%2%3%4").arg(char( logChannel >> 24        ))
-                              .arg(char((logChannel >> 16) & 0xFF))
-                              .arg(char((logChannel >> 8 ) & 0xFF))
-                              .arg(char( logChannel        & 0xFF));
 }
 
 //----------------------------------------------------------------------------------------

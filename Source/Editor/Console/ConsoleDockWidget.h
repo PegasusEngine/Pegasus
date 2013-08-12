@@ -48,13 +48,6 @@ public:
 
     //------------------------------------------------------------------------------------
 
-public:
-
-    //! Convert a Pegasus log channel into a string
-    static QString ConvertLogChannelToString(Pegasus::Core::LogChannel logChannel);
-
-    //------------------------------------------------------------------------------------
-
 private slots:
 
     //! Called when the context menu is called with a right-click

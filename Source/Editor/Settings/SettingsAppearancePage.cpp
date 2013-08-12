@@ -125,4 +125,7 @@ void SettingsAppearancePage::SetDefaultConsoleTextDefaultColor()
 {
 	mConsoleTextDefaultColorPickerBox->SetColor(
                     Editor::GetSettings()->GetConsoleDefaultTextDefaultColor());
+
+    //! \todo Refresh the content of the log channel color table view
+    //! \todo Refresh the log console itself?
 }
