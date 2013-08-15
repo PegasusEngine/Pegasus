@@ -46,6 +46,13 @@ public:
     //! \param color Default text color of the text area
     void SetTextDefaultColor(const QColor & color);
 
+    //! Set the color associated with a log channel
+    //! \note If the log channel was associated with the default text color,
+    //!       it starts using the custom color. If the color already existed,
+    //!       it is replaced.
+    //! \param logChannel Pegasus log channel to set the color of
+    void SetTextColorForLogChannel(Pegasus::Core::LogChannel logChannel, const QColor & color);
+
     //------------------------------------------------------------------------------------
 
 private slots:
@@ -56,9 +63,6 @@ private slots:
 
     //! Clear the content of the console
     void Clear();
-
-    //! Open the color settings dialog box
-    void OpenSetColors();
 
     //------------------------------------------------------------------------------------
 

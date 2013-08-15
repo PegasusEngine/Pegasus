@@ -29,6 +29,19 @@ public:
     SettingsDialog(QWidget *parent);
     ~SettingsDialog();
 
+    //! List of pages of the settings dialog box
+    enum Page
+    {
+        PAGE_APPEARANCE = 0,
+        PAGE_TEST2,
+
+        NUM_PAGES
+    };
+
+    //! Set the page to display
+    //! \param page PAGE_xxx constant, < NUM_PAGES
+    void SetCurrentPage(Page page);
+
     //------------------------------------------------------------------------------------
 	
 private slots:

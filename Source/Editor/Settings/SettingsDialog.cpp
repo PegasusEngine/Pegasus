@@ -28,7 +28,8 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     // Create the list of icons for the pages
     mIcons = new QListWidget();
     mIcons->setViewMode(QListView::IconMode);
-    mIcons->setIconSize(QSize(48, 48));
+    mIcons->setFlow(QListView::TopToBottom);
+    mIcons->setIconSize(QSize(64, 64));
     mIcons->setMovement(QListView::Static);
     mIcons->setMaximumWidth(128);
     mIcons->setSpacing(12);
@@ -69,7 +70,18 @@ SettingsDialog::~SettingsDialog()
 }
 
 //----------------------------------------------------------------------------------------
-	
+
+void SettingsDialog::SetCurrentPage(Page page)
+{
+    ED_ASSERTSTR(page < NUM_PAGES, "Invalid page for the settings dialog box");
+    if (page < NUM_PAGES)
+    {
+        mIcons->setCurrentRow(static_cast<int>(page));
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 void SettingsDialog::ChangePage(QListWidgetItem * current, QListWidgetItem * previous)
 {
     if (current == nullptr)

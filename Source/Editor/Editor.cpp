@@ -466,3 +466,13 @@ void Editor::About()
 {
     //! /todo Show the about dialog box
 }
+
+//----------------------------------------------------------------------------------------
+
+void Editor::OpenPreferencesAppearance()
+{
+	SettingsDialog * settingsDialog = nullptr;
+    settingsDialog = new SettingsDialog(this);
+    settingsDialog->SetCurrentPage(SettingsDialog::PAGE_APPEARANCE);
+	settingsDialog->show();
+}

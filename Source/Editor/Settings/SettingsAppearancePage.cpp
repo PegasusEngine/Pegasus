@@ -68,7 +68,7 @@ SettingsAppearancePage::SettingsAppearancePage(QWidget *parent)
     mConsoleTextDefaultColorPickerBox->SetColor(settings->GetConsoleTextDefaultColor());
     textColorLabel->setBuddy(mConsoleTextDefaultColorPickerBox);
     QPushButton * textColorDefaultButton = new QPushButton(tr("Set default"));
-    ConsoleChannelColorTableView * colorTableView = new ConsoleChannelColorTableView;
+    mColorTableView = new ConsoleChannelColorTableView;
 
     QGridLayout * consoleLayout = new QGridLayout();
     consoleLayout->addWidget(backgroundColorLabel, 0, 0);
@@ -77,16 +77,16 @@ SettingsAppearancePage::SettingsAppearancePage(QWidget *parent)
     consoleLayout->addWidget(textColorLabel, 1, 0);
     consoleLayout->addWidget(mConsoleTextDefaultColorPickerBox, 1, 1);
     consoleLayout->addWidget(textColorDefaultButton, 1, 2);
-    consoleLayout->addWidget(colorTableView, 2, 0);
+    consoleLayout->addWidget(mColorTableView, 2, 0);
     consoleGroup->setLayout(consoleLayout);
 
     connect(mConsoleBackgroundColorPickerBox, SIGNAL(ColorChanged(const QColor &)),
-            settings, SLOT(SetConsoleBackgroundColor(const QColor &)));
+            this, SLOT(SetConsoleBackgroundColor(const QColor &)));
     connect(backgroundColorDefaultButton, SIGNAL(clicked()),
             this, SLOT(SetDefaultConsoleBackgroundColor()));
 
     connect(mConsoleTextDefaultColorPickerBox, SIGNAL(ColorChanged(const QColor &)),
-            settings, SLOT(SetConsoleTextDefaultColor(const QColor &)));
+            this, SLOT(SetConsoleTextDefaultColor(const QColor &)));
     connect(textColorDefaultButton, SIGNAL(clicked()),
             this, SLOT(SetDefaultConsoleTextDefaultColor()));
 
@@ -113,6 +113,13 @@ void SettingsAppearancePage::SetUseWidgetStylePalette(int state)
 
 //----------------------------------------------------------------------------------------
 	
+void SettingsAppearancePage::SetConsoleBackgroundColor(const QColor & color)
+{
+	Editor::GetSettings()->SetConsoleBackgroundColor(color);
+}
+
+//----------------------------------------------------------------------------------------
+	
 void SettingsAppearancePage::SetDefaultConsoleBackgroundColor()
 {
 	mConsoleBackgroundColorPickerBox->SetColor(
@@ -121,11 +128,18 @@ void SettingsAppearancePage::SetDefaultConsoleBackgroundColor()
 
 //----------------------------------------------------------------------------------------
 
+void SettingsAppearancePage::SetConsoleTextDefaultColor(const QColor & color)
+{
+	Editor::GetSettings()->SetConsoleTextDefaultColor(color);
+
+    // Refresh the content of the log channel color table view
+    mColorTableView->Refresh();
+}
+
+//----------------------------------------------------------------------------------------
+
 void SettingsAppearancePage::SetDefaultConsoleTextDefaultColor()
 {
 	mConsoleTextDefaultColorPickerBox->SetColor(
                     Editor::GetSettings()->GetConsoleDefaultTextDefaultColor());
-
-    //! \todo Refresh the content of the log channel color table view
-    //! \todo Refresh the log console itself?
 }

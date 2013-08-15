@@ -146,6 +146,15 @@ private slots:
 
     //------------------------------------------------------------------------------------
 
+public slots:
+
+    // Extra slots for other parts of the editor that request global controls
+
+    //! Open the preferences dialog box at the appearance page
+    void OpenPreferencesAppearance();
+
+    //------------------------------------------------------------------------------------
+
 private:
 
     //@{

@@ -79,14 +79,6 @@ public:
     //!         (not a reference since it seems to not work well with the internal QMap)
     const QColor GetConsoleTextColorForLogChannel(Pegasus::Core::LogChannel logChannel) const;
 
-    //! Set the color associated with a log channel
-    //! \note If the log channel was associated with the default text color,
-    //!       it starts using the custom color. If the color already existed,
-    //!       it is replaced.
-    //! \param logChannel Pegasus log channel to set the color of
-    //! \return color New color associated with the log channel
-    void SetConsoleTextColorForLogChannel(Pegasus::Core::LogChannel logChannel, const QColor & color);
-
     //! Test if a console log channel has an associated color
     //! \param logChannel Pegasus log channel to test
     bool IsConsoleTextColorDefinedForLogChannel(Pegasus::Core::LogChannel logChannel) const;
@@ -111,6 +103,13 @@ public slots:
     //! Set the default text color of the console
     //! \param color Default text color of the console
     void SetConsoleTextDefaultColor(const QColor & color);
+
+    //! Set the color associated with a log channel
+    //! \note If the log channel was associated with the default text color,
+    //!       it starts using the custom color. If the color already existed,
+    //!       it is replaced.
+    //! \param logChannel Pegasus log channel to set the color of
+    void SetConsoleTextColorForLogChannel(Pegasus::Core::LogChannel logChannel, const QColor & color);
 
     //------------------------------------------------------------------------------------
 

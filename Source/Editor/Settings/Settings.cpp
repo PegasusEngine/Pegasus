@@ -199,15 +199,6 @@ const QColor Settings::GetConsoleTextColorForLogChannel(Pegasus::Core::LogChanne
 
 //----------------------------------------------------------------------------------------
 
-void Settings::SetConsoleTextColorForLogChannel(Pegasus::Core::LogChannel logChannel, const QColor & color)
-{
-    mLogChannelColorTable[logChannel] = color;    
-
-    //! \todo Update the content of the log console for the channels with custom colors
-}
-
-//----------------------------------------------------------------------------------------
-
 bool Settings::IsConsoleTextColorDefinedForLogChannel(Pegasus::Core::LogChannel logChannel) const
 {
     return mLogChannelColorTable.contains(logChannel);
@@ -273,9 +264,17 @@ void Settings::SetConsoleTextDefaultColor(const QColor & color)
 
 //----------------------------------------------------------------------------------------
 
+void Settings::SetConsoleTextColorForLogChannel(Pegasus::Core::LogChannel logChannel, const QColor & color)
+{
+    mLogChannelColorTable[logChannel] = color;    
+    Editor::GetInstance().GetConsoleDockWidget()->SetTextColorForLogChannel(logChannel, color);
+}
+
+//----------------------------------------------------------------------------------------
+
 QColor Settings::GetConsoleDefaultBackgroundColor() const
 {
-    return QColor(Qt::darkBlue).darker(200);
+    return QColor(0, 0, 48);
 }
 
 //----------------------------------------------------------------------------------------

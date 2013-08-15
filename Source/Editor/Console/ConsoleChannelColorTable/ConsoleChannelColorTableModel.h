@@ -28,6 +28,9 @@ public:
 	//! Destructor
 	~ConsoleChannelColorTableModel();
 
+    //! Refresh the model (and its associated views) after an update of the colors
+    void Refresh();
+
 	//------------------------------------------------------------------------------------
 
 public:

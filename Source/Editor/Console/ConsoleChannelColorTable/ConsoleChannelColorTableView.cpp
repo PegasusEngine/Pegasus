@@ -61,6 +61,13 @@ ConsoleChannelColorTableView::~ConsoleChannelColorTableView()
 
 //----------------------------------------------------------------------------------------
 
+void ConsoleChannelColorTableView::Refresh()
+{
+    (static_cast<ConsoleChannelColorTableModel *>(model()))->Refresh();
+}
+
+//----------------------------------------------------------------------------------------
+
 void ConsoleChannelColorTableView::ColorClicked(const QModelIndex & index)
 {
     if (index.isValid() && (index.column() == 1))

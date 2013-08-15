@@ -29,7 +29,10 @@ public:
 	//! Destructor
 	~ConsoleChannelColorTableView();
 
-	//------------------------------------------------------------------------------------
+    //! Refresh the associated model and the entire view after an update of the colors
+    void Refresh();
+
+    //------------------------------------------------------------------------------------
 
 private slots:
 

@@ -15,6 +15,11 @@
 #include "Pegasus/Core/Log.h"
 
 
+static const int CHANNELNAME_COLUMN_INDEX = 0;
+static const int COLOR_COLUMN_INDEX = 1;
+
+//----------------------------------------------------------------------------------------
+
 ConsoleChannelColorTableModel::ConsoleChannelColorTableModel(QObject * parent)
 :   QAbstractTableModel(parent)
 {
@@ -30,6 +35,15 @@ ConsoleChannelColorTableModel::~ConsoleChannelColorTableModel()
 
 //----------------------------------------------------------------------------------------
 
+void ConsoleChannelColorTableModel::Refresh()
+{
+    QModelIndex firstIndex = createIndex(0, COLOR_COLUMN_INDEX);
+    QModelIndex lastIndex  = createIndex(Pegasus::Core::NUM_LOG_CHANNELS - 1, COLOR_COLUMN_INDEX);
+    emit(dataChanged(firstIndex, lastIndex));
+}
+
+//----------------------------------------------------------------------------------------
+
 QVariant ConsoleChannelColorTableModel::data(const QModelIndex & index, int role) const
 {
 	if (!index.isValid())
@@ -39,13 +53,13 @@ QVariant ConsoleChannelColorTableModel::data(const QModelIndex & index, int role
 
     if (role == Qt::DisplayRole)
     {
-        if (index.column() == 0)
+        if (index.column() == CHANNELNAME_COLUMN_INDEX)
         {
             // Show the log channel name
             const Pegasus::Core::LogChannel logChannel = Pegasus::Core::sLogChannels[index.row()];
             return Settings::ConvertLogChannelToString(logChannel);
         }
-        else if (index.column() == 1)
+        else if (index.column() == COLOR_COLUMN_INDEX)
         {
             // Show only the background color, so no need for text
             return QVariant();
@@ -53,7 +67,7 @@ QVariant ConsoleChannelColorTableModel::data(const QModelIndex & index, int role
     }
     else if (role == Qt::BackgroundRole)
     {
-        if (index.column() == 1)
+        if (index.column() == COLOR_COLUMN_INDEX)
         {
             // Set the background color to the log channel color in the settings
             const Settings * const settings = Editor::GetSettings();
@@ -72,7 +86,7 @@ bool ConsoleChannelColorTableModel::setData(const QModelIndex & index,
 											const QVariant & value,
                                             int role)
 {
-	if (index.isValid() && (index.column() == 1) && (role == Qt::EditRole))
+	if (index.isValid() && (index.column() == COLOR_COLUMN_INDEX) && (role == Qt::EditRole))
     {
         // Set the log channel color (add it if it was using the default color)
         Settings * const settings = Editor::GetSettings();
@@ -92,7 +106,7 @@ bool ConsoleChannelColorTableModel::setData(const QModelIndex & index,
 
 Qt::ItemFlags ConsoleChannelColorTableModel::flags(const QModelIndex & index) const
 {
-	if (index.isValid() && (index.column() == 1))
+	if (index.isValid() && (index.column() == COLOR_COLUMN_INDEX))
     {
         // Color cells are editable
         return Qt::ItemIsEnabled | Qt::ItemIsEditable;
@@ -109,11 +123,11 @@ QVariant ConsoleChannelColorTableModel::headerData(int section,
 {
     if ((orientation == Qt::Horizontal) && (role == Qt::DisplayRole))
     {
-        if (section == 0)
+        if (section == CHANNELNAME_COLUMN_INDEX)
         {
             return QString(tr("Log channel"));
         }
-        else if (section == 1)
+        else if (section == COLOR_COLUMN_INDEX)
         {
             return QString(tr("Color"));
         }

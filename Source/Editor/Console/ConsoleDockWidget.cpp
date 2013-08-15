@@ -11,6 +11,7 @@
 
 #include "Console/ConsoleDockWidget.h"
 #include "Settings/Settings.h"
+#include "Editor.h"
 
 #include <QPlainTextEdit>
 #include <QHBoxLayout>
@@ -19,6 +20,25 @@
 #include <QTextBlock>
 #include <QTime>
 
+
+//! Class to store user data per text block (each line of text)
+class TextBlockUserData : public QTextBlockUserData
+{
+public:
+
+    TextBlockUserData(Pegasus::Core::LogChannel logChannel)
+        : mLogChannel(logChannel) { }
+
+    inline Pegasus::Core::LogChannel GetLogChannel() const { return mLogChannel; }
+
+private:
+
+    //! Log channel associated with the text block,
+    //! Settings::INVALID_LOG_CHANNEL if not associated with any channel
+    const Pegasus::Core::LogChannel mLogChannel;
+};
+
+//----------------------------------------------------------------------------------------
 
 ConsoleDockWidget::ConsoleDockWidget(QWidget *parent)
 :   QDockWidget(parent)
@@ -71,7 +91,8 @@ ConsoleDockWidget::ConsoleDockWidget(QWidget *parent)
     connect(clearAction, SIGNAL(triggered()), this, SLOT(Clear()));
     QAction * setColorsAction = new QAction(tr("&Set Colors..."), this);
 	setColorsAction->setStatusTip(tr("Set the colors associated with the channels"));
-    connect(setColorsAction, SIGNAL(triggered()), this, SLOT(OpenSetColors()));
+    connect(setColorsAction, SIGNAL(triggered()),
+            &Editor::GetInstance(), SLOT(OpenPreferencesAppearance()));
 
     mContextMenu = mTextWidget->createStandardContextMenu();
     mContextMenu->insertSeparator(*mContextMenu->actions().begin());
@@ -85,12 +106,6 @@ ConsoleDockWidget::ConsoleDockWidget(QWidget *parent)
     horizontalLayout->addWidget(mTextWidget);
 
     //! \todo Add support for filter buttons
-
-    //QTextBlock block = mTextWidget->document()->begin();
-    //block = block.next();
-    //block = block.next();
-    //block = block.next();
-    //block.setVisible(false);
 }
 
 //----------------------------------------------------------------------------------------
@@ -153,6 +168,13 @@ void ConsoleDockWidget::AddMessage(Pegasus::Core::LogChannel logChannel, const Q
         mTextWidget->appendPlainText(timeString + message);
     }
 
+    // Create user data for the text block,
+    // to optimize the recoloring after changing settings
+    QTextDocument * doc = mTextWidget->document();
+    QTextBlock block = doc->lastBlock();
+    QTextBlockUserData * userData = new TextBlockUserData(logChannel);
+    block.setUserData(userData);
+
     //! \todo Do we need manual scrolling when an arbitrary location of the scrollview
     //!       is shown and new messages are added
 	//textWidget->moveCursor(QTextCursor::End);
@@ -179,6 +201,45 @@ void ConsoleDockWidget::SetTextDefaultColor(const QColor & color)
 	QPalette palette = mTextWidget->palette();
 	palette.setColor(QPalette::Text, color);
 	mTextWidget->setPalette(palette);
+
+    // No need to go through the text blocks.
+    // No HTML tag is used when the default color is used, so the color changes
+    // automatically without user interaction
+}
+
+//----------------------------------------------------------------------------------------
+
+void ConsoleDockWidget::SetTextColorForLogChannel(Pegasus::Core::LogChannel logChannel, const QColor & color)
+{
+    ED_ASSERT(mTextWidget);
+    if (logChannel == Settings::INVALID_LOG_CHANNEL)
+    {
+        ED_FAILSTR("Invalid log channel, it must be defined in Pegasus");
+        return;
+    }
+
+    // Check every text block for the color being used and update if required
+    QTextDocument * doc = mTextWidget->document();
+    QTextCharFormat charFormat;
+    charFormat.setForeground(color);
+    for (QTextBlock textBlock = doc->begin(); textBlock != doc->end(); textBlock = textBlock.next())
+    {
+        // Check whether the block corresponds to the current channel
+        TextBlockUserData * userData = static_cast<TextBlockUserData *>(textBlock.userData());
+        if (   userData != nullptr
+            && (userData->GetLogChannel() == logChannel))
+        {
+            // Create a cursor belonging to the text block
+            QTextCursor textCursor(textBlock);
+
+            // Set the selection of the text to the entire block.
+            // Without this, only inserted text gets the new color, not the existing one.
+            textCursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+
+            // Apply the color to the selected text
+            textCursor.mergeCharFormat(charFormat);
+        }
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -193,11 +254,4 @@ void ConsoleDockWidget::ContextMenuRequested(const QPoint & pos)
 void ConsoleDockWidget::Clear()
 {
     mTextWidget->clear();
-}
-
-//----------------------------------------------------------------------------------------
-
-void ConsoleDockWidget::OpenSetColors()
-{
-    //! \todo Open the set colors dialog box
 }
