@@ -47,6 +47,11 @@
     <Filter Include="Source\Console\ConsoleChannelColorTable">
       <UniqueIdentifier>{5cc06288-1b58-455b-be46-814bb342c596}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+      <ParseFiles>true</ParseFiles>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Source\Editor\Editor.cpp">
@@ -199,6 +204,15 @@
     <ClCompile Include="..\..\..\Source\Editor\Console\ConsoleChannelColorTable\ConsoleChannelColorTableModel.cpp">
       <Filter>Source\Console\ConsoleChannelColorTable</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Log.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_Log.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_Log.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -254,6 +268,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Console\ConsoleChannelColorTable\ConsoleChannelColorTableModel.h">
       <Filter>Source\Console\ConsoleChannelColorTable</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Log.h">
+      <Filter>Source</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

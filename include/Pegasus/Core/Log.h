@@ -22,6 +22,8 @@
 //! \param str String of the message
 #define PG_LOG(channel, str)    { Pegasus::Core::LogManager::GetInstance().Log(channel, str); }
 
+//! \todo Add support for formatted strings
+
 #else
 
 #define PG_LOG(channel, str)
@@ -50,7 +52,17 @@ static const LogChannel sLogChannels[] = {
     'WARN',     // Warnings
     'ASRT',     // Assertions
 
-    'WNDW'      // Window management
+    'EDIT',     // Editor
+    'TEMP',     // Temporary channel for debugging, only for the SB branch
+    
+    'APPL',     // Application global information
+    'WNDW',     // Window management
+    'OGL_',     // OpenGL specific
+    'FILE',     // File management
+    'ASST',     // Asset management
+    'TMLN',     // Timeline info
+    'MUSC',     // Music info
+    'SHDR',     // Shader (compilation, info, error)
 };
 
 //! Number of defined channels
@@ -69,9 +81,9 @@ public:
     //! Callback function declaration.
     //! One function with this type needs to be declared in the user application
     //! to handle log messages.
-    //! \param channel Channel that receives the message
+    //! \param logChannel Log channel that receives the message
     //! \param msgStr String of the message to log
-    typedef void (* Handler)(LogChannel channel, const char * msgStr);
+    typedef void (* Handler)(LogChannel logChannel, const char * msgStr);
 
     //! Register the log message handler
     //! \warning To be called at least once by the user application. Otherwise,
@@ -85,9 +97,9 @@ public:
 
     //! Send a message to the log output, for a specific channel.
     //! The handler registered with \a RegisterHandle is called with the provided parameters
-    //! \param channel Channel that receives the message
+    //! \param logChannel Log channel that receives the message
     //! \param msgStr String of the message to log
-    void Log(LogChannel channel, const char * msgStr);
+    void Log(LogChannel logChannel, const char * msgStr);
 
 private:
 

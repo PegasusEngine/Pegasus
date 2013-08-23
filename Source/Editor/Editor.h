@@ -21,6 +21,7 @@
 #include <QtWidgets/QMainWindow>
 
 class ApplicationManager;
+class LogManager;
 class AssertionManager;
 
 class QSplashScreen;
@@ -40,6 +41,9 @@ public:
     //! Return the unique instance of the editor
     //! \return Reference to the unique instance of the editor
     inline static Editor & GetInstance() { return *sInstance; }
+
+    //! Get the log manager, used by all log macros
+    inline LogManager & GetLogManager() const { return *mLogManager; }
 
     //! Get the assertion manager, used by all assertion macros
     inline AssertionManager & GetAssertionManager() const { return *mAssertionManager; }
@@ -214,6 +218,9 @@ private:
 
     //! Unique instance of the editor class
     static Editor * sInstance;
+
+    //! Unique log manager
+    LogManager * mLogManager;
 
     //! Unique assertion manager
     AssertionManager * mAssertionManager;

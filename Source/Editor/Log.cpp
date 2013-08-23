@@ -6,20 +6,23 @@
 
 //! \file	Log.cpp
 //! \author	Kevin Boulanger
-//! \date	04th July 2013
+//! \date	22th August 2013
 //! \brief	Log manager, for debug output
 
-#include "Pegasus/Core/Log.h"
+#include "Log.h"
 
-#if PEGASUS_ENABLE_LOG
-
-
-namespace Pegasus {
-namespace Core {
+#include <stdio.h>
+#include <stdarg.h>
 
 
-LogManager::LogManager()
-:   mHandler(nullptr)
+//! Maximum size of the buffer containing one log message
+static const size_t LOGARGS_BUFFER_SIZE = 1024; 
+
+//----------------------------------------------------------------------------------------
+
+LogManager::LogManager(Editor * parent)
+:   QObject(parent),
+    mEditor(parent)
 {
 }
 
@@ -31,36 +34,23 @@ LogManager::~LogManager()
 
 //----------------------------------------------------------------------------------------
 
-void LogManager::RegisterHandler(Handler handler)
+void LogManager::Log(Pegasus::Core::LogChannel logChannel, const char * msgStr)
 {
-    mHandler = handler;
+    Editor::GetInstance().GetConsoleDockWidget()->AddMessage(logChannel, msgStr);
 }
 
 //----------------------------------------------------------------------------------------
 
-void LogManager::UnregisterHandler()
+void LogManager::LogArgs(Pegasus::Core::LogChannel logChannel, const char * msgStr, ...)
 {
-    mHandler = nullptr;
+    // Format the input string with the variable number of arguments
+    static char buffer[LOGARGS_BUFFER_SIZE];
+    va_list args;
+    va_start(args, msgStr);
+    vsnprintf_s(buffer, LOGARGS_BUFFER_SIZE, LOGARGS_BUFFER_SIZE - 1, msgStr, args);
+
+    // Send the formatted log message
+    Log(logChannel, buffer);
+
+    va_end (args);
 }
-
-//----------------------------------------------------------------------------------------
-
-void LogManager::Log(LogChannel logChannel, const char * msgStr)
-{
-    if (mHandler)
-    {
-        // Handler defined. Call it.
-        mHandler(logChannel, msgStr);
-    }
-    else
-    {
-        // Handler undefined. Throw an assertion error
-        PG_FAILSTR("No log message handler has been defined. Call LogManager::GetInstance().RegisterHandler(handler) at least once");
-    }
-}
-
-
-}   // namespace Core
-}   // namespace Pegasus
-
-#endif  // PEGASUS_ENABLE_LOG

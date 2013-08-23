@@ -16,7 +16,7 @@
 #include <QPushButton>
 
 
-AssertionManager::AssertionManager(Editor *parent)
+AssertionManager::AssertionManager(Editor * parent)
 :   QObject(parent),
     mEditor(parent),
     mIgnoreAll(false)

@@ -10,6 +10,8 @@
 //! \brief	Settings for the entire editor
 
 #include "Settings/Settings.h"
+#include "Log.h"
+
 #include <QStyleFactory>
 #include <QStyle>
 #include <QSettings>
@@ -40,6 +42,8 @@ Settings::~Settings()
 
 void Settings::Load()
 {
+    ED_LOG("Loading the editor settings");
+
     // Create the QSettings object that will read the application settings from file
     QSettings settings;
 
@@ -87,15 +91,25 @@ void Settings::Load()
             // Console colors for the log channels
             mLogChannelColorTable.clear();
             const QStringList loadedChannelNames = settings.allKeys();
-            for (QStringList::const_iterator channelName = loadedChannelNames.constBegin();
-                 channelName != loadedChannelNames.constEnd();
-                 ++channelName)
+            if (loadedChannelNames.count() == 0)
             {
-                const Pegasus::Core::LogChannel logChannel = ConvertStringToLogChannel(*channelName);
-                if (logChannel != INVALID_LOG_CHANNEL)
+                // If no key has been found, consider that no setting has been set
+                // and use the default values for some of the keys
+                SetDefaultConsoleTextColorForAllLogChannels();
+            }
+            else
+            {
+                // If keys have been found, apply them
+                for (QStringList::const_iterator channelName = loadedChannelNames.constBegin();
+                     channelName != loadedChannelNames.constEnd();
+                     ++channelName)
                 {
-                    QColor loadedColor = settings.value(*channelName).value<QColor>();
-                    mLogChannelColorTable[logChannel] = loadedColor;
+                    const Pegasus::Core::LogChannel logChannel = ConvertStringToLogChannel(*channelName);
+                    if (logChannel != INVALID_LOG_CHANNEL)
+                    {
+                        QColor loadedColor = settings.value(*channelName).value<QColor>();
+                        mLogChannelColorTable[logChannel] = loadedColor;
+                    }
                 }
             }
         }
@@ -108,6 +122,8 @@ void Settings::Load()
 
 void Settings::Save()
 {
+    ED_LOG("Saving the editor settings");
+
     // Create the QSettings object that will save the application settings
     QSettings settings;
 
@@ -217,6 +233,8 @@ void Settings::SetWidgetStyleName(const QString & name)
 {
     if (mWidgetStyleNameList.contains(name))
     {
+        ED_LOGF("Applying the style '%s' to the user interface", name.toLatin1().constData());
+
         // Apply the new widget style
         mWidgetStyleName = name;
         QApplication::setStyle(QStyleFactory::create(mWidgetStyleName));
@@ -234,10 +252,14 @@ void Settings::SetUseWidgetStylePalette(bool stylePalette)
 
     if (mUseWidgetStylePalette)
     {
+        ED_LOG("Setting the user interface to use the palette associated with the theme");
+
         QApplication::setPalette(QApplication::style()->standardPalette());
     }
     else
     {
+        ED_LOG("Setting the user interface to not use the palette associated with the theme");
+
         QApplication::setPalette(mOriginalPalette);
     }
 }
@@ -246,6 +268,8 @@ void Settings::SetUseWidgetStylePalette(bool stylePalette)
 
 void Settings::SetConsoleBackgroundColor(const QColor & color)
 {
+    ED_LOG("Setting the console background color");
+
     mConsoleBackgroundColor = color;
 
     ED_ASSERT(Editor::GetInstance().GetConsoleDockWidget());
@@ -256,6 +280,8 @@ void Settings::SetConsoleBackgroundColor(const QColor & color)
 
 void Settings::SetConsoleTextDefaultColor(const QColor & color)
 {
+    ED_LOG("Setting the console text default color");
+
     mConsoleTextDefaultColor = color;
 
     ED_ASSERT(Editor::GetInstance().GetConsoleDockWidget());
@@ -266,8 +292,31 @@ void Settings::SetConsoleTextDefaultColor(const QColor & color)
 
 void Settings::SetConsoleTextColorForLogChannel(Pegasus::Core::LogChannel logChannel, const QColor & color)
 {
+    ED_LOGF("Setting the console text color for the log channel [%s]",
+            ConvertLogChannelToString(logChannel).toLatin1().constData());
+
     mLogChannelColorTable[logChannel] = color;    
     Editor::GetInstance().GetConsoleDockWidget()->SetTextColorForLogChannel(logChannel, color);
+}
+
+//----------------------------------------------------------------------------------------
+
+void Settings::SetDefaultConsoleTextColorForAllLogChannels()
+{
+    ED_LOG("Setting the default console text color for all log channels");
+
+    // Remove all customized colors
+    mLogChannelColorTable.clear();
+
+    // Set the default colors of a few important channels
+    mLogChannelColorTable['CRIT'] = QColor(255, 0, 0);
+    mLogChannelColorTable['ERR_'] = QColor(255, 0, 0);
+    mLogChannelColorTable['WARN'] = QColor(255, 128, 0);
+    mLogChannelColorTable['ASRT'] = QColor(255, 128, 255);
+    mLogChannelColorTable['EDIT'] = QColor(128, 255, 255);
+    mLogChannelColorTable['TEMP'] = QColor(0, 255, 0);
+
+    //! \todo Set the color of the existing log lines (set and remove custom colors)
 }
 
 //----------------------------------------------------------------------------------------

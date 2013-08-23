@@ -133,7 +133,6 @@ void ConsoleDockWidget::AddMessage(Pegasus::Core::LogChannel logChannel, const Q
     static const QString htmlString3("</p>");
 
     const Settings * const settings = Editor::GetSettings();
-    ED_ASSERTSTR(settings != nullptr, "Settings have not been initialized yet.");
 
     // Get the current time and convert it into a string
     QString timeString(QTime::currentTime().toString("hh:mm:ss:zzz "));
@@ -174,11 +173,6 @@ void ConsoleDockWidget::AddMessage(Pegasus::Core::LogChannel logChannel, const Q
     QTextBlock block = doc->lastBlock();
     QTextBlockUserData * userData = new TextBlockUserData(logChannel);
     block.setUserData(userData);
-
-    //! \todo Do we need manual scrolling when an arbitrary location of the scrollview
-    //!       is shown and new messages are added
-	//textWidget->moveCursor(QTextCursor::End);
-	//textWidget->ensureCursorVisible();
 }
 
 //----------------------------------------------------------------------------------------

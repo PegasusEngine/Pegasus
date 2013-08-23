@@ -10,6 +10,8 @@
 //! \brief	Main window of Pegasus Editor
 
 #include "Editor.h"
+#include "Log.h"
+#include "Assertion.h"
 #include "ApplicationManager.h"
 #include "Settings/SettingsDialog.h"
 #include "Viewport/ViewportDockWidget.h"
@@ -39,6 +41,9 @@ Editor::Editor(QWidget *parent)
     mApplicationManager(nullptr)
 {
     sInstance = this;
+
+    // Create the log manager
+    mLogManager = new LogManager(this);
 
     // Create the assertion manager
     mAssertionManager = new AssertionManager(this);
@@ -74,6 +79,9 @@ Editor::Editor(QWidget *parent)
         sSettings = new Settings(this);
     }
 
+    // Write the log console header
+    ED_LOG("Pegasus Editor settings loaded");
+
     // Test messages
     /****/
     //! \todo Remove
@@ -106,6 +114,10 @@ Editor::~Editor()
     if (mAssertionManager != nullptr)
     {
         delete mAssertionManager;
+    }
+    if (mLogManager != nullptr)
+    {
+        delete mLogManager;
     }
     sInstance = nullptr;
 }
@@ -317,6 +329,7 @@ void Editor::closeEvent(QCloseEvent * event)
 {
     //! \todo Handle the thread management in the viewport
     //! \todo Handle the saving of unsaved files
+    //! \todo Add log messages for the different close events
 
 	// If an application thread is not created or has been destroyed
 	//if (!engineThread)
@@ -344,6 +357,15 @@ void Editor::closeEvent(QCloseEvent * event)
 	//	N3D_DELETE(engineThread);
 	//	N3D_DELETE(viewportsSceneGraph);
 
+    // Close the current application if one is open
+    if (mApplicationManager != nullptr)
+    {
+        if (mApplicationManager->IsApplicationOpened())
+        {
+            mApplicationManager->CloseApplication();
+        }
+    }
+ 
 	//	// Save the application settings and destroy the settings object
     if (sSettings != nullptr)
     {

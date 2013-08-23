@@ -69,7 +69,8 @@ SettingsAppearancePage::SettingsAppearancePage(QWidget *parent)
     textColorLabel->setBuddy(mConsoleTextDefaultColorPickerBox);
     QPushButton * textColorDefaultButton = new QPushButton(tr("Set default"));
     mColorTableView = new ConsoleChannelColorTableView;
-
+    QPushButton * colorTableResetAllButton = new QPushButton(tr("Set all to default"));
+    
     QGridLayout * consoleLayout = new QGridLayout();
     consoleLayout->addWidget(backgroundColorLabel, 0, 0);
     consoleLayout->addWidget(mConsoleBackgroundColorPickerBox, 0, 1);
@@ -78,6 +79,7 @@ SettingsAppearancePage::SettingsAppearancePage(QWidget *parent)
     consoleLayout->addWidget(mConsoleTextDefaultColorPickerBox, 1, 1);
     consoleLayout->addWidget(textColorDefaultButton, 1, 2);
     consoleLayout->addWidget(mColorTableView, 2, 0);
+    consoleLayout->addWidget(colorTableResetAllButton, 2, 2);
     consoleGroup->setLayout(consoleLayout);
 
     connect(mConsoleBackgroundColorPickerBox, SIGNAL(ColorChanged(const QColor &)),
@@ -89,6 +91,9 @@ SettingsAppearancePage::SettingsAppearancePage(QWidget *parent)
             this, SLOT(SetConsoleTextDefaultColor(const QColor &)));
     connect(textColorDefaultButton, SIGNAL(clicked()),
             this, SLOT(SetDefaultConsoleTextDefaultColor()));
+
+    connect(colorTableResetAllButton, SIGNAL(clicked()),
+            this, SLOT(ResetAllConsoleTextColors()));
 
     // Main layout
     QVBoxLayout * mainLayout = new QVBoxLayout();
@@ -142,4 +147,14 @@ void SettingsAppearancePage::SetDefaultConsoleTextDefaultColor()
 {
 	mConsoleTextDefaultColorPickerBox->SetColor(
                     Editor::GetSettings()->GetConsoleDefaultTextDefaultColor());
+}
+
+//----------------------------------------------------------------------------------------
+
+void SettingsAppearancePage::ResetAllConsoleTextColors()
+{
+    Editor::GetSettings()->SetDefaultConsoleTextColorForAllLogChannels(); 
+
+    // Refresh the content of the log channel color table view
+    mColorTableView->Refresh();
 }

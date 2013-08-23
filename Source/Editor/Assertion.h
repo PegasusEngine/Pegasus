@@ -48,14 +48,14 @@
 
 //----------------------------------------------------------------------------------------
 
-//! Assertion manager (singleton) that redirects the macros to the assertion handler
+//! Assertion manager (singleton) that shows a dialog box when an assertion test fails
 class AssertionManager : public QObject
 {
     Q_OBJECT
 
 public:
 
-    AssertionManager(Editor *parent);
+    AssertionManager(Editor * parent);
     ~AssertionManager();
 
 

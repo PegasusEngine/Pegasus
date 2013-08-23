@@ -109,7 +109,13 @@ public slots:
     //!       it starts using the custom color. If the color already existed,
     //!       it is replaced.
     //! \param logChannel Pegasus log channel to set the color of
+    //! \param color Text color for the log channel
     void SetConsoleTextColorForLogChannel(Pegasus::Core::LogChannel logChannel, const QColor & color);
+
+    //! Set the default colors associated with all log channels
+    //! \note Sets a few channels to special colors (like errors),
+    //!       all other channels use the default text color
+    void SetDefaultConsoleTextColorForAllLogChannels();
 
     //------------------------------------------------------------------------------------
 

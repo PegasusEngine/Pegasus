@@ -48,6 +48,9 @@ private slots:
     //! Set the default text color of the console to its default
     void SetDefaultConsoleTextDefaultColor();
 
+    //! Reset all the text colors for the channels to their defaults
+    void ResetAllConsoleTextColors();
+
     //------------------------------------------------------------------------------------
 
 private:
