@@ -14,6 +14,8 @@
 
 #include <QThread>
 
+#include "Pegasus/Core/Log.h"
+
 class ViewportWidget;
 
 
@@ -68,7 +70,16 @@ signals:
     void LoadingSucceeded();
 
     //------------------------------------------------------------------------------------
-    
+
+private:
+
+    //! Handler for log messages coming from the application itself
+    //! \param logChannel Log channel that receives the message
+    //! \param msgStr String of the message to log
+    static void LogHandler(Pegasus::Core::LogChannel logChannel, const char * msgStr);
+
+    //------------------------------------------------------------------------------------
+
 private:
 
     //! File name of the application to load

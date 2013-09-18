@@ -119,3 +119,10 @@ void Application::run()
 #error "Implement the unloading of the application library"
 #endif  // PEGASUS_PLATFORM_WINDOWS
 }
+
+//----------------------------------------------------------------------------------------
+
+void Application::LogHandler(Pegasus::Core::LogChannel logChannel, const char * msgStr)
+{
+    /****/
+}
