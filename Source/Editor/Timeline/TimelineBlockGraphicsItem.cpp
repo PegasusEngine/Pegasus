@@ -174,54 +174,47 @@ void TimelineBlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGraph
 {
     Q_UNUSED(widget);
 
+    const qreal lod = option->levelOfDetailFromTransform(painter->worldTransform());
+
+    // Set the outline of the block to a solid line with width 1 for any zoom (cosmetic pen) and square corners.
+    // If the LOD is too low, remove the outline, otherwise the rendering is messy and aliased
+    if (lod > 0.5f)
+    {
+        QColor outlineColor = mBaseColor.darker(200);
+        QPen outlinePen(QBrush(outlineColor), 0, Qt::SolidLine, Qt::SquareCap, Qt::BevelJoin);
+        painter->setPen(outlinePen);
+    }
+    else
+    {
+        painter->setPen(Qt::NoPen);
+    }
+
+    // Set the fill color, darker when selected, lighter when hovered by the mouse
     QColor fillColor = (option->state & QStyle::State_Selected) ? mBaseColor.darker(150) : mBaseColor;
     if (option->state & QStyle::State_MouseOver)
     {
         fillColor = fillColor.lighter(125);
     }
-
-    QColor outlineColor = mBaseColor.darker(200);
-
-    const qreal lod = option->levelOfDetailFromTransform(painter->worldTransform());
-
-
-    painter->setPen(outlineColor);
     painter->setBrush(fillColor);
 
+    // Draw the block
     painter->drawRect(0.0f,
                       0.0f,
                       mLength,
                       TIMELINE_BLOCK_HEIGHT);
 
+    // Draw the label of the block
     QFont font = painter->font();
-    //font.setBold(true);
-    const int fontPixelSize = 10;
-    font.setPixelSize(fontPixelSize);
+    font.setPixelSize(TIMELINE_BLOCK_FONT_HEIGHT);
+    font.setBold(false);
     painter->setFont(font);
     painter->setPen(Qt::black);
-    const float textMargin = (TIMELINE_BLOCK_HEIGHT - (float)fontPixelSize) * 0.5f;
+    const float textMargin = (TIMELINE_BLOCK_HEIGHT - (float)TIMELINE_BLOCK_FONT_HEIGHT) * 0.5f;
     QRectF textRect(textMargin,
                     textMargin,
                     mLength - 2.0f * textMargin,
                     TIMELINE_BLOCK_HEIGHT - 2.0f * textMargin);
     painter->drawText(textRect, QString("%1").arg(lod));
-    
-    /*    painter->drawEllipse(-7, -7, 20, 20);
-
-    QRadialGradient gradient(-3, -3, 10);
-    if (option->state & QStyle::State_Sunken) {
-        gradient.setCenter(3, 3);
-        gradient.setFocalPoint(3, 3);
-        gradient.setColorAt(1, QColor(Qt::yellow).light(120));
-        gradient.setColorAt(0, QColor(Qt::darkYellow).light(120));
-    } else {
-        gradient.setColorAt(0, Qt::yellow);
-        gradient.setColorAt(1, Qt::darkYellow);
-    }
-    painter->setBrush(gradient);
-
-    painter->setPen(QPen(Qt::black, 0));
-    painter->drawEllipse(-10, -10, 20, 20);*/
 }
 
 //----------------------------------------------------------------------------------------
@@ -239,8 +232,8 @@ QVariant TimelineBlockGraphicsItem::itemChange(GraphicsItemChange change, const 
                 QRectF rect = scene()->sceneRect();
                 if (!rect.contains(newPos))
                 {
-                    newPos.setX(qMin(rect.right(), qMax(newPos.x(), rect.left())));
-                    newPos.setY(qMin(rect.bottom(), qMax(newPos.y(), rect.top())));
+                    newPos.setX(qMin(rect.right (), qMax(newPos.x(), rect.left())));
+                    newPos.setY(qMin(rect.bottom(), qMax(newPos.y(), rect.top ())));
                     positionAffected = true;
                 }
                 mPosition = newPos.x();
