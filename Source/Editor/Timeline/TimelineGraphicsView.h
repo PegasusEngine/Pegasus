@@ -14,6 +14,8 @@
 
 #include <QGraphicsView>
 
+class TimelineCursorGraphicsItem;
+
 
 //! Minimum horizontal scale factor
 #define TIMELINE_GRAPHICS_VIEW_HORIZONTAL_SCALE_MIN     0.1f
@@ -47,6 +49,10 @@ public:
     //! Create a new lane and add it at the bottom of the list
     void AddLane();
 
+    //! Set the antialiasing mode of the timeline
+    //! \param enable True to enable antialiasing
+    void EnableAntialiasing(bool enable);
+
 
 public slots:
 //    void shuffle();
@@ -73,6 +79,10 @@ protected:
 
 
     // QGraphicsView overloads
+
+    void mousePressEvent(QMouseEvent * event);
+    void mouseMoveEvent(QMouseEvent * event);
+
 #ifndef QT_NO_WHEELEVENT
     void wheelEvent(QWheelEvent *event);
 #endif
@@ -88,6 +98,9 @@ private:
     //! Update the bounds of the scene
     void UpdateSceneRect();
 
+    //! Called when a right-click or right-dragging occurs to update the cursor position
+    //! \param event Qt mouse event
+    void UpdateCursorFromMouse(QMouseEvent * event);
 
     //! Number of lanes used by the view
     unsigned int mNumLanes;
@@ -99,6 +112,9 @@ private:
     //! Zoom level of the view
     //! 1.0f for the original view, < 1.0f for a compressed view, > 1.0f for an expanded view
     float mZoom; 
+
+    //! Cursor graphics items
+    TimelineCursorGraphicsItem * mCursorItem;
 
     //int timerId;
     //Node *centerNode;

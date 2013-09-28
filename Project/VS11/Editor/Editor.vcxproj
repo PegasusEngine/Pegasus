@@ -113,6 +113,7 @@
     <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineBackgroundBeatGraphicsItem.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineBackgroundBeatLineGraphicsItem.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineBlockGraphicsItem.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineCursorGraphicsItem.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineGraphicsView.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Viewport\ViewportDockWidget.cpp" />
@@ -373,6 +374,20 @@
     </CustomBuild>
     <ClInclude Include="..\..\..\Source\Editor\Timeline\TimelineBackgroundBeatGraphicsItem.h" />
     <ClInclude Include="..\..\..\Source\Editor\Timeline\TimelineBackgroundBeatLineGraphicsItem.h" />
+    <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineCursorGraphicsItem.h">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">
+      </Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">
+      </Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
+      </Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
+      </Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
+      </Command>
+    </CustomBuild>
     <ClInclude Include="..\..\..\Source\Editor\Timeline\TimelineSizes.h" />
     <CustomBuild Include="..\..\..\Source\Editor\Widgets\ColorPickerBox.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>

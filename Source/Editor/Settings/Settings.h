@@ -54,24 +54,28 @@ public:
 
     //! Get the list of possible widget style names
     //! Get the list of possible widget style names
-    const QStringList & GetWidgetStyleNameList() const;
+    inline const QStringList & GetWidgetStyleNameList() const { return mWidgetStyleNameList; }
 
     //! Get the name of the widget style
     //! \return Name of the widget style ("Windows", "CDE", "Plastique", etc. for example)
-    const QString & GetWidgetStyleName() const;
+    inline const QString & GetWidgetStyleName() const { return mWidgetStyleName; }
 
     //! Test whether the widget style uses the style palette
     //! \return True if the widget style uses the style palette,
     //!         false if it uses the original palette
-    bool IsUsingWidgetStylePalette() const;
+    inline bool IsUsingWidgetStylePalette() const { return mUseWidgetStylePalette; }
+
+    //! Test whether the timeline graphics view uses antialiasing
+    //! \return True if the timeline graphics view uses antialiasing
+    inline bool IsUsingTimelineAntialiasing() const { return mUseTimelineAntialiasing; }
 
     //! Get the background color of the console
     //! \return Background color of the console
-    const QColor & GetConsoleBackgroundColor() const;
+    inline const QColor & GetConsoleBackgroundColor() const { return mConsoleBackgroundColor; }
 
     //! Get the default text color of the console
     //! \return Default text color of the console
-    const QColor & GetConsoleTextDefaultColor() const;
+    inline const QColor & GetConsoleTextDefaultColor() const { return mConsoleTextDefaultColor; }
 
     //! Get the color associated with a log channel, default text color if not found
     //! \param logChannel Pegasus log channel to get the color of
@@ -95,6 +99,10 @@ public slots:
     //! \param stylePalette true to use the style palette,
     //!                     false to use the original palette
     void SetUseWidgetStylePalette(bool stylePalette);
+
+    //! Set the use of antialiasing for the timeline graphics view
+    //! \param timelineAntialiasing True if the timeline graphics view uses antialiasing
+    void SetUseTimelineAntialiasing(bool timelineAntialiasing);
 
     //! Set the background color of the console
     //! \param color Background color of the console
@@ -161,6 +169,9 @@ private:
     //! True if the widget style uses the style palette,
     //! false if it uses the original palette
     bool mUseWidgetStylePalette;
+
+    //! True if the timeline graphics view uses antialiasing
+    bool mUseTimelineAntialiasing;
 
     //! Background color of the console
     QColor mConsoleBackgroundColor;

@@ -213,6 +213,9 @@
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_Log.cpp">
       <Filter>Generated\Dev-Debug</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineCursorGraphicsItem.cpp">
+      <Filter>Source\Timeline</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -271,6 +274,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Log.h">
       <Filter>Source</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineCursorGraphicsItem.h">
+      <Filter>Source\Timeline</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

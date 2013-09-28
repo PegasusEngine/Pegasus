@@ -78,6 +78,11 @@ void Settings::Load()
         SetUseWidgetStylePalette(settings.value("UseStylePalette",
                                                 mUseWidgetStylePalette).toBool());
 
+        // Timeline graphics view antialiasing
+        mUseTimelineAntialiasing = false;
+        SetUseTimelineAntialiasing(settings.value("UseTimelineAntialiasing",
+                                                  mUseTimelineAntialiasing).toBool());
+
         // Console colors
         mConsoleBackgroundColor = GetConsoleDefaultBackgroundColor();
         mConsoleTextDefaultColor = GetConsoleDefaultTextDefaultColor();
@@ -143,6 +148,9 @@ void Settings::Save()
         settings.setValue("WidgetStyle", mWidgetStyleName);
         settings.setValue("UseStylePalette", mUseWidgetStylePalette);
 
+        // Timeline graphics view antialiasing
+        settings.setValue("UseTimelineAntialiasing", mUseTimelineAntialiasing);
+
         // Console colors
         settings.setValue("ConsoleBackgroundColor", mConsoleBackgroundColor);
         settings.setValue("ConsoleTextDefaultColor", mConsoleTextDefaultColor);
@@ -173,34 +181,6 @@ void Settings::Save()
 
 //----------------------------------------------------------------------------------------
 
-const QStringList & Settings::GetWidgetStyleNameList() const
-{
-    return mWidgetStyleNameList;
-}
-
-//----------------------------------------------------------------------------------------
-
-const QString & Settings::GetWidgetStyleName() const
-{
-    return mWidgetStyleName;
-}
-
-//----------------------------------------------------------------------------------------
-
-const QColor & Settings::GetConsoleBackgroundColor() const
-{
-    return mConsoleBackgroundColor;
-}
-
-//----------------------------------------------------------------------------------------
-
-const QColor & Settings::GetConsoleTextDefaultColor() const
-{
-    return mConsoleTextDefaultColor;
-}
-
-//----------------------------------------------------------------------------------------
-
 const QColor Settings::GetConsoleTextColorForLogChannel(Pegasus::Core::LogChannel logChannel) const
 {
     if (mLogChannelColorTable.contains(logChannel))
@@ -218,13 +198,6 @@ const QColor Settings::GetConsoleTextColorForLogChannel(Pegasus::Core::LogChanne
 bool Settings::IsConsoleTextColorDefinedForLogChannel(Pegasus::Core::LogChannel logChannel) const
 {
     return mLogChannelColorTable.contains(logChannel);
-}
-
-//----------------------------------------------------------------------------------------
-	
-bool Settings::IsUsingWidgetStylePalette() const
-{
-    return mUseWidgetStylePalette;
 }
 
 //----------------------------------------------------------------------------------------
@@ -262,6 +235,25 @@ void Settings::SetUseWidgetStylePalette(bool stylePalette)
 
         QApplication::setPalette(mOriginalPalette);
     }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Settings::SetUseTimelineAntialiasing(bool timelineAntialiasing)
+{
+    if (timelineAntialiasing)
+    {
+        ED_LOG("Enabling antialiasing for the timeline");
+    }
+    else
+    {
+        ED_LOG("Disabling antialiasing for the timeline");
+    }
+
+    mUseTimelineAntialiasing = timelineAntialiasing;
+
+    ED_ASSERT(Editor::GetInstance().GetTimelineDockWidget());
+    Editor::GetInstance().GetTimelineDockWidget()->EnableAntialiasing(mUseTimelineAntialiasing);
 }
 
 //----------------------------------------------------------------------------------------

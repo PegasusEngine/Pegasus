@@ -4,35 +4,42 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	TimelineBackgroundBeatGraphicsItem.h
+//! \file	TimelineCursorGraphicsItem.h
 //! \author	Kevin Boulanger
-//! \date	21st July 2013
-//! \brief	Graphics item representing one beat of the background in the timeline
+//! \date	27th September 2013
+//! \brief	Graphics item representing the currently selected time as a vertical bar on top of the timeline
 
-#ifndef EDITOR_TIMELINEBACKGROUNDBEATGRAPHICSITEM_H
-#define EDITOR_TIMELINEBACKGROUNDBEATGRAPHICSITEM_H
+#ifndef EDITOR_TIMELINECURSORGRAPHICSITEM_H
+#define EDITOR_TIMELINECURSORGRAPHICSITEM_H
 
 #include <QGraphicsItem>
 
 
-//! Graphics item representing one beat of the timeline's background
-class TimelineBackgroundBeatGraphicsItem : public QGraphicsItem
+//! Graphics item representing the currently selected time as a vertical bar on top of the timeline
+class TimelineCursorGraphicsItem : public QGraphicsItem
 {
 public:
 
-    //! Constructor
-    //! \param beat Index of the beat (0-based)
+    //! Constructor, places the cursor at the beginning of the timeline
     //! \param numLanes Number of lanes (>= 1)
     //! \param horizontalScale Horizontal scale of the timeline, 1.0f for a 1:1 ratio,
     //!                        < 1.0f for a compressed timeline, > 1.0f for an expanded timeline
-    TimelineBackgroundBeatGraphicsItem(unsigned int beat,
-                                       unsigned int numLanes,
-                                       float horizontalScale);
+    TimelineCursorGraphicsItem(unsigned int numLanes, float horizontalScale);
 
     //! Destructor
-    ~TimelineBackgroundBeatGraphicsItem();
+    ~TimelineCursorGraphicsItem();
 
-    //! Set the number of lanes of the background item
+    //! Set the position of the cursor
+    //! \param beat Position of the cursor, expressed in beats,
+    //!             with the possibility of fractional values (>= 0.0f)
+    void SetBeat(float beat);
+
+    //! Get the position of the cursor
+    //! \return Position of the cursor, expressed in beats,
+    //!         with the possibility of fractional values (>= 0.0f)
+    inline float GetBeat() const { return mBeat; }
+
+    //! Set the number of lanes of the timeline
     //! \param numLanes New number of lanes (>= 1)
     void SetNumLanes(unsigned int numLanes);
 
@@ -49,9 +56,8 @@ public:
     // Enable the use of qgraphicsitem_cast
     //! \todo Use a common repository of indexes to avoid conflicts
     //! \todo Document those two lines
-    enum { Type = UserType + 1 };
+    enum { Type = UserType + 20 };
     int type() const { return Type; }
-
 
 private:
 
@@ -59,9 +65,10 @@ private:
     void SetPositionFromBeat();
 
 
-    //! Index of the beat (0-based, integer cast as float)
-    const float mBeat;
-    
+    //! Position of the cursor, expressed in beats,
+    //! with the possibility of fractional values (>= 0.0f)
+    float mBeat;
+
     //! Number of lanes (>= 1)
     unsigned int mNumLanes;
 
@@ -70,5 +77,4 @@ private:
     float mHorizontalScale;
 };
 
-
-#endif  // EDITOR_TIMELINEBACKGROUNDBEATGRAPHICSITEM_H
+#endif // EDITOR_TIMELINECURSORGRAPHICSITEM_H

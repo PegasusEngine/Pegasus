@@ -56,6 +56,18 @@ SettingsAppearancePage::SettingsAppearancePage(QWidget *parent)
     connect(useStylePaletteCheck, SIGNAL(stateChanged(int)),
             this, SLOT(SetUseWidgetStylePalette(int)));
 
+    // Rendering quality group box
+    QGroupBox * renderingQualityGroup = new QGroupBox(tr("Rendering quality"));
+    QCheckBox * timelineAntialiasingCheck = new QCheckBox(tr("Timeline &antialiasing"));
+    timelineAntialiasingCheck->setChecked(settings->IsUsingTimelineAntialiasing());
+
+    QVBoxLayout * renderingQualityLayout = new QVBoxLayout();
+    renderingQualityLayout->addWidget(timelineAntialiasingCheck);
+    renderingQualityGroup->setLayout(renderingQualityLayout);
+
+    connect(timelineAntialiasingCheck, SIGNAL(stateChanged(int)),
+            this, SLOT(SetUseTimelineAntialiasing(int)));
+
     // Console group box
     QGroupBox * consoleGroup = new QGroupBox(tr("Console"));
     QLabel * backgroundColorLabel = new QLabel(tr("&Background color:"));
@@ -98,6 +110,7 @@ SettingsAppearancePage::SettingsAppearancePage(QWidget *parent)
     // Main layout
     QVBoxLayout * mainLayout = new QVBoxLayout();
     mainLayout->addWidget(interfaceStyleGroup);
+    mainLayout->addWidget(renderingQualityGroup);
     mainLayout->addWidget(consoleGroup);
     mainLayout->addStretch(1);
     setLayout(mainLayout);
@@ -114,6 +127,13 @@ SettingsAppearancePage::~SettingsAppearancePage()
 void SettingsAppearancePage::SetUseWidgetStylePalette(int state)
 {
 	Editor::GetSettings()->SetUseWidgetStylePalette(state == Qt::Checked);
+}
+
+//----------------------------------------------------------------------------------------
+
+void SettingsAppearancePage::SetUseTimelineAntialiasing(int state)
+{
+	Editor::GetSettings()->SetUseTimelineAntialiasing(state == Qt::Checked);
 }
 
 //----------------------------------------------------------------------------------------

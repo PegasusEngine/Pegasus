@@ -54,7 +54,7 @@ TimelineBackgroundBeatGraphicsItem::TimelineBackgroundBeatGraphicsItem(unsigned 
 
     // Set the depth of the block to be the most in the background
     //! \todo Create TimelineDepths.h and set the values so they do not conflict
-    setZValue(0);
+    setZValue(0.0f);
 }
 
 //----------------------------------------------------------------------------------------
@@ -65,7 +65,7 @@ TimelineBackgroundBeatGraphicsItem::~TimelineBackgroundBeatGraphicsItem()
 
 //----------------------------------------------------------------------------------------
 
-void TimelineBackgroundBeatGraphicsItem::SetNumLanes(unsigned int numLanes, bool updateItem)
+void TimelineBackgroundBeatGraphicsItem::SetNumLanes(unsigned int numLanes)
 {
     if (numLanes == 0)
     {
@@ -77,12 +77,10 @@ void TimelineBackgroundBeatGraphicsItem::SetNumLanes(unsigned int numLanes, bool
         mNumLanes = numLanes;
     }
 
-    // Update the graphics item, so it is redrawn with the right height
-    if (updateItem)
-    {
-        // Set the new height of the graphics item
-        update(boundingRect());
-    }
+    // Invalidate the cache of the graphics item.
+    // If not done manually here, setCacheMode(NoCache) would be necessary
+    // in the constructor, resulting in poor performances
+    update(boundingRect());
 }
 
 //----------------------------------------------------------------------------------------

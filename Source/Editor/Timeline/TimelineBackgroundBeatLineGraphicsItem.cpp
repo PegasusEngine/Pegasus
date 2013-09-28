@@ -52,7 +52,7 @@ TimelineBackgroundBeatLineGraphicsItem::TimelineBackgroundBeatLineGraphicsItem(u
 
     // Set the depth of the line to be the second most in the background
     //! \todo Create TimelineDepths.h and set the values so they do not conflict
-    setZValue(1);
+    setZValue(1.0f);
 }
 
 //----------------------------------------------------------------------------------------
@@ -63,7 +63,7 @@ TimelineBackgroundBeatLineGraphicsItem::~TimelineBackgroundBeatLineGraphicsItem(
 
 //----------------------------------------------------------------------------------------
 
-void TimelineBackgroundBeatLineGraphicsItem::SetNumLanes(unsigned int numLanes, bool updateItem)
+void TimelineBackgroundBeatLineGraphicsItem::SetNumLanes(unsigned int numLanes)
 {
     if (numLanes == 0)
     {
@@ -75,12 +75,10 @@ void TimelineBackgroundBeatLineGraphicsItem::SetNumLanes(unsigned int numLanes, 
         mNumLanes = numLanes;
     }
 
-    // Update the graphics item, so it is redrawn with the right height
-    if (updateItem)
-    {
-        // Set the new height of the graphics item
-        update(boundingRect());
-    }
+    // Invalidate the cache of the graphics item.
+    // If not done manually here, setCacheMode(NoCache) would be necessary
+    // in the constructor, resulting in poor performances
+    update(boundingRect());
 }
 
 //----------------------------------------------------------------------------------------
@@ -104,10 +102,23 @@ void TimelineBackgroundBeatLineGraphicsItem::SetHorizontalScale(float scale)
 
 QRectF TimelineBackgroundBeatLineGraphicsItem::boundingRect() const
 {
-    return QRectF(-TIMELINE_MEASURE_LINE_WIDTH * 0.5f,
-                  0.0f,
-                  TIMELINE_MEASURE_LINE_WIDTH * 0.5f,
-                  mNumLanes * TIMELINE_LANE_HEIGHT);
+    if ((mBeat % 4) == 0)
+    {
+        // When on a measure, use the text bounding box, ignoring the line width, as we consider
+        // the text to be always larger than the line
+        return QRectF(-TIMELINE_BEAT_NUMBER_BLOCK_WIDTH * 0.5f,
+                      -TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT,
+                      TIMELINE_BEAT_NUMBER_BLOCK_WIDTH,
+                      TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT + mNumLanes * TIMELINE_LANE_HEIGHT);
+    }
+    else
+    {
+        // When not on a measure, ignore the beat text and use the line width
+        return QRectF(-TIMELINE_MEASURE_LINE_WIDTH * 0.5f,
+                      0.0f,
+                      TIMELINE_MEASURE_LINE_WIDTH,
+                      mNumLanes * TIMELINE_LANE_HEIGHT);
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -138,6 +149,22 @@ void TimelineBackgroundBeatLineGraphicsItem::paint(QPainter *painter, const QSty
                       0.0f,
                       0.0f,
                       static_cast<float>(mNumLanes) * TIMELINE_LANE_HEIGHT);
+
+    // Draw the beat number for each measure
+    if ((mBeat % 4) == 0)
+    {
+        QFont font = painter->font();
+        font.setPixelSize(TIMELINE_BEAT_NUMBER_FONT_HEIGHT);
+        font.setBold(false);
+        painter->setFont(font);
+        painter->setPen(penBaseColor.darker(200));
+        painter->drawText(-TIMELINE_BEAT_NUMBER_BLOCK_WIDTH * 0.5f,
+                          -TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT,
+                          TIMELINE_BEAT_NUMBER_BLOCK_WIDTH,
+                          TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT,
+                          Qt::AlignHCenter | Qt::AlignVCenter,
+                          QString("%1").arg(mBeat));
+    }
 }
 
 //----------------------------------------------------------------------------------------

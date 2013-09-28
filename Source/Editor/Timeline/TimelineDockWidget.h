@@ -26,6 +26,11 @@ public:
     TimelineDockWidget(QWidget *parent = 0);
     ~TimelineDockWidget();
 
+    //! Set the antialiasing mode of the timeline
+    //! \param enable True to enable antialiasing
+    void EnableAntialiasing(bool enable);
+
+
 private:
 
     Ui::TimelineDockWidget ui;

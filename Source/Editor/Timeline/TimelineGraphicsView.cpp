@@ -13,7 +13,8 @@
 #include "Timeline/TimelineBackgroundBeatGraphicsItem.h"
 #include "Timeline/TimelineBackgroundBeatLineGraphicsItem.h"
 #include "Timeline/TimelineBlockGraphicsItem.h"
-
+#include "Timeline/TimelineCursorGraphicsItem.h"
+#include "Timeline/TimelineSizes.h"
 #include <QWheelEvent>
 
 
@@ -24,6 +25,10 @@ TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
     mZoom(1.0f)/*,
     timerId(0)*/
 {
+    // Set the scrollbars to be always visible
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+
     // Create the scene containing the items to render
     QGraphicsScene *scene = new QGraphicsScene(this);
     
@@ -44,12 +49,16 @@ TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
     //! \todo Change based on the performances
     setViewportUpdateMode(BoundingRectViewportUpdate);
 
-    // Enable anti-aliasing
-    setRenderHint(QPainter::Antialiasing);
+    // Disable anti-aliasing (default value before reading from the settings)
+    // but enable text antialiasing all the time
+    EnableAntialiasing(false);
     setRenderHint(QPainter::TextAntialiasing);
 
     // Use the mouse position to focus the zoom
     setTransformationAnchor(AnchorUnderMouse);
+
+    // Enable the selection of blocks using a drag box
+    setDragMode(QGraphicsView::RubberBandDrag);
 
     //! \todo **** Temporary block to create items to render
     for (unsigned int b = 0; b < 64; ++b)
@@ -69,6 +78,10 @@ TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
     scene->addItem(item1);
     scene->addItem(item2);
     scene->addItem(item3);
+
+    // Create the cursor
+    mCursorItem = new TimelineCursorGraphicsItem(8, mHorizontalScale);
+    scene->addItem(mCursorItem);
 }
 
 //----------------------------------------------------------------------------------------
@@ -82,7 +95,56 @@ TimelineGraphicsView::~TimelineGraphicsView()
 void TimelineGraphicsView::AddLane()
 {
     mNumLanes++;
+
+    // Invalidate the cache of the view, so that the background does not keep
+    // ghosts of the previous blocks
+    resetCachedContent();
+
+    // Update the elements that depend on the number of lanes
+    // (this invalidates the cache of the block graphics items)
+    foreach (QGraphicsItem *item, scene()->items())
+    {
+        TimelineBackgroundBeatGraphicsItem * backgroundBeatItem = qgraphicsitem_cast<TimelineBackgroundBeatGraphicsItem *>(item);
+        if (backgroundBeatItem != nullptr)
+        {
+            backgroundBeatItem->SetNumLanes(mNumLanes);
+            continue;
+        }
+
+        TimelineBackgroundBeatLineGraphicsItem * backgroundBeatLineItem = qgraphicsitem_cast<TimelineBackgroundBeatLineGraphicsItem *>(item);
+        if (backgroundBeatLineItem != nullptr)
+        {
+            backgroundBeatLineItem->SetNumLanes(mNumLanes);
+            continue;
+        }
+
+        TimelineCursorGraphicsItem * cursorItem = qgraphicsitem_cast<TimelineCursorGraphicsItem *>(item);
+        if (cursorItem != nullptr)
+        {
+            cursorItem->SetNumLanes(mNumLanes);
+            continue;
+        }
+    }
+
+    // Update the bounding box of the scene
     UpdateSceneRect();
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineGraphicsView::EnableAntialiasing(bool enable)
+{
+    setRenderHint(QPainter::Antialiasing, enable);
+
+    // Invalidate the cache of the view, so that the background does not keep
+    // ghosts of the previous blocks
+    resetCachedContent();
+
+    // Update every items to take antialiasing into account
+    foreach (QGraphicsItem *item, scene()->items())
+    {
+        item->update();
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -92,6 +154,10 @@ void TimelineGraphicsView::SetHorizontalScale(float scale)
     ED_ASSERTSTR((scale >= TIMELINE_GRAPHICS_VIEW_HORIZONTAL_SCALE_MIN) && (scale <= TIMELINE_GRAPHICS_VIEW_HORIZONTAL_SCALE_MAX),
                  "Invalid horizontal scale for the timeline graphics view.");
     mHorizontalScale = scale;
+
+    // Invalidate the cache of the view, so that the background does not keep
+    // ghosts of the previous blocks
+    resetCachedContent();
 
     // Update the horizontal scale of all the blocks
     // (this invalidates the cache of the block graphics items)
@@ -117,11 +183,17 @@ void TimelineGraphicsView::SetHorizontalScale(float scale)
             blockItem->SetHorizontalScale(mHorizontalScale);
             continue;
         }
+
+        TimelineCursorGraphicsItem * cursorItem = qgraphicsitem_cast<TimelineCursorGraphicsItem *>(item);
+        if (cursorItem != nullptr)
+        {
+            cursorItem->SetHorizontalScale(mHorizontalScale);
+            continue;
+        }
     }
 
-    // Invalidate the cache of the view, so that the background does not keep
-    // ghosts of the previous blocks
-    resetCachedContent();
+    // Update the bounding box of the scene
+    UpdateSceneRect();
 }
 
 //----------------------------------------------------------------------------------------
@@ -187,6 +259,38 @@ void TimelineGraphicsView::MultiplyZoom(float zoomFactor)
 
 //----------------------------------------------------------------------------------------
 
+void TimelineGraphicsView::mousePressEvent(QMouseEvent * event)
+{
+    if (event->buttons() & Qt::RightButton)
+    {
+        // When right-clicking, move the cursor
+        UpdateCursorFromMouse(event);
+    }
+    else
+    {
+        // Regular mouse handling
+        QGraphicsView::mousePressEvent(event);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineGraphicsView::mouseMoveEvent(QMouseEvent * event)
+{
+    if (event->buttons() & Qt::RightButton)
+    {
+        // When right-dragging, move the cursor
+        UpdateCursorFromMouse(event);
+    }
+    else
+    {
+        // Regular mouse handling
+        QGraphicsView::mouseMoveEvent(event);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 #ifndef QT_NO_WHEELEVENT
 void TimelineGraphicsView::wheelEvent(QWheelEvent *event)
 {
@@ -208,22 +312,22 @@ void TimelineGraphicsView::drawBackground(QPainter *painter, const QRectF &rect)
 {
     Q_UNUSED(rect);
     
-    // Shadow
-    QRectF sceneRect = this->sceneRect();
-    QRectF rightShadow(sceneRect.right(), sceneRect.top() + 5, 5, sceneRect.height());
-    QRectF bottomShadow(sceneRect.left() + 5, sceneRect.bottom(), sceneRect.width(), 5);
-    if (rightShadow.intersects(rect) || rightShadow.contains(rect))
-        painter->fillRect(rightShadow, Qt::darkGray);
-    if (bottomShadow.intersects(rect) || bottomShadow.contains(rect))
-        painter->fillRect(bottomShadow, Qt::darkGray);
+    //// Shadow
+    //QRectF sceneRect = this->sceneRect();
+    //QRectF rightShadow(sceneRect.right(), sceneRect.top() + 5, 5, sceneRect.height());
+    //QRectF bottomShadow(sceneRect.left() + 5, sceneRect.bottom(), sceneRect.width(), 5);
+    //if (rightShadow.intersects(rect) || rightShadow.contains(rect))
+    //    painter->fillRect(rightShadow, Qt::darkGray);
+    //if (bottomShadow.intersects(rect) || bottomShadow.contains(rect))
+    //    painter->fillRect(bottomShadow, Qt::darkGray);
 
-    // Fill
-    QLinearGradient gradient(sceneRect.topLeft(), sceneRect.bottomRight());
-    gradient.setColorAt(0, Qt::white);
-    gradient.setColorAt(1, Qt::lightGray);
-    painter->fillRect(rect.intersected(sceneRect), gradient);
-    painter->setBrush(Qt::NoBrush);
-    painter->drawRect(sceneRect);
+    //// Fill
+    //QLinearGradient gradient(sceneRect.topLeft(), sceneRect.bottomRight());
+    //gradient.setColorAt(0, Qt::white);
+    //gradient.setColorAt(1, Qt::lightGray);
+    //painter->fillRect(rect.intersected(sceneRect), gradient);
+    //painter->setBrush(Qt::NoBrush);
+    //painter->drawRect(sceneRect);
 
     // Text
     /*QRectF textRect(sceneRect.left() + 4, sceneRect.top() + 4,
@@ -245,10 +349,37 @@ void TimelineGraphicsView::drawBackground(QPainter *painter, const QRectF &rect)
 
 void TimelineGraphicsView::UpdateSceneRect()
 {
-    scene()->setSceneRect(/***/0.0f,
-                          /***/0.0f,
-                          /***/64.0f * /*****/128.0f + 64.0f,
-                          /***/static_cast<float>(mNumLanes) * /****/32.0f + 16.0f);
+    scene()->setSceneRect(0.0f,
+                          -TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT,
+                          /***/64.0f * TIMELINE_BEAT_WIDTH * mHorizontalScale,
+                          TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT + static_cast<float>(mNumLanes) * TIMELINE_LANE_HEIGHT);
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineGraphicsView::UpdateCursorFromMouse(QMouseEvent * event)
+{
+    ED_ASSERT(event != nullptr);
+
+    // Compute the beat selected by the mouse
+    float beat = mapToScene(event->pos()).x() / (mHorizontalScale * TIMELINE_BEAT_WIDTH);
+    if (beat < 0.0f)
+    {
+        beat = 0.0f;
+    }
+    //! \todo Handle out-of-bounds at the end of the timeline
+
+    // Reposition the cursor
+    if (mCursorItem != nullptr)
+    {
+        mCursorItem->SetBeat(beat);
+    }
+    else
+    {
+        ED_FAIL();
+    }
+
+    //! \todo Handle the Pegasus update
 }
 
 //----------------------------------------------------------------------------------------

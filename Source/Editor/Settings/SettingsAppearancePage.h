@@ -34,6 +34,10 @@ private slots:
     //! \param state Qt::Checked or Qt::Unchecked
     void SetUseWidgetStylePalette(int state);
 
+    //! Called when the "use timeline antialiasing" checkbox state has changed
+    //! \param state Qt::Checked or Qt::Unchecked
+    void SetUseTimelineAntialiasing(int state);
+
     //! Set the background color of the console
     //! \param color New background color of the console
     void SetConsoleBackgroundColor(const QColor & color);

@@ -35,8 +35,7 @@ public:
 
     //! Set the number of lanes of the background item
     //! \param numLanes New number of lanes (>= 1)
-    //! \param updateItem True if the graphics item needs to be updated (use false only for special cases)
-    void SetNumLanes(unsigned int numLanes, bool updateItem = true);
+    void SetNumLanes(unsigned int numLanes);
 
     //! Set the horizontal scale of the timeline
     //! \param scale 1.0f for a 1:1 ratio, < 1.0f for a compressed timeline, > 1.0f for an expanded timeline

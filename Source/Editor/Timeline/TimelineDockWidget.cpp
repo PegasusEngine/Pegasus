@@ -30,11 +30,21 @@ TimelineDockWidget::TimelineDockWidget(QWidget *parent)
     ui.graphicsView->AddLane();
     ui.graphicsView->AddLane();
     ui.graphicsView->AddLane();
+    ui.graphicsView->AddLane();
+    ui.graphicsView->AddLane();
+    ui.graphicsView->AddLane();
+    ui.graphicsView->AddLane();
 }
 
 //----------------------------------------------------------------------------------------
 
 TimelineDockWidget::~TimelineDockWidget()
 {
+}
 
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::EnableAntialiasing(bool enable)
+{
+    ui.graphicsView->EnableAntialiasing(enable);
 }

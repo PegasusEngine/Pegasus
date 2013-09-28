@@ -28,3 +28,15 @@
 
 //! Width of a background measure line
 #define TIMELINE_MEASURE_LINE_WIDTH             2.0f
+
+//! Height of the beat number font in pixels
+#define TIMELINE_BEAT_NUMBER_FONT_HEIGHT        10
+
+//! Width of the beat number block in pixels
+#define TIMELINE_BEAT_NUMBER_BLOCK_WIDTH        20.0f
+
+//! Height of the beat number block in pixels (>= TIMELINE_BEAT_NUMBER_FONT_HEIGHT)
+#define TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT       14.0f
+
+//! Width of the cursor
+#define TIMELINE_CURSOR_LINE_WIDTH              2.0f
