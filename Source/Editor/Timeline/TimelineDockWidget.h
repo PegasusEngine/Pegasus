@@ -31,6 +31,13 @@ public:
     void EnableAntialiasing(bool enable);
 
 
+private slots:
+
+    //! Called when the current beat has been updated
+    //! \param beat Current beat, can have fractional part
+    void UpdateBeat(float beat);
+
+
 private:
 
     Ui::TimelineDockWidget ui;

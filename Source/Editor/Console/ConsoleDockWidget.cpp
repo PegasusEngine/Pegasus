@@ -92,7 +92,7 @@ ConsoleDockWidget::ConsoleDockWidget(QWidget *parent)
     QAction * setColorsAction = new QAction(tr("&Set Colors..."), this);
 	setColorsAction->setStatusTip(tr("Set the colors associated with the channels"));
     connect(setColorsAction, SIGNAL(triggered()),
-            &Editor::GetInstance(), SLOT(OpenPreferencesAppearance()));
+            &Editor::GetInstance(), SLOT(OpenPreferencesConsole()));
 
     mContextMenu = mTextWidget->createStandardContextMenu();
     mContextMenu->insertSeparator(*mContextMenu->actions().begin());

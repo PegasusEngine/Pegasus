@@ -498,3 +498,13 @@ void Editor::OpenPreferencesAppearance()
     settingsDialog->SetCurrentPage(SettingsDialog::PAGE_APPEARANCE);
 	settingsDialog->show();
 }
+
+//----------------------------------------------------------------------------------------
+
+void Editor::OpenPreferencesConsole()
+{
+	SettingsDialog * settingsDialog = nullptr;
+    settingsDialog = new SettingsDialog(this);
+    settingsDialog->SetCurrentPage(SettingsDialog::PAGE_CONSOLE);
+	settingsDialog->show();
+}

@@ -33,7 +33,7 @@ public:
     enum Page
     {
         PAGE_APPEARANCE = 0,
-        PAGE_TEST2,
+        PAGE_CONSOLE,
 
         NUM_PAGES
     };

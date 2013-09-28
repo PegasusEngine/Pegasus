@@ -46,15 +46,22 @@ public:
     ~TimelineGraphicsView();
 
 
-    //! Create a new lane and add it at the bottom of the list
-    void AddLane();
-
     //! Set the antialiasing mode of the timeline
     //! \param enable True to enable antialiasing
     void EnableAntialiasing(bool enable);
 
 
+signals:
+
+    //! Sent when the current has been updated by user interaction in the view
+    //! \param beat Current beat, can have fractional part
+    void BeatUpdated(float beat);
+
 public slots:
+
+    //! Create a new lane and add it at the bottom of the list
+    void AddLane();
+
 //    void shuffle();
 //    void zoomIn();
 //    void zoomOut();

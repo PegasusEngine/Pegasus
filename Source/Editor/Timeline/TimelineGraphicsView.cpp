@@ -63,12 +63,12 @@ TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
     //! \todo **** Temporary block to create items to render
     for (unsigned int b = 0; b < 64; ++b)
     {
-        TimelineBackgroundBeatGraphicsItem * beatItem = new TimelineBackgroundBeatGraphicsItem(b, 8, mHorizontalScale);
+        TimelineBackgroundBeatGraphicsItem * beatItem = new TimelineBackgroundBeatGraphicsItem(b, 4, mHorizontalScale);
         scene->addItem(beatItem);
 
         if (b > 0)
         {
-            TimelineBackgroundBeatLineGraphicsItem * beatLineItem = new TimelineBackgroundBeatLineGraphicsItem(b, 8, mHorizontalScale);
+            TimelineBackgroundBeatLineGraphicsItem * beatLineItem = new TimelineBackgroundBeatLineGraphicsItem(b, 4, mHorizontalScale);
             scene->addItem(beatLineItem);
         }
     }
@@ -80,7 +80,7 @@ TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
     scene->addItem(item3);
 
     // Create the cursor
-    mCursorItem = new TimelineCursorGraphicsItem(8, mHorizontalScale);
+    mCursorItem = new TimelineCursorGraphicsItem(4, mHorizontalScale);
     scene->addItem(mCursorItem);
 }
 
@@ -88,6 +88,23 @@ TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
 
 TimelineGraphicsView::~TimelineGraphicsView()
 {
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineGraphicsView::EnableAntialiasing(bool enable)
+{
+    setRenderHint(QPainter::Antialiasing, enable);
+
+    // Invalidate the cache of the view, so that the background does not keep
+    // ghosts of the previous blocks
+    resetCachedContent();
+
+    // Update every items to take antialiasing into account
+    foreach (QGraphicsItem *item, scene()->items())
+    {
+        item->update();
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -128,23 +145,6 @@ void TimelineGraphicsView::AddLane()
 
     // Update the bounding box of the scene
     UpdateSceneRect();
-}
-
-//----------------------------------------------------------------------------------------
-
-void TimelineGraphicsView::EnableAntialiasing(bool enable)
-{
-    setRenderHint(QPainter::Antialiasing, enable);
-
-    // Invalidate the cache of the view, so that the background does not keep
-    // ghosts of the previous blocks
-    resetCachedContent();
-
-    // Update every items to take antialiasing into account
-    foreach (QGraphicsItem *item, scene()->items())
-    {
-        item->update();
-    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -378,6 +378,9 @@ void TimelineGraphicsView::UpdateCursorFromMouse(QMouseEvent * event)
     {
         ED_FAIL();
     }
+
+    // Update the other parts of the user interface
+    emit BeatUpdated(beat);
 
     //! \todo Handle the Pegasus update
 }

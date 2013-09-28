@@ -5,6 +5,11 @@
         <file>Toolbar/File/SaveScene24.png</file>
         <file>Toolbar/View/FullScreenViewport24.png</file>
         <file>SettingsDialog/Appearance.png</file>
-        <file>SettingsDialog/Option2.png</file>
+        <file>TimelineToolbar/Add16.png</file>
+        <file>TimelineToolbar/Delete16.png</file>
+        <file>TimelineToolbar/Play16.png</file>
+        <file>TimelineToolbar/Remove16.png</file>
+        <file>TimelineToolbar/Pause16.png</file>
+        <file>SettingsDialog/Console.png</file>
     </qresource>
 </RCC>

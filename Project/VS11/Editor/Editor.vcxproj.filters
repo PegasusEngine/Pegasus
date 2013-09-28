@@ -216,6 +216,15 @@
     <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineCursorGraphicsItem.cpp">
       <Filter>Source\Timeline</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_SettingsConsolePage.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_SettingsConsolePage.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Settings\SettingsConsolePage.cpp">
+      <Filter>Source\Settings</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -277,6 +286,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineCursorGraphicsItem.h">
       <Filter>Source\Timeline</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Settings\SettingsConsolePage.h">
+      <Filter>Source\Settings</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

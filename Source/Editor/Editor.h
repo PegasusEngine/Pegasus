@@ -157,6 +157,9 @@ public slots:
     //! Open the preferences dialog box at the appearance page
     void OpenPreferencesAppearance();
 
+    //! Open the preferences dialog box at the console page
+    void OpenPreferencesConsole();
+
     //------------------------------------------------------------------------------------
 
 private:

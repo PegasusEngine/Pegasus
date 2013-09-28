@@ -11,13 +11,14 @@
 
 #include "Settings/SettingsDialog.h"
 #include "Settings/SettingsAppearancePage.h"
+#include "Settings/SettingsConsolePage.h"
 
 #include <QListWidgetItem>
 #include <QListWidget>
 #include <QStackedWidget>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-/**********/#include <QPushButton>
+#include <QPushButton>
 
 
 SettingsDialog::SettingsDialog(QWidget *parent)
@@ -38,8 +39,8 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     // Create the stack of pages
     mSettingsPages = new QStackedWidget();
     mSettingsPages->addWidget(new SettingsAppearancePage(this));
-    /****/mSettingsPages->addWidget(new QPushButton("Test2"));
-    mIcons->setCurrentRow(0);
+    mSettingsPages->addWidget(new SettingsConsolePage(this));
+    mIcons->setCurrentRow(PAGE_APPEARANCE);
 
     // Close button
     QPushButton * closeButton = new QPushButton(tr("Close"));
@@ -102,11 +103,11 @@ void SettingsDialog::CreateIcons()
     appearanceButton->setTextAlignment(Qt::AlignHCenter);
     appearanceButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
-    QListWidgetItem * option2Button = new QListWidgetItem(mIcons);
-    option2Button->setIcon(QIcon(":/SettingsDialog/Option2.png"));
-    option2Button->setText(tr("Option 2"));
-    option2Button->setTextAlignment(Qt::AlignHCenter);
-    option2Button->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    QListWidgetItem * consoleButton = new QListWidgetItem(mIcons);
+    consoleButton->setIcon(QIcon(":/SettingsDialog/Console.png"));
+    consoleButton->setText(tr("Console"));
+    consoleButton->setTextAlignment(Qt::AlignHCenter);
+    consoleButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
     connect(mIcons, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
             this, SLOT(ChangePage(QListWidgetItem *, QListWidgetItem*)));
