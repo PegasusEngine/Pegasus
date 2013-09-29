@@ -38,5 +38,11 @@
 //! Height of the beat number block in pixels (>= TIMELINE_BEAT_NUMBER_FONT_HEIGHT)
 #define TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT       14.0f
 
+//! Width in pixels of a lane header (for a zoom of 1.0f)
+#define TIMELINE_LANE_HEADER_WIDTH              96.0f
+
+//! Height of the lane header font in pixels
+#define TIMELINE_LANE_HEADER_FONT_HEIGHT        10
+
 //! Width of the cursor
 #define TIMELINE_CURSOR_LINE_WIDTH              2.0f

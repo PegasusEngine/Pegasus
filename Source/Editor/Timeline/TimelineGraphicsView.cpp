@@ -12,6 +12,7 @@
 #include "Timeline/TimelineGraphicsView.h"
 #include "Timeline/TimelineBackgroundBeatGraphicsItem.h"
 #include "Timeline/TimelineBackgroundBeatLineGraphicsItem.h"
+#include "Timeline/TimelineLaneHeaderGraphicsItem.h"
 #include "Timeline/TimelineBlockGraphicsItem.h"
 #include "Timeline/TimelineCursorGraphicsItem.h"
 #include "Timeline/TimelineSizes.h"
@@ -61,20 +62,22 @@ TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
     setDragMode(QGraphicsView::RubberBandDrag);
 
     //! \todo **** Temporary block to create items to render
+    for (unsigned int l = 0; l < 4; ++l)
+    {
+        TimelineLaneHeaderGraphicsItem * laneHeaderItem = new TimelineLaneHeaderGraphicsItem(l);
+        scene->addItem(laneHeaderItem);
+    }
     for (unsigned int b = 0; b < 64; ++b)
     {
         TimelineBackgroundBeatGraphicsItem * beatItem = new TimelineBackgroundBeatGraphicsItem(b, 4, mHorizontalScale);
         scene->addItem(beatItem);
 
-        if (b > 0)
-        {
-            TimelineBackgroundBeatLineGraphicsItem * beatLineItem = new TimelineBackgroundBeatLineGraphicsItem(b, 4, mHorizontalScale);
-            scene->addItem(beatLineItem);
-        }
+        TimelineBackgroundBeatLineGraphicsItem * beatLineItem = new TimelineBackgroundBeatLineGraphicsItem(b, 4, mHorizontalScale);
+        scene->addItem(beatLineItem);
     }
-    TimelineBlockGraphicsItem * item1 = new TimelineBlockGraphicsItem(0, 0.0f, 1.0f, QColor(192, 128, 128), mHorizontalScale);
-    TimelineBlockGraphicsItem * item2 = new TimelineBlockGraphicsItem(2, 2.0f, 4.0f, QColor(128, 192, 128), mHorizontalScale);
-    TimelineBlockGraphicsItem * item3 = new TimelineBlockGraphicsItem(3, 0.5f, 2.0f, QColor(128, 128, 192), mHorizontalScale);
+    TimelineBlockGraphicsItem * item1 = new TimelineBlockGraphicsItem(0, 0.0f, 1.0f, QColor(255, 128, 128), mHorizontalScale);
+    TimelineBlockGraphicsItem * item2 = new TimelineBlockGraphicsItem(1, 2.0f, 4.0f, QColor(128, 255, 128), mHorizontalScale);
+    TimelineBlockGraphicsItem * item3 = new TimelineBlockGraphicsItem(3, 0.5f, 2.0f, QColor(128, 128, 255), mHorizontalScale);
     scene->addItem(item1);
     scene->addItem(item2);
     scene->addItem(item3);
@@ -116,6 +119,10 @@ void TimelineGraphicsView::AddLane()
     // Invalidate the cache of the view, so that the background does not keep
     // ghosts of the previous blocks
     resetCachedContent();
+
+    // Add a lane header
+    TimelineLaneHeaderGraphicsItem * laneHeaderItem = new TimelineLaneHeaderGraphicsItem(mNumLanes - 1);
+    scene()->addItem(laneHeaderItem);
 
     // Update the elements that depend on the number of lanes
     // (this invalidates the cache of the block graphics items)
@@ -349,7 +356,7 @@ void TimelineGraphicsView::drawBackground(QPainter *painter, const QRectF &rect)
 
 void TimelineGraphicsView::UpdateSceneRect()
 {
-    scene()->setSceneRect(0.0f,
+    scene()->setSceneRect(-TIMELINE_LANE_HEADER_WIDTH,
                           -TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT,
                           /***/64.0f * TIMELINE_BEAT_WIDTH * mHorizontalScale,
                           TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT + static_cast<float>(mNumLanes) * TIMELINE_LANE_HEIGHT);

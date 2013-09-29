@@ -225,6 +225,9 @@
     <ClCompile Include="..\..\..\Source\Editor\Settings\SettingsConsolePage.cpp">
       <Filter>Source\Settings</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineLaneHeaderGraphicsItem.cpp">
+      <Filter>Source\Timeline</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -305,6 +308,9 @@
       <Filter>Source\Timeline</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Source\Editor\Timeline\TimelineBackgroundBeatLineGraphicsItem.h">
+      <Filter>Source\Timeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\Timeline\TimelineLaneHeaderGraphicsItem.h">
       <Filter>Source\Timeline</Filter>
     </ClInclude>
   </ItemGroup>

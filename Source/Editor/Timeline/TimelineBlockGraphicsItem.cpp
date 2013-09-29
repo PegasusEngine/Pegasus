@@ -98,7 +98,7 @@ void TimelineBlockGraphicsItem::SetBasePosition(float basePosition, bool updateI
     }
     else
     {
-        mBasePosition = basePosition;
+        mBasePosition = basePosition * TIMELINE_BEAT_WIDTH;
     }
 
     // Update the scaled position
@@ -228,8 +228,10 @@ QVariant TimelineBlockGraphicsItem::itemChange(GraphicsItemChange change, const 
                 QPointF newPos = value.toPointF();
                 bool positionAffected = false;
 
-                // Clamp the blank to the bounds of the scene
+                // Clamp the block to the bounds of the scene
+                //! \todo Do not use the scene, use the actual lanes rectangle instead
                 QRectF rect = scene()->sceneRect();
+                rect.setLeft(0.0f);
                 if (!rect.contains(newPos))
                 {
                     newPos.setX(qMin(rect.right (), qMax(newPos.x(), rect.left())));

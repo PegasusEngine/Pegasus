@@ -20,10 +20,8 @@ TimelineBackgroundBeatLineGraphicsItem::TimelineBackgroundBeatLineGraphicsItem(u
                                                                                unsigned int numLanes,
                                                                                float horizontalScale)
 :   QGraphicsItem(),
-    mBeat(beat == 0 ? 1 : beat)
+    mBeat(beat)
 {
-    ED_ASSERTSTR(beat > 0, "Invalid beat for the timeline graphics item.");
-
     if (numLanes == 0)
     {
         ED_FAILSTR("Invalid number of lanes (== 0) for the timeline graphics item.");
