@@ -16,6 +16,11 @@
 #include <QPushButton>
 
 
+//! Maximum size of the buffer containing one assertion error message
+static const size_t ASSERTIONERRORARGS_BUFFER_SIZE = 1024; 
+
+//----------------------------------------------------------------------------------------
+
 AssertionManager::AssertionManager(Editor * parent)
 :   QObject(parent),
     mEditor(parent),
@@ -36,9 +41,9 @@ bool AssertionManager::AssertionError(const char * testStr,
                                       int line,
                                       const char * msgStr)
 {
-    ED_ASSERTSTR(testStr != nullptr, "The test string has to be defined for an assertion error");
-    ED_ASSERTSTR(fileStr != nullptr, "The file name string has to be defined for an assertion error");
-    ED_ASSERTSTR(line >= 0, "Invalid line number for an assertion error");
+    ED_ASSERTSTR(testStr != nullptr, "The test string has to be defined for an assertion error.");
+    ED_ASSERTSTR(fileStr != nullptr, "The file name string has to be defined for an assertion error.");
+    ED_ASSERTSTR(line >= 0, "Invalid line number for an assertion error.");
 
     // If Ignore All has been selected, ignore the current assertion error
     if (mIgnoreAll)
@@ -117,4 +122,22 @@ bool AssertionManager::AssertionError(const char * testStr,
     }
 
     return false;
+}
+
+//----------------------------------------------------------------------------------------
+
+bool AssertionManager::AssertionErrorArgs(const char * testStr,
+                                          const char * fileStr,
+                                          int line,
+                                          const char * msgStr, ...)
+{
+    // Format the input string with the variable number of arguments
+    static char buffer[ASSERTIONERRORARGS_BUFFER_SIZE];
+    va_list args;
+    va_start(args, msgStr);
+    vsnprintf_s(buffer, ASSERTIONERRORARGS_BUFFER_SIZE, ASSERTIONERRORARGS_BUFFER_SIZE - 1, msgStr, args);
+    va_end(args);
+
+    // Call the original assertion error function with the formatted assertion message
+    return AssertionError(testStr, fileStr, line, buffer);
 }

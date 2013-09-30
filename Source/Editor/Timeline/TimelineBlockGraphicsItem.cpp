@@ -32,7 +32,7 @@ TimelineBlockGraphicsItem::TimelineBlockGraphicsItem(unsigned int lane,
 {
     if (horizontalScale <= 0.0f)
     {
-        ED_FAILSTR("Invalid horizontal scale (<= 0.0f) for the timeline graphics item.");
+        ED_FAILSTRF("Invalid horizontal scale (%f) for the timeline graphics item. It should be > 0.0f.", horizontalScale);
         mHorizontalScale = 1.0f;
     }
     else
@@ -93,7 +93,7 @@ void TimelineBlockGraphicsItem::SetBasePosition(float basePosition, bool updateI
 {
     if (basePosition < 0.0f)
     {
-        ED_FAILSTR("Invalid base position (< 0.0f) for the timeline graphics item.");
+        ED_FAILSTRF("Invalid base position (%f) for the timeline graphics item. It should be >= 0.0f.", basePosition);
         mBasePosition = 0.0f;
     }
     else
@@ -119,7 +119,7 @@ void TimelineBlockGraphicsItem::SetBaseLength(float baseLength, bool updateItem)
 {
     if (baseLength <= 0.0f)
     {
-        ED_FAILSTR("Invalid base length (<= 0.0f) for the timeline graphics item.");
+        ED_FAILSTRF("Invalid base length (%f) for the timeline graphics item. It should be > 0.0f.", baseLength);
         mBaseLength = 1.0f;
     }
     else

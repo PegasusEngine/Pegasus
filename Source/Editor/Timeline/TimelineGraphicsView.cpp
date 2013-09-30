@@ -158,8 +158,8 @@ void TimelineGraphicsView::AddLane()
 
 void TimelineGraphicsView::SetHorizontalScale(float scale)
 {
-    ED_ASSERTSTR((scale >= TIMELINE_GRAPHICS_VIEW_HORIZONTAL_SCALE_MIN) && (scale <= TIMELINE_GRAPHICS_VIEW_HORIZONTAL_SCALE_MAX),
-                 "Invalid horizontal scale for the timeline graphics view.");
+    ED_ASSERTSTRF((scale >= TIMELINE_GRAPHICS_VIEW_HORIZONTAL_SCALE_MIN) && (scale <= TIMELINE_GRAPHICS_VIEW_HORIZONTAL_SCALE_MAX),
+                  "Invalid horizontal scale (%f) for the timeline graphics view.", scale);
     mHorizontalScale = scale;
 
     // Invalidate the cache of the view, so that the background does not keep
@@ -209,7 +209,7 @@ void TimelineGraphicsView::MultiplyHorizontalScale(float scaleFactor)
 {
     if (scaleFactor <= 0.0f)
     {
-        ED_FAILSTR("Invalid horizontal scale factor (<= 0.0f) for the timeline graphics view.");
+        ED_FAILSTRF("Invalid horizontal scale factor (%f) for the timeline graphics view. It should be > 0.0f.", scaleFactor);
         return;
     }
 
@@ -229,12 +229,14 @@ void TimelineGraphicsView::SetZoom(float zoom)
     if (zoom < TIMELINE_GRAPHICS_VIEW_ZOOM_MIN)
     {
         zoom = TIMELINE_GRAPHICS_VIEW_ZOOM_MIN;
-        ED_FAILSTR("Invalid zoom factor (< TIMELINE_GRAPHICS_VIEW_ZOOM_MIN) for the timeline graphics view.");
+        ED_FAILSTRF("Invalid zoom factor (%f) for the timeline graphics view. It should be >= %f.",
+                    zoom, TIMELINE_GRAPHICS_VIEW_ZOOM_MIN);
     }
     else if (zoom > TIMELINE_GRAPHICS_VIEW_ZOOM_MAX)
     {
         zoom = TIMELINE_GRAPHICS_VIEW_ZOOM_MAX;
-        ED_FAILSTR("Invalid zoom factor (> TIMELINE_GRAPHICS_VIEW_ZOOM_MAX) for the timeline graphics view.");
+        ED_FAILSTRF("Invalid zoom factor (%f) for the timeline graphics view. It should be <= %f.",
+                    zoom, TIMELINE_GRAPHICS_VIEW_ZOOM_MAX);
     }
 
     mZoom = zoom;
@@ -251,7 +253,7 @@ void TimelineGraphicsView::MultiplyZoom(float zoomFactor)
 {
     if (zoomFactor <= 0.0f)
     {
-        ED_FAILSTR("Invalid zoom multiplier (<= 0.0f) for the timeline graphics view.");
+        ED_FAILSTRF("Invalid zoom multiplier (%f) for the timeline graphics view. It should be > 0.0f.", zoomFactor);
         return;
     }
 
@@ -315,42 +317,27 @@ void TimelineGraphicsView::wheelEvent(QWheelEvent *event)
 
 //----------------------------------------------------------------------------------------
 
-void TimelineGraphicsView::drawBackground(QPainter *painter, const QRectF &rect)
-{
-    Q_UNUSED(rect);
-    
-    //// Shadow
-    //QRectF sceneRect = this->sceneRect();
-    //QRectF rightShadow(sceneRect.right(), sceneRect.top() + 5, 5, sceneRect.height());
-    //QRectF bottomShadow(sceneRect.left() + 5, sceneRect.bottom(), sceneRect.width(), 5);
-    //if (rightShadow.intersects(rect) || rightShadow.contains(rect))
-    //    painter->fillRect(rightShadow, Qt::darkGray);
-    //if (bottomShadow.intersects(rect) || bottomShadow.contains(rect))
-    //    painter->fillRect(bottomShadow, Qt::darkGray);
-
-    //// Fill
-    //QLinearGradient gradient(sceneRect.topLeft(), sceneRect.bottomRight());
-    //gradient.setColorAt(0, Qt::white);
-    //gradient.setColorAt(1, Qt::lightGray);
-    //painter->fillRect(rect.intersected(sceneRect), gradient);
-    //painter->setBrush(Qt::NoBrush);
-    //painter->drawRect(sceneRect);
-
-    // Text
-    /*QRectF textRect(sceneRect.left() + 4, sceneRect.top() + 4,
-                    sceneRect.width() - 4, sceneRect.height() - 4);
-    QString message(tr("Click and drag the nodes around, and zoom with the mouse "
-                       "wheel or the '+' and '-' keys"));
-
-    QFont font = painter->font();
-    font.setBold(true);
-    font.setPointSize(14);
-    painter->setFont(font);
-    painter->setPen(Qt::lightGray);
-    painter->drawText(textRect.translated(2, 2), message);
-    painter->setPen(Qt::black);
-    painter->drawText(textRect, message);*/
-}
+//void TimelineGraphicsView::drawBackground(QPainter *painter, const QRectF &rect)
+//{
+//    Q_UNUSED(rect);
+//    
+//    //// Shadow
+//    //QRectF sceneRect = this->sceneRect();
+//    //QRectF rightShadow(sceneRect.right(), sceneRect.top() + 5, 5, sceneRect.height());
+//    //QRectF bottomShadow(sceneRect.left() + 5, sceneRect.bottom(), sceneRect.width(), 5);
+//    //if (rightShadow.intersects(rect) || rightShadow.contains(rect))
+//    //    painter->fillRect(rightShadow, Qt::darkGray);
+//    //if (bottomShadow.intersects(rect) || bottomShadow.contains(rect))
+//    //    painter->fillRect(bottomShadow, Qt::darkGray);
+//
+//    //// Fill
+//    //QLinearGradient gradient(sceneRect.topLeft(), sceneRect.bottomRight());
+//    //gradient.setColorAt(0, Qt::white);
+//    //gradient.setColorAt(1, Qt::lightGray);
+//    //painter->fillRect(rect.intersected(sceneRect), gradient);
+//    //painter->setBrush(Qt::NoBrush);
+//    //painter->drawRect(sceneRect);
+//}
 
 //----------------------------------------------------------------------------------------
 
@@ -358,7 +345,7 @@ void TimelineGraphicsView::UpdateSceneRect()
 {
     scene()->setSceneRect(-TIMELINE_LANE_HEADER_WIDTH,
                           -TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT,
-                          /***/64.0f * TIMELINE_BEAT_WIDTH * mHorizontalScale,
+                          TIMELINE_LANE_HEADER_WIDTH + /***/64.0f * TIMELINE_BEAT_WIDTH * mHorizontalScale,
                           TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT + static_cast<float>(mNumLanes) * TIMELINE_LANE_HEIGHT);
 }
 
@@ -449,40 +436,4 @@ void TimelineGraphicsView::UpdateCursorFromMouse(QMouseEvent * event)
 //        killTimer(timerId);
 //        timerId = 0;
 //    }
-//}
-
-//----------------------------------------------------------------------------------------
-
-//void TimelineGraphicsView::ScaleView(qreal scaleFactor)
-//{
-//    qreal factor = transform().scale(scaleFactor, /*scaleFactor*/1.0f).mapRect(QRectF(0, 0, 1, 1)).width();
-//    if (   (factor < TIMELINE_GRAPHICS_VIEW_ZOOM_MIN)
-//        || (factor > TIMELINE_GRAPHICS_VIEW_ZOOM_MAX))
-//        return;
-//
-//    scale(scaleFactor, /*scaleFactor*/1.0f);
-//}
-
-//----------------------------------------------------------------------------------------
-
-//void TimelineGraphicsView::shuffle()
-//{
-//    //foreach (QGraphicsItem *item, scene()->items()) {
-//    //    if (qgraphicsitem_cast<Node *>(item))
-//    //        item->setPos(-150 + qrand() % 300, -150 + qrand() % 300);
-//    //}
-//}
-
-//----------------------------------------------------------------------------------------
-
-//void TimelineGraphicsView::zoomIn()
-//{
-//    ScaleView(qreal(1.2));
-//}
-//
-////----------------------------------------------------------------------------------------
-//
-//void TimelineGraphicsView::zoomOut()
-//{
-//    ScaleView(1 / qreal(1.2));
 //}

@@ -21,7 +21,7 @@ TimelineCursorGraphicsItem::TimelineCursorGraphicsItem(unsigned int numLanes, fl
 {
     if (numLanes == 0)
     {
-        ED_FAILSTR("Invalid number of lanes (== 0) for the timeline cursor graphics item.");
+        ED_FAILSTR("Invalid number of lanes (0) for the timeline cursor graphics item. It should be > 0.");
         mNumLanes = 1;
     }
     else
@@ -31,7 +31,7 @@ TimelineCursorGraphicsItem::TimelineCursorGraphicsItem(unsigned int numLanes, fl
 
     if (horizontalScale <= 0.0f)
     {
-        ED_FAILSTR("Invalid horizontal scale (<= 0.0f) for the timeline cursor graphics item.");
+        ED_FAILSTRF("Invalid horizontal scale (%f) for the timeline cursor graphics item. It should be > 0.0f.", horizontalScale);
         mHorizontalScale = 1.0f;
     }
     else
@@ -60,10 +60,9 @@ TimelineCursorGraphicsItem::~TimelineCursorGraphicsItem()
 
 void TimelineCursorGraphicsItem::SetBeat(float beat)
 {
-    if (mBeat < 0.0f)
+    if (beat < 0.0f)
     {
-        //! \todo Use a formatted assertion
-        ED_FAILSTR("Invalid position of the timeline cursor graphics item.");
+        ED_FAILSTRF("Invalid position of the timeline cursor graphics item (%f). It should be >= 0.0f.", beat);
         mBeat = 0.0f;
     }
     else
@@ -88,7 +87,7 @@ void TimelineCursorGraphicsItem::SetNumLanes(unsigned int numLanes)
 {
     if (numLanes == 0)
     {
-        ED_FAILSTR("Invalid number of lanes (== 0) for the timeline cursor graphics item.");
+        ED_FAILSTR("Invalid number of lanes (0) for the timeline cursor graphics item. It should be > 0.");
         mNumLanes = 1;
     }
     else

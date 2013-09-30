@@ -74,10 +74,13 @@ SettingsDialog::~SettingsDialog()
 
 void SettingsDialog::SetCurrentPage(Page page)
 {
-    ED_ASSERTSTR(page < NUM_PAGES, "Invalid page for the settings dialog box");
     if (page < NUM_PAGES)
     {
         mIcons->setCurrentRow(static_cast<int>(page));
+    }
+    else
+    {
+        ED_FAILSTRF("Invalid page (%d) for the settings dialog box. It should be < %d.", page, NUM_PAGES);
     }
 }
 

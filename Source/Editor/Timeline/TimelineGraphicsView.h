@@ -57,14 +57,12 @@ signals:
     //! \param beat Current beat, can have fractional part
     void BeatUpdated(float beat);
 
+
 public slots:
 
     //! Create a new lane and add it at the bottom of the list
     void AddLane();
 
-//    void shuffle();
-//    void zoomIn();
-//    void zoomOut();
 
 protected:
 
@@ -94,11 +92,9 @@ protected:
     void wheelEvent(QWheelEvent *event);
 #endif
 
+    //void drawBackground(QPainter *painter, const QRectF &rect);
     //void keyPressEvent(QKeyEvent *event);
     //void timerEvent(QTimerEvent *event);
-    void drawBackground(QPainter *painter, const QRectF &rect);
-
-    //void ScaleView(qreal scaleFactor);
 
 private:
 
@@ -122,9 +118,6 @@ private:
 
     //! Cursor graphics items
     TimelineCursorGraphicsItem * mCursorItem;
-
-    //int timerId;
-    //Node *centerNode;
 };
 
 

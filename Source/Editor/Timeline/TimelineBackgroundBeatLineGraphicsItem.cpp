@@ -24,7 +24,7 @@ TimelineBackgroundBeatLineGraphicsItem::TimelineBackgroundBeatLineGraphicsItem(u
 {
     if (numLanes == 0)
     {
-        ED_FAILSTR("Invalid number of lanes (== 0) for the timeline graphics item.");
+        ED_FAILSTR("Invalid number of lanes (0) for the timeline graphics item. It should be > 0.");
         mNumLanes = 1;
     }
     else
@@ -34,7 +34,7 @@ TimelineBackgroundBeatLineGraphicsItem::TimelineBackgroundBeatLineGraphicsItem(u
 
     if (horizontalScale <= 0.0f)
     {
-        ED_FAILSTR("Invalid horizontal scale (<= 0.0f) for the timeline graphics item.");
+        ED_FAILSTRF("Invalid horizontal scale (%f) for the timeline graphics item. It should be > 0.0f.", horizontalScale);
         mHorizontalScale = 1.0f;
     }
     else

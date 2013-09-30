@@ -179,7 +179,7 @@ void ConsoleDockWidget::AddMessage(Pegasus::Core::LogChannel logChannel, const Q
 
 void ConsoleDockWidget::SetBackgroundColor(const QColor & color)
 {
-	ED_ASSERT(mTextWidget);
+	ED_ASSERT(mTextWidget != nullptr);
 
 	QPalette palette = mTextWidget->palette();
 	palette.setColor(QPalette::Base, color);
@@ -190,7 +190,7 @@ void ConsoleDockWidget::SetBackgroundColor(const QColor & color)
 
 void ConsoleDockWidget::SetTextDefaultColor(const QColor & color)
 {
-	ED_ASSERT(mTextWidget);
+	ED_ASSERT(mTextWidget != nullptr);
 
 	QPalette palette = mTextWidget->palette();
 	palette.setColor(QPalette::Text, color);
@@ -205,10 +205,10 @@ void ConsoleDockWidget::SetTextDefaultColor(const QColor & color)
 
 void ConsoleDockWidget::SetTextColorForLogChannel(Pegasus::Core::LogChannel logChannel, const QColor & color)
 {
-    ED_ASSERT(mTextWidget);
+    ED_ASSERT(mTextWidget != nullptr);
     if (logChannel == Settings::INVALID_LOG_CHANNEL)
     {
-        ED_FAILSTR("Invalid log channel, it must be defined in Pegasus");
+        ED_FAILSTRF("Invalid log channel (%d). It must be defined in Pegasus.", logChannel);
         return;
     }
 

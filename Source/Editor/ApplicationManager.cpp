@@ -46,7 +46,6 @@ ApplicationManager::~ApplicationManager()
 
 void ApplicationManager::OpenApplication(const QString & fileName)
 {
-    //! \todo Add support for formatted strings
     ED_LOGF("Opening application '%s'", fileName.toLatin1().constData());
 
     ED_ASSERT(mViewportDockWidget != nullptr);
@@ -80,7 +79,7 @@ void ApplicationManager::OpenApplication(const QString & fileName)
 void ApplicationManager::CloseApplication()
 {
     ED_LOG("Closing the current application");
-    ED_ASSERTSTR(mApplication != nullptr, "Trying to close an application that is not opened");
+    ED_ASSERTSTR(mApplication != nullptr, "Trying to close an application that is not opened.");
 
     if (mApplication != nullptr)
     {
