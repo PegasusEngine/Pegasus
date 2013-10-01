@@ -16,6 +16,9 @@
 #include <QMessageBox>
 #include <QPushButton>
 
+#include <stdio.h>
+#include <stdarg.h>
+
 
 //! Maximum size of the buffer containing one assertion error message
 static const size_t ASSERTIONERRORARGS_BUFFER_SIZE = 1024; 

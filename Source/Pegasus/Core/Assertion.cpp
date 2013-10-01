@@ -13,10 +13,18 @@
 
 #if PEGASUS_ENABLE_ASSERT
 
+#include <stdio.h>
+#include <stdarg.h>
+
 
 namespace Pegasus {
 namespace Core {
 
+
+//! Maximum size of the buffer containing one assertion error message
+static const size_t ASSERTIONERRORARGS_BUFFER_SIZE = 1024; 
+
+//----------------------------------------------------------------------------------------
 
 AssertionManager::AssertionManager()
 :   mHandler(nullptr)
@@ -48,15 +56,29 @@ void AssertionManager::UnregisterHandler()
 void AssertionManager::AssertionError(const char * testStr,
                                       const char * fileStr,
                                       int line,
-                                      const char * msgStr)
+                                      const char * msgStr, ...)
 {
-    if (mHandler)
+    if (mHandler != nullptr)
     {
         // Handler defined. Call it.
         PG_ASSERTSTR(testStr != nullptr, "The test string has to be defined for an assertion error");
         PG_ASSERTSTR(fileStr != nullptr, "The file name string has to be defined for an assertion error");
         PG_ASSERTSTR(line >= 0, "Invalid line number for an assertion error");
-        mHandler(testStr, fileStr, line, msgStr);
+
+        // If a message string is present, format it with the extra parameters if there are any
+        char * formattedString = nullptr;
+        if (msgStr != nullptr)
+        {
+            static char buffer[ASSERTIONERRORARGS_BUFFER_SIZE];
+            va_list args;
+            va_start(args, msgStr);
+            vsnprintf_s(buffer, ASSERTIONERRORARGS_BUFFER_SIZE, ASSERTIONERRORARGS_BUFFER_SIZE - 1, msgStr, args);
+            va_end(args);
+
+            formattedString = buffer;
+        }
+
+        mHandler(testStr, fileStr, line, formattedString);
     }
     else
     {

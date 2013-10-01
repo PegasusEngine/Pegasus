@@ -19,14 +19,14 @@
 
 //! Macro to send a message to a log channel
 //! \param channel LogChannel to send to, refer the list below (\a sLogChannels)
-//! \param str String of the message
-#define PG_LOG(channel, str)    { Pegasus::Core::LogManager::GetInstance().Log(channel, str); }
-
-//! \todo Add support for formatted strings
+//! \param str String of the message to log, with the same formatting syntax as printf()
+//! \warning The number of parameters following str must match the list of formatting
+//!          strings inside msgStr.
+#define PG_LOG(channel, str, ...)   { Pegasus::Core::LogManager::GetInstance().Log(channel, str, __VA_ARGS__); }
 
 #else
 
-#define PG_LOG(channel, str)
+#define PG_LOG(channel, str, ...)
 
 #endif  // PEGASUS_ENABLE_LOG
 
@@ -95,11 +95,13 @@ public:
     void UnregisterHandler();
 
 
-    //! Send a message to the log output, for a specific channel.
+    //! Send a formatted message to the log output, for a specific channel.
     //! The handler registered with \a RegisterHandle is called with the provided parameters
     //! \param logChannel Log channel that receives the message
-    //! \param msgStr String of the message to log
-    void Log(LogChannel logChannel, const char * msgStr);
+    //! \param msgStr String of the message to log, with the same formatting syntax as printf()
+    //! \warning The number of parameters following msgStr must match the list of formatting
+    //!          strings inside msgStr.
+    void Log(LogChannel logChannel, const char * msgStr, ...);
 
 private:
 

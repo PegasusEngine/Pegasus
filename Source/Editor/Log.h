@@ -40,8 +40,7 @@ public:
 
     //! Send a formatted message to the console dock widget, for a specific log channel.
     //! \param logChannel Log channel that receives the message
-    //! \param msgStr String of the message to log, with the same formatting
-    //!               syntax as printf()
+    //! \param msgStr String of the message to log, with the same formatting syntax as printf()
     //! \warning The number of parameters following msgStr must match the list of formatting
     //!          strings inside msgStr.
     //! \warning Do not use QString directly as a parameter, call .toLatin1().constData() first.

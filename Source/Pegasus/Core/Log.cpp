@@ -13,10 +13,18 @@
 
 #if PEGASUS_ENABLE_LOG
 
+#include <stdio.h>
+#include <stdarg.h>
+
 
 namespace Pegasus {
 namespace Core {
 
+
+//! Maximum size of the buffer containing one log message
+static const size_t LOGARGS_BUFFER_SIZE = 1024; 
+
+//----------------------------------------------------------------------------------------
 
 LogManager::LogManager()
 :   mHandler(nullptr)
@@ -45,12 +53,26 @@ void LogManager::UnregisterHandler()
 
 //----------------------------------------------------------------------------------------
 
-void LogManager::Log(LogChannel logChannel, const char * msgStr)
+void LogManager::Log(LogChannel logChannel, const char * msgStr, ...)
 {
-    if (mHandler)
+    if (mHandler != nullptr)
     {
         // Handler defined. Call it.
-        mHandler(logChannel, msgStr);
+
+        // Format the input string with the extra parameters if there are any
+        char * formattedString = nullptr;
+        if (msgStr != nullptr)
+        {
+            static char buffer[LOGARGS_BUFFER_SIZE];
+            va_list args;
+            va_start(args, msgStr);
+            vsnprintf_s(buffer, LOGARGS_BUFFER_SIZE, LOGARGS_BUFFER_SIZE - 1, msgStr, args);
+            va_end(args);
+
+            formattedString = buffer;
+        }
+
+        mHandler(logChannel, formattedString);
     }
     else
     {
