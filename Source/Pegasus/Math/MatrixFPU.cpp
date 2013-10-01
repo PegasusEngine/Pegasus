@@ -15,6 +15,8 @@ namespace Pegasus {
 namespace Math {
 
 
+PEGASUS_AVOID_EMPTY_FILE_WARNING
+
 #if PEGASUS_ARCH_IA32 && !PEGASUS_MATH_FORCE_GENERIC
 
 //#pragma check_stack (off)

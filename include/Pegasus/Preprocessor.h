@@ -191,6 +191,19 @@
 
 //----------------------------------------------------------------------------------------
 
+// Macro to suppress the following warning in Visual Studio:
+// warning LNK4221: no public symbols found; archive member will be inaccessible.
+// Place the macro at the top of each .cpp file triggering the warning.
+// It is better to place it inside a namespace, but it is not mandatory.
+// If an #if block is the reason the file can become empty, place the macro before the #if block.
+#if PEGASUS_COMPILER_MSVC
+#define PEGASUS_AVOID_EMPTY_FILE_WARNING        namespace { char NoEmptyFileDummy##__LINE__; }
+#else
+#define PEGASUS_AVOID_EMPTY_FILE_WARNING
+#endif
+
+//----------------------------------------------------------------------------------------
+
 // Flags telling if features are enabled based on the compilation profile.
 // Use those rather than the ones above to help future maintenance.
 
