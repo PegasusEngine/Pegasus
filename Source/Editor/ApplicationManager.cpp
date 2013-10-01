@@ -46,7 +46,7 @@ ApplicationManager::~ApplicationManager()
 
 void ApplicationManager::OpenApplication(const QString & fileName)
 {
-    ED_LOGF("Opening application '%s'", fileName.toLatin1().constData());
+    ED_LOG("Opening application '%s'", fileName.toLatin1().constData());
 
     ED_ASSERT(mViewportDockWidget != nullptr);
 

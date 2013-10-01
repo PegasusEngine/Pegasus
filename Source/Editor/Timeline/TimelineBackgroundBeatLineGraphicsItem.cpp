@@ -34,7 +34,7 @@ TimelineBackgroundBeatLineGraphicsItem::TimelineBackgroundBeatLineGraphicsItem(u
 
     if (horizontalScale <= 0.0f)
     {
-        ED_FAILSTRF("Invalid horizontal scale (%f) for the timeline graphics item. It should be > 0.0f.", horizontalScale);
+        ED_FAILSTR("Invalid horizontal scale (%f) for the timeline graphics item. It should be > 0.0f.", horizontalScale);
         mHorizontalScale = 1.0f;
     }
     else

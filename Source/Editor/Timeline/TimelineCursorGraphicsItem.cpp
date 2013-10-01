@@ -31,7 +31,7 @@ TimelineCursorGraphicsItem::TimelineCursorGraphicsItem(unsigned int numLanes, fl
 
     if (horizontalScale <= 0.0f)
     {
-        ED_FAILSTRF("Invalid horizontal scale (%f) for the timeline cursor graphics item. It should be > 0.0f.", horizontalScale);
+        ED_FAILSTR("Invalid horizontal scale (%f) for the timeline cursor graphics item. It should be > 0.0f.", horizontalScale);
         mHorizontalScale = 1.0f;
     }
     else
@@ -62,7 +62,7 @@ void TimelineCursorGraphicsItem::SetBeat(float beat)
 {
     if (beat < 0.0f)
     {
-        ED_FAILSTRF("Invalid position of the timeline cursor graphics item (%f). It should be >= 0.0f.", beat);
+        ED_FAILSTR("Invalid position of the timeline cursor graphics item (%f). It should be >= 0.0f.", beat);
         mBeat = 0.0f;
     }
     else

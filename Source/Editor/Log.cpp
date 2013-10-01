@@ -34,23 +34,22 @@ LogManager::~LogManager()
 
 //----------------------------------------------------------------------------------------
 
-void LogManager::Log(Pegasus::Core::LogChannel logChannel, const char * msgStr)
+void LogManager::Log(Pegasus::Core::LogChannel logChannel, const char * msgStr, ...)
 {
-    Editor::GetInstance().GetConsoleDockWidget()->AddMessage(logChannel, msgStr);
-}
+    if (msgStr != nullptr)
+    {
+        // Format the input string with the variable number of arguments
+        static char buffer[LOGARGS_BUFFER_SIZE];
+        va_list args;
+        va_start(args, msgStr);
+        vsnprintf_s(buffer, LOGARGS_BUFFER_SIZE, LOGARGS_BUFFER_SIZE - 1, msgStr, args);
+        va_end(args);
 
-//----------------------------------------------------------------------------------------
-
-void LogManager::LogArgs(Pegasus::Core::LogChannel logChannel, const char * msgStr, ...)
-{
-    // Format the input string with the variable number of arguments
-    static char buffer[LOGARGS_BUFFER_SIZE];
-    va_list args;
-    va_start(args, msgStr);
-    vsnprintf_s(buffer, LOGARGS_BUFFER_SIZE, LOGARGS_BUFFER_SIZE - 1, msgStr, args);
-
-    // Send the formatted log message
-    Log(logChannel, buffer);
-
-    va_end (args);
+        // Send the formatted log message
+        Editor::GetInstance().GetConsoleDockWidget()->AddMessage(logChannel, buffer);
+    }
+    else
+    {
+        ED_FAILSTR("Invalid log message. The input message is a null string.");
+    }
 }

@@ -19,16 +19,12 @@
 #include <QObject>
 
 
-//! Macro to send a message to the editor log channel
-//! \param str String of the message
-#define ED_LOG(str)             { Editor::GetInstance().GetLogManager().Log('EDIT', str); }
-
 //! Macro to send a formatted message to the editor log channel
 //! \param str String of the message to log, with the same formatting syntax as printf()
 //! \warning The number of parameters following str must match the list of formatting
 //!          strings inside msgStr.
 //! \warning Do not use QString directly as a parameter, call .toLatin1().constData() first.
-#define ED_LOGF(str, ...)       { Editor::GetInstance().GetLogManager().LogArgs('EDIT', str, __VA_ARGS__); }
+#define ED_LOG(str, ...)        { Editor::GetInstance().GetLogManager().Log('EDIT', str, __VA_ARGS__); }
 
 //----------------------------------------------------------------------------------------
 
@@ -42,11 +38,6 @@ public:
     LogManager(Editor * parent);
     ~LogManager();
 
-    //! Send a message to the console dock widget, for a specific log channel.
-    //! \param logChannel Log channel that receives the message
-    //! \param msgStr String of the message to log
-    void Log(Pegasus::Core::LogChannel logChannel, const char * msgStr);
-
     //! Send a formatted message to the console dock widget, for a specific log channel.
     //! \param logChannel Log channel that receives the message
     //! \param msgStr String of the message to log, with the same formatting
@@ -54,7 +45,7 @@ public:
     //! \warning The number of parameters following msgStr must match the list of formatting
     //!          strings inside msgStr.
     //! \warning Do not use QString directly as a parameter, call .toLatin1().constData() first.
-    void LogArgs(Pegasus::Core::LogChannel logChannel, const char * msgStr, ...);
+    void Log(Pegasus::Core::LogChannel logChannel, const char * msgStr, ...);
 
 private:
 

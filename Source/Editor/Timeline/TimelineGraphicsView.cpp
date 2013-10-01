@@ -158,8 +158,8 @@ void TimelineGraphicsView::AddLane()
 
 void TimelineGraphicsView::SetHorizontalScale(float scale)
 {
-    ED_ASSERTSTRF((scale >= TIMELINE_GRAPHICS_VIEW_HORIZONTAL_SCALE_MIN) && (scale <= TIMELINE_GRAPHICS_VIEW_HORIZONTAL_SCALE_MAX),
-                  "Invalid horizontal scale (%f) for the timeline graphics view.", scale);
+    ED_ASSERTSTR((scale >= TIMELINE_GRAPHICS_VIEW_HORIZONTAL_SCALE_MIN) && (scale <= TIMELINE_GRAPHICS_VIEW_HORIZONTAL_SCALE_MAX),
+                 "Invalid horizontal scale (%f) for the timeline graphics view.", scale);
     mHorizontalScale = scale;
 
     // Invalidate the cache of the view, so that the background does not keep
@@ -209,7 +209,7 @@ void TimelineGraphicsView::MultiplyHorizontalScale(float scaleFactor)
 {
     if (scaleFactor <= 0.0f)
     {
-        ED_FAILSTRF("Invalid horizontal scale factor (%f) for the timeline graphics view. It should be > 0.0f.", scaleFactor);
+        ED_FAILSTR("Invalid horizontal scale factor (%f) for the timeline graphics view. It should be > 0.0f.", scaleFactor);
         return;
     }
 
@@ -229,14 +229,14 @@ void TimelineGraphicsView::SetZoom(float zoom)
     if (zoom < TIMELINE_GRAPHICS_VIEW_ZOOM_MIN)
     {
         zoom = TIMELINE_GRAPHICS_VIEW_ZOOM_MIN;
-        ED_FAILSTRF("Invalid zoom factor (%f) for the timeline graphics view. It should be >= %f.",
-                    zoom, TIMELINE_GRAPHICS_VIEW_ZOOM_MIN);
+        ED_FAILSTR("Invalid zoom factor (%f) for the timeline graphics view. It should be >= %f.",
+                   zoom, TIMELINE_GRAPHICS_VIEW_ZOOM_MIN);
     }
     else if (zoom > TIMELINE_GRAPHICS_VIEW_ZOOM_MAX)
     {
         zoom = TIMELINE_GRAPHICS_VIEW_ZOOM_MAX;
-        ED_FAILSTRF("Invalid zoom factor (%f) for the timeline graphics view. It should be <= %f.",
-                    zoom, TIMELINE_GRAPHICS_VIEW_ZOOM_MAX);
+        ED_FAILSTR("Invalid zoom factor (%f) for the timeline graphics view. It should be <= %f.",
+                   zoom, TIMELINE_GRAPHICS_VIEW_ZOOM_MAX);
     }
 
     mZoom = zoom;
@@ -253,7 +253,7 @@ void TimelineGraphicsView::MultiplyZoom(float zoomFactor)
 {
     if (zoomFactor <= 0.0f)
     {
-        ED_FAILSTRF("Invalid zoom multiplier (%f) for the timeline graphics view. It should be > 0.0f.", zoomFactor);
+        ED_FAILSTR("Invalid zoom multiplier (%f) for the timeline graphics view. It should be > 0.0f.", zoomFactor);
         return;
     }
 

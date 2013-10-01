@@ -80,7 +80,7 @@ void SettingsDialog::SetCurrentPage(Page page)
     }
     else
     {
-        ED_FAILSTRF("Invalid page (%d) for the settings dialog box. It should be < %d.", page, NUM_PAGES);
+        ED_FAILSTR("Invalid page (%d) for the settings dialog box. It should be < %d.", page, NUM_PAGES);
     }
 }
 

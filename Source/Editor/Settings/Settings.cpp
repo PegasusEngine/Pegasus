@@ -170,7 +170,7 @@ void Settings::Save()
                 }
                 else
                 {
-                    ED_FAILSTRF("Invalid Pegasus log channel name (%s), it must be 4 characters long.", channelName.toLatin1().constData());
+                    ED_FAILSTR("Invalid Pegasus log channel name (%s), it must be 4 characters long.", channelName.toLatin1().constData());
                 }
             }
         }
@@ -206,7 +206,7 @@ void Settings::SetWidgetStyleName(const QString & name)
 {
     if (mWidgetStyleNameList.contains(name))
     {
-        ED_LOGF("Applying the style '%s' to the user interface", name.toLatin1().constData());
+        ED_LOG("Applying the style '%s' to the user interface", name.toLatin1().constData());
 
         // Apply the new widget style
         mWidgetStyleName = name;
@@ -284,8 +284,8 @@ void Settings::SetConsoleTextDefaultColor(const QColor & color)
 
 void Settings::SetConsoleTextColorForLogChannel(Pegasus::Core::LogChannel logChannel, const QColor & color)
 {
-    ED_LOGF("Setting the console text color for the log channel [%s]",
-            ConvertLogChannelToString(logChannel).toLatin1().constData());
+    ED_LOG("Setting the console text color for the log channel [%s]",
+           ConvertLogChannelToString(logChannel).toLatin1().constData());
 
     mLogChannelColorTable[logChannel] = color;    
     Editor::GetInstance().GetConsoleDockWidget()->SetTextColorForLogChannel(logChannel, color);
@@ -329,7 +329,7 @@ QColor Settings::GetConsoleDefaultTextDefaultColor() const
 
 QString Settings::ConvertLogChannelToString(Pegasus::Core::LogChannel logChannel)
 {
-    ED_ASSERTSTRF(logChannel != 0, "Invalid log channel (%d). It should be != 0.", logChannel);
+    ED_ASSERTSTR(logChannel != 0, "Invalid log channel (%d). It should be != 0.", logChannel);
 
     return QString("%1%2%3%4").arg(char( logChannel >> 24        ))
                               .arg(char((logChannel >> 16) & 0xFF))
@@ -353,8 +353,8 @@ Pegasus::Core::LogChannel Settings::ConvertStringToLogChannel(const QString & ch
             }
             else
             {
-                ED_FAILSTRF("Invalid string (%s) to convert to a Pegasus log channel, it must be made of letters, numbers or underscores.",
-                            channelName.toLatin1().constData());
+                ED_FAILSTR("Invalid string (%s) to convert to a Pegasus log channel, it must be made of letters, numbers or underscores.",
+                           channelName.toLatin1().constData());
                 return INVALID_LOG_CHANNEL;
             }
         }
@@ -373,8 +373,8 @@ Pegasus::Core::LogChannel Settings::ConvertStringToLogChannel(const QString & ch
     }
     else
     {
-        ED_FAILSTRF("Invalid string (%s) to convert to a Pegasus log channel, it must be 4 characters long.",
-                    channelName.toLatin1().constData());
+        ED_FAILSTR("Invalid string (%s) to convert to a Pegasus log channel, it must be 4 characters long.",
+                   channelName.toLatin1().constData());
         return INVALID_LOG_CHANNEL;
     }
 }

@@ -10,6 +10,7 @@
 //! \brief	Assertion test macros and manager
 
 #include "Assertion.h"
+#include "Log.h"
 
 #include <QString>
 #include <QMessageBox>
@@ -39,7 +40,7 @@ AssertionManager::~AssertionManager()
 bool AssertionManager::AssertionError(const char * testStr,
                                       const char * fileStr,
                                       int line,
-                                      const char * msgStr)
+                                      const char * msgStr, ...)
 {
     ED_ASSERTSTR(testStr != nullptr, "The test string has to be defined for an assertion error.");
     ED_ASSERTSTR(fileStr != nullptr, "The file name string has to be defined for an assertion error.");
@@ -51,7 +52,18 @@ bool AssertionManager::AssertionError(const char * testStr,
         return false;
     }
 
-    //! \todo Add the assertion text to the log
+    // If a message string is present, format it with the extra parameters if there are any
+    char * formattedString = nullptr;
+    if (msgStr != nullptr)
+    {
+        static char buffer[ASSERTIONERRORARGS_BUFFER_SIZE];
+        va_list args;
+        va_start(args, msgStr);
+        vsnprintf_s(buffer, ASSERTIONERRORARGS_BUFFER_SIZE, ASSERTIONERRORARGS_BUFFER_SIZE - 1, msgStr, args);
+        va_end(args);
+
+        formattedString = buffer;
+    }
 
     // Convert the strings to QString
     const QString testString(testStr);
@@ -59,7 +71,7 @@ bool AssertionManager::AssertionError(const char * testStr,
     fileString.remove("..\\", Qt::CaseSensitive);
     QString lineString;
     lineString.setNum(line);
-    const QString msgString(msgStr);
+    const QString msgString(formattedString);
 
     // Prepare the content of the dialog box
     QString titleText;
@@ -84,6 +96,16 @@ bool AssertionManager::AssertionError(const char * testStr,
     if (!msgString.isNull() && !msgString.isEmpty())
     {
         assertionMsgText = msgString;
+    }
+
+    //! Send the text of the assertion error to the log
+    if (!msgString.isNull() && !msgString.isEmpty())
+    {
+        Editor::GetInstance().GetLogManager().Log('ASRT', (titleText + ". " + assertionText + ". " + assertionMsgText).toLatin1().constData());
+    }
+    else
+    {
+        Editor::GetInstance().GetLogManager().Log('ASRT', (titleText + ". " + assertionText).toLatin1().constData());
     }
 
     // Show the dialog box
@@ -122,22 +144,4 @@ bool AssertionManager::AssertionError(const char * testStr,
     }
 
     return false;
-}
-
-//----------------------------------------------------------------------------------------
-
-bool AssertionManager::AssertionErrorArgs(const char * testStr,
-                                          const char * fileStr,
-                                          int line,
-                                          const char * msgStr, ...)
-{
-    // Format the input string with the variable number of arguments
-    static char buffer[ASSERTIONERRORARGS_BUFFER_SIZE];
-    va_list args;
-    va_start(args, msgStr);
-    vsnprintf_s(buffer, ASSERTIONERRORARGS_BUFFER_SIZE, ASSERTIONERRORARGS_BUFFER_SIZE - 1, msgStr, args);
-    va_end(args);
-
-    // Call the original assertion error function with the formatted assertion message
-    return AssertionError(testStr, fileStr, line, buffer);
 }

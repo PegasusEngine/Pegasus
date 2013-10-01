@@ -208,7 +208,7 @@ void ConsoleDockWidget::SetTextColorForLogChannel(Pegasus::Core::LogChannel logC
     ED_ASSERT(mTextWidget != nullptr);
     if (logChannel == Settings::INVALID_LOG_CHANNEL)
     {
-        ED_FAILSTRF("Invalid log channel (%d). It must be defined in Pegasus.", logChannel);
+        ED_FAILSTR("Invalid log channel (%d). It must be defined in Pegasus.", logChannel);
         return;
     }
 
