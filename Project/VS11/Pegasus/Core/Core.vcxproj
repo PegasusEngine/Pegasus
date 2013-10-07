@@ -135,12 +135,12 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUSAPP_DLL;_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_DEBUG</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <SmallerTypeCheck>true</SmallerTypeCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -164,11 +164,11 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_OPT</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUSAPP_DLL;_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_OPT</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <ExceptionHandling>false</ExceptionHandling>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -197,7 +197,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <SmallerTypeCheck>true</SmallerTypeCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -227,7 +227,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -259,7 +259,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -291,7 +291,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>

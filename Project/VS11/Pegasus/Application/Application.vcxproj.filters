@@ -14,41 +14,41 @@
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
     <Filter Include="Source Files\Platform">
-      <UniqueIdentifier>{922e6b8b-60b7-4cd9-a057-f0627781a916}</UniqueIdentifier>
+      <UniqueIdentifier>{f428ba24-9ff7-43c4-94a1-4f903695cb7b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Shared">
-      <UniqueIdentifier>{b7c9cfa4-900b-4806-8947-af3013be6908}</UniqueIdentifier>
+      <UniqueIdentifier>{dbf2f810-72e3-44dc-9a2d-211f5f7303a0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Window\Window.h">
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Application\Application.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Window\WindowDefs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Source\Pegasus\Window\Platform\Window_Win32.h">
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Application\Platform\Application_Win32.h">
       <Filter>Source Files\Platform</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Window\Shared\WindowConfig.h">
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Application\Shared\IApplicationProxy.h">
       <Filter>Header Files\Shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Window\Shared\IWindowProxy.h">
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Application\Shared\ApplicationConfig.h">
       <Filter>Header Files\Shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Window\WindowProxy.h">
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Application\ApplicationProxy.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Window\Platform\Window_Win32.cpp">
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Application\Platform\Application_Win32.cpp">
       <Filter>Source Files\Platform</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Window\Window.cpp">
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Application\Application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Window\WindowProxy.cpp">
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Application\ApplicationProxy.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Application\Platform\Launcher_Win32.cpp">
+      <Filter>Source Files\Platform</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

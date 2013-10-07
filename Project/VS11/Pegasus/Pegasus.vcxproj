@@ -27,13 +27,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Include\Pegasus\IApplication.h" />
+    <ClInclude Include="..\..\..\Include\Pegasus\AppExport.h" />
     <ClInclude Include="..\..\..\Include\Pegasus\Pegasus.h" />
-    <ClInclude Include="..\..\..\Include\Pegasus\Application.h" />
     <ClInclude Include="..\..\..\Include\Pegasus\Preprocessor.h" />
+    <ClInclude Include="..\..\..\Include\Pegasus\Version.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Source\Pegasus\Application.cpp" />
+    <ClCompile Include="..\..\..\Source\Pegasus\Version.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{98BF1395-48CE-4C98-8921-7890B74889AD}</ProjectGuid>
@@ -142,12 +142,12 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUSAPP_DLL;_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_DEBUG</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <SmallerTypeCheck>true</SmallerTypeCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -161,7 +161,7 @@
     </Bscmake>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Core.lib;Render.lib;Window.lib</AdditionalDependencies>
+      <AdditionalDependencies>Core.lib;Math.lib;Render.lib;Window.lib;Application.lib</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -173,11 +173,11 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_OPT</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUSAPP_DLL;_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_OPT</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <ExceptionHandling>false</ExceptionHandling>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -193,7 +193,7 @@
     </Bscmake>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Core.lib;Render.lib;Window.lib</AdditionalDependencies>
+      <AdditionalDependencies>Core.lib;Math.lib;Render.lib;Window.lib;Application.lib</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -208,7 +208,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <SmallerTypeCheck>true</SmallerTypeCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -222,7 +222,7 @@
     </Bscmake>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Core.lib;Render.lib;Window.lib</AdditionalDependencies>
+      <AdditionalDependencies>Core.lib;Math.lib;Render.lib;Window.lib;Application.lib</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -239,7 +239,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -255,7 +255,7 @@
     </Bscmake>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Core.lib;Render.lib;Window.lib</AdditionalDependencies>
+      <AdditionalDependencies>Core.lib;Math.lib;Render.lib;Window.lib;Application.lib</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -273,7 +273,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -289,7 +289,7 @@
     </Bscmake>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Core.lib;Render.lib;Window.lib</AdditionalDependencies>
+      <AdditionalDependencies>Core.lib;Math.lib;Render.lib;Window.lib;Application.lib</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -307,7 +307,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -323,7 +323,7 @@
     </Bscmake>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Core.lib;Render.lib;Window.lib</AdditionalDependencies>
+      <AdditionalDependencies>Core.lib;Math.lib;Render.lib;Window.lib;Application.lib</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>

@@ -10,6 +10,7 @@
 //! \brief	Log manager, for debug output
 
 #include "Pegasus/Core/Log.h"
+#include "Pegasus/Core/Assertion.h"
 
 #if PEGASUS_ENABLE_LOG
 

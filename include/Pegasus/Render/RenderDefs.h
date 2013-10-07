@@ -4,31 +4,29 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   WindowDefs.h
+//! \file   RenderDefs.h
 //! \author David Worsham
-//! \date   4th Junly 2013
-//! \brief  Common typedefs for the windowing system.
+//! \date   15th July 2013
+//! \brief  Common typedefs for the rendering subsystem.
 
-#ifndef PEGASUS_WINDOW_WINDOWDEFS_H
-#define PEGASUS_WINDOW_WINDOWDEFS_H
+#ifndef PEGASUS_RENDER_RENDERDEFS_H
+#define PEGASUS_RENDER_RENDERDEFS_H
 
 #include <stdint.h>
 
+
 namespace Pegasus {
-namespace Window {
+namespace Render {
 
-//! Module handle opaque type
+//! Device context handle opaque type
 //! Can be converted to a pointer
-//! Module is an OS-agnostic concept for a chunk of executable code
-//! This can be an .exe or .dll (on Windows), or a .so (on Linux)
-typedef uintptr_t ModuleHandle;
+typedef uintptr_t DeviceContextHandle;
 
-//! Window handle opaque type
+//! Render context handle opaque type
 //! Can be converted to a pointer
-typedef uintptr_t WindowHandle;
+typedef uintptr_t RenderContextHandle;
 
-
-}   // namespace Window
+}   // namespace Render
 }   // namespace Pegasus
 
-#endif  // PEGASUS_WINDOW_WINDOWDEFS_H
+#endif  // PEGASUS_RENDER_RENDERDEFS_H

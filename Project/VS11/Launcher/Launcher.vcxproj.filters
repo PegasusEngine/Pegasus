@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Source\Launcher\LauncherWindows.cpp">
+    <ClCompile Include="..\..\..\Source\Launcher\Launcher_Win32.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>

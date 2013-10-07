@@ -1,6 +1,6 @@
 /****************************************************************************************/
 /*                                                                                      */
-/*                                    Pegasus Launcher                                  */
+/*                                  Pegasus Application                                 */
 /*                                                                                      */
 /****************************************************************************************/
 
@@ -15,35 +15,22 @@
 #include "Pegasus/Pegasus.h"
 
 
-class TestApp1 : public Pegasus::Application
+class TestApp1 : public Pegasus::Application::Application
 {
 public:
-
+    // Ctor / dtor
     TestApp1();
     ~TestApp1();
 
-    virtual void Initialize(const Pegasus::ApplicationConfig& config);
+    // App API
+    virtual void Initialize(const Pegasus::Application::ApplicationConfig& config);
     virtual void Shutdown();
     virtual void Render();
 };
 
 
 //! \todo Make this a macro with only the name of the app class as parameter
-#if PEGASUS_INCLUDE_LAUNCHER
-
-Pegasus::Application * CreatePegasusApp() { return new TestApp1(); }
-
-#else
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-PEGASUSAPP_SHARED Pegasus::IApplication * CreatePegasusApp() { return new TestApp1(); }
-#ifdef __cplusplus
-}
-#endif
-
-#endif  // PEGASUS_INCLUDE_LAUNCHER
-
+Pegasus::Application::Application * CreateApplication() { return new TestApp1(); }
+void DestroyApplication(Pegasus::Application::Application* app) { delete app; }
 
 #endif  // TESTAPP1_H

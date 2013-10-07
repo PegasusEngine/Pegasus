@@ -13,36 +13,22 @@
 #ifndef PEGASUS_APPLICATION_H
 #define PEGASUS_APPLICATION_H
 
-#if !PEGASUS_INCLUDE_LAUNCHER
-#include "Pegasus/IApplication.h"
-#endif
+#include "Pegasus/Application/Shared/ApplicationConfig.h"
 
-#include "Pegasus/Window/WindowDefs.h"
-
-
-namespace Pegasus{
-    struct WindowConfig;
-    class Window;
+// Forward declarations
+namespace Pegasus {
+    namespace Window {
+        struct WindowConfig;
+        class Window;
+    }
 }
 
 
 namespace Pegasus {
-
-//! \class Configuration structure for a Pegasus app.
-struct ApplicationConfig
-{
-public:
-    // basic ctor / dtor
-    ApplicationConfig();
-    ApplicationConfig(ApplicationHandle apphandle);
-    ~ApplicationConfig();
-
-    //! Opaque application instance
-    ApplicationHandle mAppHandle;
-};
+namespace Application {
 
 //! \class Building block class for a Pegasus application.
-//!        OVerride Init, Shutdown, and Render to perform rendering.
+//!        Override Init, Shutdown, and Render to perform rendering.
 //! \note To use this class, simply:
 //! \note   1. instantiate it
 //! \note   2. attach a window to it
@@ -50,11 +36,8 @@ public:
 //! \todo We need to manage the list of windows properly, with a map
 //!       of window handles to windows
 //! \todo A lot of stuff to handle multi-windows...
-#if PEGASUS_INCLUDE_LAUNCHER
+//! \todo Multi-application support
 class Application
-#else
-class Application : public IApplication
-#endif
 {
 public:
     // Ctor / dtor
@@ -62,19 +45,20 @@ public:
     virtual ~Application();
 
     // Window API
-    Window* AttachWindow(const WindowConfig& config);
-    void DetachWindow(Window* wnd);
-
-    // Update API
-    int Run();
+    Window::Window* AttachWindow(const AppWindowConfig& appConfig);
+    void DetachWindow(const Window::Window* wnd);
     //! \todo Set update mode
+
+    // App API
+    virtual void Initialize(const ApplicationConfig& config);
+    virtual void Shutdown();
+    int Run();
+
+    // Render API
+    virtual void Render();
 
     //! Max number of windows per app
     static const unsigned int MAX_NUM_WINDOWS = 1;
-
-    virtual void Initialize(const ApplicationConfig& config);
-    virtual void Shutdown();
-    virtual void Render() = 0;
 
 private:
     // No copies allowed
@@ -85,26 +69,21 @@ private:
     void StartupAppInternal();
     void ShutdownAppInternal();
 
-    //! Flag for startup context creation
-    static bool sContextBootstrapped;
-
-    //! Instance counter
-    static unsigned int sNumInstances;
 
     //! Initialized flag
     bool mInitialized;
 
     //! Application instance
-    ApplicationHandle mAppHandle;
+    Window::ModuleHandle mModuleHandle;
 
     //! App windows
-    Window* mWindows[MAX_NUM_WINDOWS];
+    Window::Window* mWindows[MAX_NUM_WINDOWS];
 
     //! Num app windows
     unsigned int mNumWindows;
 };
 
-
+}   // namespace Application
 }   // namespace Pegasus
 
 #endif  // PEGASUS_APPLICATION_H

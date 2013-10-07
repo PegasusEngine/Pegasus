@@ -4,83 +4,35 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   LauncherWindows.cpp
+//! \file   Launcher_Win32.cpp
 //! \author Kevin Boulanger, David Worsham
 //! \date   02nd June 2013
 //! \brief  Entry point of Pegasus Launcher, allowing the execution of application in dev mode
 //!         (Win32 and Win64 version)
 
-//== Includes ====
-#include "Pegasus/Pegasus.h"
+#include "Pegasus/Preprocessor.h"
 
 #if PEGASUS_PLATFORM_WINDOWS
+
+#include "Pegasus/Application/Application.h"
+#include "Pegasus/Application/Shared/IApplicationProxy.h"
+#include "Pegasus/Application/Shared/ApplicationConfig.h"
+#include "Pegasus/Window/Shared/IWindowProxy.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <strsafe.h>
 
-//== Forward Declarations ====
 
-//== Implementation ====
 //! Main entry point
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                      LPSTR lpCmdLine, int nCmdShow)
 {
-    // Test for preprocessor.h
-    //! \todo Test all configs, fix bugs, and remove this
-    #if PEGASUS_ENGINE
-        OutputDebugString("PEGASUS_ENGINE on\n");
-    #else
-        OutputDebugString("PEGASUS_ENGINE off\n");
-    #endif
-    
-    #if PEGASUS_DEV
-        OutputDebugString("PEGASUS_DEV on\n");
-    #else
-        OutputDebugString("PEGASUS_DEV off\n");
-    #endif
-    
-    #if PEGASUS_REL
-        OutputDebugString("PEGASUS_REL on\n");
-    #else
-        OutputDebugString("PEGASUS_REL off\n");
-    #endif
-    
-    #if PEGASUS_DEBUG
-        OutputDebugString("PEGASUS_DEBUG on\n");
-    #else
-        OutputDebugString("PEGASUS_DEBUG off\n");
-    #endif
-    
-    #if PEGASUS_OPT
-        OutputDebugString("PEGASUS_OPT on\n");
-    #else
-        OutputDebugString("PEGASUS_OPT off\n");
-    #endif
-    
-    #if PEGASUS_FINAL
-        OutputDebugString("PEGASUS_FINAL on\n");
-    #else
-        OutputDebugString("PEGASUS_FINAL off\n");
-    #endif
-    
-    #if PEGASUS_PROFILE
-        OutputDebugString("PEGASUS_PROFILE on\n");
-    #else
-        OutputDebugString("PEGASUS_PROFILE off\n");
-    #endif
-    
-    #if PEGASUS_SMALL
-        OutputDebugString("PEGASUS_SMALL on\n");
-    #else
-        OutputDebugString("PEGASUS_SMALL off\n");
-    #endif
-
-    #if PEGASUSAPP_DLL
-        OutputDebugString("PEGASUSAPP_DLL on\n");
-    #else
-        OutputDebugString("PEGASUSAPP_DLL off\n");
-    #endif
+    Pegasus::Application::ApplicationConfig appConfig;
+    Pegasus::Application::AppWindowConfig windowConfig;
+    Pegasus::Application::IApplicationProxy* application = NULL;
+    Pegasus::Window::IWindowProxy* appWindow = NULL;
+    int retVal = 0;
 
     // Check the command line for the name of the app to load.
     // It needs to be at least 5 characters long (x.dll)
@@ -131,7 +83,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     // Retrieve the entry point of the application DLL
     FARPROC createAppProcAddress = GetProcAddress(dllModule, "CreatePegasusApp");
-    if (createAppProcAddress == NULL)
+    FARPROC destroyAppProcAddress = GetProcAddress(dllModule, "DestroyPegasusApp");
+    if (createAppProcAddress == NULL || destroyAppProcAddress == NULL)
     {
         FreeLibrary(dllModule);
         MessageBox(NULL,
@@ -143,40 +96,33 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     // Cast the procedure into the actual entry point function
     //! \todo Make the function pointer a declaration in IApplication.h?
-    typedef Pegasus::IApplication * (* CreatePegasusAppFuncPtr) ();
-    CreatePegasusAppFuncPtr CreatePegasusAppFunc = (CreatePegasusAppFuncPtr)createAppProcAddress;
+    Pegasus::Application::CreatePegasusAppFuncPtr CreatePegasusAppFunc = (Pegasus::Application::CreatePegasusAppFuncPtr) createAppProcAddress;
+    Pegasus::Application::DestroyPegasusAppFuncPtr DestroyPegasusAppFunc = (Pegasus::Application::DestroyPegasusAppFuncPtr) destroyAppProcAddress;
     
-    // Call the application creation function from the DLL
-    Pegasus::IApplication * application = CreatePegasusAppFunc();
+    // Set up the app config
+    appConfig.mModuleHandle = (Pegasus::Window::ModuleHandle) hInstance;
 
-    //! Initialize the application
-    //! \todo Init
+    // Initialize the application
+    application = CreatePegasusAppFunc();
+    application->Initialize(appConfig);
+
+    //! Set up windows
+    appWindow = application->AttachWindow(windowConfig);
 
     //! Run the application loop
-    //! \todo Run loop
+    retVal = application->Run();
 
-    //! Destroy the application
-    //! \todo Destroy
+    //! Tear down windows
+    application->DetachWindow(appWindow);
 
-/*    Pegasus::ApplicationConfig testAppConfig((Pegasus::Core::PG_HINSTANCE) hInstance);
-    Pegasus::Application testApp(testAppConfig);
-    Pegasus::Core::WindowConfig testWindowConfig;
-    Pegasus::Core::Window* testWindow = testApp.AttachWindow(testWindowConfig);
-    int retVal = 0;
-
-    // Run app
-    retVal = testApp.Run();
-    testApp.DetachWindow(testWindow);
-
-    return retVal;*/
-
-    // Destroy the application object
-    delete application;
+    // Destroy the application
+    application->Shutdown();
+    DestroyPegasusAppFunc(application);
 
     // Release the application library
     FreeLibrary(dllModule);
 
-    return 0;
+    return retVal;
 }
 
 // unsigned int gFrameCount = 0;

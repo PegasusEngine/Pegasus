@@ -162,7 +162,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <SmallerTypeCheck>true</SmallerTypeCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -175,8 +175,10 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalDependencies>glew32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\GLEW\Win32\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -192,7 +194,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <ExceptionHandling>false</ExceptionHandling>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -206,8 +208,10 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalDependencies>glew32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\GLEW\Win32\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -222,7 +226,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <SmallerTypeCheck>true</SmallerTypeCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -235,7 +239,8 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalDependencies>opengl32.lib</AdditionalDependencies>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
     </Lib>
     <Lib>
       <AdditionalLibraryDirectories>
@@ -257,7 +262,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -271,7 +276,8 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalDependencies>opengl32.lib</AdditionalDependencies>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
@@ -291,7 +297,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -305,7 +311,8 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalDependencies>opengl32.lib</AdditionalDependencies>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
     </Lib>
     <Lib>
       <AdditionalLibraryDirectories>
@@ -327,7 +334,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -341,7 +348,8 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalDependencies>opengl32.lib</AdditionalDependencies>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>

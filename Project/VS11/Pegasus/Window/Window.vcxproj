@@ -132,7 +132,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <SmallerTypeCheck>true</SmallerTypeCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -153,11 +153,11 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUSAPP_DLL;_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_DEBUG</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
       <SmallerTypeCheck>true</SmallerTypeCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -176,11 +176,15 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Small|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <Optimization>MinSpace</Optimization>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_REL;_PEGASUS_SMALL</PreprocessorDefinitions>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
+      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <ExceptionHandling>false</ExceptionHandling>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -207,7 +211,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_REL;_PEGASUS_PROFILE</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -233,9 +237,9 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_OPT</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUSAPP_DLL;_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_OPT</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -263,7 +267,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_REL;_PEGASUS_FINAL</PreprocessorDefinitions>
       <ExceptionHandling>false</ExceptionHandling>
-      <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
@@ -281,12 +285,17 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Window\Shared\IWindowProxy.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Window\Shared\WindowConfig.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Window\Window.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Window\WindowDefs.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Window\WindowProxy.h" />
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Window\Platform\Window_Win32.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Window\LauncherWindows.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Window\Platform\Window_Win32.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Window\Window.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Window\WindowProxy.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

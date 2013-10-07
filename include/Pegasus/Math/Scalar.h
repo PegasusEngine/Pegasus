@@ -12,6 +12,7 @@
 #ifndef PEGASUS_MATH_SCALAR_H
 #define PEGASUS_MATH_SCALAR_H
 
+#include "Pegasus/Core/Assertion.h"
 #include "Pegasus/Math/Types.h"
 #include "Pegasus/Math/Constants.h"
 

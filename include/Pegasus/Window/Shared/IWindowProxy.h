@@ -4,31 +4,35 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   WindowDefs.h
+//! \file   IWindowProxy.h
 //! \author David Worsham
-//! \date   4th Junly 2013
-//! \brief  Common typedefs for the windowing system.
+//! \date   06th October 2013
+//! \brief  Proxy interface, used by the editor and launcher to interact with an app window.
 
-#ifndef PEGASUS_WINDOW_WINDOWDEFS_H
-#define PEGASUS_WINDOW_WINDOWDEFS_H
+#ifndef PEGASUS_SHARED_IWINDOWPROXY_H
+#define PEGASUS_SHARED_IWINDOWPROXY_H
 
-#include <stdint.h>
+namespace Pegasus {
+    namespace Window {
+        class Window;
+    }
+}
 
 namespace Pegasus {
 namespace Window {
 
-//! Module handle opaque type
-//! Can be converted to a pointer
-//! Module is an OS-agnostic concept for a chunk of executable code
-//! This can be an .exe or .dll (on Windows), or a .so (on Linux)
-typedef uintptr_t ModuleHandle;
+//! \class Proxy application interface.
+class IWindowProxy
+{
+public:
+    //! Destructor
+    virtual ~IWindowProxy() {};
 
-//! Window handle opaque type
-//! Can be converted to a pointer
-typedef uintptr_t WindowHandle;
-
+    // Unwrap API
+    virtual Window* Unwrap() const = 0;
+};
 
 }   // namespace Window
 }   // namespace Pegasus
 
-#endif  // PEGASUS_WINDOW_WINDOWDEFS_H
+#endif  // PEGASUS_SHARED_IWINDOWPROXY_H

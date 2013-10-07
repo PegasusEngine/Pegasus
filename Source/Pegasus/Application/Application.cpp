@@ -10,46 +10,21 @@
 //! \brief  Building block class for a Pegasus application.
 //!         Manages access to the Pegasus runtime.
 
-#include "Pegasus/Application.h"
-#include "Pegasus/Window/Window.h"
+#include "Pegasus/Application/Application.h"
+#include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Render/GL/GLExtensions.h"
+#include "Pegasus/Render/RenderContext.h"
+#include "Pegasus/Window/Window.h"
+
 #include <windows.h>
 
-
 namespace Pegasus {
-
-// bootstrapped flag
-bool Application::sContextBootstrapped = false;
-unsigned int Application::sNumInstances = 0;
-
-
-//! Basic constructor.
-ApplicationConfig::ApplicationConfig()
-    : mAppHandle(NULL)
-{
-}
+namespace Application {
 
 //----------------------------------------------------------------------------------------
 
-//! Config-based constructor.
-//! \param apphandle Application handle to config with.
-ApplicationConfig::ApplicationConfig(ApplicationHandle apphandle)
-    : mAppHandle(apphandle)
-{
-}
-
-//----------------------------------------------------------------------------------------
-
-//! Basic destructor.
-ApplicationConfig::~ApplicationConfig()
-{
-}
-
-//----------------------------------------------------------------------------------------
-
-//! Basic constructor.
 Application::Application()
-    : mInitialized(false), mAppHandle(NULL), mNumWindows(0)
+    : mInitialized(false), mModuleHandle(NULL), mNumWindows(0)
 {
     // Init windows array
     for (unsigned int i = 0; i < MAX_NUM_WINDOWS; i++)
@@ -60,18 +35,12 @@ Application::Application()
 
 //----------------------------------------------------------------------------------------
 
-//! Destructor.
 Application::~Application()
 {
-    // shutdown the extensions manager if need be
-    sNumInstances--;
-    if (sNumInstances == 0 && sContextBootstrapped)
-    {
-        ShutdownAppInternal();
-        sContextBootstrapped = false;
-    }
+    // Handle the extension manager and stuff
+    ShutdownAppInternal();
 
-    //! \todo Assert that no windows exist here, to alert the user of them being stupid
+    //! \todo Assert that no windows exist here, to alert the user
 
     // Free windows
     for (unsigned int i = 0; i < MAX_NUM_WINDOWS; i++)
@@ -85,48 +54,33 @@ Application::~Application()
 
 //----------------------------------------------------------------------------------------
 
-//! Creates an application window and links it to this app.
-//! \param config Config object used to create the window.
-//! \return The created window, or nullptr if creation failed.
-Window* Application::AttachWindow(const WindowConfig& config)
+void Application::Initialize(const ApplicationConfig& config)
 {
-    Window* newWnd = nullptr;
-    Window::WindowConfigPrivate privConfig(config);
+    Window::Window* startupWindow = nullptr;
 
-    // Create window
-    //! \todo Assert/log on failure
-    privConfig.mAppHandle = mAppHandle;
-    privConfig.mIsStartupWindow = false;
-    newWnd = new Window(privConfig);
+    // Cache off application handle
+    mModuleHandle = config.mModuleHandle;
 
-    // Assign it
-    //! \todo Assert on windows list not full
-    if (newWnd)
-    {
-        mWindows[mNumWindows++] = newWnd;
-    }
+    // start up the app, which creates and destroys the dummy window
+    StartupAppInternal();
 
-    return newWnd;
+    //! \todo Assert on init
+    // Initted
+    mInitialized = true;
 }
 
 //----------------------------------------------------------------------------------------
 
-//! Destroys a window and unlinks it from this app.
-//! \param wnd The window to destroy.
-void Application::DetachWindow(Window* wnd)
+//! Shutdown this application.
+void Application::Shutdown()
 {
-    //! \todo Assert window not null
-    //! \todo Assert window ID in range
-    delete mWindows[mNumWindows - 1];
-    mWindows[mNumWindows - 1] = nullptr;
-    mNumWindows--;
+    //! \todo Assert on init
+    // No longer initted
+    mInitialized = false;
 }
 
 //----------------------------------------------------------------------------------------
 
-//! Runs the application loop for this Pegasus app.
-//! \note This method does not return until the user closes the application.
-//! \return Status code.
 int Application::Run()
 {
     MSG curMsg;
@@ -155,42 +109,54 @@ int Application::Run()
 
     // wParam of WM_QUIT is the app exit code
     return curMsg.wParam;
+
+    return 0;
 }
 
 //----------------------------------------------------------------------------------------
 
-//! Initialize this application.
-//! \param config Config structure to create this app with.
-//! \warning All other method calls are invalid until Initialize is called.
-void Application::Initialize(const ApplicationConfig& config)
+void Application::Render()
 {
-    Window* startupWindow = nullptr;
-
-    // Cache off application handle
-    mAppHandle = config.mAppHandle;
-
-    //! \todo Refactor this instance counting junk
-    // start up the app, which creates and destroys the dummy window
-    if (!sContextBootstrapped)
+    // Present all windows
+    for (unsigned int i = 0; i < mNumWindows; i++)
     {
-        StartupAppInternal();
-        sContextBootstrapped = true;
+        mWindows[i]->GetRenderContext()->Swap();
     }
-    sNumInstances++;
-
-    //! \todo Assert on init
-    // Initted
-    mInitialized = true;
 }
 
 //----------------------------------------------------------------------------------------
 
-//! Shutdown this application.
-void Application::Shutdown()
+Window::Window* Application::AttachWindow(const AppWindowConfig& appConfig)
 {
-    //! \todo Assert on init
-    // No longer initted
-    mInitialized = false;
+    Window::Window* newWnd = nullptr;
+    Window::WindowConfig config;
+
+    // Create window
+    //! \todo Assert/log on failure
+    config.mModuleHandle = mModuleHandle;
+    config.mIsStartupWindow = false;
+    newWnd = new Window::Window(config);
+
+    // Assign it
+    //! \todo Assert on windows list not full
+    if (newWnd)
+    {
+        mWindows[mNumWindows++] = newWnd;
+    }
+
+    return newWnd;
+}
+
+//----------------------------------------------------------------------------------------
+
+void Application::DetachWindow(const Window::Window* wnd)
+{
+    //! \todo Assert window not null
+    //! \todo Assert window ID in range
+    //delete mWindows[mNumWindows - 1];
+    delete wnd;
+    mWindows[mNumWindows - 1] = nullptr; // Aliases wnd
+    mNumWindows--;
 }
 
 //----------------------------------------------------------------------------------------
@@ -199,15 +165,17 @@ void Application::Shutdown()
 //! \note Creates the dummy startup window used to initialize the OGL extensions.
 void Application::StartupAppInternal()
 {
-    Window* newWnd = nullptr;
-    WindowConfig baseConfig;
-    Window::WindowConfigPrivate privConfig(baseConfig);
+    Window::Window* newWnd = nullptr;
+    Window::WindowConfig config;
+
+    // First register window classes
+    Window::Window::RegisterWindowClass(mModuleHandle);
 
     // Create window and immediately destroy it
     //! \todo Assert/log on failure
-    privConfig.mAppHandle = mAppHandle;
-    privConfig.mIsStartupWindow = true;
-    newWnd = new Window(privConfig);
+    config.mModuleHandle = mModuleHandle;
+    config.mIsStartupWindow = true;
+    newWnd = new Window::Window(config);
 
     // Init openGL extensions now that we have a context
     Render::GLExtensions::CreateInstance();
@@ -273,9 +241,12 @@ void Application::ShutdownAppInternal()
 {
     // Destroy openGL extensions
     Render::GLExtensions::DestroyInstance();
+
+    // Unregister window classes
+    Window::Window::UnregisterWindowClass(mModuleHandle);
 }
 
 //----------------------------------------------------------------------------------------
 
-
+}   // namespace Application
 }   // namespace Pegasus

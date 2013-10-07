@@ -15,55 +15,26 @@
 
 
 namespace Pegasus {
+namespace Window {
 
 // Internal functions for Windows message handling
-static LRESULT CALLBACK StartupWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+static LRESULT CALLBACK CBTProc(int nCode, WPARAM wParam, LPARAM lParam);
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 // Class/Window names for Pegasus windows
 static const char* PEGASUS_WND_CLASSNAME = "PegasusEngine";
-static const char* PEGASUS_WND_STARTUPCLASSNAME = "PegasusEngine_Startup";
 static const char* PEGASUS_WND_WNDNAME = "PegasusEngine";
-static const char* PEGASUS_WND_STARTUPWNDNAME = "PegasusEngine_Startup";
 
-
-//! Basic constructor.
-WindowConfig::WindowConfig()
-{
-}
-
-//----------------------------------------------------------------------------------------
-
-//! Destructor.
-WindowConfig::~WindowConfig()
-{
-}
-
-//----------------------------------------------------------------------------------------
-
-//! Config-based constructor.
-//! \param config Configuration structure to use internally.
-Window::WindowConfigPrivate::WindowConfigPrivate(const WindowConfig& config)
- : mBaseConfig(config), mAppHandle(NULL), mIsStartupWindow(false)
-{
-}
-
-//----------------------------------------------------------------------------------------
-
-//! Destructor.
-Window::WindowConfigPrivate::~WindowConfigPrivate()
-{
-}
 
 //----------------------------------------------------------------------------------------
 
 //! Config-based constructor.
 //! \param config Configuration structure used to create this window.
-Window::Window(const Window::WindowConfigPrivate& config)
-    : mRenderContext(NULL)
+Window::Window(const WindowConfig& config)
+    : mIsStartupWindow(config.mIsStartupWindow), mHWND(NULL), mRenderContext(NULL)
 {
     // Do the Win32 setup
-    CreateWindowInternal(config);
+    Internal_CreateWindow(config);
 }
 
 //----------------------------------------------------------------------------------------
@@ -77,126 +48,169 @@ Window::~Window()
 
 //----------------------------------------------------------------------------------------
 
-//! Internal helper to create the window.
-//! \param config Configuration structure used to create this window.
-void Window::CreateWindowInternal(const Window::WindowConfigPrivate& config)
+#if PEGASUS_PLATFORM_WINDOWS
+//! Handles Win32 messages sent to this window.
+//! \param message Win32 message ID.
+//! \param wParam  Win32 wparam for this message.
+//! \param lParam  Win32 lparam for this message.
+//! \return Status code and handled flag from the message handler.
+Window::HandleMessageReturn Window::HandleMessage(unsigned int message, unsigned int* wParam, unsigned long* lParam)
 {
-    WNDCLASSEX windowClass;
-    HWND windowHandle;
+    HandleMessageReturn ret;
 
-    // Set up our window class
-    if (config.mIsStartupWindow)
-    {
-        // startup window
-        windowClass.cbSize = sizeof(WNDCLASSEX);
-        windowClass.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
-        windowClass.lpfnWndProc = StartupWndProc; // Message pump callback
-        windowClass.cbClsExtra = 0;
-        windowClass.cbWndExtra = 0;
-        windowClass.hInstance = (HINSTANCE) config.mAppHandle;
-        windowClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-        windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-        windowClass.hbrBackground = (HBRUSH) GetStockObject(WHITE_BRUSH);
-        windowClass.lpszMenuName = NULL;
-        windowClass.lpszClassName = PEGASUS_WND_STARTUPCLASSNAME;
-        windowClass.hIconSm = LoadIcon(NULL, IDI_WINLOGO);
-    }
-    else
-    {
-        // Regular window
-        windowClass.cbSize = sizeof(WNDCLASSEX);
-        windowClass.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
-        windowClass.lpfnWndProc = WndProc; // Message pump callback
-        windowClass.cbClsExtra = 0;
-        windowClass.cbWndExtra = 0;
-        windowClass.hInstance = (HINSTANCE) config.mAppHandle;
-        windowClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-        windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-        windowClass.hbrBackground = (HBRUSH) GetStockObject(WHITE_BRUSH);
-        windowClass.lpszMenuName = NULL;
-        windowClass.lpszClassName = PEGASUS_WND_CLASSNAME;
-        windowClass.hIconSm = LoadIcon(NULL, IDI_WINLOGO);
-    }
-
-    // Register our window class with the OS
-    if (!RegisterClassEx(&windowClass))
-    {
-        //! \todo Assert or log here
-        return;
-    }
-
-    // Create window
-    if (config.mIsStartupWindow)
-    {
-        // Startup window
-        windowHandle = CreateWindowEx(NULL,
-                                      PEGASUS_WND_STARTUPCLASSNAME,
-                                      PEGASUS_WND_STARTUPWNDNAME,
-                                      WS_OVERLAPPEDWINDOW | WS_SYSMENU,
-                                      100, 100,
-                                      960, 540,
-                                      NULL,
-                                      NULL,
-                                      (HINSTANCE) config.mAppHandle,
-                                      NULL);
-    }
-    else
-    {
-        // Normal window
-        windowHandle = CreateWindowEx(NULL,
-                                      PEGASUS_WND_CLASSNAME,
-                                      PEGASUS_WND_WNDNAME,
-                                      WS_OVERLAPPEDWINDOW | WS_VISIBLE | WS_SYSMENU,
-                                      100, 100,
-                                      960, 540,
-                                      NULL,
-                                      NULL,
-                                      (HINSTANCE) config.mAppHandle,
-                                      NULL);
-    }
-
-    // cache handle
-    mHWND = (WindowHandle) windowHandle;
-}
-
-//----------------------------------------------------------------------------------------
-
-//! Windows callback for the dummy startup window.  Fired every time a message is
-//! delivered to the window.
-//! \param hwnd Handle to the window.
-//! \param message Message code.
-//! \param wParam Message params high.
-//! \param lParam Message params low.
-//! \return Result status.
-//! \note The only purpose of this handler/window is to initialize the OGL 1.1 context
-//!       so that we can get the extension addresses.
-LRESULT CALLBACK StartupWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
     switch(message)
     {
     case WM_CREATE: // Window is being created
         {
-            //Render::ContextConfig contextConfig((PG_HWND) hwnd);
+            HDC deviceContext = GetDC((HWND) mHWND);
+            Render::ContextConfig contextConfig((Render::DeviceContextHandle) deviceContext);
 
-            ////! \todo Need real allocators
-            //// Create context
-            //contextConfig.mStartupContext = true;
-            //mRenderContext = new Render::Context(contextConfig);
+            //! \todo Need real allocators
+            // Create context
+            contextConfig.mStartupContext = mIsStartupWindow;
+            mRenderContext = new Render::Context(contextConfig);
         }
-        return 0;
+        ret.handled = true; ret.retcode = 0;
+        break;
     case WM_DESTROY: // Window is being destroyed
         {
-            ////! \todo Need real allocators
-            //// Destroy context
-            //delete mRenderContext;
+            //! \todo Need real allocators
+            // Destroy context
+            delete mRenderContext;
         }
-        return 0;
+        ret.handled = true; ret.retcode = 0;
+        break;
+    case WM_PAINT: // Someone requested a redraw of the window
+        //! \todo We need to call the render() method here
+        ret.handled = true; ret.retcode = 0;
+        break;
+    case WM_CLOSE: // Someone asked to close the window
+        //! \todo We really need a better way of quitting out than this, for multi monitors
+        if (!mIsStartupWindow)
+        {
+            PostQuitMessage(0);
+        }
+        ret.handled = true; ret.retcode = 0;
+        break;
     default:
         break;
     }
     
     // Fall back to OS default
-    return (DefWindowProc(hwnd, message, wParam, lParam));
+    return ret;
+}
+#endif
+
+//----------------------------------------------------------------------------------------
+
+//! Internal helper to create the window.
+//! \param config Configuration structure used to create this window.
+void Window::Internal_CreateWindow(const WindowConfig& config)
+{
+    HWND windowHandle;
+    HHOOK hCBTHook;
+    DWORD windowStyle;
+
+    // Compute window style
+    windowStyle = WS_OVERLAPPEDWINDOW | WS_SYSMENU;
+    if (!config.mIsStartupWindow)
+    {
+        windowStyle |= WS_VISIBLE;
+    }
+
+    // Create window
+    hCBTHook = SetWindowsHookEx(WH_CBT, CBTProc, 0, GetCurrentThreadId());
+    windowHandle = CreateWindowEx(NULL,
+                                    PEGASUS_WND_CLASSNAME,
+                                    PEGASUS_WND_WNDNAME,
+                                    windowStyle,
+                                    100, 100,
+                                    960, 540,
+                                    NULL,
+                                    NULL,
+                                    (HINSTANCE) config.mModuleHandle,
+                                    (LPVOID) this);
+    if (!UnhookWindowsHookEx(hCBTHook))
+    {
+        //! \todo Assert or log here
+        return;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+bool Window::RegisterWindowClass(ModuleHandle handle)
+{
+    WNDCLASSEX windowClass;
+
+    // Set up our window class
+    windowClass.cbSize = sizeof(WNDCLASSEX);
+    windowClass.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
+    windowClass.lpfnWndProc = WndProc; // Message pump callback
+    windowClass.cbClsExtra = 0;
+    windowClass.cbWndExtra = 0;
+    windowClass.hInstance = (HINSTANCE) handle;
+    windowClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+    windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+    windowClass.hbrBackground = (HBRUSH) GetStockObject(WHITE_BRUSH);
+    windowClass.lpszMenuName = NULL;
+    windowClass.lpszClassName = PEGASUS_WND_CLASSNAME;
+    windowClass.hIconSm = LoadIcon(NULL, IDI_WINLOGO);
+
+    // Register our window class with the OS
+    if (!RegisterClassEx(&windowClass))
+    {
+        //! \todo Assert or log here
+        return false;
+    }
+
+    return true;
+}
+
+//----------------------------------------------------------------------------------------
+
+bool Window::UnregisterWindowClass(ModuleHandle handle)
+{
+    if (!UnregisterClass(PEGASUS_WND_CLASSNAME, (HINSTANCE) handle))
+    {
+        //! \todo Assert or log here
+        return false;
+    }
+
+    return true;
+}
+
+//----------------------------------------------------------------------------------------
+
+//! CBT callback for hooking window-specific data.  Called before the window is created.
+//! \param nCode Message code.
+//! \param wParam Message params high.
+//! \param lParam Message params low.
+//! \return Result status. 
+LRESULT CALLBACK CBTProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+    // Hook the window before any messages are sent to it
+    if (nCode == HCBT_CREATEWND)
+    {
+        LPCREATESTRUCT windowCreateStruct;
+        Window* pThis = NULL;
+
+        // Get the create params
+        windowCreateStruct = ((CBT_CREATEWND*) lParam)->lpcs;
+        pThis = (Window*) windowCreateStruct->lpCreateParams;
+
+        // Some other bogus messages can pass NULL here
+        if (pThis != NULL)
+        {
+            // Set up the window handle
+            pThis->SetHWND((WindowHandle) wParam);
+
+            //! \todo Assert on valid Window pointer
+            SetWindowLongPtr((HWND) wParam, GWL_USERDATA, (LONG_PTR) pThis);
+        }
+    }
+
+    return 0;
 }
 
 //----------------------------------------------------------------------------------------
@@ -210,40 +224,25 @@ LRESULT CALLBACK StartupWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 //! \return Result status.
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    switch(message)
-    {
-    case WM_CREATE: // Window is being created
-        {
-            //Render::ContextConfig contextConfig((PG_HWND) hwnd);
+    Window* pWnd = (Window*) GetWindowLongPtr(hwnd, GWL_USERDATA);
+    Window::HandleMessageReturn wndProcReturn;
 
-            ////! \todo Need real allocators
-            //// Create context
-            //contextConfig.mStartupContext = false;
-            //mRenderContext = new Render::Context(contextConfig);
-        }
-        return 0;
-    case WM_DESTROY: // Window is being destroyed
-        {
-            ////! \todo Need real allocators
-            //// Destroy context
-            //delete mRenderContext;
-        }
-        return 0;
-    case WM_PAINT: // Someone requested a redraw of the window
-        //! \todo We need to call the render() method here
-        break;
-    case WM_CLOSE: // Someone asked to close the window
-        PostQuitMessage(0);
-        return 0;
-    default:
-        break;
+    //! \todo Assert window pointer not null
+
+    // Call 
+    wndProcReturn = pWnd->HandleMessage(message, (unsigned int*) wParam, (unsigned long*) lParam);
+
+    // Fall back to OS default if needed
+    if (!wndProcReturn.handled)
+    {
+        return (DefWindowProc(hwnd, message, wParam, lParam));
     }
-    
-    // Fall back to OS default
-    return (DefWindowProc(hwnd, message, wParam, lParam));
+
+    return wndProcReturn.retcode;
 }
 
 //----------------------------------------------------------------------------------------
 
 
+}   // namespace Window
 }   // namespace Pegasus

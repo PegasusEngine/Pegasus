@@ -11,7 +11,10 @@
 
 #include "Application.h"
 #include "Viewport/ViewportWidget.h"
-#include "Pegasus/Application.h"
+#include "Pegasus/Preprocessor.h"
+#include "Pegasus/Application/Shared/IApplicationProxy.h"
+#include "Pegasus/Application/Shared/ApplicationConfig.h"
+#include "Pegasus/Window/Shared/IWindowProxy.h"
 #include <stdio.h>
 
 #if PEGASUS_PLATFORM_WINDOWS
@@ -54,6 +57,13 @@ void Application::SetViewport(/**index,*/ ViewportWidget * viewportWidget)
 void Application::run()
 {
     ED_ASSERTSTR(!mFileName.isEmpty(), "Invalid application to open, the name cannot be an empty string.");
+    Pegasus::Application::ApplicationConfig appConfig;
+    Pegasus::Application::AppWindowConfig windowConfig;
+    Pegasus::Application::IApplicationProxy* application = NULL;
+    Pegasus::Window::IWindowProxy* appWindow = NULL;
+    int retVal = 0;
+
+    //PG_ASSERTSTR(!mFileName.isEmpty(), "Invalid application to open, the name cannot be an empty string");
     if (mFileName.isEmpty())
     {
         emit(LoadingError(ERROR_INVALID_FILE_NAME));
@@ -85,30 +95,44 @@ void Application::run()
         emit(LoadingError(ERROR_INVALID_INTERFACE));
         return;
     }
+    FARPROC destroyAppProcAddress = GetProcAddress(dllModule, "DestroyPegasusApp");
+    if (destroyAppProcAddress == NULL)
+    {
+        FreeLibrary(dllModule);
+        emit(LoadingError(ERROR_INVALID_INTERFACE));
+        return;
+    }
 
 #else
 #error "Implement the loading of the application library"
 #endif  // PEGASUS_PLATFORM_WINDOWS
 
+    // Set up the app config
+    appConfig.mModuleHandle = (Pegasus::Window::ModuleHandle) GetModuleHandle(NULL); // Use the handle of the Editor EXE
+
     // Cast the procedure into the actual entry point function
-    //! \todo Make the function pointer a declaration in IApplication.h?
-    typedef Pegasus::IApplication * (* CreatePegasusAppFuncPtr) ();
-    CreatePegasusAppFuncPtr CreatePegasusAppFunc = (CreatePegasusAppFuncPtr)createAppProcAddress;
-    
-    // Call the application creation function from the DLL
-    Pegasus::IApplication * application = CreatePegasusAppFunc();
+    Pegasus::Application::CreatePegasusAppFuncPtr CreatePegasusAppFunc = (Pegasus::Application::CreatePegasusAppFuncPtr) createAppProcAddress;
+    Pegasus::Application::DestroyPegasusAppFuncPtr DestroyPegasusAppFunc = (Pegasus::Application::DestroyPegasusAppFuncPtr) destroyAppProcAddress;
 
-    //! \todo Check that the version of the interface is correct
-
-    //! \todo Call the initialization function of the interface
+    // Initialize the application
+    application = CreatePegasusAppFunc();
+    application->Initialize(appConfig);
 
     // Signal the success of the loading
     emit(LoadingSucceeded());
 
-    //! \todo Run the main loop
+    // Set up windows
+    appWindow = application->AttachWindow(windowConfig);
 
-    // Destroy the application object
-    delete application;
+    // Run the application loop
+    retVal = application->Run();
+
+    // Tear down windows
+    application->DetachWindow(appWindow);
+
+    // Destroy the application
+    application->Shutdown();
+    DestroyPegasusAppFunc(application);
 
 #if PEGASUS_PLATFORM_WINDOWS
 

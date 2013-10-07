@@ -11,6 +11,7 @@
 
 #include "Pegasus/Math/AxisAlignedBoundingBox.h"
 #include "Pegasus/Math/Matrix.h"
+#include "Pegasus/Core/Assertion.h"
 
 namespace Pegasus {
 namespace Math {
