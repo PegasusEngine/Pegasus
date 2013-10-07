@@ -20,7 +20,7 @@ class TestApp1 : public Pegasus::Application::Application
 public:
     // Ctor / dtor
     TestApp1();
-    ~TestApp1();
+    virtual ~TestApp1();
 
     // App API
     virtual void Initialize(const Pegasus::Application::ApplicationConfig& config);

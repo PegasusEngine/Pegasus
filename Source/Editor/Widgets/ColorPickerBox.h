@@ -28,7 +28,7 @@ public:
 				   QWidget * parent = 0);
 
 	//! Destructor
-	~ColorPickerBox();
+	virtual ~ColorPickerBox();
 
 	//! Get the current color
 	//! \return Current color (in Qt format)

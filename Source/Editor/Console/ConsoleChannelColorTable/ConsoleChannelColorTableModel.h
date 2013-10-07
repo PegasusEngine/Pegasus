@@ -26,7 +26,7 @@ public:
 	ConsoleChannelColorTableModel(QObject * parent = 0);
 
 	//! Destructor
-	~ConsoleChannelColorTableModel();
+	virtual ~ConsoleChannelColorTableModel();
 
     //! Refresh the model (and its associated views) after an update of the colors
     void Refresh();

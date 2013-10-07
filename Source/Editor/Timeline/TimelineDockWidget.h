@@ -24,7 +24,7 @@ class TimelineDockWidget : public QDockWidget
 public:
 
     TimelineDockWidget(QWidget *parent = 0);
-    ~TimelineDockWidget();
+    virtual ~TimelineDockWidget();
 
     //! Set the antialiasing mode of the timeline
     //! \param enable True to enable antialiasing

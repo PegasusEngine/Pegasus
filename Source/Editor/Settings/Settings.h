@@ -36,7 +36,7 @@ public:
     Settings(QMainWindow * mainWindow);
 
     //! Destructor
-    ~Settings();
+    virtual ~Settings();
 
     //! Load the settings from a configuration file or the registry
     //! \note The function does not fail. If loading of the settings fails, the default values are used

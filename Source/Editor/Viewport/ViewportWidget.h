@@ -23,7 +23,7 @@ class ViewportWidget : public QWidget
 public:
 
     ViewportWidget(QWidget *parent);
-    ~ViewportWidget();
+    virtual ~ViewportWidget();
 };
 
 

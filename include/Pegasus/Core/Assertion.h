@@ -59,7 +59,7 @@ class AssertionManager : public AutoSingleton<AssertionManager>
 public:
 
     AssertionManager();
-    ~AssertionManager();
+    virtual ~AssertionManager();
 
     //! Callback function declaration.
     //! One function with this type needs to be declared in the user application

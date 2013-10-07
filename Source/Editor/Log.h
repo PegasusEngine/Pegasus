@@ -36,7 +36,7 @@ class LogManager : public QObject
 public:
 
     LogManager(Editor * parent);
-    ~LogManager();
+    virtual ~LogManager();
 
     //! Send a formatted message to the console dock widget, for a specific log channel.
     //! \param logChannel Log channel that receives the message

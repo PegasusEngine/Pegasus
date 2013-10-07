@@ -21,7 +21,7 @@ class SettingsAppearancePage : public QWidget
 public:
 
     SettingsAppearancePage(QWidget *parent);
-    ~SettingsAppearancePage();
+    virtual ~SettingsAppearancePage();
 
     //------------------------------------------------------------------------------------
 

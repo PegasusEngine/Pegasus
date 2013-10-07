@@ -30,7 +30,7 @@ public:
                                        float horizontalScale);
 
     //! Destructor
-    ~TimelineBackgroundBeatGraphicsItem();
+    virtual ~TimelineBackgroundBeatGraphicsItem();
 
     //! Set the number of lanes of the background item
     //! \param numLanes New number of lanes (>= 1)

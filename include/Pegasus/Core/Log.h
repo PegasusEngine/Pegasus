@@ -76,7 +76,7 @@ class LogManager : public AutoSingleton<LogManager>
 public:
 
     LogManager();
-    ~LogManager();
+    virtual ~LogManager();
 
     //! Callback function declaration.
     //! One function with this type needs to be declared in the user application

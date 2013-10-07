@@ -27,7 +27,7 @@ public:
     TimelineCursorGraphicsItem(unsigned int numLanes, float horizontalScale);
 
     //! Destructor
-    ~TimelineCursorGraphicsItem();
+    virtual ~TimelineCursorGraphicsItem();
 
     //! Set the position of the cursor
     //! \param beat Position of the cursor, expressed in beats,

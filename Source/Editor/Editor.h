@@ -36,7 +36,7 @@ class Editor : public QMainWindow
 public:
 
     Editor(QWidget *parent = 0);
-    ~Editor();
+    virtual ~Editor();
 
     //! Return the unique instance of the editor
     //! \return Reference to the unique instance of the editor

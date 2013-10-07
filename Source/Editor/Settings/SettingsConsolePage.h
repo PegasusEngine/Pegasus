@@ -24,7 +24,7 @@ class SettingsConsolePage : public QWidget
 public:
 
     SettingsConsolePage(QWidget *parent);
-    ~SettingsConsolePage();
+    virtual ~SettingsConsolePage();
 
     //------------------------------------------------------------------------------------
 

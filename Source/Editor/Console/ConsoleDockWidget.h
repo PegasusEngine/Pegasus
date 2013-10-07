@@ -26,7 +26,7 @@ class ConsoleDockWidget : public QDockWidget
 public:
 
     ConsoleDockWidget(QWidget *parent);
-    ~ConsoleDockWidget();
+    virtual ~ConsoleDockWidget();
 
     //! Add a message to the console text view (default color, no tag)
     //! \param message Message to display (will take an entire line)

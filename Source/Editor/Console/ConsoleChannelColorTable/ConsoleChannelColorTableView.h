@@ -27,7 +27,7 @@ public:
 	ConsoleChannelColorTableView(QWidget * parent = 0);
 
 	//! Destructor
-	~ConsoleChannelColorTableView();
+	virtual ~ConsoleChannelColorTableView();
 
     //! Refresh the associated model and the entire view after an update of the colors
     void Refresh();

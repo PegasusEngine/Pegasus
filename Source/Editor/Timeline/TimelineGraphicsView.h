@@ -43,7 +43,7 @@ public:
     TimelineGraphicsView(QWidget *parent);
 
     //! Destructor
-    ~TimelineGraphicsView();
+    virtual ~TimelineGraphicsView();
 
 
     //! Set the antialiasing mode of the timeline

@@ -27,7 +27,7 @@ class ViewportDockWidget : public QDockWidget
 public:
 
     ViewportDockWidget(QWidget *parent = 0);
-    ~ViewportDockWidget();
+    virtual ~ViewportDockWidget();
 
     //! Get the viewport widget associated with the dock widget
     //! \return Viewport widget associated with the dock widget

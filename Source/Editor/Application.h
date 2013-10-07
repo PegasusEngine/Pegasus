@@ -29,7 +29,7 @@ public:
     Application(QObject *parent = 0);
 
     //! Destructor, closes the running application
-    ~Application();
+    virtual ~Application();
 
 
     //! Set the file name of the application to load

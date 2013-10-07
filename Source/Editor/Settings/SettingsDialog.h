@@ -27,7 +27,7 @@ class SettingsDialog : public QDialog
 public:
 
     SettingsDialog(QWidget *parent);
-    ~SettingsDialog();
+    virtual ~SettingsDialog();
 
     //! List of pages of the settings dialog box
     enum Page

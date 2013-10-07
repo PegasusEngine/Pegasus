@@ -56,7 +56,7 @@ class AssertionManager : public QObject
 public:
 
     AssertionManager(Editor * parent);
-    ~AssertionManager();
+    virtual ~AssertionManager();
 
 
     //! Throw an assertion error with a formatted string.

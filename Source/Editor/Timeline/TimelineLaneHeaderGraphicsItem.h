@@ -25,7 +25,7 @@ public:
     TimelineLaneHeaderGraphicsItem(unsigned int lane);
 
     //! Destructor
-    ~TimelineLaneHeaderGraphicsItem();
+    virtual ~TimelineLaneHeaderGraphicsItem();
 
     //! Set the lane index (typically happens when removing or inserting lanes around)
     //! \param lane Initial lane index

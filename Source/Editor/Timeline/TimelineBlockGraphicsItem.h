@@ -35,7 +35,7 @@ public:
                               float horizontalScale);
 
     //! Destructor
-    ~TimelineBlockGraphicsItem();
+    virtual ~TimelineBlockGraphicsItem();
 
     //! Set the timeline lane of the block
     //! \param lane Index of the timeline lane the block belongs to

@@ -34,7 +34,7 @@ public:
                        QObject *parent = 0);
 
     //! Destructor
-    ~ApplicationManager();
+    virtual ~ApplicationManager();
 
 
     //! Open a new application
