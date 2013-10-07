@@ -156,7 +156,6 @@
     </Bscmake>
     <Lib>
       <AdditionalDependencies>opengl32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\GLEW\Win32\</AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -187,7 +186,6 @@
     </Bscmake>
     <Lib>
       <AdditionalDependencies>opengl32.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\GLEW\Win32\</AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
