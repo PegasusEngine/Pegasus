@@ -37,6 +37,7 @@ public:
     // Window API
     virtual Window::IWindowProxy* AttachWindow(const AppWindowConfig& config);
     virtual void DetachWindow(const Window::IWindowProxy* wnd);
+    virtual void ResizeWindow(Window::IWindowProxy* wnd, int width, int height);
 
     // Stateflow API
     virtual void Initialize(const ApplicationConfig& config);
@@ -45,6 +46,7 @@ public:
     //! \todo Set update mode
 
     // Render API
+    virtual void Resize(const Window::IWindowProxy* wnd, int width, int height);
     virtual void Render();
 
 private:

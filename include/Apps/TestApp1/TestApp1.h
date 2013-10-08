@@ -25,7 +25,13 @@ public:
     // App API
     virtual void Initialize(const Pegasus::Application::ApplicationConfig& config);
     virtual void Shutdown();
+    virtual void Resize(const Pegasus::Window::Window * wnd, int width, int height);
     virtual void Render();
+
+private:
+
+    int mViewportWidth;
+    int mViewportHeight;
 };
 
 

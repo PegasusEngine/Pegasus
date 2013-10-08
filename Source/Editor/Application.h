@@ -15,10 +15,21 @@
 #include <QThread>
 
 #include "Pegasus/Core/Log.h"
+#include "Pegasus/Window/WindowDefs.h"
 
 class ViewportWidget;
 
+namespace Pegasus {
+    namespace Application {
+        class IApplicationProxy;
+    }
+    namespace Window {
+        class IWindowProxy;
+    }
+}
 
+
+//! Application worker thread
 class Application : public QThread
 {
     Q_OBJECT
@@ -37,10 +48,13 @@ public:
     //! \todo Add error management
     void SetFile(const QString & fileName);
 
-    //! Set the viewport widget associated with the application
-    //! \param viewportWidget Viewport widget that will be associated with the rendering window
+    //! Set the viewport parameters for the window associated with the application
+    //! \param windowHandle Viewport window handle that will become the parent of the rendering window
+    //! \param width Initial width of the viewport in pixels (> 0)
+    //! \param height Initial height of the viewport in pixels (> 0)
     //! \todo Handle multiple viewports
-    void SetViewport(/**index,*/ ViewportWidget * viewportWidget);
+    void SetViewportParameters(/**index,*/ Pegasus::Window::WindowHandle windowHandle,
+                               int width, int height);
 
 
     //! Error codes for the application thread
@@ -71,6 +85,15 @@ signals:
 
     //------------------------------------------------------------------------------------
 
+private slots:
+        
+    //! Called when the viewport is resized
+    //! \param width New width of the viewport, in pixels
+    //! \param height New height of the viewport, in pixels
+    void ViewportResized(int width, int height);
+
+    //------------------------------------------------------------------------------------
+
 private:
 
     //! Handler for log messages coming from the application itself
@@ -85,8 +108,22 @@ private:
     //! File name of the application to load
     QString mFileName;
 
-    //! Viewport widget associated with the application
-    ViewportWidget * mViewportWidget;
+    //! Application proxy object created when running the application DLL
+    Pegasus::Application::IApplicationProxy * mApplication;
+
+    //! Window used to the render the viewport of the application
+    //! \todo Handle multiple windows
+    Pegasus::Window::IWindowProxy * mAppWindow;
+
+    //! Viewport window handle associated with the application
+    //! (will become the parent of the rendering window)
+    Pegasus::Window::WindowHandle mViewportWindowHandle;
+
+    //! Initial width of the viewport in pixels (> 0)
+    int mViewportInitialWidth;
+
+    //! Initial height of the viewport in pixels (> 0)
+    int mViewportInitialHeight;
 };
 
 

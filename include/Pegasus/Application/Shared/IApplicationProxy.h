@@ -45,6 +45,12 @@ public:
     //! \param wnd Window to destroy.
     virtual void DetachWindow(const Window::IWindowProxy* wnd) = 0;
 
+    //! Resize a window attached to this application instance
+    //! \param wnd Window to resize
+    //! \param width New width in pixels of the window
+    //! \param height New height in pixels of the window
+    virtual void ResizeWindow(Window::IWindowProxy* wnd, int width, int height) = 0;
+
 
     //! Inits this application.
     //! \param config  Config structure for the application.

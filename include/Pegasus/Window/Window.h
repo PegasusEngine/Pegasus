@@ -39,6 +39,11 @@ public:
     inline WindowHandle GetHandle() const;
     inline Render::Context* GetRenderContext() const;
 
+    //! Resize the window
+    //! \param width New size of the window in pixels
+    //! \param height New height of the window in pixels
+    void Resize(int width, int height);
+
     // Message handling
 #if PEGASUS_PLATFORM_WINDOWS
     struct HandleMessageReturn
@@ -66,9 +71,16 @@ private:
     // Helpers
     void Internal_CreateWindow(const WindowConfig& config);
 
+    //! Resize the content of the window, called when the window size has changed
+    //! \param width New width of the window in pixels
+    //! \param height New height of the window in pixels
+    void ResizeViewport(int width, int height);
 
     //! Cached startup window flag
     bool mIsStartupWindow;
+
+    //! Application the window belongs to
+    Application::Application * mApplication;
 
     //! Window handle
     WindowHandle mHWND;

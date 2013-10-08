@@ -12,7 +12,6 @@
 #ifndef PEGASUS_MATH_PLANE_H
 #define PEGASUS_MATH_PLANE_H
 
-#include "Pegasus/Core/Assertion.h"
 #include "Pegasus/Math/Vector.h"
 
 namespace Pegasus {

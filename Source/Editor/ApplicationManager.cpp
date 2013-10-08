@@ -13,6 +13,7 @@
 #include "Editor.h"
 #include "Log.h"
 #include "Viewport/ViewportDockWidget.h"
+#include "Viewport/ViewportWidget.h"
 
 #include <QMessageBox>
 
@@ -61,7 +62,11 @@ void ApplicationManager::OpenApplication(const QString & fileName)
     mApplication = new Application();
     mApplication->SetFile(fileName);
     //! \todo Handle multiple dock widgets and multiple viewports
-    mApplication->SetViewport(mViewportDockWidget->GetViewportDockWidget(/**0*/));
+    ViewportWidget * viewportWidget = mViewportDockWidget->GetViewportWidget(/**0**/);
+    mApplication->SetViewportParameters(/**0,*/
+                                        viewportWidget->GetWindowHandle(),
+                                        viewportWidget->GetWidth(),
+                                        viewportWidget->GetHeight());
 
     // Connect the engine messages
     qRegisterMetaType<Application::Error>("Application::Error");
@@ -128,6 +133,16 @@ void ApplicationManager::LoadingError(Application::Error error)
 void ApplicationManager::LoadingSucceeded()
 {
     ED_LOG("Application successfully loaded");
+
+    // Connect the viewport resized message from the viewport widget
+    // to the application worker thread. A queued connection is used since we have
+    // to cross the thread boundaries
+    //! \todo Handle multiple viewports
+    ViewportWidget * viewportWidget = mViewportDockWidget->GetViewportWidget(/**0*/);
+    connect(viewportWidget, SIGNAL(ViewportResized(int, int)),
+            mApplication, SLOT(ViewportResized(int, int)),
+            Qt::QueuedConnection);
+
     mIsApplicationRunning = true;
 }
 

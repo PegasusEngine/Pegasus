@@ -10,7 +10,6 @@
 //! \brief	Settings for the entire editor
 
 #include "Settings/Settings.h"
-#include "Log.h"
 
 #include <QStyleFactory>
 #include <QStyle>

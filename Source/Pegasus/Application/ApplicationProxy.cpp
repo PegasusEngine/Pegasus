@@ -51,6 +51,13 @@ void ApplicationProxy::DetachWindow(const Window::IWindowProxy* wnd)
 
 //----------------------------------------------------------------------------------------
 
+void ApplicationProxy::ResizeWindow(Window::IWindowProxy* wnd, int width, int height)
+{
+    mObject->ResizeWindow(wnd->Unwrap(), width, height);
+}
+
+//----------------------------------------------------------------------------------------
+
 void ApplicationProxy::Initialize(const ApplicationConfig& config)
 {
     mObject->Initialize(config);
@@ -61,6 +68,13 @@ void ApplicationProxy::Initialize(const ApplicationConfig& config)
 void ApplicationProxy::Shutdown()
 {
     mObject->Shutdown();
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationProxy::Resize(const Window::IWindowProxy* wnd, int width, int height)
+{
+    return mObject->Resize(wnd->Unwrap(), width, height);
 }
 
 //----------------------------------------------------------------------------------------

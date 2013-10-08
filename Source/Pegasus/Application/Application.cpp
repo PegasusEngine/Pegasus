@@ -115,6 +115,13 @@ int Application::Run()
 
 //----------------------------------------------------------------------------------------
 
+void Application::Resize(const Window::Window* wnd, int width, int height)
+{
+    // Do nothing here. The derived class is supposed to handle the message.
+}
+
+//----------------------------------------------------------------------------------------
+
 void Application::Render()
 {
     // Present all windows
@@ -126,7 +133,7 @@ void Application::Render()
 
 //----------------------------------------------------------------------------------------
 
-Window::Window* Application::AttachWindow(const AppWindowConfig& appConfig)
+Window::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig)
 {
     Window::Window* newWnd = nullptr;
     Window::WindowConfig config;
@@ -134,7 +141,12 @@ Window::Window* Application::AttachWindow(const AppWindowConfig& appConfig)
     // Create window
     //! \todo Assert/log on failure
     config.mModuleHandle = mModuleHandle;
+    config.mApplication = this;
     config.mIsStartupWindow = false;
+    config.mIsChild = appWindowConfig.mIsChild;
+    config.mParentWindowHandle = appWindowConfig.mParentWindowHandle;
+    config.mWidth = appWindowConfig.mWidth;
+    config.mHeight = appWindowConfig.mHeight;
     newWnd = new Window::Window(config);
 
     // Assign it
@@ -161,6 +173,20 @@ void Application::DetachWindow(const Window::Window* wnd)
 
 //----------------------------------------------------------------------------------------
 
+void Application::ResizeWindow(Window::Window* wnd, int width, int height)
+{
+    if (wnd != nullptr)
+    {
+        wnd->Resize(width, height);
+    }
+    else
+    {
+        PG_FAILSTR("Invalid window pointer given to the resize window function.");
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 //! Starts up the application.
 //! \note Creates the dummy startup window used to initialize the OGL extensions.
 void Application::StartupAppInternal()
@@ -174,7 +200,11 @@ void Application::StartupAppInternal()
     // Create window and immediately destroy it
     //! \todo Assert/log on failure
     config.mModuleHandle = mModuleHandle;
+    config.mApplication = this;
     config.mIsStartupWindow = true;
+    config.mIsChild = false;
+    config.mWidth = 128;
+    config.mHeight = 128;
     newWnd = new Window::Window(config);
 
     // Init openGL extensions now that we have a context

@@ -32,7 +32,7 @@ public:
     //! Get the viewport widget associated with the dock widget
     //! \return Viewport widget associated with the dock widget
     //! \todo Handle multiple viewports
-    inline ViewportWidget * GetViewportDockWidget() const { return mViewportWidget; }
+    inline ViewportWidget * GetViewportWidget() const { return mViewportWidget; }
 
 private:
 

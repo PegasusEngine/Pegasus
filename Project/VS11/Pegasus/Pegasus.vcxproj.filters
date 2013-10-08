@@ -23,6 +23,9 @@
     <ClInclude Include="..\..\..\Include\Pegasus\Version.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Include\Pegasus\PegasusInternal.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Source\Pegasus\Version.cpp">

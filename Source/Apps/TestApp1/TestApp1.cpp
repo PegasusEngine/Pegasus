@@ -18,7 +18,9 @@
 #include <stdlib.h>
 
 TestApp1::TestApp1()
-:   Pegasus::Application::Application()
+:   Pegasus::Application::Application(),
+    mViewportWidth(128),
+    mViewportHeight(128)
 {
 }
 
@@ -45,8 +47,18 @@ void TestApp1::Shutdown()
 
 //----------------------------------------------------------------------------------------
 
+void TestApp1::Resize(const Pegasus::Window::Window * wnd, int width, int height)
+{
+    mViewportWidth = width;
+    mViewportHeight = height;
+}
+
+//----------------------------------------------------------------------------------------
+
 void TestApp1::Render()
 {
+    glViewport(0, 0, mViewportWidth, mViewportHeight);
+
     static unsigned int counter = 0;
     static float red = 0.0f;
     static float green = 0.0f;

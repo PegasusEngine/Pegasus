@@ -11,11 +11,13 @@
 
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/Render/RenderContext.h"
-#include <windows.h>
+#include "Pegasus/Application/Application.h"
 
+#include <windows.h>
 
 namespace Pegasus {
 namespace Window {
+
 
 // Internal functions for Windows message handling
 static LRESULT CALLBACK CBTProc(int nCode, WPARAM wParam, LPARAM lParam);
@@ -25,13 +27,15 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM l
 static const char* PEGASUS_WND_CLASSNAME = "PegasusEngine";
 static const char* PEGASUS_WND_WNDNAME = "PegasusEngine";
 
-
 //----------------------------------------------------------------------------------------
 
 //! Config-based constructor.
 //! \param config Configuration structure used to create this window.
 Window::Window(const WindowConfig& config)
-    : mIsStartupWindow(config.mIsStartupWindow), mHWND(NULL), mRenderContext(NULL)
+:   mIsStartupWindow(config.mIsStartupWindow),
+    mApplication(config.mApplication),
+    mHWND(NULL),
+    mRenderContext(NULL)
 {
     // Do the Win32 setup
     Internal_CreateWindow(config);
@@ -44,6 +48,16 @@ Window::~Window()
 {
     // Destroy window
     DestroyWindow((HWND) mHWND);
+}
+
+//----------------------------------------------------------------------------------------
+
+void Window::Resize(int width, int height)
+{
+    SetWindowPos((HWND)mHWND, 0,
+                 0, 0, 
+                 width, height,
+                 SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
 }
 
 //----------------------------------------------------------------------------------------
@@ -92,6 +106,10 @@ Window::HandleMessageReturn Window::HandleMessage(unsigned int message, unsigned
         }
         ret.handled = true; ret.retcode = 0;
         break;
+    case WM_SIZE: // Someone asked to resize the window
+        ResizeViewport(LOWORD(lParam), HIWORD(lParam));
+        ret.handled = true; ret.retcode = 0;
+        break;
     default:
         break;
     }
@@ -112,29 +130,64 @@ void Window::Internal_CreateWindow(const WindowConfig& config)
     DWORD windowStyle;
 
     // Compute window style
-    windowStyle = WS_OVERLAPPEDWINDOW | WS_SYSMENU;
+    //! \todo Add support for fullscreen mode
+    //! \todo Add support for windowStyleEx
+    windowStyle = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+    if (config.mIsChild)
+    {
+        windowStyle |= WS_CHILD;
+    }
+    else
+    {
+        windowStyle |= WS_OVERLAPPEDWINDOW | WS_SYSMENU;
+    }
     if (!config.mIsStartupWindow)
     {
         windowStyle |= WS_VISIBLE;
     }
 
+    // In windowed non-child mode, adjust the rectangle of the window
+    // to account for the title bar and the borders
+    int windowWidth = config.mWidth;
+    int windowHeight = config.mHeight;
+    if (!config.mIsChild /* & !config.mIsFullscreen*/)
+    {
+        RECT rect;
+        rect.left = 0;
+		rect.right = windowWidth;
+		rect.top = 0;
+		rect.bottom = windowHeight;
+		AdjustWindowRectEx(&rect, windowStyle, FALSE, /*windowStyleEx*/0);
+        windowWidth = rect.right - rect.left;
+        windowHeight = rect.bottom - rect.top;
+    }
+
     // Create window
     hCBTHook = SetWindowsHookEx(WH_CBT, CBTProc, 0, GetCurrentThreadId());
-    windowHandle = CreateWindowEx(NULL,
-                                    PEGASUS_WND_CLASSNAME,
-                                    PEGASUS_WND_WNDNAME,
-                                    windowStyle,
-                                    100, 100,
-                                    960, 540,
-                                    NULL,
-                                    NULL,
-                                    (HINSTANCE) config.mModuleHandle,
-                                    (LPVOID) this);
+    windowHandle = CreateWindowEx(0,
+                                  PEGASUS_WND_CLASSNAME,
+                                  PEGASUS_WND_WNDNAME,
+                                  windowStyle,
+                                  config.mIsChild ? 0 : 100, config.mIsChild ? 0 : 100,
+                                  windowWidth, windowHeight,
+                                  config.mIsChild ? (HWND)config.mParentWindowHandle : NULL,
+                                  NULL,
+                                  (HINSTANCE) config.mModuleHandle,
+                                  (LPVOID) this);
     if (!UnhookWindowsHookEx(hCBTHook))
     {
         //! \todo Assert or log here
         return;
     }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Window::ResizeViewport(int width, int height)
+{
+    PG_ASSERT(mApplication != nullptr);
+
+    mApplication->Resize(this, width, height);
 }
 
 //----------------------------------------------------------------------------------------

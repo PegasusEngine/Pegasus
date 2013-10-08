@@ -26,7 +26,11 @@
 Application::Application(QObject *parent)
 :   QThread(parent),
     mFileName(),
-    mViewportWidget(nullptr)
+    mApplication(nullptr),
+    mAppWindow(nullptr),
+    mViewportWindowHandle(0),
+    mViewportInitialWidth(128),
+    mViewportInitialHeight(128)
 {
 }
 
@@ -46,10 +50,16 @@ void Application::SetFile(const QString & fileName)
 
 //----------------------------------------------------------------------------------------
 
-void Application::SetViewport(/**index,*/ ViewportWidget * viewportWidget)
+void Application::SetViewportParameters(/**index,*/ Pegasus::Window::WindowHandle windowHandle,
+                                        int width, int height)
 {
-    ED_ASSERTSTR(viewportWidget != nullptr, "Invalid viewport widget set for an application.");
-    mViewportWidget = viewportWidget;
+    ED_ASSERTSTR(windowHandle != 0, "Invalid viewport window handle set for an application.");
+    ED_ASSERTSTR(width > 0, "Invalid viewport initial width (%d). It must be positive.", width);
+    ED_ASSERTSTR(height > 0, "Invalid viewport initial height (%d). It must be positive.", height);
+
+    mViewportWindowHandle = windowHandle;
+    mViewportInitialWidth = width;
+    mViewportInitialHeight = height;
 }
 
 //----------------------------------------------------------------------------------------
@@ -59,8 +69,6 @@ void Application::run()
     ED_ASSERTSTR(!mFileName.isEmpty(), "Invalid application to open, the name cannot be an empty string.");
     Pegasus::Application::ApplicationConfig appConfig;
     Pegasus::Application::AppWindowConfig windowConfig;
-    Pegasus::Application::IApplicationProxy* application = NULL;
-    Pegasus::Window::IWindowProxy* appWindow = NULL;
     int retVal = 0;
 
     //PG_ASSERTSTR(!mFileName.isEmpty(), "Invalid application to open, the name cannot be an empty string");
@@ -70,9 +78,9 @@ void Application::run()
         return;
     }
 
-    ED_ASSERTSTR(mViewportWidget != nullptr, "Invalid viewport widget set for an application.");
-    if (mViewportWidget == nullptr)
+    if (mViewportWindowHandle == 0)
     {
+        ED_FAILSTR("Invalid viewport window handle set for an application.");
         emit(LoadingError(ERROR_INVALID_VIEWPORT));
         return;
     }
@@ -115,24 +123,30 @@ void Application::run()
     Pegasus::Application::DestroyPegasusAppFuncPtr DestroyPegasusAppFunc = (Pegasus::Application::DestroyPegasusAppFuncPtr) destroyAppProcAddress;
 
     // Initialize the application
-    application = CreatePegasusAppFunc();
-    application->Initialize(appConfig);
+    mApplication = CreatePegasusAppFunc();
+    mApplication->Initialize(appConfig);
+
+    //! Set the window handler parent of the created child window
+    windowConfig.mIsChild = true;
+    windowConfig.mParentWindowHandle = mViewportWindowHandle;
+    windowConfig.mWidth = mViewportInitialWidth;
+    windowConfig.mHeight = mViewportInitialHeight;
 
     // Signal the success of the loading
     emit(LoadingSucceeded());
 
     // Set up windows
-    appWindow = application->AttachWindow(windowConfig);
+    mAppWindow = mApplication->AttachWindow(windowConfig);
 
     // Run the application loop
-    retVal = application->Run();
+    retVal = mApplication->Run();
 
     // Tear down windows
-    application->DetachWindow(appWindow);
+    mApplication->DetachWindow(mAppWindow);
 
     // Destroy the application
-    application->Shutdown();
-    DestroyPegasusAppFunc(application);
+    mApplication->Shutdown();
+    DestroyPegasusAppFunc(mApplication);
 
 #if PEGASUS_PLATFORM_WINDOWS
 
@@ -142,6 +156,17 @@ void Application::run()
 #else
 #error "Implement the unloading of the application library"
 #endif  // PEGASUS_PLATFORM_WINDOWS
+}
+
+//----------------------------------------------------------------------------------------
+
+void Application::ViewportResized(int width, int height)
+{
+    ED_ASSERT(mApplication != nullptr);
+    ED_ASSERT(mAppWindow != nullptr);
+
+    //! \todo Handle multiple windows
+    mApplication->ResizeWindow(mAppWindow, width, height);
 }
 
 //----------------------------------------------------------------------------------------
