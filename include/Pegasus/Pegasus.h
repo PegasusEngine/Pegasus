@@ -13,15 +13,9 @@
 #define PEGASUS_PEGASUS_H
 
 //== Includes ====
-// Compilation macro definitions
-// (included by the project when compiling engine, but required when compiling an app)
-#include "Pegasus/Preprocessor.h"
 
-// Assertion management, can be used anywhere
-#include "Pegasus/Core/Assertion.h"
-
-// Log messages, can be used anywhere
-#include "Pegasus/Core/Log.h"
+// Compilation macro definitions, assertion and log management
+#include "Pegasus/PegasusInternal.h"
 
 // Application base class
 #include "Pegasus/Application/Application.h"
