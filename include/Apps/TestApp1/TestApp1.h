@@ -29,6 +29,11 @@ public:
     virtual void Render();
 
 private:
+    // Helpers
+    void InitRendering();
+    void RenderFrame(float time);
+
+    static bool sAppInitted;
 
     int mViewportWidth;
     int mViewportHeight;
