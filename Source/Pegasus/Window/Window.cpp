@@ -133,7 +133,8 @@ void Window::Internal_CreateWindow(const WindowConfig& config)
     //! \todo Add support for fullscreen mode
     //! \todo Add support for windowStyleEx
     windowStyle = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
-    if (config.mIsChild)
+    bool isChildWindow = NULL != config.mParentWindowHandle;
+    if (isChildWindow)
     {
         windowStyle |= WS_CHILD;
     }
@@ -150,7 +151,7 @@ void Window::Internal_CreateWindow(const WindowConfig& config)
     // to account for the title bar and the borders
     int windowWidth = config.mWidth;
     int windowHeight = config.mHeight;
-    if (!config.mIsChild /* & !config.mIsFullscreen*/)
+    if (!isChildWindow)
     {
         RECT rect;
         rect.left = 0;
@@ -168,9 +169,9 @@ void Window::Internal_CreateWindow(const WindowConfig& config)
                                   PEGASUS_WND_CLASSNAME,
                                   PEGASUS_WND_WNDNAME,
                                   windowStyle,
-                                  config.mIsChild ? 0 : 100, config.mIsChild ? 0 : 100,
+                                  isChildWindow ? 0 : 100, isChildWindow ? 0 : 100,
                                   windowWidth, windowHeight,
-                                  config.mIsChild ? (HWND)config.mParentWindowHandle : NULL,
+                                  isChildWindow ? (HWND)config.mParentWindowHandle : NULL,
                                   NULL,
                                   (HINSTANCE) config.mModuleHandle,
                                   (LPVOID) this);
