@@ -32,21 +32,58 @@ GLuint shaderProgram;
 
 // Shaders
 const char* TRIANGLES_VERT =
-    "#version 430 core\n"
-    "layout (location = 0) in vec4 vPosition;\n"
-    "\n"
-    "void main()\n"
-    "{\n"
-    "    gl_Position = vPosition;\n"
-    "}\n";
+"#version 430 core                \n"
+"//HomoGay Triangle vx, by Kleber     \n "
+"layout(location = 0) in vec3 vPos; "
+"out vec4 screenPos;                "
+"uniform float time;               "
+"void main()                        "
+"{                                  "
+"    vec4 aspect = vec4(960.0f/540.0f, 1,1,1);        "
+"    gl_Position = aspect*vec4(vPos + vec3(0.2*sin(time*0.001),0.4*cos(time*0.001), 0) , 1.0f);"
+"    float st = sin(time*0.005);"
+"    float ct = cos(time*0.005);"
+"    vec4 r = vec4(st,ct,-ct,st);"
+"    gl_Position.xy = vec2(dot(gl_Position.xy,r.xy),dot(gl_Position.xy,r.zw));"
+"    screenPos = gl_Position ;       "
+"}                                ";
+
 const char* TRIANGLES_FRAG =
     "#version 430 core\n"
-    "out vec4 fColor;\n"
-    "\n"
-    "void main()\n"
-    "{\n"
-    "    fColor = vec4(0.0f, 0.0f, 1.0f, 1.0f);\n"
-    "}\n";
+    "//HomoGay Triangle fx, by Kleber     \n "
+    "in  vec4 screenPos;"
+    "out vec4 color;                     "
+    "uniform float time;"
+    "vec3 twist(vec3 p)"
+    "{"
+    "    p = vec3(0.3*sin((p.y+time*0.001)*2.7)+p.x,p.y,0.3*cos((p.y+time*0.001)*2.2)+p.z) ;"
+    "    return p;"
+    "}"
+    "void main()                        "
+    "{                                  "
+    "     vec3 camPos = vec3(0,0,-1);   "
+    "     vec3 camDir = normalize(screenPos.xyz - camPos);"
+    "     vec3 p = camPos;              "
+    "     float d = 10000;"
+    "     int j = 0;      "
+    "     for (int i = 0; i < 32; ++i)"
+    "     {"
+    "        const float radius = 0.7;"
+    "         vec3 twisted = twist(p);"
+    "        d = length(vec3(0,0,0.9) - twisted) - 0.7;"
+    "        if (d < 0.001)"
+    "        {"
+    "            break;"
+    "        }"
+    "        else"
+    "        {"
+    "            p += camDir * d;"
+    "            j = i; "
+    "        }"
+    "     }"
+    "    vec4 sphere = (d < 0.001 ? 1.0f : 0.0f) * vec4(0.7f * float(j)/32.0f + 0.2f, float(j)/32.0f + 0.1f,0,0);"
+    "    color = vec4(0,0,0.2,1) + sphere ;"
+    "} ";
 
 TestApp1::TestApp1()
 :   Pegasus::Application::Application(),
@@ -136,7 +173,8 @@ void TestApp1::InitRendering()
     glLinkProgram(shaderProgram);
     glGetProgramInfoLog(vertexShader, 4096, &buffSize, infoLog);
     glUseProgram(shaderProgram);
-
+    mTimeUniform = glGetUniformLocation(shaderProgram, "time");
+    mFrame = 0;
     // Bind vertex array to shader
     glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0); // 2 floats, non-normalized, 0 stride and offset
     glEnableVertexAttribArray(vPosition);
@@ -146,9 +184,10 @@ void TestApp1::RenderFrame(float time)
 {
     // Clear screen
     glClear(GL_COLOR_BUFFER_BIT);
-
+    ++mFrame;
     // Set up and draw triangles
     glBindVertexArray(VAOs[TRIANGLES]);
+    glUniform1f(mTimeUniform, static_cast<float>(mFrame));
     glDrawArrays(GL_TRIANGLES, 0, NUM_VERTS);
 
     // Kick the GPU

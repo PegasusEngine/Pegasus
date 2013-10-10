@@ -34,7 +34,8 @@ private:
     void RenderFrame(float time);
 
     static bool sAppInitted;
-
+    int mTimeUniform;
+    int mFrame;
     int mViewportWidth;
     int mViewportHeight;
 };
