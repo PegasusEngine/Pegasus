@@ -45,7 +45,7 @@ public:
     virtual ~Application();
 
     // Window API
-    Window::Window* AttachWindow(const AppWindowConfig& appWindowConfig);
+    virtual Window::Window* AttachWindow(const AppWindowConfig& appWindowConfig);
     void DetachWindow(const Window::Window* wnd);
     void ResizeWindow(Window::Window* wnd, int width, int height);
     //! \todo Set update mode
@@ -58,6 +58,9 @@ public:
     // Render API
     virtual void Resize(const Window::Window* wnd, int width, int height);
     virtual void Render();
+
+    //callback that client must implement
+    virtual void OnWindowReady(int windowId) = 0;
 
     //! Max number of windows per app
     static const unsigned int MAX_NUM_WINDOWS = 1;
