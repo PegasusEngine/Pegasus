@@ -40,6 +40,9 @@ public:
     //! for creating the initial render context
     bool mIsStartupWindow;
 
+    //! True if the window needs to be a child of a given parent window (mParentWindowHandle)
+    bool mIsChild;
+
     //! Platform-specific window handle of the parent window.
     //! Defined only when mIsChild == true
     WindowHandle mParentWindowHandle;
@@ -55,6 +58,7 @@ public:
         :   mModuleHandle(0),
             mApplication(nullptr),
             mIsStartupWindow(false),
+            mIsChild(false),
             mWidth(960),
             mHeight(540),
             mParentWindowHandle(0)

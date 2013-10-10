@@ -143,6 +143,7 @@ Window::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig
     config.mModuleHandle = mModuleHandle;
     config.mApplication = this;
     config.mIsStartupWindow = false;
+    config.mIsChild = appWindowConfig.mIsChild;
     config.mParentWindowHandle = appWindowConfig.mParentWindowHandle;
     config.mWidth = appWindowConfig.mWidth;
     config.mHeight = appWindowConfig.mHeight;
@@ -201,6 +202,7 @@ void Application::StartupAppInternal()
     config.mModuleHandle = mModuleHandle;
     config.mApplication = this;
     config.mIsStartupWindow = true;
+    config.mIsChild = false;
     config.mWidth = 128;
     config.mHeight = 128;
     newWnd = new Window::Window(config);

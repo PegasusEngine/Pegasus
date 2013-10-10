@@ -107,6 +107,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     application->Initialize(appConfig);
 
     //! Set up windows
+    windowConfig.mIsChild = false;
     windowConfig.mWidth = 960;
     windowConfig.mHeight = 540;
     appWindow = application->AttachWindow(windowConfig);

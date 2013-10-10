@@ -32,6 +32,9 @@ public:
 struct AppWindowConfig
 {
 public:
+    //! True if the window needs to be a child of a given parent window (mParentWindowHandle)
+    bool mIsChild;
+
     //! Platform-specific window handle of the parent window.
     //! Defined only when mIsChild == true
     Window::WindowHandle mParentWindowHandle;
@@ -44,7 +47,8 @@ public:
 
     //! Default constructor
     inline AppWindowConfig()
-        :   mParentWindowHandle(0),
+        :   mIsChild(false),
+            mParentWindowHandle(0),
             mWidth(960),
             mHeight(540)
         { }

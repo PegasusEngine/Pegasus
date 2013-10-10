@@ -127,6 +127,7 @@ void Application::run()
     mApplication->Initialize(appConfig);
 
     //! Set the window handler parent of the created child window
+    windowConfig.mIsChild = true;
     windowConfig.mParentWindowHandle = mViewportWindowHandle;
     windowConfig.mWidth = mViewportInitialWidth;
     windowConfig.mHeight = mViewportInitialHeight;
