@@ -12,24 +12,8 @@
 #ifndef TESTAPP1_H
 #define TESTAPP1_H
 
-#include "Pegasus/Pegasus.h" 
-#define GLEW_STATIC 1
-#include "Pegasus/Libs/GLEW/glew.h"
+#include "Pegasus/Pegasus.h"
 
-//small struct to keep track of context related data
-
-struct TestApp1RenderContextData
-{
-    GLuint mProgram; 
-    GLuint mVertexArray;
-    GLuint mVertexBuffer;
-    GLuint mIndexBuffer;
-    GLuint mTimeUniform;
-    TestApp1RenderContextData()
-    : mProgram(0)
-    {
-    }
-};
 
 class TestApp1 : public Pegasus::Application::Application
 {
@@ -44,25 +28,15 @@ public:
     virtual void Resize(const Pegasus::Window::Window * wnd, int width, int height);
     virtual void Render();
 
-    // Application callback implementations
-    virtual void OnWindowReady(int id);
-
-    //functions that contain boiler plate code for shader initialization
-    //these can go into our opengl Rendering library
-    GLuint CompileShaderSource(const char * src, GLenum type) const;
-    void   HandleShaderError(GLuint object, const char * message) const;
-    void   HandleProgramError(GLuint object, const char * message) const;
-    GLuint CreateProgram(const char * vertexShaderSource, const char * fragmentShaderSource) const;
-    GLuint CreateVertexBuffer(GLfloat * vertices, GLuint length) const;
-    GLuint CreateIndexBuffer(GLushort * indices, GLuint length) const;
-    
-
 private:
+    // Helpers
+    void InitRendering();
+    void RenderFrame(float time);
+
+    static bool sAppInitted;
 
     int mViewportWidth;
     int mViewportHeight;
-    int mFrame;
-    TestApp1RenderContextData mRenderContextData;    
 };
 
 

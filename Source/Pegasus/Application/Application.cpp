@@ -153,14 +153,8 @@ Window::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig
     //! \todo Assert on windows list not full
     if (newWnd)
     {
-        int windowId = mNumWindows;
         mWindows[mNumWindows++] = newWnd;
-        OnWindowReady(windowId);
     }
-    
-    // TODO: meet with the guys and redesign the context initialization.
-    // for now the first window only gets vertices / shaders and render targets/
-    // each window is its own context and has its own shaders and gpu objects
 
     return newWnd;
 }
