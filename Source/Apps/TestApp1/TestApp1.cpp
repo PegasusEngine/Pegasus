@@ -182,6 +182,8 @@ void TestApp1::InitRendering()
 
 void TestApp1::RenderFrame(float time)
 {
+    glViewport(0, 0, mViewportWidth, mViewportHeight);
+
     // Clear screen
     glClear(GL_COLOR_BUFFER_BIT);
     ++mFrame;
