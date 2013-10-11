@@ -24,7 +24,7 @@ namespace Application {
 //----------------------------------------------------------------------------------------
 
 Application::Application()
-    : mInitialized(false), mModuleHandle(NULL), mNumWindows(0)
+    : mInitialized(false), mModuleHandle(NULL), mAppTime(0.0f), mNumWindows(0)
 {
     // Init windows array
     for (unsigned int i = 0; i < MAX_NUM_WINDOWS; i++)
@@ -112,6 +112,8 @@ int Application::Run()
 
     return 0;
 }
+
+//----------------------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------------------
 

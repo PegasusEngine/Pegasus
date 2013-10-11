@@ -43,7 +43,9 @@ public:
     virtual void Initialize(const ApplicationConfig& config);
     virtual void Shutdown();
     virtual int Run();
+
     //! \todo Set update mode
+    virtual void SetAppTime(float time);
 
     // Render API
     virtual void Resize(const Window::IWindowProxy* wnd, int width, int height);

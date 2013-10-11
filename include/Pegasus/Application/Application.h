@@ -55,6 +55,10 @@ public:
     virtual void Shutdown();
     int Run();
 
+    // Update API
+    inline void SetAppTime(float time) { mAppTime = time; };
+    inline float GetAppTime() const { return mAppTime; };
+
     // Render API
     virtual void Resize(const Window::Window* wnd, int width, int height);
     virtual void Render();
@@ -77,6 +81,9 @@ private:
 
     //! Application instance
     Window::ModuleHandle mModuleHandle;
+
+    //! Current app time
+    float mAppTime;
 
     //! App windows
     Window::Window* mWindows[MAX_NUM_WINDOWS];

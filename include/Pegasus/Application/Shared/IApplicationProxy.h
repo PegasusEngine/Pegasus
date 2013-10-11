@@ -63,8 +63,12 @@ public:
     //! \return Return code.
     //! \note This method does not return until the user closes the application.
     virtual int Run() = 0;
-    //! \todo Set update mode
 
+
+    //! \todo Set update mode
+    //! Sets the current time into the timeline for this application.
+    //! \param time Desired application time.
+    virtual void SetAppTime(float time) = 0;
 
     //! Renders a frame.
     virtual void Render() = 0;

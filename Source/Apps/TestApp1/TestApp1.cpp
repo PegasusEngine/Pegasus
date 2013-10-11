@@ -186,7 +186,7 @@ void TestApp1::RenderFrame(float time)
 
     // Clear screen
     glClear(GL_COLOR_BUFFER_BIT);
-    ++mFrame;
+    mFrame = (int) (GetAppTime() * 60.0f); // Time is in s
     // Set up and draw triangles
     glBindVertexArray(VAOs[TRIANGLES]);
     glUniform1f(mTimeUniform, static_cast<float>(mFrame));

@@ -86,6 +86,13 @@ int ApplicationProxy::Run()
 
 //----------------------------------------------------------------------------------------
 
+void ApplicationProxy::SetAppTime(float time)
+{
+    mObject->SetAppTime(time);
+}
+
+//----------------------------------------------------------------------------------------
+
 void ApplicationProxy::Render()
 {
     mObject->Render();
