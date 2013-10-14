@@ -31,7 +31,7 @@ void GLExtensions::CreateInstance()
     if (sInstance == nullptr)
     {
         //! \todo Allocator management
-        sInstance = new GLExtensions;
+        sInstance = PG_CORE_NEW("GLExtensions", Pegasus::Memory::PG_MEM_PERM) GLExtensions;
     }
     else
     {
@@ -45,7 +45,7 @@ void GLExtensions::DestroyInstance()
 {
     if (sInstance != nullptr)
     {
-        delete sInstance;
+        PG_DELETE sInstance;
         sInstance = nullptr;
     }
     else

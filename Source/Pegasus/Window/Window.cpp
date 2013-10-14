@@ -82,7 +82,7 @@ Window::HandleMessageReturn Window::HandleMessage(unsigned int message, unsigned
             //! \todo Need real allocators
             // Create context
             contextConfig.mStartupContext = mIsStartupWindow;
-            mRenderContext = new Render::Context(contextConfig);
+            mRenderContext = PG_CORE_NEW("Render::Context", Pegasus::Memory::PG_MEM_PERM) Render::Context(contextConfig);
         }
         ret.handled = true; ret.retcode = 0;
         break;
@@ -90,7 +90,7 @@ Window::HandleMessageReturn Window::HandleMessage(unsigned int message, unsigned
         {
             //! \todo Need real allocators
             // Destroy context
-            delete mRenderContext;
+            PG_DELETE mRenderContext;
         }
         ret.handled = true; ret.retcode = 0;
         break;

@@ -149,7 +149,7 @@ Window::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig
     config.mParentWindowHandle = appWindowConfig.mParentWindowHandle;
     config.mWidth = appWindowConfig.mWidth;
     config.mHeight = appWindowConfig.mHeight;
-    newWnd = new Window::Window(config);
+    newWnd = PG_CORE_NEW("Window", Pegasus::Memory::PG_MEM_PERM) Window::Window(config);
 
     // Assign it
     //! \todo Assert on windows list not full
@@ -168,7 +168,7 @@ void Application::DetachWindow(const Window::Window* wnd)
     //! \todo Assert window not null
     //! \todo Assert window ID in range
     //delete mWindows[mNumWindows - 1];
-    delete wnd;
+    PG_DELETE wnd;
     mWindows[mNumWindows - 1] = nullptr; // Aliases wnd
     mNumWindows--;
 }
@@ -207,7 +207,7 @@ void Application::StartupAppInternal()
     config.mIsChild = false;
     config.mWidth = 128;
     config.mHeight = 128;
-    newWnd = new Window::Window(config);
+    newWnd = PG_CORE_NEW("Temp Window", Pegasus::Memory::PG_MEM_TEMP) Window::Window(config);
 
     // Init openGL extensions now that we have a context
     Render::GLExtensions::CreateInstance();
@@ -263,7 +263,7 @@ void Application::StartupAppInternal()
     }
 
     // Destroy the window, it is no longer needed
-    delete newWnd;
+    PG_DELETE newWnd;
 }
 
 //----------------------------------------------------------------------------------------

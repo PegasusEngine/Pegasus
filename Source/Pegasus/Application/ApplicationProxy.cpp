@@ -37,7 +37,7 @@ ApplicationProxy::~ApplicationProxy()
 Window::IWindowProxy* ApplicationProxy::AttachWindow(const AppWindowConfig& config)
 {
     Window::Window* wnd = mObject->AttachWindow(config);
-    Window::WindowProxy* proxy = new Window::WindowProxy(wnd); // Wrap in proxy
+    Window::WindowProxy* proxy = PG_CORE_NEW("WindowProxy", Pegasus::Memory::PG_MEM_PERM) Window::WindowProxy(wnd); // Wrap in proxy
 
     return proxy;
 }

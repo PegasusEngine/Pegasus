@@ -12,8 +12,11 @@
 #ifndef PEGASUS_CORE_SINGLETON_H
 #define PEGASUS_CORE_SINGLETON_H
 
+#define _STRINGIFY_SINGLETON_CLASS(C) #C
+
 namespace Pegasus {
 namespace Core {
+
 
 
 //! Singleton with manual creation/destruction.
@@ -110,14 +113,13 @@ template <class C>
 C * AutoSingleton<C>::sInstance = nullptr;
 
 //----------------------------------------------------------------------------------------
-
 template <class C>
 void ManualSingleton<C>::CreateInstance()
 {
     if (sInstance == nullptr)
     {
         //! \todo Provide an allocator
-        sInstance = new C();
+        sInstance = PG_CORE_NEW(_STRINGIFY_SINGLETON_CLASS(C),Pegasus::Memory::PG_MEM_PERM) C();
     }
     else
     {
@@ -133,7 +135,7 @@ void ManualSingleton<C>::DestroyInstance()
     if (sInstance != nullptr)
     {
         //! \todo Provide an allocator
-        delete sInstance;
+        PG_DELETE sInstance;
         sInstance = nullptr;
     }
     else
@@ -158,7 +160,7 @@ C & AutoSingleton<C>::GetInstance()
     if (sInstance == nullptr)
     {
         //! \todo Provide an allocator?
-        sInstance = new C();
+        sInstance = PG_CORE_NEW(_STRINGIFY_SINGLETON_CLASS(C),Pegasus::Memory::PG_MEM_PERM) C();
     }
 
     return *sInstance;

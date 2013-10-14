@@ -17,11 +17,16 @@
 // (included by the project when compiling engine, but required when compiling an app)
 #include "Pegasus/Preprocessor.h"
 
+// Pegasus memory management
+#include "Pegasus/Memory/Memory.h"
+
 // Assertion management, can be used anywhere
 #include "Pegasus/Core/Assertion.h"
 
 // Log messages, can be used anywhere
 #include "Pegasus/Core/Log.h"
+
+
 
 
 #endif  // PEGASUS_PEGASUSINTERNAL_H

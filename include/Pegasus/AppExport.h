@@ -19,12 +19,12 @@ extern "C" {
 #endif
 PEGASUSAPP_SHARED Pegasus::Application::IApplicationProxy* CreatePegasusApp()
 {
-    return new Pegasus::Application::ApplicationProxy();
+    return PG_CORE_NEW("ApplicationProxy", Pegasus::Memory::PG_MEM_PERM) Pegasus::Application::ApplicationProxy();
 }
 
 PEGASUSAPP_SHARED void DestroyPegasusApp(Pegasus::Application::IApplicationProxy* app)
 {
-    delete app;
+    PG_DELETE app;
 }
 #ifdef __cplusplus
 }

@@ -33,7 +33,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     Pegasus::Application::IApplicationProxy* application = NULL;
     Pegasus::Window::IWindowProxy* appWindow = NULL;
     int retVal = 0;
-
     // Check the command line for the name of the app to load.
     // It needs to be at least 5 characters long (x.dll)
     if ((lpCmdLine == NULL) || (strnlen_s(lpCmdLine, 8) < 5))

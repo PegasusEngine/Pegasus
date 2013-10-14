@@ -42,7 +42,7 @@ private:
 
 
 //! \todo Make this a macro with only the name of the app class as parameter
-Pegasus::Application::Application * CreateApplication() { return new TestApp1(); }
-void DestroyApplication(Pegasus::Application::Application* app) { delete app; }
+Pegasus::Application::Application * CreateApplication() { return PG_CORE_NEW("TestApp1", Pegasus::Memory::PG_MEM_PERM) TestApp1(); }
+void DestroyApplication(Pegasus::Application::Application* app) { PG_DELETE app; }
 
 #endif  // TESTAPP1_H
