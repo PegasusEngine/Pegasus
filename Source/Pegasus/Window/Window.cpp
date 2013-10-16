@@ -95,8 +95,22 @@ Window::HandleMessageReturn Window::HandleMessage(unsigned int message, unsigned
         ret.handled = true; ret.retcode = 0;
         break;
     case WM_PAINT: // Someone requested a redraw of the window
-        //! \todo We need to call the render() method here
-        ret.handled = true; ret.retcode = 0;
+#if PEGASUS_ENABLE_ASSERT
+        if (!Core::AssertionManager::GetInstance().IsAssertionBeingHandled())
+#endif
+        {
+            PAINTSTRUCT ps;
+            BeginPaint((HWND)mHWND, &ps);
+            //! \todo Render only the current window, not all of them
+            mApplication->Render();
+            EndPaint((HWND)mHWND, &ps);
+        }
+
+        //! \todo Temporarily letting the default message handler being called to allow
+        //!       the assertion dialog box to not freeze the application thread
+        //!       (the window needs an extra paint call to unfreeze)
+        //ret.handled = true; ret.retcode = 0;
+
         break;
     case WM_CLOSE: // Someone asked to close the window
         //! \todo We really need a better way of quitting out than this, for multi monitors
@@ -205,7 +219,7 @@ bool Window::RegisterWindowClass(ModuleHandle handle)
     windowClass.hInstance = (HINSTANCE) handle;
     windowClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
     windowClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-    windowClass.hbrBackground = (HBRUSH) GetStockObject(WHITE_BRUSH);
+    windowClass.hbrBackground = NULL;
     windowClass.lpszMenuName = NULL;
     windowClass.lpszClassName = PEGASUS_WND_CLASSNAME;
     windowClass.hIconSm = LoadIcon(NULL, IDI_WINLOGO);

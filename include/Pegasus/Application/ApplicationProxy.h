@@ -47,6 +47,15 @@ public:
     //! \todo Set update mode
     virtual void SetAppTime(float time);
 
+    // Debug API
+#if PEGASUS_ENABLE_LOG
+    virtual void RegisterLogHandler(Core::LogManager::Handler handler);
+#endif
+#if PEGASUS_ENABLE_ASSERT
+    virtual void RegisterAssertionHandler(Core::AssertionManager::Handler handler);
+    virtual void InvalidateWindows();
+#endif
+
     // Render API
     virtual void Resize(const Window::IWindowProxy* wnd, int width, int height);
     virtual void Render();

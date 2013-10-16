@@ -59,7 +59,7 @@ void ApplicationManager::OpenApplication(const QString & fileName)
     }
 
     // Create the application object, and set its parameters
-    mApplication = new Application();
+    mApplication = new Application(this);
     mApplication->SetFile(fileName);
     //! \todo Handle multiple dock widgets and multiple viewports
     ViewportWidget * viewportWidget = mViewportDockWidget->GetViewportWidget(/**0**/);

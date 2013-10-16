@@ -27,7 +27,8 @@ static const size_t ASSERTIONERRORARGS_BUFFER_SIZE = 1024;
 //----------------------------------------------------------------------------------------
 
 AssertionManager::AssertionManager()
-:   mHandler(nullptr)
+:   mHandler(nullptr),
+    mAssertionBeingHandled(false)
 {
 }
 
@@ -53,10 +54,10 @@ void AssertionManager::UnregisterHandler()
 
 //----------------------------------------------------------------------------------------
 
-void AssertionManager::AssertionError(const char * testStr,
-                                      const char * fileStr,
-                                      int line,
-                                      const char * msgStr, ...)
+AssertionManager::ReturnCode AssertionManager::AssertionError(const char * testStr,
+                                                              const char * fileStr,
+                                                              int line,
+                                                              const char * msgStr, ...)
 {
     if (mHandler != nullptr)
     {
@@ -78,7 +79,12 @@ void AssertionManager::AssertionError(const char * testStr,
             formattedString = buffer;
         }
 
-        mHandler(testStr, fileStr, line, formattedString);
+        // Call the registered assertion handler
+        mAssertionBeingHandled = true;
+        ReturnCode returnCode = mHandler(testStr, fileStr, line, formattedString);
+        mAssertionBeingHandled = false;
+
+        return returnCode;
     }
     else
     {
@@ -89,6 +95,8 @@ void AssertionManager::AssertionError(const char * testStr,
         static volatile char * crashMe = 0;
         *crashMe = 0;
 #endif
+
+        return ASSERTION_BREAK;
     }
 }
 

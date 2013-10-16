@@ -18,7 +18,6 @@ namespace Pegasus {
 namespace Core {
 
 
-
 //! Singleton with manual creation/destruction.
 //! Base class for an object that has to exist only once in the application.
 //! Creation and destruction have to be handled manually.

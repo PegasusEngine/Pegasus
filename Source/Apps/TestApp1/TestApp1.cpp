@@ -191,8 +191,4 @@ void TestApp1::RenderFrame(float time)
     glBindVertexArray(VAOs[TRIANGLES]);
     glUniform1f(mTimeUniform, static_cast<float>(mFrame));
     glDrawArrays(GL_TRIANGLES, 0, NUM_VERTS);
-
-    // Kick the GPU
-    glFlush();
 }
-

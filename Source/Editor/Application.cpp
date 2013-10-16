@@ -10,11 +10,16 @@
 //! \brief	Worker thread to contain an application to run
 
 #include "Application.h"
+#include "ApplicationManager.h"
+
 #include "Viewport/ViewportWidget.h"
 #include "Pegasus/Preprocessor.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Window/Shared/IWindowProxy.h"
+
+#include <QTimer>
+
 #include <stdio.h>
 
 #if PEGASUS_PLATFORM_WINDOWS
@@ -30,8 +35,18 @@ Application::Application(QObject *parent)
     mAppWindow(nullptr),
     mViewportWindowHandle(0),
     mViewportInitialWidth(128),
-    mViewportInitialHeight(128)
+    mViewportInitialHeight(128),
+    mAssertionBeingHandled(false),
+    mAssertionReturnCode(AssertionManager::ASSERTION_INVALID)
 {
+    // Create the window redrawing timer
+    // (5 ms to avoid spamming the message loop when user interaction happens, but low enough to get a good framerate)
+    mTimer = new QTimer(nullptr);
+    connect(mTimer, SIGNAL(timeout()), this, SLOT(RedrawChildWindows()));
+    mTimer->setInterval(5);
+
+    // Move the timer to the application thread, as we want it to be triggered only once per message loop processing
+    mTimer->moveToThread(this);
 }
 
 //----------------------------------------------------------------------------------------
@@ -126,6 +141,27 @@ void Application::run()
     mApplication = CreatePegasusAppFunc();
     mApplication->Initialize(appConfig);
 
+    // Attach the debugging features
+    // (queued connections as the connections are between threads)
+    ApplicationManager * applicationManager = qobject_cast<ApplicationManager *>(parent());
+    if (applicationManager != nullptr)
+    {
+        qRegisterMetaType<Pegasus::Core::LogChannel>("Pegasus::Core::LogChannel");
+	    connect(this, SIGNAL(LogSentFromApplication(Pegasus::Core::LogChannel, const QString &)),
+                this, SLOT(LogReceivedFromApplication(Pegasus::Core::LogChannel, const QString &)),
+                Qt::QueuedConnection);
+        mApplication->RegisterLogHandler(LogHandler);
+
+        connect(this, SIGNAL(AssertionSentFromApplication(const QString &, const QString &, int, const QString &)),
+                this, SLOT(AssertionReceivedFromApplication(const QString &, const QString &, int, const QString &)),
+                Qt::QueuedConnection);
+        mApplication->RegisterAssertionHandler(AssertionHandler);
+    }
+    else
+    {
+        ED_FAILSTR("Unable to register the assertion handler, since Application object's parent is not an ApplicationManager.");
+    }
+
     //! Set the window handler parent of the created child window
     windowConfig.mIsChild = true;
     windowConfig.mParentWindowHandle = mViewportWindowHandle;
@@ -138,8 +174,16 @@ void Application::run()
     // Set up windows
     mAppWindow = mApplication->AttachWindow(windowConfig);
 
-    // Run the application loop
-    retVal = mApplication->Run();
+    // Start the timer that forces the redrawing of the app windows
+    mTimer->start();
+
+    // Run the application loop. Does not use Application->Run() since we want to control
+    // the sequencing of the message loop from the editor, and to allow assertion dialog boxes to work correctly.
+    // Uses QThread::exec() rather than QEventLoop::exec() to allow the mTimer to work.
+    this->exec();
+
+    // Stop the redrawing timer
+    mTimer->stop();
 
     // Tear down windows
     mApplication->DetachWindow(mAppWindow);
@@ -160,6 +204,74 @@ void Application::run()
 
 //----------------------------------------------------------------------------------------
 
+void Application::EmitLogFromApplication(Pegasus::Core::LogChannel logChannel, const QString & msgStr)
+{
+    // Emit the log message through an enqueued connection to the editor thread
+    emit LogSentFromApplication(logChannel, msgStr);
+}
+
+//----------------------------------------------------------------------------------------
+
+Pegasus::Core::AssertionManager::ReturnCode Application::EmitAssertionFromApplication(const QString & testStr,
+                                                                                      const QString & fileStr,
+                                                                                      int line,
+                                                                                      const QString & msgStr)
+{
+    // Stop the forced redraw of the window content
+    mTimer->stop();
+
+    // Tell the app windows to not render anything
+    mAssertionBeingHandled = true;
+
+    // Emit the assertion error through a non-blocking enqueued connection to the editor thread
+    emit AssertionSentFromApplication(testStr, fileStr, line, msgStr);
+
+    // Run an event loop, so we can intercept Qt and OS messages.
+    // Stop the loop once we have an available assertion return code.
+    mAssertionReturnCode = AssertionManager::ASSERTION_INVALID;
+    QEventLoop * eventLoop = new QEventLoop(nullptr);
+    while (mAssertionReturnCode == AssertionManager::ASSERTION_INVALID)
+    {
+        eventLoop->processEvents(QEventLoop::AllEvents);
+    }
+    delete eventLoop;
+
+    Pegasus::Core::AssertionManager::ReturnCode returnCode = Pegasus::Core::AssertionManager::ASSERTION_CONTINUE;
+    if (mAssertionReturnCode == AssertionManager::ASSERTION_IGNORE)
+    {
+        returnCode = Pegasus::Core::AssertionManager::ASSERTION_IGNORE;
+    }
+    else if (mAssertionReturnCode == AssertionManager::ASSERTION_IGNOREALL)
+    {
+        returnCode = Pegasus::Core::AssertionManager::ASSERTION_IGNOREALL;
+    }
+    else if (mAssertionReturnCode == AssertionManager::ASSERTION_BREAK)
+    {
+        // If a debug break is required, perform it here to get the debugger on the right thread and close to the assertion function call
+#if PEGASUS_COMPILER_MSVC
+        // Break into the debugger
+        __debugbreak();
+#else
+#error "Debug break is not implemented on this platform"
+#endif
+
+        returnCode = Pegasus::Core::AssertionManager::ASSERTION_BREAK;
+    }
+
+    // Reset the return code until the next assertion error   
+    mAssertionReturnCode = AssertionManager::ASSERTION_INVALID;
+
+    // Allow the app windows to render their content 
+    mAssertionBeingHandled = false;
+
+    // Restart the forceful redrawing of the app windows
+    mTimer->start();
+
+    return returnCode;
+}
+
+//----------------------------------------------------------------------------------------
+
 void Application::ViewportResized(int width, int height)
 {
     ED_ASSERT(mApplication != nullptr);
@@ -171,7 +283,68 @@ void Application::ViewportResized(int width, int height)
 
 //----------------------------------------------------------------------------------------
 
+void Application::RedrawChildWindows()
+{
+    // Let the redrawing happen only when no assertion dialog is present
+    if (!mAssertionBeingHandled)
+    {
+        mApplication->InvalidateWindows();
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Application::LogReceivedFromApplication(Pegasus::Core::LogChannel logChannel, const QString & msgStr)
+{
+    Editor::GetInstance().GetLogManager().LogNoFormat(logChannel, msgStr);
+}
+
+//----------------------------------------------------------------------------------------
+
+void Application::AssertionReceivedFromApplication(const QString & testStr, const QString & fileStr, int line, const QString & msgStr)
+{
+    // Open the actual assertion dialog box.
+    // Store the return code to unfreeze the application thread.
+    mAssertionReturnCode = Editor::GetInstance().GetAssertionManager().AssertionErrorNoFormat(testStr, fileStr, line, msgStr, false);
+}
+
+//----------------------------------------------------------------------------------------
+
 void Application::LogHandler(Pegasus::Core::LogChannel logChannel, const char * msgStr)
 {
-    /****/
+    // Static log handler, so it cannot emit any signal.
+    // We have to call a member function, running in the application thread
+    Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
+    if (application != nullptr)
+    {
+        // Convert msgStr to a string, then send it through an enqueued connection
+        // to the editor thread
+        application->EmitLogFromApplication(logChannel, msgStr);
+    }
+    else
+    {
+        ED_FAILSTR("Trying to log a message from the current application, which is undefined.");
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+Pegasus::Core::AssertionManager::ReturnCode Application::AssertionHandler(const char * testStr,
+                                                                          const char * fileStr,
+                                                                          int line,
+                                                                          const char * msgStr)
+{
+    // Static assertion handler, so it cannot emit any signal.
+    // We have to call a member function, running in the application thread
+    Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
+    if (application != nullptr)
+    {
+        // Convert testStr, fileStr and msgStr to strings, then send them through a blocking enqueued connection to the editor thread
+        return application->EmitAssertionFromApplication(testStr, fileStr, line, msgStr);
+    }
+    else
+    {
+        ED_FAILSTR("Trying to send an assertion error from the current application, which is undefined.");
+        return Pegasus::Core::AssertionManager::ASSERTION_BREAK;
+    }
 }

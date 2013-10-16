@@ -48,6 +48,9 @@ public:
     //! Get the assertion manager, used by all assertion macros
     inline AssertionManager & GetAssertionManager() const { return *mAssertionManager; }
 
+    //! Get the application manager
+    inline ApplicationManager & GetApplicationManager() const { return *mApplicationManager; }
+
     //------------------------------------------------------------------------------------
 
 public:

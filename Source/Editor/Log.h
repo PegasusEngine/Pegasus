@@ -46,6 +46,11 @@ public:
     //! \warning Do not use QString directly as a parameter, call .toLatin1().constData() first.
     void Log(Pegasus::Core::LogChannel logChannel, const char * msgStr, ...);
 
+    //! Send an unformatted message to the console dock widget, for a specific log channel.
+    //! \param logChannel Log channel that receives the message
+    //! \param msgStr String of the message to log
+    void LogNoFormat(Pegasus::Core::LogChannel logChannel, const QString & msgStr);
+
 private:
 
     //! Pointer to the parent Editor object

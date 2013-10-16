@@ -12,6 +12,12 @@
 #ifndef PEGASUS_SHARED_IAPPLICATIONPROXY_H
 #define PEGASUS_SHARED_IAPPLICATIONPROXY_H
 
+// Those includes are not required to compile Pegasus, but they become important
+// when compiling an external application using the proxy, such as the editor
+#include "Pegasus/Core/Log.h"
+#include "Pegasus/Core/Assertion.h"
+
+
 // Forward declarations
 namespace Pegasus {
     namespace Application {
@@ -63,9 +69,29 @@ public:
     //! \return Return code.
     //! \note This method does not return until the user closes the application.
     virtual int Run() = 0;
-
-
     //! \todo Set update mode
+
+
+#if PEGASUS_ENABLE_LOG
+    //! Register the log handler of the application.
+    //! This is called by the application launcher to set a callback
+    //! for log messages emitted from the application itself
+    //! \param handler Handler function defined in the launcher
+    virtual void RegisterLogHandler(Core::LogManager::Handler handler) = 0;
+#endif
+
+#if PEGASUS_ENABLE_ASSERT
+    //! Register the assertion handler of the application.
+    //! This is called by the application launcher to set a callback
+    //! for assertion errors emitted from the application itself
+    //! \param handler Handler function defined in the launcher
+    virtual void RegisterAssertionHandler(Core::AssertionManager::Handler handler) = 0;
+
+    //! Called when a request to redraw the content of the application windows is sent
+    //! \todo Temporary, we need a better way to draw, on a per-window basis
+    virtual void InvalidateWindows() = 0;
+#endif
+
     //! Sets the current time into the timeline for this application.
     //! \param time Desired application time.
     virtual void SetAppTime(float time) = 0;

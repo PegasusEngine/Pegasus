@@ -30,6 +30,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Pegasus", "Pegasus\Pegasus.
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Editor", "Editor\Editor.vcxproj", "{13712E99-DD06-4C3A-85AE-102B3654679E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CDBC735A-BBD9-48FA-AC97-3FDB4EC980F0} = {CDBC735A-BBD9-48FA-AC97-3FDB4EC980F0}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Launcher", "Launcher\Launcher.vcxproj", "{C8DD5CB8-24C9-4BA1-BDA2-E096C0D8D83C}"
 	ProjectSection(ProjectDependencies) = postProject

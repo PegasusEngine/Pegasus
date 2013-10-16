@@ -46,10 +46,18 @@ void LogManager::Log(Pegasus::Core::LogChannel logChannel, const char * msgStr, 
         va_end(args);
 
         // Send the formatted log message
+        // (converts buffer to a QString during the function call)
         Editor::GetInstance().GetConsoleDockWidget()->AddMessage(logChannel, buffer);
     }
     else
     {
         ED_FAILSTR("Invalid log message. The input message is a null string.");
     }
+}
+
+//----------------------------------------------------------------------------------------
+
+void LogManager::LogNoFormat(Pegasus::Core::LogChannel logChannel, const QString & msgStr)
+{
+    Editor::GetInstance().GetConsoleDockWidget()->AddMessage(logChannel, msgStr);
 }

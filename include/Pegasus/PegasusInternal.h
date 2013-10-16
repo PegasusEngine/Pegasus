@@ -27,6 +27,4 @@
 #include "Pegasus/Core/Log.h"
 
 
-
-
 #endif  // PEGASUS_PEGASUSINTERNAL_H

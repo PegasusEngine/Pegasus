@@ -55,9 +55,18 @@ public:
     virtual void Shutdown();
     int Run();
 
+    // Debug API
+#if PEGASUS_ENABLE_LOG
+    virtual void RegisterLogHandler(Core::LogManager::Handler handler);
+#endif
+#if PEGASUS_ENABLE_ASSERT
+    virtual void RegisterAssertionHandler(Core::AssertionManager::Handler handler);
+    virtual void InvalidateWindows();
+#endif
+
     // Update API
-    inline void SetAppTime(float time) { mAppTime = time; };
-    inline float GetAppTime() const { return mAppTime; };
+    inline void SetAppTime(float time) { mAppTime = time; }
+    inline float GetAppTime() const { return mAppTime; }
 
     // Render API
     virtual void Resize(const Window::Window* wnd, int width, int height);

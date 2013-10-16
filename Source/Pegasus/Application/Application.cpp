@@ -115,6 +115,36 @@ int Application::Run()
 
 //----------------------------------------------------------------------------------------
 
+#if PEGASUS_ENABLE_LOG
+void Application::RegisterLogHandler(Core::LogManager::Handler handler)
+{
+    Core::LogManager::GetInstance().RegisterHandler(handler);
+}
+#endif  // PEGASUS_ENABLE_LOG
+
+//----------------------------------------------------------------------------------------
+
+#if PEGASUS_ENABLE_ASSERT
+void Application::RegisterAssertionHandler(Core::AssertionManager::Handler handler)
+{
+    Core::AssertionManager::GetInstance().RegisterHandler(handler);
+}
+#endif  // PEGASUS_ENABLE_ASSERT
+
+//----------------------------------------------------------------------------------------
+
+#if PEGASUS_ENABLE_ASSERT
+void Application::InvalidateWindows()
+{
+    // Request a rendering of all windows in the next message loop
+    //! \todo Temporary, this should be done on a per-window basis
+    for (unsigned int i = 0; i < mNumWindows; i++)
+    {
+        InvalidateRect((HWND)mWindows[i]->GetHandle(), NULL, FALSE);
+    }
+}
+#endif  // PEGASUS_ENABLE_ASSERT
+
 //----------------------------------------------------------------------------------------
 
 void Application::Resize(const Window::Window* wnd, int width, int height)

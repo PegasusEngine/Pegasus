@@ -40,19 +40,20 @@ AssertionManager::~AssertionManager()
 
 //----------------------------------------------------------------------------------------
 
-bool AssertionManager::AssertionError(const char * testStr,
-                                      const char * fileStr,
-                                      int line,
-                                      const char * msgStr, ...)
+AssertionManager::ReturnCode AssertionManager::AssertionError(const char * testStr,
+                                                              const char * fileStr,
+                                                              int line,
+                                                              const char * msgStr, ...)
 {
     ED_ASSERTSTR(testStr != nullptr, "The test string has to be defined for an assertion error.");
     ED_ASSERTSTR(fileStr != nullptr, "The file name string has to be defined for an assertion error.");
     ED_ASSERTSTR(line >= 0, "Invalid line number for an assertion error.");
 
     // If Ignore All has been selected, ignore the current assertion error
+    // (this call is redundant with the one inside AssertionErrorNoFormat, but it avoids formatting the input string for no reason)
     if (mIgnoreAll)
     {
-        return false;
+        return ASSERTION_IGNOREALL;
     }
 
     // If a message string is present, format it with the extra parameters if there are any
@@ -68,19 +69,37 @@ bool AssertionManager::AssertionError(const char * testStr,
         formattedString = buffer;
     }
 
-    // Convert the strings to QString
-    const QString testString(testStr);
+    return AssertionErrorNoFormat(testStr, fileStr, line, formattedString, true);
+}
+
+//----------------------------------------------------------------------------------------
+
+AssertionManager::ReturnCode AssertionManager::AssertionErrorNoFormat(const QString & testStr,
+                                                                      const QString & fileStr,
+                                                                      int line,
+                                                                      const QString & msgStr,
+                                                                      bool allowDebugBreak)
+{
+    ED_ASSERTSTR(!testStr.isNull() && !testStr.isEmpty(), "The test string has to be defined for an assertion error.");
+    ED_ASSERTSTR(!fileStr.isNull() && !fileStr.isEmpty(), "The file name string has to be defined for an assertion error.");
+    ED_ASSERTSTR(line >= 0, "Invalid line number for an assertion error.");
+
+    // If Ignore All has been selected, ignore the current assertion error
+    if (mIgnoreAll)
+    {
+        return ASSERTION_IGNOREALL;
+    }
+
     QString fileString(fileStr);
     fileString.remove("..\\", Qt::CaseSensitive);
+
     QString lineString;
     lineString.setNum(line);
-    const QString msgString(formattedString);
 
     // Prepare the content of the dialog box
     QString titleText;
     QString assertionText;
-    QString assertionMsgText;
-    if (testString == "FAILURE")
+    if (testStr == "FAILURE")
     {
         titleText = tr("Failure");
     }
@@ -88,7 +107,7 @@ bool AssertionManager::AssertionError(const char * testStr,
     {
         titleText = tr("Assertion error");
         assertionText += tr("Test: ");
-        assertionText += testString;
+        assertionText += testStr;
         assertionText += "\n";
     }
     assertionText += tr("File: ");
@@ -96,15 +115,11 @@ bool AssertionManager::AssertionError(const char * testStr,
     assertionText += "\n";
     assertionText += tr("Line: ");
     assertionText += lineString;
-    if (!msgString.isNull() && !msgString.isEmpty())
-    {
-        assertionMsgText = msgString;
-    }
 
     //! Send the text of the assertion error to the log
-    if (!msgString.isNull() && !msgString.isEmpty())
+    if (!msgStr.isNull() && !msgStr.isEmpty())
     {
-        Editor::GetInstance().GetLogManager().Log('ASRT', (titleText + ". " + assertionText + ". " + assertionMsgText).toLatin1().constData());
+        Editor::GetInstance().GetLogManager().Log('ASRT', (titleText + ". " + assertionText + ". " + msgStr).toLatin1().constData());
     }
     else
     {
@@ -116,9 +131,9 @@ bool AssertionManager::AssertionError(const char * testStr,
     msgBox.setWindowTitle(titleText);
     msgBox.setIcon(QMessageBox::Warning);
     msgBox.setText(assertionText);
-    if (!assertionMsgText.isNull() && !assertionMsgText.isEmpty())
+    if (!msgStr.isNull() && !msgStr.isEmpty())
     {
-        msgBox.setInformativeText(assertionMsgText);
+        msgBox.setInformativeText(msgStr);
     }
     QPushButton * continueButton  = msgBox.addButton(tr("Continue"  ), QMessageBox::AcceptRole);
     QPushButton * ignoreButton    = msgBox.addButton(tr("Ignore"    ), QMessageBox::AcceptRole);
@@ -130,21 +145,31 @@ bool AssertionManager::AssertionError(const char * testStr,
 
     // React based on the buttons of the dialog box
     QAbstractButton * returnButton = msgBox.clickedButton();
-    if (returnButton == breakButton)
-    {
-        // Break into the debugger
-        __debugbreak();
-    }
-    else if (returnButton == ignoreButton)
+    if (returnButton == ignoreButton)
     {
         // Ask the assertion error to be ignored in the future
-        return true;
+        return ASSERTION_IGNORE;
     }
     else if (returnButton == ignoreAllButton)
     {
         // Make all assertions ignored from now
         mIgnoreAll = true;
+        return ASSERTION_IGNOREALL;
+    }
+    else if (returnButton == breakButton)
+    {
+        if (allowDebugBreak)
+        {
+#if PEGASUS_COMPILER_MSVC
+            // Break into the debugger
+            __debugbreak();
+#else
+#error "Debug break is not implemented on this platform"
+#endif
+        }
+
+        return ASSERTION_BREAK;
     }
 
-    return false;
+    return ASSERTION_CONTINUE;
 }

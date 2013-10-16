@@ -15,9 +15,11 @@
 #include <QThread>
 
 #include "Pegasus/Core/Log.h"
+#include "Pegasus/Core/Assertion.h"
 #include "Pegasus/Window/WindowDefs.h"
 
 class ViewportWidget;
+class QTimer;
 
 namespace Pegasus {
     namespace Application {
@@ -72,6 +74,26 @@ public:
     //! \warning Do not rename to Run(), as this function is an overload of QThread
     void run();
 
+
+    //! Function called by the log handler, emitting the \a LogSentFromApplication signal
+    //! \warning To be called in the application thread, not the editor thread
+    //! \param logChannel Pegasus log channel
+    //! \param msgStr Content of the log message
+    void EmitLogFromApplication(Pegasus::Core::LogChannel logChannel, const QString & msgStr);
+
+    //! Function called by the assertion handler, emitting the \a AssertionSentFromApplication signal
+    //! \warning To be called in the application thread, not the editor thread
+    //! \param fileStr String with the filename where the assertion test failed
+    //! \param line Line number where the assertion test failed
+    //! \param msgStr Optional string of a message making the assertion test easier to understand.
+    //!               Empty string if no message is defined.
+    //! \return Pegasus::Core::AssertionManager::ASSERTION_xxx constant,
+    //!         chosen from the button the user clicked on
+    Pegasus::Core::AssertionManager::ReturnCode EmitAssertionFromApplication(const QString & testStr,
+                                                                             const QString & fileStr,
+                                                                             int line,
+                                                                             const QString & msgStr);
+
     //------------------------------------------------------------------------------------
     
 signals:
@@ -83,6 +105,19 @@ signals:
     //! Signal emitted when the application has successfully loaded (not running)
     void LoadingSucceeded();
 
+    //! Signal emitted from the application thread when the application sends a log message
+    //! \param logChannel Pegasus log channel
+    //! \param msgStr Content of the log message
+    void LogSentFromApplication(Pegasus::Core::LogChannel logChannel, const QString & msgStr);
+
+    //! Signal emitted from the application thread when the application sends an assertion error
+    //! \param testStr String representing the assertion test itself
+    //! \param fileStr String with the filename where the assertion test failed
+    //! \param line Line number where the assertion test failed
+    //! \param msgStr Optional string of a message making the assertion test easier to understand.
+    //!               Empty string if no message is defined.
+    void AssertionSentFromApplication(const QString & testStr, const QString & fileStr, int line, const QString & msgStr);
+
     //------------------------------------------------------------------------------------
 
 private slots:
@@ -92,14 +127,55 @@ private slots:
     //! \param height New height of the viewport, in pixels
     void ViewportResized(int width, int height);
 
+    //! Called when a request to redraw the content of the application windows is sent
+    //! \todo Temporary, we need a better way to draw, on a per-window basis
+    void RedrawChildWindows();
+
+    //! Called when a log message is received from the application thread
+    //! through a queue connection
+    //! \warning This is the editor thread function, which does the final post
+    //!          into the console dock window
+    //! \param logChannel Pegasus log channel
+    //! \param msgStr Content of the log message
+    void LogReceivedFromApplication(Pegasus::Core::LogChannel logChannel, const QString & msgStr);
+
+    //! Called when an assertion error is received from the application thread
+    //! through a blocking queue connection
+    //! \warning This is the editor thread function, which shows the assertion dialog box
+    //! \param testStr String representing the assertion test itself
+    //! \param fileStr String with the filename where the assertion test failed
+    //! \param line Line number where the assertion test failed
+    //! \param msgStr Optional string of a message making the assertion test easier to understand.
+    //!               Empty string if no message is defined.
+    void AssertionReceivedFromApplication(const QString & testStr, const QString & fileStr, int line, const QString & msgStr);
+
     //------------------------------------------------------------------------------------
 
 private:
 
     //! Handler for log messages coming from the application itself
+    //! \warning This is a static function, so it cannot emit any signal.
+    //!          We have to call a member function, \a EmitLogFromApplication,
+    //!          running in the application thread
     //! \param logChannel Log channel that receives the message
     //! \param msgStr String of the message to log
     static void LogHandler(Pegasus::Core::LogChannel logChannel, const char * msgStr);
+
+    //! Handler for assertion errors coming from the application itself
+    //! \warning This is a static function, so it cannot emit any signal.
+    //!          We have to call a member function, \a EmitAssertionFromApplication,
+    //!          running in the application thread
+    //! \param testStr String representing the assertion test itself
+    //! \param fileStr String with the filename where the assertion test failed
+    //! \param line Line number where the assertion test failed
+    //! \param msgStr Optional string of a message making the assertion test easier to understand.
+    //!               nullptr if no message is defined.
+    //! \return Pegasus::Core::AssertionManager::ASSERTION_xxx constant,
+    //!         chosen from the button the user clicked on
+    static Pegasus::Core::AssertionManager::ReturnCode AssertionHandler(const char * testStr,
+                                                                        const char * fileStr,
+                                                                        int line,
+                                                                        const char * msgStr);
 
     //------------------------------------------------------------------------------------
 
@@ -124,6 +200,17 @@ private:
 
     //! Initial height of the viewport in pixels (> 0)
     int mViewportInitialHeight;
+
+    //! True while an assertion dialog box is shown to prevent any paint message to reach the application windows
+    bool mAssertionBeingHandled;
+
+    //! Return code of the assertion handler. AssertionManager::ASSERTION_INVALID by default.
+    //! The value is not the default only when leaving an assertion dialog box.
+    //! This is used to freeze the application thread until a return code is present
+    AssertionManager::ReturnCode mAssertionReturnCode;
+
+    //! Timer used to forcefully render the content of the app windows
+    QTimer * mTimer;
 };
 
 

@@ -86,6 +86,33 @@ int ApplicationProxy::Run()
 
 //----------------------------------------------------------------------------------------
 
+#if PEGASUS_ENABLE_LOG
+void ApplicationProxy::RegisterLogHandler(Core::LogManager::Handler handler)
+{
+    mObject->RegisterLogHandler(handler);
+}
+#endif  // PEGASUS_ENABLE_LOG
+
+//----------------------------------------------------------------------------------------
+
+#if PEGASUS_ENABLE_ASSERT
+void ApplicationProxy::RegisterAssertionHandler(Core::AssertionManager::Handler handler)
+{
+    mObject->RegisterAssertionHandler(handler);
+}
+#endif  // PEGASUS_ENABLE_ASSERT
+    
+//----------------------------------------------------------------------------------------
+
+#if PEGASUS_ENABLE_ASSERT
+void ApplicationProxy::InvalidateWindows()
+{
+    return mObject->InvalidateWindows();
+}
+#endif  // PEGASUS_ENABLE_ASSERT
+
+//----------------------------------------------------------------------------------------
+
 void ApplicationProxy::SetAppTime(float time)
 {
     mObject->SetAppTime(time);
