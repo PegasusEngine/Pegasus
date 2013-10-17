@@ -35,6 +35,7 @@ private:
 
     static bool sAppInitted;
     int mTimeUniform;
+    int mScreenRatioUniform;
     int mFrame;
     int mViewportWidth;
     int mViewportHeight;

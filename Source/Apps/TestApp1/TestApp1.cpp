@@ -16,8 +16,22 @@
 
 #include <stdlib.h>
 
+//! \todo Temporary, just to get some animation running
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+// Demo to execute
+#define DEMO_KLEBER_HOMOGAY_TRIANGLE    1
+#define DEMO_KEVIN_PSYBEADS             2
+#define DEMO                            DEMO_KEVIN_PSYBEADS
+
 // Statics / globals
+#if DEMO == DEMO_KLEBER_HOMOGAY_TRIANGLE
 const GLuint NUM_VERTS = 3;
+#endif
+#if DEMO == DEMO_KEVIN_PSYBEADS
+const GLuint NUM_VERTS = 6;
+#endif
 enum VAO_IDs { TRIANGLES = 0, NUM_VAO };
 enum Buffer_IDs { TRIANGLE_ARRAYBUFFER = 0, NUM_BUFFERS};
 enum Attrib_IDs { vPosition = 0 };
@@ -29,6 +43,8 @@ GLuint Buffers[NUM_BUFFERS];
 GLuint vertexShader;
 GLuint fragmentShader;
 GLuint shaderProgram;
+
+#if DEMO == DEMO_KLEBER_HOMOGAY_TRIANGLE
 
 // Shaders
 const char* TRIANGLES_VERT =
@@ -84,6 +100,47 @@ const char* TRIANGLES_FRAG =
     "    vec4 sphere = (d < 0.001 ? 1.0f : 0.0f) * vec4(0.7f * float(j)/32.0f + 0.2f, float(j)/32.0f + 0.1f,0,0);"
     "    color = vec4(0,0,0.2,1) + sphere ;"
     "} ";
+
+#endif  // DEMO_KLEBER_HOMOGAY_TRIANGLE
+
+#if DEMO == DEMO_KEVIN_PSYBEADS
+
+const char* TRIANGLES_VERT = "\
+#version 330 core\n\
+layout(location = 0) in vec2 vPos;\
+out vec3 p,d;\
+uniform float time;\
+uniform float screenRatio;\
+void main(){\
+    gl_Position=vec4(vPos.x,vPos.y*screenRatio,0.0,1.0);\
+    p=3.0*vec3(cos(time),sin(time),time);\
+    d=vec3(vPos.x*p.x-vPos.y*p.y,vPos.y*p.x+vPos.x*p.y,1);\
+}";
+
+
+const char* TRIANGLES_FRAG = "\
+#version 330 core\n\
+in vec3 p,d;\
+out vec4 color;\
+void main()\
+{\
+    vec3 e=normalize(d),r;\
+    float f,t=0;\
+    int i=0;\
+    do\
+    {\
+    r=fract(e*t+vec3(p.xy,0))-.5;\
+        f=min(.25*(length(r.yz)+length(r.xy)),length(r.xz))-.1;\
+        t+=.5*f;\
+    }\
+    while(f>.01&&i++<100);\
+    f=sin(t);\
+    color=vec4(f*.5+.2+smoothstep(.6,.62,i*.01)*smoothstep(.64,.62,i*.01),f*.6+.2,f*.7+.3,1);\
+}";
+
+#endif  // DEMO_KEVIN_PSYBEADS
+
+//----------------------------------------------------------------------------------------
 
 TestApp1::TestApp1()
 :   Pegasus::Application::Application(),
@@ -143,11 +200,24 @@ void TestApp1::InitRendering()
 {
     GLsizei buffSize;
     char infoLog[4096];
+
+#if DEMO == DEMO_KLEBER_HOMOGAY_TRIANGLE
     const GLfloat verts[NUM_VERTS][2] = {
         { -0.6f, -0.6f },
         { 0.6f, -0.6f },
         { 0.0f, 0.6f }
     };
+#endif
+#if DEMO == DEMO_KEVIN_PSYBEADS
+    const GLfloat verts[NUM_VERTS][2] = {
+        { -1.0f, -1.0f },
+        {  1.0f, -1.0f },
+        { -1.0f,  1.0f },
+        { -1.0f,  1.0f },
+        {  1.0f, -1.0f },
+        {  1.0f,  1.0f }
+    };
+#endif
 
     // Create and bind vertex array
     glGenVertexArrays(NUM_VAO, VAOs);
@@ -167,13 +237,16 @@ void TestApp1::InitRendering()
     glGetShaderInfoLog(vertexShader, 4096, &buffSize, infoLog);
     glShaderSource(fragmentShader, 1, &TRIANGLES_FRAG, NULL);
     glCompileShader(fragmentShader);
-    glGetShaderInfoLog(vertexShader, 4096, &buffSize, infoLog);
+    glGetShaderInfoLog(fragmentShader, 4096, &buffSize, infoLog);
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
-    glGetProgramInfoLog(vertexShader, 4096, &buffSize, infoLog);
+    glGetProgramInfoLog(shaderProgram, 4096, &buffSize, infoLog);
     glUseProgram(shaderProgram);
     mTimeUniform = glGetUniformLocation(shaderProgram, "time");
+#if DEMO == DEMO_KEVIN_PSYBEADS
+    mScreenRatioUniform = glGetUniformLocation(shaderProgram, "screenRatio");
+#endif
     mFrame = 0;
     // Bind vertex array to shader
     glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0); // 2 floats, non-normalized, 0 stride and offset
@@ -187,8 +260,25 @@ void TestApp1::RenderFrame(float time)
     // Clear screen
     glClear(GL_COLOR_BUFFER_BIT);
     mFrame = (int) (GetAppTime() * 60.0f); // Time is in s
+
+#if DEMO == DEMO_KLEBER_HOMOGAY_TRIANGLE
+    //! \todo Temporary, just to get some animation running
+    const float currentTime = (static_cast<float>(GetTickCount()) * 0.001f) * 60.0f;
+
     // Set up and draw triangles
     glBindVertexArray(VAOs[TRIANGLES]);
-    glUniform1f(mTimeUniform, static_cast<float>(mFrame));
+    glUniform1f(mTimeUniform, currentTime);
     glDrawArrays(GL_TRIANGLES, 0, NUM_VERTS);
+#endif  // DEMO_KLEBER_HOMOGAY_TRIANGLE
+
+#if DEMO == DEMO_KEVIN_PSYBEADS
+    //! \todo Temporary, just to get some animation running
+    const float currentTime = (static_cast<float>(GetTickCount()) * 0.001f) * 0.5f;
+
+    // Set up and draw triangles
+    glBindVertexArray(VAOs[TRIANGLES]);
+    glUniform1f(mTimeUniform, currentTime);
+    glUniform1f(mScreenRatioUniform, static_cast<float>(mViewportWidth) / static_cast<float>(mViewportHeight));
+    glDrawArrays(GL_TRIANGLES, 0, NUM_VERTS);
+#endif  // DEMO_KEVIN_PSYBEADS
 }
