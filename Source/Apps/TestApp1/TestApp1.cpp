@@ -23,13 +23,14 @@
 // Demo to execute
 #define DEMO_KLEBER_HOMOGAY_TRIANGLE    1
 #define DEMO_KEVIN_PSYBEADS             2
-#define DEMO                            DEMO_KEVIN_PSYBEADS
+#define DEMO_KEVIN_CUBE_FRACTAL         3
+#define DEMO                            DEMO_KEVIN_CUBE_FRACTAL
 
 // Statics / globals
 #if DEMO == DEMO_KLEBER_HOMOGAY_TRIANGLE
 const GLuint NUM_VERTS = 3;
 #endif
-#if DEMO == DEMO_KEVIN_PSYBEADS
+#if (DEMO == DEMO_KEVIN_PSYBEADS) || (DEMO == DEMO_KEVIN_CUBE_FRACTAL)
 const GLuint NUM_VERTS = 6;
 #endif
 enum VAO_IDs { TRIANGLES = 0, NUM_VAO };
@@ -117,7 +118,6 @@ void main(){\
     d=vec3(vPos.x*p.x-vPos.y*p.y,vPos.y*p.x+vPos.x*p.y,1);\
 }";
 
-
 const char* TRIANGLES_FRAG = "\
 #version 330 core\n\
 in vec3 p,d;\
@@ -129,7 +129,7 @@ void main()\
     int i=0;\
     do\
     {\
-    r=fract(e*t+vec3(p.xy,0))-.5;\
+        r=fract(e*t+vec3(p.xy,0))-.5;\
         f=min(.25*(length(r.yz)+length(r.xy)),length(r.xz))-.1;\
         t+=.5*f;\
     }\
@@ -139,6 +139,59 @@ void main()\
 }";
 
 #endif  // DEMO_KEVIN_PSYBEADS
+
+#if DEMO == DEMO_KEVIN_CUBE_FRACTAL
+
+const char* TRIANGLES_VERT = "\
+#version 330 core\n\
+layout(location = 0) in vec2 vPos;\
+out vec3 p,d;\
+uniform float time;\
+uniform float screenRatio;\
+void main(){\
+    gl_Position=vec4(vPos.x,vPos.y*screenRatio,0.0,1.0);\
+    p = vec3(0,0,time);\
+    d = vec3(vPos.x * cos(time) + sin(time), vPos.y, cos(time) - vPos.x * sin(time));\
+}";
+
+const char* TRIANGLES_FRAG = "\
+#version 330 core\n\
+in vec3 p,d;\
+out vec4 color;\
+void main()\
+{\
+	vec3 q,r;\
+	float f=0,g=0,k=0,c=0,t=0;\
+	int i=0,j;\
+	do\
+	{\
+		f=-1;\
+		k=1;\
+		for(j=0;j<6;++j)\
+		{\
+			q = ((1/6.) - abs(fract((d*t + p) * k + .5) - .5)) / k;\
+			r = min(q,q.yzx);\
+			g = max(r.x, max(r.y,r.z));\
+			if(g>f)\
+			{\
+				f=g;\
+				c=d.x;\
+				if(g==q.y) c=d.y;\
+				if(g==q.z) c=d.z;\
+			}\
+			/*k*=3;*/\
+			/*k*=2;*/\
+            /*k*=1.73;*/\
+            k*=1.7;\
+		}\
+		t+=.7*f;\
+	}\
+	while(f>.0006 && i++<100);\
+    color = vec4(abs(c) / (1+t) / (1.+float(i)*.05));\
+    /*color.xyz = color.xyz * vec3(1,.8,.2) + vec3(0,0,.1);*/\
+}";
+
+#endif  // DEMO_KEVIN_CUBE_FRACTAL
 
 //----------------------------------------------------------------------------------------
 
@@ -208,7 +261,7 @@ void TestApp1::InitRendering()
         { 0.0f, 0.6f }
     };
 #endif
-#if DEMO == DEMO_KEVIN_PSYBEADS
+#if (DEMO == DEMO_KEVIN_PSYBEADS) || (DEMO == DEMO_KEVIN_CUBE_FRACTAL)
     const GLfloat verts[NUM_VERTS][2] = {
         { -1.0f, -1.0f },
         {  1.0f, -1.0f },
@@ -235,16 +288,19 @@ void TestApp1::InitRendering()
     glShaderSource(vertexShader, 1, &TRIANGLES_VERT, NULL);
     glCompileShader(vertexShader);
     glGetShaderInfoLog(vertexShader, 4096, &buffSize, infoLog);
+    PG_ASSERTSTR(infoLog[0] == '\0', "Invalid vertex shader");
     glShaderSource(fragmentShader, 1, &TRIANGLES_FRAG, NULL);
     glCompileShader(fragmentShader);
     glGetShaderInfoLog(fragmentShader, 4096, &buffSize, infoLog);
+    PG_ASSERTSTR(infoLog[0] == '\0', "Invalid fragment shader");
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
     glGetProgramInfoLog(shaderProgram, 4096, &buffSize, infoLog);
+    PG_ASSERTSTR(infoLog[0] == '\0', "Invalid shader program");
     glUseProgram(shaderProgram);
     mTimeUniform = glGetUniformLocation(shaderProgram, "time");
-#if DEMO == DEMO_KEVIN_PSYBEADS
+#if (DEMO == DEMO_KEVIN_PSYBEADS) || (DEMO == DEMO_KEVIN_CUBE_FRACTAL)
     mScreenRatioUniform = glGetUniformLocation(shaderProgram, "screenRatio");
 #endif
     mFrame = 0;
@@ -271,7 +327,7 @@ void TestApp1::RenderFrame(float time)
     glDrawArrays(GL_TRIANGLES, 0, NUM_VERTS);
 #endif  // DEMO_KLEBER_HOMOGAY_TRIANGLE
 
-#if DEMO == DEMO_KEVIN_PSYBEADS
+#if (DEMO == DEMO_KEVIN_PSYBEADS) || (DEMO == DEMO_KEVIN_CUBE_FRACTAL)
     //! \todo Temporary, just to get some animation running
     const float currentTime = (static_cast<float>(GetTickCount()) * 0.001f) * 0.5f;
 
