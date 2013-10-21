@@ -12,7 +12,7 @@
 #include "Editor.h"
 #include "Log.h"
 #include "Assertion.h"
-#include "ApplicationManager.h"
+#include "Application/ApplicationManager.h"
 #include "Settings/SettingsDialog.h"
 #include "Viewport/ViewportDockWidget.h"
 #include "Timeline/TimelineDockWidget.h"

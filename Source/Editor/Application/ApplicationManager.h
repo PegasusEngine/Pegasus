@@ -12,7 +12,7 @@
 #ifndef EDITOR_APPLICATIONMANAGER_H
 #define EDITOR_APPLICATIONMANAGER_H
 
-#include "Application.h"
+#include "Application/Application.h"
 
 class Editor;
 class ViewportDockWidget;

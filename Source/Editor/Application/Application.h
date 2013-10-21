@@ -18,8 +18,8 @@
 #include "Pegasus/Core/Assertion.h"
 #include "Pegasus/Window/WindowDefs.h"
 
+class ApplicationInterface;
 class ViewportWidget;
-class QTimer;
 
 namespace Pegasus {
     namespace Application {
@@ -105,6 +105,11 @@ signals:
     //! Signal emitted when the application has successfully loaded (not running)
     void LoadingSucceeded();
 
+    //! Signal emitted when the viewport is resized
+    //! \param width New width of the viewport, in pixels
+    //! \param height New height of the viewport, in pixels
+    void ViewportResized(int width, int height);
+
     //! Signal emitted from the application thread when the application sends a log message
     //! \param logChannel Pegasus log channel
     //! \param msgStr Content of the log message
@@ -122,14 +127,10 @@ signals:
 
 private slots:
         
-    //! Called when the viewport is resized
+    //! Called when the viewport is resized (editor thread)
     //! \param width New width of the viewport, in pixels
     //! \param height New height of the viewport, in pixels
-    void ViewportResized(int width, int height);
-
-    //! Called when a request to redraw the content of the application windows is sent
-    //! \todo Temporary, we need a better way to draw, on a per-window basis
-    void RedrawChildWindows();
+    void ResizeViewport(int width, int height);
 
     //! Called when a log message is received from the application thread
     //! through a queue connection
@@ -181,6 +182,9 @@ private:
 
 private:
 
+    //! Application interface object, instantiated in the application thread
+    ApplicationInterface * mApplicationInterface;
+
     //! File name of the application to load
     QString mFileName;
 
@@ -201,16 +205,10 @@ private:
     //! Initial height of the viewport in pixels (> 0)
     int mViewportInitialHeight;
 
-    //! True while an assertion dialog box is shown to prevent any paint message to reach the application windows
-    bool mAssertionBeingHandled;
-
     //! Return code of the assertion handler. AssertionManager::ASSERTION_INVALID by default.
     //! The value is not the default only when leaving an assertion dialog box.
     //! This is used to freeze the application thread until a return code is present
     AssertionManager::ReturnCode mAssertionReturnCode;
-
-    //! Timer used to forcefully render the content of the app windows
-    QTimer * mTimer;
 };
 
 

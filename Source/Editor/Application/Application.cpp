@@ -9,8 +9,9 @@
 //! \date	02nd July 2013
 //! \brief	Worker thread to contain an application to run
 
-#include "Application.h"
-#include "ApplicationManager.h"
+#include "Application/Application.h"
+#include "Application/ApplicationInterface.h"
+#include "Application/ApplicationManager.h"
 
 #include "Viewport/ViewportWidget.h"
 #include "Pegasus/Preprocessor.h"
@@ -30,23 +31,15 @@
 
 Application::Application(QObject *parent)
 :   QThread(parent),
+    mApplicationInterface(nullptr),
     mFileName(),
     mApplication(nullptr),
     mAppWindow(nullptr),
     mViewportWindowHandle(0),
     mViewportInitialWidth(128),
     mViewportInitialHeight(128),
-    mAssertionBeingHandled(false),
     mAssertionReturnCode(AssertionManager::ASSERTION_INVALID)
 {
-    // Create the window redrawing timer
-    // (5 ms to avoid spamming the message loop when user interaction happens, but low enough to get a good framerate)
-    mTimer = new QTimer(nullptr);
-    connect(mTimer, SIGNAL(timeout()), this, SLOT(RedrawChildWindows()));
-    mTimer->setInterval(5);
-
-    // Move the timer to the application thread, as we want it to be triggered only once per message loop processing
-    mTimer->moveToThread(this);
 }
 
 //----------------------------------------------------------------------------------------
@@ -174,8 +167,17 @@ void Application::run()
     // Set up windows
     mAppWindow = mApplication->AttachWindow(windowConfig);
 
+    // Create the application interface object, owned by the application thread.
+    // Not a child of this QThread, since we want it to be in the application thread.
+    mApplicationInterface = new ApplicationInterface(mApplication, mAppWindow, nullptr);
+
+    // Connect the messages between this object and the application interface
+    connect(this, SIGNAL(ViewportResized(int, int)),
+            mApplicationInterface, SLOT(ResizeViewport(int, int)),
+            Qt::QueuedConnection);
+
     // Start the timer that forces the redrawing of the app windows
-    mTimer->start();
+    mApplicationInterface->StartRedrawTimer();
 
     // Run the application loop. Does not use Application->Run() since we want to control
     // the sequencing of the message loop from the editor, and to allow assertion dialog boxes to work correctly.
@@ -183,7 +185,11 @@ void Application::run()
     this->exec();
 
     // Stop the redrawing timer
-    mTimer->stop();
+    mApplicationInterface->StopRedrawTimer();
+
+    // Kill the interface with the application
+    delete mApplicationInterface;
+    mApplicationInterface = nullptr;
 
     // Tear down windows
     mApplication->DetachWindow(mAppWindow);
@@ -217,11 +223,15 @@ Pegasus::Core::AssertionManager::ReturnCode Application::EmitAssertionFromApplic
                                                                                       int line,
                                                                                       const QString & msgStr)
 {
-    // Stop the forced redraw of the window content
-    mTimer->stop();
+    if (mApplicationInterface != nullptr)
+    {
+        // Stop the forced redraw of the window content
+        mApplicationInterface->StopRedrawTimer();
 
-    // Tell the app windows to not render anything
-    mAssertionBeingHandled = true;
+        // Tell the app windows to not render anything
+        //! \todo Seems not useful anymore. Test and remove if possible
+        //mApplicationInterface->SetAssertionBeingHandled(true);
+    }
 
     // Emit the assertion error through a non-blocking enqueued connection to the editor thread
     emit AssertionSentFromApplication(testStr, fileStr, line, msgStr);
@@ -261,35 +271,26 @@ Pegasus::Core::AssertionManager::ReturnCode Application::EmitAssertionFromApplic
     // Reset the return code until the next assertion error   
     mAssertionReturnCode = AssertionManager::ASSERTION_INVALID;
 
-    // Allow the app windows to render their content 
-    mAssertionBeingHandled = false;
+    if (mApplicationInterface != nullptr)
+    {
+        // Allow the app windows to render their content 
+        //! \todo Seems not useful anymore. Test and remove if possible
+        //mApplicationInterface->SetAssertionBeingHandled(false);
 
-    // Restart the forceful redrawing of the app windows
-    mTimer->start();
+        // Restart the forceful redrawing of the app windows
+        mApplicationInterface->StartRedrawTimer();
+    }
 
     return returnCode;
 }
 
 //----------------------------------------------------------------------------------------
 
-void Application::ViewportResized(int width, int height)
+void Application::ResizeViewport(int width, int height)
 {
-    ED_ASSERT(mApplication != nullptr);
-    ED_ASSERT(mAppWindow != nullptr);
-
-    //! \todo Handle multiple windows
-    mApplication->ResizeWindow(mAppWindow, width, height);
-}
-
-//----------------------------------------------------------------------------------------
-
-void Application::RedrawChildWindows()
-{
-    // Let the redrawing happen only when no assertion dialog is present
-    if (!mAssertionBeingHandled)
-    {
-        mApplication->InvalidateWindows();
-    }
+    // Emit a signal that will allow a queued connection to trigger the viewport resize
+    // on the application thread
+    emit ViewportResized(width, height);
 }
 
 //----------------------------------------------------------------------------------------

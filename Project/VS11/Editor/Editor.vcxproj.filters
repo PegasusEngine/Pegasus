@@ -52,6 +52,9 @@
       <Extensions>h</Extensions>
       <ParseFiles>true</ParseFiles>
     </Filter>
+    <Filter Include="Source\Application">
+      <UniqueIdentifier>{83c168d9-1efc-40a5-921a-be40b64cd9c6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Source\Editor\Editor.cpp">
@@ -104,24 +107,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineBlockGraphicsItem.cpp">
       <Filter>Source\Timeline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Source\Editor\ApplicationManager.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Source\Editor\Application.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_Application.cpp">
-      <Filter>Generated\Dev-Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_Application.cpp">
-      <Filter>Generated\Dev-Opt</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ApplicationManager.cpp">
-      <Filter>Generated\Dev-Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ApplicationManager.cpp">
-      <Filter>Generated\Dev-Opt</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ConsoleDockWidget.cpp">
       <Filter>Generated\Dev-Debug</Filter>
@@ -228,6 +213,33 @@
     <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineLaneHeaderGraphicsItem.cpp">
       <Filter>Source\Timeline</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Application\Application.cpp">
+      <Filter>Source\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_Application.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_Application.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Application\ApplicationManager.cpp">
+      <Filter>Source\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ApplicationManager.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ApplicationManager.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Application\ApplicationInterface.cpp">
+      <Filter>Source\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ApplicationInterface.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ApplicationInterface.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -250,12 +262,6 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineBlockGraphicsItem.h">
       <Filter>Source\Timeline</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\Source\Editor\Application.h">
-      <Filter>Source</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\Source\Editor\ApplicationManager.h">
-      <Filter>Source</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Console\ConsoleDockWidget.h">
       <Filter>Source\Console</Filter>
@@ -292,6 +298,15 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Settings\SettingsConsolePage.h">
       <Filter>Source\Settings</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Application\Application.h">
+      <Filter>Source\Application</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Application\ApplicationManager.h">
+      <Filter>Source\Application</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Application\ApplicationInterface.h">
+      <Filter>Source\Application</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

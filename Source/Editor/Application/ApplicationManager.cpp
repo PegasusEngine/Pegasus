@@ -9,7 +9,7 @@
 //! \date	02nd July 2013
 //! \brief	Manager for the opened applications in the editor
 
-#include "ApplicationManager.h"
+#include "Application/ApplicationManager.h"
 #include "Editor.h"
 #include "Log.h"
 #include "Viewport/ViewportDockWidget.h"
@@ -140,7 +140,7 @@ void ApplicationManager::LoadingSucceeded()
     //! \todo Handle multiple viewports
     ViewportWidget * viewportWidget = mViewportDockWidget->GetViewportWidget(/**0*/);
     connect(viewportWidget, SIGNAL(ViewportResized(int, int)),
-            mApplication, SLOT(ViewportResized(int, int)),
+            mApplication, SLOT(ResizeViewport(int, int)),
             Qt::QueuedConnection);
 
     mIsApplicationRunning = true;

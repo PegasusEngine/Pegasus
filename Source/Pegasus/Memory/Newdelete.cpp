@@ -17,6 +17,8 @@ void * operator new (size_t size)
 {
     //DANGER! pegasus naked operator used. Forcing a crash, please refer to the pegasus memory framework
     //and use one of the predesposed macros.
+    PG_FAILSTR("The new operator should never be used alone! Use one of the predefined macros");
+
     return 0;
 }
 
