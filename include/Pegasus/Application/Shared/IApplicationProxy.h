@@ -42,6 +42,10 @@ public:
     virtual ~IApplicationProxy() {};
 
 
+    //! Gets the MAIN window type associated with this application
+    //! \return Main window class type.
+    virtual const char* GetMainWindowType() const = 0;
+
     //! Creates a new window attached to this application instance.
     //! \param config Configuration structure for the newly created window.
     //! \return Pointer to the opened window.
@@ -51,58 +55,24 @@ public:
     //! \param wnd Window to destroy.
     virtual void DetachWindow(const Window::IWindowProxy* wnd) = 0;
 
-    //! Resize a window attached to this application instance
-    //! \param wnd Window to resize
-    //! \param width New width in pixels of the window
-    //! \param height New height in pixels of the window
-    virtual void ResizeWindow(Window::IWindowProxy* wnd, int width, int height) = 0;
-
 
     //! Inits this application.
     //! \param config  Config structure for the application.
-    virtual void Initialize(const ApplicationConfig& config) = 0;
+    virtual void Initialize() = 0;
 
     //! Shuts this application down.
     virtual void Shutdown() = 0;
 
-    //! Runs this application.
-    //! \return Return code.
-    //! \note This method does not return until the user closes the application.
-    virtual int Run() = 0;
     //! \todo Set update mode
-
-
-#if PEGASUS_ENABLE_LOG
-    //! Register the log handler of the application.
-    //! This is called by the application launcher to set a callback
-    //! for log messages emitted from the application itself
-    //! \param handler Handler function defined in the launcher
-    virtual void RegisterLogHandler(Core::LogManager::Handler handler) = 0;
-#endif
-
-#if PEGASUS_ENABLE_ASSERT
-    //! Register the assertion handler of the application.
-    //! This is called by the application launcher to set a callback
-    //! for assertion errors emitted from the application itself
-    //! \param handler Handler function defined in the launcher
-    virtual void RegisterAssertionHandler(Core::AssertionManager::Handler handler) = 0;
-
-    //! Called when a request to redraw the content of the application windows is sent
-    //! \todo Temporary, we need a better way to draw, on a per-window basis
-    virtual void InvalidateWindows() = 0;
-#endif
 
     //! Sets the current time into the timeline for this application.
     //! \param time Desired application time.
     virtual void SetAppTime(float time) = 0;
-
-    //! Renders a frame.
-    virtual void Render() = 0;
 };
 
 
 //! Typedef for proxy factory function
-typedef Pegasus::Application::IApplicationProxy* (*CreatePegasusAppFuncPtr)();
+typedef Pegasus::Application::IApplicationProxy* (*CreatePegasusAppFuncPtr)(const Pegasus::Application::ApplicationConfig& config);
 //! Typedef for proxy factory function
 typedef void (*DestroyPegasusAppFuncPtr)(Pegasus::Application::IApplicationProxy* app);
 

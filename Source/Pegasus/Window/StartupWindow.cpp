@@ -4,65 +4,54 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   WindowProxy.cpp
+//! \file   StartupWindow.cpp
 //! \author David Worsham
-//! \date   06th October 2013
-//! \brief  Proxy object, used by the editor and launcher to interact with an app window.
+//! \date   20th October 2013
+//! \brief  Specialized window for the internal startup window.
 
-#include "Pegasus\Window\WindowProxy.h"
-#include "Pegasus\Window\Window.h"
+#include "Pegasus/Window/StartupWindow.h"
+#include "Pegasus/Render/RenderContext.h"
 
 namespace Pegasus {
 namespace Window {
 
-WindowProxy::WindowProxy(Window* wnd)
-    : mObject(wnd)
+StartupWindow::StartupWindow(const Pegasus::Window::WindowConfig& config)
+    : Pegasus::Window::Window(config)
 {
 }
 
 //----------------------------------------------------------------------------------------
 
-WindowProxy::~WindowProxy()
+StartupWindow::~StartupWindow()
 {
 }
 
 //----------------------------------------------------------------------------------------
 
-void WindowProxy::Initialize()
+Pegasus::Window::Window* StartupWindow::Create(const Pegasus::Window::WindowConfig& config)
 {
-    mObject->Initialize();
+    return PG_CORE_NEW("StartupWindow", Pegasus::Memory::PG_MEM_PERM) StartupWindow(config);
 }
 
 //----------------------------------------------------------------------------------------
 
-void WindowProxy::Shutdown()
+void StartupWindow::Initialize()
 {
-    mObject->Shutdown();
 }
 
 //----------------------------------------------------------------------------------------
 
-void WindowProxy::Refresh()
+void StartupWindow::Shutdown()
 {
-    mObject->Refresh();
 }
 
 //----------------------------------------------------------------------------------------
 
-void WindowProxy::Resize(unsigned int width, unsigned int height)
+void StartupWindow::Refresh()
 {
-    mObject->Resize(width, height);
+    // Flip the GPU
+    GetRenderContext()->Swap();
 }
 
-//----------------------------------------------------------------------------------------
-
-Window* WindowProxy::Unwrap() const
-{
-    return mObject;
-}
-
-//----------------------------------------------------------------------------------------
-
-
-}   // namespace Window
-}   // namespace Pegasus
+} // end namespace Window
+} // end namesapce Pegasus

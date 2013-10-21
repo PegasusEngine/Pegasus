@@ -202,6 +202,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     Pegasus::Application::AppWindowConfig windowConfig;
     Pegasus::Application::IApplicationProxy* application = NULL;
     Pegasus::Window::IWindowProxy* appWindow = NULL;
+    MSG curMsg;
+    bool appDone = false;
     int retVal = 0;
 
     // Check the command line for the name of the app to load.
@@ -271,29 +273,54 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     
     // Set up the app config
     appConfig.mModuleHandle = (Pegasus::Window::ModuleHandle) hInstance;
-
-    // Initialize the application
-    application = CreatePegasusAppFunc();
-    application->Initialize(appConfig);
-
+    appConfig.mMaxWindowTypes = 2;
+    appConfig.mMaxNumWindows = 2;
     // Attach the debugging features
 #if PEGASUS_ENABLE_LOG
-    application->RegisterLogHandler(LogHandler);
+    appConfig.mLoghandler = LogHandler;
 #endif
 #if PEGASUS_ENABLE_ASSERT
-    application->RegisterAssertionHandler(AssertionHandler);
+    appConfig.mAssertHandler = AssertionHandler;
 #endif
 
-    //! Set up windows
+    // Initialize the application
+    application = CreatePegasusAppFunc(appConfig);
+    application->Initialize();
+
+    // Set up window config
+    windowConfig.mWindowType = application->GetMainWindowType();
     windowConfig.mIsChild = false;
+    windowConfig.mParentWindowHandle = 0;
     windowConfig.mWidth = 960;
     windowConfig.mHeight = 540;
+
+    // Set up windows
     appWindow = application->AttachWindow(windowConfig);
+    appWindow->Initialize();
 
-    //! Run the application loop
-    retVal = application->Run();
+    // Run message pump until application exits
+    while(!appDone)
+    {
+        // Grab a message and dispatch it
+        PeekMessage(&curMsg, NULL, NULL, NULL, PM_REMOVE);
+        if (curMsg.message == WM_QUIT)
+        {
+            // Bail out, app is finished
+            appDone = true;
+        }
+        else
+        {
+            appWindow->Refresh();
 
-    //! Tear down windows
+            // Dispatch it
+            TranslateMessage(&curMsg);
+            DispatchMessage(&curMsg);
+        }
+    }
+    retVal = curMsg.wParam;
+
+    // Tear down windows
+    appWindow->Shutdown();
     application->DetachWindow(appWindow);
 
     // Destroy the application

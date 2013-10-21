@@ -35,11 +35,6 @@ public:
     //! Application for which the window will belong to
     Application::Application * mApplication;
 
-    //! Startup window flag
-    //! This indicates that the window is a dummy,
-    //! for creating the initial render context
-    bool mIsStartupWindow;
-
     //! True if the window needs to be a child of a given parent window (mParentWindowHandle)
     //! \warning This variable exists to handle cases where 0 is a valid window handle for a given operating system
     bool mIsChild;
@@ -56,15 +51,22 @@ public:
     //! Initial height of the window in pixels (> 0)
     int mHeight;
 
+    //! Whether to create the window as initially visible or not
+    bool mCreateVisible;
+
+    //! Whether to use a basic or extended context for this window
+    bool mUseBasicContext;
+
     //! Default constructor
     inline WindowConfig()
         :   mModuleHandle(0),
             mApplication(nullptr),
-            mIsStartupWindow(false),
             mIsChild(false),
             mWidth(960),
             mHeight(540),
-            mParentWindowHandle(0)
+            mParentWindowHandle(0),
+            mCreateVisible(false),
+            mUseBasicContext(false)
         { }
 };
 

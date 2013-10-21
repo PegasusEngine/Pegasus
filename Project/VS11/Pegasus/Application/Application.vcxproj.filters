@@ -36,6 +36,12 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Application\ApplicationProxy.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Application\AppWindowManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Application\IWindowRegistry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Application\Platform\Application_Win32.cpp">
@@ -49,6 +55,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Application\Platform\Launcher_Win32.cpp">
       <Filter>Source Files\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Application\AppWindowManager.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

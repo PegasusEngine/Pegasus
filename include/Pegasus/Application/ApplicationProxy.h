@@ -28,37 +28,21 @@ namespace Application {
 class ApplicationProxy : public IApplicationProxy
 {
 public:
-    //! Constructor
-    ApplicationProxy();
-
-    //! Destructor
+    // Ctor / dtor
+    ApplicationProxy(const ApplicationConfig& config);
     virtual ~ApplicationProxy();
 
     // Window API
+    virtual const char* GetMainWindowType() const;
     virtual Window::IWindowProxy* AttachWindow(const AppWindowConfig& config);
     virtual void DetachWindow(const Window::IWindowProxy* wnd);
-    virtual void ResizeWindow(Window::IWindowProxy* wnd, int width, int height);
 
     // Stateflow API
-    virtual void Initialize(const ApplicationConfig& config);
+    virtual void Initialize();
     virtual void Shutdown();
-    virtual int Run();
 
     //! \todo Set update mode
     virtual void SetAppTime(float time);
-
-    // Debug API
-#if PEGASUS_ENABLE_LOG
-    virtual void RegisterLogHandler(Core::LogManager::Handler handler);
-#endif
-#if PEGASUS_ENABLE_ASSERT
-    virtual void RegisterAssertionHandler(Core::AssertionManager::Handler handler);
-    virtual void InvalidateWindows();
-#endif
-
-    // Render API
-    virtual void Resize(const Window::IWindowProxy* wnd, int width, int height);
-    virtual void Render();
 
 private:
     //! The proxied application object

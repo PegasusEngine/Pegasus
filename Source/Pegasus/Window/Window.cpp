@@ -32,10 +32,12 @@ static const char* PEGASUS_WND_WNDNAME = "PegasusEngine";
 //! Config-based constructor.
 //! \param config Configuration structure used to create this window.
 Window::Window(const WindowConfig& config)
-:   mIsStartupWindow(config.mIsStartupWindow),
-    mApplication(config.mApplication),
+:   mApplication(config.mApplication),
     mHWND(NULL),
-    mRenderContext(NULL)
+    mUseBasicContext(config.mUseBasicContext),
+    mRenderContext(NULL),
+    mWidth(config.mWidth),
+    mHeight(config.mHeight)
 {
     // Do the Win32 setup
     Internal_CreateWindow(config);
@@ -52,12 +54,17 @@ Window::~Window()
 
 //----------------------------------------------------------------------------------------
 
-void Window::Resize(int width, int height)
+void Window::Resize(unsigned int width, unsigned int height)
 {
+    // Tell Windows to resize it
     SetWindowPos((HWND)mHWND, 0,
                  0, 0, 
                  width, height,
                  SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+
+    // Cache
+    //mWidth = width;
+    //mHeight = height;
 }
 
 //----------------------------------------------------------------------------------------
@@ -81,7 +88,7 @@ Window::HandleMessageReturn Window::HandleMessage(unsigned int message, unsigned
 
             //! \todo Need real allocators
             // Create context
-            contextConfig.mStartupContext = mIsStartupWindow;
+            contextConfig.mStartupContext = mUseBasicContext;
             mRenderContext = PG_CORE_NEW("Render::Context", Pegasus::Memory::PG_MEM_PERM) Render::Context(contextConfig);
         }
         ret.handled = true; ret.retcode = 0;
@@ -99,29 +106,26 @@ Window::HandleMessageReturn Window::HandleMessage(unsigned int message, unsigned
         if (!Core::AssertionManager::GetInstance().IsAssertionBeingHandled())
 #endif
         {
-            PAINTSTRUCT ps;
-            BeginPaint((HWND)mHWND, &ps);
-            //! \todo Render only the current window, not all of them
-            mApplication->Render();
-            EndPaint((HWND)mHWND, &ps);
+            PAINTSTRUCT paint;
+
+            BeginPaint((HWND) mHWND, &paint);
+            Refresh(); // Render a frame
+            EndPaint((HWND) mHWND, &paint);
         }
 
-        //! \todo Temporarily letting the default message handler being called to allow
-        //!       the assertion dialog box to not freeze the application thread
-        //!       (the window needs an extra paint call to unfreeze)
-        //ret.handled = true; ret.retcode = 0;
+        // Letting the default message handler being called to allow the assertion dialog box
+        // to not freeze the application thread (the window needs an extra paint call to unfreeze)
+        ret.handled = false; ret.retcode = 0;
 
         break;
     case WM_CLOSE: // Someone asked to close the window
-        //! \todo We really need a better way of quitting out than this, for multi monitors
-        if (!mIsStartupWindow)
-        {
-            PostQuitMessage(0);
-        }
+        PostQuitMessage(0); //! \todo Is this OK at all?  Rethink...
         ret.handled = true; ret.retcode = 0;
         break;
     case WM_SIZE: // Someone asked to resize the window
-        ResizeViewport(LOWORD(lParam), HIWORD(lParam));
+        // Cache
+        mWidth = LOWORD(lParam);
+        mHeight = HIWORD(lParam);
         ret.handled = true; ret.retcode = 0;
         break;
     default:
@@ -155,7 +159,7 @@ void Window::Internal_CreateWindow(const WindowConfig& config)
     {
         windowStyle |= WS_OVERLAPPEDWINDOW | WS_SYSMENU;
     }
-    if (!config.mIsStartupWindow)
+    if (config.mCreateVisible)
     {
         windowStyle |= WS_VISIBLE;
     }
@@ -168,10 +172,10 @@ void Window::Internal_CreateWindow(const WindowConfig& config)
     {
         RECT rect;
         rect.left = 0;
-		rect.right = windowWidth;
-		rect.top = 0;
-		rect.bottom = windowHeight;
-		AdjustWindowRectEx(&rect, windowStyle, FALSE, /*windowStyleEx*/0);
+        rect.right = windowWidth;
+        rect.top = 0;
+        rect.bottom = windowHeight;
+        AdjustWindowRectEx(&rect, windowStyle, FALSE, /*windowStyleEx*/0);
         windowWidth = rect.right - rect.left;
         windowHeight = rect.bottom - rect.top;
     }
@@ -193,15 +197,6 @@ void Window::Internal_CreateWindow(const WindowConfig& config)
         //! \todo Assert or log here
         return;
     }
-}
-
-//----------------------------------------------------------------------------------------
-
-void Window::ResizeViewport(int width, int height)
-{
-    PG_ASSERT(mApplication != nullptr);
-
-    mApplication->Resize(this, width, height);
 }
 
 //----------------------------------------------------------------------------------------

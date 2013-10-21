@@ -28,6 +28,22 @@ public:
     //! Destructor
     virtual ~IWindowProxy() {};
 
+    //! Inits this window
+    //! Used for window-specific initialization
+    virtual void Initialize() = 0;
+
+    //! Shuts down and destroys this window
+    //! Used for window-specific shutdown
+    virtual void Shutdown() = 0;
+
+    //! Requests that this window render a new frame
+    virtual void Refresh() = 0;
+
+    //! Resizes this window.
+    //! \param width New width in pixels of the window
+    //! \param height New height in pixels of the window
+    virtual void Resize(unsigned int width, unsigned int height) = 0;
+
     // Unwrap API
     virtual Window* Unwrap() const = 0;
 };

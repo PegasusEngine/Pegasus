@@ -24,14 +24,39 @@ public:
     //! Handle to the module containing this application
     Window::ModuleHandle mModuleHandle;
 
+    //! Maximum number of window types this app can contain
+    unsigned int mMaxWindowTypes;
+
+    //! Maximum number of windows this app can contain
+    unsigned int mMaxNumWindows;
+
+    // Debug API
+#if PEGASUS_ENABLE_LOG
+    Core::LogManager::Handler mLoghandler;
+#endif
+#if PEGASUS_ENABLE_ASSERT
+    Core::AssertionManager::Handler mAssertHandler;
+#endif
+
     //! Default constructor
-    inline ApplicationConfig() : mModuleHandle(0) { }
+    inline ApplicationConfig()
+        : mModuleHandle(0), mMaxWindowTypes(2), mMaxNumWindows(1)
+#if PEGASUS_ENABLE_LOG
+          ,mLoghandler(nullptr)
+#endif
+#if PEGASUS_ENABLE_ASSERT
+          ,mAssertHandler(nullptr)
+#endif
+    {}
 };
 
 //! \class Shared configuration structure for a Pegasus application window.
 struct AppWindowConfig
 {
 public:
+    //! Type string for the window
+    const char* mWindowType;
+
     //! True if the window needs to be a child of a given parent window (mParentWindowHandle)
     //! \warning This variable exists to handle cases where 0 is a valid window handle for a given operating system
     bool mIsChild;
@@ -50,11 +75,12 @@ public:
 
     //! Default constructor
     inline AppWindowConfig()
-        :   mIsChild(false),
+        :   mWindowType(nullptr),
+            mIsChild(false),
             mParentWindowHandle(0),
             mWidth(960),
             mHeight(540)
-        { }
+        {}
 };
 
 

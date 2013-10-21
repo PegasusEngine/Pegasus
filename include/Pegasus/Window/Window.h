@@ -17,6 +17,9 @@
 
 
 namespace Pegasus {
+    namespace Application {
+        class Application;
+    }
     namespace Render {
         class Context;
     }
@@ -35,14 +38,19 @@ public:
     Window(const WindowConfig& config);
     virtual ~Window();
 
-    // Getter
-    inline WindowHandle GetHandle() const;
-    inline Render::Context* GetRenderContext() const;
+    // Getters
+    inline WindowHandle GetHandle() const { return mHWND; };
+    inline Application::Application* GetApplication() const { return mApplication; };
+    inline Render::Context* GetRenderContext() const { return mRenderContext; };
+    inline void GetDimensions(unsigned int& width, unsigned int& height) { width = mWidth; height = mHeight; }
 
-    //! Resize the window
-    //! \param width New size of the window in pixels
-    //! \param height New height of the window in pixels
-    void Resize(int width, int height);
+    // App-specific API
+    virtual void Initialize() = 0;
+    virtual void Shutdown() = 0;
+    virtual void Refresh() = 0;
+
+    // Resize API
+    void Resize(unsigned int width, unsigned int height);
 
     // Message handling
 #if PEGASUS_PLATFORM_WINDOWS
@@ -71,13 +79,6 @@ private:
     // Helpers
     void Internal_CreateWindow(const WindowConfig& config);
 
-    //! Resize the content of the window, called when the window size has changed
-    //! \param width New width of the window in pixels
-    //! \param height New height of the window in pixels
-    void ResizeViewport(int width, int height);
-
-    //! Cached startup window flag
-    bool mIsStartupWindow;
 
     //! Application the window belongs to
     Application::Application * mApplication;
@@ -85,31 +86,21 @@ private:
     //! Window handle
     WindowHandle mHWND;
 
+    bool mUseBasicContext; //<! Flag to use a basic rendering context
+
     //! Rendering context
     Render::Context* mRenderContext;
+
+    //! Current width
+    unsigned int mWidth;
+
+    //! Current height
+    unsigned int mHeight;
 };
 
 
-//----------------------------------------------------------------------------------------
-
-//! Gets the handle for this window.
-//! \return Window handle.
-inline WindowHandle Window::GetHandle() const
-{
-    return mHWND;
-}
-
-//----------------------------------------------------------------------------------------
-
-//! Gets the OGL render context for this window.
-//! \return Render context.
-inline Render::Context* Window::GetRenderContext() const
-{
-    return mRenderContext;
-}
-
-//----------------------------------------------------------------------------------------
-
+//! Factory method for windows
+typedef Window* (*WindowFactoryFunc)(const WindowConfig& config);
 
 }   // namespace Window
 }   // namespace Pegasus

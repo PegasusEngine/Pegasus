@@ -12,59 +12,82 @@
 
 #include "Pegasus/Application/Application.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
+#include "Pegasus/Application/AppWindowManager.h"
 #include "Pegasus/Render/GL/GLExtensions.h"
 #include "Pegasus/Render/RenderContext.h"
 #include "Pegasus/Window/Window.h"
-
+#include "Pegasus/Window/StartupWindow.h"
 #include <windows.h>
+#undef CreateWindow
 
 namespace Pegasus {
 namespace Application {
 
+// Constants
+const char* STARTUP_WINDOW_TYPE = "INTERNAL__Startup";
+
 //----------------------------------------------------------------------------------------
 
-Application::Application()
-    : mInitialized(false), mModuleHandle(NULL), mAppTime(0.0f), mNumWindows(0)
+Application::Application(const ApplicationConfig& config)
+    : mInitialized(false), mModuleHandle(config.mModuleHandle), mAppTime(0.0f)
 {
-    // Init windows array
-    for (unsigned int i = 0; i < MAX_NUM_WINDOWS; i++)
-    {
-        mWindows[i] = nullptr;
-    }
+    AppWindowManagerConfig managerConfig;
+    WindowRegistration reg;
+
+    // Set up debugging facilities
+#if PEGASUS_ENABLE_LOG
+    Core::LogManager::GetInstance().RegisterHandler(config.mLoghandler);
+#endif
+#if PEGASUS_ENABLE_ASSERT
+    Core::AssertionManager::GetInstance().RegisterHandler(config.mAssertHandler);
+#endif
+
+    // Set up manager
+    managerConfig.mMaxWindowTypes = config.mMaxWindowTypes;
+    managerConfig.mMaxNumWindows = config.mMaxNumWindows;
+    mWindowManager = PG_CORE_NEW("AppWindowManager", Pegasus::Memory::PG_MEM_PERM) AppWindowManager(managerConfig);
+
+    // Register startup window
+    reg.mTypeTag = Pegasus::Application::WINDOW_TYPE_INVALID;
+    reg.mDescription = "INTERNAL Startup Window";
+    reg.mCreateFunc = Window::StartupWindow::Create;
+    mWindowManager->RegisterWindowClass(STARTUP_WINDOW_TYPE, reg);
 }
 
 //----------------------------------------------------------------------------------------
 
 Application::~Application()
 {
-    // Handle the extension manager and stuff
-    ShutdownAppInternal();
+    // Sanity check
+    PG_ASSERTSTR(!mInitialized, "Application still initialized in destructor!");
 
-    //! \todo Assert that no windows exist here, to alert the user
+    // Unregister startup window
+    mWindowManager->UnregisterWindowClass(STARTUP_WINDOW_TYPE);
 
     // Free windows
-    for (unsigned int i = 0; i < MAX_NUM_WINDOWS; i++)
-    {
-        if (mWindows[i] != nullptr)
-        {
-            DetachWindow(mWindows[i]);
-        }
-    }
+    PG_DELETE mWindowManager;
+
+    // Tear down debugging facilities
+#if PEGASUS_ENABLE_LOG
+    Core::LogManager::GetInstance().UnregisterHandler();
+#endif
+#if PEGASUS_ENABLE_ASSERT
+    Core::AssertionManager::GetInstance().UnregisterHandler();
+#endif
 }
 
 //----------------------------------------------------------------------------------------
 
-void Application::Initialize(const ApplicationConfig& config)
+void Application::Initialize()
 {
     Window::Window* startupWindow = nullptr;
 
-    // Cache off application handle
-    mModuleHandle = config.mModuleHandle;
+    // Sanity check
+    PG_ASSERTSTR(!mInitialized, "Application already initialized!");
 
     // start up the app, which creates and destroys the dummy window
     StartupAppInternal();
 
-    //! \todo Assert on init
     // Initted
     mInitialized = true;
 }
@@ -74,93 +97,21 @@ void Application::Initialize(const ApplicationConfig& config)
 //! Shutdown this application.
 void Application::Shutdown()
 {
-    //! \todo Assert on init
+    // Sanity check
+    PG_ASSERTSTR(mInitialized, "Application not initialized yet!");
+
+    // Shuts down GLextensions, etc
+    ShutdownAppInternal();
+
     // No longer initted
     mInitialized = false;
 }
 
 //----------------------------------------------------------------------------------------
 
-int Application::Run()
+IWindowRegistry* Application::GetWindowRegistry()
 {
-    MSG curMsg;
-    bool appDone = false;
-
-    // Run message pump until application exits
-    while(!appDone)
-    {
-        // Grab a message and dispatch it
-        PeekMessage(&curMsg, NULL, NULL, NULL, PM_REMOVE);
-        if (curMsg.message == WM_QUIT)
-        {
-            // Bail out, app is finished
-            appDone = true;
-        }
-        else
-        {
-            // Draw stuff
-            Render();
-
-            // Dispatch it
-            TranslateMessage(&curMsg); 
-            DispatchMessage(&curMsg);
-        }
-    }
-
-    // wParam of WM_QUIT is the app exit code
-    return curMsg.wParam;
-
-    return 0;
-}
-
-//----------------------------------------------------------------------------------------
-
-#if PEGASUS_ENABLE_LOG
-void Application::RegisterLogHandler(Core::LogManager::Handler handler)
-{
-    Core::LogManager::GetInstance().RegisterHandler(handler);
-}
-#endif  // PEGASUS_ENABLE_LOG
-
-//----------------------------------------------------------------------------------------
-
-#if PEGASUS_ENABLE_ASSERT
-void Application::RegisterAssertionHandler(Core::AssertionManager::Handler handler)
-{
-    Core::AssertionManager::GetInstance().RegisterHandler(handler);
-}
-#endif  // PEGASUS_ENABLE_ASSERT
-
-//----------------------------------------------------------------------------------------
-
-#if PEGASUS_ENABLE_ASSERT
-void Application::InvalidateWindows()
-{
-    // Request a rendering of all windows in the next message loop
-    //! \todo Temporary, this should be done on a per-window basis
-    for (unsigned int i = 0; i < mNumWindows; i++)
-    {
-        InvalidateRect((HWND)mWindows[i]->GetHandle(), NULL, FALSE);
-    }
-}
-#endif  // PEGASUS_ENABLE_ASSERT
-
-//----------------------------------------------------------------------------------------
-
-void Application::Resize(const Window::Window* wnd, int width, int height)
-{
-    // Do nothing here. The derived class is supposed to handle the message.
-}
-
-//----------------------------------------------------------------------------------------
-
-void Application::Render()
-{
-    // Present all windows
-    for (unsigned int i = 0; i < mNumWindows; i++)
-    {
-        mWindows[i]->GetRenderContext()->Swap();
-    }
+    return mWindowManager;
 }
 
 //----------------------------------------------------------------------------------------
@@ -171,22 +122,16 @@ Window::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig
     Window::WindowConfig config;
 
     // Create window
-    //! \todo Assert/log on failure
     config.mModuleHandle = mModuleHandle;
     config.mApplication = this;
-    config.mIsStartupWindow = false;
     config.mIsChild = appWindowConfig.mIsChild;
     config.mParentWindowHandle = appWindowConfig.mParentWindowHandle;
     config.mWidth = appWindowConfig.mWidth;
     config.mHeight = appWindowConfig.mHeight;
-    newWnd = PG_CORE_NEW("Window", Pegasus::Memory::PG_MEM_PERM) Window::Window(config);
-
-    // Assign it
-    //! \todo Assert on windows list not full
-    if (newWnd)
-    {
-        mWindows[mNumWindows++] = newWnd;
-    }
+    config.mCreateVisible = true;
+    config.mUseBasicContext = false;
+    newWnd = mWindowManager->CreateWindow(appWindowConfig.mWindowType, config);
+    PG_ASSERTSTR(newWnd != nullptr, "Unable to create window!");
 
     return newWnd;
 }
@@ -195,26 +140,7 @@ Window::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig
 
 void Application::DetachWindow(const Window::Window* wnd)
 {
-    //! \todo Assert window not null
-    //! \todo Assert window ID in range
-    //delete mWindows[mNumWindows - 1];
-    PG_DELETE wnd;
-    mWindows[mNumWindows - 1] = nullptr; // Aliases wnd
-    mNumWindows--;
-}
-
-//----------------------------------------------------------------------------------------
-
-void Application::ResizeWindow(Window::Window* wnd, int width, int height)
-{
-    if (wnd != nullptr)
-    {
-        wnd->Resize(width, height);
-    }
-    else
-    {
-        PG_FAILSTR("Invalid window pointer given to the resize window function.");
-    }
+    mWindowManager->DestroyWindow(wnd);
 }
 
 //----------------------------------------------------------------------------------------
@@ -233,11 +159,12 @@ void Application::StartupAppInternal()
     //! \todo Assert/log on failure
     config.mModuleHandle = mModuleHandle;
     config.mApplication = this;
-    config.mIsStartupWindow = true;
     config.mIsChild = false;
     config.mWidth = 128;
     config.mHeight = 128;
-    newWnd = PG_CORE_NEW("Temp Window", Pegasus::Memory::PG_MEM_TEMP) Window::Window(config);
+    config.mCreateVisible = false;
+    config.mUseBasicContext = true;
+    newWnd = mWindowManager->CreateWindow(STARTUP_WINDOW_TYPE, config);
 
     // Init openGL extensions now that we have a context
     Render::GLExtensions::CreateInstance();
@@ -248,52 +175,52 @@ void Application::StartupAppInternal()
     switch (extensions.GetMaximumProfile())
     {
     case Render::GLExtensions::PROFILE_GL_3_3:
-        OutputDebugString("OpenGL 3.3 is the maximum detected profile.\n");
+        PG_LOG('OGL_', "OpenGL 3.3 is the maximum detected profile.");
         break;
 
     case Render::GLExtensions::PROFILE_GL_4_3:
-        OutputDebugString("OpenGL 4.3 is the maximum detected profile.\n");
+        PG_LOG('OGL_', "OpenGL 4.3 is the maximum detected profile.");
         break;
 
     default:
-        OutputDebugString("Error when initializing GLExtensions.\n");
+        PG_LOG('OGL_', "Error when initializing GLExtensions.");
         break;
     }
     if (extensions.IsGLExtensionSupported("GL_ARB_draw_indirect"))
     {
-        OutputDebugString("GL_ARB_draw_indirect detected.\n");
+        PG_LOG('OGL_', "GL_ARB_draw_indirect detected.");
     }
     else
     {
-        OutputDebugString("GL_ARB_draw_indirect NOT detected.\n");
+        PG_LOG('OGL_', "GL_ARB_draw_indirect NOT detected.");
     }
     if (extensions.IsGLExtensionSupported("GL_ATI_fragment_shader"))
     {
-        OutputDebugString("GL_ATI_fragment_shader detected.\n");
+        PG_LOG('OGL_', "GL_ATI_fragment_shader detected.");
     }
     else
     {
-        OutputDebugString("GL_ATI_fragment_shader NOT detected.\n");
+        PG_LOG('OGL_', "GL_ATI_fragment_shader NOT detected.");
     }
     if (extensions.IsWGLExtensionSupported("WGL_ARB_buffer_region"))
     {
-        OutputDebugString("WGL_ARB_buffer_region detected.\n");
+        PG_LOG('OGL_', "WGL_ARB_buffer_region detected.");
     }
     else
     {
-        OutputDebugString("WGL_ARB_buffer_region NOT detected.\n");
+        PG_LOG('OGL_', "WGL_ARB_buffer_region NOT detected.");
     }
     if (extensions.IsWGLExtensionSupported("WGL_3DL_stereo_control"))
     {
-        OutputDebugString("WGL_3DL_stereo_control detected.\n");
+        PG_LOG('OGL_', "WGL_3DL_stereo_control detected.");
     }
     else
     {
-        OutputDebugString("WGL_3DL_stereo_control NOT detected.\n");
+        PG_LOG('OGL_', "WGL_3DL_stereo_control NOT detected.");
     }
 
     // Destroy the window, it is no longer needed
-    PG_DELETE newWnd;
+    mWindowManager->DestroyWindow(newWnd);
 }
 
 //----------------------------------------------------------------------------------------

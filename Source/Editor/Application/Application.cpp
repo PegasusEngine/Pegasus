@@ -123,17 +123,14 @@ void Application::run()
 #error "Implement the loading of the application library"
 #endif  // PEGASUS_PLATFORM_WINDOWS
 
-    // Set up the app config
-    appConfig.mModuleHandle = (Pegasus::Window::ModuleHandle) GetModuleHandle(NULL); // Use the handle of the Editor EXE
-
     // Cast the procedure into the actual entry point function
     Pegasus::Application::CreatePegasusAppFuncPtr CreatePegasusAppFunc = (Pegasus::Application::CreatePegasusAppFuncPtr) createAppProcAddress;
     Pegasus::Application::DestroyPegasusAppFuncPtr DestroyPegasusAppFunc = (Pegasus::Application::DestroyPegasusAppFuncPtr) destroyAppProcAddress;
 
-    // Initialize the application
-    mApplication = CreatePegasusAppFunc();
-    mApplication->Initialize(appConfig);
-
+    // Set up app config
+    appConfig.mModuleHandle = (Pegasus::Window::ModuleHandle) GetModuleHandle(NULL); // Use the handle of the Editor EXE
+    appConfig.mMaxWindowTypes = 2;
+    appConfig.mMaxNumWindows = 2;
     // Attach the debugging features
     // (queued connections as the connections are between threads)
     ApplicationManager * applicationManager = qobject_cast<ApplicationManager *>(parent());
@@ -143,29 +140,35 @@ void Application::run()
 	    connect(this, SIGNAL(LogSentFromApplication(Pegasus::Core::LogChannel, const QString &)),
                 this, SLOT(LogReceivedFromApplication(Pegasus::Core::LogChannel, const QString &)),
                 Qt::QueuedConnection);
-        mApplication->RegisterLogHandler(LogHandler);
+        appConfig.mLoghandler = LogHandler;
 
         connect(this, SIGNAL(AssertionSentFromApplication(const QString &, const QString &, int, const QString &)),
                 this, SLOT(AssertionReceivedFromApplication(const QString &, const QString &, int, const QString &)),
                 Qt::QueuedConnection);
-        mApplication->RegisterAssertionHandler(AssertionHandler);
+        appConfig.mAssertHandler = AssertionHandler;
     }
     else
     {
         ED_FAILSTR("Unable to register the assertion handler, since Application object's parent is not an ApplicationManager.");
     }
 
+    // Initialize the application
+    mApplication = CreatePegasusAppFunc(appConfig);
+    mApplication->Initialize();
+
     //! Set the window handler parent of the created child window
+    windowConfig.mWindowType = mApplication->GetMainWindowType();
     windowConfig.mIsChild = true;
     windowConfig.mParentWindowHandle = mViewportWindowHandle;
     windowConfig.mWidth = mViewportInitialWidth;
     windowConfig.mHeight = mViewportInitialHeight;
 
-    // Signal the success of the loading
-    emit(LoadingSucceeded());
-
     // Set up windows
     mAppWindow = mApplication->AttachWindow(windowConfig);
+    mAppWindow->Initialize();
+
+    // Signal the success of the loading
+    emit(LoadingSucceeded());
 
     // Create the application interface object, owned by the application thread.
     // Not a child of this QThread, since we want it to be in the application thread.
@@ -192,6 +195,7 @@ void Application::run()
     mApplicationInterface = nullptr;
 
     // Tear down windows
+    mAppWindow->Shutdown();
     mApplication->DetachWindow(mAppWindow);
 
     // Destroy the application

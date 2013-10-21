@@ -14,9 +14,13 @@
 #define PEGASUS_APPLICATION_H
 
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
+#include "Pegasus/Application/IWindowRegistry.h"
 
 // Forward declarations
 namespace Pegasus {
+    namespace Application {
+        class AppWindowManager;
+    }
     namespace Window {
         struct WindowConfig;
         class Window;
@@ -41,39 +45,22 @@ class Application
 {
 public:
     // Ctor / dtor
-    Application();
+    Application(const ApplicationConfig& config);
     virtual ~Application();
 
+    // App API
+    virtual void Initialize();
+    virtual void Shutdown();
+
     // Window API
+    IWindowRegistry* GetWindowRegistry();
     Window::Window* AttachWindow(const AppWindowConfig& appWindowConfig);
     void DetachWindow(const Window::Window* wnd);
-    void ResizeWindow(Window::Window* wnd, int width, int height);
     //! \todo Set update mode
-
-    // App API
-    virtual void Initialize(const ApplicationConfig& config);
-    virtual void Shutdown();
-    int Run();
-
-    // Debug API
-#if PEGASUS_ENABLE_LOG
-    virtual void RegisterLogHandler(Core::LogManager::Handler handler);
-#endif
-#if PEGASUS_ENABLE_ASSERT
-    virtual void RegisterAssertionHandler(Core::AssertionManager::Handler handler);
-    virtual void InvalidateWindows();
-#endif
 
     // Update API
     inline void SetAppTime(float time) { mAppTime = time; }
     inline float GetAppTime() const { return mAppTime; }
-
-    // Render API
-    virtual void Resize(const Window::Window* wnd, int width, int height);
-    virtual void Render();
-
-    //! Max number of windows per app
-    static const unsigned int MAX_NUM_WINDOWS = 1;
 
 private:
     // No copies allowed
@@ -91,14 +78,11 @@ private:
     //! Application instance
     Window::ModuleHandle mModuleHandle;
 
+    //! Window manager
+    AppWindowManager* mWindowManager;
+
     //! Current app time
     float mAppTime;
-
-    //! App windows
-    Window::Window* mWindows[MAX_NUM_WINDOWS];
-
-    //! Num app windows
-    unsigned int mNumWindows;
 };
 
 }   // namespace Application

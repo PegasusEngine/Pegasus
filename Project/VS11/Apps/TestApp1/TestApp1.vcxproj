@@ -28,9 +28,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TestApp1.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TestApp1Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TestApp1.h" />
+    <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TestApp1Window.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CDBC735A-BBD9-48FA-AC97-3FDB4EC980F0}</ProjectGuid>

@@ -16,7 +16,7 @@
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 
 // Typedefs for DLL entry point
-extern Pegasus::Application::Application* CreateApplication();
+extern Pegasus::Application::Application* CreateApplication(const Pegasus::Application::ApplicationConfig& config);
 extern void DestroyApplication(Pegasus::Application::Application* app);
 
 #define WIN32_LEAN_AND_MEAN
@@ -201,33 +201,60 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     Pegasus::Application::AppWindowConfig windowConfig;
     Pegasus::Application::Application* application = NULL;
     Pegasus::Window::Window* appWindow = NULL;
+    MSG curMsg;
+    bool appDone = false;
     int retVal = 0;
 
     // Set up the app config
     appConfig.mModuleHandle = (Pegasus::Window::ModuleHandle) hInstance;
-
-    // Initialize the application
-    application = CreateApplication();
-    application->Initialize(appConfig);
-
+    appConfig.mMaxWindowTypes = 2;
+    appConfig.mMaxNumWindows = 2;
     // Attach the debugging features
 #if PEGASUS_ENABLE_LOG
-    application->RegisterLogHandler(LogHandler);
+    appConfig.mLoghandler = LogHandler;
 #endif
 #if PEGASUS_ENABLE_ASSERT
-    application->RegisterAssertionHandler(AssertionHandler);
+    appConfig.mAssertHandler = AssertionHandler;
 #endif
 
-    // Set up windows
+    // Initialize the application
+    application = CreateApplication(appConfig);
+    application->Initialize();
+
+    // Set up window config
+    windowConfig.mWindowType = application->GetWindowRegistry()->GetMainWindowType();
     windowConfig.mIsChild = false;
+    windowConfig.mParentWindowHandle = 0;
     windowConfig.mWidth = 960;
     windowConfig.mHeight = 540;
-    appWindow = application->AttachWindow(windowConfig);
 
-    // Run the application loop
-    retVal = application->Run();
+    // Set up windows
+    appWindow = application->AttachWindow(windowConfig);
+    appWindow->Initialize();
+
+    // Run message pump until application exits
+    while(!appDone)
+    {
+        // Grab a message and dispatch it
+        PeekMessage(&curMsg, NULL, NULL, NULL, PM_REMOVE);
+        if (curMsg.message == WM_QUIT)
+        {
+            // Bail out, app is finished
+            appDone = true;
+        }
+        else
+        {
+            appWindow->Refresh();
+
+            // Dispatch it
+            TranslateMessage(&curMsg);
+            DispatchMessage(&curMsg);
+        }
+    }
+    retVal = curMsg.wParam;
 
     // Tear down windows
+    appWindow->Shutdown();
     application->DetachWindow(appWindow);
 
     // Destroy the application

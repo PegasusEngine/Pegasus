@@ -14,36 +14,17 @@
 
 #include "Pegasus/Pegasus.h"
 
-
 class TestApp1 : public Pegasus::Application::Application
 {
 public:
     // Ctor / dtor
-    TestApp1();
+    TestApp1(const Pegasus::Application::ApplicationConfig& config);
     virtual ~TestApp1();
-
-    // App API
-    virtual void Initialize(const Pegasus::Application::ApplicationConfig& config);
-    virtual void Shutdown();
-    virtual void Resize(const Pegasus::Window::Window * wnd, int width, int height);
-    virtual void Render();
-
-private:
-    // Helpers
-    void InitRendering();
-    void RenderFrame(float time);
-
-    static bool sAppInitted;
-    int mTimeUniform;
-    int mScreenRatioUniform;
-    int mFrame;
-    int mViewportWidth;
-    int mViewportHeight;
 };
 
 
 //! \todo Make this a macro with only the name of the app class as parameter
-Pegasus::Application::Application * CreateApplication() { return PG_CORE_NEW("TestApp1", Pegasus::Memory::PG_MEM_PERM) TestApp1(); }
+Pegasus::Application::Application * CreateApplication(const Pegasus::Application::ApplicationConfig& config) { return PG_CORE_NEW("TestApp1", Pegasus::Memory::PG_MEM_PERM) TestApp1(config); }
 void DestroyApplication(Pegasus::Application::Application* app) { PG_DELETE app; }
 
 #endif  // TESTAPP1_H

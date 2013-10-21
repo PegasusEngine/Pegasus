@@ -33,6 +33,14 @@ public:
     //! Destructor
     virtual ~WindowProxy();
 
+    // Stateflow API
+    virtual void Initialize();
+    virtual void Shutdown();
+    virtual void Refresh();
+
+    // Resize API
+    virtual void Resize(unsigned int width, unsigned int height);
+
     // Unwrap API
     virtual Window* Unwrap() const;
 

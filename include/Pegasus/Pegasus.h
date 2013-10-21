@@ -21,12 +21,9 @@
 #include "Pegasus/Application/Application.h"
 
 // Window base class
-//#include "Pegasus/Window/Window.h"
+#include "Pegasus/Window/Window.h"
 
-// Exported Pegasus methods
-#if PEGASUSAPP_DLL
-#include "Pegasus/AppExport.h"
-#endif
+// Versioning
 #include "Pegasus/Version.h"
 
 #endif  // PEGASUS_PEGASUS_H

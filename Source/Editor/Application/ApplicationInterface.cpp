@@ -65,23 +65,21 @@ void ApplicationInterface::StopRedrawTimer()
 
 void ApplicationInterface::ResizeViewport(int width, int height)
 {
-    ED_ASSERT(mApplication != nullptr);
     ED_ASSERT(mAppWindow != nullptr);
 
-    //! \todo Handle multiple windows
-    mApplication->ResizeWindow(mAppWindow, width, height);
+    mAppWindow->Resize(width, height);
 }
 
 //----------------------------------------------------------------------------------------
 
 void ApplicationInterface::RedrawChildWindows()
 {
-    ED_ASSERT(mApplication != nullptr);
+    ED_ASSERT(mAppWindow != nullptr);
 
     // Let the redrawing happen only when no assertion dialog is present
     //! \todo Seems not useful anymore. Test and remove if possible
     //if (!mAssertionBeingHandled)
     {
-        mApplication->InvalidateWindows();
+        mAppWindow->Refresh();
     }
 }
