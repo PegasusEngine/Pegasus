@@ -13,6 +13,8 @@
 #define TESTAPP1WINDOW_H
 
 #include "Pegasus/Pegasus.h"
+#include "Pegasus/Shader/Shader.h"
+
 
 //! \class This is a specialized window for the TestApp1 application main window.  Place
 //         specialized rendering code here.
@@ -32,6 +34,10 @@ public:
     virtual void Refresh();
 
 private:
+    Pegasus::Shader::ShaderStage mVertexShader;
+    Pegasus::Shader::ShaderStage mFragmentShader;
+    Pegasus::Shader::Program     mShaderProgram;
+
     // Rendering stuff
     int mTimeUniform;
     int mScreenRatioUniform;

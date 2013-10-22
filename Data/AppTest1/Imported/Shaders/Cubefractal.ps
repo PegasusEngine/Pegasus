@@ -1,0 +1,38 @@
+//
+//Cubefractal ps, by Kevin Boulanger 2013
+//
+
+#version 330 core
+in vec3 p,d;
+out vec4 color;
+void main()
+{
+	vec3 q,r;
+	float f=0,g=0,k=0,c=0,t=0;
+	int i=0,j;
+	do
+	{
+		f=-1;
+		k=1;
+		for(j=0;j<6;++j)
+		{
+			q = ((1/6.) - abs(fract((d*t + p) * k + .5) - .5)) / k;
+			r = min(q,q.yzx);
+			g = max(r.x, max(r.y,r.z));
+			if(g>f)
+			{
+				f=g;
+				c=d.x;
+				if(g==q.y) c=d.y;
+				if(g==q.z) c=d.z;
+			}
+			/*k*=3;*/
+			/*k*=2;*/
+            /*k*=1.73;*/
+            k*=1.7;
+		}
+		t+=.7*f;
+	}
+	while(f>.0006 && i++<100);
+    color = vec4(abs(c) / (1+t) / (1.+float(i)*.05));
+}
