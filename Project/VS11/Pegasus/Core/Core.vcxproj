@@ -28,11 +28,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Assertion.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Io.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Log.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Shared\IoErrors.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Singleton.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Assertion.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Io.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Log.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

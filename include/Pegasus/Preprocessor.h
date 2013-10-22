@@ -219,5 +219,11 @@
 // Use GLEW (GL Extension Wrangler) as embedded source code rather than a dynamic library
 #define PEGASUS_EMBED_GLEW                  (PEGASUS_REL)
 
+// Enable native application file opening, closing (or c runtime implementation)
+// See the implementation of the functions living in the Pegasus::Io namespace for more details
+#define PEGASUS_USE_NATIVE_IO_CALLS           1
+
+//Enable shader events only if dev mode. In rel mode the boiler plate code gets removed
+#define PEGASUS_SHADER_USE_EDIT_EVENTS      PEGASUS_DEV
 
 #endif  // PEGASUS_PREPROCESSOR_H

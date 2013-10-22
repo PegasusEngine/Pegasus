@@ -9,6 +9,9 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Include\Shared">
+      <UniqueIdentifier>{225f3efe-1d39-4f26-b8fc-b1e311f4875c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Assertion.h">
@@ -20,12 +23,21 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Log.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Io.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Shared\IoErrors.h">
+      <Filter>Include\Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Assertion.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Log.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Io.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
