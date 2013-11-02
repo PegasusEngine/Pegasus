@@ -14,54 +14,55 @@
 
 #include "Pegasus/Render/RenderDefs.h"
 
-
 namespace Pegasus {
 namespace Render {
-// Forward declarations
-class IContextImpl;
 
 //! Configuration structure for a rendering context.
 struct ContextConfig
 {
 public:
-    // Basic ctor / dtor
+    //! Constructor
     ContextConfig();
-    ContextConfig(DeviceContextHandle hdc);
+
+    //! Destructor
     ~ContextConfig();
 
-    //! Opaque context handle
-    DeviceContextHandle mDeviceContextHandle;
 
-    //! Startup context flag, indicating how the context should be created
-    bool mStartupContext;
+    DeviceContextHandle mDeviceContextHandle; //!< Opaque context handle
+    bool mStartupContext; //!< Startup context flag, indicating how the context should be created
 };
+
+//----------------------------------------------------------------------------------------
 
 //! Class that encapsulates an OGL rendering context.
 class Context
 {
 public:
-    // Ctor / dtor
+    //! Constructor
+    //! \param config Config object for this context.
     Context(const ContextConfig& config);
+
+    //! Destructor
     ~Context();
 
-    // Binding API
+
+    //! Bind this context to the thread as the active context
     void Bind() const;
+
+    //! Unbinds this context from the thread as the active context
     void Unbind() const;
 
-    // Present API
+
+    //! Swaps the backbuffer chain, presenting a completed image to the display
     void Swap() const;
 
 private:
     // No copies allowed
-    explicit Context(const Context& other);
-    Context& operator=(const Context& other);
+    PG_DISABLE_COPY(Context);
 
 
-    //! Opaque context handle
-    DeviceContextHandle mDeviceContextHandle;
-
-    //! Opaque GL context handle
-    RenderContextHandle mRenderContextHandle;
+    DeviceContextHandle mDeviceContextHandle; //!< Opaque context handle
+    RenderContextHandle mRenderContextHandle; //!< Opaque GL context handle
 };
 
 

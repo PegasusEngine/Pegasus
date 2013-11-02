@@ -51,16 +51,19 @@ public:
     //! \warning Unregister your classes before you call this!
     virtual ~IWindowRegistry() {};
 
-    //! Registers a window class with this registry.
+
+    //! Registers a window class with this registry
     //! \param className Name of the class to register.
     //! \param classReg Class registration info.
     //! \warning Registering the same name more than once is not permitted, nor is the registration
     //!          of more than one MAIN type window.
     virtual void RegisterWindowClass(const char* className, const WindowRegistration& classReg) = 0;
-    //! Unregisters a window class with this registry.
+
+    //! Unregisters a window class with this registry
     //! \param className Name of the class to unregister.
     virtual void UnregisterWindowClass(const char* className) = 0;
-    //! Gets the classname of the MAIN window type for for this registry.
+
+    //! Gets the classname of the MAIN window type for for this registry
     //! \return Classname.
     virtual const char* GetMainWindowType() const = 0;
 };

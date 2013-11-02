@@ -12,7 +12,6 @@
 #ifndef PEGASUS_PEGASUSINTERNAL_H
 #define PEGASUS_PEGASUSINTERNAL_H
 
-
 // Compilation macro definitions
 // (included by the project when compiling engine, but required when compiling an app)
 #include "Pegasus/Preprocessor.h"

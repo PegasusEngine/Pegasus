@@ -11,17 +11,14 @@
 
 #include "Pegasus/Render/RenderContext.h"
 #include <windows.h>
-
 #define GLEW_STATIC 1
 #include "Pegasus/Libs/GLEW/glew.h"
 #include "Pegasus/Libs/GLEW/wglew.h"
-
 
 namespace Pegasus {
 namespace Render {
 
 // Global pixel format descriptor for RGBA 32-bits
-//! \todo Support more pixel format types
 static PIXELFORMATDESCRIPTOR sPixelFormat = {
     sizeof(PIXELFORMATDESCRIPTOR), //! size of structure
     1, //! default version
@@ -41,7 +38,8 @@ static PIXELFORMATDESCRIPTOR sPixelFormat = {
     0, 0, 0}; //! layer masks ignored
 
 
-//! Basic constructor.
+//----------------------------------------------------------------------------------------
+
 ContextConfig::ContextConfig()
     : mDeviceContextHandle(0), mStartupContext(false)
 {
@@ -49,29 +47,15 @@ ContextConfig::ContextConfig()
 
 //----------------------------------------------------------------------------------------
 
-//! Config-based constructor.
-//! \param hdc Device context handle to config with.
-ContextConfig::ContextConfig(DeviceContextHandle hdc)
-    : mDeviceContextHandle(hdc), mStartupContext(false)
-{
-}
-
-//----------------------------------------------------------------------------------------
-
-//! Basic destructor.
 ContextConfig::~ContextConfig()
 {
 }
 
 //----------------------------------------------------------------------------------------
 
-//! Config-based constructor.
-//! \param config Configuration structure used to make this context.
 Context::Context(const ContextConfig& config)
     : mDeviceContextHandle(config.mDeviceContextHandle)
 {
-    //! \todo Assert on trying to create startup twice
-    //! \todo Assert on valid device context handle
     // Create context
     if (config.mStartupContext)
     {
@@ -109,7 +93,6 @@ Context::Context(const ContextConfig& config)
 
 //----------------------------------------------------------------------------------------
 
-//! Basic destructor.
 Context::~Context()
 {
     // Unbind and destroy the context
@@ -119,7 +102,6 @@ Context::~Context()
 
 //----------------------------------------------------------------------------------------
 
-//! Binds this context to the calling thread and makes it active.
 void Context::Bind() const
 {
     wglMakeCurrent((HDC) mDeviceContextHandle, (HGLRC) mRenderContextHandle);
@@ -127,7 +109,6 @@ void Context::Bind() const
 
 //----------------------------------------------------------------------------------------
 
-//! Unbinds this context from the current thread and deactivates it.
 void Context::Unbind() const
 {
     wglMakeCurrent((HDC) mDeviceContextHandle, NULL);
@@ -135,15 +116,12 @@ void Context::Unbind() const
 
 //----------------------------------------------------------------------------------------
 
-//! Performs a swap of the system backbuffer chain.
 void Context::Swap() const
 {
     // Present
     glFlush();
     SwapBuffers((HDC) mDeviceContextHandle);
 }
-
-//----------------------------------------------------------------------------------------
 
 
 }   // namespace Render

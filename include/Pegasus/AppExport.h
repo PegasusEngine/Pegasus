@@ -12,6 +12,7 @@
 #ifndef PEGASUS_APPEXPORT_H
 #define PEGASUS_APPEXPORT_H
 
+#if PEGASUS_ENABLE_PROXIES
 #include "Pegasus\Application\ApplicationProxy.h"
 
 #ifdef __cplusplus
@@ -19,7 +20,7 @@ extern "C" {
 #endif
 PEGASUSAPP_SHARED Pegasus::Application::IApplicationProxy* CreatePegasusApp(const Pegasus::Application::ApplicationConfig& config)
 {
-    return PG_CORE_NEW("ApplicationProxy", Pegasus::Memory::PG_MEM_PERM) Pegasus::Application::ApplicationProxy(config);
+    return PG_NEW("ApplicationProxy", Pegasus::Memory::PG_MEM_PERM) Pegasus::Application::ApplicationProxy(config);
 }
 
 PEGASUSAPP_SHARED void DestroyPegasusApp(Pegasus::Application::IApplicationProxy* app)
@@ -30,4 +31,5 @@ PEGASUSAPP_SHARED void DestroyPegasusApp(Pegasus::Application::IApplicationProxy
 }
 #endif
 
+#endif  // PEGASUS_ENABLE_PROXIES
 #endif  // PEGASUS_APPEXPORT_H

@@ -4,10 +4,10 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	Log.cpp
-//! \author	Kevin Boulanger
-//! \date	04th July 2013
-//! \brief	Log manager, for debug output
+//! \file   Log.cpp
+//! \author Kevin Boulanger
+//! \date   04th July 2013
+//! \brief  Log manager, for debug output
 
 #include "Pegasus/Core/Log.h"
 
@@ -16,10 +16,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-
 namespace Pegasus {
 namespace Core {
-
 
 //! Maximum size of the buffer containing one log message
 static const size_t LOGARGS_BUFFER_SIZE = 1024; 

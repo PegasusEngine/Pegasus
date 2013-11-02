@@ -81,7 +81,7 @@ TestApp1Window::~TestApp1Window()
 
 Pegasus::Window::Window* TestApp1Window::Create(const Pegasus::Window::WindowConfig& config)
 {
-    return PG_CORE_NEW("TestApp1Window", Pegasus::Memory::PG_MEM_PERM) TestApp1Window(config);
+    return PG_NEW("TestApp1Window", Pegasus::Memory::PG_MEM_PERM) TestApp1Window(config);
 }
 
 //----------------------------------------------------------------------------------------

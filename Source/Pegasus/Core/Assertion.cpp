@@ -4,10 +4,10 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	Assertion.cpp
-//! \author	Kevin Boulanger
-//! \date	24th June 2013
-//! \brief	Assertion test macros and manager
+//! \file   Assertion.cpp
+//! \author Kevin Boulanger
+//! \date   24th June 2013
+//! \brief  Assertion test macros and manager
 
 #include "Pegasus/Core/Assertion.h"
 
@@ -16,10 +16,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-
 namespace Pegasus {
 namespace Core {
-
 
 //! Maximum size of the buffer containing one assertion error message
 static const size_t ASSERTIONERRORARGS_BUFFER_SIZE = 1024; 

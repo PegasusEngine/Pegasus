@@ -4,16 +4,15 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	Assertion.h
-//! \author	Kevin Boulanger
-//! \date	24th June 2013
-//! \brief	Assertion test macros and manager
+//! \file   Assertion.h
+//! \author Kevin Boulanger
+//! \date   24th June 2013
+//! \brief  Assertion test macros and manager
 
 #ifndef PEGASUS_CORE_ASSERTION_H
 #define PEGASUS_CORE_ASSERTION_H
 
 #include "Pegasus/Preprocessor.h"
-
 
 #if PEGASUS_ENABLE_ASSERT
 
@@ -67,22 +66,23 @@
 
 namespace Pegasus {
 namespace Core {
-    
 
 //! Assertion manager (singleton) that redirects the macros to the assertion handler
 class AssertionManager : public AutoSingleton<AssertionManager>
 {
 public:
-
+    //! Constructor
     AssertionManager();
+
+    //! Destructor
     virtual ~AssertionManager();
 
     //! Return codes for the assertion error functions below
     enum ReturnCode {
-        ASSERTION_CONTINUE = 0,
-        ASSERTION_IGNORE,
-        ASSERTION_IGNOREALL,
-        ASSERTION_BREAK,
+        ASSERTION_CONTINUE = 0, //<! Skip assert
+        ASSERTION_IGNORE, //<! Ignore the assert
+        ASSERTION_IGNOREALL, //<! Ignore  all asserts
+        ASSERTION_BREAK, //<! Break into debugger
 
         ASSERTION_NUM_VALUES,
         ASSERTION_INVALID = ASSERTION_NUM_VALUES
@@ -131,12 +131,12 @@ public:
                               const char * msgStr = nullptr, ...);
 
 private:
+    // No copies allowed
+    PG_DISABLE_COPY(AssertionManager);
 
-    //! Function pointer of the assertion error handler, nullptr by default
-    Handler mHandler;
 
-    //! True if inside the execution of the assertion handler in \a AssertionError()
-    bool mAssertionBeingHandled;
+    Handler mHandler; //!< Function pointer of the assertion error handler, nullptr by default
+    bool mAssertionBeingHandled; //!< True if inside the execution of the assertion handler in \a AssertionError()
 };
 
 

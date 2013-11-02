@@ -50,8 +50,6 @@ public:
 struct AppWindowConfig
 {
 public:
-    const char* mWindowType; //!< Type string for the window
-
     //! True if the window needs to be a child of a given parent window (mParentWindowHandle)
     //! \warning This variable exists to handle cases where 0 is a valid window handle for a given operating system
     bool mIsChild;
@@ -62,14 +60,15 @@ public:
     //!          if an operating system considers 0 as a valid handle. mIsChild is used to define if a parent window is actually defined
     Window::WindowHandle mParentWindowHandle;
 
+    const char* mWindowType; //!< Type string for the window
     int mWidth; //!< Initial width of the window in pixels (> 0)
     int mHeight; //!< Initial height of the window in pixels (> 0)
 
     //! Default constructor
     inline AppWindowConfig()
-        :   mWindowType(nullptr),
-            mIsChild(false),
+        :   mIsChild(false),
             mParentWindowHandle(0),
+            mWindowType(nullptr),
             mWidth(960),
             mHeight(540)
         {}

@@ -15,25 +15,22 @@
 #include "Pegasus/Window/WindowDefs.h"
 #include "Pegasus/Window/IWindowContext.h"
 
+// Forward declarations
 namespace Pegasus {
     namespace Application {
         class Application;
     }
 }
 
+//----------------------------------------------------------------------------------------
+
 namespace Pegasus {
 namespace Window {
 
-
-//! \class Configuration structure for a Pegasus window.
-//! \todo We need actual params here
+//! Configuration structure for a Pegasus window
 struct WindowConfig
 {
 public:
-    ModuleHandle mModuleHandle; //!< Opaque application instance
-
-    IWindowContext* mWindowContext; //!< Context for this window
-
     //! True if the window needs to be a child of a given parent window (mParentWindowHandle)
     //! \warning This variable exists to handle cases where 0 is a valid window handle for a given operating system
     bool mIsChild;
@@ -44,6 +41,8 @@ public:
     //!          if an operating system considers 0 as a valid handle. mIsChild is used to define if a parent window is actually defined
     WindowHandle mParentWindowHandle;
 
+    ModuleHandle mModuleHandle; //!< Opaque application instance
+    IWindowContext* mWindowContext; //!< Context for this window
     int mWidth; //!< Initial width of the window in pixels (> 0)
     int mHeight; //!< Initial height of the window in pixels (> 0)
     bool mCreateVisible; //!< Whether to create the window as initially visible or not
@@ -51,12 +50,12 @@ public:
 
     //! Constructor
     inline WindowConfig()
-        :   mModuleHandle(0),
+        :   mIsChild(false),
+            mParentWindowHandle(0),
+            mModuleHandle(0),
             mWindowContext(nullptr),
-            mIsChild(false),
             mWidth(960),
             mHeight(540),
-            mParentWindowHandle(0),
             mCreateVisible(false),
             mUseBasicContext(false)
         { }

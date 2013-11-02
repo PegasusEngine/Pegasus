@@ -12,6 +12,7 @@
 #ifndef PEGASUS_VERSION_H
 #define PEGASUS_VERSION_H
 
+#if PEGASUS_ENABLE_PROXIES
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -22,4 +23,5 @@ PEGASUSAPP_SHARED unsigned int GetPegasusVersion();
 }
 #endif
 
+#endif  // PEGASUS_ENABLE_PROXIES
 #endif  // PEGASUS_VERSION_H

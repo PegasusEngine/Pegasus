@@ -12,8 +12,6 @@
 #ifndef PEGASUS_PEGASUS_H
 #define PEGASUS_PEGASUS_H
 
-//== Includes ====
-
 // Compilation macro definitions, assertion and log management
 #include "Pegasus/PegasusInternal.h"
 
@@ -25,5 +23,6 @@
 
 // Versioning
 #include "Pegasus/Version.h"
+
 
 #endif  // PEGASUS_PEGASUS_H

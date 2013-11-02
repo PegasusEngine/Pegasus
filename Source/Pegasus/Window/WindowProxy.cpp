@@ -9,6 +9,7 @@
 //! \date   06th October 2013
 //! \brief  Proxy object, used by the editor and launcher to interact with an app window.
 
+#if PEGASUS_ENABLE_PROXIES
 #include "Pegasus\Window\WindowProxy.h"
 #include "Pegasus\Window\Window.h"
 
@@ -61,8 +62,8 @@ Window* WindowProxy::Unwrap() const
     return mObject;
 }
 
-//----------------------------------------------------------------------------------------
-
 
 }   // namespace Window
 }   // namespace Pegasus
+
+#endif  // PEGASUS_ENABLE_PROXIES

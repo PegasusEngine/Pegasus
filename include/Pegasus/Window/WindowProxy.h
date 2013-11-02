@@ -12,6 +12,7 @@
 #ifndef PEGASUS_SHARED_WINDOWPROXY_H
 #define PEGASUS_SHARED_WINDOWPROXY_H
 
+#if PEGASUS_ENABLE_PROXIES
 #include "Pegasus\Window\Shared\IWindowProxy.h"
 
 // Forward declarations
@@ -21,15 +22,19 @@ namespace Pegasus {
     }
 }
 
+//----------------------------------------------------------------------------------------
+
 namespace Pegasus {
 namespace Window {
 
-//! \class Proxy window class.  This class manages the actual underlying window.
+//! Proxy window class for use with a DLL
 class WindowProxy : public IWindowProxy
 {
 public:
     //! Constructor
+    //! \param wnd Window to wrap.
     WindowProxy(Window* wnd);
+
     //! Destructor
     virtual ~WindowProxy();
 
@@ -53,4 +58,5 @@ private:
 }   // namespace Window
 }   // namespace Pegasus
 
+#endif  // PEGASUS_ENABLE_PROXIES
 #endif  // PEGASUS_APPLICATION_H

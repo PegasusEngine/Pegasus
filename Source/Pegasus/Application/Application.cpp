@@ -43,7 +43,7 @@ Application::Application(const ApplicationConfig& config)
     // Set up window manager
     windowManagerConfig.mMaxWindowTypes = mConfig.mMaxWindowTypes;
     windowManagerConfig.mMaxNumWindows = mConfig.mMaxNumWindows;
-    mWindowManager = PG_CORE_NEW("AppWindowManager", Pegasus::Memory::PG_MEM_PERM) AppWindowManager(windowManagerConfig);
+    mWindowManager = PG_NEW("AppWindowManager", Pegasus::Memory::PG_MEM_PERM) AppWindowManager(windowManagerConfig);
 
     // Register startup window
     reg.mTypeTag = Pegasus::Application::WINDOW_TYPE_INVALID;
@@ -89,7 +89,7 @@ void Application::Initialize()
     // This must be done here because of the GetAppName virtual
     ioManagerConfig.mBasePath = mConfig.mBasePath;
     ioManagerConfig.mAppName = GetAppName();
-    mIoManager = PG_CORE_NEW("IOManager", Pegasus::Memory::PG_MEM_PERM) Io::IOManager(ioManagerConfig);
+    mIoManager = PG_NEW("IOManager", Pegasus::Memory::PG_MEM_PERM) Io::IOManager(ioManagerConfig);
 
     // start up the app, which creates and destroys the dummy window
     StartupAppInternal();
@@ -242,7 +242,6 @@ void Application::ShutdownAppInternal()
     Window::Window::UnregisterWindowClass(mConfig.mModuleHandle);
 }
 
-//----------------------------------------------------------------------------------------
 
 }   // namespace Application
 }   // namespace Pegasus

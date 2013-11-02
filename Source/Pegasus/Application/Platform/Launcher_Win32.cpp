@@ -11,12 +11,10 @@
 
 #if PEGASUS_INCLUDE_LAUNCHER
 #if PEGASUS_PLATFORM_WINDOWS
-
 #include "Pegasus/Application/Application.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-
 
 // Since this is REL mode only, hard-code the asset root
 static const char* ASSET_ROOT = "..\\..\\..\\..\\Data\\";
@@ -25,9 +23,9 @@ static const char* ASSET_ROOT = "..\\..\\..\\..\\Data\\";
 extern Pegasus::Application::Application* CreateApplication(const Pegasus::Application::ApplicationConfig& config);
 extern void DestroyApplication(Pegasus::Application::Application* app);
 
+//----------------------------------------------------------------------------------------
 
 #if PEGASUS_ENABLE_LOG
-
 #include <cstdio>
 #include <ctime>
 
@@ -196,7 +194,7 @@ Pegasus::Core::AssertionManager::ReturnCode AssertionHandler(const char * testSt
 
 //----------------------------------------------------------------------------------------
 
-//! Engine entry point
+// App entry point
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                      LPSTR lpCmdLine, int nCmdShow)
 {

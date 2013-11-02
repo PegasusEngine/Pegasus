@@ -30,7 +30,7 @@ StartupWindow::~StartupWindow()
 
 Pegasus::Window::Window* StartupWindow::Create(const Pegasus::Window::WindowConfig& config)
 {
-    return PG_CORE_NEW("StartupWindow", Pegasus::Memory::PG_MEM_PERM) StartupWindow(config);
+    return PG_NEW("StartupWindow", Pegasus::Memory::PG_MEM_PERM) StartupWindow(config);
 }
 
 //----------------------------------------------------------------------------------------
@@ -52,6 +52,7 @@ void StartupWindow::Refresh()
     // Flip the GPU
     GetRenderContext()->Swap();
 }
+
 
 } // end namespace Window
 } // end namesapce Pegasus

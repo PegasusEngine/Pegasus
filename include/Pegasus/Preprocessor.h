@@ -191,6 +191,11 @@
 
 //----------------------------------------------------------------------------------------
 
+// Flag for the use of proxy objects
+#define PEGASUS_ENABLE_PROXIES PEGASUS_DEV
+
+//----------------------------------------------------------------------------------------
+
 //! Macro to disable the copy and assignment operators of a class.
 //! Call this macro in the private section of the class.
 //! If a copy or assignment is used, the compiler generates an error.

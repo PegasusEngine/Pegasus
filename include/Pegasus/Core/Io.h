@@ -22,44 +22,57 @@ namespace Io {
 class FileBuffer
 {
 public:
+    //! Constructor
     FileBuffer();
+
+    //! Destructor
     ~FileBuffer();
-    
+
+
+    //! Takes ownership of a buffer, as the contents of this object
+    //! \param buffer Address of the buffer.
+    //! \param bufferSize Size of the buffer.
     void OwnBuffer(char * buffer, int bufferSize);
+
+    //! Releases ownership of any currently owned buffer
     void ForgetBuffer();
+
+    //! Destroys the currently owned buffer
     void DestroyBuffer();
+
+
+    //! Sets the size of the contained file
+    //! \param fileSize New file size.
+    //! \warning File size must be less than the container/buffer size
     void SetFileSize(int fileSize);
 
-    char * GetBuffer() 
-    {
-        return mBuffer;
-    }
+    //! Gets the contained buffer, allowing RW operations
+    //! \return The buffer.
+    inline char* GetBuffer() { return mBuffer; }
 
-    const char * GetBuffer() const
-    {
-        return mBuffer;
-    }
+    //! Gets the contained buffer
+    //! \return The buffer.
+    const char * GetBuffer() const { return mBuffer; }
     
-    int GetBufferSize() const
-    {
-        return mBufferSize;
-    } 
+    //! Gets the size of the contained buffer
+    //! \return Buffer size.
+    int GetBufferSize() const { return mBufferSize; }
 
-    int GetFileSize() const
-    {
-        return mFileSize;
-    }
+    //! Gets the size of the contained file
+    //! \return Filesize.
+    int GetFileSize() const { return mFileSize; }
 
 private:
-    //no copies allowed
-    explicit FileBuffer(const FileBuffer& other); 
-    FileBuffer& operator= (const FileBuffer& other);
+    // no copies allowed
+    PG_DISABLE_COPY(FileBuffer);
 
-    char * mBuffer;
-    int mFileSize;
-    int mBufferSize;
+
+    char* mBuffer; //<! Contained buffer
+    int mFileSize; //<! Size of the file in the buiffer
+    int mBufferSize; //<! Size of the buffer
 };
 
+//----------------------------------------------------------------------------------------
 
 //! Config structure for the IO manager
 struct IOManagerConfig
@@ -67,6 +80,7 @@ struct IOManagerConfig
 public:
     //! Constructor
     IOManagerConfig() : mBasePath(nullptr), mAppName(nullptr) {}
+
     //! Destructor
     ~IOManagerConfig() {}
 
@@ -83,6 +97,7 @@ public:
     //! Constructor
     //! \param Configuration structure for this IOManager.
     IOManager(const IOManagerConfig& config);
+
     //! Destructor
     ~IOManager();
 
@@ -106,6 +121,7 @@ public:
 private:
     // No copies allowed
     PG_DISABLE_COPY(IOManager);
+
 
     char mRootDirectory[MAX_FILEPATH_LENGTH]; //<! Root directory this manager loads files from
 };

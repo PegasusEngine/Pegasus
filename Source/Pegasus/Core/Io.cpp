@@ -13,9 +13,7 @@
 
 #include "Pegasus/Core/Io.h"
 #include "Pegasus/Core/Assertion.h"
-
-//using the windows libraries to produce file IO
-#include "stdio.h"
+#include "stdio.h" //using the windows libraries to produce file IO
 #if PEGASUS_USE_NATIVE_IO_CALLS
 #if PEGASUS_PLATFORM_WINDOWS
 #include <windows.h>
@@ -61,7 +59,7 @@ Pegasus::Io::IoError NativeOpenFileToBuffer(const char* path, Pegasus::Io::FileB
             if (allocateBuffer)
             {
                 outputBuffer.OwnBuffer(
-                    PG_CORE_NEW("file buffer", Pegasus::Memory::PG_MEM_PERM) char[fileSize.LowPart],
+                    PG_NEW("file buffer", Pegasus::Memory::PG_MEM_PERM) char[fileSize.LowPart],
                     fileSize.LowPart
                 );
             }
@@ -155,7 +153,7 @@ IoError IOManager::OpenFileToBuffer(const char* relativePath, FileBuffer& output
         if (allocateBuffer)
         {
             outputBuffer.OwnBuffer (
-                PG_CORE_NEW("file buffer", Pegasus::Memory::PG_MEM_PERM) char[fileSize],
+                PG_NEW("file buffer", Pegasus::Memory::PG_MEM_PERM) char[fileSize],
                 fileSize
             );
         }
@@ -187,6 +185,8 @@ IoError IOManager::OpenFileToBuffer(const char* relativePath, FileBuffer& output
 #endif
 }
 
+//----------------------------------------------------------------------------------------
+
 Pegasus::Io::FileBuffer::FileBuffer()
 :   mBuffer(nullptr), 
     mFileSize(0), 
@@ -194,10 +194,14 @@ Pegasus::Io::FileBuffer::FileBuffer()
 {
 }
 
+//----------------------------------------------------------------------------------------
+
 Pegasus::Io::FileBuffer::~FileBuffer()
 {
     DestroyBuffer();
 }
+
+//----------------------------------------------------------------------------------------
 
 void Pegasus::Io::FileBuffer::OwnBuffer(char * buffer, int bufferSize)
 {
@@ -206,12 +210,16 @@ void Pegasus::Io::FileBuffer::OwnBuffer(char * buffer, int bufferSize)
     mBufferSize = bufferSize;
 }
 
+//----------------------------------------------------------------------------------------
+
 void Pegasus::Io::FileBuffer::ForgetBuffer()
 {
     mBuffer = nullptr;
     mBufferSize = 0;
     mFileSize = 0;
 }
+
+//----------------------------------------------------------------------------------------
 
 void Pegasus::Io::FileBuffer::DestroyBuffer()
 {
@@ -223,6 +231,8 @@ void Pegasus::Io::FileBuffer::DestroyBuffer()
         mFileSize = 0;
     }
 }
+
+//----------------------------------------------------------------------------------------
 
 void Pegasus::Io::FileBuffer::SetFileSize(int fileSize)
 {

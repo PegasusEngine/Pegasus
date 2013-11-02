@@ -4,20 +4,18 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	PegasusWindow.cpp
-//! \author	David Worsham
-//! \date	4th July 2013
-//! \brief	Class for a single window in a Pegasus application.
+//! \file   Window.cpp
+//! \author David Worsham
+//! \date   4th July 2013
+//! \brief  Class for a single window in a Pegasus application.
 
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/Render/RenderContext.h"
 #include "Pegasus/Application/Application.h"
-
 #include <windows.h>
 
 namespace Pegasus {
 namespace Window {
-
 
 // Internal functions for Windows message handling
 static LRESULT CALLBACK CBTProc(int nCode, WPARAM wParam, LPARAM lParam);
@@ -61,10 +59,6 @@ void Window::Resize(unsigned int width, unsigned int height)
                  0, 0, 
                  width, height,
                  SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
-
-    // Cache
-    //mWidth = width;
-    //mHeight = height;
 }
 
 //----------------------------------------------------------------------------------------
@@ -84,18 +78,17 @@ Window::HandleMessageReturn Window::HandleMessage(unsigned int message, unsigned
     case WM_CREATE: // Window is being created
         {
             HDC deviceContext = GetDC((HWND) mHWND);
-            Render::ContextConfig contextConfig((Render::DeviceContextHandle) deviceContext);
+            Render::ContextConfig contextConfig;
 
-            //! \todo Need real allocators
             // Create context
+            contextConfig.mDeviceContextHandle = (Render::DeviceContextHandle) deviceContext;
             contextConfig.mStartupContext = mUseBasicContext;
-            mRenderContext = PG_CORE_NEW("Render::Context", Pegasus::Memory::PG_MEM_PERM) Render::Context(contextConfig);
+            mRenderContext = PG_NEW("Render::Context", Pegasus::Memory::PG_MEM_PERM) Render::Context(contextConfig);
         }
         ret.handled = true; ret.retcode = 0;
         break;
     case WM_DESTROY: // Window is being destroyed
         {
-            //! \todo Need real allocators
             // Destroy context
             PG_DELETE mRenderContext;
         }
@@ -244,7 +237,8 @@ bool Window::UnregisterWindowClass(ModuleHandle handle)
 
 //----------------------------------------------------------------------------------------
 
-//! CBT callback for hooking window-specific data.  Called before the window is created.
+//! CBT callback for hooking window-specific data
+//! Called before the window is created, to provide its address for the WndProc later.
 //! \param nCode Message code.
 //! \param wParam Message params high.
 //! \param lParam Message params low.
@@ -277,8 +271,8 @@ LRESULT CALLBACK CBTProc(int nCode, WPARAM wParam, LPARAM lParam)
 
 //----------------------------------------------------------------------------------------
 
-//! Windows callback for a Pegasus window.  Fired every time a message is
-//! delivered to the window.
+//! Windows callback for a Pegasus window
+//! Fired every time a message is delivered to the window.
 //! \param hwnd Handle to the window.
 //! \param message Message code.
 //! \param wParam Message params high.
@@ -302,8 +296,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     return wndProcReturn.retcode;
 }
-
-//----------------------------------------------------------------------------------------
 
 
 }   // namespace Window

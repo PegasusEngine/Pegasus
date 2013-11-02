@@ -14,7 +14,6 @@
 
 #include <stdint.h>
 
-
 namespace Pegasus {
 namespace Render {
 

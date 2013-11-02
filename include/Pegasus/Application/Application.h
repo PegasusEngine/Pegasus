@@ -29,12 +29,13 @@ namespace Pegasus {
     }
 }
 
+//----------------------------------------------------------------------------------------
 
 namespace Pegasus {
 namespace Application {
 
-//! \class Building block class for a Pegasus application.
-//!        Override Init, Shutdown, and Render to perform rendering.
+//! Building block class for a Pegasus application
+//! Override Init, Shutdown, and Render to perform rendering.
 //! \note To use this class, simply:
 //! \note   1. instantiate it
 //! \note   2. attach a window to it

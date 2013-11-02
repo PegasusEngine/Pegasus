@@ -23,6 +23,7 @@ namespace Pegasus {
     }
 }
 
+//----------------------------------------------------------------------------------------
 
 namespace Pegasus {
 namespace Application {
@@ -31,8 +32,9 @@ namespace Application {
 struct AppWindowManagerConfig
 {
 public:
-    //! Basic constructor
+    //! Constructor
     AppWindowManagerConfig() : mMaxWindowTypes(2), mMaxNumWindows(1) {}
+
     //! Destructor
     ~AppWindowManagerConfig() {};
 
@@ -42,18 +44,21 @@ public:
 };
 
 
-//! \class This class manages a set of window for a Pegasus app.
-//!        It allows the registration and creation of windows of multiple,
-//!        user defined types to make it simple to extend the runtime.
+//! Window manager for a Pegasus app
+//! This class manages a set of window for a Pegasus app
+//! It allows the registration and creation of windows of multiple,
+//! user defined types to make it simple to extend the runtime.
 class AppWindowManager : public IWindowRegistry
 {
 public:
-    //! Basic constructor
+    //! Constructor
     //! \param config Config to create this manager with.
     AppWindowManager(const AppWindowManagerConfig& config);
+
     //! Destructor
     //! \warning Unregister your classes and destroy your windows before you call this!
     ~AppWindowManager();
+
 
     // IWindowRegistry API
     virtual void RegisterWindowClass(const char* className, const WindowRegistration& classReg);
@@ -65,6 +70,7 @@ public:
     //! \param config Config to use for the window.
     //! \return Created window.
     Window::Window* CreateWindow(const char* className, const Window::WindowConfig& config);
+
     //! Destroys a window and removes it from this manager.
     //! \param window The window to destroy.
     void DestroyWindow(const Window::Window* window);
@@ -75,8 +81,7 @@ public:
 
 private:
     // No copies allowed
-    AppWindowManager(const AppWindowManager& other);
-    AppWindowManager& operator=(const AppWindowManager& other);
+    PG_DISABLE_COPY(AppWindowManager);
 
 
     TypeTable* mTypeTable; //<! Window type table

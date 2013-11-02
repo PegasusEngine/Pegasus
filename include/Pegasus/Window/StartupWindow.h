@@ -17,19 +17,25 @@
 namespace Pegasus {
 namespace Window {
 
-//! \class This is a specialized window for the TestApp1 application main window.  Place
-//         specialized rendering code here.
+//! Specialized window for internal startup use
 class StartupWindow : public Window
 {
 public:
-    // Ctor / dtor
+    //! Constructor
+    //! \param config Config struct for this window.
     StartupWindow(const WindowConfig& config);
+
+    //! Destructor
     ~StartupWindow();
 
-    // Factory API
+
+    //! Factory function to create a new StartupWindow
+    //! \param config Config struct to use for the new window.
+    //! \return New window.
     static Window* Create(const WindowConfig& config);
 
-    // App-specific API
+
+    // Window API
     virtual void Initialize();
     virtual void Shutdown();
     virtual void Refresh();

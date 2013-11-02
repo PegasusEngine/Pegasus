@@ -14,7 +14,6 @@
 
 #include "Pegasus/Preprocessor.h"
 
-
 #if PEGASUS_ENABLE_LOG
 
 //! Macro to send a message to a log channel
@@ -23,22 +22,17 @@
 //! \warning The number of parameters following str must match the list of formatting
 //!          strings inside msgStr.
 #define PG_LOG(channel, str, ...)   { Pegasus::Core::LogManager::GetInstance().Log(channel, str, __VA_ARGS__); }
-
 #else
-
 #define PG_LOG(channel, str, ...)
-
 #endif  // PEGASUS_ENABLE_LOG
 
 //----------------------------------------------------------------------------------------
 
 #if PEGASUS_ENABLE_LOG
-
 #include "Pegasus/Core/Singleton.h"
 
 namespace Pegasus {
 namespace Core {
-    
 
 //! Type definition of a log channel.
 //! A channel name is represented with 4 uppercase letter inside single quotes, such as 'WARN'.
@@ -68,14 +62,17 @@ static const LogChannel sLogChannels[] = {
 //! Number of defined channels
 static const unsigned int NUM_LOG_CHANNELS = sizeof(sLogChannels) / sizeof(LogChannel);
 
+//----------------------------------------------------------------------------------------
 
 //! Log manager (singleton) that redirects the macros to the log handler,
 //! for debug messages
 class LogManager : public AutoSingleton<LogManager>
 {
 public:
-
+    //! Constructor
     LogManager();
+
+    //! Destructor
     virtual ~LogManager();
 
     //! Callback function declaration.

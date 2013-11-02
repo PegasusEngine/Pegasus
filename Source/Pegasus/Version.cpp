@@ -9,6 +9,7 @@
 //! \date   05th October 2013
 //! \brief  Methods for checking the version of the engine.
 
+#if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/Version.h"
 
 //! Version of the engine
@@ -27,3 +28,4 @@ PEGASUSAPP_SHARED unsigned int GetPegasusVersion()
 }
 #endif
 
+#endif  // PEGASUS_ENABLE_PROXIES

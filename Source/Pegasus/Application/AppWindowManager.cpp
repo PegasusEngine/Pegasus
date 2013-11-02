@@ -37,6 +37,7 @@ public:
     Window::WindowFactoryFunc mCreateFunc; // Factory function
 };
 
+//----------------------------------------------------------------------------------------
 
 // Window type table
 struct TypeTable
@@ -60,6 +61,7 @@ public:
     int mMainWindowIndex; // Index for MAIN window type
 };
 
+//----------------------------------------------------------------------------------------
 
 // Window table
 struct WindowTable
@@ -80,6 +82,8 @@ public:
     unsigned int mMaxSize; // Max table size
 };
 
+
+//----------------------------------------------------------------------------------------
 
 TypeTableEntry::TypeTableEntry()
     : mTypeTag(WINDOW_TYPE_INVALID),
@@ -142,7 +146,7 @@ void TypeTableEntry::Clear()
 TypeTable::TypeTable(unsigned int max)
     : mCurrentSize(0), mMaxSize(max), mMainWindowIndex(-1)
 {
-    mTable = PG_CORE_NEW("TypeTableEntries", Pegasus::Memory::PG_MEM_PERM) TypeTableEntry[mMaxSize];
+    mTable = PG_NEW("TypeTableEntries", Pegasus::Memory::PG_MEM_PERM) TypeTableEntry[mMaxSize];
 }
 
 //----------------------------------------------------------------------------------------
@@ -266,7 +270,7 @@ void TypeTable::Remove(const char* typeName)
 WindowTable::WindowTable(unsigned int max)
 : mCurrentSize(0), mMaxSize(max)
 {
-    mTable = PG_CORE_NEW("WindowTableEntries", Pegasus::Memory::PG_MEM_PERM) Window::Window*[mMaxSize];
+    mTable = PG_NEW("WindowTableEntries", Pegasus::Memory::PG_MEM_PERM) Window::Window*[mMaxSize];
 
     // Zero out window table
     for (unsigned int i = 0; i < mMaxSize; i++)
@@ -338,8 +342,8 @@ void WindowTable::Remove(const Window::Window* entry)
 
 AppWindowManager::AppWindowManager(const AppWindowManagerConfig& config)
 {
-    mTypeTable = PG_CORE_NEW("WindowManager-TypeTable", Pegasus::Memory::PG_MEM_PERM) TypeTable(config.mMaxWindowTypes);
-    mWindowTable = PG_CORE_NEW("WindowManager-TypeTable", Pegasus::Memory::PG_MEM_PERM) WindowTable(config.mMaxNumWindows);
+    mTypeTable = PG_NEW("WindowManager-TypeTable", Pegasus::Memory::PG_MEM_PERM) TypeTable(config.mMaxWindowTypes);
+    mWindowTable = PG_NEW("WindowManager-TypeTable", Pegasus::Memory::PG_MEM_PERM) WindowTable(config.mMaxNumWindows);
 }
 
 //----------------------------------------------------------------------------------------

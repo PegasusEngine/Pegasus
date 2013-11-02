@@ -4,14 +4,13 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	GLExtensions.cpp
-//! \author	Kevin Boulanger
-//! \date	11th June 2013
-//! \brief	Management of GL and WGL extensions, available throughout the engine
+//! \file   GLExtensions.cpp
+//! \author Kevin Boulanger
+//! \date   11th June 2013
+//! \brief  Management of GL and WGL extensions, available throughout the engine
 //!         to check if features are available before using them
 
 #include "Pegasus/Render/GL/GLExtensions.h"
-
 // Use the GLEW static mode to avoid exporting symbols as for a dynamic library
 #define GLEW_STATIC 1
 #include "Pegasus/Libs/GLEW/glew.h"
@@ -21,21 +20,18 @@
 namespace Pegasus {
 namespace Render {
 
-
-GLExtensions * GLExtensions::sInstance = nullptr;
+// Static instance of this object
+GLExtensions* GLExtensions::sInstance = nullptr;
 
 //----------------------------------------------------------------------------------------
 
 void GLExtensions::CreateInstance()
 {
+    PG_ASSERTSTR(sInstance == nullptr, "CreateInstance being called twice!");
+
     if (sInstance == nullptr)
     {
-        //! \todo Allocator management
-        sInstance = PG_CORE_NEW("GLExtensions", Pegasus::Memory::PG_MEM_PERM) GLExtensions;
-    }
-    else
-    {
-        //! \todo Assertion error
+        sInstance = PG_NEW("GLExtensions", Pegasus::Memory::PG_MEM_PERM) GLExtensions;
     }
 }
 
@@ -43,14 +39,12 @@ void GLExtensions::CreateInstance()
 
 void GLExtensions::DestroyInstance()
 {
+    PG_ASSERTSTR(sInstance != nullptr, "Destroy instance being called before CreateInstance!");
+
     if (sInstance != nullptr)
     {
         PG_DELETE sInstance;
         sInstance = nullptr;
-    }
-    else
-    {
-        //! \todo Assertion error
     }
 }
 
@@ -63,14 +57,13 @@ GLExtensions::GLExtensions()
     GLenum error = glewInit();
     if (error != GLEW_OK)
     {
-        //! \todo Proper error handling
-        //fprintf(stderr, "GLEW error: %s\n", glewGetErrorString(error));
+        PG_FAILSTR("Glew failed to initialize: %s", glewGetErrorString(error));
 
         return;
     }
 
     //! \todo Handle logging
-    //fprintf(stdout, "Using GLEW %s\n", glewGetString(GLEW_VERSION));
+    PG_LOG('OGL_', "Using glew: %u", glewGetString(GLEW_VERSION));
 
     mGLEWInitialized = true;
 }
@@ -113,7 +106,7 @@ bool GLExtensions::IsProfileSupported(Profile profile) const
 {
     if (!mGLEWInitialized)
     {
-        //! \todo Assertion for mGLEWInitialized
+        PG_FAILSTR("GLEW is not initialized!");
 
         return false;
     }
@@ -133,7 +126,7 @@ bool GLExtensions::IsProfileSupported(Profile profile) const
     }
     else
     {
-        //! \todo Assertion error
+        PG_FAILSTR("Invalid profile: %u", (unsigned int) profile);
 
         return false;
     }
@@ -141,48 +134,30 @@ bool GLExtensions::IsProfileSupported(Profile profile) const
 
 //----------------------------------------------------------------------------------------
 
-bool GLExtensions::IsGLExtensionSupported(const char * name) const
+bool GLExtensions::IsGLExtensionSupported(const char* name) const
 {
     if (!mGLEWInitialized)
     {
-        //! \todo Assertion for mGLEWInitialized
+        PG_FAILSTR("GLEW is not initialized!");
 
         return false;
     }
 
-    if (name != nullptr)
-    {
-        return (glewIsSupported(name) != 0);
-    }
-    else
-    {
-        //! \todo Assertion for empty strings
-
-        return false;
-    }
+    return (glewIsSupported(name) != 0);
 }
 
 //----------------------------------------------------------------------------------------
 
-bool GLExtensions::IsWGLExtensionSupported(const char * name) const
+bool GLExtensions::IsWGLExtensionSupported(const char* name) const
 {
     if (!mGLEWInitialized)
     {
-        //! \todo Assertion for mGLEWInitialized
+        PG_FAILSTR("GLEW is not initialized!");
 
         return false;
     }
 
-    if (name != nullptr)
-    {
-        return (wglewIsSupported(name) != 0);
-    }
-    else
-    {
-        //! \todo Assertion for empty strings
-
-        return false;
-    }
+    return (wglewIsSupported(name) != 0);
 }
 
 //----------------------------------------------------------------------------------------
