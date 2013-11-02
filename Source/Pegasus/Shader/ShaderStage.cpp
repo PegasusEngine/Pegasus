@@ -164,7 +164,7 @@ bool Pegasus::Shader::ShaderStage::CompileFromSrc(Pegasus::Shader::ShaderType ty
     return CompileFromSrcInternal(type, mFileBuffer.GetBuffer(), mFileBuffer.GetFileSize());
 }
 
-bool Pegasus::Shader::ShaderStage::CompileFromFile(const char * path)
+bool Pegasus::Shader::ShaderStage::CompileFromFile(const char * path, Io::IOManager* loader)
 {
     PG_ASSERT(path != nullptr);
     const char * extension = strrchr(path, '.');
@@ -184,7 +184,7 @@ bool Pegasus::Shader::ShaderStage::CompileFromFile(const char * path)
     if (targetStage != Pegasus::Shader::SHADER_STAGE_INVALID)
     {
         mFileBuffer.DestroyBuffer(); //clear any buffers pre-allocated to this
-        Pegasus::Io::IoError ioError = Pegasus::Io::OpenFileToBuffer(path, mFileBuffer, true);
+        Pegasus::Io::IoError ioError = loader->OpenFileToBuffer(path, mFileBuffer, true);
         if (ioError == Pegasus::Io::ERR_NONE)
         {
             SHADEREVENT_LOADED(mFileBuffer.GetBuffer(), mFileBuffer.GetFileSize());

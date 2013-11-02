@@ -17,9 +17,16 @@
 class TestApp1 : public Pegasus::Application::Application
 {
 public:
-    // Ctor / dtor
+    //! Constructor
+    //! \param config Config structure for this app.
     TestApp1(const Pegasus::Application::ApplicationConfig& config);
+
+    //! Destructor
     virtual ~TestApp1();
+
+
+    // Application interface
+    virtual const char* GetAppName() const { return "TestApp1"; }
 };
 
 

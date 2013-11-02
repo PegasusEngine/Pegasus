@@ -14,13 +14,16 @@
 
 #include "Pegasus/Application/Application.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+
+// Since this is REL mode only, hard-code the asset root
+static const char* ASSET_ROOT = "..\\..\\..\\..\\Data\\";
 
 // Typedefs for DLL entry point
 extern Pegasus::Application::Application* CreateApplication(const Pegasus::Application::ApplicationConfig& config);
 extern void DestroyApplication(Pegasus::Application::Application* app);
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 
 
 #if PEGASUS_ENABLE_LOG
@@ -209,12 +212,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     appConfig.mModuleHandle = (Pegasus::Window::ModuleHandle) hInstance;
     appConfig.mMaxWindowTypes = 2;
     appConfig.mMaxNumWindows = 2;
-    // Attach the debugging features
+    appConfig.mBasePath = ASSET_ROOT;
 #if PEGASUS_ENABLE_LOG
-    appConfig.mLoghandler = LogHandler;
+    appConfig.mLoghandler = LogHandler; // Attach the debugging features
 #endif
 #if PEGASUS_ENABLE_ASSERT
-    appConfig.mAssertHandler = AssertionHandler;
+    appConfig.mAssertHandler = AssertionHandler; // Attach the debugging features
 #endif
 
     // Initialize the application

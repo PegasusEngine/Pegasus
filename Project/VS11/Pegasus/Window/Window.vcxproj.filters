@@ -42,6 +42,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Window\StartupWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Window\IWindowContext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Window\Platform\Window_Win32.cpp">

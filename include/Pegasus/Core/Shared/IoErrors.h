@@ -12,11 +12,10 @@
 #ifndef PEGASUS_IOERRORS_H
 #define PEGASUS_IOERRORS_H
 
-namespace Pegasus
-{
-namespace Io
-{
+namespace Pegasus {
+namespace Io {
 
+//! Error code return for IO operations
 enum IoError
 {
    ERR_NONE, // no error
@@ -26,7 +25,7 @@ enum IoError
    ERR_READING_FILE // an error occured while reading the file
 };
 
-}
-}
+} // namespace Io
+} // namespace Pegasus
 
 #endif

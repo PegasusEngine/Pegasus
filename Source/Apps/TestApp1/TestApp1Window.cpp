@@ -27,7 +27,6 @@
 #define DEMO_KEVIN_CUBE_FRACTAL         3
 #define DEMO_KEVIN_CUBE_FRACTAL2        4
 #define DEMO                            DEMO_KEVIN_CUBE_FRACTAL2
-#define DEMO_ROOT  "..\\..\\..\\..\\Data\\AppTest1\\Imported\\Shaders\\"
 
 // Statics / globals
 #if DEMO == DEMO_KLEBER_HOMOGAY_TRIANGLE
@@ -47,23 +46,23 @@ GLuint Buffers[NUM_BUFFERS];
 
 
 #if DEMO == DEMO_KLEBER_HOMOGAY_TRIANGLE
-    const char* TRIANGLES_VERT = DEMO_ROOT "Blob.vs";
-    const char* TRIANGLES_FRAG = DEMO_ROOT "Blob.ps";
+    const char* TRIANGLES_VERT = "Shaders\\Blob.vs";
+    const char* TRIANGLES_FRAG = "Shaders\\Blob.ps";
 #endif  // DEMO_KLEBER_HOMOGAY_TRIANGLE
 
 #if DEMO == DEMO_KEVIN_PSYBEADS
-    const char* TRIANGLES_VERT = DEMO_ROOT "Psybeads.vs";
-    const char* TRIANGLES_FRAG = DEMO_ROOT "Psybeads.ps";
+    const char* TRIANGLES_VERT = "Shaders\\Psybeads.vs";
+    const char* TRIANGLES_FRAG = "Shaders\\Psybeads.ps";
 #endif  // DEMO_KEVIN_PSYBEADS
 
 #if DEMO == DEMO_KEVIN_CUBE_FRACTAL
-    const char* TRIANGLES_VERT = DEMO_ROOT "Cubefractal.vs";
-    const char* TRIANGLES_FRAG = DEMO_ROOT "CubeFractal.ps";
+    const char* TRIANGLES_VERT = "Shaders\\Cubefractal.vs";
+    const char* TRIANGLES_FRAG = "Shaders\\CubeFractal.ps";
 #endif  // DEMO_KEVIN_CUBE_FRACTAL
 
 #if DEMO == DEMO_KEVIN_CUBE_FRACTAL2
-    const char* TRIANGLES_VERT = DEMO_ROOT "Cubefractal2.vs";
-    const char* TRIANGLES_FRAG = DEMO_ROOT "CubeFractal2.ps";
+    const char* TRIANGLES_VERT = "Shaders\\Cubefractal2.vs";
+    const char* TRIANGLES_FRAG = "Shaders\\CubeFractal2.ps";
 #endif  // DEMO_KEVIN_CUBE_FRACTAL2
 
 
@@ -89,6 +88,8 @@ Pegasus::Window::Window* TestApp1Window::Create(const Pegasus::Window::WindowCon
 
 void TestApp1Window::Initialize()
 {
+    Pegasus::Io::IOManager* fileLoader = GetWindowContext()->GetIOManager();
+
 #if DEMO == DEMO_KLEBER_HOMOGAY_TRIANGLE
     const GLfloat verts[NUM_VERTS][2] = {
         { -0.6f, -0.6f },
@@ -117,8 +118,8 @@ void TestApp1Window::Initialize()
     glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW); // Immutable verts
 
     // Set up shaders
-    mVertexShader.CompileFromFile(TRIANGLES_VERT);
-    mFragmentShader.CompileFromFile(TRIANGLES_FRAG);
+    mVertexShader.CompileFromFile(TRIANGLES_VERT, fileLoader);
+    mFragmentShader.CompileFromFile(TRIANGLES_FRAG, fileLoader);
     mShaderProgram.SetStage(&mVertexShader);
     mShaderProgram.SetStage(&mFragmentShader);
     mShaderProgram.Link();
@@ -155,7 +156,7 @@ void TestApp1Window::Refresh()
 
     // Clear screen
     glClear(GL_COLOR_BUFFER_BIT);
-    mFrame = (int) (GetApplication()->GetAppTime() * 60.0f); // Time is in s
+    //mFrame = (int) (GetApplication()->GetAppTime() * 60.0f); // Time is in s
 
 #if DEMO == DEMO_KLEBER_HOMOGAY_TRIANGLE
     //! \todo Temporary, just to get some animation running

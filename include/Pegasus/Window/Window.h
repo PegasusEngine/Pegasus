@@ -40,7 +40,7 @@ public:
 
     // Getters
     inline WindowHandle GetHandle() const { return mHWND; };
-    inline Application::Application* GetApplication() const { return mApplication; };
+    inline IWindowContext* GetWindowContext() { return mWindowContext; }
     inline Render::Context* GetRenderContext() const { return mRenderContext; };
     inline void GetDimensions(unsigned int& width, unsigned int& height) { width = mWidth; height = mHeight; }
 
@@ -80,8 +80,7 @@ private:
     void Internal_CreateWindow(const WindowConfig& config);
 
 
-    //! Application the window belongs to
-    Application::Application * mApplication;
+    IWindowContext* mWindowContext; //!< Context for this window to operate in
 
     //! Window handle
     WindowHandle mHWND;

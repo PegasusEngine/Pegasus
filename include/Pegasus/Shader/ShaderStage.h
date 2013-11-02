@@ -46,7 +46,7 @@ namespace Shader
         
 
         bool CompileFromSrc(ShaderType type, const char * src, int stringLength);
-        bool CompileFromFile(const char * path);
+        bool CompileFromFile(const char * path, Io::IOManager* loader);
         ShaderType GetStageType() const { return mType; }
 
     private:

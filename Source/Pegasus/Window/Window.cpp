@@ -32,7 +32,7 @@ static const char* PEGASUS_WND_WNDNAME = "PegasusEngine";
 //! Config-based constructor.
 //! \param config Configuration structure used to create this window.
 Window::Window(const WindowConfig& config)
-:   mApplication(config.mApplication),
+:   mWindowContext(config.mWindowContext),
     mHWND(NULL),
     mUseBasicContext(config.mUseBasicContext),
     mRenderContext(NULL),

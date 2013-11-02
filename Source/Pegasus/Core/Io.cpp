@@ -22,17 +22,20 @@
 #endif
 #endif
 
+namespace Pegasus {
+namespace Io {
 
 //implementation using native windows api calls
 #if PEGASUS_USE_NATIVE_IO_CALLS
-namespace PegasusIoPrivate
+namespace internal
 {
 #if PEGASUS_PLATFORM_WINDOWS
 
-Pegasus::Io::IoError NativeOpenFileToBuffer(const char * relativePath, Pegasus::Io::FileBuffer& outputBuffer, bool allocateBuffer)
+Pegasus::Io::IoError NativeOpenFileToBuffer(const char* path, Pegasus::Io::FileBuffer& outputBuffer, bool allocateBuffer)
 {
+    // Load the file
     HANDLE fileHandle = CreateFile(
-        relativePath,
+        path,
         GENERIC_READ,
         FILE_SHARE_READ,
         NULL, //win32 security attributes
@@ -72,7 +75,7 @@ Pegasus::Io::IoError NativeOpenFileToBuffer(const char * relativePath, Pegasus::
             DWORD bytesRead = 0;
             ReadFile(fileHandle, outputBuffer.GetBuffer(), outputBuffer.GetFileSize(), &bytesRead, NULL); 
             
-            PG_ASSERTSTR(bytesRead == outputBuffer.GetFileSize(), "bytes read do not match bytes requested, file %s", relativePath);
+            PG_ASSERTSTR(bytesRead == outputBuffer.GetFileSize(), "bytes read do not match bytes requested, file %s", path);
             CloseHandle(fileHandle);
             if (allocateBuffer && GetLastError() != 0)
             {
@@ -83,29 +86,58 @@ Pegasus::Io::IoError NativeOpenFileToBuffer(const char * relativePath, Pegasus::
     }
     else
     {
+        PG_LOG('FILE', "File not found \"%s\"", path);
+
         return Pegasus::Io::ERR_FILE_NOT_FOUND;
     }
-    //enable low level logging, logging is failing
-    //PG_LOG('FILE', "successfully opened file \"%s\"", relativePath);
+    PG_LOG('FILE', "Successfully opened file \"%s\"", path);
+
     return Pegasus::Io::ERR_NONE;
 }
 
 #else
     #error No native implementation for IO functions in current platform!
 #endif //platform selection
-}// namespace PegasusIoPrivate
+}// namespace internal
 #endif //PEGASUS_USE_NATIVE_CALLS
 
-//implementation using the c runtime calls
-Pegasus::Io::IoError Pegasus::Io::OpenFileToBuffer(const char * relativePath, Pegasus::Io::FileBuffer& outputBuffer, bool allocateBuffer)
+//----------------------------------------------------------------------------------------
+
+IOManager::IOManager(const IOManagerConfig& config)
 {
+    // Configure the path
+    sprintf_s(mRootDirectory, MAX_FILEPATH_LENGTH, "%s%s\\Imported\\", config.mBasePath, config.mAppName); // Hardcode imported for now
+    mRootDirectory[MAX_FILEPATH_LENGTH - 1] = '\0';
+
+    PG_LOG('FILE', "Asset root set to \"%s\"", mRootDirectory);
+}
+
+//----------------------------------------------------------------------------------------
+
+IOManager::~IOManager()
+{
+}
+
+//----------------------------------------------------------------------------------------
+
+IoError IOManager::OpenFileToBuffer(const char* relativePath, FileBuffer& outputBuffer, bool allocateBuffer)
+{
+    char pathBuffer[MAX_FILEPATH_LENGTH];
+
+    // Configure the path
+    strncpy_s(pathBuffer, MAX_FILEPATH_LENGTH, mRootDirectory, MAX_FILEPATH_LENGTH);
+    pathBuffer[MAX_FILEPATH_LENGTH - 1] = '\0';
+    strncat_s(pathBuffer, relativePath, MAX_FILEPATH_LENGTH);
+    pathBuffer[MAX_FILEPATH_LENGTH - 1] = '\0';
+
+    // Load the file
 #if PEGASUS_USE_NATIVE_IO_CALLS
-    return PegasusIoPrivate::NativeOpenFileToBuffer(relativePath, outputBuffer, allocateBuffer); 
+    return internal::NativeOpenFileToBuffer(pathBuffer, outputBuffer, allocateBuffer); 
 #else
     //default to c runtime file functions
     FILE * fileHandle = nullptr;
 
-    fopen_s(&fileHandle, relativePath, "rb");
+    fopen_s(&fileHandle, pathBuffer, "rb");
     if (fileHandle)
     {
         fseek(fileHandle, 0L, SEEK_END);
@@ -114,7 +146,7 @@ Pegasus::Io::IoError Pegasus::Io::OpenFileToBuffer(const char * relativePath, Pe
 
         if (fullSize > 0x00000000FFFFFFFF)
         {
-            PG_FAILSTR("Pegasus does not support files bigger than 4 gb!");
+            PG_FAILSTR("Pegasus does not support files bigger than 4 gb, file %s", pathBuffer);
             fclose(fileHandle);
             return ERR_FILE_SIZE_TOO_BIG;
         }
@@ -134,7 +166,7 @@ Pegasus::Io::IoError Pegasus::Io::OpenFileToBuffer(const char * relativePath, Pe
         }
         outputBuffer.SetFileSize(fileSize);//force loss presicion
         int bytesRead = fread(outputBuffer.GetBuffer(), 1/*byte*/, outputBuffer.GetFileSize(), fileHandle);
-        PG_ASSERTSTR(bytesRead == outputBuffer.GetFileSize(), "bytes read do not match bytes requested, file %s", relativePath);
+        PG_ASSERTSTR(bytesRead == outputBuffer.GetFileSize(), "bytes read do not match bytes requested, file %s", pathBuffer);
         fclose(fileHandle);
         if (allocateBuffer && ferror(fileHandle))
         {
@@ -145,10 +177,12 @@ Pegasus::Io::IoError Pegasus::Io::OpenFileToBuffer(const char * relativePath, Pe
     } 
     else
     {
+        PG_LOG('FILE', "File not found" \"%s\"", pathBuffer);
+
         return Pegasus::Io::ERR_FILE_NOT_FOUND;
     }
-    //TODO: enable low level logging, logger is failing
-    //PG_LOG('FILE', "successfully opened file \"%s\"", relativePath);
+
+    PG_LOG('FILE', "Successfully opened file \"%s\"", pathBuffer);
     return Pegasus::Io::ERR_NONE; 
 #endif
 }
@@ -196,3 +230,5 @@ void Pegasus::Io::FileBuffer::SetFileSize(int fileSize)
     mFileSize = fileSize;
 }
 
+} // namespace Io
+} // namespace Pegasus

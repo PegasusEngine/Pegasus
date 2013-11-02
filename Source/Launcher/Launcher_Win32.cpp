@@ -18,10 +18,13 @@
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Window/Shared/IWindowProxy.h"
-
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <strsafe.h>
+
+
+// Since we know where the launcher launches from, hard-code the asset root
+static const char* ASSET_ROOT = "..\\..\\..\\..\\Data\\";
 
 
 #if PEGASUS_ENABLE_LOG
@@ -275,6 +278,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     appConfig.mModuleHandle = (Pegasus::Window::ModuleHandle) hInstance;
     appConfig.mMaxWindowTypes = 2;
     appConfig.mMaxNumWindows = 2;
+    appConfig.mBasePath = ASSET_ROOT;
     // Attach the debugging features
 #if PEGASUS_ENABLE_LOG
     appConfig.mLoghandler = LogHandler;

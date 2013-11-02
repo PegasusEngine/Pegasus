@@ -29,6 +29,10 @@
 #endif  // PEGASUS_PLATFORM_WINDOWS
 
 
+// Since we know where the editor launches from, hard-code the asset root
+static const char* ASSET_ROOT = "..\\..\\..\\Data\\";
+
+
 Application::Application(QObject *parent)
 :   QThread(parent),
     mApplicationInterface(nullptr),
@@ -131,6 +135,7 @@ void Application::run()
     appConfig.mModuleHandle = (Pegasus::Window::ModuleHandle) GetModuleHandle(NULL); // Use the handle of the Editor EXE
     appConfig.mMaxWindowTypes = 2;
     appConfig.mMaxNumWindows = 2;
+    appConfig.mBasePath = ASSET_ROOT;
     // Attach the debugging features
     // (queued connections as the connections are between threads)
     ApplicationManager * applicationManager = qobject_cast<ApplicationManager *>(parent());

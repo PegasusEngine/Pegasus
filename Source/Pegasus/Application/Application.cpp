@@ -17,8 +17,6 @@
 #include "Pegasus/Render/RenderContext.h"
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/Window/StartupWindow.h"
-#include <windows.h>
-#undef CreateWindow
 
 namespace Pegasus {
 namespace Application {
@@ -29,9 +27,9 @@ const char* STARTUP_WINDOW_TYPE = "INTERNAL__Startup";
 //----------------------------------------------------------------------------------------
 
 Application::Application(const ApplicationConfig& config)
-    : mInitialized(false), mModuleHandle(config.mModuleHandle), mAppTime(0.0f)
+    : mInitialized(false), mAppTime(0.0f)
 {
-    AppWindowManagerConfig managerConfig;
+    AppWindowManagerConfig windowManagerConfig;
     WindowRegistration reg;
 
     // Set up debugging facilities
@@ -42,16 +40,19 @@ Application::Application(const ApplicationConfig& config)
     Core::AssertionManager::GetInstance().RegisterHandler(config.mAssertHandler);
 #endif
 
-    // Set up manager
-    managerConfig.mMaxWindowTypes = config.mMaxWindowTypes;
-    managerConfig.mMaxNumWindows = config.mMaxNumWindows;
-    mWindowManager = PG_CORE_NEW("AppWindowManager", Pegasus::Memory::PG_MEM_PERM) AppWindowManager(managerConfig);
+    // Set up window manager
+    windowManagerConfig.mMaxWindowTypes = mConfig.mMaxWindowTypes;
+    windowManagerConfig.mMaxNumWindows = mConfig.mMaxNumWindows;
+    mWindowManager = PG_CORE_NEW("AppWindowManager", Pegasus::Memory::PG_MEM_PERM) AppWindowManager(windowManagerConfig);
 
     // Register startup window
     reg.mTypeTag = Pegasus::Application::WINDOW_TYPE_INVALID;
     reg.mDescription = "INTERNAL Startup Window";
     reg.mCreateFunc = Window::StartupWindow::Create;
     mWindowManager->RegisterWindowClass(STARTUP_WINDOW_TYPE, reg);
+
+    // Cache config
+    mConfig = config;
 }
 
 //----------------------------------------------------------------------------------------
@@ -61,10 +62,8 @@ Application::~Application()
     // Sanity check
     PG_ASSERTSTR(!mInitialized, "Application still initialized in destructor!");
 
-    // Unregister startup window
-    mWindowManager->UnregisterWindowClass(STARTUP_WINDOW_TYPE);
-
     // Free windows
+    mWindowManager->UnregisterWindowClass(STARTUP_WINDOW_TYPE);
     PG_DELETE mWindowManager;
 
     // Tear down debugging facilities
@@ -80,10 +79,17 @@ Application::~Application()
 
 void Application::Initialize()
 {
+    Io::IOManagerConfig ioManagerConfig;
     Window::Window* startupWindow = nullptr;
 
     // Sanity check
     PG_ASSERTSTR(!mInitialized, "Application already initialized!");
+
+    // Set up IO manager
+    // This must be done here because of the GetAppName virtual
+    ioManagerConfig.mBasePath = mConfig.mBasePath;
+    ioManagerConfig.mAppName = GetAppName();
+    mIoManager = PG_CORE_NEW("IOManager", Pegasus::Memory::PG_MEM_PERM) Io::IOManager(ioManagerConfig);
 
     // start up the app, which creates and destroys the dummy window
     StartupAppInternal();
@@ -102,6 +108,9 @@ void Application::Shutdown()
 
     // Shuts down GLextensions, etc
     ShutdownAppInternal();
+
+    // Tear down IO manager
+    PG_DELETE mIoManager;
 
     // No longer initted
     mInitialized = false;
@@ -122,8 +131,8 @@ Window::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig
     Window::WindowConfig config;
 
     // Create window
-    config.mModuleHandle = mModuleHandle;
-    config.mApplication = this;
+    config.mModuleHandle = mConfig.mModuleHandle;
+    config.mWindowContext = this;
     config.mIsChild = appWindowConfig.mIsChild;
     config.mParentWindowHandle = appWindowConfig.mParentWindowHandle;
     config.mWidth = appWindowConfig.mWidth;
@@ -153,24 +162,23 @@ void Application::StartupAppInternal()
     Window::WindowConfig config;
 
     // First register window classes
-    Window::Window::RegisterWindowClass(mModuleHandle);
+    Window::Window::RegisterWindowClass(mConfig.mModuleHandle);
 
     // Create window and immediately destroy it
-    //! \todo Assert/log on failure
-    config.mModuleHandle = mModuleHandle;
-    config.mApplication = this;
+    config.mModuleHandle = mConfig.mModuleHandle;
+    config.mWindowContext = this;
     config.mIsChild = false;
     config.mWidth = 128;
     config.mHeight = 128;
     config.mCreateVisible = false;
     config.mUseBasicContext = true;
     newWnd = mWindowManager->CreateWindow(STARTUP_WINDOW_TYPE, config);
+    PG_ASSERTSTR(newWnd != nullptr, "[FATAL] Failed to create startup window!");
 
     // Init openGL extensions now that we have a context
     Render::GLExtensions::CreateInstance();
 
     // Write some temporary debugging information
-    //! \todo Remove this after testing
     Render::GLExtensions & extensions = Render::GLExtensions::GetInstance();
     switch (extensions.GetMaximumProfile())
     {
@@ -225,14 +233,13 @@ void Application::StartupAppInternal()
 
 //----------------------------------------------------------------------------------------
 
-//! shuts down the application.
 void Application::ShutdownAppInternal()
 {
     // Destroy openGL extensions
     Render::GLExtensions::DestroyInstance();
 
     // Unregister window classes
-    Window::Window::UnregisterWindowClass(mModuleHandle);
+    Window::Window::UnregisterWindowClass(mConfig.mModuleHandle);
 }
 
 //----------------------------------------------------------------------------------------
