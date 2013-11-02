@@ -53,7 +53,7 @@ NodeDataReturn OperatorNode::GetUpdatedData(bool & updated)
     bool inputUpdated = false;
     for (unsigned int i = 0; i < numInputs; ++i)
     {
-        NodeDataRef updatedData = GetUpdatedData(inputUpdated);
+        (void) GetUpdatedData(inputUpdated);
     }
 
     // If any input has been updated or if the data are dirty, re-generate them

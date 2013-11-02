@@ -31,7 +31,7 @@ public:
 
 
     //! Append a node to the list of input nodes
-    //! \param inputNode Node to add to the list of input node (equivalent to NodeIn)
+    //! \param inputNode Node to add to the list of input nodes (equivalent to NodeIn)
     //! \warning Fails when the current number of input nodes is already MAX_NUM_INPUTS
     virtual void AddInput(const Pegasus::Core::Ref<Node> & inputNode);
 

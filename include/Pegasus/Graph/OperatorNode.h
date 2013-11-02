@@ -27,7 +27,7 @@ public:
     OperatorNode();
 
     //! Append a node to the list of input nodes
-    //! \param inputNode Node to add to the list of input node (equivalent to NodeIn)
+    //! \param inputNode Node to add to the list of input nodes (equivalent to NodeIn)
     //! \warning Fails when the current number of input nodes is already MAX_NUM_INPUTS
     //! \warning This function must be called at least once since an operator requires at least one input
     virtual void AddInput(NodeIn inputNode);

@@ -162,7 +162,7 @@
     </Bscmake>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Application.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;Render.lib;Shader.lib;Window.lib</AdditionalDependencies>
+      <AdditionalDependencies>Application.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;Render.lib;Shader.lib;Texture.lib;Window.lib</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -194,7 +194,7 @@
     </Bscmake>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Application.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;Render.lib;Shader.lib;Window.lib</AdditionalDependencies>
+      <AdditionalDependencies>Application.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;Render.lib;Shader.lib;Texture.lib;Window.lib</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -223,7 +223,7 @@
     </Bscmake>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Application.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;Render.lib;Shader.lib;Window.lib</AdditionalDependencies>
+      <AdditionalDependencies>Application.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;Render.lib;Shader.lib;Texture.lib;Window.lib</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -256,7 +256,7 @@
     </Bscmake>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Application.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;Render.lib;Shader.lib;Window.lib</AdditionalDependencies>
+      <AdditionalDependencies>Application.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;Render.lib;Shader.lib;Texture.lib;Window.lib</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -290,7 +290,7 @@
     </Bscmake>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Application.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;Render.lib;Shader.lib;Window.lib</AdditionalDependencies>
+      <AdditionalDependencies>Application.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;Render.lib;Shader.lib;Texture.lib;Window.lib</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -324,7 +324,7 @@
     </Bscmake>
     <Lib>
       <AdditionalLibraryDirectories>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Application.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;Render.lib;Shader.lib;Window.lib</AdditionalDependencies>
+      <AdditionalDependencies>Application.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;Render.lib;Shader.lib;Texture.lib;Window.lib</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>

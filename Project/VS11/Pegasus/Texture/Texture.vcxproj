@@ -27,23 +27,25 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\GeneratorNode.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\Node.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\NodeData.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\OperatorNode.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\OutputNode.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Generator\ConstantColorGenerator.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Operator\AddOperator.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Texture.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureData.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureGenerator.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureOperator.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\GeneratorNode.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\Node.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\NodeData.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\OperatorNode.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\OutputNode.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Generator\ConstantColorGenerator.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Operator\AddOperator.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Texture.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureData.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureGenerator.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureOperator.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{74B6C6B7-A176-4DA4-93B8-77CB715AB388}</ProjectGuid>
+    <ProjectGuid>{7E315CA4-D7D2-441F-8569-2523ECF83075}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Graph</RootNamespace>
+    <RootNamespace>Texture</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'" Label="Configuration">

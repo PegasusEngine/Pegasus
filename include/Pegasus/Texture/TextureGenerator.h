@@ -4,42 +4,39 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	GeneratorNode.h
+//! \file	TextureGenerator.h
 //! \author	Kevin Boulanger
-//! \date	19th October 2013
-//! \brief	Base generator node class, for all data generators with no input node
+//! \date	01st November 2013
+//! \brief	Base texture generator node class
 
-#ifndef PEGASUS_GRAPH_GENERATORNODE_H
-#define PEGASUS_GRAPH_GENERATORNODE_H
+#ifndef PEGASUS_TEXTURE_TEXTUREGENERATOR_H
+#define PEGASUS_TEXTURE_TEXTUREGENERATOR_H
 
-#include "Pegasus/Graph/Node.h"
+#include "Pegasus/Graph/GeneratorNode.h"
+#include "Pegasus/Texture/TextureData.h"
 
 namespace Pegasus {
-namespace Graph {
+namespace Texture {
 
 
-//! Base generator node class, for all data generators with no input node
-class GeneratorNode : public Node
+//! Base texture generator node class
+class TextureGenerator : public Graph::GeneratorNode
 {
 public:
 
     //! Default constructor
-    GeneratorNode();
-
-    //! Override the function to add an input to prevent it to be called.
-    //! \warning Fails since generators cannot have inputs and does not add the node as input
-    virtual void AddInput(NodeIn inputNode);
+    TextureGenerator();
 
 
-    //! Update the node internal state by pulling external parameters.
+    //! Update the generator internal state by pulling external parameters.
     //! This function sets the dirty flag of the node data if the internal state has changed
     //! and returns the dirty flag to the parent caller.
-    //! That will a data refresh when calling GetUpdatedData().
+    //! That will trigger a data refresh when calling GetUpdatedData().
     //! \return True if the node data are dirty
     //virtual bool Update() = 0;
 
-    //! Return the node up-to-date data.
-    //! \note Defines the standard behavior of all texture generator nodes.
+    //! Return the texture generator up-to-date data.
+    //! \note Defines the standard behavior of all generator nodes.
     //!       Calls GenerateData() if the node data are dirty.
     //!       It should be overridden only for special cases.
     //! \param updated Set to true if the node has had the data recomputed
@@ -48,51 +45,39 @@ public:
     //! \note When asking for the data of a generator node, it needs to be allocated and updated
     //!       to not have the dirty flag turned on.
     //!       Redefine this function in derived classes to change its behavior
-    virtual NodeDataReturn GetUpdatedData(bool & updated);
-
-    //! Deallocate the data of the current node and ask the input nodes to do the same.
-    //! Typically used when keeping the graph in memory but not the associated data,
-    //! to save memory and to be able to restore the data later
-    //virtual void ReleaseDataAndPropagate();
+    //virtual NodeDataReturn GetUpdatedData(bool & updated);
 
     //------------------------------------------------------------------------------------
     
 protected:
 
     //! Destructor
-    virtual ~GeneratorNode();
+    virtual ~TextureGenerator();
 
-
-    //! Allocate the data associated with the node
-    //! \warning To be redefined by each class defining a new class for its data
+    //! Allocate the data associated with the texture generator
+    //! \warning Do not override in derived classes since all generators
+    //!          use the same texture data class
     //! \warning Do not update mData internally, just return the pointer to the data
     //! \note Called by CreateData()
     //! \return Pointer to the data being allocated
-    virtual NodeData * AllocateData() const = 0;
+    virtual Graph::NodeData * AllocateData() const;
 
-    //! Generate the content of the data associated with the node
+
+    //! Generate the content of the data associated with the texture generator
     //! \warning To be redefined by each derived class, to implement its behavior
     //! \note Called by \a GetUpdatedData()
     virtual void GenerateData() = 0;
-
-#if PEGASUS_DEV
-    //! Called when an input node is going to be removed, to update the internal state
-    //! \warning This function is overridden here to throw an assertion error.
-    //!          It is not supposed to be used on generator nodes
-    //! \param index Index of the node before it is removed
-    virtual void OnRemoveInput(unsigned int index);
-#endif
 
     //------------------------------------------------------------------------------------
 
 private:
 
     // Nodes cannot be copied, only references to them
-    PG_DISABLE_COPY(GeneratorNode)
+    PG_DISABLE_COPY(TextureGenerator)
 };
 
 
-}   // namespace Graph
+}   // namespace Texture
 }   // namespace Pegasus
 
-#endif  // PEGASUS_GRAPH_GENERATORNODE_H
+#endif  // PEGASUS_TEXTURE_TEXTUREGENERATOR_H
