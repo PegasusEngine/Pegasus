@@ -27,22 +27,21 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Assertion.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Io.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Log.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Shared\IoErrors.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Ref.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Singleton.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\GeneratorNode.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\Node.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\NodeData.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\OperatorNode.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Assertion.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Io.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Log.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\GeneratorNode.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\Node.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\NodeData.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\OperatorNode.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{92FA566D-08A1-4C83-832B-C8D76BD1493B}</ProjectGuid>
+    <ProjectGuid>{74B6C6B7-A176-4DA4-93B8-77CB715AB388}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Core</RootNamespace>
+    <RootNamespace>Graph</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'" Label="Configuration">
@@ -139,7 +138,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUSAPP_DLL;_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_DEBUG</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <SmallerTypeCheck>true</SmallerTypeCheck>
@@ -168,13 +167,12 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUSAPP_DLL;_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_OPT</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_OPT</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <ExceptionHandling>false</ExceptionHandling>
       <ForcedIncludeFiles>Pegasus/PegasusInternal.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -214,6 +212,8 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -233,7 +233,6 @@
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <ForcedIncludeFiles>Pegasus/PegasusInternal.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -246,6 +245,8 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -265,7 +266,6 @@
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <ForcedIncludeFiles>Pegasus/PegasusInternal.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -278,6 +278,8 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -297,7 +299,6 @@
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <ForcedIncludeFiles>Pegasus/PegasusInternal.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -310,6 +311,8 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>

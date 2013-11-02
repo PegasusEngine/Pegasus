@@ -191,6 +191,14 @@
 
 //----------------------------------------------------------------------------------------
 
+//! Macro to disable the copy and assignment operators of a class.
+//! Call this macro in the private section of the class.
+//! If a copy or assignment is used, the compiler generates an error.
+#define PG_DISABLE_COPY(C)		\
+	C(const C &);				\
+	C & operator=(const C &);	\
+
+
 // Macro to suppress the following warning in Visual Studio:
 // warning LNK4221: no public symbols found; archive member will be inaccessible.
 // Place the macro at the top of each .cpp file triggering the warning.
@@ -215,6 +223,11 @@
 
 // Enable the assertion tests
 #define PEGASUS_ENABLE_ASSERT               (PEGASUS_DEBUG || PEGASUS_OPT)
+
+// Enable the detailed assertion tests
+// (performance issue, but useful in the early stages of development)
+// (used only when PEGASUS_ENABLE_ASSERT is defined)
+#define PEGASUS_ENABLE_DETAILED_ASSERT      (PEGASUS_ENABLE_ASSERT && PEGASUS_DEBUG)
 
 // Use GLEW (GL Extension Wrangler) as embedded source code rather than a dynamic library
 #define PEGASUS_EMBED_GLEW                  (PEGASUS_REL)

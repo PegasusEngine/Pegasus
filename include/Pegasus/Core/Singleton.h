@@ -52,11 +52,8 @@ protected:
 
 private:
 
-    //! Copy constructor, private to prevent any copy of the singleton
-    explicit ManualSingleton(const C &);
-
-    //! Copy operator, private to prevent any copy of the singleton
-    C & operator=(const C &);
+    // Singletons cannot be copied
+    PG_DISABLE_COPY(ManualSingleton)
 
     //! Unique instance of the class, nullptr by default
     static C * sInstance;
@@ -90,11 +87,8 @@ protected:
 
 private:
 
-    //! Copy constructor, private to prevent any copy of the singleton
-    explicit AutoSingleton(const C &);
-
-    //! Copy operator, private to prevent any copy of the singleton
-    C & operator=(const C &);
+    // Singletons cannot be copied
+    PG_DISABLE_COPY(AutoSingleton)
 
     //! Unique instance of the class, nullptr only before the first call to \a GetInstance()
     static C * sInstance;

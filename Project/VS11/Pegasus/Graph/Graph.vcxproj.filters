@@ -9,38 +9,32 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Include\Shared">
-      <UniqueIdentifier>{225f3efe-1d39-4f26-b8fc-b1e311f4875c}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Assertion.h">
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\Node.h">
       <Filter>Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Singleton.h">
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\NodeData.h">
       <Filter>Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Log.h">
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\GeneratorNode.h">
       <Filter>Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Io.h">
-      <Filter>Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Shared\IoErrors.h">
-      <Filter>Include\Shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Ref.h">
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\OperatorNode.h">
       <Filter>Include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Assertion.cpp">
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\Node.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Log.cpp">
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\NodeData.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Io.cpp">
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\GeneratorNode.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\OperatorNode.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
