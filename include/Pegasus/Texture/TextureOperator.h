@@ -13,6 +13,7 @@
 #define PEGASUS_TEXTURE_TEXTUREOPERATOR_H
 
 #include "Pegasus/Graph/OperatorNode.h"
+#include "Pegasus/Texture/TextureConfiguration.h"
 #include "Pegasus/Texture/TextureData.h"
 
 namespace Pegasus {
@@ -24,8 +25,13 @@ class TextureOperator : public Graph::OperatorNode
 {
 public:
 
-    //! Default constructor
-    TextureOperator();
+    //! Constructor
+    //! \param configuration Configuration of the operator, such as the resolution and pixel format
+    TextureOperator(const TextureConfiguration & configuration);
+
+    //! Get the configuration of the operator
+    //! \return Configuration of the operator, such as the resolution and pixel format
+    inline const TextureConfiguration & GetConfiguration() const { return mConfiguration; }
 
 
     //! Update the operator internal state by pulling external parameters.
@@ -76,6 +82,9 @@ private:
 
     // Nodes cannot be copied, only references to them
     PG_DISABLE_COPY(TextureOperator)
+
+    //! Configuration of the operator, such as the resolution and pixel format
+    TextureConfiguration mConfiguration;
 };
 
 

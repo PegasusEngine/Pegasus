@@ -23,8 +23,9 @@ class ConstantColorGenerator : public TextureGenerator
 {
 public:
 
-    //! Default constructor
-    ConstantColorGenerator();
+    //! Constructor
+    //! \param configuration Configuration of the generator, such as the resolution and pixel format
+    ConstantColorGenerator(const TextureConfiguration & configuration);
 
 
     //! Update the generator internal state by pulling external parameters.

@@ -15,8 +15,8 @@ namespace Pegasus {
 namespace Texture {
 
 
-AddOperator::AddOperator()
-:   TextureOperator()
+AddOperator::AddOperator(const TextureConfiguration & configuration)
+:   TextureOperator(configuration)
 {
 }
 

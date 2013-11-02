@@ -23,8 +23,9 @@ class AddOperator : public TextureOperator
 {
 public:
 
-    //! Default constructor
-    AddOperator();
+    //! Constructor
+    //! \param configuration Configuration of the operator, such as the resolution and pixel format
+    AddOperator(const TextureConfiguration & configuration);
 
     //! \todo Add functions to specify the minimum and maximum number of inputs
 

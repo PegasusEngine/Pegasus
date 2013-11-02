@@ -13,6 +13,8 @@
 #define PEGASUS_TEXTURE_TEXTURE_H
 
 #include "Pegasus/Graph/OutputNode.h"
+#include "Pegasus/Texture/TextureConfiguration.h"
+#include "Pegasus/Texture/TextureData.h"
 
 namespace Pegasus {
 namespace Texture {
@@ -26,14 +28,28 @@ class Texture : public Graph::OutputNode
 {
 public:
 
-    //! Default constructor
-    Texture();
+    //! Constructor
+    //! \param configuration Configuration of the texture, such as the resolution and pixel format
+    Texture(const TextureConfiguration & configuration);
 
-    //! Append a node to the list of input nodes
-    //! \param inputNode Texture node to add to the list of input nodes (equivalent to NodeIn)
-    //! \warning Fails if an input node is already added, as this node supports one input only
-    //! \warning This function must be called once since an output requires one input
-    //virtual void AddInput(TextureIn inputNode);
+    //! Get the configuration of the texture
+    //! \return Configuration of the texture, such as the resolution and pixel format
+    inline const TextureConfiguration & GetConfiguration() const { return mConfiguration; }
+
+
+    //! Set the input of the texture output node to a generator node
+    //! \warning If an input was already set (generator or operator), it is replaced
+    //! \note If the generator is incompatible in resolution or pixel format with the current node,
+    //!       an assertion error is thrown, and nothing is replaced
+    //! \param generator Generator node to use as input
+    //void SetGeneratorInput(TextureGeneratorIn generator);
+
+    //! Set the input of the texture output node to a operator node
+    //! \warning If an input was already set (generator or operator), it is replaced
+    //! \note If the operator is incompatible in resolution or pixel format with the current node,
+    //!       an assertion error is thrown, and nothing is replaced
+    //! \param operator Operator node to use as input
+    //void SetOperatorInput(TextureOperatorIn generator);
 
 
     //! Update the texture internal state by pulling external parameters.
@@ -55,6 +71,9 @@ private:
 
     // Nodes cannot be copied, only references to them
     PG_DISABLE_COPY(Texture)
+
+    //! Configuration of the texture, such as the resolution and pixel format
+    TextureConfiguration mConfiguration;
 };
 
 

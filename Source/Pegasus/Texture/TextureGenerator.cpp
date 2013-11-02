@@ -15,8 +15,9 @@ namespace Pegasus {
 namespace Texture {
 
 
-TextureGenerator::TextureGenerator()
-:    Graph::GeneratorNode()
+TextureGenerator::TextureGenerator(const TextureConfiguration & configuration)
+:   Graph::GeneratorNode(),
+    mConfiguration(configuration)
 {
 }
 

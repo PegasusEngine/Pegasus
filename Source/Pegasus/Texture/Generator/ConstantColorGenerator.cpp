@@ -15,8 +15,8 @@ namespace Pegasus {
 namespace Texture {
 
 
-ConstantColorGenerator::ConstantColorGenerator()
-:   TextureGenerator()
+ConstantColorGenerator::ConstantColorGenerator(const TextureConfiguration & configuration)
+:   TextureGenerator(configuration)
 {
 }
 

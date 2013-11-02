@@ -15,10 +15,23 @@ namespace Pegasus {
 namespace Texture {
 
 
-Texture::Texture()
-:   Graph::OutputNode()
+Texture::Texture(const TextureConfiguration & configuration)
+:   Graph::OutputNode(),
+    mConfiguration(configuration)
 {
-}    
+}
+
+//----------------------------------------------------------------------------------------
+
+//void Texture::SetGeneratorInput(TextureGeneratorIn generator)
+//{
+//}
+
+//----------------------------------------------------------------------------------------
+
+//void Texture::SetOperatorInput(TextureOperatorIn generator)
+//{
+//}
 
 //----------------------------------------------------------------------------------------
 

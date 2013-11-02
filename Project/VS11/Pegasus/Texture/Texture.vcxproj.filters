@@ -41,6 +41,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Operator\AddOperator.h">
       <Filter>Include\Operator</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureConfiguration.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Texture.cpp">
@@ -60,6 +63,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Operator\AddOperator.cpp">
       <Filter>Source\Operator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureConfiguration.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

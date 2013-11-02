@@ -13,6 +13,7 @@
 #define PEGASUS_TEXTURE_TEXTUREGENERATOR_H
 
 #include "Pegasus/Graph/GeneratorNode.h"
+#include "Pegasus/Texture/TextureConfiguration.h"
 #include "Pegasus/Texture/TextureData.h"
 
 namespace Pegasus {
@@ -24,8 +25,13 @@ class TextureGenerator : public Graph::GeneratorNode
 {
 public:
 
-    //! Default constructor
-    TextureGenerator();
+    //! Constructor
+    //! \param configuration Configuration of the generator, such as the resolution and pixel format
+    TextureGenerator(const TextureConfiguration & configuration);
+
+    //! Get the configuration of the generator
+    //! \return Configuration of the generator, such as the resolution and pixel format
+    inline const TextureConfiguration & GetConfiguration() const { return mConfiguration; }
 
 
     //! Update the generator internal state by pulling external parameters.
@@ -74,6 +80,9 @@ private:
 
     // Nodes cannot be copied, only references to them
     PG_DISABLE_COPY(TextureGenerator)
+
+    //! Configuration of the generator, such as the resolution and pixel format
+    TextureConfiguration mConfiguration;
 };
 
 
