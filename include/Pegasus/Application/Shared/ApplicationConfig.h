@@ -24,14 +24,14 @@ public:
     Window::ModuleHandle mModuleHandle; //!< Handle to the module containing this application
     unsigned int mMaxWindowTypes; //!< Maximum number of window types this app can contain
     unsigned int mMaxNumWindows; //!< Maximum number of windows this app can contain
-    const char* mBasePath; //<! The base path to load all assets from
+    const char* mBasePath; //!< The base path to load all assets from
 
     // Debug API
 #if PEGASUS_ENABLE_LOG
-    Core::LogManager::Handler mLoghandler; //<! Log handler for this application
+    Core::LogManager::Handler mLoghandler; //!< Log handler for this application
 #endif
 #if PEGASUS_ENABLE_ASSERT
-    Core::AssertionManager::Handler mAssertHandler; //<! Assert handler for this application
+    Core::AssertionManager::Handler mAssertHandler; //!< Assert handler for this application
 #endif
 
     //! Default constructor
@@ -46,7 +46,7 @@ public:
     {}
 };
 
-//! \class Shared configuration structure for a Pegasus application window
+//! Shared configuration structure for a Pegasus application window
 struct AppWindowConfig
 {
 public:

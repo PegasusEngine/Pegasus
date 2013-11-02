@@ -67,9 +67,9 @@ private:
     PG_DISABLE_COPY(FileBuffer);
 
 
-    char* mBuffer; //<! Contained buffer
-    int mFileSize; //<! Size of the file in the buiffer
-    int mBufferSize; //<! Size of the buffer
+    char* mBuffer; //!< Contained buffer
+    int mFileSize; //!< Size of the file in the buiffer
+    int mBufferSize; //!< Size of the buffer
 };
 
 //----------------------------------------------------------------------------------------
@@ -85,8 +85,8 @@ public:
     ~IOManagerConfig() {}
 
 
-    const char* mBasePath; //<! The base path to load all assets from
-    const char* mAppName; //<! Name of the app containing this manager, for building the path
+    const char* mBasePath; //!< The base path to load all assets from
+    const char* mAppName; //!< Name of the app containing this manager, for building the path
 };
 
 
@@ -116,14 +116,14 @@ public:
     IoError OpenFileToBuffer(const char* relativePath, FileBuffer& outputBuffer, bool allocateBuffer);
 
 
-    static const unsigned int MAX_FILEPATH_LENGTH = 256; //<! Max length for a file path
+    static const unsigned int MAX_FILEPATH_LENGTH = 256; //!< Max length for a file path
 
 private:
     // No copies allowed
     PG_DISABLE_COPY(IOManager);
 
 
-    char mRootDirectory[MAX_FILEPATH_LENGTH]; //<! Root directory this manager loads files from
+    char mRootDirectory[MAX_FILEPATH_LENGTH]; //!< Root directory this manager loads files from
 };
 
 

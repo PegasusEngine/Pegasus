@@ -102,7 +102,7 @@ private:
 
 
     bool mInitialized; //!< Initialized flag
-    ApplicationConfig mConfig; //<! Cached config object
+    ApplicationConfig mConfig; //!< Cached config object
     AppWindowManager* mWindowManager; //!< Window manager
     Io::IOManager* mIoManager; //!< IO manager
     float mAppTime; //!< Current app time

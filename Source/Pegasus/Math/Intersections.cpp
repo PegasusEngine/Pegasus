@@ -18,7 +18,7 @@ namespace Math {
 bool AreIntersecting(RayIn ray, PlaneIn plane)
 {
     return    plane.IsInPlane(ray.GetOrigin())
-           || (Abs(Dot(plane.GetNormal(), ray.GetDirection())) > N3DINTERSECTIONS_EPSILON);
+           || (Abs(Dot(plane.GetNormal(), ray.GetDirection())) > PEG_INTERSECTIONS_EPSILON);
 }
 
 //----------------------------------------------------------------------------------------

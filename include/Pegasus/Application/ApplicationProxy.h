@@ -25,7 +25,7 @@ namespace Pegasus {
 namespace Pegasus {
 namespace Application {
 
-//! \class Proxy application class.  This class manages the actual underlying application.
+//! Proxy application class for use with a DLL
 class ApplicationProxy : public IApplicationProxy
 {
 public:

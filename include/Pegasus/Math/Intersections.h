@@ -52,7 +52,7 @@ inline void GetIntersection(Point3InOut result, RayIn ray, PlaneIn plane)
 //----------------------------------------------------------------------------------------
 
 //! Value considered as zero for intersection processing
-#define N3DINTERSECTIONS_EPSILON                1.0e-6f
+#define PEG_INTERSECTIONS_EPSILON                1.0e-6f
 
 
 }   // namespace Math

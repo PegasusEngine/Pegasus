@@ -19,7 +19,7 @@ namespace Math {
 
 
 //! Value considered as zero for plane processing
-#define N3DPLANE_EPSILON            1.0e-6f
+#define PEG_PLANE_EPSILON            1.0e-6f
 
 //----------------------------------------------------------------------------------------
 
@@ -94,7 +94,7 @@ public:
     //! Get the normal of the plane
     //! \return Normalized normal of the plane
     inline const Vec3 & GetNormal() const
-        { PG_ASSERT(Length(mNormal) > N3DPLANE_EPSILON);
+        { PG_ASSERT(Length(mNormal) > PEG_PLANE_EPSILON);
           return mNormal;
         }
 
@@ -142,7 +142,7 @@ public:
     //! \param point Point to test
     //! \param eps Distance of the point from the plane to consider it as inside
     //! \return true if the point is in the plane
-    inline bool IsInPlane(Point3In point, PFloat32 eps = N3DPLANE_EPSILON) const
+    inline bool IsInPlane(Point3In point, PFloat32 eps = PEG_PLANE_EPSILON) const
         { return (Abs(mNormal.x * point.x + mNormal.y * point.y + mNormal.z * point.z + mD) <= eps); }
 
     //! Is the given point in the plane (in fact at a minimal distance from it)
@@ -151,7 +151,7 @@ public:
     //! \param z Z component of the point to test
     //! \param eps Distance of the point from the plane to consider it as inside
     //! \return true if the point is in the plane
-    inline bool IsInPlane(PFloat32 x, PFloat32 y, PFloat32 z, PFloat32 eps = N3DPLANE_EPSILON) const
+    inline bool IsInPlane(PFloat32 x, PFloat32 y, PFloat32 z, PFloat32 eps = PEG_PLANE_EPSILON) const
         { return (Abs(mNormal.x * x + mNormal.y * y + mNormal.z * z + mD) <= eps); }
 
     //! Is the given point in the back of the plane

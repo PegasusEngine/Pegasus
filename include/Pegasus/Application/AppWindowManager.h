@@ -39,8 +39,8 @@ public:
     ~AppWindowManagerConfig() {};
 
 
-    unsigned int mMaxWindowTypes; //<! Maximum number of window types this manager can contain
-    unsigned int mMaxNumWindows; //<! Maximum number of windows this manager can contain
+    unsigned int mMaxWindowTypes; //!< Maximum number of window types this manager can contain
+    unsigned int mMaxNumWindows; //!< Maximum number of windows this manager can contain
 };
 
 
@@ -84,8 +84,8 @@ private:
     PG_DISABLE_COPY(AppWindowManager);
 
 
-    TypeTable* mTypeTable; //<! Window type table
-    WindowTable* mWindowTable; //<! Window table
+    TypeTable* mTypeTable; //!< Window type table
+    WindowTable* mWindowTable; //!< Window table
 };
 
 

@@ -27,7 +27,7 @@ Plane::Plane()
 Plane::Plane(Vec3In normal, PFloat32 d)
 :    mNormal(normal), mD(d)
 {
-    PG_ASSERT(Length(normal) > N3DPLANE_EPSILON);
+    PG_ASSERT(Length(normal) > PEG_PLANE_EPSILON);
 }
 
 //----------------------------------------------------------------------------------------
@@ -38,7 +38,7 @@ Plane::Plane(PFloat32 m, PFloat32 b, PFloat32 c, PFloat32 d)
     // The constructor of normal has to be used,
     // otherwise its default constructor is called
 
-    PG_ASSERT(Length(mNormal) > N3DPLANE_EPSILON);
+    PG_ASSERT(Length(mNormal) > PEG_PLANE_EPSILON);
 }
 
 //----------------------------------------------------------------------------------------
@@ -49,7 +49,7 @@ Plane::Plane(const PFloat32 coeffs[4])
     // The constructor of normal has to be used,
     // otherwise its default constructor is called
 
-    PG_ASSERT(Length(mNormal) > N3DPLANE_EPSILON);
+    PG_ASSERT(Length(mNormal) > PEG_PLANE_EPSILON);
 }
 
 //----------------------------------------------------------------------------------------
@@ -76,7 +76,7 @@ void Plane::SetCoeffs(const PFloat32 coeffs[4])
     mNormal.y = coeffs[1];
     mNormal.z = coeffs[2];
     mD = coeffs[3];
-    PG_ASSERT(Length(mNormal) > N3DPLANE_EPSILON);
+    PG_ASSERT(Length(mNormal) > PEG_PLANE_EPSILON);
     Normalize(mNormal);
 }
 

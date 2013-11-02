@@ -15,7 +15,7 @@
 namespace Pegasus {
 namespace Application {
 
-// Window type table entry
+//! Window type table entry
 struct TypeTableEntry
 {
 public:
@@ -39,7 +39,7 @@ public:
 
 //----------------------------------------------------------------------------------------
 
-// Window type table
+//! Window type table
 struct TypeTable
 {
 public:
@@ -63,7 +63,7 @@ public:
 
 //----------------------------------------------------------------------------------------
 
-// Window table
+//! Window table
 struct WindowTable
 {
 public:

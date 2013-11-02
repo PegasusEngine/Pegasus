@@ -16,8 +16,8 @@
 #include "Pegasus/Shader/Shader.h"
 
 
-//! \class This is a specialized window for the TestApp1 application main window.  Place
-//         specialized rendering code here.
+//! This is a specialized window for the TestApp1 application main window
+//! Place specialized rendering code here.
 class TestApp1Window : public Pegasus::Window::Window
 {
 public:

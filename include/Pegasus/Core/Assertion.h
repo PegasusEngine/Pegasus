@@ -79,10 +79,10 @@ public:
 
     //! Return codes for the assertion error functions below
     enum ReturnCode {
-        ASSERTION_CONTINUE = 0, //<! Skip assert
-        ASSERTION_IGNORE, //<! Ignore the assert
-        ASSERTION_IGNOREALL, //<! Ignore  all asserts
-        ASSERTION_BREAK, //<! Break into debugger
+        ASSERTION_CONTINUE = 0, //!< Skip assert
+        ASSERTION_IGNORE, //!< Ignore the assert
+        ASSERTION_IGNOREALL, //!< Ignore  all asserts
+        ASSERTION_BREAK, //!< Break into debugger
 
         ASSERTION_NUM_VALUES,
         ASSERTION_INVALID = ASSERTION_NUM_VALUES

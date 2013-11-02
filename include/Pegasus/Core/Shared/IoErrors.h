@@ -18,11 +18,11 @@ namespace Io {
 //! Error code return for IO operations
 enum IoError
 {
-   ERR_NONE, // no error
-   ERR_FILE_NOT_FOUND,  //no file could be open
-   ERR_BUFFER_TOO_SMALL, // the buffer passed is too small
-   ERR_FILE_SIZE_TOO_BIG, // the file size is > than 32bit
-   ERR_READING_FILE // an error occured while reading the file
+   ERR_NONE, //!< No error
+   ERR_FILE_NOT_FOUND,  //!< No file could be open
+   ERR_BUFFER_TOO_SMALL, //!< The buffer passed is too small
+   ERR_FILE_SIZE_TOO_BIG, //!< The file size is > than 32bit
+   ERR_READING_FILE //!< An error occured while reading the file
 };
 
 } // namespace Io

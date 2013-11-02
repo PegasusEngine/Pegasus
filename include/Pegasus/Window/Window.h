@@ -107,7 +107,7 @@ private:
 
     WindowHandle mHWND; //!< Window handle
     IWindowContext* mWindowContext; //!< Context for this window to operate in
-    bool mUseBasicContext; //<! Flag to use a basic rendering context
+    bool mUseBasicContext; //!< Flag to use a basic rendering context
     Render::Context* mRenderContext; //!< Rendering context
     unsigned int mWidth; //!< Current width
     unsigned int mHeight; //!< Current height

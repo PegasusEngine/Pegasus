@@ -24,9 +24,9 @@ public:
     //! Definition of available OpenGL profiles
     enum Profile
     {
-        PROFILE_NO_GL,      // No proper OpenGL support
-        PROFILE_GL_3_3,     // GLSL 3.30, VS+GS+PS, samplers, floating point textures, instancing
-        PROFILE_GL_4_3,     // GLSL 4.30, tessellation, compute shaders
+        PROFILE_NO_GL,      //!< No proper OpenGL support
+        PROFILE_GL_3_3,     //!< GLSL 3.30, VS+GS+PS, samplers, floating point textures, instancing
+        PROFILE_GL_4_3,     //!< GLSL 4.30, tessellation, compute shaders
         PROFILE_MAX
     };
 

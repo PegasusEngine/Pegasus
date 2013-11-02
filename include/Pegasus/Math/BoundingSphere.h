@@ -69,7 +69,7 @@ public:
     //! \param point Point to test
     //! \param eps Distance of the point from the sphere surface to consider it on it
     //! \return true if the point is on the sphere
-    inline bool IsOnSphere(Point3In point, PFloat32 eps = N3DPLANE_EPSILON) const
+    inline bool IsOnSphere(Point3In point, PFloat32 eps = PEG_PLANE_EPSILON) const
         { return Abs(Length(point - mCenter) - mRadius) <= eps; }
 
     //! Is the given point outside the bounding sphere
