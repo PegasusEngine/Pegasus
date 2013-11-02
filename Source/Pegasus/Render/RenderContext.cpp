@@ -118,8 +118,7 @@ void Context::Unbind() const
 
 void Context::Swap() const
 {
-    // Present
-    glFlush();
+    // Present (no need for glFlush() since SwapBuffers() takes care of it)
     SwapBuffers((HDC) mDeviceContextHandle);
 }
 
