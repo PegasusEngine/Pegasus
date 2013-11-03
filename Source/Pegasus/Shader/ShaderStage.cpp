@@ -159,7 +159,7 @@ bool ShaderStage::CompileFromSrc(Pegasus::Shader::ShaderType type, const char * 
     {
         mFileBuffer.DestroyBuffer();
         mFileBuffer.OwnBuffer (
-            PG_NEW("shader src", Pegasus::Memory::PG_MEM_PERM) char[srcSize],
+            PG_NEW_ARRAY("shader src", Pegasus::Memory::PG_MEM_PERM, char, srcSize),
             srcSize
         );
         mFileBuffer.SetFileSize(srcSize);

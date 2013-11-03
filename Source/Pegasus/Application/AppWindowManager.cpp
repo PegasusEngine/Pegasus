@@ -146,7 +146,7 @@ void TypeTableEntry::Clear()
 TypeTable::TypeTable(unsigned int max)
     : mCurrentSize(0), mMaxSize(max), mMainWindowIndex(-1)
 {
-    mTable = PG_NEW("TypeTableEntries", Pegasus::Memory::PG_MEM_PERM) TypeTableEntry[mMaxSize];
+    mTable = PG_NEW_ARRAY("TypeTableEntries", Pegasus::Memory::PG_MEM_PERM, TypeTableEntry, mMaxSize);
 }
 
 //----------------------------------------------------------------------------------------
@@ -270,7 +270,7 @@ void TypeTable::Remove(const char* typeName)
 WindowTable::WindowTable(unsigned int max)
 : mCurrentSize(0), mMaxSize(max)
 {
-    mTable = PG_NEW("WindowTableEntries", Pegasus::Memory::PG_MEM_PERM) Window::Window*[mMaxSize];
+    mTable = PG_NEW_ARRAY("WindowTableEntries", Pegasus::Memory::PG_MEM_PERM, Window::Window*, mMaxSize);
 
     // Zero out window table
     for (unsigned int i = 0; i < mMaxSize; i++)

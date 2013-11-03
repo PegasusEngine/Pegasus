@@ -59,7 +59,7 @@ Pegasus::Io::IoError NativeOpenFileToBuffer(const char* path, Pegasus::Io::FileB
             if (allocateBuffer)
             {
                 outputBuffer.OwnBuffer(
-                    PG_NEW("file buffer", Pegasus::Memory::PG_MEM_PERM) char[fileSize.LowPart],
+                    PG_NEW_ARRAY("file buffer", Pegasus::Memory::PG_MEM_PERM, char, fileSize.LowPart),
                     fileSize.LowPart
                 );
             }
@@ -153,7 +153,7 @@ IoError IOManager::OpenFileToBuffer(const char* relativePath, FileBuffer& output
         if (allocateBuffer)
         {
             outputBuffer.OwnBuffer (
-                PG_NEW("file buffer", Pegasus::Memory::PG_MEM_PERM) char[fileSize],
+                PG_NEW_ARRAY("file buffer", Pegasus::Memory::PG_MEM_PERM, char, fileSize),
                 fileSize
             );
         }
@@ -225,7 +225,7 @@ void Pegasus::Io::FileBuffer::DestroyBuffer()
 {
     if (mBuffer != nullptr)
     {
-        PG_DELETE[] mBuffer;
+        PG_DELETE_ARRAY mBuffer;
         mBuffer = nullptr;
         mBufferSize = 0;
         mFileSize = 0;
