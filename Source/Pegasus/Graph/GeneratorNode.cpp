@@ -29,6 +29,15 @@ void GeneratorNode::AddInput(NodeIn inputNode)
 
 //----------------------------------------------------------------------------------------
 
+bool GeneratorNode::Update()
+{
+    // Since the node is a generator, there is no input node to check.
+    // We directly return the state of the node data.
+    return AreDataDirty();
+}
+
+//----------------------------------------------------------------------------------------
+
 NodeDataReturn GeneratorNode::GetUpdatedData(bool & updated)
 {
     // If the data have not been allocated, allocate them now
@@ -64,12 +73,12 @@ GeneratorNode::~GeneratorNode()
 
 //----------------------------------------------------------------------------------------
 
-#if PEGASUS_DEV
+#if PEGASUS_ENABLE_ASSERT
 void GeneratorNode::OnRemoveInput(unsigned int index)
 {
     PG_FAILSTR("Generator nodes do not have inputs, so no node is supposed to be removed");
 }
-#endif  // PEGASUS_DEV
+#endif  // PEGASUS_ENABLE_ASSERT
 
 
 }   // namespace Graph

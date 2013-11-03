@@ -28,7 +28,7 @@ public:
 
     //! Append a node to the list of input nodes
     //! \param inputNode Node to add to the list of input nodes (equivalent to NodeIn)
-    //! \warning Fails when the current number of input nodes is already MAX_NUM_INPUTS
+    //! \warning Fails when the current number of input nodes is already equal to \a GetMaxNumInputNodes()
     //! \warning This function must be called at least once since an operator requires at least one input
     virtual void AddInput(NodeIn inputNode);
 
@@ -49,8 +49,14 @@ public:
     //! This function sets the dirty flag of the node data if the internal state has changed
     //! or if an input node is dirty, and returns the dirty flag to the parent caller.
     //! That will trigger a chain of refreshed data when calling GetUpdatedData().
+    //! \note To be redefined in derived classes if required
+    //! \note This class implements the default behavior of an operator:
+    //!       if any input is dirty, invalidate the node data and return true,
+    //!       otherwise return the dirty state of the data
+    //! \warning If redefined in a derived class, update the internal state first,
+    //!          then call \a Update() from this class to handle the dirty flag properly
     //! \return True if the node data are dirty or if any input node is.
-    //virtual bool Update() = 0;
+    virtual bool Update();
 
     //! Return the node up-to-date data.
     //! \note Defines the standard behavior of all operator nodes.

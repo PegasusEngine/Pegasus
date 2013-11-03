@@ -27,7 +27,13 @@ public:
     //! \param configuration Configuration of the operator, such as the resolution and pixel format
     AddOperator(const TextureConfiguration & configuration);
 
-    //! \todo Add functions to specify the minimum and maximum number of inputs
+    //! Specifies the minimum number of input nodes accepted by the current node
+    //! \return 1
+    virtual unsigned int GetMinNumInputNodes() const { return 1; }
+
+    //! Specifies the maximum number of input nodes accepted by the current node
+    //! \return MAX_NUM_INPUTS
+    virtual unsigned int GetMaxNumInputNodes() const { return MAX_NUM_INPUTS; }
 
 
     //! Update the operator internal state by pulling external parameters.

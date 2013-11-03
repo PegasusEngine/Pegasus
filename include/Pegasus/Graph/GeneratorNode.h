@@ -27,16 +27,19 @@ public:
     GeneratorNode();
 
     //! Override the function to add an input to prevent it to be called.
-    //! \warning Fails since generators cannot have inputs and does not add the node as input
+    //! \warning Throws an assertion error since generators cannot have inputs
+    //!          and does not add the node as input
     virtual void AddInput(NodeIn inputNode);
-
 
     //! Update the node internal state by pulling external parameters.
     //! This function sets the dirty flag of the node data if the internal state has changed
     //! and returns the dirty flag to the parent caller.
-    //! That will a data refresh when calling GetUpdatedData().
+    //! That will trigger a data refresh when calling GetUpdatedData().
+    //! \note To be redefined in derived classes if required
+    //! \note This class implements the default behavior of a generator,
+    //!       which returns only the dirty state of the data
     //! \return True if the node data are dirty
-    //virtual bool Update() = 0;
+    virtual bool Update();
 
     //! Return the node up-to-date data.
     //! \note Defines the standard behavior of all texture generator nodes.
@@ -75,7 +78,7 @@ protected:
     //! \note Called by \a GetUpdatedData()
     virtual void GenerateData() = 0;
 
-#if PEGASUS_DEV
+#if PEGASUS_ENABLE_ASSERT
     //! Called when an input node is going to be removed, to update the internal state
     //! \warning This function is overridden here to throw an assertion error.
     //!          It is not supposed to be used on generator nodes

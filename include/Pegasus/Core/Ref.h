@@ -75,7 +75,10 @@ public:
             }
             if (ptr != nullptr)
             {
-                PG_ASSERTSTR(ptr->GetRefCount() == 0, "Invalid object given to the reference, the object has a reference count of %d, but it should 0", ptr->GetRefCount());
+                // In most cases, this assertion test makes sense,
+                // but in the cast of a cast (see operator below), the counter can be > 0
+                //PG_ASSERTSTR(ptr->GetRefCount() == 0, "Invalid object given to the reference, the object has a reference count of %d, but it should 0", ptr->GetRefCount());
+
                 ptr->AddRef();
             }
             mObject = ptr;
@@ -146,6 +149,13 @@ public:
     }
 
   
+    //! Cast operator, with C2 as the destination class
+    //! \warning C2 must be a class derived from C
+    //! \return Reference to the object cast to a different type
+    template <class C2>
+    inline operator Ref<C2>() const { return Ref<C2>(static_cast<C2 *>(mObject)); }
+
+
     //! Comparison operator with a weak pointer
     //! \warning Compares the pointers, not the objects themselves
     //! \param ptr Pointer to compare with
@@ -177,6 +187,7 @@ public:
     //! Inversion operator, typically used when testing if a reference is empty (!ref)
     //! \return True if the reference is empty
     bool operator!() const { return (mObject == nullptr); }
+
 
 private:
     //! Pointer to the reference counted object, nullptr when undefined

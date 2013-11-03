@@ -40,7 +40,7 @@ public:
     //! \note Does only call Update() for the input node.
     //!       That will trigger a chain of refreshed data when calling GetUpdatedData().
     //! \return True if the node data of the input node are dirty or if any input node is.
-    //virtual bool Update() = 0;
+    virtual bool Update();
 
     //! Return the node up-to-date data.
     //! \note Defines the standard behavior of all output nodes.
@@ -66,7 +66,6 @@ protected:
     virtual ~OutputNode();
 
 
-#if PEGASUS_DEV
     //! Allocate the data associated with the node
     //! \warning This function is overridden here to throw an assertion error.
     //!          It is not supposed to be used on output nodes
@@ -77,7 +76,6 @@ protected:
     //! \warning This function is overridden here to throw an assertion error.
     //!          It is not supposed to be used on output nodes
     virtual void GenerateData();
-#endif  // PEGASUS_DEV
 
     //! Called when an input node is going to be removed, to update the internal state
     //! \note The override of this function is optional, the default behavior does nothing

@@ -15,6 +15,8 @@
 #include "Pegasus/Graph/OutputNode.h"
 #include "Pegasus/Texture/TextureConfiguration.h"
 #include "Pegasus/Texture/TextureData.h"
+#include "Pegasus/Texture/TextureGenerator.h"
+#include "Pegasus/Texture/TextureOperator.h"
 
 namespace Pegasus {
 namespace Texture {
@@ -41,15 +43,15 @@ public:
     //! \warning If an input was already set (generator or operator), it is replaced
     //! \note If the generator is incompatible in resolution or pixel format with the current node,
     //!       an assertion error is thrown, and nothing is replaced
-    //! \param generator Generator node to use as input
-    //void SetGeneratorInput(TextureGeneratorIn generator);
+    //! \param textureGenerator Generator node to use as input
+    void SetGeneratorInput(TextureGeneratorIn textureGenerator);
 
     //! Set the input of the texture output node to a operator node
     //! \warning If an input was already set (generator or operator), it is replaced
     //! \note If the operator is incompatible in resolution or pixel format with the current node,
     //!       an assertion error is thrown, and nothing is replaced
-    //! \param operator Operator node to use as input
-    //void SetOperatorInput(TextureOperatorIn generator);
+    //! \param textureOperator Operator node to use as input
+    void SetOperatorInput(TextureOperatorIn textureOperator);
 
 
     //! Update the texture internal state by pulling external parameters.
@@ -75,6 +77,20 @@ private:
     //! Configuration of the texture, such as the resolution and pixel format
     TextureConfiguration mConfiguration;
 };
+
+//----------------------------------------------------------------------------------------
+
+//! Reference to a Texture, typically used when declaring a variable of reference type
+typedef       Pegasus::Core::Ref<Texture>   TextureRef;
+
+//! Const reference to a reference to a Texture, typically used as input parameter of a function
+typedef const Pegasus::Core::Ref<Texture> & TextureIn;
+
+//! Reference to a reference to a Texture, typically used as output parameter of a function
+typedef       Pegasus::Core::Ref<Texture> & TextureInOut;
+
+//! Reference to a Texture, typically used as the return value of a function
+typedef       Pegasus::Core::Ref<Texture>   TextureReturn;
 
 
 }   // namespace Texture

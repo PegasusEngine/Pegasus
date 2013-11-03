@@ -23,15 +23,35 @@ Texture::Texture(const TextureConfiguration & configuration)
 
 //----------------------------------------------------------------------------------------
 
-//void Texture::SetGeneratorInput(TextureGeneratorIn generator)
-//{
-//}
+void Texture::SetGeneratorInput(TextureGeneratorIn textureGenerator)
+{
+    // Check that the configuration is compatible
+    if (textureGenerator->GetConfiguration().IsCompatible(this->GetConfiguration()))
+    {
+        RemoveAllInputs();
+        AddInput(textureGenerator);
+    }
+    else
+    {
+        PG_FAILSTR("Unable to set the generator input of a Texture node since their configurations are incompatible");
+    }
+}
 
 //----------------------------------------------------------------------------------------
 
-//void Texture::SetOperatorInput(TextureOperatorIn generator)
-//{
-//}
+void Texture::SetOperatorInput(TextureOperatorIn textureOperator)
+{
+    // Check that the configuration is compatible
+    if (textureOperator->GetConfiguration().IsCompatible(this->GetConfiguration()))
+    {
+        RemoveAllInputs();
+        AddInput(textureOperator);
+    }
+    else
+    {
+        PG_FAILSTR("Unable to set the operator input of a Texture node since their configurations are incompatible");
+    }
+}
 
 //----------------------------------------------------------------------------------------
 

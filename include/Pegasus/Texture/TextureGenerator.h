@@ -85,6 +85,20 @@ private:
     TextureConfiguration mConfiguration;
 };
 
+//----------------------------------------------------------------------------------------
+
+//! Reference to a TextureGenerator, typically used when declaring a variable of reference type
+typedef       Pegasus::Core::Ref<TextureGenerator>   TextureGeneratorRef;
+
+//! Const reference to a reference to a TextureGenerator, typically used as input parameter of a function
+typedef const Pegasus::Core::Ref<TextureGenerator> & TextureGeneratorIn;
+
+//! Reference to a reference to a TextureGenerator, typically used as output parameter of a function
+typedef       Pegasus::Core::Ref<TextureGenerator> & TextureGeneratorInOut;
+
+//! Reference to a TextureGenerator, typically used as the return value of a function
+typedef       Pegasus::Core::Ref<TextureGenerator>   TextureGeneratorReturn;
+
 
 }   // namespace Texture
 }   // namespace Pegasus

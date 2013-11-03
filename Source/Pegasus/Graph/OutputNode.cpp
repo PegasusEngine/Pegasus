@@ -36,6 +36,27 @@ void OutputNode::AddInput(NodeIn inputNode)
 
 //----------------------------------------------------------------------------------------
 
+bool OutputNode::Update()
+{
+    // Check that no data is allocated
+    PG_ASSERTSTR(!AreDataAllocated(), "Invalid output node, it should not contain NodeData");
+
+    // Check that the input node is defined
+    if (GetNumInputs() == 1)
+    {
+        // Update the input node and return its dirty state
+        return GetInput(0)->Update();
+    }
+    else
+    {
+        // If no input is found, we consider there is no node data to update
+        PG_FAILSTR("Invalid output node, it does not have an input defined");
+        return false;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+    
 NodeDataReturn OutputNode::GetUpdatedData(bool & updated)
 {
     // Check that no data is allocated
@@ -68,7 +89,6 @@ OutputNode::~OutputNode()
 
 //----------------------------------------------------------------------------------------
 
-#if PEGASUS_DEV
 NodeData * OutputNode::AllocateData() const
 {
     PG_FAILSTR("Output nodes do not have data, so there is nothing to allocate");
@@ -81,7 +101,6 @@ void OutputNode::GenerateData()
 {
     PG_FAILSTR("Output nodes do not have data, so there is nothing to generate");
 }
-#endif  // PEGASUS_DEV
 
 //----------------------------------------------------------------------------------------
 

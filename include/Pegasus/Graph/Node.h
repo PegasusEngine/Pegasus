@@ -22,7 +22,7 @@ namespace Graph {
 //! Base node class for all graph-based systems (textures, meshes, shaders, etc.)
 class Node
 {
-    friend class Pegasus::Core::Ref<Node>;
+    template<class C> friend class Pegasus::Core::Ref;
 
 public:
 
@@ -41,10 +41,10 @@ public:
 
             
     //! Update the node internal state by pulling external parameters.
-    //! \warning To be redefined in derived classes
     //! This function sets the dirty flag of the node data if the internal state has changed
     //! or if an input node is dirty, and returns the dirty flag to the parent caller.
     //! That will trigger a chain of refreshed data when calling GetUpdatedData().
+    //! \warning To be redefined in derived classes
     //! \return True if the node data are dirty or if any input node is.
     virtual bool Update() = 0;
 
@@ -130,6 +130,9 @@ protected:
     inline void ReleaseData() { mData = nullptr; }
 
 
+    //! Maximum number of input nodes
+    enum { MAX_NUM_INPUTS = 8 };
+
     //! Test if an input node index is valid
     //! \param index Index to test
     //! \return True if the index is valid
@@ -146,12 +149,16 @@ protected:
     //! \return True if inputNode is attached to the current node as an input node
     bool IsInput(const Pegasus::Core::Ref<Node> & inputNode) const;
 
-    //! Remove an input node by pointer
+    //! Remove an input node by reference
     //! \param inputNode Input node to remove from the current node (equivalent to NodeIn)
     //! \note Removes every instance of the given input node
     //! \note Throws an assertion if the node is not attached, then ignores the request
     //! \note \a OnRemoveInput() is called on every removed input node
     void RemoveInput(const Pegasus::Core::Ref<Node> & inputNode);
+
+    //! Remove all input nodes
+    //! \note \a OnRemoveInput() is called on every input node between removal
+    void RemoveAllInputs();
 
     //! Called when an input node is going to be removed, to update the internal state
     //! \note The override of this function is optional, the default behavior does nothing
@@ -189,17 +196,10 @@ private:
     //! if the counter reaches 0
     void Release();
 
-    //! Release all input nodes
-    //! \note \a OnRemoveInput() is called on every input node between removal
-    void ReleaseAllInputs();
-
 
     //! Reference counter
     //! \todo Use atomic integer
     /****/int mRefCount;
-
-    //! Maximum number of input nodes
-    enum { MAX_NUM_INPUTS = 8 };
 
     //! Pointers to the input nodes (only the first mNumInputs nodes are valid)
     Pegasus::Core::Ref<Node> mInputs[MAX_NUM_INPUTS];

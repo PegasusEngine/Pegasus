@@ -130,7 +130,7 @@ Node::~Node()
     // Release all inputs
     if (mNumInputs > 0)
     {
-        ReleaseAllInputs();
+        RemoveAllInputs();
     }
 
     // Destroy the node data if present
@@ -257,28 +257,7 @@ void Node::RemoveInput(const Pegasus::Core::Ref<Node> & inputNode)
 
 //----------------------------------------------------------------------------------------
 
-void Node::OnRemoveInput(unsigned int index)
-{
-    // Empty default behavior
-}
-
-//----------------------------------------------------------------------------------------
-
-void Node::Release()
-{
-    PG_ASSERTSTR(mRefCount > 0, "Invalid reference counter (%d), it should have a positive value", mRefCount);
-    --mRefCount;
-
-    if (mRefCount <= 0)
-    {
-        //! \todo Use the allocator?
-        delete this;
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
-void Node::ReleaseAllInputs()
+void Node::RemoveAllInputs()
 {
     for (int i = (int)mNumInputs - 1; i >= 0; --i)
     {
@@ -297,6 +276,27 @@ void Node::ReleaseAllInputs()
         }
 
         --mNumInputs;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Node::OnRemoveInput(unsigned int index)
+{
+    // Empty default behavior
+}
+
+//----------------------------------------------------------------------------------------
+
+void Node::Release()
+{
+    PG_ASSERTSTR(mRefCount > 0, "Invalid reference counter (%d), it should have a positive value", mRefCount);
+    --mRefCount;
+
+    if (mRefCount <= 0)
+    {
+        //! \todo Use the allocator?
+        delete this;
     }
 }
 

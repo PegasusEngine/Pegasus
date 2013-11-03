@@ -87,6 +87,20 @@ private:
     TextureConfiguration mConfiguration;
 };
 
+//----------------------------------------------------------------------------------------
+
+//! Reference to a TextureOperator, typically used when declaring a variable of reference type
+typedef       Pegasus::Core::Ref<TextureOperator>   TextureOperatorRef;
+
+//! Const reference to a reference to a TextureOperator, typically used as input parameter of a function
+typedef const Pegasus::Core::Ref<TextureOperator> & TextureOperatorIn;
+
+//! Reference to a reference to a TextureOperator, typically used as output parameter of a function
+typedef       Pegasus::Core::Ref<TextureOperator> & TextureOperatorInOut;
+
+//! Reference to a TextureOperator, typically used as the return value of a function
+typedef       Pegasus::Core::Ref<TextureOperator>   TextureOperatorReturn;
+
 
 }   // namespace Texture
 }   // namespace Pegasus

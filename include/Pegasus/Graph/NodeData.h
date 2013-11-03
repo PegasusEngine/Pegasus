@@ -21,7 +21,7 @@ namespace Graph {
 //! Base node data class for all graph-based systems (textures, meshes, shaders, etc.)
 class NodeData
 {
-    friend class Pegasus::Core::Ref<NodeData>;
+    template<class C> friend class Pegasus::Core::Ref;
     friend class Node;
 
 public:
