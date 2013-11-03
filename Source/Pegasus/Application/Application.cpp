@@ -140,7 +140,15 @@ Window::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig
     config.mCreateVisible = true;
     config.mUseBasicContext = false;
     newWnd = mWindowManager->CreateWindow(appWindowConfig.mWindowType, config);
-    PG_ASSERTSTR(newWnd != nullptr, "Unable to create window!");
+
+    if (newWnd != nullptr)
+    {
+        PG_LOG('APPL', "Window created");
+    }
+    else
+    {
+        PG_FAILSTR("Unable to create window!");
+    }
 
     return newWnd;
 }
@@ -150,6 +158,8 @@ Window::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig
 void Application::DetachWindow(const Window::Window* wnd)
 {
     mWindowManager->DestroyWindow(wnd);
+
+    PG_LOG('APPL', "Window destroyed");
 }
 
 //----------------------------------------------------------------------------------------
@@ -160,9 +170,6 @@ void Application::StartupAppInternal()
 {
     Window::Window* newWnd = nullptr;
     Window::WindowConfig config;
-
-    // First register window classes
-    Window::Window::RegisterWindowClass(mConfig.mModuleHandle);
 
     // Create window and immediately destroy it
     config.mModuleHandle = mConfig.mModuleHandle;
@@ -229,6 +236,8 @@ void Application::StartupAppInternal()
 
     // Destroy the window, it is no longer needed
     mWindowManager->DestroyWindow(newWnd);
+
+    PG_LOG('APPL', "Startup successful");
 }
 
 //----------------------------------------------------------------------------------------
@@ -237,9 +246,6 @@ void Application::ShutdownAppInternal()
 {
     // Destroy openGL extensions
     Render::GLExtensions::DestroyInstance();
-
-    // Unregister window classes
-    Window::Window::UnregisterWindowClass(mConfig.mModuleHandle);
 }
 
 

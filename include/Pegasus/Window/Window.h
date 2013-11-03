@@ -12,7 +12,6 @@
 #ifndef PEGASUS_WINDOW_WINDOW_H
 #define PEGASUS_WINDOW_WINDOW_H
 
-#include "Pegasus/Window/WindowDefs.h"
 #include "Pegasus/Window/Shared/WindowConfig.h"
 
 // Forward declarations
@@ -22,6 +21,11 @@ namespace Pegasus {
     }
     namespace Render {
         class Context;
+    }
+    namespace Window {
+        class IWindowContext;
+        class IWindowImpl;
+        class WindowMessageHandler;
     }
 }
 
@@ -44,11 +48,7 @@ public:
 
     //! Gets the handle for this window
     //! \return Window handle.
-    inline WindowHandle GetHandle() const { return mHWND; };
-
-    //! Gets the window context for this window
-    //! \return Window context.
-    inline IWindowContext* GetWindowContext() { return mWindowContext; }
+    WindowHandle GetHandle() const;
 
     //! Gets the render context used by this window
     //! \return Render context.
@@ -71,46 +71,28 @@ public:
 
 
     //! Resize this window
-    //! \param width New width in pixels.
+    //! \param New width in pixels.
     //! \param New height in pixels.
     void Resize(unsigned int width, unsigned int height);
 
-
-    // Message handling
-#if PEGASUS_PLATFORM_WINDOWS
-    struct HandleMessageReturn
-    {
-        HandleMessageReturn() : retcode(0), handled(false) {}
-        ~HandleMessageReturn() {}
-
-
-        unsigned int retcode;
-        bool handled;
-    };
-
-    // Temp, until we make window manager
-    static bool RegisterWindowClass(ModuleHandle handle);
-    static bool UnregisterWindowClass(ModuleHandle handle);
-    void SetHWND(WindowHandle handle) { mHWND = handle; }; //! Temp, until moved to platform specific
-    HandleMessageReturn HandleMessage(unsigned int message, unsigned int* wParam, unsigned long* lParam);
-#endif
+protected:
+    //! Gets the window context for this window
+    //! \return Window context.
+    inline IWindowContext* GetWindowContext() { return mWindowContext; }
 
 private:
     // No copies allowed
     PG_DISABLE_COPY(Window);
 
 
-    //! Internal helper to create a window
-    //! \param config Config struct for this window.
-    void Internal_CreateWindow(const WindowConfig& config);
-
-
-    WindowHandle mHWND; //!< Window handle
+    IWindowImpl* mPrivateImpl; //!< Private implementation, platform-specific
+    WindowMessageHandler* mMessageHandler; //!< Message handler object
     IWindowContext* mWindowContext; //!< Context for this window to operate in
-    bool mUseBasicContext; //!< Flag to use a basic rendering context
     Render::Context* mRenderContext; //!< Rendering context
     unsigned int mWidth; //!< Current width
     unsigned int mHeight; //!< Current height
+
+    friend class WindowMessageHandler;
 };
 
 //----------------------------------------------------------------------------------------

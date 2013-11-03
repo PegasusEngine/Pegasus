@@ -13,12 +13,14 @@
 #define PEGASUS_WINDOW_WINDOWCONFIG_H
 
 #include "Pegasus/Window/WindowDefs.h"
-#include "Pegasus/Window/IWindowContext.h"
 
 // Forward declarations
 namespace Pegasus {
     namespace Application {
         class Application;
+    }
+    namespace Window {
+        class IWindowContext;
     }
 }
 

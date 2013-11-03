@@ -32,6 +32,12 @@
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\Platform\RenderContext_Win32.h">
       <Filter>Source\Platform</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\IRenderContextImpl.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Render\RenderContextConfig.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.cpp">

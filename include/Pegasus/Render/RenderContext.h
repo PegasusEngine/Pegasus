@@ -12,27 +12,19 @@
 #ifndef PEGASUS_RENDER_RENDERCONTEXT_H
 #define PEGASUS_RENDER_RENDERCONTEXT_H
 
-#include "Pegasus/Render/RenderDefs.h"
+#include "Pegasus\Render\RenderContextConfig.h"
+
+// Forward declarations
+namespace Pegasus {
+    namespace Render {
+        class IRenderContextImpl;
+    }
+}
+
+//----------------------------------------------------------------------------------------
 
 namespace Pegasus {
 namespace Render {
-
-//! Configuration structure for a rendering context.
-struct ContextConfig
-{
-public:
-    //! Constructor
-    ContextConfig();
-
-    //! Destructor
-    ~ContextConfig();
-
-
-    DeviceContextHandle mDeviceContextHandle; //!< Opaque context handle
-    bool mStartupContext; //!< Startup context flag, indicating how the context should be created
-};
-
-//----------------------------------------------------------------------------------------
 
 //! Class that encapsulates an OGL rendering context.
 class Context
@@ -61,8 +53,7 @@ private:
     PG_DISABLE_COPY(Context);
 
 
-    DeviceContextHandle mDeviceContextHandle; //!< Opaque context handle
-    RenderContextHandle mRenderContextHandle; //!< Opaque GL context handle
+    IRenderContextImpl* mPrivateImpl; //!< Private implementation -- platform-specific
 };
 
 
