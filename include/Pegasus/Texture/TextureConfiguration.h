@@ -75,6 +75,14 @@ public:
     //! \return Pixel format of the texture (PIXELFORMAT_xxx constant)
     inline PixelFormat GetPixelFormat() const { return mPixelFormat; }
 
+    //! Get the number of bytes per pixel of the texture, computed from the pixel format
+    //! \return Number of bytes per pixel of the texture (>= 1)
+    unsigned int GetNumBytesPerPixel() const;
+
+    //! Get the number of bytes of the texture, computed from the resolution and the pixel format
+    //! \return Number of bytes of the texture (>= 1)
+    unsigned int GetNumBytes() const;
+
 
     //! Test if an input texture configuration is considered as compatible with the current one
     //! \warning This is important to test when linking Texture, TextureGenerator and TextureOperator together

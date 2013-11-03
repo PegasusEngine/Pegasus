@@ -32,7 +32,7 @@ TextureOperator::~TextureOperator()
 Graph::NodeData * TextureOperator::AllocateData() const
 {
     //! \todo Use allocator
-    return PG_NEW("TextureOperator::TextureData", Pegasus::Memory::PG_MEM_TEMP) TextureData();
+    return PG_NEW("TextureOperator::TextureData", Pegasus::Memory::PG_MEM_TEMP) TextureData(mConfiguration);
 }
 
 

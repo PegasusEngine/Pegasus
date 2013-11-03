@@ -96,6 +96,29 @@ void TextureConfiguration::SetPixelFormat(PixelFormat pixelFormat)
 
 //----------------------------------------------------------------------------------------
 
+unsigned int TextureConfiguration::GetNumBytesPerPixel() const
+{
+    switch (mPixelFormat)
+    {
+        case PIXELFORMAT_RGB8:          return 3;
+        case PIXELFORMAT_RGBA8:         return 4;
+
+        default:
+            PG_FAILSTR("Invalid texture pixel format (%d), it should be less than %d", mPixelFormat, NUM_PIXELFORMATS);
+            return 1;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+unsigned int TextureConfiguration::GetNumBytes() const
+{
+    //! \todo Handle mipmaps, layers, etc.
+    return mWidth * mHeight * GetNumBytesPerPixel();
+}
+
+//----------------------------------------------------------------------------------------
+
 bool TextureConfiguration::IsCompatible(const TextureConfiguration & configuration) const
 {
     return    (configuration.mWidth == mWidth)

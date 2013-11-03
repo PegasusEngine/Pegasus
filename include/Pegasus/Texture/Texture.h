@@ -60,6 +60,13 @@ public:
     //! \return True if the node data of the input node are dirty or if any input node is.
     //virtual bool Update() = 0;
 
+    //! Return the texture up-to-date data.
+    //! \return Reference to the texture data, belonging either to the current node
+    //!         or to one of the input nodes, cannot be a null reference.
+    //! \note Calls GetUpdatedData() internally, and regenerate the texture data
+    //!       if any part of the graph is dirty
+    TextureDataReturn GetUpdatedTextureData();
+
     //------------------------------------------------------------------------------------
 
 protected:

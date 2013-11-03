@@ -55,6 +55,14 @@ void Texture::SetOperatorInput(TextureOperatorIn textureOperator)
 
 //----------------------------------------------------------------------------------------
 
+TextureDataReturn Texture::GetUpdatedTextureData()
+{
+    bool updated = false;
+    return Graph::OutputNode::GetUpdatedData(updated);
+}
+
+//----------------------------------------------------------------------------------------
+
 Texture::~Texture()
 {
 }
