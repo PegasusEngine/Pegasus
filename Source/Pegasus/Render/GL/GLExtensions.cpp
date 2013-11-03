@@ -11,11 +11,7 @@
 //!         to check if features are available before using them
 
 #include "Pegasus/Render/GL/GLExtensions.h"
-// Use the GLEW static mode to avoid exporting symbols as for a dynamic library
-#define GLEW_STATIC 1
-#include "Pegasus/Libs/GLEW/glew.h"
-#include "Pegasus/Libs/GLEW/wglew.h"
-#include "Pegasus/Libs/GLEW/glew.c" // Embed the source code of GLEW to avoid linking to a dynamic library
+#include "Pegasus/Render/GL/GLEWStaticInclude.h" 
 
 namespace Pegasus {
 namespace Render {

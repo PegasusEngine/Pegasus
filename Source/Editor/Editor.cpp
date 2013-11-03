@@ -18,7 +18,7 @@
 #include "Timeline/TimelineDockWidget.h"
 #include "Console/ConsoleDockWidget.h"
 
-#include "Pegasus/Pegasus.h"
+//#include "Pegasus/Pegasus.h"
 
 #include <QSplashScreen>
 #include <QAction>

@@ -13,6 +13,7 @@
 #define PEGASUS_RENDER_RENDERCONTEXT_H
 
 #include "Pegasus\Render\RenderContextConfig.h"
+#include "Pegasus\Render\GL\GLEWStaticInclude.h"
 
 // Forward declarations
 namespace Pegasus {

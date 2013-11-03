@@ -12,13 +12,6 @@
 #define GLEW_STATIC 1
 #include "TestApp1Window.h"
 #include "Pegasus/Render/RenderContext.h"
-#include "Pegasus/Libs/GLEW/glew.h"
-
-#include <stdlib.h>
-
-//! \todo Temporary, just to get some animation running
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 
 // Statics / globals
 // Demo to execute
@@ -124,14 +117,15 @@ void TestApp1Window::Initialize()
     mShaderProgram.SetStage(&mFragmentShader);
     mShaderProgram.Link();
     
-    //use the shader
+    // Wse the shader
     mShaderProgram.Bind();
 
+    // Set up uniforms
     mTimeUniform = glGetUniformLocation(mShaderProgram.GetProgramHandle(), "time");
 #if (DEMO == DEMO_KEVIN_PSYBEADS) || (DEMO == DEMO_KEVIN_CUBE_FRACTAL) || (DEMO == DEMO_KEVIN_CUBE_FRACTAL2)
     mScreenRatioUniform = glGetUniformLocation(mShaderProgram.GetProgramHandle(), "screenRatio");
 #endif
-    mFrame = 0;
+
     // Bind vertex array to shader
     glVertexAttribPointer(vPosition, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0); // 2 floats, non-normalized, 0 stride and offset
     glEnableVertexAttribArray(vPosition);
@@ -147,6 +141,7 @@ void TestApp1Window::Shutdown()
 
 void TestApp1Window::Refresh()
 {
+    static unsigned int tickCount = 0;
     unsigned int viewportWidth = 0;
     unsigned int viewportHeight = 0;
 
@@ -156,11 +151,10 @@ void TestApp1Window::Refresh()
 
     // Clear screen
     glClear(GL_COLOR_BUFFER_BIT);
-    //mFrame = (int) (GetApplication()->GetAppTime() * 60.0f); // Time is in s
 
 #if DEMO == DEMO_KLEBER_HOMOGAY_TRIANGLE
     //! \todo Temporary, just to get some animation running
-    const float currentTime = (static_cast<float>(GetTickCount()) * 0.001f) * 60.0f;
+    const float currentTime = (float) tickCount;//(static_cast<float>(GetTickCount()) * 0.001f) * 60.0f;
 
     // Set up and draw triangles
     glBindVertexArray(VAOs[TRIANGLES]);
@@ -170,7 +164,7 @@ void TestApp1Window::Refresh()
 
 #if (DEMO == DEMO_KEVIN_PSYBEADS) || (DEMO == DEMO_KEVIN_CUBE_FRACTAL) || (DEMO == DEMO_KEVIN_CUBE_FRACTAL2)
     //! \todo Temporary, just to get some animation running
-    const float currentTime = (static_cast<float>(GetTickCount()) * 0.001f) * 0.5f;
+    const float currentTime = (float) tickCount / 120.0f;//(static_cast<float>(GetTickCount()) * 0.001f) * 0.5f;
 
     // Set up and draw triangles
     glBindVertexArray(VAOs[TRIANGLES]);
@@ -178,6 +172,9 @@ void TestApp1Window::Refresh()
     glUniform1f(mScreenRatioUniform, static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight));
     glDrawArrays(GL_TRIANGLES, 0, NUM_VERTS);
 #endif  // DEMO_KEVIN_PSYBEADS
+
+    // Increment frame counter, assume we are at 60 fps
+    tickCount++;
 
     // Flip the GPU
     GetRenderContext()->Swap();

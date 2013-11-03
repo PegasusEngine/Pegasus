@@ -14,7 +14,6 @@
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Application/AppWindowManager.h"
 #include "Pegasus/Render/GL/GLExtensions.h"
-#include "Pegasus/Render/RenderContext.h"
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/Window/StartupWindow.h"
 

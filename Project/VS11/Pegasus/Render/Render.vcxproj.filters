@@ -38,6 +38,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\RenderContextConfig.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Render\GL\GLEWStaticInclude.h">
+      <Filter>Include\GL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.cpp">
@@ -48,6 +51,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Platform\RenderContext_Win32.cpp">
       <Filter>Source\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLEWStaticInclude.cpp">
+      <Filter>Source\GL</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

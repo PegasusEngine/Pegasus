@@ -4,17 +4,17 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   ShaderStage.cpp	
-//! \author	Kleber Garcia
-//! \date	17th October 2013
-//! \brief  Opengl shading pipeline stage	
+//! \file   ShaderStage.cpp
+//! \author Kleber Garcia
+//! \date   17th October 2013
+//! \brief  Opengl shading pipeline stage
 
 #include "Pegasus/Shader/Shared/ShaderEvent.h"
 #include "Pegasus/Shader/ShaderStage.h"
 #include <string.h>
+#undef ERROR
 
-namespace PegasusShaderPrivate
-{
+namespace PegasusShaderPrivate {
 
 static struct ShaderStageProperties
 {
@@ -34,9 +34,13 @@ static struct ShaderStageProperties
 
 } // namespace PegasusShaderPrivate
 
-Pegasus::Shader::ShaderStage::ShaderStage()
-:
-mType(Pegasus::Shader::SHADER_STAGE_INVALID)
+//----------------------------------------------------------------------------------------
+
+namespace Pegasus {
+namespace Shader {
+
+ShaderStage::ShaderStage()
+ : mType(Pegasus::Shader::SHADER_STAGE_INVALID)
 {
 }
 
@@ -45,7 +49,7 @@ Pegasus::Shader::ShaderStage::~ShaderStage()
     DestroyShader();
 }
 
-void Pegasus::Shader::ShaderStage::DestroyShader()
+void ShaderStage::DestroyShader()
 {
     if (mOgl.mShaderHandle)
     {
@@ -54,7 +58,7 @@ void Pegasus::Shader::ShaderStage::DestroyShader()
     mType = Pegasus::Shader::SHADER_STAGE_INVALID;
 }
 
-void Pegasus::Shader::ShaderStage::ProcessErrorLog(const char * log)
+void ShaderStage::ProcessErrorLog(const char * log)
 {
 #if PEGASUS_SHADER_USE_EDIT_EVENTS
     //parsing log to extract line & column
@@ -109,7 +113,7 @@ void Pegasus::Shader::ShaderStage::ProcessErrorLog(const char * log)
 #endif
 }
 
-bool Pegasus::Shader::ShaderStage::CompileFromSrcInternal(Pegasus::Shader::ShaderType type, const char * src, int bufferLength)
+bool ShaderStage::CompileFromSrcInternal(Pegasus::Shader::ShaderType type, const char * src, int bufferLength)
 {
     mType = type;
     PG_ASSERT(type >= 0 && type < Pegasus::Shader::SHADER_STAGES_COUNT);
@@ -148,7 +152,7 @@ bool Pegasus::Shader::ShaderStage::CompileFromSrcInternal(Pegasus::Shader::Shade
     return true;
 }
 
-bool Pegasus::Shader::ShaderStage::CompileFromSrc(Pegasus::Shader::ShaderType type, const char * src, int srcSize)
+bool ShaderStage::CompileFromSrc(Pegasus::Shader::ShaderType type, const char * src, int srcSize)
 {
     //reallocate buffer size if more space requested on recompilation
     if (srcSize > mFileBuffer.GetFileSize())
@@ -164,7 +168,7 @@ bool Pegasus::Shader::ShaderStage::CompileFromSrc(Pegasus::Shader::ShaderType ty
     return CompileFromSrcInternal(type, mFileBuffer.GetBuffer(), mFileBuffer.GetFileSize());
 }
 
-bool Pegasus::Shader::ShaderStage::CompileFromFile(const char * path, Io::IOManager* loader)
+bool ShaderStage::CompileFromFile(const char * path, Io::IOManager* loader)
 {
     PG_ASSERT(path != nullptr);
     const char * extension = strrchr(path, '.');
@@ -201,3 +205,7 @@ bool Pegasus::Shader::ShaderStage::CompileFromFile(const char * path, Io::IOMana
     }
     return false;
 }
+
+
+}  // namespace Shader
+}  // namespace Pegasus

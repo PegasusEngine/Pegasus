@@ -11,11 +11,7 @@
 
 #if PEGASUS_PLATFORM_WINDOWS
 #include "..\Source\Pegasus\Render\Platform\RenderContext_Win32.h"
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#define GLEW_STATIC 1
-#include "Pegasus/Libs/GLEW/glew.h"
-#include "Pegasus/Libs/GLEW/wglew.h"
+#include "Pegasus/Render/GL/GLEWStaticInclude.h"
 
 namespace Pegasus {
 namespace Render {

@@ -41,7 +41,6 @@ private:
     // Rendering stuff
     int mTimeUniform;
     int mScreenRatioUniform;
-    int mFrame;
 };
 
 #endif  // TESTAPP1WINDOW_H

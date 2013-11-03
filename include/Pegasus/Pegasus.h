@@ -21,6 +21,9 @@
 // Window base class
 #include "Pegasus/Window/Window.h"
 
+// Render context
+#include "Pegasus/Render/RenderContext.h"
+
 // Versioning
 #include "Pegasus/Version.h"
 

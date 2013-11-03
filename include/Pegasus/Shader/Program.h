@@ -4,20 +4,19 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	Program.h
-//! \author	Kleber Garcia
-//! \date	17th October 2013
-//! \brief	Represents an opengl program
+//! \file   Program.h
+//! \author Kleber Garcia
+//! \date   17th October 2013
+//! \brief  Represents an opengl program
 
-#ifndef PEGASUS_SHADERPROGRAM_H
-#define PEGASUS_SHADERPROGRAM_H
+#ifndef PEGASUS_SHADER_SHADERPROGRAM_H
+#define PEGASUS_SHADER_SHADERPROGRAM_H
 
 #include "Pegasus/Shader/ShaderStage.h"
+#include "Pegasus/Render/GL/GLEWStaticInclude.h"
 
-namespace Pegasus
-{
-namespace Shader
-{
+namespace Pegasus {
+namespace Shader {
 
 class Program
 #if PEGASUS_SHADER_USE_EDIT_EVENTS
@@ -55,6 +54,8 @@ private:
     } mOgl;
 };
 
-}
-}
-#endif
+
+} // namespace Shader
+} // namespace Pegasus
+
+#endif // PEGASUS_SHADER_SHADERPROGRAM_H
