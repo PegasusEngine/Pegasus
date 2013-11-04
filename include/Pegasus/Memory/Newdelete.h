@@ -4,7 +4,7 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   newdelete.h
+//! \file   NewDelete.h
 //! \author Kleber Garcia
 //! \date   11th October 2013
 //! \brief  Global memory operator overrides

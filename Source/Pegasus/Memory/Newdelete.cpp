@@ -4,12 +4,12 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   newdelete.cpp
+//! \file   NewDelete.cpp
 //! \author Kleber Garcia
 //! \date   11th October 2013
 //! \brief  Global memory operator overrides
 
-#include "Pegasus/Memory/newdelete.h"
+#include "Pegasus/Memory/NewDelete.h"
 #include "Pegasus/Memory/Memory.h"
 
 void* operator new(size_t size)

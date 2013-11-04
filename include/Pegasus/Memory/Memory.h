@@ -12,7 +12,7 @@
 #ifndef PEGASUS_MEMORY_MEMORY_H
 #define PEGASUS_MEMORY_MEMORY_H
 
-#include "Pegasus/Memory/Newdelete.h"
+#include "Pegasus/Memory/NewDelete.h"
 
 //! Macro for allocating memory
 #define PG_NEW(alloc, debug_str, flags) new(alloc, flags, debug_str, __FILE__, __LINE__)

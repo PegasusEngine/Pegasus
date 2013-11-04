@@ -4,13 +4,13 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   memory.cpp
+//! \file   Memory.cpp
 //! \author David Worsham
 //! \date   02 Nov 2013
 //! \brief  Memory framework
 
 #include "Pegasus/Memory/Memory.h"
-#include "Pegasus/Memory/mallocfreeallocator.h"
+#include "Pegasus/Memory/MallocFreeAllocator.h"
 
 namespace Pegasus {
 namespace Memory {

@@ -30,12 +30,12 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Memory\IAllocator.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Memory\MallocFreeAllocator.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Memory\Memory.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Memory\Newdelete.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Memory\NewDelete.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Memory\MallocFreeAllocator.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Memory\Memory.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Memory\Newdelete.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Memory\NewDelete.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8AD3BC97-CABA-48D1-B0FD-79CB17CD1F82}</ProjectGuid>

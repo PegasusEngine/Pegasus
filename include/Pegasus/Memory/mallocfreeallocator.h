@@ -4,7 +4,7 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   mallocfreeallocator.h
+//! \file   MallocfreeAllocator.h
 //! \author David Worsham
 //! \date   02 Nov 2013
 //! \brief  Basic allocator using stdC malloc and free from the system heap.

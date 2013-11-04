@@ -4,13 +4,13 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   mallocfreeallocator.cpp
+//! \file   MallocfreeAllocator.cpp
 //! \author David Worsham
 //! \date   02 Nov 2013
 //! \brief  Basic allocator using stdC malloc and free from the system heap.
 
-#include "Pegasus/Memory/mallocfreeallocator.h"
-#include "Pegasus/Memory/Newdelete.h"
+#include "Pegasus/Memory/MallocfreeAllocator.h"
+#include "Pegasus/Memory/NewDelete.h"
 
 namespace Pegasus {
 namespace Memory {
