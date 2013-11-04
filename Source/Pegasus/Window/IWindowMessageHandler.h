@@ -9,13 +9,13 @@
 //! \date   02 Nov 2013
 //! \brief  Message handling interface for platform-specific windows to use.
 
-#ifndef PEGASUS_WINDOW_IWINDOWMESSAGEHANDLER_H
-#define PEGASUS_WINDOW_IWINDOWMESSAGEHANDLER_H
+#ifndef PEGASUS_WND_IWINDOWMESSAGEHANDLER_H
+#define PEGASUS_WND_IWINDOWMESSAGEHANDLER_H
 
 #include "Pegasus/Render/RenderDefs.h"
 
 namespace Pegasus {
-namespace Window {
+namespace Wnd {
 
 
 //! Message handling interface for platform-impls
@@ -42,7 +42,7 @@ public:
 };
 
 
-}   // namespace Window
+}   // namespace Wnd
 }   // namespace Pegasus
 
-#endif  // PEGASUS_WINDOW_IWINDOWMESSAGEHANDLER_H
+#endif  // PEGASUS_WND_IWINDOWMESSAGEHANDLER_H

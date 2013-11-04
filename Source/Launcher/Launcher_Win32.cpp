@@ -201,10 +201,10 @@ Pegasus::Core::AssertReturnCode AssertionHandler(const char * testStr,
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                      LPSTR lpCmdLine, int nCmdShow)
 {
-    Pegasus::Application::ApplicationConfig appConfig;
-    Pegasus::Application::AppWindowConfig windowConfig;
-    Pegasus::Application::IApplicationProxy* application = NULL;
-    Pegasus::Window::IWindowProxy* appWindow = NULL;
+    Pegasus::App::ApplicationConfig appConfig;
+    Pegasus::App::AppWindowConfig windowConfig;
+    Pegasus::App::IApplicationProxy* application = NULL;
+    Pegasus::Wnd::IWindowProxy* appWindow = NULL;
     MSG curMsg;
     bool appDone = false;
     int retVal = 0;
@@ -271,11 +271,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     // Cast the procedure into the actual entry point function
     //! \todo Make the function pointer a declaration in IApplication.h?
-    Pegasus::Application::CreatePegasusAppFuncPtr CreatePegasusAppFunc = (Pegasus::Application::CreatePegasusAppFuncPtr) createAppProcAddress;
-    Pegasus::Application::DestroyPegasusAppFuncPtr DestroyPegasusAppFunc = (Pegasus::Application::DestroyPegasusAppFuncPtr) destroyAppProcAddress;
+    Pegasus::App::CreatePegasusAppFuncPtr CreatePegasusAppFunc = (Pegasus::App::CreatePegasusAppFuncPtr) createAppProcAddress;
+    Pegasus::App::DestroyPegasusAppFuncPtr DestroyPegasusAppFunc = (Pegasus::App::DestroyPegasusAppFuncPtr) destroyAppProcAddress;
     
     // Set up the app config
-    appConfig.mModuleHandle = (Pegasus::Window::ModuleHandle) hInstance;
+    appConfig.mModuleHandle = (Pegasus::Wnd::ModuleHandle) hInstance;
     appConfig.mMaxWindowTypes = 2;
     appConfig.mMaxNumWindows = 2;
     appConfig.mBasePath = ASSET_ROOT;

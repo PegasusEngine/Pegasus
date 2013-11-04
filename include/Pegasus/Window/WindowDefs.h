@@ -9,13 +9,13 @@
 //! \date   4th Junly 2013
 //! \brief  Common typedefs for the windowing system.
 
-#ifndef PEGASUS_WINDOW_WINDOWDEFS_H
-#define PEGASUS_WINDOW_WINDOWDEFS_H
+#ifndef PEGASUS_WND_WINDOWDEFS_H
+#define PEGASUS_WND_WINDOWDEFS_H
 
 #include <stdint.h>
 
 namespace Pegasus {
-namespace Window {
+namespace Wnd {
 
 //! Module handle opaque type
 //! Can be converted to a pointer
@@ -28,7 +28,7 @@ typedef uintptr_t ModuleHandle;
 typedef uintptr_t WindowHandle;
 
 
-}   // namespace Window
+}   // namespace Wnd
 }   // namespace Pegasus
 
-#endif  // PEGASUS_WINDOW_WINDOWDEFS_H
+#endif  // PEGASUS_WND_WINDOWDEFS_H

@@ -20,8 +20,8 @@
 static const char* ASSET_ROOT = "..\\..\\..\\..\\Data\\";
 
 // Typedefs for DLL entry point
-extern Pegasus::Application::Application* CreateApplication(const Pegasus::Application::ApplicationConfig& config);
-extern void DestroyApplication(Pegasus::Application::Application* app);
+extern Pegasus::App::Application* CreateApplication(const Pegasus::App::ApplicationConfig& config);
+extern void DestroyApplication(Pegasus::App::Application* app);
 
 //----------------------------------------------------------------------------------------
 
@@ -198,16 +198,16 @@ Pegasus::Core::AssertReturnCode AssertionHandler(const char * testStr,
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                      LPSTR lpCmdLine, int nCmdShow)
 {
-    Pegasus::Application::ApplicationConfig appConfig;
-    Pegasus::Application::AppWindowConfig windowConfig;
-    Pegasus::Application::Application* application = NULL;
-    Pegasus::Window::Window* appWindow = NULL;
+    Pegasus::App::ApplicationConfig appConfig;
+    Pegasus::App::AppWindowConfig windowConfig;
+    Pegasus::App::Application* application = NULL;
+    Pegasus::Wnd::Window* appWindow = NULL;
     MSG curMsg;
     bool appDone = false;
     int retVal = 0;
 
     // Set up the app config
-    appConfig.mModuleHandle = (Pegasus::Window::ModuleHandle) hInstance;
+    appConfig.mModuleHandle = (Pegasus::Wnd::ModuleHandle) hInstance;
     appConfig.mMaxWindowTypes = 2;
     appConfig.mMaxNumWindows = 2;
     appConfig.mBasePath = ASSET_ROOT;

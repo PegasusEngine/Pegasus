@@ -17,7 +17,7 @@
 
 // Forward declarations
 namespace Pegasus {
-    namespace Window {
+    namespace Wnd {
         class Window;
     }
 }
@@ -25,7 +25,7 @@ namespace Pegasus {
 //----------------------------------------------------------------------------------------
 
 namespace Pegasus {
-namespace Window {
+namespace Wnd {
 
 //! Proxy window class for use with a DLL
 class WindowProxy : public IWindowProxy
@@ -55,8 +55,8 @@ private:
 };
 
 
-}   // namespace Window
+}   // namespace Wnd
 }   // namespace Pegasus
 
 #endif  // PEGASUS_ENABLE_PROXIES
-#endif  // PEGASUS_APPLICATION_H
+#endif  // PEGASUS_APP_H

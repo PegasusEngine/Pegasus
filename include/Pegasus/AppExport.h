@@ -18,14 +18,14 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-PEGASUSAPP_SHARED Pegasus::Application::IApplicationProxy* CreatePegasusApp(const Pegasus::Application::ApplicationConfig& config)
+PEGASUSAPP_SHARED Pegasus::App::IApplicationProxy* CreatePegasusApp(const Pegasus::App::ApplicationConfig& config)
 {
     Pegasus::Memory::IAllocator* globalAlloc = Pegasus::Memory::GetGlobalAllocator();
 
-    return PG_NEW(globalAlloc, "ApplicationProxy", Pegasus::Memory::PG_MEM_PERM) Pegasus::Application::ApplicationProxy(config);
+    return PG_NEW(globalAlloc, "ApplicationProxy", Pegasus::Memory::PG_MEM_PERM) Pegasus::App::ApplicationProxy(config);
 }
 
-PEGASUSAPP_SHARED void DestroyPegasusApp(Pegasus::Application::IApplicationProxy* app)
+PEGASUSAPP_SHARED void DestroyPegasusApp(Pegasus::App::IApplicationProxy* app)
 {
     Pegasus::Memory::IAllocator* globalAlloc = Pegasus::Memory::GetGlobalAllocator();
 

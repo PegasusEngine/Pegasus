@@ -9,18 +9,18 @@
 //! \date   25th August 2013
 //! \brief  Proxy interface, used by the editor and launcher to interact with an app.
 
-#ifndef PEGASUS_SHARED_IAPPLICATIONPROXY_H
-#define PEGASUS_SHARED_IAPPLICATIONPROXY_H
+#ifndef PEGASUS_SHARED_IAPPPROXY_H
+#define PEGASUS_SHARED_IAPPPROXY_H
 
 #if PEGASUS_ENABLE_PROXIES
 // Forward declarations
 namespace Pegasus {
-    namespace Application {
+    namespace App {
         struct ApplicationConfig;
         struct AppWindowConfig;
     }
 
-    namespace Window {
+    namespace Wnd {
         struct AppWindowConfig;
         class IWindowProxy;
     }
@@ -29,7 +29,7 @@ namespace Pegasus {
 //----------------------------------------------------------------------------------------
 
 namespace Pegasus {
-namespace Application {
+namespace App {
 
 //! Proxy application interface.
 class IApplicationProxy
@@ -46,11 +46,11 @@ public:
     //! Creates a new window attached to this application instance
     //! \param config Configuration structure for the newly created window.
     //! \return Pointer to the opened window.
-    virtual Window::IWindowProxy* AttachWindow(const AppWindowConfig& config) = 0;
+    virtual Wnd::IWindowProxy* AttachWindow(const AppWindowConfig& config) = 0;
 
     //! Destroys a window attached to this application instance
     //! \param wnd Window to destroy.
-    virtual void DetachWindow(Window::IWindowProxy* wnd) = 0;
+    virtual void DetachWindow(Wnd::IWindowProxy* wnd) = 0;
 
 
     //! Inits this application
@@ -70,12 +70,12 @@ public:
 //----------------------------------------------------------------------------------------
 
 //! Typedef for proxy factory function
-typedef Pegasus::Application::IApplicationProxy* (*CreatePegasusAppFuncPtr)(const Pegasus::Application::ApplicationConfig& config);
+typedef Pegasus::App::IApplicationProxy* (*CreatePegasusAppFuncPtr)(const Pegasus::App::ApplicationConfig& config);
 //! Typedef for proxy factory function
-typedef void (*DestroyPegasusAppFuncPtr)(Pegasus::Application::IApplicationProxy* app);
+typedef void (*DestroyPegasusAppFuncPtr)(Pegasus::App::IApplicationProxy* app);
 
-}   // namespace Application
+}   // namespace App
 }   // namespace Pegasus
 
 #endif  // PEGASUS_ENABLE_PROXIES
-#endif  // PEGASUS_IAPPLICATIONPROXY_H
+#endif  // PEGASUS_SHARED_IAPPPROXY_H

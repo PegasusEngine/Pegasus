@@ -15,18 +15,18 @@
 #include "Pegasus/AppExport.h" // Needs including, for exported functions.  Only include this once!
 
 // Variables
-static const char* MAIN_WINDOW_TYPE = "TestApp1Window";
+static const char* MAIN_WND_TYPE = "TestApp1Window";
 
-TestApp1::TestApp1(const Pegasus::Application::ApplicationConfig& config)
-:   Pegasus::Application::Application(config)
+TestApp1::TestApp1(const Pegasus::App::ApplicationConfig& config)
+:   Pegasus::App::Application(config)
 {
-    Pegasus::Application::WindowRegistration reg;
+    Pegasus::App::WindowRegistration reg;
 
     // Register the main window
-    reg.mTypeTag = Pegasus::Application::WINDOW_TYPE_MAIN;
+    reg.mTypeTag = Pegasus::App::WINDOW_TYPE_MAIN;
     reg.mDescription = "TestApp1 Viewport";
     reg.mCreateFunc = TestApp1Window::Create;
-    GetWindowRegistry()->RegisterWindowClass(MAIN_WINDOW_TYPE, reg);
+    GetWindowRegistry()->RegisterWindowClass(MAIN_WND_TYPE, reg);
 }
 
 //----------------------------------------------------------------------------------------
@@ -34,12 +34,12 @@ TestApp1::TestApp1(const Pegasus::Application::ApplicationConfig& config)
 TestApp1::~TestApp1()
 {
     // Deregister the main window
-    GetWindowRegistry()->UnregisterWindowClass(MAIN_WINDOW_TYPE);
+    GetWindowRegistry()->UnregisterWindowClass(MAIN_WND_TYPE);
 }
 
 //----------------------------------------------------------------------------------------
 
-Pegasus::Application::Application * CreateApplication(const Pegasus::Application::ApplicationConfig& config)
+Pegasus::App::Application * CreateApplication(const Pegasus::App::ApplicationConfig& config)
 {
     Pegasus::Memory::IAllocator* globalAlloc = Pegasus::Memory::GetGlobalAllocator();
 
@@ -48,7 +48,7 @@ Pegasus::Application::Application * CreateApplication(const Pegasus::Application
 
 //----------------------------------------------------------------------------------------
 
-void DestroyApplication(Pegasus::Application::Application* app)
+void DestroyApplication(Pegasus::App::Application* app)
 {
     Pegasus::Memory::IAllocator* globalAlloc = Pegasus::Memory::GetGlobalAllocator();
 

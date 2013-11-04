@@ -13,10 +13,10 @@
 #include "Pegasus/Render/RenderContext.h"
 
 namespace Pegasus {
-namespace Window {
+namespace Wnd {
 
-StartupWindow::StartupWindow(const Pegasus::Window::WindowConfig& config)
-    : Pegasus::Window::Window(config)
+StartupWindow::StartupWindow(const Pegasus::Wnd::WindowConfig& config)
+    : Pegasus::Wnd::Window(config)
 {
 }
 
@@ -28,7 +28,7 @@ StartupWindow::~StartupWindow()
 
 //----------------------------------------------------------------------------------------
 
-Pegasus::Window::Window* StartupWindow::Create(const Pegasus::Window::WindowConfig& config, Memory::IAllocator* alloc)
+Pegasus::Wnd::Window* StartupWindow::Create(const Pegasus::Wnd::WindowConfig& config, Memory::IAllocator* alloc)
 {
     return PG_NEW(alloc, "StartupWindow", Pegasus::Memory::PG_MEM_PERM) StartupWindow(config);
 }
@@ -54,5 +54,5 @@ void StartupWindow::Refresh()
 }
 
 
-} // end namespace Window
+} // end namespace Wnd
 } // end namesapce Pegasus

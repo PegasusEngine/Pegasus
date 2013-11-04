@@ -13,7 +13,7 @@
 #include <string.h>
 
 namespace Pegasus {
-namespace Application {
+namespace App {
 
 //! Window type table entry
 struct TypeTableEntry
@@ -34,7 +34,7 @@ public:
     WindowTypeTag mTypeTag;
     char mDescription[AppWindowManager::APPWINDOW_DESC_LENGTH]; // Human-friendly description
     char mClassName[AppWindowManager::APPWINDOW_CLASS_LENGTH]; // Class name
-    Window::WindowFactoryFunc mCreateFunc; // Factory function
+    Wnd::WindowFactoryFunc mCreateFunc; // Factory function
 };
 
 //----------------------------------------------------------------------------------------
@@ -73,13 +73,13 @@ public:
     ~WindowTable();
 
     // Helpers
-    bool Contains(const Window::Window* entry) const;
-    void Insert(Window::Window* entry);
-    void Remove(Window::Window* entry);
+    bool Contains(const Wnd::Window* entry) const;
+    void Insert(Wnd::Window* entry);
+    void Remove(Wnd::Window* entry);
 
 
     Memory::IAllocator* mAllocator; //! Allocator to use when creating this object
-    Window::Window** mTable; // Table members
+    Wnd::Window** mTable; // Table members
     unsigned int mCurrentSize; // Table size
     unsigned int mMaxSize; // Max table size
 };
@@ -272,7 +272,7 @@ void TypeTable::Remove(const char* typeName)
 WindowTable::WindowTable(unsigned int max, Memory::IAllocator* alloc)
 : mAllocator(alloc), mCurrentSize(0), mMaxSize(max)
 {
-    mTable = PG_NEW_ARRAY(mAllocator, "WindowTableEntries", Pegasus::Memory::PG_MEM_PERM, Window::Window*, mMaxSize);
+    mTable = PG_NEW_ARRAY(mAllocator, "WindowTableEntries", Pegasus::Memory::PG_MEM_PERM, Wnd::Window*, mMaxSize);
 
     // Zero out window table
     for (unsigned int i = 0; i < mMaxSize; i++)
@@ -292,7 +292,7 @@ WindowTable::~WindowTable()
 
 //----------------------------------------------------------------------------------------
 
-bool WindowTable::Contains(const Window::Window* entry) const
+bool WindowTable::Contains(const Wnd::Window* entry) const
 {
     bool found = false;
 
@@ -311,7 +311,7 @@ bool WindowTable::Contains(const Window::Window* entry) const
 
 //----------------------------------------------------------------------------------------
 
-void WindowTable::Insert(Window::Window* entry)
+void WindowTable::Insert(Wnd::Window* entry)
 {
     PG_ASSERTSTR(mCurrentSize < mMaxSize, "Window table is full!");
 
@@ -320,7 +320,7 @@ void WindowTable::Insert(Window::Window* entry)
 
 //----------------------------------------------------------------------------------------
 
-void WindowTable::Remove(Window::Window* entry)
+void WindowTable::Remove(Wnd::Window* entry)
 {
     int index = -1;
 
@@ -336,7 +336,7 @@ void WindowTable::Remove(Window::Window* entry)
 
     PG_ASSERTSTR(index != -1, "Trying to remove unknown window!");
     PG_DELETE(mAllocator, mTable[index]);
-    memmove(mTable + index, mTable + index + 1, sizeof(Window::Window*) * (mCurrentSize - index - 1)); // Fill hole
+    memmove(mTable + index, mTable + index + 1, sizeof(Wnd::Window*) * (mCurrentSize - index - 1)); // Fill hole
     mCurrentSize--;
 }
 
@@ -396,10 +396,10 @@ const char* AppWindowManager::GetMainWindowType() const
 
 //----------------------------------------------------------------------------------------
 
-Window::Window* AppWindowManager::CreateWindow(const char* typeName, const Window::WindowConfig& config)
+Wnd::Window* AppWindowManager::CreateWindow(const char* typeName, const Wnd::WindowConfig& config)
 {
     TypeTableEntry* entry = nullptr;
-    Window::Window* ret = nullptr;
+    Wnd::Window* ret = nullptr;
 
     // Find an entry and use it
     entry = mTypeTable->Get(typeName);
@@ -414,11 +414,11 @@ Window::Window* AppWindowManager::CreateWindow(const char* typeName, const Windo
 
 //----------------------------------------------------------------------------------------
 
-void AppWindowManager::DestroyWindow(Window::Window* window)
+void AppWindowManager::DestroyWindow(Wnd::Window* window)
 {
     // Remove it from the window table
     mWindowTable->Remove(window);
 }
 
-}   // namespace Application
+}   // namespace App
 }   // namespace Pegasus

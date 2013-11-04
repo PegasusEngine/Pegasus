@@ -9,15 +9,15 @@
 //! \date   16th October 2013
 //! \brief  Window manager for a Pegasus app.
 
-#ifndef PEGASUS_APPLICATION_APPWINDOWMANAGER_H
-#define PEGASUS_APPLICATION_APPWINDOWMANAGER_H
+#ifndef PEGASUS_APP_APPWINDOWMANAGER_H
+#define PEGASUS_APP_APPWINDOWMANAGER_H
 
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Application/IWindowRegistry.h"
 
 // Forward declarations
 namespace Pegasus {
-    namespace Application {
+    namespace App {
         struct TypeTable;
         struct WindowTable;
     }
@@ -26,7 +26,7 @@ namespace Pegasus {
 //----------------------------------------------------------------------------------------
 
 namespace Pegasus {
-namespace Application {
+namespace App {
 
 //! Config object for the window manager class
 struct AppWindowManagerConfig
@@ -70,11 +70,11 @@ public:
     //! \param className Class of window to create.
     //! \param config Config to use for the window.
     //! \return Created window.
-    Window::Window* CreateWindow(const char* className, const Window::WindowConfig& config);
+    Wnd::Window* CreateWindow(const char* className, const Wnd::WindowConfig& config);
 
     //! Destroys a window and removes it from this manager.
     //! \param window The window to destroy.
-    void DestroyWindow(Window::Window* window);
+    void DestroyWindow(Wnd::Window* window);
 
 
     static const unsigned int APPWINDOW_DESC_LENGTH = 128; //! Max length of an app window description
@@ -91,7 +91,7 @@ private:
 };
 
 
-}   // namespace Application
+}   // namespace App
 }   // namespace Pegasus
 
-#endif  // PEGASUS_APPLICATION_APPWINDOWMANAGER_H
+#endif  // PEGASUS_APP_APPWINDOWMANAGER_H

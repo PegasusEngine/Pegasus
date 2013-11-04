@@ -15,7 +15,7 @@
 #if PEGASUS_ENABLE_PROXIES
 // Forward declarations
 namespace Pegasus {
-    namespace Window {
+    namespace Wnd {
         class Window;
     }
 }
@@ -23,7 +23,7 @@ namespace Pegasus {
 //----------------------------------------------------------------------------------------
 
 namespace Pegasus {
-namespace Window {
+namespace Wnd {
 
 //! Proxy application interface
 class IWindowProxy
@@ -58,7 +58,7 @@ public:
 };
 
 
-}   // namespace Window
+}   // namespace Wnd
 }   // namespace Pegasus
 
 #endif  // PEGASUS_ENABLE_PROXIES

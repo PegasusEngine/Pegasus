@@ -9,17 +9,17 @@
 //! \date   6th October 2013
 //! \brief  Config structure for a window.
 
-#ifndef PEGASUS_WINDOW_WINDOWCONFIG_H
-#define PEGASUS_WINDOW_WINDOWCONFIG_H
+#ifndef PEGASUS_WND_WINDOWCONFIG_H
+#define PEGASUS_WND_WINDOWCONFIG_H
 
 #include "Pegasus/Window/WindowDefs.h"
 
 // Forward declarations
 namespace Pegasus {
-    namespace Application {
+    namespace App {
         class Application;
     }
-    namespace Window {
+    namespace Wnd {
         class IWindowContext;
     }
 }
@@ -27,7 +27,7 @@ namespace Pegasus {
 //----------------------------------------------------------------------------------------
 
 namespace Pegasus {
-namespace Window {
+namespace Wnd {
 
 //! Configuration structure for a Pegasus window
 struct WindowConfig
@@ -68,7 +68,7 @@ public:
 };
 
 
-}   // namespace Window
+}   // namespace Wnd
 }   // namespace Pegasus
 
-#endif  // PEGASUS_WINDOW_WINDOWCONFIG_H
+#endif  // PEGASUS_WND_WINDOWCONFIG_H

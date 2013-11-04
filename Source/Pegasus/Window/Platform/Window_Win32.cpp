@@ -15,7 +15,7 @@
 #include <windows.h>
 
 namespace Pegasus {
-namespace Window {
+namespace Wnd {
 
 // Class/Window names for Pegasus windows
 static const char* PEGASUS_WND_CLASSNAME = "PegasusEngine";
@@ -307,7 +307,7 @@ WindowImpl_Win32::HandleMessageReturn WindowImpl_Win32::HandleMessage(unsigned i
 }
 
 
-}   // namespace Window
+}   // namespace Wnd
 }   // namespace Pegasus
 
 #endif  // PEGASUS_PLATFORM_WINDOWS

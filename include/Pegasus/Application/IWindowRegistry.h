@@ -9,13 +9,13 @@
 //! \date   20th October 2013
 //! \brief  Interface for a window registry, which is a repository of window types.
 
-#ifndef PEGASUS_APPLICATION_IWINDOWREGISTRY_H
-#define PEGASUS_APPLICATION_IWINDOWREGISTRY_H
+#ifndef PEGASUS_APP_IWINDOWREGISTRY_H
+#define PEGASUS_APP_IWINDOWREGISTRY_H
 
 #include "Pegasus/Window/Window.h"
 
 namespace Pegasus {
-namespace Application {
+namespace App {
 
 //! Window tag type, this is the window "meta-type" as seen from outside the runtime.
 //! IE TYPE_MAIN, TYPE_TEXTUREVIEWER, TYPE_MODELVIEWER, etc
@@ -28,7 +28,7 @@ enum WindowTypeTag
     WINDOW_TYPE_EXTENSION, //!< For custom, app-specific windows for the editor
 #endif
 
-    NUM_WINDOW_TYPES
+    NUM_WND_TYPES
 };
 
 
@@ -38,7 +38,7 @@ struct WindowRegistration
 public:
     WindowTypeTag mTypeTag; //!< Type tag for the window "meta type"
     char* mDescription; //!< User friendly description of the window for the editor.  nullptr in REL mode
-    Window::WindowFactoryFunc mCreateFunc; //!< Function to use to create this window type
+    Wnd::WindowFactoryFunc mCreateFunc; //!< Function to use to create this window type
 };
 
 
@@ -69,7 +69,7 @@ public:
 };
 
 
-}   // namespace Application
+}   // namespace App
 }   // namespace Pegasus
 
-#endif  // PEGASUS_APPLICATION_IWINDOWREGISTRY_H
+#endif  // PEGASUS_APP_IWINDOWREGISTRY_H

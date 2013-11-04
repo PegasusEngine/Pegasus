@@ -14,7 +14,7 @@
 #include "Pegasus\Window\Window.h"
 
 namespace Pegasus {
-namespace Window {
+namespace Wnd {
 
 WindowProxy::WindowProxy(Window* wnd)
     : mObject(wnd)
@@ -63,7 +63,7 @@ Window* WindowProxy::Unwrap() const
 }
 
 
-}   // namespace Window
+}   // namespace Wnd
 }   // namespace Pegasus
 
 #endif  // PEGASUS_ENABLE_PROXIES

@@ -9,21 +9,21 @@
 //! \date   25th August 2013
 //! \brief  Shared config structure for a Pegasus application.
 
-#ifndef PEGASUS_SHARED_APPLICATIONCONFIG_H
-#define PEGASUS_SHARED_APPLICATIONCONFIG_H
+#ifndef PEGASUS_SHARED_APPCONFIG_H
+#define PEGASUS_SHARED_APPCONFIG_H
 
 #include "Pegasus/Core/Shared/LogChannel.h"
 #include "Pegasus/Core/Shared/AssertReturnCode.h"
 #include "Pegasus/Window/WindowDefs.h"
 
 namespace Pegasus {
-namespace Application {
+namespace App {
 
 //! Shared configuration structure for a Pegasus app
 struct ApplicationConfig
 {
 public:
-    Window::ModuleHandle mModuleHandle; //!< Handle to the module containing this application
+    Wnd::ModuleHandle mModuleHandle; //!< Handle to the module containing this application
     unsigned int mMaxWindowTypes; //!< Maximum number of window types this app can contain
     unsigned int mMaxNumWindows; //!< Maximum number of windows this app can contain
     const char* mBasePath; //!< The base path to load all assets from
@@ -60,7 +60,7 @@ public:
     //! Defined only when mIsChild == true
     //! \warning Assuming that mParentWindowHandle == 0 results in a non-child window will become a problem
     //!          if an operating system considers 0 as a valid handle. mIsChild is used to define if a parent window is actually defined
-    Window::WindowHandle mParentWindowHandle;
+    Wnd::WindowHandle mParentWindowHandle;
 
     const char* mWindowType; //!< Type string for the window
     int mWidth; //!< Initial width of the window in pixels (> 0)
@@ -77,7 +77,7 @@ public:
 };
 
 
-}   // namespace Application
+}   // namespace App
 }   // namespace Pegasus
 
-#endif  // PEGASUS_APPLICATION_H
+#endif  // PEGASUS_APP_H

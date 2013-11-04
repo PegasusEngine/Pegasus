@@ -9,13 +9,13 @@
 //! \date   20th October 2013
 //! \brief  Specialized window for the internal startup window.
 
-#ifndef PEGASUS_WINDOW_STARTUPWINDOW_H
-#define PEGASUS_WINDOW_STARTUPWINDOW_H
+#ifndef PEGASUS_WND_STARTUPWINDOW_H
+#define PEGASUS_WND_STARTUPWINDOW_H
 
 #include "Pegasus/Window/Window.h"
 
 namespace Pegasus {
-namespace Window {
+namespace Wnd {
 
 //! Specialized window for internal startup use
 class StartupWindow : public Window
@@ -42,7 +42,7 @@ public:
     virtual void Refresh();
 };
 
-} // end namespace Window
+} // end namespace Wnd
 } // end namespace Pegasus
 
-#endif  // PEGASUS_WINDOW_STARTUPWINDOW_H
+#endif  // PEGASUS_WND_STARTUPWINDOW_H

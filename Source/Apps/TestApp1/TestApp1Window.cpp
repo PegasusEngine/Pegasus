@@ -59,8 +59,8 @@ GLuint Buffers[NUM_BUFFERS];
 #endif  // DEMO_KEVIN_CUBE_FRACTAL2
 
 
-TestApp1Window::TestApp1Window(const Pegasus::Window::WindowConfig& config)
-    : Pegasus::Window::Window(config), mVertexShader(config.mRenderAllocator), mFragmentShader(config.mRenderAllocator)
+TestApp1Window::TestApp1Window(const Pegasus::Wnd::WindowConfig& config)
+    : Pegasus::Wnd::Window(config), mVertexShader(config.mRenderAllocator), mFragmentShader(config.mRenderAllocator)
 {
 }
 
@@ -72,7 +72,7 @@ TestApp1Window::~TestApp1Window()
 
 //----------------------------------------------------------------------------------------
 
-Pegasus::Window::Window* TestApp1Window::Create(const Pegasus::Window::WindowConfig& config, Pegasus::Memory::IAllocator* alloc)
+Pegasus::Wnd::Window* TestApp1Window::Create(const Pegasus::Wnd::WindowConfig& config, Pegasus::Memory::IAllocator* alloc)
 {
     return PG_NEW(alloc, "TestApp1Window", Pegasus::Memory::PG_MEM_PERM) TestApp1Window(config);
 }

@@ -4,10 +4,10 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	Application.h
-//! \author	Kevin Boulanger
-//! \date	02nd July 2013
-//! \brief	Worker thread to contain an application to run
+//! \file   Application.h
+//! \author Kevin Boulanger
+//! \date   02nd July 2013
+//! \brief  Worker thread to contain an application to run
 
 #ifndef EDITOR_APPLICATION_H
 #define EDITOR_APPLICATION_H
@@ -22,10 +22,10 @@ class ApplicationInterface;
 class ViewportWidget;
 
 namespace Pegasus {
-    namespace Application {
+    namespace App {
         class IApplicationProxy;
     }
-    namespace Window {
+    namespace Wnd {
         class IWindowProxy;
     }
 }
@@ -55,7 +55,7 @@ public:
     //! \param width Initial width of the viewport in pixels (> 0)
     //! \param height Initial height of the viewport in pixels (> 0)
     //! \todo Handle multiple viewports
-    void SetViewportParameters(/**index,*/ Pegasus::Window::WindowHandle windowHandle,
+    void SetViewportParameters(/**index,*/ Pegasus::Wnd::WindowHandle windowHandle,
                                int width, int height);
 
 
@@ -189,15 +189,15 @@ private:
     QString mFileName;
 
     //! Application proxy object created when running the application DLL
-    Pegasus::Application::IApplicationProxy * mApplication;
+    Pegasus::App::IApplicationProxy * mApplication;
 
     //! Window used to the render the viewport of the application
     //! \todo Handle multiple windows
-    Pegasus::Window::IWindowProxy * mAppWindow;
+    Pegasus::Wnd::IWindowProxy * mAppWindow;
 
     //! Viewport window handle associated with the application
     //! (will become the parent of the rendering window)
-    Pegasus::Window::WindowHandle mViewportWindowHandle;
+    Pegasus::Wnd::WindowHandle mViewportWindowHandle;
 
     //! Initial width of the viewport in pixels (> 0)
     int mViewportInitialWidth;

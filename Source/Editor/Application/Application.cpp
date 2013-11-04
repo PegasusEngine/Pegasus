@@ -4,10 +4,10 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	Application.cpp
-//! \author	Kevin Boulanger
-//! \date	02nd July 2013
-//! \brief	Worker thread to contain an application to run
+//! \file   Application.cpp
+//! \author Kevin Boulanger
+//! \date   02nd July 2013
+//! \brief  Worker thread to contain an application to run
 
 #include "Application/Application.h"
 #include "Application/ApplicationInterface.h"
@@ -62,7 +62,7 @@ void Application::SetFile(const QString & fileName)
 
 //----------------------------------------------------------------------------------------
 
-void Application::SetViewportParameters(/**index,*/ Pegasus::Window::WindowHandle windowHandle,
+void Application::SetViewportParameters(/**index,*/ Pegasus::Wnd::WindowHandle windowHandle,
                                         int width, int height)
 {
     ED_ASSERTSTR(windowHandle != 0, "Invalid viewport window handle set for an application.");
@@ -79,8 +79,8 @@ void Application::SetViewportParameters(/**index,*/ Pegasus::Window::WindowHandl
 void Application::run()
 {
     ED_ASSERTSTR(!mFileName.isEmpty(), "Invalid application to open, the name cannot be an empty string.");
-    Pegasus::Application::ApplicationConfig appConfig;
-    Pegasus::Application::AppWindowConfig windowConfig;
+    Pegasus::App::ApplicationConfig appConfig;
+    Pegasus::App::AppWindowConfig windowConfig;
     int retVal = 0;
 
     //PG_ASSERTSTR(!mFileName.isEmpty(), "Invalid application to open, the name cannot be an empty string");
@@ -128,11 +128,11 @@ void Application::run()
 #endif  // PEGASUS_PLATFORM_WINDOWS
 
     // Cast the procedure into the actual entry point function
-    Pegasus::Application::CreatePegasusAppFuncPtr CreatePegasusAppFunc = (Pegasus::Application::CreatePegasusAppFuncPtr) createAppProcAddress;
-    Pegasus::Application::DestroyPegasusAppFuncPtr DestroyPegasusAppFunc = (Pegasus::Application::DestroyPegasusAppFuncPtr) destroyAppProcAddress;
+    Pegasus::App::CreatePegasusAppFuncPtr CreatePegasusAppFunc = (Pegasus::App::CreatePegasusAppFuncPtr) createAppProcAddress;
+    Pegasus::App::DestroyPegasusAppFuncPtr DestroyPegasusAppFunc = (Pegasus::App::DestroyPegasusAppFuncPtr) destroyAppProcAddress;
 
     // Set up app config
-    appConfig.mModuleHandle = (Pegasus::Window::ModuleHandle) GetModuleHandle(NULL); // Use the handle of the Editor EXE
+    appConfig.mModuleHandle = (Pegasus::Wnd::ModuleHandle) GetModuleHandle(NULL); // Use the handle of the Editor EXE
     appConfig.mMaxWindowTypes = 2;
     appConfig.mMaxNumWindows = 2;
     appConfig.mBasePath = ASSET_ROOT;

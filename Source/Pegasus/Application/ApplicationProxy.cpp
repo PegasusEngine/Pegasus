@@ -15,14 +15,14 @@
 #include "Pegasus\Window\WindowProxy.h"
 #include "Pegasus\Window\Window.h"
 
-extern Pegasus::Application::Application* CreateApplication(const Pegasus::Application::ApplicationConfig& config);
-extern void DestroyApplication(Pegasus::Application::Application* app);
+extern Pegasus::App::Application* CreateApplication(const Pegasus::App::ApplicationConfig& config);
+extern void DestroyApplication(Pegasus::App::Application* app);
 
 //----------------------------------------------------------------------------------------
 
 
 namespace Pegasus {
-namespace Application {
+namespace App {
 
 ApplicationProxy::ApplicationProxy(const ApplicationConfig& config)
 {
@@ -45,18 +45,18 @@ const char* ApplicationProxy::GetMainWindowType() const
 
 //----------------------------------------------------------------------------------------
 
-Window::IWindowProxy* ApplicationProxy::AttachWindow(const AppWindowConfig& config)
+Wnd::IWindowProxy* ApplicationProxy::AttachWindow(const AppWindowConfig& config)
 {
     Memory::IAllocator* windowAlloc = Memory::GetWindowAllocator();
-    Window::Window* wnd = mObject->AttachWindow(config);
-    Window::WindowProxy* proxy = PG_NEW(windowAlloc, "WindowProxy", Pegasus::Memory::PG_MEM_PERM) Window::WindowProxy(wnd); // Wrap in proxy
+    Wnd::Window* wnd = mObject->AttachWindow(config);
+    Wnd::WindowProxy* proxy = PG_NEW(windowAlloc, "WindowProxy", Pegasus::Memory::PG_MEM_PERM) Wnd::WindowProxy(wnd); // Wrap in proxy
 
     return proxy;
 }
 
 //----------------------------------------------------------------------------------------
 
-void ApplicationProxy::DetachWindow(Window::IWindowProxy* wnd)
+void ApplicationProxy::DetachWindow(Wnd::IWindowProxy* wnd)
 {
     Memory::IAllocator* windowAlloc = Memory::GetWindowAllocator();
 
@@ -86,7 +86,7 @@ void ApplicationProxy::SetAppTime(float time)
 }
 
 
-}   // namespace Application
+}   // namespace App
 }   // namespace Pegasus
 
 #endif  // PEGASUS_ENABLE_PROXIES

@@ -9,21 +9,21 @@
 //! \date   25th August 2013
 //! \brief  Proxy object, used by the editor and launcher to interact with an app.
 
-#ifndef PEGASUS_SHARED_APPLICATIONPROXY_H
-#define PEGASUS_SHARED_APPLICATIONPROXY_H
+#ifndef PEGASUS_SHARED_APPPROXY_H
+#define PEGASUS_SHARED_APPPROXY_H
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus\Application\Shared\IApplicationProxy.h"
 
 // Forward declarations
 namespace Pegasus {
-    namespace Application {
+    namespace App {
         class Application;
     }
 }
 
 namespace Pegasus {
-namespace Application {
+namespace App {
 
 //! Proxy application class for use with a DLL
 class ApplicationProxy : public IApplicationProxy
@@ -35,8 +35,8 @@ public:
 
     // Window API
     virtual const char* GetMainWindowType() const;
-    virtual Window::IWindowProxy* AttachWindow(const AppWindowConfig& config);
-    virtual void DetachWindow(Window::IWindowProxy* wnd);
+    virtual Wnd::IWindowProxy* AttachWindow(const AppWindowConfig& config);
+    virtual void DetachWindow(Wnd::IWindowProxy* wnd);
 
     // Stateflow API
     virtual void Initialize();
@@ -51,8 +51,8 @@ private:
 };
 
 
-}   // namespace Application
+}   // namespace App
 }   // namespace Pegasus
 
 #endif  // PEGASUS_ENABLE_PROXIES
-#endif  // PEGASUS_APPLICATION_H
+#endif  // PEGASUS_SHARED_APPPROXY_H

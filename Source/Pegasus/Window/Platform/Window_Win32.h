@@ -9,8 +9,8 @@
 //! \date   02 Nov 2013
 //! \brief  Platform-specific window impl, for Windows.
 
-#ifndef PEGASUS_WINDOW_WINDOWWIN32_H
-#define PEGASUS_WINDOW_WINDOWWIN32_H
+#ifndef PEGASUS_WND_WINDOWWIN32_H
+#define PEGASUS_WND_WINDOWWIN32_H
 
 #if PEGASUS_PLATFORM_WINDOWS
 #include "..\Source\Pegasus\Window\IWindowImpl.h"
@@ -19,7 +19,7 @@
 #include <windows.h>
 
 namespace Pegasus {
-namespace Window {
+namespace Wnd {
 
 //! Windows specific implementation for a Winodw
 class WindowImpl_Win32 : public IWindowImpl
@@ -104,8 +104,8 @@ private:
 };
 
 
-}   // namespace Window
+}   // namespace Wnd
 }   // namespace Pegasus
 
 #endif  // PEGASUS_PLATFORM_WINDOWS
-#endif  // PEGASUS_WINDOW_WINDOWWIN32_H
+#endif  // PEGASUS_WND_WINDOWWIN32_H

@@ -10,8 +10,8 @@
 //! \brief  Building block class for a Pegasus application.
 //!         Manages access to the Pegasus runtime.
 
-#ifndef PEGASUS_APPLICATION_H
-#define PEGASUS_APPLICATION_H
+#ifndef PEGASUS_APP_APPLICAITON_H
+#define PEGASUS_APP_APPLICAITON_H
 
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Application/IWindowRegistry.h"
@@ -20,10 +20,10 @@
 
 // Forward declarations
 namespace Pegasus {
-    namespace Application {
+    namespace App {
         class AppWindowManager;
     }
-    namespace Window {
+    namespace Wnd {
         struct WindowConfig;
         class Window;
     }
@@ -32,7 +32,7 @@ namespace Pegasus {
 //----------------------------------------------------------------------------------------
 
 namespace Pegasus {
-namespace Application {
+namespace App {
 
 //! Building block class for a Pegasus application
 //! Override Init, Shutdown, and Render to perform rendering.
@@ -41,7 +41,7 @@ namespace Application {
 //! \note   2. attach a window to it
 //! \note   3. call Run to enter the application loop.
 //! \todo Multi-application support
-class Application : public Window::IWindowContext
+class Application : public Wnd::IWindowContext
 {
 public:
     //! Constructor
@@ -72,11 +72,11 @@ public:
     //! \param appWindowConfig Config structure for the window.
     //! \return The new window.
     //! \note Returns nullptr on failure.
-    Window::Window* AttachWindow(const AppWindowConfig& appWindowConfig);
+    Wnd::Window* AttachWindow(const AppWindowConfig& appWindowConfig);
 
     //! Detaches a window from this app
     //! \param wnd The window to detach.
-    void DetachWindow(Window::Window* wnd);
+    void DetachWindow(Wnd::Window* wnd);
     //! \todo Set update mode
 
     //! Sets the current app time
@@ -108,7 +108,7 @@ private:
     float mAppTime; //!< Current app time
 };
 
-}   // namespace Application
+}   // namespace App
 }   // namespace Pegasus
 
-#endif  // PEGASUS_APPLICATION_H
+#endif  // PEGASUS_APP_APPLICAITON_H

@@ -18,15 +18,15 @@
 
 //! This is a specialized window for the TestApp1 application main window
 //! Place specialized rendering code here.
-class TestApp1Window : public Pegasus::Window::Window
+class TestApp1Window : public Pegasus::Wnd::Window
 {
 public:
     // Ctor / dtor
-    TestApp1Window(const Pegasus::Window::WindowConfig& config);
+    TestApp1Window(const Pegasus::Wnd::WindowConfig& config);
     ~TestApp1Window();
 
     // Factory API
-    static Pegasus::Window::Window* Create(const Pegasus::Window::WindowConfig& config, Pegasus::Memory::IAllocator* alloc);
+    static Pegasus::Wnd::Window* Create(const Pegasus::Wnd::WindowConfig& config, Pegasus::Memory::IAllocator* alloc);
 
     // App-specific API
     virtual void Initialize();

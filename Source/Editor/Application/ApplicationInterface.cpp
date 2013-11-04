@@ -4,10 +4,10 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	ApplicationInterface.cpp
-//! \author	Kevin Boulanger
-//! \date	20th October 2013
-//! \brief	Interface object used to interface with the Pegasus related messages,
+//! \file   ApplicationInterface.cpp
+//! \author Kevin Boulanger
+//! \date   20th October 2013
+//! \brief  Interface object used to interface with the Pegasus related messages,
 //!         created in the application thread
 
 #include "Application/ApplicationInterface.h"
@@ -19,8 +19,8 @@
 #include <QTimer>
 
 
-ApplicationInterface::ApplicationInterface(Pegasus::Application::IApplicationProxy * application,
-                                           Pegasus::Window::IWindowProxy * appWindow,
+ApplicationInterface::ApplicationInterface(Pegasus::App::IApplicationProxy * application,
+                                           Pegasus::Wnd::IWindowProxy * appWindow,
                                            QObject *parent)
 :   QObject(parent),
     mApplication(application),

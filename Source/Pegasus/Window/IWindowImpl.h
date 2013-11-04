@@ -9,14 +9,14 @@
 //! \date   XX month year
 //! \brief  brief
 
-#ifndef PEGASUS_WINDOW_IWINDOWIMPL_H
-#define PEGASUS_WINDOW_IWINDOWIMPL_H
+#ifndef PEGASUS_WND_IWINDOWIMPL_H
+#define PEGASUS_WND_IWINDOWIMPL_H
 
 #include "Pegasus/Window/Shared/WindowConfig.h"
 #include "..\Source\Pegasus\Window\IWindowMessageHandler.h"
 
 namespace Pegasus {
-namespace Window {
+namespace Wnd {
 
 //! Platform-specific interface for a window
 class IWindowImpl
@@ -53,7 +53,7 @@ public:
 };
 
 
-}   // namespace Window
+}   // namespace Wnd
 }   // namespace Pegasus
 
-#endif  // PEGASUS_WINDOW_IWINDOWIMPL_H
+#endif  // PEGASUS_WND_IWINDOWIMPL_H

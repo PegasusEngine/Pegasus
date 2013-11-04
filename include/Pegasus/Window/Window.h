@@ -9,20 +9,20 @@
 //! \date   4th July 2013
 //! \brief  Class for a single window in a Pegasus application.
 
-#ifndef PEGASUS_WINDOW_WINDOW_H
-#define PEGASUS_WINDOW_WINDOW_H
+#ifndef PEGASUS_WND_WINDOW_H
+#define PEGASUS_WND_WINDOW_H
 
 #include "Pegasus/Window/Shared/WindowConfig.h"
 
 // Forward declarations
 namespace Pegasus {
-    namespace Application {
+    namespace App {
         class Application;
     }
     namespace Render {
         class Context;
     }
-    namespace Window {
+    namespace Wnd {
         class IWindowContext;
         class IWindowImpl;
         class WindowMessageHandler;
@@ -32,7 +32,7 @@ namespace Pegasus {
 //----------------------------------------------------------------------------------------
 
 namespace Pegasus {
-namespace Window {
+namespace Wnd {
 
 //! Class that represents an application window
 class Window
@@ -104,7 +104,7 @@ private:
 typedef Window* (*WindowFactoryFunc)(const WindowConfig& config, Memory::IAllocator* alloc);
 
 
-}   // namespace Window
+}   // namespace Wnd
 }   // namespace Pegasus
 
-#endif  // PEGASUS_WINDOW_WINDOW_H
+#endif  // PEGASUS_WND_WINDOW_H

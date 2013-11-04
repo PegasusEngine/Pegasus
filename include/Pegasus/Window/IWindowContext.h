@@ -9,13 +9,13 @@
 //! \date   01st Nov 2013
 //! \brief  Context interface for windows, for access to external parameters
 
-#ifndef PEGASUS_WINDOW_IWINDOWCONTEXT_H
-#define PEGASUS_WINDOW_IWINDOWCONTEXT_H
+#ifndef PEGASUS_WND_IWINDOWCONTEXT_H
+#define PEGASUS_WND_IWINDOWCONTEXT_H
 
 #include "Pegasus/Core/Io.h"
 
 namespace Pegasus {
-namespace Window {
+namespace Wnd {
 
 //! Context interface for windows
 class IWindowContext
@@ -31,7 +31,7 @@ public:
 };
 
 
-}   // namespace Window
+}   // namespace Wnd
 }   // namespace Pegasus
 
-#endif  // PEGASUS_WINDOW_IWINDOWCONTEXT_H
+#endif  // PEGASUS_WND_IWINDOWCONTEXT_H

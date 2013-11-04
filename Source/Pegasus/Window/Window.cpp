@@ -15,7 +15,7 @@
 #include "../Source/Pegasus/Window/IWindowImpl.h"
 
 namespace Pegasus {
-namespace Window {
+namespace Wnd {
 
 //! Message handler object for a Window
 class WindowMessageHandler : public IWindowMessageHandler
@@ -134,5 +134,5 @@ void Window::Resize(unsigned int width, unsigned int height)
 }
 
 
-}   // namespace Window
+}   // namespace Wnd
 }   // namespace Pegasus

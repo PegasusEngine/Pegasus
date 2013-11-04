@@ -18,10 +18,10 @@
 #include "Pegasus/Window/StartupWindow.h"
 
 namespace Pegasus {
-namespace Application {
+namespace App {
 
 // Constants
-const char* STARTUP_WINDOW_TYPE = "INTERNAL__Startup";
+const char* STARTUP_WND_TYPE = "INTERNAL__Startup";
 
 //----------------------------------------------------------------------------------------
 
@@ -50,10 +50,10 @@ Application::Application(const ApplicationConfig& config)
     mWindowManager = PG_NEW(windowAlloc, "AppWindowManager", Pegasus::Memory::PG_MEM_PERM) AppWindowManager(windowManagerConfig);
 
     // Register startup window
-    reg.mTypeTag = Pegasus::Application::WINDOW_TYPE_INVALID;
+    reg.mTypeTag = Pegasus::App::WINDOW_TYPE_INVALID;
     reg.mDescription = "INTERNAL Startup Window";
-    reg.mCreateFunc = Window::StartupWindow::Create;
-    mWindowManager->RegisterWindowClass(STARTUP_WINDOW_TYPE, reg);
+    reg.mCreateFunc = Wnd::StartupWindow::Create;
+    mWindowManager->RegisterWindowClass(STARTUP_WND_TYPE, reg);
 
     // Cache config
     mConfig = config;
@@ -69,7 +69,7 @@ Application::~Application()
     PG_ASSERTSTR(!mInitialized, "Application still initialized in destructor!");
 
     // Free windows
-    mWindowManager->UnregisterWindowClass(STARTUP_WINDOW_TYPE);
+    mWindowManager->UnregisterWindowClass(STARTUP_WND_TYPE);
     PG_DELETE(windowAlloc, mWindowManager);
 
     // Tear down debugging facilities
@@ -89,7 +89,7 @@ void Application::Initialize()
 {
     Memory::IAllocator* coreAlloc = Memory::GetCoreAllocator();
     Io::IOManagerConfig ioManagerConfig;
-    Window::Window* startupWindow = nullptr;
+    Wnd::Window* startupWindow = nullptr;
 
     // Sanity check
     PG_ASSERTSTR(!mInitialized, "Application already initialized!");
@@ -136,12 +136,12 @@ IWindowRegistry* Application::GetWindowRegistry()
 
 //----------------------------------------------------------------------------------------
 
-Window::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig)
+Wnd::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig)
 {
     Memory::IAllocator* renderAlloc = Memory::GetRenderAllocator();
     Memory::IAllocator* windowAlloc = Memory::GetWindowAllocator();
-    Window::Window* newWnd = nullptr;
-    Window::WindowConfig config;
+    Wnd::Window* newWnd = nullptr;
+    Wnd::WindowConfig config;
 
     // Create window
     config.mAllocator = windowAlloc;
@@ -170,7 +170,7 @@ Window::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig
 
 //----------------------------------------------------------------------------------------
 
-void Application::DetachWindow(Window::Window* wnd)
+void Application::DetachWindow(Wnd::Window* wnd)
 {
     mWindowManager->DestroyWindow(wnd);
 
@@ -185,8 +185,8 @@ void Application::StartupAppInternal()
 {
     Memory::IAllocator* renderAlloc = Memory::GetRenderAllocator();
     Memory::IAllocator* windowAlloc = Memory::GetWindowAllocator();
-    Window::Window* newWnd = nullptr;
-    Window::WindowConfig config;
+    Wnd::Window* newWnd = nullptr;
+    Wnd::WindowConfig config;
 
     // Create window and immediately destroy it
     config.mAllocator = windowAlloc;
@@ -198,7 +198,7 @@ void Application::StartupAppInternal()
     config.mHeight = 128;
     config.mCreateVisible = false;
     config.mUseBasicContext = true;
-    newWnd = mWindowManager->CreateWindow(STARTUP_WINDOW_TYPE, config);
+    newWnd = mWindowManager->CreateWindow(STARTUP_WND_TYPE, config);
     PG_ASSERTSTR(newWnd != nullptr, "[FATAL] Failed to create startup window!");
 
     // Init openGL extensions now that we have a context
@@ -268,5 +268,5 @@ void Application::ShutdownAppInternal()
 }
 
 
-}   // namespace Application
+}   // namespace App
 }   // namespace Pegasus

@@ -14,12 +14,12 @@
 
 #include "Pegasus/Pegasus.h"
 
-class TestApp1 : public Pegasus::Application::Application
+class TestApp1 : public Pegasus::App::Application
 {
 public:
     //! Constructor
     //! \param config Config structure for this app.
-    TestApp1(const Pegasus::Application::ApplicationConfig& config);
+    TestApp1(const Pegasus::App::ApplicationConfig& config);
 
     //! Destructor
     virtual ~TestApp1();
@@ -31,7 +31,7 @@ public:
 
 
 //! \todo Make this a macro with only the name of the app class as parameter
-Pegasus::Application::Application * CreateApplication(const Pegasus::Application::ApplicationConfig& config);
-void DestroyApplication(Pegasus::Application::Application* app);
+Pegasus::App::Application * CreateApplication(const Pegasus::App::ApplicationConfig& config);
+void DestroyApplication(Pegasus::App::Application* app);
 
 #endif  // TESTAPP1_H
