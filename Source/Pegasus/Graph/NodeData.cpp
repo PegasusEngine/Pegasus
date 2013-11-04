@@ -15,8 +15,9 @@ namespace Pegasus {
 namespace Graph {
 
 
-NodeData::NodeData()
-:   mRefCount(0),
+NodeData::NodeData(Memory::IAllocator* alloc)
+:   mAllocator(alloc),
+    mRefCount(0),
     mDirty(true)
 {
 }
@@ -36,8 +37,7 @@ void NodeData::Release()
 
     if (mRefCount <= 0)
     {
-        //! \todo Use an allocator
-        delete this;
+        PG_DELETE(mAllocator, this);
     }
 }
 

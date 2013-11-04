@@ -14,7 +14,7 @@
 
 #include "Editor.h"
 
-#include "Pegasus/Core/Log.h"
+#include "Pegasus/Core/Shared/LogChannel.h"
 
 #include <QObject>
 

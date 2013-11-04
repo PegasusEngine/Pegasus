@@ -85,10 +85,13 @@ private:
     PG_DISABLE_COPY(Window);
 
 
+    Memory::IAllocator* mAllocator; //!< Allocator to use when creating this window
+    Memory::IAllocator* mRenderAllocator; //!< Allocator to use when creating this window's render resources
     IWindowImpl* mPrivateImpl; //!< Private implementation, platform-specific
     WindowMessageHandler* mMessageHandler; //!< Message handler object
     IWindowContext* mWindowContext; //!< Context for this window to operate in
     Render::Context* mRenderContext; //!< Rendering context
+    bool mContextCreated; //!< Window created flag
     unsigned int mWidth; //!< Current width
     unsigned int mHeight; //!< Current height
 
@@ -98,7 +101,7 @@ private:
 //----------------------------------------------------------------------------------------
 
 //! Factory method for windows
-typedef Window* (*WindowFactoryFunc)(const WindowConfig& config);
+typedef Window* (*WindowFactoryFunc)(const WindowConfig& config, Memory::IAllocator* alloc);
 
 
 }   // namespace Window

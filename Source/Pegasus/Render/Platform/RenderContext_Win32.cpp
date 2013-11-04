@@ -38,16 +38,16 @@ static PIXELFORMATDESCRIPTOR sPixelFormat = {
 
 //----------------------------------------------------------------------------------------
 
-IRenderContextImpl* IRenderContextImpl::CreateImpl(const ContextConfig& config)
+IRenderContextImpl* IRenderContextImpl::CreateImpl(const ContextConfig& config, Memory::IAllocator* alloc)
 {
-    return PG_NEW("RenderContext platform impl", Pegasus::Memory::PG_MEM_PERM) RenderContextImpl_Win32(config);
+    return PG_NEW(alloc, "RenderContext platform impl", Pegasus::Memory::PG_MEM_PERM) RenderContextImpl_Win32(config);
 }
 
 //----------------------------------------------------------------------------------------
 
-void IRenderContextImpl::DestroyImpl(IRenderContextImpl* impl)
+void IRenderContextImpl::DestroyImpl(IRenderContextImpl* impl, Memory::IAllocator* alloc)
 {
-    PG_DELETE impl;
+    PG_DELETE(alloc, impl);
 }
 
 //----------------------------------------------------------------------------------------
@@ -77,7 +77,6 @@ RenderContextImpl_Win32::RenderContextImpl_Win32(const ContextConfig& config)
                                 WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
                                 0, 0};
 
-        //! \todo Assert on startup context created
         // Full context
         int nPixelFormat = ChoosePixelFormat(mDeviceContextHandle, &sPixelFormat);
 

@@ -30,7 +30,7 @@ extern void DestroyApplication(Pegasus::Application::Application* app);
 #include <ctime>
 
 #if PEGASUS_ENABLE_ASSERT
-Pegasus::Core::AssertionManager::ReturnCode AssertionHandler(const char * testStr, const char * fileStr, int line, const char * msgStr);
+Pegasus::Core::AssertReturnCode AssertionHandler(const char * testStr, const char * fileStr, int line, const char * msgStr);
 #endif
 
 //! Maximum size of the buffer containing one log message
@@ -90,10 +90,10 @@ static const size_t ASSERTIONERROR_BUFFER_SIZE = 2048;
 //!               nullptr if no message is defined.
 //! \return Pegasus::Core::AssertionManager::ASSERTION_xxx constant,
 //!         chosen from the button the user clicked on
-Pegasus::Core::AssertionManager::ReturnCode AssertionHandler(const char * testStr,
-                                                             const char * fileStr,
-                                                             int line,
-                                                             const char * msgStr)
+Pegasus::Core::AssertReturnCode AssertionHandler(const char * testStr,
+                                                 const char * fileStr,
+                                                 int line,
+                                                 const char * msgStr)
 {
     if (testStr == nullptr)
     {
@@ -114,7 +114,7 @@ Pegasus::Core::AssertionManager::ReturnCode AssertionHandler(const char * testSt
     static bool sIgnoreAll = false;
     if (sIgnoreAll)
     {
-        return Pegasus::Core::AssertionManager::ASSERTION_IGNOREALL;
+        return Pegasus::Core::ASSERTION_IGNOREALL;
     }
 
     // Prepare the content of the dialog box
@@ -168,11 +168,11 @@ Pegasus::Core::AssertionManager::ReturnCode AssertionHandler(const char * testSt
         if (returnButtonIgnore == IDYES)
         {
             sIgnoreAll = true;
-            return Pegasus::Core::AssertionManager::ASSERTION_IGNOREALL;
+            return Pegasus::Core::ASSERTION_IGNOREALL;
         }
         else
         {
-            return Pegasus::Core::AssertionManager::ASSERTION_IGNORE;
+            return Pegasus::Core::ASSERTION_IGNORE;
         }
     }
     else if (returnButton == IDABORT)
@@ -184,10 +184,10 @@ Pegasus::Core::AssertionManager::ReturnCode AssertionHandler(const char * testSt
 #error "Debug break is not implemented on this platform"
 #endif
 
-        return Pegasus::Core::AssertionManager::ASSERTION_BREAK;
+        return Pegasus::Core::ASSERTION_BREAK;
     }
 
-    return Pegasus::Core::AssertionManager::ASSERTION_CONTINUE;
+    return Pegasus::Core::ASSERTION_CONTINUE;
 }
 
 #endif  // PEGASUS_ENABLE_ASSERT

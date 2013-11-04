@@ -12,6 +12,8 @@
 #ifndef PEGASUS_SHARED_APPLICATIONCONFIG_H
 #define PEGASUS_SHARED_APPLICATIONCONFIG_H
 
+#include "Pegasus/Core/Shared/LogChannel.h"
+#include "Pegasus/Core/Shared/AssertReturnCode.h"
 #include "Pegasus/Window/WindowDefs.h"
 
 namespace Pegasus {
@@ -28,10 +30,10 @@ public:
 
     // Debug API
 #if PEGASUS_ENABLE_LOG
-    Core::LogManager::Handler mLoghandler; //!< Log handler for this application
+    Core::LogHandlerFunc mLoghandler; //!< Log handler for this application
 #endif
 #if PEGASUS_ENABLE_ASSERT
-    Core::AssertionManager::Handler mAssertHandler; //!< Assert handler for this application
+    Core::AssertionHandlerFunc mAssertHandler; //!< Assert handler for this application
 #endif
 
     //! Default constructor

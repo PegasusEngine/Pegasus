@@ -12,7 +12,7 @@
 #include "Console/ConsoleChannelColorTable/ConsoleChannelColorTableModel.h"
 #include "Settings/Settings.h"
 
-#include "Pegasus/Core/Log.h"
+#include "Pegasus/Core/Shared/LogChannel.h"
 
 
 static const int CHANNELNAME_COLUMN_INDEX = 0;

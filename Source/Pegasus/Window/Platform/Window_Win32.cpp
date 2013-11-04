@@ -23,16 +23,16 @@ static const char* PEGASUS_WND_WNDNAME = "PegasusEngine";
 
 //----------------------------------------------------------------------------------------
 
-IWindowImpl* IWindowImpl::CreateImpl(const WindowConfig& config, IWindowMessageHandler* messageHandler)
+IWindowImpl* IWindowImpl::CreateImpl(const WindowConfig& config, Memory::IAllocator* alloc, IWindowMessageHandler* messageHandler)
 {
-    return PG_NEW("Window platform impl", Pegasus::Memory::PG_MEM_PERM) WindowImpl_Win32(config, messageHandler);
+    return PG_NEW(alloc, "Window platform impl", Pegasus::Memory::PG_MEM_PERM) WindowImpl_Win32(config, messageHandler);
 }
 
 //----------------------------------------------------------------------------------------
 
-void IWindowImpl::DestroyImpl(IWindowImpl* impl)
+void IWindowImpl::DestroyImpl(IWindowImpl* impl, Memory::IAllocator* alloc)
 {
-    PG_DELETE impl;
+    PG_DELETE(alloc, impl);
 }
 
 //----------------------------------------------------------------------------------------
@@ -280,7 +280,7 @@ WindowImpl_Win32::HandleMessageReturn WindowImpl_Win32::HandleMessage(unsigned i
         break;
     case WM_PAINT: // Someone requested a redraw of the window
 #if PEGASUS_ENABLE_ASSERT
-        if (!Core::AssertionManager::GetInstance().IsAssertionBeingHandled())
+        if (!Core::AssertionManager::GetInstance()->IsAssertionBeingHandled())
 #endif
         {
             PAINTSTRUCT paint;

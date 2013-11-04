@@ -16,20 +16,20 @@ namespace Texture {
 
 
 TextureData::TextureData(const TextureConfiguration & configuration)
-:   Graph::NodeData(),
+:   Graph::NodeData(configuration.GetAllocator()),
     mConfiguration(configuration)
 {
     // Allocate the image data
     //! \todo Use an allocator
     const unsigned int imageSize = configuration.GetNumBytes();
-    mImageData = PG_NEW_ARRAY("TextureData::mImageData", Memory::PG_MEM_PERM, unsigned char, imageSize);
+    mImageData = PG_NEW_ARRAY(GetAllocator(), "TextureData::mImageData", Memory::PG_MEM_PERM, unsigned char, imageSize);
 }
 
 //----------------------------------------------------------------------------------------
 
 TextureData::~TextureData()
 {
-    PG_DELETE_ARRAY mImageData;
+    PG_DELETE_ARRAY(GetAllocator(), mImageData);
 }
 
 

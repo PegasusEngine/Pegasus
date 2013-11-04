@@ -13,11 +13,6 @@
 #define PEGASUS_SHARED_IAPPLICATIONPROXY_H
 
 #if PEGASUS_ENABLE_PROXIES
-// Those includes are not required to compile Pegasus, but they become important
-// when compiling an external application using the proxy, such as the editor
-#include "Pegasus/Core/Log.h"
-#include "Pegasus/Core/Assertion.h"
-
 // Forward declarations
 namespace Pegasus {
     namespace Application {
@@ -55,7 +50,7 @@ public:
 
     //! Destroys a window attached to this application instance
     //! \param wnd Window to destroy.
-    virtual void DetachWindow(const Window::IWindowProxy* wnd) = 0;
+    virtual void DetachWindow(Window::IWindowProxy* wnd) = 0;
 
 
     //! Inits this application

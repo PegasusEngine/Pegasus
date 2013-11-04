@@ -16,9 +16,10 @@ namespace Pegasus {
 namespace Render {
 
 Context::Context(const ContextConfig& config)
+    : mAllocator(config.mAllocator)
 {
     // Make the impl
-    mPrivateImpl = IRenderContextImpl::CreateImpl(config);
+    mPrivateImpl = IRenderContextImpl::CreateImpl(config, mAllocator);
 }
 
 //----------------------------------------------------------------------------------------
@@ -26,7 +27,7 @@ Context::Context(const ContextConfig& config)
 Context::~Context()
 {
     // Unbind and destroy the context
-    IRenderContextImpl::DestroyImpl(mPrivateImpl);
+    IRenderContextImpl::DestroyImpl(mPrivateImpl, mAllocator);
 }
 
 //----------------------------------------------------------------------------------------

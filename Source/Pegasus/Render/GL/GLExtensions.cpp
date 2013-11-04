@@ -16,37 +16,10 @@
 namespace Pegasus {
 namespace Render {
 
-// Static instance of this object
-GLExtensions* GLExtensions::sInstance = nullptr;
-
-//----------------------------------------------------------------------------------------
-
-void GLExtensions::CreateInstance()
-{
-    PG_ASSERTSTR(sInstance == nullptr, "CreateInstance being called twice!");
-
-    if (sInstance == nullptr)
-    {
-        sInstance = PG_NEW("GLExtensions", Pegasus::Memory::PG_MEM_PERM) GLExtensions;
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
-void GLExtensions::DestroyInstance()
-{
-    PG_ASSERTSTR(sInstance != nullptr, "Destroy instance being called before CreateInstance!");
-
-    if (sInstance != nullptr)
-    {
-        PG_DELETE sInstance;
-        sInstance = nullptr;
-    }
-}
-
 //----------------------------------------------------------------------------------------
 
 GLExtensions::GLExtensions()
+    : Core::Singleton<GLExtensions>()
 {
     mGLEWInitialized = false;
 

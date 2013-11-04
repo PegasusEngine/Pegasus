@@ -37,7 +37,7 @@ LogManager::~LogManager()
 
 //----------------------------------------------------------------------------------------
 
-void LogManager::RegisterHandler(Handler handler)
+void LogManager::RegisterHandler(LogHandlerFunc handler)
 {
     mHandler = handler;
 }

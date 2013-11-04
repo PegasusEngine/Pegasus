@@ -12,25 +12,15 @@
 #ifndef PEGASUS_NEWDELETE_H
 #define PEGASUS_NEWDELETE_H
 
-namespace Pegasus {
-namespace Memory {
-
-//! Memory allocation flags
-enum Flags
-{
-    PG_MEM_TEMP, //!< Temporal memory
-    PG_MEM_PERM  //!< Permanent memory
-};
-
-} // namespace Memory
-} // namespace Pegasus
-
-//----------------------------------------------------------------------------------------
-// These can't be in a namespace
+#include "Pegasus/Memory/IAllocator.h"
 
 //! Naked new operator
 //! \param Size in bytes to alloc
-void * operator new (size_t size);
+void* operator new(size_t size);
+
+//! Naked new operator
+//! \param Size in bytes to alloc
+void* operator new[](size_t size);
 
 //! Pegasus new operator
 //! \param size Size in bytes to alloc
@@ -39,7 +29,7 @@ void * operator new (size_t size);
 //! \param debugText Name for this allocation, doesn't exist in REL mode
 //! \param file File this allocation was made in, __FILE__
 //! \param line Line # this allocation was made on, __LINE__
-void * operator new(size_t size, void * allocator, Pegasus::Memory::Flags flags, const char * debugText, const char * file, int line);
+void* operator new(size_t size, Pegasus::Memory::IAllocator* allocator, Pegasus::Memory::Flags flags, const char * debugText, const char * file, int line);
 
 //! Pegasus array new operator
 //! \param size Size in bytes to alloc
@@ -48,18 +38,14 @@ void * operator new(size_t size, void * allocator, Pegasus::Memory::Flags flags,
 //! \param debugText Name for this allocation, doesn't exist in REL mode
 //! \param file File this allocation was made in, __FILE__
 //! \param line Line # this allocation was made on, __LINE__
-void * operator new[] (size_t size, void * allocator, Pegasus::Memory::Flags flags, const char * debugText, const char * file, int line);
+void* operator new[] (size_t size, Pegasus::Memory::IAllocator* allocator, Pegasus::Memory::Flags flags, const char * debugText, const char * file, int line);
 
 //! Pegasus delete operator
-//! \param pointer Address of memory to delere
-//! \param file File this deletion was made in, __FILE__
-//! \param line Line # this deletion was made on, __LINE__
-void operator delete(void* pointer, const char * file, int line);
+//! \param pointer Address of memory to delete
+void operator delete(void* pointer);
 
 //! Pegasus array delete operator
-//! \param pointer Address of memory to delere
-//! \param file File this deletion was made in, __FILE__
-//! \param line Line # this deletion was made on, __LINE__
-void operator delete[](void* pointer, const char * file, int line);
+//! \param pointer Address of memory to delete
+void operator delete[](void* pointer);
 
 #endif

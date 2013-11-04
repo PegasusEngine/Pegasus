@@ -32,6 +32,12 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Ref.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Shared\LogChannel.h">
+      <Filter>Include\Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Shared\AssertReturnCode.h">
+      <Filter>Include\Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Assertion.cpp">

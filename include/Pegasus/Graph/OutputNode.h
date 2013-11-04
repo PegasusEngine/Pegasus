@@ -27,7 +27,8 @@ class OutputNode : public Node
 public:
 
     //! Default constructor
-    OutputNode();
+    //! \param alloc Allocator to use when creating this node.
+    OutputNode(Memory::IAllocator* alloc);
 
     //! Append a node to the list of input nodes
     //! \param inputNode Node to add to the list of input nodes (equivalent to NodeIn)

@@ -4,55 +4,49 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   StartupWindow.cpp
+//! \file   memory.cpp
 //! \author David Worsham
-//! \date   20th October 2013
-//! \brief  Specialized window for the internal startup window.
+//! \date   02 Nov 2013
+//! \brief  Memory framework
 
-#include "Pegasus/Window/StartupWindow.h"
-#include "Pegasus/Render/RenderContext.h"
+#include "Pegasus/Memory/Memory.h"
+#include "Pegasus/Memory/mallocfreeallocator.h"
 
 namespace Pegasus {
-namespace Window {
+namespace Memory {
 
-StartupWindow::StartupWindow(const Pegasus::Window::WindowConfig& config)
-    : Pegasus::Window::Window(config)
+// Global allocator
+//! \todo Real allocator / heap management...
+static MallocFreeAllocator sGlobalAllocator;
+
+//----------------------------------------------------------------------------------------
+
+IAllocator* GetGlobalAllocator()
 {
+    return &sGlobalAllocator;
 }
 
 //----------------------------------------------------------------------------------------
 
-StartupWindow::~StartupWindow()
+IAllocator* GetCoreAllocator()
 {
+    return &sGlobalAllocator;
 }
 
 //----------------------------------------------------------------------------------------
 
-Pegasus::Window::Window* StartupWindow::Create(const Pegasus::Window::WindowConfig& config, Memory::IAllocator* alloc)
+IAllocator* GetRenderAllocator()
 {
-    return PG_NEW(alloc, "StartupWindow", Pegasus::Memory::PG_MEM_PERM) StartupWindow(config);
+    return &sGlobalAllocator;
 }
 
 //----------------------------------------------------------------------------------------
 
-void StartupWindow::Initialize()
+IAllocator* GetWindowAllocator()
 {
-}
-
-//----------------------------------------------------------------------------------------
-
-void StartupWindow::Shutdown()
-{
-}
-
-//----------------------------------------------------------------------------------------
-
-void StartupWindow::Refresh()
-{
-    // Flip the GPU
-    GetRenderContext()->Swap();
+    return &sGlobalAllocator;
 }
 
 
-} // end namespace Window
-} // end namesapce Pegasus
+}   // namespace SubProjectNamespace
+}   // namespace Pegasus

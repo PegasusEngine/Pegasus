@@ -21,7 +21,7 @@
 //! \param str String of the message to log, with the same formatting syntax as printf()
 //! \warning The number of parameters following str must match the list of formatting
 //!          strings inside msgStr.
-#define PG_LOG(channel, str, ...)   { Pegasus::Core::LogManager::GetInstance().Log(channel, str, __VA_ARGS__); }
+#define PG_LOG(channel, str, ...)   { Pegasus::Core::LogManager::GetInstance()->Log(channel, str, __VA_ARGS__); }
 #else
 #define PG_LOG(channel, str, ...)
 #endif  // PEGASUS_ENABLE_LOG
@@ -29,44 +29,15 @@
 //----------------------------------------------------------------------------------------
 
 #if PEGASUS_ENABLE_LOG
+#include "Pegasus/Core/Shared/LogChannel.h"
 #include "Pegasus/Core/Singleton.h"
 
 namespace Pegasus {
 namespace Core {
 
-//! Type definition of a log channel.
-//! A channel name is represented with 4 uppercase letter inside single quotes, such as 'WARN'.
-//! Use underscores to replace spaces when the name is less than 4 letters long.
-typedef unsigned long LogChannel;
-
-//! Set of predefined log channels that can be used throughout the engine
-static const LogChannel sLogChannels[] = {
-    'CRIT',     // Critical errors, typically resulting in a crash or instability
-    'ERR_',     // Error that can be recovered
-    'WARN',     // Warnings
-    'ASRT',     // Assertions
-
-    'EDIT',     // Editor
-    'TEMP',     // Temporary channel for debugging, only for the SB branch
-    
-    'APPL',     // Application global information
-    'WNDW',     // Window management
-    'OGL_',     // OpenGL specific
-    'FILE',     // File management
-    'ASST',     // Asset management
-    'TMLN',     // Timeline info
-    'MUSC',     // Music info
-    'SHDR',     // Shader (compilation, info, error)
-};
-
-//! Number of defined channels
-static const unsigned int NUM_LOG_CHANNELS = sizeof(sLogChannels) / sizeof(LogChannel);
-
-//----------------------------------------------------------------------------------------
-
 //! Log manager (singleton) that redirects the macros to the log handler,
 //! for debug messages
-class LogManager : public AutoSingleton<LogManager>
+class LogManager : public Singleton<LogManager>
 {
 public:
     //! Constructor
@@ -75,18 +46,12 @@ public:
     //! Destructor
     virtual ~LogManager();
 
-    //! Callback function declaration.
-    //! One function with this type needs to be declared in the user application
-    //! to handle log messages.
-    //! \param logChannel Log channel that receives the message
-    //! \param msgStr String of the message to log
-    typedef void (* Handler)(LogChannel logChannel, const char * msgStr);
 
     //! Register the log message handler
     //! \warning To be called at least once by the user application. Otherwise,
     //!          an assertion error will happen when trying to send a log message
     //! \param handler Function pointer of the log message handler (!= nullptr)
-    void RegisterHandler(Handler handler);
+    void RegisterHandler(LogHandlerFunc handler);
 
     //! Unregister the log message handler if defined
     void UnregisterHandler();
@@ -103,7 +68,7 @@ public:
 private:
 
     //! Function pointer of the log message handler, nullptr by default
-    Handler mHandler;
+    LogHandlerFunc mHandler;
 };
 
 

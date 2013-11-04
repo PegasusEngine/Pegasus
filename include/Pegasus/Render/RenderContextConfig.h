@@ -22,12 +22,13 @@ struct ContextConfig
 {
 public:
     //! Constructor
-    ContextConfig() : mDeviceContextHandle(0), mStartupContext(false) {};
+    ContextConfig() : mAllocator(nullptr), mDeviceContextHandle(0), mStartupContext(false) {};
 
     //! Destructor
     ~ContextConfig() {};
 
 
+    Memory::IAllocator* mAllocator; //!< Allocator to use when creating this object
     DeviceContextHandle mDeviceContextHandle; //!< Opaque context handle
     bool mStartupContext; //!< Startup context flag, indicating how the context should be created
 };

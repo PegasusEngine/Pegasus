@@ -27,8 +27,9 @@ class NodeData
 public:
 
     //! Default constructor
+    //! \param alloc Allocator to use to alloc this object's data.
     //! \note Sets the dirty flag
-    NodeData();
+    NodeData(Memory::IAllocator* alloc);
 
 
     //! Set the data as dirty, meaning they will need to be recomputed to be valid
@@ -49,6 +50,11 @@ protected:
     //! Destructor
     virtual ~NodeData();
 
+
+    //! Gets the allocator for this node data
+    //! \return Node allocator.
+    Memory::IAllocator* GetAllocator() const { return mAllocator; }
+
     //------------------------------------------------------------------------------------
     
 private:
@@ -68,6 +74,9 @@ private:
     //! if the counter reaches 0
     void Release();
 
+
+    //! Allocator for this object
+    Memory::IAllocator* mAllocator;
 
     //! Reference counter
     //! \todo Use atomic integer

@@ -58,9 +58,11 @@ void WindowMessageHandler::OnCreate(Render::DeviceContextHandle handle)
     Render::ContextConfig contextConfig;
 
     // Create context
+    contextConfig.mAllocator = mParent->mRenderAllocator;
     contextConfig.mDeviceContextHandle = handle;
     contextConfig.mStartupContext = mUseBasicContext;
-    mParent->mRenderContext = PG_NEW("Render::Context", Pegasus::Memory::PG_MEM_PERM) Render::Context(contextConfig);
+    mParent->mRenderContext = PG_NEW(mParent->mRenderAllocator, "Render::Context", Pegasus::Memory::PG_MEM_PERM) Render::Context(contextConfig);
+    mParent->mContextCreated = true;
 }
 
 //----------------------------------------------------------------------------------------
@@ -68,14 +70,18 @@ void WindowMessageHandler::OnCreate(Render::DeviceContextHandle handle)
 void WindowMessageHandler::OnDestroy()
 {
      // Destroy context
-    PG_DELETE mParent->mRenderContext;
+    PG_DELETE(mParent->mRenderAllocator, mParent->mRenderContext);
+    mParent->mContextCreated = false;
 }
 
 //----------------------------------------------------------------------------------------
 
 void WindowMessageHandler::OnRepaint()
 {
-    mParent->Refresh();
+    if (mParent->mContextCreated)
+    {
+        mParent->Refresh();
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -89,14 +95,17 @@ void WindowMessageHandler::OnResize(unsigned int width, unsigned int height)
 //----------------------------------------------------------------------------------------
 
 Window::Window(const WindowConfig& config)
-:   mWindowContext(config.mWindowContext),
+:   mAllocator(config.mAllocator),
+    mRenderAllocator(config.mRenderAllocator),
+    mWindowContext(config.mWindowContext),
     mRenderContext(nullptr),
+    mContextCreated(false),
     mWidth(config.mWidth),
     mHeight(config.mHeight)
 {
     // Create platform stuff
-    mMessageHandler = PG_NEW("Window message handler", Pegasus::Memory::PG_MEM_PERM) WindowMessageHandler(config.mUseBasicContext, this);
-    mPrivateImpl = IWindowImpl::CreateImpl(config, mMessageHandler);
+    mMessageHandler = PG_NEW(mAllocator, "Window message handler", Pegasus::Memory::PG_MEM_PERM) WindowMessageHandler(config.mUseBasicContext, this);
+    mPrivateImpl = IWindowImpl::CreateImpl(config, mAllocator, mMessageHandler);
 }
 
 //----------------------------------------------------------------------------------------
@@ -104,8 +113,8 @@ Window::Window(const WindowConfig& config)
 Window::~Window()
 {
     // Destroy platform stuff
-    IWindowImpl::DestroyImpl(mPrivateImpl);
-    PG_DELETE mMessageHandler;
+    IWindowImpl::DestroyImpl(mPrivateImpl, mAllocator);
+    PG_DELETE(mAllocator, mMessageHandler);
 }
 
 //----------------------------------------------------------------------------------------

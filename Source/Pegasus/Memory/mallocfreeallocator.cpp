@@ -4,55 +4,61 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   StartupWindow.cpp
+//! \file   mallocfreeallocator.cpp
 //! \author David Worsham
-//! \date   20th October 2013
-//! \brief  Specialized window for the internal startup window.
+//! \date   02 Nov 2013
+//! \brief  Basic allocator using stdC malloc and free from the system heap.
 
-#include "Pegasus/Window/StartupWindow.h"
-#include "Pegasus/Render/RenderContext.h"
+#include "Pegasus/Memory/mallocfreeallocator.h"
+#include "Pegasus/Memory/Newdelete.h"
 
 namespace Pegasus {
-namespace Window {
+namespace Memory {
 
-StartupWindow::StartupWindow(const Pegasus::Window::WindowConfig& config)
-    : Pegasus::Window::Window(config)
+MallocFreeAllocator::MallocFreeAllocator()
 {
 }
 
 //----------------------------------------------------------------------------------------
 
-StartupWindow::~StartupWindow()
+MallocFreeAllocator::~MallocFreeAllocator()
 {
 }
 
 //----------------------------------------------------------------------------------------
 
-Pegasus::Window::Window* StartupWindow::Create(const Pegasus::Window::WindowConfig& config, Memory::IAllocator* alloc)
+void* MallocFreeAllocator::Alloc(size_t size, Flags flags, const char* debugText, const char* file, unsigned int line) const
 {
-    return PG_NEW(alloc, "StartupWindow", Pegasus::Memory::PG_MEM_PERM) StartupWindow(config);
+    return malloc(size);
 }
 
 //----------------------------------------------------------------------------------------
 
-void StartupWindow::Initialize()
+void* MallocFreeAllocator::AllocArray(size_t size, Flags flags, const char* debugText, const char* file, unsigned int line) const
 {
+    return malloc(size);
 }
 
 //----------------------------------------------------------------------------------------
 
-void StartupWindow::Shutdown()
+void MallocFreeAllocator::Delete(void* ptr, const char* file, unsigned int line) const
 {
+    if (ptr != nullptr)
+    {
+        free(ptr);
+    }
 }
 
 //----------------------------------------------------------------------------------------
 
-void StartupWindow::Refresh()
+void MallocFreeAllocator::DeleteArray(void* ptr, const char* file, unsigned int line) const
 {
-    // Flip the GPU
-    GetRenderContext()->Swap();
+    if (ptr != nullptr)
+    {
+        free(nullptr);
+    }
 }
 
 
-} // end namespace Window
-} // end namesapce Pegasus
+}   // namespace Memory
+}   // namespace Pegasus

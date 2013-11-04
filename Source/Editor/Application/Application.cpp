@@ -227,10 +227,10 @@ void Application::EmitLogFromApplication(Pegasus::Core::LogChannel logChannel, c
 
 //----------------------------------------------------------------------------------------
 
-Pegasus::Core::AssertionManager::ReturnCode Application::EmitAssertionFromApplication(const QString & testStr,
-                                                                                      const QString & fileStr,
-                                                                                      int line,
-                                                                                      const QString & msgStr)
+Pegasus::Core::AssertReturnCode Application::EmitAssertionFromApplication(const QString & testStr,
+                                                                          const QString & fileStr,
+                                                                          int line,
+                                                                          const QString & msgStr)
 {
     if (mApplicationInterface != nullptr)
     {
@@ -255,14 +255,14 @@ Pegasus::Core::AssertionManager::ReturnCode Application::EmitAssertionFromApplic
     }
     delete eventLoop;
 
-    Pegasus::Core::AssertionManager::ReturnCode returnCode = Pegasus::Core::AssertionManager::ASSERTION_CONTINUE;
+    Pegasus::Core::AssertReturnCode returnCode = Pegasus::Core::ASSERTION_CONTINUE;
     if (mAssertionReturnCode == AssertionManager::ASSERTION_IGNORE)
     {
-        returnCode = Pegasus::Core::AssertionManager::ASSERTION_IGNORE;
+        returnCode = Pegasus::Core::ASSERTION_IGNORE;
     }
     else if (mAssertionReturnCode == AssertionManager::ASSERTION_IGNOREALL)
     {
-        returnCode = Pegasus::Core::AssertionManager::ASSERTION_IGNOREALL;
+        returnCode = Pegasus::Core::ASSERTION_IGNOREALL;
     }
     else if (mAssertionReturnCode == AssertionManager::ASSERTION_BREAK)
     {
@@ -274,7 +274,7 @@ Pegasus::Core::AssertionManager::ReturnCode Application::EmitAssertionFromApplic
 #error "Debug break is not implemented on this platform"
 #endif
 
-        returnCode = Pegasus::Core::AssertionManager::ASSERTION_BREAK;
+        returnCode = Pegasus::Core::ASSERTION_BREAK;
     }
 
     // Reset the return code until the next assertion error   
@@ -339,10 +339,10 @@ void Application::LogHandler(Pegasus::Core::LogChannel logChannel, const char * 
 
 //----------------------------------------------------------------------------------------
 
-Pegasus::Core::AssertionManager::ReturnCode Application::AssertionHandler(const char * testStr,
-                                                                          const char * fileStr,
-                                                                          int line,
-                                                                          const char * msgStr)
+Pegasus::Core::AssertReturnCode Application::AssertionHandler(const char * testStr,
+                                                              const char * fileStr,
+                                                              int line,
+                                                              const char * msgStr)
 {
     // Static assertion handler, so it cannot emit any signal.
     // We have to call a member function, running in the application thread
@@ -355,6 +355,6 @@ Pegasus::Core::AssertionManager::ReturnCode Application::AssertionHandler(const 
     else
     {
         ED_FAILSTR("Trying to send an assertion error from the current application, which is undefined.");
-        return Pegasus::Core::AssertionManager::ASSERTION_BREAK;
+        return Pegasus::Core::ASSERTION_BREAK;
     }
 }

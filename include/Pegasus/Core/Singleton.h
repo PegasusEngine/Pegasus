@@ -17,17 +17,19 @@
 namespace Pegasus {
 namespace Core {
 
-//! Singleton with manual creation/destruction.
+//! Singleton template
 //! Base class for an object that has to exist only once in the application.
 //! Creation and destruction have to be handled manually.
 //! \warning \a GetInstance() can return nullptr, so be careful when using the instance pointer
 template <class C>
-class ManualSingleton
+class Singleton
 {
 public:
     //! Create the unique instance of the class
+    //! \param alloc Allocator used to create the instance.
+    //! \return Pointer to the unique instance of the class.
     //! \warning Cannot be called twice without a call to \a DestroyInstance() first
-    static void CreateInstance();
+    static C* CreateInstance(Memory::IAllocator* alloc);
 
     //! Destroy the unique instance of the class
     //! \warning \a CreateInstace() must be called at least once before this function
@@ -40,113 +42,61 @@ public:
 
 protected:
     //! Constructor, protected to allow only the derived class' constructor to call it
-    ManualSingleton() { };
+    Singleton() { };
 
     //! Destructor, protected to allow only the derived class' destructor to call it
-    virtual ~ManualSingleton() { };
+    virtual ~Singleton() { };
 
 private:
     // Singletons cannot be copied
-    PG_DISABLE_COPY(ManualSingleton)
+    PG_DISABLE_COPY(Singleton)
 
-    //! Unique instance of the class, nullptr by default
-    static C* sInstance;
-};
-
-//----------------------------------------------------------------------------------------
-
-//! Singleton with automatic creation.
-//! Base class for an object that has to exist for the entire life of the application.
-//! The singleton is created when calling \a GetInstance() for the first time.
-//! \warning \a GetInstance() is not thread-safe
-//! \todo Create a thread-safe version of this class
-template <class C>
-class AutoSingleton
-{
-public:
-    //! Get the unique instance of the class
-    //! \return Reference to the unique instance of the class, always valid
-    static C & GetInstance();
-
-protected:
-    //! Constructor, protected to allow only the derived class' constructor to call it
-    AutoSingleton() { };
-
-    //! Destructor, protected to allow only the derived class' destructor to call it
-    virtual ~AutoSingleton() { };
-
-private:
-    // Singletons cannot be copied
-    PG_DISABLE_COPY(AutoSingleton)
-
-    //! Unique instance of the class, nullptr only before the first call to \a GetInstance()
-    static C* sInstance;
+    static C* sInstance; //!< Unique instance of the class, nullptr by default
+    static Memory::IAllocator* sAllocator; //!< Allocator used to create the instance
 };
 
 
 //----------------------------------------------------------------------------------------
-// Implementation
 
-
-template <class C>
-C * ManualSingleton<C>::sInstance = nullptr;
-
-template <class C>
-C * AutoSingleton<C>::sInstance = nullptr;
+template<typename C>
+C* Singleton<C>::sInstance = nullptr;
+template<typename C>
+Memory::IAllocator* Singleton<C>::sAllocator = nullptr;
 
 //----------------------------------------------------------------------------------------
 
 template <class C>
-void ManualSingleton<C>::CreateInstance()
+C* Singleton<C>::CreateInstance(Memory::IAllocator* alloc)
 {
-    if (sInstance == nullptr)
-    {
-        //! \todo Provide an allocator
-        sInstance = PG_NEW(_STRINGIFY_SINGLETON_CLASS(C),Pegasus::Memory::PG_MEM_PERM) C();
-    }
-    else
-    {
-        //! \todo Handle error or assertion
-    }
-}
+    // Sanity check
+    PG_ASSERTSTR(sInstance == nullptr, "CreateInstance called without DestroyInstance!");
 
-//----------------------------------------------------------------------------------------
+    sInstance = PG_NEW(alloc, _STRINGIFY_SINGLETON_CLASS(C),Pegasus::Memory::PG_MEM_PERM) C();
+    sAllocator = alloc;
 
-template <class C>
-void ManualSingleton<C>::DestroyInstance()
-{
-    if (sInstance != nullptr)
-    {
-        //! \todo Provide an allocator
-        PG_DELETE sInstance;
-        sInstance = nullptr;
-    }
-    else
-    {
-        //! \todo Handle error or assertion
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
-template <class C>
-C * ManualSingleton<C>::GetInstance()
-{
     return sInstance;
 }
 
 //----------------------------------------------------------------------------------------
 
 template <class C>
-C & AutoSingleton<C>::GetInstance()
+void Singleton<C>::DestroyInstance()
 {
-    if (sInstance == nullptr)
-    {
-        //! \todo Provide an allocator?
-        sInstance = PG_NEW(_STRINGIFY_SINGLETON_CLASS(C),Pegasus::Memory::PG_MEM_PERM) C();
-    }
+    // Sanity check
+    PG_ASSERTSTR(sInstance != nullptr, "DestroyInstance called without CreateInstance called multiple times!");
 
-    return *sInstance;
+    // Delete it
+    PG_DELETE(sAllocator, sInstance);
+    sAllocator = nullptr;
+    sInstance = nullptr;
+}
+
+//----------------------------------------------------------------------------------------
+
+template <class C>
+C* Singleton<C>::GetInstance()
+{
+    return sInstance;
 }
 
 

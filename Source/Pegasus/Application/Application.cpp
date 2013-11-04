@@ -28,21 +28,26 @@ const char* STARTUP_WINDOW_TYPE = "INTERNAL__Startup";
 Application::Application(const ApplicationConfig& config)
     : mInitialized(false), mAppTime(0.0f)
 {
+    Memory::IAllocator* coreAlloc = Memory::GetCoreAllocator();
+    Memory::IAllocator* windowAlloc = Memory::GetWindowAllocator();
     AppWindowManagerConfig windowManagerConfig;
     WindowRegistration reg;
 
     // Set up debugging facilities
 #if PEGASUS_ENABLE_LOG
-    Core::LogManager::GetInstance().RegisterHandler(config.mLoghandler);
+    Core::LogManager::CreateInstance(coreAlloc);
+    Core::LogManager::GetInstance()->RegisterHandler(config.mLoghandler);
 #endif
 #if PEGASUS_ENABLE_ASSERT
-    Core::AssertionManager::GetInstance().RegisterHandler(config.mAssertHandler);
+    Core::AssertionManager::CreateInstance(coreAlloc);
+    Core::AssertionManager::GetInstance()->RegisterHandler(config.mAssertHandler);
 #endif
 
     // Set up window manager
+    windowManagerConfig.mAllocator = windowAlloc;
     windowManagerConfig.mMaxWindowTypes = mConfig.mMaxWindowTypes;
     windowManagerConfig.mMaxNumWindows = mConfig.mMaxNumWindows;
-    mWindowManager = PG_NEW("AppWindowManager", Pegasus::Memory::PG_MEM_PERM) AppWindowManager(windowManagerConfig);
+    mWindowManager = PG_NEW(windowAlloc, "AppWindowManager", Pegasus::Memory::PG_MEM_PERM) AppWindowManager(windowManagerConfig);
 
     // Register startup window
     reg.mTypeTag = Pegasus::Application::WINDOW_TYPE_INVALID;
@@ -58,19 +63,23 @@ Application::Application(const ApplicationConfig& config)
 
 Application::~Application()
 {
+    Memory::IAllocator* windowAlloc = Memory::GetWindowAllocator();
+
     // Sanity check
     PG_ASSERTSTR(!mInitialized, "Application still initialized in destructor!");
 
     // Free windows
     mWindowManager->UnregisterWindowClass(STARTUP_WINDOW_TYPE);
-    PG_DELETE mWindowManager;
+    PG_DELETE(windowAlloc, mWindowManager);
 
     // Tear down debugging facilities
-#if PEGASUS_ENABLE_LOG
-    Core::LogManager::GetInstance().UnregisterHandler();
-#endif
 #if PEGASUS_ENABLE_ASSERT
-    Core::AssertionManager::GetInstance().UnregisterHandler();
+    Core::AssertionManager::GetInstance()->UnregisterHandler();
+    Core::AssertionManager::DestroyInstance();
+#endif
+#if PEGASUS_ENABLE_LOG
+    Core::LogManager::GetInstance()->UnregisterHandler();
+    Core::LogManager::DestroyInstance();
 #endif
 }
 
@@ -78,6 +87,7 @@ Application::~Application()
 
 void Application::Initialize()
 {
+    Memory::IAllocator* coreAlloc = Memory::GetCoreAllocator();
     Io::IOManagerConfig ioManagerConfig;
     Window::Window* startupWindow = nullptr;
 
@@ -88,7 +98,7 @@ void Application::Initialize()
     // This must be done here because of the GetAppName virtual
     ioManagerConfig.mBasePath = mConfig.mBasePath;
     ioManagerConfig.mAppName = GetAppName();
-    mIoManager = PG_NEW("IOManager", Pegasus::Memory::PG_MEM_PERM) Io::IOManager(ioManagerConfig);
+    mIoManager = PG_NEW(coreAlloc, "IOManager", Pegasus::Memory::PG_MEM_PERM) Io::IOManager(ioManagerConfig);
 
     // start up the app, which creates and destroys the dummy window
     StartupAppInternal();
@@ -102,6 +112,8 @@ void Application::Initialize()
 //! Shutdown this application.
 void Application::Shutdown()
 {
+    Memory::IAllocator* coreAlloc = Memory::GetCoreAllocator();
+
     // Sanity check
     PG_ASSERTSTR(mInitialized, "Application not initialized yet!");
 
@@ -109,7 +121,7 @@ void Application::Shutdown()
     ShutdownAppInternal();
 
     // Tear down IO manager
-    PG_DELETE mIoManager;
+    PG_DELETE(coreAlloc, mIoManager);
 
     // No longer initted
     mInitialized = false;
@@ -126,10 +138,14 @@ IWindowRegistry* Application::GetWindowRegistry()
 
 Window::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig)
 {
+    Memory::IAllocator* renderAlloc = Memory::GetRenderAllocator();
+    Memory::IAllocator* windowAlloc = Memory::GetWindowAllocator();
     Window::Window* newWnd = nullptr;
     Window::WindowConfig config;
 
     // Create window
+    config.mAllocator = windowAlloc;
+    config.mRenderAllocator = renderAlloc;
     config.mModuleHandle = mConfig.mModuleHandle;
     config.mWindowContext = this;
     config.mIsChild = appWindowConfig.mIsChild;
@@ -154,7 +170,7 @@ Window::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig
 
 //----------------------------------------------------------------------------------------
 
-void Application::DetachWindow(const Window::Window* wnd)
+void Application::DetachWindow(Window::Window* wnd)
 {
     mWindowManager->DestroyWindow(wnd);
 
@@ -167,10 +183,14 @@ void Application::DetachWindow(const Window::Window* wnd)
 //! \note Creates the dummy startup window used to initialize the OGL extensions.
 void Application::StartupAppInternal()
 {
+    Memory::IAllocator* renderAlloc = Memory::GetRenderAllocator();
+    Memory::IAllocator* windowAlloc = Memory::GetWindowAllocator();
     Window::Window* newWnd = nullptr;
     Window::WindowConfig config;
 
     // Create window and immediately destroy it
+    config.mAllocator = windowAlloc;
+    config.mRenderAllocator = renderAlloc;
     config.mModuleHandle = mConfig.mModuleHandle;
     config.mWindowContext = this;
     config.mIsChild = false;
@@ -182,11 +202,11 @@ void Application::StartupAppInternal()
     PG_ASSERTSTR(newWnd != nullptr, "[FATAL] Failed to create startup window!");
 
     // Init openGL extensions now that we have a context
-    Render::GLExtensions::CreateInstance();
+    Render::GLExtensions::CreateInstance(renderAlloc);
 
     // Write some temporary debugging information
-    Render::GLExtensions & extensions = Render::GLExtensions::GetInstance();
-    switch (extensions.GetMaximumProfile())
+    Render::GLExtensions* extensions = Render::GLExtensions::GetInstance();
+    switch (extensions->GetMaximumProfile())
     {
     case Render::GLExtensions::PROFILE_GL_3_3:
         PG_LOG('OGL_', "OpenGL 3.3 is the maximum detected profile.");
@@ -197,10 +217,10 @@ void Application::StartupAppInternal()
         break;
 
     default:
-        PG_LOG('OGL_', "Error when initializing GLExtensions.");
+        PG_LOG('OGL_', "Error when initializing GLextensions->");
         break;
     }
-    if (extensions.IsGLExtensionSupported("GL_ARB_draw_indirect"))
+    if (extensions->IsGLExtensionSupported("GL_ARB_draw_indirect"))
     {
         PG_LOG('OGL_', "GL_ARB_draw_indirect detected.");
     }
@@ -208,7 +228,7 @@ void Application::StartupAppInternal()
     {
         PG_LOG('OGL_', "GL_ARB_draw_indirect NOT detected.");
     }
-    if (extensions.IsGLExtensionSupported("GL_ATI_fragment_shader"))
+    if (extensions->IsGLExtensionSupported("GL_ATI_fragment_shader"))
     {
         PG_LOG('OGL_', "GL_ATI_fragment_shader detected.");
     }
@@ -216,7 +236,7 @@ void Application::StartupAppInternal()
     {
         PG_LOG('OGL_', "GL_ATI_fragment_shader NOT detected.");
     }
-    if (extensions.IsWGLExtensionSupported("WGL_ARB_buffer_region"))
+    if (extensions->IsWGLExtensionSupported("WGL_ARB_buffer_region"))
     {
         PG_LOG('OGL_', "WGL_ARB_buffer_region detected.");
     }
@@ -224,7 +244,7 @@ void Application::StartupAppInternal()
     {
         PG_LOG('OGL_', "WGL_ARB_buffer_region NOT detected.");
     }
-    if (extensions.IsWGLExtensionSupported("WGL_3DL_stereo_control"))
+    if (extensions->IsWGLExtensionSupported("WGL_3DL_stereo_control"))
     {
         PG_LOG('OGL_', "WGL_3DL_stereo_control detected.");
     }

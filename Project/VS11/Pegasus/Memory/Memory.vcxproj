@@ -27,11 +27,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Memory\IAllocator.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Memory\memory.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Memory\newdelete.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Memory\Newdelete.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Memory\mallocfreeallocator.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Memory\newdelete.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Memory\memory.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Memory\Newdelete.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Memory\mallocfreeallocator.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8AD3BC97-CABA-48D1-B0FD-79CB17CD1F82}</ProjectGuid>
@@ -138,7 +142,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <SmallerTypeCheck>true</SmallerTypeCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <ForcedIncludeFiles>Pegasus/PegasusInternal.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -166,7 +170,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <ExceptionHandling>false</ExceptionHandling>
-      <ForcedIncludeFiles>Pegasus/PegasusInternal.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -195,7 +199,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <SmallerTypeCheck>true</SmallerTypeCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <ForcedIncludeFiles>Pegasus/PegasusInternal.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -225,7 +229,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <ForcedIncludeFiles>Pegasus/PegasusInternal.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -257,7 +261,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <ForcedIncludeFiles>Pegasus/PegasusInternal.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
@@ -289,7 +293,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <ForcedIncludeFiles>Pegasus/PegasusInternal.h</ForcedIncludeFiles>
+      <ForcedIncludeFiles>Pegasus/Preprocessor.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>

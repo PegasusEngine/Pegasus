@@ -36,3 +36,21 @@ TestApp1::~TestApp1()
     // Deregister the main window
     GetWindowRegistry()->UnregisterWindowClass(MAIN_WINDOW_TYPE);
 }
+
+//----------------------------------------------------------------------------------------
+
+Pegasus::Application::Application * CreateApplication(const Pegasus::Application::ApplicationConfig& config)
+{
+    Pegasus::Memory::IAllocator* globalAlloc = Pegasus::Memory::GetGlobalAllocator();
+
+    return PG_NEW(globalAlloc, "TestApp1", Pegasus::Memory::PG_MEM_PERM) TestApp1(config);
+}
+
+//----------------------------------------------------------------------------------------
+
+void DestroyApplication(Pegasus::Application::Application* app)
+{
+    Pegasus::Memory::IAllocator* globalAlloc = Pegasus::Memory::GetGlobalAllocator();
+
+    PG_DELETE(globalAlloc, app);
+}

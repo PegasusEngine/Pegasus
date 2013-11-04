@@ -15,8 +15,8 @@ namespace Pegasus {
 namespace Graph {
 
 
-OutputNode::OutputNode()
-:   Node()
+OutputNode::OutputNode(Memory::IAllocator* alloc)
+:   Node(alloc)
 {
 }
 

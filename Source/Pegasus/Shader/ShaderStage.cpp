@@ -39,8 +39,8 @@ static struct ShaderStageProperties
 namespace Pegasus {
 namespace Shader {
 
-ShaderStage::ShaderStage()
- : mType(Pegasus::Shader::SHADER_STAGE_INVALID)
+ShaderStage::ShaderStage(Memory::IAllocator* alloc)
+ : mAllocator(alloc), mType(Pegasus::Shader::SHADER_STAGE_INVALID)
 {
 }
 
@@ -159,7 +159,8 @@ bool ShaderStage::CompileFromSrc(Pegasus::Shader::ShaderType type, const char * 
     {
         mFileBuffer.DestroyBuffer();
         mFileBuffer.OwnBuffer (
-            PG_NEW_ARRAY("shader src", Pegasus::Memory::PG_MEM_PERM, char, srcSize),
+            mAllocator,
+            PG_NEW_ARRAY(mAllocator, "shader src", Pegasus::Memory::PG_MEM_PERM, char, srcSize),
             srcSize
         );
         mFileBuffer.SetFileSize(srcSize);
@@ -188,7 +189,7 @@ bool ShaderStage::CompileFromFile(const char * path, Io::IOManager* loader)
     if (targetStage != Pegasus::Shader::SHADER_STAGE_INVALID)
     {
         mFileBuffer.DestroyBuffer(); //clear any buffers pre-allocated to this
-        Pegasus::Io::IoError ioError = loader->OpenFileToBuffer(path, mFileBuffer, true);
+        Pegasus::Io::IoError ioError = loader->OpenFileToBuffer(path, mFileBuffer, true, mAllocator);
         if (ioError == Pegasus::Io::ERR_NONE)
         {
             SHADEREVENT_LOADED(mFileBuffer.GetBuffer(), mFileBuffer.GetFileSize());

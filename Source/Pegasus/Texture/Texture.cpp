@@ -16,7 +16,7 @@ namespace Texture {
 
 
 Texture::Texture(const TextureConfiguration & configuration)
-:   Graph::OutputNode(),
+:   Graph::OutputNode(configuration.GetAllocator()),
     mConfiguration(configuration)
 {
 }

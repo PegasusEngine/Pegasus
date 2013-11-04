@@ -43,6 +43,8 @@ public:
     //!          if an operating system considers 0 as a valid handle. mIsChild is used to define if a parent window is actually defined
     WindowHandle mParentWindowHandle;
 
+    Memory::IAllocator* mAllocator; //!< Allocator to use when creating this window
+    Memory::IAllocator* mRenderAllocator; //!< Allocator to use when creating this window's render resources
     ModuleHandle mModuleHandle; //!< Opaque application instance
     IWindowContext* mWindowContext; //!< Context for this window
     int mWidth; //!< Initial width of the window in pixels (> 0)
@@ -54,6 +56,8 @@ public:
     inline WindowConfig()
         :   mIsChild(false),
             mParentWindowHandle(0),
+            mAllocator(nullptr),
+            mRenderAllocator(nullptr),
             mModuleHandle(0),
             mWindowContext(nullptr),
             mWidth(960),

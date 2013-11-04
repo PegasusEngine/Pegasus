@@ -17,7 +17,7 @@
 #include <QPalette>
 #include <QMap>
 
-#include "Pegasus/Core/Log.h"
+#include "Pegasus/Core/Shared/LogChannel.h"
 
 class QMainWindow;
 

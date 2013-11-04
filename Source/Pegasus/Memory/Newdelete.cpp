@@ -9,47 +9,46 @@
 //! \date   11th October 2013
 //! \brief  Global memory operator overrides
 
-#include <stdlib.h>
-#include "Pegasus/Memory/memory.h"
+#include "Pegasus/Memory/newdelete.h"
+#include "Pegasus/Memory/Memory.h"
 
-
-void * operator new(size_t size)
+void* operator new(size_t size)
 {
-    //DANGER! pegasus naked operator used. Forcing a crash, please refer to the pegasus memory framework
-    //and use one of the predesposed macros.
-    static volatile char* crashMe = 0;
-    *crashMe = 0;
-
-    return 0;
+    return Pegasus::Memory::GetGlobalAllocator()->Alloc(size, Pegasus::Memory::PG_MEM_PERM, nullptr, __FILE__, __LINE__);
 }
 
 //----------------------------------------------------------------------------------------
 
-void * operator new(size_t size, void * allocator,  Pegasus::Memory::Flags flags, const char * debugText, const char * file, int line)
+void* operator new[](size_t size)
 {
-    // Todo, add allocator implementation
-    return malloc(size);
+    return Pegasus::Memory::GetGlobalAllocator()->AllocArray(size, Pegasus::Memory::PG_MEM_PERM, nullptr, __FILE__, __LINE__);
 }
 
 //----------------------------------------------------------------------------------------
 
-void * operator new[](size_t size, void * allocator,  Pegasus::Memory::Flags flags, const char * debugText, const char * file, int line)
+void* operator new(size_t size, Pegasus::Memory::IAllocator* allocator, Pegasus::Memory::Flags flags, const char* debugText, const char* file, int line)
 {
-    // Todo, add allocator implementation
-    return malloc(size);
+    return allocator->Alloc(size, flags, debugText, file, line);
 }
 
 //----------------------------------------------------------------------------------------
 
-void operator delete(void* pointer, const char * file, int line)
+void* operator new[](size_t size, Pegasus::Memory::IAllocator* allocator, Pegasus::Memory::Flags flags, const char* debugText, const char* file, int line)
 {
-    free(pointer);
+    return allocator->AllocArray(size, flags, debugText, file, line);
 }
 
 //----------------------------------------------------------------------------------------
 
-void operator delete[](void* pointer, const char * file, int line)
+void operator delete(void* pointer)
 {
-    free(pointer);
+    Pegasus::Memory::GetGlobalAllocator()->Delete(pointer, __FILE__, __LINE__);
+}
+
+//----------------------------------------------------------------------------------------
+
+void operator delete[](void* pointer)
+{
+    Pegasus::Memory::GetGlobalAllocator()->DeleteArray(pointer, __FILE__, __LINE__);
 }
 

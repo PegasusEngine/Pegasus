@@ -54,6 +54,7 @@ private:
     PG_DISABLE_COPY(Context);
 
 
+    Memory::IAllocator* mAllocator; //!< Allocator for this object
     IRenderContextImpl* mPrivateImpl; //!< Private implementation -- platform-specific
 };
 

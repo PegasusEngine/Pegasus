@@ -13,12 +13,14 @@
 #ifndef PEGASUS_RENDER_GLEXTENSIONS_H
 #define PEGASUS_RENDER_GLEXTENSIONS_H
 
+#include "Pegasus/Core/Singleton.h"
+
 namespace Pegasus {
 namespace Render {
 
 //! Singleton that manages GL and WGL extensions, available throughout the engine
 //! to check if features are available before using them
-class GLExtensions
+class GLExtensions : public Core::Singleton<GLExtensions>
 {
 public:
     //! Definition of available OpenGL profiles
@@ -31,14 +33,13 @@ public:
     };
 
 
-    //! Create the unique instance of the class
-    static void CreateInstance();
+    //! Constructor
+    //! Initializes the extensions manager for OpenGL.
+    //! Performs detection of the OpenGL version and the list of extensions available.
+    GLExtensions();
 
-    //! Destroy the unique instance of the class
-    static void DestroyInstance();
-
-    //! Get the unique instance of the class
-    inline static GLExtensions & GetInstance() { return *sInstance; }
+    //! Destructor
+    ~GLExtensions();
 
 
     //! Get the maximum profile handled by the GPU and the driver
@@ -63,17 +64,7 @@ public:
     //! \return True if the WGL extension is supported
     bool IsWGLExtensionSupported(const char * name) const;
 
-
 private:
-    //! Constructor
-    //! Initializes the extensions manager for OpenGL.
-    //! Performs detection of the OpenGL version and the list of extensions available.
-    GLExtensions();
-
-    //! Destructor
-    ~GLExtensions();
-
-
     //! Test if a profile is a valid one
     //! \param profile Profile to test (PROFILE_x constant)
     //! \return True if the profile is valid (between PROFILE_NO_GL and PROFILE_MAX)

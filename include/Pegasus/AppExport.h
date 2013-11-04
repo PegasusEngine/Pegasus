@@ -20,12 +20,16 @@ extern "C" {
 #endif
 PEGASUSAPP_SHARED Pegasus::Application::IApplicationProxy* CreatePegasusApp(const Pegasus::Application::ApplicationConfig& config)
 {
-    return PG_NEW("ApplicationProxy", Pegasus::Memory::PG_MEM_PERM) Pegasus::Application::ApplicationProxy(config);
+    Pegasus::Memory::IAllocator* globalAlloc = Pegasus::Memory::GetGlobalAllocator();
+
+    return PG_NEW(globalAlloc, "ApplicationProxy", Pegasus::Memory::PG_MEM_PERM) Pegasus::Application::ApplicationProxy(config);
 }
 
 PEGASUSAPP_SHARED void DestroyPegasusApp(Pegasus::Application::IApplicationProxy* app)
 {
-    PG_DELETE app;
+    Pegasus::Memory::IAllocator* globalAlloc = Pegasus::Memory::GetGlobalAllocator();
+
+    PG_DELETE(globalAlloc, app);
 }
 #ifdef __cplusplus
 }

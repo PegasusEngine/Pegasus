@@ -21,13 +21,13 @@
 namespace Pegasus {
 namespace Window {
 
-//! \class Class description
+//! Windows specific implementation for a Winodw
 class WindowImpl_Win32 : public IWindowImpl
 {
 public:
     //! Constructor
     //! \param config Config struct used for this impl.
-    //! \param messageHandler MEssage handler object for this impl.
+    //! \param messageHandler Message handler object for this impl.
     WindowImpl_Win32(const WindowConfig& config, IWindowMessageHandler* messageHandler);
 
     //! Destructor

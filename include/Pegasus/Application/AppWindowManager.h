@@ -33,12 +33,13 @@ struct AppWindowManagerConfig
 {
 public:
     //! Constructor
-    AppWindowManagerConfig() : mMaxWindowTypes(2), mMaxNumWindows(1) {}
+    AppWindowManagerConfig() : mAllocator(nullptr), mMaxWindowTypes(2), mMaxNumWindows(1) {}
 
     //! Destructor
     ~AppWindowManagerConfig() {};
 
 
+    Memory::IAllocator* mAllocator; //!< Allocator used to create this object
     unsigned int mMaxWindowTypes; //!< Maximum number of window types this manager can contain
     unsigned int mMaxNumWindows; //!< Maximum number of windows this manager can contain
 };
@@ -73,7 +74,7 @@ public:
 
     //! Destroys a window and removes it from this manager.
     //! \param window The window to destroy.
-    void DestroyWindow(const Window::Window* window);
+    void DestroyWindow(Window::Window* window);
 
 
     static const unsigned int APPWINDOW_DESC_LENGTH = 128; //! Max length of an app window description
@@ -84,6 +85,7 @@ private:
     PG_DISABLE_COPY(AppWindowManager);
 
 
+    Memory::IAllocator* mAllocator; //!< Allocator to use when creating this object
     TypeTable* mTypeTable; //!< Window type table
     WindowTable* mWindowTable; //!< Window table
 };

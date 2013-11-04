@@ -27,7 +27,8 @@ class Node
 public:
 
     //! Default constructor
-    Node();
+    //! \param alloc Allocator used to create the contents of this node.
+    Node(Memory::IAllocator* alloc);
 
 
     //! Append a node to the list of input nodes
@@ -86,6 +87,10 @@ protected:
     //! Destructor
     virtual ~Node();
 
+
+    //! Gets the allocator for this node
+    //! \return Node allocator.
+    Memory::IAllocator* GetAllocator() const { return mAllocator; }
 
     //! Allocate the data associated with the node
     //! \warning To be redefined by each class defining a new class for its data
@@ -196,6 +201,9 @@ private:
     //! if the counter reaches 0
     void Release();
 
+
+    //! Allocator used to create the contents of this node
+    Memory::IAllocator* mAllocator;
 
     //! Reference counter
     //! \todo Use atomic integer

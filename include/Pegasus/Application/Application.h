@@ -76,7 +76,7 @@ public:
 
     //! Detaches a window from this app
     //! \param wnd The window to detach.
-    void DetachWindow(const Window::Window* wnd);
+    void DetachWindow(Window::Window* wnd);
     //! \todo Set update mode
 
     //! Sets the current app time

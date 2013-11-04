@@ -30,9 +30,10 @@ public:
 
 
     //! Takes ownership of a buffer, as the contents of this object
+    //! \param bufferAlloc Allocator used to create this buffer.
     //! \param buffer Address of the buffer.
     //! \param bufferSize Size of the buffer.
-    void OwnBuffer(char * buffer, int bufferSize);
+    void OwnBuffer(Memory::IAllocator* bufferAlloc, char * buffer, int bufferSize);
 
     //! Releases ownership of any currently owned buffer
     void ForgetBuffer();
@@ -67,6 +68,7 @@ private:
     PG_DISABLE_COPY(FileBuffer);
 
 
+    Memory::IAllocator* mAllocator; //!< Allocator used to create the buffer
     char* mBuffer; //!< Contained buffer
     int mFileSize; //!< Size of the file in the buiffer
     int mBufferSize; //!< Size of the buffer
@@ -111,9 +113,10 @@ public:
     //! \param relativePath Relative path to the file, within the asset root.
     //! \param outputBuffer Output buffer, in which the loaded file is stored.
     //! \param allocateBuffer Whether to allocate the buffer inside of outputBuffer, or use a pre-allocated one.  This is a performance optimization.
+    //! \param alloc Allocator to use when allocating the buffer.
     //! \return Error code.
     //! \note Buffer must be deallocated by the caller
-    IoError OpenFileToBuffer(const char* relativePath, FileBuffer& outputBuffer, bool allocateBuffer);
+    IoError OpenFileToBuffer(const char* relativePath, FileBuffer& outputBuffer, bool allocateBuffer = false, Memory::IAllocator* alloc = nullptr);
 
 
     static const unsigned int MAX_FILEPATH_LENGTH = 256; //!< Max length for a file path

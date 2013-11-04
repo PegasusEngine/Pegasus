@@ -41,7 +41,7 @@ class ShaderStage
 {
     friend class Program;
 public:
-    ShaderStage();
+    ShaderStage(Memory::IAllocator* alloc);
     ~ShaderStage();
         
 
@@ -50,14 +50,15 @@ public:
     ShaderType GetStageType() const { return mType; }
 
 private:
-    void DestroyShader();
-    //no copies allowed
-    explicit ShaderStage(const ShaderStage& other);
-    ShaderStage& operator=(const ShaderStage& other);
+    // No copies allowed
+    PG_DISABLE_COPY(ShaderStage);
 
+    void DestroyShader();
     bool CompileFromSrcInternal(ShaderType type, const char * src, int stringLength);
     void ProcessErrorLog(const char * errorLog);
 
+
+    Memory::IAllocator* mAllocator;
     Pegasus::Io::FileBuffer mFileBuffer;
     ShaderType mType;
 

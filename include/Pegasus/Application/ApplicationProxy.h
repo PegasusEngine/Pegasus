@@ -36,7 +36,7 @@ public:
     // Window API
     virtual const char* GetMainWindowType() const;
     virtual Window::IWindowProxy* AttachWindow(const AppWindowConfig& config);
-    virtual void DetachWindow(const Window::IWindowProxy* wnd);
+    virtual void DetachWindow(Window::IWindowProxy* wnd);
 
     // Stateflow API
     virtual void Initialize();

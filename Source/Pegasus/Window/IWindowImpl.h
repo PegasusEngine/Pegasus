@@ -29,14 +29,16 @@ public:
     //! Factory function to construct an impl
     //! Implement this function in your platform-specific impl.
     //! \param config Config struct for this impl.
+    //! \param alloc Allocator used to create this impl.
     //! \param messageHandler Message handler object for this impl.
     //! \return Returned window impl.
-    static IWindowImpl* CreateImpl(const WindowConfig& config, IWindowMessageHandler* messageHandler);
+    static IWindowImpl* CreateImpl(const WindowConfig& config, Memory::IAllocator* alloc, IWindowMessageHandler* messageHandler);
 
     //! Factory function to destroy an impl
     //! Implement this function in your platform-specific impl.
     //! \param impl Impl object to destroy.
-    static void DestroyImpl(IWindowImpl* impl);
+    //! \param alloc Allocator used to destroy this impl.
+    static void DestroyImpl(IWindowImpl* impl, Memory::IAllocator* alloc);
 
 
     //! Gets the handle for this window

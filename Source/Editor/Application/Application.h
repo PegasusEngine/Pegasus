@@ -14,8 +14,8 @@
 
 #include <QThread>
 
-#include "Pegasus/Core/Log.h"
-#include "Pegasus/Core/Assertion.h"
+#include "Pegasus/Core/Shared/LogChannel.h"
+#include "Pegasus/Core/Shared/AssertReturnCode.h"
 #include "Pegasus/Window/WindowDefs.h"
 
 class ApplicationInterface;
@@ -87,12 +87,12 @@ public:
     //! \param line Line number where the assertion test failed
     //! \param msgStr Optional string of a message making the assertion test easier to understand.
     //!               Empty string if no message is defined.
-    //! \return Pegasus::Core::AssertionManager::ASSERTION_xxx constant,
+    //! \return Pegasus::Core::ASSERTION_xxx constant,
     //!         chosen from the button the user clicked on
-    Pegasus::Core::AssertionManager::ReturnCode EmitAssertionFromApplication(const QString & testStr,
-                                                                             const QString & fileStr,
-                                                                             int line,
-                                                                             const QString & msgStr);
+    Pegasus::Core::AssertReturnCode EmitAssertionFromApplication(const QString & testStr,
+                                                                 const QString & fileStr,
+                                                                 int line,
+                                                                 const QString & msgStr);
 
     //------------------------------------------------------------------------------------
     
@@ -171,12 +171,12 @@ private:
     //! \param line Line number where the assertion test failed
     //! \param msgStr Optional string of a message making the assertion test easier to understand.
     //!               nullptr if no message is defined.
-    //! \return Pegasus::Core::AssertionManager::ASSERTION_xxx constant,
+    //! \return Pegasus::Core::ASSERTION_xxx constant,
     //!         chosen from the button the user clicked on
-    static Pegasus::Core::AssertionManager::ReturnCode AssertionHandler(const char * testStr,
-                                                                        const char * fileStr,
-                                                                        int line,
-                                                                        const char * msgStr);
+    static Pegasus::Core::AssertReturnCode AssertionHandler(const char * testStr,
+                                                            const char * fileStr,
+                                                            int line,
+                                                            const char * msgStr);
 
     //------------------------------------------------------------------------------------
 

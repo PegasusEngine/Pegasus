@@ -28,13 +28,15 @@ public:
     //! Factory function to construct an impl
     //! Implement this function in your platform-specific impl.
     //! \param config Config struct for this impl.
+    //! \param Allocator used to create this impl.
     //! \return Returned context impl.
-    static IRenderContextImpl* CreateImpl(const ContextConfig& config);
+    static IRenderContextImpl* CreateImpl(const ContextConfig& config, Memory::IAllocator* alloc);
 
     //! Factory function to destroy an impl
     //! Implement this function in your platform-specific impl.
     //! \param impl Impl object to destroy.
-    static void DestroyImpl(IRenderContextImpl* impl);
+    //! \param Allocator used to destroy this impl.
+    static void DestroyImpl(IRenderContextImpl* impl, Memory::IAllocator* alloc);
 
 
     //! Binds this context to the current thread, making it active

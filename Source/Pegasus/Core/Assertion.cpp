@@ -38,7 +38,7 @@ AssertionManager::~AssertionManager()
 
 //----------------------------------------------------------------------------------------
 
-void AssertionManager::RegisterHandler(Handler handler)
+void AssertionManager::RegisterHandler(AssertionHandlerFunc handler)
 {
     mHandler = handler;
 }
@@ -52,10 +52,10 @@ void AssertionManager::UnregisterHandler()
 
 //----------------------------------------------------------------------------------------
 
-AssertionManager::ReturnCode AssertionManager::AssertionError(const char * testStr,
-                                                              const char * fileStr,
-                                                              int line,
-                                                              const char * msgStr, ...)
+AssertReturnCode AssertionManager::AssertionError(const char * testStr,
+                                                  const char * fileStr,
+                                                  int line,
+                                                  const char * msgStr, ...)
 {
     if (mHandler != nullptr)
     {
@@ -79,7 +79,7 @@ AssertionManager::ReturnCode AssertionManager::AssertionError(const char * testS
 
         // Call the registered assertion handler
         mAssertionBeingHandled = true;
-        ReturnCode returnCode = mHandler(testStr, fileStr, line, formattedString);
+        AssertReturnCode returnCode = mHandler(testStr, fileStr, line, formattedString);
         mAssertionBeingHandled = false;
 
         return returnCode;
