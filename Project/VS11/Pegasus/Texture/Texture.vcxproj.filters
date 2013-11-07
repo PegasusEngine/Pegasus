@@ -44,6 +44,12 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureConfiguration.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureManager.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureDeclaration.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Texture.cpp">
@@ -65,6 +71,9 @@
       <Filter>Source\Operator</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureConfiguration.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureManager.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>

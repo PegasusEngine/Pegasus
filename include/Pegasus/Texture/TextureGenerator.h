@@ -15,19 +15,34 @@
 #include "Pegasus/Graph/GeneratorNode.h"
 #include "Pegasus/Texture/TextureConfiguration.h"
 #include "Pegasus/Texture/TextureData.h"
+#include "Pegasus/Texture/TextureDeclaration.h"
 
 namespace Pegasus {
 namespace Texture {
 
 
 //! Base texture generator node class
+//! \warning IMPORTANT! When deriving from this class, update TextureManager::RegisterAllTextureNodes()
+//!                     so the generator node can be instantiated
 class TextureGenerator : public Graph::GeneratorNode
 {
 public:
 
+    //! Default constructor, uses the default texture configuration
+    //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
+    //! \param nodeDataAllocator Allocator used for NodeData
+    TextureGenerator(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator);
+
     //! Constructor
     //! \param configuration Configuration of the generator, such as the resolution and pixel format
-    TextureGenerator(const TextureConfiguration & configuration);
+    //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
+    //! \param nodeDataAllocator Allocator used for NodeData
+    TextureGenerator(const TextureConfiguration & configuration,
+                     Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator);
+
+    //! Set the configuration of the texture generator
+    //! \warning Can be done only after the constructor has been called
+    void SetConfiguration(const TextureConfiguration & configuration);
 
     //! Get the configuration of the generator
     //! \return Configuration of the generator, such as the resolution and pixel format

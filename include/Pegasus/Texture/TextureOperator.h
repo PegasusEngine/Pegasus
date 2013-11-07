@@ -15,19 +15,34 @@
 #include "Pegasus/Graph/OperatorNode.h"
 #include "Pegasus/Texture/TextureConfiguration.h"
 #include "Pegasus/Texture/TextureData.h"
+#include "Pegasus/Texture/TextureDeclaration.h"
 
 namespace Pegasus {
 namespace Texture {
 
 
 //! Base texture operator node class
+//! \warning IMPORTANT! When deriving from this class, update TextureManager::RegisterAllTextureNodes()
+//!                     so the operator node can be instantiated
 class TextureOperator : public Graph::OperatorNode
 {
 public:
 
+    //! Default constructor, uses the default texture configuration
+    //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
+    //! \param nodeDataAllocator Allocator used for NodeData
+    TextureOperator(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator);
+
     //! Constructor
+    //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
+    //! \param nodeDataAllocator Allocator used for NodeData
     //! \param configuration Configuration of the operator, such as the resolution and pixel format
-    TextureOperator(const TextureConfiguration & configuration);
+    TextureOperator(const TextureConfiguration & configuration,
+                    Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator);
+
+    //! Set the configuration of the texture operator
+    //! \warning Can be done only after the constructor has been called
+    void SetConfiguration(const TextureConfiguration & configuration);
 
     //! Get the configuration of the operator
     //! \return Configuration of the operator, such as the resolution and pixel format

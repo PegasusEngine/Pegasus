@@ -27,9 +27,9 @@ class NodeData
 public:
 
     //! Default constructor
-    //! \param alloc Allocator to use to alloc this object's data.
+    //! \param allocator Allocator used for the node data
     //! \note Sets the dirty flag
-    NodeData(Memory::IAllocator* alloc);
+    NodeData(Memory::IAllocator * allocator);
 
 
     //! Set the data as dirty, meaning they will need to be recomputed to be valid
@@ -51,9 +51,9 @@ protected:
     virtual ~NodeData();
 
 
-    //! Gets the allocator for this node data
-    //! \return Node allocator.
-    Memory::IAllocator* GetAllocator() const { return mAllocator; }
+    //! Get the allocator for the node data, to be used in every derived class
+    //! \return Node allocator
+    inline Memory::IAllocator * GetAllocator() const { return mAllocator; }
 
     //------------------------------------------------------------------------------------
     
@@ -76,11 +76,11 @@ private:
 
 
     //! Allocator for this object
-    Memory::IAllocator* mAllocator;
+    Memory::IAllocator * mAllocator;
 
     //! Reference counter
     //! \todo Use atomic integer
-    /****/int mRefCount;
+    int mRefCount;
 
     //! True when the data are dirty, meaning they will need to be recomputed to be valid
     bool mDirty;

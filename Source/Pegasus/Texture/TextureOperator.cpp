@@ -15,10 +15,33 @@ namespace Pegasus {
 namespace Texture {
 
 
-TextureOperator::TextureOperator(const TextureConfiguration & configuration)
-:   Graph::OperatorNode(configuration.GetAllocator()),
+TextureOperator::TextureOperator(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator)
+:   Graph::OperatorNode(nodeAllocator, nodeDataAllocator),
+    mConfiguration()
+{
+}
+
+//----------------------------------------------------------------------------------------
+
+TextureOperator::TextureOperator(const TextureConfiguration & configuration,
+                                 Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator)
+:   Graph::OperatorNode(nodeAllocator, nodeDataAllocator),
     mConfiguration(configuration)
 {
+}
+
+//----------------------------------------------------------------------------------------
+
+void TextureOperator::SetConfiguration(const TextureConfiguration & configuration)
+{
+    if (GetRefCount() == 1)
+    {
+        mConfiguration = configuration;
+    }
+    else
+    {
+        PG_FAILSTR("Cannot set the configuration of a texture operator because the node is already in use");
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -31,8 +54,8 @@ TextureOperator::~TextureOperator()
 
 Graph::NodeData * TextureOperator::AllocateData() const
 {
-    //! \todo Use allocator
-    return PG_NEW(GetAllocator(), "TextureOperator::TextureData", Pegasus::Memory::PG_MEM_TEMP) TextureData(mConfiguration);
+    return PG_NEW(GetNodeAllocator(), "TextureOperator::TextureData", Pegasus::Memory::PG_MEM_TEMP)
+                    TextureData(mConfiguration, GetNodeDataAllocator());
 }
 
 

@@ -27,8 +27,9 @@ class Node
 public:
 
     //! Default constructor
-    //! \param alloc Allocator used to create the contents of this node.
-    Node(Memory::IAllocator* alloc);
+    //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
+    //! \param nodeDataAllocator Allocator used for NodeData
+    Node(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator);
 
 
     //! Append a node to the list of input nodes
@@ -65,6 +66,11 @@ public:
     virtual void ReleaseDataAndPropagate();
 
 
+    //! Creation function type used by the node manager
+    //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
+    //! \param nodeDataAllocator Allocator used for NodeData
+    typedef Pegasus::Core::Ref<Node> (* CreateNodeFunc)(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator);
+
 #if PEGASUS_DEV
     //! Set the name of the node
     //! \param name New name of the node (MAX_NAME_LENGTH characters max),
@@ -88,9 +94,13 @@ protected:
     virtual ~Node();
 
 
-    //! Gets the allocator for this node
-    //! \return Node allocator.
-    Memory::IAllocator* GetAllocator() const { return mAllocator; }
+    //! Get the allocator used for node internal data (except the attached NodeData)
+    //! \return Node allocator
+    inline Memory::IAllocator* GetNodeAllocator() const { return mNodeAllocator; }
+
+    //! Get the allocator used for NodeData
+    //! \return Node data allocator
+    inline Memory::IAllocator* GetNodeDataAllocator() const { return mNodeDataAllocator; }
 
     //! Allocate the data associated with the node
     //! \warning To be redefined by each class defining a new class for its data
@@ -171,6 +181,11 @@ protected:
     virtual void OnRemoveInput(unsigned int index);
 
 
+    //! Get the current reference counter
+    //! \return Number of Ref<Node> objects pointing to the current object (>= 0)
+    inline int GetRefCount() const { return mRefCount; }
+
+
 #if PEGASUS_DEV
     //! Return the DOT representation of the node
     //virtual const char * GetDOTDescription() const;
@@ -193,21 +208,20 @@ private:
     //! Increment the reference counter, used by Ref<Node>
     inline void AddRef() { mRefCount++; }
 
-    //! Get the current reference counter
-    //! \return Number of Ref<Node> objects pointing to the current object (>= 0)
-    inline int GetRefCount() const { return mRefCount; }
-
     //! Decrease the reference counter, and delete the current object
     //! if the counter reaches 0
     void Release();
 
 
-    //! Allocator used to create the contents of this node
-    Memory::IAllocator* mAllocator;
+    //! Allocator used for node internal data (except the attached NodeData)
+    Memory::IAllocator* mNodeAllocator;
+
+    //! Allocator used for NodeData
+    Memory::IAllocator* mNodeDataAllocator;
 
     //! Reference counter
     //! \todo Use atomic integer
-    /****/int mRefCount;
+    int mRefCount;
 
     //! Pointers to the input nodes (only the first mNumInputs nodes are valid)
     Pegasus::Core::Ref<Node> mInputs[MAX_NUM_INPUTS];

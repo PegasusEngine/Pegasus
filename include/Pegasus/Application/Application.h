@@ -10,8 +10,8 @@
 //! \brief  Building block class for a Pegasus application.
 //!         Manages access to the Pegasus runtime.
 
-#ifndef PEGASUS_APP_APPLICAITON_H
-#define PEGASUS_APP_APPLICAITON_H
+#ifndef PEGASUS_APP_APPLICATION_H
+#define PEGASUS_APP_APPLICATION_H
 
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Application/IWindowRegistry.h"
@@ -26,6 +26,12 @@ namespace Pegasus {
     namespace Wnd {
         struct WindowConfig;
         class Window;
+    }
+    namespace Graph {
+        class NodeManager;
+    }
+    namespace Texture {
+        class TextureManager;
     }
 }
 
@@ -89,7 +95,9 @@ public:
 
 
     // IWindowContext interface
-    virtual Io::IOManager* GetIOManager() { return mIoManager; }
+    virtual Io::IOManager* GetIOManager() const { return mIoManager; }
+    virtual Graph::NodeManager* GetNodeManager() const { return mNodeManager; }
+    virtual Texture::TextureManager* GetTextureManager() const { return mTextureManager; }
 
 private:
     // No copies allowed
@@ -101,14 +109,16 @@ private:
     void ShutdownAppInternal();
 
 
-    bool mInitialized; //!< Initialized flag
-    ApplicationConfig mConfig; //!< Cached config object
-    AppWindowManager* mWindowManager; //!< Window manager
-    Io::IOManager* mIoManager; //!< IO manager
-    float mAppTime; //!< Current app time
+    bool mInitialized;                          //!< Initialized flag
+    ApplicationConfig mConfig;                  //!< Cached config object
+    AppWindowManager* mWindowManager;           //!< Window manager
+    Io::IOManager* mIoManager;                  //!< IO manager
+    Graph::NodeManager* mNodeManager;           //!< Graph node manager
+    Texture::TextureManager* mTextureManager;   //!< Texture node manager
+    float mAppTime;                             //!< Current app time
 };
 
 }   // namespace App
 }   // namespace Pegasus
 
-#endif  // PEGASUS_APP_APPLICAITON_H
+#endif  // PEGASUS_APP_APPLICATION_H

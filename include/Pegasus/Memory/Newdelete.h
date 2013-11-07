@@ -42,10 +42,28 @@ void* operator new[] (size_t size, Pegasus::Memory::IAllocator* allocator, Pegas
 
 //! Pegasus delete operator
 //! \param pointer Address of memory to delete
-void operator delete(void* pointer);
+//! \param allocator Dummy parameter
+//! \param flags Dummy parameter
+//! \param debugText Dummy parameter
+//! \param file Dummy parameter
+//! \param line Dummy parameter
+//! \warning The dummy parameters of this operator are to allow a match with the placement new operator.
+//!          Without those parameters, a warning is thrown and prevents compilation.
+//! \todo Check that this operator is ever called
+//! \todo Investigate in detail that dummy parameter approach and if it is the right way
+void operator delete(void* pointer, Pegasus::Memory::IAllocator* allocator, Pegasus::Memory::Flags flags, const char * debugText, const char * file, int line);
 
 //! Pegasus array delete operator
 //! \param pointer Address of memory to delete
-void operator delete[](void* pointer);
+//! \param allocator Dummy parameter
+//! \param flags Dummy parameter
+//! \param debugText Dummy parameter
+//! \param file Dummy parameter
+//! \param line Dummy parameter
+//! \warning The dummy parameters of this operator are to allow a match with the placement new operator.
+//!          Without those parameters, a warning is thrown and prevents compilation.
+//! \todo Check that this operator is ever called
+//! \todo Investigate in detail that dummy parameter approach and if it is the right way
+void operator delete[](void* pointer, Pegasus::Memory::IAllocator* allocator, Pegasus::Memory::Flags flags, const char * debugText, const char * file, int line);
 
 #endif

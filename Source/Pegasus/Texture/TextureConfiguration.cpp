@@ -16,13 +16,19 @@ namespace Pegasus {
 namespace Texture {
 
 
-TextureConfiguration::TextureConfiguration(Memory::IAllocator* alloc,
-                                           unsigned int width,
+TextureConfiguration::TextureConfiguration()
+{
+    mWidth = 256;
+    mHeight = 256;
+    mPixelFormat = PIXELFORMAT_RGB8;
+}
+
+//----------------------------------------------------------------------------------------
+
+TextureConfiguration::TextureConfiguration(unsigned int width,
                                            unsigned int height,
                                            PixelFormat pixelFormat)
 {
-    SetAllocator(alloc);
-
     mWidth = 1;
     SetWidth(width);
 
@@ -53,20 +59,6 @@ TextureConfiguration & TextureConfiguration::operator=(const TextureConfiguratio
     mPixelFormat = other.mPixelFormat;
 
     return *this;
-}
-
-//----------------------------------------------------------------------------------------
-
-void TextureConfiguration::SetAllocator(Memory::IAllocator* alloc)
-{
-    mAllocator = alloc;
-}
-
-//----------------------------------------------------------------------------------------
-
-Memory::IAllocator* TextureConfiguration::GetAllocator() const
-{
-    return mAllocator;
 }
 
 //----------------------------------------------------------------------------------------

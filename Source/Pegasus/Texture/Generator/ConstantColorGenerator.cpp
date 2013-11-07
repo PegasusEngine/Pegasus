@@ -15,19 +15,6 @@ namespace Pegasus {
 namespace Texture {
 
 
-ConstantColorGenerator::ConstantColorGenerator(const TextureConfiguration & configuration)
-:   TextureGenerator(configuration)
-{
-}
-
-//----------------------------------------------------------------------------------------
-    
-ConstantColorGenerator::~ConstantColorGenerator()
-{
-}
-
-//----------------------------------------------------------------------------------------
-
 void ConstantColorGenerator::GenerateData()
 {
     //! \todo Use an easier syntax

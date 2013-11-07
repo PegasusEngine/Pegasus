@@ -26,6 +26,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\OutputNode.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\NodeManager.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\Node.cpp">
@@ -41,6 +44,9 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\OutputNode.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\NodeManager.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>

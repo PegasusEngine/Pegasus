@@ -30,9 +30,22 @@ class Texture : public Graph::OutputNode
 {
 public:
 
+    //! Default constructor, uses the default texture configuration
+    //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
+    //! \param nodeDataAllocator Allocator used for NodeData
+    Texture(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator);
+
     //! Constructor
+    //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
+    //! \param nodeDataAllocator Allocator used for NodeData
     //! \param configuration Configuration of the texture, such as the resolution and pixel format
-    Texture(const TextureConfiguration & configuration);
+    Texture(const TextureConfiguration & configuration,
+            Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator);
+
+    //! Set the configuration of the texture
+    //! \warning Can be done only after the constructor has been called, when no input node is connected yet.
+    //!          In case of error, the configuration is not set
+    void SetConfiguration(const TextureConfiguration & configuration);
 
     //! Get the configuration of the texture
     //! \return Configuration of the texture, such as the resolution and pixel format
@@ -66,6 +79,14 @@ public:
     //! \note Calls GetUpdatedData() internally, and regenerate the texture data
     //!       if any part of the graph is dirty
     TextureDataReturn GetUpdatedTextureData();
+
+
+    //! Texture node creation function, used by the texture manager
+    //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
+    //! \param nodeDataAllocator Allocator used for NodeData
+    //! \return New instance of the texture node
+    static Graph::NodeReturn CreateNode(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator)
+    {   return PG_NEW(nodeAllocator, "Texture", Memory::PG_MEM_PERM) Texture(nodeAllocator, nodeDataAllocator); }
 
     //------------------------------------------------------------------------------------
 

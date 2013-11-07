@@ -24,8 +24,9 @@ class OperatorNode : public Node
 public:
 
     //! Default constructor
-    //! \param alloc Allocator to use when creating this node.
-    OperatorNode(Memory::IAllocator* alloc);
+    //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
+    //! \param nodeDataAllocator Allocator used for NodeData
+    OperatorNode(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator);
 
     //! Append a node to the list of input nodes
     //! \param inputNode Node to add to the list of input nodes (equivalent to NodeIn)

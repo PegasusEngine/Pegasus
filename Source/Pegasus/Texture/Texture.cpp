@@ -15,10 +15,33 @@ namespace Pegasus {
 namespace Texture {
 
 
-Texture::Texture(const TextureConfiguration & configuration)
-:   Graph::OutputNode(configuration.GetAllocator()),
+Texture::Texture(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator)
+:   Graph::OutputNode(nodeAllocator, nodeDataAllocator),
+    mConfiguration()
+{
+}
+
+//----------------------------------------------------------------------------------------
+
+Texture::Texture(const TextureConfiguration & configuration,
+                 Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator)
+:   Graph::OutputNode(nodeAllocator, nodeDataAllocator),
     mConfiguration(configuration)
 {
+}
+
+//----------------------------------------------------------------------------------------
+
+void Texture::SetConfiguration(const TextureConfiguration & configuration)
+{
+    if (GetNumInputs() == 0)
+    {
+        mConfiguration = configuration;
+    }
+    else
+    {
+        PG_FAILSTR("Cannot set the configuration of a texture because the node is already in use");
+    }
 }
 
 //----------------------------------------------------------------------------------------

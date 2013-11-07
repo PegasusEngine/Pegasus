@@ -33,15 +33,16 @@ public:
     };
 
 
+    //! Default constructor, sets the resolution to 256x256 and the pixel format to RGB8
+    TextureConfiguration();
+
     //! Constructor
-    //! \param alloc Allocator to use when creating the texture.
     //! \param width Horizontal resolution of the texture in pixels (>= 1)
     //! \param height Vertical resolution of the texture in pixels (>= 1)
     //! \param pixelFormat Pixel format of the texture (PIXELFORMAT_xxx constant)
-    explicit TextureConfiguration(Memory::IAllocator* alloc,
-                                  unsigned int width,
-                                  unsigned int height,
-                                  PixelFormat pixelFormat);
+    TextureConfiguration(unsigned int width,
+                         unsigned int height,
+                         PixelFormat pixelFormat);
 
     //! Copy constructor
     //! \param other Other configuration to copy from
@@ -50,15 +51,6 @@ public:
     //! Assignment operator
     //! \param other Other configuration to copy from
     TextureConfiguration & operator=(const TextureConfiguration & other);
-
-
-    //! Sets the allocator to use when creating this texture
-    //! \param alloc Allocator.
-    void SetAllocator(Memory::IAllocator* alloc);
-
-    //! Gets the allocator to use when creating this texture
-    //! \return Allocator.
-    Memory::IAllocator* GetAllocator() const;
 
 
     //! Set the width of the texture in pixels
@@ -104,9 +96,6 @@ public:
     //------------------------------------------------------------------------------------
     
 private:
-
-    //! Allocator to use when creating the texture
-    Memory::IAllocator* mAllocator;
 
     //! Horizontal resolution of the texture in pixels (>= 1)
     unsigned int mWidth;

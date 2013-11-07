@@ -13,7 +13,9 @@
 #include "Pegasus/Application/Application.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Application/AppWindowManager.h"
+#include "Pegasus/Graph/NodeManager.h"
 #include "Pegasus/Render/GL/GLExtensions.h"
+#include "Pegasus/Texture/TextureManager.h"
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/Window/StartupWindow.h"
 
@@ -30,6 +32,9 @@ Application::Application(const ApplicationConfig& config)
 {
     Memory::IAllocator* coreAlloc = Memory::GetCoreAllocator();
     Memory::IAllocator* windowAlloc = Memory::GetWindowAllocator();
+    Memory::IAllocator* nodeAlloc = Memory::GetNodeAllocator();
+    Memory::IAllocator* nodeDataAlloc = Memory::GetNodeDataAllocator();
+
     AppWindowManagerConfig windowManagerConfig;
     WindowRegistration reg;
 
@@ -47,13 +52,17 @@ Application::Application(const ApplicationConfig& config)
     windowManagerConfig.mAllocator = windowAlloc;
     windowManagerConfig.mMaxWindowTypes = mConfig.mMaxWindowTypes;
     windowManagerConfig.mMaxNumWindows = mConfig.mMaxNumWindows;
-    mWindowManager = PG_NEW(windowAlloc, "AppWindowManager", Pegasus::Memory::PG_MEM_PERM) AppWindowManager(windowManagerConfig);
+    mWindowManager = PG_NEW(windowAlloc, "AppWindowManager", Memory::PG_MEM_PERM) AppWindowManager(windowManagerConfig);
 
     // Register startup window
     reg.mTypeTag = Pegasus::App::WINDOW_TYPE_INVALID;
     reg.mDescription = "INTERNAL Startup Window";
     reg.mCreateFunc = Wnd::StartupWindow::Create;
     mWindowManager->RegisterWindowClass(STARTUP_WND_TYPE, reg);
+
+    // Set up node managers
+    mNodeManager = PG_NEW(nodeAlloc, "NodeManager", Memory::PG_MEM_PERM) Graph::NodeManager(nodeAlloc, nodeDataAlloc);
+    mTextureManager = PG_NEW(nodeAlloc, "TextureManager", Memory::PG_MEM_PERM) Texture::TextureManager(mNodeManager);
 
     // Cache config
     mConfig = config;
@@ -64,6 +73,8 @@ Application::Application(const ApplicationConfig& config)
 Application::~Application()
 {
     Memory::IAllocator* windowAlloc = Memory::GetWindowAllocator();
+    Memory::IAllocator* nodeAlloc = Memory::GetNodeAllocator();
+    Memory::IAllocator* nodeDataAlloc = Memory::GetNodeDataAllocator();
 
     // Sanity check
     PG_ASSERTSTR(!mInitialized, "Application still initialized in destructor!");
@@ -71,6 +82,10 @@ Application::~Application()
     // Free windows
     mWindowManager->UnregisterWindowClass(STARTUP_WND_TYPE);
     PG_DELETE(windowAlloc, mWindowManager);
+
+    // Delete the texture and node managers
+    PG_DELETE(nodeAlloc, mTextureManager);
+    PG_DELETE(nodeAlloc, mNodeManager);
 
     // Tear down debugging facilities
 #if PEGASUS_ENABLE_ASSERT

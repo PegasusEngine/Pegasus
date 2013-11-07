@@ -42,6 +42,20 @@ IAllocator* GetRenderAllocator()
 
 //----------------------------------------------------------------------------------------
 
+IAllocator* GetNodeAllocator()
+{
+    return &sGlobalAllocator;
+}
+
+//----------------------------------------------------------------------------------------
+
+IAllocator* GetNodeDataAllocator()
+{
+    return &sGlobalAllocator;
+}
+
+//----------------------------------------------------------------------------------------
+
 IAllocator* GetWindowAllocator()
 {
     return &sGlobalAllocator;

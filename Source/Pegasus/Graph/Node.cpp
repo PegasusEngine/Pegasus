@@ -17,16 +17,21 @@ namespace Pegasus {
 namespace Graph {
 
 
-Node::Node(Memory::IAllocator* alloc)
-:   mAllocator(alloc),
+Node::Node(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator)
+:   mNodeAllocator(nodeAllocator),
+    mNodeDataAllocator(nodeDataAllocator),
     mRefCount(0),
     mNumInputs(0)
 {
+    PG_ASSERTSTR(nodeAllocator != nullptr, "Invalid node allocator given to a Node");
+    PG_ASSERTSTR(nodeDataAllocator != nullptr, "Invalid node data allocator given to a Node");
+
 #if PEGASUS_DEV
     mName[0] = '\0';
 
     // Create the DOT description of the node (name between quotes)
     //! \todo Handle DOT
+    mDOTDescription[0] = '\0';
     //strncpy(mDOTDescription, "\"", MAX_DOT_DESCRIPTION_LENGTH);
     //strlcat(mDOTDescription, mName, MAX_DOT_DESCRIPTION_LENGTH);
     //strlcat(mDOTDescription, "\"", MAX_DOT_DESCRIPTION_LENGTH);
@@ -296,7 +301,10 @@ void Node::Release()
 
     if (mRefCount <= 0)
     {
-        PG_DELETE(mAllocator, this);
+        //! \todo The destructor is called explicitly here because PG_DELETE does not do it.
+        //!       This should be replaced by implicit destructors
+        this->~Node();
+        PG_DELETE(mNodeAllocator, this);
     }
 }
 

@@ -21,11 +21,9 @@ namespace Texture {
 //! Texture operator that adds an arbitrary number of textures together
 class AddOperator : public TextureOperator
 {
-public:
+    DECLARE_TEXTURE_OPERATOR_NODE(AddOperator)
 
-    //! Constructor
-    //! \param configuration Configuration of the operator, such as the resolution and pixel format
-    AddOperator(const TextureConfiguration & configuration);
+public:
 
     //! Specifies the minimum number of input nodes accepted by the current node
     //! \return 1
@@ -47,19 +45,8 @@ public:
     
 protected:
 
-    //! Destructor
-    virtual ~AddOperator();
-
-
     //! Generate the content of the data associated with the texture operator
     virtual void GenerateData();
-
-    //------------------------------------------------------------------------------------
-
-private:
-
-    // Nodes cannot be copied, only references to them
-    PG_DISABLE_COPY(AddOperator)
 };
 
 

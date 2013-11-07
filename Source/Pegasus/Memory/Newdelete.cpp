@@ -40,14 +40,14 @@ void* operator new[](size_t size, Pegasus::Memory::IAllocator* allocator, Pegasu
 
 //----------------------------------------------------------------------------------------
 
-void operator delete(void* pointer)
+void operator delete(void* pointer, Pegasus::Memory::IAllocator* allocator, Pegasus::Memory::Flags flags, const char * debugText, const char * file, int line)
 {
     Pegasus::Memory::GetGlobalAllocator()->Delete(pointer, __FILE__, __LINE__);
 }
 
 //----------------------------------------------------------------------------------------
 
-void operator delete[](void* pointer)
+void operator delete[](void* pointer, Pegasus::Memory::IAllocator* allocator, Pegasus::Memory::Flags flags, const char * debugText, const char * file, int line)
 {
     Pegasus::Memory::GetGlobalAllocator()->DeleteArray(pointer, __FILE__, __LINE__);
 }

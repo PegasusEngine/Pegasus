@@ -30,6 +30,7 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\GeneratorNode.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\Node.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\NodeData.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\NodeManager.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\OperatorNode.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\OutputNode.h" />
   </ItemGroup>
@@ -37,6 +38,7 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\GeneratorNode.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\Node.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\NodeData.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\NodeManager.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\OperatorNode.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\OutputNode.cpp" />
   </ItemGroup>

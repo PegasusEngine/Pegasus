@@ -15,19 +15,6 @@ namespace Pegasus {
 namespace Texture {
 
 
-AddOperator::AddOperator(const TextureConfiguration & configuration)
-:   TextureOperator(configuration)
-{
-}
-
-//----------------------------------------------------------------------------------------
-
-AddOperator::~AddOperator()
-{
-}
-
-//----------------------------------------------------------------------------------------
-
 void AddOperator::GenerateData()
 {
     //! \todo Implement

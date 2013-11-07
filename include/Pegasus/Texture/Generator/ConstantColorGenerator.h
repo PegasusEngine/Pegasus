@@ -21,12 +21,9 @@ namespace Texture {
 //! Texture generator that fills the image with a constant color
 class ConstantColorGenerator : public TextureGenerator
 {
+    DECLARE_TEXTURE_GENERATOR_NODE(ConstantColorGenerator)
+
 public:
-
-    //! Constructor
-    //! \param configuration Configuration of the generator, such as the resolution and pixel format
-    ConstantColorGenerator(const TextureConfiguration & configuration);
-
 
     //! Update the generator internal state by pulling external parameters.
     //! This function sets the dirty flag of the node data if the internal state has changed
@@ -39,19 +36,8 @@ public:
     
 protected:
 
-    //! Destructor
-    virtual ~ConstantColorGenerator();
-
-
     //! Generate the content of the data associated with the texture generator
     virtual void GenerateData();
-
-    //------------------------------------------------------------------------------------
-
-private:
-
-    // Nodes cannot be copied, only references to them
-    PG_DISABLE_COPY(ConstantColorGenerator)
 };
 
 

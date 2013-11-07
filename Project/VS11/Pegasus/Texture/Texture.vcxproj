@@ -32,7 +32,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Texture.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureConfiguration.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureData.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureDeclaration.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureGenerator.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureManager.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureOperator.h" />
   </ItemGroup>
   <ItemGroup>
@@ -42,6 +44,7 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureConfiguration.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureData.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureGenerator.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureManager.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureOperator.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

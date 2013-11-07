@@ -24,8 +24,9 @@ class GeneratorNode : public Node
 public:
 
     //! Default constructor
-    //! \param alloc Allocator to use when creating this node.
-    GeneratorNode(Memory::IAllocator* alloc);
+    //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
+    //! \param nodeDataAllocator Allocator used for NodeData
+    GeneratorNode(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator);
 
     //! Override the function to add an input to prevent it to be called.
     //! \warning Throws an assertion error since generators cannot have inputs

@@ -15,10 +15,33 @@ namespace Pegasus {
 namespace Texture {
 
 
-TextureGenerator::TextureGenerator(const TextureConfiguration & configuration)
-:   Graph::GeneratorNode(configuration.GetAllocator()),
+TextureGenerator::TextureGenerator(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator)
+:   Graph::GeneratorNode(nodeAllocator, nodeDataAllocator),
+    mConfiguration()
+{
+}
+
+//----------------------------------------------------------------------------------------
+
+TextureGenerator::TextureGenerator(const TextureConfiguration & configuration,
+                                   Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator)
+:   Graph::GeneratorNode(nodeAllocator, nodeDataAllocator),
     mConfiguration(configuration)
 {
+}
+
+//----------------------------------------------------------------------------------------
+
+void TextureGenerator::SetConfiguration(const TextureConfiguration & configuration)
+{
+    if (GetRefCount() == 1)
+    {
+        mConfiguration = configuration;
+    }
+    else
+    {
+        PG_FAILSTR("Cannot set the configuration of a texture generator because the node is already in use");
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -31,8 +54,8 @@ TextureGenerator::~TextureGenerator()
 
 Graph::NodeData * TextureGenerator::AllocateData() const
 {
-    //! \todo Use allocator
-    return PG_NEW(GetAllocator(), "TextureGenerator::TextureData", Pegasus::Memory::PG_MEM_TEMP) TextureData(mConfiguration);
+    return PG_NEW(GetNodeAllocator(), "TextureGenerator::TextureData", Pegasus::Memory::PG_MEM_TEMP)
+                    TextureData(mConfiguration, GetNodeDataAllocator());
 }
 
 
