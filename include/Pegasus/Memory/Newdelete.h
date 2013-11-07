@@ -42,7 +42,12 @@ void* operator new[] (size_t size, Pegasus::Memory::IAllocator* allocator, Pegas
 
 //! Pegasus delete operator
 //! \param pointer Address of memory to delete
-//! \param allocator Dummy parameter
+//! \todo Make sure this function is called properly in a unit test
+void operator delete(void* pointer);
+
+//! Pegasus delete operator (corresponding to the 
+//! \param pointer Address of memory to delete
+//! \param allocator Allocator used by the corresponding new
 //! \param flags Dummy parameter
 //! \param debugText Dummy parameter
 //! \param file Dummy parameter
@@ -55,7 +60,7 @@ void operator delete(void* pointer, Pegasus::Memory::IAllocator* allocator, Pega
 
 //! Pegasus array delete operator
 //! \param pointer Address of memory to delete
-//! \param allocator Dummy parameter
+//! \param allocator Allocator used by the corresponding new
 //! \param flags Dummy parameter
 //! \param debugText Dummy parameter
 //! \param file Dummy parameter
