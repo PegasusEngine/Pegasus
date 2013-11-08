@@ -6,15 +6,15 @@
 
 //! \file   AppExport.h
 //! \author David Worsham
-//! \date   5th October 2013
+//! \date   05th October 2013
 //! \brief  Exported functions for creating an app proxy via the launcher or editor.
 
 #ifndef PEGASUS_APPEXPORT_H
 #define PEGASUS_APPEXPORT_H
 
 #if PEGASUS_ENABLE_PROXIES
-#include "Pegasus\Application\ApplicationProxy.h"
-#include "Pegasus\Memory\MemoryManager.h"
+#include "Pegasus/Application/ApplicationProxy.h"
+#include "Pegasus/Memory/MemoryManager.h"
 
 #ifdef __cplusplus
 extern "C" {

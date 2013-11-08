@@ -6,14 +6,14 @@
 
 //! \file   RenderContext.h
 //! \author David Worsham
-//! \date   5th July 2013
+//! \date   05th July 2013
 //! \brief  Class that encapsulates an OGL rendering context.
 
 #ifndef PEGASUS_RENDER_RENDERCONTEXT_H
 #define PEGASUS_RENDER_RENDERCONTEXT_H
 
-#include "Pegasus\Render\RenderContextConfig.h"
-#include "Pegasus\Render\GL\GLEWStaticInclude.h"
+#include "Pegasus/Render/RenderContextConfig.h"
+#include "Pegasus/Render/GL/GLEWStaticInclude.h"
 
 // Forward declarations
 namespace Pegasus {

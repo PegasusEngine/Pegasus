@@ -4,16 +4,16 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   FileName.h
-//! \author Firstname Lastname
-//! \date   XX month year
-//! \brief  brief
+//! \file   IWindowImpl.h
+//! \author David Worsham
+//! \date   02 November 2013
+//! \brief  Platform-specific interface for a window.
 
 #ifndef PEGASUS_WND_IWINDOWIMPL_H
 #define PEGASUS_WND_IWINDOWIMPL_H
 
 #include "Pegasus/Window/Shared/WindowConfig.h"
-#include "..\Source\Pegasus\Window\IWindowMessageHandler.h"
+#include "../Source/Pegasus/Window/IWindowMessageHandler.h"
 
 namespace Pegasus {
 namespace Wnd {

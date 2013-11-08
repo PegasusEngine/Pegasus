@@ -13,8 +13,8 @@
 #define PEGASUS_RENDER_RENDERCONTEXTWIN32_H
 
 #if PEGASUS_PLATFORM_WINDOWS
-#include "..\Source\Pegasus\Render\IRenderContextImpl.h"
-#include "Pegasus\Render\RenderContextConfig.h"
+#include "../Source/Pegasus/Render/IRenderContextImpl.h"
+#include "Pegasus/Render/RenderContextConfig.h"
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 

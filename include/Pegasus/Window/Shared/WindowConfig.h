@@ -6,7 +6,7 @@
 
 //! \file   WindowConfig.h
 //! \author David Worsham
-//! \date   6th October 2013
+//! \date   06th October 2013
 //! \brief  Config structure for a window.
 
 #ifndef PEGASUS_WND_WINDOWCONFIG_H

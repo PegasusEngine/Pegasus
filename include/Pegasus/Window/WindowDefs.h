@@ -6,7 +6,7 @@
 
 //! \file   WindowDefs.h
 //! \author David Worsham
-//! \date   4th Junly 2013
+//! \date   04th Junly 2013
 //! \brief  Common typedefs for the windowing system.
 
 #ifndef PEGASUS_WND_WINDOWDEFS_H

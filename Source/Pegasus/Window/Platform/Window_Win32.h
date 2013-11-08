@@ -13,8 +13,8 @@
 #define PEGASUS_WND_WINDOWWIN32_H
 
 #if PEGASUS_PLATFORM_WINDOWS
-#include "..\Source\Pegasus\Window\IWindowImpl.h"
-#include "Pegasus\Window\Shared\WindowConfig.h"
+#include "../Source/Pegasus/Window/IWindowImpl.h"
+#include "Pegasus/Window/Shared/WindowConfig.h"
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 

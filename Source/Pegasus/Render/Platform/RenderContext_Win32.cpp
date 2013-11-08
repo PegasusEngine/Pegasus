@@ -10,7 +10,7 @@
 //! \brief  Platform-specific render context for Windows.
 
 #if PEGASUS_PLATFORM_WINDOWS
-#include "..\Source\Pegasus\Render\Platform\RenderContext_Win32.h"
+#include "../Source/Pegasus/Render/Platform/RenderContext_Win32.h"
 #include "Pegasus/Render/GL/GLEWStaticInclude.h"
 
 namespace Pegasus {

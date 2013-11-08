@@ -6,11 +6,11 @@
 
 //! \file   RenderContext.cpp
 //! \author David Worsham
-//! \date   5th July 2013
+//! \date   05th July 2013
 //! \brief  Class that encapsulates an OGL rendering context.
 
 #include "Pegasus/Render/RenderContext.h"
-#include "..\Source\Pegasus\Render\IRenderContextImpl.h"
+#include "../Source/Pegasus/Render/IRenderContextImpl.h"
 
 namespace Pegasus {
 namespace Render {

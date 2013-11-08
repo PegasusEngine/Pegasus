@@ -13,7 +13,7 @@
 #define PEGASUS_SHARED_WINDOWPROXY_H
 
 #if PEGASUS_ENABLE_PROXIES
-#include "Pegasus\Window\Shared\IWindowProxy.h"
+#include "Pegasus/Window/Shared/IWindowProxy.h"
 
 // Forward declarations
 namespace Pegasus {

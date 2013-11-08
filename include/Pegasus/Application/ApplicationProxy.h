@@ -13,7 +13,7 @@
 #define PEGASUS_SHARED_APPPROXY_H
 
 #if PEGASUS_ENABLE_PROXIES
-#include "Pegasus\Application\Shared\IApplicationProxy.h"
+#include "Pegasus/Application/Shared/IApplicationProxy.h"
 
 // Forward declarations
 namespace Pegasus {

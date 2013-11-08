@@ -6,7 +6,7 @@
 
 //! \file   Window.h
 //! \author David Worsham
-//! \date   4th July 2013
+//! \date   04th July 2013
 //! \brief  Class for a single window in a Pegasus application.
 
 #ifndef PEGASUS_WND_WINDOW_H

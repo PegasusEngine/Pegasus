@@ -6,7 +6,7 @@
 
 //! \file   Version.h
 //! \author David Worsham
-//! \date   5th October 2013
+//! \date   05th October 2013
 //! \brief  Methods for checking the version of the engine.
 
 #ifndef PEGASUS_VERSION_H

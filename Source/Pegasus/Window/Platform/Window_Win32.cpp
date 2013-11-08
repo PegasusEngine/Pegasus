@@ -10,7 +10,7 @@
 //! \brief  Platform-specific window impl, for Windows.
 
 #if PEGASUS_PLATFORM_WINDOWS
-#include "..\Source\Pegasus\Window\Platform\Window_Win32.h"
+#include "../Source/Pegasus/Window/Platform/Window_Win32.h"
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
