@@ -18,6 +18,11 @@ namespace Memory {
 // Global allocator
 //! \todo Real allocator / heap management...
 static MallocFreeAllocator sGlobalAllocator(0);
+static MallocFreeAllocator sCoreAllocator(1);
+static MallocFreeAllocator sRenderAllocator(2);
+static MallocFreeAllocator sNodeAllocator(3);
+static MallocFreeAllocator sNodeDataAllocator(4);
+static MallocFreeAllocator sWindowAllocator(5);
 
 //----------------------------------------------------------------------------------------
 
@@ -30,35 +35,35 @@ Alloc::IAllocator* GetGlobalAllocator()
 
 Alloc::IAllocator* GetCoreAllocator()
 {
-    return &sGlobalAllocator;
+    return &sCoreAllocator;
 }
 
 //----------------------------------------------------------------------------------------
 
 Alloc::IAllocator* GetRenderAllocator()
 {
-    return &sGlobalAllocator;
+    return &sRenderAllocator;
 }
 
 //----------------------------------------------------------------------------------------
 
 Alloc::IAllocator* GetNodeAllocator()
 {
-    return &sGlobalAllocator;
+    return &sNodeAllocator;
 }
 
 //----------------------------------------------------------------------------------------
 
 Alloc::IAllocator* GetNodeDataAllocator()
 {
-    return &sGlobalAllocator;
+    return &sNodeDataAllocator;
 }
 
 //----------------------------------------------------------------------------------------
 
 Alloc::IAllocator* GetWindowAllocator()
 {
-    return &sGlobalAllocator;
+    return &sWindowAllocator;
 }
 
 
