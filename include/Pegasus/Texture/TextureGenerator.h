@@ -49,13 +49,6 @@ public:
     inline const TextureConfiguration & GetConfiguration() const { return mConfiguration; }
 
 
-    //! Update the generator internal state by pulling external parameters.
-    //! This function sets the dirty flag of the node data if the internal state has changed
-    //! and returns the dirty flag to the parent caller.
-    //! That will trigger a data refresh when calling GetUpdatedData().
-    //! \return True if the node data are dirty
-    //virtual bool Update() = 0;
-
     //! Return the texture generator up-to-date data.
     //! \note Defines the standard behavior of all generator nodes.
     //!       Calls GenerateData() if the node data are dirty.

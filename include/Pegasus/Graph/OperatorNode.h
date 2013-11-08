@@ -51,12 +51,12 @@ public:
     //! This function sets the dirty flag of the node data if the internal state has changed
     //! or if an input node is dirty, and returns the dirty flag to the parent caller.
     //! That will trigger a chain of refreshed data when calling GetUpdatedData().
-    //! \note To be redefined in derived classes if required
+    //! \note To be redefined in derived classes if required.
+    //!       In that case, this Update() should be called first, then the dirty flag
+    //!       can be ORed with the content of the override before returning it.
     //! \note This class implements the default behavior of an operator:
     //!       if any input is dirty, invalidate the node data and return true,
     //!       otherwise return the dirty state of the data
-    //! \warning If redefined in a derived class, update the internal state first,
-    //!          then call \a Update() from this class to handle the dirty flag properly
     //! \return True if the node data are dirty or if any input node is.
     virtual bool Update();
 
@@ -73,11 +73,6 @@ public:
     //!       to not have the dirty flag turned on.
     //!       Redefine this function in derived classes to change its behavior
     virtual NodeDataReturn GetUpdatedData(bool & updated);
-
-    //! Deallocate the data of the current node and ask the input nodes to do the same.
-    //! Typically used when keeping the graph in memory but not the associated data,
-    //! to save memory and to be able to restore the data later
-    //virtual void ReleaseDataAndPropagate();
 
     //------------------------------------------------------------------------------------
     

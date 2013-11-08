@@ -60,12 +60,6 @@ NodeDataReturn GeneratorNode::GetUpdatedData(bool & updated)
 }
 
 //----------------------------------------------------------------------------------------
-
-//void GeneratorNode::ReleaseDataAndPropagate()
-//{
-//}
-
-//----------------------------------------------------------------------------------------
     
 GeneratorNode::~GeneratorNode()
 {

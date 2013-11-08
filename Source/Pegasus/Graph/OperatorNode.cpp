@@ -113,10 +113,6 @@ NodeDataReturn OperatorNode::GetUpdatedData(bool & updated)
 }
 
 //----------------------------------------------------------------------------------------
-
-//virtual void ReleaseDataAndPropagate();
-
-//----------------------------------------------------------------------------------------
     
 OperatorNode::~OperatorNode()
 {

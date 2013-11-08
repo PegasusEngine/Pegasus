@@ -76,12 +76,6 @@ NodeDataReturn OutputNode::GetUpdatedData(bool & updated)
 }
 
 //----------------------------------------------------------------------------------------
-
-//void OutputNode::ReleaseDataAndPropagate()
-//{
-//}
-
-//----------------------------------------------------------------------------------------
     
 OutputNode::~OutputNode()
 {

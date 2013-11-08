@@ -49,13 +49,6 @@ public:
     inline const TextureConfiguration & GetConfiguration() const { return mConfiguration; }
 
 
-    //! Update the operator internal state by pulling external parameters.
-    //! This function sets the dirty flag of the node data if the internal state has changed
-    //! or if an input node is dirty, and returns the dirty flag to the parent caller.
-    //! That will trigger a chain of refreshed data when calling GetUpdatedData().
-    //! \return True if the node data are dirty or if any input node is.
-    //virtual bool Update() = 0;
-
     //! Return the texture operator up-to-date data.
     //! \note Defines the standard behavior of all texture operator nodes.
     //!       Calls GetUpdatedData() on all inputs, and if any of them was dirty,

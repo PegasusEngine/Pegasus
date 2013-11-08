@@ -55,11 +55,6 @@ public:
     //!         (throws an assertion error in that case)
     virtual NodeDataReturn GetUpdatedData(bool & updated);
 
-    //! Deallocate the data of the current node and ask the input nodes to do the same.
-    //! Typically used when keeping the graph in memory but not the associated data,
-    //! to save memory and to be able to restore the data later
-    //virtual void ReleaseDataAndPropagate();
-
     //------------------------------------------------------------------------------------
 
 protected:

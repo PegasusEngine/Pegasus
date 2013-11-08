@@ -67,12 +67,6 @@ public:
     void SetOperatorInput(TextureOperatorIn textureOperator);
 
 
-    //! Update the texture internal state by pulling external parameters.
-    //! \note Does only call Update() for the input node.
-    //!       That will trigger a chain of refreshed data when calling GetUpdatedData().
-    //! \return True if the node data of the input node are dirty or if any input node is.
-    //virtual bool Update() = 0;
-
     //! Return the texture up-to-date data.
     //! \return Reference to the texture data, belonging either to the current node
     //!         or to one of the input nodes, cannot be a null reference.
