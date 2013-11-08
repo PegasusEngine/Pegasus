@@ -37,18 +37,18 @@
         inline static const char * GetClassName() { return #className; }                    \
                                                                                             \
         inline static Pegasus::Graph::NodeReturn CreateNode(                                \
-                                    Pegasus::Memory::IAllocator * nodeAllocator,            \
-                                    Pegasus::Memory::IAllocator * nodeDataAllocator)        \
-            {   return PG_NEW(nodeAllocator, "Texture::" #className, Memory::PG_MEM_PERM)   \
+                                    Pegasus::Alloc::IAllocator* nodeAllocator,            \
+                                    Pegasus::Alloc::IAllocator* nodeDataAllocator)        \
+            {   return PG_NEW(nodeAllocator, -1, "Texture::" #className, Alloc::PG_MEM_PERM)   \
                                 className(nodeAllocator, nodeDataAllocator); }              \
                                                                                             \
-        className(Pegasus::Memory::IAllocator * nodeAllocator,                              \
-                  Pegasus::Memory::IAllocator * nodeDataAllocator)                          \
+        className(Pegasus::Alloc::IAllocator* nodeAllocator,                              \
+                  Pegasus::Alloc::IAllocator* nodeDataAllocator)                          \
         :   baseClassName(nodeAllocator, nodeDataAllocator) { }                             \
                                                                                             \
         className(const Pegasus::Texture::TextureConfiguration & configuration,             \
-                  Pegasus::Memory::IAllocator * nodeAllocator,                              \
-                  Pegasus::Memory::IAllocator * nodeDataAllocator)                          \
+                  Pegasus::Alloc::IAllocator* nodeAllocator,                              \
+                  Pegasus::Alloc::IAllocator* nodeDataAllocator)                          \
         :   baseClassName(configuration, nodeAllocator, nodeDataAllocator) { }              \
                                                                                             \
     protected:                                                                              \

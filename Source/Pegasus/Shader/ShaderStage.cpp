@@ -39,7 +39,7 @@ static struct ShaderStageProperties
 namespace Pegasus {
 namespace Shader {
 
-ShaderStage::ShaderStage(Memory::IAllocator* alloc)
+ShaderStage::ShaderStage(Alloc::IAllocator* alloc)
  : mAllocator(alloc), mType(Pegasus::Shader::SHADER_STAGE_INVALID)
 {
 }
@@ -160,7 +160,7 @@ bool ShaderStage::CompileFromSrc(Pegasus::Shader::ShaderType type, const char * 
         mFileBuffer.DestroyBuffer();
         mFileBuffer.OwnBuffer (
             mAllocator,
-            PG_NEW_ARRAY(mAllocator, "shader src", Pegasus::Memory::PG_MEM_PERM, char, srcSize),
+            PG_NEW_ARRAY(mAllocator, -1, "shader src", Pegasus::Alloc::PG_MEM_PERM, char, srcSize),
             srcSize
         );
         mFileBuffer.SetFileSize(srcSize);

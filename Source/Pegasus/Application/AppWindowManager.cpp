@@ -44,7 +44,7 @@ struct TypeTable
 {
 public:
     // Ctor / dtor
-    TypeTable(unsigned int max, Memory::IAllocator* alloc);
+    TypeTable(unsigned int max, Alloc::IAllocator* alloc);
     ~TypeTable();
 
     // Helpers
@@ -55,7 +55,7 @@ public:
     void Remove(const char* typeName);
 
 
-    Memory::IAllocator* mAllocator; //! Allocator to use when creating this object
+    Alloc::IAllocator* mAllocator; //! Allocator to use when creating this object
     TypeTableEntry* mTable; // Table members
     unsigned int mCurrentSize; // Current table size
     unsigned int mMaxSize; // Maximum table size
@@ -69,7 +69,7 @@ struct WindowTable
 {
 public:
     // ctor / dtor
-    WindowTable(unsigned int max, Memory::IAllocator* alloc);
+    WindowTable(unsigned int max, Alloc::IAllocator* alloc);
     ~WindowTable();
 
     // Helpers
@@ -78,7 +78,7 @@ public:
     void Remove(Wnd::Window* entry);
 
 
-    Memory::IAllocator* mAllocator; //! Allocator to use when creating this object
+    Alloc::IAllocator* mAllocator; //! Allocator to use when creating this object
     Wnd::Window** mTable; // Table members
     unsigned int mCurrentSize; // Table size
     unsigned int mMaxSize; // Max table size
@@ -145,10 +145,10 @@ void TypeTableEntry::Clear()
 
 //----------------------------------------------------------------------------------------
 
-TypeTable::TypeTable(unsigned int max, Memory::IAllocator* alloc)
+TypeTable::TypeTable(unsigned int max, Alloc::IAllocator* alloc)
     : mAllocator(alloc), mCurrentSize(0), mMaxSize(max), mMainWindowIndex(-1)
 {
-    mTable = PG_NEW_ARRAY(mAllocator, "TypeTableEntries", Pegasus::Memory::PG_MEM_PERM, TypeTableEntry, mMaxSize);
+    mTable = PG_NEW_ARRAY(mAllocator, -1, "TypeTableEntries", Pegasus::Alloc::PG_MEM_PERM, TypeTableEntry, mMaxSize);
 }
 
 //----------------------------------------------------------------------------------------
@@ -269,10 +269,10 @@ void TypeTable::Remove(const char* typeName)
 
 //----------------------------------------------------------------------------------------
 
-WindowTable::WindowTable(unsigned int max, Memory::IAllocator* alloc)
+WindowTable::WindowTable(unsigned int max, Alloc::IAllocator* alloc)
 : mAllocator(alloc), mCurrentSize(0), mMaxSize(max)
 {
-    mTable = PG_NEW_ARRAY(mAllocator, "WindowTableEntries", Pegasus::Memory::PG_MEM_PERM, Wnd::Window*, mMaxSize);
+    mTable = PG_NEW_ARRAY(mAllocator, -1, "WindowTableEntries", Pegasus::Alloc::PG_MEM_PERM, Wnd::Window*, mMaxSize);
 
     // Zero out window table
     for (unsigned int i = 0; i < mMaxSize; i++)
@@ -345,8 +345,8 @@ void WindowTable::Remove(Wnd::Window* entry)
 AppWindowManager::AppWindowManager(const AppWindowManagerConfig& config)
     : mAllocator(config.mAllocator)
 {
-    mTypeTable = PG_NEW(mAllocator, "WindowManager-TypeTable", Pegasus::Memory::PG_MEM_PERM) TypeTable(config.mMaxWindowTypes, mAllocator);
-    mWindowTable = PG_NEW(mAllocator, "WindowManager-TypeTable", Pegasus::Memory::PG_MEM_PERM) WindowTable(config.mMaxNumWindows, mAllocator);
+    mTypeTable = PG_NEW(mAllocator, -1, "WindowManager-TypeTable", Pegasus::Alloc::PG_MEM_PERM) TypeTable(config.mMaxWindowTypes, mAllocator);
+    mWindowTable = PG_NEW(mAllocator, -1, "WindowManager-TypeTable", Pegasus::Alloc::PG_MEM_PERM) WindowTable(config.mMaxNumWindows, mAllocator);
 }
 
 //----------------------------------------------------------------------------------------

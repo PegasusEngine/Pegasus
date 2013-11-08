@@ -33,7 +33,7 @@ public:
     //! \param config Config struct to use for the new window.
     //! \param alloc Allocator to use when crating this window.
     //! \return New window.
-    static Window* Create(const WindowConfig& config, Memory::IAllocator* alloc);
+    static Window* Create(const WindowConfig& config, Alloc::IAllocator* alloc);
 
 
     // Window API

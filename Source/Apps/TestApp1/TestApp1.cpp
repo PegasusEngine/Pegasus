@@ -41,16 +41,16 @@ TestApp1::~TestApp1()
 
 Pegasus::App::Application * CreateApplication(const Pegasus::App::ApplicationConfig& config)
 {
-    Pegasus::Memory::IAllocator* globalAlloc = Pegasus::Memory::GetGlobalAllocator();
+    Pegasus::Alloc::IAllocator* globalAlloc = Pegasus::Memory::GetGlobalAllocator();
 
-    return PG_NEW(globalAlloc, "TestApp1", Pegasus::Memory::PG_MEM_PERM) TestApp1(config);
+    return PG_NEW(globalAlloc, -1, "TestApp1", Pegasus::Alloc::PG_MEM_PERM) TestApp1(config);
 }
 
 //----------------------------------------------------------------------------------------
 
 void DestroyApplication(Pegasus::App::Application* app)
 {
-    Pegasus::Memory::IAllocator* globalAlloc = Pegasus::Memory::GetGlobalAllocator();
+    Pegasus::Alloc::IAllocator* globalAlloc = Pegasus::Memory::GetGlobalAllocator();
 
     PG_DELETE(globalAlloc, app);
 }

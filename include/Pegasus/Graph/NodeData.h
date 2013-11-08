@@ -29,7 +29,11 @@ public:
     //! Default constructor
     //! \param allocator Allocator used for the node data
     //! \note Sets the dirty flag
-    NodeData(Memory::IAllocator * allocator);
+    NodeData(Alloc::IAllocator* allocator);
+
+    //! Destructor
+    virtual ~NodeData();
+
 
 
     //! Set the data as dirty, meaning they will need to be recomputed to be valid
@@ -47,13 +51,9 @@ public:
     
 protected:
 
-    //! Destructor
-    virtual ~NodeData();
-
-
     //! Get the allocator for the node data, to be used in every derived class
     //! \return Node allocator
-    inline Memory::IAllocator * GetAllocator() const { return mAllocator; }
+    inline Alloc::IAllocator* GetAllocator() const { return mAllocator; }
 
     //------------------------------------------------------------------------------------
     
@@ -76,7 +76,7 @@ private:
 
 
     //! Allocator for this object
-    Memory::IAllocator * mAllocator;
+    Alloc::IAllocator* mAllocator;
 
     //! Reference counter
     //! \todo Use atomic integer

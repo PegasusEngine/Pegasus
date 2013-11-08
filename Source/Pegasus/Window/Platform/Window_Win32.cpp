@@ -23,14 +23,14 @@ static const char* PEGASUS_WND_WNDNAME = "PegasusEngine";
 
 //----------------------------------------------------------------------------------------
 
-IWindowImpl* IWindowImpl::CreateImpl(const WindowConfig& config, Memory::IAllocator* alloc, IWindowMessageHandler* messageHandler)
+IWindowImpl* IWindowImpl::CreateImpl(const WindowConfig& config, Alloc::IAllocator* alloc, IWindowMessageHandler* messageHandler)
 {
-    return PG_NEW(alloc, "Window platform impl", Pegasus::Memory::PG_MEM_PERM) WindowImpl_Win32(config, messageHandler);
+    return PG_NEW(alloc, -1, "Window platform impl", Pegasus::Alloc::PG_MEM_PERM) WindowImpl_Win32(config, messageHandler);
 }
 
 //----------------------------------------------------------------------------------------
 
-void IWindowImpl::DestroyImpl(IWindowImpl* impl, Memory::IAllocator* alloc)
+void IWindowImpl::DestroyImpl(IWindowImpl* impl, Alloc::IAllocator* alloc)
 {
     PG_DELETE(alloc, impl);
 }

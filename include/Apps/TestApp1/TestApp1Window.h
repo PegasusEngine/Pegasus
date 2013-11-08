@@ -26,7 +26,7 @@ public:
     ~TestApp1Window();
 
     // Factory API
-    static Pegasus::Wnd::Window* Create(const Pegasus::Wnd::WindowConfig& config, Pegasus::Memory::IAllocator* alloc);
+    static Pegasus::Wnd::Window* Create(const Pegasus::Wnd::WindowConfig& config, Pegasus::Alloc::IAllocator* alloc);
 
     // App-specific API
     virtual void Initialize();

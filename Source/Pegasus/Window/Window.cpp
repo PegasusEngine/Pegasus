@@ -61,7 +61,7 @@ void WindowMessageHandler::OnCreate(Render::DeviceContextHandle handle)
     contextConfig.mAllocator = mParent->mRenderAllocator;
     contextConfig.mDeviceContextHandle = handle;
     contextConfig.mStartupContext = mUseBasicContext;
-    mParent->mRenderContext = PG_NEW(mParent->mRenderAllocator, "Render::Context", Pegasus::Memory::PG_MEM_PERM) Render::Context(contextConfig);
+    mParent->mRenderContext = PG_NEW(mParent->mRenderAllocator, -1, "Render::Context", Pegasus::Alloc::PG_MEM_PERM) Render::Context(contextConfig);
     mParent->mContextCreated = true;
 }
 
@@ -104,7 +104,7 @@ Window::Window(const WindowConfig& config)
     mHeight(config.mHeight)
 {
     // Create platform stuff
-    mMessageHandler = PG_NEW(mAllocator, "Window message handler", Pegasus::Memory::PG_MEM_PERM) WindowMessageHandler(config.mUseBasicContext, this);
+    mMessageHandler = PG_NEW(mAllocator, -1, "Window message handler", Pegasus::Alloc::PG_MEM_PERM) WindowMessageHandler(config.mUseBasicContext, this);
     mPrivateImpl = IWindowImpl::CreateImpl(config, mAllocator, mMessageHandler);
 }
 

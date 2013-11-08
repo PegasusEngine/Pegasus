@@ -10,10 +10,11 @@
 //! \brief  Proxy object, used by the editor and launcher to interact with an app.
 
 #if PEGASUS_ENABLE_PROXIES
-#include "Pegasus\Application\ApplicationProxy.h"
-#include "Pegasus\Application\Application.h"
-#include "Pegasus\Window\WindowProxy.h"
-#include "Pegasus\Window\Window.h"
+#include "Pegasus/Application/ApplicationProxy.h"
+#include "Pegasus/Application/Application.h"
+#include "Pegasus/Memory/MemoryManager.h"
+#include "Pegasus/Window/WindowProxy.h"
+#include "Pegasus/Window/Window.h"
 
 extern Pegasus::App::Application* CreateApplication(const Pegasus::App::ApplicationConfig& config);
 extern void DestroyApplication(Pegasus::App::Application* app);
@@ -47,9 +48,9 @@ const char* ApplicationProxy::GetMainWindowType() const
 
 Wnd::IWindowProxy* ApplicationProxy::AttachWindow(const AppWindowConfig& config)
 {
-    Memory::IAllocator* windowAlloc = Memory::GetWindowAllocator();
+    Alloc::IAllocator* windowAlloc = Memory::GetWindowAllocator();
     Wnd::Window* wnd = mObject->AttachWindow(config);
-    Wnd::WindowProxy* proxy = PG_NEW(windowAlloc, "WindowProxy", Pegasus::Memory::PG_MEM_PERM) Wnd::WindowProxy(wnd); // Wrap in proxy
+    Wnd::WindowProxy* proxy = PG_NEW(windowAlloc, -1, "WindowProxy", Pegasus::Alloc::PG_MEM_PERM) Wnd::WindowProxy(wnd); // Wrap in proxy
 
     return proxy;
 }
@@ -58,7 +59,7 @@ Wnd::IWindowProxy* ApplicationProxy::AttachWindow(const AppWindowConfig& config)
 
 void ApplicationProxy::DetachWindow(Wnd::IWindowProxy* wnd)
 {
-    Memory::IAllocator* windowAlloc = Memory::GetWindowAllocator();
+    Alloc::IAllocator* windowAlloc = Memory::GetWindowAllocator();
 
     mObject->DetachWindow(wnd->Unwrap()); // Unwrap and destroy proxied window
     PG_DELETE(windowAlloc, wnd);
@@ -89,4 +90,6 @@ void ApplicationProxy::SetAppTime(float time)
 }   // namespace App
 }   // namespace Pegasus
 
+#else
+PEGASUS_AVOID_EMPTY_FILE_WARNING;
 #endif  // PEGASUS_ENABLE_PROXIES

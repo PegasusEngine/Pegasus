@@ -12,6 +12,8 @@
 #ifndef PEGASUS_CORE_SINGLETON_H
 #define PEGASUS_CORE_SINGLETON_H
 
+#include "Pegasus/Allocator/Alloc.h"
+
 #define _STRINGIFY_SINGLETON_CLASS(C) #C
 
 namespace Pegasus {
@@ -20,7 +22,7 @@ namespace Core {
 //! Singleton template
 //! Base class for an object that has to exist only once in the application.
 //! Creation and destruction have to be handled manually.
-//! \warning \a GetInstance() can return nullptr, so be careful when using the instance pointer
+//! \warning A GetInstance() can return nullptr, so be careful when using the instance pointer
 template <class C>
 class Singleton
 {
@@ -29,7 +31,7 @@ public:
     //! \param alloc Allocator used to create the instance.
     //! \return Pointer to the unique instance of the class.
     //! \warning Cannot be called twice without a call to \a DestroyInstance() first
-    static C* CreateInstance(Memory::IAllocator* alloc);
+    static C* CreateInstance(Alloc::IAllocator* alloc);
 
     //! Destroy the unique instance of the class
     //! \warning \a CreateInstace() must be called at least once before this function
@@ -52,7 +54,7 @@ private:
     PG_DISABLE_COPY(Singleton)
 
     static C* sInstance; //!< Unique instance of the class, nullptr by default
-    static Memory::IAllocator* sAllocator; //!< Allocator used to create the instance
+    static Alloc::IAllocator* sAllocator; //!< Allocator used to create the instance
 };
 
 
@@ -61,17 +63,17 @@ private:
 template<typename C>
 C* Singleton<C>::sInstance = nullptr;
 template<typename C>
-Memory::IAllocator* Singleton<C>::sAllocator = nullptr;
+Alloc::IAllocator* Singleton<C>::sAllocator = nullptr;
 
 //----------------------------------------------------------------------------------------
 
 template <class C>
-C* Singleton<C>::CreateInstance(Memory::IAllocator* alloc)
+C* Singleton<C>::CreateInstance(Alloc::IAllocator* alloc)
 {
     // Sanity check
     PG_ASSERTSTR(sInstance == nullptr, "CreateInstance called without DestroyInstance!");
 
-    sInstance = PG_NEW(alloc, _STRINGIFY_SINGLETON_CLASS(C),Pegasus::Memory::PG_MEM_PERM) C();
+    sInstance = PG_NEW(alloc, -1, _STRINGIFY_SINGLETON_CLASS(C), Pegasus::Alloc::PG_MEM_PERM) C();
     sAllocator = alloc;
 
     return sInstance;

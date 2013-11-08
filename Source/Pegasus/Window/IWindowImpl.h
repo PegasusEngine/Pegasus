@@ -32,13 +32,13 @@ public:
     //! \param alloc Allocator used to create this impl.
     //! \param messageHandler Message handler object for this impl.
     //! \return Returned window impl.
-    static IWindowImpl* CreateImpl(const WindowConfig& config, Memory::IAllocator* alloc, IWindowMessageHandler* messageHandler);
+    static IWindowImpl* CreateImpl(const WindowConfig& config, Alloc::IAllocator* alloc, IWindowMessageHandler* messageHandler);
 
     //! Factory function to destroy an impl
     //! Implement this function in your platform-specific impl.
     //! \param impl Impl object to destroy.
     //! \param alloc Allocator used to destroy this impl.
-    static void DestroyImpl(IWindowImpl* impl, Memory::IAllocator* alloc);
+    static void DestroyImpl(IWindowImpl* impl, Alloc::IAllocator* alloc);
 
 
     //! Gets the handle for this window

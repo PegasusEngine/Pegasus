@@ -28,7 +28,7 @@ public:
     //! \param configuration Configuration of the texture, such as the resolution and pixel format
     //! \param allocator Allocator used for the node data
     //! \note Sets the dirty flag
-    TextureData(const TextureConfiguration & configuration, Memory::IAllocator * allocator);
+    TextureData(const TextureConfiguration & configuration, Alloc::IAllocator* allocator);
 
     //! Get the configuration of the texture data
     //! \return Configuration of the texture data, such as the resolution and pixel format

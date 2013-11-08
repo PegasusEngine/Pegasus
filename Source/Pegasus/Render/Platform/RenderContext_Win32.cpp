@@ -38,14 +38,14 @@ static PIXELFORMATDESCRIPTOR sPixelFormat = {
 
 //----------------------------------------------------------------------------------------
 
-IRenderContextImpl* IRenderContextImpl::CreateImpl(const ContextConfig& config, Memory::IAllocator* alloc)
+IRenderContextImpl* IRenderContextImpl::CreateImpl(const ContextConfig& config, Alloc::IAllocator* alloc)
 {
-    return PG_NEW(alloc, "RenderContext platform impl", Pegasus::Memory::PG_MEM_PERM) RenderContextImpl_Win32(config);
+    return PG_NEW(alloc, -1, "RenderContext platform impl", Pegasus::Alloc::PG_MEM_PERM) RenderContextImpl_Win32(config);
 }
 
 //----------------------------------------------------------------------------------------
 
-void IRenderContextImpl::DestroyImpl(IRenderContextImpl* impl, Memory::IAllocator* alloc)
+void IRenderContextImpl::DestroyImpl(IRenderContextImpl* impl, Alloc::IAllocator* alloc)
 {
     PG_DELETE(alloc, impl);
 }

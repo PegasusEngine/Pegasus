@@ -66,4 +66,6 @@ Window* WindowProxy::Unwrap() const
 }   // namespace Wnd
 }   // namespace Pegasus
 
+#else
+PEGASUS_AVOID_EMPTY_FILE_WARNING;
 #endif  // PEGASUS_ENABLE_PROXIES

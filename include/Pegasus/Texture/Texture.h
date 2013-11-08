@@ -33,14 +33,14 @@ public:
     //! Default constructor, uses the default texture configuration
     //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
     //! \param nodeDataAllocator Allocator used for NodeData
-    Texture(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator);
+    Texture(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
     //! Constructor
     //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
     //! \param nodeDataAllocator Allocator used for NodeData
     //! \param configuration Configuration of the texture, such as the resolution and pixel format
     Texture(const TextureConfiguration & configuration,
-            Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator);
+            Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
     //! Set the configuration of the texture
     //! \warning Can be done only after the constructor has been called, when no input node is connected yet.
@@ -79,8 +79,8 @@ public:
     //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
     //! \param nodeDataAllocator Allocator used for NodeData
     //! \return New instance of the texture node
-    static Graph::NodeReturn CreateNode(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator)
-    {   return PG_NEW(nodeAllocator, "Texture", Memory::PG_MEM_PERM) Texture(nodeAllocator, nodeDataAllocator); }
+    static Graph::NodeReturn CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
+    {   return PG_NEW(nodeAllocator, -1, "Texture", Alloc::PG_MEM_PERM) Texture(nodeAllocator, nodeDataAllocator); }
 
     //------------------------------------------------------------------------------------
 

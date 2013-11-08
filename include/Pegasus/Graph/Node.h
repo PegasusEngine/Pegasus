@@ -29,7 +29,10 @@ public:
     //! Default constructor
     //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
     //! \param nodeDataAllocator Allocator used for NodeData
-    Node(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator);
+    Node(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
+
+    //! Destructor
+    virtual ~Node();
 
 
     //! Append a node to the list of input nodes
@@ -69,7 +72,7 @@ public:
     //! Creation function type used by the node manager
     //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
     //! \param nodeDataAllocator Allocator used for NodeData
-    typedef Pegasus::Core::Ref<Node> (* CreateNodeFunc)(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator);
+    typedef Pegasus::Core::Ref<Node> (* CreateNodeFunc)(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
 #if PEGASUS_DEV
     //! Set the name of the node
@@ -90,17 +93,13 @@ public:
     
 protected:
 
-    //! Destructor
-    virtual ~Node();
-
-
     //! Get the allocator used for node internal data (except the attached NodeData)
     //! \return Node allocator
-    inline Memory::IAllocator* GetNodeAllocator() const { return mNodeAllocator; }
+    inline Alloc::IAllocator* GetNodeAllocator() const { return mNodeAllocator; }
 
     //! Get the allocator used for NodeData
     //! \return Node data allocator
-    inline Memory::IAllocator* GetNodeDataAllocator() const { return mNodeDataAllocator; }
+    inline Alloc::IAllocator* GetNodeDataAllocator() const { return mNodeDataAllocator; }
 
     //! Allocate the data associated with the node
     //! \warning To be redefined by each class defining a new class for its data
@@ -214,10 +213,10 @@ private:
 
 
     //! Allocator used for node internal data (except the attached NodeData)
-    Memory::IAllocator* mNodeAllocator;
+    Alloc::IAllocator* mNodeAllocator;
 
     //! Allocator used for NodeData
-    Memory::IAllocator* mNodeDataAllocator;
+    Alloc::IAllocator* mNodeDataAllocator;
 
     //! Reference counter
     //! \todo Use atomic integer

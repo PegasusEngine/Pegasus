@@ -31,14 +31,14 @@ public:
     //! Default constructor, uses the default texture configuration
     //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
     //! \param nodeDataAllocator Allocator used for NodeData
-    TextureGenerator(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator);
+    TextureGenerator(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
     //! Constructor
     //! \param configuration Configuration of the generator, such as the resolution and pixel format
     //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
     //! \param nodeDataAllocator Allocator used for NodeData
     TextureGenerator(const TextureConfiguration & configuration,
-                     Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator);
+                     Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
     //! Set the configuration of the texture generator
     //! \warning Can be done only after the constructor has been called

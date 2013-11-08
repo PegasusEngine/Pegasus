@@ -15,7 +15,7 @@ namespace Pegasus {
 namespace Texture {
 
 
-Texture::Texture(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator)
+Texture::Texture(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :   Graph::OutputNode(nodeAllocator, nodeDataAllocator),
     mConfiguration()
 {
@@ -24,7 +24,7 @@ Texture::Texture(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDa
 //----------------------------------------------------------------------------------------
 
 Texture::Texture(const TextureConfiguration & configuration,
-                 Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator)
+                 Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :   Graph::OutputNode(nodeAllocator, nodeDataAllocator),
     mConfiguration(configuration)
 {

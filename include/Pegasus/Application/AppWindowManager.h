@@ -39,7 +39,7 @@ public:
     ~AppWindowManagerConfig() {};
 
 
-    Memory::IAllocator* mAllocator; //!< Allocator used to create this object
+    Alloc::IAllocator* mAllocator; //!< Allocator used to create this object
     unsigned int mMaxWindowTypes; //!< Maximum number of window types this manager can contain
     unsigned int mMaxNumWindows; //!< Maximum number of windows this manager can contain
 };
@@ -85,7 +85,7 @@ private:
     PG_DISABLE_COPY(AppWindowManager);
 
 
-    Memory::IAllocator* mAllocator; //!< Allocator to use when creating this object
+    Alloc::IAllocator* mAllocator; //!< Allocator to use when creating this object
     TypeTable* mTypeTable; //!< Window type table
     WindowTable* mWindowTable; //!< Window table
 };

@@ -17,7 +17,7 @@
 #include "Pegasus/Preprocessor.h"
 
 // Pegasus memory management
-#include "Pegasus/Memory/Memory.h"
+#include "Pegasus/Allocator/Alloc.h"
 
 // Assertion management, can be used anywhere
 #include "Pegasus/Core/Assertion.h"

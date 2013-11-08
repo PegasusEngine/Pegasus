@@ -28,9 +28,9 @@ StartupWindow::~StartupWindow()
 
 //----------------------------------------------------------------------------------------
 
-Pegasus::Wnd::Window* StartupWindow::Create(const Pegasus::Wnd::WindowConfig& config, Memory::IAllocator* alloc)
+Pegasus::Wnd::Window* StartupWindow::Create(const Pegasus::Wnd::WindowConfig& config, Alloc::IAllocator* alloc)
 {
-    return PG_NEW(alloc, "StartupWindow", Pegasus::Memory::PG_MEM_PERM) StartupWindow(config);
+    return PG_NEW(alloc, -1, "StartupWindow", Pegasus::Alloc::PG_MEM_PERM) StartupWindow(config);
 }
 
 //----------------------------------------------------------------------------------------

@@ -41,7 +41,7 @@ class ShaderStage
 {
     friend class Program;
 public:
-    ShaderStage(Memory::IAllocator* alloc);
+    ShaderStage(Alloc::IAllocator* alloc);
     ~ShaderStage();
         
 
@@ -58,7 +58,7 @@ private:
     void ProcessErrorLog(const char * errorLog);
 
 
-    Memory::IAllocator* mAllocator;
+    Alloc::IAllocator* mAllocator;
     Pegasus::Io::FileBuffer mFileBuffer;
     ShaderType mType;
 

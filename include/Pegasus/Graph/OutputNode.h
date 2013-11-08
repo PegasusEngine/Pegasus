@@ -29,7 +29,7 @@ public:
     //! Default constructor
     //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
     //! \param nodeDataAllocator Allocator used for NodeData
-    OutputNode(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator);
+    OutputNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
     //! Append a node to the list of input nodes
     //! \param inputNode Node to add to the list of input nodes (equivalent to NodeIn)

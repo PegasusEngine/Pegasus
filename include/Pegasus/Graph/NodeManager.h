@@ -26,7 +26,7 @@ public:
     //! Default constructor
     //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
     //! \param nodeDataAllocator Allocator used for NodeData
-    NodeManager(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator);
+    NodeManager(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
     //! Destructor
     virtual ~NodeManager();
@@ -60,10 +60,10 @@ private:
 
 
     //! Allocator used for node internal data (except the attached NodeData)
-    Memory::IAllocator* mNodeAllocator;
+    Alloc::IAllocator* mNodeAllocator;
 
     //! Allocator used for NodeData
-    Memory::IAllocator* mNodeDataAllocator;
+    Alloc::IAllocator* mNodeDataAllocator;
 
 
     //! Maximum length of a class name string

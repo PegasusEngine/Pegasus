@@ -14,20 +14,21 @@
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus\Application\ApplicationProxy.h"
+#include "Pegasus\Memory\MemoryManager.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 PEGASUSAPP_SHARED Pegasus::App::IApplicationProxy* CreatePegasusApp(const Pegasus::App::ApplicationConfig& config)
 {
-    Pegasus::Memory::IAllocator* globalAlloc = Pegasus::Memory::GetGlobalAllocator();
+    Pegasus::Alloc::IAllocator* globalAlloc = Pegasus::Memory::GetGlobalAllocator();
 
-    return PG_NEW(globalAlloc, "ApplicationProxy", Pegasus::Memory::PG_MEM_PERM) Pegasus::App::ApplicationProxy(config);
+    return PG_NEW(globalAlloc, -1, "ApplicationProxy", Pegasus::Alloc::PG_MEM_PERM) Pegasus::App::ApplicationProxy(config);
 }
 
 PEGASUSAPP_SHARED void DestroyPegasusApp(Pegasus::App::IApplicationProxy* app)
 {
-    Pegasus::Memory::IAllocator* globalAlloc = Pegasus::Memory::GetGlobalAllocator();
+    Pegasus::Alloc::IAllocator* globalAlloc = Pegasus::Memory::GetGlobalAllocator();
 
     PG_DELETE(globalAlloc, app);
 }

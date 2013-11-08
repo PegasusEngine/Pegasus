@@ -14,6 +14,7 @@
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Application/AppWindowManager.h"
 #include "Pegasus/Graph/NodeManager.h"
+#include "Pegasus/Memory/MemoryManager.h"
 #include "Pegasus/Render/GL/GLExtensions.h"
 #include "Pegasus/Texture/TextureManager.h"
 #include "Pegasus/Window/Window.h"
@@ -30,10 +31,10 @@ const char* STARTUP_WND_TYPE = "INTERNAL__Startup";
 Application::Application(const ApplicationConfig& config)
     : mInitialized(false), mAppTime(0.0f)
 {
-    Memory::IAllocator* coreAlloc = Memory::GetCoreAllocator();
-    Memory::IAllocator* windowAlloc = Memory::GetWindowAllocator();
-    Memory::IAllocator* nodeAlloc = Memory::GetNodeAllocator();
-    Memory::IAllocator* nodeDataAlloc = Memory::GetNodeDataAllocator();
+    Alloc::IAllocator* coreAlloc = Memory::GetCoreAllocator();
+    Alloc::IAllocator* windowAlloc = Memory::GetWindowAllocator();
+    Alloc::IAllocator* nodeAlloc = Memory::GetNodeAllocator();
+    Alloc::IAllocator* nodeDataAlloc = Memory::GetNodeDataAllocator();
 
     AppWindowManagerConfig windowManagerConfig;
     WindowRegistration reg;
@@ -52,7 +53,7 @@ Application::Application(const ApplicationConfig& config)
     windowManagerConfig.mAllocator = windowAlloc;
     windowManagerConfig.mMaxWindowTypes = mConfig.mMaxWindowTypes;
     windowManagerConfig.mMaxNumWindows = mConfig.mMaxNumWindows;
-    mWindowManager = PG_NEW(windowAlloc, "AppWindowManager", Memory::PG_MEM_PERM) AppWindowManager(windowManagerConfig);
+    mWindowManager = PG_NEW(windowAlloc, -1, "AppWindowManager", Alloc::PG_MEM_PERM) AppWindowManager(windowManagerConfig);
 
     // Register startup window
     reg.mTypeTag = Pegasus::App::WINDOW_TYPE_INVALID;
@@ -61,8 +62,8 @@ Application::Application(const ApplicationConfig& config)
     mWindowManager->RegisterWindowClass(STARTUP_WND_TYPE, reg);
 
     // Set up node managers
-    mNodeManager = PG_NEW(nodeAlloc, "NodeManager", Memory::PG_MEM_PERM) Graph::NodeManager(nodeAlloc, nodeDataAlloc);
-    mTextureManager = PG_NEW(nodeAlloc, "TextureManager", Memory::PG_MEM_PERM) Texture::TextureManager(mNodeManager);
+    mNodeManager = PG_NEW(nodeAlloc, -1, "NodeManager", Alloc::PG_MEM_PERM) Graph::NodeManager(nodeAlloc, nodeDataAlloc);
+    mTextureManager = PG_NEW(nodeAlloc, -1, "TextureManager", Alloc::PG_MEM_PERM) Texture::TextureManager(mNodeManager);
 
     // Cache config
     mConfig = config;
@@ -72,9 +73,9 @@ Application::Application(const ApplicationConfig& config)
 
 Application::~Application()
 {
-    Memory::IAllocator* windowAlloc = Memory::GetWindowAllocator();
-    Memory::IAllocator* nodeAlloc = Memory::GetNodeAllocator();
-    Memory::IAllocator* nodeDataAlloc = Memory::GetNodeDataAllocator();
+    Alloc::IAllocator* windowAlloc = Memory::GetWindowAllocator();
+    Alloc::IAllocator* nodeAlloc = Memory::GetNodeAllocator();
+    Alloc::IAllocator* nodeDataAlloc = Memory::GetNodeDataAllocator();
 
     // Sanity check
     PG_ASSERTSTR(!mInitialized, "Application still initialized in destructor!");
@@ -102,7 +103,7 @@ Application::~Application()
 
 void Application::Initialize()
 {
-    Memory::IAllocator* coreAlloc = Memory::GetCoreAllocator();
+    Alloc::IAllocator* coreAlloc = Memory::GetCoreAllocator();
     Io::IOManagerConfig ioManagerConfig;
     Wnd::Window* startupWindow = nullptr;
 
@@ -113,7 +114,7 @@ void Application::Initialize()
     // This must be done here because of the GetAppName virtual
     ioManagerConfig.mBasePath = mConfig.mBasePath;
     ioManagerConfig.mAppName = GetAppName();
-    mIoManager = PG_NEW(coreAlloc, "IOManager", Pegasus::Memory::PG_MEM_PERM) Io::IOManager(ioManagerConfig);
+    mIoManager = PG_NEW(coreAlloc, -1, "IOManager", Pegasus::Alloc::PG_MEM_PERM) Io::IOManager(ioManagerConfig);
 
     // start up the app, which creates and destroys the dummy window
     StartupAppInternal();
@@ -127,7 +128,7 @@ void Application::Initialize()
 //! Shutdown this application.
 void Application::Shutdown()
 {
-    Memory::IAllocator* coreAlloc = Memory::GetCoreAllocator();
+    Alloc::IAllocator* coreAlloc = Memory::GetCoreAllocator();
 
     // Sanity check
     PG_ASSERTSTR(mInitialized, "Application not initialized yet!");
@@ -153,8 +154,8 @@ IWindowRegistry* Application::GetWindowRegistry()
 
 Wnd::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig)
 {
-    Memory::IAllocator* renderAlloc = Memory::GetRenderAllocator();
-    Memory::IAllocator* windowAlloc = Memory::GetWindowAllocator();
+    Alloc::IAllocator* renderAlloc = Memory::GetRenderAllocator();
+    Alloc::IAllocator* windowAlloc = Memory::GetWindowAllocator();
     Wnd::Window* newWnd = nullptr;
     Wnd::WindowConfig config;
 
@@ -198,8 +199,8 @@ void Application::DetachWindow(Wnd::Window* wnd)
 //! \note Creates the dummy startup window used to initialize the OGL extensions.
 void Application::StartupAppInternal()
 {
-    Memory::IAllocator* renderAlloc = Memory::GetRenderAllocator();
-    Memory::IAllocator* windowAlloc = Memory::GetWindowAllocator();
+    Alloc::IAllocator* renderAlloc = Memory::GetRenderAllocator();
+    Alloc::IAllocator* windowAlloc = Memory::GetWindowAllocator();
     Wnd::Window* newWnd = nullptr;
     Wnd::WindowConfig config;
 

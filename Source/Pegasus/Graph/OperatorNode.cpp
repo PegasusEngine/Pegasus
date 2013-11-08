@@ -15,7 +15,7 @@ namespace Pegasus {
 namespace Graph {
 
 
-OperatorNode::OperatorNode(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator)
+OperatorNode::OperatorNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :   Node(nodeAllocator, nodeDataAllocator)
 {
 }

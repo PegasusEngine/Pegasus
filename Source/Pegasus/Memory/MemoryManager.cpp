@@ -4,12 +4,12 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   Memory.cpp
+//! \file   MemoryManager.cpp
 //! \author David Worsham
-//! \date   02 Nov 2013
-//! \brief  Memory framework
+//! \date   08th November 2013
+//! \brief  Memory manager, to manage a set of allocators for an application.
 
-#include "Pegasus/Memory/Memory.h"
+#include "Pegasus/Memory/MemoryManager.h"
 #include "Pegasus/Memory/MallocFreeAllocator.h"
 
 namespace Pegasus {
@@ -17,46 +17,46 @@ namespace Memory {
 
 // Global allocator
 //! \todo Real allocator / heap management...
-static MallocFreeAllocator sGlobalAllocator;
+static MallocFreeAllocator sGlobalAllocator(0);
 
 //----------------------------------------------------------------------------------------
 
-IAllocator* GetGlobalAllocator()
+Alloc::IAllocator* GetGlobalAllocator()
 {
     return &sGlobalAllocator;
 }
 
 //----------------------------------------------------------------------------------------
 
-IAllocator* GetCoreAllocator()
+Alloc::IAllocator* GetCoreAllocator()
 {
     return &sGlobalAllocator;
 }
 
 //----------------------------------------------------------------------------------------
 
-IAllocator* GetRenderAllocator()
+Alloc::IAllocator* GetRenderAllocator()
 {
     return &sGlobalAllocator;
 }
 
 //----------------------------------------------------------------------------------------
 
-IAllocator* GetNodeAllocator()
+Alloc::IAllocator* GetNodeAllocator()
 {
     return &sGlobalAllocator;
 }
 
 //----------------------------------------------------------------------------------------
 
-IAllocator* GetNodeDataAllocator()
+Alloc::IAllocator* GetNodeDataAllocator()
 {
     return &sGlobalAllocator;
 }
 
 //----------------------------------------------------------------------------------------
 
-IAllocator* GetWindowAllocator()
+Alloc::IAllocator* GetWindowAllocator()
 {
     return &sGlobalAllocator;
 }

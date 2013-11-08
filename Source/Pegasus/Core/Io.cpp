@@ -13,6 +13,8 @@
 
 #include "Pegasus/Core/Io.h"
 #include "Pegasus/Core/Assertion.h"
+#include "Pegasus/Core/Log.h"
+#include "Pegasus/Allocator/Alloc.h"
 #include "stdio.h" //using the windows libraries to produce file IO
 #if PEGASUS_USE_NATIVE_IO_CALLS
 #if PEGASUS_PLATFORM_WINDOWS
@@ -29,7 +31,7 @@ namespace internal
 {
 #if PEGASUS_PLATFORM_WINDOWS
 
-Pegasus::Io::IoError NativeOpenFileToBuffer(const char* path, Pegasus::Io::FileBuffer& outputBuffer, bool allocateBuffer, Memory::IAllocator* alloc)
+Pegasus::Io::IoError NativeOpenFileToBuffer(const char* path, Pegasus::Io::FileBuffer& outputBuffer, bool allocateBuffer, Alloc::IAllocator* alloc)
 {
     // Load the file
     HANDLE fileHandle = CreateFile(
@@ -60,7 +62,7 @@ Pegasus::Io::IoError NativeOpenFileToBuffer(const char* path, Pegasus::Io::FileB
             {
                 outputBuffer.OwnBuffer(
                     alloc,
-                    PG_NEW_ARRAY(alloc, "file buffer", Pegasus::Memory::PG_MEM_PERM, char, fileSize.LowPart),
+                    PG_NEW_ARRAY(alloc, -1, "file buffer", Pegasus::Alloc::PG_MEM_PERM, char, fileSize.LowPart),
                     fileSize.LowPart
                 );
             }
@@ -119,7 +121,7 @@ IOManager::~IOManager()
 
 //----------------------------------------------------------------------------------------
 
-IoError IOManager::OpenFileToBuffer(const char* relativePath, FileBuffer& outputBuffer, bool allocateBuffer, Memory::IAllocator* alloc)
+IoError IOManager::OpenFileToBuffer(const char* relativePath, FileBuffer& outputBuffer, bool allocateBuffer, Alloc::IAllocator* alloc)
 {
     char pathBuffer[MAX_FILEPATH_LENGTH];
 
@@ -155,7 +157,7 @@ IoError IOManager::OpenFileToBuffer(const char* relativePath, FileBuffer& output
         {
             outputBuffer.OwnBuffer (
                 alloc,
-                PG_NEW_ARRAY(alloc, "file buffer", Pegasus::Memory::PG_MEM_PERM) char[fileSize],
+                PG_NEW_ARRAY(alloc, "file buffer", Pegasus::Alloc::PG_MEM_PERM) char[fileSize],
                 fileSize
             );
         }
@@ -206,7 +208,7 @@ Pegasus::Io::FileBuffer::~FileBuffer()
 
 //----------------------------------------------------------------------------------------
 
-void Pegasus::Io::FileBuffer::OwnBuffer(Memory::IAllocator* bufferAlloc, char * buffer, int bufferSize)
+void Pegasus::Io::FileBuffer::OwnBuffer(Alloc::IAllocator* bufferAlloc, char * buffer, int bufferSize)
 {
     PG_ASSERTSTR(mBuffer == nullptr, "Dangerous operation! please call ForgetBuffer or DestroyBuffer before Setting a new buffer");
     mAllocator = bufferAlloc;
@@ -228,15 +230,12 @@ void Pegasus::Io::FileBuffer::ForgetBuffer()
 
 void Pegasus::Io::FileBuffer::DestroyBuffer()
 {
-    if (mBuffer != nullptr)
-    {
-        PG_DELETE_ARRAY(mAllocator, mBuffer);
+    PG_DELETE_ARRAY(mAllocator, mBuffer);
 
-        mAllocator = nullptr;
-        mBuffer = nullptr;
-        mBufferSize = 0;
-        mFileSize = 0;
-    }
+    mAllocator = nullptr;
+    mBuffer = nullptr;
+    mBufferSize = 0;
+    mFileSize = 0;
 }
 
 //----------------------------------------------------------------------------------------

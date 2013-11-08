@@ -28,7 +28,7 @@ public:
     ~ContextConfig() {};
 
 
-    Memory::IAllocator* mAllocator; //!< Allocator to use when creating this object
+    Alloc::IAllocator* mAllocator; //!< Allocator to use when creating this object
     DeviceContextHandle mDeviceContextHandle; //!< Opaque context handle
     bool mStartupContext; //!< Startup context flag, indicating how the context should be created
 };

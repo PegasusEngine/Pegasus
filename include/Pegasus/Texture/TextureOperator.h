@@ -31,14 +31,14 @@ public:
     //! Default constructor, uses the default texture configuration
     //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
     //! \param nodeDataAllocator Allocator used for NodeData
-    TextureOperator(Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator);
+    TextureOperator(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
     //! Constructor
     //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
     //! \param nodeDataAllocator Allocator used for NodeData
     //! \param configuration Configuration of the operator, such as the resolution and pixel format
     TextureOperator(const TextureConfiguration & configuration,
-                    Memory::IAllocator * nodeAllocator, Memory::IAllocator * nodeDataAllocator);
+                    Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
     //! Set the configuration of the texture operator
     //! \warning Can be done only after the constructor has been called

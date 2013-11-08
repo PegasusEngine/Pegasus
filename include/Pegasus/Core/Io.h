@@ -14,6 +14,15 @@
 
 #include "Pegasus/Core/Shared/IoErrors.h"
 
+// forward declarations
+namespace Pegasus {
+    namespace Alloc {
+        class IAllocator;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 namespace Pegasus {
 namespace Io {
 
@@ -33,7 +42,7 @@ public:
     //! \param bufferAlloc Allocator used to create this buffer.
     //! \param buffer Address of the buffer.
     //! \param bufferSize Size of the buffer.
-    void OwnBuffer(Memory::IAllocator* bufferAlloc, char * buffer, int bufferSize);
+    void OwnBuffer(Alloc::IAllocator* bufferAlloc, char * buffer, int bufferSize);
 
     //! Releases ownership of any currently owned buffer
     void ForgetBuffer();
@@ -68,7 +77,7 @@ private:
     PG_DISABLE_COPY(FileBuffer);
 
 
-    Memory::IAllocator* mAllocator; //!< Allocator used to create the buffer
+    Alloc::IAllocator* mAllocator; //!< Allocator used to create the buffer
     char* mBuffer; //!< Contained buffer
     int mFileSize; //!< Size of the file in the buiffer
     int mBufferSize; //!< Size of the buffer
@@ -116,7 +125,7 @@ public:
     //! \param alloc Allocator to use when allocating the buffer.
     //! \return Error code.
     //! \note Buffer must be deallocated by the caller
-    IoError OpenFileToBuffer(const char* relativePath, FileBuffer& outputBuffer, bool allocateBuffer = false, Memory::IAllocator* alloc = nullptr);
+    IoError OpenFileToBuffer(const char* relativePath, FileBuffer& outputBuffer, bool allocateBuffer = false, Alloc::IAllocator* alloc = nullptr);
 
 
     static const unsigned int MAX_FILEPATH_LENGTH = 256; //!< Max length for a file path

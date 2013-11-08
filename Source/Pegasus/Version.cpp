@@ -28,4 +28,6 @@ PEGASUSAPP_SHARED unsigned int GetPegasusVersion()
 }
 #endif
 
+#else
+PEGASUS_AVOID_EMPTY_FILE_WARNING;
 #endif  // PEGASUS_ENABLE_PROXIES

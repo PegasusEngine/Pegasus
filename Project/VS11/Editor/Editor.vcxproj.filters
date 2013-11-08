@@ -47,13 +47,13 @@
     <Filter Include="Source\Console\ConsoleChannelColorTable">
       <UniqueIdentifier>{5cc06288-1b58-455b-be46-814bb342c596}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
+    <Filter Include="Source\Application">
+      <UniqueIdentifier>{83c168d9-1efc-40a5-921a-be40b64cd9c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h</Extensions>
       <ParseFiles>true</ParseFiles>
-    </Filter>
-    <Filter Include="Source\Application">
-      <UniqueIdentifier>{83c168d9-1efc-40a5-921a-be40b64cd9c6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

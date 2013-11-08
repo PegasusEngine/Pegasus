@@ -4,18 +4,18 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   MallocfreeAllocator.cpp
+//! \file   MallocFreeAllocator.cpp
 //! \author David Worsham
-//! \date   02 Nov 2013
+//! \date   02nd November 2013
 //! \brief  Basic allocator using stdC malloc and free from the system heap.
 
-#include "Pegasus/Memory/MallocfreeAllocator.h"
-#include "Pegasus/Memory/NewDelete.h"
+#include "Pegasus/Memory/MallocFreeAllocator.h"
 
 namespace Pegasus {
 namespace Memory {
 
-MallocFreeAllocator::MallocFreeAllocator()
+MallocFreeAllocator::MallocFreeAllocator(unsigned int allocId)
+    : mAllocId(allocId)
 {
 }
 
@@ -27,35 +27,50 @@ MallocFreeAllocator::~MallocFreeAllocator()
 
 //----------------------------------------------------------------------------------------
 
-void* MallocFreeAllocator::Alloc(size_t size, Flags flags, const char* debugText, const char* file, unsigned int line) const
+void* MallocFreeAllocator::Alloc(size_t size, Alloc::Flags flags, Alloc::Category category, const char* debugText, const char* file, unsigned int line) const
 {
-    return malloc(size);
+    //! \todo Platform-specific allocs
+    // Grab the chunk with an extra int at the front for the allocator ID
+    unsigned int chunkSize = size + sizeof(unsigned int);
+    void* chunk = malloc(chunkSize);
+    void* ret = ((unsigned int*) chunk) + 1;
+
+    // Cache the ID
+    *((unsigned int*) chunk) = mAllocId;
+
+    return ret;
 }
 
 //----------------------------------------------------------------------------------------
 
-void* MallocFreeAllocator::AllocArray(size_t size, Flags flags, const char* debugText, const char* file, unsigned int line) const
+void* MallocFreeAllocator::AllocAlign(size_t size, Alloc::Alignment align, Alloc::Flags flags, Alloc::Category category, const char* debugText, const char* file, unsigned int line) const
 {
-    return malloc(size);
+    //! \todo Platform-specific allocs
+    // Grab the chunk with an extra int at the front for the allocator ID
+    unsigned int chunkSize = size + sizeof(unsigned int);
+    void* chunk = malloc(chunkSize);
+    void* ret = ((unsigned int*) chunk) + 1;
+
+    // Cache the ID
+    *((unsigned int*) chunk) = mAllocId;
+
+    return ret;
 }
 
 //----------------------------------------------------------------------------------------
 
-void MallocFreeAllocator::Delete(void* ptr, const char* file, unsigned int line) const
+void MallocFreeAllocator::Delete(void* ptr) const
 {
     if (ptr != nullptr)
     {
-        free(ptr);
-    }
-}
+        // Grab the chunk and allocator ID
+        void* chunk = ((unsigned int*) ptr) - 1;
+        const unsigned int chunkId = *((unsigned int*) chunk);
 
-//----------------------------------------------------------------------------------------
+        // Allocator integrity check
+        PG_ASSERTSTR(chunkId == mAllocId, "Allocation freed from a different allocator than it was alloced in!  Memory corruption may follow...");
 
-void MallocFreeAllocator::DeleteArray(void* ptr, const char* file, unsigned int line) const
-{
-    if (ptr != nullptr)
-    {
-        free(nullptr);
+        free(chunk);
     }
 }
 

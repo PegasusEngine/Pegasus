@@ -72,9 +72,9 @@ TestApp1Window::~TestApp1Window()
 
 //----------------------------------------------------------------------------------------
 
-Pegasus::Wnd::Window* TestApp1Window::Create(const Pegasus::Wnd::WindowConfig& config, Pegasus::Memory::IAllocator* alloc)
+Pegasus::Wnd::Window* TestApp1Window::Create(const Pegasus::Wnd::WindowConfig& config, Pegasus::Alloc::IAllocator* alloc)
 {
-    return PG_NEW(alloc, "TestApp1Window", Pegasus::Memory::PG_MEM_PERM) TestApp1Window(config);
+    return PG_NEW(alloc, -1, "TestApp1Window", Pegasus::Alloc::PG_MEM_PERM) TestApp1Window(config);
 }
 
 //----------------------------------------------------------------------------------------

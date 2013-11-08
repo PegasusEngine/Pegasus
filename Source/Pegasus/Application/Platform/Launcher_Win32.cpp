@@ -265,9 +265,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     return retVal;
 }
 
-
-#else
-#error "This file is not supposed to be compiled on platforms other than Windows"
 #endif  // PEGASUS_PLATFORM_WINDOWS
-
+#else
+PEGASUS_AVOID_EMPTY_FILE_WARNING;
 #endif  // PEGASUS_INCLUDE_LAUNCHER

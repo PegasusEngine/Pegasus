@@ -15,13 +15,13 @@ namespace Pegasus {
 namespace Texture {
 
 
-TextureData::TextureData(const TextureConfiguration & configuration, Memory::IAllocator * allocator)
+TextureData::TextureData(const TextureConfiguration & configuration, Alloc::IAllocator* allocator)
 :   Graph::NodeData(allocator),
     mConfiguration(configuration)
 {
     // Allocate the image data
     const unsigned int imageSize = configuration.GetNumBytes();
-    mImageData = PG_NEW_ARRAY(GetAllocator(), "TextureData::mImageData", Memory::PG_MEM_TEMP, unsigned char, imageSize);
+    mImageData = PG_NEW_ARRAY(GetAllocator(), -1, "TextureData::mImageData", Alloc::PG_MEM_TEMP, unsigned char, imageSize);
 }
 
 //----------------------------------------------------------------------------------------
