@@ -74,7 +74,11 @@ public:
     //! \param nodeDataAllocator Allocator used for NodeData
     typedef Pegasus::Core::Ref<Node> (* CreateNodeFunc)(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
-#if PEGASUS_DEV
+#if PEGASUS_ENABLE_PROXIES
+
+    //! Maximum length of the node name
+    enum { MAX_NAME_LENGTH = 31 };
+
     //! Set the name of the node
     //! \param name New name of the node (MAX_NAME_LENGTH characters max),
     //!             can be an empty string to delete the name
@@ -87,7 +91,8 @@ public:
     //! Test if the name of the node is defined
     //! \return True if the name is not an empty string
     inline bool IsNameDefined() const { return (mName[0] != '\0'); }
-#endif  // PEGASUS_DEV
+
+#endif  // PEGASUS_ENABLE_PROXIES
 
     //------------------------------------------------------------------------------------
     
@@ -185,16 +190,15 @@ protected:
     inline int GetRefCount() const { return mRefCount; }
 
 
-#if PEGASUS_DEV
+#if PEGASUS_ENABLE_PROXIES
+
     //! Return the DOT representation of the node
     //virtual const char * GetDOTDescription() const;
 
-    //! Maximum length of the node name
-    enum { MAX_NAME_LENGTH = 32 };
-
     //! Maximum length of the node DOT description
-    enum { MAX_DOT_DESCRIPTION_LENGTH = 96 };
-#endif  // PEGASUS_DEV
+    enum { MAX_DOT_DESCRIPTION_LENGTH = 95 };
+
+#endif  // PEGASUS_ENABLE_PROXIES
 
     //------------------------------------------------------------------------------------
 
@@ -231,14 +235,15 @@ private:
     //! Data node, used to store optional intermediate node data
     NodeDataRef mData;
 
-#if PEGASUS_DEV
+#if PEGASUS_ENABLE_PROXIES
+
     //! Name of the node (includes the terminating character)
     char mName[MAX_NAME_LENGTH + 1];
 
     //! Description of the node in DOT language
     char mDOTDescription[MAX_DOT_DESCRIPTION_LENGTH];
-#endif  // PEGASUS_DEV
 
+#endif  // PEGASUS_ENABLE_PROXIES
 };
 
 //----------------------------------------------------------------------------------------

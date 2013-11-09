@@ -26,7 +26,7 @@ Node::Node(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocato
     PG_ASSERTSTR(nodeAllocator != nullptr, "Invalid node allocator given to a Node");
     PG_ASSERTSTR(nodeDataAllocator != nullptr, "Invalid node data allocator given to a Node");
 
-#if PEGASUS_DEV
+#if PEGASUS_ENABLE_PROXIES
     mName[0] = '\0';
 
     // Create the DOT description of the node (name between quotes)
@@ -35,7 +35,7 @@ Node::Node(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocato
     //strncpy(mDOTDescription, "\"", MAX_DOT_DESCRIPTION_LENGTH);
     //strlcat(mDOTDescription, mName, MAX_DOT_DESCRIPTION_LENGTH);
     //strlcat(mDOTDescription, "\"", MAX_DOT_DESCRIPTION_LENGTH);
-#endif
+#endif  // PEGASUS_ENABLE_PROXIES
 }
 
 //----------------------------------------------------------------------------------------
@@ -75,13 +75,13 @@ NodeDataReturn Node::GetUpdatedData(bool & updated)
     }
 
     // If the data are not allocated, they have to be recomputed, but that has to be done by derived nodes
-#if PEGASUS_DEV
+#if PEGASUS_ENABLE_PROXIES
     if (IsNameDefined())
     {
         PG_FAILSTR("Trying to recompute the data of the node \"%s\" but it should be done in a derived class.", GetName());
     }
     else
-#endif
+#endif  // PEGASUS_ENABLE_PROXIES
     {
         PG_FAILSTR("Trying to recompute the data of a node but it should use a derived class.");
     }
@@ -107,7 +107,7 @@ void Node::ReleaseDataAndPropagate()
 
 //----------------------------------------------------------------------------------------
 
-#if PEGASUS_DEV
+#if PEGASUS_ENABLE_PROXIES
 void Node::SetName(const char * name)
 {
     if (name == nullptr)
@@ -124,7 +124,7 @@ void Node::SetName(const char * name)
 #endif  // PEGASUS_COMPILER_MSVC
     }
 }
-#endif  // PEGASUS_DEV
+#endif  // PEGASUS_ENABLE_PROXIES
 
 //----------------------------------------------------------------------------------------
 

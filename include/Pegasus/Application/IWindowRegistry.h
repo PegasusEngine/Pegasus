@@ -23,7 +23,7 @@ enum WindowTypeTag
 {
     WINDOW_TYPE_INVALID = -1, //!< Not a valid window type.
     WINDOW_TYPE_MAIN = 0, //!< The main timeline view window in the editor, or the main app window when launched alone
-#if PEGASUS_DEV
+#if PEGASUS_ENABLE_PROXIES
     WINDOW_TYPE_TEXTUREVIEWER, //!< Texture viewer for the editor
     WINDOW_TYPE_EXTENSION, //!< For custom, app-specific windows for the editor
 #endif
