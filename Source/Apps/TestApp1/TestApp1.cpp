@@ -16,6 +16,9 @@
 
 // Variables
 static const char* MAIN_WND_TYPE = "TestApp1Window";
+#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
+static const char* SECONDARY_WND_TYPE = "TestApp1SecondaryWindow";
+#endif
 
 TestApp1::TestApp1(const Pegasus::App::ApplicationConfig& config)
 :   Pegasus::App::Application(config)
@@ -27,13 +30,24 @@ TestApp1::TestApp1(const Pegasus::App::ApplicationConfig& config)
     reg.mDescription = "TestApp1 Viewport";
     reg.mCreateFunc = TestApp1Window::Create;
     GetWindowRegistry()->RegisterWindowClass(MAIN_WND_TYPE, reg);
+
+#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
+    // Register the secondary window
+    //! \todo That is weird to have to register that window here.
+    //!       Also, where should the texture and mesh viewers be created?
+    //! \todo Is it normal to have to use a different type tag?
+    reg.mTypeTag = Pegasus::App::WINDOW_TYPE_SECONDARY;
+    reg.mDescription = "TestApp1 Secondary Viewport";
+    reg.mCreateFunc = TestApp1Window::Create;
+    GetWindowRegistry()->RegisterWindowClass(SECONDARY_WND_TYPE, reg);
+#endif  // PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
 }
 
 //----------------------------------------------------------------------------------------
 
 TestApp1::~TestApp1()
 {
-    // Deregister the main window
+    // Unregister the main window
     GetWindowRegistry()->UnregisterWindowClass(MAIN_WND_TYPE);
 }
 

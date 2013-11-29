@@ -139,7 +139,7 @@ void TestApp1Window::Shutdown()
 
 //----------------------------------------------------------------------------------------
 
-void TestApp1Window::Refresh()
+void TestApp1Window::Render()
 {
     static unsigned int tickCount = 0;
     unsigned int viewportWidth = 0;

@@ -17,6 +17,7 @@
 #include "Pegasus/Memory/MemoryManager.h"
 #include "Pegasus/Render/GL/GLExtensions.h"
 #include "Pegasus/Texture/TextureManager.h"
+#include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/Window/StartupWindow.h"
 
@@ -35,6 +36,7 @@ Application::Application(const ApplicationConfig& config)
     Alloc::IAllocator* windowAlloc = Memory::GetWindowAllocator();
     Alloc::IAllocator* nodeAlloc = Memory::GetNodeAllocator();
     Alloc::IAllocator* nodeDataAlloc = Memory::GetNodeDataAllocator();
+    Alloc::IAllocator* timelineAlloc = Memory::GetTimelineAllocator();
 
     AppWindowManagerConfig windowManagerConfig;
     WindowRegistration reg;
@@ -51,8 +53,8 @@ Application::Application(const ApplicationConfig& config)
 
     // Set up window manager
     windowManagerConfig.mAllocator = windowAlloc;
-    windowManagerConfig.mMaxWindowTypes = mConfig.mMaxWindowTypes;
-    windowManagerConfig.mMaxNumWindows = mConfig.mMaxNumWindows;
+    windowManagerConfig.mMaxWindowTypes = config.mMaxWindowTypes;
+    windowManagerConfig.mMaxNumWindows = config.mMaxNumWindows;
     mWindowManager = PG_NEW(windowAlloc, -1, "AppWindowManager", Alloc::PG_MEM_PERM) AppWindowManager(windowManagerConfig);
 
     // Register startup window
@@ -65,6 +67,9 @@ Application::Application(const ApplicationConfig& config)
     mNodeManager = PG_NEW(nodeAlloc, -1, "NodeManager", Alloc::PG_MEM_PERM) Graph::NodeManager(nodeAlloc, nodeDataAlloc);
     mTextureManager = PG_NEW(nodeAlloc, -1, "TextureManager", Alloc::PG_MEM_PERM) Texture::TextureManager(mNodeManager);
 
+    // Set up timeline
+    mTimeline = PG_NEW(timelineAlloc, -1, "Timeline", Alloc::PG_MEM_PERM) Timeline::Timeline(timelineAlloc);
+
     // Cache config
     mConfig = config;
 }
@@ -76,6 +81,7 @@ Application::~Application()
     Alloc::IAllocator* windowAlloc = Memory::GetWindowAllocator();
     Alloc::IAllocator* nodeAlloc = Memory::GetNodeAllocator();
     Alloc::IAllocator* nodeDataAlloc = Memory::GetNodeDataAllocator();
+    Alloc::IAllocator* timelineAlloc = Memory::GetTimelineAllocator();
 
     // Sanity check
     PG_ASSERTSTR(!mInitialized, "Application still initialized in destructor!");
@@ -83,6 +89,9 @@ Application::~Application()
     // Free windows
     mWindowManager->UnregisterWindowClass(STARTUP_WND_TYPE);
     PG_DELETE(windowAlloc, mWindowManager);
+
+    // Delete the timeline
+    PG_DELETE(timelineAlloc, mTimeline);
 
     // Delete the texture and node managers
     PG_DELETE(nodeAlloc, mTextureManager);

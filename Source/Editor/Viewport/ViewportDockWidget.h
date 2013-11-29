@@ -12,6 +12,8 @@
 #ifndef EDITOR_VIEWPORTDOCKWIDGET_H
 #define EDITOR_VIEWPORTDOCKWIDGET_H
 
+#include "Viewport/ViewportType.h"
+
 #include <QDockWidget>
 
 class ViewportWidget;
@@ -26,7 +28,12 @@ class ViewportDockWidget : public QDockWidget
 
 public:
 
-    ViewportDockWidget(QWidget *parent = 0);
+    //! Constructor
+    //! \param viewportType Type of the viewport (VIEWPORTTYPE_xxx constant)
+    //! \param parent Parent of the dock widget
+    ViewportDockWidget(ViewportType viewportType, QWidget * parent = 0);
+
+    //! Destructor
     virtual ~ViewportDockWidget();
 
     //! Get the viewport widget associated with the dock widget

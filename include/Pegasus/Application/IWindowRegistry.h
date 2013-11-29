@@ -17,15 +17,18 @@
 namespace Pegasus {
 namespace App {
 
+
 //! Window tag type, this is the window "meta-type" as seen from outside the runtime.
-//! IE TYPE_MAIN, TYPE_TEXTUREVIEWER, TYPE_MODELVIEWER, etc
+//! IE TYPE_MAIN, TYPE_TEXTUREVIEWER, TYPE_MESHVIEWER, etc
 enum WindowTypeTag
 {
-    WINDOW_TYPE_INVALID = -1, //!< Not a valid window type.
-    WINDOW_TYPE_MAIN = 0, //!< The main timeline view window in the editor, or the main app window when launched alone
-#if PEGASUS_ENABLE_PROXIES
-    WINDOW_TYPE_TEXTUREVIEWER, //!< Texture viewer for the editor
-    WINDOW_TYPE_EXTENSION, //!< For custom, app-specific windows for the editor
+    WINDOW_TYPE_INVALID = -1,   //!< Not a valid window type.
+    WINDOW_TYPE_MAIN = 0,       //!< The main view window in the editor, or the main app window when launched alone
+#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
+    WINDOW_TYPE_SECONDARY,      //!< The optional secondary view window in the editor
+    WINDOW_TYPE_TEXTUREVIEWER,  //!< Texture viewer for the editor
+    WINDOW_TYPE_MESHVIEWER,     //!< Mesh viewer for the editor
+    WINDOW_TYPE_EXTENSION,      //!< For custom, app-specific windows for the editor
 #endif
 
     NUM_WND_TYPES
@@ -66,6 +69,14 @@ public:
     //! Gets the classname of the MAIN window type for for this registry
     //! \return Classname.
     virtual const char* GetMainWindowType() const = 0;
+
+#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
+
+    //! Gets the classname of the SECONDARY window type for for this registry
+    //! \return Classname.
+    virtual const char* GetSecondaryWindowType() const = 0;
+
+#endif  // PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
 };
 
 

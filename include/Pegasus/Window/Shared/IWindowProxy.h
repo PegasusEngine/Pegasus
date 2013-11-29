@@ -41,7 +41,7 @@ public:
     //! Used for window-specific shutdown
     virtual void Shutdown() = 0;
 
-    //! Requests that this window render a new frame
+    //! Bind the render context and render the window
     virtual void Refresh() = 0;
 
 

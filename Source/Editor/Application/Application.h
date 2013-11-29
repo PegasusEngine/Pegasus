@@ -12,6 +12,8 @@
 #ifndef EDITOR_APPLICATION_H
 #define EDITOR_APPLICATION_H
 
+#include "Viewport/ViewportType.h"
+
 #include <QThread>
 
 #include "Pegasus/Core/Shared/LogChannel.h"
@@ -50,14 +52,6 @@ public:
     //! \todo Add error management
     void SetFile(const QString & fileName);
 
-    //! Set the viewport parameters for the window associated with the application
-    //! \param windowHandle Viewport window handle that will become the parent of the rendering window
-    //! \param width Initial width of the viewport in pixels (> 0)
-    //! \param height Initial height of the viewport in pixels (> 0)
-    //! \todo Handle multiple viewports
-    void SetViewportParameters(/**index,*/ Pegasus::Wnd::WindowHandle windowHandle,
-                               int width, int height);
-
 
     //! Error codes for the application thread
     typedef enum Error
@@ -73,6 +67,17 @@ public:
     //! then runs the main loop
     //! \warning Do not rename to Run(), as this function is an overload of QThread
     void run();
+
+
+    //! Get the application proxy object
+    //! \return Pointer to the application proxy object created when running the application DLL
+    inline Pegasus::App::IApplicationProxy * GetApplicationProxy() const { return mApplication; }
+
+    //! Get the window used to render one of the viewports of the application
+    //! \param viewportType Type of the viewport widget to get (VIEWPORTTYPE_xxx constant)
+    //! \return Pointer to the window used to render the viewport of the application
+    //!         (nullptr in case of error)
+    Pegasus::Wnd::IWindowProxy * GetWindowProxy(ViewportType viewportType) const;
 
 
     //! Function called by the log handler, emitting the \a LogSentFromApplication signal
@@ -105,11 +110,6 @@ signals:
     //! Signal emitted when the application has successfully loaded (not running)
     void LoadingSucceeded();
 
-    //! Signal emitted when the viewport is resized
-    //! \param width New width of the viewport, in pixels
-    //! \param height New height of the viewport, in pixels
-    void ViewportResized(int width, int height);
-
     //! Signal emitted from the application thread when the application sends a log message
     //! \param logChannel Pegasus log channel
     //! \param msgStr Content of the log message
@@ -127,11 +127,6 @@ signals:
 
 private slots:
         
-    //! Called when the viewport is resized (editor thread)
-    //! \param width New width of the viewport, in pixels
-    //! \param height New height of the viewport, in pixels
-    void ResizeViewport(int width, int height);
-
     //! Called when a log message is received from the application thread
     //! through a queue connection
     //! \warning This is the editor thread function, which does the final post
@@ -153,6 +148,11 @@ private slots:
     //------------------------------------------------------------------------------------
 
 private:
+
+    //! Convert a viewport type to a window type string
+    //! \param viewportType Type of the viewport (VIEWPORTTYPE_xxx constant)
+    //! \return String of the window type, nullptr in case of error
+    const char * GetWindowTypeFromViewportType(ViewportType viewportType) const;
 
     //! Handler for log messages coming from the application itself
     //! \warning This is a static function, so it cannot emit any signal.
@@ -191,19 +191,8 @@ private:
     //! Application proxy object created when running the application DLL
     Pegasus::App::IApplicationProxy * mApplication;
 
-    //! Window used to the render the viewport of the application
-    //! \todo Handle multiple windows
-    Pegasus::Wnd::IWindowProxy * mAppWindow;
-
-    //! Viewport window handle associated with the application
-    //! (will become the parent of the rendering window)
-    Pegasus::Wnd::WindowHandle mViewportWindowHandle;
-
-    //! Initial width of the viewport in pixels (> 0)
-    int mViewportInitialWidth;
-
-    //! Initial height of the viewport in pixels (> 0)
-    int mViewportInitialHeight;
+    //! Windows used to render the viewports of the application
+    Pegasus::Wnd::IWindowProxy * mAppWindow[NUM_VIEWPORT_TYPES];
 
     //! Return code of the assertion handler. AssertionManager::ASSERTION_INVALID by default.
     //! The value is not the default only when leaving an assertion dialog box.

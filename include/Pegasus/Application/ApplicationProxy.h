@@ -35,6 +35,9 @@ public:
 
     // Window API
     virtual const char* GetMainWindowType() const;
+#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
+    virtual const char* GetSecondaryWindowType() const;
+#endif
     virtual Wnd::IWindowProxy* AttachWindow(const AppWindowConfig& config);
     virtual void DetachWindow(Wnd::IWindowProxy* wnd);
 

@@ -100,7 +100,7 @@ Editor::Editor(QWidget *parent)
  //   }
 
     // Create the application manager
-    mApplicationManager = new ApplicationManager(this, mViewportDockWidget, this);
+    mApplicationManager = new ApplicationManager(this, this);
 }
 
 //----------------------------------------------------------------------------------------
@@ -138,6 +138,34 @@ void Editor::CloseSplashScreen()
     {
         delete mSplashScreen;
         mSplashScreen = nullptr;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+ViewportWidget * Editor::GetViewportWidget(ViewportType viewportType) const
+{
+    switch (viewportType)
+    {
+        case VIEWPORTTYPE_MAIN:
+            return mMainViewportDockWidget->GetViewportWidget();
+
+        case VIEWPORTTYPE_SECONDARY:
+            return mSecondaryViewportDockWidget->GetViewportWidget();
+
+        case VIEWPORTTYPE_TEXTURE_EDITOR_PREVIEW:
+            //! \todo Add support for texture editor
+            ED_FAILSTR("The texture editor preview viewport is not implemented yet");
+            return nullptr;
+
+        case VIEWPORTTYPE_MESH_EDITOR_PREVIEW:
+            //! \todo Add support for mesh editor
+            ED_FAILSTR("The mesh editor preview viewport is not implemented yet");
+            return nullptr;
+
+        default:
+            ED_FAILSTR("Invalid viewport widget type (%d), it should be < %d", viewportType, NUM_VIEWPORT_TYPES);
+            return nullptr;
     }
 }
 
@@ -192,9 +220,13 @@ void Editor::CreateActions()
 	connect(mActionCreatePrimitiveSphere, SIGNAL(triggered()), this, SLOT(CreateSphere()));
 
 
-    mActionWindowViewport = new QAction(tr("&Viewport"), this);
-	mActionWindowViewport->setStatusTip(tr("Open the viewport window"));
-	connect(mActionWindowViewport, SIGNAL(triggered()), this, SLOT(OpenViewportWindow()));
+    mActionWindowMainViewport = new QAction(tr("&Main Viewport"), this);
+	mActionWindowMainViewport->setStatusTip(tr("Open the main viewport window"));
+	connect(mActionWindowMainViewport, SIGNAL(triggered()), this, SLOT(OpenMainViewportWindow()));
+
+    mActionWindowSecondaryViewport = new QAction(tr("&Secondary Viewport"), this);
+	mActionWindowSecondaryViewport->setStatusTip(tr("Open the secondary viewport window"));
+	connect(mActionWindowSecondaryViewport, SIGNAL(triggered()), this, SLOT(OpenSecondaryViewportWindow()));
 
     mActionWindowTimeline = new QAction(tr("&Timeline"), this);
 	mActionWindowTimeline->setStatusTip(tr("Open the timeline window"));
@@ -245,7 +277,8 @@ void Editor::CreateMenu()
 	//mToolbarMenu = windowMenu->addMenu(tr("&Toolbars"));
 	//mDockMenu = windowMenu->addMenu(tr("&Windows"));
     //! \todo Temporary. Use the toolbar and dock menus with checkboxes
-    windowMenu->addAction(mActionWindowViewport);
+    windowMenu->addAction(mActionWindowMainViewport);
+    windowMenu->addAction(mActionWindowSecondaryViewport);
     windowMenu->addAction(mActionWindowTimeline);
     windowMenu->addAction(mActionWindowConsole);
 
@@ -297,9 +330,13 @@ void Editor::CreateDockWidgets()
     // Create the dock widgets and assign their initial position
     //! \todo Use the correct icons for the docks, and add them to the menu and toolbar
 
-    mViewportDockWidget = new ViewportDockWidget(this);
-    //mViewportDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
-    addDockWidget(Qt::TopDockWidgetArea, mViewportDockWidget);
+    mMainViewportDockWidget = new ViewportDockWidget(VIEWPORTTYPE_MAIN, this);
+    //mMainViewportDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
+    addDockWidget(Qt::TopDockWidgetArea, mMainViewportDockWidget);
+
+    mSecondaryViewportDockWidget = new ViewportDockWidget(VIEWPORTTYPE_SECONDARY, this);
+    //mSecondaryViewportDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
+    addDockWidget(Qt::TopDockWidgetArea, mSecondaryViewportDockWidget);
 
     mTimelineDockWidget = new TimelineDockWidget(this);
     //mTimelineDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
@@ -454,9 +491,16 @@ void Editor::CreateSphere()
 
 //----------------------------------------------------------------------------------------
 
-void Editor::OpenViewportWindow()
+void Editor::OpenMainViewportWindow()
 {
-    mViewportDockWidget->show();
+    mMainViewportDockWidget->show();
+}
+
+//----------------------------------------------------------------------------------------
+
+void Editor::OpenSecondaryViewportWindow()
+{
+    mSecondaryViewportDockWidget->show();
 }
 
 //----------------------------------------------------------------------------------------

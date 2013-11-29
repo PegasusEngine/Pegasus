@@ -17,6 +17,8 @@
 #include "Console/ConsoleDockWidget.h"
 #include "Timeline/TimelineDockWidget.h"
 #include "Viewport/ViewportDockWidget.h"
+#include "Viewport/ViewportWidget.h"
+#include "Viewport/ViewportType.h"
 
 #include <QtWidgets/QMainWindow>
 
@@ -69,9 +71,18 @@ public:
 
 public:
 
-    //! Get the viewport dock widget
-    //! \return Pointer to the viewport dock widget
-    inline ViewportDockWidget * GetViewportDockWidget() const { return mViewportDockWidget; }
+    //! Get one of the viewport widgets
+    //! \param viewportType Type of the viewport widget to get
+    //! \return Pointer to the viewport widget, nullptr in case of error
+    ViewportWidget * GetViewportWidget(ViewportType viewportType) const;
+
+    //! Get the main viewport dock widget
+    //! \return Pointer to the main viewport dock widget
+    inline ViewportDockWidget * GetMainViewportDockWidget() const { return mMainViewportDockWidget; }
+
+    //! Get the secondary viewport dock widget
+    //! \return Pointer to the secondary viewport dock widget
+    inline ViewportDockWidget * GetSecondaryViewportDockWidget() const { return mSecondaryViewportDockWidget; }
 
     //! Get the timeline dock widget
     //! \return Pointer to the timeline dock widget
@@ -81,7 +92,7 @@ public:
     //! \return Pointer to the console dock widget
     inline ConsoleDockWidget * GetConsoleDockWidget() const { return mConsoleDockWidget; }
 
-    //------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------
 
 private:
 
@@ -140,7 +151,8 @@ private slots:
 
     //@{
     //! Slots for the actions of the Window menu
-    void OpenViewportWindow();
+    void OpenMainViewportWindow();
+    void OpenSecondaryViewportWindow();
     void OpenTimelineWindow();
     void OpenConsoleWindow();
     //@}
@@ -193,7 +205,8 @@ private:
 
     //@{
     //! Actions triggered when an item of the Window menu is selected
-	QAction * mActionWindowViewport;
+	QAction * mActionWindowMainViewport;
+	QAction * mActionWindowSecondaryViewport;
     QAction * mActionWindowTimeline;
     QAction * mActionWindowConsole;
     //@}
@@ -240,7 +253,8 @@ private:
 
     //@{
     //! Dock widgets
-    ViewportDockWidget * mViewportDockWidget;
+    ViewportDockWidget * mMainViewportDockWidget;
+    ViewportDockWidget * mSecondaryViewportDockWidget;
     TimelineDockWidget * mTimelineDockWidget;
     ConsoleDockWidget * mConsoleDockWidget;
     //@}

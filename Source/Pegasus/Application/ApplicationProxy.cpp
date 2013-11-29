@@ -46,6 +46,17 @@ const char* ApplicationProxy::GetMainWindowType() const
 
 //----------------------------------------------------------------------------------------
 
+#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
+    
+const char* ApplicationProxy::GetSecondaryWindowType() const
+{
+    return mObject->GetWindowRegistry()->GetSecondaryWindowType();
+}
+
+#endif  // PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
+
+//----------------------------------------------------------------------------------------
+
 Wnd::IWindowProxy* ApplicationProxy::AttachWindow(const AppWindowConfig& config)
 {
     Alloc::IAllocator* windowAlloc = Memory::GetWindowAllocator();

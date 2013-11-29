@@ -66,8 +66,12 @@ public:
     //! Shutdown this window
     virtual void Shutdown() = 0;
 
-    //! Trigger this window to draw one frame
-    virtual void Refresh() = 0;
+    //! Render the content of the window
+    //! \warning Do not use directly, call \a Refresh() instead to guarantee the render context is bound
+    virtual void Render() = 0;
+
+    //! Bind the render context and render the window
+    void Refresh();
 
 
     //! Resize this window
@@ -75,10 +79,13 @@ public:
     //! \param New height in pixels.
     void Resize(unsigned int width, unsigned int height);
 
+
 protected:
+
     //! Gets the window context for this window
     //! \return Window context.
     inline IWindowContext* GetWindowContext() { return mWindowContext; }
+
 
 private:
     // No copies allowed

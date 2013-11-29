@@ -208,8 +208,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     // Set up the app config
     appConfig.mModuleHandle = (Pegasus::Wnd::ModuleHandle) hInstance;
-    appConfig.mMaxWindowTypes = 2;
-    appConfig.mMaxNumWindows = 2;
+    appConfig.mMaxWindowTypes = 1;
+    appConfig.mMaxNumWindows = 1;
     appConfig.mBasePath = ASSET_ROOT;
 #if PEGASUS_ENABLE_LOG
     appConfig.mLoghandler = LogHandler; // Attach the debugging features

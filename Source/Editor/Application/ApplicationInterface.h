@@ -13,16 +13,10 @@
 #ifndef EDITOR_APPLICATIONINTERFACE_H
 #define EDITOR_APPLICATIONINTERFACE_H
 
-class QTimer;
+#include "Viewport/ViewportType.h"
 
-namespace Pegasus {
-    namespace App {
-        class IApplicationProxy;
-    }
-    namespace Wnd {
-        class IWindowProxy;
-    }
-}
+class Application;
+class QTimer;
 
 
 //! Interface object used to interface with the Pegasus related messages,
@@ -34,12 +28,9 @@ class ApplicationInterface : public QObject
 public:
 
     //! Constructor
-    //! \param application Pegasus application proxy (!= nullptr)
-    //! \param appWindow Pegasus application window proxy (!= nullptr)
+    //! \param application Editor application object (!= nullptr)
     //! \param parent Parent Qt object
-    ApplicationInterface(Pegasus::App::IApplicationProxy * application,
-                         Pegasus::Wnd::IWindowProxy * appWindow,
-                         QObject *parent = 0);
+    ApplicationInterface(Application * application, QObject * parent = 0);
 
     //! Destructor, closes the running application
     virtual ~ApplicationInterface();
@@ -65,13 +56,13 @@ public slots:
 private slots:
 
     //! Called when the viewport needs to be resized
+    //! \param viewportType Type of the viewport (VIEWPORTTYPE_xxx constant)
     //! \param width New width of the viewport, in pixels
     //! \param height New height of the viewport, in pixels
-    void ResizeViewport(int width, int height);
+    void ResizeViewport(ViewportType viewportType, int width, int height);
 
-    //! Called when a request to redraw the content of the application windows is sent
-    //! \todo Temporary, we need a better way to draw, on a per-window basis
-    void RedrawChildWindows();
+    //! Called when a request to redraw the content of the main viewport is sent
+    void RedrawMainViewport();
 
     //------------------------------------------------------------------------------------
 
@@ -80,12 +71,8 @@ private:
     //! Timer used to forcefully render the content of the app windows
     QTimer * mTimer;
 
-    //! Application proxy object created when running the application DLL
-    Pegasus::App::IApplicationProxy * mApplication;
-
-    //! Window used to the render the viewport of the application
-    //! \todo Handle multiple windows
-    Pegasus::Wnd::IWindowProxy * mAppWindow;
+    //! Editor application object
+    Application * mApplication;
 
     //! True while an assertion dialog box is shown to prevent any paint message to reach the application windows
     //! \todo Seems not useful anymore. Test and remove if possible

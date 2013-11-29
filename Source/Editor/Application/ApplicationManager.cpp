@@ -14,23 +14,24 @@
 #include "Log.h"
 #include "Viewport/ViewportDockWidget.h"
 #include "Viewport/ViewportWidget.h"
+#include "Viewport/ViewportType.h"
 
 #include <QMessageBox>
 
 
-ApplicationManager::ApplicationManager(Editor * editor,
-                                       ViewportDockWidget * viewportDockWidget,
-                                       QObject *parent)
+ApplicationManager::ApplicationManager(Editor * editor, QObject *parent)
 :   QObject(parent),
     mEditor(editor),
-    mViewportDockWidget(viewportDockWidget),
     mApplication(nullptr),
     mIsApplicationRunning(false)
 {
     ED_LOG("Creating the application manager");
 
     ED_ASSERT(editor != nullptr);
-    ED_ASSERT(viewportDockWidget != nullptr);
+
+    // Register the custom types used in the editor signals
+    qRegisterMetaType<Application::Error>("Application::Error");
+    qRegisterMetaType<ViewportType>("ViewportType");
 }
 
 //----------------------------------------------------------------------------------------
@@ -49,8 +50,6 @@ void ApplicationManager::OpenApplication(const QString & fileName)
 {
     ED_LOG("Opening application '%s'", fileName.toLatin1().constData());
 
-    ED_ASSERT(mViewportDockWidget != nullptr);
-
     // Close the previous application is there is one
     if (IsApplicationOpened())
     {
@@ -61,15 +60,8 @@ void ApplicationManager::OpenApplication(const QString & fileName)
     // Create the application object, and set its parameters
     mApplication = new Application(this);
     mApplication->SetFile(fileName);
-    //! \todo Handle multiple dock widgets and multiple viewports
-    ViewportWidget * viewportWidget = mViewportDockWidget->GetViewportWidget(/**0**/);
-    mApplication->SetViewportParameters(/**0,*/
-                                        viewportWidget->GetWindowHandle(),
-                                        viewportWidget->GetWidth(),
-                                        viewportWidget->GetHeight());
 
     // Connect the engine messages
-    qRegisterMetaType<Application::Error>("Application::Error");
 	connect(mApplication, SIGNAL(LoadingError(Application::Error)), this, SLOT(LoadingError(Application::Error)));
 	connect(mApplication, SIGNAL(LoadingSucceeded()), this, SLOT(LoadingSucceeded()));
 	connect(mApplication, SIGNAL(finished()), this, SLOT(ApplicationFinished()));
@@ -133,15 +125,6 @@ void ApplicationManager::LoadingError(Application::Error error)
 void ApplicationManager::LoadingSucceeded()
 {
     ED_LOG("Application successfully loaded");
-
-    // Connect the viewport resized message from the viewport widget
-    // to the application worker thread. A queued connection is used since we have
-    // to cross the thread boundaries
-    //! \todo Handle multiple viewports
-    ViewportWidget * viewportWidget = mViewportDockWidget->GetViewportWidget(/**0*/);
-    connect(viewportWidget, SIGNAL(ViewportResized(int, int)),
-            mApplication, SLOT(ResizeViewport(int, int)),
-            Qt::QueuedConnection);
 
     mIsApplicationRunning = true;
 }

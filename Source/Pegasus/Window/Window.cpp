@@ -126,6 +126,21 @@ WindowHandle Window::GetHandle() const
 
 //----------------------------------------------------------------------------------------
 
+void Window::Refresh()
+{
+    if (mRenderContext != nullptr)
+    {
+        mRenderContext->Bind();
+        Render();
+    }
+    else
+    {
+        PG_FAILSTR("Trying to refresh a window but its render context is undefined");
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 void Window::Resize(unsigned int width, unsigned int height)
 {
     mPrivateImpl->Resize(width, height);

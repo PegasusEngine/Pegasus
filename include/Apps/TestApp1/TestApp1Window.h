@@ -31,7 +31,7 @@ public:
     // App-specific API
     virtual void Initialize();
     virtual void Shutdown();
-    virtual void Refresh();
+    virtual void Render();
 
 private:
     Pegasus::Shader::ShaderStage mVertexShader;

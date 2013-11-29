@@ -38,12 +38,12 @@ Application::Application(QObject *parent)
     mApplicationInterface(nullptr),
     mFileName(),
     mApplication(nullptr),
-    mAppWindow(nullptr),
-    mViewportWindowHandle(0),
-    mViewportInitialWidth(128),
-    mViewportInitialHeight(128),
     mAssertionReturnCode(AssertionManager::ASSERTION_INVALID)
 {
+    for (unsigned int w = 0; w < NUM_VIEWPORT_TYPES; ++w)
+    {
+        mAppWindow[w] = nullptr;
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -62,25 +62,10 @@ void Application::SetFile(const QString & fileName)
 
 //----------------------------------------------------------------------------------------
 
-void Application::SetViewportParameters(/**index,*/ Pegasus::Wnd::WindowHandle windowHandle,
-                                        int width, int height)
-{
-    ED_ASSERTSTR(windowHandle != 0, "Invalid viewport window handle set for an application.");
-    ED_ASSERTSTR(width > 0, "Invalid viewport initial width (%d). It must be positive.", width);
-    ED_ASSERTSTR(height > 0, "Invalid viewport initial height (%d). It must be positive.", height);
-
-    mViewportWindowHandle = windowHandle;
-    mViewportInitialWidth = width;
-    mViewportInitialHeight = height;
-}
-
-//----------------------------------------------------------------------------------------
-
 void Application::run()
 {
     ED_ASSERTSTR(!mFileName.isEmpty(), "Invalid application to open, the name cannot be an empty string.");
     Pegasus::App::ApplicationConfig appConfig;
-    Pegasus::App::AppWindowConfig windowConfig;
     int retVal = 0;
 
     //PG_ASSERTSTR(!mFileName.isEmpty(), "Invalid application to open, the name cannot be an empty string");
@@ -90,9 +75,10 @@ void Application::run()
         return;
     }
 
-    if (mViewportWindowHandle == 0)
+    ViewportWidget * mainViewportWidget = Editor::GetInstance().GetViewportWidget(VIEWPORTTYPE_MAIN);
+    if (mainViewportWidget == nullptr)
     {
-        ED_FAILSTR("Invalid viewport window handle set for an application.");
+        ED_FAILSTR("Invalid main viewport to be used for an application.");
         emit(LoadingError(ERROR_INVALID_VIEWPORT));
         return;
     }
@@ -133,8 +119,8 @@ void Application::run()
 
     // Set up app config
     appConfig.mModuleHandle = (Pegasus::Wnd::ModuleHandle) GetModuleHandle(NULL); // Use the handle of the Editor EXE
-    appConfig.mMaxWindowTypes = 2;
-    appConfig.mMaxNumWindows = 2;
+    appConfig.mMaxWindowTypes = NUM_VIEWPORT_TYPES;
+    appConfig.mMaxNumWindows = NUM_VIEWPORT_TYPES;
     appConfig.mBasePath = ASSET_ROOT;
     // Attach the debugging features
     // (queued connections as the connections are between threads)
@@ -161,28 +147,32 @@ void Application::run()
     mApplication = CreatePegasusAppFunc(appConfig);
     mApplication->Initialize();
 
-    //! Set the window handler parent of the created child window
-    windowConfig.mWindowType = mApplication->GetMainWindowType();
-    windowConfig.mIsChild = true;
-    windowConfig.mParentWindowHandle = mViewportWindowHandle;
-    windowConfig.mWidth = mViewportInitialWidth;
-    windowConfig.mHeight = mViewportInitialHeight;
-
     // Set up windows
-    mAppWindow = mApplication->AttachWindow(windowConfig);
-    mAppWindow->Initialize();
+    //! \todo Add support for other viewport types
+    for (unsigned int vt = 0; vt < /*NUM_VIEWPORT_TYPES*/2; ++vt)
+    {
+        const ViewportType viewportType = ViewportType(VIEWPORTTYPE_FIRST + vt);
+        ViewportWidget * viewportWidget = Editor::GetInstance().GetViewportWidget(viewportType);
+        if (viewportWidget != nullptr)
+        {
+            Pegasus::App::AppWindowConfig windowConfig;
+
+            windowConfig.mWindowType = GetWindowTypeFromViewportType(viewportType);
+            windowConfig.mIsChild = true;
+            windowConfig.mParentWindowHandle = viewportWidget->GetWindowHandle();
+            windowConfig.mWidth = viewportWidget->GetWidth();
+            windowConfig.mHeight = viewportWidget->GetHeight();
+            mAppWindow[vt] = mApplication->AttachWindow(windowConfig);
+            mAppWindow[vt]->Initialize();
+        }
+    }
 
     // Signal the success of the loading
     emit(LoadingSucceeded());
 
     // Create the application interface object, owned by the application thread.
     // Not a child of this QThread, since we want it to be in the application thread.
-    mApplicationInterface = new ApplicationInterface(mApplication, mAppWindow, nullptr);
-
-    // Connect the messages between this object and the application interface
-    connect(this, SIGNAL(ViewportResized(int, int)),
-            mApplicationInterface, SLOT(ResizeViewport(int, int)),
-            Qt::QueuedConnection);
+    mApplicationInterface = new ApplicationInterface(this, nullptr);
 
     // Start the timer that forces the redrawing of the app windows
     mApplicationInterface->StartRedrawTimer();
@@ -200,8 +190,15 @@ void Application::run()
     mApplicationInterface = nullptr;
 
     // Tear down windows
-    mAppWindow->Shutdown();
-    mApplication->DetachWindow(mAppWindow);
+    for (unsigned int w = 0; w < NUM_VIEWPORT_TYPES; ++w)
+    {
+        if (mAppWindow[w] != nullptr)
+        {
+            mAppWindow[w]->Shutdown();
+            mApplication->DetachWindow(mAppWindow[w]);
+            mAppWindow[w] = nullptr;
+        }
+    }
 
     // Destroy the application
     mApplication->Shutdown();
@@ -215,6 +212,21 @@ void Application::run()
 #else
 #error "Implement the unloading of the application library"
 #endif  // PEGASUS_PLATFORM_WINDOWS
+}
+
+//----------------------------------------------------------------------------------------
+
+Pegasus::Wnd::IWindowProxy * Application::GetWindowProxy(ViewportType viewportType) const
+{
+    if (viewportType < NUM_VIEWPORT_TYPES)
+    {
+        return mAppWindow[viewportType];
+    }
+    else
+    {
+        ED_FAILSTR("Invalid viewport widget type (%d), it should be < %d", viewportType, NUM_VIEWPORT_TYPES);
+        return nullptr;
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -295,15 +307,6 @@ Pegasus::Core::AssertReturnCode Application::EmitAssertionFromApplication(const 
 
 //----------------------------------------------------------------------------------------
 
-void Application::ResizeViewport(int width, int height)
-{
-    // Emit a signal that will allow a queued connection to trigger the viewport resize
-    // on the application thread
-    emit ViewportResized(width, height);
-}
-
-//----------------------------------------------------------------------------------------
-
 void Application::LogReceivedFromApplication(Pegasus::Core::LogChannel logChannel, const QString & msgStr)
 {
     Editor::GetInstance().GetLogManager().LogNoFormat(logChannel, msgStr);
@@ -316,6 +319,34 @@ void Application::AssertionReceivedFromApplication(const QString & testStr, cons
     // Open the actual assertion dialog box.
     // Store the return code to unfreeze the application thread.
     mAssertionReturnCode = Editor::GetInstance().GetAssertionManager().AssertionErrorNoFormat(testStr, fileStr, line, msgStr, false);
+}
+
+//----------------------------------------------------------------------------------------
+
+const char * Application::GetWindowTypeFromViewportType(ViewportType viewportType) const
+{
+    switch (viewportType)
+    {
+        case VIEWPORTTYPE_MAIN:
+            return mApplication->GetMainWindowType();
+
+        case VIEWPORTTYPE_SECONDARY:
+            return mApplication->GetSecondaryWindowType();
+
+        case VIEWPORTTYPE_TEXTURE_EDITOR_PREVIEW:
+            //! \todo Add support for texture editor
+            ED_FAILSTR("The texture editor viewport type is not handled yet");
+            return nullptr;
+
+        case VIEWPORTTYPE_MESH_EDITOR_PREVIEW:
+            //! \todo Add support for mesh editor
+            ED_FAILSTR("The mesh editor viewport type is not handled yet");
+            return nullptr;
+
+        default:
+            ED_FAILSTR("Invalid viewport widget type (%d), it should be < %d", viewportType, NUM_VIEWPORT_TYPES);
+            return nullptr;
+    }
 }
 
 //----------------------------------------------------------------------------------------

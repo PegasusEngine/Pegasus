@@ -13,7 +13,7 @@
 
 
 TimelineDockWidget::TimelineDockWidget(QWidget *parent)
-    : QDockWidget(parent)
+:   QDockWidget(parent)
 {
     ui.setupUi(this);
 

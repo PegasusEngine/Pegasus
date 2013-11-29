@@ -15,6 +15,7 @@
 namespace Pegasus {
     namespace Timeline {
         class Lane;
+        class TimelineProxy;
     }
 }
 
@@ -42,6 +43,14 @@ public:
     //! \return New lane, nullptr if the number of lanes is MAX_NUM_LANES
     Lane * CreateLane();
 
+
+#if PEGASUS_ENABLE_PROXIES
+
+    //! Get the proxy associated with the timeline
+    inline TimelineProxy * GetProxy() const { return mProxy; }
+
+#endif  // PEGASUS_ENABLE_PROXIES
+
     //------------------------------------------------------------------------------------
 
 private:
@@ -52,6 +61,14 @@ private:
         
     //! Allocator used for all timeline allocations
     Alloc::IAllocator * mAllocator;
+
+#if PEGASUS_ENABLE_PROXIES
+
+    //! Proxy associated with the timeline
+    TimelineProxy * mProxy;
+
+#endif  // PEGASUS_ENABLE_PROXIES
+
 
     //! Set of lanes, only the first mNumLanes are defined
     Lane * mLanes[MAX_NUM_LANES];

@@ -308,6 +308,9 @@
     <CustomBuild Include="..\..\..\Source\Editor\Application\ApplicationInterface.h">
       <Filter>Source\Application</Filter>
     </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Viewport\ViewportType.h">
+      <Filter>Source\Viewport</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Editor.rc" />

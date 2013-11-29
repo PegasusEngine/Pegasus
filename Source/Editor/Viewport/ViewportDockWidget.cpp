@@ -17,8 +17,8 @@
 #include <QVBoxLayout>
 
 
-ViewportDockWidget::ViewportDockWidget(QWidget *parent)
-    : QDockWidget(parent)
+ViewportDockWidget::ViewportDockWidget(ViewportType viewportType, QWidget * parent)
+:   QDockWidget(parent)
 {
     // Set the dock widget parameters
     setWindowTitle(tr("Viewport"));
@@ -40,14 +40,8 @@ ViewportDockWidget::ViewportDockWidget(QWidget *parent)
     // Create the menu bar
     QMenuBar * menuBar = CreateMenu(mainWidget);
 
-    // Create the viewport widget that will contain the renderer and set its size policy
-    mViewportWidget = new ViewportWidget(mainWidget);
-    QSizePolicy sizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-    sizePolicy.setHorizontalStretch(0);
-    sizePolicy.setVerticalStretch(0);
-    sizePolicy.setHeightForWidth(mViewportWidget->sizePolicy().hasHeightForWidth());
-    mViewportWidget->setSizePolicy(sizePolicy);
-    mViewportWidget->setMinimumSize(QSize(128, 128));
+    // Create the viewport widget that will contain the renderer
+    mViewportWidget = new ViewportWidget(viewportType, mainWidget);
 
     // Set the elements of the layout
     verticalLayout->setMenuBar(menuBar);

@@ -60,6 +60,9 @@ public:
     unsigned int mCurrentSize; // Current table size
     unsigned int mMaxSize; // Maximum table size
     int mMainWindowIndex; // Index for MAIN window type
+#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
+    int mSecondaryWindowIndex; // Index for SECONDARY window type
+#endif
 };
 
 //----------------------------------------------------------------------------------------
@@ -147,6 +150,9 @@ void TypeTableEntry::Clear()
 
 TypeTable::TypeTable(unsigned int max, Alloc::IAllocator* alloc)
     : mAllocator(alloc), mCurrentSize(0), mMaxSize(max), mMainWindowIndex(-1)
+#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
+    , mSecondaryWindowIndex(-1)
+#endif
 {
     mTable = PG_NEW_ARRAY(mAllocator, -1, "TypeTableEntries", Pegasus::Alloc::PG_MEM_PERM, TypeTableEntry, mMaxSize);
 }
@@ -238,6 +244,14 @@ void TypeTable::Insert(const TypeTableEntry& entry)
 
         mMainWindowIndex = (int) mCurrentSize;
     }
+#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
+    else if (entry.mTypeTag == WINDOW_TYPE_SECONDARY)
+    {
+        PG_ASSERTSTR(!Contains(WINDOW_TYPE_SECONDARY), "Type table already contains a SECONDARY window!");
+
+        mSecondaryWindowIndex = (int) mCurrentSize;
+    }
+#endif  // PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
     mTable[mCurrentSize++] = entry;
 }
 
@@ -263,6 +277,13 @@ void TypeTable::Remove(const char* typeName)
     {
         mMainWindowIndex = -1;
     }
+#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
+    // Check for SECONDARY
+    else if (mTable[index].mTypeTag == WINDOW_TYPE_SECONDARY)
+    {
+        mSecondaryWindowIndex = -1;
+    }
+#endif  // PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
     memmove(mTable + index, mTable + index + 1, sizeof(TypeTableEntry) * (mCurrentSize - index - 1)); // Fill hole
     mCurrentSize--;
 }
@@ -345,7 +366,9 @@ void WindowTable::Remove(Wnd::Window* entry)
 AppWindowManager::AppWindowManager(const AppWindowManagerConfig& config)
     : mAllocator(config.mAllocator)
 {
-    mTypeTable = PG_NEW(mAllocator, -1, "WindowManager-TypeTable", Pegasus::Alloc::PG_MEM_PERM) TypeTable(config.mMaxWindowTypes, mAllocator);
+    // 1 is added to the number of window types, as the startup window class is used internally
+    // and is not supposed to be known from the application
+    mTypeTable = PG_NEW(mAllocator, -1, "WindowManager-TypeTable", Pegasus::Alloc::PG_MEM_PERM) TypeTable(config.mMaxWindowTypes + 1, mAllocator);
     mWindowTable = PG_NEW(mAllocator, -1, "WindowManager-TypeTable", Pegasus::Alloc::PG_MEM_PERM) WindowTable(config.mMaxNumWindows, mAllocator);
 }
 
@@ -393,6 +416,22 @@ const char* AppWindowManager::GetMainWindowType() const
 
     return nullptr;
 }
+
+//----------------------------------------------------------------------------------------
+
+#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
+    
+const char* AppWindowManager::GetSecondaryWindowType() const
+{
+    if (mTypeTable->mSecondaryWindowIndex != -1)
+    {
+        return mTypeTable->mTable[mTypeTable->mSecondaryWindowIndex].mClassName;
+    }
+
+    return nullptr;
+}
+
+#endif  // PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
 
 //----------------------------------------------------------------------------------------
 

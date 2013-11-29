@@ -17,6 +17,7 @@
 #include "Pegasus/Application/Application.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
+#include "Pegasus/Application/IWindowRegistry.h"
 #include "Pegasus/Window/Shared/IWindowProxy.h"
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -276,8 +277,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     
     // Set up the app config
     appConfig.mModuleHandle = (Pegasus::Wnd::ModuleHandle) hInstance;
-    appConfig.mMaxWindowTypes = 2;
-    appConfig.mMaxNumWindows = 2;
+    appConfig.mMaxWindowTypes = Pegasus::App::NUM_WND_TYPES;
+    appConfig.mMaxNumWindows = 1;
     appConfig.mBasePath = ASSET_ROOT;
     // Attach the debugging features
 #if PEGASUS_ENABLE_LOG

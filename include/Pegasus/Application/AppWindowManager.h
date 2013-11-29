@@ -65,6 +65,9 @@ public:
     virtual void RegisterWindowClass(const char* className, const WindowRegistration& classReg);
     virtual void UnregisterWindowClass(const char* className);
     virtual const char* GetMainWindowType() const;
+#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
+    virtual const char* GetSecondaryWindowType() const;
+#endif
 
     //! Creates a window and adds it to this manager.
     //! \param className Class of window to create.

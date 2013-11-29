@@ -47,7 +47,7 @@ void StartupWindow::Shutdown()
 
 //----------------------------------------------------------------------------------------
 
-void StartupWindow::Refresh()
+void StartupWindow::Render()
 {
     // Flip the GPU
     GetRenderContext()->Swap();
@@ -55,4 +55,4 @@ void StartupWindow::Refresh()
 
 
 } // end namespace Wnd
-} // end namesapce Pegasus
+} // end namespace Pegasus

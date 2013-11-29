@@ -27,11 +27,8 @@ public:
 
     //! Constructor
     //! \param editor Main window of the editor
-    //! \param viewportDockWidget Viewport dock widget associated with the editor
     //! \todo Handle multiple dock widgets
-    ApplicationManager(Editor * editor,
-                       ViewportDockWidget * viewportDockWidget,
-                       QObject *parent = 0);
+    ApplicationManager(Editor * editor, QObject *parent = 0);
 
     //! Destructor
     virtual ~ApplicationManager();
@@ -77,9 +74,6 @@ private:
 
     //! Editor main window
     Editor * mEditor;
-
-    //! Viewport dock widget associated with the editor
-    ViewportDockWidget * mViewportDockWidget;
 
     //! Pointer to the opened application, nullptr is not assigned
     Application * mApplication;

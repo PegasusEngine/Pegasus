@@ -39,7 +39,7 @@ public:
     // Window API
     virtual void Initialize();
     virtual void Shutdown();
-    virtual void Refresh();
+    virtual void Render();
 };
 
 } // end namespace Wnd

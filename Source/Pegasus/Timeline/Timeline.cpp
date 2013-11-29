@@ -12,6 +12,10 @@
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Timeline/Lane.h"
 
+#if PEGASUS_ENABLE_PROXIES
+#include "Pegasus/Timeline/TimelineProxy.h"
+#endif  // PEGASUS_ENABLE_PROXIES
+
 namespace Pegasus {
 namespace Timeline {
 
@@ -21,6 +25,11 @@ Timeline::Timeline(Alloc::IAllocator * allocator)
     mAllocator(allocator)
 {
     PG_ASSERTSTR(allocator != nullptr, "Invalid allocator given to the timeline object");
+
+#if PEGASUS_ENABLE_PROXIES
+    //! Create the proxy associated with the timeline
+    mProxy = PG_NEW(allocator, -1, "Timeline::mProxy", Pegasus::Alloc::PG_MEM_PERM) TimelineProxy(this);
+#endif  // PEGASUS_ENABLE_PROXIES
 }
 
 //----------------------------------------------------------------------------------------
@@ -31,6 +40,11 @@ Timeline::~Timeline()
     {
         PG_DELETE(mAllocator, mLanes[lane]);
     }
+
+#if PEGASUS_ENABLE_PROXIES
+    //! Destroy the proxy associated with the timeline
+    PG_DELETE(mAllocator, mProxy);
+#endif
 }
 
 //----------------------------------------------------------------------------------------

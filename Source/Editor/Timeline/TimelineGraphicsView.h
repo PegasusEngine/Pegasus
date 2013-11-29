@@ -53,7 +53,7 @@ public:
 
 signals:
 
-    //! Sent when the current has been updated by user interaction in the view
+    //! Sent when the current beat has been updated by user interaction in the view
     //! \param beat Current beat, can have fractional part
     void BeatUpdated(float beat);
 

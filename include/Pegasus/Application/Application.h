@@ -33,6 +33,9 @@ namespace Pegasus {
     namespace Texture {
         class TextureManager;
     }
+    namespace Timeline {
+        class Timeline;
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -96,6 +99,7 @@ public:
 
     // IWindowContext interface
     virtual Io::IOManager* GetIOManager() const { return mIoManager; }
+    virtual Timeline::Timeline* GetTimeline() const { return mTimeline; }
     virtual Graph::NodeManager* GetNodeManager() const { return mNodeManager; }
     virtual Texture::TextureManager* GetTextureManager() const { return mTextureManager; }
 
@@ -113,6 +117,7 @@ private:
     ApplicationConfig mConfig;                  //!< Cached config object
     AppWindowManager* mWindowManager;           //!< Window manager
     Io::IOManager* mIoManager;                  //!< IO manager
+    Timeline::Timeline * mTimeline;             //!< Timeline object
     Graph::NodeManager* mNodeManager;           //!< Graph node manager
     Texture::TextureManager* mTextureManager;   //!< Texture node manager
     float mAppTime;                             //!< Current app time

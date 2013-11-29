@@ -43,6 +43,14 @@ public:
     //! \return Main window class type.
     virtual const char* GetMainWindowType() const = 0;
 
+#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
+
+    //! Gets the SECONDARY window type associated with this application
+    //! \return Secondary window class type.
+    virtual const char* GetSecondaryWindowType() const = 0;
+
+#endif  // PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
+
     //! Creates a new window attached to this application instance
     //! \param config Configuration structure for the newly created window.
     //! \return Pointer to the opened window.
