@@ -6,78 +6,82 @@
 
 //! \file   ShaderStage.h
 //! \author Kleber Garcia
-//! \date   15th October 2013
-//! \brief  Opengl shading pipeline stage	
-
-#ifndef PEGASUS_SHADER_SHADERSTAGE_H
-#define PEGASUS_SHADER_SHADERSTAGE_H
-
-#include "Pegasus/Shader/EventDispatcher.h"
+//! \date   1st December 2013
+//! \brief  Pegasus Shader Stage	
+#ifndef PEGASUS_SHADER_STAGE_H
+#define PEGASUS_SHADER_STAGE_H
+#include "Pegasus/Core/Ref.h"
+#include "Pegasus/Graph/GeneratorNode.h"
+#include "Pegasus/Allocator/IAllocator.h"
+#include "Pegasus/Shader/Gl/GLShaderStage.h"
 #include "Pegasus/Core/Io.h"
-#include "Pegasus/Render/GL/GLEWStaticInclude.h"
 
-namespace Pegasus {
-namespace Shader {
-
-enum ShaderType
+namespace Pegasus
 {
-    VERTEX,
-    FRAGMENT,
-    TESSELATION_CONTROL,
-    TESSELATION_EVALUATION,
-    GEOMETRY,
-    COMPUTE,
-    SHADER_STAGES_COUNT,
-    SHADER_STAGE_INVALID,
-    SHADER_STAGE_MAX
-};
-
-//----------------------------------------------------------------------------------------
-
-class ShaderStage 
-#if PEGASUS_SHADER_USE_EDIT_EVENTS
-: public EventDispatcher
-#endif
+namespace Shader
 {
-    friend class Program;
+
+// forward declarations
+class IEventListener;
+class IUserData;
+
+//! Shader Stage class, holds information about a shader stage
+class ShaderStage : public Graph::GeneratorNode
+{
 public:
-    ShaderStage(Alloc::IAllocator* alloc);
-    ~ShaderStage();
-        
+    //! Default constructor
+    //! \param  nodeAllocator used for nodes
+    //! \param  nodeDataAllocator used for data allocation of nodes
+    ShaderStage(
+        Alloc::IAllocator* nodeAllocator,
+        Alloc::IAllocator* nodeDataAllocator
+    );
 
-    bool CompileFromSrc(ShaderType type, const char * src, int stringLength);
-    bool CompileFromFile(const char * path, Io::IOManager* loader);
-    ShaderType GetStageType() const { return mType; }
+    //! Destructor
+    virtual ~ShaderStage();
+
+    //! Set the shader source
+    //! \param  type the type of the source
+    //! \param  src the actual src string
+    //! \param  buffSize precomputed string length
+    void SetSource(ShaderType type, const char * src, int srcSize);
+
+
+    //! Open a file and load its source internally
+    //! \param  type the type of shader stage
+    //! \param  path the path of the file to open
+    //! \param  loader loader controller
+    //! \return  true if succeeds loading the file, false if loading fails
+    bool SetSourceFromFile(ShaderType type, const char * path, Io::IOManager * loader);
+
+    //! Return the stage type
+    //! \return the shader type
+    ShaderType GetStageType() const { return mInternalStage.GetStageType(); }
+
+    //! Set event listener for shader stage
+    //! \param eventListener the event listener interface
+    void SetEventListener(IEventListener * eventListener);
+
+    //! Set user data of particular shader stage
+    //! \param userData user data returned on the execution of an event. Use this 
+    void SetUserData(IUserData * userData);
+
+protected:
+    virtual Pegasus::Graph::NodeData * AllocateData() const;
+    virtual void GenerateData();
 
 private:
-    // No copies allowed
-    PG_DISABLE_COPY(ShaderStage);
+    PG_DISABLE_COPY(ShaderStage)
+    GLShaderStage mInternalStage;
 
-    void DestroyShader();
-    bool CompileFromSrcInternal(ShaderType type, const char * src, int stringLength);
-    void ProcessErrorLog(const char * errorLog);
-
-
-    Alloc::IAllocator* mAllocator;
-    Pegasus::Io::FileBuffer mFileBuffer;
-    ShaderType mType;
-
-    //opengl specifics
-    struct OglState
-    {
-        GLuint mShaderHandle;
-        OglState()
-        : mShaderHandle(0)
-        {
-        }
-        ~OglState()
-        {
-        }
-    } mOgl;
 };
 
+typedef Pegasus::Core::Ref<ShaderStage> ShaderStageRef;
+typedef Pegasus::Core::Ref<ShaderStage> & ShaderStageIn;
+typedef Pegasus::Core::Ref<ShaderStage> & ShaderStageInOut;
+typedef Pegasus::Core::Ref<ShaderStage> ShaderStageReturn;
 
-} // namespace Shader
-} // namespace Pegasus
+}
+}
 
-#endif // PEGASUS_SHADER_SHADERSTAGE_H
+#endif

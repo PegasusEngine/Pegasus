@@ -60,14 +60,16 @@ GLuint Buffers[NUM_BUFFERS];
 
 
 TestApp1Window::TestApp1Window(const Pegasus::Wnd::WindowConfig& config)
-    : Pegasus::Wnd::Window(config), mVertexShader(config.mRenderAllocator), mFragmentShader(config.mRenderAllocator)
+    : Pegasus::Wnd::Window(config), mAllocator(config.mAllocator), mNodeManager(config.mRenderAllocator, config.mRenderAllocator)
 {
+    mShaderManager = PG_NEW(mAllocator, -1, "ShaderManager",Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Shader::ShaderManager(&mNodeManager);
 }
 
 //----------------------------------------------------------------------------------------
 
 TestApp1Window::~TestApp1Window()
 {
+    PG_DELETE(mAllocator, mShaderManager);
 }
 
 //----------------------------------------------------------------------------------------
@@ -111,19 +113,20 @@ void TestApp1Window::Initialize()
     glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW); // Immutable verts
 
     // Set up shaders
-    mVertexShader.CompileFromFile(TRIANGLES_VERT, fileLoader);
-    mFragmentShader.CompileFromFile(TRIANGLES_FRAG, fileLoader);
-    mShaderProgram.SetStage(&mVertexShader);
-    mShaderProgram.SetStage(&mFragmentShader);
-    mShaderProgram.Link();
+    mShaderProgramLinkage = mShaderManager->CreateProgram();
+    mShaderProgramLinkage->LoadShaderStage(TRIANGLES_VERT, fileLoader);
+    mShaderProgramLinkage->LoadShaderStage(TRIANGLES_FRAG, fileLoader);
+
+    bool updated;
+    mProgramData = mShaderProgramLinkage->GetUpdatedData(updated);
     
     // Wse the shader
-    mShaderProgram.Bind();
+    mProgramData->Use();
 
     // Set up uniforms
-    mTimeUniform = glGetUniformLocation(mShaderProgram.GetProgramHandle(), "time");
+    mTimeUniform = glGetUniformLocation(mProgramData->GetGlHandle(), "time");
 #if (DEMO == DEMO_KEVIN_PSYBEADS) || (DEMO == DEMO_KEVIN_CUBE_FRACTAL) || (DEMO == DEMO_KEVIN_CUBE_FRACTAL2)
-    mScreenRatioUniform = glGetUniformLocation(mShaderProgram.GetProgramHandle(), "screenRatio");
+    mScreenRatioUniform = glGetUniformLocation(mProgramData->GetGlHandle(), "screenRatio");
 #endif
 
     // Bind vertex array to shader
@@ -138,9 +141,15 @@ void TestApp1Window::Shutdown()
 }
 
 //----------------------------------------------------------------------------------------
-
 void TestApp1Window::Render()
 {
+
+    bool dummy;
+    mProgramData = mShaderProgramLinkage->GetUpdatedData(dummy);
+    // Wse the shader
+    mProgramData->Use();    
+
+
     static unsigned int tickCount = 0;
     unsigned int viewportWidth = 0;
     unsigned int viewportHeight = 0;

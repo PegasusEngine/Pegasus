@@ -88,8 +88,8 @@ namespace Shader
         DECLARE_VISITOR;
         enum Type
         {
-            ERROR,
-            WARNING
+            COMPILATION_ERROR,
+            COMPILATION_WARNING
         };
         CompilationNotification(Type t, int row, int column, const char * description)
         : mType(t), mColumn(column), mRow(row), mDescription(description)

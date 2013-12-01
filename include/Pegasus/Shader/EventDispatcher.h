@@ -52,7 +52,7 @@
 #define SHADEREVENT_COMPILATION_ERROR(row, column, description)\
     {\
     Pegasus::Shader::CompilationNotification e(\
-        Pegasus::Shader::CompilationNotification::ERROR, row, column, description);\
+        Pegasus::Shader::CompilationNotification::COMPILATION_ERROR, row, column, description);\
     DispatchEvent(e); \
     }
 

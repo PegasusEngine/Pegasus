@@ -4,18 +4,21 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	Shader.h
-//! \author	Kleber Garcia
-//! \date	16th October 2013
-//! \brief	Demoscene Shader Management package, main include file
+//! \file   ShaderData.cpp
+//! \author Kleber Garcia
+//! \date   1st December 2013
+//! \brief  Implementation of ShaderData class
 
-#ifndef PEGASUS_SHADER_H
-#define PEGASUS_SHADER_H
+#include "Pegasus/Shader/ShaderData.h"
 
-#include "Pegasus/Shader/Shared/IEventListener.h"
-#include "Pegasus/Shader/EventDispatcher.h"
-#include "Pegasus/Shader/Program.h"
-#include "Pegasus/Shader/ShaderManager.h"
+Pegasus::Shader::ShaderData::ShaderData(Alloc::IAllocator * allocator)
+:
+Pegasus::Graph::NodeData(allocator),
+mHandle(0)
+{
+    
+}
 
-
-#endif
+Pegasus::Shader::ShaderData::~ShaderData()
+{
+}

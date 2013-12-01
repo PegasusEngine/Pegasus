@@ -12,21 +12,15 @@
     <Filter Include="Include\Shared">
       <UniqueIdentifier>{90b94d7c-4433-4a62-b91b-fd29f48a8553}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\GL">
+      <UniqueIdentifier>{3b977b64-e3b7-40e7-b178-630863ff2754}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\GL">
+      <UniqueIdentifier>{87b8782e-0e30-4cc7-93ba-16c1f045f667}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shader.h">
-      <Filter>Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Program.h">
-      <Filter>Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderStage.h">
-      <Filter>Include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\EventDispatcher.h">
-      <Filter>Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderManager.h">
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\IEventListener.h">
@@ -35,10 +29,34 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\ShaderEvent.h">
       <Filter>Include\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\GL\GLShaderStage.h">
+      <Filter>Include\GL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderStage.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderManager.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderData.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ProgramLinkage.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ProgramData.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\GL\GLProgramLinker.h">
+      <Filter>Include\GL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\Program.cpp">
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\EventDispatcher.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\GL\GLShaderStage.cpp">
+      <Filter>Source\GL</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderManager.cpp">
       <Filter>Source</Filter>
@@ -46,8 +64,17 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderStage.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\EventDispatcher.cpp">
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ProgramLinkage.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ProgramData.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderData.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\GL\GLProgramLinker.cpp">
+      <Filter>Source\GL</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
