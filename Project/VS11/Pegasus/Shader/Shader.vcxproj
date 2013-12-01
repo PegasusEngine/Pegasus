@@ -36,6 +36,7 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderManager.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderStage.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\IEventListener.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\ShaderDefs.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\ShaderEvent.h" />
   </ItemGroup>
   <ItemGroup>
