@@ -57,6 +57,7 @@ Pegasus::Graph::NodeData * Pegasus::Shader::ShaderStage::AllocateData() const
     return PG_NEW(GetNodeDataAllocator(), -1, "ShaderData", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Shader::ShaderData(GetNodeDataAllocator());
 }
 
+#if PEGASUS_SHADER_USE_EDIT_EVENTS
 void Pegasus::Shader::ShaderStage::SetEventListener(Pegasus::Shader::IEventListener * eventListener)
 {
     mInternalStage.SetEventListener(eventListener);
@@ -66,6 +67,7 @@ void Pegasus::Shader::ShaderStage::SetUserData(Pegasus::Shader::IUserData * user
 {
     mInternalStage.SetUserData(userData);
 }
+#endif //PEGASUS_SHADER_USE_EDIT_EVENTS
 
 void Pegasus::Shader::ShaderStage::GenerateData()
 {
@@ -80,3 +82,8 @@ void Pegasus::Shader::ShaderStage::GenerateData()
         shaderData->SetGlHandle(0);
     }
 } 
+
+Pegasus::Graph::NodeReturn Pegasus::Shader::ShaderStage::CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
+{
+    return PG_NEW(nodeAllocator, -1, "ShaderStage", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Shader::ShaderStage(nodeAllocator, nodeDataAllocator);
+}

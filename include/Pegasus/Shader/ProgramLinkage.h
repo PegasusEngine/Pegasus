@@ -26,23 +26,6 @@ namespace Shader
 class IEventListener;
 class IUserData;
 
-//! Shader stage configuration structure
-struct ShaderStageConfig
-{
-    Pegasus::Shader::IUserData * mUserData; // user data held by shader stage
-    Pegasus::Shader::ShaderType mType; // type for shader stage
-    const char * mSource; // the source string
-    int          mSourceSize; // the source string precomputed size
-        
-    ShaderStageConfig()
-    :
-    mUserData(nullptr),
-    mType(Pegasus::Shader::SHADER_STAGE_INVALID),
-    mSource(nullptr),
-    mSourceSize(0)
-    {
-    }
-};
 
 //! Program linkage class. Represents a set of linked shader stages
 class ProgramLinkage : public Pegasus::Graph::OperatorNode
@@ -57,28 +40,21 @@ public:
     //! Destructor
     virtual ~ProgramLinkage();
 
+#if PEGASUS_SHADER_USE_EDIT_EVENTS
     //! Set event listener for shader stage
     //! \param eventListener the event listener interface
     void SetEventListener(IEventListener * eventListener);
 
+
     //! Set user data of particular shader stage
     //! \param userData user data returned on the execution of an event. Use this 
     void SetUserData(IUserData * userData);
+#endif
 
-    //! Set program stage configuration
-    void SetShaderStage(const Pegasus::Shader::ShaderStageConfig& config);   
+    //! Set program stage 
+    //! \param shaderStage the shader stage to be added
+    void SetShaderStage(Pegasus::Shader::ShaderStageIn shaderStage);   
 
-    //! Load a shader stage from a file.
-    //! \param path File containing shader stage. valid extensions are:
-    //!             .ps - pixel shader
-    //!             .vs - vertex shader
-    //!             .tcs -tesselation control  shader
-    //!             .tes -tesselation evaluation shader
-    //!             .gs - geometry shader
-    //!             .cs - compute shader
-    //! \param loader the pegasus loader control
-    //! \return true on success, false on failre. See IShaderEvent to capture more detailed errors thrown
-    bool LoadShaderStage(const char * path, Io::IOManager * loader);
 
     //! Minimum number of input nodes
     //! \return the minimum number of input nodes
@@ -91,6 +67,11 @@ public:
     //! Static function that creates a program linkage
     static Graph::NodeReturn CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
+    //! Returns a shader stage node
+    //! \param type the type to be queried
+    //! \return the shader stage smart reference
+    ShaderStageReturn FindShaderStage(Pegasus::Shader::ShaderType type) const;
+
 protected:
     //! overrides, do not use
     virtual void AddInput(Pegasus::Graph::NodeIn node);
@@ -101,11 +82,17 @@ protected:
 
     //! shader compilation logic
     virtual void GenerateData();
+
+    //! allocation of node data
     virtual Pegasus::Graph::NodeData* AllocateData() const;
+
+    //! event listening of input removal 
+    virtual void OnRemoveInput(unsigned int index);
 
 private:
     PG_DISABLE_COPY(ProgramLinkage);
     Pegasus::Shader::GLProgramLinker mInternalLinker;
+    unsigned char mStageFlags;
 };
 
 typedef       Pegasus::Core::Ref<ProgramLinkage>   ProgramLinkageRef;

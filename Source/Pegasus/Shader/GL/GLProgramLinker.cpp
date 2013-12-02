@@ -15,6 +15,10 @@
 Pegasus::Shader::GLProgramLinker::GLProgramLinker()
 : mGLProgramLinkerHandle(0)
 {
+    for (unsigned int i = 0; i < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT); ++i)
+    {
+        mStages[i] = 0;
+    }
 }
 
 Pegasus::Shader::GLProgramLinker::~GLProgramLinker()
@@ -64,6 +68,7 @@ bool Pegasus::Shader::GLProgramLinker::Link(GLuint shaderPipeline[Pegasus::Shade
         SHADEREVENT_LINKING_INCOMPLETE;
         return false;
     }
+
 
     for (int i = 0; i < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT); ++i)
     {

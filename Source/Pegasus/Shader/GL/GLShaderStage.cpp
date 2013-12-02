@@ -187,6 +187,7 @@ bool GLShaderStage::SetSourceFromFile(Pegasus::Shader::ShaderType type, const ch
         if (ioError == Pegasus::Io::ERR_NONE)
         {
             SHADEREVENT_LOADED(mFileBuffer.GetBuffer(), mFileBuffer.GetFileSize());
+            return true;
         }
         else
         {

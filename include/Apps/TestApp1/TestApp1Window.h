@@ -15,6 +15,7 @@
 #include "Pegasus/Pegasus.h"
 #include "Pegasus/Graph/NodeManager.h"
 #include "Pegasus/Shader/ShaderManager.h"
+#include "Pegasus/Shader/ShaderStage.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Shader/ProgramData.h"
 

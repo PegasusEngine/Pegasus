@@ -58,6 +58,7 @@ public:
     //! \return the shader type
     ShaderType GetStageType() const { return mInternalStage.GetStageType(); }
 
+#if PEGASUS_SHADER_USE_EDIT_EVENTS
     //! Set event listener for shader stage
     //! \param eventListener the event listener interface
     void SetEventListener(IEventListener * eventListener);
@@ -65,6 +66,9 @@ public:
     //! Set user data of particular shader stage
     //! \param userData user data returned on the execution of an event. Use this 
     void SetUserData(IUserData * userData);
+#endif
+
+    static Graph::NodeReturn CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
 protected:
     virtual Pegasus::Graph::NodeData * AllocateData() const;

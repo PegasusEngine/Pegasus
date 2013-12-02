@@ -114,10 +114,16 @@ void TestApp1Window::Initialize()
 
     // Set up shaders
     mShaderProgramLinkage = mShaderManager->CreateProgram();
-    mShaderProgramLinkage->LoadShaderStage(TRIANGLES_VERT, fileLoader);
-    mShaderProgramLinkage->LoadShaderStage(TRIANGLES_FRAG, fileLoader);
+    Pegasus::Shader::ShaderStageFileProperties fileLoadProperties;
+    fileLoadProperties.mLoader = fileLoader;
 
-    bool updated;
+    fileLoadProperties.mPath = TRIANGLES_VERT;
+    mShaderProgramLinkage->SetShaderStage( mShaderManager->LoadShaderStageFromFile(fileLoadProperties) );
+
+    fileLoadProperties.mPath = TRIANGLES_FRAG;
+    mShaderProgramLinkage->SetShaderStage( mShaderManager->LoadShaderStageFromFile(fileLoadProperties) );
+
+    bool updated = false;
     mProgramData = mShaderProgramLinkage->GetUpdatedData(updated);
     
     // Wse the shader
@@ -144,9 +150,9 @@ void TestApp1Window::Shutdown()
 void TestApp1Window::Render()
 {
 
-    bool dummy;
+    bool dummy = false;
     mProgramData = mShaderProgramLinkage->GetUpdatedData(dummy);
-    // Wse the shader
+    // Use the shader
     mProgramData->Use();    
 
 

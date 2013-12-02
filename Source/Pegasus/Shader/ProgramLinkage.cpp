@@ -4,36 +4,18 @@
 //! private data structures
 namespace PegasusShaderPrivate {
 
-
-//lookup struct array with extension / GL type / pegasus Shader stage mappings
-static struct PegasusExtensionMappings
+unsigned char ToStageFlag(Pegasus::Shader::ShaderType type)
 {
-    Pegasus::Shader::ShaderType mType;
-    const char * mExtension;
-} gPegasusShaderStageExtensionMappings[Pegasus::Shader::SHADER_STAGES_COUNT] =
-{
-    { Pegasus::Shader::VERTEX,                 ".vs"  },
-    { Pegasus::Shader::FRAGMENT,               ".ps"  },
-    { Pegasus::Shader::TESSELATION_CONTROL,    ".tcs" },
-    { Pegasus::Shader::TESSELATION_EVALUATION, ".tes" },
-    { Pegasus::Shader::GEOMETRY,               ".gs"  },
-    { Pegasus::Shader::COMPUTE,                ".cs"  }
+    return (1 << static_cast<unsigned char>(type));
 }
-;
 
 } // namespace PegasusShaderPrivate
 
 Pegasus::Shader::ProgramLinkage::ProgramLinkage(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :
-Pegasus::Graph::OperatorNode(nodeAllocator, nodeDataAllocator)
+Pegasus::Graph::OperatorNode(nodeAllocator, nodeDataAllocator), mStageFlags(0)
 {
-    for (int i = 0; i < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT); ++i)
-    {
-        Pegasus::Shader::ShaderStageRef invalidShaderStage = 
-            PG_NEW(GetNodeDataAllocator(), -1, "ShaderData", Pegasus::Alloc::PG_MEM_TEMP) 
-            Pegasus::Shader::ShaderStage(nodeAllocator, nodeDataAllocator);
-        Node::AddInput(invalidShaderStage);
-    }
+
 }
 
 
@@ -54,15 +36,26 @@ Pegasus::Graph::NodeData* Pegasus::Shader::ProgramLinkage::AllocateData() const
 
 void Pegasus::Shader::ProgramLinkage::GenerateData()
 {
+    //TODO optimize this code in size. Loops are expensive in instruction #s??
     PG_ASSERT(GetData() != nullptr);
     Pegasus::Shader::ProgramDataRef programData = GetData();
     const int shaderStagesCount = Pegasus::Shader::SHADER_STAGES_COUNT;
     GLuint programDataPipe[shaderStagesCount];
-    bool dummy = false;
-    for (int i = 0; i < shaderStagesCount; ++i)
+    for (unsigned int i = 0; i < shaderStagesCount; ++i)
     {
-        Pegasus::Shader::ShaderDataRef shaderData = this->GetInput(i)->GetUpdatedData(dummy);
-        programDataPipe[i] = shaderData->GetGlHandle();
+        programDataPipe[i] = 0;//initialize to 0
+    }
+
+    
+    bool dummy = false;
+    for (unsigned int i = 0; i < GetNumInputs(); ++i)
+    {
+        Pegasus::Shader::ShaderStageRef shaderStage = GetInput(i);
+        if (shaderStage->GetStageType() != Pegasus::Shader::SHADER_STAGE_INVALID)
+        {
+            Pegasus::Shader::ShaderDataRef shaderData = shaderStage->GetUpdatedData(dummy);    
+            programDataPipe[shaderStage->GetStageType()] = shaderData->GetGlHandle();
+        }
     }
 
     bool success = mInternalLinker.Link(programDataPipe);
@@ -75,9 +68,9 @@ void Pegasus::Shader::ProgramLinkage::GenerateData()
     {
         programData->SetGlHandle(0);
     }
-    
 }
 
+#if PEGASUS_SHADER_USE_EDIT_EVENTS
 void Pegasus::Shader::ProgramLinkage::SetEventListener(Pegasus::Shader::IEventListener * eventListener)
 {
     //propagate event listener all the way down to compiler
@@ -90,52 +83,34 @@ void Pegasus::Shader::ProgramLinkage::SetEventListener(Pegasus::Shader::IEventLi
 }
 
 
-void Pegasus::Shader::ProgramLinkage::SetShaderStage(const Pegasus::Shader::ShaderStageConfig& config)
+void Pegasus::Shader::ProgramLinkage::SetUserData(Pegasus::Shader::IUserData * userData)
 {
-    if (config.mType >= 0 && config.mType < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT))
+    mInternalLinker.SetUserData(userData);
+}
+#endif //PEGASUS_SHADER_USE_EDIT_EVENTS
+
+void Pegasus::Shader::ProgramLinkage::SetShaderStage(Pegasus::Shader::ShaderStageIn shaderStage)
+{
+    if (shaderStage != nullptr)
     {
-        Pegasus::Shader::ShaderStageRef stage = GetShaderStage(config.mType);
-        if (config.mUserData != nullptr)
+        unsigned char flag = PegasusShaderPrivate::ToStageFlag(shaderStage->GetStageType());
+        if (flag & mStageFlags)
         {
-            stage->SetUserData (config.mUserData);
+            RemoveInput(FindShaderStage(shaderStage->GetStageType()));
         }
 
-        if (config.mSource && config.mSourceSize > 1)
-        {
-            stage->SetSource(config.mType, config.mSource, config.mSourceSize);
-        }
-        else
-        {
-            PG_FAILSTR("Incorrect source string for shader!");
-        }
-    }
-    else
-    {
-        PG_FAILSTR("Incorrect config type set");
+        PG_ASSERT(shaderStage->GetStageType() >= 0 && shaderStage->GetStageType() < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT));
+        OperatorNode::AddInput(shaderStage);
+        mStageFlags |= flag;
     }
 }
 
-
-bool Pegasus::Shader::ProgramLinkage::LoadShaderStage(const char * path, Io::IOManager * loader)
+void Pegasus::Shader::ProgramLinkage::OnRemoveInput(unsigned int index)
 {
-    const char * extension = strrchr(path, '.');
-    Pegasus::Shader::ShaderType targetStage = Pegasus::Shader::SHADER_STAGE_INVALID;
-    if (extension != nullptr)
-    {
-        for (int i = 0; i < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT); ++i)
-        {
-            if (!_stricmp(extension, PegasusShaderPrivate::gPegasusShaderStageExtensionMappings[i].mExtension))
-            {
-                targetStage = PegasusShaderPrivate::gPegasusShaderStageExtensionMappings[i].mType;
-                break;
-            }
-        }
-    }
-    
-    Pegasus::Shader::ShaderStageRef stage = GetShaderStage(targetStage);
-    return stage->SetSourceFromFile(targetStage, path, loader);
+    Pegasus::Shader::ShaderStageRef targetStage = GetInput(index);
+    unsigned char flag =  PegasusShaderPrivate::ToStageFlag(targetStage->GetStageType());
+    mStageFlags &= ~(flag); //turn off bit
 }
-
 
 void Pegasus::Shader::ProgramLinkage::AddInput(Pegasus::Graph::NodeIn node)
 {
@@ -146,6 +121,19 @@ void Pegasus::Shader::ProgramLinkage::AddInput(Pegasus::Graph::NodeIn node)
 Pegasus::Graph::NodeReturn Pegasus::Shader::ProgramLinkage::CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 {
     return PG_NEW(nodeAllocator, -1, "ProgramLinkage", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Shader::ProgramLinkage(nodeAllocator, nodeDataAllocator);
+}
+
+Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ProgramLinkage::FindShaderStage(Pegasus::Shader::ShaderType type) const
+{
+    for (unsigned int i = 0; i < GetNumInputs(); ++i)
+    {
+        Pegasus::Shader::ShaderStageRef stage = GetInput(i);    
+        if (stage->GetStageType() == type)
+        {
+            return stage;
+        }
+    }
+    return nullptr;
 }
 
 
