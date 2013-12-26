@@ -17,6 +17,7 @@
 #include "Pegasus/Graph/NodeManager.h"
 #include "Pegasus/Memory/MemoryManager.h"
 #include "Pegasus/Render/GL/GLExtensions.h"
+#include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Texture/TextureManager.h"
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Window/Window.h"
@@ -69,6 +70,7 @@ Application::Application(const ApplicationConfig& config)
 
     // Set up node managers
     mNodeManager = PG_NEW(nodeAlloc, -1, "NodeManager", Alloc::PG_MEM_PERM) Graph::NodeManager(nodeAlloc, nodeDataAlloc);
+    mShaderManager = PG_NEW(nodeAlloc, -1, "ShaderManager", Alloc::PG_MEM_PERM) Shader::ShaderManager(mNodeManager);
     mTextureManager = PG_NEW(nodeAlloc, -1, "TextureManager", Alloc::PG_MEM_PERM) Texture::TextureManager(mNodeManager);
 
     // Set up timeline
@@ -99,6 +101,7 @@ Application::~Application()
 
     // Delete the texture and node managers
     PG_DELETE(nodeAlloc, mTextureManager);
+    PG_DELETE(nodeAlloc, mShaderManager);
     PG_DELETE(nodeAlloc, mNodeManager);
 
     // Tear down debugging facilities
@@ -183,7 +186,7 @@ Wnd::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig)
     config.mHeight = appWindowConfig.mHeight;
     config.mCreateVisible = true;
     config.mUseBasicContext = false;
-    newWnd = mWindowManager->CreateWindow(appWindowConfig.mWindowType, config);
+    newWnd = mWindowManager->CreateNewWindow(appWindowConfig.mWindowType, config);
 
     if (newWnd != nullptr)
     {
@@ -227,7 +230,7 @@ void Application::StartupAppInternal()
     config.mHeight = 128;
     config.mCreateVisible = false;
     config.mUseBasicContext = true;
-    newWnd = mWindowManager->CreateWindow(STARTUP_WND_TYPE, config);
+    newWnd = mWindowManager->CreateNewWindow(STARTUP_WND_TYPE, config);
     PG_ASSERTSTR(newWnd != nullptr, "[FATAL] Failed to create startup window!");
 
     // Init openGL extensions now that we have a context

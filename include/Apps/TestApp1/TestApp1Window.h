@@ -13,8 +13,6 @@
 #define TESTAPP1WINDOW_H
 
 #include "Pegasus/Pegasus.h"
-#include "Pegasus/Graph/NodeManager.h"
-#include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Shader/ShaderStage.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Shader/ProgramData.h"
@@ -38,8 +36,6 @@ public:
     virtual void Render();
 
 private:
-    Pegasus::Graph::NodeManager mNodeManager;
-    Pegasus::Shader::ShaderManager * mShaderManager;
     Pegasus::Shader::ProgramLinkageRef mShaderProgramLinkage;
     Pegasus::Shader::ProgramDataRef mProgramData;
 

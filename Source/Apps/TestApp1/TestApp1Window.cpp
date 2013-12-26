@@ -60,16 +60,14 @@ GLuint Buffers[NUM_BUFFERS];
 
 
 TestApp1Window::TestApp1Window(const Pegasus::Wnd::WindowConfig& config)
-    : Pegasus::Wnd::Window(config), mAllocator(config.mAllocator), mNodeManager(config.mRenderAllocator, config.mRenderAllocator)
+    : Pegasus::Wnd::Window(config), mAllocator(config.mAllocator)
 {
-    mShaderManager = PG_NEW(mAllocator, -1, "ShaderManager",Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Shader::ShaderManager(&mNodeManager);
 }
 
 //----------------------------------------------------------------------------------------
 
 TestApp1Window::~TestApp1Window()
 {
-    PG_DELETE(mAllocator, mShaderManager);
 }
 
 //----------------------------------------------------------------------------------------
@@ -113,15 +111,16 @@ void TestApp1Window::Initialize()
     glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW); // Immutable verts
 
     // Set up shaders
-    mShaderProgramLinkage = mShaderManager->CreateProgram();
+    Pegasus::Shader::ShaderManager * const shaderManager = GetWindowContext()->GetShaderManager();
+    mShaderProgramLinkage = shaderManager->CreateProgram();
     Pegasus::Shader::ShaderStageFileProperties fileLoadProperties;
     fileLoadProperties.mLoader = fileLoader;
 
     fileLoadProperties.mPath = TRIANGLES_VERT;
-    mShaderProgramLinkage->SetShaderStage( mShaderManager->LoadShaderStageFromFile(fileLoadProperties) );
+    mShaderProgramLinkage->SetShaderStage( shaderManager->LoadShaderStageFromFile(fileLoadProperties) );
 
     fileLoadProperties.mPath = TRIANGLES_FRAG;
-    mShaderProgramLinkage->SetShaderStage( mShaderManager->LoadShaderStageFromFile(fileLoadProperties) );
+    mShaderProgramLinkage->SetShaderStage( shaderManager->LoadShaderStageFromFile(fileLoadProperties) );
 
     bool updated = false;
     mProgramData = mShaderProgramLinkage->GetUpdatedData(updated);
@@ -149,12 +148,10 @@ void TestApp1Window::Shutdown()
 //----------------------------------------------------------------------------------------
 void TestApp1Window::Render()
 {
-
     bool dummy = false;
     mProgramData = mShaderProgramLinkage->GetUpdatedData(dummy);
     // Use the shader
     mProgramData->Use();    
-
 
     static unsigned int tickCount = 0;
     unsigned int viewportWidth = 0;

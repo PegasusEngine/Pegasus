@@ -73,7 +73,7 @@ public:
     //! \param className Class of window to create.
     //! \param config Config to use for the window.
     //! \return Created window.
-    Wnd::Window* CreateWindow(const char* className, const Wnd::WindowConfig& config);
+    Wnd::Window* CreateNewWindow(const char* className, const Wnd::WindowConfig& config);
 
     //! Destroys a window and removes it from this manager.
     //! \param window The window to destroy.

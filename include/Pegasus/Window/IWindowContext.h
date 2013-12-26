@@ -14,6 +14,7 @@
 
 #include "Pegasus/Core/Io.h"
 #include "Pegasus/Graph/NodeManager.h"
+#include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Texture/TextureManager.h"
 #include "Pegasus/Timeline/Timeline.h"
 
@@ -33,17 +34,21 @@ public:
     //! \return The IO manager.
     virtual Io::IOManager* GetIOManager() const = 0;
 
-    //! Gets the timeline for use by this window
-    //! \return The timeline.
-    virtual Timeline::Timeline* GetTimeline() const = 0;
-
     //! Gets the node manager for use by this window
     //! \return The node manager.
     virtual Graph::NodeManager* GetNodeManager() const = 0;
 
+    //! Gets the shader manager for use by this window
+    //! \return The shader manager.
+    virtual Shader::ShaderManager* GetShaderManager() const = 0;
+
     //! Gets the texture manager for use by this window
     //! \return The texture manager.
     virtual Texture::TextureManager* GetTextureManager() const = 0;
+
+    //! Gets the timeline for use by this window
+    //! \return The timeline.
+    virtual Timeline::Timeline* GetTimeline() const = 0;
 };
 
 

@@ -435,7 +435,7 @@ const char* AppWindowManager::GetSecondaryWindowType() const
 
 //----------------------------------------------------------------------------------------
 
-Wnd::Window* AppWindowManager::CreateWindow(const char* typeName, const Wnd::WindowConfig& config)
+Wnd::Window* AppWindowManager::CreateNewWindow(const char* typeName, const Wnd::WindowConfig& config)
 {
     TypeTableEntry* entry = nullptr;
     Wnd::Window* ret = nullptr;

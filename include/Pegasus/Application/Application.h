@@ -15,7 +15,6 @@
 
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Application/IWindowRegistry.h"
-#include "Pegasus/Core/Io.h"
 #include "Pegasus/Window/IWindowContext.h"
 
 // Forward declarations
@@ -26,15 +25,6 @@ namespace Pegasus {
     namespace Wnd {
         struct WindowConfig;
         class Window;
-    }
-    namespace Graph {
-        class NodeManager;
-    }
-    namespace Texture {
-        class TextureManager;
-    }
-    namespace Timeline {
-        class Timeline;
     }
 }
 
@@ -90,9 +80,10 @@ public:
 
     // IWindowContext interface
     virtual Io::IOManager* GetIOManager() const { return mIoManager; }
-    virtual Timeline::Timeline* GetTimeline() const { return mTimeline; }
     virtual Graph::NodeManager* GetNodeManager() const { return mNodeManager; }
+    virtual Shader::ShaderManager* GetShaderManager() const { return mShaderManager; }
     virtual Texture::TextureManager* GetTextureManager() const { return mTextureManager; }
+    virtual Timeline::Timeline* GetTimeline() const { return mTimeline; }
 
 private:
     // No copies allowed
@@ -108,9 +99,10 @@ private:
     ApplicationConfig mConfig;                  //!< Cached config object
     AppWindowManager* mWindowManager;           //!< Window manager
     Io::IOManager* mIoManager;                  //!< IO manager
-    Timeline::Timeline * mTimeline;             //!< Timeline object
     Graph::NodeManager* mNodeManager;           //!< Graph node manager
+    Shader::ShaderManager* mShaderManager;      //!< Shader node manager
     Texture::TextureManager* mTextureManager;   //!< Texture node manager
+    Timeline::Timeline* mTimeline;              //!< Timeline object
 };
 
 }   // namespace App
