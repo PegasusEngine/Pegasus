@@ -44,6 +44,18 @@ public:
     //! \return Proxy interface for a timeline lane, nullptr if the number of lanes is Timeline::MAX_NUM_LANES
     virtual ILaneProxy * CreateLane();
 
+
+    //! Set the play mode of the timeline
+    //! \param playMode New play mode of the timeline (PLAYMODE_xxx constant)
+    virtual void SetPlayMode(PlayMode playMode);
+
+    //! Update the current state of the timeline based on the play mode and the current time
+    virtual void Update();
+
+    //! Set the current beat of the timeline
+    //! \param beat Current beat, can have fractional part
+    virtual void SetCurrentBeat(float beat);
+
     //------------------------------------------------------------------------------------
     
 private:

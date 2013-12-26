@@ -64,6 +64,10 @@ private slots:
     //! Called when a request to redraw the content of the main viewport is sent
     void RedrawMainViewport();
 
+    //! Called when the current beat has been updated
+    //! \param beat Current beat, can have fractional part
+    void SetCurrentBeat(float beat);
+
     //------------------------------------------------------------------------------------
 
 private:

@@ -175,7 +175,8 @@ void Application::run()
     mApplicationInterface = new ApplicationInterface(this, nullptr);
 
     // Start the timer that forces the redrawing of the app windows
-    mApplicationInterface->StartRedrawTimer();
+    //! \todo Handle dynamic rendering mode
+    //mApplicationInterface->StartRedrawTimer();
 
     // Run the application loop. Does not use Application->Run() since we want to control
     // the sequencing of the message loop from the editor, and to allow assertion dialog boxes to work correctly.
@@ -225,6 +226,21 @@ Pegasus::Wnd::IWindowProxy * Application::GetWindowProxy(ViewportType viewportTy
     else
     {
         ED_FAILSTR("Invalid viewport widget type (%d), it should be < %d", viewportType, NUM_VIEWPORT_TYPES);
+        return nullptr;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+Pegasus::Timeline::ITimelineProxy * Application::GetTimelineProxy() const
+{
+    if (mApplication != nullptr)
+    {
+        return mApplication->GetTimeline();
+    }
+    else
+    {
+        ED_FAILSTR("Invalid Pegasus application object when getting the timeline proxy");
         return nullptr;
     }
 }

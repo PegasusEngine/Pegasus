@@ -12,6 +12,8 @@
 #ifndef PEGASUS_TIMELINE_TIMELINE_H
 #define PEGASUS_TIMELINE_TIMELINE_H
 
+#include "Pegasus/Timeline/Shared/TimelineDefs.h"
+
 namespace Pegasus {
     namespace Timeline {
         class Lane;
@@ -42,6 +44,22 @@ public:
     //! Create a new lane
     //! \return New lane, nullptr if the number of lanes is MAX_NUM_LANES
     Lane * CreateLane();
+
+
+    //! Set the play mode of the timeline
+    //! \param playMode New play mode of the timeline (PLAYMODE_xxx constant)
+    void SetPlayMode(PlayMode playMode);
+
+    //! Update the current state of the timeline based on the play mode and the current time
+    void Update();
+
+    //! Set the current beat of the timeline
+    //! \param beat Current beat, can have fractional part
+    void SetCurrentBeat(float beat);
+
+    //! Get the current beat of the timeline
+    //! \return Current beat, can have fractional part
+    inline float GetCurrentBeat() const { return mCurrentBeat; }
 
 
 #if PEGASUS_ENABLE_PROXIES
@@ -75,6 +93,19 @@ private:
 
     //! Number of used lanes (<= MAX_NUM_LANES)
     unsigned int mNumLanes;
+
+    //! Current play mode of the timeline (PLAYMODE_xxx constant, PLAYMODE_REALTIME by default)
+    PlayMode mPlayMode;
+
+    //! Current beat of the timeline (>= 0.0f, integer for each beat, can have fractional part).
+    //! INVALID_BEAT before the first call to Update()
+    float mCurrentBeat;
+
+    //! Invalid beat, used to detect the Update() function has not been called yet
+    static const float INVALID_BEAT;
+
+    //! Pegasus time returned by \a GetPegasusTime() when the timeline was started being played
+    double mStartPegasusTime;
 };
 
 

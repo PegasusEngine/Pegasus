@@ -19,7 +19,7 @@
 #define DEMO_KEVIN_PSYBEADS             2
 #define DEMO_KEVIN_CUBE_FRACTAL         3
 #define DEMO_KEVIN_CUBE_FRACTAL2        4
-#define DEMO                            DEMO_KEVIN_CUBE_FRACTAL2
+#define DEMO                            DEMO_KEVIN_PSYBEADS
 
 // Statics / globals
 #if DEMO == DEMO_KLEBER_HOMOGAY_TRIANGLE
@@ -167,9 +167,12 @@ void TestApp1Window::Render()
     // Clear screen
     glClear(GL_COLOR_BUFFER_BIT);
 
+    Pegasus::Timeline::Timeline* timeline = GetWindowContext()->GetTimeline();
+
 #if DEMO == DEMO_KLEBER_HOMOGAY_TRIANGLE
     //! \todo Temporary, just to get some animation running
-    const float currentTime = (float) tickCount;//(static_cast<float>(GetTickCount()) * 0.001f) * 60.0f;
+    //const float currentTime = (float) tickCount;//(static_cast<float>(GetTickCount()) * 0.001f) * 60.0f;
+    const float currentTime = timeline->GetCurrentBeat() * 30.0f;
 
     // Set up and draw triangles
     glBindVertexArray(VAOs[TRIANGLES]);
@@ -179,7 +182,8 @@ void TestApp1Window::Render()
 
 #if (DEMO == DEMO_KEVIN_PSYBEADS) || (DEMO == DEMO_KEVIN_CUBE_FRACTAL) || (DEMO == DEMO_KEVIN_CUBE_FRACTAL2)
     //! \todo Temporary, just to get some animation running
-    const float currentTime = (float) tickCount / 120.0f;//(static_cast<float>(GetTickCount()) * 0.001f) * 0.5f;
+    //const float currentTime = (float) tickCount / 120.0f;//(static_cast<float>(GetTickCount()) * 0.001f) * 0.5f;
+    const float currentTime = timeline->GetCurrentBeat() * 0.25f;
 
     // Set up and draw triangles
     glBindVertexArray(VAOs[TRIANGLES]);

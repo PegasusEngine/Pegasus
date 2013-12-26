@@ -20,6 +20,9 @@ namespace Pegasus {
         struct AppWindowConfig;
     }
 
+    namespace Timeline {
+        class ITimelineProxy;
+    }
     namespace Wnd {
         struct AppWindowConfig;
         class IWindowProxy;
@@ -70,9 +73,10 @@ public:
 
     //! \todo Set update mode
 
-    //! Sets the current time into the timeline for this application
-    //! \param time Desired application time.
-    virtual void SetAppTime(float time) = 0;
+
+    // Get the timeline proxy object
+    //! \return Timeline proxy object
+    virtual Timeline::ITimelineProxy* GetTimeline() const = 0;
 };
 
 //----------------------------------------------------------------------------------------

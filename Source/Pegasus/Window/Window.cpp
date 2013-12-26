@@ -131,6 +131,7 @@ void Window::Refresh()
     if (mRenderContext != nullptr)
     {
         mRenderContext->Bind();
+        mWindowContext->GetTimeline()->Update();
         Render();
     }
     else

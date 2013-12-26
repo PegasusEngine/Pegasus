@@ -15,6 +15,7 @@
 
 #include "Pegasus/Preprocessor.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
+#include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 #include "Pegasus/Window/Shared/IWindowProxy.h"
 
 #include <QTimer>
@@ -28,6 +29,11 @@ ApplicationInterface::ApplicationInterface(Application * application, QObject * 
 {
     ED_ASSERTSTR(application != nullptr, "Invalid application object given to the application interface");
 
+    // Set the timeline play mode to stopped by default
+    Pegasus::Timeline::ITimelineProxy * timeline = mApplication->GetTimelineProxy();
+    ED_ASSERT(timeline != nullptr);
+    timeline->SetPlayMode(Pegasus::Timeline::PLAYMODE_STOPPED);
+
     // Connect the viewport widget resized messages to the windows in the application worker thread.
     // A queued connection is used since we have to cross the thread boundaries
     //! \todo Add support for other window types
@@ -40,6 +46,19 @@ ApplicationInterface::ApplicationInterface(Application * application, QObject * 
                     this, SLOT(ResizeViewport(ViewportType, int, int)),
                     Qt::QueuedConnection);
         }
+    }
+
+    // Connect the timeline widget messages through queued connections
+    TimelineDockWidget * timelineDockWidget = Editor::GetInstance().GetTimelineDockWidget();
+    if (timelineDockWidget != nullptr)
+    {
+        connect(timelineDockWidget, SIGNAL(BeatUpdated(float)),
+                this, SLOT(SetCurrentBeat(float)),
+                Qt::QueuedConnection);
+    }
+    else
+    {
+        ED_FAILSTR("Unable to get the timeline dock widget");
     }
 
     // Create the window redrawing timer
@@ -95,4 +114,17 @@ void ApplicationInterface::RedrawMainViewport()
     {
         mainViewportWindow->Refresh();
     }
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::SetCurrentBeat(float beat)
+{
+    Pegasus::Timeline::ITimelineProxy * timeline = mApplication->GetTimelineProxy();
+    ED_ASSERT(timeline != nullptr);
+
+    timeline->SetCurrentBeat(beat);
+
+    //! \todo Handle multiple viewports and if the main viewport is in real-time mode
+    RedrawMainViewport();
 }

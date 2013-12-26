@@ -31,11 +31,17 @@ public:
     void EnableAntialiasing(bool enable);
 
 
+signals:
+
+    //! Emitted when the current beat has been updated
+    void BeatUpdated(float beat);
+
+
 private slots:
 
     //! Called when the current beat has been updated
     //! \param beat Current beat, can have fractional part
-    void UpdateBeat(float beat);
+    void SetCurrentBeat(float beat);
 
 
 private:

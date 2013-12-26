@@ -11,6 +11,7 @@
 
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Timeline/Lane.h"
+#include "Pegasus/Core/Time.h"
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/Timeline/TimelineProxy.h"
@@ -20,9 +21,16 @@ namespace Pegasus {
 namespace Timeline {
 
 
+const float Timeline::INVALID_BEAT = -1.0f;
+
+//----------------------------------------------------------------------------------------
+
 Timeline::Timeline(Alloc::IAllocator * allocator)
 :   mNumLanes(0),
-    mAllocator(allocator)
+    mAllocator(allocator),
+    mPlayMode(PLAYMODE_REALTIME),
+    mCurrentBeat(INVALID_BEAT),
+    mStartPegasusTime(0.0)
 {
     PG_ASSERTSTR(allocator != nullptr, "Invalid allocator given to the timeline object");
 
@@ -65,6 +73,67 @@ Lane * Timeline::CreateLane()
         PG_FAILSTR("Unable to create a new lane, the maximum number of lane has been reached %d", MAX_NUM_LANES);
         return nullptr;
     }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Timeline::Update()
+{
+    if ((mCurrentBeat == INVALID_BEAT) || (mCurrentBeat < 0.0f))
+    {
+        mCurrentBeat = 0.0f;
+        Core::UpdatePegasusTime();
+        mStartPegasusTime = Core::GetPegasusTime();
+        mCurrentBeat = 0.0f;
+    }
+    else
+    {
+        if (mPlayMode == PLAYMODE_REALTIME)
+        {
+            Core::UpdatePegasusTime();
+            const double currentTime = Core::GetPegasusTime() - mStartPegasusTime;
+            //! \todo Implement tempo
+            mCurrentBeat = static_cast<float>(currentTime / /*mBeatsPerSecond*/2.0);
+        }
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Timeline::SetPlayMode(PlayMode playMode)
+{
+    if (playMode < NUM_PLAYMODES)
+    {
+        switch (playMode)
+        {
+            case PLAYMODE_REALTIME:
+                PG_LOG('TMLN', "Switched to real-time mode for the timeline");
+                break;
+
+            case PLAYMODE_STOPPED:
+                PG_LOG('TMLN', "Switched to stopped mode for the timeline");
+                break;
+
+            default:
+                PG_LOG('TMLN', "Switched to an unknown mode for the timeline");
+        }
+
+        mPlayMode = playMode;
+    }
+    else
+    {
+        PG_FAILSTR("Invalid play mode (%d) for the timeline. The maximum value is %d", playMode, NUM_PLAYMODES - 1);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Timeline::SetCurrentBeat(float beat)
+{
+    //! \todo Implement proper behavior (more safety, handles play modes)
+    mCurrentBeat = beat;
+
+    PG_LOG('TMLN', "Set the current beat of the timeline to %f", mCurrentBeat);
 }
 
 

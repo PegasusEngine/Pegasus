@@ -86,15 +86,6 @@ public:
     //! Detaches a window from this app
     //! \param wnd The window to detach.
     void DetachWindow(Wnd::Window* wnd);
-    //! \todo Set update mode
-
-    //! Sets the current app time
-    //! \param time New app time.
-    inline void SetAppTime(float time) { mAppTime = time; }
-
-    //! Gets the current app time
-    //! \return Current app time.
-    inline float GetAppTime() const { return mAppTime; }
 
 
     // IWindowContext interface
@@ -120,7 +111,6 @@ private:
     Timeline::Timeline * mTimeline;             //!< Timeline object
     Graph::NodeManager* mNodeManager;           //!< Graph node manager
     Texture::TextureManager* mTextureManager;   //!< Texture node manager
-    float mAppTime;                             //!< Current app time
 };
 
 }   // namespace App

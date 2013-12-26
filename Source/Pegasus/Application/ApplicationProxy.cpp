@@ -13,6 +13,8 @@
 #include "Pegasus/Application/ApplicationProxy.h"
 #include "Pegasus/Application/Application.h"
 #include "Pegasus/Memory/MemoryManager.h"
+#include "Pegasus/Timeline/TimelineProxy.h"
+#include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Window/WindowProxy.h"
 #include "Pegasus/Window/Window.h"
 
@@ -92,9 +94,9 @@ void ApplicationProxy::Shutdown()
 
 //----------------------------------------------------------------------------------------
 
-void ApplicationProxy::SetAppTime(float time)
+Timeline::ITimelineProxy* ApplicationProxy::GetTimeline() const
 {
-    mObject->SetAppTime(time);
+    return mObject->GetTimeline()->GetProxy();
 }
 
 

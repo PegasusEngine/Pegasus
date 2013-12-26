@@ -35,11 +35,13 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Ref.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Shared\LogChannel.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Singleton.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Time.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Assertion.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Io.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Log.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Platform\Time_Win32.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{92FA566D-08A1-4C83-832B-C8D76BD1493B}</ProjectGuid>

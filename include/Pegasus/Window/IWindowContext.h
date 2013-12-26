@@ -15,6 +15,7 @@
 #include "Pegasus/Core/Io.h"
 #include "Pegasus/Graph/NodeManager.h"
 #include "Pegasus/Texture/TextureManager.h"
+#include "Pegasus/Timeline/Timeline.h"
 
 namespace Pegasus {
 namespace Wnd {
@@ -31,6 +32,10 @@ public:
     //! Gets the IO manager for use by this window
     //! \return The IO manager.
     virtual Io::IOManager* GetIOManager() const = 0;
+
+    //! Gets the timeline for use by this window
+    //! \return The timeline.
+    virtual Timeline::Timeline* GetTimeline() const = 0;
 
     //! Gets the node manager for use by this window
     //! \return The node manager.

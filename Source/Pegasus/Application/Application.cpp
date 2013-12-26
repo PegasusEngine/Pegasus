@@ -13,6 +13,7 @@
 #include "Pegasus/Application/Application.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Application/AppWindowManager.h"
+#include "Pegasus/Core/Time.h"
 #include "Pegasus/Graph/NodeManager.h"
 #include "Pegasus/Memory/MemoryManager.h"
 #include "Pegasus/Render/GL/GLExtensions.h"
@@ -30,7 +31,7 @@ const char* STARTUP_WND_TYPE = "INTERNAL__Startup";
 //----------------------------------------------------------------------------------------
 
 Application::Application(const ApplicationConfig& config)
-    : mInitialized(false), mAppTime(0.0f)
+    : mInitialized(false)
 {
     Alloc::IAllocator* coreAlloc = Memory::GetCoreAllocator();
     Alloc::IAllocator* windowAlloc = Memory::GetWindowAllocator();
@@ -50,6 +51,9 @@ Application::Application(const ApplicationConfig& config)
     Core::AssertionManager::CreateInstance(coreAlloc);
     Core::AssertionManager::GetInstance()->RegisterHandler(config.mAssertHandler);
 #endif
+
+    // Set up the time system
+    Core::InitializePegasusTime();
 
     // Set up window manager
     windowManagerConfig.mAllocator = windowAlloc;

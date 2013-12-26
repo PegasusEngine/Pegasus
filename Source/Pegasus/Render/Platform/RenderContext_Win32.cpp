@@ -72,7 +72,7 @@ RenderContextImpl_Win32::RenderContextImpl_Win32(const ContextConfig& config)
     else
     {
         // Context attributes for OGL 4.3
-        const int sAttrib[8] = {WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+        const int sAttrib[8] = {WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
                                 WGL_CONTEXT_MINOR_VERSION_ARB , 3,
                                 WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
                                 0, 0};

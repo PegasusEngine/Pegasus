@@ -45,8 +45,8 @@ public:
     virtual void Initialize();
     virtual void Shutdown();
 
-    //! \todo Set update mode
-    virtual void SetAppTime(float time);
+    // Proxy accessors
+    virtual Timeline::ITimelineProxy* GetTimeline() const;
 
 private:
     //! The proxied application object

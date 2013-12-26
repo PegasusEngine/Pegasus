@@ -27,6 +27,9 @@ namespace Pegasus {
     namespace App {
         class IApplicationProxy;
     }
+    namespace Timeline {
+        class ITimelineProxy;
+    }
     namespace Wnd {
         class IWindowProxy;
     }
@@ -78,6 +81,10 @@ public:
     //! \return Pointer to the window used to render the viewport of the application
     //!         (nullptr in case of error)
     Pegasus::Wnd::IWindowProxy * GetWindowProxy(ViewportType viewportType) const;
+
+    //! Get the timeline proxy object
+    //! \return Pointer to the timeline proxy object
+    Pegasus::Timeline::ITimelineProxy * GetTimelineProxy() const;
 
 
     //! Function called by the log handler, emitting the \a LogSentFromApplication signal

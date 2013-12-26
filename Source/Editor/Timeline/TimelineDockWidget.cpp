@@ -29,7 +29,7 @@ TimelineDockWidget::TimelineDockWidget(QWidget *parent)
     connect(ui.addButton, SIGNAL(clicked()),
             ui.graphicsView, SLOT(AddLane()));
     connect(ui.graphicsView, SIGNAL(BeatUpdated(float)),
-            this, SLOT(UpdateBeat(float)));
+            this, SLOT(SetCurrentBeat(float)));
 
     //! \todo Temporary! Just to have proper scene rect
     ui.graphicsView->AddLane();
@@ -53,8 +53,10 @@ void TimelineDockWidget::EnableAntialiasing(bool enable)
 
 //----------------------------------------------------------------------------------------
 
-void TimelineDockWidget::UpdateBeat(float beat)
+void TimelineDockWidget::SetCurrentBeat(float beat)
 {
+    emit BeatUpdated(beat);
+
     const int intBeat = static_cast<int>(floorf(beat));
     const float fracBeat = beat - static_cast<float>(intBeat);
     const int subBeat = static_cast<int>(floorf(fracBeat * 8.0f));

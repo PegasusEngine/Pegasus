@@ -43,6 +43,27 @@ ILaneProxy * TimelineProxy::CreateLane()
     return lane->GetProxy();
 }
 
+//----------------------------------------------------------------------------------------
+
+void TimelineProxy::SetPlayMode(PlayMode playMode)
+{
+    mTimeline->SetPlayMode(playMode);
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineProxy::Update()
+{
+    mTimeline->Update();
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineProxy::SetCurrentBeat(float beat)
+{
+    mTimeline->SetCurrentBeat(beat);
+}
+
 
 }   // namespace Timeline
 }   // namespace Pegasus
