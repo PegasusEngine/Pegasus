@@ -165,6 +165,23 @@
 
 //----------------------------------------------------------------------------------------
 
+// Graphics API
+#if PEGASUS_PLATFORM_WINDOWS
+
+#define PEGASUS_GAPI_GL             1
+#define PEGASUS_GAPI_GLES           0
+#define PEGASUS_GAPI_DX             0
+
+#else
+
+#define PEGASUS_GAPI_GL             1
+#define PEGASUS_GAPI_GLES           0
+#define PEGASUS_GAPI_DX             0
+
+#endif
+
+//----------------------------------------------------------------------------------------
+
 // DLL mode for the application, used when compiling the app as a dynamic library, in DEV mode
 #ifdef _PEGASUSAPP_DLL
 #if PEGASUS_REL
