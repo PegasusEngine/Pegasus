@@ -64,6 +64,13 @@ void TimelineProxy::SetCurrentBeat(float beat)
     mTimeline->SetCurrentBeat(beat);
 }
 
+//----------------------------------------------------------------------------------------
+
+float TimelineProxy::GetCurrentBeat() const
+{
+    return mTimeline->GetCurrentBeat();
+}
+
 
 }   // namespace Timeline
 }   // namespace Pegasus

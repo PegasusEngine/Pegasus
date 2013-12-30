@@ -55,18 +55,28 @@ public:
     inline bool IsApplicationRunning() const { return mIsApplicationRunning; }
 
     //------------------------------------------------------------------------------------
+
+signals:
+
+    //! Emitted when an application has successfully finished loading
+    void ApplicationLoaded();
+
+    //! Emitted when an application has finished executing
+    void ApplicationFinished();
+
+    //------------------------------------------------------------------------------------
     
 private slots:
 
 	//! Called when an error occurred when loading the application
     //! \param error Error code
-	void LoadingError(Application::Error error);
+	void OnLoadingError(Application::Error error);
 
     //! Called when the application has successfully loaded (not running)
-    void LoadingSucceeded();
+    void OnLoadingSucceeded();
 
     //! Called when the application has finished executing
-    void ApplicationFinished();
+    void OnApplicationFinished();
 
     //------------------------------------------------------------------------------------
 

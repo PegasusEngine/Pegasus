@@ -63,6 +63,9 @@ public slots:
     //! Create a new lane and add it at the bottom of the list
     void AddLane();
 
+    //! Set the position of the cursor from the given beat
+    //! \param beat Current beat, can have fractional part
+    void SetCursorFromBeat(float beat);
 
 protected:
 
@@ -101,9 +104,9 @@ private:
     //! Update the bounds of the scene
     void UpdateSceneRect();
 
-    //! Called when a right-click or right-dragging occurs to update the cursor position
+    //! Called when a right-click or right-dragging occurs, this then sets the current beat and updates the UI
     //! \param event Qt mouse event
-    void UpdateCursorFromMouse(QMouseEvent * event);
+    void SetBeatFromMouse(QMouseEvent * event);
 
     //! Number of lanes used by the view
     unsigned int mNumLanes;

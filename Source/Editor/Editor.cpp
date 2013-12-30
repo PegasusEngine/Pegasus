@@ -101,6 +101,10 @@ Editor::Editor(QWidget *parent)
 
     // Create the application manager
     mApplicationManager = new ApplicationManager(this, this);
+    connect(mApplicationManager, SIGNAL(ApplicationLoaded()),
+            mTimelineDockWidget, SLOT(UpdateUIForAppLoaded()));
+    connect(mApplicationManager, SIGNAL(ApplicationFinished()),
+            mTimelineDockWidget, SLOT(UpdateUIForAppClosed()));
 }
 
 //----------------------------------------------------------------------------------------

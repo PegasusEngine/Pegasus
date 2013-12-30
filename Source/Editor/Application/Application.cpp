@@ -174,17 +174,12 @@ void Application::run()
     // Not a child of this QThread, since we want it to be in the application thread.
     mApplicationInterface = new ApplicationInterface(this, nullptr);
 
-    // Start the timer that forces the redrawing of the app windows
-    //! \todo Handle dynamic rendering mode
-    //mApplicationInterface->StartRedrawTimer();
-
     // Run the application loop. Does not use Application->Run() since we want to control
     // the sequencing of the message loop from the editor, and to allow assertion dialog boxes to work correctly.
-    // Uses QThread::exec() rather than QEventLoop::exec() to allow the mTimer to work.
+    // Uses QThread::exec() rather than QEventLoop::exec() to allow timers to work.
     this->exec();
 
-    // Stop the redrawing timer
-    mApplicationInterface->StopRedrawTimer();
+    //! \todo Make sure the play mode gets disabled
 
     // Kill the interface with the application
     delete mApplicationInterface;
@@ -263,7 +258,7 @@ Pegasus::Core::AssertReturnCode Application::EmitAssertionFromApplication(const 
     if (mApplicationInterface != nullptr)
     {
         // Stop the forced redraw of the window content
-        mApplicationInterface->StopRedrawTimer();
+        //! \todo Make sure the play mode is blocked when throwing an assertion
 
         // Tell the app windows to not render anything
         //! \todo Seems not useful anymore. Test and remove if possible
@@ -314,8 +309,7 @@ Pegasus::Core::AssertReturnCode Application::EmitAssertionFromApplication(const 
         //! \todo Seems not useful anymore. Test and remove if possible
         //mApplicationInterface->SetAssertionBeingHandled(false);
 
-        // Restart the forceful redrawing of the app windows
-        mApplicationInterface->StartRedrawTimer();
+        //! \todo Make sure play mode still works after an assertion error
     }
 
     return returnCode;
@@ -335,6 +329,20 @@ void Application::AssertionReceivedFromApplication(const QString & testStr, cons
     // Open the actual assertion dialog box.
     // Store the return code to unfreeze the application thread.
     mAssertionReturnCode = Editor::GetInstance().GetAssertionManager().AssertionErrorNoFormat(testStr, fileStr, line, msgStr, false);
+}
+
+//----------------------------------------------------------------------------------------
+
+void Application::UpdateUIAndRequestFrameInPlayMode(float beat)
+{
+    // Update the timeline UI (beat, cursor)
+    Editor::GetInstance().GetTimelineDockWidget()->UpdateUIFromBeat(beat);
+
+    // If the play mode is still enabled, send a new request to refresh the viewport
+    if (Editor::GetInstance().GetTimelineDockWidget()->IsPlaying())
+    {
+        emit FrameRequestedInPlayMode();
+    }
 }
 
 //----------------------------------------------------------------------------------------

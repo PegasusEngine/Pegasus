@@ -156,6 +156,23 @@ void TimelineGraphicsView::AddLane()
 
 //----------------------------------------------------------------------------------------
 
+void TimelineGraphicsView::SetCursorFromBeat(float beat)
+{
+    //! \todo Handle out-of-bounds at the end of the timeline
+
+    // Reposition the cursor
+    if (mCursorItem != nullptr)
+    {
+        mCursorItem->SetBeat(beat);
+    }
+    else
+    {
+        ED_FAIL();
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 void TimelineGraphicsView::SetHorizontalScale(float scale)
 {
     ED_ASSERTSTR((scale >= TIMELINE_GRAPHICS_VIEW_HORIZONTAL_SCALE_MIN) && (scale <= TIMELINE_GRAPHICS_VIEW_HORIZONTAL_SCALE_MAX),
@@ -273,7 +290,7 @@ void TimelineGraphicsView::mousePressEvent(QMouseEvent * event)
     if (event->buttons() & Qt::RightButton)
     {
         // When right-clicking, move the cursor
-        UpdateCursorFromMouse(event);
+        SetBeatFromMouse(event);
     }
     else
     {
@@ -289,7 +306,7 @@ void TimelineGraphicsView::mouseMoveEvent(QMouseEvent * event)
     if (event->buttons() & Qt::RightButton)
     {
         // When right-dragging, move the cursor
-        UpdateCursorFromMouse(event);
+        SetBeatFromMouse(event);
     }
     else
     {
@@ -351,7 +368,7 @@ void TimelineGraphicsView::UpdateSceneRect()
 
 //----------------------------------------------------------------------------------------
 
-void TimelineGraphicsView::UpdateCursorFromMouse(QMouseEvent * event)
+void TimelineGraphicsView::SetBeatFromMouse(QMouseEvent * event)
 {
     ED_ASSERT(event != nullptr);
 
@@ -363,20 +380,8 @@ void TimelineGraphicsView::UpdateCursorFromMouse(QMouseEvent * event)
     }
     //! \todo Handle out-of-bounds at the end of the timeline
 
-    // Reposition the cursor
-    if (mCursorItem != nullptr)
-    {
-        mCursorItem->SetBeat(beat);
-    }
-    else
-    {
-        ED_FAIL();
-    }
-
-    // Update the other parts of the user interface
+    // Update user interface, including the cursor
     emit BeatUpdated(beat);
-
-    //! \todo Handle the Pegasus update
 }
 
 //----------------------------------------------------------------------------------------

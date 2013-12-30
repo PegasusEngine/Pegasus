@@ -18,8 +18,6 @@
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 #include "Pegasus/Window/Shared/IWindowProxy.h"
 
-#include <QTimer>
-
 
 ApplicationInterface::ApplicationInterface(Application * application, QObject * parent)
 :   QObject(parent),
@@ -52,6 +50,18 @@ ApplicationInterface::ApplicationInterface(Application * application, QObject * 
     TimelineDockWidget * timelineDockWidget = Editor::GetInstance().GetTimelineDockWidget();
     if (timelineDockWidget != nullptr)
     {
+        connect(timelineDockWidget, SIGNAL(PlayModeToggled(bool)),
+                this, SLOT(TogglePlayMode(bool)),
+                Qt::QueuedConnection);
+
+        connect(this, SIGNAL(ViewportRedrawnInPlayMode(float)),
+                application, SLOT(UpdateUIAndRequestFrameInPlayMode(float)),
+                Qt::QueuedConnection);
+
+        connect(application, SIGNAL(FrameRequestedInPlayMode()),
+                this, SLOT(RequestFrameInPlayMode()),
+                Qt::QueuedConnection);
+
         connect(timelineDockWidget, SIGNAL(BeatUpdated(float)),
                 this, SLOT(SetCurrentBeat(float)),
                 Qt::QueuedConnection);
@@ -60,35 +70,12 @@ ApplicationInterface::ApplicationInterface(Application * application, QObject * 
     {
         ED_FAILSTR("Unable to get the timeline dock widget");
     }
-
-    // Create the window redrawing timer
-    // (5 ms to avoid spamming the message loop when user interaction happens, but low enough to get a good framerate)
-    mTimer = new QTimer(this);
-    connect(mTimer, SIGNAL(timeout()), this, SLOT(RedrawMainViewport()));
-    mTimer->setInterval(5);
 }
 
 //----------------------------------------------------------------------------------------
 
 ApplicationInterface::~ApplicationInterface()
 {
-    // No need to delete mTimer, since its parent is this, Qt takes care of it
-}
-
-//----------------------------------------------------------------------------------------
-
-void ApplicationInterface::StartRedrawTimer()
-{
-    ED_ASSERT(mTimer != nullptr);
-    mTimer->start();
-}
-
-//----------------------------------------------------------------------------------------
-
-void ApplicationInterface::StopRedrawTimer()
-{
-    ED_ASSERT(mTimer != nullptr);
-    mTimer->stop();
 }
 
 //----------------------------------------------------------------------------------------
@@ -114,6 +101,48 @@ void ApplicationInterface::RedrawMainViewport()
     {
         mainViewportWindow->Refresh();
     }
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::TogglePlayMode(bool enabled)
+{
+    Pegasus::Timeline::ITimelineProxy * timeline = mApplication->GetTimelineProxy();
+    ED_ASSERT(timeline != nullptr);
+
+    if (enabled)
+    {
+        // When enabling the play mode, switch the timeline play mode to real-time
+        timeline->SetPlayMode(Pegasus::Timeline::PLAYMODE_REALTIME);
+
+        // Request the rendering of the first frame
+        //! \todo Handle multiple viewports
+        RedrawMainViewport();
+
+        // At this point, the play mode is still enabled, so inform the linked objects
+        // that will request a refresh of the viewports
+        emit ViewportRedrawnInPlayMode(timeline->GetCurrentBeat());
+    }
+    else
+    {
+        // When disabling the play mode, switch the timeline play mode to stopped
+        timeline->SetPlayMode(Pegasus::Timeline::PLAYMODE_STOPPED);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::RequestFrameInPlayMode()
+{
+    Pegasus::Timeline::ITimelineProxy * timeline = mApplication->GetTimelineProxy();
+    ED_ASSERT(timeline != nullptr);
+
+    // Request the rendering of the viewport for the current beat
+    //! \todo Handle multiple viewports and if the main viewport is in real-time mode
+    RedrawMainViewport();
+
+    // We are still in play mode, inform the linked objects that will request a refresh of the viewports
+    emit ViewportRedrawnInPlayMode(timeline->GetCurrentBeat());
 }
 
 //----------------------------------------------------------------------------------------

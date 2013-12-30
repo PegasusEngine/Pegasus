@@ -139,33 +139,14 @@
         </property>
         <property name="icon">
          <iconset resource="../Resources/Resources.qrc">
-          <normaloff>:/TimelineToolbar/Play16.png</normaloff>:/TimelineToolbar/Play16.png</iconset>
+          <normaloff>:/TimelineToolbar/Play16.png</normaloff>
+          <normalon>:/TimelineToolbar/Pause16.png</normalon>:/TimelineToolbar/Play16.png</iconset>
         </property>
         <property name="shortcut">
          <string>Space</string>
         </property>
         <property name="checkable">
          <bool>true</bool>
-        </property>
-        <property name="autoRaise">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="toolButton">
-        <property name="toolTip">
-         <string>Pause</string>
-        </property>
-        <property name="statusTip">
-         <string>Pause the timeline</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="../Resources/Resources.qrc">
-          <normaloff>:/TimelineToolbar/Pause16.png</normaloff>:/TimelineToolbar/Pause16.png</iconset>
         </property>
         <property name="autoRaise">
          <bool>true</bool>
@@ -271,12 +252,12 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>80</width>
+          <width>100</width>
           <height>0</height>
          </size>
         </property>
         <property name="text">
-         <string>Beat: 0:0</string>
+         <string>Beat: 0:0.0</string>
         </property>
        </widget>
       </item>

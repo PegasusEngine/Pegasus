@@ -45,6 +45,10 @@ public:
     //! Set the current beat of the timeline
     //! \param beat Current beat, can have fractional part
     virtual void SetCurrentBeat(float beat) = 0;
+
+    //! Get the current beat of the timeline
+    //! \return Current beat, can have fractional part
+    virtual float GetCurrentBeat() const = 0;
 };
 
 

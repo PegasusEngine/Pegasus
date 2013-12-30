@@ -62,9 +62,9 @@ void ApplicationManager::OpenApplication(const QString & fileName)
     mApplication->SetFile(fileName);
 
     // Connect the engine messages
-	connect(mApplication, SIGNAL(LoadingError(Application::Error)), this, SLOT(LoadingError(Application::Error)));
-	connect(mApplication, SIGNAL(LoadingSucceeded()), this, SLOT(LoadingSucceeded()));
-	connect(mApplication, SIGNAL(finished()), this, SLOT(ApplicationFinished()));
+	connect(mApplication, SIGNAL(LoadingError(Application::Error)), this, SLOT(OnLoadingError(Application::Error)));
+	connect(mApplication, SIGNAL(LoadingSucceeded()), this, SLOT(OnLoadingSucceeded()));
+	connect(mApplication, SIGNAL(finished()), this, SLOT(OnApplicationFinished()));
 
     // Start the application thread
     ED_LOG("Starting the application thread");
@@ -89,7 +89,7 @@ void ApplicationManager::CloseApplication()
 
 //----------------------------------------------------------------------------------------
 
-void ApplicationManager::LoadingError(Application::Error error)
+void ApplicationManager::OnLoadingError(Application::Error error)
 {
     const QString title(tr("Open Application"));
     QString message;
@@ -122,16 +122,18 @@ void ApplicationManager::LoadingError(Application::Error error)
 
 //----------------------------------------------------------------------------------------
 
-void ApplicationManager::LoadingSucceeded()
+void ApplicationManager::OnLoadingSucceeded()
 {
     ED_LOG("Application successfully loaded");
 
     mIsApplicationRunning = true;
+
+    emit(ApplicationLoaded());
 }
 
 //----------------------------------------------------------------------------------------
 
-void ApplicationManager::ApplicationFinished()
+void ApplicationManager::OnApplicationFinished()
 {
     ED_LOG("The application exited");
     mIsApplicationRunning = false;
@@ -142,4 +144,6 @@ void ApplicationManager::ApplicationFinished()
         delete mApplication;
         mApplication = nullptr;
     }
+
+    emit(ApplicationFinished());
 }

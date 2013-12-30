@@ -16,7 +16,6 @@
 #include "Viewport/ViewportType.h"
 
 class Application;
-class QTimer;
 
 
 //! Interface object used to interface with the Pegasus related messages,
@@ -43,15 +42,13 @@ public:
 
     //------------------------------------------------------------------------------------
 
-public slots:
+signals:
 
-    //! Start the window redrawing timer
-    void StartRedrawTimer();
+    //! Emitted when a viewport rendering completes while being in play mode
+    //! \param beat Beat used to render the last frame in the viewport, can have fractional part
+    void ViewportRedrawnInPlayMode(float beat);
 
-    //! Stop the window redrawing 
-    void StopRedrawTimer();
-
-    //----------------------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------
     
 private slots:
 
@@ -64,6 +61,13 @@ private slots:
     //! Called when a request to redraw the content of the main viewport is sent
     void RedrawMainViewport();
 
+    //! Enable or disable the play mode of the demo timeline
+    //! \param enabled True if the play mode has just been enabled, false if it has just been disabled
+    void TogglePlayMode(bool enabled);
+
+    //! Request the rendering of a new frame while in play mode
+    void RequestFrameInPlayMode();
+
     //! Called when the current beat has been updated
     //! \param beat Current beat, can have fractional part
     void SetCurrentBeat(float beat);
@@ -71,9 +75,6 @@ private slots:
     //------------------------------------------------------------------------------------
 
 private:
-
-    //! Timer used to forcefully render the content of the app windows
-    QTimer * mTimer;
 
     //! Editor application object
     Application * mApplication;
