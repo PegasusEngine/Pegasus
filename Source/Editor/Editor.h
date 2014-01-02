@@ -53,6 +53,10 @@ public:
     //! Get the application manager
     inline ApplicationManager & GetApplicationManager() const { return *mApplicationManager; }
 
+    //! Test if the application manager has been created yet
+    //! \return True if the application manager has been created
+    inline bool IsApplicationManagerAvailable() const { return mApplicationManager != nullptr; }
+
     //------------------------------------------------------------------------------------
 
 public:

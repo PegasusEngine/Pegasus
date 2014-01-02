@@ -16,15 +16,23 @@
 #include "Timeline/TimelineBlockGraphicsItem.h"
 #include "Timeline/TimelineCursorGraphicsItem.h"
 #include "Timeline/TimelineSizes.h"
+
+#include "Application/Application.h"
+#include "Application/ApplicationManager.h"
+
+#include "Pegasus/Timeline/Shared/ITimelineProxy.h"
+#include "Pegasus/Timeline/Shared/ILaneProxy.h"
+
 #include <QWheelEvent>
 
 
 TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
 :   QGraphicsView(parent),
+    mRightClickCursorDraggingEnabled(true),
+    mNumBeats(32),
     mNumLanes(0),
     mHorizontalScale(1.0f),
-    mZoom(1.0f)/*,
-    timerId(0)*/
+    mZoom(1.0f)
 {
     // Set the scrollbars to be always visible
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -39,9 +47,8 @@ TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
     // Adapt based on the performances.
     scene->setItemIndexMethod(QGraphicsScene::NoIndex);
 
-    // Set the initial bounds of the scene
+    // Set the graphics view to the created scene
     setScene(scene);
-    UpdateSceneRect();
 
     // Set the cache mode
     setCacheMode(CacheBackground);
@@ -61,30 +68,21 @@ TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
     // Enable the selection of blocks using a drag box
     setDragMode(QGraphicsView::RubberBandDrag);
 
-    //! \todo **** Temporary block to create items to render
-    for (unsigned int l = 0; l < 4; ++l)
-    {
-        TimelineLaneHeaderGraphicsItem * laneHeaderItem = new TimelineLaneHeaderGraphicsItem(l);
-        scene->addItem(laneHeaderItem);
-    }
-    for (unsigned int b = 0; b < 64; ++b)
-    {
-        TimelineBackgroundBeatGraphicsItem * beatItem = new TimelineBackgroundBeatGraphicsItem(b, 4, mHorizontalScale);
-        scene->addItem(beatItem);
-
-        TimelineBackgroundBeatLineGraphicsItem * beatLineItem = new TimelineBackgroundBeatLineGraphicsItem(b, 4, mHorizontalScale);
-        scene->addItem(beatLineItem);
-    }
-    TimelineBlockGraphicsItem * item1 = new TimelineBlockGraphicsItem(0, 0.0f, 1.0f, QColor(255, 128, 128), mHorizontalScale);
-    TimelineBlockGraphicsItem * item2 = new TimelineBlockGraphicsItem(1, 2.0f, 4.0f, QColor(128, 255, 128), mHorizontalScale);
-    TimelineBlockGraphicsItem * item3 = new TimelineBlockGraphicsItem(3, 0.5f, 2.0f, QColor(128, 128, 255), mHorizontalScale);
-    scene->addItem(item1);
-    scene->addItem(item2);
-    scene->addItem(item3);
-
     // Create the cursor
-    mCursorItem = new TimelineCursorGraphicsItem(4, mHorizontalScale);
+    mCursorItem = new TimelineCursorGraphicsItem(1, mHorizontalScale);
     scene->addItem(mCursorItem);
+
+    // Create the default lane
+    CreateLanes(0, 1);
+    CreateBackgroundGraphicsItems(0, mNumBeats);
+
+    //! \todo Handle timeline blocks
+    //TimelineBlockGraphicsItem * item1 = new TimelineBlockGraphicsItem(0, 0.0f, 1.0f, QColor(255, 128, 128), mHorizontalScale);
+    //TimelineBlockGraphicsItem * item2 = new TimelineBlockGraphicsItem(1, 2.0f, 4.0f, QColor(128, 255, 128), mHorizontalScale);
+    //TimelineBlockGraphicsItem * item3 = new TimelineBlockGraphicsItem(3, 0.5f, 2.0f, QColor(128, 128, 255), mHorizontalScale);
+    //scene->addItem(item1);
+    //scene->addItem(item2);
+    //scene->addItem(item3);
 }
 
 //----------------------------------------------------------------------------------------
@@ -112,46 +110,71 @@ void TimelineGraphicsView::EnableAntialiasing(bool enable)
 
 //----------------------------------------------------------------------------------------
 
-void TimelineGraphicsView::AddLane()
+void TimelineGraphicsView::RefreshFromTimeline()
 {
-    mNumLanes++;
-
-    // Invalidate the cache of the view, so that the background does not keep
-    // ghosts of the previous blocks
-    resetCachedContent();
-
-    // Add a lane header
-    TimelineLaneHeaderGraphicsItem * laneHeaderItem = new TimelineLaneHeaderGraphicsItem(mNumLanes - 1);
-    scene()->addItem(laneHeaderItem);
-
-    // Update the elements that depend on the number of lanes
-    // (this invalidates the cache of the block graphics items)
-    foreach (QGraphicsItem *item, scene()->items())
+    Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
+    if (application != nullptr)
     {
-        TimelineBackgroundBeatGraphicsItem * backgroundBeatItem = qgraphicsitem_cast<TimelineBackgroundBeatGraphicsItem *>(item);
-        if (backgroundBeatItem != nullptr)
+        // Application running
+
+        Pegasus::Timeline::ITimelineProxy * const timeline = application->GetTimelineProxy();
+
+        // Handle the length of the timeline
+        const unsigned int numBeats = timeline->GetNumBeats();
+        if (numBeats < mNumBeats)
         {
-            backgroundBeatItem->SetNumLanes(mNumLanes);
-            continue;
+            // Remove the background items at the end of the timeline
+            //! \todo Implement
+            /*****/
+            mNumBeats = numBeats;
+        }
+        else if (numBeats > mNumBeats)
+        {
+            // Add the missing background items at the end of the timeline
+            CreateBackgroundGraphicsItems(mNumBeats, numBeats - mNumBeats);
+            mNumBeats = numBeats;
         }
 
-        TimelineBackgroundBeatLineGraphicsItem * backgroundBeatLineItem = qgraphicsitem_cast<TimelineBackgroundBeatLineGraphicsItem *>(item);
-        if (backgroundBeatLineItem != nullptr)
+        // Handle the number of lanes of the timeline
+        const unsigned int numLanes = timeline->GetNumLanes();
+        if (numLanes < mNumLanes)
         {
-            backgroundBeatLineItem->SetNumLanes(mNumLanes);
-            continue;
+            // Remove the extra lanes from the end of the list
+            //! \todo Implement
+            /*****/
+            mNumLanes = numLanes;
+        }
+        else if (numLanes > mNumLanes)
+        {
+            // Add the missing lanes at the end of the list
+            CreateLanes(mNumLanes, numLanes - mNumLanes);
+            mNumLanes = numLanes;
         }
 
-        TimelineCursorGraphicsItem * cursorItem = qgraphicsitem_cast<TimelineCursorGraphicsItem *>(item);
-        if (cursorItem != nullptr)
+        // Refresh the content of every lane
+        for (unsigned int l = 0; l < numLanes; ++l)
         {
-            cursorItem->SetNumLanes(mNumLanes);
-            continue;
+            //RefreshLaneFromTimelineLane(l, timeline->GetLane(l));
         }
     }
+    else
+    {
+        // Application closed or failed to load
 
-    // Update the bounding box of the scene
-    UpdateSceneRect();
+        // Reset the timeline graphics view to its default state
+        //! \todo Implement
+        /****/
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineGraphicsView::AddLane()
+{
+    //! \todo Add a lane in the Pegasus timeline
+
+    // Create a new lane in the graphics view
+    CreateLanes(mNumLanes, 1);
 }
 
 //----------------------------------------------------------------------------------------
@@ -173,6 +196,13 @@ void TimelineGraphicsView::SetCursorFromBeat(float beat)
 
 //----------------------------------------------------------------------------------------
 
+void TimelineGraphicsView::OnPlayModeToggled(bool enable)
+{
+    mRightClickCursorDraggingEnabled = !enable;
+}
+
+//----------------------------------------------------------------------------------------
+
 void TimelineGraphicsView::SetHorizontalScale(float scale)
 {
     ED_ASSERTSTR((scale >= TIMELINE_GRAPHICS_VIEW_HORIZONTAL_SCALE_MIN) && (scale <= TIMELINE_GRAPHICS_VIEW_HORIZONTAL_SCALE_MAX),
@@ -185,37 +215,26 @@ void TimelineGraphicsView::SetHorizontalScale(float scale)
 
     // Update the horizontal scale of all the blocks
     // (this invalidates the cache of the block graphics items)
-    foreach (QGraphicsItem *item, scene()->items())
+    foreach (TimelineBackgroundBeatGraphicsItem * backgroundBeatItem, mBackgroundBeatItems)
     {
-        TimelineBackgroundBeatGraphicsItem * backgroundBeatItem = qgraphicsitem_cast<TimelineBackgroundBeatGraphicsItem *>(item);
-        if (backgroundBeatItem != nullptr)
-        {
-            backgroundBeatItem->SetHorizontalScale(mHorizontalScale);
-            continue;
-        }
-
-        TimelineBackgroundBeatLineGraphicsItem * backgroundBeatLineItem = qgraphicsitem_cast<TimelineBackgroundBeatLineGraphicsItem *>(item);
-        if (backgroundBeatLineItem != nullptr)
-        {
-            backgroundBeatLineItem->SetHorizontalScale(mHorizontalScale);
-            continue;
-        }
-
-        TimelineBlockGraphicsItem * blockItem = qgraphicsitem_cast<TimelineBlockGraphicsItem *>(item);
-        if (blockItem != nullptr)
-        {
-            blockItem->SetHorizontalScale(mHorizontalScale);
-            continue;
-        }
-
-        TimelineCursorGraphicsItem * cursorItem = qgraphicsitem_cast<TimelineCursorGraphicsItem *>(item);
-        if (cursorItem != nullptr)
-        {
-            cursorItem->SetHorizontalScale(mHorizontalScale);
-            continue;
-        }
+        ED_ASSERTSTR(backgroundBeatItem != nullptr, "Invalid item in the list of background beat graphics items");
+        backgroundBeatItem->SetHorizontalScale(mHorizontalScale);
     }
-
+    foreach (TimelineBackgroundBeatLineGraphicsItem * backgroundBeatLineItem, mBackgroundBeatLineItems)
+    {
+        ED_ASSERTSTR(backgroundBeatLineItem != nullptr, "Invalid item in the list of background beat line graphics items");
+        backgroundBeatLineItem->SetHorizontalScale(mHorizontalScale);
+    }
+    //! \todo List of blocks
+    //TimelineBlockGraphicsItem * blockItem = qgraphicsitem_cast<TimelineBlockGraphicsItem *>(item);
+    //if (blockItem != nullptr)
+    //{
+    //    blockItem->SetHorizontalScale(mHorizontalScale);
+    //    continue;
+    //}
+    ED_ASSERTSTR(mCursorItem != nullptr, "Invalid graphics item for the cursor");
+    mCursorItem->SetHorizontalScale(mHorizontalScale);
+    
     // Update the bounding box of the scene
     UpdateSceneRect();
 }
@@ -305,8 +324,11 @@ void TimelineGraphicsView::mouseMoveEvent(QMouseEvent * event)
 {
     if (event->buttons() & Qt::RightButton)
     {
-        // When right-dragging, move the cursor
-        SetBeatFromMouse(event);
+        if (mRightClickCursorDraggingEnabled)
+        {
+            // When right-dragging, move the cursor
+            SetBeatFromMouse(event);
+        }
     }
     else
     {
@@ -362,8 +384,78 @@ void TimelineGraphicsView::UpdateSceneRect()
 {
     scene()->setSceneRect(-TIMELINE_LANE_HEADER_WIDTH,
                           -TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT,
-                          TIMELINE_LANE_HEADER_WIDTH + /***/64.0f * TIMELINE_BEAT_WIDTH * mHorizontalScale,
-                          TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT + static_cast<float>(mNumLanes) * TIMELINE_LANE_HEIGHT);
+                          TIMELINE_LANE_HEADER_WIDTH + static_cast<float>(mNumBeats) * TIMELINE_BEAT_WIDTH * mHorizontalScale,
+                          TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT + static_cast<float>(mNumLanes) * TIMELINE_LANE_HEIGHT + TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT);
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineGraphicsView::CreateLanes(unsigned int firstLane, unsigned int numLanes)
+{
+    ED_ASSERTSTR(firstLane <= mNumLanes, "Invalid first lane (%d), it should be <= %d", firstLane, mNumLanes);
+    ED_ASSERTSTR(numLanes >= 1, "Invalid number of lanes (%d), it should be >= 1", numLanes);
+    const unsigned int lastLane = firstLane + numLanes;
+
+    // Invalidate the cache of the view, so that the background does not keep
+    // ghosts of the previous blocks
+    resetCachedContent();
+
+    // Create the lane specific graphics items
+    unsigned int l;
+    for (l = firstLane; l < lastLane; ++l)
+    {
+        // Add a lane header
+        //! \todo Add list
+        TimelineLaneHeaderGraphicsItem * laneHeaderItem = new TimelineLaneHeaderGraphicsItem(l);
+        scene()->addItem(laneHeaderItem);
+    }
+    mNumLanes += numLanes;
+
+    // Update the elements that depend on the number of lanes
+    // (this invalidates the cache of the block graphics items)
+    foreach (TimelineBackgroundBeatGraphicsItem * backgroundBeatItem, mBackgroundBeatItems)
+    {
+        ED_ASSERTSTR(backgroundBeatItem != nullptr, "Invalid item in the list of background beat graphics items");
+        backgroundBeatItem->SetNumLanes(mNumLanes);
+    }
+    foreach (TimelineBackgroundBeatLineGraphicsItem * backgroundBeatLineItem, mBackgroundBeatLineItems)
+    {
+        ED_ASSERTSTR(backgroundBeatLineItem != nullptr, "Invalid item in the list of background beat line graphics items");
+        backgroundBeatLineItem->SetNumLanes(mNumLanes);
+    }
+    ED_ASSERTSTR(mCursorItem != nullptr, "Invalid graphics item for the cursor");
+    mCursorItem->SetNumLanes(mNumLanes);
+
+    // Update the bounding box of the scene
+    UpdateSceneRect();
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineGraphicsView::CreateBackgroundGraphicsItems(unsigned int firstBeat, unsigned int numBeats)
+{
+    ED_ASSERTSTR(firstBeat <= mNumBeats, "Invalid first beat (%d), it should be <= %d", firstBeat, mNumBeats);
+    ED_ASSERTSTR(numBeats >= 1, "Invalid number of beats (%d), it should be >= 1", numBeats);
+    const unsigned int lastBeat = firstBeat + numBeats;
+
+    for (unsigned int b = firstBeat; b < lastBeat; ++b)
+    {
+        TimelineBackgroundBeatGraphicsItem * beatItem = new TimelineBackgroundBeatGraphicsItem(b, mNumLanes, mHorizontalScale);
+        scene()->addItem(beatItem);
+        mBackgroundBeatItems += beatItem;
+
+        TimelineBackgroundBeatLineGraphicsItem * beatLineItem = new TimelineBackgroundBeatLineGraphicsItem(b, mNumLanes, mHorizontalScale);
+        scene()->addItem(beatLineItem);
+        mBackgroundBeatLineItems += beatLineItem;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineGraphicsView::RefreshLaneFromTimelineLane(unsigned int laneIndex, Pegasus::Timeline::ILaneProxy * laneProxy)
+{
+    /****/
+    //! \todo Implement
 }
 
 //----------------------------------------------------------------------------------------
@@ -413,32 +505,5 @@ void TimelineGraphicsView::SetBeatFromMouse(QMouseEvent * event)
 //        break;
 //    default:
 //        QGraphicsView::keyPressEvent(event);
-//    }
-//}
-
-//----------------------------------------------------------------------------------------
-
-//void TimelineGraphicsView::timerEvent(QTimerEvent *event)
-//{
-//    Q_UNUSED(event);
-//
-//    //QList<Node *> nodes;
-//    //foreach (QGraphicsItem *item, scene()->items()) {
-//    //    if (Node *node = qgraphicsitem_cast<Node *>(item))
-//    //        nodes << node;
-//    //}
-//
-//    //foreach (Node *node, nodes)
-//    //    node->calculateForces();
-//
-//    bool itemsMoved = false;
-//    //foreach (Node *node, nodes) {
-//    //    if (node->advance())
-//    //        itemsMoved = true;
-//    //}
-//
-//    if (!itemsMoved) {
-//        killTimer(timerId);
-//        timerId = 0;
 //    }
 //}

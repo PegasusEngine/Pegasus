@@ -37,6 +37,34 @@ TimelineProxy::~TimelineProxy()
 
 //----------------------------------------------------------------------------------------
 
+void TimelineProxy::SetBeatsPerMinute(float bpm)
+{
+    mTimeline->SetBeatsPerMinute(bpm);
+}
+
+//----------------------------------------------------------------------------------------
+
+float TimelineProxy::GetBeatsPerMinute() const
+{
+    return mTimeline->GetBeatsPerMinute();
+}
+    
+//----------------------------------------------------------------------------------------
+
+void TimelineProxy::SetNumBeats(unsigned int numBeats)
+{
+    mTimeline->SetNumBeats(numBeats);
+}
+
+//----------------------------------------------------------------------------------------
+
+unsigned int TimelineProxy::GetNumBeats() const
+{
+    return mTimeline->GetNumBeats();
+}
+
+//----------------------------------------------------------------------------------------
+
 ILaneProxy * TimelineProxy::CreateLane()
 {
     Lane * const lane = mTimeline->CreateLane();
@@ -45,6 +73,13 @@ ILaneProxy * TimelineProxy::CreateLane()
 
 //----------------------------------------------------------------------------------------
 
+unsigned int TimelineProxy::GetNumLanes() const
+{
+    return mTimeline->GetNumLanes();
+}
+
+//----------------------------------------------------------------------------------------
+    
 void TimelineProxy::SetPlayMode(PlayMode playMode)
 {
     mTimeline->SetPlayMode(playMode);

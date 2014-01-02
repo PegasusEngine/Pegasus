@@ -30,9 +30,32 @@ public:
     virtual ~ITimelineProxy() {};
 
 
+    //! Set the speed of the timeline in beats per minute
+    //! \param bpm Beats per minute (30.0f <= bpm <= 500.0f)
+    virtual void SetBeatsPerMinute(float bpm) = 0;
+
+    //! Get the speed of the timeline in beats per minute
+    //! \return Beats per minute (30.0f <= bpm <= 500.0f)
+    virtual float GetBeatsPerMinute() const = 0;
+
+
+    //! Set the length of the timeline
+    //! \warning If the length is not enough to contain all existing blocks, the blocks after the end line will be deleted
+    //! \param numBeats Number of beats defining the new length of the timeline (> 0)
+    virtual void SetNumBeats(unsigned int numBeats) = 0;
+
+    //! Get the length of the timeline
+    //! \return Number of beats defining the length of the timeline (>= 1)
+    virtual unsigned int GetNumBeats() const = 0;
+
+
     //! Create a new lane
     //! \return Proxy interface for a timeline lane, nullptr if the number of lanes is Timeline::MAX_NUM_LANES
     virtual ILaneProxy * CreateLane() = 0;
+
+    //! Get the current number of lanes
+    //! \return Number of lanes (>= 1)
+    virtual unsigned int GetNumLanes() const = 0;
 
 
     //! Set the play mode of the timeline

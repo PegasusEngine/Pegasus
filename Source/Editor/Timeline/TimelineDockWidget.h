@@ -66,6 +66,10 @@ public slots:
 
 private slots:
 
+    //! Called when the speed of the demo has changed
+    //! \param bpm Tempo in beats per minute
+    void SetBeatsPerMinute(double bpm);
+
     //! Called when the current beat has been updated
     //! \param beat Current beat, can have fractional part
     void SetCurrentBeat(float beat);
@@ -75,6 +79,12 @@ private slots:
     //! \param subBeat Integer sub-beat (0, 1, 2, 3), representing quarter beats
     //! \param subSubBeat Integer sub-sub-beat (0, 1 , 2, 3), representing sixteenth of beats
     void SetBeatLabel(unsigned int beat, unsigned int subBeat, unsigned int subSubBeat);
+
+    //! Set the label of the current time
+    //! \param minutes Integer number of minutes (can be > 59)
+    //! \param seconds Integer number of seconds (0 <= seconds <= 59)
+    //! \param milliseconds Integer number of milliseconds (0 <= milliseconds <= 999)
+    void SetTimeLabel(unsigned int minutes, unsigned int seconds, unsigned int milliseconds);
 
     //------------------------------------------------------------------------------------
 

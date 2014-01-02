@@ -26,7 +26,9 @@ const float Timeline::INVALID_BEAT = -1.0f;
 //----------------------------------------------------------------------------------------
 
 Timeline::Timeline(Alloc::IAllocator * allocator)
-:   mNumLanes(0),
+:   mBeatsPerMinute(120.0f),
+    mNumBeats(128),
+    mNumLanes(0),
     mAllocator(allocator),
     mPlayMode(PLAYMODE_REALTIME),
     mCurrentBeat(INVALID_BEAT),
@@ -37,7 +39,12 @@ Timeline::Timeline(Alloc::IAllocator * allocator)
 #if PEGASUS_ENABLE_PROXIES
     //! Create the proxy associated with the timeline
     mProxy = PG_NEW(allocator, -1, "Timeline::mProxy", Pegasus::Alloc::PG_MEM_PERM) TimelineProxy(this);
+
+    mRequiresStartTimeComputation = false;
 #endif  // PEGASUS_ENABLE_PROXIES
+
+    // Create the initial default lane
+    Clear();
 }
 
 //----------------------------------------------------------------------------------------
@@ -53,6 +60,72 @@ Timeline::~Timeline()
     //! Destroy the proxy associated with the timeline
     PG_DELETE(mAllocator, mProxy);
 #endif
+}
+
+//----------------------------------------------------------------------------------------
+
+void Timeline::Clear()
+{
+    // Delete the existing lanes
+    for (unsigned int lane = 0; lane < mNumLanes; ++lane)
+    {
+        PG_DELETE(mAllocator, mLanes[lane]);
+    }
+    mNumLanes = 0;
+
+    // Create a default lane
+    CreateLane();
+
+    //! \todo Remove those temporary lanes
+    /****/CreateLane();
+    /****/CreateLane();
+    /****/CreateLane();
+    /****/CreateLane();
+}
+
+//----------------------------------------------------------------------------------------
+
+void Timeline::SetBeatsPerMinute(float bpm)
+{
+    if (bpm < 30.0f)
+    {
+        PG_FAILSTR("Invalid speed for the timeline (%f BPM). It should be >= 30.0f", bpm);
+        mBeatsPerMinute = 30.0f;
+    }
+    else if (bpm > 500.0f)
+    {
+        PG_FAILSTR("Invalid speed for the timeline (%f BPM). It should be <= 500.0f", bpm);
+        mBeatsPerMinute = 500.0f;
+    }
+    else
+    {
+        mBeatsPerMinute = bpm;
+    }
+
+#if PEGASUS_ENABLE_PROXIES
+    // If the play mode is real-time, the Pegasus start time needs to be recomputed
+    // to avoid the cursor jumping all over the place
+    if (mPlayMode == PLAYMODE_REALTIME)
+    {
+        mRequiresStartTimeComputation = true;
+    }
+#endif  // PEGASUS_ENABLE_PROXIES
+}
+
+//----------------------------------------------------------------------------------------
+
+void Timeline::SetNumBeats(unsigned int numBeats)
+{
+    if (numBeats >= 1)
+    {
+        //! \todo If the length is not enough to contain all existing blocks, the blocks after the end line will be deleted
+
+        mNumBeats = numBeats;
+    }
+    else
+    {
+        PG_FAILSTR("Invalid number of beats (%d) to define the length of the timeline");
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -91,9 +164,24 @@ void Timeline::Update()
         if (mPlayMode == PLAYMODE_REALTIME)
         {
             Core::UpdatePegasusTime();
+
+#if PEGASUS_ENABLE_PROXIES
+            // If the start time needs to be recomputed (typically when the cursor position is changed,
+            // or when the play mode has just been set to real-time)
+            if (mRequiresStartTimeComputation)
+            {
+                // Current time that we should have got from the timer for the current beat and the current tempo
+                double requiredCurrentTime = static_cast<double>(mCurrentBeat / (mBeatsPerMinute * (1.0f / 60.0f)));
+
+                // Move the start Pegasus time to simulate a non-stop execution of the timeline until the current beat
+                mStartPegasusTime = static_cast<float>(Core::GetPegasusTime() - requiredCurrentTime);
+
+                mRequiresStartTimeComputation = false;
+            }
+#endif  // PEGASUS_ENABLE_PROXIES
+
             const double currentTime = Core::GetPegasusTime() - mStartPegasusTime;
-            //! \todo Implement tempo
-            mCurrentBeat = static_cast<float>(currentTime / /*mBeatsPerSecond*/2.0);
+            mCurrentBeat = static_cast<float>(currentTime * (mBeatsPerMinute * (1.0f / 60.0f)));
         }
     }
 }
@@ -108,6 +196,10 @@ void Timeline::SetPlayMode(PlayMode playMode)
         {
             case PLAYMODE_REALTIME:
                 PG_LOG('TMLN', "Switched to real-time mode for the timeline");
+#if PEGASUS_ENABLE_PROXIES
+                // The Pegasus start time needs to be recomputed to avoid the cursor jumping all over the place
+                mRequiresStartTimeComputation = true;
+#endif 
                 break;
 
             case PLAYMODE_STOPPED:
@@ -134,6 +226,14 @@ void Timeline::SetCurrentBeat(float beat)
     mCurrentBeat = beat;
 
     PG_LOG('TMLN', "Set the current beat of the timeline to %f", mCurrentBeat);
+
+#if PEGASUS_ENABLE_PROXIES
+    // If the play mode is real-time, the Pegasus start time needs to be recomputed
+    if (mPlayMode == PLAYMODE_REALTIME)
+    {
+        mRequiresStartTimeComputation = true;
+    }
+#endif  // PEGASUS_ENABLE_PROXIES
 }
 
 

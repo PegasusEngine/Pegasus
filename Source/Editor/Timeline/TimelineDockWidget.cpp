@@ -11,6 +11,12 @@
 
 #include "Timeline/TimelineDockWidget.h"
 
+#include "Application/Application.h"
+#include "Application/ApplicationManager.h"
+
+#include "Pegasus/Timeline/Shared/ITimelineProxy.h"
+#include "Pegasus/Timeline/Shared/ILaneProxy.h"
+
 
 TimelineDockWidget::TimelineDockWidget(QWidget *parent)
 :   QDockWidget(parent)
@@ -32,14 +38,12 @@ TimelineDockWidget::TimelineDockWidget(QWidget *parent)
             ui.graphicsView, SLOT(AddLane()));
     connect(ui.playButton, SIGNAL(toggled(bool)),
             this, SIGNAL(PlayModeToggled(bool)));
+    connect(ui.playButton, SIGNAL(toggled(bool)),
+            ui.graphicsView, SLOT(OnPlayModeToggled(bool)));
+    connect(ui.bpmSpin, SIGNAL(valueChanged(double)),
+            this, SLOT(SetBeatsPerMinute(double)));
     connect(ui.graphicsView, SIGNAL(BeatUpdated(float)),
             this, SLOT(SetCurrentBeat(float)));
-
-    //! \todo Temporary! Just to have proper scene rect
-    ui.graphicsView->AddLane();
-    ui.graphicsView->AddLane();
-    ui.graphicsView->AddLane();
-    ui.graphicsView->AddLane();
 }
 
 //----------------------------------------------------------------------------------------
@@ -65,13 +69,24 @@ void TimelineDockWidget::UpdateUIFromBeat(float beat)
         beat = 0.0f;
     }
 
+    // Update the beat label
     const unsigned int intBeat = static_cast<unsigned int>(floorf(beat));
     const float fracBeat = beat - static_cast<float>(intBeat);
     const unsigned int subBeat = static_cast<unsigned int>(floorf(fracBeat * 4.0f));
     const float subFracBeat = fracBeat - static_cast<float>(subBeat) * (1.0f / 4.0f);
     const unsigned int subSubBeat = static_cast<unsigned int>(floorf(subFracBeat * (4.0f * 4.0f)));
-
     SetBeatLabel(intBeat, subBeat, subSubBeat);
+
+    // Update the time label
+    const double timeMinutes = static_cast<double>(beat) / ui.bpmSpin->value();
+    const unsigned int intMinutes = static_cast<unsigned int>(floor(timeMinutes));
+    const double fracTimeSeconds = (timeMinutes - static_cast<double>(intMinutes)) * 60.0;
+    const unsigned int intSeconds = static_cast<unsigned int>(floor(fracTimeSeconds));
+    const double fracTimeMilliseconds = (fracTimeSeconds - static_cast<double>(intSeconds)) * 1000.0;
+    const unsigned int intMilliseconds = static_cast<unsigned int>(floor(fracTimeMilliseconds));
+    SetTimeLabel(intMinutes, intSeconds, intMilliseconds);
+
+    // Place the cursor in the right position
     ui.graphicsView->SetCursorFromBeat(beat);
 }
 
@@ -82,11 +97,28 @@ void TimelineDockWidget::UpdateUIForAppLoaded()
     ui.addButton->setEnabled(true);
     ui.removeButton->setEnabled(true);
     ui.deleteButton->setEnabled(true);
+
     ui.playButton->setEnabled(true);
     ui.playButton->setChecked(false);
+    ui.graphicsView->OnPlayModeToggled(false);
+
+    Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
+    if (application != nullptr)
+    {
+        Pegasus::Timeline::ITimelineProxy * const timeline = application->GetTimelineProxy();
+        ui.bpmSpin->setValue(static_cast<double>(timeline->GetBeatsPerMinute()));
+    }
+    else
+    {
+        ui.bpmSpin->setValue(120.0);
+    }
+
     UpdateUIFromBeat(0.0f);
 
     //! \todo Enable the timeline graphics view input
+
+    // Update the content of the timeline graphics view from the timeline of the app
+    ui.graphicsView->RefreshFromTimeline();
 }
 
 //----------------------------------------------------------------------------------------
@@ -96,15 +128,41 @@ void TimelineDockWidget::UpdateUIForAppClosed()
     ui.addButton->setEnabled(false);
     ui.removeButton->setEnabled(false);
     ui.deleteButton->setEnabled(false);
+
     ui.playButton->setEnabled(false);
     ui.playButton->setChecked(false);
+    ui.graphicsView->OnPlayModeToggled(false);
+
     UpdateUIFromBeat(0.0f);
 
     //! \todo Disable the timeline graphics view input
+
+    // Clear the content of the timeline graphics view
+    if (Editor::GetInstance().IsApplicationManagerAvailable())
+    {
+        ui.graphicsView->RefreshFromTimeline();
+    }
 }
 
 //----------------------------------------------------------------------------------------
 
+void TimelineDockWidget::SetBeatsPerMinute(double bpm)
+{
+    Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
+    if (application != nullptr)
+    {
+        Pegasus::Timeline::ITimelineProxy * const timeline = application->GetTimelineProxy();
+        timeline->SetBeatsPerMinute(bpm);
+
+        if (timeline->GetCurrentBeat() >= 0.0f)
+        {
+            UpdateUIFromBeat(timeline->GetCurrentBeat());
+        }
+    }
+}
+
+//----------------------------------------------------------------------------------------
+    
 void TimelineDockWidget::SetCurrentBeat(float beat)
 {
     emit BeatUpdated(beat);
@@ -115,5 +173,12 @@ void TimelineDockWidget::SetCurrentBeat(float beat)
 
 void TimelineDockWidget::SetBeatLabel(unsigned int beat, unsigned int subBeat, unsigned int subSubBeat)
 {
-    ui.beatLabel->setText(QString("Beat: %1:%2.%3").arg(beat).arg(subBeat).arg(subSubBeat));
+    ui.beatLabel->setText(QString("%1:%2.%3").arg(beat).arg(subBeat).arg(subSubBeat));
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::SetTimeLabel(unsigned int minutes, unsigned int seconds, unsigned int milliseconds)
+{
+    ui.timeLabel->setText(QString("%1:%2:%3").arg(minutes).arg(seconds, 2, 10, QChar('0')).arg(milliseconds, 3, 10, QChar('0')));
 }

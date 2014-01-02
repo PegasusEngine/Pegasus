@@ -107,7 +107,7 @@ QRectF TimelineBackgroundBeatLineGraphicsItem::boundingRect() const
         return QRectF(-TIMELINE_BEAT_NUMBER_BLOCK_WIDTH * 0.5f,
                       -TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT,
                       TIMELINE_BEAT_NUMBER_BLOCK_WIDTH,
-                      TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT + mNumLanes * TIMELINE_LANE_HEIGHT);
+                      TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT + mNumLanes * TIMELINE_LANE_HEIGHT + TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT);
     }
     else
     {
@@ -148,7 +148,7 @@ void TimelineBackgroundBeatLineGraphicsItem::paint(QPainter *painter, const QSty
                       0.0f,
                       static_cast<float>(mNumLanes) * TIMELINE_LANE_HEIGHT);
 
-    // Draw the beat number for each measure
+    // Draw the beat numbers for each measure
     if ((mBeat % 4) == 0)
     {
         QFont font = painter->font();
@@ -156,12 +156,19 @@ void TimelineBackgroundBeatLineGraphicsItem::paint(QPainter *painter, const QSty
         font.setBold(false);
         painter->setFont(font);
         painter->setPen(penBaseColor.darker(200));
+        const QString beatString(QString("%1").arg(mBeat));
         painter->drawText(-TIMELINE_BEAT_NUMBER_BLOCK_WIDTH * 0.5f,
                           -TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT,
                           TIMELINE_BEAT_NUMBER_BLOCK_WIDTH,
                           TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT,
                           Qt::AlignHCenter | Qt::AlignVCenter,
-                          QString("%1").arg(mBeat));
+                          beatString);
+        painter->drawText(-TIMELINE_BEAT_NUMBER_BLOCK_WIDTH * 0.5f,
+                          mNumLanes * TIMELINE_LANE_HEIGHT,
+                          TIMELINE_BEAT_NUMBER_BLOCK_WIDTH,
+                          TIMELINE_BEAT_NUMBER_BLOCK_HEIGHT,
+                          Qt::AlignHCenter | Qt::AlignVCenter,
+                          beatString);
     }
 }
 

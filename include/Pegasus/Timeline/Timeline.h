@@ -37,6 +37,28 @@ public:
     //! Destructor
     virtual ~Timeline();
 
+    //! Clear the entire timeline and create a default lane
+    void Clear();
+
+
+    //! Set the speed of the timeline in beats per minute
+    //! \param bpm Beats per minute (30.0f <= bpm <= 500.0f)
+    void SetBeatsPerMinute(float bpm);
+
+    //! Get the speed of the timeline in beats per minute
+    //! \return Beats per minute (30.0f <= bpm <= 500.0f)
+    inline float GetBeatsPerMinute() const { return mBeatsPerMinute; }
+
+
+    //! Set the length of the timeline
+    //! \warning If the length is not enough to contain all existing blocks, the blocks after the end line will be deleted
+    //! \param numBeats Number of beats defining the new length of the timeline (> 0)
+    void SetNumBeats(unsigned int numBeats);
+
+    //! Get the length of the timeline
+    //! \return Number of beats defining the length of the timeline (>= 1)
+    inline unsigned int GetNumBeats() const { return mNumBeats; }
+
 
     //! Maximum number of lanes allowed in the timeline
     enum { MAX_NUM_LANES = 64 };
@@ -44,6 +66,10 @@ public:
     //! Create a new lane
     //! \return New lane, nullptr if the number of lanes is MAX_NUM_LANES
     Lane * CreateLane();
+
+    //! Get the current number of lanes
+    //! \return Number of lanes (>= 1)
+    inline unsigned int GetNumLanes() const { return mNumLanes; }
 
 
     //! Set the play mode of the timeline
@@ -85,8 +111,17 @@ private:
     //! Proxy associated with the timeline
     TimelineProxy * mProxy;
 
+    //! True when the real-time play mode has been selected, to update mStartPegasusTime on the next call to Update()
+    bool mRequiresStartTimeComputation;
+
 #endif  // PEGASUS_ENABLE_PROXIES
 
+
+    //! Speed of the timeline in beats per minute (30.0f <= bpm <= 500.0f)
+    float mBeatsPerMinute;
+
+    //! Number of beats defining the length of the timeline (>= 1)
+    unsigned int mNumBeats;
 
     //! Set of lanes, only the first mNumLanes are defined
     Lane * mLanes[MAX_NUM_LANES];
