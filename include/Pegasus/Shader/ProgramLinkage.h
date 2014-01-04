@@ -13,7 +13,7 @@
 
 #include "Pegasus/Graph/OperatorNode.h"
 #include "Pegasus/Shader/ShaderStage.h"
-#include "Pegasus/Shader/GL/GLProgramLinker.h"
+#include "Pegasus/Shader/RenderPlatProgramLinker.h"
 #include "Pegasus/Shader/ProgramData.h"
 
 namespace Pegasus
@@ -91,7 +91,7 @@ protected:
 
 private:
     PG_DISABLE_COPY(ProgramLinkage);
-    Pegasus::Shader::GLProgramLinker mInternalLinker;
+    Pegasus::Shader::RenderPlatProgramLinker mInternalLinker;
     unsigned char mStageFlags;
 };
 

@@ -125,13 +125,13 @@ void TestApp1Window::Initialize()
     bool updated = false;
     mProgramData = mShaderProgramLinkage->GetUpdatedData(updated);
     
-    // Wse the shader
+    // Use the shader
     mProgramData->Use();
 
     // Set up uniforms
-    mTimeUniform = glGetUniformLocation(mProgramData->GetGlHandle(), "time");
+    mTimeUniform = glGetUniformLocation(mProgramData->GetHandle(), "time");
 #if (DEMO == DEMO_KEVIN_PSYBEADS) || (DEMO == DEMO_KEVIN_CUBE_FRACTAL) || (DEMO == DEMO_KEVIN_CUBE_FRACTAL2)
-    mScreenRatioUniform = glGetUniformLocation(mProgramData->GetGlHandle(), "screenRatio");
+    mScreenRatioUniform = glGetUniformLocation(mProgramData->GetHandle(), "screenRatio");
 #endif
 
     // Bind vertex array to shader

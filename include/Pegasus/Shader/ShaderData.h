@@ -13,12 +13,19 @@
 #define PEGASUS_SHADER_DATA_H
 
 #include "Pegasus/Graph/NodeData.h"
-#include "Pegasus/Render/GL/GLEWStaticInclude.h"
 
 namespace Pegasus
 {
 namespace Shader
 {
+
+#if PEGASUS_GAPI_GL
+    typedef unsigned int ShaderHandle;
+    const ShaderHandle INVALID_SHADER_HANDLE = 0;
+#else  
+#error "Shader package only supports Open GL"
+#endif
+
 //! Class that describes shader data, exposing GLuint handle
 class ShaderData : public Pegasus::Graph::NodeData
 {
@@ -34,11 +41,11 @@ public:
 
     //! Returns the GL handle of a shader stage
     //! \return GLuint the GLuint used in glAttachShader opengl calls
-    GLuint GetGlHandle() const { return mHandle; }
+    ShaderHandle GetShaderHandle() const { return mHandle; }
 
 private:
-    void   SetGlHandle(GLuint handle){ mHandle = handle; }
-    GLuint mHandle;
+    void   SetShaderHandle(ShaderHandle handle){ mHandle = handle; }
+    ShaderHandle mHandle;
 };
 
 typedef Pegasus::Core::Ref<ShaderData> ShaderDataRef;

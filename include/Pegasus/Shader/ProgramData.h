@@ -12,8 +12,7 @@
 #ifndef PEGASUS_PROGRAM_DATA_H
 #define PEGASUS_PROGRAM_DATA_H
 
-#include "Pegasus/Graph/NodeData.h"
-#include "Pegasus/Render/GL/GLEWStaticInclude.h"
+#include "Pegasus/Shader/ShaderData.h"
 
 namespace Pegasus
 {
@@ -34,14 +33,14 @@ public:
 
     //! Returns the GL handle of a shader stage
     //! \return GLuint the GLuint used in glAttachShader opengl calls
-    GLuint GetGlHandle() const { return mHandle; }
+    ShaderHandle GetHandle() const { return mHandle; }
 
     //! Convinience function that activates the current shader program
     void Use() const;
   
 private:
-    void SetGlHandle(GLuint handle){ mHandle = handle;}
-    GLuint mHandle;
+    void SetHandle(ShaderHandle handle){ mHandle = handle;}
+    ShaderHandle mHandle;
 };
 
 

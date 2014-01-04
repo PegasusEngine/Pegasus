@@ -4,18 +4,18 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   GLShaderStage.h
+//! \file   RenderPlatShaderStage.h
 //! \author Kleber Garcia
 //! \date   15th October 2013
-//! \brief  Opengl shading pipeline stage	
+//! \brief  Platform specific shading pipeline stage header interface.
 
-#ifndef PEGASUS_SHADER_GLSHADERSTAGE_H
-#define PEGASUS_SHADER_GLSHADERSTAGE_H
+#ifndef PEGASUS_SHADER_RenderPlatShaderStage_H
+#define PEGASUS_SHADER_RenderPlatShaderStage_H
 
 #include "Pegasus/Shader/shared/ShaderDefs.h"
 #include "Pegasus/Shader/EventDispatcher.h"
+#include "Pegasus/Shader/ShaderData.h"
 #include "Pegasus/Core/Io.h"
-#include "Pegasus/Render/GL/GLEWStaticInclude.h"
 
 namespace Pegasus 
 {
@@ -26,21 +26,21 @@ namespace Shader
 //----------------------------------------------------------------------------------------
 
 //! Base shader stage class. Encapsulates all specific opengl functionality. Exposes GLuint handles.
-class GLShaderStage 
+class RenderPlatShaderStage 
 #if PEGASUS_SHADER_USE_EDIT_EVENTS
 : public EventDispatcher
 #endif
 {
-    friend class GLProgramLinker;
+    friend class RenderPlatProgramLinker;
     friend class ShaderStage;
 public:
 
     //! Default constructor
     //! \param  alloc used for specific allocations of shader src strings
-    GLShaderStage(Alloc::IAllocator* alloc);
+    RenderPlatShaderStage(Alloc::IAllocator* alloc);
     
     //! Destructor
-    ~GLShaderStage();
+    ~RenderPlatShaderStage();
 
     //! Set the shader source
     //! \param  type the type of the source
@@ -62,14 +62,14 @@ public:
 
     //! Return the shader opengl handle
     //! \return opengl handle
-    GLuint GetCompiledShaderHandle() { return mShaderHandle; }
+    ShaderHandle GetCompiledShaderHandle() { return mShaderHandle; }
 
     //! Return the stage type
     //! \return the shader type
     ShaderType GetStageType() const { return mType; }
 
 private:
-    PG_DISABLE_COPY(GLShaderStage);
+    PG_DISABLE_COPY(RenderPlatShaderStage);
 
     void DestroyShader();
     void ProcessErrorLog(const char * errorLog);
@@ -78,7 +78,7 @@ private:
     Pegasus::Io::FileBuffer mFileBuffer;
     ShaderType mType;
 
-    GLuint mShaderHandle;
+    ShaderHandle mShaderHandle;
 };
 
 

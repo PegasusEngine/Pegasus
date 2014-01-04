@@ -28,10 +28,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\EventDispatcher.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\GL\GLProgramLinker.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\GL\GLShaderStage.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ProgramData.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ProgramLinkage.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\RenderPlatProgramLinker.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\RenderPlatShaderStage.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderData.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderManager.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderStage.h" />

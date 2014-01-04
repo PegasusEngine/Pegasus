@@ -75,11 +75,11 @@ void Pegasus::Shader::ShaderStage::GenerateData()
     Pegasus::Shader::ShaderDataRef shaderData = GetData();  
     if (mInternalStage.Compile())
     {
-        shaderData->SetGlHandle(mInternalStage.GetCompiledShaderHandle());
+        shaderData->SetShaderHandle(mInternalStage.GetCompiledShaderHandle());
     }
     else
     {
-        shaderData->SetGlHandle(0);
+        shaderData->SetShaderHandle(Pegasus::Shader::INVALID_SHADER_HANDLE);
     }
 } 
 

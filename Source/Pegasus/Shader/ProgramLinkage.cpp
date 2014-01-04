@@ -40,12 +40,11 @@ void Pegasus::Shader::ProgramLinkage::GenerateData()
     PG_ASSERT(GetData() != nullptr);
     Pegasus::Shader::ProgramDataRef programData = GetData();
     const int shaderStagesCount = Pegasus::Shader::SHADER_STAGES_COUNT;
-    GLuint programDataPipe[shaderStagesCount];
+    ShaderHandle programDataPipe[shaderStagesCount];
     for (unsigned int i = 0; i < shaderStagesCount; ++i)
     {
-        programDataPipe[i] = 0;//initialize to 0
+        programDataPipe[i] = Pegasus::Shader::INVALID_SHADER_HANDLE;//initialize to invalid shader handles
     }
-
     
     bool dummy = false;
     for (unsigned int i = 0; i < GetNumInputs(); ++i)
@@ -54,7 +53,7 @@ void Pegasus::Shader::ProgramLinkage::GenerateData()
         if (shaderStage->GetStageType() != Pegasus::Shader::SHADER_STAGE_INVALID)
         {
             Pegasus::Shader::ShaderDataRef shaderData = shaderStage->GetUpdatedData(dummy);    
-            programDataPipe[shaderStage->GetStageType()] = shaderData->GetGlHandle();
+            programDataPipe[shaderStage->GetStageType()] = shaderData->GetShaderHandle();
         }
     }
 
@@ -62,11 +61,11 @@ void Pegasus::Shader::ProgramLinkage::GenerateData()
     
     if (success)
     {
-        programData->SetGlHandle(mInternalLinker.GetProgramHandle());     
+        programData->SetHandle(mInternalLinker.GetProgramHandle());     
     }
     else
     {
-        programData->SetGlHandle(0);
+        programData->SetHandle(Pegasus::Shader::INVALID_SHADER_HANDLE);
     }
 }
 

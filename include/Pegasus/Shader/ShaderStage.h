@@ -13,7 +13,7 @@
 #include "Pegasus/Core/Ref.h"
 #include "Pegasus/Graph/GeneratorNode.h"
 #include "Pegasus/Allocator/IAllocator.h"
-#include "Pegasus/Shader/Gl/GLShaderStage.h"
+#include "Pegasus/Shader/RenderPlatShaderStage.h"
 #include "Pegasus/Core/Io.h"
 
 namespace Pegasus
@@ -76,7 +76,7 @@ protected:
 
 private:
     PG_DISABLE_COPY(ShaderStage)
-    GLShaderStage mInternalStage;
+    RenderPlatShaderStage mInternalStage;
 
 };
 

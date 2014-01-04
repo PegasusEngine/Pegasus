@@ -4,64 +4,65 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	GLProgramLinker.cpp
+//! \file	RenderPlatProgramLinker.cpp
 //! \author	Kleber Garcia
 //! \date	20th October 2013
 //! \brief	Represents an opengl program
 
 #include "Pegasus/Shader/Shared/ShaderEvent.h"
-#include "Pegasus/Shader/GL/GLProgramLinker.h"
+#include "Pegasus/Shader/RenderPlatProgramLinker.h"
+#include "Pegasus/Render/GL/GLEWStaticInclude.h"
 
-Pegasus::Shader::GLProgramLinker::GLProgramLinker()
-: mGLProgramLinkerHandle(0)
+Pegasus::Shader::RenderPlatProgramLinker::RenderPlatProgramLinker()
+: mRenderPlatProgramLinkerHandle(0)
 {
     for (unsigned int i = 0; i < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT); ++i)
     {
-        mStages[i] = 0;
+        mStages[i] = Pegasus::Shader::INVALID_SHADER_HANDLE;
     }
 }
 
-Pegasus::Shader::GLProgramLinker::~GLProgramLinker()
+Pegasus::Shader::RenderPlatProgramLinker::~RenderPlatProgramLinker()
 {
     for (int i = 0; i < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT); ++i)
     { 
         RemoveStage(static_cast<Pegasus::Shader::ShaderType>(i));   
     }
 
-    if (mGLProgramLinkerHandle != 0)
+    if (mRenderPlatProgramLinkerHandle != 0)
     {
-        glDeleteProgram(mGLProgramLinkerHandle);
+        glDeleteProgram(static_cast<GLuint>(mRenderPlatProgramLinkerHandle));
     }
 }
 
-void Pegasus::Shader::GLProgramLinker::RemoveStage(Pegasus::Shader::ShaderType stageType)
+void Pegasus::Shader::RenderPlatProgramLinker::RemoveStage(Pegasus::Shader::ShaderType stageType)
 {
     PG_ASSERTSTR(static_cast<int>(stageType) >= 0
      && stageType <= Pegasus::Shader::SHADER_STAGES_COUNT, "Invalid stage type passed!");
-    if (mGLProgramLinkerHandle != 0 && mStages[static_cast<int>(stageType)] != 0)
+    if (mRenderPlatProgramLinkerHandle != 0 && mStages[static_cast<int>(stageType)] != 0)
     {
-        glDetachShader(mGLProgramLinkerHandle, mStages[static_cast<int>(stageType)]);
+        glDetachShader(static_cast<GLuint>(mRenderPlatProgramLinkerHandle), static_cast<GLuint>(mStages[static_cast<int>(stageType)]));
     }
     mStages[static_cast<int>(stageType)] = 0;
 }
 
-bool Pegasus::Shader::GLProgramLinker::Link(GLuint shaderPipeline[Pegasus::Shader::SHADER_STAGES_COUNT])
+bool Pegasus::Shader::RenderPlatProgramLinker::Link(GLuint shaderPipeline[Pegasus::Shader::SHADER_STAGES_COUNT])
 {
-    if (mGLProgramLinkerHandle == 0)
+    if (mRenderPlatProgramLinkerHandle == 0)
     {
-        mGLProgramLinkerHandle = glCreateProgram();
+        mRenderPlatProgramLinkerHandle = static_cast<Pegasus::Shader::ShaderHandle>(glCreateProgram());
     }
 
     //either have at least a pixel and vertex shader, or have everything null but a single compute shader
     if (
         !(shaderPipeline[Pegasus::Shader::VERTEX] != 0)
         &&  !(
-                shaderPipeline[VERTEX] == 0 &&
-                shaderPipeline[FRAGMENT] == 0 &&
-                shaderPipeline[TESSELATION_CONTROL] == 0 &&
-                shaderPipeline[TESSELATION_EVALUATION] == 0 &&
-                shaderPipeline[GEOMETRY] == 0 &&
-                shaderPipeline[COMPUTE] != 0
+                shaderPipeline[VERTEX] == Pegasus::Shader::INVALID_SHADER_HANDLE &&
+                shaderPipeline[FRAGMENT] == Pegasus::Shader::INVALID_SHADER_HANDLE &&
+                shaderPipeline[TESSELATION_CONTROL] == Pegasus::Shader::INVALID_SHADER_HANDLE &&
+                shaderPipeline[TESSELATION_EVALUATION] == Pegasus::Shader::INVALID_SHADER_HANDLE &&
+                shaderPipeline[GEOMETRY] == Pegasus::Shader::INVALID_SHADER_HANDLE &&
+                shaderPipeline[COMPUTE] != Pegasus::Shader::INVALID_SHADER_HANDLE
             )
     )
     {
@@ -76,19 +77,19 @@ bool Pegasus::Shader::GLProgramLinker::Link(GLuint shaderPipeline[Pegasus::Shade
         if (shaderPipeline[i] != 0)
         {
             mStages[i] = shaderPipeline[i];
-            glAttachShader(mGLProgramLinkerHandle, shaderPipeline[i]); 
+            glAttachShader(static_cast<GLuint>(mRenderPlatProgramLinkerHandle), shaderPipeline[i]); 
         }
     }
 
-    glLinkProgram(mGLProgramLinkerHandle); 
+    glLinkProgram(static_cast<GLuint>(mRenderPlatProgramLinkerHandle)); 
     GLint shaderLinked = GL_FALSE;
-    glGetProgramiv(mGLProgramLinkerHandle, GL_LINK_STATUS, &shaderLinked);
+    glGetProgramiv(static_cast<GLuint>(mRenderPlatProgramLinkerHandle), GL_LINK_STATUS, &shaderLinked);
     if (shaderLinked == GL_FALSE)
     {
         const GLsizei bufferSize = 256;
         char logBuffer[bufferSize];
         GLsizei logLength = 0;
-        glGetProgramInfoLog(mGLProgramLinkerHandle, bufferSize, &logLength, logBuffer);
+        glGetProgramInfoLog(static_cast<GLuint>(mRenderPlatProgramLinkerHandle), bufferSize, &logLength, logBuffer);
         SHADEREVENT_LINKING_FAIL(logBuffer);
         return false;
     }
