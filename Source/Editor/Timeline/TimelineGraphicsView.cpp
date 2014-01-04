@@ -89,6 +89,7 @@ TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
 
 TimelineGraphicsView::~TimelineGraphicsView()
 {
+    //! \todo Empty the graphics view, delete all items
 }
 
 //----------------------------------------------------------------------------------------
@@ -124,8 +125,7 @@ void TimelineGraphicsView::RefreshFromTimeline()
         if (numBeats < mNumBeats)
         {
             // Remove the background items at the end of the timeline
-            //! \todo Implement
-            /*****/
+            RemoveBackgroundGraphicsItems(numBeats, mNumBeats - numBeats);
             mNumBeats = numBeats;
         }
         else if (numBeats > mNumBeats)
@@ -140,8 +140,7 @@ void TimelineGraphicsView::RefreshFromTimeline()
         if (numLanes < mNumLanes)
         {
             // Remove the extra lanes from the end of the list
-            //! \todo Implement
-            /*****/
+            RemoveLanes(numLanes, mNumLanes - numLanes);
             mNumLanes = numLanes;
         }
         else if (numLanes > mNumLanes)
@@ -393,7 +392,7 @@ void TimelineGraphicsView::UpdateSceneRect()
 void TimelineGraphicsView::CreateLanes(unsigned int firstLane, unsigned int numLanes)
 {
     ED_ASSERTSTR(firstLane <= mNumLanes, "Invalid first lane (%d), it should be <= %d", firstLane, mNumLanes);
-    ED_ASSERTSTR(numLanes >= 1, "Invalid number of lanes (%d), it should be >= 1", numLanes);
+    ED_ASSERTSTR(numLanes >= 1, "Invalid number of lanes to add (%d), it should be >= 1", numLanes);
     const unsigned int lastLane = firstLane + numLanes;
 
     // Invalidate the cache of the view, so that the background does not keep
@@ -405,11 +404,57 @@ void TimelineGraphicsView::CreateLanes(unsigned int firstLane, unsigned int numL
     for (l = firstLane; l < lastLane; ++l)
     {
         // Add a lane header
-        //! \todo Add list
         TimelineLaneHeaderGraphicsItem * laneHeaderItem = new TimelineLaneHeaderGraphicsItem(l);
         scene()->addItem(laneHeaderItem);
+        mLaneHeaderItems += laneHeaderItem;
     }
+
+    // Set the new number of lanes
     mNumLanes += numLanes;
+
+    // Update the elements that depend on the number of lanes
+    // (this invalidates the cache of the block graphics items)
+    foreach (TimelineBackgroundBeatGraphicsItem * backgroundBeatItem, mBackgroundBeatItems)
+    {
+        ED_ASSERTSTR(backgroundBeatItem != nullptr, "Invalid item in the list of background beat graphics items");
+        backgroundBeatItem->SetNumLanes(mNumLanes);
+    }
+    foreach (TimelineBackgroundBeatLineGraphicsItem * backgroundBeatLineItem, mBackgroundBeatLineItems)
+    {
+        ED_ASSERTSTR(backgroundBeatLineItem != nullptr, "Invalid item in the list of background beat line graphics items");
+        backgroundBeatLineItem->SetNumLanes(mNumLanes);
+    }
+    ED_ASSERTSTR(mCursorItem != nullptr, "Invalid graphics item for the cursor");
+    mCursorItem->SetNumLanes(mNumLanes);
+
+    // Update the bounding box of the scene
+    UpdateSceneRect();
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineGraphicsView::RemoveLanes(unsigned int firstLane, unsigned int numLanes)
+{
+    ED_ASSERTSTR(firstLane <= mNumLanes, "Invalid first lane (%d), it should be <= %d", firstLane, mNumLanes);
+    ED_ASSERTSTR(numLanes >= 1, "Invalid number of lanes to remove (%d), it should be >= 1", numLanes);
+    ED_ASSERTSTR(numLanes <= mNumLanes - firstLane, "Invalid number of lanes to remove (%d), it should be <= %d", numLanes, mNumLanes - firstLane);
+    const int lastLane = static_cast<int>(firstLane + numLanes);
+
+    // Invalidate the cache of the view, so that the background does not keep
+    // ghosts of the previous blocks
+    resetCachedContent();
+
+    // Remove the lane specific graphics items
+    for (int l = lastLane - 1; l >= static_cast<int>(firstLane); --l)
+    {
+        //! \todo Remove the content of the lanes (blocks)
+
+        // Remove the lane header
+        scene()->removeItem(mLaneHeaderItems.takeAt(l));
+    }
+
+    // Set the new number of lanes
+    mNumLanes -= numLanes;
 
     // Update the elements that depend on the number of lanes
     // (this invalidates the cache of the block graphics items)
@@ -435,7 +480,7 @@ void TimelineGraphicsView::CreateLanes(unsigned int firstLane, unsigned int numL
 void TimelineGraphicsView::CreateBackgroundGraphicsItems(unsigned int firstBeat, unsigned int numBeats)
 {
     ED_ASSERTSTR(firstBeat <= mNumBeats, "Invalid first beat (%d), it should be <= %d", firstBeat, mNumBeats);
-    ED_ASSERTSTR(numBeats >= 1, "Invalid number of beats (%d), it should be >= 1", numBeats);
+    ED_ASSERTSTR(numBeats >= 1, "Invalid number of beats to add (%d), it should be >= 1", numBeats);
     const unsigned int lastBeat = firstBeat + numBeats;
 
     for (unsigned int b = firstBeat; b < lastBeat; ++b)
@@ -447,6 +492,25 @@ void TimelineGraphicsView::CreateBackgroundGraphicsItems(unsigned int firstBeat,
         TimelineBackgroundBeatLineGraphicsItem * beatLineItem = new TimelineBackgroundBeatLineGraphicsItem(b, mNumLanes, mHorizontalScale);
         scene()->addItem(beatLineItem);
         mBackgroundBeatLineItems += beatLineItem;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineGraphicsView::RemoveBackgroundGraphicsItems(unsigned int firstBeat, unsigned int numBeats)
+{
+    ED_ASSERTSTR(firstBeat <= mNumBeats, "Invalid first beat (%d), it should be <= %d", firstBeat, mNumBeats);
+    ED_ASSERTSTR(numBeats >= 1, "Invalid number of beats to remove (%d), it should be >= 1", numBeats);
+    ED_ASSERTSTR(numBeats <= mNumBeats - firstBeat, "Invalid number of beats to remove (%d), it should be <= %d", numBeats, mNumBeats - firstBeat);
+    const int lastBeat = static_cast<int>(firstBeat + numBeats);
+
+    //! \todo Remove the content of the lane first? What about the blocks that are outside the range?
+
+    for (int b = lastBeat - 1; b >= static_cast<int>(firstBeat); --b)
+    {
+        // Remove the graphics items
+        scene()->removeItem(mBackgroundBeatItems.takeAt(b));
+        scene()->removeItem(mBackgroundBeatLineItems.takeAt(b));
     }
 }
 

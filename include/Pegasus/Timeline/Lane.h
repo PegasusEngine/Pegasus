@@ -15,6 +15,7 @@
 namespace Pegasus {
     namespace Timeline {
         class LaneProxy;
+        class Block;
     }
 }
     
@@ -33,6 +34,17 @@ public:
 
     //! Destructor
     virtual ~Lane();
+
+
+    //! Maximum number of blocks allowed in the lane
+    enum { MAX_NUM_BLOCKS = 64 };
+
+    //! Add a block to the lane
+    //! \param block Allocated block, with position and size already defined
+    //! \note The internal linked list stays sorted after this operation
+    //! \return True if succeeded, false if the block is invalid, has a collision with an existing block,
+    //!         or the number of blocks has already reached MAX_NUM_BLOCKS
+    bool InsertBlock(Block * block);
 
 
 #if PEGASUS_ENABLE_PROXIES
@@ -57,6 +69,13 @@ public:
 
 #endif  // PEGASUS_ENABLE_PROXIES
 
+#if PEGASUS_DEBUG
+
+    //! Dump the content of the lane into the log for debugging
+    void DumpToLog();
+
+#endif  // PEGASUS_DEBUG
+
     //------------------------------------------------------------------------------------
 
 private:
@@ -64,9 +83,32 @@ private:
     // Lanes cannot be copied
     PG_DISABLE_COPY(Lane)
 
-
     //! Allocator used for all timeline allocations
     Alloc::IAllocator * mAllocator;
+
+
+    //! Record to store one block inside a linked list
+    typedef struct BlockRecord
+    {
+        Block * mBlock;     //!< Pointer to the stored block, nullptr if the record is invalid
+        int mNext;          //!< Index of the next record, INVALID_RECORD_INDEX if the record is invalid,
+                            //!< mFirstBlockIndex if the last step is reached
+    };
+
+    //! Invalid index for the block records
+    enum { INVALID_RECORD_INDEX = -1 };
+
+    //! Set of block records, stored as linked list in a fixed size array.
+    //! The blocks are ordered by position from beginning to end.
+    //! Only mNumBlocks block records are valid, but are in a random order
+    BlockRecord mBlockRecords[MAX_NUM_BLOCKS];
+
+    //! Index of the first block record in the table (0 by default, but can change if a block is removed)
+    unsigned int mFirstBlockIndex;
+
+    //! Number of used block records in mBlockRecords (<= MAX_NUM_BLOCKS)
+    unsigned int mNumBlocks;
+
 
 #if PEGASUS_ENABLE_PROXIES
 
@@ -77,6 +119,22 @@ private:
     char mName[MAX_NAME_LENGTH + 1];
 
 #endif  // PEGASUS_ENABLE_PROXIES
+
+
+    //! Given a beat on the timeline, return the index of the current (or previous) block and the next one (not reached yet)
+    //! \param beat Input beat, can have fractional part
+    //! \param currentBlockIndex Resulting block index intersected by the given beat,
+    //!                          or just before the beat if the next block is not reached yet.
+    //!                          INVALID_RECORD_INDEX if the beat is before the first beat, or no block is defined on the timeline
+    //! \param nextBlockIndex Resulting block index after the given beat, not reached yet.
+    //!                       INVALID_RECORD_INDEX if the beat is on or after the beginning of the last block,
+    //!                       or no block is defined on the timeline
+    void FindCurrentAndNextBlocks(float beat, int & currentBlockIndex, int & nextBlockIndex) const;
+
+    //! Find a block record in the array that is not used yet
+    //! \return Index of a block record free to use (0 <= index < MAX_NUM_BLOCKS, when mNumBlocks < MAX_NUM_BLOCKS),
+    //!         INVALID_RECORD_INDEX if the array is full (mNumBlocks == MAX_NUM_BLOCKS), or in case of error
+    int FindFirstAvailableBlockRecord() const;
 };
 
 

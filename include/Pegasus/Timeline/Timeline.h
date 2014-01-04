@@ -71,6 +71,11 @@ public:
     //! \return Number of lanes (>= 1)
     inline unsigned int GetNumLanes() const { return mNumLanes; }
 
+    //! Get one of the lanes
+    //! \param laneIndex Index of the lane (< GetNumLanes())
+    //! \return Pointer to the lane, nullptr in case of error
+    Lane * GetLane(unsigned int laneIndex) const;
+
 
     //! Set the play mode of the timeline
     //! \param playMode New play mode of the timeline (PLAYMODE_xxx constant)

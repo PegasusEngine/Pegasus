@@ -143,13 +143,29 @@ Lane * Timeline::CreateLane()
     }
     else
     {
-        PG_FAILSTR("Unable to create a new lane, the maximum number of lane has been reached %d", MAX_NUM_LANES);
+        PG_FAILSTR("Unable to create a new lane, the maximum number of lane has been reached (%d)", MAX_NUM_LANES);
         return nullptr;
     }
 }
 
 //----------------------------------------------------------------------------------------
 
+Lane * Timeline::GetLane(unsigned int laneIndex) const
+{
+    if (laneIndex < mNumLanes)
+    {
+        PG_ASSERTSTR(mLanes[laneIndex] != nullptr, "Invalid lane in the timeline (index %d)", laneIndex);
+        return mLanes[laneIndex];
+    }
+    else
+    {
+        PG_FAILSTR("Invalid lane index (%d), it should be < %d", laneIndex, mNumLanes);
+        return nullptr;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+    
 void Timeline::Update()
 {
     if ((mCurrentBeat == INVALID_BEAT) || (mCurrentBeat < 0.0f))
@@ -157,7 +173,6 @@ void Timeline::Update()
         mCurrentBeat = 0.0f;
         Core::UpdatePegasusTime();
         mStartPegasusTime = Core::GetPegasusTime();
-        mCurrentBeat = 0.0f;
     }
     else
     {
@@ -182,6 +197,14 @@ void Timeline::Update()
 
             const double currentTime = Core::GetPegasusTime() - mStartPegasusTime;
             mCurrentBeat = static_cast<float>(currentTime * (mBeatsPerMinute * (1.0f / 60.0f)));
+
+#if PEGASUS_ENABLE_PROXIES
+            // Fix precision issues when starting play mode in the editor
+            if (mCurrentBeat < 0.0f)
+            {
+                mCurrentBeat = 0.0f;
+            }
+#endif  // PEGASUS_ENABLE_PROXIES
         }
     }
 }

@@ -16,6 +16,7 @@
 
 class TimelineBackgroundBeatGraphicsItem;
 class TimelineBackgroundBeatLineGraphicsItem;
+class TimelineLaneHeaderGraphicsItem;
 class TimelineCursorGraphicsItem;
 
 namespace Pegasus {
@@ -126,10 +127,20 @@ private:
     //! \param numLanes Number of lanes to add (>= 1)
     void CreateLanes(unsigned int firstLane, unsigned int numLanes);
 
+    //! Remove existing lanes, without affecting the application
+    //! \param firstLane Index of the first lane (<= mNumLanes)
+    //! \param numLanes Number of lanes to remove (>= 1)
+    void RemoveLanes(unsigned int firstLane, unsigned int numLanes);
+
     //! Create new background graphics items, typically used when extending the length of the timeline
     //! \param firstBeat Index of the first beat (<= mNumBeats)
     //! \param numBeats Number of beats to add (>= 1)
     void CreateBackgroundGraphicsItems(unsigned int firstBeat, unsigned int numBeats);
+
+    //! Remove existing background graphics items, typically used when reducing the length of the timeline
+    //! \param firstBeat Index of the first beat (<= mNumBeats)
+    //! \param numBeats Number of beats to remove (>= 1)
+    void RemoveBackgroundGraphicsItems(unsigned int firstBeat, unsigned int numBeats);
 
     //! Refresh the content of a lane using the data from the application timeline lane
     //! \param laneIndex Index of the lane to refresh (< mNumLanes)
@@ -163,6 +174,9 @@ private:
 
     //! List of background beat line graphics items (vertical lines and beat numbers)
     QList<TimelineBackgroundBeatLineGraphicsItem *> mBackgroundBeatLineItems;
+
+    //! List of lane header graphics items (block with name)
+    QList<TimelineLaneHeaderGraphicsItem *> mLaneHeaderItems;
 
     //! List of block graphics items
     //TimelineBlockGraphicsItem
