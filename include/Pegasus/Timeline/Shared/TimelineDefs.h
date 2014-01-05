@@ -17,6 +17,10 @@ namespace Pegasus {
     namespace Timeline {
 
 
+//! Maximum number of lanes allowed in the timeline
+enum { TIMELINE_MAX_NUM_LANES = 64 };
+
+
 //! Available play modes for the timeline
 enum PlayMode
 {

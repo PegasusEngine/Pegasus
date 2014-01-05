@@ -14,6 +14,9 @@
 
 #if PEGASUS_ENABLE_PROXIES
 
+#include "Pegasus/Timeline/Shared/IBlockProxy.h"
+#include "Pegasus/Timeline/Shared/LaneDefs.h"
+
 namespace Pegasus {
 namespace Timeline {
 
@@ -34,6 +37,14 @@ public:
     //! Get the name of the lane
     //! \return Name of the lane, can be empty or nullptr
     virtual const char * GetName() const = 0;
+
+
+    //! Get the list of blocks of the lane
+    //! \param blocks Allocated array of LANE_MAX_NUM_BLOCKS pointers to IBlockProxy,
+    //!               contains the resulting list of block proxy pointers.
+    //! \note Only the valid blocks have their pointers updated
+    //! \return Number of block proxy pointers written to the \a blockList array (<= LANE_MAX_NUM_BLOCKS)
+    virtual unsigned int GetBlocks(IBlockProxy ** blocks) const = 0;
 };
 
 

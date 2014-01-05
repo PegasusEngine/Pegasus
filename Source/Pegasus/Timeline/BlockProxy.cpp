@@ -61,6 +61,20 @@ float BlockProxy::GetLength() const
     return mBlock->GetLength();
 }
 
+//----------------------------------------------------------------------------------------
+
+void BlockProxy::SetColor(unsigned char red, unsigned char green, unsigned char blue)
+{
+    mBlock->SetColor(red, green, blue);
+}
+
+//----------------------------------------------------------------------------------------
+
+void BlockProxy::GetColor(unsigned char & red, unsigned char & green, unsigned char & blue) const
+{
+    mBlock->GetColor(red, green, blue);
+}
+
 
 }   // namespace Timeline
 }   // namespace Pegasus

@@ -68,7 +68,14 @@ unsigned int TimelineProxy::GetNumBeats() const
 ILaneProxy * TimelineProxy::CreateLane()
 {
     Lane * const lane = mTimeline->CreateLane();
-    return lane->GetProxy();
+    if (lane != nullptr)
+    {
+        return lane->GetProxy();
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -76,6 +83,21 @@ ILaneProxy * TimelineProxy::CreateLane()
 unsigned int TimelineProxy::GetNumLanes() const
 {
     return mTimeline->GetNumLanes();
+}
+
+//----------------------------------------------------------------------------------------
+
+ILaneProxy * TimelineProxy::GetLane(unsigned int laneIndex) const
+{
+    Lane * const lane = mTimeline->GetLane(laneIndex);
+    if (lane != nullptr)
+    {
+        return lane->GetProxy();
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
 //----------------------------------------------------------------------------------------

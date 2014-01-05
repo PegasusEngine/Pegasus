@@ -13,15 +13,19 @@
 #define EDITOR_TIMELINEGRAPHICSVIEW_H
 
 #include <QGraphicsView>
+#include <QList>
+#include <QMap>
 
 class TimelineBackgroundBeatGraphicsItem;
 class TimelineBackgroundBeatLineGraphicsItem;
 class TimelineLaneHeaderGraphicsItem;
+class TimelineBlockGraphicsItem;
 class TimelineCursorGraphicsItem;
 
 namespace Pegasus {
     namespace Timeline {
         class ILaneProxy;
+        class IBlockProxy;
     }
 }
 
@@ -142,10 +146,14 @@ private:
     //! \param numBeats Number of beats to remove (>= 1)
     void RemoveBackgroundGraphicsItems(unsigned int firstBeat, unsigned int numBeats);
 
+    //! Remove existing block graphics items for a lane
+    //! \param laneIndex Index of the lane to clear
+    void ClearBlockItems(unsigned int laneIndex);
+
     //! Refresh the content of a lane using the data from the application timeline lane
     //! \param laneIndex Index of the lane to refresh (< mNumLanes)
     //! \param laneProxy Proxy of the timeline lane to get the data from
-    void RefreshLaneFromTimelineLane(unsigned int laneIndex, Pegasus::Timeline::ILaneProxy * laneProxy);
+    void RefreshLaneFromTimelineLane(unsigned int laneIndex, const Pegasus::Timeline::ILaneProxy * laneProxy);
 
     //! Called when a right-click or right-dragging occurs, this then sets the current beat and updates the UI
     //! \param event Qt mouse event
@@ -177,6 +185,12 @@ private:
 
     //! List of lane header graphics items (block with name)
     QList<TimelineLaneHeaderGraphicsItem *> mLaneHeaderItems;
+
+    //! Type for a list of blocks stored in a timeline lane
+    typedef QMap<Pegasus::Timeline::IBlockProxy *, TimelineBlockGraphicsItem *> LaneBlockList;
+
+    //! List of blocks for each lane of the timeline
+    QList<LaneBlockList> mBlockItems;
 
     //! List of block graphics items
     //TimelineBlockGraphicsItem

@@ -12,10 +12,13 @@
 #ifndef PEGASUS_TIMELINE_LANE_H
 #define PEGASUS_TIMELINE_LANE_H
 
+#include "Pegasus/Timeline/Shared/LaneDefs.h"
+
 namespace Pegasus {
     namespace Timeline {
         class LaneProxy;
         class Block;
+        class IBlockProxy;
     }
 }
     
@@ -36,18 +39,23 @@ public:
     virtual ~Lane();
 
 
-    //! Maximum number of blocks allowed in the lane
-    enum { MAX_NUM_BLOCKS = 64 };
-
     //! Add a block to the lane
     //! \param block Allocated block, with position and size already defined
     //! \note The internal linked list stays sorted after this operation
     //! \return True if succeeded, false if the block is invalid, has a collision with an existing block,
-    //!         or the number of blocks has already reached MAX_NUM_BLOCKS
+    //!         or the number of blocks has already reached LANE_MAX_NUM_BLOCKS
     bool InsertBlock(Block * block);
 
 
 #if PEGASUS_ENABLE_PROXIES
+
+    //! Get the list of blocks of the lane
+    //! \param blocks Allocated array of LANE_MAX_NUM_BLOCKS pointers to IBlockProxy,
+    //!               contains the resulting list of block proxy pointers.
+    //! \note Only the valid blocks have their pointers updated
+    //! \return Number of block proxy pointers written to the \a blockList array (<= LANE_MAX_NUM_BLOCKS)
+    unsigned int GetBlocks(IBlockProxy ** blocks) const;
+
 
     //! Get the proxy associated with the lane
     inline LaneProxy * GetProxy() const { return mProxy; }
@@ -101,12 +109,12 @@ private:
     //! Set of block records, stored as linked list in a fixed size array.
     //! The blocks are ordered by position from beginning to end.
     //! Only mNumBlocks block records are valid, but are in a random order
-    BlockRecord mBlockRecords[MAX_NUM_BLOCKS];
+    BlockRecord mBlockRecords[LANE_MAX_NUM_BLOCKS];
 
     //! Index of the first block record in the table (0 by default, but can change if a block is removed)
     unsigned int mFirstBlockIndex;
 
-    //! Number of used block records in mBlockRecords (<= MAX_NUM_BLOCKS)
+    //! Number of used block records in mBlockRecords (<= LANE_MAX_NUM_BLOCKS)
     unsigned int mNumBlocks;
 
 
@@ -132,8 +140,8 @@ private:
     void FindCurrentAndNextBlocks(float beat, int & currentBlockIndex, int & nextBlockIndex) const;
 
     //! Find a block record in the array that is not used yet
-    //! \return Index of a block record free to use (0 <= index < MAX_NUM_BLOCKS, when mNumBlocks < MAX_NUM_BLOCKS),
-    //!         INVALID_RECORD_INDEX if the array is full (mNumBlocks == MAX_NUM_BLOCKS), or in case of error
+    //! \return Index of a block record free to use (0 <= index < LANE_MAX_NUM_BLOCKS, when mNumBlocks < LANE_MAX_NUM_BLOCKS),
+    //!         INVALID_RECORD_INDEX if the array is full (mNumBlocks == LANE_MAX_NUM_BLOCKS), or in case of error
     int FindFirstAvailableBlockRecord() const;
 };
 

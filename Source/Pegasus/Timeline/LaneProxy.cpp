@@ -47,6 +47,13 @@ const char * LaneProxy::GetName() const
     return mLane->GetName();
 }
 
+//----------------------------------------------------------------------------------------
+
+unsigned int LaneProxy::GetBlocks(IBlockProxy ** blocks) const
+{
+    return mLane->GetBlocks(blocks);
+}
+
 
 }   // namespace Timeline
 }   // namespace Pegasus

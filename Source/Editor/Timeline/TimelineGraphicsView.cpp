@@ -22,6 +22,7 @@
 
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 #include "Pegasus/Timeline/Shared/ILaneProxy.h"
+#include "Pegasus/Timeline/Shared/IBlockProxy.h"
 
 #include <QWheelEvent>
 
@@ -75,14 +76,6 @@ TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
     // Create the default lane
     CreateLanes(0, 1);
     CreateBackgroundGraphicsItems(0, mNumBeats);
-
-    //! \todo Handle timeline blocks
-    //TimelineBlockGraphicsItem * item1 = new TimelineBlockGraphicsItem(0, 0.0f, 1.0f, QColor(255, 128, 128), mHorizontalScale);
-    //TimelineBlockGraphicsItem * item2 = new TimelineBlockGraphicsItem(1, 2.0f, 4.0f, QColor(128, 255, 128), mHorizontalScale);
-    //TimelineBlockGraphicsItem * item3 = new TimelineBlockGraphicsItem(3, 0.5f, 2.0f, QColor(128, 128, 255), mHorizontalScale);
-    //scene->addItem(item1);
-    //scene->addItem(item2);
-    //scene->addItem(item3);
 }
 
 //----------------------------------------------------------------------------------------
@@ -153,7 +146,7 @@ void TimelineGraphicsView::RefreshFromTimeline()
         // Refresh the content of every lane
         for (unsigned int l = 0; l < numLanes; ++l)
         {
-            //RefreshLaneFromTimelineLane(l, timeline->GetLane(l));
+            RefreshLaneFromTimelineLane(l, timeline->GetLane(l));
         }
     }
     else
@@ -212,8 +205,8 @@ void TimelineGraphicsView::SetHorizontalScale(float scale)
     // ghosts of the previous blocks
     resetCachedContent();
 
-    // Update the horizontal scale of all the blocks
-    // (this invalidates the cache of the block graphics items)
+    // Update the horizontal scale of all the objects that depend on the horizontal scale
+    // (this invalidates the cache of the graphics items)
     foreach (TimelineBackgroundBeatGraphicsItem * backgroundBeatItem, mBackgroundBeatItems)
     {
         ED_ASSERTSTR(backgroundBeatItem != nullptr, "Invalid item in the list of background beat graphics items");
@@ -224,13 +217,15 @@ void TimelineGraphicsView::SetHorizontalScale(float scale)
         ED_ASSERTSTR(backgroundBeatLineItem != nullptr, "Invalid item in the list of background beat line graphics items");
         backgroundBeatLineItem->SetHorizontalScale(mHorizontalScale);
     }
-    //! \todo List of blocks
-    //TimelineBlockGraphicsItem * blockItem = qgraphicsitem_cast<TimelineBlockGraphicsItem *>(item);
-    //if (blockItem != nullptr)
-    //{
-    //    blockItem->SetHorizontalScale(mHorizontalScale);
-    //    continue;
-    //}
+    for (unsigned int l = 0; l < mNumLanes; ++l)
+    {
+        QMapIterator<Pegasus::Timeline::IBlockProxy *, TimelineBlockGraphicsItem *> it(mBlockItems[l]);
+        while (it.hasNext())
+        {
+            it.next();
+            it.value()->SetHorizontalScale(mHorizontalScale);
+        }
+    }
     ED_ASSERTSTR(mCursorItem != nullptr, "Invalid graphics item for the cursor");
     mCursorItem->SetHorizontalScale(mHorizontalScale);
     
@@ -407,6 +402,9 @@ void TimelineGraphicsView::CreateLanes(unsigned int firstLane, unsigned int numL
         TimelineLaneHeaderGraphicsItem * laneHeaderItem = new TimelineLaneHeaderGraphicsItem(l);
         scene()->addItem(laneHeaderItem);
         mLaneHeaderItems += laneHeaderItem;
+
+        // Create the empty list of block items
+        mBlockItems += LaneBlockList();
     }
 
     // Set the new number of lanes
@@ -447,7 +445,9 @@ void TimelineGraphicsView::RemoveLanes(unsigned int firstLane, unsigned int numL
     // Remove the lane specific graphics items
     for (int l = lastLane - 1; l >= static_cast<int>(firstLane); --l)
     {
-        //! \todo Remove the content of the lanes (blocks)
+        //! Remove the content of the lane
+        ClearBlockItems(l);
+        mBlockItems.removeAt(l);
 
         // Remove the lane header
         scene()->removeItem(mLaneHeaderItems.takeAt(l));
@@ -516,10 +516,61 @@ void TimelineGraphicsView::RemoveBackgroundGraphicsItems(unsigned int firstBeat,
 
 //----------------------------------------------------------------------------------------
 
-void TimelineGraphicsView::RefreshLaneFromTimelineLane(unsigned int laneIndex, Pegasus::Timeline::ILaneProxy * laneProxy)
+void TimelineGraphicsView::ClearBlockItems(unsigned int laneIndex)
 {
-    /****/
-    //! \todo Implement
+    ED_ASSERTSTR(laneIndex < static_cast<unsigned int>(mBlockItems.size()), "Invalid block items list index (%d), it should be < %d", laneIndex, mBlockItems.size());
+
+    // Clear the list of block items for the lane
+    QMapIterator<Pegasus::Timeline::IBlockProxy *, TimelineBlockGraphicsItem *> it(mBlockItems[laneIndex]);
+    while (it.hasNext())
+    {
+        it.next();
+        scene()->removeItem(it.value());
+    }
+    mBlockItems[laneIndex].clear();
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineGraphicsView::RefreshLaneFromTimelineLane(unsigned int laneIndex, const Pegasus::Timeline::ILaneProxy * laneProxy)
+{
+    if (laneProxy != nullptr)
+    {
+        // Perform a full refresh of the lane rather than an incremental one
+        ClearBlockItems(laneIndex);
+
+        // Get the list of blocks in the timeline
+        Pegasus::Timeline::IBlockProxy ** blockProxies = new Pegasus::Timeline::IBlockProxy * [Pegasus::Timeline::LANE_MAX_NUM_BLOCKS];
+        const unsigned int numBlocks = laneProxy->GetBlocks(blockProxies);
+
+        // For each block, create a corresponding graphics item
+        for (unsigned int b = 0; b < numBlocks; ++b)
+        {
+            Pegasus::Timeline::IBlockProxy * blockProxy = blockProxies[b];
+            if (blockProxy != nullptr)
+            {
+                unsigned char red, green, blue;
+                blockProxy->GetColor(red, green, blue);
+                TimelineBlockGraphicsItem * item = new TimelineBlockGraphicsItem(laneIndex,
+                                                                                 blockProxy->GetPosition(),
+                                                                                 blockProxy->GetLength(),
+                                                                                 QColor(red, green, blue),
+                                                                                 mHorizontalScale);
+                scene()->addItem(item);
+                mBlockItems[laneIndex].insert(blockProxy, item);
+            }
+            else
+            {
+                ED_FAILSTR("Unable to get the block %d of lane %d, it is a nullptr", b, laneIndex);
+            }
+        }
+
+        delete[] blockProxies;
+    }
+    else
+    {
+        ED_FAILSTR("Unable to refresh the lane %d because it is nullptr", laneIndex);
+    }
 }
 
 //----------------------------------------------------------------------------------------

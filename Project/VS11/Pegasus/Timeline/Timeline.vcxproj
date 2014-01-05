@@ -34,6 +34,7 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Shared\IBlockProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Shared\ILaneProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Shared\ITimelineProxy.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Shared\LaneDefs.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Shared\TimelineDefs.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Timeline.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\TimelineProxy.h" />

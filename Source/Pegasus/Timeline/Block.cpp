@@ -28,6 +28,11 @@ Block::Block(Alloc::IAllocator * allocator)
 #if PEGASUS_ENABLE_PROXIES
     //! Create the proxy associated with the block
     mProxy = PG_NEW(allocator, -1, "Timeline::Block::mProxy", Pegasus::Alloc::PG_MEM_PERM) BlockProxy(this);
+
+    // Default color
+    mColorRed = 128;
+    mColorGreen = 128;
+    mColorBlue = 128;
 #endif  // PEGASUS_ENABLE_PROXIES
 }
 
@@ -74,6 +79,28 @@ void Block::SetLength(float length)
         mLength = length;
     }
 }
+
+//----------------------------------------------------------------------------------------
+
+#if PEGASUS_ENABLE_PROXIES
+
+void Block::SetColor(unsigned char red, unsigned char green, unsigned char blue)
+{
+    mColorRed = red;
+    mColorGreen = green;
+    mColorBlue = blue;
+}
+
+//----------------------------------------------------------------------------------------
+
+void Block::GetColor(unsigned char & red, unsigned char & green, unsigned char & blue) const
+{
+    red = mColorRed;
+    green = mColorGreen;
+    blue = mColorBlue;
+}
+
+#endif  // PEGASUS_ENABLE_PROXIES
 
 
 }   // namespace Timeline

@@ -42,6 +42,15 @@ public:
     //! Get the length of the block
     //! \return Length of the block, measured in beats (> 0.0f)
     virtual float GetLength() const = 0;
+
+    //! Set the color of the block
+    //! \param red Red component (0-255)
+    //! \param green Green component (0-255)
+    //! \param blue Blue component (0-255)
+    virtual void SetColor(unsigned char red, unsigned char green, unsigned char blue) = 0;
+
+    //! Get the color of the block
+    virtual void GetColor(unsigned char & red, unsigned char & green, unsigned char & blue) const = 0;
 };
 
 

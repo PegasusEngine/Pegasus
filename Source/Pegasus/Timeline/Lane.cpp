@@ -14,6 +14,8 @@
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/Timeline/LaneProxy.h"
+#include "Pegasus/Timeline/BlockProxy.h"
+#include "Pegasus/Timeline/Shared/IBlockProxy.h"
 #include <string.h>
 #endif  // PEGASUS_ENABLE_PROXIES
 
@@ -29,7 +31,7 @@ Lane::Lane(Alloc::IAllocator * allocator)
     PG_ASSERTSTR(allocator != nullptr, "Invalid allocator given to a timeline Lane object");
 
     // Set all block records as invalid
-    for (unsigned int b = 0; b < MAX_NUM_BLOCKS; ++b)
+    for (unsigned int b = 0; b < LANE_MAX_NUM_BLOCKS; ++b)
     {
         mBlockRecords[b].mBlock = nullptr;
         mBlockRecords[b].mNext = INVALID_RECORD_INDEX;
@@ -51,7 +53,7 @@ Lane::Lane(Alloc::IAllocator * allocator)
 Lane::~Lane()
 {
     // Destroy the blocks allocated in the lane
-    for (unsigned int b = 0; b < MAX_NUM_BLOCKS; ++b)
+    for (unsigned int b = 0; b < LANE_MAX_NUM_BLOCKS; ++b)
     {
         if (mBlockRecords[b].mBlock != nullptr)
         {
@@ -73,7 +75,7 @@ bool Lane::InsertBlock(Block * block)
 
     if (block != nullptr)
     {
-        if (mNumBlocks < MAX_NUM_BLOCKS)
+        if (mNumBlocks < LANE_MAX_NUM_BLOCKS)
         {
             // Find where to insert the block
             int currentBlockIndex, nextBlockIndex;
@@ -168,7 +170,7 @@ bool Lane::InsertBlock(Block * block)
         }
         else
         {
-            PG_FAILSTR("Unable to add a block to a lane, the maximum number of blocks has been reached (%d)", MAX_NUM_BLOCKS);
+            PG_FAILSTR("Unable to add a block to a lane, the maximum number of blocks has been reached (%d)", LANE_MAX_NUM_BLOCKS);
         }
     }
     else
@@ -182,6 +184,38 @@ bool Lane::InsertBlock(Block * block)
 //----------------------------------------------------------------------------------------
 
 #if PEGASUS_ENABLE_PROXIES
+
+unsigned int Lane::GetBlocks(IBlockProxy ** blocks) const
+{
+    if (blocks != nullptr)
+    {
+        if (mNumBlocks == 0)
+        {
+            return 0;
+        }
+        else
+        {
+            // Copy the entire linked list into the output array
+            unsigned int numBlocks = 0;
+            int currentIndex = mFirstBlockIndex;
+            do
+            {
+                blocks[numBlocks++] = mBlockRecords[currentIndex].mBlock->GetProxy();
+                currentIndex = mBlockRecords[currentIndex].mNext;
+            }
+            while (currentIndex != mFirstBlockIndex);
+            return numBlocks;
+        }
+    }
+    else
+    {
+        PG_FAILSTR("Unable to get list of blocks for a lane, the resulting array is nullptr");
+        return 0;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 void Lane::SetName(const char * name)
 {
     if (name == nullptr)
@@ -278,13 +312,13 @@ void Lane::FindCurrentAndNextBlocks(float beat, int & currentBlockIndex, int & n
 int Lane::FindFirstAvailableBlockRecord() const
 {
     // No free block record found
-    if (mNumBlocks >= MAX_NUM_BLOCKS)
+    if (mNumBlocks >= LANE_MAX_NUM_BLOCKS)
     {
         return INVALID_RECORD_INDEX;
     }
 
     // Look for an available block record
-    for (unsigned int b = 0; b < MAX_NUM_BLOCKS; ++b)
+    for (unsigned int b = 0; b < LANE_MAX_NUM_BLOCKS; ++b)
     {
         if (mBlockRecords[b].mNext == INVALID_RECORD_INDEX)
         {

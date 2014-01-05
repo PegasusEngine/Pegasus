@@ -15,7 +15,6 @@
 #if PEGASUS_ENABLE_PROXIES
 
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
-#include "Pegasus/Timeline/Shared/ILaneProxy.h"
 
 namespace Pegasus {
     namespace Timeline {
@@ -60,12 +59,17 @@ public:
 
 
     //! Create a new lane
-    //! \return Proxy interface for a timeline lane, nullptr if the number of lanes is Timeline::MAX_NUM_LANES
+    //! \return Proxy interface for a timeline lane, nullptr if the number of lanes is TIMELINE_MAX_NUM_LANES
     virtual ILaneProxy * CreateLane();
 
     //! Get the current number of lanes
     //! \return Number of lanes (>= 1)
     virtual unsigned int GetNumLanes() const;
+
+    //! Get one of the lanes
+    //! \param laneIndex Index of the lane (< GetNumLanes())
+    //! \return Pointer to the lane proxy, nullptr in case of error
+    virtual ILaneProxy * GetLane(unsigned int laneIndex) const;
 
 
     //! Set the play mode of the timeline

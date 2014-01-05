@@ -51,8 +51,17 @@ public:
     //! \return Length of the block, measured in beats (> 0.0f)
     inline float GetLength() const { return mLength; }
 
-
 #if PEGASUS_ENABLE_PROXIES
+
+    //! Set the color of the block for the editor
+    //! \param red Red component (0-255)
+    //! \param green Green component (0-255)
+    //! \param blue Blue component (0-255)
+    void SetColor(unsigned char red, unsigned char green, unsigned char blue);
+
+    //! Get the color of the block for the editor
+    void GetColor(unsigned char & red, unsigned char & green, unsigned char & blue) const;
+
 
     //! Get the proxy associated with the block
     inline BlockProxy * GetProxy() const { return mProxy; }
@@ -83,6 +92,19 @@ private:
 
     //! Length of the block, measured in beats (> 0.0f)
     float mLength;
+
+#if PEGASUS_ENABLE_PROXIES
+
+    //! Red component of the color for the editor (0-255)
+    unsigned char mColorRed;
+
+    //! Green component of the color for the editor (0-255)
+    unsigned char mColorGreen;
+
+    //! Blue component of the color for the editor (0-255)
+    unsigned char mColorBlue;
+
+#endif  // PEGASUS_ENABLE_PROXIES
 };
 
 

@@ -60,11 +60,8 @@ public:
     inline unsigned int GetNumBeats() const { return mNumBeats; }
 
 
-    //! Maximum number of lanes allowed in the timeline
-    enum { MAX_NUM_LANES = 64 };
-
     //! Create a new lane
-    //! \return New lane, nullptr if the number of lanes is MAX_NUM_LANES
+    //! \return New lane, nullptr if the number of lanes is TIMELINE_MAX_NUM_LANES
     Lane * CreateLane();
 
     //! Get the current number of lanes
@@ -129,9 +126,9 @@ private:
     unsigned int mNumBeats;
 
     //! Set of lanes, only the first mNumLanes are defined
-    Lane * mLanes[MAX_NUM_LANES];
+    Lane * mLanes[TIMELINE_MAX_NUM_LANES];
 
-    //! Number of used lanes (<= MAX_NUM_LANES)
+    //! Number of used lanes (<= TIMELINE_MAX_NUM_LANES)
     unsigned int mNumLanes;
 
     //! Current play mode of the timeline (PLAYMODE_xxx constant, PLAYMODE_REALTIME by default)

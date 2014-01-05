@@ -312,6 +312,8 @@ void TimelineBlockGraphicsItem::SetLaneFromPosition(float lanePosition)
         lane = 0;
     }
 
+    //! \todo Clamp to avoid blocks to move to an invalid lane (job000088)
+
     mLane = static_cast<unsigned int>(lane);
 }
 
