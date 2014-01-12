@@ -94,6 +94,13 @@ void ApplicationProxy::Shutdown()
 
 //----------------------------------------------------------------------------------------
 
+void ApplicationProxy::Load()
+{
+    mObject->Load();
+}
+
+//----------------------------------------------------------------------------------------
+
 Timeline::ITimelineProxy* ApplicationProxy::GetTimeline() const
 {
     return mObject->GetTimeline()->GetProxy();

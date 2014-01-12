@@ -338,9 +338,10 @@ void Editor::CreateDockWidgets()
     //mMainViewportDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
     addDockWidget(Qt::TopDockWidgetArea, mMainViewportDockWidget);
 
-    mSecondaryViewportDockWidget = new ViewportDockWidget(VIEWPORTTYPE_SECONDARY, this);
-    //mSecondaryViewportDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
-    addDockWidget(Qt::TopDockWidgetArea, mSecondaryViewportDockWidget);
+    //! \todo Restore the second viewport once we know how to share buffers between contexts
+    //mSecondaryViewportDockWidget = new ViewportDockWidget(VIEWPORTTYPE_SECONDARY, this);
+    ////mSecondaryViewportDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
+    //addDockWidget(Qt::TopDockWidgetArea, mSecondaryViewportDockWidget);
 
     mTimelineDockWidget = new TimelineDockWidget(this);
     //mTimelineDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));

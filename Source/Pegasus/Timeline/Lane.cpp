@@ -183,6 +183,51 @@ bool Lane::InsertBlock(Block * block)
 
 //----------------------------------------------------------------------------------------
 
+void Lane::InitializeBlocks()
+{
+    if (mNumBlocks > 0)
+    {
+        // Call Initialize() for each block
+        int currentIndex = mFirstBlockIndex;
+        do
+        {
+            mBlockRecords[currentIndex].mBlock->Initialize();
+            currentIndex = mBlockRecords[currentIndex].mNext;
+        }
+        while (currentIndex != mFirstBlockIndex);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Lane::Render(float beat, Wnd::Window * window)
+{
+    //! \todo The current approach is extremely brute force and inefficient.
+    //! \todo Cache the current selected block in function of the timeline time.
+
+    if (mNumBlocks > 0)
+    {
+        int currentBlockIndex = INVALID_RECORD_INDEX;
+        int nextBlockIndex = INVALID_RECORD_INDEX;
+        FindCurrentAndNextBlocks(beat, currentBlockIndex, nextBlockIndex);
+        if (currentBlockIndex != INVALID_RECORD_INDEX)
+        {
+            Block * const block = mBlockRecords[currentBlockIndex].mBlock;
+            float relativeBeat = beat - block->GetPosition();
+            if (relativeBeat < 0.0f)
+            {
+                relativeBeat = 0.0f;
+            }
+            if (relativeBeat < block->GetLength())
+            {
+                block->Render(relativeBeat, window);
+            }
+        }
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 #if PEGASUS_ENABLE_PROXIES
 
 unsigned int Lane::GetBlocks(IBlockProxy ** blocks) const

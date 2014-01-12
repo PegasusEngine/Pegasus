@@ -35,7 +35,8 @@ ApplicationInterface::ApplicationInterface(Application * application, QObject * 
     // Connect the viewport widget resized messages to the windows in the application worker thread.
     // A queued connection is used since we have to cross the thread boundaries
     //! \todo Add support for other window types
-    for (unsigned int vt = 0; vt < /*NUM_VIEWPORT_TYPES*/2; ++vt)
+    //! \todo Restore support for the second viewport (buffer sharing)
+    for (unsigned int vt = 0; vt < /*NUM_VIEWPORT_TYPES*/1; ++vt)
     {
         ViewportWidget * viewportWidget = Editor::GetInstance().GetViewportWidget(ViewportType(VIEWPORTTYPE_FIRST + vt));
         if (viewportWidget != nullptr)

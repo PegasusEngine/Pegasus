@@ -25,8 +25,14 @@ public:
     virtual ~TestApp1();
 
 
-    // Application interface
+    //! Application interface
     virtual const char* GetAppName() const { return "TestApp1"; }
+
+    //! Custom initialization, done before the timeline triggers the loading of blocks and their assets
+    virtual void InitializeApp();
+
+    //! Custom shutdown
+    virtual void ShutdownApp();
 };
 
 

@@ -132,8 +132,11 @@ void Application::Initialize()
     ioManagerConfig.mAppName = GetAppName();
     mIoManager = PG_NEW(coreAlloc, -1, "IOManager", Pegasus::Alloc::PG_MEM_PERM) Io::IOManager(ioManagerConfig);
 
-    // start up the app, which creates and destroys the dummy window
+    // Start up the app, which creates and destroys the dummy window
     StartupAppInternal();
+
+    // Custom initialization, done in the user application
+    InitializeApp();
 
     // Initted
     mInitialized = true;
@@ -149,6 +152,9 @@ void Application::Shutdown()
     // Sanity check
     PG_ASSERTSTR(mInitialized, "Application not initialized yet!");
 
+    // Custom shutdown, done in the user application
+    ShutdownApp();
+
     // Shuts down GLextensions, etc
     ShutdownAppInternal();
 
@@ -157,6 +163,16 @@ void Application::Shutdown()
 
     // No longer initted
     mInitialized = false;
+}
+
+//----------------------------------------------------------------------------------------
+
+void Application::Load()
+{
+    PG_ASSERTSTR(mTimeline != nullptr, "Invalid timeline for the application");
+
+    // Tell all the blocks of the timeline to initialize their content
+    mTimeline->InitializeBlocks();
 }
 
 //----------------------------------------------------------------------------------------

@@ -11,8 +11,6 @@
 
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Timeline/Lane.h"
-//! \todo Remove the test blocks
-/****/#include "Pegasus/Timeline/Block.h"
 #include "Pegasus/Core/Time.h"
 
 #if PEGASUS_ENABLE_PROXIES
@@ -77,33 +75,6 @@ void Timeline::Clear()
 
     // Create a default lane
     CreateLane();
-
-    //! \todo Remove those temporary lanes and blocks
-    /****/CreateLane();
-    /****/CreateLane();
-    /****/CreateLane();
-    /****/CreateLane();
-    /****/Block * block = PG_NEW(mAllocator, -1, "test", Alloc::PG_MEM_PERM) Block(mAllocator);
-    /****/block->SetPosition(3.0f);
-    /****/block->SetLength(2.5f);
-#if PEGASUS_ENABLE_PROXIES
-    /****/block->SetColor(255, 128, 128);
-#endif
-    /****/GetLane(1)->InsertBlock(block);
-    /****/Block * block2 = PG_NEW(mAllocator, -1, "test", Alloc::PG_MEM_PERM) Block(mAllocator);
-    /****/block2->SetPosition(1.0f);
-    /****/block2->SetLength(1.5f);
-#if PEGASUS_ENABLE_PROXIES
-    /****/block2->SetColor(128, 255, 128);
-#endif
-    /****/GetLane(3)->InsertBlock(block2);
-    /****/Block * block3 = PG_NEW(mAllocator, -1, "test", Alloc::PG_MEM_PERM) Block(mAllocator);
-    /****/block3->SetPosition(3.5f);
-    /****/block3->SetLength(10.0f);
-#if PEGASUS_ENABLE_PROXIES
-    /****/block3->SetColor(128, 128, 255);
-#endif
-    /****/GetLane(4)->InsertBlock(block3);
 }
 
 //----------------------------------------------------------------------------------------
@@ -188,6 +159,20 @@ Lane * Timeline::GetLane(unsigned int laneIndex) const
 }
 
 //----------------------------------------------------------------------------------------
+
+void Timeline::InitializeBlocks()
+{
+    for (unsigned int l = 0; l < mNumLanes; ++l)
+    {
+        Lane * lane = GetLane(l);
+        if (lane != nullptr)
+        {
+            lane->InitializeBlocks();
+        }
+    }
+}
+
+//----------------------------------------------------------------------------------------
     
 void Timeline::Update()
 {
@@ -229,6 +214,28 @@ void Timeline::Update()
             }
 #endif  // PEGASUS_ENABLE_PROXIES
         }
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Timeline::Render(Wnd::Window * window)
+{
+    if (window != nullptr)
+    {
+        // Render the content of each lane from top to bottom
+        for (unsigned int l = 0; l < mNumLanes; ++l)
+        {
+            Lane * lane = GetLane(l);
+            if (lane != nullptr)
+            {
+                lane->Render(mCurrentBeat, window);
+            }
+        }
+    }
+    else
+    {
+        PG_FAILSTR("Invalid window given to the timeline for rendering");
     }
 }
 

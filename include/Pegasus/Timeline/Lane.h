@@ -20,6 +20,10 @@ namespace Pegasus {
         class Block;
         class IBlockProxy;
     }
+
+    namespace Wnd {
+        class Window;
+    }
 }
     
 namespace Pegasus {
@@ -45,6 +49,16 @@ public:
     //! \return True if succeeded, false if the block is invalid, has a collision with an existing block,
     //!         or the number of blocks has already reached LANE_MAX_NUM_BLOCKS
     bool InsertBlock(Block * block);
+
+
+    // Tell all the blocks of the lane to initialize their content (calling their Initialize() function)
+    void InitializeBlocks();
+
+    //! Render the content of the lane for the given window
+    //! \param beat Current beat, can have fractional part
+    //! \param window Window in which the lane is being rendered
+    //! \todo That dependency is ugly. Find a way to remove that dependency
+    void Render(float beat, Wnd::Window * window);
 
 
 #if PEGASUS_ENABLE_PROXIES

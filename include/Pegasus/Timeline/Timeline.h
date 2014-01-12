@@ -19,6 +19,10 @@ namespace Pegasus {
         class Lane;
         class TimelineProxy;
     }
+
+    namespace Wnd {
+        class Window;
+    }
 }
 
 namespace Pegasus {
@@ -36,6 +40,9 @@ public:
 
     //! Destructor
     virtual ~Timeline();
+
+    //! Get the allocator used for all timeline allocations
+    inline Alloc::IAllocator * GetAllocator() const { return mAllocator; }
 
     //! Clear the entire timeline and create a default lane
     void Clear();
@@ -74,12 +81,21 @@ public:
     Lane * GetLane(unsigned int laneIndex) const;
 
 
+    // Tell all the blocks of the timeline to initialize their content (calling their Initialize() function)
+    void InitializeBlocks();
+
+
     //! Set the play mode of the timeline
     //! \param playMode New play mode of the timeline (PLAYMODE_xxx constant)
     void SetPlayMode(PlayMode playMode);
 
     //! Update the current state of the timeline based on the play mode and the current time
     void Update();
+
+    //! Render the content of the timeline for the given window
+    //! \param window Window in which the timeline is being rendered
+    //! \todo That dependency is ugly. Find a way to remove that dependency
+    void Render(Wnd::Window * window);
 
     //! Set the current beat of the timeline
     //! \param beat Current beat, can have fractional part

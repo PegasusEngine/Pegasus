@@ -303,6 +303,9 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     appWindow = application->AttachWindow(windowConfig);
     appWindow->Initialize();
 
+    // Load the assets required to render the timeline blocks
+    application->Load();
+
     // Run message pump until application exits
     while(!appDone)
     {

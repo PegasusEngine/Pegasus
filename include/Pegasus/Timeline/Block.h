@@ -12,12 +12,18 @@
 #ifndef PEGASUS_TIMELINE_BLOCK_H
 #define PEGASUS_TIMELINE_BLOCK_H
 
+#include "Pegasus/Window/IWindowContext.h"
+
 namespace Pegasus {
     namespace Timeline {
         class BlockProxy;
     }
+
+    namespace Wnd {
+        class Window;
+    }
 }
-    
+
 namespace Pegasus {
 namespace Timeline {
 
@@ -29,7 +35,8 @@ public:
 
     //! Constructor
     //! \param allocator Allocator used for all timeline allocations
-    Block(Alloc::IAllocator * allocator);
+    //! \param appContext Application context, providing access to the global managers
+    Block(Alloc::IAllocator * allocator, Wnd::IWindowContext * appContext);
 
     //! Destructor
     virtual ~Block();
@@ -70,6 +77,51 @@ public:
 
     //------------------------------------------------------------------------------------
 
+public:
+
+    // Functions called in derived classes
+
+    //! Initialize the data of the block
+    virtual void Initialize();
+
+    //! Deallocate the data used by the block
+    virtual void Shutdown();
+
+    //! Render the content of the block
+    //! \param beat Current beat relative to the beginning of the block,
+    //!             can have fractional part (>= 0.0f)
+    //! \param window Window in which the lane is being rendered
+    //! \todo That dependency is ugly. Find a way to remove that dependency
+    virtual void Render(float beat, Wnd::Window * window) = 0;
+
+    //------------------------------------------------------------------------------------
+
+protected:
+
+    // Accessors to the global manager for the derived classes
+    
+    //! Get the global IO manager
+    //! \return Global IO manager
+    inline Io::IOManager * GetIOManager() const { return mAppContext->GetIOManager(); }
+
+    //! Get the node manager
+    //! \return Global node manager
+    inline Graph::NodeManager * GetNodeManager() const { return mAppContext->GetNodeManager(); }
+
+    //! Get the shader manager
+    //! \return Global shader manager
+    inline Shader::ShaderManager * GetShaderManager() const { return mAppContext->GetShaderManager(); }
+
+    //! Get the texture manager
+    //! \return Global texture manager
+    inline Texture::TextureManager * GetTextureManager() const { return mAppContext->GetTextureManager(); }
+
+    //! Get the timeline
+    //! \return Global timeline
+    inline Timeline * GetTimeline() const { return mAppContext->GetTimeline(); }
+
+    //------------------------------------------------------------------------------------
+
 private:
 
     // Blocks cannot be copied
@@ -78,6 +130,9 @@ private:
 
     //! Allocator used for all timeline allocations
     Alloc::IAllocator * mAllocator;
+
+    //! Application context, providing access to the global managers
+    Wnd::IWindowContext * mAppContext;
 
 #if PEGASUS_ENABLE_PROXIES
 

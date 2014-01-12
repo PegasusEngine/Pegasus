@@ -19,11 +19,14 @@ namespace Pegasus {
 namespace Timeline {
 
 
-Block::Block(Alloc::IAllocator * allocator)
-:   mPosition(0.0f),
+Block::Block(Alloc::IAllocator * allocator, Wnd::IWindowContext * appContext)
+:   mAllocator(allocator),
+    mAppContext(appContext),
+    mPosition(0.0f),
     mLength(1.0f)
 {
     PG_ASSERTSTR(allocator != nullptr, "Invalid allocator given to a timeline Block object");
+    PG_ASSERTSTR(appContext != nullptr, "Invalid application context given to a timeline Block object");
 
 #if PEGASUS_ENABLE_PROXIES
     //! Create the proxy associated with the block
@@ -101,6 +104,20 @@ void Block::GetColor(unsigned char & red, unsigned char & green, unsigned char &
 }
 
 #endif  // PEGASUS_ENABLE_PROXIES
+
+//----------------------------------------------------------------------------------------
+
+void Block::Initialize()
+{
+    // No default implementation
+}
+
+//----------------------------------------------------------------------------------------
+
+void Block::Shutdown()
+{
+    // No default implementation
+}
 
 
 }   // namespace Timeline

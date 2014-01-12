@@ -55,12 +55,21 @@ public:
     //! \return Application name.
     virtual const char* GetAppName() const = 0;
 
+    //! Custom initialization, done in the user application before the timeline triggers the loading of blocks and their assets
+    virtual void InitializeApp() = 0;
+
+    //! Custom shutdown, done in the user application
+    virtual void ShutdownApp() = 0;
+
 
     //! Initializes this app
-    virtual void Initialize();
+    void Initialize();
 
     //! Shut this app down
-    virtual void Shutdown();
+    void Shutdown();
+
+    //! Load the assets required to render the timeline blocks
+    void Load();
 
 
     //! Gets the window registry for this app, to register window types
@@ -91,6 +100,7 @@ private:
 
     //! Internal helper to start up the app
     void StartupAppInternal();
+
     //! Internal handler to shutdown the app
     void ShutdownAppInternal();
 

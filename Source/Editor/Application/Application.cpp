@@ -149,7 +149,8 @@ void Application::run()
 
     // Set up windows
     //! \todo Add support for other viewport types
-    for (unsigned int vt = 0; vt < /*NUM_VIEWPORT_TYPES*/2; ++vt)
+    //! \todo Restore support for the second viewport (buffer sharing)
+    for (unsigned int vt = 0; vt < /*NUM_VIEWPORT_TYPES*/1; ++vt)
     {
         const ViewportType viewportType = ViewportType(VIEWPORTTYPE_FIRST + vt);
         ViewportWidget * viewportWidget = Editor::GetInstance().GetViewportWidget(viewportType);
@@ -166,6 +167,9 @@ void Application::run()
             mAppWindow[vt]->Initialize();
         }
     }
+
+    // Load the assets required to render the timeline blocks
+    mApplication->Load();
 
     // Signal the success of the loading
     emit(LoadingSucceeded());

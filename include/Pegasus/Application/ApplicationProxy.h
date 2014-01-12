@@ -44,6 +44,7 @@ public:
     // Stateflow API
     virtual void Initialize();
     virtual void Shutdown();
+    virtual void Load();
 
     // Proxy accessors
     virtual Timeline::ITimelineProxy* GetTimeline() const;

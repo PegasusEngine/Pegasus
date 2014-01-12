@@ -71,6 +71,10 @@ public:
     //! Shuts this application down
     virtual void Shutdown() = 0;
 
+    //! Load the assets required to render the timeline blocks
+    virtual void Load() = 0;
+
+
     //! \todo Set update mode
 
 
