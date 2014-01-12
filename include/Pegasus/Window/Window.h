@@ -79,6 +79,9 @@ public:
     //! \param New height in pixels.
     void Resize(unsigned int width, unsigned int height);
 
+    //! Initialize special events for a window that is a primary (controls lifetime of application)
+    void HandleMainWindowEvents();
+
 
 protected:
 
@@ -101,6 +104,7 @@ private:
     bool mContextCreated; //!< Window created flag
     unsigned int mWidth; //!< Current width
     unsigned int mHeight; //!< Current height
+    bool mIsChild; //!< Current state, wether is child window or not
 
     friend class WindowMessageHandler;
 };

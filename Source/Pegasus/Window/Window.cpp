@@ -101,7 +101,9 @@ Window::Window(const WindowConfig& config)
     mRenderContext(nullptr),
     mContextCreated(false),
     mWidth(config.mWidth),
-    mHeight(config.mHeight)
+    mHeight(config.mHeight),
+    mIsChild(config.mIsChild)
+
 {
     // Create platform stuff
     mMessageHandler = PG_NEW(mAllocator, -1, "Window message handler", Pegasus::Alloc::PG_MEM_PERM) WindowMessageHandler(config.mUseBasicContext, this);
@@ -149,6 +151,14 @@ void Window::Resize(unsigned int width, unsigned int height)
     mHeight = height;
 }
 
+//----------------------------------------------------------------------------------------
+void Window::HandleMainWindowEvents()
+{
+    if (!mIsChild)
+    {
+        mPrivateImpl->SetAsMainWindow();
+    }
+}
 
 }   // namespace Wnd
 }   // namespace Pegasus

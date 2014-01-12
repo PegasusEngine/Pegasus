@@ -129,6 +129,8 @@ bool RenderPlatShaderStage::Compile()
     {
         mShaderHandle = (Pegasus::Shader::ShaderHandle)glCreateShader(PegasusShaderPrivate::gGLPegasusStageMappings[static_cast<int>(mType)].mGlRenderPlatShaderStage);    
     }
+    PG_ASSERT(mShaderHandle != Pegasus::Shader::INVALID_SHADER_HANDLE);
+
     const GLint stringLength = static_cast<GLuint>(mFileBuffer.GetFileSize());
     const char * shaderSource = mFileBuffer.GetBuffer();
     glShaderSource(
@@ -139,7 +141,7 @@ bool RenderPlatShaderStage::Compile()
             //opengl samples use NULL, not nullptr
             // NULL in this argument means just assume each string is a NULL terminated string
     );
-    PG_ASSERT(mShaderHandle != Pegasus::Shader::SHADER_STAGE_INVALID);
+
     glCompileShader(static_cast<GLuint>(mShaderHandle));
     GLint shaderCompiled = GL_TRUE;
     glGetShaderiv(static_cast<GLuint>(mShaderHandle), GL_COMPILE_STATUS, &shaderCompiled);

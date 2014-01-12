@@ -59,6 +59,10 @@ TestApp1::~TestApp1()
 {
     // Unregister the main window
     GetWindowRegistry()->UnregisterWindowClass(MAIN_WND_TYPE);
+#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
+    GetWindowRegistry()->UnregisterWindowClass(SECONDARY_WND_TYPE);
+#endif
+
 }
 
 //----------------------------------------------------------------------------------------

@@ -38,7 +38,7 @@ void IWindowImpl::DestroyImpl(IWindowImpl* impl, Alloc::IAllocator* alloc)
 //----------------------------------------------------------------------------------------
 
 WindowImpl_Win32::WindowImpl_Win32(const WindowConfig& config, IWindowMessageHandler* messageHandler)
-    : mModule((HMODULE) config.mModuleHandle), mHandler(messageHandler)
+    : mModule((HMODULE) config.mModuleHandle), mHandler(messageHandler), mIsMainWindow(false)
 {
     // Register window class if need be
     if (!WindowImpl_Win32::IsWindowClassRegistered(mModule))
@@ -277,6 +277,11 @@ WindowImpl_Win32::HandleMessageReturn WindowImpl_Win32::HandleMessage(unsigned i
     case WM_DESTROY: // Window is being destroyed
         mHandler->OnDestroy();
         ret.handled = true; ret.retcode = 0;
+        if (mIsMainWindow)
+        {
+            //bail entire app if the main window is closed. Post the message.
+            PostQuitMessage(0);
+        }
         break;
     case WM_PAINT: // Someone requested a redraw of the window
 #if PEGASUS_ENABLE_ASSERT

@@ -50,6 +50,8 @@ public:
     //! \param New width in pixels.
     //! \param New height in pixels.
     virtual void Resize(unsigned int width, unsigned int height) = 0;
+
+    virtual void SetAsMainWindow() = 0;
 };
 
 

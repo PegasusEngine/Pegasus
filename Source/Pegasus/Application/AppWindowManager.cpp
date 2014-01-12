@@ -448,6 +448,13 @@ Wnd::Window* AppWindowManager::CreateNewWindow(const char* typeName, const Wnd::
     // Add it to the window table
     mWindowTable->Insert(ret);
 
+    // The main view window in the editor, or the main app window when launched alone, requires
+    //special events to be executed
+    if (entry->mTypeTag == WINDOW_TYPE_MAIN )       
+    {
+        ret->HandleMainWindowEvents();
+    }
+
     return ret;
 }
 

@@ -37,6 +37,8 @@ public:
     // IWindowImpl interface
     virtual WindowHandle GetHandle() const { return (WindowHandle) mHWND; }
     virtual void Resize(unsigned int width, unsigned int height);
+    virtual void SetAsMainWindow() { mIsMainWindow = true; }
+    
 
 private:
     // No copies allowed
@@ -101,6 +103,7 @@ private:
     HMODULE mModule; //!< Module that owns this window
     HWND mHWND; //!< Window handle
     IWindowMessageHandler* mHandler; //!< MEssage handler object
+    bool mIsMainWindow; //!< Controls the life cycle of the application
 };
 
 
