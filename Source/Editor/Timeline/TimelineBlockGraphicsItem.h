@@ -25,12 +25,14 @@ public:
     //! \param lane Index of the timeline lane the block belongs to
     //! \param basePosition Based position of the block, in time units (1.0f for one beat, >= 0.0f)
     //! \param baseLength Base length of the block, in time units (1.0f for one beat, > 0.0f)
+    //! \param name Name of the block, displayed as text on top of the block
     //! \param baseColor Based color of the block, when not selected
     //! \param horizontalScale Horizontal scale of the block, 1.0f for a 1:1 ratio,
     //!                        < 1.0f for a compressed block, > 1.0f for an expanded block
     TimelineBlockGraphicsItem(unsigned int lane,
                               float basePosition,
                               float baseLength,
+                              const QString & name,
                               const QColor & baseColor,
                               float horizontalScale);
 
@@ -110,6 +112,9 @@ private:
 
     //! Base length of the block, in time units (1.0f for one beat, > 0.0f)
     float mBaseLength;
+
+    //! Name of the block, displayed as text on top of the block
+    QString mName;
 
     //! Base color of the block, when not selected
     QColor mBaseColor;

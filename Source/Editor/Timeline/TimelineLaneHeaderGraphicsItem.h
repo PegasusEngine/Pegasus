@@ -35,6 +35,11 @@ public:
     //! \param name New name of the lane
     void SetName(const QString & name);
 
+    //! Set the the default name of the lane
+    //! \note Uses mLane to generate the name
+    //! \param updateView True to update the graphics view
+    void SetDefaultName(bool updateView = true);
+
     //! Set the header color (before being lightened internally)
     //! \param color Color associated with the lane
     void SetColor(const QColor & color);
@@ -52,6 +57,8 @@ public:
     int type() const { return Type; }
 
 
+    //------------------------------------------------------------------------------------
+    
 private:
 
     //! Update the position from the lane index

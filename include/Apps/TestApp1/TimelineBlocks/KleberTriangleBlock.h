@@ -21,6 +21,8 @@
 //! \todo Use protected inheritance? In that case, give access to SetPosition() and SetLength()
 class KleberTriangleBlock : public Pegasus::Timeline::Block
 {
+    DECLARE_TIMELINE_BLOCK("BlobTriangle");
+
 public:
 
     //! Constructor

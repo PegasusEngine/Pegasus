@@ -77,6 +77,11 @@ void TestApp1::InitializeApp()
     timeline->CreateLane();
     timeline->CreateLane();
     timeline->CreateLane();
+#if PEGASUS_ENABLE_PROXIES
+    timeline->GetLane(0)->SetName("Beads");
+    timeline->GetLane(1)->SetName("Fractal");
+    timeline->GetLane(2)->SetName("Blob");
+#endif
 
     KleberTriangleBlock * kleberTriangleBlock = PG_NEW(timelineAllocator, -1, "KleberTriangleBlock", Pegasus::Alloc::PG_MEM_PERM) KleberTriangleBlock(timelineAllocator, this);
     kleberTriangleBlock->SetPosition(6.0f);

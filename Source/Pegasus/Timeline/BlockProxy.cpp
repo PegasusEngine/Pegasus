@@ -63,6 +63,13 @@ float BlockProxy::GetLength() const
 
 //----------------------------------------------------------------------------------------
 
+const char * BlockProxy::GetEditorString() const
+{
+    return mBlock->GetEditorString();
+}
+
+//----------------------------------------------------------------------------------------
+
 void BlockProxy::SetColor(unsigned char red, unsigned char green, unsigned char blue)
 {
     mBlock->SetColor(red, green, blue);

@@ -49,6 +49,13 @@ const char * LaneProxy::GetName() const
 
 //----------------------------------------------------------------------------------------
 
+bool LaneProxy::IsNameDefined() const
+{
+    return mLane->IsNameDefined();
+}
+
+//----------------------------------------------------------------------------------------
+
 unsigned int LaneProxy::GetBlocks(IBlockProxy ** blocks) const
 {
     return mLane->GetBlocks(blocks);

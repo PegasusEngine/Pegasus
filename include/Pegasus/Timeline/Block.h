@@ -12,6 +12,7 @@
 #ifndef PEGASUS_TIMELINE_BLOCK_H
 #define PEGASUS_TIMELINE_BLOCK_H
 
+#include "Pegasus/Timeline/Shared/BlockDefs.h"
 #include "Pegasus/Window/IWindowContext.h"
 
 namespace Pegasus {
@@ -59,6 +60,11 @@ public:
     inline float GetLength() const { return mLength; }
 
 #if PEGASUS_ENABLE_PROXIES
+
+    //! Get the string displayed by the editor (usually class name without the "Block" suffix)
+    //! \warning To be defined in each derived class, using the DECLARE_TIMELINE_BLOCK macro
+    //! \return String displayed by the editor
+    virtual const char * GetEditorString() const = 0;
 
     //! Set the color of the block for the editor
     //! \param red Red component (0-255)

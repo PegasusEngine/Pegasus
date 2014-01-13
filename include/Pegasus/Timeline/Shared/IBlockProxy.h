@@ -43,6 +43,12 @@ public:
     //! \return Length of the block, measured in beats (> 0.0f)
     virtual float GetLength() const = 0;
 
+
+    //! Get the string displayed by the editor (usually class name without the "Block" suffix)
+    //! \warning To be defined in each derived class, using the DECLARE_TIMELINE_BLOCK macro
+    //! \return String displayed by the editor
+    virtual const char * GetEditorString() const = 0;
+
     //! Set the color of the block
     //! \param red Red component (0-255)
     //! \param green Green component (0-255)

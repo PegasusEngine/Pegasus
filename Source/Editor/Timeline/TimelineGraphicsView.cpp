@@ -558,6 +558,16 @@ void TimelineGraphicsView::RefreshLaneFromTimelineLane(unsigned int laneIndex, c
         // Perform a full refresh of the lane rather than an incremental one
         ClearBlockItems(laneIndex);
 
+        // Update the name of the lane
+        if (laneProxy->IsNameDefined())
+        {
+            mLaneHeaderItems[laneIndex]->SetName(laneProxy->GetName());
+        }
+        else
+        {
+            mLaneHeaderItems[laneIndex]->SetDefaultName();
+        }
+
         // Get the list of blocks in the timeline
         Pegasus::Timeline::IBlockProxy ** blockProxies = new Pegasus::Timeline::IBlockProxy * [Pegasus::Timeline::LANE_MAX_NUM_BLOCKS];
         const unsigned int numBlocks = laneProxy->GetBlocks(blockProxies);
@@ -573,6 +583,7 @@ void TimelineGraphicsView::RefreshLaneFromTimelineLane(unsigned int laneIndex, c
                 TimelineBlockGraphicsItem * item = new TimelineBlockGraphicsItem(laneIndex,
                                                                                  blockProxy->GetPosition(),
                                                                                  blockProxy->GetLength(),
+                                                                                 blockProxy->GetEditorString(),
                                                                                  QColor(red, green, blue),
                                                                                  mHorizontalScale);
                 scene()->addItem(item);

@@ -38,6 +38,10 @@ public:
     //! \return Name of the lane, can be empty or nullptr
     virtual const char * GetName() const = 0;
 
+    //! Test if the name of the lane is defined
+    //! \return True if the name is not an empty string
+    virtual bool IsNameDefined() const = 0;
+
 
     //! Get the list of blocks of the lane
     //! \param blocks Allocated array of LANE_MAX_NUM_BLOCKS pointers to IBlockProxy,

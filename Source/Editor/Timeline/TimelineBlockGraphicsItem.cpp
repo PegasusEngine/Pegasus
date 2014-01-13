@@ -25,11 +25,15 @@
 TimelineBlockGraphicsItem::TimelineBlockGraphicsItem(unsigned int lane,
                                                      float basePosition,
                                                      float baseLength,
+                                                     const QString & name,
                                                      const QColor & baseColor,
                                                      float horizontalScale)
 :   QGraphicsItem(),
+    mName(name),
     mBaseColor(baseColor)
 {
+    ED_ASSERTSTR(!name.isEmpty(), "The name of the block must be defined");
+
     if (horizontalScale <= 0.0f)
     {
         ED_FAILSTR("Invalid horizontal scale (%f) for the timeline graphics item. It should be > 0.0f.", horizontalScale);
@@ -209,12 +213,13 @@ void TimelineBlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGraph
     font.setBold(false);
     painter->setFont(font);
     painter->setPen(Qt::black);
-    const float textMargin = (TIMELINE_BLOCK_HEIGHT - (float)TIMELINE_BLOCK_FONT_HEIGHT) * 0.5f;
-    QRectF textRect(textMargin,
+    const float fontHeightScale = 1.25f;            // To handle text below the base line
+    const float textMargin = (TIMELINE_BLOCK_HEIGHT - fontHeightScale * (float)TIMELINE_BLOCK_FONT_HEIGHT) * 0.5f;
+    QRectF textRect(textMargin * 2,                 // Added extra space on the left
                     textMargin,
-                    mLength - 2.0f * textMargin,
+                    mLength - 3.0f * textMargin,    // Takes the extra space on the left into account
                     TIMELINE_BLOCK_HEIGHT - 2.0f * textMargin);
-    painter->drawText(textRect, QString("%1").arg(lod));
+    painter->drawText(textRect, mName);
 }
 
 //----------------------------------------------------------------------------------------

@@ -47,6 +47,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Shared\LaneDefs.h">
       <Filter>Include\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Shared\BlockDefs.h">
+      <Filter>Include\Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\Timeline.cpp">

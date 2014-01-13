@@ -46,7 +46,7 @@ TimelineLaneHeaderGraphicsItem::TimelineLaneHeaderGraphicsItem(unsigned int lane
     SetPositionFromLane();
 
     // Set the initial name of the lane
-    mName = QString("Lane %1").arg(lane);
+    SetDefaultName(false);
 
     // Set the initial color from the lane number
     const unsigned int colorIndex = lane % NUM_LANE_HEADER_BASE_COLORS;
@@ -144,10 +144,11 @@ void TimelineLaneHeaderGraphicsItem::paint(QPainter *painter, const QStyleOption
     font.setBold(false);
     painter->setFont(font);
     painter->setPen(Qt::black);
-    const float textMargin = (TIMELINE_BLOCK_HEIGHT - static_cast<float>(TIMELINE_LANE_HEADER_FONT_HEIGHT)) * 0.5f;
-    QRectF textRect(-TIMELINE_LANE_HEADER_WIDTH + textMargin,
+    const float fontHeightScale = 1.25f;       // To handle text below the base line
+    const float textMargin = (TIMELINE_BLOCK_HEIGHT - fontHeightScale * static_cast<float>(TIMELINE_LANE_HEADER_FONT_HEIGHT)) * 0.5f;
+    QRectF textRect(-TIMELINE_LANE_HEADER_WIDTH + textMargin * 2,       // Added extra space on the left
                     textMargin,
-                    TIMELINE_LANE_HEADER_WIDTH - 2.0f * textMargin,
+                    TIMELINE_LANE_HEADER_WIDTH - 3.0f * textMargin,     // Takes the extra space on the left into account
                     TIMELINE_BLOCK_HEIGHT - 2.0f * textMargin);
     painter->drawText(textRect, mName);
 }
@@ -165,4 +166,19 @@ void TimelineLaneHeaderGraphicsItem::ComputeColorsFromBase(const QColor & color)
 {
     mTopColor = color.lighter(170);
     mBottomColor = mTopColor.darker(120);
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineLaneHeaderGraphicsItem::SetDefaultName(bool updateView)
+{
+    mName = QString("Lane %1").arg(mLane);
+
+    if (updateView)
+    {
+        // Invalidate the cache of the graphics item.
+        // If not done manually here, setCacheMode(NoCache) would be necessary
+        // in the constructor, resulting in poor performances
+        update(boundingRect());
+    }
 }
