@@ -73,6 +73,9 @@ signals:
     //! \param beat Current beat, can have fractional part
     void BeatUpdated(float beat);
 
+    //! Emitted when a block has been moved by the user
+    void BlockMoved();
+
     //------------------------------------------------------------------------------------
 
 public slots:

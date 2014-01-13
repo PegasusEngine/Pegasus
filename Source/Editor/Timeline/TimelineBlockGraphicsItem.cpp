@@ -11,6 +11,9 @@
 
 #include "Timeline/TimelineBlockGraphicsItem.h"
 #include "Timeline/TimelineSizes.h"
+
+#include "Pegasus/Timeline/Shared/IBlockProxy.h"
+
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
@@ -22,17 +25,15 @@
 
 //----------------------------------------------------------------------------------------
 
-TimelineBlockGraphicsItem::TimelineBlockGraphicsItem(unsigned int lane,
-                                                     float basePosition,
-                                                     float baseLength,
-                                                     const QString & name,
-                                                     const QColor & baseColor,
+TimelineBlockGraphicsItem::TimelineBlockGraphicsItem(Pegasus::Timeline::IBlockProxy * blockProxy,
+                                                     unsigned int lane,
                                                      float horizontalScale)
-:   QGraphicsItem(),
-    mName(name),
-    mBaseColor(baseColor)
+:   QGraphicsObject(),
+    mBlockProxy(blockProxy),
+    mName((blockProxy != nullptr) ? blockProxy->GetEditorString() : "")
 {
-    ED_ASSERTSTR(!name.isEmpty(), "The name of the block must be defined");
+    ED_ASSERTSTR(blockProxy != nullptr, "A block proxy must be associated with the block item");
+    ED_ASSERTSTR(!QString(blockProxy->GetEditorString()).isEmpty(), "The name of the block must be defined");
 
     if (horizontalScale <= 0.0f)
     {
@@ -44,10 +45,15 @@ TimelineBlockGraphicsItem::TimelineBlockGraphicsItem(unsigned int lane,
         mHorizontalScale = horizontalScale;
     }
 
+    // Set the block color
+    unsigned char red, green, blue;
+    blockProxy->GetColor(red, green, blue);
+    mBaseColor = QColor(red, green, blue);
+
     // Set the initial position and length, and update the scaled position and length
-    SetBaseLength(baseLength, false);
+    SetBaseLength(blockProxy->GetLength(), false);
     SetLane(lane, false);
-    SetBasePosition(basePosition, true);
+    SetBasePosition(blockProxy->GetPosition(), true);
 
     // Make the block movable and selectable with the mouse
     setFlag(ItemIsMovable);
@@ -80,13 +86,13 @@ void TimelineBlockGraphicsItem::SetLane(unsigned int lane, bool updateItem)
     mLane = lane;
 
     // Update the vertical position
-    SetLanePositionFromLane();
+    SetYFromLane();
 
     // Update the graphics item, so it is redrawn at the right location
     if (updateItem)
     {
         // Set the new position of the graphics item
-        setPos(mPosition, mLanePosition);
+        setPos(mX, mY);
         update(boundingRect());
     }
 }
@@ -102,17 +108,17 @@ void TimelineBlockGraphicsItem::SetBasePosition(float basePosition, bool updateI
     }
     else
     {
-        mBasePosition = basePosition * TIMELINE_BEAT_WIDTH;
+        mBasePosition = basePosition;
     }
 
     // Update the scaled position
-    SetPositionFromBasePosition();
+    SetXFromBasePosition();
 
     // Update the graphics item, so it is redrawn at the right location
     if (updateItem)
     {
         // Set the new position of the graphics item
-        setPos(mPosition, mLanePosition);
+        setPos(mX, mY);
         update(boundingRect());
     }
 }
@@ -132,7 +138,7 @@ void TimelineBlockGraphicsItem::SetBaseLength(float baseLength, bool updateItem)
     }
 
     // Update the scaled length
-    SetLengthFromBaseLength();
+    SetPixelLengthFromBaseLength();
 
     // Update the graphics item, so it is redrawn with the right length
     if (updateItem)
@@ -150,11 +156,11 @@ void TimelineBlockGraphicsItem::SetHorizontalScale(float scale)
     mHorizontalScale = scale;
 
     //! Update the scaled position and length
-    SetPositionFromBasePosition();
-    SetLengthFromBaseLength();
+    SetXFromBasePosition();
+    SetPixelLengthFromBaseLength();
 
     // Set the new position of the graphics item
-    setPos(mPosition, mLanePosition);
+    setPos(mX, mY);
 
     // Invalidate the cache of the graphics item.
     // If not done manually here, setCacheMode(NoCache) would be necessary
@@ -168,7 +174,7 @@ QRectF TimelineBlockGraphicsItem::boundingRect() const
 {
     return QRectF(0.0f,
                   0.0f,
-                  mLength,
+                  mPixelLength,
                   TIMELINE_BLOCK_HEIGHT);
 }
 
@@ -204,7 +210,7 @@ void TimelineBlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGraph
     // Draw the block
     painter->drawRect(0.0f,
                       0.0f,
-                      mLength,
+                      mPixelLength,
                       TIMELINE_BLOCK_HEIGHT);
 
     // Draw the label of the block
@@ -213,11 +219,11 @@ void TimelineBlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGraph
     font.setBold(false);
     painter->setFont(font);
     painter->setPen(Qt::black);
-    const float fontHeightScale = 1.25f;            // To handle text below the base line
+    const float fontHeightScale = 1.25f;                // To handle text below the base line
     const float textMargin = (TIMELINE_BLOCK_HEIGHT - fontHeightScale * (float)TIMELINE_BLOCK_FONT_HEIGHT) * 0.5f;
-    QRectF textRect(textMargin * 2,                 // Added extra space on the left
+    QRectF textRect(textMargin * 2,                     // Added extra space on the left
                     textMargin,
-                    mLength - 3.0f * textMargin,    // Takes the extra space on the left into account
+                    mPixelLength - 3.0f * textMargin,   // Takes the extra space on the left into account
                     TIMELINE_BLOCK_HEIGHT - 2.0f * textMargin);
     painter->drawText(textRect, mName);
 }
@@ -243,17 +249,28 @@ QVariant TimelineBlockGraphicsItem::itemChange(GraphicsItemChange change, const 
                     newPos.setY(qMin(rect.bottom(), qMax(newPos.y(), rect.top ())));
                     positionAffected = true;
                 }
-                mPosition = newPos.x();
-                SetBasePositionFromPosition();
+                mX = newPos.x();
+                SetBasePositionFromX();
 
                 // If the lane changes, update the coordinates accordingly
-                SetLaneFromPosition(newPos.y());
-                SetLanePositionFromLane();
-                if (mLanePosition != newPos.y())
+                SetLaneFromY(newPos.y());
+                SetYFromLane();
+                if (mY != newPos.y())
                 {
-                    newPos.setY(mLanePosition);
+                    newPos.setY(mY);
                     positionAffected = true;
                 }
+
+                // Update the position of the Pegasus timeline block
+                mBlockProxy->SetPosition(mBasePosition);
+
+                //! \todo Add support for lane changes in Pegasus
+
+                //! \todo Update the Pegasus linked list of the lane,
+                //!       otherwise the order of the blocks cannot be changed
+
+                // Tell parents the block has moved
+                emit BlockMoved();
 
                 // Return the new coordinates if they have been forced to change
                 if (positionAffected)
@@ -287,29 +304,29 @@ void TimelineBlockGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *even
 }
 
 //----------------------------------------------------------------------------------------
+
+void TimelineBlockGraphicsItem::SetXFromBasePosition()
+{
+    mX = mBasePosition * mHorizontalScale * TIMELINE_BEAT_WIDTH;
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineBlockGraphicsItem::SetBasePositionFromX()
+{
+    mBasePosition = mX / (mHorizontalScale * TIMELINE_BEAT_WIDTH);
+}
+
+//----------------------------------------------------------------------------------------
     
-void TimelineBlockGraphicsItem::SetLanePositionFromLane()
+void TimelineBlockGraphicsItem::SetYFromLane()
 {
-    mLanePosition = TIMELINE_BLOCK_MARGIN_HEIGHT + mLane * TIMELINE_LANE_HEIGHT;
+    mY = TIMELINE_BLOCK_MARGIN_HEIGHT + mLane * TIMELINE_LANE_HEIGHT;
 }
 
 //----------------------------------------------------------------------------------------
 
-void TimelineBlockGraphicsItem::SetPositionFromBasePosition()
-{
-    mPosition = mBasePosition * mHorizontalScale;
-}
-
-//----------------------------------------------------------------------------------------
-
-void TimelineBlockGraphicsItem::SetLengthFromBaseLength()
-{
-    mLength = mBaseLength * (mHorizontalScale * TIMELINE_BEAT_WIDTH);
-}
-
-//----------------------------------------------------------------------------------------
-
-void TimelineBlockGraphicsItem::SetLaneFromPosition(float lanePosition)
+void TimelineBlockGraphicsItem::SetLaneFromY(float lanePosition)
 {
     int lane = static_cast<int>(floor((lanePosition - TIMELINE_BLOCK_MARGIN_HEIGHT) / TIMELINE_LANE_HEIGHT));
     if (lane < 0)
@@ -324,14 +341,14 @@ void TimelineBlockGraphicsItem::SetLaneFromPosition(float lanePosition)
 
 //----------------------------------------------------------------------------------------
 
-void TimelineBlockGraphicsItem::SetBasePositionFromPosition()
+void TimelineBlockGraphicsItem::SetPixelLengthFromBaseLength()
 {
-    mBasePosition = mPosition / mHorizontalScale;
+    mPixelLength = mBaseLength * (mHorizontalScale * TIMELINE_BEAT_WIDTH);
 }
 
 //----------------------------------------------------------------------------------------
 
-void TimelineBlockGraphicsItem::SetBaseLengthFromLength()
+void TimelineBlockGraphicsItem::SetBaseLengthFromPixelLength()
 {
-    mBaseLength = mLength / (mHorizontalScale * TIMELINE_BEAT_WIDTH);
+    mBaseLength = mPixelLength / (mHorizontalScale * TIMELINE_BEAT_WIDTH);
 }

@@ -46,6 +46,9 @@ signals:
     //! \param beat Beat after update, can have fractional part
     void BeatUpdated(float beat);
 
+    //! Emitted when a block has been moved by the user
+    void BlockMoved();
+
     //! Emitted when the play mode button has been enabled or disabled
     //! \param enabled True if the play mode button has just been enabled
     void PlayModeToggled(bool enabled);

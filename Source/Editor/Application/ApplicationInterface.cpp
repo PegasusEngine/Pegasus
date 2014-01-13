@@ -66,6 +66,11 @@ ApplicationInterface::ApplicationInterface(Application * application, QObject * 
         connect(timelineDockWidget, SIGNAL(BeatUpdated(float)),
                 this, SLOT(SetCurrentBeat(float)),
                 Qt::QueuedConnection);
+
+        //! \todo Handle multiple blocks being moved at the same time
+        connect(timelineDockWidget, SIGNAL(BlockMoved()),
+                this, SLOT(RedrawMainViewport()),
+                Qt::QueuedConnection);
     }
     else
     {

@@ -44,6 +44,8 @@ TimelineDockWidget::TimelineDockWidget(QWidget *parent)
             this, SLOT(SetBeatsPerMinute(double)));
     connect(ui.graphicsView, SIGNAL(BeatUpdated(float)),
             this, SLOT(SetCurrentBeat(float)));
+    connect(ui.graphicsView, SIGNAL(BlockMoved()),
+            this, SIGNAL(BlockMoved()));
 }
 
 //----------------------------------------------------------------------------------------

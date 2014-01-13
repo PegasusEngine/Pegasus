@@ -240,6 +240,12 @@
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ApplicationInterface.cpp">
       <Filter>Generated\Dev-Debug</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_TimelineBlockGraphicsItem.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_TimelineBlockGraphicsItem.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">

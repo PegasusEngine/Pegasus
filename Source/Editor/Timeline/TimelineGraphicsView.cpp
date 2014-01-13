@@ -578,16 +578,15 @@ void TimelineGraphicsView::RefreshLaneFromTimelineLane(unsigned int laneIndex, c
             Pegasus::Timeline::IBlockProxy * blockProxy = blockProxies[b];
             if (blockProxy != nullptr)
             {
-                unsigned char red, green, blue;
-                blockProxy->GetColor(red, green, blue);
-                TimelineBlockGraphicsItem * item = new TimelineBlockGraphicsItem(laneIndex,
-                                                                                 blockProxy->GetPosition(),
-                                                                                 blockProxy->GetLength(),
-                                                                                 blockProxy->GetEditorString(),
-                                                                                 QColor(red, green, blue),
+                TimelineBlockGraphicsItem * item = new TimelineBlockGraphicsItem(blockProxy,
+                                                                                 laneIndex,
                                                                                  mHorizontalScale);
                 scene()->addItem(item);
                 mBlockItems[laneIndex].insert(blockProxy, item);
+
+                // Connect the block moved signal to a request to re-render the viewport
+                connect(item, SIGNAL(BlockMoved()),
+                        this, SIGNAL(BlockMoved()));
             }
             else
             {
