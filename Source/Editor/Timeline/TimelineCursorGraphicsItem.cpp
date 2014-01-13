@@ -42,8 +42,8 @@ TimelineCursorGraphicsItem::TimelineCursorGraphicsItem(unsigned int numLanes, fl
     // Set the initial scaled position
     SetPositionFromBeat();
 
-    // Caching performed at paint device level, best quality and lower memory usage
-    setCacheMode(DeviceCoordinateCache);
+    // No caching, as the cursor is a very simple primitive
+    setCacheMode(NoCache);
 
     // Set the depth of the line to be the second most in the background
     //! \todo Create TimelineDepths.h and set the values so they do not conflict
@@ -74,11 +74,6 @@ void TimelineCursorGraphicsItem::SetBeat(float beat)
 
     //! Update the position
     SetPositionFromBeat();
-
-    // Invalidate the cache of the graphics item.
-    // If not done manually here, setCacheMode(NoCache) would be necessary
-    // in the constructor, resulting in poor performances
-    update(boundingRect());
 }
 
 //----------------------------------------------------------------------------------------
@@ -95,10 +90,7 @@ void TimelineCursorGraphicsItem::SetNumLanes(unsigned int numLanes)
         mNumLanes = numLanes;
     }
 
-    // Invalidate the cache of the graphics item.
-    // If not done manually here, setCacheMode(NoCache) would be necessary
-    // in the constructor, resulting in poor performances
-    update(boundingRect());
+    // No cache management
 }
 
 //----------------------------------------------------------------------------------------
@@ -112,19 +104,19 @@ void TimelineCursorGraphicsItem::SetHorizontalScale(float scale)
     //! Update the scaled position
     SetPositionFromBeat();
 
-    // Invalidate the cache of the graphics item.
-    // If not done manually here, setCacheMode(NoCache) would be necessary
-    // in the constructor, resulting in poor performances
-    update(boundingRect());
+    // No cache management
 }
 
 //----------------------------------------------------------------------------------------
 
 QRectF TimelineCursorGraphicsItem::boundingRect() const
 {
-    return QRectF(-TIMELINE_CURSOR_LINE_WIDTH * 0.5f,
+    // Multiplier for the width of the cursor, so no rendering bugs occurs when moving the cursor
+    const float widthScale = 20.0f;
+
+    return QRectF(-TIMELINE_CURSOR_LINE_WIDTH * 0.5f * widthScale,
                   0.0f,
-                  TIMELINE_CURSOR_LINE_WIDTH * 0.5f,
+                  TIMELINE_CURSOR_LINE_WIDTH * 0.5f * widthScale,
                   mNumLanes * TIMELINE_LANE_HEIGHT);
 }
 

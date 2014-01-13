@@ -334,37 +334,42 @@
         </item>
         <item>
          <property name="text">
-          <string>1/8</string>
+          <string>1/16 beat (0:0:1)</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>1/4</string>
+          <string>1/8 beat (0:0:2)</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>1/2</string>
+          <string>1/4 beat (0:1:0)</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>1</string>
+          <string>1/2 beat (0:2:0)</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>2</string>
+          <string>1 beat (1:0:0)</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>4</string>
+          <string>2 beats (2:0:0)</string>
          </property>
         </item>
         <item>
          <property name="text">
-          <string>8</string>
+          <string>4 beats (4:0:0)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>8 beats (8:0:0)</string>
          </property>
         </item>
        </widget>

@@ -175,10 +175,14 @@ void TimelineGraphicsView::SetCursorFromBeat(float beat)
 {
     //! \todo Handle out-of-bounds at the end of the timeline
 
-    // Reposition the cursor
     if (mCursorItem != nullptr)
     {
+        // Reposition the cursor
         mCursorItem->SetBeat(beat);
+
+        // Make sure cursor is visible, scroll otherwise
+        // (100 pixels horizontal margin, default vertical margin)
+        ensureVisible(mCursorItem, 100, 50);
     }
     else
     {
@@ -293,6 +297,21 @@ void TimelineGraphicsView::MultiplyZoom(float zoomFactor)
     {
         // Range valid. Apply the zoom and redraw the view
         SetZoom(newZoom);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineGraphicsView::keyPressEvent(QKeyEvent * event)
+{
+    switch (event->key())
+    {
+        case Qt::Key_Home:
+            emit BeatUpdated(0.0f);
+            break;
+
+        default:
+            QGraphicsView::keyPressEvent(event);
     }
 }
 
@@ -590,35 +609,3 @@ void TimelineGraphicsView::SetBeatFromMouse(QMouseEvent * event)
     // Update user interface, including the cursor
     emit BeatUpdated(beat);
 }
-
-//----------------------------------------------------------------------------------------
-
-//void GraphWidget::keyPressEvent(QKeyEvent *event)
-//{
-//    switch (event->key()) {
-//    case Qt::Key_Up:
-//        centerNode->moveBy(0, -20);
-//        break;
-//    case Qt::Key_Down:
-//        centerNode->moveBy(0, 20);
-//        break;
-//    case Qt::Key_Left:
-//        centerNode->moveBy(-20, 0);
-//        break;
-//    case Qt::Key_Right:
-//        centerNode->moveBy(20, 0);
-//        break;
-//    case Qt::Key_Plus:
-//        zoomIn();
-//        break;
-//    case Qt::Key_Minus:
-//        zoomOut();
-//        break;
-//    case Qt::Key_Space:
-//    case Qt::Key_Enter:
-//        shuffle();
-//        break;
-//    default:
-//        QGraphicsView::keyPressEvent(event);
-//    }
-//}
