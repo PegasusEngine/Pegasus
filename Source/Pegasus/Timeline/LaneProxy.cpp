@@ -16,6 +16,7 @@ PEGASUS_AVOID_EMPTY_FILE_WARNING
 
 #include "Pegasus/Timeline/LaneProxy.h"
 #include "Pegasus/Timeline/Lane.h"
+#include "Pegasus/Timeline/BlockProxy.h"
 
 namespace Pegasus {
 namespace Timeline {
@@ -52,6 +53,28 @@ const char * LaneProxy::GetName() const
 bool LaneProxy::IsNameDefined() const
 {
     return mLane->IsNameDefined();
+}
+
+//----------------------------------------------------------------------------------------
+
+void LaneProxy::SetBlockPosition(IBlockProxy * block, float position)
+{
+    // Convert the abstract proxy to a concrete proxy, relying on the fact that
+    // BlockProxy is the only possible derived class from IBlockProxy
+    BlockProxy * blockProxy = static_cast<BlockProxy *>(block);
+
+    mLane->SetBlockPosition(blockProxy->GetBlock(), position);
+}
+
+//----------------------------------------------------------------------------------------
+
+void LaneProxy::SetBlockLength(IBlockProxy * block, float length)
+{
+    // Convert the abstract proxy to a concrete proxy, relying on the fact that
+    // BlockProxy is the only possible derived class from IBlockProxy
+    BlockProxy * blockProxy = static_cast<BlockProxy *>(block);
+
+    mLane->SetBlockLength(blockProxy->GetBlock(), length);
 }
 
 //----------------------------------------------------------------------------------------

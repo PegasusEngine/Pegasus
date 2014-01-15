@@ -14,8 +14,13 @@
 
 #if PEGASUS_ENABLE_PROXIES
 
-#include "Pegasus/Timeline/Shared/IBlockProxy.h"
 #include "Pegasus/Timeline/Shared/LaneDefs.h"
+
+namespace Pegasus {
+    namespace Timeline {
+        class IBlockProxy;
+    }
+}
 
 namespace Pegasus {
 namespace Timeline {
@@ -41,6 +46,22 @@ public:
     //! Test if the name of the lane is defined
     //! \return True if the name is not an empty string
     virtual bool IsNameDefined() const = 0;
+
+
+    //! Set the position of a block in the lane
+    //! \warning The block has to belong to the lane
+    //! \note If the block is not found in the lane, the block is not moved,
+    //!       to not break the sorted linked list of another lane
+    //! \param block Block to move
+    //! \param position New position of the block, measured in beats (>= 0.0f)
+    virtual void SetBlockPosition(IBlockProxy * block, float position) = 0;
+
+    //! Set the length of a block in the lane
+    //! \warning The block has to belong to the lane
+    //! \note If the block is not found in the lane, the block is not resized,
+    //!       to not break the sorted linked list of another lane
+    //! \param length New length of the block, measured in beats (> 0.0f)
+    virtual void SetBlockLength(IBlockProxy * block, float length) = 0;
 
 
     //! Get the list of blocks of the lane

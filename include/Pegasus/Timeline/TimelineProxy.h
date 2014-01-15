@@ -38,6 +38,10 @@ public:
     //! Destructor
     virtual ~TimelineProxy();
 
+    //! Get the timeline associated with the proxy
+    //! \return Timeline associated with the proxy (!= nullptr)
+    inline Timeline * GetTimeline() const { return mTimeline; }
+
 
     //! Set the speed of the timeline in beats per minute
     //! \param bpm Beats per minute (30.0f <= bpm <= 500.0f)

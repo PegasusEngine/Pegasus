@@ -13,6 +13,7 @@
 #include "Timeline/TimelineSizes.h"
 
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"
+#include "Pegasus/Timeline/Shared/ILaneProxy.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
@@ -262,12 +263,17 @@ QVariant TimelineBlockGraphicsItem::itemChange(GraphicsItemChange change, const 
                 }
 
                 // Update the position of the Pegasus timeline block
-                mBlockProxy->SetPosition(mBasePosition);
+                Pegasus::Timeline::ILaneProxy * laneProxy = mBlockProxy->GetLane();
+                if (laneProxy != nullptr)
+                {
+                    laneProxy->SetBlockPosition(mBlockProxy, mBasePosition);
+                }
+                else
+                {
+                    ED_FAILSTR("Unable to move the block \"%s\" since it has no associated lane", mBlockProxy->GetEditorString());
+                }
 
                 //! \todo Add support for lane changes in Pegasus
-
-                //! \todo Update the Pegasus linked list of the lane,
-                //!       otherwise the order of the blocks cannot be changed
 
                 // Tell parents the block has moved
                 emit BlockMoved();

@@ -44,11 +44,32 @@ public:
 
 
     //! Add a block to the lane
-    //! \param block Allocated block, with position and size already defined
+    //! \param block Allocated block, with position and size ignored
+    //! \param position Position of the block, measured in beats (>= 0.0f)
+    //! \param length Length of the block, measured in beats (> 0.0f)
     //! \note The internal linked list stays sorted after this operation
     //! \return True if succeeded, false if the block is invalid, has a collision with an existing block,
     //!         or the number of blocks has already reached LANE_MAX_NUM_BLOCKS
-    bool InsertBlock(Block * block);
+    bool InsertBlock(Block * block, float position, float length);
+
+    //! Remove a block from the lane
+    //! \param block Existing block belonging to the lane
+    void RemoveBlock(Block * block);
+
+    //! Set the position of a block in the lane
+    //! \warning The block has to belong to the lane
+    //! \note If the block is not found in the lane, the block is not moved,
+    //!       to not break the sorted linked list of another lane
+    //! \param block Block to move
+    //! \param position New position of the block, measured in beats (>= 0.0f)
+    void SetBlockPosition(Block * block, float position);
+
+    //! Set the length of a block in the lane
+    //! \warning The block has to belong to the lane
+    //! \note If the block is not found in the lane, the block is not resized,
+    //!       to not break the sorted linked list of another lane
+    //! \param length New length of the block, measured in beats (> 0.0f)
+    void SetBlockLength(Block * block, float length);
 
 
     // Tell all the blocks of the lane to initialize their content (calling their Initialize() function)
@@ -102,6 +123,51 @@ public:
 
 private:
 
+    //! Given a beat on the timeline, return the index of the current (or previous) block and the next one (not reached yet)
+    //! \param beat Input beat, can have fractional part
+    //! \param currentBlockIndex Resulting block index intersected by the given beat,
+    //!                          or just before the beat if the next block is not reached yet.
+    //!                          INVALID_RECORD_INDEX if the beat is before the first beat, or no block is defined on the timeline
+    //! \param nextBlockIndex Resulting block index after the given beat, not reached yet.
+    //!                       INVALID_RECORD_INDEX if the beat is on or after the beginning of the last block,
+    //!                       or no block is defined on the timeline
+    void FindCurrentAndNextBlocks(float beat, int & currentBlockIndex, int & nextBlockIndex) const;
+
+    //! Find the index of a block record in the array that is not used yet
+    //! \return Index of a block record free to use (0 <= index < LANE_MAX_NUM_BLOCKS, when mNumBlocks < LANE_MAX_NUM_BLOCKS),
+    //!         INVALID_RECORD_INDEX if the array is full (mNumBlocks == LANE_MAX_NUM_BLOCKS), or in case of error
+    int FindFirstAvailableBlockRecord() const;
+
+    //! Find the index of a block record in the linked list
+    //! \param block Block to find
+    //! \return Index of the block record for the input block, INVALID_RECORD_INDEX if not found or in case of error
+    int FindBlockIndex(Block * block) const;
+
+    //! Add a block to the lane with predefined position and length
+    //! \param block Allocated block, with position and size already defined
+    //! \note The internal linked list stays sorted after this operation
+    //! \return True if succeeded, false if the block is invalid, has a collision with an existing block,
+    //!         or the number of blocks has already reached LANE_MAX_NUM_BLOCKS
+    bool InsertBlock(Block * block);
+
+    //! Remove a block from the lane given a block record index in the linked list
+    //! \param blockIndex Index of the block in the \a mBlockRecords array, < LANE_MAX_NUM_BLOCKS
+    void RemoveBlock(int blockIndex);
+
+    //! Set the position of a block in the lane given a block record index in the linked list
+    //! \param blockIndex Index of the block in the \a mBlockRecords array, < LANE_MAX_NUM_BLOCKS
+    //! \param position New position of the block, measured in beats (>= 0.0f)
+    void SetBlockPosition(int blockIndex, float position);
+
+    //! Set the length of a block in the lane given a block record index in the linked list
+    //! \param blockIndex Index of the block in the \a mBlockRecords array, < LANE_MAX_NUM_BLOCKS
+    //! \param length New length of the block, measured in beats (> 0.0f)
+    void SetBlockLength(int blockIndex, float length);
+
+    //------------------------------------------------------------------------------------
+
+private:
+
     // Lanes cannot be copied
     PG_DISABLE_COPY(Lane)
 
@@ -141,22 +207,6 @@ private:
     char mName[MAX_NAME_LENGTH + 1];
 
 #endif  // PEGASUS_ENABLE_PROXIES
-
-
-    //! Given a beat on the timeline, return the index of the current (or previous) block and the next one (not reached yet)
-    //! \param beat Input beat, can have fractional part
-    //! \param currentBlockIndex Resulting block index intersected by the given beat,
-    //!                          or just before the beat if the next block is not reached yet.
-    //!                          INVALID_RECORD_INDEX if the beat is before the first beat, or no block is defined on the timeline
-    //! \param nextBlockIndex Resulting block index after the given beat, not reached yet.
-    //!                       INVALID_RECORD_INDEX if the beat is on or after the beginning of the last block,
-    //!                       or no block is defined on the timeline
-    void FindCurrentAndNextBlocks(float beat, int & currentBlockIndex, int & nextBlockIndex) const;
-
-    //! Find a block record in the array that is not used yet
-    //! \return Index of a block record free to use (0 <= index < LANE_MAX_NUM_BLOCKS, when mNumBlocks < LANE_MAX_NUM_BLOCKS),
-    //!         INVALID_RECORD_INDEX if the array is full (mNumBlocks == LANE_MAX_NUM_BLOCKS), or in case of error
-    int FindFirstAvailableBlockRecord() const;
 };
 
 

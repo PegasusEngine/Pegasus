@@ -38,22 +38,22 @@ public:
     //! Destructor
     virtual ~BlockProxy();
 
+    //! Get the block associated with the proxy
+    //! \return Block associated with the proxy (!= nullptr)
+    inline Block * GetBlock() const { return mBlock; }
 
-    //! Set the position of the block in the lane
-    //! \param position Position of the block, measured in beats (>= 0.0f)
-    virtual void SetPosition(float position);
 
     //! Get the position of the block in the lane
     //! \return Position of the block, measured in beats (>= 0.0f)
     virtual float GetPosition() const;
 
-    //! Set the length of the block
-    //! \param length Length of the block, measured in beats (> 0.0f)
-    virtual void SetLength(float length);
-
     //! Get the length of the block
     //! \return Length of the block, measured in beats (> 0.0f)
     virtual float GetLength() const;
+
+    //! Get the lane the block belongs to
+    //! \return Lane the block belongs to, nullptr when the block is not associated with a lane yet
+    virtual ILaneProxy * GetLane() const;
 
 
     //! Get the string displayed by the editor (usually class name without the "Block" suffix)

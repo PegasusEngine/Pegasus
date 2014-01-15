@@ -16,8 +16,8 @@ PEGASUS_AVOID_EMPTY_FILE_WARNING
 
 #include "Pegasus/Timeline/TimelineProxy.h"
 #include "Pegasus/Timeline/Timeline.h"
-#include "Pegasus/Timeline/LaneProxy.h"
 #include "Pegasus/Timeline/Lane.h"
+#include "Pegasus/Timeline/LaneProxy.h"
 
 namespace Pegasus {
 namespace Timeline {

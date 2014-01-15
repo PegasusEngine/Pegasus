@@ -23,7 +23,8 @@ Block::Block(Alloc::IAllocator * allocator, Wnd::IWindowContext * appContext)
 :   mAllocator(allocator),
     mAppContext(appContext),
     mPosition(0.0f),
-    mLength(1.0f)
+    mLength(1.0f),
+    mLane(nullptr)
 {
     PG_ASSERTSTR(allocator != nullptr, "Invalid allocator given to a timeline Block object");
     PG_ASSERTSTR(appContext != nullptr, "Invalid application context given to a timeline Block object");
@@ -47,40 +48,6 @@ Block::~Block()
     //! Destroy the proxy associated with the block
     PG_DELETE(mAllocator, mProxy);
 #endif
-}
-
-//----------------------------------------------------------------------------------------
-
-void Block::SetPosition(float position)
-{
-    PG_LOG('TMLN', "Setting the position of a block to %f", position);
-
-    if (position < 0.0f)
-    {
-        mPosition = 0.0f;
-        PG_FAILSTR("Invalid position given to a block (%f), setting it to 0.0f", position);
-    }
-    else
-    {
-        mPosition = position;
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
-void Block::SetLength(float length)
-{
-    PG_LOG('TMLN', "Setting the length of a block to %f", length);
-
-    if (length <= 0.0f)
-    {
-        mLength = 1.0f;
-        PG_FAILSTR("Invalid length given to a block (%f), setting it to 1.0f", length);
-    }
-    else
-    {
-        mLength = length;
-    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -117,6 +84,45 @@ void Block::Initialize()
 void Block::Shutdown()
 {
     // No default implementation
+}
+
+//----------------------------------------------------------------------------------------
+
+void Block::SetPosition(float position)
+{
+    if (position < 0.0f)
+    {
+        mPosition = 0.0f;
+        PG_FAILSTR("Invalid position given to the block (%f), setting it to 0.0f", position);
+    }
+    else
+    {
+        mPosition = position;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Block::SetLength(float length)
+{
+    if (length <= 0.0f)
+    {
+        //! \todo Use 1 tick
+        mLength = 1.0f;
+        PG_FAILSTR("Invalid length given to the block (%f), setting it to 1.0f", length);
+    }
+    else
+    {
+        mLength = length;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Block::SetLane(Lane * lane)
+{
+    PG_ASSERTSTR(lane != nullptr, "Invalid lane associated with a block");
+    mLane = lane;
 }
 
 

@@ -17,6 +17,7 @@
 
 namespace Pegasus {
     namespace Timeline {
+        class Lane;
         class BlockProxy;
     }
 
@@ -43,21 +44,18 @@ public:
     virtual ~Block();
 
 
-    //! Set the position of the block in the lane
-    //! \param position Position of the block, measured in beats (>= 0.0f)
-    void SetPosition(float position);
-
     //! Get the position of the block in the lane
     //! \return Position of the block, measured in beats (>= 0.0f)
     inline float GetPosition() const { return mPosition; }
 
-    //! Set the length of the block
-    //! \param length Length of the block, measured in beats (> 0.0f)
-    void SetLength(float length);
-
     //! Get the length of the block
     //! \return Length of the block, measured in beats (> 0.0f)
     inline float GetLength() const { return mLength; }
+
+    //! Get the lane the block belongs to
+    //! \return Lane the block belongs to, nullptr when the block is not associated with a lane yet
+    inline Lane * GetLane() const { return mLane; }
+
 
 #if PEGASUS_ENABLE_PROXIES
 
@@ -130,6 +128,26 @@ protected:
 
 private:
 
+    // Functions accessible only from the Lane object, to prevent the sorted linked list
+    // of the owner lane to lose its sorting
+    friend class Lane;
+
+    //! Set the position of the block in the lane
+    //! \param position Position of the block, measured in beats (>= 0.0f)
+    void SetPosition(float position);
+
+    //! Set the length of the block
+    //! \param length Length of the block, measured in beats (> 0.0f)
+    void SetLength(float length);
+
+    //! Set the lane the block belongs to
+    //! \param lane Lane the block belongs to (!= nullptr)
+    void SetLane(Lane * lane);
+
+    //------------------------------------------------------------------------------------
+
+private:
+
     // Blocks cannot be copied
     PG_DISABLE_COPY(Block)
 
@@ -153,6 +171,9 @@ private:
 
     //! Length of the block, measured in beats (> 0.0f)
     float mLength;
+
+    //! Lane the block belongs to, nullptr when the block is not associated with a lane yet
+    Lane * mLane;
 
 #if PEGASUS_ENABLE_PROXIES
 

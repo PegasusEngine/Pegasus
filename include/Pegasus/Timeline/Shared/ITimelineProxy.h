@@ -14,8 +14,13 @@
 
 #if PEGASUS_ENABLE_PROXIES
 
-#include "Pegasus/Timeline/Shared/ILaneProxy.h"
 #include "Pegasus/Timeline/Shared/TimelineDefs.h"
+
+namespace Pegasus {
+    namespace Timeline {
+        class ILaneProxy;
+    }
+}
 
 namespace Pegasus {
 namespace Timeline {

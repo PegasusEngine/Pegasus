@@ -16,6 +16,8 @@ PEGASUS_AVOID_EMPTY_FILE_WARNING
 
 #include "Pegasus/Timeline/BlockProxy.h"
 #include "Pegasus/Timeline/Block.h"
+#include "Pegasus/Timeline/Lane.h"
+#include "Pegasus/Timeline/LaneProxy.h"
 
 namespace Pegasus {
 namespace Timeline {
@@ -35,13 +37,6 @@ BlockProxy::~BlockProxy()
 
 //----------------------------------------------------------------------------------------
 
-void BlockProxy::SetPosition(float position)
-{
-    mBlock->SetPosition(position);
-}
-
-//----------------------------------------------------------------------------------------
-
 float BlockProxy::GetPosition() const
 {
     return mBlock->GetPosition();
@@ -49,16 +44,24 @@ float BlockProxy::GetPosition() const
 
 //----------------------------------------------------------------------------------------
 
-void BlockProxy::SetLength(float length)
+float BlockProxy::GetLength() const
 {
-    mBlock->SetLength(length);
+    return mBlock->GetLength();
 }
 
 //----------------------------------------------------------------------------------------
 
-float BlockProxy::GetLength() const
+ILaneProxy * BlockProxy::GetLane() const
 {
-    return mBlock->GetLength();
+    Lane * const lane = mBlock->GetLane();
+    if (lane != nullptr)
+    {
+        return lane->GetProxy();
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
 //----------------------------------------------------------------------------------------

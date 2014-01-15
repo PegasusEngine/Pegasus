@@ -84,44 +84,34 @@ void TestApp1::InitializeApp()
 #endif
 
     KleberTriangleBlock * kleberTriangleBlock = PG_NEW(timelineAllocator, -1, "KleberTriangleBlock", Pegasus::Alloc::PG_MEM_PERM) KleberTriangleBlock(timelineAllocator, this);
-    kleberTriangleBlock->SetPosition(6.0f);
-    kleberTriangleBlock->SetLength(4.0f);
 #if PEGASUS_ENABLE_PROXIES
     kleberTriangleBlock->SetColor(255, 255, 128);
 #endif
-    timeline->GetLane(2)->InsertBlock(kleberTriangleBlock);
+    timeline->GetLane(2)->InsertBlock(kleberTriangleBlock, 6.0f, 4.0f);
 
     PsyBeadsBlock * psyBeadBlock = PG_NEW(timelineAllocator, -1, "PsyBeadsBlock", Pegasus::Alloc::PG_MEM_PERM) PsyBeadsBlock(timelineAllocator, this);
-    psyBeadBlock->SetPosition(0.0f);
-    psyBeadBlock->SetLength(8.0f);
 #if PEGASUS_ENABLE_PROXIES
     psyBeadBlock->SetColor(255, 128, 128);
 #endif
-    timeline->GetLane(0)->InsertBlock(psyBeadBlock);
+    timeline->GetLane(0)->InsertBlock(psyBeadBlock, 0.0f, 8.0f);
 
     PsyBeadsBlock * psyBeadBlock2 = PG_NEW(timelineAllocator, -1, "PsyBeadsBlock 2", Pegasus::Alloc::PG_MEM_PERM) PsyBeadsBlock(timelineAllocator, this);
-    psyBeadBlock2->SetPosition(19.0f);
-    psyBeadBlock2->SetLength(10.0f);
 #if PEGASUS_ENABLE_PROXIES
     psyBeadBlock2->SetColor(255, 128, 192);
 #endif
-    timeline->GetLane(0)->InsertBlock(psyBeadBlock2);
+    timeline->GetLane(0)->InsertBlock(psyBeadBlock2, 19.0f, 10.0f);
 
     FractalCubeBlock * fractalCubeBlock = PG_NEW(timelineAllocator, -1, "FractalCubeBlock", Pegasus::Alloc::PG_MEM_PERM) FractalCubeBlock(timelineAllocator, this);
-    fractalCubeBlock->SetPosition(8.0f);
-    fractalCubeBlock->SetLength(5.0f);
 #if PEGASUS_ENABLE_PROXIES
     fractalCubeBlock->SetColor(128, 255, 128);
 #endif
-    timeline->GetLane(1)->InsertBlock(fractalCubeBlock);
+    timeline->GetLane(1)->InsertBlock(fractalCubeBlock, 8.0f, 5.0f);
 
     FractalCube2Block * fractalCube2Block = PG_NEW(timelineAllocator, -1, "FractalCube2Block", Pegasus::Alloc::PG_MEM_PERM) FractalCube2Block(timelineAllocator, this);
-    fractalCube2Block->SetPosition(13.0f);
-    fractalCube2Block->SetLength(12.0f);
 #if PEGASUS_ENABLE_PROXIES
     fractalCube2Block->SetColor(128, 255, 192);
 #endif
-    timeline->GetLane(1)->InsertBlock(fractalCube2Block);
+    timeline->GetLane(1)->InsertBlock(fractalCube2Block, 13.0f, 12.0f);
 }
 
 //----------------------------------------------------------------------------------------
