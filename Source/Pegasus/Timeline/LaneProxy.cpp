@@ -16,6 +16,8 @@ PEGASUS_AVOID_EMPTY_FILE_WARNING
 
 #include "Pegasus/Timeline/LaneProxy.h"
 #include "Pegasus/Timeline/Lane.h"
+#include "Pegasus/Timeline/Timeline.h"
+#include "Pegasus/Timeline/TimelineProxy.h"
 #include "Pegasus/Timeline/BlockProxy.h"
 
 namespace Pegasus {
@@ -32,6 +34,21 @@ LaneProxy::LaneProxy(Lane * lane)
 
 LaneProxy::~LaneProxy()
 {
+}
+
+//----------------------------------------------------------------------------------------
+
+ITimelineProxy * LaneProxy::GetTimeline() const
+{
+    Timeline * const timeline = mLane->GetTimeline();
+    if (timeline != nullptr)
+    {
+        return timeline->GetProxy();
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -57,24 +74,66 @@ bool LaneProxy::IsNameDefined() const
 
 //----------------------------------------------------------------------------------------
 
-void LaneProxy::SetBlockPosition(IBlockProxy * block, float position)
+void LaneProxy::SetBlockBeat(IBlockProxy * block, Beat beat)
 {
     // Convert the abstract proxy to a concrete proxy, relying on the fact that
     // BlockProxy is the only possible derived class from IBlockProxy
     BlockProxy * blockProxy = static_cast<BlockProxy *>(block);
 
-    mLane->SetBlockPosition(blockProxy->GetBlock(), position);
+    if (blockProxy != nullptr)
+    {
+        mLane->SetBlockBeat(blockProxy->GetBlock(), beat);
+    }
 }
 
 //----------------------------------------------------------------------------------------
 
-void LaneProxy::SetBlockLength(IBlockProxy * block, float length)
+void LaneProxy::SetBlockDuration(IBlockProxy * block, Duration duration)
 {
     // Convert the abstract proxy to a concrete proxy, relying on the fact that
     // BlockProxy is the only possible derived class from IBlockProxy
     BlockProxy * blockProxy = static_cast<BlockProxy *>(block);
 
-    mLane->SetBlockLength(blockProxy->GetBlock(), length);
+    if (blockProxy != nullptr)
+    {
+        mLane->SetBlockDuration(blockProxy->GetBlock(), duration);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+bool LaneProxy::IsBlockFitting(IBlockProxy * block, Beat beat, Duration duration) const
+{
+    // Convert the abstract proxy to a concrete proxy, relying on the fact that
+    // BlockProxy is the only possible derived class from IBlockProxy
+    BlockProxy * blockProxy = static_cast<BlockProxy *>(block);
+
+    if (blockProxy != nullptr)
+    {
+        return mLane->IsBlockFitting(blockProxy->GetBlock(), beat, duration);
+    }
+    else
+    {
+        return false;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void LaneProxy::MoveBlockToLane(IBlockProxy * block, ILaneProxy * newLane, Beat beat)
+{
+    // Convert the abstract block proxy to a concrete proxy, relying on the fact that
+    // BlockProxy is the only possible derived class from IBlockProxy
+    BlockProxy * blockProxy = static_cast<BlockProxy *>(block);
+
+    // Convert the abstract lane proxy to a concrete proxy, relying on the fact that
+    // LaneProxy is the only possible derived class from ILaneProxy
+    LaneProxy * newLaneProxy = static_cast<LaneProxy *>(newLane);
+
+    if ((blockProxy != nullptr) && (newLaneProxy != nullptr))
+    {
+        mLane->MoveBlockToLane(blockProxy->GetBlock(), newLaneProxy->GetLane(), beat);
+    }
 }
 
 //----------------------------------------------------------------------------------------

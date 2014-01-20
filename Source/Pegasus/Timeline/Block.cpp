@@ -22,8 +22,8 @@ namespace Timeline {
 Block::Block(Alloc::IAllocator * allocator, Wnd::IWindowContext * appContext)
 :   mAllocator(allocator),
     mAppContext(appContext),
-    mPosition(0.0f),
-    mLength(1.0f),
+    mBeat(0),
+    mDuration(1),
     mLane(nullptr)
 {
     PG_ASSERTSTR(allocator != nullptr, "Invalid allocator given to a timeline Block object");
@@ -88,32 +88,23 @@ void Block::Shutdown()
 
 //----------------------------------------------------------------------------------------
 
-void Block::SetPosition(float position)
+void Block::SetBeat(Beat beat)
 {
-    if (position < 0.0f)
-    {
-        mPosition = 0.0f;
-        PG_FAILSTR("Invalid position given to the block (%f), setting it to 0.0f", position);
-    }
-    else
-    {
-        mPosition = position;
-    }
+    mBeat = beat;
 }
 
 //----------------------------------------------------------------------------------------
 
-void Block::SetLength(float length)
+void Block::SetDuration(Duration duration)
 {
-    if (length <= 0.0f)
+    if (duration == 0)
     {
-        //! \todo Use 1 tick
-        mLength = 1.0f;
-        PG_FAILSTR("Invalid length given to the block (%f), setting it to 1.0f", length);
+        mDuration = 1;
+        PG_FAILSTR("Invalid duration given to the block (%u), setting it to 1 tick", duration);
     }
     else
     {
-        mLength = length;
+        mDuration = duration;
     }
 }
 

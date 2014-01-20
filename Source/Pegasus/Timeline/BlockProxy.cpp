@@ -37,16 +37,16 @@ BlockProxy::~BlockProxy()
 
 //----------------------------------------------------------------------------------------
 
-float BlockProxy::GetPosition() const
+Beat BlockProxy::GetBeat() const
 {
-    return mBlock->GetPosition();
+    return mBlock->GetBeat();
 }
 
 //----------------------------------------------------------------------------------------
 
-float BlockProxy::GetLength() const
+Duration BlockProxy::GetDuration() const
 {
-    return mBlock->GetLength();
+    return mBlock->GetDuration();
 }
 
 //----------------------------------------------------------------------------------------

@@ -15,9 +15,11 @@
 #if PEGASUS_ENABLE_PROXIES
 
 #include "Pegasus/Timeline/Shared/LaneDefs.h"
+#include "Pegasus/Timeline/Shared/TimelineDefs.h"
 
 namespace Pegasus {
     namespace Timeline {
+        class ITimelineProxy;
         class IBlockProxy;
     }
 }
@@ -33,6 +35,10 @@ public:
 
     //! Destructor
     virtual ~ILaneProxy() {};
+
+    //! Get the timeline the lane belongs to
+    //! \return Timeline the lane belongs to (!= nullptr)
+    virtual ITimelineProxy * GetTimeline() const = 0;
 
 
     //! Set the name of the lane
@@ -52,16 +58,31 @@ public:
     //! \warning The block has to belong to the lane
     //! \note If the block is not found in the lane, the block is not moved,
     //!       to not break the sorted linked list of another lane
-    //! \param block Block to move
-    //! \param position New position of the block, measured in beats (>= 0.0f)
-    virtual void SetBlockPosition(IBlockProxy * block, float position) = 0;
+    //! \param block Block to move, has to belong to the lane
+    //! \param beat New position of the block, measured in ticks
+    virtual void SetBlockBeat(IBlockProxy * block, Beat beat) = 0;
 
-    //! Set the length of a block in the lane
+    //! Set the duration of a block in the lane
     //! \warning The block has to belong to the lane
     //! \note If the block is not found in the lane, the block is not resized,
     //!       to not break the sorted linked list of another lane
-    //! \param length New length of the block, measured in beats (> 0.0f)
-    virtual void SetBlockLength(IBlockProxy * block, float length) = 0;
+    //! \param duration New duration of the block, measured in ticks (> 0)
+    virtual void SetBlockDuration(IBlockProxy * block, Duration duration) = 0;
+
+    //! Test if a block would fit in the lane
+    //! \param Block to test for a fit
+    //! \param beat New position of the block, measured in ticks
+    //! \param duration New duration of the block, measured in ticks (> 0)
+    //! \return True if the block would fit in the lane, and if there is enough space to store it
+    virtual bool IsBlockFitting(IBlockProxy * block, Beat beat, Duration duration) const = 0;
+
+    //! Move a block from this lane into another lane
+    //! \warning The block has to belong to the lane
+    //! \note If any error happens, nothing changes to preserve the sorted linked lists
+    //! \param block Block to move, has to belong to the lane
+    //! \param newLane Lane to move the block into, different from the current lane, != nullptr
+    //! \param beat New position of the block, measured in ticks
+    virtual void MoveBlockToLane(IBlockProxy * block, ILaneProxy * newLane, Beat beat) = 0;
 
 
     //! Get the list of blocks of the lane

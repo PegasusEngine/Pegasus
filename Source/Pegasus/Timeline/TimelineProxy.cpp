@@ -37,6 +37,27 @@ TimelineProxy::~TimelineProxy()
 
 //----------------------------------------------------------------------------------------
 
+unsigned int TimelineProxy::GetNumTicksPerBeat() const
+{
+    return mTimeline->GetNumTicksPerBeat();
+}
+
+//----------------------------------------------------------------------------------------
+
+float TimelineProxy::GetNumTicksPerBeatFloat() const
+{
+    return mTimeline->GetNumTicksPerBeatFloat();
+}
+
+//----------------------------------------------------------------------------------------
+
+float TimelineProxy::GetRcpNumTicksPerBeat() const
+{
+    return mTimeline->GetRcpNumTicksPerBeat();
+}
+    
+//----------------------------------------------------------------------------------------
+
 void TimelineProxy::SetBeatsPerMinute(float bpm)
 {
     mTimeline->SetBeatsPerMinute(bpm);

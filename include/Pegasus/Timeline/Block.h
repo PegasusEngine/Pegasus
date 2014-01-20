@@ -13,6 +13,7 @@
 #define PEGASUS_TIMELINE_BLOCK_H
 
 #include "Pegasus/Timeline/Shared/BlockDefs.h"
+#include "Pegasus/Timeline/Shared/TimelineDefs.h"
 #include "Pegasus/Window/IWindowContext.h"
 
 namespace Pegasus {
@@ -45,12 +46,12 @@ public:
 
 
     //! Get the position of the block in the lane
-    //! \return Position of the block, measured in beats (>= 0.0f)
-    inline float GetPosition() const { return mPosition; }
+    //! \return Position of the block, measured in ticks
+    inline Beat GetBeat() const { return mBeat; }
 
-    //! Get the length of the block
-    //! \return Length of the block, measured in beats (> 0.0f)
-    inline float GetLength() const { return mLength; }
+    //! Get the duration of the block
+    //! \return Duration of the block, measured in ticks (> 0)
+    inline Duration GetDuration() const { return mDuration; }
 
     //! Get the lane the block belongs to
     //! \return Lane the block belongs to, nullptr when the block is not associated with a lane yet
@@ -133,12 +134,12 @@ private:
     friend class Lane;
 
     //! Set the position of the block in the lane
-    //! \param position Position of the block, measured in beats (>= 0.0f)
-    void SetPosition(float position);
+    //! \param beat Position of the block, measured in ticks
+    void SetBeat(Beat beat);
 
-    //! Set the length of the block
-    //! \param length Length of the block, measured in beats (> 0.0f)
-    void SetLength(float length);
+    //! Set the duration of the block
+    //! \param duration Duration of the block, measured in ticks (> 0)
+    void SetDuration(Duration duration);
 
     //! Set the lane the block belongs to
     //! \param lane Lane the block belongs to (!= nullptr)
@@ -166,11 +167,11 @@ private:
 #endif  // PEGASUS_ENABLE_PROXIES
 
 
-    //! Position of the block in the lane, measured in beats (>= 0.0f)
-    float mPosition;
+    //! Position of the block in the lane, measured in ticks
+    Beat mBeat;
 
-    //! Length of the block, measured in beats (> 0.0f)
-    float mLength;
+    //! Duration of the block, measured in ticks (> 0)
+    Duration mDuration;
 
     //! Lane the block belongs to, nullptr when the block is not associated with a lane yet
     Lane * mLane;

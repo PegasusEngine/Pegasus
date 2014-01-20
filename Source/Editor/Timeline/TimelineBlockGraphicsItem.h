@@ -14,6 +14,8 @@
 
 #include <QGraphicsObject>
 
+#include "Pegasus/Timeline/Shared/TimelineDefs.h"
+
 namespace Pegasus {
     namespace Timeline {
         class IBlockProxy;
@@ -46,15 +48,15 @@ public:
     //! \param updateItem True if the graphics item needs to be updated (use false only for special cases)
     void SetLane(unsigned int lane, bool updateItem = true);
 
-    //! Set the base position of the block
-    //! \param basePosition Base position of the block, in time units (1.0f for one beat, >= 0.0f)
+    //! Set the position of the block
+    //! \param beat Position of the block, measured in ticks
     //! \param updateItem True if the graphics item needs to be updated (use false only for special cases)
-    void SetBasePosition(float basePosition, bool updateItem = true);
+    void SetBeat(Pegasus::Timeline::Beat beat, bool updateItem = true);
 
-    //! Set the base length of the block
-    //! \param baseLength Base length of the block, in time units (1.0f for one beat, > 0.0f)
+    //! Set the duration of the block
+    //! \param duration Duration of the block, measured in ticks (> 0)
     //! \param updateItem True if the graphics item needs to be updated (use false only for special cases)
-    void SetBaseLength(float baseLength, bool updateItem = true);
+    void SetDuration(Pegasus::Timeline::Duration duration, bool updateItem = true);
 
     //! Set the horizontal scale of the block
     //! \param scale 1.0f for a 1:1 ratio, < 1.0f for a compressed block, > 1.0f for an expanded block
@@ -96,23 +98,26 @@ protected:
 
 private:
 
-    //! Update the scaled position in pixels from the base position
-    void SetXFromBasePosition();
+    //! Update the scaled position in pixels from the position in ticks
+    void SetXFromBeat();
 
-    //! Update the base position from the scaled position
-    void SetBasePositionFromX();
+    //! Get the beat in ticks from the scaled position
+    //! \param x Horizontal position in pixels (for a zoom of 1.0f)
+    //! \return Beat, measured in ticks
+    Pegasus::Timeline::Beat GetBeatFromX(float x) const;
 
     //! Update the vertical position from the lane index
     void SetYFromLane();
 
-    //! Set the vertical position (linked to lane size) from an input vertical coordinate
+    //! Get the lane index (linked to lane size) from an input vertical coordinate
     //! \param lanePosition Vertical position in pixels (for a zoom of 1.0f)
-    void SetLaneFromY(float lanePosition);
+    //! \return Lane index
+    unsigned int GetLaneFromY(float lanePosition) const;
 
-    //! Update the scaled length from the base length
-    void SetPixelLengthFromBaseLength();
+    //! Update the scaled length from the duration in ticks
+    void SetLengthFromDuration();
 
-    //! Update the base length from the base scaled length
+    //! Update the duration in ticks from the scaled length
     void SetBaseLengthFromPixelLength();
 
 
@@ -128,11 +133,11 @@ private:
     //! Base color of the block, when not selected
     QColor mBaseColor;
 
-    //! Base position of the block in the lane, in time units (1.0f for one beat, >= 0.0f)
-    float mBasePosition;
+    //! Position of the block in the lane, measured in ticks
+    Pegasus::Timeline::Beat mBeat;
 
-    //! Base length of the block, in time units (1.0f for one beat, > 0.0f)
-    float mBaseLength;
+    //! Duration of the block, measured in ticks (> 0)
+    Pegasus::Timeline::Duration mDuration;
 
     //! Horizontal scale of the block
     //! 1.0f for a 1:1 ratio, < 1.0f for a compressed block, > 1.0f for an expanded block
@@ -145,7 +150,7 @@ private:
     float mY;
 
     //! Length in pixels (with no zoom applied, but horizontal scale applied)
-    float mPixelLength;
+    float mLength;
 };
 
 

@@ -17,6 +17,13 @@ namespace Pegasus {
     namespace Timeline {
 
 
+//! Type definition for a position in the timeline (in number of timeline ticks, >= 0)
+typedef unsigned int Beat;
+
+//! Type definition for a length in the timeline (in number of timeline ticks, > 0)
+typedef unsigned int Duration;
+
+
 //! Maximum number of lanes allowed in the timeline
 enum { TIMELINE_MAX_NUM_LANES = 64 };
 

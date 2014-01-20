@@ -44,12 +44,12 @@ public:
 
 
     //! Get the position of the block in the lane
-    //! \return Position of the block, measured in beats (>= 0.0f)
-    virtual float GetPosition() const;
+    //! \return Position of the block, measured in ticks
+    virtual Beat GetBeat() const;
 
-    //! Get the length of the block
-    //! \return Length of the block, measured in beats (> 0.0f)
-    virtual float GetLength() const;
+    //! Get the duration of the block
+    //! \return Duration of the block, measured in beats (> 0)
+    virtual Duration GetDuration() const;
 
     //! Get the lane the block belongs to
     //! \return Lane the block belongs to, nullptr when the block is not associated with a lane yet

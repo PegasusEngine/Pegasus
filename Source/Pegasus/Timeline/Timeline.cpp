@@ -12,6 +12,7 @@
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Timeline/Lane.h"
 #include "Pegasus/Core/Time.h"
+#include "Pegasus/Math/Scalar.h"
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/Timeline/TimelineProxy.h"
@@ -26,7 +27,10 @@ const float Timeline::INVALID_BEAT = -1.0f;
 //----------------------------------------------------------------------------------------
 
 Timeline::Timeline(Alloc::IAllocator * allocator)
-:   mBeatsPerMinute(120.0f),
+:   mNumTicksPerBeat(128),
+    mNumTicksPerBeatFloat(128.0f),
+    mRcpNumTicksPerBeat(1.0f / 128.0f),
+    mBeatsPerMinute(120.0f),
     mNumBeats(128),
     mNumLanes(0),
     mAllocator(allocator),
@@ -75,6 +79,29 @@ void Timeline::Clear()
 
     // Create a default lane
     CreateLane();
+}
+
+//----------------------------------------------------------------------------------------
+
+void Timeline::SetNumTicksPerBeat(unsigned int numTicksPerBeat)
+{
+    if (numTicksPerBeat < 16)
+    {
+        PG_FAILSTR("Invalid number of ticks per beat (%u), it must be >= 16", numTicksPerBeat);
+        numTicksPerBeat = 16;
+    }
+    else if (!Math::IsPowerOf2((Math::PUInt32)numTicksPerBeat))
+    {
+        PG_FAILSTR("Invalid number of ticks per beat (%u), it must be a power of 2", numTicksPerBeat);
+        numTicksPerBeat = Math::NextPowerOf2((Math::PUInt32)numTicksPerBeat);
+    }
+    else
+    {
+        mNumTicksPerBeat = numTicksPerBeat;
+    }
+
+    mNumTicksPerBeatFloat = static_cast<float>(mNumTicksPerBeat);
+    mRcpNumTicksPerBeat = 1.0f / mNumTicksPerBeatFloat;
 }
 
 //----------------------------------------------------------------------------------------
@@ -130,7 +157,7 @@ Lane * Timeline::CreateLane()
 
     if (mNumLanes < TIMELINE_MAX_NUM_LANES)
     {
-        mLanes[mNumLanes] = PG_NEW(mAllocator, -1, "Timeline::Lane", Alloc::PG_MEM_PERM) Lane(mAllocator);
+        mLanes[mNumLanes] = PG_NEW(mAllocator, -1, "Timeline::Lane", Alloc::PG_MEM_PERM) Lane(mAllocator, this);
         ++mNumLanes;
 
         return mLanes[mNumLanes - 1];

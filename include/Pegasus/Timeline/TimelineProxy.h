@@ -43,6 +43,19 @@ public:
     inline Timeline * GetTimeline() const { return mTimeline; }
 
 
+    //! Get the number of ticks per beat
+    //! \return Number of ticks per beat, power of 2, >= 16, 128 by default
+    virtual unsigned int GetNumTicksPerBeat() const;
+
+    //! Get the number of ticks per beat in float format
+    //! \return Number of ticks per beat in float format, power of 2, >= 16.0f, 128.0f by default
+    virtual float GetNumTicksPerBeatFloat() const;
+
+    //! Get the reciprocal of the number of ticks per beat
+    //! \return Reciprocal of the number of ticks per beat
+    virtual float GetRcpNumTicksPerBeat() const;
+
+
     //! Set the speed of the timeline in beats per minute
     //! \param bpm Beats per minute (30.0f <= bpm <= 500.0f)
     virtual void SetBeatsPerMinute(float bpm);
@@ -84,11 +97,11 @@ public:
     virtual void Update();
 
     //! Set the current beat of the timeline
-    //! \param beat Current beat, can have fractional part
+    //! \param beat Current beat, measured in ticks, can have fractional part
     virtual void SetCurrentBeat(float beat);
 
     //! Get the current beat of the timeline
-    //! \return Current beat, can have fractional part
+    //! \return Current beat, measured in ticks, can have fractional part
     virtual float GetCurrentBeat() const;
 
     //------------------------------------------------------------------------------------

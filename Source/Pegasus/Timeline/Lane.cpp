@@ -11,6 +11,7 @@
 
 #include "Pegasus/Timeline/Lane.h"
 #include "Pegasus/Timeline/Block.h"
+#include "Pegasus/Math/Scalar.h"
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/Timeline/LaneProxy.h"
@@ -23,12 +24,14 @@ namespace Pegasus {
 namespace Timeline {
 
 
-Lane::Lane(Alloc::IAllocator * allocator)
+Lane::Lane(Alloc::IAllocator * allocator, Timeline * timeline)
 :   mAllocator(allocator),
+    mTimeline(timeline),
     mFirstBlockIndex(0),
     mNumBlocks(0)
 {
     PG_ASSERTSTR(allocator != nullptr, "Invalid allocator given to a timeline Lane object");
+    PG_ASSERTSTR(timeline != nullptr, "Invalid timeline given to a timeline Lane object");
 
     // Set all block records as invalid
     for (unsigned int b = 0; b < LANE_MAX_NUM_BLOCKS; ++b)
@@ -69,25 +72,25 @@ Lane::~Lane()
 
 //----------------------------------------------------------------------------------------
 
-bool Lane::InsertBlock(Block * block, float position, float length)
+bool Lane::InsertBlock(Block * block, Beat beat, Duration duration)
 {
 #if PEGASUS_ENABLE_PROXIES
     if (block != nullptr)
     {
-        PG_LOG('TMLN', "Adding the block \"%s\" of length %f to the lane \"%s\", at position %f",
-               block->GetEditorString(), length, GetName(), position);
+        PG_LOG('TMLN', "Adding the block \"%s\" of duration %u to the lane \"%s\", at position %u",
+               block->GetEditorString(), duration, GetName(), beat);
     }
     else
 #endif
     {
-        PG_LOG('TMLN', "Adding a block of length %f to a lane, at position %f", length, position);
+        PG_LOG('TMLN', "Adding a block of length %u to a lane, at position %u", duration, beat);
     }
 
     if (block != nullptr)
     {
         // Configure the block
-        block->SetPosition(position);
-        block->SetLength(length);
+        block->SetBeat(beat);
+        block->SetDuration(duration);
         block->SetLane(this);
 
         // Insert the pre-configured block
@@ -136,17 +139,17 @@ void Lane::RemoveBlock(Block * block)
 
 //----------------------------------------------------------------------------------------
 
-void Lane::SetBlockPosition(Block * block, float position)
+void Lane::SetBlockBeat(Block * block, Beat beat)
 {
 #if PEGASUS_ENABLE_PROXIES
     if (block != nullptr)
     {
-        PG_LOG('TMLN', "Moving the block \"%s\" to position %f", block->GetEditorString(), position);
+        PG_LOG('TMLN', "Moving the block \"%s\" to position %u", block->GetEditorString(), beat);
     }
     else
 #endif
     {
-        PG_LOG('TMLN', "Moving a block to position %f", position);
+        PG_LOG('TMLN', "Moving a block to position %u", beat);
     }
 
     if (block != nullptr)
@@ -155,7 +158,7 @@ void Lane::SetBlockPosition(Block * block, float position)
         const int blockIndex = FindBlockIndex(block);
 
         // Move the block by index
-        SetBlockPosition(blockIndex, position);
+        SetBlockBeat(blockIndex, beat);
     }
     else
     {
@@ -165,17 +168,17 @@ void Lane::SetBlockPosition(Block * block, float position)
 
 //----------------------------------------------------------------------------------------
 
-void Lane::SetBlockLength(Block * block, float length)
+void Lane::SetBlockDuration(Block * block, Duration duration)
 {
 #if PEGASUS_ENABLE_PROXIES
     if (block != nullptr)
     {
-        PG_LOG('TMLN', "Resizing the block \"%s\" to length %f", block->GetEditorString(), length);
+        PG_LOG('TMLN', "Resizing the block \"%s\" to length %u", block->GetEditorString(), duration);
     }
     else
 #endif
     {
-        PG_LOG('TMLN', "Resizing the block to length %f", length);
+        PG_LOG('TMLN', "Resizing the block to length %u", duration);
     }
 
     if (block != nullptr)
@@ -184,12 +187,121 @@ void Lane::SetBlockLength(Block * block, float length)
         const int blockIndex = FindBlockIndex(block);
 
         // Resize the block by index
-        SetBlockLength(blockIndex, length);
+        SetBlockDuration(blockIndex, duration);
     }
     else
     {
         PG_FAILSTR("Unable to resize a block, the block is invalid");
     }
+}
+
+//----------------------------------------------------------------------------------------
+
+bool Lane::IsBlockFitting(Block * block, Beat beat, Duration duration) const
+{
+    // If the lane is full, the block does not fit
+    if (mNumBlocks >= LANE_MAX_NUM_BLOCKS)
+    {
+        return false;
+    }
+
+    // If the lane is empty, the block always fit
+    if (mNumBlocks == 0)
+    {
+        return true;
+    }
+
+    //! \todo Add support for limited length timeline
+
+    // Find the current block index (block the tick is on or right after)
+    // and the next block index (block that is not started yet)
+    int currentBlockIndex = INVALID_RECORD_INDEX;
+    int nextBlockIndex = INVALID_RECORD_INDEX;
+    FindCurrentAndNextBlocks(beat, currentBlockIndex, nextBlockIndex);
+
+    // Test if the input block belongs to the lane
+    const int testBlockIndex = FindBlockIndex(block);
+    if (testBlockIndex != INVALID_RECORD_INDEX)
+    {
+        if (currentBlockIndex == testBlockIndex)
+        {
+            // If the current block is the tested one, find the previous block
+            currentBlockIndex = FindPreviousBlockIndex(testBlockIndex);
+        }
+        else if (nextBlockIndex == testBlockIndex)
+        {
+            // If the next block is the tested one, find the next block
+            nextBlockIndex = FindNextBlockIndex(testBlockIndex);
+        }
+    }
+
+    if (currentBlockIndex == INVALID_RECORD_INDEX)
+    {
+        if (nextBlockIndex != INVALID_RECORD_INDEX)
+        {
+            // If before the first block, make sure the duration does not go too far
+            Block * const nextBlock = mBlockRecords[nextBlockIndex].mBlock;
+            return (beat + duration) <= nextBlock->GetBeat();
+        }
+        else
+        {
+            // If the tested block is the only one in the lane, the fit is possible
+            return true;
+        }
+    }
+    else if (nextBlockIndex == INVALID_RECORD_INDEX)
+    {
+        // If after the last block, make sure we do not collide with the last one
+        Block * const currentBlock = mBlockRecords[currentBlockIndex].mBlock;
+        return beat >= (currentBlock->GetBeat() + currentBlock->GetDuration());
+    }
+    else
+    {
+        // If between two blocks, make sure the beginning of the block does not collide
+        // with the current block, and that the duration does not collide with the next one
+        Block * const currentBlock = mBlockRecords[currentBlockIndex].mBlock;
+        Block * const nextBlock = mBlockRecords[nextBlockIndex].mBlock;
+        return   ( beat >= (currentBlock->GetBeat() + currentBlock->GetDuration()) )
+              && ( (beat + duration) <= nextBlock->GetBeat() );
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Lane::MoveBlockToLane(Block * block, Lane * newLane, Beat beat)
+{
+#if PEGASUS_ENABLE_PROXIES
+    if ((block != nullptr) && (newLane != nullptr))
+    {
+        PG_LOG('TMLN', "Moving the block \"%s\" to the lane \"%s\" at position %u", block->GetEditorString(), newLane->GetName(), beat);
+    }
+    else
+#endif
+    {
+        PG_LOG('TMLN', "Moving a block to another lane at position %u", beat);
+    }
+
+    if (block == nullptr)
+    {
+        PG_FAILSTR("Unable to move a block to another lane, the block is invalid");
+        return;
+    }
+    else if (newLane == nullptr)
+    {
+        PG_FAILSTR("Unable to move a block to another lane, the lane is invalid");
+        return;
+    }
+    else if (newLane == this)
+    {
+        PG_FAILSTR("Unable to move a block to another lane, the other lane is the current lane");
+        return;
+    }
+
+    // Find the block in the linked list
+    const int blockIndex = FindBlockIndex(block);
+
+    // Resize the block by index
+    MoveBlockToLane(blockIndex, newLane, beat);
 }
 
 //----------------------------------------------------------------------------------------
@@ -218,19 +330,29 @@ void Lane::Render(float beat, Wnd::Window * window)
 
     if (mNumBlocks > 0)
     {
+        // Convert the time in floating point format to a tick
+        const unsigned int tick = static_cast<unsigned int>(Pegasus::Math::Floor(beat * mTimeline->GetNumTicksPerBeatFloat()));
+
+        // Find the current block index (block the tick is on or right after)
+        // and the next block index (block that is not started yet)
         int currentBlockIndex = INVALID_RECORD_INDEX;
         int nextBlockIndex = INVALID_RECORD_INDEX;
-        FindCurrentAndNextBlocks(beat, currentBlockIndex, nextBlockIndex);
+        FindCurrentAndNextBlocks(tick, currentBlockIndex, nextBlockIndex);
+
         if (currentBlockIndex != INVALID_RECORD_INDEX)
         {
             Block * const block = mBlockRecords[currentBlockIndex].mBlock;
-            float relativeBeat = beat - block->GetPosition();
-            if (relativeBeat < 0.0f)
+
+            // Compute the number of ticks since the beginning of the block.
+            // If the number is strictly lower than the duration in ticks,
+            // the block is rendered
+            const unsigned int blockTick = tick - block->GetBeat();
+            if (blockTick < block->GetDuration())
             {
-                relativeBeat = 0.0f;
-            }
-            if (relativeBeat < block->GetLength())
-            {
+                // Compute the beat relative to the beginning of the block.
+                // This time is measured in beats, not in ticks.
+                const float relativeBeat = static_cast<float>(blockTick) * mTimeline->GetRcpNumTicksPerBeat();
+
                 block->Render(relativeBeat, window);
             }
         }
@@ -315,16 +437,16 @@ void Lane::DumpToLog()
         do
         {
 #if PEGASUS_ENABLE_PROXIES
-            PG_LOG('TMLN', "(%d, %f, %f, %s)",
+            PG_LOG('TMLN', "(%d, %u, %u, %s)",
                    currentIndex,
-                   mBlockRecords[currentIndex].mBlock->GetPosition(),
-                   mBlockRecords[currentIndex].mBlock->GetLength(),
+                   mBlockRecords[currentIndex].mBlock->GetBeat(),
+                   mBlockRecords[currentIndex].mBlock->GetDuration(),
                    mBlockRecords[currentIndex].mBlock->GetEditorString());
 #else
-            PG_LOG('TMLN', "(%d, %f, %f)",
+            PG_LOG('TMLN', "(%d, %u, %u)",
                    currentIndex,
-                   mBlockRecords[currentIndex].mBlock->GetPosition(),
-                   mBlockRecords[currentIndex].mBlock->GetLength());
+                   mBlockRecords[currentIndex].mBlock->GetBeat(),
+                   mBlockRecords[currentIndex].mBlock->GetDuration());
 #endif
             currentIndex = mBlockRecords[currentIndex].mNext;
         }
@@ -335,7 +457,7 @@ void Lane::DumpToLog()
 
 //----------------------------------------------------------------------------------------
 
-void Lane::FindCurrentAndNextBlocks(float beat, int & currentBlockIndex, int & nextBlockIndex) const
+void Lane::FindCurrentAndNextBlocks(Beat beat, int & currentBlockIndex, int & nextBlockIndex) const
 {
     currentBlockIndex = INVALID_RECORD_INDEX;
     nextBlockIndex = INVALID_RECORD_INDEX;
@@ -349,7 +471,7 @@ void Lane::FindCurrentAndNextBlocks(float beat, int & currentBlockIndex, int & n
 
     // Test if we are before the first block
     PG_ASSERTSTR(mBlockRecords[mFirstBlockIndex].mBlock != nullptr, "Invalid first block record in the lane, it is supposed to be a valid one");
-    if (beat < mBlockRecords[mFirstBlockIndex].mBlock->GetPosition())
+    if (beat < mBlockRecords[mFirstBlockIndex].mBlock->GetBeat())
     {
         nextBlockIndex = mFirstBlockIndex;
         return;
@@ -360,7 +482,7 @@ void Lane::FindCurrentAndNextBlocks(float beat, int & currentBlockIndex, int & n
     int next = mBlockRecords[mFirstBlockIndex].mNext;
     PG_ASSERTSTR(mBlockRecords[next].mBlock != nullptr, "Invalid block record in the lane, it is supposed to be a valid one");
     while (   (next != mFirstBlockIndex)
-           && (beat >= mBlockRecords[next].mBlock->GetPosition()) )
+           && (beat >= mBlockRecords[next].mBlock->GetBeat()) )
     {
         current = next;
         next = mBlockRecords[next].mNext;
@@ -427,12 +549,89 @@ int Lane::FindBlockIndex(Block * block) const
         }
 
         // Block not found
-        PG_FAILSTR("Unable to find the block in the lane");
         return INVALID_RECORD_INDEX;
     }
     else
     {
-        PG_FAILSTR("Unable to find an invalid block in the lane");
+        return INVALID_RECORD_INDEX;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+int Lane::FindPreviousBlockIndex(int blockIndex) const
+{
+    if ((blockIndex  >= 0) && (blockIndex < LANE_MAX_NUM_BLOCKS))
+    {
+        Block * const block = mBlockRecords[blockIndex].mBlock;
+        if (block != nullptr)
+        {
+            if (blockIndex == mFirstBlockIndex)
+            {
+                // If the tested block is the first one, there is no previous block
+                return INVALID_RECORD_INDEX;
+            }
+            else
+            {
+                // Search for the previous block
+                int currentIndex = mFirstBlockIndex;
+                do
+                {
+                    if (mBlockRecords[currentIndex].mNext == blockIndex)
+                    {
+                        // Previous block found
+                        return currentIndex;
+                    }
+                    currentIndex = mBlockRecords[currentIndex].mNext;
+                }
+                while (currentIndex != mFirstBlockIndex);
+
+                PG_FAILSTR("Internal error when looking for the previous block of the block of index %d", blockIndex);
+                return INVALID_RECORD_INDEX;
+            }
+        }
+        else
+        {
+            PG_FAILSTR("Invalid block record index (%d), it should be the one of an allocated block", blockIndex);
+            return INVALID_RECORD_INDEX;
+        }
+    }
+    else
+    {
+        PG_FAILSTR("Invalid block record index (%d), it should be >= 0 and < %u", blockIndex, LANE_MAX_NUM_BLOCKS);
+        return INVALID_RECORD_INDEX;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+int Lane::FindNextBlockIndex(int blockIndex) const
+{
+    if ((blockIndex  >= 0) && (blockIndex < LANE_MAX_NUM_BLOCKS))
+    {
+        Block * const block = mBlockRecords[blockIndex].mBlock;
+        if (block != nullptr)
+        {
+            if (mBlockRecords[blockIndex].mNext != mFirstBlockIndex)
+            {
+                // Next block found
+                return mBlockRecords[blockIndex].mNext;
+            }
+            else
+            {
+                // Next block not found
+                return INVALID_RECORD_INDEX;
+            }
+        }
+        else
+        {
+            PG_FAILSTR("Invalid block record index (%d), it should be the one of an allocated block", blockIndex);
+            return INVALID_RECORD_INDEX;
+        }
+    }
+    else
+    {
+        PG_FAILSTR("Invalid block record index (%d), it should be >= 0 and < %u", blockIndex, LANE_MAX_NUM_BLOCKS);
         return INVALID_RECORD_INDEX;
     }
 }
@@ -447,7 +646,7 @@ bool Lane::InsertBlock(Block * block)
         {
             // Find where to insert the block
             int currentBlockIndex, nextBlockIndex;
-            FindCurrentAndNextBlocks(block->GetPosition(), currentBlockIndex, nextBlockIndex);
+            FindCurrentAndNextBlocks(block->GetBeat(), currentBlockIndex, nextBlockIndex);
 
             if (currentBlockIndex == INVALID_RECORD_INDEX)
             {
@@ -538,7 +737,7 @@ bool Lane::InsertBlock(Block * block)
         }
         else
         {
-            PG_FAILSTR("Unable to add a block to a lane, the maximum number of blocks has been reached (%d)", LANE_MAX_NUM_BLOCKS);
+            PG_FAILSTR("Unable to add a block to a lane, the maximum number of blocks has been reached (%u)", LANE_MAX_NUM_BLOCKS);
         }
     }
     else
@@ -589,13 +788,13 @@ void Lane::RemoveBlock(int blockIndex)
     }
     else
     {
-        PG_FAILSTR("Invalid block record index (%d), it should be >= 0 and < %d", blockIndex, LANE_MAX_NUM_BLOCKS);
+        PG_FAILSTR("Invalid block record index (%d), it should be >= 0 and < %u", blockIndex, LANE_MAX_NUM_BLOCKS);
     }
 }
 
 //----------------------------------------------------------------------------------------
 
-void Lane::SetBlockPosition(int blockIndex, float position)
+void Lane::SetBlockBeat(int blockIndex, Beat beat)
 {
     if (   (blockIndex >= 0)
         && (blockIndex < LANE_MAX_NUM_BLOCKS) )
@@ -610,20 +809,20 @@ void Lane::SetBlockPosition(int blockIndex, float position)
         RemoveBlock(blockIndex);
 
         // Set the new position of the block
-        block->SetPosition(position);
+        block->SetBeat(beat);
 
         // Insert the block back to the linked list, the proper sorting is guaranteed
         InsertBlock(block);
     }
     else
     {
-        PG_FAILSTR("Invalid block record index (%d), it should be >= 0 and < %d", blockIndex, LANE_MAX_NUM_BLOCKS);
+        PG_FAILSTR("Invalid block record index (%d), it should be >= 0 and < %u", blockIndex, LANE_MAX_NUM_BLOCKS);
     }
 }
 
 //----------------------------------------------------------------------------------------
 
-void Lane::SetBlockLength(int blockIndex, float length)
+void Lane::SetBlockDuration(int blockIndex, Duration duration)
 {
     if (   (blockIndex >= 0)
         && (blockIndex < LANE_MAX_NUM_BLOCKS) )
@@ -637,15 +836,52 @@ void Lane::SetBlockLength(int blockIndex, float length)
         // Remove the block from the lane so we do not mess up the sorting of the linked list
         RemoveBlock(blockIndex);
 
-        // Set the new length of the block
-        block->SetLength(length);
+        // Set the new duration of the block
+        block->SetDuration(duration);
 
         // Insert the block back to the linked list, the proper sorting is guaranteed
         InsertBlock(block);
     }
     else
     {
-        PG_FAILSTR("Invalid block record index (%d), it should be >= 0 and < %d", blockIndex, LANE_MAX_NUM_BLOCKS);
+        PG_FAILSTR("Invalid block record index (%d), it should be >= 0 and < %u", blockIndex, LANE_MAX_NUM_BLOCKS);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Lane::MoveBlockToLane(int blockIndex, Lane * newLane, Beat beat)
+{
+    if (   (blockIndex >= 0)
+        && (blockIndex < LANE_MAX_NUM_BLOCKS) )
+    {
+        PG_ASSERTSTR(mNumBlocks >= 1, "Internal error when moving a block to another lane");
+
+        // Check for a space in the other lane
+        if (newLane->GetNumBlocks() < LANE_MAX_NUM_BLOCKS)
+        {
+            // Get a pointer to the block
+            Block * block = mBlockRecords[blockIndex].mBlock;
+            PG_ASSERTSTR(block != nullptr, "Internal error when moving a block to another lane");
+
+            // Remove the block from the current lane
+            RemoveBlock(blockIndex);
+
+            // Set the new position of the block
+            block->SetBeat(beat);
+
+            // Insert the block to the new lane, the proper sorting is guaranteed
+            newLane->InsertBlock(block);
+            block->SetLane(newLane);
+        }
+        else
+        {
+            PG_FAILSTR("Unable to move a block to another lane, that other lane is full");
+        }
+    }
+    else
+    {
+        PG_FAILSTR("Invalid block record index (%d), it should be >= 0 and < %u", blockIndex, LANE_MAX_NUM_BLOCKS);
     }
 }
 

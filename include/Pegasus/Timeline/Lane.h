@@ -13,9 +13,11 @@
 #define PEGASUS_TIMELINE_LANE_H
 
 #include "Pegasus/Timeline/Shared/LaneDefs.h"
+#include "Pegasus/Timeline/Shared/TimelineDefs.h"
 
 namespace Pegasus {
     namespace Timeline {
+        class Timeline;
         class LaneProxy;
         class Block;
         class IBlockProxy;
@@ -37,46 +39,71 @@ public:
 
     //! Constructor
     //! \param allocator Allocator used for all timeline allocations
-    Lane(Alloc::IAllocator * allocator);
+    //! \param timeline Timeline the lane belongs to (!= nullptr)
+    Lane(Alloc::IAllocator * allocator, Timeline * timeline);
 
     //! Destructor
     virtual ~Lane();
 
+    //! Get the timeline the lane belongs to
+    //! \return Timeline the lane belongs to (!= nullptr)
+    inline Timeline * GetTimeline() const { return mTimeline; }
+
 
     //! Add a block to the lane
     //! \param block Allocated block, with position and size ignored
-    //! \param position Position of the block, measured in beats (>= 0.0f)
-    //! \param length Length of the block, measured in beats (> 0.0f)
+    //! \param beat Position of the block, measured in ticks
+    //! \param duration Duration of the block, measured in ticks (> 0)
     //! \note The internal linked list stays sorted after this operation
     //! \return True if succeeded, false if the block is invalid, has a collision with an existing block,
     //!         or the number of blocks has already reached LANE_MAX_NUM_BLOCKS
-    bool InsertBlock(Block * block, float position, float length);
+    bool InsertBlock(Block * block, Beat beat, Duration duration);
 
     //! Remove a block from the lane
     //! \param block Existing block belonging to the lane
     void RemoveBlock(Block * block);
+
+    //! Get the number of blocks in the lane
+    //! \return Number of blocks in the lane (<= LANE_MAX_NUM_BLOCKS)
+    inline unsigned int GetNumBlocks() const { return mNumBlocks; }
+
 
     //! Set the position of a block in the lane
     //! \warning The block has to belong to the lane
     //! \note If the block is not found in the lane, the block is not moved,
     //!       to not break the sorted linked list of another lane
     //! \param block Block to move
-    //! \param position New position of the block, measured in beats (>= 0.0f)
-    void SetBlockPosition(Block * block, float position);
+    //! \param beat New position of the block, measured in ticks
+    void SetBlockBeat(Block * block, Beat beat);
 
-    //! Set the length of a block in the lane
+    //! Set the duration of a block in the lane
     //! \warning The block has to belong to the lane
     //! \note If the block is not found in the lane, the block is not resized,
     //!       to not break the sorted linked list of another lane
-    //! \param length New length of the block, measured in beats (> 0.0f)
-    void SetBlockLength(Block * block, float length);
+    //! \param duration New duration of the block, measured in ticks (> 0)
+    void SetBlockDuration(Block * block, Duration duration);
+
+    //! Test if a block would fit in the lane
+    //! \param Block to test for a fit
+    //! \param beat New position of the block, measured in ticks
+    //! \param duration New duration of the block, measured in ticks (> 0)
+    //! \return True if the block would fit in the lane, and if there is enough space to store it
+    bool IsBlockFitting(Block * block, Beat beat, Duration duration) const;
+
+    //! Move a block from this lane into another lane
+    //! \warning The block has to belong to the lane
+    //! \note If any error happens, nothing changes to preserve the sorted linked lists
+    //! \param block Block to move, has to belong to the lane
+    //! \param newLane Lane to move the block into, different from the current lane, != nullptr
+    //! \param beat New position of the block, measured in ticks
+    void MoveBlockToLane(Block * block, Lane * newLane, Beat beat);
 
 
     // Tell all the blocks of the lane to initialize their content (calling their Initialize() function)
     void InitializeBlocks();
 
     //! Render the content of the lane for the given window
-    //! \param beat Current beat, can have fractional part
+    //! \param beat Current beat, measured in ticks, can have fractional part
     //! \param window Window in which the lane is being rendered
     //! \todo That dependency is ugly. Find a way to remove that dependency
     void Render(float beat, Wnd::Window * window);
@@ -124,14 +151,14 @@ public:
 private:
 
     //! Given a beat on the timeline, return the index of the current (or previous) block and the next one (not reached yet)
-    //! \param beat Input beat, can have fractional part
+    //! \param beat Input beat, measured in ticks
     //! \param currentBlockIndex Resulting block index intersected by the given beat,
     //!                          or just before the beat if the next block is not reached yet.
     //!                          INVALID_RECORD_INDEX if the beat is before the first beat, or no block is defined on the timeline
     //! \param nextBlockIndex Resulting block index after the given beat, not reached yet.
     //!                       INVALID_RECORD_INDEX if the beat is on or after the beginning of the last block,
     //!                       or no block is defined on the timeline
-    void FindCurrentAndNextBlocks(float beat, int & currentBlockIndex, int & nextBlockIndex) const;
+    void FindCurrentAndNextBlocks(Beat beat, int & currentBlockIndex, int & nextBlockIndex) const;
 
     //! Find the index of a block record in the array that is not used yet
     //! \return Index of a block record free to use (0 <= index < LANE_MAX_NUM_BLOCKS, when mNumBlocks < LANE_MAX_NUM_BLOCKS),
@@ -142,6 +169,19 @@ private:
     //! \param block Block to find
     //! \return Index of the block record for the input block, INVALID_RECORD_INDEX if not found or in case of error
     int FindBlockIndex(Block * block) const;
+
+    //! Find the index of the previous block given a block index
+    //! \param blockIndex Index of the block in the \a mBlockRecords array, < LANE_MAX_NUM_BLOCKS
+    //! \return Index of the previous block in the \a mBlockRecords array, < LANE_MAX_NUM_BLOCKS,
+    //!         INVALID_RECORD_INDEX if the tested block is the first one
+    int FindPreviousBlockIndex(int blockIndex) const;
+
+    //! Find the index of the next block given a block index
+    //! \param blockIndex Index of the block in the \a mBlockRecords array, < LANE_MAX_NUM_BLOCKS
+    //! \return Index of the next block in the \a mBlockRecords array, < LANE_MAX_NUM_BLOCKS,
+    //!         INVALID_RECORD_INDEX if the tested block is the last one
+    int FindNextBlockIndex(int blockIndex) const;
+
 
     //! Add a block to the lane with predefined position and length
     //! \param block Allocated block, with position and size already defined
@@ -156,13 +196,19 @@ private:
 
     //! Set the position of a block in the lane given a block record index in the linked list
     //! \param blockIndex Index of the block in the \a mBlockRecords array, < LANE_MAX_NUM_BLOCKS
-    //! \param position New position of the block, measured in beats (>= 0.0f)
-    void SetBlockPosition(int blockIndex, float position);
+    //! \param beat New position of the block, measured in ticks
+    void SetBlockBeat(int blockIndex, Beat beat);
 
-    //! Set the length of a block in the lane given a block record index in the linked list
+    //! Set the duration of a block in the lane given a block record index in the linked list
     //! \param blockIndex Index of the block in the \a mBlockRecords array, < LANE_MAX_NUM_BLOCKS
-    //! \param length New length of the block, measured in beats (> 0.0f)
-    void SetBlockLength(int blockIndex, float length);
+    //! \param duration New duration of the block, measured in ticks (> 0)
+    void SetBlockDuration(int blockIndex, Duration duration);
+
+    //! Move a block from this lane into another lane given a block record index in the linked list
+    //! \param blockIndex Index of the block in the \a mBlockRecords array, < LANE_MAX_NUM_BLOCKS
+    //! \param newLane Lane to move the block into, different from the current lane, != nullptr
+    //! \param beat New position of the block, measured in ticks
+    void MoveBlockToLane(int blockIndex, Lane * newLane, Beat beat);
 
     //------------------------------------------------------------------------------------
 
@@ -173,6 +219,9 @@ private:
 
     //! Allocator used for all timeline allocations
     Alloc::IAllocator * mAllocator;
+
+    //! Timeline the block belongs to (!= nullpr)
+    Timeline * const mTimeline;
 
 
     //! Record to store one block inside a linked list

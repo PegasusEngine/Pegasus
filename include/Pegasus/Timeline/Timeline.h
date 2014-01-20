@@ -48,6 +48,23 @@ public:
     void Clear();
 
 
+    //! Set the number of ticks per beat
+    //! \param numTicksPerBeat New number of ticks per beat, power of 2, >= 16
+    void SetNumTicksPerBeat(unsigned int numTicksPerBeat);
+
+    //! Get the number of ticks per beat
+    //! \return Number of ticks per beat, power of 2, >= 16, 128 by default
+    inline unsigned int GetNumTicksPerBeat() const { return mNumTicksPerBeat; }
+
+    //! Get the number of ticks per beat in float format
+    //! \return Number of ticks per beat in float format, power of 2, >= 16.0f, 128.0f by default
+    inline float GetNumTicksPerBeatFloat() const { return mNumTicksPerBeatFloat; }
+
+    //! Get the reciprocal of the number of ticks per beat
+    //! \return Reciprocal of the number of ticks per beat
+    inline float GetRcpNumTicksPerBeat() const { return mRcpNumTicksPerBeat; }
+
+
     //! Set the speed of the timeline in beats per minute
     //! \param bpm Beats per minute (30.0f <= bpm <= 500.0f)
     void SetBeatsPerMinute(float bpm);
@@ -98,11 +115,11 @@ public:
     void Render(Wnd::Window * window);
 
     //! Set the current beat of the timeline
-    //! \param beat Current beat, can have fractional part
+    //! \param beat Current beat, in number of ticks, can have fractional part
     void SetCurrentBeat(float beat);
 
     //! Get the current beat of the timeline
-    //! \return Current beat, can have fractional part
+    //! \return Current beat, in number of ticks, can have fractional part
     inline float GetCurrentBeat() const { return mCurrentBeat; }
 
 
@@ -135,6 +152,16 @@ private:
 #endif  // PEGASUS_ENABLE_PROXIES
 
 
+    //! Number of ticks per beat, power of 2, >= 16, 128 by default
+    unsigned int mNumTicksPerBeat;
+
+    //! Number of ticks per beat in float format, power of 2, >= 16.0f, 128.0f by default
+    float mNumTicksPerBeatFloat;
+
+    //! Reciprocal of the number of ticks per beat
+    float mRcpNumTicksPerBeat;
+
+
     //! Speed of the timeline in beats per minute (30.0f <= bpm <= 500.0f)
     float mBeatsPerMinute;
 
@@ -150,7 +177,7 @@ private:
     //! Current play mode of the timeline (PLAYMODE_xxx constant, PLAYMODE_REALTIME by default)
     PlayMode mPlayMode;
 
-    //! Current beat of the timeline (>= 0.0f, integer for each beat, can have fractional part).
+    //! Current beat of the timeline, in number of ticks, can have fractional part.
     //! INVALID_BEAT before the first call to Update()
     float mCurrentBeat;
 
