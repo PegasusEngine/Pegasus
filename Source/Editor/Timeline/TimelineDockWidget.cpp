@@ -10,6 +10,7 @@
 //! \brief	Dock widget containing the timeline graphics view
 
 #include "Timeline/TimelineDockWidget.h"
+#include "Timeline/TimelineUndoCommands.h"
 
 #include "Application/Application.h"
 #include "Application/ApplicationManager.h"
@@ -19,7 +20,8 @@
 
 
 TimelineDockWidget::TimelineDockWidget(QWidget *parent)
-:   QDockWidget(parent)
+:   QDockWidget(parent),
+    mEnableUndo(true)
 {
     // Set the initial UI state
     ui.setupUi(this);
@@ -41,7 +43,7 @@ TimelineDockWidget::TimelineDockWidget(QWidget *parent)
     connect(ui.playButton, SIGNAL(toggled(bool)),
             ui.graphicsView, SLOT(OnPlayModeToggled(bool)));
     connect(ui.bpmSpin, SIGNAL(valueChanged(double)),
-            this, SLOT(SetBeatsPerMinute(double)));
+            this, SLOT(OnSetBeatsPerMinute(double)));
     connect(ui.graphicsView, SIGNAL(BeatUpdated(float)),
             this, SLOT(SetCurrentBeat(float)));
     connect(ui.graphicsView, SIGNAL(BlockMoved()),
@@ -59,6 +61,35 @@ TimelineDockWidget::~TimelineDockWidget()
 void TimelineDockWidget::EnableAntialiasing(bool enable)
 {
     ui.graphicsView->EnableAntialiasing(enable);
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::SetBeatsPerMinute(double bpm)
+{
+    Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
+    if (application != nullptr)
+    {
+        Pegasus::Timeline::ITimelineProxy * const timeline = application->GetTimelineProxy();
+        if (timeline != nullptr)
+        {
+            mEnableUndo = false;
+
+            // Apply the new tempo to the timeline
+            timeline->SetBeatsPerMinute(static_cast<float>(bpm));
+
+            // Update the tempo field
+            ui.bpmSpin->setValue(bpm);
+
+            // Update the timeline view from the new tempo
+            if (timeline->GetCurrentBeat() >= 0.0f)
+            {
+                UpdateUIFromBeat(timeline->GetCurrentBeat());
+            }
+
+            mEnableUndo = true;
+        }
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -96,6 +127,8 @@ void TimelineDockWidget::UpdateUIFromBeat(float beat)
 
 void TimelineDockWidget::UpdateUIForAppLoaded()
 {
+    mEnableUndo = false;
+
     ui.addButton->setEnabled(true);
     ui.removeButton->setEnabled(true);
     ui.deleteButton->setEnabled(true);
@@ -114,13 +147,16 @@ void TimelineDockWidget::UpdateUIForAppLoaded()
     {
         ui.bpmSpin->setValue(120.0);
     }
+    ui.bpmSpin->setEnabled(true);
 
+    ui.snapCombo->setEnabled(true);
     UpdateUIFromBeat(0.0f);
-
-    //! \todo Enable the timeline graphics view input
+    ui.graphicsView->setEnabled(true);
 
     // Update the content of the timeline graphics view from the timeline of the app
     ui.graphicsView->RefreshFromTimeline();
+
+    mEnableUndo = true;
 }
 
 //----------------------------------------------------------------------------------------
@@ -135,9 +171,10 @@ void TimelineDockWidget::UpdateUIForAppClosed()
     ui.playButton->setChecked(false);
     ui.graphicsView->OnPlayModeToggled(false);
 
+    ui.bpmSpin->setEnabled(false);
+    ui.snapCombo->setEnabled(false);
     UpdateUIFromBeat(0.0f);
-
-    //! \todo Disable the timeline graphics view input
+    ui.graphicsView->setEnabled(false);
 
     // Clear the content of the timeline graphics view
     if (Editor::GetInstance().IsApplicationManagerAvailable())
@@ -148,17 +185,21 @@ void TimelineDockWidget::UpdateUIForAppClosed()
 
 //----------------------------------------------------------------------------------------
 
-void TimelineDockWidget::SetBeatsPerMinute(double bpm)
+void TimelineDockWidget::OnSetBeatsPerMinute(double bpm)
 {
-    Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
-    if (application != nullptr)
+    if (mEnableUndo)
     {
-        Pegasus::Timeline::ITimelineProxy * const timeline = application->GetTimelineProxy();
-        timeline->SetBeatsPerMinute(bpm);
-
-        if (timeline->GetCurrentBeat() >= 0.0f)
+        Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
+        if (application != nullptr)
         {
-            UpdateUIFromBeat(timeline->GetCurrentBeat());
+            Pegasus::Timeline::ITimelineProxy * const timeline = application->GetTimelineProxy();
+
+            // Create the undo command
+            TimelineSetBPMUndoCommand * undoCommand = new TimelineSetBPMUndoCommand(static_cast<double>(timeline->GetBeatsPerMinute()),
+                                                                                    bpm);
+        
+            // Push the undo command, redo() is executed and the timeline updated
+            Editor::GetInstance().PushUndoCommand(undoCommand);
         }
     }
 }

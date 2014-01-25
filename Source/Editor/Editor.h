@@ -15,6 +15,7 @@
 #include "Settings/Settings.h"
 
 #include "Console/ConsoleDockWidget.h"
+#include "History/HistoryDockWidget.h"
 #include "Timeline/TimelineDockWidget.h"
 #include "Viewport/ViewportDockWidget.h"
 #include "Viewport/ViewportWidget.h"
@@ -27,7 +28,9 @@ class LogManager;
 class AssertionManager;
 
 class QSplashScreen;
+class QUndoCommand;
 class QAction;
+class QUndoStack;
 
 
 //! Main window of Pegasus Editor
@@ -71,6 +74,10 @@ public:
     //! \return Pointer to the editor settings object
     inline static Settings * GetSettings() { return sSettings; }
 
+    //! Add a command to the list of the undo manager
+    //! \param command Command to add to the list of the undo manager, != nullptr
+    void PushUndoCommand(QUndoCommand * command);
+
 	//------------------------------------------------------------------------------------
 
 public:
@@ -91,6 +98,10 @@ public:
     //! Get the timeline dock widget
     //! \return Pointer to the timeline dock widget
     inline TimelineDockWidget * GetTimelineDockWidget() const { return mTimelineDockWidget; }
+
+    //! Get the history dock widget
+    //! \return Pointer to the history dock widget
+    inline HistoryDockWidget * GetHistoryDockWidget() const { return mHistoryDockWidget; }
 
     //! Get the console dock widget
     //! \return Pointer to the console dock widget
@@ -158,6 +169,7 @@ private slots:
     void OpenMainViewportWindow();
     void OpenSecondaryViewportWindow();
     void OpenTimelineWindow();
+    void OpenHistoryWindow();
     void OpenConsoleWindow();
     //@}
 
@@ -193,6 +205,8 @@ private:
 
     //@{
     //! Actions triggered when an item of the Edit menu is selected
+    QAction * mActionEditUndo;
+    QAction * mActionEditRedo;
     QAction * mActionEditPreferences;
     //@}
 
@@ -212,6 +226,7 @@ private:
 	QAction * mActionWindowMainViewport;
 	QAction * mActionWindowSecondaryViewport;
     QAction * mActionWindowTimeline;
+    QAction * mActionWindowHistory;
     QAction * mActionWindowConsole;
     //@}
 
@@ -255,11 +270,15 @@ private:
     //! Editor settings (preferences)
 	static Settings * sSettings;
 
+    //! Undo manager, used to register commands for Undo/Redo operations
+    QUndoStack * mUndoStack;
+
     //@{
     //! Dock widgets
     ViewportDockWidget * mMainViewportDockWidget;
     ViewportDockWidget * mSecondaryViewportDockWidget;
     TimelineDockWidget * mTimelineDockWidget;
+    HistoryDockWidget * mHistoryDockWidget;
     ConsoleDockWidget * mConsoleDockWidget;
     //@}
 

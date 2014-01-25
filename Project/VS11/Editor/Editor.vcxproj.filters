@@ -55,6 +55,9 @@
       <Extensions>h</Extensions>
       <ParseFiles>true</ParseFiles>
     </Filter>
+    <Filter Include="Source\History">
+      <UniqueIdentifier>{cc49ef2d-91fd-491e-8c9f-e87edbefeec5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Source\Editor\Editor.cpp">
@@ -246,6 +249,18 @@
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_TimelineBlockGraphicsItem.cpp">
       <Filter>Generated\Dev-Debug</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_HistoryDockWidget.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_HistoryDockWidget.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\History\HistoryDockWidget.cpp">
+      <Filter>Source\History</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineUndoCommands.cpp">
+      <Filter>Source\Timeline</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -316,6 +331,12 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Viewport\ViewportType.h">
       <Filter>Source\Viewport</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\History\HistoryDockWidget.h">
+      <Filter>Source\History</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineUndoCommands.h">
+      <Filter>Source\Timeline</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

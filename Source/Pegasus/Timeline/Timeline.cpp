@@ -100,6 +100,8 @@ void Timeline::SetNumTicksPerBeat(unsigned int numTicksPerBeat)
         mNumTicksPerBeat = numTicksPerBeat;
     }
 
+    PG_LOG('TMLN', "Setting the number of ticks per beat to %u", mNumTicksPerBeat);
+
     mNumTicksPerBeatFloat = static_cast<float>(mNumTicksPerBeat);
     mRcpNumTicksPerBeat = 1.0f / mNumTicksPerBeatFloat;
 }
@@ -110,18 +112,20 @@ void Timeline::SetBeatsPerMinute(float bpm)
 {
     if (bpm < 30.0f)
     {
-        PG_FAILSTR("Invalid speed for the timeline (%f BPM). It should be >= 30.0f", bpm);
+        PG_FAILSTR("Invalid speed for the timeline (%.2f BPM). It should be >= 30.0f", bpm);
         mBeatsPerMinute = 30.0f;
     }
     else if (bpm > 500.0f)
     {
-        PG_FAILSTR("Invalid speed for the timeline (%f BPM). It should be <= 500.0f", bpm);
+        PG_FAILSTR("Invalid speed for the timeline (%.2f BPM). It should be <= 500.0f", bpm);
         mBeatsPerMinute = 500.0f;
     }
     else
     {
         mBeatsPerMinute = bpm;
     }
+
+    PG_LOG('TMLN', "Setting the tempo to %.2f BPM", mBeatsPerMinute);
 
 #if PEGASUS_ENABLE_PROXIES
     // If the play mode is real-time, the Pegasus start time needs to be recomputed

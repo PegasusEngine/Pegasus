@@ -43,20 +43,37 @@ public:
     //! Destructor
     virtual ~TimelineBlockGraphicsItem();
 
+    //! Get the block proxy associated with the item
+    //! \return Block proxy associated with the item (!= nullptr)
+    inline Pegasus::Timeline::IBlockProxy * GetBlockProxy() const { return mBlockProxy; }
+
+
     //! Set the timeline lane of the block
     //! \param lane Index of the timeline lane the block belongs to
     //! \param updateItem True if the graphics item needs to be updated (use false only for special cases)
     void SetLane(unsigned int lane, bool updateItem = true);
+
+    //! Get the timeline lane of the block
+    //! \return Index of the timeline lane the block belongs to
+    inline unsigned int GetLane() const { return mLane; }
 
     //! Set the position of the block
     //! \param beat Position of the block, measured in ticks
     //! \param updateItem True if the graphics item needs to be updated (use false only for special cases)
     void SetBeat(Pegasus::Timeline::Beat beat, bool updateItem = true);
 
+    //! Get the position of the block
+    //! \return Position of the block, measured in ticks
+    inline Pegasus::Timeline::Beat GetBeat() const { return mBeat; }
+
     //! Set the duration of the block
     //! \param duration Duration of the block, measured in ticks (> 0)
     //! \param updateItem True if the graphics item needs to be updated (use false only for special cases)
     void SetDuration(Pegasus::Timeline::Duration duration, bool updateItem = true);
+
+    //! Get the duration of the block
+    //! \return Duration of the block, measured in ticks (> 0)
+    inline Pegasus::Timeline::Duration GetDuration() const { return mDuration; }
 
     //! Set the horizontal scale of the block
     //! \param scale 1.0f for a 1:1 ratio, < 1.0f for a compressed block, > 1.0f for an expanded block
@@ -65,6 +82,11 @@ public:
     //! Get the horizontal scale of the block
     //! \return 1.0f for a 1:1 ratio, < 1.0f for a compressed block, > 1.0f for an expanded block
     //inline float GetHorizontalScale() const { return mHorizontalScale; }
+
+    //! Get the block ID, unique to each block, used for merging undo commands
+    //! (so moving a block does not create a new undo command for each pixel moved)
+    //! \return ID unique to the block
+    inline unsigned int GetBlockID() const { return mBlockID; }
 
 
     //! \todo Document those functions
@@ -151,6 +173,21 @@ private:
 
     //! Length in pixels (with no zoom applied, but horizontal scale applied)
     float mLength;
+
+    //! True if undo commands can be sent
+    bool mEnableUndo;
+
+    //! Block ID counter, assigned uniquely to each block, used for merging undo commands
+    //! (so moving a block does not create a new undo command for each pixel moved)
+    static unsigned int sCurrentBlockID;
+    
+    //! Block ID, unique to each block, used for merging undo commands
+    //! (so moving a block does not create a new undo command for each pixel moved)
+    unsigned int mBlockID;
+
+    //! Mouse click ID, unique for each time the click is maintained while moving a block.
+    //! Used to create new undo commands each time the mouse click is released.
+    static unsigned int sMouseClickID;
 };
 
 

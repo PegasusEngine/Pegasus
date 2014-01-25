@@ -26,6 +26,7 @@ public:
     TimelineDockWidget(QWidget *parent = 0);
     virtual ~TimelineDockWidget();
 
+
     //! Set the antialiasing mode of the timeline
     //! \param enable True to enable antialiasing
     void EnableAntialiasing(bool enable);
@@ -37,6 +38,12 @@ public:
     //! Test if the play mode is currently enabled
     //! \return True if the play button is currently toggled
     inline bool IsPlaying() const { return ui.playButton->isChecked(); }
+
+
+    //! Set the speed of the demo
+    //! \note Updates the Pegasus timeline, refreshed the tempo field and updates the graphics view
+    //! \param bpm Tempo in beats per minute
+    void SetBeatsPerMinute(double bpm);
 
     //------------------------------------------------------------------------------------
 
@@ -69,9 +76,9 @@ public slots:
 
 private slots:
 
-    //! Called when the speed of the demo has changed
+    //! Called when the tempo has changed value
     //! \param bpm Tempo in beats per minute
-    void SetBeatsPerMinute(double bpm);
+    void OnSetBeatsPerMinute(double bpm);
 
     //! Called when the current beat has been updated
     //! \param beat Current beat, can have fractional part
@@ -93,7 +100,11 @@ private slots:
 
 private:
 
+    //! User interface definition
     Ui::TimelineDockWidget ui;
+
+    //! True if undo commands can be sent
+    bool mEnableUndo;
 };
 
 

@@ -10,6 +10,7 @@
 //! \brief	Graphics item representing one block in the timeline
 
 #include "Timeline/TimelineBlockGraphicsItem.h"
+#include "Timeline/TimelineUndoCommands.h"
 #include "Timeline/TimelineSizes.h"
 
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"
@@ -25,6 +26,9 @@
 //! Depth of the block when drawn. Positive since it needs to be rendered in front of the grid at least
 #define TIMELINE_BLOCK_GRAPHICS_ITEM_Z_VALUE                10.0f
 
+unsigned int TimelineBlockGraphicsItem::sCurrentBlockID = 0;
+unsigned int TimelineBlockGraphicsItem::sMouseClickID = 0;
+
 //----------------------------------------------------------------------------------------
 
 TimelineBlockGraphicsItem::TimelineBlockGraphicsItem(Pegasus::Timeline::IBlockProxy * blockProxy,
@@ -32,7 +36,8 @@ TimelineBlockGraphicsItem::TimelineBlockGraphicsItem(Pegasus::Timeline::IBlockPr
                                                      float horizontalScale)
 :   QGraphicsObject(),
     mBlockProxy(blockProxy),
-    mName((blockProxy != nullptr) ? blockProxy->GetEditorString() : "")
+    mName((blockProxy != nullptr) ? blockProxy->GetEditorString() : ""),
+    mEnableUndo(true)
 {
     ED_ASSERTSTR(blockProxy != nullptr, "A block proxy must be associated with the block item");
     ED_ASSERTSTR(!QString(blockProxy->GetEditorString()).isEmpty(), "The name of the block must be defined");
@@ -73,6 +78,9 @@ TimelineBlockGraphicsItem::TimelineBlockGraphicsItem(Pegasus::Timeline::IBlockPr
     // Set the depth of the block (positive since it needs to be rendered
     // in front of the grid at least)
     setZValue(TIMELINE_BLOCK_GRAPHICS_ITEM_Z_VALUE);
+
+    //! Assign a unique ID to the block for merging undo commands when moving the block
+    mBlockID = sCurrentBlockID++;
 }
 
 //----------------------------------------------------------------------------------------
@@ -85,6 +93,8 @@ TimelineBlockGraphicsItem::~TimelineBlockGraphicsItem()
 
 void TimelineBlockGraphicsItem::SetLane(unsigned int lane, bool updateItem)
 {
+    mEnableUndo = false;
+
     mLane = lane;
 
     // Update the vertical position
@@ -96,13 +106,19 @@ void TimelineBlockGraphicsItem::SetLane(unsigned int lane, bool updateItem)
         // Set the new position of the graphics item
         setPos(mX, mY);
         update(boundingRect());
+
+        emit BlockMoved();
     }
+
+    mEnableUndo = true;
 }
 
 //----------------------------------------------------------------------------------------
 
 void TimelineBlockGraphicsItem::SetBeat(Pegasus::Timeline::Beat beat, bool updateItem)
 {
+    mEnableUndo = false;
+
     mBeat = beat;
 
     // Update the scaled position
@@ -114,7 +130,11 @@ void TimelineBlockGraphicsItem::SetBeat(Pegasus::Timeline::Beat beat, bool updat
         // Set the new position of the graphics item
         setPos(mX, mY);
         update(boundingRect());
+
+        emit BlockMoved();
     }
+
+    mEnableUndo = true;
 }
 
 //----------------------------------------------------------------------------------------
@@ -234,108 +254,130 @@ QVariant TimelineBlockGraphicsItem::itemChange(GraphicsItemChange change, const 
         // In all cases, Pegasus is informed of the update
         case ItemPositionChange:
             {
-                Pegasus::Timeline::ILaneProxy * laneProxy = mBlockProxy->GetLane();
-                if (laneProxy == nullptr)
+                if (mEnableUndo)
                 {
-                    ED_FAILSTR("Unable to move the block \"%s\" since it has no associated lane", mBlockProxy->GetEditorString());
-                    break;
-                }
-                Pegasus::Timeline::ITimelineProxy * timelineProxy = laneProxy->GetTimeline();
-                if (timelineProxy == nullptr)
-                {
-                    ED_FAILSTR("Unable to move the block \"%s\" since it has no associated timeline", mBlockProxy->GetEditorString());
-                    break;
-                }
-
-                // Compute the desired beat and lane from the mouse position
-                QPointF newMousePos = value.toPointF();
-                Pegasus::Timeline::Beat newBeat = GetBeatFromX(newMousePos.x());
-                unsigned int newLane = GetLaneFromY(newMousePos.y());
-
-                // If the beat and lane have not changed (movement smaller than a tick),
-                // keep the old location and tell the item we overrode the position
-                if ((newBeat == mBeat) && (newLane == mLane))
-                {
-                    return QPointF(mX, mY);
-                }
-
-                // Test if the block fits in its new location
-                Pegasus::Timeline::ILaneProxy * newLaneProxy = timelineProxy->GetLane(newLane);
-                if (newLaneProxy == nullptr)
-                {
-                    newLaneProxy = laneProxy;
-                }
-                if (newLaneProxy->IsBlockFitting(mBlockProxy, newBeat, mBlockProxy->GetDuration()))
-                {
-                    // If the block fits
-                    
-                    if (newLane != mLane)
+                    Pegasus::Timeline::ILaneProxy * laneProxy = mBlockProxy->GetLane();
+                    if (laneProxy == nullptr)
                     {
-                        // If the lane has changed, move the block to the new lane and new position
-                        laneProxy->MoveBlockToLane(mBlockProxy, newLaneProxy, newBeat);
+                        ED_FAILSTR("Unable to move the block \"%s\" since it has no associated lane", mBlockProxy->GetEditorString());
+                        break;
                     }
-                    else
+                    Pegasus::Timeline::ITimelineProxy * timelineProxy = laneProxy->GetTimeline();
+                    if (timelineProxy == nullptr)
                     {
-                        // The lane has not changed, just move the block in the current lane
-                        laneProxy->SetBlockBeat(mBlockProxy, newBeat);
+                        ED_FAILSTR("Unable to move the block \"%s\" since it has no associated timeline", mBlockProxy->GetEditorString());
+                        break;
                     }
 
-                    // Update the coordinates of the item
-                    mBeat = newBeat;
-                    mLane = newLane;
-                    SetXFromBeat();
-                    SetYFromLane();
+                    // Compute the desired beat and lane from the mouse position
+                    QPointF newMousePos = value.toPointF();
+                    Pegasus::Timeline::Beat newBeat = GetBeatFromX(newMousePos.x());
+                    unsigned int newLane = GetLaneFromY(newMousePos.y());
 
-                    // Tell the parents the block has moved
-                    emit BlockMoved();
-
-                    // If the new coordinates differ from the new mouse position,
-                    // tell the item we overrode the position
-                    if ( (mX != newMousePos.x()) || (mY != newMousePos.y()) )
+                    // If the beat and lane have not changed (movement smaller than a tick),
+                    // keep the old location and tell the item we overrode the position
+                    if ((newBeat == mBeat) && (newLane == mLane))
                     {
                         return QPointF(mX, mY);
                     }
-                }
-                else
-                {
-                    // If the block does not fit
 
-                    if ((newLane != mLane) && (newBeat != mBeat))
+                    // Determine if the block is part of a multiple selection
+                    bool isMultipleSelection = false;
+                    QGraphicsScene * const parentScene = scene();
+                    QList<QGraphicsItem *> selectedItems;
+                    if (parentScene != nullptr)
                     {
-                        // If the lane and the beats have changed, test if the block fits in the original lane.
-                        // In that case, just affect the beat
-                        if (laneProxy->IsBlockFitting(mBlockProxy, newBeat, mBlockProxy->GetDuration()))
+                        selectedItems = parentScene->selectedItems();
+                        if (selectedItems.count() >= 2)
                         {
-                            // The lane has not changed, just move the block in the current lane
-                            laneProxy->SetBlockBeat(mBlockProxy, newBeat);
+                            ED_ASSERTSTR(selectedItems.contains(this), "Invalid block selection");
+                            isMultipleSelection = true;
+                        }
+                    }
 
-                            // Update the coordinates of the item
-                            mBeat = newBeat;
-                            SetXFromBeat();
-                            SetYFromLane();
-
-                            // Tell the parents the block has moved
-                            emit BlockMoved();
-
-                            // If the new coordinates differ from the new mouse position,
-                            // tell the item we overrode the position
-                            if ( (mX != newMousePos.x()) || (mY != newMousePos.y()) )
-                            {
-                                return QPointF(mX, mY);
-                            }
+                    // Test if the block fits in its new location
+                    Pegasus::Timeline::ILaneProxy * newLaneProxy = timelineProxy->GetLane(newLane);
+                    if (newLaneProxy == nullptr)
+                    {
+                        newLaneProxy = laneProxy;
+                    }
+                    if (newLaneProxy->IsBlockFitting(mBlockProxy, newBeat, mBlockProxy->GetDuration()))
+                    {
+                        // If the block fits
+                    
+                        // Create the undo command
+                        QUndoCommand * undoCommand = nullptr;
+                        if (isMultipleSelection)
+                        {
+                            undoCommand = new TimelineSetMultiBlockPositionUndoCommand(this, selectedItems,
+                                                                                       (newLane != mLane), newLane, newBeat,
+                                                                                       sMouseClickID);
                         }
                         else
                         {
-                            // If the block does not fit in the new location in a different lane,
-                            // keep the old location and tell the item we overrode the position
+                            undoCommand = new TimelineSetBlockPositionUndoCommand(this,
+                                                                                  (newLane != mLane), newLane, newBeat,
+                                                                                  sMouseClickID);
+                        }
+        
+                        // Push the undo command, redo() is executed and the block updated
+                        Editor::GetInstance().PushUndoCommand(undoCommand);
+
+                        // If the new coordinates differ from the new mouse position,
+                        // tell the item we overrode the position
+                        if ( (mX != newMousePos.x()) || (mY != newMousePos.y()) )
+                        {
                             return QPointF(mX, mY);
                         }
                     }
                     else
                     {
-                        // If the block does not fit in the new location in the same lane,
-                        // keep the old location and tell the item we overrode the position
-                        return QPointF(mX, mY);
+                        // If the block does not fit
+
+                        if ((newLane != mLane) && (newBeat != mBeat))
+                        {
+                            // If the lane and the beats have changed, test if the block fits in the original lane.
+                            // In that case, just affect the beat
+                            if (laneProxy->IsBlockFitting(mBlockProxy, newBeat, mBlockProxy->GetDuration()))
+                            {
+                                // Create the undo command
+                                QUndoCommand * undoCommand = nullptr;
+                                if (isMultipleSelection)
+                                {
+                                    undoCommand = new TimelineSetMultiBlockPositionUndoCommand(this, selectedItems,
+                                                                                               false, mLane, newBeat,
+                                                                                               sMouseClickID);
+                                }
+                                else
+                                {
+                                    undoCommand = new TimelineSetBlockPositionUndoCommand(this,
+                                                                                          false, mLane, newBeat,
+                                                                                          sMouseClickID);
+                                }
+        
+                                // Push the undo command, redo() is executed and the block updated
+                                Editor::GetInstance().PushUndoCommand(undoCommand);
+
+                                // If the new coordinates differ from the new mouse position,
+                                // tell the item we overrode the position
+                                if ( (mX != newMousePos.x()) || (mY != newMousePos.y()) )
+                                {
+                                    return QPointF(mX, mY);
+                                }
+                            }
+                            else
+                            {
+                                // If the block does not fit in the new location in a different lane,
+                                // keep the old location and tell the item we overrode the position
+                                return QPointF(mX, mY);
+                            }
+                        }
+                        else
+                        {
+                            // If the block does not fit in the new location in the same lane,
+                            // keep the old location and tell the item we overrode the position
+                            return QPointF(mX, mY);
+                        }
                     }
                 }
             }
@@ -360,6 +402,10 @@ void TimelineBlockGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void TimelineBlockGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
+    // Consider the next time we move the same block as a new undo command
+    // (do not test for left button, it does not seem to work)
+    sMouseClickID++;
+
     update();
     QGraphicsItem::mouseReleaseEvent(event);
 }

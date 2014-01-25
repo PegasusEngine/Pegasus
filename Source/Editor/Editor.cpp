@@ -16,8 +16,10 @@
 #include "Settings/SettingsDialog.h"
 #include "Viewport/ViewportDockWidget.h"
 #include "Timeline/TimelineDockWidget.h"
+#include "History/HistoryDockWidget.h"
 #include "Console/ConsoleDockWidget.h"
 
+#include <QUndoStack>
 #include <QSplashScreen>
 #include <QAction>
 #include <QMenuBar>
@@ -45,6 +47,9 @@ Editor::Editor(QWidget *parent)
 
     // Create the assertion manager
     mAssertionManager = new AssertionManager(this);
+
+    // Create the undo stack
+    mUndoStack = new QUndoStack(this);
 
     // Create the splash screen (it becomes visible once this class is initialized,
     // set by the application class)
@@ -147,6 +152,20 @@ void Editor::CloseSplashScreen()
 
 //----------------------------------------------------------------------------------------
 
+void Editor::PushUndoCommand(QUndoCommand * command)
+{
+    if (command != nullptr)
+    {
+        mUndoStack->push(command);
+    }
+    else
+    {
+        ED_FAILSTR("Invalid command pushed to the undo manager");
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 ViewportWidget * Editor::GetViewportWidget(ViewportType viewportType) const
 {
     switch (viewportType)
@@ -202,10 +221,21 @@ void Editor::CreateActions()
 	connect(mActionFileQuit, SIGNAL(triggered()), this, SLOT(Quit()));
 
 
+    mActionEditUndo = mUndoStack->createUndoAction(this, tr("&Undo"));
+	mActionEditUndo->setIcon(QIcon(":/Toolbar/Edit/Undo16.png"));
+	mActionEditUndo->setShortcut(tr("Ctrl+Z"));
+	mActionEditUndo->setStatusTip(tr("Undo the last command"));
+
+    mActionEditRedo = mUndoStack->createRedoAction(this, tr("&Redo"));
+	mActionEditRedo->setIcon(QIcon(":/Toolbar/Edit/Redo16.png"));
+	mActionEditRedo->setShortcut(tr("Ctrl+Y"));
+	mActionEditRedo->setStatusTip(tr("Redo the last command"));
+
     mActionEditPreferences = new QAction(tr("&Preferences..."), this);
 	mActionEditPreferences->setShortcut(tr("Ctrl+K"));
 	mActionEditPreferences->setStatusTip(tr("Open the preferences dialog"));
 	connect(mActionEditPreferences, SIGNAL(triggered()), this, SLOT(OpenPreferences()));
+
 
 	mActionViewShowFullscreenViewport = new QAction(tr("Show &Fullscreen Viewport"), this);
 	mActionViewShowFullscreenViewport->setCheckable(true);
@@ -235,6 +265,10 @@ void Editor::CreateActions()
     mActionWindowTimeline = new QAction(tr("&Timeline"), this);
 	mActionWindowTimeline->setStatusTip(tr("Open the timeline window"));
 	connect(mActionWindowTimeline, SIGNAL(triggered()), this, SLOT(OpenTimelineWindow()));
+
+    mActionWindowHistory = new QAction(tr("&History"), this);
+	mActionWindowHistory->setStatusTip(tr("Open the history window"));
+	connect(mActionWindowHistory, SIGNAL(triggered()), this, SLOT(OpenHistoryWindow()));
 
     mActionWindowConsole = new QAction(tr("&Console"), this);
 	mActionWindowConsole->setStatusTip(tr("Open the console window"));
@@ -267,6 +301,9 @@ void Editor::CreateMenu()
     fileMenu->addAction(mActionFileQuit);
 
     QMenu * editMenu = menuBar()->addMenu(tr("&Edit"));
+    editMenu->addAction(mActionEditUndo);
+    editMenu->addAction(mActionEditRedo);
+    editMenu->addSeparator();
     editMenu->addAction(mActionEditPreferences);
 
     QMenu * viewMenu = menuBar()->addMenu(tr("&View"));
@@ -284,6 +321,7 @@ void Editor::CreateMenu()
     windowMenu->addAction(mActionWindowMainViewport);
     windowMenu->addAction(mActionWindowSecondaryViewport);
     windowMenu->addAction(mActionWindowTimeline);
+    windowMenu->addAction(mActionWindowHistory);
     windowMenu->addAction(mActionWindowConsole);
 
     QMenu * helpMenu = menuBar()->addMenu(tr("&Help"));
@@ -305,7 +343,14 @@ void Editor::CreateToolBars()
 	fileToolBar->addAction(mActionFileOpenApp);
     fileToolBar->addAction(mActionFileCloseApp);
 
-	QToolBar * viewToolBar = addToolBar(tr("View"));
+	QToolBar * editToolBar = addToolBar(tr("Edit"));
+    editToolBar->setObjectName("EditToolBar");
+	editToolBar->setIconSize(QSize(16, 16));
+	editToolBar->setAllowedAreas(Qt::TopToolBarArea);
+	editToolBar->addAction(mActionEditUndo);
+	editToolBar->addAction(mActionEditRedo);
+
+    QToolBar * viewToolBar = addToolBar(tr("View"));
     viewToolBar->setObjectName("ViewToolBar");
 	viewToolBar->setIconSize(QSize(16, 16));
 	viewToolBar->setAllowedAreas(Qt::TopToolBarArea);
@@ -346,6 +391,10 @@ void Editor::CreateDockWidgets()
     mTimelineDockWidget = new TimelineDockWidget(this);
     //mTimelineDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
     addDockWidget(Qt::BottomDockWidgetArea, mTimelineDockWidget);
+
+    mHistoryDockWidget = new HistoryDockWidget(mUndoStack, this);
+    //mHistoryDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
+    addDockWidget(Qt::RightDockWidgetArea, mHistoryDockWidget);
 
     mConsoleDockWidget = new ConsoleDockWidget(this);
     //mConsoleDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
@@ -513,6 +562,13 @@ void Editor::OpenSecondaryViewportWindow()
 void Editor::OpenTimelineWindow()
 {
     mTimelineDockWidget->show();
+}
+
+//----------------------------------------------------------------------------------------
+
+void Editor::OpenHistoryWindow()
+{
+    mHistoryDockWidget->show();
 }
 
 //----------------------------------------------------------------------------------------

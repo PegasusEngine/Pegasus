@@ -3,6 +3,8 @@
         <file>Toolbar/File/NewScene24.png</file>
         <file>Toolbar/File/OpenApp24.png</file>
         <file>Toolbar/File/SaveScene24.png</file>
+        <file>Toolbar/Edit/Undo16.png</file>
+        <file>Toolbar/Edit/Redo16.png</file>
         <file>Toolbar/View/FullScreenViewport24.png</file>
         <file>SettingsDialog/Appearance.png</file>
         <file>TimelineToolbar/Add16.png</file>
