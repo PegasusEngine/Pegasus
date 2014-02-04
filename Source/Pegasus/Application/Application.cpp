@@ -74,7 +74,7 @@ Application::Application(const ApplicationConfig& config)
     mTextureManager = PG_NEW(nodeAlloc, -1, "TextureManager", Alloc::PG_MEM_PERM) Texture::TextureManager(mNodeManager);
 
     // Set up timeline
-    mTimeline = PG_NEW(timelineAlloc, -1, "Timeline", Alloc::PG_MEM_PERM) Timeline::Timeline(timelineAlloc);
+    mTimeline = PG_NEW(timelineAlloc, -1, "Timeline", Alloc::PG_MEM_PERM) Timeline::Timeline(timelineAlloc, this);
 
     // Cache config
     mConfig = config;
@@ -136,6 +136,7 @@ void Application::Initialize()
     StartupAppInternal();
 
     // Custom initialization, done in the user application
+    RegisterTimelineBlocks();
     InitializeApp();
 
     // Initted

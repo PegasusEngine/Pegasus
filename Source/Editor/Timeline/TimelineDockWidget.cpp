@@ -18,6 +18,8 @@
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 #include "Pegasus/Timeline/Shared/ILaneProxy.h"
 
+#include <QListWidgetItem>
+
 
 TimelineDockWidget::TimelineDockWidget(QWidget *parent)
 :   QDockWidget(parent),
@@ -153,6 +155,9 @@ void TimelineDockWidget::UpdateUIForAppLoaded()
     UpdateUIFromBeat(0.0f);
     ui.graphicsView->setEnabled(true);
 
+    // Update the content of the timeline block names list
+    RefreshBlockNames();
+
     // Update the content of the timeline graphics view from the timeline of the app
     ui.graphicsView->RefreshFromTimeline();
 
@@ -224,4 +229,27 @@ void TimelineDockWidget::SetBeatLabel(unsigned int beat, unsigned int subBeat, u
 void TimelineDockWidget::SetTimeLabel(unsigned int minutes, unsigned int seconds, unsigned int milliseconds)
 {
     ui.timeLabel->setText(QString("%1:%2:%3").arg(minutes).arg(seconds, 2, 10, QChar('0')).arg(milliseconds, 3, 10, QChar('0')));
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::RefreshBlockNames()
+{
+    Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
+    if (application != nullptr)
+    {
+        Pegasus::Timeline::ITimelineProxy * const timeline = application->GetTimelineProxy();
+
+        // Get the list from the Pegasus timeline
+        static char blockClassNames   [Pegasus::Timeline::MAX_NUM_REGISTERED_BLOCKS][Pegasus::Timeline::MAX_BLOCK_CLASS_NAME_LENGTH + 1];
+        static char blockEditorStrings[Pegasus::Timeline::MAX_NUM_REGISTERED_BLOCKS][Pegasus::Timeline::MAX_BLOCK_CLASS_NAME_LENGTH + 1];
+        const unsigned int numBlockNames = timeline->GetRegisteredBlockNames(blockClassNames, blockEditorStrings);
+
+        // Fill the list of block names
+        ui.blockNamesList->clear();
+        for (unsigned int b = 0; b < numBlockNames; ++b)
+        {
+            new QListWidgetItem(QString(blockEditorStrings[b]) + " (" + QString(blockClassNames[b]) + ")", ui.blockNamesList);
+        }
+    }
 }

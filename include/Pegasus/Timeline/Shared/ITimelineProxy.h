@@ -35,6 +35,18 @@ public:
     virtual ~ITimelineProxy() {};
 
 
+    //! Get the list of registered block names (class and editor string)
+    //! \param classNames Allocated 2D array of Timeline::MAX_NUM_REGISTERED_BLOCKS strings
+    //!                   of length Timeline::MAX_BLOCK_CLASS_NAME_LENGTH + 1,
+    //!                   containing the resulting class names
+    //! \param editorStrings Allocated 2D array of Timeline::MAX_NUM_REGISTERED_BLOCKS strings
+    //!                   of length Timeline::MAX_BLOCK_EDITOR_STRING_LENGTH + 1,
+    //!                   containing the resulting editor strings (can be empty)
+    //! \return Number of registered blocks (<= Timeline::MAX_NUM_REGISTERED_BLOCKS)
+    virtual unsigned int GetRegisteredBlockNames(char classNames   [MAX_NUM_REGISTERED_BLOCKS][MAX_BLOCK_CLASS_NAME_LENGTH    + 1],
+                                                 char editorStrings[MAX_NUM_REGISTERED_BLOCKS][MAX_BLOCK_EDITOR_STRING_LENGTH + 1]) const = 0;
+
+
     //! Get the number of ticks per beat
     //! \return Number of ticks per beat, power of 2, >= 16, 128 by default
     virtual unsigned int GetNumTicksPerBeat() const = 0;

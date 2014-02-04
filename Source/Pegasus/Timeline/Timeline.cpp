@@ -18,6 +18,8 @@
 #include "Pegasus/Timeline/TimelineProxy.h"
 #endif  // PEGASUS_ENABLE_PROXIES
 
+#include <string.h>
+
 namespace Pegasus {
 namespace Timeline {
 
@@ -26,19 +28,22 @@ const float Timeline::INVALID_BEAT = -1.0f;
 
 //----------------------------------------------------------------------------------------
 
-Timeline::Timeline(Alloc::IAllocator * allocator)
-:   mNumTicksPerBeat(128),
+Timeline::Timeline(Alloc::IAllocator * allocator, Wnd::IWindowContext * appContext)
+:   mAllocator(allocator),
+    mAppContext(appContext),
+    mNumRegisteredBlocks(0),
+    mNumTicksPerBeat(128),
     mNumTicksPerBeatFloat(128.0f),
     mRcpNumTicksPerBeat(1.0f / 128.0f),
     mBeatsPerMinute(120.0f),
     mNumBeats(128),
     mNumLanes(0),
-    mAllocator(allocator),
     mPlayMode(PLAYMODE_REALTIME),
     mCurrentBeat(INVALID_BEAT),
     mStartPegasusTime(0.0)
 {
     PG_ASSERTSTR(allocator != nullptr, "Invalid allocator given to the timeline object");
+    PG_ASSERTSTR(appContext != nullptr, "Invalid application context given to the timeline object");
 
 #if PEGASUS_ENABLE_PROXIES
     //! Create the proxy associated with the timeline
@@ -64,6 +69,143 @@ Timeline::~Timeline()
     //! Destroy the proxy associated with the timeline
     PG_DELETE(mAllocator, mProxy);
 #endif
+}
+
+//----------------------------------------------------------------------------------------
+
+#if PEGASUS_ENABLE_PROXIES
+void Timeline::RegisterBlock(const char * className, const char * editorString, CreateBlockFunc createBlockFunc)
+#else
+void Timeline::RegisterBlock(const char * className, CreateBlockFunc createBlockFunc)
+#endif
+{
+    if (className == nullptr)
+    {
+        PG_FAILSTR("Trying to register a block class but the name is undefined");
+        return;
+    }
+#if PEGASUS_ENABLE_PROXIES
+    if (editorString == nullptr)
+    {
+        PG_FAILSTR("Trying to register a block class but the editor string is undefined");
+        return;
+    }
+#endif
+
+#if PEGASUS_COMPILER_MSVC
+    if (strnlen_s(className, MAX_BLOCK_CLASS_NAME_LENGTH) < 4)
+#else
+    if (strnlen(className, MAX_BLOCK_CLASS_NAME_LENGTH) < 4)
+#endif
+    {
+        PG_FAILSTR("Trying to register a block class but the name (%s) is too short", className);
+        return;
+    }
+
+    if (createBlockFunc == nullptr)
+    {
+        PG_FAILSTR("Trying to register a block class but the factory function is undefined");
+        return;
+    }
+
+    if (mNumRegisteredBlocks >= MAX_NUM_REGISTERED_BLOCKS)
+    {
+        PG_FAILSTR("Unable to register a block, the maximum number of blocks (%d) has been reached", MAX_NUM_REGISTERED_BLOCKS);
+        return;
+    }
+
+    // After the parameters have been validated, register the class
+    BlockEntry & entry = mRegisteredBlocks[mNumRegisteredBlocks];
+#if PEGASUS_COMPILER_MSVC
+
+    strncpy_s(entry.className, MAX_BLOCK_CLASS_NAME_LENGTH + 1,
+              className, MAX_BLOCK_CLASS_NAME_LENGTH + 1);
+#if PEGASUS_ENABLE_PROXIES
+    strncpy_s(entry.editorString, MAX_BLOCK_EDITOR_STRING_LENGTH + 1,
+              editorString, MAX_BLOCK_EDITOR_STRING_LENGTH + 1);
+#endif
+
+#else
+
+    entry.className[MAX_BLOCK_CLASS_NAME_LENGTH] = '\0';
+    strncpy(entry.className, className, MAX_BLOCK_CLASS_NAME_LENGTH);
+#if PEGASUS_ENABLE_PROXIES
+    strncpy(entry.editorString, editorString, MAX_BLOCK_EDITOR_STRING_LENGTH);
+#endif
+
+#endif  // PEGASUS_COMPILER_MSVC
+
+    entry.createBlockFunc = createBlockFunc;
+    ++mNumRegisteredBlocks;
+}
+
+//----------------------------------------------------------------------------------------
+
+#if PEGASUS_ENABLE_PROXIES
+
+unsigned int Timeline::GetRegisteredBlockNames(char classNames   [MAX_NUM_REGISTERED_BLOCKS][MAX_BLOCK_CLASS_NAME_LENGTH + 1],
+                                               char editorStrings[MAX_NUM_REGISTERED_BLOCKS][MAX_BLOCK_CLASS_NAME_LENGTH + 1]) const
+{
+    if ((classNames != nullptr) && (editorStrings != nullptr))
+    {
+        for (unsigned int b = 0; b < mNumRegisteredBlocks; ++b)
+        {
+            if ((classNames[b] != nullptr) && (editorStrings[b] != nullptr))
+            {
+                const BlockEntry & entry = mRegisteredBlocks[b];
+#if PEGASUS_COMPILER_MSVC
+                strncpy_s(classNames[b], MAX_BLOCK_CLASS_NAME_LENGTH + 1,
+                          entry.className, MAX_BLOCK_CLASS_NAME_LENGTH + 1);
+                strncpy_s(editorStrings[b], MAX_BLOCK_EDITOR_STRING_LENGTH + 1,
+                          entry.editorString, MAX_BLOCK_EDITOR_STRING_LENGTH + 1);
+#else
+                classNames[b][MAX_BLOCK_CLASS_NAME_LENGTH] = '\0';
+                strncpy(classNames[b], entry.className, MAX_BLOCK_CLASS_NAME_LENGTH);
+                strncpy(editorStrings[b], entry.editorString, MAX_BLOCK_EDITOR_STRING_LENGTH);
+#endif  // PEGASUS_COMPILER_MSVC
+            }
+            else
+            {
+                PG_FAILSTR("Invalid output array when getting the list of registered timeline blocks");
+                return 0;
+            }
+        }
+
+        return mNumRegisteredBlocks;
+    }
+    else
+    {
+        PG_FAILSTR("Invalid output array when getting the list of registered timeline blocks");
+        return 0;
+    }
+}
+
+#endif  // PEGASUS_ENABLE_PROXIES
+
+//----------------------------------------------------------------------------------------
+
+Block * Timeline::CreateBlock(const char * className)
+{
+    const unsigned int registeredBlockIndex = GetRegisteredBlockIndex(className);
+    if (registeredBlockIndex < mNumRegisteredBlocks)
+    {
+        BlockEntry & entry = mRegisteredBlocks[registeredBlockIndex];
+        PG_ASSERT(entry.createBlockFunc != nullptr);
+        return entry.createBlockFunc(mAllocator, mAppContext);
+    }
+    else
+    {
+        if (className == nullptr)
+        {
+            PG_FAILSTR("Unable to create a block because the provided class name is invalid");
+        }
+        else
+        {
+            PG_FAILSTR("Unable to create the block of class %s because it has not been registered", className);
+        }
+
+        return nullptr;
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -159,7 +301,7 @@ Lane * Timeline::CreateLane()
 {
     PG_LOG('TMLN', "Creating a new lane (index %d)", mNumLanes);
 
-    if (mNumLanes < TIMELINE_MAX_NUM_LANES)
+    if (mNumLanes < MAX_NUM_LANES)
     {
         mLanes[mNumLanes] = PG_NEW(mAllocator, -1, "Timeline::Lane", Alloc::PG_MEM_PERM) Lane(mAllocator, this);
         ++mNumLanes;
@@ -168,7 +310,7 @@ Lane * Timeline::CreateLane()
     }
     else
     {
-        PG_FAILSTR("Unable to create a new lane, the maximum number of lane has been reached (%d)", TIMELINE_MAX_NUM_LANES);
+        PG_FAILSTR("Unable to create a new lane, the maximum number of lane has been reached (%d)", MAX_NUM_LANES);
         return nullptr;
     }
 }
@@ -318,6 +460,31 @@ void Timeline::SetCurrentBeat(float beat)
         mRequiresStartTimeComputation = true;
     }
 #endif  // PEGASUS_ENABLE_PROXIES
+}
+
+//----------------------------------------------------------------------------------------
+
+unsigned int Timeline::GetRegisteredBlockIndex(const char * className) const
+{
+    if (className == nullptr)
+    {
+        PG_FAILSTR("Trying to find a block class by name but the name is undefined");
+        return mNumRegisteredBlocks;
+    }
+
+    unsigned int index;
+    for (index = 0; index < mNumRegisteredBlocks; ++index)
+    {
+        if (strncmp(mRegisteredBlocks[index].className, className, MAX_BLOCK_CLASS_NAME_LENGTH) == 0)
+        {
+            // Block found
+            return index;
+        }
+    }
+
+    // Block not found
+    PG_ASSERT(index == mNumRegisteredBlocks);
+    return mNumRegisteredBlocks;
 }
 
 

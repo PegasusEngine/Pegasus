@@ -55,6 +55,9 @@ public:
     //! \return Application name.
     virtual const char* GetAppName() const = 0;
 
+    //! Register the custom timeline blocks in the user application
+    virtual void RegisterTimelineBlocks() = 0;
+
     //! Custom initialization, done in the user application before the timeline triggers the loading of blocks and their assets
     virtual void InitializeApp() = 0;
 

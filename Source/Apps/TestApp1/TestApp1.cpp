@@ -67,10 +67,19 @@ TestApp1::~TestApp1()
 
 //----------------------------------------------------------------------------------------
 
+void TestApp1::RegisterTimelineBlocks()
+{
+    REGISTER_TIMELINE_BLOCK(KleberTriangleBlock);
+    REGISTER_TIMELINE_BLOCK(PsyBeadsBlock);
+    REGISTER_TIMELINE_BLOCK(FractalCubeBlock);
+    REGISTER_TIMELINE_BLOCK(FractalCube2Block);
+}
+
+//----------------------------------------------------------------------------------------
+    
 void TestApp1::InitializeApp()
 {
     Pegasus::Timeline::Timeline * const timeline = GetTimeline();
-    Pegasus::Alloc::IAllocator * const timelineAllocator = timeline->GetAllocator();
 
     // Create the content of the timeline
     const unsigned int TICKS_PER_BEAT = 128;
@@ -86,31 +95,31 @@ void TestApp1::InitializeApp()
     timeline->GetLane(2)->SetName("Blob");
 #endif
 
-    KleberTriangleBlock * kleberTriangleBlock = PG_NEW(timelineAllocator, -1, "KleberTriangleBlock", Pegasus::Alloc::PG_MEM_PERM) KleberTriangleBlock(timelineAllocator, this);
+    Pegasus::Timeline::Block * kleberTriangleBlock = timeline->CreateBlock("KleberTriangleBlock");
 #if PEGASUS_ENABLE_PROXIES
     kleberTriangleBlock->SetColor(255, 255, 128);
 #endif
     timeline->GetLane(2)->InsertBlock(kleberTriangleBlock, 6 * TICKS_PER_BEAT, 4 * TICKS_PER_BEAT);
 
-    PsyBeadsBlock * psyBeadBlock = PG_NEW(timelineAllocator, -1, "PsyBeadsBlock", Pegasus::Alloc::PG_MEM_PERM) PsyBeadsBlock(timelineAllocator, this);
+    Pegasus::Timeline::Block * psyBeadBlock = timeline->CreateBlock("PsyBeadsBlock");
 #if PEGASUS_ENABLE_PROXIES
     psyBeadBlock->SetColor(255, 128, 128);
 #endif
     timeline->GetLane(0)->InsertBlock(psyBeadBlock, 0 * TICKS_PER_BEAT, 8 * TICKS_PER_BEAT);
 
-    PsyBeadsBlock * psyBeadBlock2 = PG_NEW(timelineAllocator, -1, "PsyBeadsBlock 2", Pegasus::Alloc::PG_MEM_PERM) PsyBeadsBlock(timelineAllocator, this);
+    Pegasus::Timeline::Block * psyBeadBlock2 = timeline->CreateBlock("PsyBeadsBlock");
 #if PEGASUS_ENABLE_PROXIES
     psyBeadBlock2->SetColor(255, 128, 192);
 #endif
     timeline->GetLane(0)->InsertBlock(psyBeadBlock2, 19 * TICKS_PER_BEAT, 10 * TICKS_PER_BEAT);
 
-    FractalCubeBlock * fractalCubeBlock = PG_NEW(timelineAllocator, -1, "FractalCubeBlock", Pegasus::Alloc::PG_MEM_PERM) FractalCubeBlock(timelineAllocator, this);
+    Pegasus::Timeline::Block * fractalCubeBlock = timeline->CreateBlock("FractalCubeBlock");
 #if PEGASUS_ENABLE_PROXIES
     fractalCubeBlock->SetColor(128, 255, 128);
 #endif
     timeline->GetLane(1)->InsertBlock(fractalCubeBlock, 8 * TICKS_PER_BEAT, 5 * TICKS_PER_BEAT);
 
-    FractalCube2Block * fractalCube2Block = PG_NEW(timelineAllocator, -1, "FractalCube2Block", Pegasus::Alloc::PG_MEM_PERM) FractalCube2Block(timelineAllocator, this);
+    Pegasus::Timeline::Block * fractalCube2Block = timeline->CreateBlock("FractalCube2Block");
 #if PEGASUS_ENABLE_PROXIES
     fractalCube2Block->SetColor(128, 255, 192);
 #endif

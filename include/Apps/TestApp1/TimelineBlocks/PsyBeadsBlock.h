@@ -21,7 +21,7 @@
 //! \todo Use protected inheritance? In that case, give access to SetPosition() and SetLength()
 class PsyBeadsBlock : public Pegasus::Timeline::Block
 {
-    DECLARE_TIMELINE_BLOCK("PsyBeads");
+    DECLARE_TIMELINE_BLOCK(PsyBeadsBlock, "PsyBeads");
 
 public:
 

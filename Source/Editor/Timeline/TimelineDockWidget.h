@@ -100,6 +100,10 @@ private slots:
 
 private:
 
+    // Update the content of the timeline block names list
+    void RefreshBlockNames();
+
+
     //! User interface definition
     Ui::TimelineDockWidget ui;
 

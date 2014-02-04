@@ -43,6 +43,18 @@ public:
     inline Timeline * GetTimeline() const { return mTimeline; }
 
 
+    //! Get the list of registered block names (class and editor string)
+    //! \param classNames Allocated 2D array of Timeline::MAX_NUM_REGISTERED_BLOCKS strings
+    //!                   of length Timeline::MAX_BLOCK_CLASS_NAME_LENGTH + 1,
+    //!                   containing the resulting class names
+    //! \param editorStrings Allocated 2D array of Timeline::MAX_NUM_REGISTERED_BLOCKS strings
+    //!                   of length Timeline::MAX_BLOCK_EDITOR_STRING_LENGTH + 1,
+    //!                   containing the resulting editor strings (can be empty)
+    //! \return Number of registered blocks (<= Timeline::MAX_NUM_REGISTERED_BLOCKS)
+    virtual unsigned int GetRegisteredBlockNames(char classNames   [MAX_NUM_REGISTERED_BLOCKS][MAX_BLOCK_CLASS_NAME_LENGTH    + 1],
+                                                 char editorStrings[MAX_NUM_REGISTERED_BLOCKS][MAX_BLOCK_EDITOR_STRING_LENGTH + 1]) const;
+
+
     //! Get the number of ticks per beat
     //! \return Number of ticks per beat, power of 2, >= 16, 128 by default
     virtual unsigned int GetNumTicksPerBeat() const;
@@ -76,7 +88,7 @@ public:
 
 
     //! Create a new lane
-    //! \return Proxy interface for a timeline lane, nullptr if the number of lanes is TIMELINE_MAX_NUM_LANES
+    //! \return Proxy interface for a timeline lane, nullptr if the number of lanes is MAX_NUM_LANES
     virtual ILaneProxy * CreateLane();
 
     //! Get the current number of lanes

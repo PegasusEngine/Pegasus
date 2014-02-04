@@ -37,6 +37,14 @@ TimelineProxy::~TimelineProxy()
 
 //----------------------------------------------------------------------------------------
 
+unsigned int TimelineProxy::GetRegisteredBlockNames(char classNames   [MAX_NUM_REGISTERED_BLOCKS][MAX_BLOCK_CLASS_NAME_LENGTH    + 1],
+                                                    char editorStrings[MAX_NUM_REGISTERED_BLOCKS][MAX_BLOCK_EDITOR_STRING_LENGTH + 1]) const
+{
+    return mTimeline->GetRegisteredBlockNames(classNames, editorStrings);
+}
+
+//----------------------------------------------------------------------------------------
+
 unsigned int TimelineProxy::GetNumTicksPerBeat() const
 {
     return mTimeline->GetNumTicksPerBeat();

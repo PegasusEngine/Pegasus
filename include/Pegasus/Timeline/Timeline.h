@@ -16,18 +16,36 @@
 
 namespace Pegasus {
     namespace Timeline {
+        class Block;
         class Lane;
         class TimelineProxy;
     }
 
     namespace Wnd {
         class Window;
+        class IWindowContext;
     }
 }
 
 namespace Pegasus {
 namespace Timeline {
 
+
+//! Macro to register a timeline block inside the Application class
+//! \param className Name of the class to register, without quotes
+#if PEGASUS_ENABLE_PROXIES
+
+#define REGISTER_TIMELINE_BLOCK(className)                                                                  \
+    GetTimeline()->RegisterBlock(#className, className::GetStaticEditorString(), className::CreateBlock);   \
+
+#else
+
+#define REGISTER_TIMELINE_BLOCK(className)                              \
+    GetTimeline()->RegisterBlock(#className, className::CreateBlock);   \
+
+#endif  // PEGASUS_ENABLE_PROXIES
+
+//----------------------------------------------------------------------------------------
 
 //! Timeline management, manages a set of blocks stored in lanes to sequence demo rendering
 class Timeline
@@ -36,13 +54,63 @@ public:
 
     //! Constructor
     //! \param allocator Allocator used for all timeline allocations
-    Timeline(Alloc::IAllocator * allocator);
+    //! \param appContext Application context, providing access to the global managers
+    Timeline(Alloc::IAllocator * allocator, Wnd::IWindowContext * appContext);
 
     //! Destructor
     virtual ~Timeline();
 
     //! Get the allocator used for all timeline allocations
     inline Alloc::IAllocator * GetAllocator() const { return mAllocator; }
+
+
+    //! Creation function type, to be defined once per timeline block class
+    //! \param allocator Allocator used for block internal data
+    //! \param appContext Application context, providing access to the global managers
+    typedef Block * (* CreateBlockFunc)(Alloc::IAllocator * allocator,
+                                        Wnd::IWindowContext * appContext);
+
+#if PEGASUS_ENABLE_PROXIES
+
+    //! Register a block class, to be called before any timeline block of this type is created
+    //! \param className String of the block class (maximum length MAX_BLOCK_CLASS_NAME_LENGTH)
+    //! \param editorString String for the editor (more readable than the class name), can be empty but != nullptr
+    //! \param createBlockFunc Pointer to the block member function that instantiates the block
+    //! \warning If the number of registered block classes reaches MAX_NUM_REGISTERED_BLOCKS,
+    //!          an assertion is thrown and the class does not get registered.
+    //!          If that happens, increase the value of MAX_NUM_REGISTERED_BLOCKS
+    //! \note Use the \a REGISTER_TIMELINE_BLOCK macro as convenience
+    void RegisterBlock(const char * className, const char * editorString, CreateBlockFunc createBlockFunc);
+
+    //! Get the list of registered block names (class and editor string)
+    //! \param classNames Allocated 2D array of MAX_NUM_REGISTERED_BLOCKS strings
+    //!                   of length MAX_BLOCK_CLASS_NAME_LENGTH + 1,
+    //!                   containing the resulting class names
+    //! \param editorStrings Allocated 2D array of MAX_NUM_REGISTERED_BLOCKS strings
+    //!                   of length MAX_BLOCK_EDITOR_STRING_LENGTH + 1,
+    //!                   containing the resulting editor strings (can be empty)
+    //! \return Number of registered blocks (<= MAX_NUM_REGISTERED_BLOCKS)
+    unsigned int GetRegisteredBlockNames(char classNames   [MAX_NUM_REGISTERED_BLOCKS][MAX_BLOCK_CLASS_NAME_LENGTH    + 1],
+                                         char editorStrings[MAX_NUM_REGISTERED_BLOCKS][MAX_BLOCK_EDITOR_STRING_LENGTH + 1]) const;
+
+#else
+
+    //! Register a block class, to be called before any timeline block of this type is created
+    //! \param className String of the block class (maximum length MAX_BLOCK_CLASS_NAME_LENGTH)
+    //! \param createBlockFunc Pointer to the block member function that instantiates the block
+    //! \warning If the number of registered block classes reaches MAX_NUM_REGISTERED_BLOCKS,
+    //!          an assertion is thrown and the class does not get registered.
+    //!          If that happens, increase the value of MAX_NUM_REGISTERED_BLOCKS
+    //! \note Use the \a REGISTER_TIMELINE_BLOCK macro as convenience
+    void RegisterBlock(const char * className, CreateBlockFunc createBlockFunc);
+
+#endif  // PEGASUS_ENABLE_PROXIES
+
+    //! Create a block by class name
+    //! \param className Name of the block class to instantiate
+    //! \return Pointer to the created block, nullptr if an error occurred
+    Block * CreateBlock(const char * className);
+
 
     //! Clear the entire timeline and create a default lane
     void Clear();
@@ -85,7 +153,7 @@ public:
 
 
     //! Create a new lane
-    //! \return New lane, nullptr if the number of lanes is TIMELINE_MAX_NUM_LANES
+    //! \return New lane, nullptr if the number of lanes is MAX_NUM_LANES
     Lane * CreateLane();
 
     //! Get the current number of lanes
@@ -137,9 +205,37 @@ private:
     // The timeline cannot be copied
     PG_DISABLE_COPY(Timeline)
 
-        
+    //! Find a registered block by name
+    //! \param className Name of the class of the block to find
+    //! \return Index of the block in the \a mRegisteredBlocks array if found,
+    //!         mNumRegisteredBlocks if not found
+    unsigned int GetRegisteredBlockIndex(const char * className) const;
+
+
     //! Allocator used for all timeline allocations
     Alloc::IAllocator * mAllocator;
+
+    //! Application context, providing access to the global managers
+    Wnd::IWindowContext * mAppContext;
+
+    //! Structure describing one registered block class
+    struct BlockEntry
+    {
+        char className[MAX_BLOCK_CLASS_NAME_LENGTH + 1];        //!< Name of the class
+#if PEGASUS_ENABLE_PROXIES
+        char editorString[MAX_BLOCK_EDITOR_STRING_LENGTH + 1];  //!< Editor string (more readable than the class name)
+#endif
+        CreateBlockFunc createBlockFunc;                        //!< Factory function of the block
+
+        BlockEntry() { className[0] = '\0'; createBlockFunc = nullptr; }    //!< Default constructor
+    };
+
+    //! List of registered blocks, only the first mNumRegisteredBlocks ones are valid
+    BlockEntry mRegisteredBlocks[MAX_NUM_REGISTERED_BLOCKS];
+
+    //! Number of currently registered blocks (<= MAX_NUM_REGISTERED_BLOCKS)
+    unsigned int mNumRegisteredBlocks;
+
 
 #if PEGASUS_ENABLE_PROXIES
 
@@ -169,9 +265,9 @@ private:
     unsigned int mNumBeats;
 
     //! Set of lanes, only the first mNumLanes are defined
-    Lane * mLanes[TIMELINE_MAX_NUM_LANES];
+    Lane * mLanes[MAX_NUM_LANES];
 
-    //! Number of used lanes (<= TIMELINE_MAX_NUM_LANES)
+    //! Number of used lanes (<= MAX_NUM_LANES)
     unsigned int mNumLanes;
 
     //! Current play mode of the timeline (PLAYMODE_xxx constant, PLAYMODE_REALTIME by default)

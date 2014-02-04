@@ -24,8 +24,19 @@ typedef unsigned int Beat;
 typedef unsigned int Duration;
 
 
+//! Maximum length of a block class name string
+enum { MAX_BLOCK_CLASS_NAME_LENGTH = 63 };
+
+#if PEGASUS_ENABLE_PROXIES
+//! Maximum length of a block editor string
+enum { MAX_BLOCK_EDITOR_STRING_LENGTH = 63 };
+#endif
+
+//! Maximum number of blocks that can be registered
+enum { MAX_NUM_REGISTERED_BLOCKS = 256 };
+
 //! Maximum number of lanes allowed in the timeline
-enum { TIMELINE_MAX_NUM_LANES = 64 };
+enum { MAX_NUM_LANES = 64 };
 
 
 //! Available play modes for the timeline
