@@ -274,6 +274,10 @@ QVariant TimelineBlockGraphicsItem::itemChange(GraphicsItemChange change, const 
                     Pegasus::Timeline::Beat newBeat = GetBeatFromX(newMousePos.x());
                     unsigned int newLane = GetLaneFromY(newMousePos.y());
 
+                    // Apply snapping
+                    const unsigned int snapNumTicks = Editor::GetInstance().GetTimelineDockWidget()->GetSnapNumTicks();
+                    newBeat = (newBeat / snapNumTicks) * snapNumTicks;
+
                     // If the beat and lane have not changed (movement smaller than a tick),
                     // keep the old location and tell the item we overrode the position
                     if ((newBeat == mBeat) && (newLane == mLane))

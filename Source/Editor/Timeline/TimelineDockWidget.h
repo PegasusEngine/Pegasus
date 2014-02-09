@@ -45,6 +45,10 @@ public:
     //! \param bpm Tempo in beats per minute
     void SetBeatsPerMinute(double bpm);
 
+    //! Get the current snapping mode
+    //! \return Number of ticks per snap
+    inline unsigned int GetSnapNumTicks() const { return mSnapNumTicks; }
+
     //------------------------------------------------------------------------------------
 
 signals:
@@ -78,7 +82,11 @@ private slots:
 
     //! Called when the tempo has changed value
     //! \param bpm Tempo in beats per minute
-    void OnSetBeatsPerMinute(double bpm);
+    void OnBeatsPerMinuteChanged(double bpm);
+
+    //! Called when the snap mode has changed
+    //! \param New snap mode
+    void OnSnapModeChanged(int mode);
 
     //! Called when the current beat has been updated
     //! \param beat Current beat, can have fractional part
@@ -106,6 +114,9 @@ private:
 
     //! User interface definition
     Ui::TimelineDockWidget ui;
+
+    //! Current snapping mode (in number of ticks per snap)
+    unsigned int mSnapNumTicks;
 
     //! True if undo commands can be sent
     bool mEnableUndo;

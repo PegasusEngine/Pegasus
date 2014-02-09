@@ -23,6 +23,7 @@
 
 TimelineDockWidget::TimelineDockWidget(QWidget *parent)
 :   QDockWidget(parent),
+    mSnapNumTicks(1),
     mEnableUndo(true)
 {
     // Set the initial UI state
@@ -45,7 +46,9 @@ TimelineDockWidget::TimelineDockWidget(QWidget *parent)
     connect(ui.playButton, SIGNAL(toggled(bool)),
             ui.graphicsView, SLOT(OnPlayModeToggled(bool)));
     connect(ui.bpmSpin, SIGNAL(valueChanged(double)),
-            this, SLOT(OnSetBeatsPerMinute(double)));
+            this, SLOT(OnBeatsPerMinuteChanged(double)));
+    connect(ui.snapCombo, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(OnSnapModeChanged(int)));
     connect(ui.graphicsView, SIGNAL(BeatUpdated(float)),
             this, SLOT(SetCurrentBeat(float)));
     connect(ui.graphicsView, SIGNAL(BlockMoved()),
@@ -152,6 +155,8 @@ void TimelineDockWidget::UpdateUIForAppLoaded()
     ui.bpmSpin->setEnabled(true);
 
     ui.snapCombo->setEnabled(true);
+    ui.snapCombo->setCurrentIndex(0);
+    mSnapNumTicks = 1;
     UpdateUIFromBeat(0.0f);
     ui.graphicsView->setEnabled(true);
 
@@ -178,6 +183,8 @@ void TimelineDockWidget::UpdateUIForAppClosed()
 
     ui.bpmSpin->setEnabled(false);
     ui.snapCombo->setEnabled(false);
+    ui.snapCombo->setCurrentIndex(0);
+    mSnapNumTicks = 1;
     UpdateUIFromBeat(0.0f);
     ui.graphicsView->setEnabled(false);
 
@@ -190,7 +197,7 @@ void TimelineDockWidget::UpdateUIForAppClosed()
 
 //----------------------------------------------------------------------------------------
 
-void TimelineDockWidget::OnSetBeatsPerMinute(double bpm)
+void TimelineDockWidget::OnBeatsPerMinuteChanged(double bpm)
 {
     if (mEnableUndo)
     {
@@ -205,6 +212,47 @@ void TimelineDockWidget::OnSetBeatsPerMinute(double bpm)
         
             // Push the undo command, redo() is executed and the timeline updated
             Editor::GetInstance().PushUndoCommand(undoCommand);
+        }
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::OnSnapModeChanged(int mode)
+{
+    if (mode == 0)
+    {
+        mSnapNumTicks = 1;  // No snapping, use the smallest unit, the tick
+        ED_LOG("Number of ticks for timeline block snap: 1");
+        return;
+    }
+    
+    Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
+    if (application != nullptr)
+    {
+        Pegasus::Timeline::ITimelineProxy * const timeline = application->GetTimelineProxy();
+        if (timeline != nullptr)
+        {
+            unsigned int numTicksPerBeat = timeline->GetNumTicksPerBeat();
+
+            switch (mode)
+            {
+                case 1:     mSnapNumTicks = numTicksPerBeat / 16;   break;
+                case 2:     mSnapNumTicks = numTicksPerBeat / 8;    break;
+                case 3:     mSnapNumTicks = numTicksPerBeat / 4;    break;
+                case 4:     mSnapNumTicks = numTicksPerBeat / 2;    break;
+                case 5:     mSnapNumTicks = numTicksPerBeat;        break;
+                case 6:     mSnapNumTicks = numTicksPerBeat * 2;    break;
+                case 7:     mSnapNumTicks = numTicksPerBeat * 4;    break;
+                case 8:     mSnapNumTicks = numTicksPerBeat * 8;    break;
+
+                default:
+                    ED_FAILSTR("Invalid snap mode (%d), it should be <= 8", mode);
+                    mSnapNumTicks = 1;
+                    break;
+            }
+
+            ED_LOG("Number of ticks for timeline block snap: %u", mSnapNumTicks);
         }
     }
 }
