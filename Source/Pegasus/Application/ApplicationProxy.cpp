@@ -61,21 +61,15 @@ const char* ApplicationProxy::GetSecondaryWindowType() const
 
 Wnd::IWindowProxy* ApplicationProxy::AttachWindow(const AppWindowConfig& config)
 {
-    Alloc::IAllocator* windowAlloc = Memory::GetWindowAllocator();
     Wnd::Window* wnd = mObject->AttachWindow(config);
-    Wnd::WindowProxy* proxy = PG_NEW(windowAlloc, -1, "WindowProxy", Pegasus::Alloc::PG_MEM_PERM) Wnd::WindowProxy(wnd); // Wrap in proxy
-
-    return proxy;
+    return wnd->GetProxy();
 }
 
 //----------------------------------------------------------------------------------------
 
 void ApplicationProxy::DetachWindow(Wnd::IWindowProxy* wnd)
 {
-    Alloc::IAllocator* windowAlloc = Memory::GetWindowAllocator();
-
     mObject->DetachWindow(wnd->Unwrap()); // Unwrap and destroy proxied window
-    PG_DELETE(windowAlloc, wnd);
 }
 
 //----------------------------------------------------------------------------------------

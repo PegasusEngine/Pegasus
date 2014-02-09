@@ -26,6 +26,7 @@ namespace Pegasus {
         class IWindowContext;
         class IWindowImpl;
         class WindowMessageHandler;
+        class WindowProxy;
     }
 }
 
@@ -83,6 +84,14 @@ public:
     void HandleMainWindowEvents();
 
 
+#if PEGASUS_ENABLE_PROXIES
+
+    //! Get the proxy associated with the window
+    inline WindowProxy* GetProxy() const { return mProxy; }
+
+#endif  // PEGASUS_ENABLE_PROXIES
+
+
 protected:
 
     //! Gets the window context for this window
@@ -94,6 +103,12 @@ private:
     // No copies allowed
     PG_DISABLE_COPY(Window);
 
+#if PEGASUS_ENABLE_PROXIES
+
+    //! Proxy associated with the window
+    WindowProxy * mProxy;
+
+#endif  // PEGASUS_ENABLE_PROXIES
 
     Alloc::IAllocator* mAllocator; //!< Allocator to use when creating this window
     Alloc::IAllocator* mRenderAllocator; //!< Allocator to use when creating this window's render resources

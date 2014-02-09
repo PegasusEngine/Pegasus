@@ -14,6 +14,10 @@
 #include "Pegasus/Window/IWindowContext.h"
 #include "../Source/Pegasus/Window/IWindowImpl.h"
 
+#if PEGASUS_ENABLE_PROXIES
+#include "Pegasus/Window/WindowProxy.h"
+#endif  // PEGASUS_ENABLE_PROXIES
+
 namespace Pegasus {
 namespace Wnd {
 
@@ -103,11 +107,15 @@ Window::Window(const WindowConfig& config)
     mWidth(config.mWidth),
     mHeight(config.mHeight),
     mIsChild(config.mIsChild)
-
 {
     // Create platform stuff
     mMessageHandler = PG_NEW(mAllocator, -1, "Window message handler", Pegasus::Alloc::PG_MEM_PERM) WindowMessageHandler(config.mUseBasicContext, this);
     mPrivateImpl = IWindowImpl::CreateImpl(config, mAllocator, mMessageHandler);
+
+#if PEGASUS_ENABLE_PROXIES
+    //! Create the proxy associated with the timeline
+    mProxy = PG_NEW(mAllocator, -1, "Window::mProxy", Pegasus::Alloc::PG_MEM_PERM) WindowProxy(this);
+#endif  // PEGASUS_ENABLE_PROXIES
 }
 
 //----------------------------------------------------------------------------------------
@@ -117,6 +125,11 @@ Window::~Window()
     // Destroy platform stuff
     IWindowImpl::DestroyImpl(mPrivateImpl, mAllocator);
     PG_DELETE(mAllocator, mMessageHandler);
+
+#if PEGASUS_ENABLE_PROXIES
+    //! Destroy the proxy associated with the window
+    PG_DELETE(mAllocator, mProxy);
+#endif
 }
 
 //----------------------------------------------------------------------------------------
