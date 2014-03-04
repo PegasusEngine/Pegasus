@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Include">
+      <UniqueIdentifier>{b3ebb0f8-ca63-45ea-8cbb-7c7466b52d56}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{3a5e022c-4c91-49c9-b569-8f4761ff796c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Dev\Pegasus\SB_kgarcia\Include\Pegasus\Utils\Memcpy.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Dev\Pegasus\SB_kgarcia\Include\Pegasus\Utils\String.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\Dev\Pegasus\SB_kgarcia\Source\Pegasus\Utils\Memcpy.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Dev\Pegasus\SB_kgarcia\Source\Pegasus\Utils\Sring.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Utils\UtilsUnitTests.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

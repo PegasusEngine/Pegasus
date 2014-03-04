@@ -12,6 +12,7 @@
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Graph/NodeManager.h"
+#include "Pegasus/Utils/String.h"
 
 namespace PegasusShaderPrivate {
 
@@ -69,13 +70,14 @@ Pegasus::Shader::ProgramLinkageReturn Pegasus::Shader::ShaderManager::CreateProg
 
 Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::LoadShaderStageFromFile(const Pegasus::Shader::ShaderStageFileProperties& properties)
 {
+    //! TODO - add a custom strchr function!
     const char * extension = strrchr(properties.mPath, '.');
     Pegasus::Shader::ShaderType targetStage = Pegasus::Shader::SHADER_STAGE_INVALID;
     if (extension != nullptr)
     {
         for (int i = 0; i < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT); ++i)
         {
-            if (!_stricmp(extension, PegasusShaderPrivate::gPegasusShaderStageExtensionMappings[i].mExtension))
+            if (!Pegasus::Utils::Stricmp(extension, PegasusShaderPrivate::gPegasusShaderStageExtensionMappings[i].mExtension))
             {
                 targetStage = PegasusShaderPrivate::gPegasusShaderStageExtensionMappings[i].mType;
                 break;

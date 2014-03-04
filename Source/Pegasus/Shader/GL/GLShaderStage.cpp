@@ -12,7 +12,7 @@
 #include "Pegasus/Shader/Shared/ShaderEvent.h"
 #include "Pegasus/Shader/RenderPlatShaderStage.h"
 #include "Pegasus/Render/GL/GLEWStaticInclude.h"
-#include <string.h>
+#include "Pegasus/Utils/Memcpy.h"
 
 
 namespace PegasusShaderPrivate {
@@ -175,7 +175,8 @@ void RenderPlatShaderStage::SetSource(Pegasus::Shader::ShaderType type, const ch
         );
     }
     mFileBuffer.SetFileSize(srcSize);
-    memcpy_s(mFileBuffer.GetBuffer(),mFileBuffer.GetBufferSize(),src,srcSize);
+    PG_ASSERTSTR(mFileBuffer.GetBufferSize() >= srcSize, "Not enough size to hold the string buffer!");
+    Pegasus::Utils::Memcpy(mFileBuffer.GetBuffer(),src,srcSize);
     mType = type;
 }
 

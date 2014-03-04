@@ -125,6 +125,33 @@
 
 //----------------------------------------------------------------------------------------
 
+// detecting 64 bit or 32 bit platform
+#if defined(WIN64) || defined(_WIN64) || defined(__WIN64__)
+
+#define PEGASUS_POINTERSIZE_32BIT  0
+#define PEGASUS_POINTERSIZE_64BIT  1
+
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+
+#define PEGASUS_POINTERSIZE_32BIT  1
+#define PEGASUS_POINTERSIZE_64BIT  0
+
+#elif defined(__LP64__)
+
+#define PEGASUS_POINTERSIZE_32BIT  0
+#define PEGASUS_POINTERSIZE_64BIT  1
+
+#elif defined (_ILP32)
+
+#define PEGASUS_POINTERSIZE_32BIT  1
+#define PEGASUS_POINTERSIZE_64BIT  0
+
+#else
+#error "Unable to detect if 64bit or 32bit environment"
+#endif
+
+//----------------------------------------------------------------------------------------
+
 // Compiler
 #ifdef _MSC_VER
 #ifdef __INTEL_COMPILER
