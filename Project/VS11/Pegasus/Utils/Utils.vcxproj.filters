@@ -9,22 +9,22 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="C:\Dev\Pegasus\SB_kgarcia\Include\Pegasus\Utils\Memcpy.h">
-      <Filter>Include</Filter>
-    </ClInclude>
-    <ClInclude Include="C:\Dev\Pegasus\SB_kgarcia\Include\Pegasus\Utils\String.h">
-      <Filter>Include</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="C:\Dev\Pegasus\SB_kgarcia\Source\Pegasus\Utils\Memcpy.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Dev\Pegasus\SB_kgarcia\Source\Pegasus\Utils\Sring.cpp">
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Utils\Memcpy.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Utils\UtilsUnitTests.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Utils\String.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Utils\Memcpy.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Utils\String.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
