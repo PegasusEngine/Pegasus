@@ -52,7 +52,7 @@ void KleberTriangleBlock::Initialize()
 
     // Set up shaders
     Pegasus::Shader::ShaderManager * const shaderManager = GetShaderManager();
-    mShaderProgramLinkage = shaderManager->CreateProgram();
+    mShaderProgramLinkage = shaderManager->CreateProgram("KleberTriangleBlob");
     Pegasus::Shader::ShaderStageFileProperties fileLoadProperties;
     fileLoadProperties.mLoader = GetIOManager();
 

@@ -18,6 +18,7 @@
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Window/Shared/IWindowProxy.h"
+#include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
 
 #include <QTimer>
 
@@ -244,6 +245,20 @@ Pegasus::Timeline::ITimelineProxy * Application::GetTimelineProxy() const
     }
 }
 
+//----------------------------------------------------------------------------------------
+
+Pegasus::Shader::IShaderManagerProxy * Application::GetShaderManagerProxy() const
+{
+    if (mApplication != nullptr)
+    {
+        return mApplication->GetShaderManager();
+    }
+    else
+    {
+        ED_FAILSTR("Invalid Pegasus application object when getting the shadermanager proxy");
+        return nullptr;
+    }
+}
 //----------------------------------------------------------------------------------------
 
 void Application::EmitLogFromApplication(Pegasus::Core::LogChannel logChannel, const QString & msgStr)

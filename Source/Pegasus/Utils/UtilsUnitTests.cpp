@@ -132,6 +132,43 @@ bool UNIT_TEST_Strlen3()
     const char * c1 = "1";
     return Pegasus::Utils::Strlen(c1) == 1;
 }
+
+
+bool UNIT_TEST_Strchr1()
+{
+    const char * c1 = "01234567890";
+    return Pegasus::Utils::Strchr(c1, '0') == c1;
+}
+
+bool UNIT_TEST_Strchr2()
+{
+    const char * c1 = "01234567890";
+    return Pegasus::Utils::Strchr(c1, '9') == (c1 + 9);
+}
+
+bool UNIT_TEST_Strchr3()
+{
+    const char * c1 = "01234567890";
+    return Pegasus::Utils::Strchr(c1, '6') == (c1 + 6);
+}
+
+bool UNIT_TEST_Strrchr1()
+{
+    const char * c1 = "01234567890";
+    return Pegasus::Utils::Strrchr(c1, '0') == c1 + 10;
+}
+
+bool UNIT_TEST_Strrchr2()
+{
+    const char * c1 = "01234567890";
+    return Pegasus::Utils::Strrchr(c1, '9') == (c1 + 9);
+}
+
+bool UNIT_TEST_Strrchr3()
+{
+    const char * c1 = "x1234567890";
+    return Pegasus::Utils::Strrchr(c1, 'x') == (c1);
+}
 ///////////////////////////////////////////////
 
 bool RunTests(TestFunc func, const char * testTitle, int& outSucceses, int& outTotals)
@@ -180,6 +217,16 @@ int main()
     RUN_TEST(UNIT_TEST_Strlen1,"Strlen1");
     RUN_TEST(UNIT_TEST_Strlen2,"Strlen2");
     RUN_TEST(UNIT_TEST_Strlen3,"Strlen3");
+
+    //strchr
+    RUN_TEST(UNIT_TEST_Strchr1,"Strchr1");
+    RUN_TEST(UNIT_TEST_Strchr2,"Strchr2");
+    RUN_TEST(UNIT_TEST_Strchr3,"Strchr3");
+
+    //strrchr
+    RUN_TEST(UNIT_TEST_Strrchr1,"Strrchr1");
+    RUN_TEST(UNIT_TEST_Strrchr2,"Strrchr2");
+    RUN_TEST(UNIT_TEST_Strrchr3,"Strrchr3");
 
     ///////////////////////////////////////////////////////////
 

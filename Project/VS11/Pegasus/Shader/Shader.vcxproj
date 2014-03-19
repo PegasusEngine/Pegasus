@@ -30,12 +30,18 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\EventDispatcher.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ProgramData.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ProgramLinkage.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ProgramProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\RenderPlatProgramLinker.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\RenderPlatShaderStage.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderData.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderManager.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderManagerProxy.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderStage.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderTracker.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\IEventListener.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\IProgramProxy.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\IShaderProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\ShaderDefs.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\ShaderEvent.h" />
   </ItemGroup>
@@ -45,9 +51,13 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\GL\GLShaderStage.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ProgramData.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ProgramLinkage.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ProgramProxy.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderData.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderManager.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderManagerProxy.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderProxy.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderStage.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderTracker.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{13AFD782-33A5-4718-AEE8-5390E6918255}</ProjectGuid>

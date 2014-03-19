@@ -48,3 +48,43 @@ unsigned Pegasus::Utils::Strlen(const char * str)
     for (; *str; ++str, ++counter);
     return counter;
 }
+
+const char * Pegasus::Utils::Strchr ( const char * str, char character)
+{
+    do 
+    {
+        if (*str == character) return str;
+    } while(*(str++));
+    return nullptr;
+}
+
+const char * Pegasus::Utils::Strrchr (const char * str, char character)
+{
+    int len = Pegasus::Utils::Strlen(str);
+    while (len >= 0)
+    {
+        if (str[len] == character) return str + len;
+        --len;
+    }
+    return nullptr;
+}
+
+char * Pegasus::Utils::Strchr (char * str, char character)
+{
+    do 
+    {
+        if (*str == character) return str;
+    } while(*(str++));
+    return nullptr;
+}
+
+char * Pegasus::Utils::Strrchr (char * str, char character)
+{
+    int len = Pegasus::Utils::Strlen(str);
+    while (len >= 0)
+    {
+        if (str[len + 1] == character) return str + len + 1;
+        --len;
+    }
+    return nullptr;
+}

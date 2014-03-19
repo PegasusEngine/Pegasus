@@ -1,6 +1,8 @@
 #include "Pegasus/Shader/Shared/ShaderEvent.h"
 #include "Pegasus/Shader/ShaderStage.h"
 #include "Pegasus/Shader/ShaderData.h"
+#include "Pegasus/Utils/String.h"
+#include "Pegasus/Utils/Memcpy.h"
 
 //! private data structures
 namespace PegasusShaderPrivate {
@@ -82,6 +84,39 @@ void Pegasus::Shader::ShaderStage::GenerateData()
         shaderData->SetShaderHandle(Pegasus::Shader::INVALID_SHADER_HANDLE);
     }
 } 
+
+
+//! editor metadata
+#if PEGASUS_ENABLE_PROXIES
+void Pegasus::Shader::ShaderStage::SetFullFilePath(const char * name)
+{
+    int len = 0;
+    if (name)
+    {
+        int fullLen = Pegasus::Utils::Strlen(name);
+        const char * nameString1 = Pegasus::Utils::Strrchr(name, '/');
+        const char * nameString2 = Pegasus::Utils::Strrchr(name, '\\');
+        const char * nameString = nameString1 > nameString2 ? nameString1 : nameString2;
+        if (nameString != nullptr)
+        {
+            fullLen = fullLen - (nameString - name + 1);
+            Pegasus::Utils::Memcpy(mName, nameString + 1, fullLen);
+            mName[fullLen] = '\0';
+            fullLen = nameString - name + 1;
+            Pegasus::Utils::Memcpy(mPath, name, fullLen);
+            mPath[fullLen] = '\0';
+        }
+        else
+        {
+            len = fullLen < Pegasus::Shader::ShaderStage::METADATA_NAME_LENGTH - 1 ? fullLen : Pegasus::Shader::ShaderStage::METADATA_NAME_LENGTH - 1;
+            Pegasus::Utils::Memcpy(mName, name, len);
+            mName[len] = '\0';
+            mPath[0] = '\0';
+        }
+    }
+} 
+#endif
+
 
 Pegasus::Graph::NodeReturn Pegasus::Shader::ShaderStage::CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 {

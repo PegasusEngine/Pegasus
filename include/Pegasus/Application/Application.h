@@ -93,9 +93,12 @@ public:
     // IWindowContext interface
     virtual Io::IOManager* GetIOManager() const { return mIoManager; }
     virtual Graph::NodeManager* GetNodeManager() const { return mNodeManager; }
-    virtual Shader::ShaderManager* GetShaderManager() const { return mShaderManager; }
     virtual Texture::TextureManager* GetTextureManager() const { return mTextureManager; }
+    virtual Shader::ShaderManager* GetShaderManager() const { return mShaderManager; }
     virtual Timeline::Timeline* GetTimeline() const { return mTimeline; }
+
+    // Editor functions
+    Shader::ShaderManager* GetShaderManager() { return mShaderManager; }
 
 private:
     // No copies allowed

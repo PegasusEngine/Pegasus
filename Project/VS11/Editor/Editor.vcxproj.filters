@@ -58,6 +58,9 @@
     <Filter Include="Source\History">
       <UniqueIdentifier>{cc49ef2d-91fd-491e-8c9f-e87edbefeec5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\ShaderLibrary">
+      <UniqueIdentifier>{e8de268e-9236-40a3-b3db-76cceac2b24d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Source\Editor\Editor.cpp">
@@ -261,6 +264,18 @@
     <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineUndoCommands.cpp">
       <Filter>Source\Timeline</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\ShaderLibrary\ShaderLibraryWidget.cpp">
+      <Filter>Source\ShaderLibrary</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ShaderLibraryWidget.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ShaderLibraryWidget.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\ShaderLibrary\ProgramTreeModel.cpp">
+      <Filter>Source\ShaderLibrary</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -338,14 +353,17 @@
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineUndoCommands.h">
       <Filter>Source\Timeline</Filter>
     </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\ShaderLibrary\ShaderLibraryWidget.ui">
+      <Filter>Forms</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\ShaderLibrary\ShaderLibraryWidget.h">
+      <Filter>Source\ShaderLibrary</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Editor.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GeneratedFiles\ui_TimelineDockWidget.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\Source\Editor\Timeline\TimelineBackgroundBeatGraphicsItem.h">
       <Filter>Source\Timeline</Filter>
     </ClInclude>
@@ -357,6 +375,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\Source\Editor\Timeline\TimelineLaneHeaderGraphicsItem.h">
       <Filter>Source\Timeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\ShaderLibrary\ProgramTreeModel.h">
+      <Filter>Source\ShaderLibrary</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

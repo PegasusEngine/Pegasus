@@ -63,15 +63,23 @@ void Pegasus::Shader::ShaderManager::RegisterAllNodes()
     REGISTER_SHADER_NODE(ShaderStage);
 }
 
-Pegasus::Shader::ProgramLinkageReturn Pegasus::Shader::ShaderManager::CreateProgram() const
+Pegasus::Shader::ProgramLinkageReturn Pegasus::Shader::ShaderManager::CreateProgram(const char * name)
 {
+#if PEGASUS_ENABLE_PROXIES
+    //if proxies make sure to set metadata correctly
+    Pegasus::Shader::ProgramLinkageRef program = mNodeManager->CreateNode("ProgramLinkage");
+    program->SetName(name);
+    mShaderTracker.InsertProgram(&(*program));
+    return program;
+#else
+    //otherwise straight forward return
     return mNodeManager->CreateNode("ProgramLinkage");
+#endif
 }
 
 Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::LoadShaderStageFromFile(const Pegasus::Shader::ShaderStageFileProperties& properties)
-{
-    //! TODO - add a custom strchr function!
-    const char * extension = strrchr(properties.mPath, '.');
+{    
+    const char * extension = Pegasus::Utils::Strrchr(properties.mPath, '.');
     Pegasus::Shader::ShaderType targetStage = Pegasus::Shader::SHADER_STAGE_INVALID;
     if (extension != nullptr)
     {
@@ -93,6 +101,11 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::LoadShaderSta
 #if PEGASUS_SHADER_USE_EDIT_EVENTS
             stage->SetUserData(properties.mUserData);
             stage->SetEventListener(properties.mEventListener);
+#endif
+
+#if PEGASUS_ENABLE_PROXIES
+            stage->SetFullFilePath(properties.mPath);
+            mShaderTracker.InsertShader(&(*stage));
 #endif
             return stage;
         }
@@ -116,6 +129,12 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::CreateShaderS
         if (properties.mSource && properties.mSourceSize > 1)
         {
             stage->SetSource(properties.mType, properties.mSource, properties.mSourceSize);
+#if PEGASUS_ENABLE_PROXIES
+            stage->SetFullFilePath("<custom-shader>");
+            mShaderTracker.InsertShader(&(*stage));
+            
+#endif
+            return stage;
         }
         else
         {

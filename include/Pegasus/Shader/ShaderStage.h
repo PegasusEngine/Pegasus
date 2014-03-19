@@ -70,6 +70,12 @@ public:
 
     static Graph::NodeReturn CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
+#if PEGASUS_ENABLE_PROXIES
+    void SetFullFilePath(const char * fullPath);
+    const char * GetFilePath() const { return mPath; }
+    const char * GetFileName() const { return mName; }
+#endif
+
 protected:
     virtual Pegasus::Graph::NodeData * AllocateData() const;
     virtual void GenerateData();
@@ -77,6 +83,13 @@ protected:
 private:
     PG_DISABLE_COPY(ShaderStage)
     RenderPlatShaderStage mInternalStage;
+
+//! editor metadata
+#if PEGASUS_ENABLE_PROXIES
+    static const int METADATA_NAME_LENGTH = 256;
+    char mName[METADATA_NAME_LENGTH];
+    char mPath[METADATA_NAME_LENGTH];
+#endif
 
 };
 

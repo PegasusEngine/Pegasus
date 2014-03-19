@@ -55,7 +55,7 @@ void FractalCubeBlock::Initialize()
 
     // Set up shaders
     Pegasus::Shader::ShaderManager * const shaderManager = GetShaderManager();
-    mShaderProgramLinkage = shaderManager->CreateProgram();
+    mShaderProgramLinkage = shaderManager->CreateProgram("FractalCube");
     Pegasus::Shader::ShaderStageFileProperties fileLoadProperties;
     fileLoadProperties.mLoader = GetIOManager();
 

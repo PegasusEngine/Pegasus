@@ -3,6 +3,9 @@
 
 #include "Pegasus/Shader/ProgramLinkage.h"
 
+#if PEGASUS_ENABLE_PROXIES
+#include "Pegasus/Shader/ShaderTracker.h"
+#endif
 
 namespace Pegasus
 {
@@ -17,42 +20,8 @@ namespace Shader
 class IEventListener;
 
 
-//! Shader stage configuration structure
-struct ShaderStageProperties
-{
-    Pegasus::Shader::IUserData * mUserData; //! user data held by shader stage
-    Pegasus::Shader::ShaderType mType; //! type for shader stage
-    const char * mSource; //! the source string
-    int          mSourceSize; //! the source string precomputed size
-        
-    ShaderStageProperties()
-    :
-    mUserData(nullptr),
-    mType(Pegasus::Shader::SHADER_STAGE_INVALID),
-    mSource(nullptr),
-    mSourceSize(0)
-    {
-    }
-};
 
-//! Shader stage file loading configuration
-struct ShaderStageFileProperties
-{
-    const char * mPath; //! path for file to load, null terminated string
-    Pegasus::Io::IOManager * mLoader; //! file loader
-    Pegasus::Shader::IEventListener * mEventListener; //!event listener, required for loading events
-    Pegasus::Shader::IUserData      * mUserData; //!user data to be injected into shader stage
-    
-    ShaderStageFileProperties()
-    :
-    mPath(nullptr),
-    mLoader(nullptr),
-    mEventListener(nullptr),
-    mUserData(nullptr)
-    {
-    }
-};
-
+//! ShaderManager, manages and keeps up with shader data
 class ShaderManager
 {
 public:
@@ -60,7 +29,7 @@ public:
     virtual ~ShaderManager();
 
     //! Load a shader stage from a file.
-    ProgramLinkageRef CreateProgram() const;
+    ProgramLinkageRef CreateProgram(const char * name = 0);
 
     //! Load a shader stage from a file.
     //! \param properties.mPath File containing shader stage. valid extensions are:
@@ -77,11 +46,18 @@ public:
     //! \param properties constructor properties for shader stage
     ShaderStageReturn CreateShaderStage(const Pegasus::Shader::ShaderStageProperties& properties);   
 
+#if PEGASUS_ENABLE_PROXIES
+    const ShaderTracker * GetShaderTracker() const { return &mShaderTracker; }
+#endif
+
 private:
     void RegisterAllNodes();
 
     Graph::NodeManager * mNodeManager;
-    
+
+#if PEGASUS_ENABLE_PROXIES
+    ShaderTracker mShaderTracker;
+#endif
 };
 
 }//namespace Shader

@@ -106,10 +106,16 @@ Editor::Editor(QWidget *parent)
 
     // Create the application manager
     mApplicationManager = new ApplicationManager(this, this);
+
     connect(mApplicationManager, SIGNAL(ApplicationLoaded()),
             mTimelineDockWidget, SLOT(UpdateUIForAppLoaded()));
     connect(mApplicationManager, SIGNAL(ApplicationFinished()),
             mTimelineDockWidget, SLOT(UpdateUIForAppClosed()));
+
+    connect(mApplicationManager, SIGNAL(ApplicationLoaded()),
+            mShaderLibraryWidget, SLOT(UpdateUIForAppLoaded()));
+    connect(mApplicationManager, SIGNAL(ApplicationFinished()),
+            mShaderLibraryWidget, SLOT(UpdateUIForAppClosed()));
 }
 
 //----------------------------------------------------------------------------------------
@@ -274,6 +280,9 @@ void Editor::CreateActions()
 	mActionWindowConsole->setStatusTip(tr("Open the console window"));
 	connect(mActionWindowConsole, SIGNAL(triggered()), this, SLOT(OpenConsoleWindow()));
 
+    mActionWindowShaderLibrary = new QAction(tr("&Shader Library"), this);
+	mActionWindowShaderLibrary->setStatusTip(tr("Open the shader library"));
+	connect(mActionWindowShaderLibrary, SIGNAL(triggered()), this, SLOT(OpenShaderLibraryWindow()));
 
     mActionHelpIndex = new QAction(tr("&Index..."), this);
 	mActionHelpIndex->setShortcut(tr("F1"));
@@ -323,6 +332,7 @@ void Editor::CreateMenu()
     windowMenu->addAction(mActionWindowTimeline);
     windowMenu->addAction(mActionWindowHistory);
     windowMenu->addAction(mActionWindowConsole);
+    windowMenu->addAction(mActionWindowShaderLibrary);
 
     QMenu * helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(mActionHelpIndex);
@@ -399,6 +409,11 @@ void Editor::CreateDockWidgets()
     mConsoleDockWidget = new ConsoleDockWidget(this);
     //mConsoleDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
     addDockWidget(Qt::BottomDockWidgetArea, mConsoleDockWidget);
+
+    mShaderLibraryWidget = new ShaderLibraryWidget(this);
+    // ** do not add the shader library as default, instead hide it **
+    addDockWidget(Qt::RightDockWidgetArea, mShaderLibraryWidget);        
+    mShaderLibraryWidget->setFloating(true);
 
     // Create and place the view actions for the dock widgets to the dock menu
     // (in alphabetical order)
@@ -576,6 +591,13 @@ void Editor::OpenHistoryWindow()
 void Editor::OpenConsoleWindow()
 {
     mConsoleDockWidget->show();
+}
+
+//----------------------------------------------------------------------------------------
+
+void Editor::OpenShaderLibraryWindow()
+{
+    mShaderLibraryWidget->show();
 }
 
 //----------------------------------------------------------------------------------------

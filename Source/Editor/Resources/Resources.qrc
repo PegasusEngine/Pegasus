@@ -1,17 +1,19 @@
 <RCC>
-    <qresource prefix="/">
-        <file>Toolbar/File/NewScene24.png</file>
-        <file>Toolbar/File/OpenApp24.png</file>
-        <file>Toolbar/File/SaveScene24.png</file>
-        <file>Toolbar/Edit/Undo16.png</file>
-        <file>Toolbar/Edit/Redo16.png</file>
-        <file>Toolbar/View/FullScreenViewport24.png</file>
-        <file>SettingsDialog/Appearance.png</file>
-        <file>TimelineToolbar/Add16.png</file>
-        <file>TimelineToolbar/Delete16.png</file>
-        <file>TimelineToolbar/Play16.png</file>
-        <file>TimelineToolbar/Remove16.png</file>
-        <file>TimelineToolbar/Pause16.png</file>
-        <file>SettingsDialog/Console.png</file>
-    </qresource>
+  <qresource prefix="/">
+    <file>ShaderLibrary/success.png</file>
+    <file>Toolbar/File/NewScene24.png</file>
+    <file>Toolbar/File/OpenApp24.png</file>
+    <file>Toolbar/File/SaveScene24.png</file>
+    <file>Toolbar/Edit/Undo16.png</file>
+    <file>Toolbar/Edit/Redo16.png</file>
+    <file>Toolbar/View/FullScreenViewport24.png</file>
+    <file>SettingsDialog/Appearance.png</file>
+    <file>TimelineToolbar/Add16.png</file>
+    <file>TimelineToolbar/Delete16.png</file>
+    <file>ShaderLibrary/error.png</file>
+    <file>TimelineToolbar/Play16.png</file>
+    <file>TimelineToolbar/Remove16.png</file>
+    <file>TimelineToolbar/Pause16.png</file>
+    <file>SettingsDialog/Console.png</file>
+  </qresource>
 </RCC>

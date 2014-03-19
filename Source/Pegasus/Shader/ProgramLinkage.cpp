@@ -1,6 +1,9 @@
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Shader/ShaderData.h"
 
+#include "Pegasus/Utils/String.h"
+#include "Pegasus/Utils/Memcpy.h"
+
 //! private data structures
 namespace PegasusShaderPrivate {
 
@@ -26,7 +29,7 @@ Pegasus::Shader::ProgramLinkage::~ProgramLinkage()
 Pegasus::Shader::ShaderStageRef Pegasus::Shader::ProgramLinkage::GetShaderStage(Pegasus::Shader::ShaderType type) const
 {
     PG_ASSERT(type >= 0 && type < Pegasus::Shader::SHADER_STAGES_COUNT);
-    return GetInput(static_cast<unsigned int>(type));
+    return FindShaderStage(type);
 }
 
 Pegasus::Graph::NodeData* Pegasus::Shader::ProgramLinkage::AllocateData() const
@@ -116,6 +119,19 @@ void Pegasus::Shader::ProgramLinkage::AddInput(Pegasus::Graph::NodeIn node)
     PG_FAILSTR("Add input call not allowed for shader linkage! The topology must not be messed up with.");
 }
 
+#if PEGASUS_ENABLE_PROXIES
+void Pegasus::Shader::ProgramLinkage::SetName(const char * name)
+{
+    int len = 0;
+    if (name)
+    {
+        int namelen = Pegasus::Utils::Strlen(name); 
+        len = namelen < Pegasus::Shader::ProgramLinkage::METADATA_NAME_LENGTH - 1 ? namelen : Pegasus::Shader::ProgramLinkage::METADATA_NAME_LENGTH - 1;
+        Pegasus::Utils::Memcpy(mName, name, len);
+    }
+    mName[len] = '\0';
+}
+#endif
 
 Pegasus::Graph::NodeReturn Pegasus::Shader::ProgramLinkage::CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 {

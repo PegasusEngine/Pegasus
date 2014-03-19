@@ -24,6 +24,19 @@ namespace Utils
 
     //! Standard unsafe 8bit ascii null terminated string size function
     unsigned Strlen(const char * str);
+
+    //! Standard unsafe 8bit ascii Strchr function
+    const char * Strchr ( const char * str, char character);
+
+    //! Standard unsafe 8bit ascii Strrchr function
+    const char * Strrchr (const char * str, char character);
+
+    //! Standard unsafe 8bit ascii Strchr function
+    char * Strchr (char * str, char character);
+
+    //! Standard unsafe 8bit ascii Strrchr function
+    char * Strrchr (char * str, char character);
+    
 }
 }
 

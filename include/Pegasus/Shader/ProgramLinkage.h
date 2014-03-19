@@ -30,6 +30,11 @@ class IUserData;
 //! Program linkage class. Represents a set of linked shader stages
 class ProgramLinkage : public Pegasus::Graph::OperatorNode
 {
+#if PEGASUS_ENABLE_PROXIES
+    //! give full access to proxy
+    friend class ProgramProxy;
+#endif
+
 public:
 
     //! Default constructor
@@ -72,6 +77,10 @@ public:
     //! \return the shader stage smart reference
     ShaderStageReturn FindShaderStage(Pegasus::Shader::ShaderType type) const;
 
+#if PEGASUS_ENABLE_PROXIES
+    const char * GetName() { return mName; }
+    void SetName(const char * name);
+#endif
 protected:
     //! overrides, do not use
     virtual void AddInput(Pegasus::Graph::NodeIn node);
@@ -90,6 +99,12 @@ protected:
     virtual void OnRemoveInput(unsigned int index);
 
 private:
+
+#if PEGASUS_ENABLE_PROXIES
+    static const int METADATA_NAME_LENGTH = 256;
+    char mName[METADATA_NAME_LENGTH];
+#endif
+
     PG_DISABLE_COPY(ProgramLinkage);
     Pegasus::Shader::RenderPlatProgramLinker mInternalLinker;
     unsigned char mStageFlags;

@@ -20,6 +20,10 @@ namespace Pegasus {
     namespace App {
         class Application;
     }
+    
+    namespace Shader {
+        class IShaderManagerProxy;
+    }
 }
 
 namespace Pegasus {
@@ -40,6 +44,7 @@ public:
 #endif
     virtual Wnd::IWindowProxy* AttachWindow(const AppWindowConfig& config);
     virtual void DetachWindow(Wnd::IWindowProxy* wnd);
+    virtual Shader::IShaderManagerProxy * GetShaderManager() { return mShaderManager; }
 
     // Stateflow API
     virtual void Initialize();
@@ -52,6 +57,7 @@ public:
 private:
     //! The proxied application object
     Application* mObject;
+    Shader::IShaderManagerProxy * mShaderManager; 
 };
 
 

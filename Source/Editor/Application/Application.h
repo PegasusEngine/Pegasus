@@ -33,6 +33,9 @@ namespace Pegasus {
     namespace Wnd {
         class IWindowProxy;
     }
+    namespace Shader {
+        class IShaderManagerProxy;
+    }
 }
 
 
@@ -86,6 +89,9 @@ public:
     //! \return Pointer to the timeline proxy object
     Pegasus::Timeline::ITimelineProxy * GetTimelineProxy() const;
 
+    //! Get the shader manager proxy object
+    //! \return Pointer to the shader manager object
+    Pegasus::Shader::IShaderManagerProxy * GetShaderManagerProxy() const;
 
     //! Function called by the log handler, emitting the \a LogSentFromApplication signal
     //! \warning To be called in the application thread, not the editor thread

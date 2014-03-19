@@ -17,6 +17,7 @@
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Window/WindowProxy.h"
 #include "Pegasus/Window/Window.h"
+#include "Pegasus/Shader/ShaderManagerProxy.h"
 
 extern Pegasus::App::Application* CreateApplication(const Pegasus::App::ApplicationConfig& config);
 extern void DestroyApplication(Pegasus::App::Application* app);
@@ -30,12 +31,19 @@ namespace App {
 ApplicationProxy::ApplicationProxy(const ApplicationConfig& config)
 {
     mObject = CreateApplication(config);
+    mShaderManager = PG_NEW( 
+             Pegasus::Memory::GetGlobalAllocator(), 
+             -1, 
+            "ShaderManagerProxy", 
+             Pegasus::Alloc::PG_MEM_PERM
+             ) Pegasus::Shader::ShaderManagerProxy(mObject->GetShaderManager());
 }
 
 //----------------------------------------------------------------------------------------
 
 ApplicationProxy::~ApplicationProxy()
 {
+    PG_DELETE(Pegasus::Memory::GetGlobalAllocator(), mShaderManager);
     DestroyApplication(mObject);
 }
 

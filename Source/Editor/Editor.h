@@ -17,6 +17,7 @@
 #include "Console/ConsoleDockWidget.h"
 #include "History/HistoryDockWidget.h"
 #include "Timeline/TimelineDockWidget.h"
+#include "ShaderLibrary/ShaderLibraryWidget.h"
 #include "Viewport/ViewportDockWidget.h"
 #include "Viewport/ViewportWidget.h"
 #include "Viewport/ViewportType.h"
@@ -171,6 +172,7 @@ private slots:
     void OpenTimelineWindow();
     void OpenHistoryWindow();
     void OpenConsoleWindow();
+    void OpenShaderLibraryWindow();
     //@}
 
     //@{
@@ -228,6 +230,7 @@ private:
     QAction * mActionWindowTimeline;
     QAction * mActionWindowHistory;
     QAction * mActionWindowConsole;
+    QAction * mActionWindowShaderLibrary;
     //@}
 
     //@{
@@ -279,6 +282,7 @@ private:
     ViewportDockWidget * mSecondaryViewportDockWidget;
     TimelineDockWidget * mTimelineDockWidget;
     HistoryDockWidget * mHistoryDockWidget;
+    ShaderLibraryWidget * mShaderLibraryWidget;
     ConsoleDockWidget * mConsoleDockWidget;
     //@}
 
