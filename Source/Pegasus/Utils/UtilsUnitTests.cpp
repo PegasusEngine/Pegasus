@@ -54,8 +54,8 @@ bool UNIT_TEST_MemcpyUnitTest2()
 bool UNIT_TEST_MemcpyUnitTest3()
 {
     //Test 
-    unsigned long long bigList[256];
-    unsigned long long destList[256];
+    unsigned long long bigList[267];
+    unsigned long long destList[267];
     for (int i = 0; i < 256; ++i) bigList[i] =  i;
     Pegasus::Utils::Memcpy(destList, bigList, 256 * sizeof(unsigned long long));
 
