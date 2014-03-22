@@ -36,10 +36,20 @@ namespace Shader
     public:
         IEventListener(){}
         virtual ~IEventListener(){}
+
+        //! Dispatch event callback on a compilation event
         virtual void OnEvent(IUserData * userData, CompilationEvent& e) = 0;
+
+        //! Dispatch event callback on a linker event
         virtual void OnEvent(IUserData * userData, LinkingEvent& e) = 0;
+    
+        //! Dispatch event callback on a file operation event
         virtual void OnEvent(IUserData * userData, FileOperationEvent& e) = 0;
+
+        //! Dispatch event callback on a loading event
         virtual void OnEvent(IUserData * userData, ShaderLoadedEvent& e) = 0;
+
+        //! Dispatch event callback on a compilation notification event
         virtual void OnEvent(IUserData * userData, CompilationNotification& e) = 0;
     };
 }

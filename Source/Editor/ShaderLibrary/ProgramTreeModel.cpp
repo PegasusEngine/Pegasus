@@ -26,8 +26,8 @@ ProgramTreeModel::ProgramTreeModel(
       mShaderManager(nullptr)
 
 {
-    mWorkingIcon.addFile(QStringLiteral(":/ShaderLibrary/error.png"), QSize(), QIcon::Normal, QIcon::On);   
-    mWarningIcon.addFile(QStringLiteral(":/ShaderLibrary/success.png"), QSize(), QIcon::Normal, QIcon::On);   
+    mWorkingIcon.addFile(QStringLiteral(":/ShaderLibrary/success.png"), QSize(), QIcon::Normal, QIcon::On);   
+    mWarningIcon.addFile(QStringLiteral(":/ShaderLibrary/error.png"), QSize(), QIcon::Normal, QIcon::On);   
 }
 
 //----------------------------------------------------------------------------------------
@@ -145,7 +145,7 @@ QVariant ProgramTreeModel::data(const QModelIndex &index, int role) const
         {
         case Qt::DecorationRole:
             {
-                return mWarningIcon;
+                return mWorkingIcon;
             }
         }
     }

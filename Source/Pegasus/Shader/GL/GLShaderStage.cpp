@@ -116,7 +116,8 @@ void RenderPlatShaderStage::ProcessErrorLog(const char * log)
 
 bool RenderPlatShaderStage::Compile()
 {
-    if (mType == Pegasus::Shader::SHADER_STAGE_INVALID)
+
+    if (mType == Pegasus::Shader::SHADER_STAGE_INVALID || mFileBuffer.GetFileSize() == 0)
     {
         //empty shader, ignore compilation
         return false;

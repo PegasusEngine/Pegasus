@@ -27,6 +27,7 @@ namespace Shader
 class IProgramProxy;
 class ShaderManager;
 
+//! Implementation of IShaderManagerProxy and wrapper proxy to expose to the editor
 class ShaderManagerProxy : public IShaderManagerProxy
 {
 public:
@@ -34,6 +35,8 @@ public:
     virtual ~ShaderManagerProxy(){}
     virtual int GetProgramCount() const;
     virtual IProgramProxy* GetProgram(int i);
+    virtual int GetShaderCount() const;
+    virtual IShaderProxy* GetShader(int id); 
 
 private:
     ShaderManager * mObject;

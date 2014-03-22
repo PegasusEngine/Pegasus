@@ -35,6 +35,23 @@ Pegasus::Shader::IProgramProxy * Pegasus::Shader::ShaderManagerProxy::GetProgram
     }
     return nullptr;
 }
+
+int Pegasus::Shader::ShaderManagerProxy::GetShaderCount() const
+{
+    return mObject->GetShaderTracker()->ShaderSize();
+}
+
+Pegasus::Shader::IShaderProxy * Pegasus::Shader::ShaderManagerProxy::GetShader(int i)
+{
+    if (i >= 0 && i < GetShaderCount())
+    {
+        Pegasus::Shader::ShaderProxy * proxyWrapper = &mShaderProxyPool[i];
+        proxyWrapper->Wrap(mObject->GetShaderTracker()->GetShaderStage(i));
+        return proxyWrapper;
+    }
+    return nullptr;
+}
+
 #else
 PEGASUS_AVOID_EMPTY_FILE_WARNING;
 #endif

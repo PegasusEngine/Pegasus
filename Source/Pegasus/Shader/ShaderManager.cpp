@@ -81,6 +81,11 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::LoadShaderSta
 {    
     const char * extension = Pegasus::Utils::Strrchr(properties.mPath, '.');
     Pegasus::Shader::ShaderType targetStage = Pegasus::Shader::SHADER_STAGE_INVALID;
+    Pegasus::Shader::ShaderStageRef stage = mNodeManager->CreateNode("ShaderStage");
+#if PEGASUS_ENABLE_PROXIES
+    stage->SetFullFilePath(properties.mPath);
+    mShaderTracker.InsertShader(&(*stage));
+#endif
     if (extension != nullptr)
     {
         for (int i = 0; i < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT); ++i)
@@ -95,30 +100,23 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::LoadShaderSta
     
     if (targetStage >= 0 && targetStage < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT))
     {
-        Pegasus::Shader::ShaderStageRef stage = mNodeManager->CreateNode("ShaderStage");
         if (stage->SetSourceFromFile(targetStage, properties.mPath, properties.mLoader))
         {
 #if PEGASUS_SHADER_USE_EDIT_EVENTS
             stage->SetUserData(properties.mUserData);
             stage->SetEventListener(properties.mEventListener);
 #endif
-
-#if PEGASUS_ENABLE_PROXIES
-            stage->SetFullFilePath(properties.mPath);
-            mShaderTracker.InsertShader(&(*stage));
-#endif
-            return stage;
         }
         
     }
-    return nullptr;
+    return stage;
 }
 
 Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::CreateShaderStage(const Pegasus::Shader::ShaderStageProperties& properties)
 {
+    Pegasus::Shader::ShaderStageRef stage = mNodeManager->CreateNode("ShaderStage");
     if (properties.mType >= 0 && properties.mType < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT))
     {
-        Pegasus::Shader::ShaderStageRef stage = mNodeManager->CreateNode("ShaderStage");
         if (properties.mUserData != nullptr)
         {
 #if PEGASUS_SHADER_USE_EDIT_EVENTS
@@ -132,9 +130,7 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::CreateShaderS
 #if PEGASUS_ENABLE_PROXIES
             stage->SetFullFilePath("<custom-shader>");
             mShaderTracker.InsertShader(&(*stage));
-            
 #endif
-            return stage;
         }
         else
         {
@@ -145,6 +141,6 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::CreateShaderS
     {
         PG_FAILSTR("Incorrect config type set");
     }
-    return nullptr;
+    return stage;
 }
 

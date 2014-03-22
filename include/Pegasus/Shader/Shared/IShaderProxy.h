@@ -21,8 +21,15 @@ namespace Shader
 class IShaderProxy
 {
     public:
-        ~IShaderProxy(){}
+        //! Destructor
+        virtual ~IShaderProxy(){}
+
+        //! Gets the shader stage type
+        //! \return returs the enum for the type of this shader
         virtual ShaderType GetStageType() const = 0;
+    
+        //! Gets the name of the shader
+        //! \return the name given to the shader (the filename) as null terminated string
         virtual const char * GetName() const = 0;
 };
 

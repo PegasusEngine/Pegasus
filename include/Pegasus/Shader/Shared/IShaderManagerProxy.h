@@ -19,15 +19,30 @@ namespace Shader
 {
 
 class IProgramProxy;
+class IShaderProxy;
 
 class IShaderManagerProxy
 {
 
 public:
     //! Destructor
-    ~IShaderManagerProxy() {};
+    virtual ~IShaderManagerProxy() {};
+
+    //! Returns the number of programs existant on the application
+    //! \return program count in the application
     virtual int GetProgramCount() const = 0;
+
+    //! Gets the program based on its id. The id range goes from 0 to ProgramCount
+    //! \return program proxy
     virtual IProgramProxy* GetProgram(int id) = 0;
+
+    //! Gets the number of shaders existant on the application
+    //! \return shader count in the application
+    virtual int GetShaderCount() const = 0;
+    
+    //! Gets the shader based on it's id. The id range goes from 0 to GetShaderCount()
+    //! \return shader proxy
+    virtual IShaderProxy* GetShader(int id) = 0; 
 
 };
 

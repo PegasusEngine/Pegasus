@@ -15,11 +15,13 @@
 #include "Application/ApplicationManager.h"
 #include "ShaderLibrary/ShaderLibraryWidget.h"
 #include "ShaderLibrary/ProgramTreeModel.h"
+#include "ShaderLibrary/ShaderListModel.h"
 
 ShaderLibraryWidget::ShaderLibraryWidget(QWidget * parent)
 : QDockWidget(parent)
 {
     mProgramTreeModel = new ProgramTreeModel(this);
+    mShaderListModel = new ShaderListModel(this);
     ui.setupUi(this);
 
     //disable program buttons for now
@@ -30,6 +32,7 @@ ShaderLibraryWidget::ShaderLibraryWidget(QWidget * parent)
     ui.ShaderRemoveButton->setDisabled(true);
 
     ui.ProgramTreeView->setModel(mProgramTreeModel);
+    ui.ShaderTreeView->setModel(mShaderListModel);
 }
 
 //----------------------------------------------------------------------------------------
@@ -46,6 +49,9 @@ void ShaderLibraryWidget::UpdateUIForAppLoaded()
 {
     mProgramTreeModel->OnAppLoaded();
     ui.ProgramTreeView->doItemsLayout();
+
+    mShaderListModel->OnAppLoaded();
+    ui.ShaderTreeView->doItemsLayout();
 }
 
 //----------------------------------------------------------------------------------------
@@ -54,5 +60,8 @@ void ShaderLibraryWidget::UpdateUIForAppFinished()
 {    
     mProgramTreeModel->OnAppDestroyed();
     ui.ProgramTreeView->doItemsLayout();
+
+    mShaderListModel->OnAppDestroyed();
+    ui.ShaderTreeView->doItemsLayout();
 }
 

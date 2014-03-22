@@ -276,6 +276,9 @@
     <ClCompile Include="..\..\..\Source\Editor\ShaderLibrary\ProgramTreeModel.cpp">
       <Filter>Source\ShaderLibrary</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\ShaderLibrary\ShaderListModel.cpp">
+      <Filter>Source\ShaderLibrary</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -377,6 +380,9 @@
       <Filter>Source\Timeline</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Source\Editor\ShaderLibrary\ProgramTreeModel.h">
+      <Filter>Source\ShaderLibrary</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\ShaderLibrary\ShaderListModel.h">
       <Filter>Source\ShaderLibrary</Filter>
     </ClInclude>
   </ItemGroup>
