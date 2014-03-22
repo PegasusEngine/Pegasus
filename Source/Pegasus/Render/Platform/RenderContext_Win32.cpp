@@ -85,6 +85,8 @@ RenderContextImpl_Win32::RenderContextImpl_Win32(const ContextConfig& config)
 
         // Make a new opengl context
         mRenderContextHandle = wglCreateContextAttribsARB(mDeviceContextHandle, 0, sAttrib);
+   
+        PG_ASSERTSTR(mRenderContextHandle != 0x0, "Cannot instantiate render context! Check if your graphcis card supports the minor and major version");
     }
 
     PG_LOG('OGL_', "Context %u created", mRenderContextHandle);
