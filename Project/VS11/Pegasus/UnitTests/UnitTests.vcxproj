@@ -28,6 +28,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\UnitTests\main.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\UnitTests\UtilsTests.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\UnitTests\UtilsTests.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{019F596D-8D2A-4A1C-8560-5C412F8ACF9F}</ProjectGuid>
