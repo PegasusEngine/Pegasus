@@ -10,7 +10,6 @@
 //! \brief  Set of unit tests, used to prove soundness of 
 //!         any data structure. To run, edit Utils project to generate an executable, and run
 
-#if PEGASUS_DEV
 #include "Pegasus\Utils\Memcpy.h"
 #include "Pegasus\Utils\String.h"
 #include <stdio.h>
@@ -185,8 +184,6 @@ bool RunTests(TestFunc func, const char * testTitle, int& outSucceses, int& outT
 
 }
 
-//! UNCOMMENT THIS TO COMPILE AS UNIT TEST PROJECT!
-#if 0
 int main()
 {
     int successes = 0;
@@ -232,16 +229,3 @@ int main()
 
     printf("Final Results: %d out of %d succeeded", successes, total);
 }
-
-#endif
-
-#else
-// The following line is added in order suppress the MS Visual C++ Linker warning 4221
-// warning LNK4221: no public symbols found; archive member will be inaccessible
-// This warning occurs on PC and XBOX when a file compiles out completely
-// has no externally visible symbols which may be dependant on configuration
-// #defines and options.
-
-namespace { char NoEmptyFileDummy_vivalafrance; }
-
-#endif
