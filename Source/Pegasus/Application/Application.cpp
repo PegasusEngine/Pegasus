@@ -16,12 +16,13 @@
 #include "Pegasus/Core/Time.h"
 #include "Pegasus/Graph/NodeManager.h"
 #include "Pegasus/Memory/MemoryManager.h"
-#include "Pegasus/Render/GL/GLExtensions.h"
+#include "Pegasus/Render/ShaderFactory.h"
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Texture/TextureManager.h"
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/Window/StartupWindow.h"
+#include "Pegasus/Render/RenderContext.h"
 
 namespace Pegasus {
 namespace App {
@@ -70,7 +71,12 @@ Application::Application(const ApplicationConfig& config)
 
     // Set up node managers
     mNodeManager = PG_NEW(nodeAlloc, -1, "NodeManager", Alloc::PG_MEM_PERM) Graph::NodeManager(nodeAlloc, nodeDataAlloc);
-    mShaderManager = PG_NEW(nodeAlloc, -1, "ShaderManager", Alloc::PG_MEM_PERM) Shader::ShaderManager(mNodeManager);
+    Pegasus::Shader::IShaderFactory * shaderFactory = Pegasus::Render::GetRenderShaderFactory();
+
+    //! TODO - we probably need to use a render specific allocator for this
+    shaderFactory->Initialize(nodeDataAlloc);
+    mShaderManager = PG_NEW(nodeAlloc, -1, "ShaderManager", Alloc::PG_MEM_PERM) Shader::ShaderManager(mNodeManager, shaderFactory);
+
     mTextureManager = PG_NEW(nodeAlloc, -1, "TextureManager", Alloc::PG_MEM_PERM) Texture::TextureManager(mNodeManager);
 
     // Set up timeline
@@ -249,59 +255,8 @@ void Application::StartupAppInternal()
     config.mUseBasicContext = true;
     newWnd = mWindowManager->CreateNewWindow(STARTUP_WND_TYPE, config);
     PG_ASSERTSTR(newWnd != nullptr, "[FATAL] Failed to create startup window!");
-
-    // Init openGL extensions now that we have a context
-    Render::GLExtensions::CreateInstance(renderAlloc);
-
-    // Write some temporary debugging information
-    Render::GLExtensions* extensions = Render::GLExtensions::GetInstance();
-    switch (extensions->GetMaximumProfile())
-    {
-    case Render::GLExtensions::PROFILE_GL_3_3:
-        PG_LOG('OGL_', "OpenGL 3.3 is the maximum detected profile.");
-        break;
-
-    case Render::GLExtensions::PROFILE_GL_4_3:
-        PG_LOG('OGL_', "OpenGL 4.3 is the maximum detected profile.");
-        break;
-
-    default:
-        PG_LOG('OGL_', "Error when initializing GLextensions->");
-        break;
-    }
-    if (extensions->IsGLExtensionSupported("GL_ARB_draw_indirect"))
-    {
-        PG_LOG('OGL_', "GL_ARB_draw_indirect detected.");
-    }
-    else
-    {
-        PG_LOG('OGL_', "GL_ARB_draw_indirect NOT detected.");
-    }
-    if (extensions->IsGLExtensionSupported("GL_ATI_fragment_shader"))
-    {
-        PG_LOG('OGL_', "GL_ATI_fragment_shader detected.");
-    }
-    else
-    {
-        PG_LOG('OGL_', "GL_ATI_fragment_shader NOT detected.");
-    }
-    if (extensions->IsWGLExtensionSupported("WGL_ARB_buffer_region"))
-    {
-        PG_LOG('OGL_', "WGL_ARB_buffer_region detected.");
-    }
-    else
-    {
-        PG_LOG('OGL_', "WGL_ARB_buffer_region NOT detected.");
-    }
-    if (extensions->IsWGLExtensionSupported("WGL_3DL_stereo_control"))
-    {
-        PG_LOG('OGL_', "WGL_3DL_stereo_control detected.");
-    }
-    else
-    {
-        PG_LOG('OGL_', "WGL_3DL_stereo_control NOT detected.");
-    }
-
+    newWnd->GetRenderContext()->CheckRenderingExtensions();
+    
     // Destroy the window, it is no longer needed
     mWindowManager->DestroyWindow(newWnd);
 
@@ -312,8 +267,7 @@ void Application::StartupAppInternal()
 
 void Application::ShutdownAppInternal()
 {
-    // Destroy openGL extensions
-    Render::GLExtensions::DestroyInstance();
+       
 }
 
 

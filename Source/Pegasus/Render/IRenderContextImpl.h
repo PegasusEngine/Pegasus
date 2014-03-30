@@ -47,6 +47,9 @@ public:
 
     //! Swaps the backbuffer chain, presenting a completed image to the display
     virtual void Swap() const = 0;
+
+    //! At initialization only, utility function that checks for all the extensions from the render api
+    virtual void CheckRenderingExtensions() const = 0;
 };
 
 

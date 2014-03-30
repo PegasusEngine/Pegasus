@@ -289,4 +289,7 @@
 //Enable shader events only if dev mode. In rel mode the boiler plate code gets removed
 #define PEGASUS_SHADER_USE_EDIT_EVENTS      PEGASUS_DEV
 
+//Enable gpu data runTime Type Information, for safe casting (asserts thrown if wrong type being casted)
+#define PEGASUS_GRAPH_GPUDATA_RTTI          PEGASUS_DEBUG 
+
 #endif  // PEGASUS_PREPROCESSOR_H

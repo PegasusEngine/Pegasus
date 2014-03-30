@@ -10,6 +10,7 @@
 //! \brief	Timeline block for the KleberHomogayTriangle effect
 
 #include "TimelineBlocks/KleberTriangleBlock.h"
+#include "Pegasus/Render/Render.h"
 
 
 static const GLuint NUM_VERTS = 3;
@@ -52,26 +53,22 @@ void KleberTriangleBlock::Initialize()
 
     // Set up shaders
     Pegasus::Shader::ShaderManager * const shaderManager = GetShaderManager();
-    mShaderProgramLinkage = shaderManager->CreateProgram("KleberTriangleBlob");
+    mProgram = shaderManager->CreateProgram("KleberTriangleBlob");
     Pegasus::Shader::ShaderStageFileProperties fileLoadProperties;
     fileLoadProperties.mLoader = GetIOManager();
 
     fileLoadProperties.mPath = VERTEX_SHADER;
-    mShaderProgramLinkage->SetShaderStage( shaderManager->LoadShaderStageFromFile(fileLoadProperties) );
+    mProgram->SetShaderStage( shaderManager->LoadShaderStageFromFile(fileLoadProperties) );
 
     fileLoadProperties.mPath = FRAGMENT_SHADER;
-    mShaderProgramLinkage->SetShaderStage( shaderManager->LoadShaderStageFromFile(fileLoadProperties) );
+    mProgram->SetShaderStage( shaderManager->LoadShaderStageFromFile(fileLoadProperties) );
 
     // Force a compilation of the shaders
     bool updated = false;
-    mProgramData = mShaderProgramLinkage->GetUpdatedData(updated);
-
-    // Use the shader
-    //! \todo Why do we know that here?
-    mProgramData->Use();
+    mProgram->GetUpdatedData(updated);
 
     // Set up shader uniforms
-    mTimeUniform = glGetUniformLocation(mProgramData->GetHandle(), "time");
+    mTimeUniform = 0;//glGetUniformLocation(mProgramData->GetHandle(), "time");
 
     // Bind vertex array to shader
     glVertexAttribPointer(POSITION_ATTRIB, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0); // 2 floats, non-normalized, 0 stride and offset
@@ -89,13 +86,7 @@ void KleberTriangleBlock::Shutdown()
 
 void KleberTriangleBlock::Render(float beat, Pegasus::Wnd::Window * window)
 {
-    // Make sure the shaders are compiled
-    //! \todo Why do we need this?
-    bool updated = false;
-    mProgramData = mShaderProgramLinkage->GetUpdatedData(updated);
-
-    // Use the shader
-    mProgramData->Use();
+    Pegasus::Render::Dispatch(mProgram);
 
     const float currentTime = beat * 30.0f;
 

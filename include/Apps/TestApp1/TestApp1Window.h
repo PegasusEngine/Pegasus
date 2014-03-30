@@ -13,10 +13,6 @@
 #define TESTAPP1WINDOW_H
 
 #include "Pegasus/Pegasus.h"
-#include "Pegasus/Shader/ShaderStage.h"
-#include "Pegasus/Shader/ProgramLinkage.h"
-#include "Pegasus/Shader/ProgramData.h"
-
 
 //! This is a specialized window for the TestApp1 application main window
 //! Place specialized rendering code here.
@@ -36,13 +32,6 @@ public:
     virtual void Render();
 
 private:
-    Pegasus::Shader::ProgramLinkageRef mShaderProgramLinkage;
-    Pegasus::Shader::ProgramDataRef mProgramData;
-
-    // Rendering stuff
-    GLint mTimeUniform;
-    GLint mScreenRatioUniform;
-
     Pegasus::Alloc::IAllocator * mAllocator;
 };
 

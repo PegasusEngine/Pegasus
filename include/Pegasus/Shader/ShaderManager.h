@@ -18,6 +18,7 @@ namespace Shader
 {
 
 class IEventListener;
+class IShaderFactory;
 
 
 
@@ -25,7 +26,7 @@ class IEventListener;
 class ShaderManager
 {
 public:
-    explicit ShaderManager(Graph::NodeManager * nodeManager);
+    ShaderManager(Graph::NodeManager * nodeManager, IShaderFactory * factory);
     virtual ~ShaderManager();
 
     //! Load a shader stage from a file.
@@ -54,6 +55,7 @@ private:
     void RegisterAllNodes();
 
     Graph::NodeManager * mNodeManager;
+    IShaderFactory * mFactory;
 
 #if PEGASUS_ENABLE_PROXIES
     ShaderTracker mShaderTracker;

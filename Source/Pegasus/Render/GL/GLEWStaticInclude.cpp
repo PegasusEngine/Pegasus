@@ -9,5 +9,5 @@
 //! \date   02 Nov 2013
 //! \brief  Static include header for GLEW.
 
-#include "Pegasus/Render/GL/GLEWStaticInclude.h"
+#include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
 #include "Pegasus/Libs/GLEW/glew.c"

@@ -18,6 +18,7 @@ namespace Graph {
 NodeData::NodeData(Alloc::IAllocator* allocator)
 :   mAllocator(allocator),
     mRefCount(0),
+    mNodeGpuData(nullptr),
     mDirty(true)
 {
 }

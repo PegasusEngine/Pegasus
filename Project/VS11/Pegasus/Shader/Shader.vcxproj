@@ -28,12 +28,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\EventDispatcher.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ProgramData.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\IShaderFactory.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ProgramLinkage.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ProgramProxy.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\RenderPlatProgramLinker.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\RenderPlatShaderStage.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderData.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderManager.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderManagerProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderProxy.h" />
@@ -47,12 +44,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\EventDispatcher.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\GL\GLProgramLinker.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\GL\GLShaderStage.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ProgramData.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ProgramLinkage.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ProgramProxy.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderData.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderManager.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderManagerProxy.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderProxy.cpp" />

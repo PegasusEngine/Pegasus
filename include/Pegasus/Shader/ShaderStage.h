@@ -13,8 +13,10 @@
 #include "Pegasus/Core/Ref.h"
 #include "Pegasus/Graph/GeneratorNode.h"
 #include "Pegasus/Allocator/IAllocator.h"
-#include "Pegasus/Shader/RenderPlatShaderStage.h"
+#include "Pegasus/Shader/EventDispatcher.h"
+#include "Pegasus/Shader/Shared/ShaderDefs.h"
 #include "Pegasus/Core/Io.h"
+
 
 namespace Pegasus
 {
@@ -24,10 +26,16 @@ namespace Shader
 // forward declarations
 class IEventListener;
 class IUserData;
+class IShaderFactory;
+class ShaderTracker;
 
 //! Shader Stage class, holds information about a shader stage
 class ShaderStage : public Graph::GeneratorNode
+#if PEGASUS_SHADER_USE_EDIT_EVENTS
+, public EventDispatcher
+#endif
 {
+    friend class ShaderManager;
 public:
     //! Default constructor
     //! \param  nodeAllocator used for nodes
@@ -46,6 +54,10 @@ public:
     //! \param  buffSize precomputed string length
     void SetSource(ShaderType type, const char * src, int srcSize);
 
+    //! Gets the shader source
+    //! \param  output string constant pointer
+    //! \param  output size of string 
+    void GetSource (const char ** outSrc, int& outSize) const;
 
     //! Open a file and load its source internally
     //! \param  type the type of shader stage
@@ -56,21 +68,23 @@ public:
 
     //! Return the stage type
     //! \return the shader type
-    ShaderType GetStageType() const { return mInternalStage.GetStageType(); }
+    ShaderType GetStageType() const { return mType; }
 
-#if PEGASUS_SHADER_USE_EDIT_EVENTS
-    //! Set event listener for shader stage
-    //! \param eventListener the event listener interface
-    void SetEventListener(IEventListener * eventListener);
+    //! Sets the factory, which contains the render library implementation of shader
+    //! compilation and linkage
+    void SetFactory(IShaderFactory * factory) { mFactory = factory; }
 
-    //! Set user data of particular shader stage
-    //! \param userData user data returned on the execution of an event. Use this 
-    void SetUserData(IUserData * userData);
-#endif
+    //! Deallocate the data of the current node and ask the input nodes to do the same.
+    //! Typically used when keeping the graph in memory but not the associated data,
+    //! to save memory and to be able to restore the data later
+    virtual void ReleaseDataAndPropagate();
 
     static Graph::NodeReturn CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
+
 #if PEGASUS_ENABLE_PROXIES
+    //! Sets the full path, divides the stirng into the file name and the root full path
+    //! to be used only by the editor
     void SetFullFilePath(const char * fullPath);
     const char * GetFilePath() const { return mPath; }
     const char * GetFileName() const { return mName; }
@@ -82,13 +96,20 @@ protected:
 
 private:
     PG_DISABLE_COPY(ShaderStage)
-    RenderPlatShaderStage mInternalStage;
+    Io::FileBuffer     mFileBuffer; //! buffer structure containing shader source
+    Alloc::IAllocator* mAllocator; //! Allocator to use when creating this object
+    IShaderFactory   * mFactory;
+    ShaderType         mType; //! type of shader stage
 
 //! editor metadata
 #if PEGASUS_ENABLE_PROXIES
+    void SetShaderTracker(ShaderTracker * tracker) {mShaderTracker = tracker;}
+
     static const int METADATA_NAME_LENGTH = 256;
     char mName[METADATA_NAME_LENGTH];
     char mPath[METADATA_NAME_LENGTH];
+    ShaderTracker * mShaderTracker;
+
 #endif
 
 };

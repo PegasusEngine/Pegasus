@@ -37,41 +37,41 @@
     DispatchEvent(e); \
     }
 
-#define SHADEREVENT_COMPILATION_FAIL(log) \
+#define SHADEREVENT_COMPILATION_FAIL(dispatcher, log) \
     { \
     Pegasus::Shader::CompilationEvent e(false, log);\
-    DispatchEvent(e); \
+    dispatcher->DispatchEvent(e); \
     }
 
-#define SHADEREVENT_COMPILATION_SUCCESS \
+#define SHADEREVENT_COMPILATION_SUCCESS(dispatcher) \
     { \
     Pegasus::Shader::CompilationEvent e(true, "" );\
-    DispatchEvent(e); \
+    dispatcher->DispatchEvent(e); \
     }
 
-#define SHADEREVENT_COMPILATION_ERROR(row, column, description)\
+#define SHADEREVENT_COMPILATION_ERROR(dispatcher, row, column, description)\
     {\
     Pegasus::Shader::CompilationNotification e(\
         Pegasus::Shader::CompilationNotification::COMPILATION_ERROR, row, column, description);\
-    DispatchEvent(e); \
+    dispatcher->DispatchEvent(e); \
     }
 
-#define SHADEREVENT_LINKING_SUCCESS \
+#define SHADEREVENT_LINKING_SUCCESS(dispatcher) \
     { \
     Pegasus::Shader::LinkingEvent e(Pegasus::Shader::LinkingEvent::LINKING_SUCCESS, "" );\
-    DispatchEvent(e); \
+    dispatcher->DispatchEvent(e); \
     }
 
-#define SHADEREVENT_LINKING_FAIL(log) \
+#define SHADEREVENT_LINKING_FAIL(dispatcher, log) \
     { \
     Pegasus::Shader::LinkingEvent e(Pegasus::Shader::LinkingEvent::LINKING_FAIL, log);\
-    DispatchEvent(e); \
+    dispatcher->DispatchEvent(e); \
     }
 
-#define SHADEREVENT_LINKING_INCOMPLETE \
+#define SHADEREVENT_LINKING_INCOMPLETE(dispatcher) \
     {\
     Pegasus::Shader::LinkingEvent e(Pegasus::Shader::LinkingEvent::INCOMPLETE_STAGES_FAIL, "");\
-    DispatchEvent(e); \
+    dispatcher->DispatchEvent(e); \
     }
 
 #define SHADEREVENT_ATTACHMENT_FAIL(dispatcher) \
@@ -86,12 +86,12 @@
 #define SHADEREVENT_WRONG_FILE_FORMAT(file, msg)
 #define SHADEREVENT_IO_ERROR(ioError, file, msg)
 #define SHADEREVENT_LOADED(src, srcSize)
-#define SHADEREVENT_COMPILATION_FAIL(log)
-#define SHADEREVENT_COMPILATION_SUCCESS 
-#define SHADEREVENT_COMPILATION_ERROR(row, column, description)
-#define SHADEREVENT_LINKING_SUCCESS 
-#define SHADEREVENT_LINKING_FAIL(log)
-#define SHADEREVENT_LINKING_INCOMPLETE
+#define SHADEREVENT_COMPILATION_FAIL(dispatcher, log)
+#define SHADEREVENT_COMPILATION_SUCCESS(dispatcher)
+#define SHADEREVENT_COMPILATION_ERROR(dispatcher, row, column, description)
+#define SHADEREVENT_LINKING_SUCCESS(dispatcher)
+#define SHADEREVENT_LINKING_FAIL(dispatcher, log)
+#define SHADEREVENT_LINKING_INCOMPLETE(dispatcher)
 #define SHADEREVENT_ATTACHMENT_FAIL(dispatcher)
 
 

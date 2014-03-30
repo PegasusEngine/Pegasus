@@ -30,6 +30,7 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\GeneratorNode.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\Node.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\NodeData.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\NodeGpuData.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\NodeManager.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\OperatorNode.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\OutputNode.h" />

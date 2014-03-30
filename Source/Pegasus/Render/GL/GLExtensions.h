@@ -13,14 +13,12 @@
 #ifndef PEGASUS_RENDER_GLEXTENSIONS_H
 #define PEGASUS_RENDER_GLEXTENSIONS_H
 
-#include "Pegasus/Core/Singleton.h"
-
 namespace Pegasus {
 namespace Render {
 
 //! Singleton that manages GL and WGL extensions, available throughout the engine
 //! to check if features are available before using them
-class GLExtensions : public Core::Singleton<GLExtensions>
+class GLExtensions
 {
 public:
     //! Definition of available OpenGL profiles

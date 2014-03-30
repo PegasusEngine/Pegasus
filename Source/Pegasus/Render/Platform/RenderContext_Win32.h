@@ -36,8 +36,8 @@ public:
     // IRenderContextImpl interface
     virtual void Bind() const;
     virtual void Unbind() const;
-    virtual void Swap() const;
-
+    virtual void Swap() const;        
+    virtual void CheckRenderingExtensions() const;
 private:
     // No copies allowed
     PG_DISABLE_COPY(RenderContextImpl_Win32);

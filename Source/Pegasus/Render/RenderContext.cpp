@@ -51,6 +51,13 @@ void Context::Swap() const
     mPrivateImpl->Swap();
 }
 
+//----------------------------------------------------------------------------------------
+
+void Context::CheckRenderingExtensions() const
+{
+    mPrivateImpl->CheckRenderingExtensions();
+}
+
 
 }   // namespace Render
 }   // namespace Pegasus

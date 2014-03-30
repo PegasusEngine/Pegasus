@@ -10,8 +10,8 @@
 //! \brief  Management of GL and WGL extensions, available throughout the engine
 //!         to check if features are available before using them
 
-#include "Pegasus/Render/GL/GLExtensions.h"
-#include "Pegasus/Render/GL/GLEWStaticInclude.h" 
+#include "../Source/Pegasus/Render/GL/GLExtensions.h"
+#include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h" 
 
 namespace Pegasus {
 namespace Render {
@@ -19,7 +19,6 @@ namespace Render {
 //----------------------------------------------------------------------------------------
 
 GLExtensions::GLExtensions()
-    : Core::Singleton<GLExtensions>()
 {
     mGLEWInitialized = false;
 

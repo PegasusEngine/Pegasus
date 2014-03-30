@@ -13,9 +13,10 @@
 #define TESTAPP1_KLEBERTRIANGLE_BLOCK_H
 
 #include "Pegasus/Shader/ProgramLinkage.h"
-#include "Pegasus/Shader/ProgramData.h"
 #include "Pegasus/Timeline/Block.h"
 
+//! TODO remove this direct dependency once our mesh & shader packages are fully complete
+#include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
 
 //! Timeline block for the KleberHomogayTriangle effect
 //! \todo Use protected inheritance? In that case, give access to SetPosition() and SetLength()
@@ -58,8 +59,7 @@ private:
     enum BUFFER_IDS { TRIANGLES_BUFFER = 0, NUM_BUFFERS };
     GLuint mVAOs[NUM_VAOS];
     GLuint mBuffers[NUM_BUFFERS];
-    Pegasus::Shader::ProgramLinkageRef mShaderProgramLinkage;
-    Pegasus::Shader::ProgramDataRef mProgramData;
+    Pegasus::Shader::ProgramLinkageRef mProgram;
     GLint mTimeUniform;
 };
 

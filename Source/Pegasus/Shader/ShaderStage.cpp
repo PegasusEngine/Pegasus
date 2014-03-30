@@ -1,8 +1,10 @@
 #include "Pegasus/Shader/Shared/ShaderEvent.h"
 #include "Pegasus/Shader/ShaderStage.h"
-#include "Pegasus/Shader/ShaderData.h"
+#include "Pegasus/Shader/IShaderFactory.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/Memcpy.h"
+#include "Pegasus/Shader/ShaderTracker.h"
+
 
 //! private data structures
 namespace PegasusShaderPrivate {
@@ -28,21 +30,67 @@ static struct PegasusExtensionMappings
 
 Pegasus::Shader::ShaderStage::ShaderStage(Pegasus::Alloc::IAllocator * allocator, Pegasus::Alloc::IAllocator * nodeDataAllocator)
     : Pegasus::Graph::GeneratorNode(allocator, nodeDataAllocator), 
-      mInternalStage(allocator)
+      mAllocator(allocator),
+      mType(Pegasus::Shader::SHADER_STAGE_INVALID),
+      mFactory(nullptr)
+#if PEGASUS_ENABLE_PROXIES
+      , mShaderTracker(nullptr)
+#endif
 {
 }
 
 Pegasus::Shader::ShaderStage::~ShaderStage()
 {
+    if (GetData() != nullptr)
+    {
+        mFactory->DestroyShaderGpuData(&(*GetData()));
+    }
+#if PEGASUS_ENABLE_PROXIES
+    if (mShaderTracker != nullptr)
+    {
+        mShaderTracker->DeleteShader(this);
+    }
+#endif
+
+}
+
+void Pegasus::Shader::ShaderStage::ReleaseDataAndPropagate()
+{
+    if (GetData() != nullptr)
+    {
+        mFactory->DestroyShaderGpuData(&(*GetData()));
+    }
+    Pegasus::Graph::Node::ReleaseDataAndPropagate();
 }
 
 void Pegasus::Shader::ShaderStage::SetSource(Pegasus::Shader::ShaderType type, const char * src, int srcSize)
 {
+    //! mark data as dirty
     if (GetData() != nullptr)
     {
         GetData()->Invalidate();
     }
-    mInternalStage.SetSource(type, src, srcSize);
+
+    //reallocate buffer size if more space requested on recompilation
+    if (srcSize > mFileBuffer.GetFileSize())
+    {
+        mFileBuffer.DestroyBuffer();
+        mFileBuffer.OwnBuffer (
+            mAllocator,
+            PG_NEW_ARRAY(mAllocator, -1, "shader src", Pegasus::Alloc::PG_MEM_PERM, char, srcSize),
+            srcSize
+        );
+    }
+    mFileBuffer.SetFileSize(srcSize);
+    PG_ASSERTSTR(mFileBuffer.GetBufferSize() >= srcSize, "Not enough size to hold the string buffer!");
+    Pegasus::Utils::Memcpy(mFileBuffer.GetBuffer(),src,srcSize);
+    mType = type;
+}
+
+void Pegasus::Shader::ShaderStage::GetSource ( const char ** outSrc, int& outSize) const
+{
+    *outSrc = mFileBuffer.GetBuffer(); 
+    outSize = mFileBuffer.GetFileSize();
 }
 
 bool Pegasus::Shader::ShaderStage::SetSourceFromFile(Pegasus::Shader::ShaderType type, const char * path, Io::IOManager * loader)
@@ -51,38 +99,39 @@ bool Pegasus::Shader::ShaderStage::SetSourceFromFile(Pegasus::Shader::ShaderType
     {
         GetData()->Invalidate();
     }
-    return mInternalStage.SetSourceFromFile(type, path, loader);
+
+    PG_ASSERT(path != nullptr);
+    mType = type;
+    if (mType != Pegasus::Shader::SHADER_STAGE_INVALID)
+    {
+        mFileBuffer.DestroyBuffer(); //clear any buffers pre-allocated to this
+        Pegasus::Io::IoError ioError = loader->OpenFileToBuffer(path, mFileBuffer, true, mAllocator);
+        if (ioError == Pegasus::Io::ERR_NONE)
+        {
+            SHADEREVENT_LOADED(mFileBuffer.GetBuffer(), mFileBuffer.GetFileSize());
+            return true;
+        }
+        else
+        {
+            SHADEREVENT_IO_ERROR(ioError, path, "Io error");
+        }
+    }
+    else
+    {
+        SHADEREVENT_WRONG_FILE_FORMAT(path, "wrong file format!");
+    }
+    return false;
 }
 
 Pegasus::Graph::NodeData * Pegasus::Shader::ShaderStage::AllocateData() const
 {
-    return PG_NEW(GetNodeDataAllocator(), -1, "ShaderData", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Shader::ShaderData(GetNodeDataAllocator());
+    return PG_NEW(GetNodeDataAllocator(), -1, "Shader Node Data", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Graph::NodeData(GetNodeDataAllocator());
 }
-
-#if PEGASUS_SHADER_USE_EDIT_EVENTS
-void Pegasus::Shader::ShaderStage::SetEventListener(Pegasus::Shader::IEventListener * eventListener)
-{
-    mInternalStage.SetEventListener(eventListener);
-}
-
-void Pegasus::Shader::ShaderStage::SetUserData(Pegasus::Shader::IUserData * userData)
-{
-    mInternalStage.SetUserData(userData);
-}
-#endif //PEGASUS_SHADER_USE_EDIT_EVENTS
 
 void Pegasus::Shader::ShaderStage::GenerateData()
 {
     PG_ASSERT(GetData() != nullptr);
-    Pegasus::Shader::ShaderDataRef shaderData = GetData();  
-    if (mInternalStage.Compile())
-    {
-        shaderData->SetShaderHandle(mInternalStage.GetCompiledShaderHandle());
-    }
-    else
-    {
-        shaderData->SetShaderHandle(Pegasus::Shader::INVALID_SHADER_HANDLE);
-    }
+    mFactory->GenerateShaderGpuData(&(*this), &(*GetData()));
 } 
 
 

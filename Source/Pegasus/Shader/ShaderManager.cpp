@@ -11,6 +11,7 @@
 
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
+#include "Pegasus/Shader/IShaderFactory.h"
 #include "Pegasus/Graph/NodeManager.h"
 #include "Pegasus/Utils/String.h"
 
@@ -37,9 +38,10 @@ static struct PegasusExtensionMappings
 
 #define REGISTER_SHADER_NODE(className) mNodeManager->RegisterNode(#className, className::CreateNode);
 
-Pegasus::Shader::ShaderManager::ShaderManager(Pegasus::Graph::NodeManager * nodeManager)
+Pegasus::Shader::ShaderManager::ShaderManager(Pegasus::Graph::NodeManager * nodeManager, Pegasus::Shader::IShaderFactory * factory)
 :
-mNodeManager(nodeManager)
+mNodeManager(nodeManager),
+mFactory(factory)
 {
     if (nodeManager != nullptr)
     {
@@ -65,16 +67,14 @@ void Pegasus::Shader::ShaderManager::RegisterAllNodes()
 
 Pegasus::Shader::ProgramLinkageReturn Pegasus::Shader::ShaderManager::CreateProgram(const char * name)
 {
+    Pegasus::Shader::ProgramLinkageRef program = mNodeManager->CreateNode("ProgramLinkage");
+    program->SetFactory(mFactory);
 #if PEGASUS_ENABLE_PROXIES
     //if proxies make sure to set metadata correctly
-    Pegasus::Shader::ProgramLinkageRef program = mNodeManager->CreateNode("ProgramLinkage");
     program->SetName(name);
     mShaderTracker.InsertProgram(&(*program));
-    return program;
-#else
-    //otherwise straight forward return
-    return mNodeManager->CreateNode("ProgramLinkage");
 #endif
+    return program; 
 }
 
 Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::LoadShaderStageFromFile(const Pegasus::Shader::ShaderStageFileProperties& properties)
@@ -82,9 +82,10 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::LoadShaderSta
     const char * extension = Pegasus::Utils::Strrchr(properties.mPath, '.');
     Pegasus::Shader::ShaderType targetStage = Pegasus::Shader::SHADER_STAGE_INVALID;
     Pegasus::Shader::ShaderStageRef stage = mNodeManager->CreateNode("ShaderStage");
+    stage->SetFactory(mFactory);
+
 #if PEGASUS_ENABLE_PROXIES
     stage->SetFullFilePath(properties.mPath);
-    mShaderTracker.InsertShader(&(*stage));
 #endif
     if (extension != nullptr)
     {
@@ -103,8 +104,11 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::LoadShaderSta
         if (stage->SetSourceFromFile(targetStage, properties.mPath, properties.mLoader))
         {
 #if PEGASUS_SHADER_USE_EDIT_EVENTS
+            stage->SetShaderTracker(&mShaderTracker);
             stage->SetUserData(properties.mUserData);
             stage->SetEventListener(properties.mEventListener);
+            stage->SetShaderTracker(&mShaderTracker);
+            mShaderTracker.InsertShader(&(*stage));
 #endif
         }
         
@@ -115,6 +119,8 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::LoadShaderSta
 Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::CreateShaderStage(const Pegasus::Shader::ShaderStageProperties& properties)
 {
     Pegasus::Shader::ShaderStageRef stage = mNodeManager->CreateNode("ShaderStage");
+    stage->SetFactory(mFactory);
+
     if (properties.mType >= 0 && properties.mType < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT))
     {
         if (properties.mUserData != nullptr)
@@ -128,6 +134,7 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::CreateShaderS
         {
             stage->SetSource(properties.mType, properties.mSource, properties.mSourceSize);
 #if PEGASUS_ENABLE_PROXIES
+            stage->SetShaderTracker(&mShaderTracker);
             stage->SetFullFilePath("<custom-shader>");
             mShaderTracker.InsertShader(&(*stage));
 #endif
@@ -143,4 +150,3 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::CreateShaderS
     }
     return stage;
 }
-

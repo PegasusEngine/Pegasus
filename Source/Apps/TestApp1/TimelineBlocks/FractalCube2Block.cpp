@@ -10,6 +10,7 @@
 //! \brief	Timeline block for the FractalCube2 effect (colored fractal with shadows)
 
 #include "TimelineBlocks/FractalCube2Block.h"
+#include "Pegasus/Render/Render.h"
 
 
 static const GLuint NUM_VERTS = 6;
@@ -55,27 +56,19 @@ void FractalCube2Block::Initialize()
 
     // Set up shaders
     Pegasus::Shader::ShaderManager * const shaderManager = GetShaderManager();
-    mShaderProgramLinkage = shaderManager->CreateProgram("FractalCube2");
+    mProgram = shaderManager->CreateProgram("FractalCube2");
     Pegasus::Shader::ShaderStageFileProperties fileLoadProperties;
     fileLoadProperties.mLoader = GetIOManager();
 
     fileLoadProperties.mPath = VERTEX_SHADER;
-    mShaderProgramLinkage->SetShaderStage( shaderManager->LoadShaderStageFromFile(fileLoadProperties) );
+    mProgram->SetShaderStage( shaderManager->LoadShaderStageFromFile(fileLoadProperties) );
 
     fileLoadProperties.mPath = FRAGMENT_SHADER;
-    mShaderProgramLinkage->SetShaderStage( shaderManager->LoadShaderStageFromFile(fileLoadProperties) );
-
-    // Force a compilation of the shaders
-    bool updated = false;
-    mProgramData = mShaderProgramLinkage->GetUpdatedData(updated);
-
-    // Use the shader
-    //! \todo Why do we know that here?
-    mProgramData->Use();
+    mProgram->SetShaderStage( shaderManager->LoadShaderStageFromFile(fileLoadProperties) );
 
     // Set up shader uniforms
-    mTimeUniform = glGetUniformLocation(mProgramData->GetHandle(), "time");
-    mScreenRatioUniform = glGetUniformLocation(mProgramData->GetHandle(), "screenRatio");
+    mScreenRatioUniform = 0;//glGetUniformLocation(mProgramData->GetHandle(), "screenRatio");
+    mTimeUniform = 1;//glGetUniformLocation(mProgramData->GetHandle(), "time");
 
     // Bind vertex array to shader
     glVertexAttribPointer(POSITION_ATTRIB, 2, GL_FLOAT, GL_FALSE, 0, (void*) 0); // 2 floats, non-normalized, 0 stride and offset
@@ -93,13 +86,8 @@ void FractalCube2Block::Shutdown()
 
 void FractalCube2Block::Render(float beat, Pegasus::Wnd::Window * window)
 {
-    // Make sure the shaders are compiled
-    //! \todo Why do we need this?
-    bool updated = false;
-    mProgramData = mShaderProgramLinkage->GetUpdatedData(updated);
 
-    // Use the shader
-    mProgramData->Use();
+    Pegasus::Render::Dispatch(mProgram);
 
     const float currentTime = beat * 0.25f;
     unsigned int viewportWidth = 0;

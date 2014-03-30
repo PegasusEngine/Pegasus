@@ -13,6 +13,7 @@
 #define PEGASUS_GRAPH_NODEDATA_H
 
 #include "Pegasus/Core/Ref.h"
+#include "Pegasus/Graph/NodeGpuData.h"
 
 namespace Pegasus {
 namespace Graph {
@@ -34,8 +35,6 @@ public:
     //! Destructor
     virtual ~NodeData();
 
-
-
     //! Set the data as dirty, meaning they will need to be recomputed to be valid
     //! \note Does not deallocate any memory, only sets a flag
     inline void Invalidate() { mDirty = true; }
@@ -46,6 +45,15 @@ public:
     //! Test if the data are dirty
     //! \return True if the dirty flag is set
     inline bool AreDirty() const { return mDirty; }
+
+    //! Sets custom node gpu data by user code.
+    void  SetNodeGpuData (NodeGpuData * nodeGpuData) { mNodeGpuData = nodeGpuData; }
+
+    //! Gets custom node gpu data set by user.
+    NodeGpuData * GetNodeGpuData () { return mNodeGpuData; }
+
+    //! Gets custom read only node gpu data set by user.
+    const NodeGpuData * GetNodeGpuData () const { return mNodeGpuData; }
 
     //------------------------------------------------------------------------------------
     
@@ -74,6 +82,8 @@ private:
     //! if the counter reaches 0
     void Release();
 
+    //! Gpu data container
+    NodeGpuData * mNodeGpuData;
 
     //! Allocator for this object
     Alloc::IAllocator* mAllocator;
@@ -84,6 +94,7 @@ private:
 
     //! True when the data are dirty, meaning they will need to be recomputed to be valid
     bool mDirty;
+
 };
 
 //----------------------------------------------------------------------------------------

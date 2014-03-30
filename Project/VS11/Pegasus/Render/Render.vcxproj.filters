@@ -9,9 +9,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Include\GL">
-      <UniqueIdentifier>{be830b89-097c-409a-b585-c10fc9297658}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\GL">
       <UniqueIdentifier>{a1f5371a-5199-4e2c-a0b0-c28c66b20ba1}</UniqueIdentifier>
     </Filter>
@@ -20,9 +17,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Render\GL\GLExtensions.h">
-      <Filter>Include\GL</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\RenderContext.h">
       <Filter>Include</Filter>
     </ClInclude>
@@ -38,8 +32,20 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\RenderContextConfig.h">
       <Filter>Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Render\GL\GLEWStaticInclude.h">
-      <Filter>Include\GL</Filter>
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLEWStaticInclude.h">
+      <Filter>Source\GL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.h">
+      <Filter>Source\GL</Filter>
+    </ClInclude>
+	<ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLGpuDataDefs.h">
+      <Filter>Source\GL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Render\ShaderFactory.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Render\Render.h">
+      <Filter>Include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -53,6 +59,12 @@
       <Filter>Source\Platform</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLEWStaticInclude.cpp">
+      <Filter>Source\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLShaderFactory.cpp">
+      <Filter>Source\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLRenderImpl.cpp">
       <Filter>Source\GL</Filter>
     </ClCompile>
   </ItemGroup>

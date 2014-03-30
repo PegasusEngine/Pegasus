@@ -13,6 +13,8 @@
 #include "TestApp1Window.h"
 #include "Pegasus/Render/RenderContext.h"
 
+//! TODO remove this direct dependency once our mesh & shader packages are fully complete
+#include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
 
 TestApp1Window::TestApp1Window(const Pegasus::Wnd::WindowConfig& config)
     : Pegasus::Wnd::Window(config), mAllocator(config.mAllocator)

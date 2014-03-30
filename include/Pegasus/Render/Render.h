@@ -4,23 +4,26 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   ShaderData.cpp
+//! \file   Render.h
 //! \author Kleber Garcia
-//! \date   1st December 2013
-//! \brief  Implementation of ShaderData class
+//! \date   25th March of 2014
+//! \brief  Master render library. PARR - Pegasus Abstract Render Recipes	
+//!         This library encapsulates most of the underlying API and serves as a way 
+//!         of accessing it. Provides render shortcuts.
 
-#include "Pegasus/Shader/ShaderData.h"
+#ifndef PARR_H
+#define PARR_H
 
+#include "Pegasus/Shader/ProgramLinkage.h"
 
-
-Pegasus::Shader::ShaderData::ShaderData(Alloc::IAllocator * allocator)
-:
-Pegasus::Graph::NodeData(allocator),
-mHandle(0)
+namespace Pegasus
 {
-    
+
+namespace Render
+{
+    void Dispatch (Shader::ProgramLinkageRef program);
 }
 
-Pegasus::Shader::ShaderData::~ShaderData()
-{
 }
+
+#endif

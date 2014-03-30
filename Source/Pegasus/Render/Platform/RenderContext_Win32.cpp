@@ -11,7 +11,8 @@
 
 #if PEGASUS_PLATFORM_WINDOWS
 #include "../Source/Pegasus/Render/Platform/RenderContext_Win32.h"
-#include "Pegasus/Render/GL/GLEWStaticInclude.h"
+#include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
+#include "../Source/Pegasus/Render/GL/GLExtensions.h"
 
 namespace Pegasus {
 namespace Render {
@@ -130,6 +131,61 @@ void RenderContextImpl_Win32::Swap() const
 {
     // Present (no need for glFlush() since SwapBuffers() takes care of it)
     SwapBuffers(mDeviceContextHandle);
+}
+
+//----------------------------------------------------------------------------------------
+void RenderContextImpl_Win32::CheckRenderingExtensions() const
+{
+    // do a full check on rendering extensions supported by opengl
+
+    // Write some temporary debugging information
+    Render::GLExtensions extensions;
+    switch (extensions.GetMaximumProfile())
+    {
+    case Render::GLExtensions::PROFILE_GL_3_3:
+        PG_LOG('OGL_', "OpenGL 3.3 is the maximum detected profile.");
+        break;
+
+    case Render::GLExtensions::PROFILE_GL_4_3:
+        PG_LOG('OGL_', "OpenGL 4.3 is the maximum detected profile.");
+        break;
+
+    default:
+        PG_LOG('OGL_', "Error when initializing GLextensions->");
+        break;
+    }
+    if (extensions.IsGLExtensionSupported("GL_ARB_draw_indirect"))
+    {
+        PG_LOG('OGL_', "GL_ARB_draw_indirect detected.");
+    }
+    else
+    {
+        PG_LOG('OGL_', "GL_ARB_draw_indirect NOT detected.");
+    }
+    if (extensions.IsGLExtensionSupported("GL_ATI_fragment_shader"))
+    {
+        PG_LOG('OGL_', "GL_ATI_fragment_shader detected.");
+    }
+    else
+    {
+        PG_LOG('OGL_', "GL_ATI_fragment_shader NOT detected.");
+    }
+    if (extensions.IsWGLExtensionSupported("WGL_ARB_buffer_region"))
+    {
+        PG_LOG('OGL_', "WGL_ARB_buffer_region detected.");
+    }
+    else
+    {
+        PG_LOG('OGL_', "WGL_ARB_buffer_region NOT detected.");
+    }
+    if (extensions.IsWGLExtensionSupported("WGL_3DL_stereo_control"))
+    {
+        PG_LOG('OGL_', "WGL_3DL_stereo_control detected.");
+    }
+    else
+    {
+        PG_LOG('OGL_', "WGL_3DL_stereo_control NOT detected.");
+    }
 }
 
 
