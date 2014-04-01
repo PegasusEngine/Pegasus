@@ -13,7 +13,7 @@
 #include "Pegasus/Utils/Memcpy.h"
 #include "Pegasus/Utils/String.h"
 
-bool UNIT_TEST_MemcpyUnitTest1()
+bool UNIT_TEST_Memcpy1()
 {
     //Test
     const char * testString1 = "This is a test string."; int count = 23;//size of memory is 
@@ -30,7 +30,7 @@ bool UNIT_TEST_MemcpyUnitTest1()
 }
 
 
-bool UNIT_TEST_MemcpyUnitTest2()
+bool UNIT_TEST_Memcpy2()
 {
     //Test 
     const char * testString1 = ""; int count = 0;
@@ -45,7 +45,7 @@ bool UNIT_TEST_MemcpyUnitTest2()
     return match;
 }
 
-bool UNIT_TEST_MemcpyUnitTest3()
+bool UNIT_TEST_Memcpy3()
 {
     //Test 
     unsigned long long bigList[267];

@@ -15,11 +15,11 @@
 #ifndef PEGASUS_UTILS_TESTS_H
 #define PEGASUS_UTILS_TESTS_H
 
-bool UNIT_TEST_MemcpyUnitTest1();
+bool UNIT_TEST_Memcpy1();
 
-bool UNIT_TEST_MemcpyUnitTest2();
+bool UNIT_TEST_Memcpy2();
 
-bool UNIT_TEST_MemcpyUnitTest3();
+bool UNIT_TEST_Memcpy3();
 
 bool UNIT_TEST_Strcmp1();
 

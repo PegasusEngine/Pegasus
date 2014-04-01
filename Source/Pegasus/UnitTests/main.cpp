@@ -34,44 +34,45 @@ int main()
 {
     int successes = 0;
     int total = 0;
-#define RUN_TEST(fn, name) RunTests(fn, name, successes, total)
+
+#define RUN_TEST(name) RunTests(UNIT_TEST_##name, #name, successes, total)
     
     ///////////////////////////////////////////////////////////////////
     // UNIT TESTS - add here your UTILS package unit tests executions//
     ///////////////////////////////////////////////////////////////////
     
     //memcpy
-    RUN_TEST(UNIT_TEST_MemcpyUnitTest1,"MemCpy1");
-    RUN_TEST(UNIT_TEST_MemcpyUnitTest2,"MemCpy2");
-    RUN_TEST(UNIT_TEST_MemcpyUnitTest3,"MemCpy3");
+    RUN_TEST(Memcpy1);
+    RUN_TEST(Memcpy2);
+    RUN_TEST(Memcpy3);
 
     //strcmp
-    RUN_TEST(UNIT_TEST_Strcmp1,"strcmp1");
-    RUN_TEST(UNIT_TEST_Strcmp2,"strcmp2");
-    RUN_TEST(UNIT_TEST_Strcmp3,"strcmp3");
-    RUN_TEST(UNIT_TEST_Strcmp4,"strcmp4");
+    RUN_TEST(Strcmp1);
+    RUN_TEST(Strcmp2);
+    RUN_TEST(Strcmp3);
+    RUN_TEST(Strcmp4);
 
     //stricmp
-    RUN_TEST(UNIT_TEST_Stricmp1,"stricmp1");
-    RUN_TEST(UNIT_TEST_Stricmp2,"stricmp2");
-    RUN_TEST(UNIT_TEST_Stricmp3,"stricmp3");
+    RUN_TEST(Stricmp1);
+    RUN_TEST(Stricmp2);
+    RUN_TEST(Stricmp3);
 
     //strlen
-    RUN_TEST(UNIT_TEST_Strlen1,"Strlen1");
-    RUN_TEST(UNIT_TEST_Strlen2,"Strlen2");
-    RUN_TEST(UNIT_TEST_Strlen3,"Strlen3");
+    RUN_TEST(Strlen1);
+    RUN_TEST(Strlen2);
+    RUN_TEST(Strlen3);
 
     //strchr
-    RUN_TEST(UNIT_TEST_Strchr1,"Strchr1");
-    RUN_TEST(UNIT_TEST_Strchr2,"Strchr2");
-    RUN_TEST(UNIT_TEST_Strchr3,"Strchr3");
+    RUN_TEST(Strchr1);
+    RUN_TEST(Strchr2);
+    RUN_TEST(Strchr3);
 
     //strrchr
-    RUN_TEST(UNIT_TEST_Strrchr1,"Strrchr1");
-    RUN_TEST(UNIT_TEST_Strrchr2,"Strrchr2");
-    RUN_TEST(UNIT_TEST_Strrchr3,"Strrchr3");
+    RUN_TEST(Strrchr1);
+    RUN_TEST(Strrchr2);
+    RUN_TEST(Strrchr3);
 
     ///////////////////////////////////////////////////////////
 
-    printf("Final Results: %d out of %d succeeded", successes, total);
+    printf("Final Results: %d out of %d succeeded\n", successes, total);
 }
