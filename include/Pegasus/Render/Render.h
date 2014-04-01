@@ -21,6 +21,8 @@ namespace Pegasus
 
 namespace Render
 {
+    //! Dispatches a shader.
+    //! \param program the shader program to dispatch
     void Dispatch (Shader::ProgramLinkageRef program);
 }
 

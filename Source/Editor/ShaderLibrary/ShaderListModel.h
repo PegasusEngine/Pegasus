@@ -16,6 +16,7 @@
 namespace Pegasus {
     namespace Shader {
         class IShaderManagerProxy;
+        class IShaderProxy;
     }
 }
 
@@ -46,6 +47,9 @@ public:
 
     //! callback that clears the shader manager proxy
     void OnAppDestroyed();
+
+    //! Translates an index to a shader proxy
+    Pegasus::Shader::IShaderProxy * Translate(const QModelIndex& index);
 
 private:
     QIcon mWorkingIcon;

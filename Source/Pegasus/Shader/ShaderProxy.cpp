@@ -29,6 +29,11 @@ const char * Pegasus::Shader::ShaderProxy::GetName() const
     return mObject->GetFileName();
 }
 
+void Pegasus::Shader::ShaderProxy::GetSource(const char ** outSrc, int& outSize) const
+{
+    return mObject->GetSource(outSrc, outSize);
+}
+
 #else
 PEGASUS_AVOID_EMPTY_FILE_WARNING;
 #endif

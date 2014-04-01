@@ -62,6 +62,8 @@ public:
     virtual unsigned int GetMaxNumInputNodes() const { return static_cast<unsigned int>(Pegasus::Shader::SHADER_STAGES_COUNT);}
 
     //! Static function that creates a program linkage
+    //! nodeAllocator node allocator
+    //! nodeDataAllocator node data allocator
     static Graph::NodeReturn CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
     //! Returns a shader stage node
@@ -83,6 +85,7 @@ public:
 
     //! Sets the factory, which contains the render library implementation of shader
     //! compilation and linkage
+    //! \param factory the shader gpu factory to be used internally for compilation process.
     void SetFactory (IShaderFactory * factory) { mFactory = factory; }
 
     //! Deallocate the data of the current node and ask the input nodes to do the same.
@@ -91,7 +94,11 @@ public:
     virtual void ReleaseDataAndPropagate();
 
 #if PEGASUS_ENABLE_PROXIES
+    //! returns the name of this program.
+    //! \return name of program
     const char * GetName() { return mName; }
+    
+    //! sets the name of this shader to be used
     void SetName(const char * name);
 #endif
 protected:
@@ -99,6 +106,7 @@ protected:
     virtual void AddInput(Pegasus::Graph::NodeIn node);
     
     //! Get the particular shader stage
+    //! \param tyoe the type to get from this program
     //! \return the shader stage reference
     Pegasus::Shader::ShaderStageRef GetShaderStage(Pegasus::Shader::ShaderType type) const;
 
@@ -109,16 +117,23 @@ protected:
     virtual Pegasus::Graph::NodeData* AllocateData() const;
 
     //! event listening of input removal 
+    //! \param index callback when input is removed
     virtual void OnRemoveInput(unsigned int index);
 
 private:    
 #if PEGASUS_ENABLE_PROXIES
+    //! name meta data stuff
     static const int METADATA_NAME_LENGTH = 256;
     char mName[METADATA_NAME_LENGTH];
 #endif
 
     PG_DISABLE_COPY(ProgramLinkage);    
+    //! pointer to shader factory
     IShaderFactory * mFactory;
+    
+    //! bit mask describing the contents of this node.
+    //! this allows this node to behave like a set with a static
+    //! topology.
     unsigned char mStageFlags;
 };
 

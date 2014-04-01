@@ -48,16 +48,23 @@ public:
     ShaderStageReturn CreateShaderStage(const Pegasus::Shader::ShaderStageProperties& properties);   
 
 #if PEGASUS_ENABLE_PROXIES
+    //! Returns the shader tracker. Keeps track of all programs and shaders existant.
+    //! \return tracker helper. Use it to iterate over shaders and programs
     const ShaderTracker * GetShaderTracker() const { return &mShaderTracker; }
 #endif
 
 private:
+    //! Internal function. registers the node types.
     void RegisterAllNodes();
 
+    //! reference to the global node manager. Use it to allocate node data.
     Graph::NodeManager * mNodeManager;
+
+    //! reference to the gpu factory. Passed to every node generated from this manager.
     IShaderFactory * mFactory;
 
 #if PEGASUS_ENABLE_PROXIES
+    //! shader tracker. To be used by proxy to track and iterate over shader nodes
     ShaderTracker mShaderTracker;
 #endif
 };

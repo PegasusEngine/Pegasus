@@ -23,19 +23,38 @@ namespace Shader
 {
 class ProgramLinkage;
 
+//! Program proxy. To be used by the editor
 class ProgramProxy : public IProgramProxy
 {
 public:
     ProgramProxy(){}
     virtual ~ProgramProxy() {}
+
+    //! returns the number of shaders this program holds.
+    //! \return number of shaders this program holds.
     virtual int GetShaderCount() const; 
+
+    //! Gets the shader proxy by id.
+    //! \param i the index of the shader proxy child
+    //! \return null if shader is not found, otherwise a pointer to its proxy
     virtual IShaderProxy * GetShader(unsigned i);
+
+    //! \return Gets the name of this shader program
     virtual const char * GetName() const;
+
+    //! sets the internal implementation of shader linkage
+    //! \param object the program linkage internal object.
     void Wrap(ProgramLinkage * object) { mObject = object; }
+
+    //! \return Returns the internal program linkage owned.
     ProgramLinkage * Unwrap() const { return mObject; }
 
 private:
+
+    //! internal worker, obfuscated
     ProgramLinkage * mObject;
+    
+    //! pool of shader proxies.
     ShaderProxy mShaderProxyPool[SHADER_STAGES_COUNT];
     
 };

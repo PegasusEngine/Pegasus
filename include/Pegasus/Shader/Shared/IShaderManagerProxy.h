@@ -41,6 +41,7 @@ public:
     virtual int GetShaderCount() const = 0;
     
     //! Gets the shader based on it's id. The id range goes from 0 to GetShaderCount()
+    //! \param id index position of shader proxy to get
     //! \return shader proxy
     virtual IShaderProxy* GetShader(int id) = 0; 
 

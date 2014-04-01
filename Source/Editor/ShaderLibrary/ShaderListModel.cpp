@@ -70,6 +70,17 @@ QVariant ShaderListModel::data(const QModelIndex &index, int role) const
 
 //----------------------------------------------------------------------------------------
 
+Pegasus::Shader::IShaderProxy * ShaderListModel::Translate(const QModelIndex& index)
+{
+    if (mShaderManager != nullptr)
+    {
+        return mShaderManager->GetShader(index.row());
+    }
+    return nullptr;
+}
+
+//----------------------------------------------------------------------------------------
+
 QVariant ShaderListModel::headerData (int section, Qt::Orientation orientation, int role) const
 {
     return QVariant();

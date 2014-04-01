@@ -33,14 +33,30 @@ class ShaderManagerProxy : public IShaderManagerProxy
 public:
     ShaderManagerProxy(ShaderManager * object);
     virtual ~ShaderManagerProxy(){}
+
+    //! \return gets the number of programs in the application
     virtual int GetProgramCount() const;
+    
+    //! \param i index of the program requested
+    //! \return gets a reference to a program
     virtual IProgramProxy* GetProgram(int i);
+
+    //! \return total number of shaders in the application
     virtual int GetShaderCount() const;
+
+    //! \param id  of the shader requested
+    //! \return gets a reference to a shader
     virtual IShaderProxy* GetShader(int id); 
 
 private:
+
+    //! reference to internal program
     ShaderManager * mObject;
+
+    //! pool of memory of shader proxies
     ShaderProxy  mShaderProxyPool [ShaderTracker::MAX_SHADER_CONTAINER];
+
+    //! pool of memory of program proxies
     ProgramProxy mProgramProxyPool [ShaderTracker::MAX_SHADER_CONTAINER];
 };
 }

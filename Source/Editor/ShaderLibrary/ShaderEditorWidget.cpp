@@ -1,0 +1,299 @@
+/****************************************************************************************/
+/*                                                                                      */
+/*                                    Pegasus Editor                                    */
+/*                                                                                      */
+/****************************************************************************************/
+
+//! \file   ShaderEditorWidget.cpp	
+//! \author	Kleber Garcia
+//! \date	30th Match 2014
+//! \brief	Shader Editor IDE
+
+#include "Editor.h"
+#include "Log.h"
+#include "Assertion.h"
+#include "ShaderLibrary/ShaderEditorWidget.h"
+#include "Pegasus/Shader/Shared/IShaderProxy.h"
+#include <QVBoxLayout>
+#include <QTabWidget>
+#include <QTextEdit>
+#include <QColor>
+#include <QSyntaxHighlighter>
+#include <QRegExp>
+#include <QTextCharFormat>
+
+//! internal class serving as the syntax highlighter for shade code
+class ShaderSyntaxHighlighter : public QSyntaxHighlighter
+{
+public:
+    ShaderSyntaxHighlighter(QTextDocument * parent)
+    : QSyntaxHighlighter(parent)
+    {
+        QRegExp numExp("\\b[0-9|\\.]+f?\\b"); 
+        QTextCharFormat numFormat;
+        numFormat.setForeground(QColor(230,54,0,255)); 
+        mRules << HighlightRule(numExp, numFormat);
+        
+        static const char  * keywords[] = {
+            "\\bsin\\b",
+            "\\bcos\\b",
+            "\\bmix\\b",
+            "\\bdot\\b",
+            "\\bnormalize\\b",
+            "\\bdistance\\b",
+            "\\bvoid\\b",
+            "\\bfloat\\b",
+            "\\b[biud]?vec[1-4]?\\b",
+            "\\bbool\\b",
+            "\\bint\\b",
+            "\\buint\\b",
+            "\\bfloat\\b",
+            "\\bdouble\\b",
+            "\\bmat[1-4]x?[1-4]?\\b",
+            "\\buniform\\b",
+            "\\bvarying\\b",
+            "\\battribute\\b",
+            "\\bstruct\\b",
+            "\\bout\\b",
+            "\\blayout\\b",
+            "\\bin\\b",
+            "\\bpow\\b",
+            nullptr
+        };
+        const char * ptr = keywords[0];
+        int i = 0;
+        QTextCharFormat keywordFormat;
+        keywordFormat.setForeground(QColor(130,225,50,255)); 
+        while (ptr != nullptr)
+        {
+            QRegExp keywordExp(ptr);
+            mRules << HighlightRule(keywordExp, keywordFormat);
+            ptr = keywords[++i]; 
+        }
+    }
+
+    virtual ~ShaderSyntaxHighlighter() {}
+
+    
+protected:
+
+    struct HighlightRule
+    {
+        QRegExp mPattern;
+        QTextCharFormat mFormat;
+        HighlightRule(){}
+        HighlightRule(QRegExp& pattern, QTextCharFormat& format)
+        {
+            mPattern = pattern;
+            mFormat = format;
+        }
+    };
+
+    QVector<HighlightRule> mRules;
+
+    //! sets the formats for comments
+    void SetCCommentStyle(int start, int end)
+    {
+        setFormat(start, end, QColor(0,255,0,255));
+    }
+
+    //! sets the formats for CPP coments
+    void SetCPPCommentStyle(int start, int end)
+    {
+         setFormat(start, end, Qt::green);
+    }
+
+    //! sets the formats for regular style
+    void SetNormalStyle(int start, int end)
+    {
+        setFormat(start, end, Qt::white);
+    }
+
+    //! qt callback that processes highlighting in a line of text
+    virtual void highlightBlock(const QString& text)
+    {
+
+        // state machine definitions
+        const int NormalState = -1;
+        const int CommentState = 0;
+        int state = previousBlockState();
+        int start = 0;
+        bool isCommentLine = false;
+
+        // for every character
+        for (int i = 0; i < text.length(); ++i)
+        {
+            if (state == CommentState)
+            {
+                //close the comment
+                if (text.mid(i, 2) == "*/")
+                {
+                    state = NormalState;
+                    SetCPPCommentStyle(start, i - start + 2);
+                    start = i + 2;
+                }
+            }
+            else
+            {
+                // trigger a full line comment
+                if (text.mid(i, 2) == "//")
+                {
+                    isCommentLine = true;
+                    SetCCommentStyle(i, text.length() - i);
+                    start = text.length();
+                    break;
+                }
+                // trigger a comment block
+                else if (text.mid(i, 2) == "/*")
+                {
+                    start = i;
+                    state = CommentState; 
+                }
+                // trigger a imm state
+            }
+        }
+
+        if (state == CommentState && start < text.length())
+        {
+            SetCPPCommentStyle(start, text.length() - start);
+        }
+
+        if (state != CommentState && !isCommentLine)
+        {
+            for (int i = 0; i < mRules.size(); ++i)
+            {
+                HighlightRule& rule = mRules[i]; 
+                QRegExp& pattern = rule.mPattern;
+                QTextCharFormat& format = rule.mFormat;
+                int index = pattern.indexIn(text);
+                while (index >= 0)
+                {
+                    int length = pattern.matchedLength();
+                    setFormat(index, length, format);
+                    index = pattern.indexIn(text, index + length);
+                }
+            }
+        }
+        setCurrentBlockState(state);
+    }
+    
+};
+
+ShaderEditorWidget::ShaderEditorWidget (QWidget * parent)
+: QWidget(parent), mTabCount(0)
+{
+    SetupUi();
+}
+
+ShaderEditorWidget::~ShaderEditorWidget()
+{
+}
+
+void ShaderEditorWidget::SetupUi()
+{
+    resize(550, 700);
+    setWindowTitle(QString("Shader Editor"));
+    mUi.mMainLayout = new QVBoxLayout();
+    mUi.mTabWidget = new QTabWidget(this);
+    mUi.mTabWidget->setTabsClosable(true);
+    
+    connect(
+        mUi.mTabWidget, SIGNAL(tabCloseRequested(int)),
+        this, SLOT(RequestClose(int))
+    );
+    
+    mUi.mMainLayout->addWidget(mUi.mTabWidget);
+
+    for (int i = 0; i < MAX_TEXT_TABS; ++i)
+    {
+        mUi.mWidgetPool[i] = new QWidget();
+        mUi.mTextEditPool[i] = new QTextEdit();
+
+        mUi.mTextEditPool[i]->setStyleSheet (
+            "QTextEdit"
+            "{ color: #FFFFFF; background-color: #000000; }"
+        );
+
+        mUi.mTextEditPool[i]->setFontFamily(QString("Courier"));
+
+        mUi.mSyntaxHighlighterPool[i] = new ShaderSyntaxHighlighter(mUi.mTextEditPool[i]->document());
+    
+        QHBoxLayout * horizontalLayout = new QHBoxLayout(this);
+        horizontalLayout->addWidget(mUi.mTextEditPool[i]);
+        mUi.mWidgetPool[i]->setLayout(horizontalLayout);
+
+    }
+
+    setLayout(mUi.mMainLayout);
+}
+
+int ShaderEditorWidget::FindIndex(Pegasus::Shader::IShaderProxy * target)
+{
+    for (int i = 0; i < mTabCount; ++i)
+    {
+        if (target == mShaderProxyPool[i])
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+void ShaderEditorWidget::RequestClose(int index)
+{
+    //remove tab
+    mUi.mTabWidget->removeTab(index);
+
+    //update tab indices
+    QWidget * tempW = mUi.mWidgetPool[index];
+    QTextEdit * tempTextEdit = mUi.mTextEditPool[index];
+    QSyntaxHighlighter * mtempSyntax = mUi.mSyntaxHighlighterPool[index];
+
+    //copy the pointers back
+    for (int i = index; i < MAX_TEXT_TABS - 1; ++i)
+    {
+        mUi.mWidgetPool[i]  = mUi.mWidgetPool[i + 1];
+        mUi.mTextEditPool[i]  = mUi.mTextEditPool[i + 1];
+        mUi.mSyntaxHighlighterPool[i]  = mUi.mSyntaxHighlighterPool[i + 1];
+        mShaderProxyPool[i] = mShaderProxyPool[i + 1];
+    }
+
+    //send deleted pointer to the back of the buffer
+    mUi.mWidgetPool[MAX_TEXT_TABS - 1] = tempW;
+    mUi.mTextEditPool[MAX_TEXT_TABS - 1] = tempTextEdit;
+    mUi.mSyntaxHighlighterPool[MAX_TEXT_TABS - 1] = mtempSyntax;
+
+    --mTabCount;
+}
+
+void ShaderEditorWidget::RequestOpen(Pegasus::Shader::IShaderProxy * shaderProxy)
+{
+    if (mTabCount >= MAX_TEXT_TABS)
+    {
+        //TODO - error, too many text tabs open, throw a signal or something
+    }
+    else
+    {
+        int currentTabIndex = FindIndex(shaderProxy);
+        if (currentTabIndex == -1) //is this opened already in the pool?
+        {
+            mShaderProxyPool[mTabCount] = shaderProxy;
+            mUi.mTabWidget->addTab(mUi.mWidgetPool[mTabCount], QString(shaderProxy->GetName()));
+            currentTabIndex = mUi.mTabWidget->count() - 1;            
+            const char * srcChar = nullptr;
+            int srcSize = 0;
+            shaderProxy->GetSource(&srcChar, srcSize);
+            QChar * qchar = new QChar[srcSize];
+            for (int i = 0; i < srcSize; ++i)
+            {
+                qchar[i] = srcChar[i];
+            }
+            QString srcQString(qchar, srcSize);
+            mUi.mTextEditPool[currentTabIndex]->setText(srcQString);
+            delete[] qchar;
+            mTabCount++;
+        }
+        mUi.mTabWidget->setCurrentIndex(currentTabIndex); 
+    }
+}
+

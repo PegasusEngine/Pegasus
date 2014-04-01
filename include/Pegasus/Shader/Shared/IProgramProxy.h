@@ -18,6 +18,7 @@ namespace Shader
 
 class IShaderProxy;
 
+//! shader program proxy interface
 class IProgramProxy
 {
 public:
@@ -29,6 +30,7 @@ public:
     virtual int GetShaderCount() const = 0; 
 
     //! Returns shader proxy item, the i is the id going from 0 to ShaderCount
+    //! \param i index position of shader requested
     //! \return shader proxy item
     virtual IShaderProxy * GetShader(unsigned i) = 0;
 

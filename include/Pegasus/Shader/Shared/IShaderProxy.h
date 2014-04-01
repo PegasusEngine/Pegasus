@@ -31,6 +31,11 @@ class IShaderProxy
         //! Gets the name of the shader
         //! \return the name given to the shader (the filename) as null terminated string
         virtual const char * GetName() const = 0;
+
+        //! Gets the source of the shader
+        //! \param outSrc output param to be filled with a string pointer containing the src
+        //! \param outSize output param to an int, to be filled with the size of outSize
+        virtual void GetSource(const char ** outSrc, int& outSize) const = 0;
 };
 
 }

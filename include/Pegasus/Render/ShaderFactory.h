@@ -17,6 +17,8 @@
 namespace Pegasus {
 namespace Render {
 
+//! \return returns a shader factory implementation.
+//!         this implementation needs to be passed to the ShaderManager
 Pegasus::Shader::IShaderFactory * GetRenderShaderFactory();
 
 }

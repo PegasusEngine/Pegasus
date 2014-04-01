@@ -227,6 +227,32 @@ void ProgramTreeModel::OnAppLoaded()
 
 //----------------------------------------------------------------------------------------
 
+Pegasus::Shader::IShaderProxy * ProgramTreeModel::TranslateShaderIndex(const QModelIndex& idx)
+{
+    if (mShaderManager != nullptr)
+    {
+        Pegasus::Shader::IProgramProxy * proxy = mShaderManager->GetProgram(idx.internalId()); 
+        if (proxy != nullptr)
+        {
+            return proxy->GetShader(idx.row());
+        }
+    }
+    return nullptr;
+}
+
+//----------------------------------------------------------------------------------------
+Pegasus::Shader::IProgramProxy * ProgramTreeModel::TranslateProgramIndex(const QModelIndex& idx)
+{
+    if (mShaderManager != nullptr)
+    {
+        return mShaderManager->GetProgram(idx.row()); 
+    }
+    return nullptr;
+}
+
+
+//----------------------------------------------------------------------------------------
+
 void ProgramTreeModel::OnAppDestroyed()
 {
     //set everything off

@@ -16,6 +16,8 @@
 namespace Pegasus {
     namespace Shader {
         class IShaderManagerProxy;
+        class IShaderProxy;
+        class IProgramProxy;
     }
 }
 
@@ -30,11 +32,13 @@ public:
     virtual ~ProgramTreeModel();
 
     //! Returns the number of children for a parent node
-    //! \return
+    //! \param index parent node to pass. 
+    //! \return count of rows
     virtual int rowCount(const QModelIndex &parent = QModelIndex()) const;
 
     //! Returns the count of columns from a parent node
-    //! \return
+    //! \param parent index
+    //! \return count of columns
     virtual int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
     //! Gets the parent model index
@@ -79,6 +83,18 @@ public:
 
     //! callback when application is done and destroyed
     void OnAppDestroyed();
+
+    //! translates a model index to a shader proxy. No hazard check is done to the idx.
+    //! make sure that isProgramIndex is called on the questioned index
+    //! \param idx the index to translate
+    //! make sure that IsShaderIndex is called on the questioned index. 
+    Pegasus::Shader::IShaderProxy * TranslateShaderIndex(const QModelIndex& idx);
+
+    //! translates a model index to a program proxy. No hazard check is done to the idx.
+    //! make sure that isProgramIndex is called on the questioned index
+    //! \param idx the index to translate
+    //! \return gets the program proxy from the specified model index
+    Pegasus::Shader::IProgramProxy * TranslateProgramIndex(const QModelIndex& idx);
 
 private:
     //! major test to determine if a tree view can be generated

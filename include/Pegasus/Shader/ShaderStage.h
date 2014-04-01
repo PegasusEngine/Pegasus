@@ -72,6 +72,7 @@ public:
 
     //! Sets the factory, which contains the render library implementation of shader
     //! compilation and linkage
+    //! \param factory factory with gpu implementation to be set.
     void SetFactory(IShaderFactory * factory) { mFactory = factory; }
 
     //! Deallocate the data of the current node and ask the input nodes to do the same.
@@ -85,30 +86,42 @@ public:
 #if PEGASUS_ENABLE_PROXIES
     //! Sets the full path, divides the stirng into the file name and the root full path
     //! to be used only by the editor
+    //! \param fullpath file path of the shader to be set
     void SetFullFilePath(const char * fullPath);
+
+    //! \return the path containing this shader
     const char * GetFilePath() const { return mPath; }
+
+    //! \return the file name of this shader
     const char * GetFileName() const { return mName; }
 #endif
 
 protected:
+    //! callback which allocates shader data
     virtual Pegasus::Graph::NodeData * AllocateData() const;
+
+    //! override that generates data. This will generate the shader gpu data using the factory
     virtual void GenerateData();
 
 private:
     PG_DISABLE_COPY(ShaderStage)
     Io::FileBuffer     mFileBuffer; //! buffer structure containing shader source
     Alloc::IAllocator* mAllocator; //! Allocator to use when creating this object
-    IShaderFactory   * mFactory;
+    IShaderFactory   * mFactory; //! reference to gpu shader factory
     ShaderType         mType; //! type of shader stage
 
 //! editor metadata
 #if PEGASUS_ENABLE_PROXIES
+    //! sets internal reference to shader tracker
+    //! this is needed so when the shader is deleted, it can remove itself from the tracker
+    //! \param tracker the shader tracker to reference.
     void SetShaderTracker(ShaderTracker * tracker) {mShaderTracker = tracker;}
 
+    //! Filename metadata
     static const int METADATA_NAME_LENGTH = 256;
     char mName[METADATA_NAME_LENGTH];
     char mPath[METADATA_NAME_LENGTH];
-    ShaderTracker * mShaderTracker;
+    ShaderTracker * mShaderTracker; //! reference to tracker
 
 #endif
 
