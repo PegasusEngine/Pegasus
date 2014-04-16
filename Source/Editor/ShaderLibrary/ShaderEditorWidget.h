@@ -38,6 +38,9 @@ public:
     //! \param shaderProxy the shader to open
     void RequestOpen(Pegasus::Shader::IShaderProxy * shaderProxy);
 
+    //! called whenever settings have been changed
+    void OnSettingsChanged();
+
 private slots:
     //! slot to be called when a shader wants to be closed.
     //! \param index index of shader to close

@@ -34,7 +34,7 @@ public:
     {
         PAGE_APPEARANCE = 0,
         PAGE_CONSOLE,
-
+        PAGE_SHADER_EDITOR,
         NUM_PAGES
     };
 

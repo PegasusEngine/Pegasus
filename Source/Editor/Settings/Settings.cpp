@@ -18,6 +18,26 @@
 #include <QMainWindow>
 
 
+const QColor Settings::sDefaultSyntaxHighlightColors[Settings::SYNTAX_COUNT] =
+{
+    QColor(0, 0, 0, 255),  //background
+    QColor(20, 255, 20, 255),  //CPP Comment
+    QColor(0, 255, 0, 255),  //C Comment
+    QColor(255, 255, 255, 255),  //regular text
+    QColor(130, 255, 50, 255),  //keyword
+    QColor(230, 54, 0, 255) //imm number value
+};
+
+const char * Settings::sShaderEditorSyntaxStyleNames[Settings::SYNTAX_COUNT] =
+{
+    "background",
+    "cpp comment",
+    "c comment",
+    "regular text",
+    "keyword",
+    "magic number"
+};
+
 Settings::Settings(QMainWindow * mainWindow)
 :   QObject(),
     mMainWindow(mainWindow)
@@ -118,6 +138,23 @@ void Settings::Load()
             }
         }
         settings.endGroup();    // ConsoleTextColor
+
+        settings.beginGroup("ShaderEditorSyntaxColor");
+        {
+            char syntaxColorStrName[256];
+            for (unsigned i = 0; i < Settings::SYNTAX_COUNT; ++i)
+            {
+                sprintf_s(syntaxColorStrName, "syntaxcol_%d", i);
+                SetShaderEditorColor(
+                        static_cast<Settings::ShaderEditorSyntaxStyle>(i), 
+                        settings.value(
+                            syntaxColorStrName,
+                            sDefaultSyntaxHighlightColors[i]).value<QColor>()
+                );
+            } 
+        }
+        settings.endGroup();    // ConsoleTextColor
+
     }
     settings.endGroup();    // Appearance
 }
@@ -172,6 +209,20 @@ void Settings::Save()
                     ED_FAILSTR("Invalid Pegasus log channel name (%s), it must be 4 characters long.", channelName.toLatin1().constData());
                 }
             }
+        }
+        settings.endGroup();    // ConsoleTextColor
+
+        settings.beginGroup("ShaderEditorSyntaxColor");
+        {
+            char syntaxColorStrName[256];
+            for (unsigned i = 0; i < Settings::SYNTAX_COUNT; ++i)
+            {
+                sprintf_s(syntaxColorStrName, "syntaxcol_%d", i);
+                settings.setValue(
+                      syntaxColorStrName,
+                      GetShaderSyntaxColor(static_cast<Settings::ShaderEditorSyntaxStyle>(i))
+                );
+            } 
         }
         settings.endGroup();    // ConsoleTextColor
     }
@@ -288,6 +339,16 @@ void Settings::SetConsoleTextColorForLogChannel(Pegasus::Core::LogChannel logCha
 
     mLogChannelColorTable[logChannel] = color;    
     Editor::GetInstance().GetConsoleDockWidget()->SetTextColorForLogChannel(logChannel, color);
+}
+
+//----------------------------------------------------------------------------------------
+
+void Settings::SetShaderEditorColor(ShaderEditorSyntaxStyle style, const QColor& color)
+{
+    ED_LOG("Setting syntax highlight color");
+    mShaderEditorColorStyles[style] = color;
+    
+    emit(OnShaderEditorStyleChanged());
 }
 
 //----------------------------------------------------------------------------------------

@@ -116,6 +116,9 @@ Editor::Editor(QWidget *parent)
             mShaderLibraryWidget, SLOT(UpdateUIForAppLoaded()));
     connect(mApplicationManager, SIGNAL(ApplicationFinished()),
             mShaderLibraryWidget, SLOT(UpdateUIForAppClosed()));
+
+    connect(sSettings, SIGNAL(OnShaderEditorStyleChanged()),
+            mShaderLibraryWidget, SLOT(UpdateEditorStyle())); 
 }
 
 //----------------------------------------------------------------------------------------

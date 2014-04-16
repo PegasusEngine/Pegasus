@@ -288,6 +288,15 @@
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ShaderEditorWidget.cpp">
       <Filter>Generated\Dev-Debug</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Settings\SettingsShaderEditorPage.cpp">
+      <Filter>Source\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_SettingsShaderEditorPage.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_SettingsShaderEditorPage.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -373,6 +382,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\ShaderLibrary\ShaderEditorWidget.h">
       <Filter>Source\ShaderLibrary</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Settings\SettingsShaderEditorPage.h">
+      <Filter>Source\Settings</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

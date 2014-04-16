@@ -12,6 +12,7 @@
 #include "Editor.h"
 #include "Log.h"
 #include "Assertion.h"
+#include "Settings/Settings.h"
 #include "ShaderLibrary/ShaderEditorWidget.h"
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
 #include <QVBoxLayout>
@@ -29,12 +30,9 @@ public:
     ShaderSyntaxHighlighter(QTextDocument * parent)
     : QSyntaxHighlighter(parent)
     {
-        QRegExp numExp("\\b[0-9|\\.]+f?\\b"); 
-        QTextCharFormat numFormat;
-        numFormat.setForeground(QColor(230,54,0,255)); 
-        mRules << HighlightRule(numExp, numFormat);
-        
+       
         static const char  * keywords[] = {
+            "\\b[0-9]*\\.?[0-9]+f?\\b",
             "\\bsin\\b",
             "\\bcos\\b",
             "\\bmix\\b",
@@ -67,7 +65,7 @@ public:
         while (ptr != nullptr)
         {
             QRegExp keywordExp(ptr);
-            mRules << HighlightRule(keywordExp, keywordFormat);
+            mRules << keywordExp;
             ptr = keywords[++i]; 
         }
     }
@@ -77,42 +75,34 @@ public:
     
 protected:
 
-    struct HighlightRule
-    {
-        QRegExp mPattern;
-        QTextCharFormat mFormat;
-        HighlightRule(){}
-        HighlightRule(QRegExp& pattern, QTextCharFormat& format)
-        {
-            mPattern = pattern;
-            mFormat = format;
-        }
-    };
-
-    QVector<HighlightRule> mRules;
+    QVector<QRegExp> mRules;
 
     //! sets the formats for comments
-    void SetCCommentStyle(int start, int end)
+    void SetCCommentStyle(int start, int end, Settings * settings)
     {
-        setFormat(start, end, QColor(0,255,0,255));
+        setFormat(start, end, settings->GetShaderSyntaxColor(Settings::SYNTAX_C_COMMENT));
     }
 
     //! sets the formats for CPP coments
-    void SetCPPCommentStyle(int start, int end)
+    void SetCPPCommentStyle(int start, int end, Settings * settings)
     {
-         setFormat(start, end, Qt::green);
+         setFormat(start, end, settings->GetShaderSyntaxColor(Settings::SYNTAX_CPP_COMMENT));
     }
 
     //! sets the formats for regular style
-    void SetNormalStyle(int start, int end)
+    void SetNormalStyle(int start, int end, Settings * settings)
     {
-        setFormat(start, end, Qt::white);
+        setFormat(start, end, settings->GetShaderSyntaxColor(Settings::SYNTAX_NORMAL_TEXT));
     }
 
     //! qt callback that processes highlighting in a line of text
     virtual void highlightBlock(const QString& text)
     {
-
+        //TODO: Because the settings has a direct dependency on the widget dock, 
+        //      we must request the settings singleton every time we highlight a line.
+        //      this is a lot of memory dereference :/ we could optimize this if we cache
+        //      the settings as a member of this class
+        Settings * settings = Editor::GetInstance().GetSettings();
         // state machine definitions
         const int NormalState = -1;
         const int CommentState = 0;
@@ -129,7 +119,7 @@ protected:
                 if (text.mid(i, 2) == "*/")
                 {
                     state = NormalState;
-                    SetCPPCommentStyle(start, i - start + 2);
+                    SetCPPCommentStyle(start, i - start + 2, settings);
                     start = i + 2;
                 }
             }
@@ -139,7 +129,7 @@ protected:
                 if (text.mid(i, 2) == "//")
                 {
                     isCommentLine = true;
-                    SetCCommentStyle(i, text.length() - i);
+                    SetCCommentStyle(i, text.length() - i, settings);
                     start = text.length();
                     break;
                 }
@@ -149,27 +139,25 @@ protected:
                     start = i;
                     state = CommentState; 
                 }
-                // trigger a imm state
             }
         }
 
         if (state == CommentState && start < text.length())
         {
-            SetCPPCommentStyle(start, text.length() - start);
+            SetCPPCommentStyle(start, text.length() - start, settings);
         }
 
         if (state != CommentState && !isCommentLine)
         {
             for (int i = 0; i < mRules.size(); ++i)
             {
-                HighlightRule& rule = mRules[i]; 
-                QRegExp& pattern = rule.mPattern;
-                QTextCharFormat& format = rule.mFormat;
+                QRegExp& pattern = mRules[i];
                 int index = pattern.indexIn(text);
                 while (index >= 0)
                 {
                     int length = pattern.matchedLength();
-                    setFormat(index, length, format);
+                    Settings::ShaderEditorSyntaxStyle style = i == 0 ? Settings::SYNTAX_NUMBER_VALUE : Settings::SYNTAX_KEYWORD;
+                    setFormat(index, length, settings->GetShaderSyntaxColor(style));
                     index = pattern.indexIn(text, index + length);
                 }
             }
@@ -203,19 +191,13 @@ void ShaderEditorWidget::SetupUi()
     );
     
     mUi.mMainLayout->addWidget(mUi.mTabWidget);
-
+    
     for (int i = 0; i < MAX_TEXT_TABS; ++i)
     {
         mUi.mWidgetPool[i] = new QWidget();
         mUi.mTextEditPool[i] = new QTextEdit();
 
-        mUi.mTextEditPool[i]->setStyleSheet (
-            "QTextEdit"
-            "{ color: #FFFFFF; background-color: #000000; }"
-        );
-
         mUi.mTextEditPool[i]->setFontFamily(QString("Courier"));
-
         mUi.mSyntaxHighlighterPool[i] = new ShaderSyntaxHighlighter(mUi.mTextEditPool[i]->document());
     
         QHBoxLayout * horizontalLayout = new QHBoxLayout(this);
@@ -237,6 +219,18 @@ int ShaderEditorWidget::FindIndex(Pegasus::Shader::IShaderProxy * target)
         }
     }
     return -1;
+}
+
+void ShaderEditorWidget::OnSettingsChanged()
+{
+    for (int i = 0; i < mTabCount; ++i)
+    {
+        mUi.mSyntaxHighlighterPool[i]->rehighlight();
+        QPalette p = mUi.mTextEditPool[i]->palette();
+        p.setColor(QPalette::Base, Editor::GetInstance().GetSettings()->GetShaderSyntaxColor(Settings::SYNTAX_BACKGROUND));
+        p.setColor(QPalette::Text, Editor::GetInstance().GetSettings()->GetShaderSyntaxColor(Settings::SYNTAX_NORMAL_TEXT));
+        mUi.mTextEditPool[i]->setPalette(p);
+    }
 }
 
 void ShaderEditorWidget::RequestClose(int index)
@@ -290,6 +284,12 @@ void ShaderEditorWidget::RequestOpen(Pegasus::Shader::IShaderProxy * shaderProxy
             }
             QString srcQString(qchar, srcSize);
             mUi.mTextEditPool[currentTabIndex]->setText(srcQString);
+    
+            QPalette p = mUi.mTextEditPool[currentTabIndex]->palette();
+            p.setColor(QPalette::Base, Editor::GetInstance().GetSettings()->GetShaderSyntaxColor(Settings::SYNTAX_BACKGROUND));
+            p.setColor(QPalette::Text, Editor::GetInstance().GetSettings()->GetShaderSyntaxColor(Settings::SYNTAX_NORMAL_TEXT));
+            mUi.mTextEditPool[currentTabIndex]->setPalette(p);
+        
             delete[] qchar;
             mTabCount++;
         }

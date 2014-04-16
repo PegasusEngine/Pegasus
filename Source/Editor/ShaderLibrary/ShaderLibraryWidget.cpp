@@ -104,6 +104,13 @@ void ShaderLibraryWidget::DispatchShaderEditorThroughShaderView(const QModelInde
 
 //----------------------------------------------------------------------------------------
 
+void ShaderLibraryWidget::UpdateEditorStyle()
+{
+    mShaderEditorWidget->OnSettingsChanged();
+}
+
+//----------------------------------------------------------------------------------------
+
 void ShaderLibraryWidget::DispatchShaderEditorThroughProgramView(const QModelIndex& index)
 {
     if (mProgramTreeModel->IsProgramIndex(index))

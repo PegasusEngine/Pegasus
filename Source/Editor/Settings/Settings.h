@@ -50,6 +50,25 @@ public:
 
 public:
 
+    // definitions
+
+    //syntax style list
+    enum ShaderEditorSyntaxStyle
+    {
+        SYNTAX_BACKGROUND = 0,
+        SYNTAX_CPP_COMMENT,
+        SYNTAX_C_COMMENT,
+        SYNTAX_NORMAL_TEXT,
+        SYNTAX_KEYWORD,
+        SYNTAX_NUMBER_VALUE,
+        SYNTAX_COUNT
+    };
+
+    //name of syntax styles
+    static const char * sShaderEditorSyntaxStyleNames[SYNTAX_COUNT];
+
+    static const QColor sDefaultSyntaxHighlightColors[SYNTAX_COUNT];
+
     // Appearance settings
 
     //! Get the list of possible widget style names
@@ -86,6 +105,17 @@ public:
     //! Test if a console log channel has an associated color
     //! \param logChannel Pegasus log channel to test
     bool IsConsoleTextColorDefinedForLogChannel(Pegasus::Core::LogChannel logChannel) const;
+
+    //! Set shader editor style color
+    //! \param style the sytnax to set for a particular color
+    //! \param color the color
+    void SetShaderEditorColor(ShaderEditorSyntaxStyle style, const QColor& color);
+
+    //! Returns the shader editor color from a particular syntax style
+    //! \return the syntax style to get the color from
+    const QColor& GetShaderSyntaxColor(ShaderEditorSyntaxStyle style) const { return mShaderEditorColorStyles[style]; }
+
+
 
 public slots:
 
@@ -126,6 +156,9 @@ public slots:
     void SetDefaultConsoleTextColorForAllLogChannels();
 
     //------------------------------------------------------------------------------------
+
+signals:
+    void OnShaderEditorStyleChanged();
 
 public:
 
@@ -184,6 +217,10 @@ private:
     //! Conversion table between a log channel and an associated color
     //! (contains only the channels that are overridden, not the ones using the text default color)
     LogChannelColorTable mLogChannelColorTable;
+
+    //! list of colors for syntax highlight
+    QColor mShaderEditorColorStyles[SYNTAX_COUNT];
+
 
     //------------------------------------------------------------------------------------
 

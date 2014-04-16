@@ -48,6 +48,9 @@ public slots:
 
     //! slot triggered when something has been selected through program tree view
     void DispatchShaderEditorThroughProgramView(const QModelIndex& index);
+    
+    //! slot triggered when the editor style has changed, forces the text editor to resync styles
+    void UpdateEditorStyle();
 
     
     
