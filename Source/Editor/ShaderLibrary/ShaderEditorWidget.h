@@ -24,6 +24,8 @@ class QVBoxLayout;
 class QTabWidget;
 class QTextEdit;
 class QSyntaxHighlighter;
+class QSignalMapper;
+class QMutex;
 
 //! Graphics Widget meant for shader text editing
 class ShaderEditorWidget : public QWidget
@@ -41,10 +43,21 @@ public:
     //! called whenever settings have been changed
     void OnSettingsChanged();
 
+    bool AsyncHasCompilationRequestPending();
+    void AsyncSetCompilationRequestPending();
+    void FlushShaderTextEditorToShader(int id);
+
+signals:
+    void RequestShaderCompilation(int id);
+
 private slots:
     //! slot to be called when a shader wants to be closed.
     //! \param index index of shader to close
     void RequestClose(int index);
+
+    //! slot called whenever a tab changes its text.
+    //! \param the widget that changed its text, should be casted to a QTextEdit object
+    void OnTextChanged(QWidget *);
 
 private:
     //! maximum number of shader tabs to have open
@@ -55,6 +68,9 @@ private:
 
     //! finds the index of a particular shader
     int  FindIndex(Pegasus::Shader::IShaderProxy * target);
+
+    //! finds the index of a particular text edit
+    int  FindIndex(QTextEdit * target);
 
     //! ui component pool
     struct Ui
@@ -70,6 +86,14 @@ private:
 
     //! pool of shader proxy pointers
     Pegasus::Shader::IShaderProxy * mShaderProxyPool[MAX_TEXT_TABS];
+
+    //! signal mapper for shader text editors
+    QSignalMapper * mShaderEditorSignalMapper;
+
+    //! compilation barrier. Throttles compilation if a signal has been sent
+    bool mCompilationRequestPending;
+    QMutex * mCompilationRequestMutex;
+    
     
 };
 

@@ -22,6 +22,8 @@
 #include <QSyntaxHighlighter>
 #include <QRegExp>
 #include <QTextCharFormat>
+#include <QSignalMapper>
+#include <QMutex>
 
 //! internal class serving as the syntax highlighter for shade code
 class ShaderSyntaxHighlighter : public QSyntaxHighlighter
@@ -30,7 +32,6 @@ public:
     ShaderSyntaxHighlighter(QTextDocument * parent)
     : QSyntaxHighlighter(parent)
     {
-       
         static const char  * keywords[] = {
             "\\b[0-9]*\\.?[0-9]+f?\\b",
             "\\bsin\\b",
@@ -58,6 +59,7 @@ public:
             "\\bpow\\b",
             nullptr
         };
+
         const char * ptr = keywords[0];
         int i = 0;
         QTextCharFormat keywordFormat;
@@ -168,17 +170,21 @@ protected:
 };
 
 ShaderEditorWidget::ShaderEditorWidget (QWidget * parent)
-: QWidget(parent), mTabCount(0)
+: QWidget(parent), mTabCount(0), mCompilationRequestPending(false)
 {
+    mCompilationRequestMutex = new QMutex();
     SetupUi();
 }
 
 ShaderEditorWidget::~ShaderEditorWidget()
 {
+    delete mCompilationRequestMutex;
 }
 
 void ShaderEditorWidget::SetupUi()
 {
+    mShaderEditorSignalMapper = new QSignalMapper(this);
+
     resize(550, 700);
     setWindowTitle(QString("Shader Editor"));
     mUi.mMainLayout = new QVBoxLayout();
@@ -199,6 +205,11 @@ void ShaderEditorWidget::SetupUi()
 
         mUi.mTextEditPool[i]->setFontFamily(QString("Courier"));
         mUi.mSyntaxHighlighterPool[i] = new ShaderSyntaxHighlighter(mUi.mTextEditPool[i]->document());
+
+        connect(mUi.mTextEditPool[i], SIGNAL(textChanged()),
+                mShaderEditorSignalMapper, SLOT(map()));
+    
+        mShaderEditorSignalMapper->setMapping(mUi.mTextEditPool[i], static_cast<QWidget*>(mUi.mTextEditPool[i]));
     
         QHBoxLayout * horizontalLayout = new QHBoxLayout(this);
         horizontalLayout->addWidget(mUi.mTextEditPool[i]);
@@ -206,14 +217,62 @@ void ShaderEditorWidget::SetupUi()
 
     }
 
+    connect(mShaderEditorSignalMapper, SIGNAL(mapped(QWidget *)),
+            this, SLOT(OnTextChanged(QWidget *)));
+
     setLayout(mUi.mMainLayout);
+}
+
+bool ShaderEditorWidget::AsyncHasCompilationRequestPending()
+{
+    bool tmp;
+    mCompilationRequestMutex->lock();
+    tmp = mCompilationRequestPending;
+    mCompilationRequestMutex->unlock();
+    return tmp;
+}
+
+
+void ShaderEditorWidget::AsyncSetCompilationRequestPending()
+{
+    mCompilationRequestMutex->lock();
+    mCompilationRequestPending = true;
+    mCompilationRequestMutex->unlock();
+}
+
+void ShaderEditorWidget::FlushShaderTextEditorToShader(int id)
+{
+    mCompilationRequestMutex->lock();
+    QTextEdit * textEditor = mUi.mTextEditPool[id];
+    Pegasus::Shader::IShaderProxy * shaderProxy = mShaderProxyPool[id];
+    QString qs = textEditor->toPlainText();
+    QByteArray arr = qs.toLocal8Bit();
+    const char * source = arr.data();
+    int sourceSize = qs.size();
+    shaderProxy->SetSource(source, sourceSize);
+
+    //todo, inject here property of shader
+    mCompilationRequestPending = false;
+    mCompilationRequestMutex->unlock();
 }
 
 int ShaderEditorWidget::FindIndex(Pegasus::Shader::IShaderProxy * target)
 {
     for (int i = 0; i < mTabCount; ++i)
     {
-        if (target == mShaderProxyPool[i])
+        if (target->GetGuid() == mShaderProxyPool[i]->GetGuid())
+        {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int ShaderEditorWidget::FindIndex(QTextEdit * target)
+{
+    for (int i = 0; i < mTabCount; ++i)
+    {
+        if (target == mUi.mTextEditPool[i])
         {
             return i;
         }
@@ -258,6 +317,34 @@ void ShaderEditorWidget::RequestClose(int index)
     mUi.mSyntaxHighlighterPool[MAX_TEXT_TABS - 1] = mtempSyntax;
 
     --mTabCount;
+}
+
+void ShaderEditorWidget::OnTextChanged(QWidget * sender)
+{
+    QTextEdit * textEditor = static_cast<QTextEdit*>(sender);
+    int id = FindIndex(textEditor);
+    if (id != -1)
+    {
+        // The following snippet is meant to optimize this set of functions:
+        //if (!AsyncHasCompilationRequestPending()) 
+        //{
+        //    AsyncSetCompilationRequestPending();
+        //    emit(RequestShaderCompilation(id));
+        //}
+
+        //we are reducing here the number of accesses to the mutex
+        mCompilationRequestMutex->lock(); 
+        if (!mCompilationRequestPending)
+        {
+            mCompilationRequestPending = true;            
+            mCompilationRequestMutex->unlock();
+            emit(RequestShaderCompilation(id));
+        }
+        else
+        {
+            mCompilationRequestMutex->unlock();
+        }
+    }
 }
 
 void ShaderEditorWidget::RequestOpen(Pegasus::Shader::IShaderProxy * shaderProxy)

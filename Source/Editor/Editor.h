@@ -61,6 +61,7 @@ public:
     //! \return True if the application manager has been created
     inline bool IsApplicationManagerAvailable() const { return mApplicationManager != nullptr; }
 
+
     //------------------------------------------------------------------------------------
 
 public:
@@ -107,6 +108,10 @@ public:
     //! Get the console dock widget
     //! \return Pointer to the console dock widget
     inline ConsoleDockWidget * GetConsoleDockWidget() const { return mConsoleDockWidget; }
+
+    //! Get the shader library widget
+    //! \return Pointer to shader library widget
+    inline ShaderLibraryWidget * GetShaderLibraryWidget() const { return mShaderLibraryWidget; }
 
     //----------------------------------------------------------------------------------------
 

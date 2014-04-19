@@ -87,6 +87,12 @@ void Pegasus::Shader::ShaderStage::SetSource(Pegasus::Shader::ShaderType type, c
     mType = type;
 }
 
+void Pegasus::Shader::ShaderStage::SetSource(const char * src, int srcSize)
+{
+    PG_ASSERT(mType != Pegasus::Shader::SHADER_STAGE_INVALID);
+    SetSource(mType, src, srcSize);
+}
+
 void Pegasus::Shader::ShaderStage::GetSource ( const char ** outSrc, int& outSize) const
 {
     *outSrc = mFileBuffer.GetBuffer(); 

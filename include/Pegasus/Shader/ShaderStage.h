@@ -54,6 +54,11 @@ public:
     //! \param  buffSize precomputed string length
     void SetSource(ShaderType type, const char * src, int srcSize);
 
+    //! Set the shader source, keeping the current shader type
+    //! \param  src the actual src string
+    //! \param  buffSize precomputed string length
+    void SetSource(const char * src, int srcSize);
+
     //! Gets the shader source
     //! \param  output string constant pointer
     //! \param  output size of string 

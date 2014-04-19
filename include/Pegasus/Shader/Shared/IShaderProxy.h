@@ -36,6 +36,15 @@ class IShaderProxy
         //! \param outSrc output param to be filled with a string pointer containing the src
         //! \param outSize output param to an int, to be filled with the size of outSize
         virtual void GetSource(const char ** outSrc, int& outSize) const = 0;
+
+        //! Sets the source and marks shader as dirty
+        //! \param source string. Doesn't need to be null terminated
+        //! \param source size to copy 
+        virtual void SetSource(const char * source, int sourceSize) = 0;
+
+        //! returns a 64 bit guid for a particular shader.
+        //! \return the guid must correspond to a single shaderstage instance
+        virtual long long GetGuid() const = 0;
 };
 
 }

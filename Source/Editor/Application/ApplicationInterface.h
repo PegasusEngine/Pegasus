@@ -72,6 +72,10 @@ private slots:
     //! \param beat Current beat, can have fractional part
     void SetCurrentBeat(float beat);
 
+    //! Called when the current beat has been updated
+    //! \param beat Current beat, can have fractional part
+    void ReceiveShaderCompilationRequest(int id);
+
     //------------------------------------------------------------------------------------
 
 private:

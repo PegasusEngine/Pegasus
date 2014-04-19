@@ -34,6 +34,11 @@ void Pegasus::Shader::ShaderProxy::GetSource(const char ** outSrc, int& outSize)
     return mObject->GetSource(outSrc, outSize);
 }
 
+void Pegasus::Shader::ShaderProxy::SetSource(const char * src, int size)
+{
+    mObject->SetSource(src, size);
+}
+
 #else
 PEGASUS_AVOID_EMPTY_FILE_WARNING;
 #endif

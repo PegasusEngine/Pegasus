@@ -12,6 +12,8 @@
 
 #include "Application/ApplicationInterface.h"
 #include "Application/Application.h"
+#include "ShaderLibrary/ShaderLibraryWidget.h"
+#include "ShaderLibrary/ShaderEditorWidget.h"
 
 #include "Pegasus/Preprocessor.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
@@ -75,6 +77,27 @@ ApplicationInterface::ApplicationInterface(Application * application, QObject * 
     else
     {
         ED_FAILSTR("Unable to get the timeline dock widget");
+    }
+
+    // Connect the shader library widget and the shader editor widget through queued connections
+    ShaderLibraryWidget * shaderLibraryWidget = Editor::GetInstance().GetShaderLibraryWidget();
+    if (shaderLibraryWidget != nullptr)
+    {
+        ShaderEditorWidget * shaderEditorWidget = shaderLibraryWidget->GetShaderEditorWidget();
+        if (shaderEditorWidget != nullptr)
+        {
+            connect(shaderEditorWidget, SIGNAL(RequestShaderCompilation(int)),
+                this, SLOT(ReceiveShaderCompilationRequest(int)),
+                Qt::QueuedConnection);
+        }
+        else
+        {
+            ED_FAILSTR("Unable to get the shader editor widget");
+        }
+    }
+    else
+    {
+        ED_FAILSTR("Unable to get the shader library dock widget");
     }
 }
 
@@ -162,4 +185,30 @@ void ApplicationInterface::SetCurrentBeat(float beat)
 
     //! \todo Handle multiple viewports and if the main viewport is in real-time mode
     RedrawMainViewport();
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::ReceiveShaderCompilationRequest(int id)
+{
+    ShaderLibraryWidget * shaderLibraryWidget = Editor::GetInstance().GetShaderLibraryWidget();
+    if (shaderLibraryWidget != nullptr)
+    {
+        ShaderEditorWidget * shaderEditorWidget = shaderLibraryWidget->GetShaderEditorWidget();
+        if (shaderEditorWidget != nullptr)
+        {
+            shaderEditorWidget->FlushShaderTextEditorToShader(id);
+
+            //refresh viewport
+            RequestFrameInPlayMode();
+        }
+        else
+        {
+            ED_FAILSTR("Unable to get the shader editor widget");
+        }
+    }
+    else
+    {
+        ED_FAILSTR("Unable to get the shader library dock widget");
+    }
 }

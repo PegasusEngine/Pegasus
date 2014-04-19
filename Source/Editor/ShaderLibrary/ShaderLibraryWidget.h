@@ -52,8 +52,8 @@ public slots:
     //! slot triggered when the editor style has changed, forces the text editor to resync styles
     void UpdateEditorStyle();
 
-    
-    
+    //! gets the shader editor widget
+    ShaderEditorWidget * GetShaderEditorWidget() { return mShaderEditorWidget; }
 
 private:
     //! toggle the buttons on this widget on / off

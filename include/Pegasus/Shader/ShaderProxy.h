@@ -49,6 +49,16 @@ public:
     //! \param outSize the size of the string being outputed
     void GetSource(const char ** outSrc, int& outSize) const;
 
+    //! Sets the source and marks shader as dirty
+    //! \param source string. Doesn't need to be null terminated
+    //! \param source size to copy 
+    virtual void SetSource(const char * source, int sourceSize);
+    
+    //! returns a 64 bit guid for a particular shader.
+    //! \return the guid must correspond to a single shaderstage instance, on this
+    //!         case is the address of the shader stage object, which should be unique
+    virtual long long GetGuid() const { return reinterpret_cast<long long>(mObject); }
+
 private:
 
     //! internal implementation
