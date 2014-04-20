@@ -15,6 +15,10 @@
 #include "Pegasus/Graph/NodeManager.h"
 #include "Pegasus/Utils/String.h"
 
+#if PEGASUS_SHADER_USE_EDIT_EVENTS
+#include "Pegasus/Shader/Shared/IEventListener.h"
+#endif
+
 namespace PegasusShaderPrivate {
 
 
@@ -68,6 +72,9 @@ void Pegasus::Shader::ShaderManager::RegisterAllNodes()
 Pegasus::Shader::ProgramLinkageReturn Pegasus::Shader::ShaderManager::CreateProgram(const char * name)
 {
     Pegasus::Shader::ProgramLinkageRef program = mNodeManager->CreateNode("ProgramLinkage");
+#if PEGASUS_SHADER_USE_EDIT_EVENTS
+    program->SetEventListener(mEventListener);
+#endif
     program->SetFactory(mFactory);
 #if PEGASUS_ENABLE_PROXIES
     //if proxies make sure to set metadata correctly
@@ -82,6 +89,9 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::LoadShaderSta
     const char * extension = Pegasus::Utils::Strrchr(properties.mPath, '.');
     Pegasus::Shader::ShaderType targetStage = Pegasus::Shader::SHADER_STAGE_INVALID;
     Pegasus::Shader::ShaderStageRef stage = mNodeManager->CreateNode("ShaderStage");
+#if PEGASUS_SHADER_USE_EDIT_EVENTS
+    stage->SetEventListener(mEventListener);
+#endif
     stage->SetFactory(mFactory);
 
 #if PEGASUS_ENABLE_PROXIES
@@ -105,8 +115,6 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::LoadShaderSta
         {
 #if PEGASUS_SHADER_USE_EDIT_EVENTS
             stage->SetShaderTracker(&mShaderTracker);
-            stage->SetUserData(properties.mUserData);
-            stage->SetEventListener(properties.mEventListener);
             stage->SetShaderTracker(&mShaderTracker);
             mShaderTracker.InsertShader(&(*stage));
 #endif
@@ -119,17 +127,13 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::LoadShaderSta
 Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::CreateShaderStage(const Pegasus::Shader::ShaderStageProperties& properties)
 {
     Pegasus::Shader::ShaderStageRef stage = mNodeManager->CreateNode("ShaderStage");
+#if PEGASUS_SHADER_USE_EDIT_EVENTS
+    stage->SetEventListener(mEventListener);
+#endif
     stage->SetFactory(mFactory);
 
     if (properties.mType >= 0 && properties.mType < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT))
     {
-        if (properties.mUserData != nullptr)
-        {
-#if PEGASUS_SHADER_USE_EDIT_EVENTS
-            stage->SetUserData (properties.mUserData);
-#endif
-        }
-
         if (properties.mSource && properties.mSourceSize > 1)
         {
             stage->SetSource(properties.mType, properties.mSource, properties.mSourceSize);

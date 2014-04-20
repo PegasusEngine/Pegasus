@@ -53,6 +53,10 @@ public:
     const ShaderTracker * GetShaderTracker() const { return &mShaderTracker; }
 #endif
 
+#if PEGASUS_SHADER_USE_EDIT_EVENTS
+    void RegisterEventListener(IEventListener * eventListener) { mEventListener = eventListener; }
+#endif
+
 private:
     //! Internal function. registers the node types.
     void RegisterAllNodes();
@@ -66,6 +70,10 @@ private:
 #if PEGASUS_ENABLE_PROXIES
     //! shader tracker. To be used by proxy to track and iterate over shader nodes
     ShaderTracker mShaderTracker;
+#endif
+
+#if PEGASUS_SHADER_USE_EDIT_EVENTS
+    IEventListener * mEventListener;
 #endif
 };
 

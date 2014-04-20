@@ -1,3 +1,14 @@
+/****************************************************************************************/
+/*                                                                                      */
+/*                                       Pegasus                                        */
+/*                                                                                      */
+/****************************************************************************************/
+
+//! \file   ShaderStage.cpp
+//! \author Kleber Garcia
+//! \date   1st December 2013
+//! \brief  Pegasus Shader Stage	
+
 #include "Pegasus/Shader/Shared/ShaderEvent.h"
 #include "Pegasus/Shader/ShaderStage.h"
 #include "Pegasus/Shader/IShaderFactory.h"

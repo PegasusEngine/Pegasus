@@ -40,6 +40,22 @@ const char * Pegasus::Shader::ProgramProxy::GetName() const
     return mObject->GetName();
 }
 
+void Pegasus::Shader::ProgramProxy::SetUserData(Pegasus::Shader::IUserData * userData)
+{
+#if PEGASUS_SHADER_USE_EDIT_EVENTS
+    mObject->SetUserData(userData);
+#endif
+}
+
+Pegasus::Shader::IUserData * Pegasus::Shader::ProgramProxy::GetUserData() const
+{
+#if PEGASUS_SHADER_USE_EDIT_EVENTS
+    return mObject->GetUserData();
+#else
+    return nullptr;
+#endif
+}
+
 #else
 PEGASUS_AVOID_EMPTY_FILE_WARNING;
 #endif

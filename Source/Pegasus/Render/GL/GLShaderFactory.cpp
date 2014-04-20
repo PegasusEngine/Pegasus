@@ -256,7 +256,10 @@ void GLShaderFactory::GenerateShaderGpuData (Pegasus::Shader::ShaderStage * shad
         SHADEREVENT_COMPILATION_FAIL(shaderNode, logBuffer);
 
     }
-    SHADEREVENT_COMPILATION_SUCCESS(shaderNode);
+    else
+    {
+        SHADEREVENT_COMPILATION_SUCCESS(shaderNode);
+    }
     nodeData->SetNodeGpuData(reinterpret_cast<Pegasus::Graph::NodeGpuData*>(gpuData));
 }
 
@@ -328,8 +331,10 @@ void GLShaderFactory::GenerateProgramGpuData (Pegasus::Shader::ProgramLinkage * 
         glGetProgramInfoLog(gpuData->mHandle, bufferSize, &logLength, logBuffer);
         SHADEREVENT_LINKING_FAIL(programNode, logBuffer);
     }
-
-    SHADEREVENT_LINKING_SUCCESS(programNode);
+    else
+    {
+        SHADEREVENT_LINKING_SUCCESS(programNode);
+    }
 
 }
 

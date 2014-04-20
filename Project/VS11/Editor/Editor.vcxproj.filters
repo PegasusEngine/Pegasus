@@ -297,6 +297,15 @@
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_SettingsShaderEditorPage.cpp">
       <Filter>Generated\Dev-Debug</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\ShaderLibrary\ShaderManagerEventListener.cpp">
+      <Filter>Source\ShaderLibrary</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ShaderManagerEventListener.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ShaderManagerEventListener.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -385,6 +394,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Settings\SettingsShaderEditorPage.h">
       <Filter>Source\Settings</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\ShaderLibrary\ShaderManagerEventListener.h">
+      <Filter>Source\ShaderLibrary</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

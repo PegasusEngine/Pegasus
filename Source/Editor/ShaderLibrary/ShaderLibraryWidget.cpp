@@ -17,7 +17,11 @@
 #include "ShaderLibrary/ProgramTreeModel.h"
 #include "ShaderLibrary/ShaderListModel.h"
 #include "ShaderLibrary/ShaderEditorWidget.h"
+#include "ShaderLibrary/ShaderManagerEventListener.h"
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
+#include "Pegasus/Shader/Shared/IProgramProxy.h"
+#include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
+#include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include <QItemSelectionModel>
 
 ShaderLibraryWidget::ShaderLibraryWidget(QWidget * parent)
@@ -31,7 +35,11 @@ ShaderLibraryWidget::ShaderLibraryWidget(QWidget * parent)
 
     mShaderListModel = new ShaderListModel(this);
     mShaderListSelectionModel = new QItemSelectionModel(mShaderListModel);
+
+    mShaderManagerEventListener = new ShaderManagerEventListener(this);
+
     ui.setupUi(this);
+
 
     connect(ui.ShaderEditorButton, SIGNAL(clicked()),
             this, SLOT(DispatchShaderEditButton()));
@@ -44,6 +52,9 @@ ShaderLibraryWidget::ShaderLibraryWidget(QWidget * parent)
 
     connect(ui.ProgramTreeView, SIGNAL(doubleClicked(QModelIndex)),
             this, SLOT(DispatchShaderEditorThroughProgramView(QModelIndex)));
+
+    connect(mShaderManagerEventListener, SIGNAL(CompilationResultsChanged()),
+        this, SLOT(UpdateUIItemsLayout()), Qt::QueuedConnection);
 
     ui.ProgramTreeView->setModel(mProgramTreeModel);
     ui.ProgramTreeView->setSelectionModel(mProgramSelectionModel);
@@ -129,6 +140,7 @@ void ShaderLibraryWidget::DispatchShaderEditorThroughProgramView(const QModelInd
 
 ShaderLibraryWidget::~ShaderLibraryWidget()
 {
+    delete mShaderManagerEventListener;
     delete mProgramTreeModel;
     delete mShaderListModel;
 }
@@ -138,6 +150,8 @@ ShaderLibraryWidget::~ShaderLibraryWidget()
 
 void ShaderLibraryWidget::UpdateUIForAppLoaded()
 {
+    InitializeInternalUserData();
+
     mProgramTreeModel->OnAppLoaded();
     ui.ProgramTreeView->doItemsLayout();
 
@@ -145,6 +159,74 @@ void ShaderLibraryWidget::UpdateUIForAppLoaded()
     ui.ShaderTreeView->doItemsLayout();
     
     ActivateButtons(true);
+}
+
+void ShaderLibraryWidget::UpdateUIItemsLayout()
+{
+    ui.ProgramTreeView->doItemsLayout();
+    ui.ShaderTreeView->doItemsLayout();
+}
+
+//----------------------------------------------------------------------------------------
+
+void ShaderLibraryWidget::InitializeInternalUserData()
+{
+    Application * app = Editor::GetInstance().GetApplicationManager().GetApplication(); 
+    ED_ASSERTSTR(app != nullptr, "App cannot be nulL!");
+    if (app != nullptr)
+    {
+        Pegasus::App::IApplicationProxy * appProxy = app->GetApplicationProxy();
+        ED_ASSERTSTR(appProxy != nullptr, "App proxy cannot be null!");
+        if (appProxy != nullptr)
+        {
+            Pegasus::Shader::IShaderManagerProxy * shaderManager = appProxy->GetShaderManager();
+            ED_ASSERTSTR(shaderManager != nullptr, "Failed retrieving shader manager");            
+            for (int i = 0; i < shaderManager->GetShaderCount(); ++i)
+            {
+                Pegasus::Shader::IShaderProxy * shader = shaderManager->GetShader(i);
+                ShaderUserData * newUserData = new ShaderUserData(shader);                   
+                shader->SetUserData(newUserData);
+            } 
+
+            for (int i = 0; i < shaderManager->GetProgramCount(); ++i)
+            {
+                Pegasus::Shader::IProgramProxy * program = shaderManager->GetProgram(i);
+                ProgramUserData * newUserData = new ProgramUserData(program);
+                program->SetUserData(newUserData);
+            } 
+        }
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void ShaderLibraryWidget::UninitializeInternalUserData()
+{
+    Application * app = Editor::GetInstance().GetApplicationManager().GetApplication(); 
+    ED_ASSERTSTR(app != nullptr, "App cannot be nulL!");
+    if (app != nullptr)
+    {
+        Pegasus::App::IApplicationProxy * appProxy = app->GetApplicationProxy();
+        ED_ASSERTSTR(appProxy != nullptr, "App proxy cannot be null!");
+        if (appProxy != nullptr)
+        {
+            Pegasus::Shader::IShaderManagerProxy * shaderManager = appProxy->GetShaderManager();
+            ED_ASSERTSTR(shaderManager != nullptr, "Failed retrieving shader manager");            
+            for (int i = 0; i < shaderManager->GetShaderCount(); ++i)
+            {
+                Pegasus::Shader::IShaderProxy * shader = shaderManager->GetShader(i);
+                delete shader->GetUserData();
+                shader->SetUserData(nullptr);
+            } 
+
+            for (int i = 0; i < shaderManager->GetProgramCount(); ++i)
+            {
+                Pegasus::Shader::IProgramProxy * program = shaderManager->GetProgram(i);
+                delete program->GetUserData();
+                program->SetUserData(nullptr);
+            } 
+        }
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -158,5 +240,7 @@ void ShaderLibraryWidget::UpdateUIForAppFinished()
     ui.ShaderTreeView->doItemsLayout();
 
     ActivateButtons(false);
+
+    UninitializeInternalUserData();
 }
 

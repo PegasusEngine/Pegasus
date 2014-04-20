@@ -13,6 +13,7 @@
 
 #include "Pegasus/Shader/ShaderProxy.h"
 #include "Pegasus/Shader/ShaderStage.h"
+#include "Pegasus/Shader/Shared/ShaderDefs.h"
 
 Pegasus::Shader::ShaderProxy::ShaderProxy()
 : mObject(nullptr)
@@ -37,6 +38,22 @@ void Pegasus::Shader::ShaderProxy::GetSource(const char ** outSrc, int& outSize)
 void Pegasus::Shader::ShaderProxy::SetSource(const char * src, int size)
 {
     mObject->SetSource(src, size);
+}
+
+void Pegasus::Shader::ShaderProxy::SetUserData(Pegasus::Shader::IUserData * userData)
+{
+#if PEGASUS_SHADER_USE_EDIT_EVENTS
+    mObject->SetUserData(userData);
+#endif
+}
+
+Pegasus::Shader::IUserData * Pegasus::Shader::ShaderProxy::GetUserData() const
+{
+#if PEGASUS_SHADER_USE_EDIT_EVENTS
+    return mObject->GetUserData();
+#else
+    return nullptr;
+#endif
 }
 
 #else

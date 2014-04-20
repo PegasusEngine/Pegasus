@@ -13,11 +13,13 @@
 #include "Log.h"
 #include "Assertion.h"
 #include "ShaderLibrary/ProgramTreeModel.h"
+#include "ShaderLibrary/ShaderManagerEventListener.h"
 #include "Application/ApplicationManager.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
+#include "Pegasus/Shader/Shared/ShaderDefs.h"
 
 ProgramTreeModel::ProgramTreeModel(
     QObject * parent
@@ -145,7 +147,7 @@ QVariant ProgramTreeModel::data(const QModelIndex &index, int role) const
         {
         case Qt::DecorationRole:
             {
-                return mWorkingIcon;
+               return GetIconFromIndex(index);
             }
         }
     }
@@ -206,7 +208,40 @@ const char * ProgramTreeModel::GetStringDataFromIndex(const QModelIndex& index) 
     }
     return "0xdeadbeef";
 }
+//----------------------------------------------------------------------------------------
 
+QIcon ProgramTreeModel::GetIconFromIndex(const QModelIndex& index) const
+{
+    if (IsProgramIndex(index)) // is program node
+    {
+        const Pegasus::Shader::IProgramProxy * proxy = mShaderManager->GetProgram(index.row()); 
+        if (proxy != nullptr)
+        {
+            //TODO: for now always compile correctly for programs
+            return mWorkingIcon;
+        }
+    }
+    else
+    {
+        Pegasus::Shader::IProgramProxy * proxy = mShaderManager->GetProgram(index.internalId()); 
+        if (proxy != nullptr)
+        {
+            Pegasus::Shader::IShaderProxy * shaderProxy = proxy->GetShader(index.row());
+            if (shaderProxy != nullptr)
+            {
+                ShaderUserData * userData =  static_cast<ShaderUserData*>(shaderProxy->GetUserData());
+                if (userData != nullptr)
+                {
+                    return userData->IsValid() ? mWorkingIcon : mWarningIcon;
+                }
+
+            }
+        }
+    }
+
+    //default
+    return mWorkingIcon;
+}
 //----------------------------------------------------------------------------------------
 
 void ProgramTreeModel::OnAppLoaded() 

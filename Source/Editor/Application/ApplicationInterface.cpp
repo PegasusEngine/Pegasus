@@ -18,6 +18,7 @@
 #include "Pegasus/Preprocessor.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
+#include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
 #include "Pegasus/Window/Shared/IWindowProxy.h"
 
 
@@ -200,6 +201,7 @@ void ApplicationInterface::ReceiveShaderCompilationRequest(int id)
             shaderEditorWidget->FlushShaderTextEditorToShader(id);
 
             //refresh viewport
+            mApplication->GetShaderManagerProxy()->UpdateAllPrograms();
             RequestFrameInPlayMode();
         }
         else

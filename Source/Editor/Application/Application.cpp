@@ -19,9 +19,10 @@
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Window/Shared/IWindowProxy.h"
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
+#include "Pegasus/Shader/Shared/IEventListener.h"
+#include "ShaderLibrary\ShaderManagerEventListener.h"
 
 #include <QTimer>
-
 #include <stdio.h>
 
 #if PEGASUS_PLATFORM_WINDOWS
@@ -146,6 +147,11 @@ void Application::run()
 
     // Initialize the application
     mApplication = CreatePegasusAppFunc(appConfig);
+    
+    // Initialize all application event listeners
+    mApplication->GetShaderManager()->RegisterEventListener( Editor::GetInstance().GetShaderLibraryWidget()->GetShaderManagerEventListener() );
+
+    // Run the initialization process of the application
     mApplication->Initialize();
 
     // Set up windows

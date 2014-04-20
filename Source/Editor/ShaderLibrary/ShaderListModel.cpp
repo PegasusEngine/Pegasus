@@ -13,10 +13,12 @@
 #include "Log.h"
 #include "Assertion.h"
 #include "ShaderLibrary/ShaderListModel.h"
+#include "ShaderLibrary/ShaderManagerEventListener.h"
 #include "Application/ApplicationManager.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
+
 
 //----------------------------------------------------------------------------------------
 
@@ -61,7 +63,18 @@ QVariant ShaderListModel::data(const QModelIndex &index, int role) const
             return proxy->GetName();
             break;
         case Qt::DecorationRole:
-            return mWorkingIcon;
+            {
+                ShaderUserData * userData = static_cast<ShaderUserData*>(proxy->GetUserData());
+                if (userData!=nullptr)
+                {
+                    return userData->IsValid() ? mWorkingIcon : mWarningIcon;
+                }
+                else
+                {
+                    return mWorkingIcon;
+                }
+                
+            }
             break;
         }
     }

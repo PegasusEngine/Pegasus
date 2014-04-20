@@ -52,6 +52,23 @@ Pegasus::Shader::IShaderProxy * Pegasus::Shader::ShaderManagerProxy::GetShader(i
     return nullptr;
 }
 
+void Pegasus::Shader::ShaderManagerProxy::RegisterEventListener(Pegasus::Shader::IEventListener * eventListener)
+{
+#if PEGASUS_SHADER_USE_EDIT_EVENTS
+    mObject->RegisterEventListener(eventListener);
+#endif
+}
+
+void Pegasus::Shader::ShaderManagerProxy::UpdateAllPrograms()
+{ 
+    const Pegasus::Shader::ShaderTracker * tracker = mObject->GetShaderTracker();
+    bool dummy;
+    for (int i = 0; i < tracker->ProgramSize(); ++i)
+    {
+        tracker->GetProgram(i)->GetUpdatedData(dummy);
+    }
+}
+
 #else
 PEGASUS_AVOID_EMPTY_FILE_WARNING;
 #endif

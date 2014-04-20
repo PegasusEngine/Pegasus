@@ -20,6 +20,7 @@ class QItemSelectionModel;
 class ShaderEditorWidget;
 class ProgramTreeModel;
 class ShaderListModel;
+class ShaderManagerEventListener;
 
 //! Graphics Widget meant for shader navigation & management
 class ShaderLibraryWidget : public QDockWidget
@@ -33,6 +34,9 @@ public:
 public slots:
     //! slot triggered when app is loaded
     void UpdateUIForAppLoaded();
+
+    //! updates the ui items laytout
+    void UpdateUIItemsLayout();
 
     //! slot triggered when app is unloaded
     void UpdateUIForAppFinished();
@@ -55,9 +59,18 @@ public slots:
     //! gets the shader editor widget
     ShaderEditorWidget * GetShaderEditorWidget() { return mShaderEditorWidget; }
 
+    //! gets the shader manager event listener
+    ShaderManagerEventListener * GetShaderManagerEventListener() { return mShaderManagerEventListener;}
+
 private:
     //! toggle the buttons on this widget on / off
     void ActivateButtons(bool activation);
+
+    //! inject all user data inside shaders and program nodes 
+    void InitializeInternalUserData();
+
+    //! delete all user data inside shaders and program nodes
+    void UninitializeInternalUserData();
 
     //! ui components
     Ui::ShaderLibraryWidget ui;
@@ -76,6 +89,9 @@ private:
     
     //! reference to the shader text editor widget
     ShaderEditorWidget * mShaderEditorWidget;
+
+    //! shader manager event listener
+    ShaderManagerEventListener * mShaderManagerEventListener;
 
 };
 

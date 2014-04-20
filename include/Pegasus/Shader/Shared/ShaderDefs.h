@@ -45,14 +45,12 @@ enum ShaderType
 //! Shader stage configuration structure
 struct ShaderStageProperties
 {
-    Pegasus::Shader::IUserData * mUserData; //! user data held by shader stage
     Pegasus::Shader::ShaderType mType; //! type for shader stage
     const char * mSource; //! the source string
     int          mSourceSize; //! the source string precomputed size
         
     ShaderStageProperties()
     :
-    mUserData(nullptr),
     mType(Pegasus::Shader::SHADER_STAGE_INVALID),
     mSource(nullptr),
     mSourceSize(0)

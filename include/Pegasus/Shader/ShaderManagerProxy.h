@@ -25,6 +25,7 @@ namespace Shader
 {
 
 class IProgramProxy;
+class IEventListener;
 class ShaderManager;
 
 //! Implementation of IShaderManagerProxy and wrapper proxy to expose to the editor
@@ -47,6 +48,13 @@ public:
     //! \param id  of the shader requested
     //! \return gets a reference to a shader
     virtual IShaderProxy* GetShader(int id); 
+
+    //! Sets the event listener to be used for the shader
+    //! \param event listener reference
+    virtual void RegisterEventListener(IEventListener * eventListener);
+
+    //! Updates all the programs, only those which changed
+    virtual void UpdateAllPrograms();
 
 private:
 

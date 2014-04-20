@@ -103,6 +103,10 @@ private:
     //! gets the shader or program's internal name from an index
     //! \return the string data from the program or shader passed in index
     const char * GetStringDataFromIndex(const QModelIndex& index) const;
+    
+    //! gets the shader icon status from an index
+    //! \return the icon data from the program or shader passed in index
+    QIcon ProgramTreeModel::GetIconFromIndex(const QModelIndex& index) const;
 
     //! miscelaneous icons and the invaluable shader manager proxy
     QIcon mWorkingIcon;

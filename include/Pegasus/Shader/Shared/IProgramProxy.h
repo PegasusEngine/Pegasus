@@ -17,6 +17,7 @@ namespace Shader
 {
 
 class IShaderProxy;
+class IUserData;
 
 //! shader program proxy interface
 class IProgramProxy
@@ -37,6 +38,15 @@ public:
     //! Gets the shader name
     //! \return gets the shader name
     virtual const char * GetName() const = 0;
+
+    //! Sets the user data for this particular program
+    //! \param userData. the user data to retrieve
+    virtual void SetUserData(Pegasus::Shader::IUserData * userData) = 0;
+
+    //! Gets the user data for this particular program 
+    //! \return user data reference
+    virtual Pegasus::Shader::IUserData * GetUserData() const = 0;
+    
 };
 
 

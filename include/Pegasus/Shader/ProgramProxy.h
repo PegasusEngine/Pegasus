@@ -42,6 +42,14 @@ public:
     //! \return Gets the name of this shader program
     virtual const char * GetName() const;
 
+    //! Sets the user data for this particular program
+    //! \param userData. the user data to retrieve
+    virtual void SetUserData(Pegasus::Shader::IUserData * userData);
+
+    //! Gets the user data for this particular program 
+    //! \return user data reference
+    virtual Pegasus::Shader::IUserData * GetUserData() const;
+
     //! sets the internal implementation of shader linkage
     //! \param object the program linkage internal object.
     void Wrap(ProgramLinkage * object) { mObject = object; }
