@@ -41,7 +41,7 @@ void ShaderManagerEventListener::OnEvent(Pegasus::Shader::IUserData * userData, 
         shaderUserData->SetIsValid(e.IsSuccess());
         if (previousIsValid != e.IsSuccess())
         {
-            emit(CompilationResultsChanged());
+            emit(CompilationResultsChanged(shaderUserData->GetShader()));
         }
     }
 }
@@ -60,4 +60,18 @@ void ShaderManagerEventListener::OnEvent(Pegasus::Shader::IUserData * userData, 
 
 void ShaderManagerEventListener::OnEvent(Pegasus::Shader::IUserData * userData, Pegasus::Shader::CompilationNotification& e)
 {
+    if (userData != nullptr)
+    {
+        ShaderUserData * shaderUserData = static_cast<ShaderUserData*>(userData);
+        shaderUserData->InvalidateLine(e.GetColumn());
+        
+        emit(
+            shaderUserData->GetShader(),
+            OnCompilationError(
+                shaderUserData->GetShader(),
+                e.GetColumn(), //Hack! the event is caching row in wrong place!
+                QString(e.GetDescription())
+            )
+        ); 
+    }
 }

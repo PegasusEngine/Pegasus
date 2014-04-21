@@ -53,8 +53,11 @@ ShaderLibraryWidget::ShaderLibraryWidget(QWidget * parent)
     connect(ui.ProgramTreeView, SIGNAL(doubleClicked(QModelIndex)),
             this, SLOT(DispatchShaderEditorThroughProgramView(QModelIndex)));
 
-    connect(mShaderManagerEventListener, SIGNAL(CompilationResultsChanged()),
-        this, SLOT(UpdateUIItemsLayout()), Qt::QueuedConnection);
+    connect(mShaderManagerEventListener, SIGNAL(CompilationResultsChanged(void*)),
+        this, SLOT(UpdateUIItemsLayout(void*)), Qt::QueuedConnection);
+
+    connect(mShaderManagerEventListener, SIGNAL(OnCompilationError(void*,int,QString)),
+        mShaderEditorWidget, SLOT(SignalCompilationError(void*,int,QString)), Qt::QueuedConnection);
 
     ui.ProgramTreeView->setModel(mProgramTreeModel);
     ui.ProgramTreeView->setSelectionModel(mProgramSelectionModel);
@@ -161,8 +164,12 @@ void ShaderLibraryWidget::UpdateUIForAppLoaded()
     ActivateButtons(true);
 }
 
-void ShaderLibraryWidget::UpdateUIItemsLayout()
+void ShaderLibraryWidget::UpdateUIItemsLayout(void* targetShader)
 {
+    if (targetShader != nullptr)
+    {
+        mShaderEditorWidget->ShaderUIChanged(static_cast<Pegasus::Shader::IShaderProxy*>(targetShader));
+    } 
     ui.ProgramTreeView->doItemsLayout();
     ui.ShaderTreeView->doItemsLayout();
 }

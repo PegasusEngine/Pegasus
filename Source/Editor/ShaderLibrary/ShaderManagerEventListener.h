@@ -13,6 +13,7 @@
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
 #include <QObject>
+#include <QSet>
 
 #ifndef EDITOR_SHADERMANAGEREVENTLISTENER_H
 #define EDITOR_SHADERMANAGEREVENTLISTENER_H
@@ -27,9 +28,14 @@ public:
     Pegasus::Shader::IShaderProxy * GetShader() const { return mShader; }
     void SetIsValid(bool value) { mIsValid = value; }
     bool IsValid() const { return mIsValid; }
+    void ClearInvalidLines() { mInvalidLinesSet.clear(); }
+    void InvalidateLine(int line) { mInvalidLinesSet.insert(line); }
+    bool IsInvalidLine (int line) const { return mInvalidLinesSet.contains(line); }
+    QSet<int>& GetInvalidLineSet() { return mInvalidLinesSet; }
 private:
     Pegasus::Shader::IShaderProxy * mShader;
     bool mIsValid;
+    QSet<int> mInvalidLinesSet;
     
 };
 
@@ -67,7 +73,8 @@ public:
     virtual void OnEvent(Pegasus::Shader::IUserData * userData, Pegasus::Shader::CompilationNotification& e);
 
 signals:
-    void CompilationResultsChanged();
+    void CompilationResultsChanged(void* shaderPointer);
+    void OnCompilationError(void* shaderPointer, int row, QString message);
 
 private:
     ShaderLibraryWidget * mLibraryWidget;

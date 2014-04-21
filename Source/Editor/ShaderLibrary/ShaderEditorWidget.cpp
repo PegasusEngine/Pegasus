@@ -15,6 +15,7 @@
 #include "Settings/Settings.h"
 #include "ShaderLibrary/ShaderEditorWidget.h"
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
+#include "ShaderLibrary/ShaderManagerEventListener.h"
 #include <QVBoxLayout>
 #include <QTabWidget>
 #include <QTextEdit>
@@ -24,13 +25,14 @@
 #include <QTextCharFormat>
 #include <QSignalMapper>
 #include <QMutex>
+#include <QSet>
 
 //! internal class serving as the syntax highlighter for shade code
 class ShaderSyntaxHighlighter : public QSyntaxHighlighter
 {
 public:
     ShaderSyntaxHighlighter(QTextDocument * parent)
-    : QSyntaxHighlighter(parent)
+    : QSyntaxHighlighter(parent), mSignalSyntaxError(false), mShaderUserData(nullptr)
     {
         static const char  * keywords[] = {
             "\\b[0-9]*\\.?[0-9]+f?\\b",
@@ -74,27 +76,42 @@ public:
 
     virtual ~ShaderSyntaxHighlighter() {}
 
+    void SetShaderUserData(const ShaderUserData * shaderUserData) { mShaderUserData = shaderUserData;}
+    
     
 protected:
 
     QVector<QRegExp> mRules;
+    
+    bool mWrongLines;
+    bool mSignalSyntaxError;
+    const ShaderUserData * mShaderUserData;
 
     //! sets the formats for comments
     void SetCCommentStyle(int start, int end, Settings * settings)
     {
-        setFormat(start, end, settings->GetShaderSyntaxColor(Settings::SYNTAX_C_COMMENT));
+        QTextCharFormat f;
+        f.setForeground(settings->GetShaderSyntaxColor(Settings::SYNTAX_C_COMMENT));
+        if (mSignalSyntaxError) f.setUnderlineStyle(QTextCharFormat::WaveUnderline);
+        setFormat(start, end, f);
     }
 
     //! sets the formats for CPP coments
     void SetCPPCommentStyle(int start, int end, Settings * settings)
     {
-         setFormat(start, end, settings->GetShaderSyntaxColor(Settings::SYNTAX_CPP_COMMENT));
+        QTextCharFormat f;
+        f.setForeground(settings->GetShaderSyntaxColor(Settings::SYNTAX_CPP_COMMENT));
+        if (mSignalSyntaxError) f.setUnderlineStyle(QTextCharFormat::WaveUnderline);
+        setFormat(start, end, f);
     }
 
     //! sets the formats for regular style
     void SetNormalStyle(int start, int end, Settings * settings)
     {
-        setFormat(start, end, settings->GetShaderSyntaxColor(Settings::SYNTAX_NORMAL_TEXT));
+        QTextCharFormat f;
+        f.setForeground(settings->GetShaderSyntaxColor(Settings::SYNTAX_NORMAL_TEXT));
+        if (mSignalSyntaxError) f.setUnderlineStyle(QTextCharFormat::WaveUnderline);
+        setFormat(start, end, f);
     }
 
     //! qt callback that processes highlighting in a line of text
@@ -111,6 +128,8 @@ protected:
         int state = previousBlockState();
         int start = 0;
         bool isCommentLine = false;
+
+        mSignalSyntaxError = mShaderUserData == nullptr ? false : mShaderUserData->IsInvalidLine(currentBlock().firstLineNumber()+1);
 
         // for every character
         for (int i = 0; i < text.length(); ++i)
@@ -147,6 +166,12 @@ protected:
         if (state == CommentState && start < text.length())
         {
             SetCPPCommentStyle(start, text.length() - start, settings);
+            start =  text.length();
+        }
+
+        if (start < text.length())
+        {
+            SetNormalStyle(start, text.length(), settings);
         }
 
         if (state != CommentState && !isCommentLine)
@@ -158,10 +183,22 @@ protected:
                 while (index >= 0)
                 {
                     int length = pattern.matchedLength();
+                    if (start < index + length)
+                    {
+                        start = index + length;
+                    }
                     Settings::ShaderEditorSyntaxStyle style = i == 0 ? Settings::SYNTAX_NUMBER_VALUE : Settings::SYNTAX_KEYWORD;
-                    setFormat(index, length, settings->GetShaderSyntaxColor(style));
+                    QTextCharFormat f;
+                    f.setForeground(settings->GetShaderSyntaxColor(style));
+                    if (mSignalSyntaxError) f.setUnderlineStyle(QTextCharFormat::WaveUnderline);
+                    setFormat(index, length, f);
                     index = pattern.indexIn(text, index + length);
+               
                 }
+            }
+            if (start < text.length())
+            {
+                SetNormalStyle(start, text.length(), settings);
             }
         }
         setCurrentBlockState(state);
@@ -170,7 +207,7 @@ protected:
 };
 
 ShaderEditorWidget::ShaderEditorWidget (QWidget * parent)
-: QWidget(parent), mTabCount(0), mCompilationRequestPending(false)
+: QWidget(parent), mTabCount(0), mCompilationRequestPending(false), mInternalBlockTextUpdated(false)
 {
     mCompilationRequestMutex = new QMutex();
     SetupUi();
@@ -256,6 +293,45 @@ void ShaderEditorWidget::FlushShaderTextEditorToShader(int id)
     mCompilationRequestMutex->unlock();
 }
 
+void ShaderEditorWidget::SignalCompilationError(void * shaderPtr, int line, QString errorString)
+{
+    //TODO post here string message
+}
+
+void ShaderEditorWidget::UpdateSyntaxForLine(int id, int line)
+{
+    ED_ASSERT(id < mTabCount);
+    QTextDocument * doc = mUi.mTextEditPool[id]->document();
+    int lineId = line - 1;
+    if (lineId > 0 && lineId < doc->lineCount())
+    {
+        //prevent a circular event loop by disabling text changed event
+        mInternalBlockTextUpdated = true;
+        QTextBlock block = doc->findBlockByLineNumber(lineId);
+        mUi.mSyntaxHighlighterPool[id]->rehighlightBlock(block);
+        mInternalBlockTextUpdated = false;
+    }
+}
+
+void ShaderEditorWidget::ShaderUIChanged(Pegasus::Shader::IShaderProxy * target)
+{
+    //TODO any event that requires the shader editor to reupdate
+    int id = FindIndex(target);
+    if (target->GetUserData() != nullptr)
+    {
+        ShaderUserData * shaderUserData = static_cast<ShaderUserData*>(target->GetUserData());
+        QSet<int> lineSetCopy = shaderUserData->GetInvalidLineSet();
+        if (shaderUserData->IsValid())
+        {
+            shaderUserData->ClearInvalidLines();
+        }
+        for (int line : lineSetCopy)
+        {
+            UpdateSyntaxForLine(id, line);
+        }
+    }
+}
+
 int ShaderEditorWidget::FindIndex(Pegasus::Shader::IShaderProxy * target)
 {
     for (int i = 0; i < mTabCount; ++i)
@@ -301,6 +377,7 @@ void ShaderEditorWidget::RequestClose(int index)
     QWidget * tempW = mUi.mWidgetPool[index];
     QTextEdit * tempTextEdit = mUi.mTextEditPool[index];
     QSyntaxHighlighter * mtempSyntax = mUi.mSyntaxHighlighterPool[index];
+    static_cast<ShaderSyntaxHighlighter*>(mtempSyntax)->SetShaderUserData(nullptr);
 
     //copy the pointers back
     for (int i = index; i < MAX_TEXT_TABS - 1; ++i)
@@ -321,6 +398,10 @@ void ShaderEditorWidget::RequestClose(int index)
 
 void ShaderEditorWidget::OnTextChanged(QWidget * sender)
 {
+    //HACK: do not trigger a text update event if the syntax highlighter rehighlights
+    if (mInternalBlockTextUpdated)
+        return;
+
     QTextEdit * textEditor = static_cast<QTextEdit*>(sender);
     int id = FindIndex(textEditor);
     if (id != -1)
@@ -369,6 +450,10 @@ void ShaderEditorWidget::RequestOpen(Pegasus::Shader::IShaderProxy * shaderProxy
             {
                 qchar[i] = srcChar[i];
             }
+            
+            QSyntaxHighlighter * mtempSyntax = mUi.mSyntaxHighlighterPool[currentTabIndex];
+            static_cast<ShaderSyntaxHighlighter*>(mtempSyntax)->SetShaderUserData(static_cast<ShaderUserData*>(shaderProxy->GetUserData()));
+
             QString srcQString(qchar, srcSize);
             mUi.mTextEditPool[currentTabIndex]->setText(srcQString);
     
@@ -377,7 +462,7 @@ void ShaderEditorWidget::RequestOpen(Pegasus::Shader::IShaderProxy * shaderProxy
             p.setColor(QPalette::Text, Editor::GetInstance().GetSettings()->GetShaderSyntaxColor(Settings::SYNTAX_NORMAL_TEXT));
             mUi.mTextEditPool[currentTabIndex]->setPalette(p);
         
-            delete[] qchar;
+            delete[] qchar;            
             mTabCount++;
         }
         mUi.mTabWidget->setCurrentIndex(currentTabIndex); 

@@ -43,9 +43,21 @@ public:
     //! called whenever settings have been changed
     void OnSettingsChanged();
 
+    //! checks if there is a compilation request pending (so we dont resend more)
     bool AsyncHasCompilationRequestPending();
+    
+    //! Sets a pending compilation request has been sent and is on its way to be cleard
     void AsyncSetCompilationRequestPending();
+    
+    //! Clears the compilation request and flushes the internal text of a shader tab
+    //! into the internal shader source container
+    //! \param id of the shader editor to flush
     void FlushShaderTextEditorToShader(int id);
+
+    //! Called when a shader compilation status has been changed
+    //! \param shader that has been updated
+    void ShaderUIChanged(Pegasus::Shader::IShaderProxy * shader);
+
 
 signals:
     void RequestShaderCompilation(int id);
@@ -59,7 +71,19 @@ private slots:
     //! \param the widget that changed its text, should be casted to a QTextEdit object
     void OnTextChanged(QWidget *);
 
+    //! signals a compilation error.
+    //! \param the shader reference to set the compilation error
+    //! \param the line number that such shader failed at
+    //! \param the error message string of the failed compilation
+    void SignalCompilationError(void* shader, int line, QString errorString);
+
 private:
+
+    //! request a syntax highlight update for a particular line
+    //! \param the id of the text editor
+    //! \param the line number to update
+    void UpdateSyntaxForLine(int id, int line);
+
     //! maximum number of shader tabs to have open
     static const int MAX_TEXT_TABS = 50;
 
@@ -93,6 +117,8 @@ private:
     //! compilation barrier. Throttles compilation if a signal has been sent
     bool mCompilationRequestPending;
     QMutex * mCompilationRequestMutex;
+
+    bool mInternalBlockTextUpdated;
     
     
 };

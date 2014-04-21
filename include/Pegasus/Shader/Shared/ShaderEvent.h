@@ -147,7 +147,7 @@ namespace Shader
         Type GetType() const  { return mType;   }
 
         //! text with description
-        const char * GetDescription() const { mDescription; }
+        const char * GetDescription() const { return mDescription; }
     private:
         Type mType;
         int mColumn;
