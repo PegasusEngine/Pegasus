@@ -56,8 +56,15 @@ ShaderLibraryWidget::ShaderLibraryWidget(QWidget * parent)
     connect(mShaderManagerEventListener, SIGNAL(CompilationResultsChanged(void*)),
         this, SLOT(UpdateUIItemsLayout(void*)), Qt::QueuedConnection);
 
+    //Queued connections, from events than come directly from the app
     connect(mShaderManagerEventListener, SIGNAL(OnCompilationError(void*,int,QString)),
         mShaderEditorWidget, SLOT(SignalCompilationError(void*,int,QString)), Qt::QueuedConnection);
+
+    connect(mShaderManagerEventListener, SIGNAL(OnCompilationBegin(void*)),
+        mShaderEditorWidget, SLOT(SignalCompilationBegin(void*)), Qt::QueuedConnection);
+
+    connect(mShaderManagerEventListener, SIGNAL(OnLinkingEvent(void*,QString,int)),
+            this, SLOT(OnProgramLinkingEvent(void*,QString,int)), Qt::QueuedConnection);
 
     ui.ProgramTreeView->setModel(mProgramTreeModel);
     ui.ProgramTreeView->setSelectionModel(mProgramSelectionModel);
@@ -121,6 +128,23 @@ void ShaderLibraryWidget::DispatchShaderEditorThroughShaderView(const QModelInde
 void ShaderLibraryWidget::UpdateEditorStyle()
 {
     mShaderEditorWidget->OnSettingsChanged();
+}
+//----------------------------------------------------------------------------------------
+
+void ShaderLibraryWidget::OnProgramLinkingEvent(void * program, QString message, int eventType)
+{
+    Pegasus::Shader::IProgramProxy * target = static_cast<Pegasus::Shader::IProgramProxy*>(program);
+    ED_ASSERT(target != nullptr);
+    ProgramUserData * programUserData = static_cast<ProgramUserData*>(target->GetUserData());
+    if (programUserData != nullptr)
+    {
+        programUserData->SetIsValid(
+            static_cast<Pegasus::Shader::LinkingEvent::Type>(eventType) == Pegasus::Shader::LinkingEvent::LINKING_SUCCESS
+        );
+        programUserData->SetErrorMessage(message);
+        //update ui
+        ui.ProgramTreeView->doItemsLayout();
+    }
 }
 
 //----------------------------------------------------------------------------------------

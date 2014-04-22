@@ -77,6 +77,10 @@ private slots:
     //! \param the error message string of the failed compilation
     void SignalCompilationError(void* shader, int line, QString errorString);
 
+    //! signals the begining of a compilation request. Used to set UI states and clear stuff 
+    //! \param the shader pointer
+    void SignalCompilationBegin(void* shader);
+
 private:
 
     //! request a syntax highlight update for a particular line

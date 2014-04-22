@@ -295,7 +295,32 @@ void ShaderEditorWidget::FlushShaderTextEditorToShader(int id)
 
 void ShaderEditorWidget::SignalCompilationError(void * shaderPtr, int line, QString errorString)
 {
-    //TODO post here string message
+    Pegasus::Shader::IShaderProxy* target = static_cast<Pegasus::Shader::IShaderProxy*>(shaderPtr);
+    ShaderUserData * userData = static_cast<ShaderUserData*>(target->GetUserData());
+    if (userData != nullptr)
+    {
+        userData->InvalidateLine(line);
+        int id = FindIndex(target);
+        ED_ASSERT(id < mTabCount);
+        UpdateSyntaxForLine(id, line);
+    }
+}
+
+void ShaderEditorWidget::SignalCompilationBegin(void * shader)
+{
+    Pegasus::Shader::IShaderProxy* target = static_cast<Pegasus::Shader::IShaderProxy*>(shader);
+    int id = FindIndex(target);
+    ED_ASSERT(id < mTabCount);
+    if (target->GetUserData() != nullptr)
+    {
+        ShaderUserData * shaderUserData = static_cast<ShaderUserData*>(target->GetUserData());
+        QSet<int> lineSetCopy = shaderUserData->GetInvalidLineSet();
+        shaderUserData->ClearInvalidLines();
+        for (int line : lineSetCopy)
+        {
+            UpdateSyntaxForLine(id, line);
+        }
+    }
 }
 
 void ShaderEditorWidget::UpdateSyntaxForLine(int id, int line)
@@ -316,20 +341,6 @@ void ShaderEditorWidget::UpdateSyntaxForLine(int id, int line)
 void ShaderEditorWidget::ShaderUIChanged(Pegasus::Shader::IShaderProxy * target)
 {
     //TODO any event that requires the shader editor to reupdate
-    int id = FindIndex(target);
-    if (target->GetUserData() != nullptr)
-    {
-        ShaderUserData * shaderUserData = static_cast<ShaderUserData*>(target->GetUserData());
-        QSet<int> lineSetCopy = shaderUserData->GetInvalidLineSet();
-        if (shaderUserData->IsValid())
-        {
-            shaderUserData->ClearInvalidLines();
-        }
-        for (int line : lineSetCopy)
-        {
-            UpdateSyntaxForLine(id, line);
-        }
-    }
 }
 
 int ShaderEditorWidget::FindIndex(Pegasus::Shader::IShaderProxy * target)

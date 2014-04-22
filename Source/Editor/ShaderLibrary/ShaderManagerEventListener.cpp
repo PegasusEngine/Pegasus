@@ -19,7 +19,7 @@ ShaderUserData::ShaderUserData(Pegasus::Shader::IShaderProxy * shader)
 }
 
 ProgramUserData::ProgramUserData(Pegasus::Shader::IProgramProxy * program)
-: mProgram(program)
+: mProgram(program), mIsValid(true)
 {
 }
 
@@ -48,10 +48,17 @@ void ShaderManagerEventListener::OnEvent(Pegasus::Shader::IUserData * userData, 
 
 void ShaderManagerEventListener::OnEvent(Pegasus::Shader::IUserData * userData, Pegasus::Shader::LinkingEvent& e)
 {
+    if (userData != nullptr)
+    {
+        ProgramUserData * programUserData = static_cast<ProgramUserData*>(userData); 
+        emit(OnLinkingEvent(programUserData->GetProgram(), e.GetLog(), e.GetEventType()));
+    }
 }
 
 void ShaderManagerEventListener::OnEvent(Pegasus::Shader::IUserData * userData, Pegasus::Shader::FileOperationEvent& e)
 {
+    //error loading a shader file
+    ED_ASSERTSTR("Shader file not found: %s", e.GetMessage());
 }
 
 void ShaderManagerEventListener::OnEvent(Pegasus::Shader::IUserData * userData, Pegasus::Shader::ShaderLoadedEvent& e)
@@ -63,15 +70,20 @@ void ShaderManagerEventListener::OnEvent(Pegasus::Shader::IUserData * userData, 
     if (userData != nullptr)
     {
         ShaderUserData * shaderUserData = static_cast<ShaderUserData*>(userData);
-        shaderUserData->InvalidateLine(e.GetColumn());
-        
-        emit(
-            shaderUserData->GetShader(),
-            OnCompilationError(
+        if (e.GetType() == Pegasus::Shader::CompilationNotification::COMPILATION_BEGIN)
+        {
+            emit( OnCompilationBegin(shaderUserData->GetShader()) ) ;
+        }
+        else
+        {        
+            emit(
                 shaderUserData->GetShader(),
-                e.GetColumn(), //Hack! the event is caching row in wrong place!
-                QString(e.GetDescription())
-            )
-        ); 
+                OnCompilationError(
+                    shaderUserData->GetShader(),
+                    e.GetColumn(), //Hack! the event is caching row in wrong place!
+                    QString(e.GetDescription())
+                )
+             );
+        } 
     }
 }

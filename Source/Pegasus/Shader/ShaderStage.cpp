@@ -148,6 +148,7 @@ Pegasus::Graph::NodeData * Pegasus::Shader::ShaderStage::AllocateData() const
 void Pegasus::Shader::ShaderStage::GenerateData()
 {
     PG_ASSERT(GetData() != nullptr);
+    SHADEREVENT_COMPILATION_BEGIN(this)
     mFactory->GenerateShaderGpuData(&(*this), &(*GetData()));
 } 
 

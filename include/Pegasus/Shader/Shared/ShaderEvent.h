@@ -124,7 +124,8 @@ namespace Shader
         enum Type
         {
             COMPILATION_ERROR,
-            COMPILATION_WARNING
+            COMPILATION_WARNING,
+            COMPILATION_BEGIN
         };
 
         //! constructor

@@ -45,8 +45,14 @@ public:
     explicit ProgramUserData(Pegasus::Shader::IProgramProxy * program);
     virtual ~ProgramUserData(){}
     Pegasus::Shader::IProgramProxy * GetProgram() const { return mProgram; }
+    bool IsValid() const { return mIsValid; }
+    const QString& GetErrorMessage() const { return mErrorMessage; }
+    void SetIsValid(bool valid) { mIsValid = valid; }
+    void SetErrorMessage(const QString& message) { mErrorMessage = message; }
 private:
     Pegasus::Shader::IProgramProxy * mProgram;
+    bool mIsValid;
+    QString mErrorMessage;
 };
 
 class ShaderManagerEventListener : public QObject, public Pegasus::Shader::IEventListener 
@@ -75,6 +81,8 @@ public:
 signals:
     void CompilationResultsChanged(void* shaderPointer);
     void OnCompilationError(void* shaderPointer, int row, QString message);
+    void OnCompilationBegin(void* shaderPointer);
+    void OnLinkingEvent(void* shaderPointer, QString message, int messageType);
 
 private:
     ShaderLibraryWidget * mLibraryWidget;

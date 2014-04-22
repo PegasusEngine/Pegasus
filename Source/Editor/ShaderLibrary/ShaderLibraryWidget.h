@@ -56,6 +56,9 @@ public slots:
     //! slot triggered when the editor style has changed, forces the text editor to resync styles
     void UpdateEditorStyle();
 
+    //! slot triggered when there is a program linking event
+    void OnProgramLinkingEvent(void * program, QString message, int eventType);
+
     //! gets the shader editor widget
     ShaderEditorWidget * GetShaderEditorWidget() { return mShaderEditorWidget; }
 

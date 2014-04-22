@@ -62,6 +62,14 @@
     dispatcher->DispatchEvent(e); \
     }
 
+//! dispatches a compilation begin event
+#define SHADEREVENT_COMPILATION_BEGIN(dispatcher)\
+    {\
+    Pegasus::Shader::CompilationNotification e(\
+        Pegasus::Shader::CompilationNotification::COMPILATION_BEGIN, 0, 0, "");\
+    dispatcher->DispatchEvent(e); \
+    }
+
 //! dispatches a linking error
 #define SHADEREVENT_LINKING_SUCCESS(dispatcher) \
     { \
@@ -99,6 +107,7 @@
 #define SHADEREVENT_COMPILATION_FAIL(dispatcher, log)
 #define SHADEREVENT_COMPILATION_SUCCESS(dispatcher)
 #define SHADEREVENT_COMPILATION_ERROR(dispatcher, row, column, description)
+#define SHADEREVENT_COMPILATION_BEGIN(dispatcher)
 #define SHADEREVENT_LINKING_SUCCESS(dispatcher)
 #define SHADEREVENT_LINKING_FAIL(dispatcher, log)
 #define SHADEREVENT_LINKING_INCOMPLETE(dispatcher)
