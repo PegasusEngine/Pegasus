@@ -22,10 +22,10 @@ namespace Pegasus {
 
 class QVBoxLayout;
 class QTabWidget;
-class QTextEdit;
 class QSyntaxHighlighter;
 class QSignalMapper;
 class QMutex;
+class ShaderTextEditorWidget;
 
 //! Graphics Widget meant for shader text editing
 class ShaderEditorWidget : public QWidget
@@ -98,7 +98,7 @@ private:
     int  FindIndex(Pegasus::Shader::IShaderProxy * target);
 
     //! finds the index of a particular text edit
-    int  FindIndex(QTextEdit * target);
+    int  FindIndex(ShaderTextEditorWidget * target);
 
     //! ui component pool
     struct Ui
@@ -106,14 +106,10 @@ private:
         QVBoxLayout * mMainLayout; //! the main layout of the text editor
         QTabWidget  * mTabWidget; //! the tab widget
         QWidget   * mWidgetPool[MAX_TEXT_TABS]; //! pool of widgets for tabs
-        QTextEdit * mTextEditPool[MAX_TEXT_TABS]; //! pool of text editor tabs
-        QSyntaxHighlighter * mSyntaxHighlighterPool[MAX_TEXT_TABS]; //! pool of syntax highlighers
+        ShaderTextEditorWidget * mTextEditPool[MAX_TEXT_TABS]; //! pool of text editor tabs
     } mUi;
 
     int mTabCount; //! count of tabs
-
-    //! pool of shader proxy pointers
-    Pegasus::Shader::IShaderProxy * mShaderProxyPool[MAX_TEXT_TABS];
 
     //! signal mapper for shader text editors
     QSignalMapper * mShaderEditorSignalMapper;
