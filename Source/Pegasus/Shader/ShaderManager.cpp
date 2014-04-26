@@ -44,8 +44,11 @@ static struct PegasusExtensionMappings
 
 Pegasus::Shader::ShaderManager::ShaderManager(Pegasus::Graph::NodeManager * nodeManager, Pegasus::Shader::IShaderFactory * factory)
 :
-mNodeManager(nodeManager),
-mFactory(factory)
+mNodeManager(nodeManager)
+, mFactory(factory)
+#if PEGASUS_SHADER_USE_EDIT_EVENTS
+, mEventListener(nullptr)
+#endif
 {
     if (nodeManager != nullptr)
     {
