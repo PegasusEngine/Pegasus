@@ -82,10 +82,6 @@ static void ProcessErrorLog(Pegasus::Shader::ShaderStage * shaderNode, const cha
 #if PEGASUS_SHADER_USE_EDIT_EVENTS
     //parsing log to extract line & column
     const char  * s = log;
- 
-    const int descriptionBufferSize = 256;
-    char descriptionBuffer[descriptionBufferSize];
-    char * descriptionBufferLimit = descriptionBuffer + descriptionBufferSize;
 
     //WARNING, I have optimized the crap out of the following code, so parsing might be messy.
     // I am trying to parse the following string:
@@ -94,40 +90,37 @@ static void ProcessErrorLog(Pegasus::Shader::ShaderStage * shaderNode, const cha
 
     while (*s)
     {
-        bool isErrorStr = true;
-
-        //find "ERROR" substring
-        const char * errorStr = "ERROR";
-        for (; *errorStr && isErrorStr; ++errorStr) isErrorStr = *errorStr == *(s++);
-
-        if (isErrorStr)
-        {
-            int line = 0;
-            int column = 0;
+        int line = 0;
+        bool foundNumber = false;
         
-            //Skip spaces and colons
-            while (*s == ' ' || *s == ':') ++s;
+        //Skip any non numerical character
+        while ( *s != '\0' && (*s < '0' || *s > '9')) ++s;
 
-            //Parse Line number
-            for (;*s >= '0' && *s <= '9'; ++s) line = 10*line + (*s - '0');
+        //Skip first numerical character
+        while ( *s != '\0' && *s >= '0' && *s <= '9') ++s;
 
-            //Skip spaces and colons
-            while (*s == ' ' || *s == ':') ++s; // skip
+        //Skip any non numerical character
+        while ( *s != '\0' && (*s < '0' || *s > '9')) ++s;
 
-            //Parse Column number
-            for (;*s >= '0' && *s <= '9'; ++s) column = 10*column + (*s - '0');
-
-            //Skip spaces and colons
-            while (*s == ' ' || *s == ':') ++s; // skip
-
-            //cache description buffer
-            char * descPtr = descriptionBuffer;
-            for (;*s && descPtr != descriptionBufferLimit && *s != '\n';++s) *(descPtr++) = *s;
-            PG_ASSERTSTR(descPtr !=descriptionBufferLimit, "DANGER!! buffer overflow!");
-            *descPtr = '\0';
-
-            SHADEREVENT_COMPILATION_ERROR(shaderNode, line, column, descriptionBuffer);
+        //Parse Line number
+        for (; *s != '\0' && *s >= '0' && *s <= '9'; ++s)
+        {
+            foundNumber = true;
+            line = 10*line + (*s - '0');
         }
+
+        char descriptionError[512];
+        int idx = 0;
+        //skip to new line or end of string
+        while ( *s != '\0' && *s != '\n') 
+        {
+            if (idx < 511)
+                descriptionError[idx++] = *s; 
+            ++s;
+        } 
+        descriptionError[idx] = '\0';
+        SHADEREVENT_COMPILATION_ERROR(shaderNode, line, descriptionError);
+
     }
 #endif
 }

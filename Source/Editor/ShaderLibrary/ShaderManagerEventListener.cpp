@@ -80,7 +80,7 @@ void ShaderManagerEventListener::OnEvent(Pegasus::Shader::IUserData * userData, 
                 shaderUserData->GetShader(),
                 OnCompilationError(
                     shaderUserData->GetShader(),
-                    e.GetColumn(), //Hack! the event is caching row in wrong place!
+                    e.GetRow(),
                     QString(e.GetDescription())
                 )
              );

@@ -55,10 +55,10 @@
     }
 
 //! dispatches a compilation error
-#define SHADEREVENT_COMPILATION_ERROR(dispatcher, row, column, description)\
+#define SHADEREVENT_COMPILATION_ERROR(dispatcher, row, description)\
     {\
     Pegasus::Shader::CompilationNotification e(\
-        Pegasus::Shader::CompilationNotification::COMPILATION_ERROR, row, column, description);\
+        Pegasus::Shader::CompilationNotification::COMPILATION_ERROR, row, description);\
     dispatcher->DispatchEvent(e); \
     }
 
@@ -66,7 +66,7 @@
 #define SHADEREVENT_COMPILATION_BEGIN(dispatcher)\
     {\
     Pegasus::Shader::CompilationNotification e(\
-        Pegasus::Shader::CompilationNotification::COMPILATION_BEGIN, 0, 0, "");\
+        Pegasus::Shader::CompilationNotification::COMPILATION_BEGIN, 0, "");\
     dispatcher->DispatchEvent(e); \
     }
 
@@ -106,7 +106,7 @@
 #define SHADEREVENT_LOADED(src, srcSize)
 #define SHADEREVENT_COMPILATION_FAIL(dispatcher, log)
 #define SHADEREVENT_COMPILATION_SUCCESS(dispatcher)
-#define SHADEREVENT_COMPILATION_ERROR(dispatcher, row, column, description)
+#define SHADEREVENT_COMPILATION_ERROR(dispatcher, row, description)
 #define SHADEREVENT_COMPILATION_BEGIN(dispatcher)
 #define SHADEREVENT_LINKING_SUCCESS(dispatcher)
 #define SHADEREVENT_LINKING_FAIL(dispatcher, log)

@@ -129,16 +129,12 @@ namespace Shader
         };
 
         //! constructor
-        CompilationNotification(Type t, int row, int column, const char * description)
-        : mType(t), mColumn(column), mRow(row), mDescription(description)
+        CompilationNotification(Type t, int row, const char * description)
+        : mType(t), mRow(row), mDescription(description)
         {}
 
         //! destructor
         virtual ~CompilationNotification(){}
-
-        //! gets the column where the error / warning occurred
-        //! \returns zero based int for the column number
-        int GetColumn() const { return mColumn; }
 
         //! gets the row where the error / warning occurred
         //! \returns zero based int for the row number
