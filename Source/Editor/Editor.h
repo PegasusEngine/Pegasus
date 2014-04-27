@@ -18,6 +18,7 @@
 #include "History/HistoryDockWidget.h"
 #include "Timeline/TimelineDockWidget.h"
 #include "ShaderLibrary/ShaderLibraryWidget.h"
+#include "ShaderLibrary/ShaderEditorWidget.h"
 #include "Viewport/ViewportDockWidget.h"
 #include "Viewport/ViewportWidget.h"
 #include "Viewport/ViewportType.h"
@@ -109,6 +110,10 @@ public:
     //! \return Pointer to the console dock widget
     inline ConsoleDockWidget * GetConsoleDockWidget() const { return mConsoleDockWidget; }
 
+    //! Get the shader editor widget
+    //! \return Pointer to shader editor widget
+    inline ShaderEditorWidget * GetShaderEditorWidget() const { return mShaderEditorWidget; }
+
     //! Get the shader library widget
     //! \return Pointer to shader library widget
     inline ShaderLibraryWidget * GetShaderLibraryWidget() const { return mShaderLibraryWidget; }
@@ -177,6 +182,7 @@ private slots:
     void OpenTimelineWindow();
     void OpenHistoryWindow();
     void OpenConsoleWindow();
+    void OpenShaderEditorWindow();
     void OpenShaderLibraryWindow();
     //@}
 
@@ -235,6 +241,7 @@ private:
     QAction * mActionWindowTimeline;
     QAction * mActionWindowHistory;
     QAction * mActionWindowConsole;
+    QAction * mActionWindowShaderEditor;
     QAction * mActionWindowShaderLibrary;
     //@}
 
@@ -283,12 +290,13 @@ private:
 
     //@{
     //! Dock widgets
-    ViewportDockWidget * mMainViewportDockWidget;
-    ViewportDockWidget * mSecondaryViewportDockWidget;
-    TimelineDockWidget * mTimelineDockWidget;
-    HistoryDockWidget * mHistoryDockWidget;
-    ShaderLibraryWidget * mShaderLibraryWidget;
-    ConsoleDockWidget * mConsoleDockWidget;
+    ViewportDockWidget *  mMainViewportDockWidget;
+    ViewportDockWidget *  mSecondaryViewportDockWidget;
+    TimelineDockWidget *  mTimelineDockWidget;
+    HistoryDockWidget  *  mHistoryDockWidget;
+    ShaderLibraryWidget*  mShaderLibraryWidget;
+    ShaderEditorWidget *  mShaderEditorWidget;
+    ConsoleDockWidget  *  mConsoleDockWidget;
     //@}
 
 	//! Menu containing the checkable actions for the tool bars

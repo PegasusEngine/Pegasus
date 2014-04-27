@@ -28,7 +28,7 @@ class ShaderLibraryWidget : public QDockWidget
     Q_OBJECT
 
 public:
-    ShaderLibraryWidget(QWidget * parent = 0);
+    ShaderLibraryWidget(QWidget * parent, ShaderEditorWidget * editorWidget);
     virtual ~ShaderLibraryWidget();
 
 public slots:

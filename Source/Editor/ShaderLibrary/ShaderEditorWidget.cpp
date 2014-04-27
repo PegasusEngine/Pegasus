@@ -19,16 +19,22 @@
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
 #include <QVBoxLayout>
 #include <QTabWidget>
+#include <QToolBar>
 #include <QColor>
 #include <QSyntaxHighlighter>
+#include <QPushButton>
 #include <QRegExp>
 #include <QTextCharFormat>
 #include <QSignalMapper>
 #include <QMutex>
 #include <QSet>
+#include <QAction>
+
+static const char * DOCKABLE_DESC = "Dockable: Allow to be docked when hovering over main window.";
+static const char * UNDOCKABLE_DESC = "Undockable: Allow to hover over window w/o docking.";
 
 ShaderEditorWidget::ShaderEditorWidget (QWidget * parent)
-: QWidget(parent), mTabCount(0), mCompilationRequestPending(false), mInternalBlockTextUpdated(false)
+: QDockWidget(parent), mTabCount(0), mCompilationRequestPending(false), mInternalBlockTextUpdated(false)
 {
     mCompilationRequestMutex = new QMutex();
     SetupUi();
@@ -42,11 +48,40 @@ ShaderEditorWidget::~ShaderEditorWidget()
 void ShaderEditorWidget::SetupUi()
 {
     mShaderEditorSignalMapper = new QSignalMapper(this);
+    QWidget * mainWidget = new QWidget(this);
+    setWidget(mainWidget);
+
+	setFeatures(  QDockWidget::DockWidgetClosable
+				| QDockWidget::DockWidgetMovable
+				| QDockWidget::DockWidgetFloatable);
+
+    setAllowedAreas(Qt::NoDockWidgetArea);
+    QToolBar * toolBar = new QToolBar(this);
+
+    //TODO hook up these actions
+    QIcon saveIcon(tr(":/ShaderEditor/save.png"));
+    QIcon singleIcon(tr(":/ShaderEditor/single.png"));
+    QIcon verticalIcon(tr(":/ShaderEditor/vertical.png"));
+    QIcon horizontalIcon(tr(":/ShaderEditor/horizontal.png"));
+    toolBar->addAction(saveIcon, tr("COMING SOON: save shader to its file"));
+    toolBar->addAction(singleIcon, tr("COMING SOON: single view"));
+    toolBar->addAction(verticalIcon, tr("COMING SOON: split views vertically"));
+    toolBar->addAction(horizontalIcon, tr("COMING SOON: split views horizontally"));
+
+    toolBar->addSeparator();
+
+    mPinIcon.addFile(tr(":/ShaderEditor/pin.png"));
+    mUnpinIcon.addFile(tr(":/ShaderEditor/unpin.png"));
+    mPinAction = toolBar->addAction(mUnpinIcon, tr(UNDOCKABLE_DESC));
+
+    connect(mPinAction, SIGNAL(triggered(bool)),
+            this, SLOT(SignalPinActionTriggered()));
 
     resize(550, 700);
-    setWindowTitle(QString("Shader Editor"));
+    setWindowTitle(tr("Shader Editor"));
+    setObjectName("ShaderEditor");
     mUi.mMainLayout = new QVBoxLayout();
-    mUi.mTabWidget = new QTabWidget(this);
+    mUi.mTabWidget = new QTabWidget(mainWidget);
     mUi.mTabWidget->setTabsClosable(true);
     
     connect(
@@ -54,6 +89,7 @@ void ShaderEditorWidget::SetupUi()
         this, SLOT(RequestClose(int))
     );
     
+    mUi.mMainLayout->addWidget(toolBar);
     mUi.mMainLayout->addWidget(mUi.mTabWidget);
     
     for (int i = 0; i < MAX_TEXT_TABS; ++i)
@@ -67,16 +103,15 @@ void ShaderEditorWidget::SetupUi()
     
         mShaderEditorSignalMapper->setMapping(mUi.mTextEditPool[i], static_cast<QWidget*>(mUi.mTextEditPool[i]));
     
-        QHBoxLayout * horizontalLayout = new QHBoxLayout(this);
+        QHBoxLayout * horizontalLayout = new QHBoxLayout(mainWidget);
         horizontalLayout->addWidget(mUi.mTextEditPool[i]);
         mUi.mWidgetPool[i]->setLayout(horizontalLayout);
 
     }
-
     connect(mShaderEditorSignalMapper, SIGNAL(mapped(QWidget *)),
             this, SLOT(OnTextChanged(QWidget *)));
 
-    setLayout(mUi.mMainLayout);
+    mainWidget->setLayout(mUi.mMainLayout);
 }
 
 bool ShaderEditorWidget::AsyncHasCompilationRequestPending()
@@ -133,6 +168,23 @@ void ShaderEditorWidget::SignalCompilationBegin(void * shader)
             UpdateSyntaxForLine(id, line);
         }
     }
+}
+
+void ShaderEditorWidget::SignalPinActionTriggered()
+{
+    ED_ASSERT(mPinAction != nullptr);
+    if (allowedAreas() == Qt::NoDockWidgetArea)
+    {
+        setAllowedAreas(Qt::AllDockWidgetAreas);
+        mPinAction->setIcon(mPinIcon);
+        mPinAction->setText(tr(DOCKABLE_DESC));
+    }
+    else if (allowedAreas() == Qt::AllDockWidgetAreas)
+    {
+        setAllowedAreas(Qt::NoDockWidgetArea);
+        mPinAction->setIcon(mUnpinIcon);
+        mPinAction->setText(tr(UNDOCKABLE_DESC));
+    } 
 }
 
 void ShaderEditorWidget::UpdateSyntaxForLine(int id, int line)

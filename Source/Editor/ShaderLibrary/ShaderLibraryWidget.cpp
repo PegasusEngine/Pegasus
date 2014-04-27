@@ -24,12 +24,9 @@
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include <QItemSelectionModel>
 
-ShaderLibraryWidget::ShaderLibraryWidget(QWidget * parent)
-: QDockWidget(parent)
+ShaderLibraryWidget::ShaderLibraryWidget(QWidget * parent, ShaderEditorWidget * editorWidget)
+: QDockWidget(parent), mShaderEditorWidget(editorWidget)
 {
-    mShaderEditorWidget = new ShaderEditorWidget(nullptr);
-    mShaderEditorWidget->hide();
-
     mProgramTreeModel = new ProgramTreeModel(this);
     mProgramSelectionModel = new QItemSelectionModel(mProgramTreeModel);
 

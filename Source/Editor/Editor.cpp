@@ -115,7 +115,7 @@ Editor::Editor(QWidget *parent)
     connect(mApplicationManager, SIGNAL(ApplicationLoaded()),
             mShaderLibraryWidget, SLOT(UpdateUIForAppLoaded()));
     connect(mApplicationManager, SIGNAL(ApplicationFinished()),
-            mShaderLibraryWidget, SLOT(UpdateUIForAppClosed()));
+            mShaderLibraryWidget, SLOT(UpdateUIForAppFinished()));
 
     connect(sSettings, SIGNAL(OnShaderEditorStyleChanged()),
             mShaderLibraryWidget, SLOT(UpdateEditorStyle())); 
@@ -283,6 +283,10 @@ void Editor::CreateActions()
 	mActionWindowConsole->setStatusTip(tr("Open the console window"));
 	connect(mActionWindowConsole, SIGNAL(triggered()), this, SLOT(OpenConsoleWindow()));
 
+    mActionWindowShaderEditor = new QAction(tr("&Shader Editor"), this);
+	mActionWindowShaderEditor->setStatusTip(tr("Open the shader editor"));
+	connect(mActionWindowShaderEditor, SIGNAL(triggered()), this, SLOT(OpenShaderEditorWindow()));
+
     mActionWindowShaderLibrary = new QAction(tr("&Shader Library"), this);
 	mActionWindowShaderLibrary->setStatusTip(tr("Open the shader library"));
 	connect(mActionWindowShaderLibrary, SIGNAL(triggered()), this, SLOT(OpenShaderLibraryWindow()));
@@ -335,6 +339,7 @@ void Editor::CreateMenu()
     windowMenu->addAction(mActionWindowTimeline);
     windowMenu->addAction(mActionWindowHistory);
     windowMenu->addAction(mActionWindowConsole);
+    windowMenu->addAction(mActionWindowShaderEditor);
     windowMenu->addAction(mActionWindowShaderLibrary);
 
     QMenu * helpMenu = menuBar()->addMenu(tr("&Help"));
@@ -413,7 +418,11 @@ void Editor::CreateDockWidgets()
     //mConsoleDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
     addDockWidget(Qt::BottomDockWidgetArea, mConsoleDockWidget);
 
-    mShaderLibraryWidget = new ShaderLibraryWidget(this);
+    mShaderEditorWidget = new ShaderEditorWidget(this);
+    addDockWidget(Qt::BottomDockWidgetArea, mShaderEditorWidget);
+    mShaderEditorWidget->setFloating(true);
+
+    mShaderLibraryWidget = new ShaderLibraryWidget(this, mShaderEditorWidget);
     // ** do not add the shader library as default, instead hide it **
     addDockWidget(Qt::RightDockWidgetArea, mShaderLibraryWidget);        
     mShaderLibraryWidget->setFloating(true);
@@ -594,6 +603,13 @@ void Editor::OpenHistoryWindow()
 void Editor::OpenConsoleWindow()
 {
     mConsoleDockWidget->show();
+}
+
+//----------------------------------------------------------------------------------------
+
+void Editor::OpenShaderEditorWindow()
+{
+    mShaderEditorWidget->show();
 }
 
 //----------------------------------------------------------------------------------------

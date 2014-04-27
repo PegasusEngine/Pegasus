@@ -12,7 +12,7 @@
 #ifndef EDITOR_SHADEREDITORWIDGET_H
 #define EDITOR_SHADEREDITORWIDGET_H
 
-#include <QWidget>
+#include <QDockWidget>
 
 namespace Pegasus {
     namespace Shader {
@@ -25,10 +25,11 @@ class QTabWidget;
 class QSyntaxHighlighter;
 class QSignalMapper;
 class QMutex;
+class QAction;
 class ShaderTextEditorWidget;
 
 //! Graphics Widget meant for shader text editing
-class ShaderEditorWidget : public QWidget
+class ShaderEditorWidget : public QDockWidget
 {
     Q_OBJECT
 
@@ -81,6 +82,9 @@ private slots:
     //! \param the shader pointer
     void SignalCompilationBegin(void* shader);
 
+    //! signal triggered when pin icon is pressed in the toolbar
+    void SignalPinActionTriggered(); 
+
 private:
 
     //! request a syntax highlight update for a particular line
@@ -108,6 +112,10 @@ private:
         QWidget   * mWidgetPool[MAX_TEXT_TABS]; //! pool of widgets for tabs
         ShaderTextEditorWidget * mTextEditPool[MAX_TEXT_TABS]; //! pool of text editor tabs
     } mUi;
+    //! toolbar actions
+    QIcon mPinIcon;
+    QIcon mUnpinIcon;
+    QAction * mPinAction;
 
     int mTabCount; //! count of tabs
 
@@ -119,6 +127,7 @@ private:
     QMutex * mCompilationRequestMutex;
 
     bool mInternalBlockTextUpdated;
+
     
     
 };

@@ -16,5 +16,11 @@
         <file>TimelineToolbar/Pause16.png</file>
         <file>SettingsDialog/Console.png</file>
         <file>SettingsDialog/ShaderEditor.png</file>
+        <file>ShaderEditor/pin.png</file>
+        <file>ShaderEditor/unpin.png</file>
+        <file>ShaderEditor/horizontal.png</file>
+        <file>ShaderEditor/save.png</file>
+        <file>ShaderEditor/vertical.png</file>
+        <file>ShaderEditor/single.png</file>
     </qresource>
 </RCC>
