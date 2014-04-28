@@ -25,6 +25,7 @@
 #include <QPushButton>
 #include <QRegExp>
 #include <QTextCharFormat>
+#include <QFontMetrics>
 #include <QSignalMapper>
 #include <QMutex>
 #include <QSet>
@@ -74,6 +75,8 @@ void ShaderEditorWidget::SetupUi()
     mUnpinIcon.addFile(tr(":/ShaderEditor/unpin.png"));
     mPinAction = toolBar->addAction(mUnpinIcon, tr(UNDOCKABLE_DESC));
 
+    toolBar->setIconSize(QSize(16,16));
+
     connect(mPinAction, SIGNAL(triggered(bool)),
             this, SLOT(SignalPinActionTriggered()));
 
@@ -96,7 +99,6 @@ void ShaderEditorWidget::SetupUi()
     {
         mUi.mWidgetPool[i] = new QWidget();
         mUi.mTextEditPool[i] = new ShaderTextEditorWidget();
-        mUi.mTextEditPool[i]->setFontFamily(QString("Courier"));
 
         connect(mUi.mTextEditPool[i], SIGNAL(textChanged()),
                 mShaderEditorSignalMapper, SLOT(map()));
@@ -224,15 +226,29 @@ int ShaderEditorWidget::FindIndex(ShaderTextEditorWidget * target)
     return -1;
 }
 
+void ShaderEditorWidget::SynchronizeTextEditWidgetSyntaxStyle(int i)
+{
+    QPalette p = mUi.mTextEditPool[i]->palette();
+    p.setColor(QPalette::Base, Editor::GetInstance().GetSettings()->GetShaderSyntaxColor(Settings::SYNTAX_BACKGROUND));
+    p.setColor(QPalette::Text, Editor::GetInstance().GetSettings()->GetShaderSyntaxColor(Settings::SYNTAX_NORMAL_TEXT));
+    int fontSize = Editor::GetInstance().GetSettings()->GetShaderEditorFontSize();
+    int tabStop  = Editor::GetInstance().GetSettings()->GetShaderEditorTabSize();
+    QFont f("Courier");
+    f.setPointSize(fontSize);
+    
+    QFontMetrics metrics(f);
+
+    mUi.mTextEditPool[i]->setFont(f);
+    mUi.mTextEditPool[i]->setPalette(p);
+    mUi.mTextEditPool[i]->setTabStopWidth(tabStop * metrics.width(' '));
+    mUi.mTextEditPool[i]->UpdateAllDocumentSyntax();
+}
+
 void ShaderEditorWidget::OnSettingsChanged()
 {
     for (int i = 0; i < mTabCount; ++i)
     {
-        mUi.mTextEditPool[i]->UpdateAllDocumentSyntax();
-        QPalette p = mUi.mTextEditPool[i]->palette();
-        p.setColor(QPalette::Base, Editor::GetInstance().GetSettings()->GetShaderSyntaxColor(Settings::SYNTAX_BACKGROUND));
-        p.setColor(QPalette::Text, Editor::GetInstance().GetSettings()->GetShaderSyntaxColor(Settings::SYNTAX_NORMAL_TEXT));
-        mUi.mTextEditPool[i]->setPalette(p);
+        SynchronizeTextEditWidgetSyntaxStyle(i);
     }
 }
 
@@ -306,11 +322,7 @@ void ShaderEditorWidget::RequestOpen(Pegasus::Shader::IShaderProxy * shaderProxy
             currentTabIndex = mUi.mTabWidget->count() - 1;            
 
             mUi.mTextEditPool[currentTabIndex]->Initialize(shaderProxy);
-    
-            QPalette p = mUi.mTextEditPool[currentTabIndex]->palette();
-            p.setColor(QPalette::Base, Editor::GetInstance().GetSettings()->GetShaderSyntaxColor(Settings::SYNTAX_BACKGROUND));
-            p.setColor(QPalette::Text, Editor::GetInstance().GetSettings()->GetShaderSyntaxColor(Settings::SYNTAX_NORMAL_TEXT));
-            mUi.mTextEditPool[currentTabIndex]->setPalette(p);
+            SynchronizeTextEditWidgetSyntaxStyle(currentTabIndex); 
             mTabCount++;
         }
         mUi.mTabWidget->setCurrentIndex(currentTabIndex); 

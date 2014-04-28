@@ -115,6 +115,22 @@ public:
     //! \return the syntax style to get the color from
     const QColor& GetShaderSyntaxColor(ShaderEditorSyntaxStyle style) const { return mShaderEditorColorStyles[style]; }
 
+    //! Returns the font size of the shader editor font
+    //! \return the font size
+    int GetShaderEditorFontSize() const { return mShaderEditorFontSize; }
+
+    //! Returns the tab size of the shader editor
+    //! \return the tab size
+    int GetShaderEditorTabSize()  const { return mShaderEditorTabSize; }
+
+    //! sets the editor font size and emits UI update event
+    //! \param the new font size
+    void SetShaderEditorFontSize(int newFontSize);
+
+    //! sets the editor tab size and emits UI update event
+    //! \param the new tab size
+    void SetShaderEditorTabSize(int newTabSize);
+
 
 
 public slots:
@@ -221,6 +237,11 @@ private:
     //! list of colors for syntax highlight
     QColor mShaderEditorColorStyles[SYNTAX_COUNT];
 
+    //! font size for shader editor
+    int mShaderEditorFontSize;
+
+    //! tab size for shader editor
+    int mShaderEditorTabSize;
 
     //------------------------------------------------------------------------------------
 

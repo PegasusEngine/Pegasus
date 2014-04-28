@@ -152,10 +152,14 @@ void Settings::Load()
                             sDefaultSyntaxHighlightColors[i]).value<QColor>()
                 );
             } 
+
+            SetShaderEditorFontSize( settings.value("ShaderEditorFontSize", 11).toInt() );
+            SetShaderEditorTabSize( settings.value("ShaderEditorTabSize", 4).toInt() );
+            
         }
         settings.endGroup();    // ConsoleTextColor
 
-    }
+     }
     settings.endGroup();    // Appearance
 }
 
@@ -223,6 +227,8 @@ void Settings::Save()
                       GetShaderSyntaxColor(static_cast<Settings::ShaderEditorSyntaxStyle>(i))
                 );
             } 
+            settings.setValue("ShaderEditorFontSize", GetShaderEditorFontSize());
+            settings.setValue("ShaderEditorTabSize", GetShaderEditorTabSize());
         }
         settings.endGroup();    // ConsoleTextColor
     }
@@ -349,6 +355,24 @@ void Settings::SetShaderEditorColor(ShaderEditorSyntaxStyle style, const QColor&
     mShaderEditorColorStyles[style] = color;
     
     emit(OnShaderEditorStyleChanged());
+}
+
+//----------------------------------------------------------------------------------------
+
+void Settings::SetShaderEditorFontSize(int newFontSize)
+{
+    ED_LOG("Setting shader editor font size");
+    mShaderEditorFontSize = newFontSize;
+    emit (OnShaderEditorStyleChanged());
+}
+
+//----------------------------------------------------------------------------------------
+
+void Settings::SetShaderEditorTabSize(int newTabSize)
+{
+    ED_LOG("Setting shader editor tab size");
+    mShaderEditorTabSize = newTabSize;
+    emit (OnShaderEditorStyleChanged());
 }
 
 //----------------------------------------------------------------------------------------

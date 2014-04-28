@@ -104,6 +104,9 @@ private:
     //! finds the index of a particular text edit
     int  FindIndex(ShaderTextEditorWidget * target);
 
+    //! Updates the syntax and style of a specific textedit widget
+    void SynchronizeTextEditWidgetSyntaxStyle(int i);
+
     //! ui component pool
     struct Ui
     {
