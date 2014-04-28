@@ -101,16 +101,49 @@ void Settings::Load()
         mUseTimelineAntialiasing = false;
         SetUseTimelineAntialiasing(settings.value("UseTimelineAntialiasing",
                                                   mUseTimelineAntialiasing).toBool());
+    }
+    settings.endGroup();    // Appearance
 
+    settings.beginGroup("Console");
+    {
         // Console colors
         mConsoleBackgroundColor = GetConsoleDefaultBackgroundColor();
         mConsoleTextDefaultColor = GetConsoleDefaultTextDefaultColor();
-        SetConsoleBackgroundColor(settings.value("ConsoleBackgroundColor",
+        SetConsoleBackgroundColor(settings.value("BackgroundColor",
                                                  mConsoleBackgroundColor).value<QColor>());
-        SetConsoleTextDefaultColor(settings.value("ConsoleTextDefaultColor",
+        SetConsoleTextDefaultColor(settings.value("TextDefaultColor",
                                                   mConsoleTextDefaultColor).value<QColor>());
 
-        settings.beginGroup("ConsoleTextColor");
+        settings.beginGroup("ChannelFilters");
+        {
+            // Filtering states for the log channels
+            mLogChannelFilterTable.clear();
+            const QStringList loadedChannelNames = settings.allKeys();
+            if (loadedChannelNames.count() == 0)
+            {
+                // If no key has been found, consider that no setting has been set
+                // and use the default values for some of the keys
+                SetDefaultConsoleFilterStateForAllLogChannels();
+            }
+            else
+            {
+                // If keys have been found, apply them
+                for (QStringList::const_iterator channelName = loadedChannelNames.constBegin();
+                     channelName != loadedChannelNames.constEnd();
+                     ++channelName)
+                {
+                    const Pegasus::Core::LogChannel logChannel = ConvertStringToLogChannel(*channelName);
+                    if (logChannel != INVALID_LOG_CHANNEL)
+                    {
+                        // No need to read the key value, the presence of a key means channel disabled
+                        mLogChannelFilterTable[logChannel] = false;
+                    }
+                }
+            }
+        }
+        settings.endGroup();    // ChannelFilters
+
+        settings.beginGroup("ChannelColors");
         {
             // Console colors for the log channels
             mLogChannelColorTable.clear();
@@ -137,30 +170,32 @@ void Settings::Load()
                 }
             }
         }
-        settings.endGroup();    // ConsoleTextColor
+        settings.endGroup();    // ChannelColors
+    }
+    settings.endGroup();    // Console
 
-        settings.beginGroup("ShaderEditorSyntaxColor");
+    settings.beginGroup("ShaderEditor");
+    {
+        settings.beginGroup("SyntaxColors");
         {
             char syntaxColorStrName[256];
             for (unsigned i = 0; i < Settings::SYNTAX_COUNT; ++i)
             {
-                sprintf_s(syntaxColorStrName, "syntaxcol_%d", i);
+                sprintf_s(syntaxColorStrName, "SyntaxCol%d", i);
                 SetShaderEditorColor(
                         static_cast<Settings::ShaderEditorSyntaxStyle>(i), 
                         settings.value(
                             syntaxColorStrName,
                             sDefaultSyntaxHighlightColors[i]).value<QColor>()
                 );
-            } 
-
-            SetShaderEditorFontSize( settings.value("ShaderEditorFontSize", 11).toInt() );
-            SetShaderEditorTabSize( settings.value("ShaderEditorTabSize", 4).toInt() );
-            
+            }
         }
-        settings.endGroup();    // ConsoleTextColor
+        settings.endGroup();    // SyntaxColors
 
+        SetShaderEditorFontSize( settings.value("FontSize", 11).toInt() );
+        SetShaderEditorTabSize( settings.value("TabSize", 4).toInt() );
      }
-    settings.endGroup();    // Appearance
+    settings.endGroup();    // ShaderEditor
 }
 
 //----------------------------------------------------------------------------------------
@@ -190,12 +225,37 @@ void Settings::Save()
 
         // Timeline graphics view antialiasing
         settings.setValue("UseTimelineAntialiasing", mUseTimelineAntialiasing);
+    }
+    settings.endGroup();    // Appearance
 
+    settings.beginGroup("Console");
+    {
         // Console colors
-        settings.setValue("ConsoleBackgroundColor", mConsoleBackgroundColor);
-        settings.setValue("ConsoleTextDefaultColor", mConsoleTextDefaultColor);
+        settings.setValue("BackgroundColor", mConsoleBackgroundColor);
+        settings.setValue("TextDefaultColor", mConsoleTextDefaultColor);
 
-        settings.beginGroup("ConsoleTextColor");
+        settings.beginGroup("ChannelFilters");
+        {
+            // Console log channel filtering states
+            // (delete the old keys and write only the ones that are disabled)
+            settings.remove("");
+            QMap<Pegasus::Core::LogChannel, bool>::const_iterator channel;
+            for (channel = mLogChannelFilterTable.constBegin(); channel != mLogChannelFilterTable.constEnd(); ++channel)
+            {
+                const QString channelName(ConvertLogChannelToString(channel.key()));
+                if (channelName.length() == 4)
+                {
+                    settings.setValue(channelName, false);
+                }
+                else
+                {
+                    ED_FAILSTR("Invalid Pegasus log channel name (%s), it must be 4 characters long.", channelName.toLatin1().constData());
+                }
+            }
+        }
+        settings.endGroup();    // ChannelFilters
+
+        settings.beginGroup("ChannelColors");
         {
             // Console log channel colors
             // (delete the old keys and write only the ones that are not using the default color)
@@ -214,30 +274,56 @@ void Settings::Save()
                 }
             }
         }
-        settings.endGroup();    // ConsoleTextColor
+        settings.endGroup();    // ChannelColors
+    }
+    settings.endGroup();    // Console
 
-        settings.beginGroup("ShaderEditorSyntaxColor");
+    settings.beginGroup("ShaderEditor");
+    {
+        settings.beginGroup("SyntaxColors");
         {
-            char syntaxColorStrName[256];
+            static char syntaxColorStrName[256];
             for (unsigned i = 0; i < Settings::SYNTAX_COUNT; ++i)
             {
-                sprintf_s(syntaxColorStrName, "syntaxcol_%d", i);
+                sprintf_s(syntaxColorStrName, "SyntaxCol%d", i);
                 settings.setValue(
                       syntaxColorStrName,
                       GetShaderSyntaxColor(static_cast<Settings::ShaderEditorSyntaxStyle>(i))
                 );
             } 
-            settings.setValue("ShaderEditorFontSize", GetShaderEditorFontSize());
-            settings.setValue("ShaderEditorTabSize", GetShaderEditorTabSize());
         }
-        settings.endGroup();    // ConsoleTextColor
+        settings.endGroup();    // SyntaxColors
+
+        settings.setValue("FontSize", GetShaderEditorFontSize());
+        settings.setValue("TabSize", GetShaderEditorTabSize());
     }
-    settings.endGroup();    // Appearance
+    settings.endGroup();    // ShaderEditor
 }
 
 //----------------------------------------------------------------------------------------
 
-const QColor Settings::GetConsoleTextColorForLogChannel(Pegasus::Core::LogChannel logChannel) const
+bool Settings::GetConsoleFilterStateForLogChannel(Pegasus::Core::LogChannel logChannel) const
+{
+    if (mLogChannelFilterTable.contains(logChannel))
+    {
+        return mLogChannelFilterTable[logChannel];
+    }
+    else
+    {
+        return true;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+bool Settings::IsConsoleFilterStateDefinedForLogChannel(Pegasus::Core::LogChannel logChannel) const
+{
+    return mLogChannelFilterTable.contains(logChannel);
+}
+
+//----------------------------------------------------------------------------------------
+
+QColor Settings::GetConsoleTextColorForLogChannel(Pegasus::Core::LogChannel logChannel) const
 {
     if (mLogChannelColorTable.contains(logChannel))
     {
@@ -254,6 +340,34 @@ const QColor Settings::GetConsoleTextColorForLogChannel(Pegasus::Core::LogChanne
 bool Settings::IsConsoleTextColorDefinedForLogChannel(Pegasus::Core::LogChannel logChannel) const
 {
     return mLogChannelColorTable.contains(logChannel);
+}
+
+//----------------------------------------------------------------------------------------
+
+void Settings::SetShaderEditorColor(ShaderEditorSyntaxStyle style, const QColor& color)
+{
+    ED_LOG("Setting syntax highlight color");
+    mShaderEditorColorStyles[style] = color;
+    
+    emit(OnShaderEditorStyleChanged());
+}
+
+//----------------------------------------------------------------------------------------
+
+void Settings::SetShaderEditorFontSize(int newFontSize)
+{
+    ED_LOG("Setting shader editor font size");
+    mShaderEditorFontSize = newFontSize;
+    emit (OnShaderEditorStyleChanged());
+}
+
+//----------------------------------------------------------------------------------------
+
+void Settings::SetShaderEditorTabSize(int newTabSize)
+{
+    ED_LOG("Setting shader editor tab size");
+    mShaderEditorTabSize = newTabSize;
+    emit (OnShaderEditorStyleChanged());
 }
 
 //----------------------------------------------------------------------------------------
@@ -338,6 +452,35 @@ void Settings::SetConsoleTextDefaultColor(const QColor & color)
 
 //----------------------------------------------------------------------------------------
 
+void Settings::SetConsoleFilterStateForLogChannel(Pegasus::Core::LogChannel logChannel, bool state)
+{
+    ED_LOG("Setting the console filtering state for the log channel [%s]",
+           ConvertLogChannelToString(logChannel).toLatin1().constData());
+
+    if (state)
+    {
+        mLogChannelFilterTable.remove(logChannel);
+    }
+    else
+    {
+        mLogChannelFilterTable[logChannel] = false;
+    }
+
+    Editor::GetInstance().GetConsoleDockWidget()->SetFilterStateForLogChannel(logChannel, state);
+}
+
+//----------------------------------------------------------------------------------------
+
+void Settings::SetDefaultConsoleFilterStateForAllLogChannels()
+{
+    ED_LOG("Setting the default filter state for all log channels");
+
+    // Set all filter states to enabled
+    mLogChannelFilterTable.clear();
+}
+
+//----------------------------------------------------------------------------------------
+
 void Settings::SetConsoleTextColorForLogChannel(Pegasus::Core::LogChannel logChannel, const QColor & color)
 {
     ED_LOG("Setting the console text color for the log channel [%s]",
@@ -345,34 +488,6 @@ void Settings::SetConsoleTextColorForLogChannel(Pegasus::Core::LogChannel logCha
 
     mLogChannelColorTable[logChannel] = color;    
     Editor::GetInstance().GetConsoleDockWidget()->SetTextColorForLogChannel(logChannel, color);
-}
-
-//----------------------------------------------------------------------------------------
-
-void Settings::SetShaderEditorColor(ShaderEditorSyntaxStyle style, const QColor& color)
-{
-    ED_LOG("Setting syntax highlight color");
-    mShaderEditorColorStyles[style] = color;
-    
-    emit(OnShaderEditorStyleChanged());
-}
-
-//----------------------------------------------------------------------------------------
-
-void Settings::SetShaderEditorFontSize(int newFontSize)
-{
-    ED_LOG("Setting shader editor font size");
-    mShaderEditorFontSize = newFontSize;
-    emit (OnShaderEditorStyleChanged());
-}
-
-//----------------------------------------------------------------------------------------
-
-void Settings::SetShaderEditorTabSize(int newTabSize)
-{
-    ED_LOG("Setting shader editor tab size");
-    mShaderEditorTabSize = newTabSize;
-    emit (OnShaderEditorStyleChanged());
 }
 
 //----------------------------------------------------------------------------------------

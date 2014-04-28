@@ -65,6 +65,17 @@ QVariant ConsoleChannelColorTableModel::data(const QModelIndex & index, int role
             return QVariant();
         }
     }
+    else if (role == Qt::CheckStateRole)
+    {
+        if (index.column() == CHANNELNAME_COLUMN_INDEX)
+        {
+            // Set the check box for the filtering state of the log channel color from the settings
+            const Settings * const settings = Editor::GetSettings();
+            const Pegasus::Core::LogChannel logChannel = Pegasus::Core::sLogChannels[index.row()];
+
+            return settings->GetConsoleFilterStateForLogChannel(logChannel) ? Qt::Checked : Qt::Unchecked;
+        }
+    }
     else if (role == Qt::BackgroundRole)
     {
         if (index.column() == COLOR_COLUMN_INDEX)
@@ -86,17 +97,33 @@ bool ConsoleChannelColorTableModel::setData(const QModelIndex & index,
 											const QVariant & value,
                                             int role)
 {
-	if (index.isValid() && (index.column() == COLOR_COLUMN_INDEX) && (role == Qt::EditRole))
+	if (index.isValid())
     {
-        // Set the log channel color (add it if it was using the default color)
-        Settings * const settings = Editor::GetSettings();
-        const Pegasus::Core::LogChannel logChannel = Pegasus::Core::sLogChannels[index.row()];
-        settings->SetConsoleTextColorForLogChannel(logChannel, value.value<QColor>());
+        if ((index.column() == CHANNELNAME_COLUMN_INDEX) && (role == Qt::CheckStateRole))
+        {
+            // Set the log channel filtering state
+            Settings * const settings = Editor::GetSettings();
+            const Pegasus::Core::LogChannel logChannel = Pegasus::Core::sLogChannels[index.row()];
+            const bool isEnabled = (static_cast<Qt::CheckState>(value.toInt()) == Qt::Checked);
+            settings->SetConsoleFilterStateForLogChannel(logChannel, isEnabled);
 
-        // Emit the dataChanged() signal, required by Qt
-        emit(dataChanged(index, index));
+            // Emit the dataChanged() signal, required by Qt
+            emit(dataChanged(index, index));
 
-    	return true;
+    	    return true;
+        }
+        else if ((index.column() == COLOR_COLUMN_INDEX) && (role == Qt::EditRole))
+        {
+            // Set the log channel color (add it if it was using the default color)
+            Settings * const settings = Editor::GetSettings();
+            const Pegasus::Core::LogChannel logChannel = Pegasus::Core::sLogChannels[index.row()];
+            settings->SetConsoleTextColorForLogChannel(logChannel, value.value<QColor>());
+
+            // Emit the dataChanged() signal, required by Qt
+            emit(dataChanged(index, index));
+
+    	    return true;
+        }
     }
 
     return false;
@@ -106,10 +133,18 @@ bool ConsoleChannelColorTableModel::setData(const QModelIndex & index,
 
 Qt::ItemFlags ConsoleChannelColorTableModel::flags(const QModelIndex & index) const
 {
-	if (index.isValid() && (index.column() == COLOR_COLUMN_INDEX))
+	if (index.isValid())
     {
-        // Color cells are editable
-        return Qt::ItemIsEnabled | Qt::ItemIsEditable;
+        if (index.column() == CHANNELNAME_COLUMN_INDEX)
+        {
+            // Channel name cell is non-editable, but it contains a checkbox
+            return Qt::ItemIsEnabled | Qt::ItemIsUserCheckable;
+        }
+        else if (index.column() == COLOR_COLUMN_INDEX)
+        {
+            // Color cells are editable
+            return Qt::ItemIsEnabled | Qt::ItemIsEditable;
+        }
     }
 
     return Qt::ItemIsEnabled;

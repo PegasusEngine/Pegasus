@@ -22,7 +22,7 @@
 #include "Widgets/ColorPickerBox.h"
 
 const int gShaderFontSizes[] = {
-    8, 11, 12, 13, 14, 18, 22, 24, 32
+    8, 9, 10, 11, 12, 13, 14, 18, 22, 24, 32
 };
 
 const int gShaderTabSizes[] = {

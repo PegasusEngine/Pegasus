@@ -128,11 +128,16 @@ void ConsoleDockWidget::AddMessage(Pegasus::Core::LogChannel logChannel, const Q
 {
 	ED_ASSERT(mTextWidget != nullptr);
 
+    // Filter the message out if requested by the settings
+    const Settings * const settings = Editor::GetSettings();
+    if ((settings != nullptr) && (settings->GetConsoleFilterStateForLogChannel(logChannel) == false))
+    {
+        return;
+    }
+
     static const QString htmlString1("<p style=\"color:");
     static const QString htmlString2("\">");
     static const QString htmlString3("</p>");
-
-    const Settings * const settings = Editor::GetSettings();
 
     // Get the current time and convert it into a string
     QString timeString(QTime::currentTime().toString("hh:mm:ss:zzz "));
@@ -199,6 +204,19 @@ void ConsoleDockWidget::SetTextDefaultColor(const QColor & color)
     // No need to go through the text blocks.
     // No HTML tag is used when the default color is used, so the color changes
     // automatically without user interaction
+}
+
+//----------------------------------------------------------------------------------------
+
+void ConsoleDockWidget::SetFilterStateForLogChannel(Pegasus::Core::LogChannel logChannel, bool state)
+{
+    if (logChannel == Settings::INVALID_LOG_CHANNEL)
+    {
+        ED_FAILSTR("Invalid log channel (%d). It must be defined in Pegasus.", logChannel);
+        return;
+    }
+
+    // No specific action to take, the filtering occurs when a log message is posted
 }
 
 //----------------------------------------------------------------------------------------

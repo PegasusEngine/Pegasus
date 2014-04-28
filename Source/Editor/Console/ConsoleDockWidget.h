@@ -46,11 +46,17 @@ public:
     //! \param color Default text color of the text area
     void SetTextDefaultColor(const QColor & color);
 
+    //! Set the filtering state associated with a log channel
+    //! \param logChannel Pegasus log channel to set the filtering state of
+    //! \param state New filtering state associated with the log channel (true for enabled)
+    void SetFilterStateForLogChannel(Pegasus::Core::LogChannel logChannel, bool state);
+
     //! Set the color associated with a log channel
     //! \note If the log channel was associated with the default text color,
     //!       it starts using the custom color. If the color already existed,
     //!       it is replaced.
     //! \param logChannel Pegasus log channel to set the color of
+    //! \param color New color associated with the log channel
     void SetTextColorForLogChannel(Pegasus::Core::LogChannel logChannel, const QColor & color);
 
     //------------------------------------------------------------------------------------

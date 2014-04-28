@@ -88,6 +88,9 @@ public:
     //! \return True if the timeline graphics view uses antialiasing
     inline bool IsUsingTimelineAntialiasing() const { return mUseTimelineAntialiasing; }
 
+
+    // Console settings
+
     //! Get the background color of the console
     //! \return Background color of the console
     inline const QColor & GetConsoleBackgroundColor() const { return mConsoleBackgroundColor; }
@@ -96,18 +99,31 @@ public:
     //! \return Default text color of the console
     inline const QColor & GetConsoleTextDefaultColor() const { return mConsoleTextDefaultColor; }
 
+    //! Get the filtering state associated with a log channel, enabled if not found
+    //! \param logChannel Pegasus log channel to get the filtering state of
+    //! \return Filtering state associated with the log channel (false if channel disabled),
+    //!         true if not found
+    bool GetConsoleFilterStateForLogChannel(Pegasus::Core::LogChannel logChannel) const;
+
+    //! Test if a console log channel has an associated filter state
+    //! \param logChannel Pegasus log channel to test
+    bool IsConsoleFilterStateDefinedForLogChannel(Pegasus::Core::LogChannel logChannel) const;
+
     //! Get the color associated with a log channel, default text color if not found
     //! \param logChannel Pegasus log channel to get the color of
     //! \return Color associated with the log channel, default text color if not found
     //!         (not a reference since it seems to not work well with the internal QMap)
-    const QColor GetConsoleTextColorForLogChannel(Pegasus::Core::LogChannel logChannel) const;
+    QColor GetConsoleTextColorForLogChannel(Pegasus::Core::LogChannel logChannel) const;
 
     //! Test if a console log channel has an associated color
     //! \param logChannel Pegasus log channel to test
     bool IsConsoleTextColorDefinedForLogChannel(Pegasus::Core::LogChannel logChannel) const;
 
+
+    // Shader editor settings
+
     //! Set shader editor style color
-    //! \param style the sytnax to set for a particular color
+    //! \param style the syntax to set for a particular color
     //! \param color the color
     void SetShaderEditorColor(ShaderEditorSyntaxStyle style, const QColor& color);
 
@@ -157,6 +173,14 @@ public slots:
     //! Set the default text color of the console
     //! \param color Default text color of the console
     void SetConsoleTextDefaultColor(const QColor & color);
+
+    //! Set the filtering state associated with a log channel
+    //! \param logChannel Pegasus log channel to set the filtering state of
+    //! \param state True to enable the channel, false otherwise
+    void SetConsoleFilterStateForLogChannel(Pegasus::Core::LogChannel logChannel, bool state);
+
+    //! Set the default filter state associated with all log channels
+    void SetDefaultConsoleFilterStateForAllLogChannels();
 
     //! Set the color associated with a log channel
     //! \note If the log channel was associated with the default text color,
@@ -228,7 +252,12 @@ private:
     //! Default text color of the console
     QColor mConsoleTextDefaultColor;
 
+    typedef QMap<Pegasus::Core::LogChannel, bool> LogChannelFilterTable;
     typedef QMap<Pegasus::Core::LogChannel, QColor> LogChannelColorTable;
+
+    //! Conversion table between a log channel and an associated filtering state
+    //! (contains only the channels that are disabled)
+    LogChannelFilterTable mLogChannelFilterTable;
 
     //! Conversion table between a log channel and an associated color
     //! (contains only the channels that are overridden, not the ones using the text default color)

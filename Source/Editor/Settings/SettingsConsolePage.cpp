@@ -63,9 +63,13 @@ SettingsConsolePage::SettingsConsolePage(QWidget *parent)
     QGroupBox * consoleChannelColorGroup = new QGroupBox(tr("Log channel colors"));
     mColorTableView = new ConsoleChannelColorTableView;
     QPushButton * colorTableResetAllButton = new QPushButton(tr("Set all to default"));
+    QLabel * colorTableInfoLabel = new QLabel(tr("Unchecking a channel disables its update in the console."));
+    colorTableInfoLabel->setFixedWidth(100);
+    colorTableInfoLabel->setWordWrap(true);
 
     QVBoxLayout * consoleChannelColorVLayout = new QVBoxLayout();
     consoleChannelColorVLayout->addWidget(colorTableResetAllButton);
+    consoleChannelColorVLayout->addWidget(colorTableInfoLabel);
     consoleChannelColorVLayout->addStretch(1);
 
     QHBoxLayout * consoleChannelColorHLayout = new QHBoxLayout();
