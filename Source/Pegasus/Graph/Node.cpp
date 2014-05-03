@@ -21,7 +21,8 @@ Node::Node(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocato
 :   mNodeAllocator(nodeAllocator),
     mNodeDataAllocator(nodeDataAllocator),
     mRefCount(0),
-    mNumInputs(0)
+    mNumInputs(0),
+    mPropertyGrid()
 {
     PG_ASSERTSTR(nodeAllocator != nullptr, "Invalid node allocator given to a Node");
     PG_ASSERTSTR(nodeDataAllocator != nullptr, "Invalid node data allocator given to a Node");
@@ -36,6 +37,29 @@ Node::Node(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocato
     //strlcat(mDOTDescription, mName, MAX_DOT_DESCRIPTION_LENGTH);
     //strlcat(mDOTDescription, "\"", MAX_DOT_DESCRIPTION_LENGTH);
 #endif  // PEGASUS_ENABLE_PROXIES
+}
+
+//----------------------------------------------------------------------------------------
+
+Node::~Node()
+{
+    //! \todo Use the actual integer part of the atomic int in the assert message
+    PG_ASSERTSTR(mRefCount == 0, "Trying to destroy a Node that still has owners (mRefCount == %d)", mRefCount);
+
+    // Release all inputs
+    if (mNumInputs > 0)
+    {
+        RemoveAllInputs();
+    }
+
+    // Destroy the node data if present
+    ReleaseData();
+}
+
+//----------------------------------------------------------------------------------------
+
+void Node::InitProperties()
+{
 }
 
 //----------------------------------------------------------------------------------------
@@ -125,23 +149,6 @@ void Node::SetName(const char * name)
     }
 }
 #endif  // PEGASUS_ENABLE_PROXIES
-
-//----------------------------------------------------------------------------------------
-
-Node::~Node()
-{
-    //! \todo Use the actual integer part of the atomic int in the assert message
-    PG_ASSERTSTR(mRefCount == 0, "Trying to destroy a Node that still has owners (mRefCount == %d)", mRefCount);
-
-    // Release all inputs
-    if (mNumInputs > 0)
-    {
-        RemoveAllInputs();
-    }
-
-    // Destroy the node data if present
-    ReleaseData();
-}
 
 //----------------------------------------------------------------------------------------
 

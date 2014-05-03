@@ -13,6 +13,7 @@
 #define PEGASUS_GRAPH_NODE_H
 
 #include "Pegasus/Graph/NodeData.h"
+#include "Pegasus/PropertyGrid/PropertyGrid.h"
 #include "Pegasus/Core/Ref.h"
 
 namespace Pegasus {
@@ -33,6 +34,10 @@ public:
 
     //! Destructor
     virtual ~Node();
+
+    //! Initialize the property grid of the node
+    //! \note Empty by default, needs to be overridden by nodes that define properties
+    virtual void InitProperties();
 
 
     //! Append a node to the list of input nodes
@@ -190,6 +195,15 @@ protected:
     inline int GetRefCount() const { return mRefCount; }
 
 
+    //! Get the property grid
+    //! \return Reference to the property grid
+    inline const PropertyGrid::PropertyGrid & GetPropertyGrid() const { return mPropertyGrid; }
+
+    //! Get the property grid
+    //! \return Reference to the property grid
+    inline PropertyGrid::PropertyGrid & GetPropertyGrid() { return mPropertyGrid; }
+
+
 #if PEGASUS_ENABLE_PROXIES
 
     //! Return the DOT representation of the node
@@ -234,6 +248,9 @@ private:
 
     //! Data node, used to store optional intermediate node data
     NodeDataRef mData;
+
+    //! Property grid, defining the set of editable properties
+    PropertyGrid::PropertyGrid mPropertyGrid;
 
 #if PEGASUS_ENABLE_PROXIES
 

@@ -70,18 +70,18 @@ Color8RGB
 
     Color8RGB(ColorRGBIn c)               //!< Constructor that converts float numbers (clamps between 0.0 and 1.0)
         {
-            const ColorRGB c = Floor(Clamp(c, 0.0f, 1.0f) * 255.0f);
-            red   = (PUInt8)c.red;
-            green = (PUInt8)c.green;
-            blue  = (PUInt8)c.blue;
+            const ColorRGB cf = Floor(Clamp(c, 0.0f, 1.0f) * 255.0f);
+            red   = (PUInt8)cf.red;
+            green = (PUInt8)cf.green;
+            blue  = (PUInt8)cf.blue;
         }
 
     Color8RGB(ColorRGBAIn c)              //!< Constructor that converts float numbers (clamps between 0.0 and 1.0)
         {
-            const ColorRGBA c = Floor(Clamp(c, 0.0f, 1.0f) * 255.0f);
-            red   = (PUInt8)c.red;
-            green = (PUInt8)c.green;
-            blue  = (PUInt8)c.blue;
+            const ColorRGBA cf = Floor(Clamp(c, 0.0f, 1.0f) * 255.0f);
+            red   = (PUInt8)cf.red;
+            green = (PUInt8)cf.green;
+            blue  = (PUInt8)cf.blue;
         }
 
     //Color8RGB(const ColorRGBA & c)              //!< Constructor that converts float
@@ -107,19 +107,19 @@ Color8RGB
 
     inline Color8RGB & operator = (ColorRGBIn c)  //!< Assignment operator with conversion
         {
-            const ColorRGB c = Floor(Clamp(c, 0.0f, 1.0f) * 255.0f);
-            red   = (PUInt8)c.red;
-            green = (PUInt8)c.green;
-            blue  = (PUInt8)c.blue;
+            const ColorRGB cf = Floor(Clamp(c, 0.0f, 1.0f) * 255.0f);
+            red   = (PUInt8)cf.red;
+            green = (PUInt8)cf.green;
+            blue  = (PUInt8)cf.blue;
             return *this;
         }
 
     inline Color8RGB & operator = (ColorRGBAIn c) //!< Assignment operator with conversion
         {
-            const ColorRGBA c = Floor(Clamp(c, 0.0f, 1.0f) * 255.0f);
-            red   = (PUInt8)c.red;
-            green = (PUInt8)c.green;
-            blue  = (PUInt8)c.blue;
+            const ColorRGBA cf = Floor(Clamp(c, 0.0f, 1.0f) * 255.0f);
+            red   = (PUInt8)cf.red;
+            green = (PUInt8)cf.green;
+            blue  = (PUInt8)cf.blue;
             return *this;
         }
 };
@@ -150,19 +150,19 @@ Color8RGBA
     Color8RGBA(ColorRGBIn c)              //!< Constructor that converts float numbers (clamps between 0.0 and 1.0) and adds the alpha component
         : alpha(255)
         {
-            ColorRGB c = Floor(Clamp(c, 0.0f, 1.0f) * 255.0f);
-            red   = (PUInt8)c.red;
-            green = (PUInt8)c.green;
-            blue  = (PUInt8)c.blue;
+            ColorRGB cf = Floor(Clamp(c, 0.0f, 1.0f) * 255.0f);
+            red   = (PUInt8)cf.red;
+            green = (PUInt8)cf.green;
+            blue  = (PUInt8)cf.blue;
         }
 
     Color8RGBA(ColorRGBAIn c)             //!< Constructor that converts float numbers (clamps between 0.0 and 1.0)
         {
-            ColorRGBA c = Floor(Clamp(c, 0.0f, 1.0f) * 255.0f);
-            red   = (PUInt8)c.red;
-            green = (PUInt8)c.green;
-            blue  = (PUInt8)c.blue;
-            alpha = (PUInt8)c.alpha;
+            ColorRGBA cf = Floor(Clamp(c, 0.0f, 1.0f) * 255.0f);
+            red   = (PUInt8)cf.red;
+            green = (PUInt8)cf.green;
+            blue  = (PUInt8)cf.blue;
+            alpha = (PUInt8)cf.alpha;
         }
 
     Color8RGBA(PUInt8 red, PUInt8 green, PUInt8 blue, PUInt8 alpha) //!< Constructor with single components
@@ -172,7 +172,7 @@ Color8RGBA
         {
             red   = c.red;
             green = c.green;
-            blue = c.blue;
+            blue  = c.blue;
             alpha = c.alpha;
             return *this;
         }
@@ -181,27 +181,27 @@ Color8RGBA
         {
             red   = c.red;
             green = c.green;
-            blue = c.blue;
+            blue  = c.blue;
             alpha = 255;
             return *this;
         }
 
     inline Color8RGBA & operator = (ColorRGBIn c)             //!< Assignment operator conversion that adds the alpha component
         {
-            const ColorRGB c = Floor(Clamp(c, 0.0f, 1.0f) * 255.0f);
-            red   = (PUInt8)c.red;
-            green = (PUInt8)c.green;
-            blue  = (PUInt8)c.blue;
+            const ColorRGB cf = Floor(Clamp(c, 0.0f, 1.0f) * 255.0f);
+            red   = (PUInt8)cf.red;
+            green = (PUInt8)cf.green;
+            blue  = (PUInt8)cf.blue;
             alpha = 255;
             return *this;                        }
 
     inline Color8RGBA & operator = (ColorRGBAIn c)            //!< Assignment operator with conversion
         {
-            const ColorRGBA c = Floor(Clamp(c, 0.0f, 1.0f) * 255.0f);
-            red   = (PUInt8)c.red;
-            green = (PUInt8)c.green;
-            blue  = (PUInt8)c.blue;
-            alpha = (PUInt8)c.alpha;
+            const ColorRGBA cf = Floor(Clamp(c, 0.0f, 1.0f) * 255.0f);
+            red   = (PUInt8)cf.red;
+            green = (PUInt8)cf.green;
+            blue  = (PUInt8)cf.blue;
+            alpha = (PUInt8)cf.alpha;
             return *this;
         }
 };

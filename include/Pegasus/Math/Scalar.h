@@ -416,9 +416,9 @@ inline const T & Min(const T * v, PUInt32 n)
     {
         PG_ASSERT(v);
         PG_ASSERT(n >= 1);
-        const T & min(v[0]);
-        for (PUInt32 i = 1; i < n; i++) { min = Min(min, v[i]); }
-        return min;
+        const T & outMin(v[0]);
+        for (PUInt32 i = 1; i < n; i++) { outMin = Min(outMin, v[i]); }
+        return outMin;
     }
 
 //! Maximum of N values (by reference)
@@ -431,9 +431,9 @@ inline const T & Max(const T * v, PUInt32 n)
     {
         PG_ASSERT(v);
         PG_ASSERT(n >= 1);
-        const T & max(v[0]);
-        for (PUInt32 i = 1; i < n; i++) { max = Max(max, v[i]); }
-        return max;
+        const T & outMax(v[0]);
+        for (PUInt32 i = 1; i < n; i++) { outMax = Max(outMax, v[i]); }
+        return outMax;
     }
 
 //----------------------------------------------------------------------------------------
