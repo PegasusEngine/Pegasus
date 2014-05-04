@@ -22,20 +22,6 @@ OutputNode::OutputNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* node
 
 //----------------------------------------------------------------------------------------
 
-void OutputNode::AddInput(NodeIn inputNode)
-{
-    // Only one input node accepted
-    if (GetNumInputs() != 0)
-    {
-        PG_FAILSTR("Output nodes are not allowed to have multiple input nodes");
-        return;
-    }
-
-    Node::AddInput(inputNode);
-}
-
-//----------------------------------------------------------------------------------------
-
 bool OutputNode::Update()
 {
     // Check that no data is allocated
@@ -76,6 +62,14 @@ NodeDataReturn OutputNode::GetUpdatedData(bool & updated)
 }
 
 //----------------------------------------------------------------------------------------
+
+NodeDataReturn OutputNode::GetUpdatedData()
+{
+    bool updated = false;
+    return GetUpdatedData(updated);
+}
+
+//----------------------------------------------------------------------------------------
     
 OutputNode::~OutputNode()
 {
@@ -94,6 +88,39 @@ NodeData * OutputNode::AllocateData() const
 void OutputNode::GenerateData()
 {
     PG_FAILSTR("Output nodes do not have data, so there is nothing to generate");
+}
+
+//----------------------------------------------------------------------------------------
+
+void OutputNode::AddInput(NodeIn inputNode)
+{
+    // Only one input node accepted
+    if (GetNumInputs() != 0)
+    {
+        PG_FAILSTR("Output nodes are not allowed to have multiple input nodes");
+        return;
+    }
+
+    Node::AddInput(inputNode);
+}
+
+//----------------------------------------------------------------------------------------
+
+void OutputNode::ReplaceInput(unsigned int index, const Pegasus::Core::Ref<Node> & inputNode)
+{
+    // An input node must be present already, and at most one can be defined
+    if (index != 0)
+    {
+        PG_FAILSTR("Only the first input node can be replaced for an output node");
+        return;
+    }
+    if (GetNumInputs() != 1)
+    {
+        PG_FAILSTR("Cannot replace the input node as it has not been added yet");
+        return;
+    }
+
+    Node::ReplaceInput(0, inputNode);
 }
 
 //----------------------------------------------------------------------------------------

@@ -62,10 +62,11 @@ void Pegasus::Shader::ShaderManagerProxy::RegisterEventListener(Pegasus::Shader:
 void Pegasus::Shader::ShaderManagerProxy::UpdateAllPrograms()
 { 
     const Pegasus::Shader::ShaderTracker * tracker = mObject->GetShaderTracker();
-    bool dummy;
+    bool updated;
     for (int i = 0; i < tracker->ProgramSize(); ++i)
     {
-        tracker->GetProgram(i)->GetUpdatedData(dummy);
+        updated = false;
+        tracker->GetProgram(i)->GetUpdatedData(updated);
     }
 }
 

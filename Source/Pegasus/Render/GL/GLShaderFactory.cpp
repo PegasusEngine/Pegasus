@@ -282,7 +282,7 @@ void GLShaderFactory::GenerateProgramGpuData (Pegasus::Shader::ProgramLinkage * 
         }
     }
 
-    bool dummy;
+    bool updated;
 
     //walk over inputs and attach new shaders
     for (unsigned i = 0; i < programNode->GetNumInputs(); ++i)
@@ -290,7 +290,8 @@ void GLShaderFactory::GenerateProgramGpuData (Pegasus::Shader::ProgramLinkage * 
         Pegasus::Shader::ShaderStageRef shaderStage = programNode->FindShaderStageInput(i);
         if (shaderStage->GetStageType() != Pegasus::Shader::SHADER_STAGE_INVALID)
         {
-            Pegasus::Graph::NodeDataRef shaderNodeDataRef = shaderStage->GetUpdatedData(dummy);
+            updated = false;
+            Pegasus::Graph::NodeDataRef shaderNodeDataRef = shaderStage->GetUpdatedData(updated);
             Pegasus::Render::OglShaderGpuData * shaderStageGpuData = GetOrAllocateShaderGpuData(mAllocator,&(*shaderNodeDataRef));
             glAttachShader(gpuData->mHandle, shaderStageGpuData->mHandle);
             shaderCachedHandles[shaderStage->GetStageType()] = shaderStageGpuData->mHandle;

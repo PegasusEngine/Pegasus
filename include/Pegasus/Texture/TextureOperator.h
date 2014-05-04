@@ -16,6 +16,7 @@
 #include "Pegasus/Texture/TextureConfiguration.h"
 #include "Pegasus/Texture/TextureData.h"
 #include "Pegasus/Texture/TextureDeclaration.h"
+#include "Pegasus/Texture/TextureGenerator.h"
 
 namespace Pegasus {
 namespace Texture {
@@ -47,6 +48,32 @@ public:
     //! Get the configuration of the operator
     //! \return Configuration of the operator, such as the resolution and pixel format
     inline const TextureConfiguration & GetConfiguration() const { return mConfiguration; }
+
+
+    //! Append a texture generator node to the list of input nodes
+    //! \param inputNode Node to add to the list of input nodes, must be non-null
+    //! \warning The configuration of the new node must match this operator node
+    //! \warning Fails when the current number of input nodes is already MAX_NUM_INPUTS
+    virtual void AddGeneratorInput(TextureGeneratorIn textureGenerator);
+
+    //! Append a texture operator node to the list of input nodes
+    //! \param inputNode Node to add to the list of input nodes (equivalent to TextureOperatorIn),
+    //!        must be non-null
+    //! \warning The configuration of the new node must match this operator node
+    //! \warning Fails when the current number of input nodes is already MAX_NUM_INPUTS
+    virtual void AddOperatorInput(const Pegasus::Core::Ref<TextureOperator> & textureOperator);
+
+    //! Replace an input node by a texture generator node
+    //! \param index Index of the input node to replace (0 <= index < GetNumInputs())
+    //! \param inputNode Replacement node, must be non-null
+    //! \warning The configuration of the new node must match this operator node
+    virtual void ReplaceInputByGenerator(unsigned int index, TextureGeneratorIn textureGenerator);
+
+    //! Replace an input node by a texture operator node
+    //! \param index Index of the input node to replace (0 <= index < GetNumInputs())
+    //! \param inputNode Replacement node (equivalent to TextureOperatorIn), must be non-null
+    //! \warning The configuration of the new node must match this operator node
+    virtual void ReplaceInputByOperator(unsigned int index, const Pegasus::Core::Ref<TextureOperator> & textureOperator);
 
 
     //! Return the texture operator up-to-date data.

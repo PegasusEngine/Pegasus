@@ -40,11 +40,6 @@ public:
     virtual void InitProperties();
 
 
-    //! Append a node to the list of input nodes
-    //! \param inputNode Node to add to the list of input nodes (equivalent to NodeIn)
-    //! \warning Fails when the current number of input nodes is already MAX_NUM_INPUTS
-    virtual void AddInput(const Pegasus::Core::Ref<Node> & inputNode);
-
     //! Get the number of input nodes connected to the current node
     //! \return Number of input nodes (from 0 to MAX_NUM_INPUTS - 1)
     inline unsigned int GetNumInputs() const { return mNumInputs; }
@@ -66,6 +61,7 @@ public:
     //! \note When asking for the data of a node, it needs to be allocated and updated
     //!       to not have the dirty flag turned on.
     //!       Redefine this function in derived classes to change its behavior
+    //! \warning The \a updated output parameter must be set to false by the first caller
     virtual NodeDataReturn GetUpdatedData(bool & updated);
 
     //! Deallocate the data of the current node and ask the input nodes to do the same.
@@ -156,6 +152,17 @@ protected:
 
     //! Maximum number of input nodes
     enum { MAX_NUM_INPUTS = 8 };
+
+    //! Append a node to the list of input nodes
+    //! \param inputNode Node to add to the list of input nodes (equivalent to NodeIn),
+    //!        must be non-null
+    //! \warning Fails when the current number of input nodes is already MAX_NUM_INPUTS
+    virtual void AddInput(const Pegasus::Core::Ref<Node> & inputNode);
+
+    //! Replace an input node by another one
+    //! \param index Index of the input node to replace (0 <= index < GetNumInputs())
+    //! \param inputNode Replacement node (equivalent to NodeIn), must be non-null
+    virtual void ReplaceInput(unsigned int index, const Pegasus::Core::Ref<Node> & inputNode);
 
     //! Test if an input node index is valid
     //! \param index Index to test

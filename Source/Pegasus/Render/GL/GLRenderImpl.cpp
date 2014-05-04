@@ -17,8 +17,8 @@
 
 void Pegasus::Render::Dispatch (Pegasus::Shader::ProgramLinkageRef program)
 {
-    bool dummy;
-    Pegasus::Graph::NodeGpuData * gpuData = program->GetUpdatedData(dummy)->GetNodeGpuData();
+    bool updated = false;
+    Pegasus::Graph::NodeGpuData * gpuData = program->GetUpdatedData(updated)->GetNodeGpuData();
     Pegasus::Render::OglProgramGpuData * programGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(
          Pegasus::Render::OglProgramGpuData, 
          gpuData

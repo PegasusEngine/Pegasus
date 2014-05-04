@@ -46,6 +46,66 @@ void TextureOperator::SetConfiguration(const TextureConfiguration & configuratio
 
 //----------------------------------------------------------------------------------------
 
+void TextureOperator::AddGeneratorInput(TextureGeneratorIn textureGenerator)
+{
+    // Check that the configuration is compatible
+    if (textureGenerator->GetConfiguration().IsCompatible(this->GetConfiguration()))
+    {
+        Graph::OperatorNode::AddInput(textureGenerator);
+    }
+    else
+    {
+        PG_FAILSTR("Unable to add a generator input to a TextureOperator node since their configurations are incompatible");
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TextureOperator::AddOperatorInput(const Pegasus::Core::Ref<TextureOperator> & textureOperator)
+{
+    // Check that the configuration is compatible
+    if (textureOperator->GetConfiguration().IsCompatible(this->GetConfiguration()))
+    {
+        Graph::OperatorNode::AddInput(textureOperator);
+    }
+    else
+    {
+        PG_FAILSTR("Unable to add an operator input to a TextureOperator node since their configurations are incompatible");
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TextureOperator::ReplaceInputByGenerator(unsigned int index, TextureGeneratorIn textureGenerator)
+{
+    // Check that the configuration is compatible
+    if (textureGenerator->GetConfiguration().IsCompatible(this->GetConfiguration()))
+    {
+        Graph::OperatorNode::ReplaceInput(index, textureGenerator);
+    }
+    else
+    {
+        PG_FAILSTR("Unable to replace an input of a TextureOperator node since the new configuration is incompatible with the current one");
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TextureOperator::ReplaceInputByOperator(unsigned int index, const Pegasus::Core::Ref<TextureOperator> & textureOperator)
+{
+    // Check that the configuration is compatible
+    if (textureOperator->GetConfiguration().IsCompatible(this->GetConfiguration()))
+    {
+        Graph::OperatorNode::ReplaceInput(index, textureOperator);
+    }
+    else
+    {
+        PG_FAILSTR("Unable to replace an input of a TextureOperator node since the new configuration is incompatible with the current one");
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 TextureOperator::~TextureOperator()
 {
 }
@@ -54,8 +114,8 @@ TextureOperator::~TextureOperator()
 
 Graph::NodeData * TextureOperator::AllocateData() const
 {
-    return PG_NEW(GetNodeAllocator(), -1, "TextureOperator::TextureData", Pegasus::Alloc::PG_MEM_TEMP)
-                    TextureData(mConfiguration, GetNodeDataAllocator());
+    return PG_NEW(GetNodeDataAllocator(), -1, "TextureOperator::TextureData", Pegasus::Alloc::PG_MEM_TEMP)
+                  TextureData(mConfiguration, GetNodeDataAllocator());
 }
 
 

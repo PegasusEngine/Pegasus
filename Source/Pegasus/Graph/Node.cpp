@@ -64,32 +64,6 @@ void Node::InitProperties()
 
 //----------------------------------------------------------------------------------------
 
-void Node::AddInput(const Pegasus::Core::Ref<Node> & inputNode)
-{
-    if (inputNode == nullptr)
-    {
-        PG_FAILSTR("Invalid node added as an input to the current node");
-        return;
-    }
-
-    if (mNumInputs >= MAX_NUM_INPUTS)
-    {
-        PG_FAILSTR("Too many nodes added to the current node");
-        return;
-    }
-
-    mInputs[mNumInputs] = inputNode;
-    ++mNumInputs;
-
-    // Since an input node has been added, that means the node data is dirty
-    if (mData != nullptr)
-    {
-        mData->Invalidate();
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
 NodeDataReturn Node::GetUpdatedData(bool & updated)
 {
     // If the data are allocated and not dirty, they can be returned directly
@@ -182,6 +156,66 @@ void Node::InvalidateData()
     if (mData != nullptr)
     {
         mData->Invalidate();
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Node::AddInput(const Pegasus::Core::Ref<Node> & inputNode)
+{
+    if (inputNode == nullptr)
+    {
+        PG_FAILSTR("Invalid node added as an input to the current node");
+        return;
+    }
+
+    if (mNumInputs >= MAX_NUM_INPUTS)
+    {
+        PG_FAILSTR("Too many nodes added to the current node");
+        return;
+    }
+
+    mInputs[mNumInputs] = inputNode;
+    ++mNumInputs;
+
+    // Since an input node has been added, that means the node data is dirty
+    if (mData != nullptr)
+    {
+        mData->Invalidate();
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Node::ReplaceInput(unsigned int index, const Pegasus::Core::Ref<Node> & inputNode)
+{
+    if (index >= mNumInputs)
+    {
+        PG_FAILSTR("Invalid input index (%d) when trying to replace an input node, it must be < %d", index, GetNumInputs());
+        return;
+    }
+
+    if (inputNode == nullptr)
+    {
+        PG_FAILSTR("Invalid node added as an input to the current node");
+        return;
+    }
+
+    if (mInputs[index] == nullptr)
+    {
+        PG_FAILSTR("Corrupted node, one of the inputs is undefined");
+    }
+
+    if (inputNode != mInputs[index])
+    {
+        // Replace the node (releases the previous node)
+        mInputs[index] = inputNode;
+
+        // Since an input node has been changed, that means the node data is dirty
+        if (mData != nullptr)
+        {
+            mData->Invalidate();
+        }
     }
 }
 

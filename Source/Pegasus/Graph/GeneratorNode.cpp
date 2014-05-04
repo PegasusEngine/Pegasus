@@ -22,13 +22,6 @@ GeneratorNode::GeneratorNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator
 
 //----------------------------------------------------------------------------------------
 
-void GeneratorNode::AddInput(NodeIn inputNode)
-{
-    PG_FAILSTR("Generator nodes are not allowed to have input nodes");
-}
-
-//----------------------------------------------------------------------------------------
-
 bool GeneratorNode::Update()
 {
     // Since the node is a generator, there is no input node to check.
@@ -63,6 +56,20 @@ NodeDataReturn GeneratorNode::GetUpdatedData(bool & updated)
     
 GeneratorNode::~GeneratorNode()
 {
+}
+
+//----------------------------------------------------------------------------------------
+
+void GeneratorNode::AddInput(NodeIn inputNode)
+{
+    PG_FAILSTR("Generator nodes are not allowed to have input nodes");
+}
+
+//----------------------------------------------------------------------------------------
+
+void GeneratorNode::ReplaceInput(unsigned int index, const Pegasus::Core::Ref<Node> & inputNode)
+{
+    PG_FAILSTR("Generator nodes are not allowed to have input nodes");
 }
 
 //----------------------------------------------------------------------------------------

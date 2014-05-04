@@ -28,11 +28,6 @@ public:
     //! \param nodeDataAllocator Allocator used for NodeData
     GeneratorNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
-    //! Override the function to add an input to prevent it to be called.
-    //! \warning Throws an assertion error since generators cannot have inputs
-    //!          and does not add the node as input
-    virtual void AddInput(NodeIn inputNode);
-
     //! Update the node internal state by pulling external parameters.
     //! This function sets the dirty flag of the node data if the internal state has changed
     //! and returns the dirty flag to the parent caller.
@@ -55,6 +50,7 @@ public:
     //! \note When asking for the data of a generator node, it needs to be allocated and updated
     //!       to not have the dirty flag turned on.
     //!       Redefine this function in derived classes to change its behavior
+    //! \warning The \a updated output parameter must be set to false by the first caller
     virtual NodeDataReturn GetUpdatedData(bool & updated);
 
     //------------------------------------------------------------------------------------
@@ -76,6 +72,16 @@ protected:
     //! \warning To be redefined by each derived class, to implement its behavior
     //! \note Called by \a GetUpdatedData()
     virtual void GenerateData() = 0;
+
+
+    //! Override the function to add an input to prevent it to be called.
+    //! \warning Throws an assertion error since generators cannot have inputs
+    //!          and does not add the node as input
+    virtual void AddInput(NodeIn inputNode);
+
+    //! Override the function to replace an input node by another one to prevent it to be called
+    //! \warning Throws an assertion error since generators cannot have inputs
+    virtual void ReplaceInput(unsigned int index, const Pegasus::Core::Ref<Node> & inputNode);
 
 #if PEGASUS_ENABLE_ASSERT
     //! Called when an input node is going to be removed, to update the internal state

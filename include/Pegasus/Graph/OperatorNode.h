@@ -28,12 +28,6 @@ public:
     //! \param nodeDataAllocator Allocator used for NodeData
     OperatorNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
-    //! Append a node to the list of input nodes
-    //! \param inputNode Node to add to the list of input nodes (equivalent to NodeIn)
-    //! \warning Fails when the current number of input nodes is already equal to \a GetMaxNumInputNodes()
-    //! \warning This function must be called at least once since an operator requires at least one input
-    virtual void AddInput(NodeIn inputNode);
-
     //! Specifies the minimum number of input nodes accepted by the current node
     //! \warning To be reimplemented in the derived class to define the behavior
     //! \return Minimum number of nodes accepted by the current node
@@ -72,6 +66,7 @@ public:
     //! \note When asking for the data of a node, it needs to be allocated and updated
     //!       to not have the dirty flag turned on.
     //!       Redefine this function in derived classes to change its behavior
+    //! \warning The \a updated output parameter must be set to false by the first caller
     virtual NodeDataReturn GetUpdatedData(bool & updated);
 
     //------------------------------------------------------------------------------------
@@ -93,6 +88,19 @@ protected:
     //! \warning To be redefined by each derived class, to implement its behavior
     //! \note Called by \a GetUpdatedData()
     virtual void GenerateData() = 0;
+
+
+    //! Append a node to the list of input nodes
+    //! \param inputNode Node to add to the list of input nodes (equivalent to NodeIn),
+    //!        must be non-null
+    //! \warning Fails when the current number of input nodes is already equal to \a GetMaxNumInputNodes()
+    //! \warning This function must be called at least once since an operator requires at least one input
+    virtual void AddInput(NodeIn inputNode);
+
+    //! Replace an input node by another one
+    //! \param index Index of the input node to replace (0 <= index < GetNumInputs())
+    //! \param inputNode Replacement node (equivalent to NodeIn), must be non-null
+    virtual void ReplaceInput(unsigned int index, const Pegasus::Core::Ref<Node> & inputNode);
 
     //! Called when an input node is going to be removed, to update the internal state
     //! \note The override of this function is optional, the default behavior does nothing

@@ -22,20 +22,6 @@ OperatorNode::OperatorNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* 
 
 //----------------------------------------------------------------------------------------
 
-void OperatorNode::AddInput(NodeIn inputNode)
-{
-    if (GetNumInputs() < GetMaxNumInputNodes())
-    {
-        Node::AddInput(inputNode);
-    }
-    else
-    {
-        PG_FAILSTR("Unable to add an input node since its maximum number has been reached (%d)", GetMaxNumInputNodes());
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
 bool OperatorNode::Update()
 {
     // Check the number of inputs
@@ -116,6 +102,28 @@ NodeDataReturn OperatorNode::GetUpdatedData(bool & updated)
     
 OperatorNode::~OperatorNode()
 {
+}
+
+//----------------------------------------------------------------------------------------
+
+void OperatorNode::AddInput(NodeIn inputNode)
+{
+    if (GetNumInputs() < GetMaxNumInputNodes())
+    {
+        Node::AddInput(inputNode);
+    }
+    else
+    {
+        PG_FAILSTR("Unable to add an input node since its maximum number has been reached (%d)", GetMaxNumInputNodes());
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void OperatorNode::ReplaceInput(unsigned int index, const Pegasus::Core::Ref<Node> & inputNode)
+{
+    // Nothing special to test, the number of inputs does not change
+    Node::ReplaceInput(index, inputNode);
 }
 
 //----------------------------------------------------------------------------------------

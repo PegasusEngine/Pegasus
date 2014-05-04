@@ -31,13 +31,6 @@ public:
     //! \param nodeDataAllocator Allocator used for NodeData
     OutputNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
-    //! Append a node to the list of input nodes
-    //! \param inputNode Node to add to the list of input nodes (equivalent to NodeIn)
-    //! \warning Fails if an input node is already added, as this node supports one input only
-    //! \warning This function must be called once since an output requires one input
-    virtual void AddInput(NodeIn inputNode);
-
-
     //! Update the node internal state by pulling external parameters.
     //! \note Does only call Update() for the input node.
     //!       That will trigger a chain of refreshed data when calling GetUpdatedData().
@@ -53,7 +46,17 @@ public:
     //! \return Reference to the node data, belonging to the input node
     //!         or to one of its input nodes. null reference if the input node is missing
     //!         (throws an assertion error in that case)
+    //! \warning The \a updated output parameter must be set to false by the first caller
     virtual NodeDataReturn GetUpdatedData(bool & updated);
+
+    //! Return the node up-to-date data.
+    //! \note Defines the standard behavior of all output nodes.
+    //!       Calls GetUpdatedData() on the input.
+    //!       It should be overridden only for special cases.
+    //! \return Reference to the node data, belonging to the input node
+    //!         or to one of its input nodes. null reference if the input node is missing
+    //!         (throws an assertion error in that case)
+    virtual NodeDataReturn GetUpdatedData();
 
     //------------------------------------------------------------------------------------
 
@@ -73,6 +76,19 @@ protected:
     //! \warning This function is overridden here to throw an assertion error.
     //!          It is not supposed to be used on output nodes
     virtual void GenerateData();
+
+
+    //! Append a node to the list of input nodes
+    //! \param inputNode Node to add to the list of input nodes (equivalent to NodeIn),
+    //!        must be non-null
+    //! \warning Fails if an input node is already added, as this node supports one input only
+    //! \warning This function must be called once since an output requires one input
+    virtual void AddInput(NodeIn inputNode);
+
+    //! Replace an input node by another one
+    //! \param index Index of the input node to replace (== 0 as this node supports one input only)
+    //! \param inputNode Replacement node (equivalent to NodeIn), must be non-null
+    virtual void ReplaceInput(unsigned int index, const Pegasus::Core::Ref<Node> & inputNode);
 
     //! Called when an input node is going to be removed, to update the internal state
     //! \note The override of this function is optional, the default behavior does nothing
