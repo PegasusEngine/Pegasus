@@ -14,61 +14,16 @@
 
 #include "Pegasus/Shader/Shared/IEventListener.h"
 #include "Pegasus/Core/Shared/IoErrors.h"
-
-// generic definition of visitor callback
-#define DECLARE_VISITOR virtual void Visit(IUserData * userData, IEventListener * listener) {listener->OnEvent(userData, *this);}
-
-namespace Pegasus
-{
-    namespace Shader
-    {
-        class IEventListener;
-        class ShaderStage;
-    }
-}
+#include "Pegasus/Graph/Shared/GraphEventDefs.h"
 
 namespace Pegasus
 {
 namespace Shader
 {
-    //! data to be filled by the editor
-    class IUserData
-    {
-    public:
-        //! empty constructor
-        IUserData(){}
-
-        //! empty destructor
-        virtual ~IUserData(){}
-    };
-
-    //! generic event
-    class Event
-    {
-    public:
-        //! generic event constructor
-        explicit Event() {}
-
-        //! generic destructor
-        virtual ~Event(){};
-
-        //! Visitor callback, meant to dispatch to the listener correctly
-        virtual void Visit(IUserData * userData, IEventListener * listener) = 0;
-
-    private:
-        //no copy constructor
-        explicit Event(const Event& other);
-        Event& operator= (const Event& other);
-        IUserData * mUserData;
-    };
-
     //! loading event: fired when shader loading is finished
-    class ShaderLoadedEvent : public Event
+    class ShaderLoadedEvent
     {
     public:
-        //! internal visitor callback
-        DECLARE_VISITOR;
-
         //! constructor
         ShaderLoadedEvent(const char * src, int length)
         : mSrc(src), mBufferLength(length)
@@ -89,12 +44,9 @@ namespace Shader
     };
 
     //! compilation event: fired when compilation is finished
-    class CompilationEvent : public Event
+    class CompilationEvent 
     {
     public:
-        //! internal visitor callback
-        DECLARE_VISITOR;
-
         //! constructor
         CompilationEvent(bool success, const char * log)
         : mSuccess(success), mLogString(log)
@@ -114,12 +66,9 @@ namespace Shader
     };
 
     //! a particular compilation issue on a shader, to be used by a shader IDE
-    class CompilationNotification : public Event
+    class CompilationNotification 
     {
     public:
-        //! internal visitor callback
-        DECLARE_VISITOR;
-
         //! type of notification: warning or error
         enum Type
         {
@@ -155,11 +104,9 @@ namespace Shader
 
 
     //! fired when linking notification occurs
-    class LinkingEvent : public Event
+    class LinkingEvent
     {
     public:
-        //! internal visitor callback
-        DECLARE_VISITOR;
         enum Type
         {
             LINKING_SUCCESS,
@@ -186,11 +133,9 @@ namespace Shader
     };
 
     //! fired when file loading operation occurs
-    class FileOperationEvent : public Event
+    class FileOperationEvent
     {
     public:
-        //! internal visitor callback
-        DECLARE_VISITOR;
         enum Type
         {
             WRONG_EXTENSION, //wrong extension
@@ -230,7 +175,18 @@ namespace Shader
         const char * mFilePath;
         
     };
+
+    GRAPH_EVENT_BEGIN_REGISTRY (IShaderEventListener)
+        GRAPH_EVENT_REGISTER (ShaderLoadedEvent)
+        GRAPH_EVENT_REGISTER (CompilationEvent)
+        GRAPH_EVENT_REGISTER (CompilationNotification)
+        GRAPH_EVENT_REGISTER (LinkingEvent)
+        GRAPH_EVENT_REGISTER (FileOperationEvent)
+    GRAPH_EVENT_END_REGISTRY
+
 }
+
+
 }
 
 #endif

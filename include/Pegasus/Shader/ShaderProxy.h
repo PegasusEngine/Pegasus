@@ -57,11 +57,11 @@ public:
     
     //! Sets the user data for this particular shader
     //! \param userData. the user data to retrieve
-    virtual void SetUserData(Pegasus::Shader::IUserData * userData);
+    virtual void SetUserData(Pegasus::Graph::IGraphUserData * userData);
 
     //! Gets the user data for this particular shader
     //! \return user data reference
-    virtual Pegasus::Shader::IUserData * GetUserData() const;
+    virtual Pegasus::Graph::IGraphUserData * GetUserData() const;
 
     //! returns a 64 bit guid for a particular shader.
     //! \return the guid must correspond to a single shaderstage instance, on this

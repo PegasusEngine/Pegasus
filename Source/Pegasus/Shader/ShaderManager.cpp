@@ -12,12 +12,11 @@
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Shader/IShaderFactory.h"
+#include "Pegasus/Shader/Shared/ShaderEvent.h"
 #include "Pegasus/Graph/NodeManager.h"
 #include "Pegasus/Utils/String.h"
 
-#if PEGASUS_SHADER_USE_EDIT_EVENTS
-#include "Pegasus/Shader/Shared/IEventListener.h"
-#endif
+
 
 namespace PegasusShaderPrivate {
 
@@ -46,7 +45,7 @@ Pegasus::Shader::ShaderManager::ShaderManager(Pegasus::Graph::NodeManager * node
 :
 mNodeManager(nodeManager)
 , mFactory(factory)
-#if PEGASUS_SHADER_USE_EDIT_EVENTS
+#if PEGASUS_USE_GRAPH_EVENTS
 , mEventListener(nullptr)
 #endif
 {
@@ -75,7 +74,7 @@ void Pegasus::Shader::ShaderManager::RegisterAllNodes()
 Pegasus::Shader::ProgramLinkageReturn Pegasus::Shader::ShaderManager::CreateProgram(const char * name)
 {
     Pegasus::Shader::ProgramLinkageRef program = mNodeManager->CreateNode("ProgramLinkage");
-#if PEGASUS_SHADER_USE_EDIT_EVENTS
+#if PEGASUS_USE_GRAPH_EVENTS 
     program->SetEventListener(mEventListener);
 #endif
     program->SetFactory(mFactory);
@@ -92,7 +91,7 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::LoadShaderSta
     const char * extension = Pegasus::Utils::Strrchr(properties.mPath, '.');
     Pegasus::Shader::ShaderType targetStage = Pegasus::Shader::SHADER_STAGE_INVALID;
     Pegasus::Shader::ShaderStageRef stage = mNodeManager->CreateNode("ShaderStage");
-#if PEGASUS_SHADER_USE_EDIT_EVENTS
+#if PEGASUS_USE_GRAPH_EVENTS
     stage->SetEventListener(mEventListener);
 #endif
     stage->SetFactory(mFactory);
@@ -116,7 +115,7 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::LoadShaderSta
     {
         if (stage->SetSourceFromFile(targetStage, properties.mPath, properties.mLoader))
         {
-#if PEGASUS_SHADER_USE_EDIT_EVENTS
+#if PEGASUS_ENABLE_PROXIES
             stage->SetShaderTracker(&mShaderTracker);
             stage->SetShaderTracker(&mShaderTracker);
             mShaderTracker.InsertShader(&(*stage));
@@ -130,7 +129,7 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::LoadShaderSta
 Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::CreateShaderStage(const Pegasus::Shader::ShaderStageProperties& properties)
 {
     Pegasus::Shader::ShaderStageRef stage = mNodeManager->CreateNode("ShaderStage");
-#if PEGASUS_SHADER_USE_EDIT_EVENTS
+#if PEGASUS_USE_GRAPH_EVENTS
     stage->SetEventListener(mEventListener);
 #endif
     stage->SetFactory(mFactory);

@@ -19,7 +19,6 @@
 #include "Pegasus/Shader/IShaderFactory.h"
 #include "Pegasus/Shader/ShaderStage.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
-#include "Pegasus/Shader/EventDispatcher.h"
 #include "Pegasus/Render/ShaderFactory.h"
 #include "Pegasus/Graph/NodeData.h"
 
@@ -79,7 +78,7 @@ void GLShaderFactory::Initialize(Pegasus::Alloc::IAllocator * allocator)
 //! processes an error log from opengl compilation
 static void ProcessErrorLog(Pegasus::Shader::ShaderStage * shaderNode, const char * log)
 {
-#if PEGASUS_SHADER_USE_EDIT_EVENTS
+#if PEGASUS_USE_GRAPH_EVENTS 
     //parsing log to extract line & column
     const char  * s = log;
 
@@ -119,7 +118,14 @@ static void ProcessErrorLog(Pegasus::Shader::ShaderStage * shaderNode, const cha
             ++s;
         } 
         descriptionError[idx] = '\0';
-        SHADEREVENT_COMPILATION_ERROR(shaderNode, line, descriptionError);
+        GRAPH_EVENT_DISPATCH(
+            shaderNode,
+            Pegasus::Shader::CompilationNotification,
+            // Shader Event specific arguments
+            Pegasus::Shader::CompilationNotification::COMPILATION_ERROR,
+            line,
+            descriptionError
+        );
 
     }
 #endif
@@ -211,7 +217,13 @@ void GLShaderFactory::GenerateShaderGpuData (Pegasus::Shader::ShaderStage * shad
     if (type == Pegasus::Shader::SHADER_STAGE_INVALID || sourceSize == 0)
     {
         //empty shader, ignore compilation
-        SHADEREVENT_COMPILATION_FAIL(shaderNode, "invalid shader");
+        GRAPH_EVENT_DISPATCH (
+            shaderNode,
+            Pegasus::Shader::CompilationEvent,
+            // Event specific arguments
+            false, //compilation success status
+            "invalid shader"
+        );
         return;
     }
 
@@ -246,12 +258,24 @@ void GLShaderFactory::GenerateShaderGpuData (Pegasus::Shader::ShaderStage * shad
         
         ProcessErrorLog(shaderNode, logBuffer);
     
-        SHADEREVENT_COMPILATION_FAIL(shaderNode, logBuffer);
+        GRAPH_EVENT_DISPATCH (
+            shaderNode,
+            Pegasus::Shader::CompilationEvent,
+            // Event specific arguments
+            false, //compilation success status
+            logBuffer
+        );
 
     }
     else
     {
-        SHADEREVENT_COMPILATION_SUCCESS(shaderNode);
+        GRAPH_EVENT_DISPATCH (
+            shaderNode,
+            Pegasus::Shader::CompilationEvent,
+            // Event specific arguments
+            true, //compilation success status
+            "" // unused
+        );
     }
     nodeData->SetNodeGpuData(reinterpret_cast<Pegasus::Graph::NodeGpuData*>(gpuData));
 }
@@ -310,7 +334,14 @@ void GLShaderFactory::GenerateProgramGpuData (Pegasus::Shader::ProgramLinkage * 
             )
     )
     {
-        SHADEREVENT_LINKING_INCOMPLETE(programNode);
+        GRAPH_EVENT_DISPATCH (
+            programNode,
+            Pegasus::Shader::LinkingEvent,
+            // Event specific arguments:
+            Pegasus::Shader::LinkingEvent::INCOMPLETE_STAGES_FAIL,
+            ""
+        );
+
         return;
     }
 
@@ -323,11 +354,23 @@ void GLShaderFactory::GenerateProgramGpuData (Pegasus::Shader::ProgramLinkage * 
         char logBuffer[bufferSize];
         GLsizei logLength = 0;
         glGetProgramInfoLog(gpuData->mHandle, bufferSize, &logLength, logBuffer);
-        SHADEREVENT_LINKING_FAIL(programNode, logBuffer);
+        GRAPH_EVENT_DISPATCH (
+            programNode,
+            Pegasus::Shader::LinkingEvent,
+            // Event specific arguments:
+            Pegasus::Shader::LinkingEvent::LINKING_FAIL,
+            ""
+        );
     }
     else
     {
-        SHADEREVENT_LINKING_SUCCESS(programNode);
+        GRAPH_EVENT_DISPATCH (
+            programNode,
+            Pegasus::Shader::LinkingEvent,
+            // Event specific arguments:
+            Pegasus::Shader::LinkingEvent::LINKING_SUCCESS,
+            ""
+        );
     }
 
 }

@@ -22,7 +22,7 @@
 class ShaderLibraryWidget;
 
 //! User interface state user data for shaders
-class ShaderUserData : public Pegasus::Shader::IUserData
+class ShaderUserData : public Pegasus::Graph::IGraphUserData
 {
 public:
     //! constructor
@@ -77,7 +77,7 @@ private:
 };
 
 //! User interface state user data for shader programs
-class ProgramUserData : public Pegasus::Shader::IUserData
+class ProgramUserData : public Pegasus::Graph::IGraphUserData
 {
 public:
     //! constructor
@@ -114,7 +114,7 @@ private:
 //! all the signals of this app must be queued connections, and no state should be set within
 //! these event callbacks
 //! this event must be pushed before the application loads any data
-class ShaderManagerEventListener : public QObject, public Pegasus::Shader::IEventListener 
+class ShaderManagerEventListener : public QObject, public Pegasus::Shader::IShaderEventListener 
 {
     Q_OBJECT;
 
@@ -123,19 +123,19 @@ public:
     virtual ~ShaderManagerEventListener();
 
     //! Dispatch event callback on a compilation event
-    virtual void OnEvent(Pegasus::Shader::IUserData * userData, Pegasus::Shader::CompilationEvent& e);
+    virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Shader::CompilationEvent& e);
 
     //! Dispatch event callback on a linker event
-    virtual void OnEvent(Pegasus::Shader::IUserData * userData, Pegasus::Shader::LinkingEvent& e);
+    virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Shader::LinkingEvent& e);
 
     //! Dispatch event callback on a file operation event
-    virtual void OnEvent(Pegasus::Shader::IUserData * userData, Pegasus::Shader::FileOperationEvent& e);
+    virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Shader::FileOperationEvent& e);
 
     //! Dispatch event callback on a loading event
-    virtual void OnEvent(Pegasus::Shader::IUserData * userData, Pegasus::Shader::ShaderLoadedEvent& e);
+    virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Shader::ShaderLoadedEvent& e);
 
     //! Dispatch event callback on a compilation notification event
-    virtual void OnEvent(Pegasus::Shader::IUserData * userData, Pegasus::Shader::CompilationNotification& e);
+    virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Shader::CompilationNotification& e);
 
 signals:
     //! triggered when any compilation state changes. Use a queued connection

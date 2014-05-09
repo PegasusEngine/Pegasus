@@ -19,6 +19,12 @@
 
 namespace Pegasus
 {
+
+namespace Graph
+{
+class IGraphUserData;
+}
+
 namespace Shader
 {
 class ProgramLinkage;
@@ -44,11 +50,11 @@ public:
 
     //! Sets the user data for this particular program
     //! \param userData. the user data to retrieve
-    virtual void SetUserData(Pegasus::Shader::IUserData * userData);
+    virtual void SetUserData(Pegasus::Graph::IGraphUserData * userData);
 
     //! Gets the user data for this particular program 
     //! \return user data reference
-    virtual Pegasus::Shader::IUserData * GetUserData() const;
+    virtual Pegasus::Graph::IGraphUserData * GetUserData() const;
 
     //! sets the internal implementation of shader linkage
     //! \param object the program linkage internal object.

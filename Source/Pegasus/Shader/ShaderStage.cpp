@@ -48,6 +48,7 @@ Pegasus::Shader::ShaderStage::ShaderStage(Pegasus::Alloc::IAllocator * allocator
       , mShaderTracker(nullptr)
 #endif
 {
+    GRAPH_EVENT_INIT_DISPATCHER
 }
 
 Pegasus::Shader::ShaderStage::~ShaderStage()
@@ -125,17 +126,39 @@ bool Pegasus::Shader::ShaderStage::SetSourceFromFile(Pegasus::Shader::ShaderType
         Pegasus::Io::IoError ioError = loader->OpenFileToBuffer(path, mFileBuffer, true, mAllocator);
         if (ioError == Pegasus::Io::ERR_NONE)
         {
-            SHADEREVENT_LOADED(mFileBuffer.GetBuffer(), mFileBuffer.GetFileSize());
+            GRAPH_EVENT_DISPATCH(
+                this,
+                Pegasus::Shader::ShaderLoadedEvent, 
+                // Event specific arguments:
+                mFileBuffer.GetBuffer(), 
+                mFileBuffer.GetFileSize()
+            );
             return true;
         }
         else
         {
-            SHADEREVENT_IO_ERROR(ioError, path, "Io error");
+            GRAPH_EVENT_DISPATCH(
+                this,
+                Pegasus::Shader::FileOperationEvent, 
+                // Event specific arguments:
+                Pegasus::Shader::FileOperationEvent::IO_ERROR, 
+                ioError,
+                path, 
+                "Io error"
+            );
         }
     }
     else
     {
-        SHADEREVENT_WRONG_FILE_FORMAT(path, "wrong file format!");
+        GRAPH_EVENT_DISPATCH(
+            this,
+            Pegasus::Shader::FileOperationEvent, 
+            // Event specific arguments:
+            Pegasus::Shader::FileOperationEvent::WRONG_EXTENSION, 
+            Pegasus::Io::ERR_NONE,
+            path, 
+            "wrong file format"
+        );
     }
     return false;
 }
@@ -148,7 +171,14 @@ Pegasus::Graph::NodeData * Pegasus::Shader::ShaderStage::AllocateData() const
 void Pegasus::Shader::ShaderStage::GenerateData()
 {
     PG_ASSERT(GetData() != nullptr);
-    SHADEREVENT_COMPILATION_BEGIN(this)
+    GRAPH_EVENT_DISPATCH(
+        this,
+        Pegasus::Shader::CompilationNotification, 
+        // Event specific arguments:
+        Pegasus::Shader::CompilationNotification::COMPILATION_BEGIN, 
+        0, // unused
+        "" // unused
+    );
     mFactory->GenerateShaderGpuData(&(*this), &(*GetData()));
 } 
 

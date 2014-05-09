@@ -13,8 +13,8 @@
 #include "Pegasus/Core/Ref.h"
 #include "Pegasus/Graph/GeneratorNode.h"
 #include "Pegasus/Allocator/IAllocator.h"
-#include "Pegasus/Shader/EventDispatcher.h"
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
+#include "Pegasus/Shader/Shared/ShaderEvent.h"
 #include "Pegasus/Core/Io.h"
 
 
@@ -24,18 +24,15 @@ namespace Shader
 {
 
 // forward declarations
-class IEventListener;
-class IUserData;
 class IShaderFactory;
 class ShaderTracker;
 
 //! Shader Stage class, holds information about a shader stage
 class ShaderStage : public Graph::GeneratorNode
-#if PEGASUS_SHADER_USE_EDIT_EVENTS
-, public EventDispatcher
-#endif
 {
     friend class ShaderManager;
+    GRAPH_EVENT_DECLARE_DISPATCHER(IShaderEventListener)
+
 public:
     //! Default constructor
     //! \param  nodeAllocator used for nodes

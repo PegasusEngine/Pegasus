@@ -51,7 +51,7 @@ public:
 
     //! Sets the event listener to be used for the shader
     //! \param event listener reference
-    virtual void RegisterEventListener(IEventListener * eventListener);
+    virtual void RegisterEventListener(IShaderEventListener * eventListener);
 
     //! Updates all the programs, only those which changed
     virtual void UpdateAllPrograms();

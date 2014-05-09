@@ -20,7 +20,7 @@ namespace Shader
 
 class IProgramProxy;
 class IShaderProxy;
-class IEventListener;
+class IShaderEventListener;
 
 class IShaderManagerProxy
 {
@@ -48,7 +48,7 @@ public:
 
     //! Sets the event listener to be used for the shader
     //! \param event listener reference
-    virtual void RegisterEventListener(IEventListener * eventListener) = 0;
+    virtual void RegisterEventListener(IShaderEventListener * eventListener) = 0;
 
     //! Updates all the programs, only those which changed
     virtual void UpdateAllPrograms() = 0;

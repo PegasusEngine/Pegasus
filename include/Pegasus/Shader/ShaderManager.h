@@ -17,10 +17,8 @@ namespace Graph
 namespace Shader
 {
 
-class IEventListener;
+class IShaderEventListener;
 class IShaderFactory;
-
-
 
 //! ShaderManager, manages and keeps up with shader data
 class ShaderManager
@@ -53,8 +51,8 @@ public:
     const ShaderTracker * GetShaderTracker() const { return &mShaderTracker; }
 #endif
 
-#if PEGASUS_SHADER_USE_EDIT_EVENTS
-    void RegisterEventListener(IEventListener * eventListener) { mEventListener = eventListener; }
+#if PEGASUS_USE_GRAPH_EVENTS
+    void RegisterEventListener(IShaderEventListener * eventListener) { mEventListener = eventListener; }
 #endif
 
 private:
@@ -72,8 +70,8 @@ private:
     ShaderTracker mShaderTracker;
 #endif
 
-#if PEGASUS_SHADER_USE_EDIT_EVENTS
-    IEventListener * mEventListener;
+#if PEGASUS_USE_GRAPH_EVENTS
+    IShaderEventListener * mEventListener;
 #endif
 };
 

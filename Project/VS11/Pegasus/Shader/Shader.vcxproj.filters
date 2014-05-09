@@ -14,9 +14,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\EventDispatcher.h">
-      <Filter>Include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\IEventListener.h">
       <Filter>Include\Shared</Filter>
     </ClInclude>
@@ -58,9 +55,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\EventDispatcher.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderManager.cpp">
       <Filter>Source</Filter>
     </ClCompile>

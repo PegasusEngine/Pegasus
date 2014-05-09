@@ -40,17 +40,17 @@ const char * Pegasus::Shader::ProgramProxy::GetName() const
     return mObject->GetName();
 }
 
-void Pegasus::Shader::ProgramProxy::SetUserData(Pegasus::Shader::IUserData * userData)
+void Pegasus::Shader::ProgramProxy::SetUserData(Pegasus::Graph::IGraphUserData * userData)
 {
-#if PEGASUS_SHADER_USE_EDIT_EVENTS
-    mObject->SetUserData(userData);
+#if PEGASUS_USE_GRAPH_EVENTS
+    mObject->SetGraphEventUserData(userData);
 #endif
 }
 
-Pegasus::Shader::IUserData * Pegasus::Shader::ProgramProxy::GetUserData() const
+Pegasus::Graph::IGraphUserData * Pegasus::Shader::ProgramProxy::GetUserData() const
 {
-#if PEGASUS_SHADER_USE_EDIT_EVENTS
-    return mObject->GetUserData();
+#if PEGASUS_USE_GRAPH_EVENTS
+    return mObject->GetGraphEventUserData();
 #else
     return nullptr;
 #endif

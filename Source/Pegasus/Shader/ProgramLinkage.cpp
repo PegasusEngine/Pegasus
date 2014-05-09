@@ -18,7 +18,7 @@ Pegasus::Shader::ProgramLinkage::ProgramLinkage(Alloc::IAllocator* nodeAllocator
 :
 Pegasus::Graph::OperatorNode(nodeAllocator, nodeDataAllocator), mStageFlags(0), mFactory(nullptr)
 {
-
+    GRAPH_EVENT_INIT_DISPATCHER
 }
 
 Pegasus::Shader::ProgramLinkage::~ProgramLinkage()

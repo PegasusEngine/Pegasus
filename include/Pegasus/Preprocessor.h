@@ -286,8 +286,11 @@
 // See the implementation of the functions living in the Pegasus::Io namespace for more details
 #define PEGASUS_USE_NATIVE_IO_CALLS           1
 
-//Enable shader events only if dev mode. In rel mode the boiler plate code gets removed
-#define PEGASUS_SHADER_USE_EDIT_EVENTS      PEGASUS_DEV
+//Enable node events only if dev mode. In rel mode the boiler plate code gets removed
+//Events are used to communicate information to an editor app.
+#define PEGASUS_USE_GRAPH_EVENTS      PEGASUS_DEV
+
+#define PEGASUS_SHADER_USE_SHADER_EVENTS      PEGASUS_DEV
 
 //Enable gpu data runTime Type Information, for safe casting (asserts thrown if wrong type being casted)
 #define PEGASUS_GRAPH_GPUDATA_RTTI          PEGASUS_DEBUG 

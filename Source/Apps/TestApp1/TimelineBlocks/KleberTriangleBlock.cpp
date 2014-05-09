@@ -54,14 +54,19 @@ void KleberTriangleBlock::Initialize()
     // Set up shaders
     Pegasus::Shader::ShaderManager * const shaderManager = GetShaderManager();
     mProgram = shaderManager->CreateProgram("KleberTriangleBlob");
+    mProgram2 = shaderManager->CreateProgram("KleberTriangleBlob-Copy");
     Pegasus::Shader::ShaderStageFileProperties fileLoadProperties;
     fileLoadProperties.mLoader = GetIOManager();
-
     fileLoadProperties.mPath = VERTEX_SHADER;
-    mProgram->SetShaderStage( shaderManager->LoadShaderStageFromFile(fileLoadProperties) );
-
+    Pegasus::Shader::ShaderStageRef vertexShader = shaderManager->LoadShaderStageFromFile(fileLoadProperties);    
     fileLoadProperties.mPath = FRAGMENT_SHADER;
-    mProgram->SetShaderStage( shaderManager->LoadShaderStageFromFile(fileLoadProperties) );
+    Pegasus::Shader::ShaderStageRef fragmentShader = shaderManager->LoadShaderStageFromFile(fileLoadProperties);
+    mProgram->SetShaderStage( vertexShader );
+    mProgram->SetShaderStage( fragmentShader );
+
+    mProgram2->SetShaderStage( vertexShader );
+    mProgram2->SetShaderStage( fragmentShader );
+
 
     // Force a compilation of the shaders
     bool updated = false;

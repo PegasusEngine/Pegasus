@@ -13,11 +13,14 @@
 
 namespace Pegasus
 {
+
+namespace Graph
+{
+    class IGraphUserData;
+}
+
 namespace Shader
 {
-
-class IShaderProxy;
-class IUserData;
 
 //! shader program proxy interface
 class IProgramProxy
@@ -41,11 +44,11 @@ public:
 
     //! Sets the user data for this particular program
     //! \param userData. the user data to retrieve
-    virtual void SetUserData(Pegasus::Shader::IUserData * userData) = 0;
+    virtual void SetUserData(Pegasus::Graph::IGraphUserData * userData) = 0;
 
     //! Gets the user data for this particular program 
     //! \return user data reference
-    virtual Pegasus::Shader::IUserData * GetUserData() const = 0;
+    virtual Pegasus::Graph::IGraphUserData * GetUserData() const = 0;
     
 };
 

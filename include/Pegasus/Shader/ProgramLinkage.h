@@ -21,22 +21,19 @@ namespace Shader
 
 
 // forward declarations
-class IEventListener;
-class IUserData;
 class IShaderFactory;
 
 
 //! Program linkage class. Represents a set of linked shader stages
 class ProgramLinkage : public Pegasus::Graph::OperatorNode
-#if PEGASUS_SHADER_USE_EDIT_EVENTS
-    , public EventDispatcher
-#endif
 {
     friend class ShaderManager;
 #if PEGASUS_ENABLE_PROXIES
     //! give full access to proxy
     friend class ProgramProxy;
 #endif
+    
+    GRAPH_EVENT_DECLARE_DISPATCHER(IShaderEventListener)
 
 public:
 

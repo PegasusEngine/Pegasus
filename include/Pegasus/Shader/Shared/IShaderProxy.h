@@ -15,6 +15,10 @@
 
 namespace Pegasus
 {
+namespace Graph
+{
+    class IGraphUserData;
+}
 namespace Shader
 {
 
@@ -44,11 +48,11 @@ class IShaderProxy
 
         //! Sets the user data for this particular shader
         //! \param userData. the user data to retrieve
-        virtual void SetUserData(Pegasus::Shader::IUserData * userData) = 0;
+        virtual void SetUserData(Pegasus::Graph::IGraphUserData * userData) = 0;
 
         //! Gets the user data for this particular shader
         //! \return user data reference
-        virtual Pegasus::Shader::IUserData * GetUserData() const = 0;
+        virtual Pegasus::Graph::IGraphUserData * GetUserData() const = 0;
 
         //! returns a 64 bit guid for a particular shader.
         //! \return the guid must correspond to a single shaderstage instance

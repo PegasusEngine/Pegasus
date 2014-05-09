@@ -60,6 +60,7 @@ private:
     GLuint mVAOs[NUM_VAOS];
     GLuint mBuffers[NUM_BUFFERS];
     Pegasus::Shader::ProgramLinkageRef mProgram;
+    Pegasus::Shader::ProgramLinkageRef mProgram2;
     GLint mTimeUniform;
 };
 

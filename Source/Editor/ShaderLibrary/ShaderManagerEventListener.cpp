@@ -32,7 +32,7 @@ ShaderManagerEventListener::~ShaderManagerEventListener()
 {
 }
 
-void ShaderManagerEventListener::OnEvent(Pegasus::Shader::IUserData * userData, Pegasus::Shader::CompilationEvent& e)
+void ShaderManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Shader::CompilationEvent& e)
 {
     if (userData != nullptr)
     {
@@ -46,7 +46,7 @@ void ShaderManagerEventListener::OnEvent(Pegasus::Shader::IUserData * userData, 
     }
 }
 
-void ShaderManagerEventListener::OnEvent(Pegasus::Shader::IUserData * userData, Pegasus::Shader::LinkingEvent& e)
+void ShaderManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Shader::LinkingEvent& e)
 {
     if (userData != nullptr)
     {
@@ -55,17 +55,17 @@ void ShaderManagerEventListener::OnEvent(Pegasus::Shader::IUserData * userData, 
     }
 }
 
-void ShaderManagerEventListener::OnEvent(Pegasus::Shader::IUserData * userData, Pegasus::Shader::FileOperationEvent& e)
+void ShaderManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Shader::FileOperationEvent& e)
 {
     //error loading a shader file
     ED_ASSERTSTR("Shader file not found: %s", e.GetMessage());
 }
 
-void ShaderManagerEventListener::OnEvent(Pegasus::Shader::IUserData * userData, Pegasus::Shader::ShaderLoadedEvent& e)
+void ShaderManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Shader::ShaderLoadedEvent& e)
 {
 }
 
-void ShaderManagerEventListener::OnEvent(Pegasus::Shader::IUserData * userData, Pegasus::Shader::CompilationNotification& e)
+void ShaderManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Shader::CompilationNotification& e)
 {
     if (userData != nullptr)
     {
