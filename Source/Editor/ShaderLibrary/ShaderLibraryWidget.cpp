@@ -222,7 +222,11 @@ void ShaderLibraryWidget::InitializeInternalUserData()
                 ProgramUserData * newUserData = new ProgramUserData(program);
                 program->SetUserData(newUserData);
             } 
+            
+            //send compilation request to all shaders
+            mShaderEditorWidget->CompileShader(-1);
         }
+        
     }
 }
 

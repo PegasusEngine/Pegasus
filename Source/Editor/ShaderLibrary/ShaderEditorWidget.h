@@ -59,6 +59,10 @@ public:
     //! \param shader that has been updated
     void ShaderUIChanged(Pegasus::Shader::IShaderProxy * shader);
 
+    //! Requests a shaders to compile
+    //! \param the id of the editor (tab id). If the id is -1, then all programs are queried for compilaton
+    void CompileShader(int id);
+
 
 signals:
     void RequestShaderCompilation(int id);

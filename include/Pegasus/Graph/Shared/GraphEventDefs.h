@@ -48,7 +48,7 @@ namespace Graph {
 //! \brief declare this statement at the very beginning of your node that will send events. Make sure to pass the event listener type declared in BEGIN_EVENT_REGISTRY
 #define GRAPH_EVENT_DECLARE_DISPATCHER(_listener_type) public: \
     Pegasus::Graph::IGraphUserData * GetGraphEventUserData() { return __mUserData;} \
-    void SetGraphEventUserData(Pegasus::Graph::IGraphUserData * userData)  { __mUserData = userData; } \
+    void SetGraphEventUserData(Pegasus::Graph::IGraphUserData * userData)  { __mUserData = userData; InvalidateData(); } \
     _listener_type * GetEventListener() { return __mEventListener; } \
     void SetEventListener(_listener_type * l) { __mEventListener = l; } \
     private: _listener_type * __mEventListener; Pegasus::Graph::IGraphUserData * __mUserData; public:

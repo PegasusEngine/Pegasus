@@ -136,7 +136,10 @@ void ShaderEditorWidget::AsyncSetCompilationRequestPending()
 void ShaderEditorWidget::FlushShaderTextEditorToShader(int id)
 {
     mCompilationRequestMutex->lock();
-    mUi.mTextEditPool[id]->FlushTextToShader();
+    if (id != -1) //is there a ui element for this shader?
+    {
+        mUi.mTextEditPool[id]->FlushTextToShader();
+    }
     mCompilationRequestPending = false;
     mCompilationRequestMutex->unlock();
 }
@@ -151,7 +154,10 @@ void ShaderEditorWidget::SignalCompilationError(void * shaderPtr, int line, QStr
         userData->InsertMessage(line, errorString);
         int id = FindIndex(target);
         ED_ASSERT(id < mTabCount);
-        UpdateSyntaxForLine(id, line);
+        if (id != -1) //is there a ui element for this shader?
+        {
+            UpdateSyntaxForLine(id, line);
+        }
     }
 }
 
@@ -160,7 +166,7 @@ void ShaderEditorWidget::SignalCompilationBegin(void * shader)
     Pegasus::Shader::IShaderProxy* target = static_cast<Pegasus::Shader::IShaderProxy*>(shader);
     int id = FindIndex(target);
     ED_ASSERT(id < mTabCount);
-    if (target->GetUserData() != nullptr)
+    if (id != -1 && target->GetUserData() != nullptr)
     {
         ShaderUserData * shaderUserData = static_cast<ShaderUserData*>(target->GetUserData());
         QSet<int> lineSetCopy = shaderUserData->GetInvalidLineSet();
@@ -285,25 +291,31 @@ void ShaderEditorWidget::OnTextChanged(QWidget * sender)
     int id = FindIndex(textEditor);
     if (id != -1)
     {
-        // The following snippet is meant to optimize this set of functions:
-        //if (!AsyncHasCompilationRequestPending()) 
-        //{
-        //    AsyncSetCompilationRequestPending();
-        //    emit(RequestShaderCompilation(id));
-        //}
 
+        CompileShader(id);
         //we are reducing here the number of accesses to the mutex
-        mCompilationRequestMutex->lock(); 
-        if (!mCompilationRequestPending)
-        {
-            mCompilationRequestPending = true;            
-            mCompilationRequestMutex->unlock();
-            emit(RequestShaderCompilation(id));
-        }
-        else
-        {
-            mCompilationRequestMutex->unlock();
-        }
+      
+    }
+}
+
+void ShaderEditorWidget::CompileShader(int id)
+{
+    // The following snippet is meant to optimize this set of functions:
+    //if (!AsyncHasCompilationRequestPending()) 
+    //{
+    //    AsyncSetCompilationRequestPending();
+    //    emit(RequestShaderCompilation(id));
+    //}
+    mCompilationRequestMutex->lock(); 
+    if (!mCompilationRequestPending)
+    {
+        mCompilationRequestPending = true;            
+        mCompilationRequestMutex->unlock();
+        emit(RequestShaderCompilation(id));
+    }
+    else
+    {
+        mCompilationRequestMutex->unlock();
     }
 }
 
