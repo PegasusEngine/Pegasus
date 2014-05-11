@@ -11,6 +11,8 @@
 
 #include "TimelineBlocks/TextureTestBlock.h"
 #include "Pegasus/Render/Render.h"
+#include "Pegasus/Texture/Generator/ConstantColorGenerator.h"
+#include "Pegasus/Texture/Operator/AddOperator.h"
 
 
 static const GLuint NUM_VERTS = 6;
@@ -81,6 +83,8 @@ void TextureTestBlock::Initialize()
     // Create the textures
     CreateTexture1();
     CreateTexture2();
+    CreateTextureAdd1();
+    CreateTextureAdd2();
 
     // Create the sampler object
     //mTextureSampler = 0;
@@ -115,13 +119,21 @@ void TextureTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
     glUniform1f(mScreenRatioUniform, static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight));
 
     glActiveTexture(GL_TEXTURE0);
-    if (beat < 6.0f)
+    if (beat < 3.0f)
     {
-        glBindTexture(GL_TEXTURE_2D, mTexture1);
+        glBindTexture(GL_TEXTURE_2D, mGLTexture1);
+    }
+    else if (beat < 6.0f)
+    {
+        glBindTexture(GL_TEXTURE_2D, mGLTexture2);
+    }
+    else if (beat < 9.0f)
+    {
+        glBindTexture(GL_TEXTURE_2D, mGLTextureAdd1);
     }
     else
     {
-        glBindTexture(GL_TEXTURE_2D, mTexture2);
+        glBindTexture(GL_TEXTURE_2D, mGLTextureAdd2);
     }
     glUniform1i(mTextureUniform, 0);
     //glBindSampler(0, mTextureSampler);
@@ -165,24 +177,24 @@ GLuint TextureTestBlock::CreateGLTexture(Pegasus::Texture::TextureRef texture)
 void TextureTestBlock::CreateTexture1()
 {
     using namespace Pegasus::Texture;
+    using namespace Pegasus::Math;
 
     TextureManager* textureManager = GetTextureManager();
     TextureConfiguration texConfig(TextureConfiguration::TYPE_2D,
                                    TextureConfiguration::PIXELFORMAT_RGBA8,
                                    256, 256, 1, 1);
 
-    TextureRef texture1 = textureManager->CreateTextureNode(texConfig);
-    //TextureOperatorRef addOperator1 = textureManager->CreateTextureOperatorNode("AddOperator", texConfig);
-    TextureGeneratorRef constantColorGenerator1 = textureManager->CreateTextureGeneratorNode("ConstantColorGenerator", texConfig);
-    //TextureGeneratorRef constantColorGenerator2 = textureManager->CreateTextureGeneratorNode("ConstantColorGenerator", texConfig);
+    TextureGeneratorRef constantColorGenerator1Node = textureManager->CreateTextureGeneratorNode("ConstantColorGenerator", texConfig);
+    ConstantColorGenerator * constantColorGenerator1 = static_cast<ConstantColorGenerator *>(constantColorGenerator1Node);
+    constantColorGenerator1->SetColor(Color8RGBA(132, 5, 212, 255));
+    
+    mTexture1 = textureManager->CreateTextureNode(texConfig);
+    mTexture1->SetGeneratorInput(constantColorGenerator1Node);
+    mTexture1->Update();
 
-    //addOperator1->AddGeneratorInput(constantColorGenerator1);
-    //addOperator1->AddGeneratorInput(constantColorGenerator2);
-    //texture1->SetOperatorInput(addOperator1);
-    texture1->SetGeneratorInput(constantColorGenerator1);
+    mTextureGenerator1 = constantColorGenerator1Node;
 
-    texture1->Update();
-    mTexture1 = CreateGLTexture(texture1);
+    mGLTexture1 = CreateGLTexture(mTexture1);
 }
 
 //----------------------------------------------------------------------------------------
@@ -190,22 +202,70 @@ void TextureTestBlock::CreateTexture1()
 void TextureTestBlock::CreateTexture2()
 {
     using namespace Pegasus::Texture;
+    using namespace Pegasus::Math;
 
     TextureManager* textureManager = GetTextureManager();
     TextureConfiguration texConfig(TextureConfiguration::TYPE_2D,
                                    TextureConfiguration::PIXELFORMAT_RGBA8,
                                    256, 256, 1, 1);
 
-    TextureRef texture2 = textureManager->CreateTextureNode(texConfig);
-    //TextureOperatorRef addOperator1 = textureManager->CreateTextureOperatorNode("AddOperator", texConfig);
-    TextureGeneratorRef constantColorGenerator1 = textureManager->CreateTextureGeneratorNode("ConstantColorGenerator", texConfig);
-    //TextureGeneratorRef constantColorGenerator2 = textureManager->CreateTextureGeneratorNode("ConstantColorGenerator", texConfig);
+    TextureGeneratorRef constantColorGenerator2Node = textureManager->CreateTextureGeneratorNode("ConstantColorGenerator", texConfig);
+    ConstantColorGenerator * constantColorGenerator2 = static_cast<ConstantColorGenerator *>(constantColorGenerator2Node);
+    constantColorGenerator2->SetColor(Color8RGBA(212, 5, 134, 255));
 
-    //addOperator1->AddGeneratorInput(constantColorGenerator1);
-    //addOperator1->AddGeneratorInput(constantColorGenerator2);
-    //texture1->SetOperatorInput(addOperator1);
-    texture2->SetGeneratorInput(constantColorGenerator1);
+    mTexture2 = textureManager->CreateTextureNode(texConfig);
+    mTexture2->SetGeneratorInput(constantColorGenerator2Node);
+    mTexture2->Update();
 
-    texture2->Update();
-    mTexture2 = CreateGLTexture(texture2);
+    mTextureGenerator2 = constantColorGenerator2Node;
+
+    mGLTexture2 = CreateGLTexture(mTexture2);
+}
+
+//----------------------------------------------------------------------------------------
+
+void TextureTestBlock::CreateTextureAdd1()
+{
+    using namespace Pegasus::Texture;
+    using namespace Pegasus::Math;
+
+    TextureManager* textureManager = GetTextureManager();
+    const TextureConfiguration & texConfig = mTexture1->GetConfiguration();
+
+    TextureOperatorRef addOperator1Node = textureManager->CreateTextureOperatorNode("AddOperator", texConfig);
+    AddOperator * addOperator1 = static_cast<AddOperator *>(addOperator1Node);
+    addOperator1->SetClamp(false);
+    addOperator1Node->AddGeneratorInput(mTextureGenerator1);
+    addOperator1Node->AddGeneratorInput(mTextureGenerator2);
+    addOperator1Node->AddGeneratorInput(mTextureGenerator2);
+
+    mTextureAdd1 = textureManager->CreateTextureNode(texConfig);
+    mTextureAdd1->SetOperatorInput(addOperator1Node);
+    mTextureAdd1->Update();
+
+    mGLTextureAdd1 = CreateGLTexture(mTextureAdd1);
+}
+
+//----------------------------------------------------------------------------------------
+
+void TextureTestBlock::CreateTextureAdd2()
+{
+    using namespace Pegasus::Texture;
+    using namespace Pegasus::Math;
+
+    TextureManager* textureManager = GetTextureManager();
+    const TextureConfiguration & texConfig = mTexture1->GetConfiguration();
+
+    TextureOperatorRef addOperator2Node = textureManager->CreateTextureOperatorNode("AddOperator", texConfig);
+    AddOperator * addOperator2 = static_cast<AddOperator *>(addOperator2Node);
+    addOperator2->SetClamp(true);
+    addOperator2Node->AddGeneratorInput(mTextureGenerator1);
+    addOperator2Node->AddGeneratorInput(mTextureGenerator2);
+    addOperator2Node->AddGeneratorInput(mTextureGenerator2);
+
+    mTextureAdd2 = textureManager->CreateTextureNode(texConfig);
+    mTextureAdd2->SetOperatorInput(addOperator2Node);
+    mTextureAdd2->Update();
+
+    mGLTextureAdd2 = CreateGLTexture(mTextureAdd2);
 }

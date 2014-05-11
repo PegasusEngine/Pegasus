@@ -15,69 +15,61 @@ namespace Pegasus {
 namespace Texture {
 
 
+BEGIN_IMPLEMENT_PROPERTIES(ConstantColorGenerator)
+    IMPLEMENT_PROPERTY(Math::Color8RGBA, Color, Math::Color8RGBA(0, 0, 0, 255))
+END_IMPLEMENT_PROPERTIES()
+
+//----------------------------------------------------------------------------------------
+
 void ConstantColorGenerator::GenerateData()
 {
-    //! \todo Use an easier syntax
+    //! \todo Use a simpler syntax
     Graph::NodeDataRef dataRef = GetData();
     TextureData * data = static_cast<TextureData *>(&(*dataRef));
     PG_ASSERT(data != nullptr);
 
-    //! \todo Compute the color constant from the properties
-    /*const*/ unsigned char color[4] = { 132, 5, 212, 255 };
-    static bool firstTime = true;
-    if (!firstTime)
-    {
-        color[0] = 212;
-        color[2] = 132;
-    }
-    firstTime = false;
-
+    const Math::PUInt8 * color8 = GetColor().rgba;
+    const Math::PUInt32 color32 = GetColor().rgba32;
+    
     const TextureConfiguration & configuration = GetConfiguration();
     const unsigned int numBytesPerPixel = configuration.GetNumBytesPerPixel();
     const unsigned int numLayers = configuration.GetNumLayers();
     const unsigned int numPixelsPerLayer = configuration.GetNumPixelsPerLayer();
     
-    unsigned int layer, p;
     unsigned char * layerData;
+    Math::PUInt32 * layerData32;
+    unsigned int layer, p;
 
     // For each layer
-    switch (numBytesPerPixel)
+    for (layer = 0; layer < numLayers; ++layer)
     {
-        case 3:
-            for (layer = 0; layer < numLayers; ++layer)
-            {
-                layerData = data->GetLayerImageData(layer);
-        
+        layerData = data->GetLayerImageData(layer);
+
+        switch (numBytesPerPixel)
+        {
+            case 3:
                 // For each pixel, copy the constant color
                 for (p = 0; p < numPixelsPerLayer; ++p)
                 {
                     const unsigned int p3 = p * 3;
-                    layerData[p3    ] = color[0];
-                    layerData[p3 + 1] = color[1];
-                    layerData[p3 + 2] = color[2];
+                    layerData[p3    ] = color8[0];
+                    layerData[p3 + 1] = color8[1];
+                    layerData[p3 + 2] = color8[2];
                 }
-            }
             break;
 
-        case 4:
-            for (layer = 0; layer < numLayers; ++layer)
-            {
-                layerData = data->GetLayerImageData(layer);
-        
+            case 4:
                 // For each pixel, copy the constant color
+                layerData32 = reinterpret_cast<Math::PUInt32 *>(layerData);
                 for (p = 0; p < numPixelsPerLayer; ++p)
                 {
-                    const unsigned int p4 = p << 2;
-                    layerData[p4    ] = color[0];
-                    layerData[p4 + 1] = color[1];
-                    layerData[p4 + 2] = color[2];
-                    layerData[p4 + 3] = color[3];
+                    layerData32[p] = color32;
                 }
-            }
             break;
 
-        default:
-            PG_FAILSTR("Unsupported number of bytes per pixel (%d) for ConstantColorGenerator", numBytesPerPixel);
+            default:
+                PG_FAILSTR("Unsupported number of bytes per pixel (%d) for ConstantColorGenerator", numBytesPerPixel);
+        }
     }
 }
 

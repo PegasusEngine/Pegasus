@@ -64,7 +64,8 @@ private:
     //! Create the individual textures
     void CreateTexture1();
     void CreateTexture2();
-
+    void CreateTextureAdd1();
+    void CreateTextureAdd2();
 
     enum VAO_IDS { TRIANGLES_VAO = 0, NUM_VAOS };
     enum BUFFER_IDS { TRIANGLES_BUFFER = 0, NUM_BUFFERS };
@@ -73,9 +74,10 @@ private:
     Pegasus::Shader::ProgramLinkageRef mProgram;
     GLint mScreenRatioUniform;
     GLint mTextureUniform;
+    Pegasus::Texture::TextureGeneratorRef mTextureGenerator1, mTextureGenerator2;
+    Pegasus::Texture::TextureRef mTexture1, mTexture2, mTextureAdd1, mTextureAdd2;
+    GLuint mGLTexture1, mGLTexture2, mGLTextureAdd1, mGLTextureAdd2;
     //GLuint mTextureSampler;
-    GLuint mTexture1;
-    GLuint mTexture2;
 };
 
 

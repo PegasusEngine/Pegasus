@@ -23,6 +23,10 @@ class AddOperator : public TextureOperator
 {
     DECLARE_TEXTURE_OPERATOR_NODE(AddOperator)
 
+    BEGIN_DECLARE_PROPERTIES()
+        DECLARE_PROPERTY(bool, Clamp)
+    END_DECLARE_PROPERTIES()
+
 public:
 
     //! Specifies the minimum number of input nodes accepted by the current node
@@ -39,7 +43,7 @@ public:
     //! or if an input node is dirty, and returns the dirty flag to the parent caller.
     //! That will trigger a chain of refreshed data when calling GetUpdatedData().
     //! \return True if the node data are dirty or if any input node is.
-    //virtual bool Update() = 0;
+    //virtual bool Update();
 
     //------------------------------------------------------------------------------------
     

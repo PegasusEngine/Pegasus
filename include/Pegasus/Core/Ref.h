@@ -149,11 +149,25 @@ public:
     }
 
   
-    //! Cast operator, with C2 as the destination class
+    //! Reference cast operator, with C2 as the destination class
     //! \warning C2 must be a class derived from C
     //! \return Reference to the object cast to a different type
     template <class C2>
     inline operator Ref<C2>() const { return Ref<C2>(static_cast<C2 *>(mObject)); }
+
+    //! Weak pointer cast operator, with C2 as the destination class
+    //! \warning C2 must be a class derived from C
+    //! \warning The returned pointer is weak, meaning that no reference counting is handled for it
+    //! \return Pointer to the object cast to a different pointer type
+    template <class C2>
+    inline operator C2 *() { return static_cast<C2 *>(mObject); }
+
+    //! Constant weak pointer cast operator, with C2 as the destination class
+    //! \warning C2 must be a class derived from C
+    //! \warning The returned pointer is weak, meaning that no reference counting is handled for it
+    //! \return Pointer to the object cast to a different pointer type
+    template <class C2>
+    inline operator const C2 *() const { return static_cast<const C2 *>(mObject); }
 
 
     //! Comparison operator with a weak pointer

@@ -23,6 +23,10 @@ class ConstantColorGenerator : public TextureGenerator
 {
     DECLARE_TEXTURE_GENERATOR_NODE(ConstantColorGenerator)
 
+    BEGIN_DECLARE_PROPERTIES()
+        DECLARE_PROPERTY(Math::Color8RGBA, Color)
+    END_DECLARE_PROPERTIES()
+
 public:
 
     //! Update the generator internal state by pulling external parameters.
@@ -30,7 +34,7 @@ public:
     //! and returns the dirty flag to the parent caller.
     //! That will trigger a data refresh when calling GetUpdatedData().
     //! \return True if the node data are dirty
-    //virtual bool Update() = 0;
+    //virtual bool Update();
 
     //------------------------------------------------------------------------------------
     

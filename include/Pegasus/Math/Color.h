@@ -135,6 +135,7 @@ Color8RGBA
 {
     PUInt8 v[4];                                //!< Array version of the color
     PUInt8 rgba[4];                             //!< Array version of the color
+    PUInt32 rgba32;                             //!< 32 bits integer version of the color
     struct { PUInt8 rgb[3]; PUInt8 alpha; };    //!< RGB and alpha
     struct { PUInt8 red, green, blue, alpha; }; //!< Individual colors
 

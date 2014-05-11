@@ -22,7 +22,8 @@ namespace PropertyGrid {
 //! Enumerant for the different property types. Those are the only ones supported
 enum PropertyType
 {
-    PROPERTYTYPE_INT = 0,
+    PROPERTYTYPE_BOOL = 0,
+    PROPERTYTYPE_INT,
 
     PROPERTYTYPE_FLOAT,
     PROPERTYTYPE_VEC2,
@@ -55,6 +56,15 @@ class PropertyDefinition
 //! (typically a const reference for non-primitive types).
 //! ReturnType is the type required to return a property from a function
 //! (typically a value, even for non-primitive types).
+template <>
+struct PropertyDefinition<bool>
+{
+    static const PropertyType PROPERTY_TYPE = PROPERTYTYPE_BOOL;
+    typedef bool VarType;
+    typedef bool ParamType;
+    typedef bool ReturnType;
+};
+
 template <>
 struct PropertyDefinition<int>
 {
