@@ -18,6 +18,7 @@
 #include "TimelineBlocks/PsyBeadsBlock.h"
 #include "TimelineBlocks/FractalCubeBlock.h"
 #include "TimelineBlocks/FractalCube2Block.h"
+#include "TimelineBlocks/TextureTestBlock.h"
 
 #include "Pegasus/Timeline/Lane.h"
 
@@ -73,6 +74,7 @@ void TestApp1::RegisterTimelineBlocks()
     REGISTER_TIMELINE_BLOCK(PsyBeadsBlock);
     REGISTER_TIMELINE_BLOCK(FractalCubeBlock);
     REGISTER_TIMELINE_BLOCK(FractalCube2Block);
+    REGISTER_TIMELINE_BLOCK(TextureTestBlock);
 }
 
 //----------------------------------------------------------------------------------------
@@ -124,6 +126,12 @@ void TestApp1::InitializeApp()
     fractalCube2Block->SetColor(128, 255, 192);
 #endif
     timeline->GetLane(1)->InsertBlock(fractalCube2Block, 13 * TICKS_PER_BEAT, 12 * TICKS_PER_BEAT);
+
+    Pegasus::Timeline::Block * textureTestBlock = timeline->CreateBlock("TextureTestBlock");
+#if PEGASUS_ENABLE_PROXIES
+    textureTestBlock->SetColor(192, 255, 128);
+#endif
+    timeline->GetLane(2)->InsertBlock(textureTestBlock, 25 * TICKS_PER_BEAT, 12 * TICKS_PER_BEAT);
 }
 
 //----------------------------------------------------------------------------------------

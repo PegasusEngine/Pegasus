@@ -33,6 +33,7 @@
     <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TimelineBlocks\FractalCubeBlock.cpp" />
     <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TimelineBlocks\KleberTriangleBlock.cpp" />
     <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TimelineBlocks\PsyBeadsBlock.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TimelineBlocks\TextureTestBlock.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TestApp1.h" />
@@ -41,6 +42,7 @@
     <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TimelineBlocks\FractalCubeBlock.h" />
     <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TimelineBlocks\KleberTriangleBlock.h" />
     <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TimelineBlocks\PsyBeadsBlock.h" />
+    <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TimelineBlocks\TextureTestBlock.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CDBC735A-BBD9-48FA-AC97-3FDB4EC980F0}</ProjectGuid>

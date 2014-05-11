@@ -35,6 +35,9 @@
     <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TimelineBlocks\KleberTriangleBlock.cpp">
       <Filter>Source\TimelineBlocks</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TimelineBlocks\TextureTestBlock.cpp">
+      <Filter>Source\TimelineBlocks</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TestApp1.h">
@@ -53,6 +56,9 @@
       <Filter>Include\TimelineBlocks</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TimelineBlocks\KleberTriangleBlock.h">
+      <Filter>Include\TimelineBlocks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TimelineBlocks\TextureTestBlock.h">
       <Filter>Include\TimelineBlocks</Filter>
     </ClInclude>
   </ItemGroup>

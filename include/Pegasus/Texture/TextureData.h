@@ -34,6 +34,22 @@ public:
     //! \return Configuration of the texture data, such as the resolution and pixel format
     inline const TextureConfiguration & GetConfiguration() const { return mConfiguration; }
 
+    //! Get the image data for a layer
+    //! \param layer Index of the layer (< mNumLayers)
+    inline unsigned char * GetLayerImageData(unsigned int layer)
+        {
+            PG_ASSERTSTR(layer < mConfiguration.GetNumLayers(), "Invalid layer index (%d), it must be < %d", layer, mConfiguration.GetNumLayers());
+            return mImageData[layer];
+        }
+
+    //! Get the image data for a layer (const version)
+    //! \param layer Index of the layer (< mNumLayers)
+    inline const unsigned char * GetLayerImageData(unsigned int layer) const
+        {
+            PG_ASSERTSTR(layer < mConfiguration.GetNumLayers(), "Invalid layer index (%d), it must be < %d", layer, mConfiguration.GetNumLayers());
+            return mImageData[layer];
+        }
+
     //------------------------------------------------------------------------------------
     
 protected:
@@ -52,9 +68,9 @@ private:
     TextureConfiguration mConfiguration;
 
 
-    //! Image data of the texture, never nullptr
-    //! \todo Handle mipmaps, layers, etc. (separate image data from actual texture data?)
-    unsigned char * mImageData;
+    //! Image data of the texture, never nullptr.
+    //! mImageData[layer][z*height*width + y*height + x]
+    unsigned char ** mImageData;
 };
 
 //----------------------------------------------------------------------------------------

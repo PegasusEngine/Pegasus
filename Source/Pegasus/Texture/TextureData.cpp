@@ -20,14 +20,24 @@ TextureData::TextureData(const TextureConfiguration & configuration, Alloc::IAll
     mConfiguration(configuration)
 {
     // Allocate the image data
-    const unsigned int imageSize = configuration.GetNumBytes();
-    mImageData = PG_NEW_ARRAY(GetAllocator(), -1, "TextureData::mImageData", Alloc::PG_MEM_TEMP, unsigned char, imageSize);
+    const unsigned int numLayers = configuration.GetNumLayers();
+    const unsigned int numBytesPerLayer = configuration.GetNumBytesPerLayer();
+    mImageData = PG_NEW_ARRAY(GetAllocator(), -1, "TextureData::mImageData", Alloc::PG_MEM_TEMP, unsigned char *, numLayers);
+    for (unsigned int layer = 0; layer < numLayers; ++layer)
+    {
+        mImageData[layer] = PG_NEW_ARRAY(GetAllocator(), -1, "TextureData::mImageData[layer]", Alloc::PG_MEM_TEMP, unsigned char, numBytesPerLayer);
+    }
 }
 
 //----------------------------------------------------------------------------------------
 
 TextureData::~TextureData()
 {
+    const unsigned int numLayers = mConfiguration.GetNumLayers();
+    for (unsigned int layer = 0; layer < numLayers; ++layer)
+    {
+        PG_DELETE_ARRAY(GetAllocator(), mImageData[layer]);
+    }
     PG_DELETE_ARRAY(GetAllocator(), mImageData);
 }
 
