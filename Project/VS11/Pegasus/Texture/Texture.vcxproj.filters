@@ -50,6 +50,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureDeclaration.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Generator\GradientGenerator.h">
+      <Filter>Include\Generator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Texture.cpp">
@@ -75,6 +78,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureManager.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Generator\GradientGenerator.cpp">
+      <Filter>Source\Generator</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

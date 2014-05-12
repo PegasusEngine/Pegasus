@@ -289,9 +289,9 @@ inline ColorRGB ToColorRGB(const ColorRGBA & color)
 //! \return RGB color defined with float numbers
 inline ColorRGB ToColorRGB(const Color8RGB & color)
     {
-        return ColorRGB(PFloat32(color.red  ) * 255.0f,
-                        PFloat32(color.green) * 255.0f,
-                        PFloat32(color.blue ) * 255.0f);
+        return ColorRGB(PFloat32(color.red  ) * (1.0f / 255.0f),
+                        PFloat32(color.green) * (1.0f / 255.0f),
+                        PFloat32(color.blue ) * (1.0f / 255.0f));
     }
 
 //! Convert an RGB color defined with 8-bit integers to float numbers
@@ -300,9 +300,9 @@ inline ColorRGB ToColorRGB(const Color8RGB & color)
 //! \return RGB color defined with float numbers
 inline ColorRGB ToColorRGB(const Color8RGBA & color)
     {
-        return ColorRGB(PFloat32(color.red  ) * 255.0f,
-                        PFloat32(color.green) * 255.0f,
-                        PFloat32(color.blue ) * 255.0f);
+        return ColorRGB(PFloat32(color.red  ) * (1.0f / 255.0f),
+                        PFloat32(color.green) * (1.0f / 255.0f),
+                        PFloat32(color.blue ) * (1.0f / 255.0f));
     }
 
 //! Add an alpha component to a color defined with float numbers
@@ -317,9 +317,9 @@ inline ColorRGBA ToColorRGBA(const ColorRGB & color)
 //! \return RGBA color defined with float numbers (alpha = 1.0f)
 inline ColorRGBA ToColorRGBA(const Color8RGB & color)
     {
-        return ColorRGBA(PFloat32(color.red  ) * 255.0f,
-                         PFloat32(color.green) * 255.0f,
-                         PFloat32(color.blue ) * 255.0f, 1.0f);
+        return ColorRGBA(PFloat32(color.red  ) * (1.0f / 255.0f),
+                         PFloat32(color.green) * (1.0f / 255.0f),
+                         PFloat32(color.blue ) * (1.0f / 255.0f), 1.0f);
     }
 
 //! Convert an RGBA color defined with 8-bit integers to float numbers
@@ -327,10 +327,10 @@ inline ColorRGBA ToColorRGBA(const Color8RGB & color)
 //! \return RGBA color defined with float numbers
 inline ColorRGBA ToColorRGBA(const Color8RGBA & color)
     {
-        return ColorRGBA(PFloat32(color.red  ) * 255.0f,
-                         PFloat32(color.green) * 255.0f,
-                         PFloat32(color.blue ) * 255.0f,
-                         PFloat32(color.alpha) * 255.0f);
+        return ColorRGBA(PFloat32(color.red  ) * (1.0f / 255.0f),
+                         PFloat32(color.green) * (1.0f / 255.0f),
+                         PFloat32(color.blue ) * (1.0f / 255.0f),
+                         PFloat32(color.alpha) * (1.0f / 255.0f));
     }
 
 //! Convert from an RGB color defined with 8 bits per component to a grayscale value

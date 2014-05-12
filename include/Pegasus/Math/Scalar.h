@@ -45,7 +45,25 @@ namespace Pegasus {
 namespace Math {
 
 
-// Main mathematical operations
+//@{
+//! Test if a number is close to another one (usually better to use than == due to precision issues)
+//! \param v1 Input number
+//! \param v2 Number to compare to
+//! \param epsilon Size of the window around f2 for which f1 is considered as equal
+//! \return True if f1 is similar to f2 (with less than epsilon difference)
+inline bool IsSimilar(PFloat32 v1, PFloat32 v2, PFloat32 epsilon = 1e-5f)
+    {
+        PG_ASSERT(epsilon > 0.0f);
+        return (v1 >= (v2 - epsilon)) && (v1 <= (v2 + epsilon));
+    }
+inline bool IsSimilar(PFloat64 v1, PFloat64 v2, PFloat64 epsilon = 1e-10)
+    {
+        PG_ASSERT(epsilon > 0.0);
+        return (v1 >= (v2 - epsilon)) && (v1 <= (v2 + epsilon));
+    }
+//@}
+
+//----------------------------------------------------------------------------------------
 
 //@{
 //! Square of a value
@@ -146,7 +164,7 @@ inline bool IsPowerOf2(PUInt32 n) { return (n == 0) ? false : (((n - 1) & n) == 
 //! Get the next power of 2
 //! \param n Argument integer
 //! \return Power of 2 integer which is greater than or equal to n
-inline PUInt8  NextPowerOf2(PUInt8  n)
+inline PUInt8 NextPowerOf2(PUInt8  n)
     {
         PG_ASSERT(n <= (1 << 7));
         PUInt8 res = 1;
@@ -175,7 +193,7 @@ inline PUInt32 NextPowerOf2(PUInt32 n)
 //! Get the integer base 2 logarithm
 //! \param n Argument integer (>= 1)
 //! \return Base 2 logarithm of n, rounded to the smaller integer
-inline PUInt8  Log2(PUInt8  n)
+inline PUInt8 Log2(PUInt8  n)
     {
         PG_ASSERT(n >= 1);
         if (n == 0) { return 0; }
@@ -462,6 +480,14 @@ inline PUInt32  Clamp(PUInt32  v, PUInt32  min, PUInt32  max) { return (v > max)
 inline PInt32   Clamp(PInt32   v, PInt32   min, PInt32   max) { return (v > max) ? max : ((v < min) ? min : v); }
 inline PFloat32 Clamp(PFloat32 v, PFloat32 min, PFloat32 max) { return (v > max) ? max : ((v < min) ? min : v); }
 inline PFloat64 Clamp(PFloat64 v, PFloat64 min, PFloat64 max) { return (v > max) ? max : ((v < min) ? min : v); }
+//@}
+
+//@{
+//! Clamping of a floating point value between 0 and 1
+//! \param v Value to clamp
+//! \return Clamped value, in [0, 1]
+inline PFloat32 Saturate(PFloat32 v) { return Clamp(v, 0.0f, 1.0f); }
+inline PFloat64 Saturate(PFloat64 v) { return Clamp(v, 0.0, 1.0); }
 //@}
 
 //----------------------------------------------------------------------------------------

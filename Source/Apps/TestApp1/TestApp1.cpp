@@ -131,7 +131,7 @@ void TestApp1::InitializeApp()
 #if PEGASUS_ENABLE_PROXIES
     textureTestBlock->SetColor(192, 255, 128);
 #endif
-    timeline->GetLane(2)->InsertBlock(textureTestBlock, 25 * TICKS_PER_BEAT, 12 * TICKS_PER_BEAT);
+    timeline->GetLane(2)->InsertBlock(textureTestBlock, 25 * TICKS_PER_BEAT, 18 * TICKS_PER_BEAT);
 }
 
 //----------------------------------------------------------------------------------------

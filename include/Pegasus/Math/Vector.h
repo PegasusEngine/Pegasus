@@ -29,6 +29,7 @@ Vec2
     PFloat32 xy[2];                 //!< Array version of the vector
     PFloat32 xz[2];                 //!< Array version of the vector
     PFloat32 st[2];                 //!< Array version of the vector
+    PFloat32 rg[2];                 //!< Array version of the vector
     struct { PFloat32 x, y; };      //!< Space coordinates
     struct { PFloat32 x, z; };      //!< Space coordinates
     struct { PFloat32 s, t; };      //!< Texture coordinates
@@ -84,6 +85,7 @@ Vec3
     PFloat32 v[3];                            //!< Array version of the vector
     PFloat32 xyz[3];                          //!< Array version of the vector
     PFloat32 str[3];                          //!< Array version of the vector
+    PFloat32 rgb[3];                          //!< Array version of the vector
     struct { PFloat32 x, y, z;          };    //!< Space coordinates
     struct { PFloat32 xy[2], z;         };    //!< Space coordinates
     struct { PFloat32 x, yz[2];         };    //!< Space coordinates
@@ -169,6 +171,7 @@ Vec4
     PFloat32 v[4];                                   //!< Array version of the vector
     PFloat32 xyzw[4];                                //!< Array version of the vector
     PFloat32 strq[4];                                //!< Array version of the vector
+    PFloat32 rgba[4];                                //!< Array version of the vector
     struct { PFloat32 x, y, z, w;              };    //!< Homogeneous space coordinates
     struct { PFloat32 xy[2], zw[2];            };    //!< Homogeneous space coordinates
     struct { PFloat32 x, yz[2], w;             };    //!< Homogeneous space coordinates
@@ -608,6 +611,16 @@ inline void Normalize(Vec4InOut dst, Vec4In vec) { dst = vec * RcpLength(vec); }
 inline Vec2Return Normalize(Vec2In vec) { return vec * RcpLength(vec); }
 inline Vec3Return Normalize(Vec3In vec) { return vec * RcpLength(vec); }
 inline Vec4Return Normalize(Vec4In vec) { return vec * RcpLength(vec); }
+//@}
+
+//@{
+//! Test if a vector is normalized
+//! \param vec Vector to test for a length of 1
+//! \param epsilon Error allowed on the length measurement to still consider the vector as a length of 1
+//! \return True if the vector is normalized
+inline bool IsNormalized(Vec2In vec, PFloat32 epsilon = 0.001f) { return IsSimilar(SqLength(vec), 1.0f, epsilon); }
+inline bool IsNormalized(Vec3In vec, PFloat32 epsilon = 0.001f) { return IsSimilar(SqLength(vec), 1.0f, epsilon); }
+inline bool IsNormalized(Vec4In vec, PFloat32 epsilon = 0.001f) { return IsSimilar(SqLength(vec), 1.0f, epsilon); }
 //@}
 
 //----------------------------------------------------------------------------------------

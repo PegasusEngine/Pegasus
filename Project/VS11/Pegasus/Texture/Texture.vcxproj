@@ -28,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Generator\ConstantColorGenerator.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Generator\GradientGenerator.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Operator\AddOperator.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Texture.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureConfiguration.h" />
@@ -39,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Generator\ConstantColorGenerator.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Generator\GradientGenerator.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Operator\AddOperator.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Texture.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureConfiguration.cpp" />

@@ -64,6 +64,8 @@ private:
     //! Create the individual textures
     void CreateTexture1();
     void CreateTexture2();
+    void CreateTextureGradient1();
+    void CreateTextureGradient2();
     void CreateTextureAdd1();
     void CreateTextureAdd2();
 
@@ -74,9 +76,9 @@ private:
     Pegasus::Shader::ProgramLinkageRef mProgram;
     GLint mScreenRatioUniform;
     GLint mTextureUniform;
-    Pegasus::Texture::TextureGeneratorRef mTextureGenerator1, mTextureGenerator2;
-    Pegasus::Texture::TextureRef mTexture1, mTexture2, mTextureAdd1, mTextureAdd2;
-    GLuint mGLTexture1, mGLTexture2, mGLTextureAdd1, mGLTextureAdd2;
+    Pegasus::Texture::TextureGeneratorRef mTextureGenerator1, mTextureGenerator2, mTextureGradientGenerator1, mTextureGradientGenerator2;
+    Pegasus::Texture::TextureRef mTexture1, mTexture2, mTextureGradient1, mTextureGradient2, mTextureAdd1, mTextureAdd2;
+    GLuint mGLTexture1, mGLTexture2, mGLTextureGradient1, mGLTextureGradient2, mGLTextureAdd1, mGLTextureAdd2;
     //GLuint mTextureSampler;
 };
 

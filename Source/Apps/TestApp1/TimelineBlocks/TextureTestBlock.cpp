@@ -12,6 +12,7 @@
 #include "TimelineBlocks/TextureTestBlock.h"
 #include "Pegasus/Render/Render.h"
 #include "Pegasus/Texture/Generator/ConstantColorGenerator.h"
+#include "Pegasus/Texture/Generator/GradientGenerator.h"
 #include "Pegasus/Texture/Operator/AddOperator.h"
 
 
@@ -83,6 +84,8 @@ void TextureTestBlock::Initialize()
     // Create the textures
     CreateTexture1();
     CreateTexture2();
+    CreateTextureGradient1();
+    CreateTextureGradient2();
     CreateTextureAdd1();
     CreateTextureAdd2();
 
@@ -128,6 +131,14 @@ void TextureTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
         glBindTexture(GL_TEXTURE_2D, mGLTexture2);
     }
     else if (beat < 9.0f)
+    {
+        glBindTexture(GL_TEXTURE_2D, mGLTextureGradient1);
+    }
+    else if (beat < 12.0f)
+    {
+        glBindTexture(GL_TEXTURE_2D, mGLTextureGradient2);
+    }
+    else if (beat < 15.0f)
     {
         glBindTexture(GL_TEXTURE_2D, mGLTextureAdd1);
     }
@@ -224,6 +235,62 @@ void TextureTestBlock::CreateTexture2()
 
 //----------------------------------------------------------------------------------------
 
+void TextureTestBlock::CreateTextureGradient1()
+{
+    using namespace Pegasus::Texture;
+    using namespace Pegasus::Math;
+
+    TextureManager* textureManager = GetTextureManager();
+    TextureConfiguration texConfig(TextureConfiguration::TYPE_2D,
+                                   TextureConfiguration::PIXELFORMAT_RGBA8,
+                                   256, 256, 1, 1);
+
+    TextureGeneratorRef gradientGenerator1Node = textureManager->CreateTextureGeneratorNode("GradientGenerator", texConfig);
+    GradientGenerator * gradientGenerator1 = static_cast<GradientGenerator *>(gradientGenerator1Node);
+    gradientGenerator1->SetColor0(Color8RGBA(32, 32, 64, 255));
+    gradientGenerator1->SetColor1(Color8RGBA(192, 32, 0, 255));
+    gradientGenerator1->SetPoint0(Vec3(0.2f, 0.5f, 0.0f));
+    gradientGenerator1->SetPoint1(Vec3(0.3f, 0.7f, 0.0f));
+    
+    mTextureGradient1 = textureManager->CreateTextureNode(texConfig);
+    mTextureGradient1->SetGeneratorInput(gradientGenerator1Node);
+    mTextureGradient1->Update();
+
+    mTextureGradientGenerator1 = gradientGenerator1Node;
+
+    mGLTextureGradient1 = CreateGLTexture(mTextureGradient1);
+}
+
+//----------------------------------------------------------------------------------------
+
+void TextureTestBlock::CreateTextureGradient2()
+{
+    using namespace Pegasus::Texture;
+    using namespace Pegasus::Math;
+
+    TextureManager* textureManager = GetTextureManager();
+    TextureConfiguration texConfig(TextureConfiguration::TYPE_2D,
+                                   TextureConfiguration::PIXELFORMAT_RGBA8,
+                                   256, 256, 1, 1);
+
+    TextureGeneratorRef gradientGenerator2Node = textureManager->CreateTextureGeneratorNode("GradientGenerator", texConfig);
+    GradientGenerator * gradientGenerator2 = static_cast<GradientGenerator *>(gradientGenerator2Node);
+    gradientGenerator2->SetColor0(Color8RGBA(32, 64, 32, 255));
+    gradientGenerator2->SetColor1(Color8RGBA(0, 192, 128, 255));
+    gradientGenerator2->SetPoint0(Vec3(0.7f, 0.7f, 0.0f));
+    gradientGenerator2->SetPoint1(Vec3(0.5f, 0.9f, 0.0f));
+    
+    mTextureGradient2 = textureManager->CreateTextureNode(texConfig);
+    mTextureGradient2->SetGeneratorInput(gradientGenerator2Node);
+    mTextureGradient2->Update();
+
+    mTextureGradientGenerator2 = gradientGenerator2Node;
+
+    mGLTextureGradient2 = CreateGLTexture(mTextureGradient2);
+}
+
+//----------------------------------------------------------------------------------------
+
 void TextureTestBlock::CreateTextureAdd1()
 {
     using namespace Pegasus::Texture;
@@ -234,10 +301,10 @@ void TextureTestBlock::CreateTextureAdd1()
 
     TextureOperatorRef addOperator1Node = textureManager->CreateTextureOperatorNode("AddOperator", texConfig);
     AddOperator * addOperator1 = static_cast<AddOperator *>(addOperator1Node);
-    addOperator1->SetClamp(false);
+    addOperator1->SetClamp(true);
     addOperator1Node->AddGeneratorInput(mTextureGenerator1);
-    addOperator1Node->AddGeneratorInput(mTextureGenerator2);
-    addOperator1Node->AddGeneratorInput(mTextureGenerator2);
+    addOperator1Node->AddGeneratorInput(mTextureGradientGenerator1);
+    addOperator1Node->AddGeneratorInput(mTextureGradientGenerator2);
 
     mTextureAdd1 = textureManager->CreateTextureNode(texConfig);
     mTextureAdd1->SetOperatorInput(addOperator1Node);
@@ -258,10 +325,10 @@ void TextureTestBlock::CreateTextureAdd2()
 
     TextureOperatorRef addOperator2Node = textureManager->CreateTextureOperatorNode("AddOperator", texConfig);
     AddOperator * addOperator2 = static_cast<AddOperator *>(addOperator2Node);
-    addOperator2->SetClamp(true);
+    addOperator2->SetClamp(false);
     addOperator2Node->AddGeneratorInput(mTextureGenerator1);
-    addOperator2Node->AddGeneratorInput(mTextureGenerator2);
-    addOperator2Node->AddGeneratorInput(mTextureGenerator2);
+    addOperator2Node->AddGeneratorInput(mTextureGradientGenerator1);
+    addOperator2Node->AddGeneratorInput(mTextureGradientGenerator2);
 
     mTextureAdd2 = textureManager->CreateTextureNode(texConfig);
     mTextureAdd2->SetOperatorInput(addOperator2Node);

@@ -13,6 +13,7 @@
 #include "Pegasus/Graph/NodeManager.h"
 
 #include "Pegasus/Texture/Generator/ConstantColorGenerator.h"
+#include "Pegasus/Texture/Generator/GradientGenerator.h"
 
 #include "Pegasus/Texture/Operator/AddOperator.h"
 
@@ -129,6 +130,7 @@ void TextureManager::RegisterAllTextureNodes()
     // IMPORTANT! Add here every texture generator node that is created,
     //            and update the list of #includes above
     REGISTER_TEXTURE_NODE(ConstantColorGenerator);
+    REGISTER_TEXTURE_NODE(GradientGenerator);
 
     // Register the operator nodes
     // IMPORTANT! Add here every texture operator node that is created

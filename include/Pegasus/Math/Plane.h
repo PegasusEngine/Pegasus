@@ -21,6 +21,9 @@ namespace Math {
 //! Value considered as zero for plane processing
 #define PEG_PLANE_EPSILON            1.0e-6f
 
+//! Value considered as zero for checking the length of the plane normal
+#define PEG_PLANE_NORMAL_EPSILON     1.0e-3f
+
 //----------------------------------------------------------------------------------------
 
 //! Class defining a 3D plane
@@ -34,13 +37,20 @@ public:
     Plane();
 
     //! Constructor
-    //! \warning The length has not to be null
-    //! \param normal Normal to the plane (renormalized)
+    //! \warning The normal length has to be 1
+    //! \param normal Normal to the plane (of length 1)
     //! \param d Distance from the origin
     Plane(Vec3In normal, PFloat32 d);
 
     //! Constructor
+    //! \warning The normal length has to be 1
+    //! \param normal Normal to the plane (of length 1)
+    //! \param p Point belonging to the plane
+    Plane(Vec3In normal, Point3In p);
+
+    //! Constructor
     //! \warning a, b, c cannot be zero at the same time
+    //! \warning The length of (a, b, c) has to be 1
     //! \param a First plane coefficient
     //! \param b Second plane coefficient
     //! \param c Third plane coefficient
@@ -49,6 +59,7 @@ public:
 
     //! Constructor
     //! \warning The first three coefficients cannot be zero at the same time
+    //! \warning The length of (coeffs[0], coeffs[1], coeffs[2]) has to be 1
     //! \param coeffs Four coefficients of the plane (as a, b, c and d)
     Plane(const PFloat32 coeffs[4]);
 
@@ -63,13 +74,12 @@ public:
 
     //------------------------------------------------------------------------------------
 
-    //! Set the normal of the plane
+    //! Set the normal of the plane (and renormalize it)
     //! \param normal Normal of the plane (internally normalized),
     //!               its length has not to be zero
     inline void SetNormal(Vec3In normal)
-        { //PG_ASSERT(Length(normal) > N3DPLANE_EPSILON);
-          PG_ASSERT(Length(normal) > 0.0f);
-          mNormal = Normalize(normal);
+        {   PG_ASSERT(Length(normal) > PEG_PLANE_EPSILON);
+            mNormal = Normalize(normal);
         }
 
     //! Set the distance of the plane from the origin

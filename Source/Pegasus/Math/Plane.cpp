@@ -18,27 +18,39 @@ namespace Math {
 Plane::Plane()
 :    mNormal(Vec3(0.0f, 1.0f, 0.0f)), mD(0.0f)
 {
-    // The constructor of normal has to be used,
+    // The constructor of mNormal has to be used,
     // otherwise its default constructor is called
 }
 
 //----------------------------------------------------------------------------------------
 
 Plane::Plane(Vec3In normal, PFloat32 d)
-:    mNormal(normal), mD(d)
+:   mNormal(normal), mD(d)
 {
-    PG_ASSERT(Length(normal) > PEG_PLANE_EPSILON);
+    // The constructor of mNormal has to be used,
+    // otherwise its default constructor is called
+    PG_ASSERT(IsNormalized(mNormal, PEG_PLANE_NORMAL_EPSILON));
 }
 
 //----------------------------------------------------------------------------------------
 
-Plane::Plane(PFloat32 m, PFloat32 b, PFloat32 c, PFloat32 d)
-:    mNormal(Vec3(mA, b, c)), mD(d)
+Plane::Plane(Vec3In normal, Point3In p)
+:   mNormal(normal)
 {
-    // The constructor of normal has to be used,
+    // The constructor of mNormal has to be used,
     // otherwise its default constructor is called
+    PG_ASSERT(IsNormalized(mNormal, PEG_PLANE_NORMAL_EPSILON));
+    SetOriginDistanceWithPoint(p);
+}
 
-    PG_ASSERT(Length(mNormal) > PEG_PLANE_EPSILON);
+//----------------------------------------------------------------------------------------
+
+Plane::Plane(PFloat32 a, PFloat32 b, PFloat32 c, PFloat32 d)
+:   mNormal(a, b, c), mD(d)
+{
+    // The constructor of mNormal has to be used,
+    // otherwise its default constructor is called
+    PG_ASSERT(IsNormalized(mNormal, PEG_PLANE_NORMAL_EPSILON));
 }
 
 //----------------------------------------------------------------------------------------
@@ -48,8 +60,7 @@ Plane::Plane(const PFloat32 coeffs[4])
 {
     // The constructor of normal has to be used,
     // otherwise its default constructor is called
-
-    PG_ASSERT(Length(mNormal) > PEG_PLANE_EPSILON);
+    PG_ASSERT(IsNormalized(mNormal, PEG_PLANE_NORMAL_EPSILON));
 }
 
 //----------------------------------------------------------------------------------------
