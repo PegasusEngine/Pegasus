@@ -15,11 +15,12 @@
 #ifndef PEGASUS_RENDER_GLGPUDEFS_H
 #define PEGASUS_RENDER_GLGPUDEFS_H
 
-#ifdef PEGASUS_GAPI_GL
+#if PEGASUS_GAPI_GL
 
 #include "Pegasus/Graph/NodeGpuData.h"
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
 #include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
+#include "../Source/Pegasus/Render/GL/GLShaderReflect.h"
 
 namespace Pegasus
 {
@@ -39,6 +40,7 @@ struct OglProgramGpuData
     PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(OglProgramGpuData, 0x2);
     GLuint mHandle; //! open gl handle
     GLuint mShaderCachedHandles [Pegasus::Shader::SHADER_STAGES_COUNT]; //! open gl cached handles for binded shaders
+    GLShaderReflect mReflection; //! reflection data
 };
 
 //! basic internal container class with opengl handles for textures

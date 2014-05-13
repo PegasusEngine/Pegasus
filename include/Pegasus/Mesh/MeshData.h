@@ -51,6 +51,9 @@ private:
 
     //! Configuration of the mesh data
     MeshConfiguration mConfiguration;
+    void  * mVertexStreams[MESH_MAX_STREAMS];
+    short * mIndexBuffer;
+    int     mVertexStreamStrides[MESH_MAX_STREAMS];
 };
 
 //----------------------------------------------------------------------------------------

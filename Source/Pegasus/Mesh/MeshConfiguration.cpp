@@ -11,12 +11,18 @@
 //!         between nodes to link them
 
 #include "Pegasus/Mesh/MeshConfiguration.h"
+#include "Pegasus/Utils/Memcpy.h"
 
 namespace Pegasus {
 namespace Mesh {
 
 
 MeshConfiguration::MeshConfiguration()
+    :
+mIsIndexed(true),
+mVertexCount(0),
+mIndexCount(0),
+mPrimitiveType(TRIANGLE)
 {
 }
 
@@ -24,22 +30,15 @@ MeshConfiguration::MeshConfiguration()
 
 MeshConfiguration::MeshConfiguration(const MeshConfiguration & other)
 {
-    *this = other;
+    Pegasus::Utils::Memcpy(this, &other, sizeof(MeshConfiguration));
 }
 
 //----------------------------------------------------------------------------------------
 
 MeshConfiguration & MeshConfiguration::operator=(const MeshConfiguration & other)
 {
+    Pegasus::Utils::Memcpy(this, &other, sizeof(MeshConfiguration));
     return *this;
-}
-
-
-//----------------------------------------------------------------------------------------
-
-bool MeshConfiguration::IsCompatible(const MeshConfiguration & configuration) const
-{
-    return true;
 }
 
 

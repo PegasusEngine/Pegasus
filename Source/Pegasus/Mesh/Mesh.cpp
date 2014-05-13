@@ -49,15 +49,15 @@ void Mesh::SetConfiguration(const MeshConfiguration & configuration)
 void Mesh::SetGeneratorInput(MeshGeneratorIn meshGenerator)
 {
     // Check that the configuration is compatible
-    if (meshGenerator->GetConfiguration().IsCompatible(this->GetConfiguration()))
+  //  if (meshGenerator->GetConfiguration().IsCompatible(this->GetConfiguration()))
     {
         RemoveAllInputs();
         AddInput(meshGenerator);
     }
-    else
+    /*else
     {
         PG_FAILSTR("Unable to set the generator input of a Mesh node since their configurations are incompatible");
-    }
+    }*/
 }
 
 //----------------------------------------------------------------------------------------
@@ -65,15 +65,15 @@ void Mesh::SetGeneratorInput(MeshGeneratorIn meshGenerator)
 void Mesh::SetOperatorInput(MeshOperatorIn meshOperator)
 {
     // Check that the configuration is compatible
-    if (meshOperator->GetConfiguration().IsCompatible(this->GetConfiguration()))
+  //  if (meshOperator->GetConfiguration().IsCompatible(this->GetConfiguration()))
     {
         RemoveAllInputs();
         AddInput(meshOperator);
     }
-    else
+   /* else
     {
         PG_FAILSTR("Unable to set the operator input of a Mesh node since their configurations are incompatible");
-    }
+    }*/
 }
 
 //----------------------------------------------------------------------------------------

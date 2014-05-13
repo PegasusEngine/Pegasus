@@ -165,6 +165,8 @@ static Pegasus::Render::OglProgramGpuData * GetOrAllocateProgramGpuData(Pegasus:
         {
             gpuData->mShaderCachedHandles[i] = 0;
         }
+        //initializes reflection data to a null state
+        Pegasus::Render::PopulateReflectionInfo(0, gpuData->mReflection);
         nodeData->SetNodeGpuData(reinterpret_cast<Pegasus::Graph::NodeGpuData*>(gpuData));
     }
     else 
@@ -372,6 +374,9 @@ void GLShaderFactory::GenerateProgramGpuData (Pegasus::Shader::ProgramLinkage * 
             ""
         );
     }
+    
+    // populate reflection data for quick draw calls in meshes
+    Pegasus::Render::PopulateReflectionInfo(gpuData->mHandle, gpuData->mReflection);
 
 }
 
