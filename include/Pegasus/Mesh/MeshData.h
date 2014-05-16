@@ -36,6 +36,7 @@ public:
     inline const MeshConfiguration & GetConfiguration() const { return mConfiguration; }
 
     //------------------------------------------------------------------------------------
+    template <class T> T * GetStream(int stream);    
     
 protected:
 
@@ -55,6 +56,14 @@ private:
     short * mIndexBuffer;
     int     mVertexStreamStrides[MESH_MAX_STREAMS];
 };
+
+
+template<class T>
+T * MeshData::GetStream(int stream)
+{
+    PG_ASSERTSTR(sizeof(T) == mVertexStreamStrides[stream], "stream strides must match!");
+    return static_cast<T*>(mVertexStreams[stream]);
+}
 
 //----------------------------------------------------------------------------------------
 

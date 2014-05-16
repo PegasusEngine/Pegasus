@@ -10,6 +10,7 @@
 //! \brief	Mesh output node
 
 #include "Pegasus/Mesh/Mesh.h"
+#include "Pegasus/Mesh/IMeshFactory.h"
 
 namespace Pegasus {
 namespace Mesh {
@@ -23,57 +24,26 @@ Mesh::Mesh(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocato
 
 //----------------------------------------------------------------------------------------
 
-Mesh::Mesh(const MeshConfiguration & configuration,
-                 Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
-:   Graph::OutputNode(nodeAllocator, nodeDataAllocator),
-    mConfiguration(configuration)
-{
-}
-
-//----------------------------------------------------------------------------------------
-
 void Mesh::SetConfiguration(const MeshConfiguration & configuration)
 {
-    if (GetNumInputs() == 0)
-    {
-        mConfiguration = configuration;
-    }
-    else
-    {
-        PG_FAILSTR("Cannot set the configuration of a mesh because the node is already in use");
-    }
+    mConfiguration = configuration;
 }
 
 //----------------------------------------------------------------------------------------
 
 void Mesh::SetGeneratorInput(MeshGeneratorIn meshGenerator)
 {
-    // Check that the configuration is compatible
-  //  if (meshGenerator->GetConfiguration().IsCompatible(this->GetConfiguration()))
-    {
-        RemoveAllInputs();
-        AddInput(meshGenerator);
-    }
-    /*else
-    {
-        PG_FAILSTR("Unable to set the generator input of a Mesh node since their configurations are incompatible");
-    }*/
+    RemoveAllInputs();
+    AddInput(meshGenerator);
+    SetConfiguration(meshGenerator->GetConfiguration());
 }
 
 //----------------------------------------------------------------------------------------
 
 void Mesh::SetOperatorInput(MeshOperatorIn meshOperator)
 {
-    // Check that the configuration is compatible
-  //  if (meshOperator->GetConfiguration().IsCompatible(this->GetConfiguration()))
-    {
-        RemoveAllInputs();
-        AddInput(meshOperator);
-    }
-   /* else
-    {
-        PG_FAILSTR("Unable to set the operator input of a Mesh node since their configurations are incompatible");
-    }*/
+    RemoveAllInputs();
+    AddInput(meshOperator);
 }
 
 //----------------------------------------------------------------------------------------

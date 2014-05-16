@@ -32,7 +32,7 @@ MeshData::MeshData(const MeshConfiguration & configuration, Alloc::IAllocator* a
     for (int i = 0; i < inputLayout->GetAttributeCount(); ++i)
     {
         const MeshInputLayout::AttrDesc& desc = inputLayout->GetAttributeDesc(i);
-        int size = MeshInputLayout::AttrTypeSizes[desc.mType];
+        int size = MeshInputLayout::AttrTypeSizes[desc.mType] * desc.mAttributeTypeCount;
         mVertexStreamStrides[desc.mStreamIndex] += size;
     }
 
@@ -42,7 +42,7 @@ MeshData::MeshData(const MeshConfiguration & configuration, Alloc::IAllocator* a
         int streamSize = mVertexStreamStrides[stream] * configuration.GetVertexCount();
         if (streamSize > 0)
         {
-            mVertexStreams[stream] = PG_NEW_ARRAY(GetAllocator(), -1, "MeshData::mVertexStream[i]", Alloc::PG_MEM_TEMP, char, streamSize);
+            mVertexStreams[stream] = PG_NEW_ARRAY(GetAllocator(), -1, "MeshData::mVertexStream[i]", Alloc::PG_MEM_TEMP, char, streamSize);           
         }
     }
 
@@ -60,7 +60,7 @@ MeshData::~MeshData()
     { 
         if (mVertexStreams[s] != nullptr)
         {
-            PG_DELETE_ARRAY(GetAllocator(), (char*)mVertexStreams[s]);
+            PG_DELETE_ARRAY(GetAllocator(), (char*)mVertexStreams[s]);           
         }
     }
     

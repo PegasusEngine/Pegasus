@@ -26,6 +26,18 @@ namespace Pegasus {
         struct WindowConfig;
         class Window;
     }
+
+    namespace Shader {
+        class ShaderManager;
+    }
+
+    namespace Texture {
+        class TextureManager;
+    }
+    
+    namespace Mesh {
+        class MeshManager;
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -91,11 +103,12 @@ public:
 
 
     // IWindowContext interface
-    virtual Io::IOManager* GetIOManager() const { return mIoManager; }
-    virtual Graph::NodeManager* GetNodeManager() const { return mNodeManager; }
+    virtual Io::IOManager*           GetIOManager()      const { return mIoManager;      }
+    virtual Graph::NodeManager*      GetNodeManager()    const { return mNodeManager;    }
     virtual Texture::TextureManager* GetTextureManager() const { return mTextureManager; }
-    virtual Shader::ShaderManager* GetShaderManager() const { return mShaderManager; }
-    virtual Timeline::Timeline* GetTimeline() const { return mTimeline; }
+    virtual Mesh::MeshManager*       GetMeshManager()    const { return mMeshManager;    }
+    virtual Shader::ShaderManager*   GetShaderManager()  const { return mShaderManager;  }
+    virtual Timeline::Timeline*      GetTimeline()       const { return mTimeline;       }
 
     // Editor functions
     Shader::ShaderManager* GetShaderManager() { return mShaderManager; }
@@ -112,13 +125,14 @@ private:
 
 
     bool mInitialized;                          //!< Initialized flag
-    ApplicationConfig mConfig;                  //!< Cached config object
-    AppWindowManager* mWindowManager;           //!< Window manager
-    Io::IOManager* mIoManager;                  //!< IO manager
-    Graph::NodeManager* mNodeManager;           //!< Graph node manager
-    Shader::ShaderManager* mShaderManager;      //!< Shader node manager
+    ApplicationConfig        mConfig;           //!< Cached config object
+    AppWindowManager*        mWindowManager;    //!< Window manager
+    Io::IOManager*           mIoManager;        //!< IO manager
+    Graph::NodeManager*      mNodeManager;      //!< Graph node manager
+    Shader::ShaderManager*   mShaderManager;    //!< Shader node manager
     Texture::TextureManager* mTextureManager;   //!< Texture node manager
-    Timeline::Timeline* mTimeline;              //!< Timeline object
+    Mesh::MeshManager*       mMeshManager;      //!< Mesh node manager
+    Timeline::Timeline*      mTimeline;         //!< Timeline object
 };
 
 }   // namespace App

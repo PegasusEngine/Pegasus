@@ -16,6 +16,7 @@
 #include "Pegasus/Graph/NodeManager.h"
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Texture/TextureManager.h"
+#include "Pegasus/Mesh/MeshManager.h"
 #include "Pegasus/Timeline/Timeline.h"
 
 namespace Pegasus {
@@ -45,6 +46,10 @@ public:
     //! Gets the texture manager for use by this window
     //! \return The texture manager.
     virtual Texture::TextureManager* GetTextureManager() const = 0;
+
+    //! Gets the texture manager for use by this window
+    //! \return The texture manager.
+    virtual Mesh::MeshManager* GetMeshManager() const = 0;
 
     //! Gets the timeline for use by this window
     //! \return The timeline.

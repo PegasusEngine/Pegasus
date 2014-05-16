@@ -108,7 +108,7 @@ void MeshInputLayout::GenerateEditorLayout(MeshInputLayout::LayoutUsageBitMask m
             MeshInputLayout::FLOAT, // 32 bit precision
             offset, // byte offset
             0, // semantic index
-            3, // vec3
+            2, // vec2
             0, // use the first stream
             true, // snorm
         };

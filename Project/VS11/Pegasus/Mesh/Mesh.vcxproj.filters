@@ -47,6 +47,12 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\MeshInputLayout.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\Generator\QuadGenerator.h">
+      <Filter>Include\Generator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\IMeshFactory.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Mesh.cpp">
@@ -69,6 +75,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\MeshInputLayout.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Generator\QuadGenerator.cpp">
+      <Filter>Source\Generator</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -121,6 +121,10 @@ protected:
     //! \return Global texture manager
     inline Texture::TextureManager * GetTextureManager() const { return mAppContext->GetTextureManager(); }
 
+    //! Get the mesh manager
+    //! \return Global mesh manager
+    inline Mesh::MeshManager * GetMeshManager() const { return mAppContext->GetMeshManager(); }
+
     //! Get the timeline
     //! \return Global timeline
     inline Timeline * GetTimeline() const { return mAppContext->GetTimeline(); }

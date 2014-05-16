@@ -10,6 +10,7 @@
 //! \brief  Pegasus Unit tests for the Utils package, implementation
 
 #include "Pegasus/UnitTests/UtilsTests.h"
+#include "Pegasus/Utils/Memset.h"
 #include "Pegasus/Utils/Memcpy.h"
 #include "Pegasus/Utils/String.h"
 
@@ -58,6 +59,22 @@ bool UNIT_TEST_Memcpy3()
     for (int i = 0; i < 256; ++i) match = match && destList[i] == i;
 
     return match;
+}
+
+bool UNIT_TEST_Memset1()
+{
+    char p = 100; 
+    Pegasus::Utils::Memset8(&p, '9', 1);
+    return p == '9';
+}
+
+bool UNIT_TEST_Memset2()
+{
+    int values[100];
+    for (int i = 0; i < 100; ++i) values[i] = i;
+    Pegasus::Utils::Memset8(values, 0, sizeof(values));
+    for (int i = 0; i < 100; ++i) if (values[i] != 0) return false;
+    return true;
 }
 
 bool UNIT_TEST_Strcmp1()

@@ -50,6 +50,9 @@
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLShaderReflect.h">
       <Filter>Source\GL</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Render\MeshFactory.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.cpp">
@@ -71,6 +74,9 @@
       <Filter>Source\GL</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLShaderReflect.cpp">
+      <Filter>Source\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLMeshFactory.cpp">
       <Filter>Source\GL</Filter>
     </ClCompile>
   </ItemGroup>

@@ -22,6 +22,7 @@
 namespace Pegasus {
 namespace Mesh {
 
+class IMeshFactory;
 
 //! Base output node class, for the root of the graphs.
 //! \warning Has one and only one input node, operator or generator
@@ -36,22 +37,13 @@ public:
     //! \param nodeDataAllocator Allocator used for NodeData
     Mesh(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
-    //! Constructor
-    //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
-    //! \param nodeDataAllocator Allocator used for NodeData
-    //! \param configuration Configuration of the mesh, such as the resolution and pixel format
-    Mesh(const MeshConfiguration & configuration,
-            Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
-
-    //! Set the configuration of the mesh
-    //! \warning Can be done only after the constructor has been called, when no input node is connected yet.
-    //!          In case of error, the configuration is not set
-    void SetConfiguration(const MeshConfiguration & configuration);
 
     //! Get the configuration of the mesh
     //! \return Configuration of the mesh
     inline const MeshConfiguration & GetConfiguration() const { return mConfiguration; }
 
+    //! Sets the GPU factory for the mesh
+    void SetFactory(IMeshFactory * factory) { mFactory = factory; }
 
     //! Set the input of the mesh output node to a generator node
     //! \warning If an input was already set (generator or operator), it is replaced
@@ -90,6 +82,11 @@ protected:
     //! Destructor
     virtual ~Mesh();
 
+    //! Set the configuration of the mesh
+    //! \warning Can be done only after the constructor has been called, when no input node is connected yet.
+    //!          In case of error, the configuration is not set
+    void SetConfiguration(const MeshConfiguration & configuration);
+
     //------------------------------------------------------------------------------------
 
 private:
@@ -99,6 +96,9 @@ private:
 
     //! Configuration of the mesh, such as the resolution and pixel format
     MeshConfiguration mConfiguration;
+
+    //! Pointer to GPU Mesh factory
+    IMeshFactory * mFactory;
 };
 
 //----------------------------------------------------------------------------------------

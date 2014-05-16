@@ -27,6 +27,7 @@ namespace Pegasus {
 namespace Pegasus {
 namespace Mesh {
 
+class IMeshFactory;
 
 //! Global mesh node manager, including the factory features
 class MeshManager
@@ -36,7 +37,7 @@ public:
     //! Constructor
     //! \note Registers all mesh nodes of the Mesh project
     //! \param nodeManager Pointer to the global node manager (!- nullptr)
-    MeshManager(Graph::NodeManager * nodeManager);
+    MeshManager(Graph::NodeManager * nodeManager, IMeshFactory * factory);
 
     //! Destructor
     virtual ~MeshManager();
@@ -53,14 +54,12 @@ public:
     //! Create a mesh node
     //! \param configuration Configuration of the mesh
     //! \return Reference to the created node, null reference if an error occurred
-    MeshReturn CreateMeshNode(const MeshConfiguration & configuration);
+    MeshReturn CreateMeshNode();
 
     //! Create a mesh generator node by class name
     //! \param className Name of the mesh generator node class to instantiate
-    //! \param configuration Configuration of the mesh
     //! \return Reference to the created node, null reference if an error occurred
-    MeshGeneratorReturn CreateMeshGeneratorNode(const char * className,
-                                                      const MeshConfiguration & configuration);
+    MeshGeneratorReturn CreateMeshGeneratorNode(const char * className);
 
     //! Create an mesh operator node by class name
     //! \param className Name of the mesh operator node class to instantiate
@@ -80,9 +79,11 @@ private:
     //! Register all the mesh nodes of the Mesh project
     void RegisterAllMeshNodes();
 
-
     //! Pointer to the node manager (!= nullptr)
     Graph::NodeManager * mNodeManager;
+
+    //! Pointer to the GPU factory. Generates gpu data from cpu mesh data
+    IMeshFactory * mFactory;
 };
 
 

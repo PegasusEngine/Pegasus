@@ -83,6 +83,9 @@ protected:
     //! \note Called by \a GetUpdatedData()
     virtual void GenerateData() = 0;
 
+    //! Configuration of the generator
+    MeshConfiguration mConfiguration;
+
     //------------------------------------------------------------------------------------
 
 private:
@@ -90,8 +93,6 @@ private:
     // Nodes cannot be copied, only references to them
     PG_DISABLE_COPY(MeshGenerator)
 
-    //! Configuration of the generator, such as the resolution and pixel format
-    MeshConfiguration mConfiguration;
 };
 
 //----------------------------------------------------------------------------------------

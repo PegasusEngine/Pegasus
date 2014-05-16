@@ -10,6 +10,8 @@
 //! \brief	Global mesh node manager, including the factory features
 
 #include "Pegasus/Mesh/MeshManager.h"
+#include "Pegasus/Mesh/Generator/QuadGenerator.h"
+#include "Pegasus/Mesh/IMeshFactory.h"
 #include "Pegasus/Graph/NodeManager.h"
 
 namespace Pegasus {
@@ -22,9 +24,10 @@ namespace Mesh {
 
 //----------------------------------------------------------------------------------------
     
-MeshManager::MeshManager(Graph::NodeManager * nodeManager)
-:   mNodeManager(nodeManager)
+MeshManager::MeshManager(Graph::NodeManager * nodeManager, IMeshFactory * factory)
+:   mNodeManager(nodeManager), mFactory(factory)
 {
+    PG_ASSERT(factory);
     if (nodeManager != nullptr)
     {
         RegisterAllMeshNodes();
@@ -57,12 +60,12 @@ void MeshManager::RegisterMeshNode(const char * className, Graph::Node::CreateNo
 
 //----------------------------------------------------------------------------------------
 
-MeshReturn MeshManager::CreateMeshNode(const MeshConfiguration & configuration)
+MeshReturn MeshManager::CreateMeshNode()
 {
     if (mNodeManager != nullptr)
     {
         MeshRef mesh = mNodeManager->CreateNode("Mesh");
-        mesh->SetConfiguration(configuration);
+        mesh->SetFactory(mFactory);
         return mesh;
     }
     else
@@ -74,15 +77,13 @@ MeshReturn MeshManager::CreateMeshNode(const MeshConfiguration & configuration)
 
 //----------------------------------------------------------------------------------------
 
-MeshGeneratorReturn MeshManager::CreateMeshGeneratorNode(const char * className,
-                                                                  const MeshConfiguration & configuration)
+MeshGeneratorReturn MeshManager::CreateMeshGeneratorNode(const char * className)
 {
     if (mNodeManager != nullptr)
     {
         //! \todo Check that the class corresponds to a generator mesh
 
         MeshGeneratorRef meshGenerator = mNodeManager->CreateNode(className);
-        meshGenerator->SetConfiguration(configuration);
         return meshGenerator;
     }
     else
@@ -124,12 +125,8 @@ void MeshManager::RegisterAllMeshNodes()
     // Register the generator nodes
     // IMPORTANT! Add here every mesh generator node that is created,
     //            and update the list of #includes above
-    //REGISTER_MESH_NODE(ConstantColorGenerator);
+    REGISTER_MESH_NODE(QuadGenerator);
 
-    // Register the operator nodes
-    // IMPORTANT! Add here every mesh operator node that is created
-    //            and update the list of #includes above
-    //REGISTER_MESH_NODE(AddOperator);
 }
 
 

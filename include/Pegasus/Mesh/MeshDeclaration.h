@@ -42,17 +42,7 @@
             {   return PG_NEW(nodeAllocator, -1, "Mesh::" #className, Alloc::PG_MEM_PERM)   \
                                 className(nodeAllocator, nodeDataAllocator); }              \
                                                                                             \
-        className(Pegasus::Alloc::IAllocator* nodeAllocator,                              \
-                  Pegasus::Alloc::IAllocator* nodeDataAllocator)                          \
-        :   baseClassName(nodeAllocator, nodeDataAllocator) { }                             \
                                                                                             \
-        className(const Pegasus::Mesh::MeshConfiguration & configuration,             \
-                  Pegasus::Alloc::IAllocator* nodeAllocator,                              \
-                  Pegasus::Alloc::IAllocator* nodeDataAllocator)                          \
-        :   baseClassName(configuration, nodeAllocator, nodeDataAllocator) { }              \
-                                                                                            \
-    protected:                                                                              \
-        virtual ~className() { }                                                            \
                                                                                             \
     private:                                                                                \
         PG_DISABLE_COPY(className)                                                          \

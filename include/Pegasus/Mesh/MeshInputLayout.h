@@ -35,12 +35,12 @@ class MeshInputLayout
 public:
 
     //! Convinience mask used for the editor layout
-    enum LayoutUsageBitMask
-    {
-        USE_POSITION = 0x1,
-        USE_NORMAL = 0x2,
-        USE_UV = 0x3
-    };
+    
+    static const int USE_POSITION = 0x1;
+    static const int USE_NORMAL = 0x2;
+    static const int USE_UV = 0x4;
+    typedef int LayoutUsageBitMask;
+    
 
     //! semantic description of a vertex attribute
     enum Semantic

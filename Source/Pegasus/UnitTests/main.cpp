@@ -46,6 +46,10 @@ int main()
     RUN_TEST(Memcpy2);
     RUN_TEST(Memcpy3);
 
+    //memset
+    RUN_TEST(Memset1);
+    RUN_TEST(Memset2);
+
     //strcmp
     RUN_TEST(Strcmp1);
     RUN_TEST(Strcmp2);
