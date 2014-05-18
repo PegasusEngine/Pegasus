@@ -27,7 +27,7 @@ namespace PegasusShaderPrivate {
 static struct GLPegasusStageMapping 
 {
     Pegasus::Shader::ShaderType mType;
-    GLuint mGlRenderPlatShaderStage;
+    GLuint mGLRenderPlatShaderStage;
 } gGLPegasusStageMappings[Pegasus::Shader::SHADER_STAGES_COUNT] =
 {
     { Pegasus::Shader::VERTEX                 , GL_VERTEX_SHADER          },
@@ -85,7 +85,7 @@ static void ProcessErrorLog(Pegasus::Shader::ShaderStage * shaderNode, const cha
     //WARNING, I have optimized the crap out of the following code, so parsing might be messy.
     // I am trying to parse the following string:
     // ERROR {row:column}: {Description}
-    // OpenGl logs throw errors in this format.
+    // OpenGL logs throw errors in this format.
 
     while (*s)
     {
@@ -233,7 +233,7 @@ void GLShaderFactory::GenerateShaderGPUData (Pegasus::Shader::ShaderStage * shad
     
     if (gpuData->mHandle == 0)
     {
-        gpuData->mHandle = glCreateShader(PegasusShaderPrivate::gGLPegasusStageMappings[static_cast<int>(type)].mGlRenderPlatShaderStage);    
+        gpuData->mHandle = glCreateShader(PegasusShaderPrivate::gGLPegasusStageMappings[static_cast<int>(type)].mGLRenderPlatShaderStage);    
     }
     PG_ASSERT(gpuData->mHandle != 0);
 

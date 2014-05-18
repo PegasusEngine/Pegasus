@@ -28,7 +28,7 @@ namespace Shader
     class IEventListener;
     class IUserData;
 
-//! Shader Stage Type, mapping to the OpenGl 4.X shader pipeline
+//! Shader Stage Type, mapping to the OpenGL 4.X shader pipeline
 enum ShaderType
 {
     VERTEX, // vertex shader stage
