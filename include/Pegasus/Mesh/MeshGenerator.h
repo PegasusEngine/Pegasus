@@ -52,7 +52,7 @@ public:
 
     //! Return the mesh generator up-to-date data.
     //! \note Defines the standard behavior of all generator nodes.
-    //!       Calls GenerateData() if the node data are dirty.
+    //!       Calls GenerateData() if the node data is dirty.
     //!       It should be overridden only for special cases.
     //! \param updated Set to true if the node has had the data recomputed
     //!                (output parameter, set to false only by the caller)

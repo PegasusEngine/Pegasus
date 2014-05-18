@@ -66,13 +66,13 @@ void Node::InitProperties()
 
 NodeDataReturn Node::GetUpdatedData(bool & updated)
 {
-    // If the data are allocated and not dirty, they can be returned directly
-    if (AreDataAllocated() && !mData->AreDirty())
+    // If the data is allocated and not dirty, it can be returned directly
+    if (IsDataAllocated() && !mData->IsDirty())
     {
         return mData;
     }
 
-    // If the data are not allocated, they have to be recomputed, but that has to be done by derived nodes
+    // If the data is not allocated, it has to be recomputed, but that has to be done by derived nodes
 #if PEGASUS_ENABLE_PROXIES
     if (IsNameDefined())
     {
@@ -96,7 +96,7 @@ void Node::ReleaseDataAndPropagate()
     // Deallocate the data if defined
     ReleaseData();
 
-    // Default behavior, ask each input node to release their data
+    // Default behavior, ask each input node to release its data
     for (unsigned int i = 0; i < mNumInputs; ++i)
     {
         GetInput(i)->ReleaseDataAndPropagate();
@@ -128,7 +128,7 @@ void Node::SetName(const char * name)
 
 void Node::CreateData()
 {
-    if (!AreDataAllocated())
+    if (!IsDataAllocated())
     {
         NodeData * newData = AllocateData();
         if (newData != nullptr)
@@ -142,7 +142,7 @@ void Node::CreateData()
     }
     else
     {
-        PG_FAILSTR("Trying to allocate the data of a node, but the previous data are still allocated. Keeping and invalidating the previous data");
+        PG_FAILSTR("Trying to allocate the data of a node, but the previous data is still allocated. Keeping and invalidating the previous data");
 
         // Invalidate the data that should not be there in the first place
         mData->Invalidate();

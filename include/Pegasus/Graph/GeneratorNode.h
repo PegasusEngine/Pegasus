@@ -37,12 +37,12 @@ public:
     //!       can be ORed with the content of the override before returning it.
     //! \note This class implements the default behavior of a generator,
     //!       which returns only the dirty state of the data
-    //! \return True if the node data are dirty
+    //! \return True if the node data is dirty
     virtual bool Update();
 
     //! Return the node up-to-date data.
     //! \note Defines the standard behavior of all texture generator nodes.
-    //!       Calls GenerateData() if the node data are dirty.
+    //!       Calls GenerateData() if the node data is dirty.
     //!       It should be overridden only for special cases.
     //! \param updated Set to true if the node has had the data recomputed
     //!                (output parameter, set to false only by the caller)

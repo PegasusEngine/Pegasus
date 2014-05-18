@@ -34,7 +34,7 @@ public:
     //! Update the node internal state by pulling external parameters.
     //! \note Does only call Update() for the input node.
     //!       That will trigger a chain of refreshed data when calling GetUpdatedData().
-    //! \return True if the node data of the input node are dirty or if any input node is.
+    //! \return True if the node data of the input node is dirty or if any input node is.
     virtual bool Update();
 
     //! Return the node up-to-date data.

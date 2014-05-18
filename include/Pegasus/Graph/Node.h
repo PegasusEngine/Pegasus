@@ -50,7 +50,7 @@ public:
     //! or if an input node is dirty, and returns the dirty flag to the parent caller.
     //! That will trigger a chain of refreshed data when calling GetUpdatedData().
     //! \warning To be redefined in derived classes
-    //! \return True if the node data are dirty or if any input node is.
+    //! \return True if the node data is dirty or if any input node is.
     virtual bool Update() = 0;
 
     //! Return the node up-to-date data.
@@ -137,11 +137,11 @@ protected:
 
     //! Test if the node data are allocated (does not test for dirtiness)
     //! \return True if the node data are allocated
-    inline bool AreDataAllocated() const { return mData != nullptr; }
+    inline bool IsDataAllocated() const { return mData != nullptr; }
 
-    //! Test if the node data are dirty
-    //! \return True if the node data are dirty or unallocated
-    inline bool AreDataDirty() const { return (mData != nullptr) ? mData->AreDirty() : true; }
+    //! Test if the node data is dirty
+    //! \return True if the node data is dirty or unallocated
+    inline bool IsDataDirty() const { return (mData != nullptr) ? mData->IsDirty() : true; }
 
     //! Set the dirty flag of the node data if allocated, keep it set when not allocated
     void InvalidateData();

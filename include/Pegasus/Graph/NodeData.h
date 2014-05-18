@@ -35,16 +35,16 @@ public:
     //! Destructor
     virtual ~NodeData();
 
-    //! Set the data as dirty, meaning they will need to be recomputed to be valid
+    //! Set the data as dirty, meaning it will need to be recomputed to be valid
     //! \note Does not deallocate any memory, only sets a flag
     inline void Invalidate() { mDirty = true; }
 
     //! Set the data as non-dirty, usually after a call to \a GenerateData()
     inline void Validate() { mDirty = false; }
 
-    //! Test if the data are dirty
+    //! Test if the data is dirty
     //! \return True if the dirty flag is set
-    inline bool AreDirty() const { return mDirty; }
+    inline bool IsDirty() const { return mDirty; }
 
     //! Sets custom node gpu data by user code.
     void  SetNodeGpuData (NodeGpuData * nodeGpuData) { mNodeGpuData = nodeGpuData; }
@@ -92,7 +92,7 @@ private:
     //! \todo Use atomic integer
     int mRefCount;
 
-    //! True when the data are dirty, meaning they will need to be recomputed to be valid
+    //! True when the data is dirty, meaning it will need to be recomputed to be valid
     bool mDirty;
 
 };

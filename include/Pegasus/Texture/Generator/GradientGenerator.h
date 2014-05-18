@@ -36,7 +36,7 @@ public:
     //! This function sets the dirty flag of the node data if the internal state has changed
     //! and returns the dirty flag to the parent caller.
     //! That will trigger a data refresh when calling GetUpdatedData().
-    //! \return True if the node data are dirty
+    //! \return True if the node data is dirty
     //virtual bool Update();
 
     //------------------------------------------------------------------------------------

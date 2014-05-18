@@ -26,28 +26,28 @@ bool GeneratorNode::Update()
 {
     // Since the node is a generator, there is no input node to check.
     // We directly return the state of the node data.
-    return AreDataDirty();
+    return IsDataDirty();
 }
 
 //----------------------------------------------------------------------------------------
 
 NodeDataReturn GeneratorNode::GetUpdatedData(bool & updated)
 {
-    // If the data have not been allocated, allocate them now
-    if (!AreDataAllocated())
+    // If the data has not been allocated, allocate it now
+    if (!IsDataAllocated())
     {
         CreateData();
     }
-    PG_ASSERTSTR(AreDataAllocated(), "Node data have to be allocated when being updated");
+    PG_ASSERTSTR(IsDataAllocated(), "Node data has to be allocated when being updated");
 
-    // If the data are dirty, re-generate them
-    if (AreDataDirty())
+    // If the data is dirty, re-generate it
+    if (IsDataDirty())
     {
         GenerateData();
         GetData()->Validate();
         updated = true;
     }
-    PG_ASSERTSTR(!AreDataDirty(), "Node data are supposed to be up-to-date at this point");
+    PG_ASSERTSTR(!IsDataDirty(), "Node data is supposed to be up-to-date at this point");
 
     return GetData();
 }

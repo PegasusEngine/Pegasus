@@ -33,7 +33,7 @@ bool OperatorNode::Update()
     {
         PG_FAILSTR("Invalid number of inputs for a node (%d), it should be between %d and %d",
                    numInputs, minNumInputs, maxNumInputs);
-        return AreDataDirty();
+        return IsDataDirty();
     }
     
     // Update every input node and check if any has the dirty flag set
@@ -52,7 +52,7 @@ bool OperatorNode::Update()
     else
     {
         // If no input is dirty, return the state of the node data
-        return AreDataDirty();
+        return IsDataDirty();
     }
 }
 
@@ -72,12 +72,12 @@ NodeDataReturn OperatorNode::GetUpdatedData(bool & updated)
         return GetData();
     }
 
-    // If the data have not been allocated, allocate them now
-    if (!AreDataAllocated())
+    // If the data has not been allocated, allocate it now
+    if (!IsDataAllocated())
     {
         CreateData();
     }
-    PG_ASSERTSTR(AreDataAllocated(), "Node data have to be allocated when being updated");
+    PG_ASSERTSTR(IsDataAllocated(), "Node data has to be allocated when being updated");
 
     // Get the updated data for every input
     bool inputUpdated = false;
@@ -86,14 +86,14 @@ NodeDataReturn OperatorNode::GetUpdatedData(bool & updated)
         (void) GetInput(i)->GetUpdatedData(inputUpdated);
     }
 
-    // If any input has been updated or if the data are dirty, re-generate them
-    if (inputUpdated || AreDataDirty())
+    // If any input has been updated or if the data is dirty, re-generate them
+    if (inputUpdated || IsDataDirty())
     {
         GenerateData();
         GetData()->Validate();
         updated = true;
     }
-    PG_ASSERTSTR(!AreDataDirty(), "Node data are supposed to be up-to-date at this point");
+    PG_ASSERTSTR(!IsDataDirty(), "Node data is supposed to be up-to-date at this point");
 
     return GetData();
 }

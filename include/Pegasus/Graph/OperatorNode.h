@@ -51,7 +51,7 @@ public:
     //! \note This class implements the default behavior of an operator:
     //!       if any input is dirty, invalidate the node data and return true,
     //!       otherwise return the dirty state of the data
-    //! \return True if the node data are dirty or if any input node is.
+    //! \return True if the node data is dirty or if any input node is.
     virtual bool Update();
 
     //! Return the node up-to-date data.

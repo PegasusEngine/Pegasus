@@ -25,7 +25,7 @@ OutputNode::OutputNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* node
 bool OutputNode::Update()
 {
     // Check that no data is allocated
-    PG_ASSERTSTR(!AreDataAllocated(), "Invalid output node, it should not contain NodeData");
+    PG_ASSERTSTR(!IsDataAllocated(), "Invalid output node, it should not contain NodeData");
 
     // Check that the input node is defined
     if (GetNumInputs() == 1)
@@ -46,7 +46,7 @@ bool OutputNode::Update()
 NodeDataReturn OutputNode::GetUpdatedData(bool & updated)
 {
     // Check that no data is allocated
-    PG_ASSERTSTR(!AreDataAllocated(), "Invalid output node, it should not contain NodeData");
+    PG_ASSERTSTR(!IsDataAllocated(), "Invalid output node, it should not contain NodeData");
 
     // Check that the input node is defined
     if (GetNumInputs() == 1)
