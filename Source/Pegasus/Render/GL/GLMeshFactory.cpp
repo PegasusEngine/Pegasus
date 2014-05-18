@@ -35,7 +35,7 @@ private:
 };
 
 
-//! API function that converts from a nodeData to a gpu valid opengl handle for a mesh
+//! API function that converts from a nodeData to a GPU valid OpenGL handle for a mesh
 void GLMeshFactory::GenerateMeshGPUData(Pegasus::Mesh::MeshData * nodeData)
 {
     //!TODO - implement

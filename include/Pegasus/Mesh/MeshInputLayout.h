@@ -62,12 +62,12 @@ public:
     //! vertex attribute name in shader. Position must match VertexSemanticType enum values.
     //! in the shader, vertex attributes must be the attribute string, with a numerical index concatenated.
     //! for example, we want to put two position inputs in the shader, it would be: 
-    //! "attribute vec3 p0;" in an opengl shader
-    //! Conversely, it would be "float3 p0 : POSITION" in direct x
+    //! "attribute vec3 p0;" in an OpenGL shader
+    //! Conversely, it would be "float3 p0 : POSITION" in DirectX
     //! Matrices must be packed in group of float4s
     static const char SemanticNames[SEMANTIC_COUNT];
 
-    //! the attribute type enum list. These types get translated into dx or opengl types internally
+    //! the attribute type enum list. These types get translated into DX or OpenGL types internally
     enum AttrType
     {
         FLOAT,

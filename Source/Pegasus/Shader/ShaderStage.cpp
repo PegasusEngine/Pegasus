@@ -55,7 +55,7 @@ Pegasus::Shader::ShaderStage::~ShaderStage()
 {
     if (GetData() != nullptr)
     {
-        mFactory->DestroyShaderGpuData(&(*GetData()));
+        mFactory->DestroyShaderGPUData(&(*GetData()));
     }
 #if PEGASUS_ENABLE_PROXIES
     if (mShaderTracker != nullptr)
@@ -70,7 +70,7 @@ void Pegasus::Shader::ShaderStage::ReleaseDataAndPropagate()
 {
     if (GetData() != nullptr)
     {
-        mFactory->DestroyShaderGpuData(&(*GetData()));
+        mFactory->DestroyShaderGPUData(&(*GetData()));
     }
     Pegasus::Graph::Node::ReleaseDataAndPropagate();
 }
@@ -179,7 +179,7 @@ void Pegasus::Shader::ShaderStage::GenerateData()
         0, // unused
         "" // unused
     );
-    mFactory->GenerateShaderGpuData(&(*this), &(*GetData()));
+    mFactory->GenerateShaderGPUData(&(*this), &(*GetData()));
 } 
 
 

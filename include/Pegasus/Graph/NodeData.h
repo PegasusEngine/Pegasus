@@ -13,7 +13,7 @@
 #define PEGASUS_GRAPH_NODEDATA_H
 
 #include "Pegasus/Core/Ref.h"
-#include "Pegasus/Graph/NodeGpuData.h"
+#include "Pegasus/Graph/NodeGPUData.h"
 
 namespace Pegasus {
 namespace Graph {
@@ -46,14 +46,14 @@ public:
     //! \return True if the dirty flag is set
     inline bool IsDirty() const { return mDirty; }
 
-    //! Sets custom node gpu data by user code.
-    void  SetNodeGpuData (NodeGpuData * nodeGpuData) { mNodeGpuData = nodeGpuData; }
+    //! Sets custom node GPU data by user code.
+    void  SetNodeGPUData (NodeGPUData * nodeGPUData) { mNodeGPUData = nodeGPUData; }
 
-    //! Gets custom node gpu data set by user.
-    NodeGpuData * GetNodeGpuData () { return mNodeGpuData; }
+    //! Gets custom node GPU data set by user.
+    NodeGPUData * GetNodeGPUData () { return mNodeGPUData; }
 
-    //! Gets custom read only node gpu data set by user.
-    const NodeGpuData * GetNodeGpuData () const { return mNodeGpuData; }
+    //! Gets custom read only node GPU data set by user.
+    const NodeGPUData * GetNodeGPUData () const { return mNodeGPUData; }
 
     //------------------------------------------------------------------------------------
     
@@ -82,8 +82,8 @@ private:
     //! if the counter reaches 0
     void Release();
 
-    //! Gpu data container
-    NodeGpuData * mNodeGpuData;
+    //! GPU data container
+    NodeGPUData * mNodeGPUData;
 
     //! Allocator for this object
     Alloc::IAllocator* mAllocator;

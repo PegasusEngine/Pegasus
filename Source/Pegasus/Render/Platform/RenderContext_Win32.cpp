@@ -65,7 +65,7 @@ RenderContextImpl_Win32::RenderContextImpl_Win32(const ContextConfig& config)
         // Setup pixel format for backbuffer
         SetPixelFormat(mDeviceContextHandle, nPixelFormat, &sPixelFormat);
 
-        // Make a new opengl context
+        // Make a new OpenGL context
         mRenderContextHandle = wglCreateContext(mDeviceContextHandle);
 
         PG_LOG('OGL_', "Startup context created");
@@ -84,7 +84,7 @@ RenderContextImpl_Win32::RenderContextImpl_Win32(const ContextConfig& config)
         // Setup pixel format for backbuffer
         SetPixelFormat(mDeviceContextHandle, nPixelFormat, &sPixelFormat);
 
-        // Make a new opengl context
+        // Make a new OpenGL context
         mRenderContextHandle = wglCreateContextAttribsARB(mDeviceContextHandle, 0, sAttrib);
    
         PG_ASSERTSTR(mRenderContextHandle != 0x0, "Cannot instantiate render context! Check if your graphcis card supports the minor and major version");
@@ -136,7 +136,7 @@ void RenderContextImpl_Win32::Swap() const
 //----------------------------------------------------------------------------------------
 void RenderContextImpl_Win32::CheckRenderingExtensions() const
 {
-    // do a full check on rendering extensions supported by opengl
+    // do a full check on rendering extensions supported by OpenGL
 
     // Write some temporary debugging information
     Render::GLExtensions extensions;

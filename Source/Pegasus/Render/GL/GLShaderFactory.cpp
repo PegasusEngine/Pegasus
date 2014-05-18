@@ -12,7 +12,7 @@
 #if PEGASUS_GAPI_GL
 
 #include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
-#include "../Source/Pegasus/Render/GL/GLGpuDataDefs.h"
+#include "../Source/Pegasus/Render/GL/GLGPUDataDefs.h"
 #include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/Allocator/Alloc.h"
 #include "Pegasus/Shader/shared/ShaderEvent.h"
@@ -56,18 +56,18 @@ public:
 
     virtual void Initialize(Pegasus::Alloc::IAllocator * allocator);
 
-    virtual void GenerateShaderGpuData (Pegasus::Shader::ShaderStage * shaderNode, Pegasus::Graph::NodeData * nodeData);
-    virtual void DestroyShaderGpuData  (Pegasus::Graph::NodeData * nodeData);
+    virtual void GenerateShaderGPUData (Pegasus::Shader::ShaderStage * shaderNode, Pegasus::Graph::NodeData * nodeData);
+    virtual void DestroyShaderGPUData  (Pegasus::Graph::NodeData * nodeData);
     
-    virtual void GenerateProgramGpuData (Pegasus::Shader::ProgramLinkage * programNode, Pegasus::Graph::NodeData * nodeData);
-    virtual void DestroyProgramGpuData (Pegasus::Graph::NodeData * nodeData);
+    virtual void GenerateProgramGPUData (Pegasus::Shader::ProgramLinkage * programNode, Pegasus::Graph::NodeData * nodeData);
+    virtual void DestroyProgramGPUData (Pegasus::Graph::NodeData * nodeData);
 
 private:
     Pegasus::Alloc::IAllocator * mAllocator;
     
 };
 
-//! define a global static shader factory api
+//! define a global static shader factory API
 static GLShaderFactory gGlobalStaticFactory;
 
 void GLShaderFactory::Initialize(Pegasus::Alloc::IAllocator * allocator)
@@ -75,7 +75,7 @@ void GLShaderFactory::Initialize(Pegasus::Alloc::IAllocator * allocator)
     mAllocator = allocator;
 }
 
-//! processes an error log from opengl compilation
+//! processes an error log from OpenGL compilation
 static void ProcessErrorLog(Pegasus::Shader::ShaderStage * shaderNode, const char * log)
 {
 #if PEGASUS_USE_GRAPH_EVENTS 
@@ -131,86 +131,86 @@ static void ProcessErrorLog(Pegasus::Shader::ShaderStage * shaderNode, const cha
 #endif
 }
 
-//! allocates lazily or returns an existant shader data type
-static Pegasus::Render::OglShaderGpuData * GetOrAllocateShaderGpuData(Pegasus::Alloc::IAllocator * allocator, Pegasus::Graph::NodeData * nodeData)
+//! allocates lazily or returns an existent shader data type
+static Pegasus::Render::OGLShaderGPUData * GetOrAllocateShaderGPUData(Pegasus::Alloc::IAllocator * allocator, Pegasus::Graph::NodeData * nodeData)
 {
-    Pegasus::Render::OglShaderGpuData * gpuData = nullptr;
-    if (nodeData->GetNodeGpuData() == nullptr)
+    Pegasus::Render::OGLShaderGPUData * gpuData = nullptr;
+    if (nodeData->GetNodeGPUData() == nullptr)
     {
-        gpuData = PG_NEW(allocator, -1, "Shader Gpu Data", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Render::OglShaderGpuData();
+        gpuData = PG_NEW(allocator, -1, "Shader GPU Data", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Render::OGLShaderGPUData();
         
         // initialize
-        gpuData->mHandle = 0; //invalid opengl handle
-        nodeData->SetNodeGpuData(reinterpret_cast<Pegasus::Graph::NodeGpuData*>(gpuData));
+        gpuData->mHandle = 0; //invalid OpenGL handle
+        nodeData->SetNodeGPUData(reinterpret_cast<Pegasus::Graph::NodeGPUData*>(gpuData));
     }
     else 
     {
-        gpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OglShaderGpuData, nodeData->GetNodeGpuData());
+        gpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OGLShaderGPUData, nodeData->GetNodeGPUData());
     }
 
     return gpuData;
 }
 
-//! allocates lazily or returns an existant shader data type
-static Pegasus::Render::OglProgramGpuData * GetOrAllocateProgramGpuData(Pegasus::Alloc::IAllocator * allocator, Pegasus::Graph::NodeData * nodeData)
+//! allocates lazily or returns an existent shader data type
+static Pegasus::Render::OGLProgramGPUData * GetOrAllocateProgramGPUData(Pegasus::Alloc::IAllocator * allocator, Pegasus::Graph::NodeData * nodeData)
 {
-    Pegasus::Render::OglProgramGpuData * gpuData = nullptr;
-    if (nodeData->GetNodeGpuData() == nullptr)
+    Pegasus::Render::OGLProgramGPUData * gpuData = nullptr;
+    if (nodeData->GetNodeGPUData() == nullptr)
     {
-        gpuData = PG_NEW(allocator, -1, "Shader Gpu Data", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Render::OglProgramGpuData();
+        gpuData = PG_NEW(allocator, -1, "Shader GPU Data", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Render::OGLProgramGPUData();
         
         // initialize
-        gpuData->mHandle = 0; //invalid opengl handle
+        gpuData->mHandle = 0; //invalid OpenGL handle
         for (unsigned i = 0; i < Pegasus::Shader::SHADER_STAGES_COUNT; ++i)
         {
             gpuData->mShaderCachedHandles[i] = 0;
         }
         //initializes reflection data to a null state
         Pegasus::Render::PopulateReflectionInfo(0, gpuData->mReflection);
-        nodeData->SetNodeGpuData(reinterpret_cast<Pegasus::Graph::NodeGpuData*>(gpuData));
+        nodeData->SetNodeGPUData(reinterpret_cast<Pegasus::Graph::NodeGPUData*>(gpuData));
     }
     else 
     {
-        gpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OglProgramGpuData, nodeData->GetNodeGpuData());
+        gpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OGLProgramGPUData, nodeData->GetNodeGPUData());
     }
 
     return gpuData;
 }
 
-//! destruction of a shader gpu data
-static void CommonDestroyShaderGpuData (Pegasus::Alloc::IAllocator * allocator, Pegasus::Graph::NodeData * nodeData)
+//! destruction of a shader GPU data
+static void CommonDestroyShaderGPUData (Pegasus::Alloc::IAllocator * allocator, Pegasus::Graph::NodeData * nodeData)
 {
-    if (nodeData->GetNodeGpuData() != nullptr)
+    if (nodeData->GetNodeGPUData() != nullptr)
     {
-        Pegasus::Render::OglShaderGpuData * gpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OglShaderGpuData, nodeData->GetNodeGpuData());
+        Pegasus::Render::OGLShaderGPUData * gpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OGLShaderGPUData, nodeData->GetNodeGPUData());
         if (gpuData->mHandle != 0)
         {
             glDeleteShader(gpuData->mHandle);
         }
         PG_DELETE(allocator, gpuData);
-        nodeData->SetNodeGpuData(nullptr);
+        nodeData->SetNodeGPUData(nullptr);
     }
 }
 
-//! destruction of a program gpu data
-static void CommonDestroyProgramGpuData (Pegasus::Alloc::IAllocator * allocator, Pegasus::Graph::NodeData * nodeData)
+//! destruction of a program GPU data
+static void CommonDestroyProgramGPUData (Pegasus::Alloc::IAllocator * allocator, Pegasus::Graph::NodeData * nodeData)
 {
-    if (nodeData->GetNodeGpuData() != nullptr)
+    if (nodeData->GetNodeGPUData() != nullptr)
     {
-        Pegasus::Render::OglProgramGpuData * gpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OglProgramGpuData, nodeData->GetNodeGpuData());
+        Pegasus::Render::OGLProgramGPUData * gpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OGLProgramGPUData, nodeData->GetNodeGPUData());
         if (gpuData->mHandle != 0)
         {
             glDeleteProgram(gpuData->mHandle);
         }
         PG_DELETE(allocator, gpuData);
-        nodeData->SetNodeGpuData(nullptr);
+        nodeData->SetNodeGPUData(nullptr);
     }
 }
 
-//! Inject gpu data to shader stage
-void GLShaderFactory::GenerateShaderGpuData (Pegasus::Shader::ShaderStage * shaderNode, Pegasus::Graph::NodeData * nodeData)
+//! Inject GPU data to shader stage
+void GLShaderFactory::GenerateShaderGPUData (Pegasus::Shader::ShaderStage * shaderNode, Pegasus::Graph::NodeData * nodeData)
 {
-    Pegasus::Render::OglShaderGpuData * gpuData = GetOrAllocateShaderGpuData(mAllocator, nodeData);
+    Pegasus::Render::OGLShaderGPUData * gpuData = GetOrAllocateShaderGPUData(mAllocator, nodeData);
     Pegasus::Shader::ShaderType type = shaderNode->GetStageType();
     const char * shaderSource;
     int sourceSize;
@@ -243,7 +243,7 @@ void GLShaderFactory::GenerateShaderGpuData (Pegasus::Shader::ShaderStage * shad
         1, // count
         &static_cast<const GLchar*>(shaderSource), // src (list of strings, on this case just 1 string
         &stringLength // length of each string in the list of strings,
-            //opengl samples use NULL, not nullptr
+            //OpenGL samples use NULL, not nullptr
             // NULL in this argument means just assume each string is a NULL terminated string
     );
 
@@ -279,19 +279,19 @@ void GLShaderFactory::GenerateShaderGpuData (Pegasus::Shader::ShaderStage * shad
             "" // unused
         );
     }
-    nodeData->SetNodeGpuData(reinterpret_cast<Pegasus::Graph::NodeGpuData*>(gpuData));
+    nodeData->SetNodeGPUData(reinterpret_cast<Pegasus::Graph::NodeGPUData*>(gpuData));
 }
 
-//! Destroy gpu data to shader stage
-void GLShaderFactory::DestroyShaderGpuData  (Pegasus::Graph::NodeData * nodeData)
+//! Destroy GPU data to shader stage
+void GLShaderFactory::DestroyShaderGPUData  (Pegasus::Graph::NodeData * nodeData)
 {
-    CommonDestroyShaderGpuData(mAllocator, nodeData);
+    CommonDestroyShaderGPUData(mAllocator, nodeData);
 }
 
-//! Inject gpu data to program 
-void GLShaderFactory::GenerateProgramGpuData (Pegasus::Shader::ProgramLinkage * programNode, Pegasus::Graph::NodeData * nodeData)
+//! Inject GPU data to program 
+void GLShaderFactory::GenerateProgramGPUData (Pegasus::Shader::ProgramLinkage * programNode, Pegasus::Graph::NodeData * nodeData)
 {
-    Pegasus::Render::OglProgramGpuData * gpuData = GetOrAllocateProgramGpuData(mAllocator, nodeData);
+    Pegasus::Render::OGLProgramGPUData * gpuData = GetOrAllocateProgramGPUData(mAllocator, nodeData);
     if (gpuData->mHandle == 0)
     {
         gpuData->mHandle = glCreateProgram();
@@ -318,9 +318,9 @@ void GLShaderFactory::GenerateProgramGpuData (Pegasus::Shader::ProgramLinkage * 
         {
             updated = false;
             Pegasus::Graph::NodeDataRef shaderNodeDataRef = shaderStage->GetUpdatedData(updated);
-            Pegasus::Render::OglShaderGpuData * shaderStageGpuData = GetOrAllocateShaderGpuData(mAllocator,&(*shaderNodeDataRef));
-            glAttachShader(gpuData->mHandle, shaderStageGpuData->mHandle);
-            shaderCachedHandles[shaderStage->GetStageType()] = shaderStageGpuData->mHandle;
+            Pegasus::Render::OGLShaderGPUData * shaderStageGPUData = GetOrAllocateShaderGPUData(mAllocator,&(*shaderNodeDataRef));
+            glAttachShader(gpuData->mHandle, shaderStageGPUData->mHandle);
+            shaderCachedHandles[shaderStage->GetStageType()] = shaderStageGPUData->mHandle;
         }
     }
     
@@ -380,10 +380,10 @@ void GLShaderFactory::GenerateProgramGpuData (Pegasus::Shader::ProgramLinkage * 
 
 }
 
-//! Destroy gpu data to program
-void GLShaderFactory::DestroyProgramGpuData (Pegasus::Graph::NodeData * nodeData)
+//! Destroy GPU data to program
+void GLShaderFactory::DestroyProgramGPUData (Pegasus::Graph::NodeData * nodeData)
 {
-    CommonDestroyProgramGpuData(mAllocator, nodeData);
+    CommonDestroyProgramGPUData(mAllocator, nodeData);
 }
 
 //! return statically defined shader factory singleton

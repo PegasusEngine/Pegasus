@@ -82,7 +82,7 @@ public:
 
     //! Sets the factory, which contains the render library implementation of shader
     //! compilation and linkage
-    //! \param factory the shader gpu factory to be used internally for compilation process.
+    //! \param factory the shader GPU factory to be used internally for compilation process.
     void SetFactory (IShaderFactory * factory) { mFactory = factory; }
 
     //! Deallocate the data of the current node and ask the input nodes to do the same.

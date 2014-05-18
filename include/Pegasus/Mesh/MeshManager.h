@@ -82,7 +82,7 @@ private:
     //! Pointer to the node manager (!= nullptr)
     Graph::NodeManager * mNodeManager;
 
-    //! Pointer to the GPU factory. Generates gpu data from cpu mesh data
+    //! Pointer to the GPU factory. Generates GPU data from cpu mesh data
     IMeshFactory * mFactory;
 };
 

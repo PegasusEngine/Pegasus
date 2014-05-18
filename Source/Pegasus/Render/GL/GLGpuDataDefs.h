@@ -4,12 +4,12 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	GLGpuDataDefs.h
+//! \file	GLGPUDataDefs.h
 //! \author	Kleber Garcia
 //! \date	23rd March 2014
-//! \brief	Basic declaration of custom opengl gpu data. Each gpu data type has its own RTTI
+//! \brief	Basic declaration of custom OpenGL GPU data. Each GPU data type has its own RTTI
 //!         safety declaration
-//!         WARNING!! do not declare constructor on custom gpu data. initialize data in respective
+//!         WARNING!! do not declare constructor on custom GPU data. initialize data in respective
 //!                   factory functions
 
 #ifndef PEGASUS_RENDER_GLGPUDEFS_H
@@ -17,7 +17,7 @@
 
 #if PEGASUS_GAPI_GL
 
-#include "Pegasus/Graph/NodeGpuData.h"
+#include "Pegasus/Graph/NodeGPUData.h"
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
 #include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
 #include "../Source/Pegasus/Render/GL/GLShaderReflect.h"
@@ -27,32 +27,32 @@ namespace Pegasus
 namespace Render
 {
 
-//! basic internal container class with opengl handles for shaders
-struct OglShaderGpuData
+//! basic internal container class with OpenGL handles for shaders
+struct OGLShaderGPUData
 {
-    PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(OglShaderGpuData, 0x1);
-    GLuint mHandle; //! open gl handle
+    PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(OGLShaderGPUData, 0x1);
+    GLuint mHandle; //! OpenGL handle
 };
 
-//! basic internal container class with opengl handles for programs
-struct OglProgramGpuData
+//! basic internal container class with OpenGL handles for programs
+struct OGLProgramGPUData
 {
-    PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(OglProgramGpuData, 0x2);
-    GLuint mHandle; //! open gl handle
-    GLuint mShaderCachedHandles [Pegasus::Shader::SHADER_STAGES_COUNT]; //! open gl cached handles for binded shaders
+    PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(OGLProgramGPUData, 0x2);
+    GLuint mHandle; //! OpenGL handle
+    GLuint mShaderCachedHandles [Pegasus::Shader::SHADER_STAGES_COUNT]; //! OpenGL cached handles for binded shaders
     GLShaderReflect mReflection; //! reflection data
 };
 
-//! basic internal container class with opengl handles for textures
-struct OglTextureGpuData
+//! basic internal container class with OpenGL handles for textures
+struct OGLTextureGPUData
 {
-    PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(OglTextureGpuData, 0x3);
+    PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(OGLTextureGPUData, 0x3);
 };
 
-//! basic internal container class with opengl handles for meshes
-struct OglMeshGpuData
+//! basic internal container class with OpenGL handles for meshes
+struct OGLMeshGPUData
 {
-    PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(OglMeshGpuData, 0x4);
+    PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(OGLMeshGPUData, 0x4);
 };
 
 } // namespace Render

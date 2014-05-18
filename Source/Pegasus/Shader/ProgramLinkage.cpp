@@ -25,7 +25,7 @@ Pegasus::Shader::ProgramLinkage::~ProgramLinkage()
 {
     if (GetData() != nullptr)
     {
-        mFactory->DestroyProgramGpuData(&(*GetData()));
+        mFactory->DestroyProgramGPUData(&(*GetData()));
     }
 }
 
@@ -33,7 +33,7 @@ void Pegasus::Shader::ProgramLinkage::ReleaseDataAndPropagate()
 {
     if (GetData() != nullptr)
     {
-        mFactory->DestroyProgramGpuData(&(*GetData()));
+        mFactory->DestroyProgramGPUData(&(*GetData()));
     }
 }
 
@@ -51,7 +51,7 @@ Pegasus::Graph::NodeData* Pegasus::Shader::ProgramLinkage::AllocateData() const
 void Pegasus::Shader::ProgramLinkage::GenerateData()
 {
     PG_ASSERT(GetData() != nullptr);
-    mFactory->GenerateProgramGpuData(&(*this), &(*GetData()));
+    mFactory->GenerateProgramGPUData(&(*this), &(*GetData()));
 }
 
 void Pegasus::Shader::ProgramLinkage::SetShaderStage(Pegasus::Shader::ShaderStageIn shaderStage)

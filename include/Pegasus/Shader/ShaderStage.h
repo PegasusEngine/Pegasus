@@ -74,7 +74,7 @@ public:
 
     //! Sets the factory, which contains the render library implementation of shader
     //! compilation and linkage
-    //! \param factory factory with gpu implementation to be set.
+    //! \param factory factory with GPU implementation to be set.
     void SetFactory(IShaderFactory * factory) { mFactory = factory; }
 
     //! Deallocate the data of the current node and ask the input nodes to do the same.
@@ -102,14 +102,14 @@ protected:
     //! callback which allocates shader data
     virtual Pegasus::Graph::NodeData * AllocateData() const;
 
-    //! override that generates data. This will generate the shader gpu data using the factory
+    //! override that generates data. This will generate the shader GPU data using the factory
     virtual void GenerateData();
 
 private:
     PG_DISABLE_COPY(ShaderStage)
     Io::FileBuffer     mFileBuffer; //! buffer structure containing shader source
     Alloc::IAllocator* mAllocator; //! Allocator to use when creating this object
-    IShaderFactory   * mFactory; //! reference to gpu shader factory
+    IShaderFactory   * mFactory; //! reference to GPU shader factory
     ShaderType         mType; //! type of shader stage
 
 //! editor metadata

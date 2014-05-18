@@ -62,7 +62,7 @@ private:
     //! reference to the global node manager. Use it to allocate node data.
     Graph::NodeManager * mNodeManager;
 
-    //! reference to the gpu factory. Passed to every node generated from this manager.
+    //! reference to the GPU factory. Passed to every node generated from this manager.
     IShaderFactory * mFactory;
 
 #if PEGASUS_ENABLE_PROXIES

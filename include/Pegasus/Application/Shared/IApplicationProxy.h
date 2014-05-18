@@ -69,7 +69,7 @@ public:
     //! \param wnd Window to destroy.
     virtual void DetachWindow(Wnd::IWindowProxy* wnd) = 0;
 
-    //! Gets the shader manager, for shader and gpu program controls
+    //! Gets the shader manager, for shader and GPU program controls
     //! \return shader manager.
     virtual Shader::IShaderManagerProxy * GetShaderManager() = 0;
 
