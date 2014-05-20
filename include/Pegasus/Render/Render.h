@@ -15,6 +15,7 @@
 #define PARR_H
 
 #include "Pegasus/Shader/ProgramLinkage.h"
+#include "Pegasus/Mesh/Mesh.h"
 
 namespace Pegasus
 {
@@ -24,6 +25,18 @@ namespace Render
     //! Dispatches a shader.
     //! \param program the shader program to dispatch
     void Dispatch (Shader::ProgramLinkageRef program);
+
+    //! Dispatches a mesh.
+    //! \param mesh that the system will dispatch.
+    //! \WARNING: a shader must have been dispatched before this call.
+    //!           not dispatching a shader will cause the mesh to be incorrectly rendered
+    //!           or throw an assert
+    void Dispatch (Mesh::MeshRef mesh);
+
+    //! Draws geometry.
+    //! \note Requires: -Shader to be dispatched
+    //!                 -Mesh to be dispatched
+    void Draw();
 }
 
 }

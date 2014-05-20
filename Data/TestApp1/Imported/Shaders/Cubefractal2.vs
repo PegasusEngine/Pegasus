@@ -3,12 +3,12 @@
 //
 
 #version 330 core
-layout(location = 0) in vec2 vPos;
+in vec2 p0;
 out vec3 p,d;
 uniform float time;
 uniform float screenRatio;
 void main(){
-    gl_Position=vec4(vPos.x,vPos.y*screenRatio,0.0,1.0);
+    gl_Position=vec4(p0.x,p0.y*screenRatio,0.0,1.0);
     p = vec3(0,0,time*.6);
-    d = vec3(vPos.x * cos(time) + sin(time), vPos.y + .4*sin(time), cos(time) - vPos.x * sin(time));
+    d = vec3(p0.x * cos(time) + sin(time), p0.y + .4*sin(time), cos(time) - p0.x * sin(time));
 }

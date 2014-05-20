@@ -35,8 +35,18 @@ public:
     //! \return Configuration of the mesh data
     inline const MeshConfiguration & GetConfiguration() const { return mConfiguration; }
 
-    //------------------------------------------------------------------------------------
+    //! Gets the stream, casted properly
     template <class T> T * GetStream(int stream);    
+    
+    //! Gets the stream, as a void pointer
+    template <> void * GetStream(int stream);    
+
+    //! Gets the stride size count of the stream
+    //! \param i the stream index
+    int GetStreamStride(int i) const { return mVertexStreamStrides[i]; };
+
+    //! Convinience function that returns the total byte size of a stream
+    int GetStreamByteSize(int i) const { return mVertexStreamStrides[i] * mConfiguration.GetVertexCount(); }
     
 protected:
 
@@ -64,7 +74,11 @@ T * MeshData::GetStream(int stream)
     PG_ASSERTSTR(sizeof(T) == mVertexStreamStrides[stream], "stream strides must match!");
     return static_cast<T*>(mVertexStreams[stream]);
 }
-
+template<>
+void * MeshData::GetStream(int stream)
+{
+    return (mVertexStreams[stream]);
+}
 //----------------------------------------------------------------------------------------
 
 //! Reference to a MeshData, typically used when declaring a variable of reference type

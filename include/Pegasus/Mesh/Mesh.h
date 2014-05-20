@@ -65,7 +65,11 @@ public:
     //!         or to one of the input nodes, cannot be a null reference.
     //! \note Calls GetUpdatedData() internally, and regenerate the mesh data
     //!       if any part of the graph is dirty
-    MeshDataReturn GetUpdatedMeshData();
+    virtual MeshDataReturn GetUpdatedMeshData();
+
+
+    //! Releases the node internal data
+    void ReleaseDataAndPropagate();
 
 
     //! Mesh node creation function, used by the mesh manager

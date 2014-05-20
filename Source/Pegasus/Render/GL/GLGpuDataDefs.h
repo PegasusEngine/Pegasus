@@ -19,6 +19,7 @@
 
 #include "Pegasus/Graph/NodeGPUData.h"
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
+#include "Pegasus/Mesh/MeshInputLayout.h"
 #include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
 #include "../Source/Pegasus/Render/GL/GLShaderReflect.h"
 
@@ -41,6 +42,9 @@ struct OGLProgramGPUData
     GLuint mHandle; //! OpenGL handle
     GLuint mShaderCachedHandles [Pegasus::Shader::SHADER_STAGES_COUNT]; //! OpenGL cached handles for binded shaders
     GLShaderReflect mReflection; //! reflection data
+    short mGUID; //! GUID, every program must have a unique ID
+    short mVersion; //! Used to keep track of the compilation counts. Helps other metadata to be updated when a shader
+                    //! has changed.
 };
 
 //! basic internal container class with OpenGL handles for textures
@@ -53,6 +57,28 @@ struct OGLTextureGPUData
 struct OGLMeshGPUData
 {
     PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(OGLMeshGPUData, 0x4);
+
+    struct DrawState {
+        int mVertexCount;
+        GLuint mPrimitive;
+    } mDrawState;
+
+    struct VAOEntry {
+        GLuint mVAOName;
+        short mProgramGUID;
+        short mProgramVersion;
+        VAOEntry()
+        {
+            mVAOName = GL_INVALID_INDEX;
+            mProgramGUID = -1;
+            mProgramVersion = -1;
+        }
+    } * mVAOTable;  //! cached VAO table, one per shader
+
+    int mVAOTableSize; //! total table size
+    int mVAOTableCount;
+
+    GLuint mBufferTable[MESH_MAX_STREAMS];
 };
 
 } // namespace Render

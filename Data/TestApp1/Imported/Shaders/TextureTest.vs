@@ -4,12 +4,12 @@
 
 #version 330 core
 
-layout(location = 0) in vec2 vPos;
+layout(location = 0) in vec2 p0;
 uniform float screenRatio;
 out vec2 texCoords;
 
 void main()
 {
-    gl_Position = vec4(vPos.x * 0.9 / screenRatio, vPos.y * 0.9, 0.0, 1.0);
-	texCoords = vPos.xy * 0.5 + 0.5;
+    gl_Position = vec4(p0.x * 0.9 / screenRatio, p0.y * 0.9, 0.0, 1.0);
+	texCoords = p0.xy * 0.5 + 0.5;
 }

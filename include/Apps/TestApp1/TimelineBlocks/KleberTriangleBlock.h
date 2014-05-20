@@ -13,6 +13,7 @@
 #define TESTAPP1_KLEBERTRIANGLE_BLOCK_H
 
 #include "Pegasus/Shader/ProgramLinkage.h"
+#include "Pegasus/Mesh/Mesh.h"
 #include "Pegasus/Timeline/Block.h"
 
 //! TODO remove this direct dependency once our mesh & shader packages are fully complete
@@ -55,12 +56,9 @@ private:
     // Blocks cannot be copied
     PG_DISABLE_COPY(KleberTriangleBlock)
 
-    enum VAO_IDS { TRIANGLES_VAO = 0, NUM_VAOS };
-    enum BUFFER_IDS { TRIANGLES_BUFFER = 0, NUM_BUFFERS };
-    GLuint mVAOs[NUM_VAOS];
-    GLuint mBuffers[NUM_BUFFERS];
     Pegasus::Shader::ProgramLinkageRef mProgram;
     Pegasus::Shader::ProgramLinkageRef mProgram2;
+    Pegasus::Mesh::MeshRef mQuadMesh;
     GLint mTimeUniform;
 };
 

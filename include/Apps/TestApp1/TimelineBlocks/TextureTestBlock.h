@@ -13,11 +13,12 @@
 #define TESTAPP1_TEXTURETEST_BLOCK_H
 
 #include "Pegasus/Shader/ProgramLinkage.h"
+#include "Pegasus/Mesh/Mesh.h"
 #include "Pegasus/Timeline/Block.h"
+
 
 //! TODO remove this direct dependency once our mesh & shader packages are fully complete
 #include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
-
 
 //! Timeline block for the TextureTest effect (texture viewer)
 //! \todo Use protected inheritance? In that case, give access to SetPosition() and SetLength()
@@ -69,11 +70,8 @@ private:
     void CreateTextureAdd1();
     void CreateTextureAdd2();
 
-    enum VAO_IDS { TRIANGLES_VAO = 0, NUM_VAOS };
-    enum BUFFER_IDS { TRIANGLES_BUFFER = 0, NUM_BUFFERS };
-    GLuint mVAOs[NUM_VAOS];
-    GLuint mBuffers[NUM_BUFFERS];
     Pegasus::Shader::ProgramLinkageRef mProgram;
+    Pegasus::Mesh::MeshRef mQuad;
     GLint mScreenRatioUniform;
     GLint mTextureUniform;
     Pegasus::Texture::TextureGeneratorRef mTextureGenerator1, mTextureGenerator2, mTextureGradientGenerator1, mTextureGradientGenerator2;

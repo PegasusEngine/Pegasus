@@ -33,11 +33,10 @@ public:
         TRIANGLE,
         TRIANGLE_STRIP,
         TRIANGLE_FAN,
-        QUAD,
-        QUAD_STRIP,
         LINE,
         LINE_STRIP,
         POINT,
+        PRIMITIVE_COUNT
     };
 
     //! Default constructor
@@ -63,6 +62,9 @@ public:
     //! Gets wether this mesh is indexed
     bool    GetIsIndexed() const { return mIsIndexed; }
     
+    //! Gets wether this mesh is static or dynamic
+    bool    GetIsDynamic() const { return mIsDynamic; }
+    
     //! Gets the vertex count for this mesh
     int     GetVertexCount() const { return mVertexCount; }
 
@@ -74,6 +76,9 @@ public:
 
     //! Sets wether this mesh is indexed or not
     void    SetIsIndexed(bool isIndexed) { mIsIndexed = isIndexed; }
+
+    //! Sets wether this mesh is dynamic or static
+    void    SetIsDynamic(bool isDynamic) { mIsDynamic = isDynamic; }
     
     //! Sets the vertex count for this mesh config
     void    SetVertexCount(int vertexCount) { mVertexCount = vertexCount; }
@@ -87,6 +92,9 @@ public:
 private:
     //! boolean that determines if this mesh is indexed or not
     bool     mIsIndexed;
+
+    //! boolean that determines if the buffer is dynamic (for draw)
+    bool     mIsDynamic;
 
     //! the vertex count
     int      mVertexCount;

@@ -20,6 +20,7 @@ namespace Mesh {
 MeshConfiguration::MeshConfiguration()
     :
 mIsIndexed(true),
+mIsDynamic(false),
 mVertexCount(0),
 mIndexCount(0),
 mPrimitiveType(TRIANGLE)

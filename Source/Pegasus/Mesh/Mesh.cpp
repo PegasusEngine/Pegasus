@@ -50,14 +50,33 @@ void Mesh::SetOperatorInput(MeshOperatorIn meshOperator)
 
 MeshDataReturn Mesh::GetUpdatedMeshData()
 {
+    PG_ASSERT(mFactory);
     bool updated = false;
-    return Graph::OutputNode::GetUpdatedData(updated);
+    MeshDataRef meshData = Graph::OutputNode::GetUpdatedData(updated);
+    if (updated)
+    {
+        mFactory->GenerateMeshGPUData((MeshData*)&(*meshData));
+    }
+    return meshData;
+}
+
+//----------------------------------------------------------------------------------------
+
+void Mesh::ReleaseDataAndPropagate()
+{
+    //PG_TODO: easier way to delete the internals of an output node?
+    bool dummyVariable = false;
+    if (GetNumInputs() == 1 && GetInput(0)->GetUpdatedData(dummyVariable) != nullptr && mFactory != nullptr)
+    {
+        mFactory->DestroyNodeGPUData((MeshData*)&(*GetInput(0)->GetUpdatedData(dummyVariable)));
+    }
 }
 
 //----------------------------------------------------------------------------------------
 
 Mesh::~Mesh()
 {
+    ReleaseDataAndPropagate();
 }
 
 

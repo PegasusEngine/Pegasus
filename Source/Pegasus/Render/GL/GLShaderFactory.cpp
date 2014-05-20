@@ -62,10 +62,14 @@ public:
     virtual void GenerateProgramGPUData (Pegasus::Shader::ProgramLinkage * programNode, Pegasus::Graph::NodeData * nodeData);
     virtual void DestroyProgramGPUData (Pegasus::Graph::NodeData * nodeData);
 
+    static short sProgramGUIDCounter;
+
 private:
     Pegasus::Alloc::IAllocator * mAllocator;
     
 };
+
+short GLShaderFactory::sProgramGUIDCounter = 1;
 
 //! define a global static shader factory API
 static GLShaderFactory gGlobalStaticFactory;
@@ -167,6 +171,10 @@ static Pegasus::Render::OGLProgramGPUData * GetOrAllocateProgramGPUData(Pegasus:
         }
         //initializes reflection data to a null state
         Pegasus::Render::PopulateReflectionInfo(0, gpuData->mReflection);
+
+        //assign a GUID
+        gpuData->mGUID = GLShaderFactory::sProgramGUIDCounter++;
+        gpuData->mVersion = 0; //first version
         nodeData->SetNodeGPUData(reinterpret_cast<Pegasus::Graph::NodeGPUData*>(gpuData));
     }
     else 
@@ -366,6 +374,7 @@ void GLShaderFactory::GenerateProgramGPUData (Pegasus::Shader::ProgramLinkage * 
     }
     else
     {
+        gpuData->mVersion++; //shader has been compiled, increase the version
         GRAPH_EVENT_DISPATCH (
             programNode,
             Pegasus::Shader::LinkingEvent,
