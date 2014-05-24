@@ -56,8 +56,8 @@ void PsyBeadsBlock::Initialize()
 
 
     // Set up shader uniforms
-    mScreenRatioUniform = 0; //glGetUniformLocation(mProgramData->GetHandle(), "screenRatio");
-    mTimeUniform = 1;//glGetUniformLocation(mProgramData->GetHandle(), "time");
+    Pegasus::Render::GetUniformLocation(mProgram, "screenRatio", mScreenRatioUniform);
+    Pegasus::Render::GetUniformLocation(mProgram, "time", mTimeUniform);
 }
 
 //----------------------------------------------------------------------------------------
@@ -79,8 +79,8 @@ void PsyBeadsBlock::Render(float beat, Pegasus::Wnd::Window * window)
     unsigned int viewportHeight = 0;
     window->GetDimensions(viewportWidth, viewportHeight);
 
-    glUniform1f(mTimeUniform, currentTime);
-    glUniform1f(mScreenRatioUniform, static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight));
+    Pegasus::Render::SetUniform(mTimeUniform, currentTime);
+    Pegasus::Render::SetUniform(mScreenRatioUniform, static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight));
 
     Pegasus::Render::Draw();
 }

@@ -55,7 +55,7 @@ void KleberTriangleBlock::Initialize()
     mProgram->GetUpdatedData(updated);
 
     // Set up shader uniforms
-    mTimeUniform = 0;//glGetUniformLocation(mProgramData->GetHandle(), "time");
+    Pegasus::Render::GetUniformLocation(mProgram, "time", mTimeUniform);
 
     Pegasus::Mesh::MeshGeneratorRef quadGenerator = GetMeshManager()->CreateMeshGeneratorNode("QuadGenerator");
     mQuadMesh = GetMeshManager()->CreateMeshNode();
@@ -77,6 +77,6 @@ void KleberTriangleBlock::Render(float beat, Pegasus::Wnd::Window * window)
     Pegasus::Render::Dispatch(mProgram);
     Pegasus::Render::Dispatch(mQuadMesh);
     const float currentTime = beat * 30.0f;
-    glUniform1f(mTimeUniform, currentTime);
+    Pegasus::Render::SetUniform(mTimeUniform, currentTime);
     Pegasus::Render::Draw();
 }

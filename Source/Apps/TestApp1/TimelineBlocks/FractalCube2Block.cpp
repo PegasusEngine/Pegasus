@@ -10,7 +10,9 @@
 //! \brief	Timeline block for the FractalCube2 effect (colored fractal with shadows)
 
 #include "TimelineBlocks/FractalCube2Block.h"
-#include "Pegasus/Render/Render.h"
+//! TODO remove this direct dependency once our mesh & shader packages are fully complete
+#include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
+
 
 static const char * VERTEX_SHADER = "Shaders\\Cubefractal2.vs";
 static const char * FRAGMENT_SHADER = "Shaders\\CubeFractal2.ps";
@@ -51,8 +53,8 @@ void FractalCube2Block::Initialize()
     mProgram->SetShaderStage( shaderManager->LoadShaderStageFromFile(fileLoadProperties) );
 
     // Set up shader uniforms
-    mScreenRatioUniform = 0;//glGetUniformLocation(mProgramData->GetHandle(), "screenRatio");
-    mTimeUniform = 1;//glGetUniformLocation(mProgramData->GetHandle(), "time");
+    Pegasus::Render::GetUniformLocation(mProgram, "screenRatio", mScreenRatioUniform);
+    Pegasus::Render::GetUniformLocation(mProgram, "time", mTimeUniform);
 }
 
 //----------------------------------------------------------------------------------------
@@ -80,8 +82,8 @@ void FractalCube2Block::Render(float beat, Pegasus::Wnd::Window * window)
     glBlendEquation(GL_ADD);
     glBlendFunc(GL_ONE, GL_ONE);
 
-    glUniform1f(mTimeUniform, currentTime);
-    glUniform1f(mScreenRatioUniform, static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight));
+    Pegasus::Render::SetUniform(mTimeUniform, currentTime);
+    Pegasus::Render::SetUniform(mScreenRatioUniform, static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight));
     
     Pegasus::Render::Draw();
 

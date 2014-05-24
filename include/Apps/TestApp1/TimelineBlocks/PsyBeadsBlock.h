@@ -12,13 +12,10 @@
 #ifndef TESTAPP1_PSYBEADS_BLOCK_H
 #define TESTAPP1_PSYBEADS_BLOCK_H
 
+#include "Pegasus/Render/Render.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Mesh/Mesh.h"
 #include "Pegasus/Timeline/Block.h"
-
-//! TODO remove this direct dependency once our mesh & shader packages are fully complete
-#include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
-
 
 //! Timeline block for the PsyBeads effect (vertical columns with regular beads)
 //! \todo Use protected inheritance? In that case, give access to SetPosition() and SetLength()
@@ -58,9 +55,9 @@ private:
     PG_DISABLE_COPY(PsyBeadsBlock)
 
     Pegasus::Shader::ProgramLinkageRef mProgram;
+    Pegasus::Render::Uniform mTimeUniform;
+    Pegasus::Render::Uniform mScreenRatioUniform;
     Pegasus::Mesh::MeshRef mQuad;
-    GLint mTimeUniform;
-    GLint mScreenRatioUniform;
 };
 
 

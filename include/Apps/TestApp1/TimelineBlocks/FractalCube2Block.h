@@ -12,12 +12,10 @@
 #ifndef TESTAPP1_FRACTALCUBE2_BLOCK_H
 #define TESTAPP1_FRACTALCUBE2_BLOCK_H
 
+#include "Pegasus/Render/Render.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Mesh/Mesh.h"
 #include "Pegasus/Timeline/Block.h"
-
-//! TODO remove this direct dependency once our mesh & shader packages are fully complete
-#include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
 
 //! Timeline block for the FractalCube2 effect (colored fractal with shadows)
 //! \todo Use protected inheritance? In that case, give access to SetPosition() and SetLength()
@@ -58,8 +56,8 @@ private:
 
     Pegasus::Shader::ProgramLinkageRef mProgram;
     Pegasus::Mesh::MeshRef mQuad;
-    GLint mTimeUniform;
-    GLint mScreenRatioUniform;
+    Pegasus::Render::Uniform mTimeUniform;
+    Pegasus::Render::Uniform mScreenRatioUniform;
 };
 
 

@@ -170,7 +170,7 @@ static Pegasus::Render::OGLProgramGPUData * GetOrAllocateProgramGPUData(Pegasus:
             gpuData->mShaderCachedHandles[i] = 0;
         }
         //initializes reflection data to a null state
-        Pegasus::Render::PopulateReflectionInfo(0, gpuData->mReflection);
+        Pegasus::Render::PopulateReflectionInfo(nullptr, 0, gpuData->mReflection);
 
         //assign a GUID
         gpuData->mGUID = GLShaderFactory::sProgramGUIDCounter++;
@@ -206,6 +206,8 @@ static void CommonDestroyProgramGPUData (Pegasus::Alloc::IAllocator * allocator,
     if (nodeData->GetNodeGPUData() != nullptr)
     {
         Pegasus::Render::OGLProgramGPUData * gpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OGLProgramGPUData, nodeData->GetNodeGPUData());
+
+        Pegasus::Render::DestroyReflectionInfo(allocator, gpuData->mReflection);
         if (gpuData->mHandle != 0)
         {
             glDeleteProgram(gpuData->mHandle);
@@ -382,10 +384,11 @@ void GLShaderFactory::GenerateProgramGPUData (Pegasus::Shader::ProgramLinkage * 
             Pegasus::Shader::LinkingEvent::LINKING_SUCCESS,
             ""
         );
+        
+        // populate reflection data for quick draw calls in meshes
+        Pegasus::Render::PopulateReflectionInfo(mAllocator, gpuData->mHandle, gpuData->mReflection);
     }
     
-    // populate reflection data for quick draw calls in meshes
-    Pegasus::Render::PopulateReflectionInfo(gpuData->mHandle, gpuData->mReflection);
 
 }
 
