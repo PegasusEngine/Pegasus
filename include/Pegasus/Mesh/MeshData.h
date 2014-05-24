@@ -47,6 +47,9 @@ public:
 
     //! Convinience function that returns the total byte size of a stream
     int GetStreamByteSize(int i) const { return mVertexStreamStrides[i] * mConfiguration.GetVertexCount(); }
+
+    //! Gets the index buffer reference
+    unsigned short * GetIndexBuffer() { return mIndexBuffer; }
     
 protected:
 
@@ -63,7 +66,7 @@ private:
     //! Configuration of the mesh data
     MeshConfiguration mConfiguration;
     void  * mVertexStreams[MESH_MAX_STREAMS];
-    short * mIndexBuffer;
+    unsigned short * mIndexBuffer;
     int     mVertexStreamStrides[MESH_MAX_STREAMS];
 };
 

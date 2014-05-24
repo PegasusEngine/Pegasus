@@ -94,6 +94,7 @@ void Pegasus::Render::Dispatch (Pegasus::Mesh::MeshInOut mesh)
 
     // bind the actual vertex array
     glBindVertexArray(VAOEntry->mVAOName);
+    const Pegasus::Mesh::MeshConfiguration& meshConfig = meshData->GetConfiguration();
     
     //if the program has not changed, no need to re-record the vertex attribute array
     if (VAOEntry->mProgramVersion != programGPUData->mVersion)
@@ -102,8 +103,7 @@ void Pegasus::Render::Dispatch (Pegasus::Mesh::MeshInOut mesh)
         //create the VAO commands
         int previousStream = -1;
         int currStreamStride = 0;
-        const Pegasus::Mesh::MeshConfiguration& meshCofig = meshData->GetConfiguration();
-        const Pegasus::Mesh::MeshInputLayout * inputLayout = meshCofig.GetInputLayout();
+        const Pegasus::Mesh::MeshInputLayout * inputLayout = meshConfig.GetInputLayout();
         for (int i = 0; i < inputLayout->GetAttributeCount() ; ++i)
         {
             const Pegasus::Mesh::MeshInputLayout::AttrDesc& attrDesc = inputLayout->GetAttributeDesc(i);
@@ -140,6 +140,14 @@ void Pegasus::Render::Dispatch (Pegasus::Mesh::MeshInOut mesh)
             }
         }
     }
+    
+    if (meshGPUData->mDrawState.mIsIndexed)
+    {
+        PG_ASSERT(meshConfig.GetIsIndexed());
+        PG_ASSERT(meshGPUData->mIndexBuffer != GL_INVALID_INDEX);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshGPUData->mIndexBuffer);
+    }
+
     gOGLState.mDispatchedMeshGPUData = meshGPUData;
 }
 
@@ -231,7 +239,14 @@ void Pegasus::Render::Draw()
     PG_ASSERT(gOGLState.mDispatchedShader != nullptr);
     PG_ASSERT(gOGLState.mDispatchedMeshGPUData != nullptr);    
     Pegasus::Render::OGLMeshGPUData::DrawState& drawState = gOGLState.mDispatchedMeshGPUData->mDrawState;
-    glDrawArrays(drawState.mPrimitive, 0, drawState.mVertexCount);
+    if (drawState.mIsIndexed)
+    {
+        glDrawElements(drawState.mPrimitive, drawState.mIndexCount, GL_UNSIGNED_SHORT, (void*)0x0);
+    }
+    else
+    {
+        glDrawArrays(drawState.mPrimitive, 0, drawState.mVertexCount);
+    }
 }
 
 #endif

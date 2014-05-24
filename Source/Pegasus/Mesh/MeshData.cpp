@@ -48,7 +48,7 @@ MeshData::MeshData(const MeshConfiguration & configuration, Alloc::IAllocator* a
 
     if (configuration.GetIsIndexed())
     {
-        mIndexBuffer = PG_NEW_ARRAY(GetAllocator(), -1, "MeshData::mIndexBuffer", Alloc::PG_MEM_TEMP, short, configuration.GetIndexCount());
+        mIndexBuffer = PG_NEW_ARRAY(GetAllocator(), -1, "MeshData::mIndexBuffer", Alloc::PG_MEM_TEMP, unsigned short, configuration.GetIndexCount());
     }
 }
 

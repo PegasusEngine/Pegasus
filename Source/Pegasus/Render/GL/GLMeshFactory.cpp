@@ -54,6 +54,8 @@ Pegasus::Render::OGLMeshGPUData * GLMeshFactory::GetOrAllocateGPUData(Pegasus::M
             Pegasus::Render::OGLMeshGPUData();
 
         //setup the draw state
+        meshGPUData->mDrawState.mIsIndexed = false;
+        meshGPUData->mDrawState.mIndexCount  = 0;
         meshGPUData->mDrawState.mVertexCount = 0;
         meshGPUData->mDrawState.mPrimitive = GL_TRIANGLES; // defaulting to triangles
 
@@ -82,6 +84,8 @@ Pegasus::Render::OGLMeshGPUData * GLMeshFactory::GetOrAllocateGPUData(Pegasus::M
         {
             meshGPUData->mBufferTable[i] = GL_INVALID_INDEX;
         }
+
+        meshGPUData->mIndexBuffer = GL_INVALID_INDEX;
 
         //set the brand new mesh gpu data
         nodeData->SetNodeGPUData(reinterpret_cast<Pegasus::Graph::NodeGPUData*>(meshGPUData));
@@ -129,6 +133,25 @@ void GLMeshFactory::GenerateMeshGPUData(Pegasus::Mesh::MeshData * nodeData)
                 meshConfig.GetIsDynamic() ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
         }
     }
+
+    if (meshConfig.GetIsIndexed())
+    {
+        gpuData->mDrawState.mIsIndexed = true;
+        gpuData->mDrawState.mIndexCount = meshConfig.GetIndexCount();
+        if (gpuData->mIndexBuffer == GL_INVALID_INDEX)
+        {
+            glGenBuffers(1, &gpuData->mIndexBuffer);
+        }
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gpuData->mIndexBuffer);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(short) * meshConfig.GetIndexCount(), 
+                     nodeData->GetIndexBuffer(),
+                     meshConfig.GetIsDynamic() ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+
+    }
+    else
+    {
+        gpuData->mDrawState.mIsIndexed = false;
+    }
 }
 
 //! API function that deletes any GPU data inside the node data, if any
@@ -155,6 +178,11 @@ void GLMeshFactory::DestroyNodeGPUData(Pegasus::Mesh::MeshData * nodeData)
             {
                 glDeleteBuffers(1, &meshGPUData->mBufferTable[i]);
             }
+        }
+
+        if (meshGPUData->mIndexBuffer != GL_INVALID_INDEX)
+        {
+            glDeleteBuffers(1, &meshGPUData->mIndexBuffer);
         }
 
         // delete final reference to GPU data

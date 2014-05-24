@@ -59,7 +59,9 @@ struct OGLMeshGPUData
     PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(OGLMeshGPUData, 0x4);
 
     struct DrawState {
-        int mVertexCount;
+        bool mIsIndexed;
+        int  mIndexCount;
+        int  mVertexCount;
         GLuint mPrimitive;
     } mDrawState;
 
@@ -79,6 +81,8 @@ struct OGLMeshGPUData
     int mVAOTableCount;
 
     GLuint mBufferTable[MESH_MAX_STREAMS];
+    GLuint mIndexBuffer;
+    
 };
 
 } // namespace Render
