@@ -43,8 +43,7 @@ private:
     PG_DISABLE_COPY(RenderContextImpl_Win32);
 
 
-    HDC mDeviceContextHandle; //!< Opaque context handle
-    HGLRC mRenderContextHandle; //!< Opaque GL context handle
+    HDC mDeviceContextHandle; //!< Opaque context handle    
 };
 
 

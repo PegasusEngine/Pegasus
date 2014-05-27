@@ -17,6 +17,9 @@
 namespace Pegasus {
 namespace Render {
 
+static HGLRC gRenderContextHandle = 0; //!< Opaque GL context handle
+static int   gRenderContextHandleReferences = 0; //reference count for the GL context
+
 // Global pixel format descriptor for RGBA 32-bits
 static PIXELFORMATDESCRIPTOR sPixelFormat = {
     sizeof(PIXELFORMATDESCRIPTOR), //! size of structure
@@ -53,11 +56,13 @@ void IRenderContextImpl::DestroyImpl(IRenderContextImpl* impl, Alloc::IAllocator
 
 //----------------------------------------------------------------------------------------
 
+
+
 RenderContextImpl_Win32::RenderContextImpl_Win32(const ContextConfig& config)
     : mDeviceContextHandle((HDC) config.mDeviceContextHandle)
 {
     // Create context
-    if (config.mStartupContext)
+    if (config.mStartupContext && gRenderContextHandle == 0)
     {
         // Startup
         int nPixelFormat = ChoosePixelFormat(mDeviceContextHandle, &sPixelFormat);
@@ -65,8 +70,11 @@ RenderContextImpl_Win32::RenderContextImpl_Win32(const ContextConfig& config)
         // Setup pixel format for backbuffer
         SetPixelFormat(mDeviceContextHandle, nPixelFormat, &sPixelFormat);
 
-        // Make a new OpenGL context
-        mRenderContextHandle = wglCreateContext(mDeviceContextHandle);
+        if (gRenderContextHandleReferences == 0)
+        {
+            // Make a new OpenGL context
+            gRenderContextHandle = wglCreateContext(mDeviceContextHandle);
+        }
 
         PG_LOG('OGL_', "Startup context created");
     }
@@ -83,14 +91,18 @@ RenderContextImpl_Win32::RenderContextImpl_Win32(const ContextConfig& config)
 
         // Setup pixel format for backbuffer
         SetPixelFormat(mDeviceContextHandle, nPixelFormat, &sPixelFormat);
-
-        // Make a new OpenGL context
-        mRenderContextHandle = wglCreateContextAttribsARB(mDeviceContextHandle, 0, sAttrib);
+        if (gRenderContextHandleReferences == 0)
+        {
+            // Make a new OpenGL context
+            gRenderContextHandle = wglCreateContextAttribsARB(mDeviceContextHandle, 0, sAttrib);
+        }
    
-        PG_ASSERTSTR(mRenderContextHandle != 0x0, "Cannot instantiate render context! Check if your graphcis card supports the minor and major version");
+        PG_ASSERTSTR(gRenderContextHandle != 0x0, "Cannot instantiate render context! Check if your graphcis card supports the minor and major version");
     }
 
-    PG_LOG('OGL_', "Context %u created", mRenderContextHandle);
+    ++gRenderContextHandleReferences;
+
+    PG_LOG('OGL_', "Context %u created", gRenderContextHandle);
 
     // Link it to the window
     Bind();
@@ -102,18 +114,23 @@ RenderContextImpl_Win32::~RenderContextImpl_Win32()
 {
     // Unbind and destroy the context
     Unbind();
-    wglDeleteContext(mRenderContextHandle);
+    --gRenderContextHandleReferences;
 
-    PG_LOG('OGL_', "Context %u destroyed", mRenderContextHandle);
+    if (gRenderContextHandleReferences == 0)
+    {
+        wglDeleteContext(gRenderContextHandle);
+        gRenderContextHandle = 0;
+    }
+
+    PG_LOG('OGL_', "Context %u destroyed", gRenderContextHandle);
 }
 
 //----------------------------------------------------------------------------------------
-
 void RenderContextImpl_Win32::Bind() const
-{
-    wglMakeCurrent(mDeviceContextHandle, mRenderContextHandle);
+{    
+    wglMakeCurrent(mDeviceContextHandle, gRenderContextHandle);
 
-    PG_LOG('OGL_', "%u is now the active context", mRenderContextHandle);
+    PG_LOG('OGL_', "%u is now the active context", gRenderContextHandle);
 }
 
 //----------------------------------------------------------------------------------------
