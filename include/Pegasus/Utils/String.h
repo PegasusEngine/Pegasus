@@ -36,6 +36,15 @@ namespace Utils
 
     //! Standard unsafe 8bit ascii Strrchr function
     char * Strrchr (char * str, char character);
+
+    //! standard, unsafe string concatenation function
+    char * Strcat(char * dst, const char * src);
+
+    //! standard, unsafe string concatenation function
+    char * Strcat(char * dst, int i);
+
+    //! convert a string to int
+    int Atoi(const char * str);
     
 }
 }

@@ -57,4 +57,22 @@ bool UNIT_TEST_Strrchr2();
 
 bool UNIT_TEST_Strrchr3();
 
+bool UNIT_TEST_Strcat1();
+
+bool UNIT_TEST_Strcat2();
+
+bool UNIT_TEST_Strcat3();
+
+bool UNIT_TEST_Strcat4();
+
+bool UNIT_TEST_Strcat5();
+
+bool UNIT_TEST_Strcat6();
+
+bool UNIT_TEST_Atoi1();
+
+bool UNIT_TEST_Atoi2();
+
+bool UNIT_TEST_Atoi3();
+
 #endif

@@ -21,9 +21,8 @@
 void * Pegasus::Utils::Memcpy(void* dst, const void* src, unsigned count)
 {
     PG_ASSERTSTR( 
-        reinterpret_cast<NumPtr>(dst) < reinterpret_cast<NumPtr>(src) ?
-            reinterpret_cast<NumPtr>(src) - reinterpret_cast<NumPtr>(dst) > static_cast<NumPtr>(count) :
-            reinterpret_cast<NumPtr>(dst) - reinterpret_cast<NumPtr>(src) > static_cast<NumPtr>(count) ,
+        reinterpret_cast<NumPtr>(dst) < reinterpret_cast<NumPtr>(src) ||
+        (reinterpret_cast<NumPtr>(dst) > reinterpret_cast<NumPtr>(src) && (reinterpret_cast<NumPtr>(dst) - reinterpret_cast<NumPtr>(src)) >= static_cast<NumPtr>(count)),
         "Fatal Memcpy!, memcpy intersection detected. Pegasus only supports fwd copy. this will result in a possible memory stomp."
     );
 

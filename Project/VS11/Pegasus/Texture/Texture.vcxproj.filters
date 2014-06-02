@@ -53,6 +53,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Generator\GradientGenerator.h">
       <Filter>Include\Generator</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\ITextureFactory.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Texture.cpp">

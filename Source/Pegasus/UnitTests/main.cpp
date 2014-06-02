@@ -76,6 +76,18 @@ int main()
     RUN_TEST(Strrchr2);
     RUN_TEST(Strrchr3);
 
+    //strcat
+    RUN_TEST(Strcat1);
+    RUN_TEST(Strcat2);
+    RUN_TEST(Strcat3);
+    RUN_TEST(Strcat4);
+    RUN_TEST(Strcat5);
+    RUN_TEST(Strcat6);
+
+    //Atoi
+    RUN_TEST(Atoi1);
+    RUN_TEST(Atoi2);
+    RUN_TEST(Atoi3);
     ///////////////////////////////////////////////////////////
 
     printf("Final Results: %d out of %d succeeded\n", successes, total);

@@ -10,7 +10,8 @@
 //! \brief  Window manager for a Pegasus app.
 
 #include "Pegasus/Application/AppWindowManager.h"
-#include <string.h>
+#include "Pegasus/Utils/String.h"
+#include "Pegasus/Utils/Memcpy.h"
 
 namespace Pegasus {
 namespace App {
@@ -28,7 +29,7 @@ public:
     // Helpers
     void Clear();
     inline bool TypeEqual(const TypeTableEntry& other) { return (mTypeTag == other.mTypeTag); }
-    inline bool ClassEqual(const TypeTableEntry& other) { return (strcmp(mClassName, other.mClassName) == 0); }
+    inline bool ClassEqual(const TypeTableEntry& other) { return (Utils::Strcmp(mClassName, other.mClassName) == 0); }
     inline bool Empty() { return (mClassName[0] == '\0'); }
 
     WindowTypeTag mTypeTag;
@@ -175,7 +176,7 @@ bool TypeTable::Contains(const char* typeName) const
     // Iterate over table
     for (unsigned int i = 0; i < mCurrentSize; i++)
     {
-        if (strcmp(typeName, mTable[i].mClassName) == 0)
+        if (Pegasus::Utils::Strcmp(typeName, mTable[i].mClassName) == 0)
         {
             found = true;
             break;
@@ -213,7 +214,7 @@ TypeTableEntry* TypeTable::Get(const char* typeName) const
     // Iterate over table
     for (unsigned int i = 0; i < mCurrentSize; i++)
     {
-        if (strcmp(typeName, mTable[i].mClassName) == 0)
+        if (Pegasus::Utils::Strcmp(typeName, mTable[i].mClassName) == 0)
         {
             index = i;
             break;
@@ -260,32 +261,41 @@ void TypeTable::Insert(const TypeTableEntry& entry)
 void TypeTable::Remove(const char* typeName)
 {
     int index = -1;
+    mMainWindowIndex = -1;
+
+#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
+    mSecondaryWindowIndex = -1;
+#endif  // PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
 
     // Iterate over table
     for (unsigned int i = 0; i < mCurrentSize; i++)
     {
-        if (strcmp(typeName, mTable[i].mClassName) == 0)
+        if (Pegasus::Utils::Strcmp(typeName, mTable[i].mClassName) == 0)
         {
             index = i;
-            break;
+            Pegasus::Utils::Memcpy(mTable + index, mTable + index + 1, sizeof(TypeTableEntry) * (mCurrentSize - index - 1)); // Fill hole
+            mCurrentSize--;
+            break;            
         }
     }
 
+    for (unsigned int i = 0; i < mCurrentSize; i++)
+    {
+        if (mTable[i].mTypeTag == WINDOW_TYPE_MAIN)
+        {
+            mMainWindowIndex = i;
+        }
+
+    #if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
+        // Check for SECONDARY
+        if (mTable[i].mTypeTag == WINDOW_TYPE_SECONDARY)
+        {
+            mSecondaryWindowIndex = i;
+        }
+    #endif  // PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
+    }
+    
     PG_ASSERTSTR(index != -1, "Trying to remove unknown window type!");
-    // Check for MAIN
-    if (mTable[index].mTypeTag == WINDOW_TYPE_MAIN)
-    {
-        mMainWindowIndex = -1;
-    }
-#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
-    // Check for SECONDARY
-    else if (mTable[index].mTypeTag == WINDOW_TYPE_SECONDARY)
-    {
-        mSecondaryWindowIndex = -1;
-    }
-#endif  // PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
-    memmove(mTable + index, mTable + index + 1, sizeof(TypeTableEntry) * (mCurrentSize - index - 1)); // Fill hole
-    mCurrentSize--;
 }
 
 //----------------------------------------------------------------------------------------
@@ -357,7 +367,7 @@ void WindowTable::Remove(Wnd::Window* entry)
 
     PG_ASSERTSTR(index != -1, "Trying to remove unknown window!");
     PG_DELETE(mAllocator, mTable[index]);
-    memmove(mTable + index, mTable + index + 1, sizeof(Wnd::Window*) * (mCurrentSize - index - 1)); // Fill hole
+    Pegasus::Utils::Memcpy(mTable + index, mTable + index + 1, sizeof(Wnd::Window*) * (mCurrentSize - index - 1)); // Fill hole
     mCurrentSize--;
 }
 

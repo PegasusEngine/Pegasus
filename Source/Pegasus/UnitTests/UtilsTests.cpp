@@ -180,3 +180,79 @@ bool UNIT_TEST_Strrchr3()
     const char * c1 = "x1234567890";
     return Pegasus::Utils::Strrchr(c1, 'x') == (c1);
 }
+
+bool UNIT_TEST_Strcat1()
+{
+    const char * src1 = "Hello";
+    const char * src2 = "World";
+    char dest[64];
+    dest[0] = '\0';
+    dest[11] = 99; //sentinel
+    Pegasus::Utils::Strcat(dest, src1);
+    Pegasus::Utils::Strcat(dest, src2);
+    return !Pegasus::Utils::Strcmp(dest, "HelloWorld") && dest[10] == '\0' && dest[11] == 99;
+}
+
+
+bool UNIT_TEST_Strcat2()
+{
+    const char * src1 = "B";
+    char dest[64];
+    dest[0] = '\0';
+    Pegasus::Utils::Strcat(dest, src1);
+    return !Pegasus::Utils::Strcmp(dest, src1);
+}
+
+bool UNIT_TEST_Strcat3()
+{
+    const char * src1 = "";
+    const char * src2 = "";
+    char dest[64];
+    dest[0] = '\0';
+    Pegasus::Utils::Strcat(dest, src1);
+    Pegasus::Utils::Strcat(dest, src2);
+    return !Pegasus::Utils::Strcmp(dest, "");
+}
+
+
+bool UNIT_TEST_Strcat4()
+{
+    char p[3] = "";
+    p[2] = 99;//sentinel
+    Pegasus::Utils::Strcat(p,0);
+    return !Pegasus::Utils::Strcmp(p,"0") && p[2] == 99;
+}
+
+bool UNIT_TEST_Strcat5()
+{
+    char p[3] = "";
+    p[2] = 99;//sentinel
+    Pegasus::Utils::Strcat(p,9);
+    return !Pegasus::Utils::Strcmp(p,"9") && p[2] == 99;
+}
+
+bool UNIT_TEST_Strcat6()
+{
+    char p[5] = "";
+    p[4] = 99;//sentinel
+    Pegasus::Utils::Strcat(p,128);
+    return !Pegasus::Utils::Strcmp(p,"128") && p[4] == 99;
+}
+
+bool UNIT_TEST_Atoi1()
+{
+    const char * n = "-1234567890";
+    return Pegasus::Utils::Atoi(n) == -1234567890;
+}
+
+bool UNIT_TEST_Atoi2()
+{
+    const char * n = "-0000000";
+    return Pegasus::Utils::Atoi(n) == 0;
+}
+
+bool UNIT_TEST_Atoi3()
+{
+    const char * n = "1";
+    return Pegasus::Utils::Atoi(n) == 1;
+}

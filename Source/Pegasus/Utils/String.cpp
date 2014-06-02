@@ -88,3 +88,64 @@ char * Pegasus::Utils::Strrchr (char * str, char character)
     }
     return nullptr;
 }
+
+char * Pegasus::Utils::Strcat(char * dst, const char * src)
+{
+    int len = Pegasus::Utils::Strlen(dst);
+    const char * srcPtr = src;
+    char * dstPtr = dst + len;
+    *dstPtr = *srcPtr;
+    do
+    {
+        *(++dstPtr) = *(++srcPtr);
+    } while(*srcPtr != 0);
+    return dst;
+}
+
+char * Pegasus::Utils::Strcat(char * dst, int i)
+{
+    int len = Pegasus::Utils::Strlen(dst);
+    char * dstPtr = dst + len;
+
+    if (i == 0)
+    {
+        dstPtr[0] = '0'; dstPtr[1] = '\0';
+    }
+    else
+    {
+        if (i < 0) *dstPtr++ = '-';
+        char * beginning = dstPtr;
+        while (i)
+        {
+            *dstPtr++ = (i % 10) + '0';
+            i /= 10;
+        }
+        char * end = dstPtr - 1;
+        //flip
+        while (beginning < end)
+        {
+            char tmp = *beginning;
+            *beginning++ = *end;
+            *end-- = tmp;
+        }
+        *dstPtr = 0;
+    }
+    return dst;
+}
+
+int Pegasus::Utils::Atoi(const char * str)
+{
+    if (*str != '\0')
+    {
+        int sign = *str == '-' ? -1 : 1;
+        if (sign < 0) ++str;
+        int val = 0;
+        while (*str && *str >= '0' && *str <= '9')
+        {
+            val = 10*val + (*str - '0');
+            ++str;
+        }
+        return sign * val;
+    }
+    return 0;
+}

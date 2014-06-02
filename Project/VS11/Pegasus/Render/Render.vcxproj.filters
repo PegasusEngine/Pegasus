@@ -53,6 +53,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\MeshFactory.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Render\TextureFactory.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.cpp">
@@ -77,6 +80,9 @@
       <Filter>Source\GL</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLMeshFactory.cpp">
+      <Filter>Source\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLTextureFactory.cpp">
       <Filter>Source\GL</Filter>
     </ClCompile>
   </ItemGroup>

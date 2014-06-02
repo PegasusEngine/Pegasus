@@ -10,6 +10,7 @@
 //! \brief	Global node manager, including the factory features
 
 #include "Pegasus/Graph/NodeManager.h"
+#include "Pegasus/Utils/String.h"
 
 #include <string.h>
 
@@ -42,11 +43,7 @@ void NodeManager::RegisterNode(const char * className, Node::CreateNodeFunc crea
         return;
     }
 
-#if PEGASUS_COMPILER_MSVC
-    if (strnlen_s(className, MAX_CLASS_NAME_LENGTH) < 4)
-#else
-    if (strnlen(className, MAX_CLASS_NAME_LENGTH) < 4)
-#endif
+    if (Pegasus::Utils::Strlen(className) < 4)
     {
         PG_FAILSTR("Trying to register a node class but the name (%s) is too short", className);
         return;
@@ -117,7 +114,7 @@ unsigned int NodeManager::GetRegisteredNodeIndex(const char * className) const
     unsigned int index;
     for (index = 0; index < mNumRegisteredNodes; ++index)
     {
-        if (strncmp(mRegisteredNodes[index].className, className, MAX_CLASS_NAME_LENGTH) == 0)
+        if (Pegasus::Utils::Strcmp(mRegisteredNodes[index].className, className) == 0)
         {
             // Node found
             return index;

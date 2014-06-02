@@ -13,6 +13,8 @@
 #include "Pegasus/Timeline/Lane.h"
 #include "Pegasus/Core/Time.h"
 #include "Pegasus/Math/Scalar.h"
+#include "Pegasus/Utils/String.h"
+#include "Pegasus/Utils/Memcpy.h"
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/Timeline/TimelineProxy.h"
@@ -92,11 +94,8 @@ void Timeline::RegisterBlock(const char * className, CreateBlockFunc createBlock
     }
 #endif
 
-#if PEGASUS_COMPILER_MSVC
-    if (strnlen_s(className, MAX_BLOCK_CLASS_NAME_LENGTH) < 4)
-#else
-    if (strnlen(className, MAX_BLOCK_CLASS_NAME_LENGTH) < 4)
-#endif
+
+    if (Pegasus::Utils::Strlen(className) < 4)
     {
         PG_FAILSTR("Trying to register a block class but the name (%s) is too short", className);
         return;
@@ -475,7 +474,7 @@ unsigned int Timeline::GetRegisteredBlockIndex(const char * className) const
     unsigned int index;
     for (index = 0; index < mNumRegisteredBlocks; ++index)
     {
-        if (strncmp(mRegisteredBlocks[index].className, className, MAX_BLOCK_CLASS_NAME_LENGTH) == 0)
+        if (Pegasus::Utils::Strcmp(mRegisteredBlocks[index].className, className) == 0)
         {
             // Block found
             return index;

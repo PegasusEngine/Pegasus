@@ -33,6 +33,7 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\RenderContextConfig.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\RenderDefs.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\ShaderFactory.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Render\TextureFactory.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLGpuDataDefs.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLEWStaticInclude.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.h" />
@@ -47,6 +48,7 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLRenderImpl.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLShaderFactory.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLShaderReflect.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLTextureFactory.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Platform\RenderContext_Win32.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\RenderContext.cpp" />
   </ItemGroup>
