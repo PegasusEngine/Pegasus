@@ -318,7 +318,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         }
         else
         {
-            appWindow->Refresh();
+            appWindow->Refresh(true);
 
             // Dispatch it
             TranslateMessage(&curMsg);

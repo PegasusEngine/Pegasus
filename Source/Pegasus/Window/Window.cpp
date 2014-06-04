@@ -84,7 +84,7 @@ void WindowMessageHandler::OnRepaint()
 {
     if (mParent->mContextCreated)
     {
-        mParent->Refresh();
+        mParent->Refresh(true);
     }
 }
 
@@ -141,12 +141,15 @@ WindowHandle Window::GetHandle() const
 
 //----------------------------------------------------------------------------------------
 
-void Window::Refresh()
+void Window::Refresh(bool updateTimeline)
 {
     if (mRenderContext != nullptr)
     {
         mRenderContext->Bind();
-        mWindowContext->GetTimeline()->Update();
+        if (updateTimeline)
+        {
+            mWindowContext->GetTimeline()->Update();
+        }
         Render();
     }
     else

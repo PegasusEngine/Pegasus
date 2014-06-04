@@ -42,7 +42,8 @@ public:
     virtual void Shutdown() = 0;
 
     //! Bind the render context and render the window
-    virtual void Refresh() = 0;
+    //! \param updateTimeline True to update the timeline, so animation happens
+    virtual void Refresh(bool updateTimeline) = 0;
 
 
     //! Resizes this window.

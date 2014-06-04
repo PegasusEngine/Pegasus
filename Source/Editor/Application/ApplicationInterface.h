@@ -59,7 +59,18 @@ private slots:
     void ResizeViewport(ViewportType viewportType, int width, int height);
 
     //! Called when a request to redraw the content of the main viewport is sent
-    void RedrawMainViewport();
+    //! \param updateTimeline True to update the timeline, so animation happens
+    //! \return True if drawing happened (when the dock widget is open)
+    bool RedrawMainViewport(bool updateTimeline = true);
+
+    //! Called when a request to redraw the content of the secondary viewport is sent
+    //! \return True if drawing happened (when the dock widget is open)
+    bool RedrawSecondaryViewport(bool updateTimeline = true);
+
+    //! Called when a request to redraw the content of all viewports is sent
+    //! \note Nothing happens if the dock widgets are closed
+    void RedrawAllViewports();
+
 
     //! Enable or disable the play mode of the demo timeline
     //! \param enabled True if the play mode has just been enabled, false if it has just been disabled

@@ -72,7 +72,8 @@ public:
     virtual void Render() = 0;
 
     //! Bind the render context and render the window
-    void Refresh();
+    //! \param updateTimeline True to update the timeline, so animation happens
+    void Refresh(bool updateTimeline);
 
 
     //! Resize this window

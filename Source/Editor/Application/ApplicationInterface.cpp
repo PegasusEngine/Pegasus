@@ -38,8 +38,7 @@ ApplicationInterface::ApplicationInterface(Application * application, QObject * 
     // Connect the viewport widget resized messages to the windows in the application worker thread.
     // A queued connection is used since we have to cross the thread boundaries
     //! \todo Add support for other window types
-    //! \todo Restore support for the second viewport (buffer sharing)
-    for (unsigned int vt = 0; vt < /*NUM_VIEWPORT_TYPES*/1; ++vt)
+    for (unsigned int vt = 0; vt < /*NUM_VIEWPORT_TYPES*/2; ++vt)
     {
         ViewportWidget * viewportWidget = Editor::GetInstance().GetViewportWidget(ViewportType(VIEWPORTTYPE_FIRST + vt));
         if (viewportWidget != nullptr)
@@ -72,7 +71,7 @@ ApplicationInterface::ApplicationInterface(Application * application, QObject * 
 
         //! \todo Handle multiple blocks being moved at the same time
         connect(timelineDockWidget, SIGNAL(BlockMoved()),
-                this, SLOT(RedrawMainViewport()),
+                this, SLOT(RedrawAllViewports()),
                 Qt::QueuedConnection);
     }
     else
@@ -120,16 +119,65 @@ void ApplicationInterface::ResizeViewport(ViewportType viewportType, int width, 
 
 //----------------------------------------------------------------------------------------
 
-void ApplicationInterface::RedrawMainViewport()
+bool ApplicationInterface::RedrawMainViewport(bool updateTimeline)
 {
-    Pegasus::Wnd::IWindowProxy * mainViewportWindow = mApplication->GetWindowProxy(VIEWPORTTYPE_MAIN);
-    ED_ASSERT(mainViewportWindow != nullptr);
-
-    // Let the redrawing happen only when no assertion dialog is present
-    //! \todo Seems not useful anymore. Test and remove if possible
-    //if (!mAssertionBeingHandled)
+    if (Editor::GetInstance().GetMainViewportDockWidget()->isVisible())
     {
-        mainViewportWindow->Refresh();
+        Pegasus::Wnd::IWindowProxy * mainViewportWindow = mApplication->GetWindowProxy(VIEWPORTTYPE_MAIN);
+        ED_ASSERT(mainViewportWindow != nullptr);
+
+        // Let the redrawing happen only when no assertion dialog is present
+        //! \todo Seems not useful anymore. Test and remove if possible
+        //if (!mAssertionBeingHandled)
+        {
+            mainViewportWindow->Refresh(updateTimeline);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+//----------------------------------------------------------------------------------------
+
+bool ApplicationInterface::RedrawSecondaryViewport(bool updateTimeline)
+{
+    if (Editor::GetInstance().GetSecondaryViewportDockWidget()->isVisible())
+    {
+        Pegasus::Wnd::IWindowProxy * secondaryViewportWindow = mApplication->GetWindowProxy(VIEWPORTTYPE_SECONDARY);
+        ED_ASSERT(secondaryViewportWindow != nullptr);
+
+        // Let the redrawing happen only when no assertion dialog is present
+        //! \todo Seems not useful anymore. Test and remove if possible
+        //if (!mAssertionBeingHandled)
+        {
+            secondaryViewportWindow->Refresh(updateTimeline);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::RedrawAllViewports()
+{
+    // Redraw the main viewport, updating the timeline
+    const bool mainRedrawn = RedrawMainViewport(true);
+
+    // If the main viewport has been redrawn, skip the timeline update for the secondary window.
+    // Otherwise, update the timeline.
+    const bool secondaryRedrawn = RedrawSecondaryViewport(!mainRedrawn);
+
+    // If no viewport has been redrawn, at least update the timeline so play mode does not get stuck
+    if (!mainRedrawn && !secondaryRedrawn)
+    {
+        Pegasus::Timeline::ITimelineProxy * timeline = mApplication->GetTimelineProxy();
+        if (timeline != nullptr)
+        {
+            timeline->Update();
+        }
     }
 }
 
@@ -146,8 +194,7 @@ void ApplicationInterface::TogglePlayMode(bool enabled)
         timeline->SetPlayMode(Pegasus::Timeline::PLAYMODE_REALTIME);
 
         // Request the rendering of the first frame
-        //! \todo Handle multiple viewports
-        RedrawMainViewport();
+        RedrawAllViewports();
 
         // At this point, the play mode is still enabled, so inform the linked objects
         // that will request a refresh of the viewports
@@ -168,8 +215,7 @@ void ApplicationInterface::RequestFrameInPlayMode()
     ED_ASSERT(timeline != nullptr);
 
     // Request the rendering of the viewport for the current beat
-    //! \todo Handle multiple viewports and if the main viewport is in real-time mode
-    RedrawMainViewport();
+    RedrawAllViewports();
 
     // We are still in play mode, inform the linked objects that will request a refresh of the viewports
     emit ViewportRedrawnInPlayMode(timeline->GetCurrentBeat());
@@ -184,8 +230,7 @@ void ApplicationInterface::SetCurrentBeat(float beat)
 
     timeline->SetCurrentBeat(beat);
 
-    //! \todo Handle multiple viewports and if the main viewport is in real-time mode
-    RedrawMainViewport();
+    RedrawAllViewports();
 }
 
 //----------------------------------------------------------------------------------------
@@ -202,7 +247,7 @@ void ApplicationInterface::ReceiveShaderCompilationRequest(int id)
 
             //refresh viewport
             mApplication->GetShaderManagerProxy()->UpdateAllPrograms();
-            RequestFrameInPlayMode();
+            RedrawAllViewports();
         }
         else
         {

@@ -43,9 +43,9 @@ void WindowProxy::Shutdown()
 
 //----------------------------------------------------------------------------------------
 
-void WindowProxy::Refresh()
+void WindowProxy::Refresh(bool updateTimeline)
 {
-    mObject->Refresh();
+    mObject->Refresh(updateTimeline);
 }
 
 //----------------------------------------------------------------------------------------
