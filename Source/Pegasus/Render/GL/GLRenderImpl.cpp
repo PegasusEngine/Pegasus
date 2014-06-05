@@ -152,7 +152,7 @@ void Pegasus::Render::Dispatch (Pegasus::Mesh::MeshInOut mesh)
 }
 
 
-static bool GetUniformLocationInternal(Pegasus::Render::OGLProgramGPUData * programGPUData, const char * name, Pegasus::Render::Uniform& outputUniform)
+static bool GetUniformLocationInternal(Pegasus::Render::OGLProgramGPUData * programGPUData, Pegasus::Render::Uniform& outputUniform)
 {
     Pegasus::Render::GLShaderReflect::UniformTable * table = &programGPUData->mReflection.mUniformTable;
     PG_ASSERT(table != nullptr);
@@ -160,9 +160,8 @@ static bool GetUniformLocationInternal(Pegasus::Render::OGLProgramGPUData * prog
     for (int i = 0; i < table->mTableCount; ++i)
     {
         Pegasus::Render::GLShaderUniform * uniformEntry = &table->mTable[i];
-        if (!Pegasus::Utils::Strcmp(name, uniformEntry->mName))
+        if (!Pegasus::Utils::Strcmp(outputUniform.mName, uniformEntry->mName))
         {
-            Pegasus::Utils::Memcpy(outputUniform.mName, uniformEntry->mName, PEGASUS_RENDER_MAX_UNIFORM_NAME_LEN); 
             outputUniform.mInternalIndex = i;
             outputUniform.mInternalOwner = programGPUData->mGUID;
             outputUniform.mInternalVersion = programGPUData->mVersion;
@@ -182,19 +181,21 @@ bool Pegasus::Render::GetUniformLocation(Pegasus::Shader::ProgramLinkageInOut pr
          Pegasus::Render::OGLProgramGPUData, 
          gpuData
     );
-    return GetUniformLocationInternal(programGPUData, name, outputUniform);
+    Pegasus::Utils::Memcpy(outputUniform.mName, name, PEGASUS_RENDER_MAX_UNIFORM_NAME_LEN); 
+
+    return GetUniformLocationInternal(programGPUData, outputUniform);
 }
 
 static bool UpdateUniform(Pegasus::Render::OGLProgramGPUData * dispatchedShader, Pegasus::Render::Uniform& u)
 {
      
-    PG_ASSERTSTR(u.mInternalOwner == dispatchedShader->mGUID, "The uniform does not belong to the shader being dispatched!");
-    if (dispatchedShader != nullptr && u.mInternalOwner == dispatchedShader->mGUID)
+    PG_ASSERTSTR(u.mInternalOwner == -1 || u.mInternalOwner == dispatchedShader->mGUID, "The uniform does not belong to the shader being dispatched!");
+    if (dispatchedShader != nullptr && (u.mInternalOwner == dispatchedShader->mGUID || u.mInternalOwner == -1))
     {
         if (u.mInternalVersion != dispatchedShader->mVersion)
         {
             //uniform re-update is required
-            return GetUniformLocationInternal(dispatchedShader, u.mName, u);
+            return GetUniformLocationInternal(dispatchedShader, u);
         }
         else
         {
@@ -229,6 +230,32 @@ bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, float value)
     {
         PG_ASSERTSTR(uniformEntry->mType == GL_FLOAT, "Setting a uniform of the wrong type!");
         glUniform1f(uniformEntry->mSlot, value);
+        return true;
+    }
+    return false;
+}
+
+bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, Pegasus::Texture::TextureInOut texture)
+{
+    Pegasus::Render::GLShaderUniform * uniformEntry = GetUpdatedGLUniformLocation(u);
+    if (uniformEntry != nullptr)
+    {
+        PG_ASSERTSTR(
+            uniformEntry->mType == GL_SAMPLER_1D ||
+            uniformEntry->mType == GL_SAMPLER_2D ||
+            uniformEntry->mType == GL_SAMPLER_3D ||
+            uniformEntry->mType == GL_SAMPLER_CUBE ||
+            uniformEntry->mType == GL_SAMPLER_1D_SHADOW ||
+            uniformEntry->mType == GL_SAMPLER_2D_SHADOW,
+        "Setting a uniform of the wrong type!");
+        glActiveTexture(GL_TEXTURE0 + uniformEntry->mTextureSlot);
+        Pegasus::Render::OGLTextureGPUData * textureGPUData = 
+            PEGASUS_GRAPH_GPUDATA_SAFECAST(
+                Pegasus::Render::OGLTextureGPUData,
+                texture->GetUpdatedTextureData()->GetNodeGPUData()
+            );
+        glBindTexture(GL_TEXTURE_2D, textureGPUData->mHandle);
+        glUniform1i(uniformEntry->mSlot, uniformEntry->mTextureSlot);
         return true;
     }
     return false;

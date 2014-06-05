@@ -27,8 +27,8 @@ namespace Texture {
 
 //----------------------------------------------------------------------------------------
     
-TextureManager::TextureManager(Graph::NodeManager * nodeManager)
-:   mNodeManager(nodeManager)
+TextureManager::TextureManager(Graph::NodeManager * nodeManager, ITextureFactory * textureFactory)
+:   mNodeManager(nodeManager), mFactory(textureFactory)
 {
     if (nodeManager != nullptr)
     {
@@ -68,6 +68,7 @@ TextureReturn TextureManager::CreateTextureNode(const TextureConfiguration & con
     {
         TextureRef texture = mNodeManager->CreateNode("Texture");
         texture->SetConfiguration(configuration);
+        texture->SetFactory(mFactory);
         return texture;
     }
     else

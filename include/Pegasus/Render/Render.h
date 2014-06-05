@@ -16,6 +16,7 @@
 
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Mesh/Mesh.h"
+#include "Pegasus/Texture/Texture.h"
 
 #define PEGASUS_RENDER_MAX_UNIFORM_NAME_LEN 64 
 
@@ -71,6 +72,11 @@ namespace Render
     //! \return boolean, true on success, false on error
     bool SetUniform(Uniform& u, float value);
 
+    //! Sets the uniform value to a texture
+    //! \param u uniform to set the value to
+    //! \param texture to set to the uniform slot
+    //! \return boolean, true on success, false on error
+    bool SetUniform(Uniform& u, Texture::TextureInOut texture);
 
 }
 

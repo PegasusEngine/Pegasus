@@ -40,6 +40,7 @@ struct GLShaderUniform
     char mName[PEGASUS_RENDER_MAX_UNIFORM_NAME_LEN];
     GLuint mSlot;
     GLenum mType;
+    GLint  mTextureSlot;
     GLShaderUniform()
     {
         mSlot = GL_INVALID_INDEX;

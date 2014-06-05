@@ -26,6 +26,7 @@ namespace Pegasus {
 namespace Pegasus {
 namespace Texture {
 
+class ITextureFactory;
 
 //! Global texture node manager, including the factory features
 class TextureManager
@@ -35,7 +36,7 @@ public:
     //! Constructor
     //! \note Registers all texture nodes of the Texture project
     //! \param nodeManager Pointer to the global node manager (!- nullptr)
-    TextureManager(Graph::NodeManager * nodeManager);
+    TextureManager(Graph::NodeManager * nodeManager, ITextureFactory * textureFactory);
 
     //! Destructor
     virtual ~TextureManager();
@@ -82,6 +83,9 @@ private:
 
     //! Pointer to the node manager (!= nullptr)
     Graph::NodeManager * mNodeManager;
+
+    //! Pointer to the GPU factory. Generates GPU data from cpu texture data
+    ITextureFactory * mFactory;
 };
 
 

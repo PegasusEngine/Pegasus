@@ -17,6 +17,7 @@
 #include "Pegasus/Graph/NodeManager.h"
 #include "Pegasus/Memory/MemoryManager.h"
 #include "Pegasus/Render/ShaderFactory.h"
+#include "Pegasus/Render/TextureFactory.h"
 #include "Pegasus/Render/MeshFactory.h"
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Texture/TextureManager.h"
@@ -75,14 +76,16 @@ Application::Application(const ApplicationConfig& config)
 
     Pegasus::Shader::IShaderFactory * shaderFactory = Pegasus::Render::GetRenderShaderFactory();
     Pegasus::Mesh::IMeshFactory * meshFactory = Pegasus::Render::GetRenderMeshFactory();
+    Pegasus::Texture::ITextureFactory * textureFactory = Pegasus::Render::GetRenderTextureFactory();
 
     //! TODO - we probably need to use a render specific allocator for this
     shaderFactory->Initialize(nodeDataAlloc);
     meshFactory->Initialize(nodeDataAlloc);
+    textureFactory->Initialize(nodeDataAlloc);
 
 
     mShaderManager = PG_NEW(nodeAlloc, -1, "ShaderManager", Alloc::PG_MEM_PERM) Shader::ShaderManager(mNodeManager, shaderFactory);
-    mTextureManager = PG_NEW(nodeAlloc, -1, "TextureManager", Alloc::PG_MEM_PERM) Texture::TextureManager(mNodeManager);
+    mTextureManager = PG_NEW(nodeAlloc, -1, "TextureManager", Alloc::PG_MEM_PERM) Texture::TextureManager(mNodeManager, textureFactory);
     mMeshManager    = PG_NEW(nodeAlloc, -1, "MeshManager", Alloc::PG_MEM_PERM) Mesh::MeshManager(mNodeManager, meshFactory);
 
     // Set up timeline

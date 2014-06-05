@@ -64,7 +64,14 @@ MeshDataReturn Mesh::GetUpdatedMeshData()
 
 void Mesh::ReleaseDataAndPropagate()
 {
-    //PG_TODO: easier way to delete the internals of an output node?
+    ReleaseGPUData();
+    Graph::Node::ReleaseDataAndPropagate();
+}
+
+//----------------------------------------------------------------------------------------
+
+void Mesh::ReleaseGPUData()
+{
     bool dummyVariable = false;
     if (GetNumInputs() == 1 && GetInput(0)->GetUpdatedData(dummyVariable) != nullptr && mFactory != nullptr)
     {
@@ -76,7 +83,7 @@ void Mesh::ReleaseDataAndPropagate()
 
 Mesh::~Mesh()
 {
-    ReleaseDataAndPropagate();
+    ReleaseGPUData();
 }
 
 

@@ -10,6 +10,7 @@
 //! \brief	Texture output node
 
 #include "Pegasus/Texture/Texture.h"
+#include "Pegasus/Texture/ITextureFactory.h"
 
 namespace Pegasus {
 namespace Texture {
@@ -80,14 +81,40 @@ void Texture::SetOperatorInput(TextureOperatorIn textureOperator)
 
 TextureDataReturn Texture::GetUpdatedTextureData()
 {
+    PG_ASSERT(mFactory);
     bool updated = false;
-    return Graph::OutputNode::GetUpdatedData(updated);
+    TextureDataRef textureData = Graph::OutputNode::GetUpdatedData(updated);
+    if (updated)
+    {
+        mFactory->GenerateTextureGPUData(&(*textureData));
+    }
+    return textureData;
+}
+
+//----------------------------------------------------------------------------------------
+
+void Texture::ReleaseDataAndPropagate()
+{
+    ReleaseGPUData();
+    Graph::Node::ReleaseDataAndPropagate();
+}
+
+//----------------------------------------------------------------------------------------
+
+void Texture::ReleaseGPUData()
+{
+    bool dummyVariable = false;
+    if (GetNumInputs() == 1 && GetInput(0)->GetUpdatedData(dummyVariable) != nullptr && mFactory != nullptr)
+    {
+        mFactory->DestroyNodeGPUData((TextureData*)&(*GetInput(0)->GetUpdatedData(dummyVariable)));
+    }
 }
 
 //----------------------------------------------------------------------------------------
 
 Texture::~Texture()
 {
+    ReleaseGPUData();
 }
 
 

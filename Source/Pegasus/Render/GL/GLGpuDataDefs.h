@@ -51,6 +51,7 @@ struct OGLProgramGPUData
 struct OGLTextureGPUData
 {
     PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(OGLTextureGPUData, 0x3);
+    GLuint mHandle;
 };
 
 //! basic internal container class with OpenGL handles for meshes

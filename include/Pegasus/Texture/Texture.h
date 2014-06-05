@@ -21,6 +21,8 @@
 namespace Pegasus {
 namespace Texture {
 
+// forward declaration
+class ITextureFactory;
 
 //! Base output node class, for the root of the graphs.
 //! \warning Has one and only one input node, operator or generator
@@ -46,6 +48,10 @@ public:
     //! \warning Can be done only after the constructor has been called, when no input node is connected yet.
     //!          In case of error, the configuration is not set
     void SetConfiguration(const TextureConfiguration & configuration);
+
+    //! Sets the texture factory, which will generate CPU data
+    //! \note Must be set in order to provide GPU data during GetUpdatedData callback
+    void SetFactory(ITextureFactory * textureFactory) { mFactory = textureFactory; }
 
     //! Get the configuration of the texture
     //! \return Configuration of the texture, such as the resolution and pixel format
@@ -74,6 +80,9 @@ public:
     //!       if any part of the graph is dirty
     TextureDataReturn GetUpdatedTextureData();
 
+    //! Releases the entire graph data. Propagates to its children recursively
+    virtual void ReleaseDataAndPropagate();
+
 
     //! Texture node creation function, used by the texture manager
     //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
@@ -96,8 +105,13 @@ private:
     // Nodes cannot be copied, only references to them
     PG_DISABLE_COPY(Texture)
 
+    void ReleaseGPUData();
+
     //! Configuration of the texture, such as the resolution and pixel format
     TextureConfiguration mConfiguration;
+
+    //! Pointer to the GPU factory. Generates GPU data from cpu texture data
+    ITextureFactory * mFactory;
 };
 
 //----------------------------------------------------------------------------------------

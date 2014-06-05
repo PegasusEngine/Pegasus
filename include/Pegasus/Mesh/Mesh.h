@@ -69,7 +69,7 @@ public:
 
 
     //! Releases the node internal data
-    void ReleaseDataAndPropagate();
+    virtual void ReleaseDataAndPropagate();
 
 
     //! Mesh node creation function, used by the mesh manager
@@ -82,6 +82,9 @@ public:
     //------------------------------------------------------------------------------------
 
 protected:
+
+    //! Releases the node internal data
+    void ReleaseGPUData();
 
     //! Destructor
     virtual ~Mesh();

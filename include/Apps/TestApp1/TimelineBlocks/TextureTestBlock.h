@@ -12,13 +12,10 @@
 #ifndef TESTAPP1_TEXTURETEST_BLOCK_H
 #define TESTAPP1_TEXTURETEST_BLOCK_H
 
+#include "Pegasus/Render/Render.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Mesh/Mesh.h"
 #include "Pegasus/Timeline/Block.h"
-
-
-//! TODO remove this direct dependency once our mesh & shader packages are fully complete
-#include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
 
 //! Timeline block for the TextureTest effect (texture viewer)
 //! \todo Use protected inheritance? In that case, give access to SetPosition() and SetLength()
@@ -57,11 +54,6 @@ private:
     // Blocks cannot be copied
     PG_DISABLE_COPY(TextureTestBlock)
 
-    //! Create an OpenGL texture out of a texture node
-    //! \param texture Texture node
-    //! \return OpenGL handle
-    GLuint CreateGLTexture(Pegasus::Texture::TextureRef texture);
-
     //! Create the individual textures
     void CreateTexture1();
     void CreateTexture2();
@@ -72,11 +64,11 @@ private:
 
     Pegasus::Shader::ProgramLinkageRef mProgram;
     Pegasus::Mesh::MeshRef mQuad;
-    GLint mScreenRatioUniform;
-    GLint mTextureUniform;
+    Pegasus::Render::Uniform mScreenRatioUniform;
+    Pegasus::Render::Uniform mTextureUniform;
+    Pegasus::Render::Uniform mTextureUniform2;
     Pegasus::Texture::TextureGeneratorRef mTextureGenerator1, mTextureGenerator2, mTextureGradientGenerator1, mTextureGradientGenerator2;
     Pegasus::Texture::TextureRef mTexture1, mTexture2, mTextureGradient1, mTextureGradient2, mTextureAdd1, mTextureAdd2;
-    GLuint mGLTexture1, mGLTexture2, mGLTextureGradient1, mGLTextureGradient2, mGLTextureAdd1, mGLTextureAdd2;
     //GLuint mTextureSampler;
 };
 

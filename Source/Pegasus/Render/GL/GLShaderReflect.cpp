@@ -57,6 +57,7 @@ namespace Render
 
         // iterate over all the total uniforms that the shader has,
         // and cache their data into the uniform table
+        int textureSlotAllocation = 0;
         for (int i = 0; i < total; ++i)
         {
             int nameLen = 0;
@@ -74,6 +75,21 @@ namespace Render
             PG_ASSERTSTR(arraySize == 1, "Uniform arrays not supported. Please use uniform blocks instead");
             uniform->mName[nameLen] = 0;
             uniform->mSlot = glGetUniformLocation(programHandle, uniform->mName);
+            if (
+                   uniform->mType == GL_SAMPLER_1D ||
+                   uniform->mType == GL_SAMPLER_2D ||
+                   uniform->mType == GL_SAMPLER_3D ||
+                   uniform->mType == GL_SAMPLER_CUBE ||
+                   uniform->mType == GL_SAMPLER_1D_SHADOW ||
+                   uniform->mType == GL_SAMPLER_2D_SHADOW
+            )
+            {
+                uniform->mTextureSlot = textureSlotAllocation++;
+            }
+            else
+            {
+                uniform->mTextureSlot = -1; //invalid slot
+            }
             PG_ASSERT(uniform->mSlot != GL_INVALID_INDEX);
         }
     }
