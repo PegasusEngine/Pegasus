@@ -14,10 +14,6 @@
 #include "Assertion.h"
 #include "Application/ApplicationManager.h"
 #include "Settings/SettingsDialog.h"
-#include "Viewport/ViewportDockWidget.h"
-#include "Timeline/TimelineDockWidget.h"
-#include "History/HistoryDockWidget.h"
-#include "Console/ConsoleDockWidget.h"
 
 #include <QUndoStack>
 #include <QSplashScreen>
@@ -291,6 +287,10 @@ void Editor::CreateActions()
 	mActionWindowShaderLibrary->setStatusTip(tr("Open the shader library"));
 	connect(mActionWindowShaderLibrary, SIGNAL(triggered()), this, SLOT(OpenShaderLibraryWindow()));
 
+    mActionWindowTextureEditor = new QAction(tr("Te&xture Editor"), this);
+	mActionWindowTextureEditor->setStatusTip(tr("Open the texture editor window"));
+	connect(mActionWindowTextureEditor, SIGNAL(triggered()), this, SLOT(OpenTextureEditorWindow()));
+
     mActionHelpIndex = new QAction(tr("&Index..."), this);
 	mActionHelpIndex->setShortcut(tr("F1"));
 	mActionHelpIndex->setStatusTip(tr("Open the help for Pegasus Editor"));
@@ -341,6 +341,7 @@ void Editor::CreateMenu()
     windowMenu->addAction(mActionWindowConsole);
     windowMenu->addAction(mActionWindowShaderEditor);
     windowMenu->addAction(mActionWindowShaderLibrary);
+    windowMenu->addAction(mActionWindowTextureEditor);
 
     QMenu * helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(mActionHelpIndex);
@@ -425,6 +426,10 @@ void Editor::CreateDockWidgets()
     // ** do not add the shader library as default, instead hide it **
     addDockWidget(Qt::RightDockWidgetArea, mShaderLibraryWidget);        
     mShaderLibraryWidget->setFloating(true);
+
+    mTextureEditorDockWidget = new TextureEditorDockWidget(this);
+    //mTextureEditorDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
+    addDockWidget(Qt::RightDockWidgetArea, mTextureEditorDockWidget);
 
     // Create and place the view actions for the dock widgets to the dock menu
     // (in alphabetical order)
@@ -616,6 +621,13 @@ void Editor::OpenShaderEditorWindow()
 void Editor::OpenShaderLibraryWindow()
 {
     mShaderLibraryWidget->show();
+}
+
+//----------------------------------------------------------------------------------------
+
+void Editor::OpenTextureEditorWindow()
+{
+    mTextureEditorDockWidget->show();
 }
 
 //----------------------------------------------------------------------------------------

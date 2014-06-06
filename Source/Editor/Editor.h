@@ -19,6 +19,7 @@
 #include "Timeline/TimelineDockWidget.h"
 #include "ShaderLibrary/ShaderLibraryWidget.h"
 #include "ShaderLibrary/ShaderEditorWidget.h"
+#include "Texture/TextureEditorDockWidget.h"
 #include "Viewport/ViewportDockWidget.h"
 #include "Viewport/ViewportWidget.h"
 #include "Viewport/ViewportType.h"
@@ -118,6 +119,10 @@ public:
     //! \return Pointer to shader library widget
     inline ShaderLibraryWidget * GetShaderLibraryWidget() const { return mShaderLibraryWidget; }
 
+    //! Get the texture editor dock widget
+    //! \return Pointer to the texture editor dock widget
+    inline TextureEditorDockWidget * GetTextureEditorDockWidget() const { return mTextureEditorDockWidget; }
+
     //----------------------------------------------------------------------------------------
 
 private:
@@ -184,6 +189,7 @@ private slots:
     void OpenConsoleWindow();
     void OpenShaderEditorWindow();
     void OpenShaderLibraryWindow();
+    void OpenTextureEditorWindow();
     //@}
 
     //@{
@@ -243,6 +249,7 @@ private:
     QAction * mActionWindowConsole;
     QAction * mActionWindowShaderEditor;
     QAction * mActionWindowShaderLibrary;
+    QAction * mActionWindowTextureEditor;
     //@}
 
     //@{
@@ -290,13 +297,14 @@ private:
 
     //@{
     //! Dock widgets
-    ViewportDockWidget *  mMainViewportDockWidget;
-    ViewportDockWidget *  mSecondaryViewportDockWidget;
-    TimelineDockWidget *  mTimelineDockWidget;
-    HistoryDockWidget  *  mHistoryDockWidget;
-    ShaderLibraryWidget*  mShaderLibraryWidget;
-    ShaderEditorWidget *  mShaderEditorWidget;
-    ConsoleDockWidget  *  mConsoleDockWidget;
+    ViewportDockWidget      * mMainViewportDockWidget;
+    ViewportDockWidget      * mSecondaryViewportDockWidget;
+    TimelineDockWidget      * mTimelineDockWidget;
+    HistoryDockWidget       * mHistoryDockWidget;
+    ShaderLibraryWidget     * mShaderLibraryWidget;
+    ShaderEditorWidget      * mShaderEditorWidget;
+    ConsoleDockWidget       * mConsoleDockWidget;
+    TextureEditorDockWidget * mTextureEditorDockWidget;
     //@}
 
 	//! Menu containing the checkable actions for the tool bars

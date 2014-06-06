@@ -50,16 +50,17 @@
     <Filter Include="Source\Application">
       <UniqueIdentifier>{83c168d9-1efc-40a5-921a-be40b64cd9c6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Include">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h</Extensions>
-      <ParseFiles>true</ParseFiles>
-    </Filter>
     <Filter Include="Source\History">
       <UniqueIdentifier>{cc49ef2d-91fd-491e-8c9f-e87edbefeec5}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\ShaderLibrary">
       <UniqueIdentifier>{e8de268e-9236-40a3-b3db-76cceac2b24d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Texture">
+      <UniqueIdentifier>{1b62beab-7720-420e-85cb-4f0c1b4f1a43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Graph">
+      <UniqueIdentifier>{2af47436-0925-4092-8689-19cbaa6f17d5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -315,6 +316,33 @@
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ShaderTextEditorWidget.cpp">
       <Filter>Generated\Dev-Debug</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_TextureEditorDockWidget.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_TextureEditorDockWidget.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Texture\TextureEditorDockWidget.cpp">
+      <Filter>Source\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_GraphEditorGraphicsView.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_GraphEditorGraphicsView.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Graph\GraphEditorGraphicsView.cpp">
+      <Filter>Source\Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_TextureGraphEditorGraphicsView.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_TextureGraphEditorGraphicsView.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Texture\TextureGraphEditorGraphicsView.cpp">
+      <Filter>Source\Texture</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -410,6 +438,18 @@
     <CustomBuild Include="..\..\..\Source\Editor\ShaderLibrary\ShaderTextEditorWidget.h">
       <Filter>Source\ShaderLibrary</Filter>
     </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Texture\TextureEditorDockWidget.h">
+      <Filter>Source\Texture</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Texture\TextureEditorDockWidget.ui">
+      <Filter>Forms</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Graph\GraphEditorGraphicsView.h">
+      <Filter>Source\Graph</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Texture\TextureGraphEditorGraphicsView.h">
+      <Filter>Source\Texture</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Editor.rc" />
@@ -432,6 +472,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\Source\Editor\ShaderLibrary\ShaderListModel.h">
       <Filter>Source\ShaderLibrary</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_TextureEditorDockWidget.h">
+      <Filter>Generated</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
