@@ -19,6 +19,12 @@
 #include "Pegasus/Texture/TextureOperator.h"
 
 namespace Pegasus {
+    namespace Texture {
+        class TextureProxy;
+    }
+}
+
+namespace Pegasus {
 namespace Texture {
 
 // forward declaration
@@ -91,6 +97,14 @@ public:
     static Graph::NodeReturn CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
     {   return PG_NEW(nodeAllocator, -1, "Texture", Alloc::PG_MEM_PERM) Texture(nodeAllocator, nodeDataAllocator); }
 
+
+#if PEGASUS_ENABLE_PROXIES
+
+    //! Get the proxy associated with the texture
+    inline TextureProxy * GetProxy() const { return mProxy; }
+
+#endif  // PEGASUS_ENABLE_PROXIES
+
     //------------------------------------------------------------------------------------
 
 protected:
@@ -104,6 +118,13 @@ private:
 
     // Nodes cannot be copied, only references to them
     PG_DISABLE_COPY(Texture)
+
+#if PEGASUS_ENABLE_PROXIES
+
+    //! Proxy associated with the texture
+    TextureProxy * mProxy;
+
+#endif  // PEGASUS_ENABLE_PROXIES
 
     void ReleaseGPUData();
 

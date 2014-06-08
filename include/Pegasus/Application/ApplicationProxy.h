@@ -41,6 +41,7 @@ public:
     virtual const char* GetMainWindowType() const;
 #if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
     virtual const char* GetSecondaryWindowType() const;
+    virtual const char* GetTextureEditorPreviewWindowType() const;
 #endif
     virtual Wnd::IWindowProxy* AttachWindow(const AppWindowConfig& config);
     virtual void DetachWindow(Wnd::IWindowProxy* wnd);
@@ -50,6 +51,8 @@ public:
     virtual void Initialize();
     virtual void Shutdown();
     virtual void Load();
+    //! \todo Temporary. Remove as soon as the proper interface is defined
+    virtual unsigned int GetTextures(void * textureList);
 
     // Proxy accessors
     virtual Timeline::ITimelineProxy* GetTimeline() const;

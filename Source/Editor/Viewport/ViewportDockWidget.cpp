@@ -21,8 +21,22 @@ ViewportDockWidget::ViewportDockWidget(ViewportType viewportType, QWidget * pare
 :   QDockWidget(parent)
 {
     // Set the dock widget parameters
-    setWindowTitle(tr("Viewport"));
-	setObjectName("ViewportDockWidget");
+    switch (viewportType)
+    {
+        case VIEWPORTTYPE_MAIN:
+            setWindowTitle(tr("Viewport 1"));
+	        setObjectName("MainViewportDockWidget");
+            break;
+
+        case VIEWPORTTYPE_SECONDARY:
+            setWindowTitle(tr("Viewport 2"));
+	        setObjectName("SecondaryViewportDockWidget");
+            break;
+
+        default:
+            setWindowTitle(tr("<Untitled Viewport>"));
+	        setObjectName("ViewportDockWidget");
+    }
 	setFeatures(  QDockWidget::DockWidgetClosable
 				| QDockWidget::DockWidgetMovable
 				| QDockWidget::DockWidgetFloatable);

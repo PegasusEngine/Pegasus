@@ -63,6 +63,7 @@ public:
     int mMainWindowIndex; // Index for MAIN window type
 #if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
     int mSecondaryWindowIndex; // Index for SECONDARY window type
+    int mTextureEditorPreviewWindowIndex; // Index for TEXTUREEDITORPREVIEW window type
 #endif
 };
 
@@ -153,6 +154,7 @@ TypeTable::TypeTable(unsigned int max, Alloc::IAllocator* alloc)
     : mAllocator(alloc), mCurrentSize(0), mMaxSize(max), mMainWindowIndex(-1)
 #if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
     , mSecondaryWindowIndex(-1)
+    , mTextureEditorPreviewWindowIndex(-1)
 #endif
 {
     mTable = PG_NEW_ARRAY(mAllocator, -1, "TypeTableEntries", Pegasus::Alloc::PG_MEM_PERM, TypeTableEntry, mMaxSize);
@@ -252,6 +254,12 @@ void TypeTable::Insert(const TypeTableEntry& entry)
 
         mSecondaryWindowIndex = (int) mCurrentSize;
     }
+    else if (entry.mTypeTag == WINDOW_TYPE_TEXTUREEDITORPREVIEW)
+    {
+        PG_ASSERTSTR(!Contains(WINDOW_TYPE_TEXTUREEDITORPREVIEW), "Type table already contains a TEXTUREEDITORPREVIEW window!");
+
+        mTextureEditorPreviewWindowIndex = (int) mCurrentSize;
+    }
 #endif  // PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
     mTable[mCurrentSize++] = entry;
 }
@@ -265,6 +273,7 @@ void TypeTable::Remove(const char* typeName)
 
 #if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
     mSecondaryWindowIndex = -1;
+    mTextureEditorPreviewWindowIndex = -1;
 #endif  // PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
 
     // Iterate over table
@@ -291,6 +300,11 @@ void TypeTable::Remove(const char* typeName)
         if (mTable[i].mTypeTag == WINDOW_TYPE_SECONDARY)
         {
             mSecondaryWindowIndex = i;
+        }
+        // Check for TEXTUREEDITORPREVIEW
+        if (mTable[i].mTypeTag == WINDOW_TYPE_TEXTUREEDITORPREVIEW)
+        {
+            mTextureEditorPreviewWindowIndex = i;
         }
     #endif  // PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
     }
@@ -436,6 +450,18 @@ const char* AppWindowManager::GetSecondaryWindowType() const
     if (mTypeTable->mSecondaryWindowIndex != -1)
     {
         return mTypeTable->mTable[mTypeTable->mSecondaryWindowIndex].mClassName;
+    }
+
+    return nullptr;
+}
+
+//----------------------------------------------------------------------------------------
+
+const char* AppWindowManager::GetTextureEditorPreviewWindowType() const
+{
+    if (mTypeTable->mTextureEditorPreviewWindowIndex != -1)
+    {
+        return mTypeTable->mTable[mTypeTable->mTextureEditorPreviewWindowIndex].mClassName;
     }
 
     return nullptr;

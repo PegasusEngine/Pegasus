@@ -24,7 +24,6 @@ extern void DestroyApplication(Pegasus::App::Application* app);
 
 //----------------------------------------------------------------------------------------
 
-
 namespace Pegasus {
 namespace App {
 
@@ -63,6 +62,13 @@ const char* ApplicationProxy::GetSecondaryWindowType() const
     return mObject->GetWindowRegistry()->GetSecondaryWindowType();
 }
 
+//----------------------------------------------------------------------------------------
+
+const char* ApplicationProxy::GetTextureEditorPreviewWindowType() const
+{
+    return mObject->GetWindowRegistry()->GetTextureEditorPreviewWindowType();
+}
+
 #endif  // PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
 
 //----------------------------------------------------------------------------------------
@@ -99,6 +105,14 @@ void ApplicationProxy::Shutdown()
 void ApplicationProxy::Load()
 {
     mObject->Load();
+}
+
+//----------------------------------------------------------------------------------------
+
+//! \todo Temporary. Remove as soon as the proper interface is defined
+unsigned int ApplicationProxy::GetTextures(void * textureList)
+{
+    return mObject->GetTextures(textureList);
 }
 
 //----------------------------------------------------------------------------------------

@@ -9,7 +9,7 @@
 //! \date	06th June 2014
 //! \brief	Specialization of the graph editor for textures
 
-#include "TextureGraphEditorGraphicsView.h"
+#include "Texture/TextureGraphEditorGraphicsView.h"
 
 
 TextureGraphEditorGraphicsView::TextureGraphEditorGraphicsView(QWidget *parent)

@@ -76,6 +76,10 @@ public:
     //! Custom shutdown, done in the user application
     virtual void ShutdownApp() = 0;
 
+    //! Return the list of texture assets in the application
+    //! \todo Temporary. Remove as soon as the proper interface is defined
+    virtual unsigned int GetTextures(void * textureList) = 0;
+
 
     //! Initializes this app
     void Initialize();

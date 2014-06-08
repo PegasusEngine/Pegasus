@@ -38,7 +38,7 @@ ApplicationInterface::ApplicationInterface(Application * application, QObject * 
     // Connect the viewport widget resized messages to the windows in the application worker thread.
     // A queued connection is used since we have to cross the thread boundaries
     //! \todo Add support for other window types
-    for (unsigned int vt = 0; vt < /*NUM_VIEWPORT_TYPES*/2; ++vt)
+    for (unsigned int vt = 0; vt < /*NUM_VIEWPORT_TYPES*/3; ++vt)
     {
         ViewportWidget * viewportWidget = Editor::GetInstance().GetViewportWidget(ViewportType(VIEWPORTTYPE_FIRST + vt));
         if (viewportWidget != nullptr)
@@ -87,8 +87,8 @@ ApplicationInterface::ApplicationInterface(Application * application, QObject * 
         if (shaderEditorWidget != nullptr)
         {
             connect(shaderEditorWidget, SIGNAL(RequestShaderCompilation(int)),
-                this, SLOT(ReceiveShaderCompilationRequest(int)),
-                Qt::QueuedConnection);
+                    this, SLOT(ReceiveShaderCompilationRequest(int)),
+                    Qt::QueuedConnection);
         }
         else
         {
@@ -98,6 +98,15 @@ ApplicationInterface::ApplicationInterface(Application * application, QObject * 
     else
     {
         ED_FAILSTR("Unable to get the shader library dock widget");
+    }
+
+    // Connect the texture editor messages through queued connections
+    TextureEditorDockWidget * textureEditorDockWidget = Editor::GetInstance().GetTextureEditorDockWidget();
+    if (textureEditorDockWidget != nullptr)
+    {
+        connect(textureEditorDockWidget, SIGNAL(GraphChanged()),
+                this, SLOT(RedrawTextureEditorPreview()),
+                Qt::QueuedConnection);
     }
 }
 
@@ -179,6 +188,27 @@ void ApplicationInterface::RedrawAllViewports()
             timeline->Update();
         }
     }
+}
+
+//----------------------------------------------------------------------------------------
+
+bool ApplicationInterface::RedrawTextureEditorPreview()
+{
+    if (Editor::GetInstance().GetTextureEditorDockWidget()->isVisible())
+    {
+        Pegasus::Wnd::IWindowProxy * textureEditorPreviewWindow = mApplication->GetWindowProxy(VIEWPORTTYPE_TEXTURE_EDITOR_PREVIEW);
+        ED_ASSERT(textureEditorPreviewWindow != nullptr);
+
+        // Let the redrawing happen only when no assertion dialog is present
+        //! \todo Seems not useful anymore. Test and remove if possible
+        //if (!mAssertionBeingHandled)
+        {
+            textureEditorPreviewWindow->Refresh(false);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 //----------------------------------------------------------------------------------------

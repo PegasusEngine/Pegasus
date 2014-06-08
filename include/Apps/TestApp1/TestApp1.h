@@ -36,6 +36,18 @@ public:
 
     //! Custom shutdown
     virtual void ShutdownApp();
+
+    //! Return the list of texture assets in the application
+    //! \todo Temporary. Remove as soon as the proper interface is defined
+    virtual unsigned int GetTextures(void * textureList);
+
+    //------------------------------------------------------------------------------------
+    
+private:
+    
+    //! \todo Temporary
+    //! Texture test block, used to retrieve the list of textures for the editor
+    Pegasus::Timeline::Block * mTextureTestBlock;
 };
 
 

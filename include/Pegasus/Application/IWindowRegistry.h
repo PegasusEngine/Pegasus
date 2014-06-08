@@ -19,16 +19,15 @@ namespace App {
 
 
 //! Window tag type, this is the window "meta-type" as seen from outside the runtime.
-//! IE TYPE_MAIN, TYPE_TEXTUREVIEWER, TYPE_MESHVIEWER, etc
+//! IE TYPE_MAIN, TYPE_TEXTUREEDITORPREVIEW, TYPE_MESHEDITORPREVIEW, etc
 enum WindowTypeTag
 {
-    WINDOW_TYPE_INVALID = -1,   //!< Not a valid window type.
-    WINDOW_TYPE_MAIN = 0,       //!< The main view window in the editor, or the main app window when launched alone
+    WINDOW_TYPE_INVALID = -1,           //!< Not a valid window type.
+    WINDOW_TYPE_MAIN = 0,               //!< The main view window in the editor, or the main app window when launched alone
 #if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
-    WINDOW_TYPE_SECONDARY,      //!< The optional secondary view window in the editor
-    WINDOW_TYPE_TEXTUREVIEWER,  //!< Texture viewer for the editor
-    WINDOW_TYPE_MESHVIEWER,     //!< Mesh viewer for the editor
-    WINDOW_TYPE_EXTENSION,      //!< For custom, app-specific windows for the editor
+    WINDOW_TYPE_SECONDARY,              //!< The optional secondary view window in the editor
+    WINDOW_TYPE_TEXTUREEDITORPREVIEW,   //!< Texture viewer for the editor
+    WINDOW_TYPE_MESHEDITORPREVIEW,      //!< Mesh viewer for the editor
 #endif
 
     NUM_WND_TYPES
@@ -66,15 +65,19 @@ public:
     //! \param className Name of the class to unregister.
     virtual void UnregisterWindowClass(const char* className) = 0;
 
-    //! Gets the classname of the MAIN window type for for this registry
-    //! \return Classname.
+    //! Gets the class name of the MAIN window type for for this registry
+    //! \return Class name.
     virtual const char* GetMainWindowType() const = 0;
 
 #if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
 
-    //! Gets the classname of the SECONDARY window type for for this registry
-    //! \return Classname.
+    //! Gets the class name of the SECONDARY window type for for this registry
+    //! \return Class name.
     virtual const char* GetSecondaryWindowType() const = 0;
+
+    //! Gets the class name of the TEXTURE_EDITOR_PREVIEW window type for this registry
+    //! \return Class name.
+    virtual const char* GetTextureEditorPreviewWindowType() const = 0;
 
 #endif  // PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
 };

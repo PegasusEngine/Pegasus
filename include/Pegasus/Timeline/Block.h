@@ -99,6 +99,10 @@ public:
     //! \todo That dependency is ugly. Find a way to remove that dependency
     virtual void Render(float beat, Wnd::Window * window) = 0;
 
+    //! Return the list of texture assets in the application
+    //! \todo Temporary. Remove as soon as the proper interface is defined
+    virtual unsigned int GetTextures(void * textureList) { return 0; }
+
     //------------------------------------------------------------------------------------
 
 protected:

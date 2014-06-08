@@ -9,8 +9,8 @@
 //! \date	07th November 2013
 //! \brief	Proxy object, used by the editor to interact with the timeline
 
-#ifndef PEGASUS_TEXTURE_TIMELINEPROXY_H
-#define PEGASUS_TEXTURE_TIMELINEPROXY_H
+#ifndef PEGASUS_TIMELINE_TIMELINEPROXY_H
+#define PEGASUS_TIMELINE_TIMELINEPROXY_H
 
 #if PEGASUS_ENABLE_PROXIES
 
@@ -129,4 +129,4 @@ private:
 }   // namespace Pegasus
 
 #endif  // PEGASUS_ENABLE_PROXIES
-#endif  // PEGASUS_TEXTURE_TIMELINEPROXY_H
+#endif  // PEGASUS_TIMELINE_TIMELINEPROXY_H

@@ -58,6 +58,10 @@ public:
     //! \return Secondary window class type.
     virtual const char* GetSecondaryWindowType() const = 0;
 
+    //! Gets the TEXTURE_EDITOR_PREVIEW window type associated with this application
+    //! \return Texture editor preview window class type.
+    virtual const char* GetTextureEditorPreviewWindowType() const = 0;
+
 #endif  // PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
 
     //! Creates a new window attached to this application instance
@@ -74,7 +78,7 @@ public:
     virtual Shader::IShaderManagerProxy * GetShaderManager() = 0;
 
 
-    //! Inits this application
+    //! Initializes this application
     //! \param config  Config structure for the application.
     virtual void Initialize() = 0;
 
@@ -83,6 +87,10 @@ public:
 
     //! Load the assets required to render the timeline blocks
     virtual void Load() = 0;
+
+    //! Return the list of texture assets in the application
+    //! \todo Temporary. Remove as soon as the proper interface is defined
+    virtual unsigned int GetTextures(void * textureList) = 0;
 
 
     //! \todo Set update mode

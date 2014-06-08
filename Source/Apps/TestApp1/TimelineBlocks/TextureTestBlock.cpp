@@ -145,6 +145,30 @@ void TextureTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
     Pegasus::Render::Draw();
 }
 
+//----------------------------------------------------------------------------------------
+
+unsigned int TextureTestBlock::GetTextures(void * textureList)
+{
+#if PEGASUS_ENABLE_PROXIES
+    //! \todo Everything here is temporary
+    mTexture1->SetName("Color 1");
+    mTexture2->SetName("Color 2");
+    mTextureGradient1->SetName("Gradient 1");
+    mTextureGradient2->SetName("Gradient 2");
+    mTextureAdd1->SetName("Add 1");
+    mTextureAdd2->SetName("Add 2");
+    Pegasus::Texture::TextureProxy ** textures = reinterpret_cast<Pegasus::Texture::TextureProxy **>(textureList);
+    textures[0] = mTexture1->GetProxy();
+    textures[1] = mTexture2->GetProxy();
+    textures[2] = mTextureGradient1->GetProxy();
+    textures[3] = mTextureGradient2->GetProxy();
+    textures[4] = mTextureAdd1->GetProxy();
+    textures[5] = mTextureAdd2->GetProxy();
+    return 6;
+#else
+    return 0;
+#endif
+}
 
 //----------------------------------------------------------------------------------------
 

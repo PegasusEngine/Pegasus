@@ -27,6 +27,7 @@
 static const char* MAIN_WND_TYPE = "TestApp1Window";
 #if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
 static const char* SECONDARY_WND_TYPE = "TestApp1SecondaryWindow";
+static const char* TEXTURE_EDITOR_PREVIEW_WND_TYPE = "TestApp1TextureEditorPreviewWindow";
 #endif
 
 //----------------------------------------------------------------------------------------
@@ -43,14 +44,18 @@ TestApp1::TestApp1(const Pegasus::App::ApplicationConfig& config)
     GetWindowRegistry()->RegisterWindowClass(MAIN_WND_TYPE, reg);
 
 #if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
-    // Register the secondary window
-    //! \todo That is weird to have to register that window here.
-    //!       Also, where should the texture and mesh viewers be created?
+    // Register the editor windows
+    //! \todo That is weird to have to register those windows here.
     //! \todo Is it normal to have to use a different type tag?
     reg.mTypeTag = Pegasus::App::WINDOW_TYPE_SECONDARY;
     reg.mDescription = "TestApp1 Secondary Viewport";
     reg.mCreateFunc = TestApp1Window::Create;
     GetWindowRegistry()->RegisterWindowClass(SECONDARY_WND_TYPE, reg);
+
+    reg.mTypeTag = Pegasus::App::WINDOW_TYPE_TEXTUREEDITORPREVIEW;
+    reg.mDescription = "TestApp1 Texture Editor Preview";
+    reg.mCreateFunc = TestApp1Window::Create;
+    GetWindowRegistry()->RegisterWindowClass(TEXTURE_EDITOR_PREVIEW_WND_TYPE, reg);
 #endif  // PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
 }
 
@@ -62,6 +67,7 @@ TestApp1::~TestApp1()
     GetWindowRegistry()->UnregisterWindowClass(MAIN_WND_TYPE);
 #if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
     GetWindowRegistry()->UnregisterWindowClass(SECONDARY_WND_TYPE);
+    GetWindowRegistry()->UnregisterWindowClass(TEXTURE_EDITOR_PREVIEW_WND_TYPE);
 #endif
 
 }
@@ -127,17 +133,25 @@ void TestApp1::InitializeApp()
 #endif
     timeline->GetLane(1)->InsertBlock(fractalCube2Block, 13 * TICKS_PER_BEAT, 12 * TICKS_PER_BEAT);
 
-    Pegasus::Timeline::Block * textureTestBlock = timeline->CreateBlock("TextureTestBlock");
+    mTextureTestBlock = timeline->CreateBlock("TextureTestBlock");
 #if PEGASUS_ENABLE_PROXIES
-    textureTestBlock->SetColor(192, 255, 128);
+    mTextureTestBlock->SetColor(192, 255, 128);
 #endif
-    timeline->GetLane(2)->InsertBlock(textureTestBlock, 25 * TICKS_PER_BEAT, 18 * TICKS_PER_BEAT);
+    timeline->GetLane(2)->InsertBlock(mTextureTestBlock, 25 * TICKS_PER_BEAT, 18 * TICKS_PER_BEAT);
 }
 
 //----------------------------------------------------------------------------------------
 
 void TestApp1::ShutdownApp()
 {
+}
+
+//----------------------------------------------------------------------------------------
+
+//! \todo Temporary. Remove as soon as the proper interface is defined
+unsigned int TestApp1::GetTextures(void * textureList)
+{
+    return mTextureTestBlock->GetTextures(textureList);
 }
 
 //----------------------------------------------------------------------------------------

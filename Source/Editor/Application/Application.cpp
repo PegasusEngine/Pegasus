@@ -157,7 +157,7 @@ void Application::run()
     // Set up windows
     //! \todo Add support for other viewport types
     //! \todo Restore support for the second viewport (buffer sharing)
-    for (unsigned int vt = 0; vt < /*NUM_VIEWPORT_TYPES*/2; ++vt)
+    for (unsigned int vt = 0; vt < /*NUM_VIEWPORT_TYPES*/3; ++vt)
     {
         const ViewportType viewportType = ViewportType(VIEWPORTTYPE_FIRST + vt);
         ViewportWidget * viewportWidget = Editor::GetInstance().GetViewportWidget(viewportType);
@@ -383,9 +383,7 @@ const char * Application::GetWindowTypeFromViewportType(ViewportType viewportTyp
             return mApplication->GetSecondaryWindowType();
 
         case VIEWPORTTYPE_TEXTURE_EDITOR_PREVIEW:
-            //! \todo Add support for texture editor
-            ED_FAILSTR("The texture editor viewport type is not handled yet");
-            return nullptr;
+            return mApplication->GetTextureEditorPreviewWindowType();
 
         case VIEWPORTTYPE_MESH_EDITOR_PREVIEW:
             //! \todo Add support for mesh editor

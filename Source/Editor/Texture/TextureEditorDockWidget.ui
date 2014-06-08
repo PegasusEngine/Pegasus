@@ -33,6 +33,116 @@
        <number>7</number>
       </property>
       <item>
+       <widget class="QTableWidget" name="propertyGridTableWidget">
+        <property name="minimumSize">
+         <size>
+          <width>256</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="alternatingRowColors">
+         <bool>true</bool>
+        </property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::SingleSelection</enum>
+        </property>
+        <property name="gridStyle">
+         <enum>Qt::SolidLine</enum>
+        </property>
+        <property name="cornerButtonEnabled">
+         <bool>false</bool>
+        </property>
+        <property name="columnCount">
+         <number>2</number>
+        </property>
+        <attribute name="horizontalHeaderDefaultSectionSize">
+         <number>120</number>
+        </attribute>
+        <attribute name="horizontalHeaderMinimumSectionSize">
+         <number>64</number>
+        </attribute>
+        <attribute name="verticalHeaderVisible">
+         <bool>false</bool>
+        </attribute>
+        <attribute name="verticalHeaderDefaultSectionSize">
+         <number>24</number>
+        </attribute>
+        <attribute name="verticalHeaderMinimumSectionSize">
+         <number>24</number>
+        </attribute>
+        <row>
+         <property name="text">
+          <string>Property 1</string>
+         </property>
+        </row>
+        <row>
+         <property name="text">
+          <string>Property 2</string>
+         </property>
+        </row>
+        <row>
+         <property name="text">
+          <string>Property 3</string>
+         </property>
+        </row>
+        <row>
+         <property name="text">
+          <string>Property 4</string>
+         </property>
+        </row>
+        <column>
+         <property name="text">
+          <string>Property</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Value</string>
+         </property>
+        </column>
+        <item row="0" column="0">
+         <property name="text">
+          <string>Property 1</string>
+         </property>
+        </item>
+        <item row="0" column="1">
+         <property name="text">
+          <string>3</string>
+         </property>
+        </item>
+        <item row="1" column="0">
+         <property name="text">
+          <string>Property 2</string>
+         </property>
+        </item>
+        <item row="1" column="1">
+         <property name="text">
+          <string>(0.0, 1.0, 2.0)</string>
+         </property>
+        </item>
+        <item row="2" column="0">
+         <property name="text">
+          <string>Property 3</string>
+         </property>
+        </item>
+        <item row="2" column="1">
+         <property name="text">
+          <string>0</string>
+         </property>
+        </item>
+        <item row="3" column="0">
+         <property name="text">
+          <string>Property 4</string>
+         </property>
+        </item>
+        <item row="3" column="1">
+         <property name="text">
+          <string>Enabled</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
        <widget class="QMdiArea" name="mdiArea">
         <property name="viewMode">
          <enum>QMdiArea::TabbedView</enum>
@@ -54,21 +164,9 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QFrame" name="texturePreviewFrame">
-          <property name="minimumSize">
-           <size>
-            <width>256</width>
-            <height>256</height>
-           </size>
-          </property>
-          <property name="autoFillBackground">
-           <bool>true</bool>
-          </property>
-          <property name="frameShape">
-           <enum>QFrame::Panel</enum>
-          </property>
-          <property name="frameShadow">
-           <enum>QFrame::Sunken</enum>
+         <widget class="QPushButton" name="refreshButton">
+          <property name="text">
+           <string>Refresh</string>
           </property>
          </widget>
         </item>
@@ -76,8 +174,14 @@
          <widget class="QFrame" name="propertiesFrame">
           <property name="minimumSize">
            <size>
-            <width>192</width>
+            <width>256</width>
             <height>0</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>256</width>
+            <height>16777215</height>
            </size>
           </property>
           <property name="frameShape">
@@ -90,35 +194,28 @@
            <number>1</number>
           </property>
           <layout class="QGridLayout" name="gridLayout">
-           <item row="1" column="1">
+           <item row="2" column="1">
             <widget class="QLabel" name="formatValueLabel">
              <property name="text">
               <string>RGBA 8</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="0">
+           <item row="2" column="0">
             <widget class="QLabel" name="formatLabel">
              <property name="text">
               <string>Format:</string>
              </property>
             </widget>
            </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="resolutionLabel">
-             <property name="text">
-              <string>Resolution:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
+           <item row="1" column="1">
             <widget class="QLabel" name="resolutionValueLabel">
              <property name="text">
               <string>256 x 256</string>
              </property>
             </widget>
            </item>
-           <item row="2" column="0">
+           <item row="3" column="0">
             <spacer name="propertiesVerticalSpacer">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -127,6 +224,26 @@
               <size>
                <width>20</width>
                <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="resolutionLabel">
+             <property name="text">
+              <string>Resolution:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
               </size>
              </property>
             </spacer>

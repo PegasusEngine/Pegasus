@@ -9,8 +9,15 @@
 //! \date	05th June 2014
 //! \brief	Dock widget for the texture editor
 
-#include "TextureEditorDockWidget.h"
-#include "TextureGraphEditorGraphicsView.h"
+#include "Texture/TextureEditorDockWidget.h"
+#include "Texture/TextureGraphEditorGraphicsView.h"
+#include "Viewport/ViewportWidget.h"
+
+//! \todo Temporary
+#include "Editor.h"
+#include "Application/ApplicationManager.h"
+#include "Pegasus/Application/Shared/IApplicationProxy.h"
+#include "Pegasus/Texture/Shared/ITextureProxy.h"
 
 #include <QMdiSubWindow>
 #include <QMenuBar>
@@ -22,6 +29,12 @@ TextureEditorDockWidget::TextureEditorDockWidget(QWidget *parent)
 :   QDockWidget(parent)
 {
     ui.setupUi(this);
+    setWindowTitle(tr("Texture Editor"));
+	setObjectName("TextureEditorDockWidget");
+	setFeatures(  QDockWidget::DockWidgetClosable
+				| QDockWidget::DockWidgetMovable
+				| QDockWidget::DockWidgetFloatable);
+	setAllowedAreas(Qt::AllDockWidgetAreas);
 
     // Create the menu bar
     //! \todo Use proper actions
@@ -46,30 +59,46 @@ TextureEditorDockWidget::TextureEditorDockWidget(QWidget *parent)
     leftToolBar->setOrientation(Qt::Vertical);
     ui.mainHorizontalLayout->insertWidget(0, leftToolBar);
 
-    //! \todo Replace those temporary buttons by graph editors
-    TextureGraphEditorGraphicsView * button1 = new TextureGraphEditorGraphicsView(this);
-    TextureGraphEditorGraphicsView * button2 = new TextureGraphEditorGraphicsView(this);
-    QMdiSubWindow *subWindow1 = new QMdiSubWindow;
-    subWindow1->setWidget(button1);
-    subWindow1->setAttribute(Qt::WA_DeleteOnClose);
-    subWindow1->setWindowTitle("Test1");
-    ui.mdiArea->addSubWindow(subWindow1);
-    QMdiSubWindow *subWindow2 = new QMdiSubWindow;
-    subWindow2->setWidget(button2);
-    subWindow2->setAttribute(Qt::WA_DeleteOnClose);
-    subWindow2->setWindowTitle("Test2");
-    ui.mdiArea->addSubWindow(subWindow2);
+    // Create the viewport widget that will contain the previewer
+    mViewportWidget = new ViewportWidget(VIEWPORTTYPE_TEXTURE_EDITOR_PREVIEW, ui.mainWidget);
+    mViewportWidget->setMinimumSize(256, 256);
+    mViewportWidget->setMaximumSize(256, 256);
+    ui.propertiesVerticalLayout->insertWidget(0, mViewportWidget);
 
-    //! \todo Replace the black background of the frame
-    //!       by the texture preview
-    //! \todo Disable auto fill background in Qt Designer
-    QPalette pal(ui.texturePreviewFrame->palette());
-    pal.setColor(QPalette::Background, Qt::black);
-    ui.texturePreviewFrame->setPalette(pal);
+    // Connect the Refresh button to the graph changed message
+    //! \todo Temporary. Needs to emit the signal when the graph actually changes
+    connect(ui.refreshButton, SIGNAL(clicked()),
+            this, SIGNAL(GraphChanged()));
 }
 
 //----------------------------------------------------------------------------------------
 
 TextureEditorDockWidget::~TextureEditorDockWidget()
 {
+}
+
+//----------------------------------------------------------------------------------------
+
+void TextureEditorDockWidget::UpdateUIForAppLoaded()
+{
+    //! \todo Temporary code to load the list of textures and create a tab for each
+    static Pegasus::Texture::ITextureProxy * textureProxies[16] = { nullptr };
+    const unsigned int numTextures = Editor::GetInstance().GetApplicationManager().GetApplication()->GetApplicationProxy()
+                                            ->GetTextures(textureProxies);
+    for (unsigned int t = 0; t < numTextures; ++t)
+    {
+        TextureGraphEditorGraphicsView * graphicsView = new TextureGraphEditorGraphicsView;
+        QMdiSubWindow * subWindow = ui.mdiArea->addSubWindow(graphicsView);
+        subWindow->setWidget(graphicsView);
+        subWindow->setAttribute(Qt::WA_DeleteOnClose);
+        subWindow->setWindowTitle(textureProxies[t]->GetName());
+        subWindow->show();
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TextureEditorDockWidget::UpdateUIForAppClosed()
+{
+
 }

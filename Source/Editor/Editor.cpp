@@ -115,6 +115,11 @@ Editor::Editor(QWidget *parent)
 
     connect(sSettings, SIGNAL(OnShaderEditorStyleChanged()),
             mShaderLibraryWidget, SLOT(UpdateEditorStyle())); 
+
+    connect(mApplicationManager, SIGNAL(ApplicationLoaded()),
+            mTextureEditorDockWidget, SLOT(UpdateUIForAppLoaded()));
+    connect(mApplicationManager, SIGNAL(ApplicationFinished()),
+            mTextureEditorDockWidget, SLOT(UpdateUIForAppClosed()));
 }
 
 //----------------------------------------------------------------------------------------
@@ -182,9 +187,7 @@ ViewportWidget * Editor::GetViewportWidget(ViewportType viewportType) const
             return mSecondaryViewportDockWidget->GetViewportWidget();
 
         case VIEWPORTTYPE_TEXTURE_EDITOR_PREVIEW:
-            //! \todo Add support for texture editor
-            ED_FAILSTR("The texture editor preview viewport is not implemented yet");
-            return nullptr;
+            return mTextureEditorDockWidget->GetViewportWidget();
 
         case VIEWPORTTYPE_MESH_EDITOR_PREVIEW:
             //! \todo Add support for mesh editor

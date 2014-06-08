@@ -21,7 +21,7 @@ class TextureGraphEditorGraphicsView : public GraphEditorGraphicsView
 
 public:
 
-    TextureGraphEditorGraphicsView(QWidget *parent);
+    TextureGraphEditorGraphicsView(QWidget *parent = 0);
     ~TextureGraphEditorGraphicsView();
 
     //------------------------------------------------------------------------------------

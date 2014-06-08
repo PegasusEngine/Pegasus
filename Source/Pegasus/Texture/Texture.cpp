@@ -12,6 +12,10 @@
 #include "Pegasus/Texture/Texture.h"
 #include "Pegasus/Texture/ITextureFactory.h"
 
+#if PEGASUS_ENABLE_PROXIES
+#include "Pegasus/Texture/TextureProxy.h"
+#endif  // PEGASUS_ENABLE_PROXIES
+
 namespace Pegasus {
 namespace Texture {
 
@@ -20,6 +24,10 @@ Texture::Texture(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAl
 :   Graph::OutputNode(nodeAllocator, nodeDataAllocator),
     mConfiguration()
 {
+#if PEGASUS_ENABLE_PROXIES
+    //! Create the proxy associated with the texture
+    mProxy = PG_NEW(nodeAllocator, -1, "Texture::Texture::mProxy", Pegasus::Alloc::PG_MEM_PERM) TextureProxy(this);
+#endif  // PEGASUS_ENABLE_PROXIES
 }
 
 //----------------------------------------------------------------------------------------
@@ -29,6 +37,10 @@ Texture::Texture(const TextureConfiguration & configuration,
 :   Graph::OutputNode(nodeAllocator, nodeDataAllocator),
     mConfiguration(configuration)
 {
+#if PEGASUS_ENABLE_PROXIES
+    //! Create the proxy associated with the texture
+    mProxy = PG_NEW(nodeAllocator, -1, "Texture::Texture::mProxy", Pegasus::Alloc::PG_MEM_PERM) TextureProxy(this);
+#endif  // PEGASUS_ENABLE_PROXIES
 }
 
 //----------------------------------------------------------------------------------------
@@ -115,6 +127,11 @@ void Texture::ReleaseGPUData()
 Texture::~Texture()
 {
     ReleaseGPUData();
+
+#if PEGASUS_ENABLE_PROXIES
+    //! Destroy the proxy associated with the texture
+    PG_DELETE(GetNodeAllocator(), mProxy);
+#endif
 }
 
 

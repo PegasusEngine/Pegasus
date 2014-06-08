@@ -9,8 +9,8 @@
 //! \date	07th November 2013
 //! \brief	Proxy interface, used by the editor to interact with the timeline lanes
 
-#ifndef PEGASUS_TEXTURE_SHARED_ILANEPROXY_H
-#define PEGASUS_TEXTURE_SHARED_ILANEPROXY_H
+#ifndef PEGASUS_TIMELINE_SHARED_ILANEPROXY_H
+#define PEGASUS_TIMELINE_SHARED_ILANEPROXY_H
 
 #if PEGASUS_ENABLE_PROXIES
 
@@ -98,4 +98,4 @@ public:
 }   // namespace Pegasus
 
 #endif  // PEGASUS_ENABLE_PROXIES
-#endif  // PEGASUS_TEXTURE_SHARED_ILANEPROXY_H
+#endif  // PEGASUS_TIMELINE_SHARED_ILANEPROXY_H

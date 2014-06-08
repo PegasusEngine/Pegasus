@@ -22,7 +22,7 @@ class GraphEditorGraphicsView : public QGraphicsView
 
 public:
 
-    GraphEditorGraphicsView(QWidget *parent);
+    GraphEditorGraphicsView(QWidget *parent = 0);
     ~GraphEditorGraphicsView();
 
     //------------------------------------------------------------------------------------

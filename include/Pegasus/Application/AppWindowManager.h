@@ -67,6 +67,7 @@ public:
     virtual const char* GetMainWindowType() const;
 #if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
     virtual const char* GetSecondaryWindowType() const;
+    virtual const char* GetTextureEditorPreviewWindowType() const;
 #endif
 
     //! Creates a window and adds it to this manager.
@@ -81,7 +82,7 @@ public:
 
 
     static const unsigned int APPWINDOW_DESC_LENGTH = 128; //! Max length of an app window description
-    static const unsigned int APPWINDOW_CLASS_LENGTH = 32; //! Max length of an app window type
+    static const unsigned int APPWINDOW_CLASS_LENGTH = 64; //! Max length of an app window type
 
 private:
     // No copies allowed
