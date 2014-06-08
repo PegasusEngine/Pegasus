@@ -13,6 +13,7 @@
 #define PEGASUS_TEXTURE_TEXTUREGENERATOR_H
 
 #include "Pegasus/Graph/GeneratorNode.h"
+#include "Pegasus/Texture/Shared/TextureEvent.h"
 #include "Pegasus/Texture/TextureConfiguration.h"
 #include "Pegasus/Texture/TextureData.h"
 #include "Pegasus/Texture/TextureDeclaration.h"
@@ -26,6 +27,10 @@ namespace Texture {
 //!                     so the generator node can be instantiated
 class TextureGenerator : public Graph::GeneratorNode
 {
+
+    //Generating code to allow texture handle macros
+    GRAPH_EVENT_DECLARE_DISPATCHER(ITextureEventListener);
+
 public:
 
     //! Default constructor, uses the default texture configuration

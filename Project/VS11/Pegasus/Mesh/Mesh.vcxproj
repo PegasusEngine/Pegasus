@@ -37,6 +37,7 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\MeshInputLayout.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\MeshManager.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\MeshOperator.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\Shared\MeshEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Generator\QuadGenerator.cpp" />

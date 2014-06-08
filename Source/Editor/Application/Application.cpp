@@ -17,9 +17,9 @@
 #include "Pegasus/Preprocessor.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
+#include "Pegasus/Shader/Shared/ShaderEvent.h"
 #include "Pegasus/Window/Shared/IWindowProxy.h"
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
-#include "Pegasus/Shader/Shared/IEventListener.h"
 #include "ShaderLibrary\ShaderManagerEventListener.h"
 
 #include <QTimer>

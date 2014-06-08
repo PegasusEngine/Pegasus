@@ -19,6 +19,8 @@ MeshGenerator::MeshGenerator(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator
 :   Graph::GeneratorNode(nodeAllocator, nodeDataAllocator),
     mConfiguration()
 {
+    //initialize event user data
+    GRAPH_EVENT_INIT_DISPATCHER
 }
 
 //----------------------------------------------------------------------------------------
@@ -28,6 +30,8 @@ MeshGenerator::MeshGenerator(const MeshConfiguration & configuration,
 :   Graph::GeneratorNode(nodeAllocator, nodeDataAllocator),
     mConfiguration(configuration)
 {
+    //initialize event user data
+    GRAPH_EVENT_INIT_DISPATCHER
 }
 
 //----------------------------------------------------------------------------------------

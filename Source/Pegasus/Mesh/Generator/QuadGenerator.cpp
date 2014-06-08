@@ -1,3 +1,14 @@
+/****************************************************************************************/
+/*                                                                                      */
+/*                                       Pegasus                                        */
+/*                                                                                      */
+/****************************************************************************************/
+
+//! \file	QuadGenerator.cpp
+//! \author	Kleber Garcia
+//! \date	11th May 2014
+//! \brief	Mesh generator of a quad 
+
 #include "Pegasus/Mesh/Generator/QuadGenerator.h"
 #include "Pegasus/Math/Vector.h"
 
@@ -37,6 +48,8 @@ void QuadGenerator::GenerateData()
 {
     using namespace Pegasus::Math;
 
+    GRAPH_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::BEGIN);
+
     MeshDataRef meshData = GetData();
     PG_ASSERT(meshData != nullptr);
 
@@ -61,6 +74,8 @@ void QuadGenerator::GenerateData()
         stream[i].uv.s = stream[i].position.x * 0.5f + 0.5f;
         stream[i].uv.t = stream[i].position.y * 0.5f + 0.5f;
     }
+
+    GRAPH_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::END_SUCCESS);
 }
 
 } //Mesh

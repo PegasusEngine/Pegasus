@@ -11,6 +11,7 @@
 
 #include "Pegasus/Texture/Generator/GradientGenerator.h"
 #include "Pegasus/Math/Plane.h"
+#include "Pegasus/Texture/Shared/TextureEvent.h"
 
 namespace Pegasus {
 namespace Texture {
@@ -27,6 +28,8 @@ END_IMPLEMENT_PROPERTIES()
 
 void GradientGenerator::GenerateData()
 {
+    GRAPH_EVENT_DISPATCH(this, TextureGenerationEvent, TextureGenerationEvent::BEGIN);
+
     //! \todo Use a simpler syntax
     Graph::NodeDataRef dataRef = GetData();
     TextureData * data = static_cast<TextureData *>(&(*dataRef));
@@ -139,6 +142,7 @@ void GradientGenerator::GenerateData()
             }
         }
     }
+    GRAPH_EVENT_DISPATCH(this, TextureGenerationEvent, TextureGenerationEvent::END_SUCCESS);
 }
 
 

@@ -14,6 +14,7 @@
 
 #include "Pegasus/Core/Ref.h"
 #include "Pegasus/Graph/GeneratorNode.h"
+#include "Pegasus/Mesh/Shared/MeshEvent.h"
 #include "Pegasus/Mesh/MeshConfiguration.h"
 #include "Pegasus/Mesh/MeshData.h"
 #include "Pegasus/Mesh/MeshDeclaration.h"
@@ -27,6 +28,8 @@ namespace Mesh {
 //!                     so the generator node can be instantiated
 class MeshGenerator : public Graph::GeneratorNode
 {
+
+    GRAPH_EVENT_DECLARE_DISPATCHER(IMeshEventListener);
 public:
 
     //! Default constructor, uses the default mesh configuration

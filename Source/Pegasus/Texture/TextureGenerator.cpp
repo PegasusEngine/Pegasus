@@ -19,6 +19,8 @@ TextureGenerator::TextureGenerator(Alloc::IAllocator* nodeAllocator, Alloc::IAll
 :   Graph::GeneratorNode(nodeAllocator, nodeDataAllocator),
     mConfiguration()
 {
+    //initialize event user data
+    GRAPH_EVENT_INIT_DISPATCHER
 }
 
 //----------------------------------------------------------------------------------------
@@ -28,6 +30,8 @@ TextureGenerator::TextureGenerator(const TextureConfiguration & configuration,
 :   Graph::GeneratorNode(nodeAllocator, nodeDataAllocator),
     mConfiguration(configuration)
 {
+    //initialize event user data
+    GRAPH_EVENT_INIT_DISPATCHER
 }
 
 //----------------------------------------------------------------------------------------
@@ -40,7 +44,13 @@ void TextureGenerator::SetConfiguration(const TextureConfiguration & configurati
     }
     else
     {
-        PG_FAILSTR("Cannot set the configuration of a texture generator because the node is already in use");
+        GRAPH_EVENT_DISPATCH (
+            this,
+            TextureNotificationEvent,
+            //event specific arguments
+            TextureNotificationEvent::CONFIGURATION_ERROR,
+            "Cannot set the configuration of a texture generator because the node is already in use"
+        );
     }
 }
 

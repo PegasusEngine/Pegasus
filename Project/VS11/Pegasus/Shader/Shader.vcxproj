@@ -35,7 +35,6 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderStage.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderTracker.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\IEventListener.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\IProgramProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\IShaderProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\ShaderDefs.h" />

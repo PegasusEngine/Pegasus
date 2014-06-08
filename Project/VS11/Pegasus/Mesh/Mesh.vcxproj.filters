@@ -21,6 +21,9 @@
     <Filter Include="Source\Operator">
       <UniqueIdentifier>{2196e8cd-3de7-4b3b-88b7-e8dbc6660b8f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Include\Shared">
+      <UniqueIdentifier>{d48793c3-c08f-4592-8540-5abffbca8dc7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\Mesh.h">
@@ -52,6 +55,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\IMeshFactory.h">
       <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\Shared\MeshEvent.h">
+      <Filter>Include\Shared</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

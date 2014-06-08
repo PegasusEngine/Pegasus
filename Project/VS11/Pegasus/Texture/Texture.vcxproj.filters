@@ -21,6 +21,9 @@
     <Filter Include="Source\Operator">
       <UniqueIdentifier>{f48d5ea8-0206-4adf-9e23-7bf3341386a7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Include\Shared">
+      <UniqueIdentifier>{125bf539-0061-48a7-9c0b-e2afca4d3b89}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Texture.h">
@@ -55,6 +58,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\ITextureFactory.h">
       <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\TextureEvent.h">
+      <Filter>Include\Shared</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

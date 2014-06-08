@@ -8,7 +8,6 @@
 //! \date   4rth April 2014
 //! \brief  Pegasus Shader Manager Event Listener	
 
-#include "Pegasus/Shader/Shared/IEventListener.h"
 #include "Pegasus/Shader/Shared/ShaderEvent.h"
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
 #include "Pegasus/Shader/Shared/IProgramProxy.h"

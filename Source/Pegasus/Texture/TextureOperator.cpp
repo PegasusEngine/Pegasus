@@ -19,6 +19,8 @@ TextureOperator::TextureOperator(Alloc::IAllocator* nodeAllocator, Alloc::IAlloc
 :   Graph::OperatorNode(nodeAllocator, nodeDataAllocator),
     mConfiguration()
 {
+    //initialize event user data
+    GRAPH_EVENT_INIT_DISPATCHER
 }
 
 //----------------------------------------------------------------------------------------
@@ -28,6 +30,8 @@ TextureOperator::TextureOperator(const TextureConfiguration & configuration,
 :   Graph::OperatorNode(nodeAllocator, nodeDataAllocator),
     mConfiguration(configuration)
 {
+    //initialize event user data
+    GRAPH_EVENT_INIT_DISPATCHER
 }
 
 //----------------------------------------------------------------------------------------
@@ -40,7 +44,13 @@ void TextureOperator::SetConfiguration(const TextureConfiguration & configuratio
     }
     else
     {
-        PG_FAILSTR("Cannot set the configuration of a texture operator because the node is already in use");
+        GRAPH_EVENT_DISPATCH (
+            this,
+            TextureNotificationEvent,
+            //event specific arguments
+            TextureNotificationEvent::CONFIGURATION_ERROR,
+            "Cannot set the configuration of a texture operator because the node is already in use"
+        );
     }
 }
 
@@ -55,7 +65,13 @@ void TextureOperator::AddGeneratorInput(TextureGeneratorIn textureGenerator)
     }
     else
     {
-        PG_FAILSTR("Unable to add a generator input to a TextureOperator node since their configurations are incompatible");
+        GRAPH_EVENT_DISPATCH (
+            this,
+            TextureNotificationEvent,
+            //event specific arguments
+            TextureNotificationEvent::INCOMPATIBILITY_WARNING,
+            "Unable to add a generator input to a TextureOperator node since their configurations are incompatible"
+        );
     }
 }
 
@@ -70,7 +86,13 @@ void TextureOperator::AddOperatorInput(const Pegasus::Core::Ref<TextureOperator>
     }
     else
     {
-        PG_FAILSTR("Unable to add an operator input to a TextureOperator node since their configurations are incompatible");
+        GRAPH_EVENT_DISPATCH (
+            this,
+            TextureNotificationEvent,
+            //event specific arguments
+            TextureNotificationEvent::INCOMPATIBILITY_WARNING,
+            "Unable to add an operator input to a TextureOperator node since their configurations are incompatible"
+        );
     }
 }
 
@@ -85,7 +107,13 @@ void TextureOperator::ReplaceInputByGenerator(unsigned int index, TextureGenerat
     }
     else
     {
-        PG_FAILSTR("Unable to replace an input of a TextureOperator node since the new configuration is incompatible with the current one");
+        GRAPH_EVENT_DISPATCH (
+            this,
+            TextureNotificationEvent,
+            //event specific arguments
+            TextureNotificationEvent::INCOMPATIBILITY_WARNING,
+            "Unable to replace an input of a TextureOperator node since the new configuration is incompatible with the current one"
+        );
     }
 }
 
@@ -100,7 +128,13 @@ void TextureOperator::ReplaceInputByOperator(unsigned int index, const Pegasus::
     }
     else
     {
-        PG_FAILSTR("Unable to replace an input of a TextureOperator node since the new configuration is incompatible with the current one");
+        GRAPH_EVENT_DISPATCH (
+            this,
+            TextureNotificationEvent,
+            //event specific arguments
+            TextureNotificationEvent::INCOMPATIBILITY_WARNING,
+            "Unable to replace an input of a TextureOperator node since the new configuration is incompatible with the current one"
+        );
     }
 }
 

@@ -12,7 +12,6 @@
 #ifndef PEGASUS_SHADEREVENT_H 
 #define PEGASUS_SHADEREVENT_H
 
-#include "Pegasus/Shader/Shared/IEventListener.h"
 #include "Pegasus/Core/Shared/IoErrors.h"
 #include "Pegasus/Graph/Shared/GraphEventDefs.h"
 

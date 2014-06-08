@@ -11,7 +11,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\Source\Launcher\EventListeners.cpp" />
     <ClCompile Include="..\..\..\Source\Launcher\Launcher_Win32.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\Include\Launcher\EventListeners.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C8DD5CB8-24C9-4BA1-BDA2-E096C0D8D83C}</ProjectGuid>

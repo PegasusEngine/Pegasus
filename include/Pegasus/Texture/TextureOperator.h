@@ -13,6 +13,7 @@
 #define PEGASUS_TEXTURE_TEXTUREOPERATOR_H
 
 #include "Pegasus/Graph/OperatorNode.h"
+#include "Pegasus/Texture/Shared/TextureEvent.h"
 #include "Pegasus/Texture/TextureConfiguration.h"
 #include "Pegasus/Texture/TextureData.h"
 #include "Pegasus/Texture/TextureDeclaration.h"
@@ -27,6 +28,9 @@ namespace Texture {
 //!                     so the operator node can be instantiated
 class TextureOperator : public Graph::OperatorNode
 {
+    //Generating code to allow texture handle macros
+    GRAPH_EVENT_DECLARE_DISPATCHER(ITextureEventListener);
+
 public:
 
     //! Default constructor, uses the default texture configuration

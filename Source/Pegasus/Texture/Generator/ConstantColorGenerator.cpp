@@ -23,6 +23,8 @@ END_IMPLEMENT_PROPERTIES()
 
 void ConstantColorGenerator::GenerateData()
 {
+    GRAPH_EVENT_DISPATCH(this, TextureGenerationEvent, TextureGenerationEvent::BEGIN);
+
     //! \todo Use a simpler syntax
     Graph::NodeDataRef dataRef = GetData();
     TextureData * data = static_cast<TextureData *>(&(*dataRef));
@@ -71,6 +73,8 @@ void ConstantColorGenerator::GenerateData()
                 PG_FAILSTR("Unsupported number of bytes per pixel (%d) for ConstantColorGenerator", numBytesPerPixel);
         }
     }
+
+    GRAPH_EVENT_DISPATCH(this, TextureGenerationEvent, TextureGenerationEvent::END_SUCCESS);
 }
 
 

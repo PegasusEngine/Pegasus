@@ -31,6 +31,7 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Generator\GradientGenerator.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\ITextureFactory.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Operator\AddOperator.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\TextureEvent.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Texture.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureConfiguration.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureData.h" />
