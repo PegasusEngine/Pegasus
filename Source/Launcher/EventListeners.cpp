@@ -5,59 +5,72 @@ namespace Pegasus
 namespace Launcher
 {
 
-    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, Shader::ShaderLoadedEvent)
+    void LogAssertDispatcher::Assert(bool condition, const char * msg)
     {
-        //TODO handle this event
+        if (!condition)
+        {
+            mAssertHandler("","",0,msg);
+        }
     }
 
-    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, Shader::CompilationEvent)
+    void LogAssertDispatcher::Log(Pegasus::Core::LogChannel channel, const char * msg)
     {
-        //TODO handle this event
+        mLogHandler(channel, msg);
     }
 
-    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, Shader::CompilationNotification)
+    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, Shader::ShaderLoadedEvent& e)
     {
-        //TODO handle this event
+        Log('SHDR', "Shader text has been set.");
     }
 
-    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, Shader::LinkingEvent)
+    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, Shader::CompilationEvent& e)
     {
-        //TODO handle this event
+        Assert(e.IsSuccess(), e.GetLogString());
     }
 
-    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, Shader::FileOperationEvent)
+    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, Shader::CompilationNotification& e)
     {
-        //TODO handle this event
+        //ignore notifications
+    }
+
+    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, Shader::LinkingEvent& e)
+    {
+        Assert(e.GetEventType() == Shader::LinkingEvent::LINKING_SUCCESS, e.GetLog());
+    }
+
+    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, Shader::FileOperationEvent& e)
+    {
+        Assert(false, "Pegasus Shader IO Error.");
     }
 
     void LauncherTextureListener::OnEvent(Graph::IGraphUserData * u, Texture::TextureNotificationEvent& e)
     {
-        //TODO handle this event
+        Assert(false, e.GetMessage());
     }
 
     void LauncherTextureListener::OnEvent(Graph::IGraphUserData * u, Texture::TextureGenerationEvent&   e)
     {
-        //TODO handle this event
+        //ignore generation notifications
     }
 
     void LauncherTextureListener::OnEvent(Graph::IGraphUserData * u, Texture::TextureOperationEvent&    e)
     {
-        //TODO handle this event
+        //ignore operation notifications
     }
 
     void LauncherMeshListener::OnEvent(Graph::IGraphUserData * u, Mesh::MeshNotificationEvent& e)
     {
-        //TODO handle this event
+        Assert(false, e.GetMessage());
     }
 
     void LauncherMeshListener::OnEvent(Graph::IGraphUserData * u, Mesh::MeshGenerationEvent&   e)
     {
-        //TODO handle this event
+        //ignore generation notifications
     }
 
     void LauncherMeshListener::OnEvent(Graph::IGraphUserData * u, Mesh::MeshOperationEvent&    e)
     {
-        //TODO handle this event
+        //ignore operation notifications
     }
 
 }

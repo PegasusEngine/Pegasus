@@ -14,6 +14,10 @@
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
+#if PEGASUS_USE_GRAPH_EVENTS
+#include "Pegasus/Mesh/Shared/MeshEvent.h"
+#include "Pegasus/Texture/Shared/TextureEvent.h"
+#endif
 
 // Forward declarations
 namespace Pegasus {
@@ -51,8 +55,17 @@ public:
     virtual void Initialize();
     virtual void Shutdown();
     virtual void Load();
-    //! \todo Temporary. Remove as soon as the proper interface is defined
+
+    //! \todo Temporary. Remove as soon as the proper interfaces are defined
     virtual unsigned int GetTextures(void * textureList);
+#if PEGASUS_USE_GRAPH_EVENTS
+
+    //! \todo Temporary. Remove as soon as the proper interfaces are defined
+    virtual void RegisterTextureEventListener(Texture::ITextureEventListener * eventListener);
+
+    //! \todo Temporary. Remove as soon as the proper interfaces are defined
+    virtual void RegisterMeshEventListener(Mesh::IMeshEventListener * eventListener);
+#endif
 
     // Proxy accessors
     virtual Timeline::ITimelineProxy* GetTimeline() const;

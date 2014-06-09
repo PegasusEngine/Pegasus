@@ -33,6 +33,15 @@ namespace Pegasus {
         class IShaderManagerProxy;
     }
 
+#if PEGASUS_USE_GRAPH_EVENTS
+    namespace Texture {
+        class ITextureEventListener;
+    }
+
+    namespace Mesh {
+        class IMeshEventListener;
+    }
+#endif
 }
 
 //----------------------------------------------------------------------------------------
@@ -92,6 +101,16 @@ public:
     //! \todo Temporary. Remove as soon as the proper interface is defined
     virtual unsigned int GetTextures(void * textureList) = 0;
 
+#if PEGASUS_USE_GRAPH_EVENTS
+
+    //! \todo Temporary. Remove as soon as the proper interface is defined
+    virtual void RegisterTextureEventListener(Texture::ITextureEventListener * eventListener) = 0;
+
+    //! \todo Temporary. Remove as soon as the proper interface is defined
+    virtual void RegisterMeshEventListener(Mesh::IMeshEventListener * eventListener) = 0;
+
+#endif
+
 
     //! \todo Set update mode
 
@@ -99,6 +118,7 @@ public:
     // Get the timeline proxy object
     //! \return Timeline proxy object
     virtual Timeline::ITimelineProxy* GetTimeline() const = 0;
+
 };
 
 //----------------------------------------------------------------------------------------

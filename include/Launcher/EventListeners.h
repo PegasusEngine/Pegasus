@@ -15,6 +15,8 @@
 #include "Pegasus/Shader/Shared/ShaderEvent.h"
 #include "Pegasus/Texture/Shared/TextureEvent.h"
 #include "Pegasus/Mesh/Shared/MeshEvent.h"
+#include "Pegasus/Core/Shared/LogChannel.h"
+#include "Pegasus/Core/Shared/AssertReturnCode.h"
 
 namespace Pegasus
 {
@@ -22,22 +24,46 @@ namespace Pegasus
 namespace Launcher
 {
 
-// The following are event listeners for each event occuring within an app
-class LauncherShaderListener : public Shader::IShaderEventListener
+class LogAssertDispatcher
 {
 public:
-    virtual void OnEvent(Graph::IGraphUserData * u, Shader::ShaderLoadedEvent);
-    virtual void OnEvent(Graph::IGraphUserData * u, Shader::CompilationEvent);
-    virtual void OnEvent(Graph::IGraphUserData * u, Shader::CompilationNotification);
-    virtual void OnEvent(Graph::IGraphUserData * u, Shader::LinkingEvent);
-    virtual void OnEvent(Graph::IGraphUserData * u, Shader::FileOperationEvent);
+    LogAssertDispatcher(Core::LogHandlerFunc logHandler, Core::AssertionHandlerFunc assertHandler)
+    : mLogHandler(logHandler), mAssertHandler(assertHandler)
+    {
+    }
+    ~LogAssertDispatcher()
+    {
+    }
+
+    void Assert(bool condition, const char * msg);
+    void Log(Pegasus::Core::LogChannel channel, const char * msg);
+private:
+    Core::LogHandlerFunc mLogHandler;
+    Core::AssertionHandlerFunc mAssertHandler;
+    
+};
+
+// The following are event listeners for each event occuring within an app
+class LauncherShaderListener : public Shader::IShaderEventListener, LogAssertDispatcher
+{
+public:
+    LauncherShaderListener(Core::LogHandlerFunc logHandler, Core::AssertionHandlerFunc assertHandler)
+    : LogAssertDispatcher(logHandler, assertHandler) {}
+    ~LauncherShaderListener(){}
+
+    virtual void OnEvent(Graph::IGraphUserData * u, Shader::ShaderLoadedEvent& e);
+    virtual void OnEvent(Graph::IGraphUserData * u, Shader::CompilationEvent& e);
+    virtual void OnEvent(Graph::IGraphUserData * u, Shader::CompilationNotification& e);
+    virtual void OnEvent(Graph::IGraphUserData * u, Shader::LinkingEvent& e);
+    virtual void OnEvent(Graph::IGraphUserData * u, Shader::FileOperationEvent& e);
 };
 
 
-class LauncherTextureListener : public Texture::ITextureEventListener
+class LauncherTextureListener : public Texture::ITextureEventListener, LogAssertDispatcher
 {
 public:
-    LauncherTextureListener() {}
+    LauncherTextureListener(Core::LogHandlerFunc logHandler, Core::AssertionHandlerFunc assertHandler)
+    : LogAssertDispatcher(logHandler, assertHandler) {}
     ~LauncherTextureListener(){}
 
     virtual void OnEvent(Graph::IGraphUserData * u, Texture::TextureNotificationEvent& e);
@@ -46,10 +72,11 @@ public:
 };
 
 
-class LauncherMeshListener : public Mesh::IMeshEventListener
+class LauncherMeshListener : public Mesh::IMeshEventListener, LogAssertDispatcher
 {
 public:
-    LauncherMeshListener() {}
+    LauncherMeshListener(Core::LogHandlerFunc logHandler, Core::AssertionHandlerFunc assertHandler)
+    : LogAssertDispatcher(logHandler, assertHandler) {}
     ~LauncherMeshListener() {}
 
     virtual void  OnEvent(Graph::IGraphUserData * u, Mesh::MeshNotificationEvent& e);

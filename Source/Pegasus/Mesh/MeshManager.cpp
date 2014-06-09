@@ -26,6 +26,10 @@ namespace Mesh {
     
 MeshManager::MeshManager(Graph::NodeManager * nodeManager, IMeshFactory * factory)
 :   mNodeManager(nodeManager), mFactory(factory)
+#if PEGASUS_USE_GRAPH_EVENTS
+    //initialize without an event listener
+    , mEventListener(nullptr)
+#endif
 {
     PG_ASSERT(factory);
     if (nodeManager != nullptr)
@@ -84,6 +88,10 @@ MeshGeneratorReturn MeshManager::CreateMeshGeneratorNode(const char * className)
         //! \todo Check that the class corresponds to a generator mesh
 
         MeshGeneratorRef meshGenerator = mNodeManager->CreateNode(className);
+#if PEGASUS_USE_GRAPH_EVENTS
+        //propagate event listener
+        meshGenerator->SetEventListener(mEventListener);
+#endif
         return meshGenerator;
     }
     else
@@ -104,6 +112,10 @@ MeshOperatorReturn MeshManager::CreateMeshOperatorNode(const char * className,
 
         MeshOperatorRef meshOperator = mNodeManager->CreateNode(className);
         meshOperator->SetConfiguration(configuration);
+#if PEGASUS_USE_GRAPH_EVENTS
+        //propagate event listener
+        meshOperator->SetEventListener(mEventListener);
+#endif
         return meshOperator;
     }
     else

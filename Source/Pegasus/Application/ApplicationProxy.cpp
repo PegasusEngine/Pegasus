@@ -117,6 +117,23 @@ unsigned int ApplicationProxy::GetTextures(void * textureList)
 
 //----------------------------------------------------------------------------------------
 
+#if PEGASUS_USE_GRAPH_EVENTS
+
+//! todo remove these functions once we have the corresponding managers proxies?
+void ApplicationProxy::RegisterTextureEventListener(Texture::ITextureEventListener * eventListener)
+{
+    mObject->GetTextureManager()->RegisterEventListener(eventListener);
+}
+
+void ApplicationProxy::RegisterMeshEventListener(Mesh::IMeshEventListener * eventListener)
+{
+    mObject->GetMeshManager()->RegisterEventListener(eventListener);
+}
+
+#endif
+
+//----------------------------------------------------------------------------------------
+
 Timeline::ITimelineProxy* ApplicationProxy::GetTimeline() const
 {
     return mObject->GetTimeline()->GetProxy();

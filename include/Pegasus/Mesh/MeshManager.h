@@ -68,7 +68,11 @@ public:
     MeshOperatorReturn CreateMeshOperatorNode(const char * className,
                                                     const MeshConfiguration & configuration);
 
-    //------------------------------------------------------------------------------------
+#if PEGASUS_USE_GRAPH_EVENTS
+    //! Registers an event listener so we can listen to mesh specific event whilst constructing nodes.
+    //! \param the event listener to use
+    void RegisterEventListener(IMeshEventListener * eventListener) { mEventListener = eventListener; }
+#endif
     
 private:
 
@@ -84,6 +88,10 @@ private:
 
     //! Pointer to the GPU factory. Generates GPU data from cpu mesh data
     IMeshFactory * mFactory;
+
+#if PEGASUS_USE_GRAPH_EVENTS
+    IMeshEventListener * mEventListener;
+#endif
 };
 
 

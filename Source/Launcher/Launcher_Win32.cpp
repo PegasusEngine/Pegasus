@@ -12,13 +12,15 @@
 
 #include "Pegasus/Preprocessor.h"
 
-#if PEGASUS_PLATFORM_WINDOWS
-
+#include "Launcher/EventListeners.h"
 #include "Pegasus/Application/Application.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Application/IWindowRegistry.h"
 #include "Pegasus/Window/Shared/IWindowProxy.h"
+#include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
+
+#if PEGASUS_PLATFORM_WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <strsafe.h>
@@ -291,6 +293,15 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     // Initialize the application
     application = CreatePegasusAppFunc(appConfig);
     application->Initialize();
+
+    Pegasus::Launcher::LauncherShaderListener  shaderListener(appConfig.mLoghandler, appConfig.mAssertHandler);
+    Pegasus::Launcher::LauncherTextureListener textureListener(appConfig.mLoghandler, appConfig.mAssertHandler);
+    Pegasus::Launcher::LauncherMeshListener    meshListener(appConfig.mLoghandler, appConfig.mAssertHandler);
+
+    application->GetShaderManager()->RegisterEventListener(&shaderListener);
+    application->RegisterTextureEventListener(&textureListener);
+    application->RegisterMeshEventListener(&meshListener);
+
 
     // Set up window config
     windowConfig.mWindowType = application->GetMainWindowType();

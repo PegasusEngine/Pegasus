@@ -29,7 +29,13 @@ namespace Texture {
     
 TextureManager::TextureManager(Graph::NodeManager * nodeManager, ITextureFactory * textureFactory)
 :   mNodeManager(nodeManager), mFactory(textureFactory)
+#if PEGASUS_USE_GRAPH_EVENTS
+    //initialize without an event listener
+    , mEventListener(nullptr)
+#endif
 {
+
+
     if (nodeManager != nullptr)
     {
         RegisterAllTextureNodes();
@@ -89,6 +95,10 @@ TextureGeneratorReturn TextureManager::CreateTextureGeneratorNode(const char * c
 
         TextureGeneratorRef textureGenerator = mNodeManager->CreateNode(className);
         textureGenerator->SetConfiguration(configuration);
+#if PEGASUS_USE_GRAPH_EVENTS
+        //propagate event listener
+        textureGenerator->SetEventListener(mEventListener);
+#endif
         return textureGenerator;
     }
     else
@@ -109,6 +119,10 @@ TextureOperatorReturn TextureManager::CreateTextureOperatorNode(const char * cla
 
         TextureOperatorRef textureOperator = mNodeManager->CreateNode(className);
         textureOperator->SetConfiguration(configuration);
+#if PEGASUS_USE_GRAPH_EVENTS
+        //propagate event listener
+        textureOperator->SetEventListener(mEventListener);
+#endif
         return textureOperator;
     }
     else

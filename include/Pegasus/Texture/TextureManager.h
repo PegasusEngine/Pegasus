@@ -28,6 +28,10 @@ namespace Texture {
 
 class ITextureFactory;
 
+#if PEGASUS_USE_GRAPH_EVENTS
+class ITextureEventListener;
+#endif
+
 //! Global texture node manager, including the factory features
 class TextureManager
 {
@@ -69,7 +73,11 @@ public:
     TextureOperatorReturn CreateTextureOperatorNode(const char * className,
                                                     const TextureConfiguration & configuration);
 
-    //------------------------------------------------------------------------------------
+#if PEGASUS_USE_GRAPH_EVENTS
+    //! Registers an event listener so we can listen to texture specific events whilst constructing nodes.
+    //! \param the event listener to use
+    void RegisterEventListener(ITextureEventListener * eventListener) { mEventListener = eventListener; }
+#endif
     
 private:
 
@@ -86,6 +94,10 @@ private:
 
     //! Pointer to the GPU factory. Generates GPU data from cpu texture data
     ITextureFactory * mFactory;
+
+#if PEGASUS_USE_GRAPH_EVENTS
+    ITextureEventListener * mEventListener;
+#endif
 };
 
 
