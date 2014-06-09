@@ -298,7 +298,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     Pegasus::Launcher::LauncherTextureListener textureListener(appConfig.mLoghandler, appConfig.mAssertHandler);
     Pegasus::Launcher::LauncherMeshListener    meshListener(appConfig.mLoghandler, appConfig.mAssertHandler);
 
-    application->GetShaderManager()->RegisterEventListener(&shaderListener);
+    application->GetShaderManagerProxy()->RegisterEventListener(&shaderListener);
     application->RegisterTextureEventListener(&textureListener);
     application->RegisterMeshEventListener(&meshListener);
 

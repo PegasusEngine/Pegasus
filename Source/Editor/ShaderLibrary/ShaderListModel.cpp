@@ -111,7 +111,7 @@ void ShaderListModel::OnAppLoaded()
         ED_ASSERTSTR(appProxy != nullptr, "App proxy cannot be null!");
         if (appProxy != nullptr)
         {
-            mShaderManager = appProxy->GetShaderManager();
+            mShaderManager = appProxy->GetShaderManagerProxy();
             ED_ASSERTSTR(mShaderManager != nullptr, "Failed retrieving shader manager");            
         }
     }

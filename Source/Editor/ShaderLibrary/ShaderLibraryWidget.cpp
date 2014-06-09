@@ -207,7 +207,7 @@ void ShaderLibraryWidget::InitializeInternalUserData()
         ED_ASSERTSTR(appProxy != nullptr, "App proxy cannot be null!");
         if (appProxy != nullptr)
         {
-            Pegasus::Shader::IShaderManagerProxy * shaderManager = appProxy->GetShaderManager();
+            Pegasus::Shader::IShaderManagerProxy * shaderManager = appProxy->GetShaderManagerProxy();
             ED_ASSERTSTR(shaderManager != nullptr, "Failed retrieving shader manager");            
             for (int i = 0; i < shaderManager->GetShaderCount(); ++i)
             {
@@ -242,7 +242,7 @@ void ShaderLibraryWidget::UninitializeInternalUserData()
         ED_ASSERTSTR(appProxy != nullptr, "App proxy cannot be null!");
         if (appProxy != nullptr)
         {
-            Pegasus::Shader::IShaderManagerProxy * shaderManager = appProxy->GetShaderManager();
+            Pegasus::Shader::IShaderManagerProxy * shaderManager = appProxy->GetShaderManagerProxy();
             ED_ASSERTSTR(shaderManager != nullptr, "Failed retrieving shader manager");            
             for (int i = 0; i < shaderManager->GetShaderCount(); ++i)
             {

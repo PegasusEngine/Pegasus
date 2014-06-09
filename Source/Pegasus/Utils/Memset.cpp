@@ -14,7 +14,7 @@ namespace Pegasus
 namespace Utils
 {
 
-void* Memset8(void * destination, char value, unsigned size)
+void* Memset8(void * destination, char value, unsigned int size)
 {
     char * byteDestination = static_cast<char*>(destination);
     while(size-- > 0)

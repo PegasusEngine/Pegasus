@@ -180,7 +180,7 @@
           </property>
           <property name="maximumSize">
            <size>
-            <width>256</width>
+            <width>16777215</width>
             <height>16777215</height>
            </size>
           </property>
@@ -195,23 +195,23 @@
           </property>
           <layout class="QGridLayout" name="gridLayout">
            <item row="2" column="1">
-            <widget class="QLabel" name="formatValueLabel">
+            <widget class="QLabel" name="layersValueLabel">
              <property name="text">
-              <string>RGBA 8</string>
+              <string>0</string>
              </property>
             </widget>
            </item>
            <item row="2" column="0">
-            <widget class="QLabel" name="formatLabel">
+            <widget class="QLabel" name="layersLabel">
              <property name="text">
-              <string>Format:</string>
+              <string>Layers:</string>
              </property>
             </widget>
            </item>
            <item row="1" column="1">
             <widget class="QLabel" name="resolutionValueLabel">
              <property name="text">
-              <string>256 x 256</string>
+              <string>0 x 0 x 0</string>
              </property>
             </widget>
            </item>

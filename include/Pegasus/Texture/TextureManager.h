@@ -17,6 +17,10 @@
 #include "Pegasus/Texture/TextureGenerator.h"
 #include "Pegasus/Texture/TextureOperator.h"
 
+#if PEGASUS_ENABLE_PROXIES
+#include "Pegasus/Texture/TextureTracker.h"
+#endif
+
 namespace Pegasus {
     namespace Graph {
         class NodeManager;
@@ -73,6 +77,11 @@ public:
     TextureOperatorReturn CreateTextureOperatorNode(const char * className,
                                                     const TextureConfiguration & configuration);
 
+#if PEGASUS_ENABLE_PROXIES
+    //! Returns the texture tracker, to get a list of texture proxies
+    const TextureTracker & GetTracker() const { return mTracker; }
+#endif
+
 #if PEGASUS_USE_GRAPH_EVENTS
     //! Registers an event listener so we can listen to texture specific events whilst constructing nodes.
     //! \param the event listener to use
@@ -94,6 +103,11 @@ private:
 
     //! Pointer to the GPU factory. Generates GPU data from cpu texture data
     ITextureFactory * mFactory;
+
+#if PEGASUS_ENABLE_PROXIES
+    //! Texture tracker, to get a list of texture proxies
+    TextureTracker mTracker;
+#endif
 
 #if PEGASUS_USE_GRAPH_EVENTS
     ITextureEventListener * mEventListener;

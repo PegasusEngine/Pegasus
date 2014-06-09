@@ -76,10 +76,6 @@ public:
     //! Custom shutdown, done in the user application
     virtual void ShutdownApp() = 0;
 
-    //! Return the list of texture assets in the application
-    //! \todo Temporary. Remove as soon as the proper interface is defined
-    virtual unsigned int GetTextures(void * textureList) = 0;
-
 
     //! Initializes this app
     void Initialize();
@@ -113,9 +109,6 @@ public:
     virtual Mesh::MeshManager*       GetMeshManager()    const { return mMeshManager;    }
     virtual Shader::ShaderManager*   GetShaderManager()  const { return mShaderManager;  }
     virtual Timeline::Timeline*      GetTimeline()       const { return mTimeline;       }
-
-    // Editor functions
-    Shader::ShaderManager* GetShaderManager() { return mShaderManager; }
 
 private:
     // No copies allowed

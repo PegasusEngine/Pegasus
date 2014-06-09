@@ -31,6 +31,7 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Generator\GradientGenerator.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\ITextureFactory.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Operator\AddOperator.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\ITextureManagerProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\TextureEvent.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\ITextureProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Texture.h" />
@@ -39,8 +40,10 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureDeclaration.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureGenerator.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureManager.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureManagerProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureOperator.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureProxy.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureTracker.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Generator\ConstantColorGenerator.cpp" />
@@ -51,8 +54,10 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureData.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureGenerator.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureManager.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureManagerProxy.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureOperator.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureProxy.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureTracker.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7E315CA4-D7D2-441F-8569-2523ECF83075}</ProjectGuid>

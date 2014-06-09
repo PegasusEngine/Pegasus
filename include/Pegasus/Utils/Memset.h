@@ -14,10 +14,10 @@ namespace Pegasus
 namespace Utils
 {
     //! Memset8
-    //! \brief sets memory in chunks of 8 bytes
+    //! \brief sets memory in chunks of 8 bits
     //! \param destination - memory destination
     //! \param value - value to set
     //! \param size - total size of destination, in bytes
-    void* Memset8(void * destination, char value, unsigned size);
+    void* Memset8(void * destination, char value, unsigned int size);
 }
 }

@@ -18,6 +18,7 @@
 #include "Pegasus/Window/WindowProxy.h"
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/Shader/ShaderManagerProxy.h"
+#include "Pegasus/Texture/TextureManagerProxy.h"
 
 extern Pegasus::App::Application* CreateApplication(const Pegasus::App::ApplicationConfig& config);
 extern void DestroyApplication(Pegasus::App::Application* app);
@@ -30,19 +31,28 @@ namespace App {
 ApplicationProxy::ApplicationProxy(const ApplicationConfig& config)
 {
     mObject = CreateApplication(config);
-    mShaderManager = PG_NEW( 
-             Pegasus::Memory::GetGlobalAllocator(), 
+
+    //! \todo Make those proxies owned by the managers themselves (look at Timeline)
+    mShaderManagerProxy = PG_NEW( 
+             Memory::GetGlobalAllocator(), 
              -1, 
             "ShaderManagerProxy", 
-             Pegasus::Alloc::PG_MEM_PERM
-             ) Pegasus::Shader::ShaderManagerProxy(mObject->GetShaderManager());
+             Alloc::PG_MEM_PERM
+             ) Shader::ShaderManagerProxy(mObject->GetShaderManager());
+    mTextureManagerProxy = PG_NEW( 
+             Memory::GetGlobalAllocator(), 
+             -1, 
+            "TextureManagerProxy", 
+             Alloc::PG_MEM_PERM
+             ) Texture::TextureManagerProxy(mObject->GetTextureManager());
 }
 
 //----------------------------------------------------------------------------------------
 
 ApplicationProxy::~ApplicationProxy()
 {
-    PG_DELETE(Pegasus::Memory::GetGlobalAllocator(), mShaderManager);
+    PG_DELETE(Memory::GetGlobalAllocator(), mShaderManagerProxy);
+    PG_DELETE(Memory::GetGlobalAllocator(), mTextureManagerProxy);
     DestroyApplication(mObject);
 }
 
@@ -105,14 +115,6 @@ void ApplicationProxy::Shutdown()
 void ApplicationProxy::Load()
 {
     mObject->Load();
-}
-
-//----------------------------------------------------------------------------------------
-
-//! \todo Temporary. Remove as soon as the proper interface is defined
-unsigned int ApplicationProxy::GetTextures(void * textureList)
-{
-    return mObject->GetTextures(textureList);
 }
 
 //----------------------------------------------------------------------------------------

@@ -33,15 +33,18 @@ namespace Pegasus {
         class IShaderManagerProxy;
     }
 
-#if PEGASUS_USE_GRAPH_EVENTS
     namespace Texture {
+        class ITextureManagerProxy;
+#if PEGASUS_USE_GRAPH_EVENTS
         class ITextureEventListener;
+#endif
     }
 
     namespace Mesh {
+#if PEGASUS_USE_GRAPH_EVENTS
         class IMeshEventListener;
-    }
 #endif
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -82,9 +85,17 @@ public:
     //! \param wnd Window to destroy.
     virtual void DetachWindow(Wnd::IWindowProxy* wnd) = 0;
 
+    //! Gets the timeline proxy
+    //! \return Timeline proxy
+    virtual Timeline::ITimelineProxy * GetTimelineProxy() = 0;
+
     //! Gets the shader manager, for shader and GPU program controls
-    //! \return shader manager.
-    virtual Shader::IShaderManagerProxy * GetShaderManager() = 0;
+    //! \return Shader manager
+    virtual Shader::IShaderManagerProxy * GetShaderManagerProxy() = 0;
+
+    //! Gets the texture manager, for texture and GPU program controls
+    //! \return Texture manager
+    virtual Texture::ITextureManagerProxy * GetTextureManagerProxy() = 0;
 
 
     //! Initializes this application
@@ -97,10 +108,6 @@ public:
     //! Load the assets required to render the timeline blocks
     virtual void Load() = 0;
 
-    //! Return the list of texture assets in the application
-    //! \todo Temporary. Remove as soon as the proper interface is defined
-    virtual unsigned int GetTextures(void * textureList) = 0;
-
 #if PEGASUS_USE_GRAPH_EVENTS
 
     //! \todo Temporary. Remove as soon as the proper interface is defined
@@ -109,7 +116,7 @@ public:
     //! \todo Temporary. Remove as soon as the proper interface is defined
     virtual void RegisterMeshEventListener(Mesh::IMeshEventListener * eventListener) = 0;
 
-#endif
+#endif  // PEGASUS_USE_GRAPH_EVENTS
 
 
     //! \todo Set update mode

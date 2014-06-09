@@ -55,6 +55,9 @@ public slots:
     //! Called when an application is closed
     void UpdateUIForAppClosed();
 
+    //! Called when the properties of the textures must be updated
+    void UpdateTextureProperties();
+
     //------------------------------------------------------------------------------------
     
 private:

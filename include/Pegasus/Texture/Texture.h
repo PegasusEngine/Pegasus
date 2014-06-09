@@ -19,16 +19,12 @@
 #include "Pegasus/Texture/TextureOperator.h"
 
 namespace Pegasus {
-    namespace Texture {
-        class TextureProxy;
-    }
-}
-
-namespace Pegasus {
 namespace Texture {
 
-// forward declaration
+class TextureProxy;
 class ITextureFactory;
+class TextureTracker;
+
 
 //! Base output node class, for the root of the graphs.
 //! \warning Has one and only one input node, operator or generator
@@ -103,6 +99,10 @@ public:
     //! Get the proxy associated with the texture
     inline TextureProxy * GetProxy() const { return mProxy; }
 
+    //! Set the tracker associated with the texture
+    //! \param tracker Global tracker used to get the list of textures in the editor
+    void SetTracker(TextureTracker * tracker);
+
 #endif  // PEGASUS_ENABLE_PROXIES
 
     //------------------------------------------------------------------------------------
@@ -120,10 +120,11 @@ private:
     PG_DISABLE_COPY(Texture)
 
 #if PEGASUS_ENABLE_PROXIES
-
     //! Proxy associated with the texture
     TextureProxy * mProxy;
 
+    //! Tracker associated with the texture
+    TextureTracker * mTracker;
 #endif  // PEGASUS_ENABLE_PROXIES
 
     void ReleaseGPUData();

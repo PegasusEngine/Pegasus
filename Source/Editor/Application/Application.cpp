@@ -149,7 +149,7 @@ void Application::run()
     mApplication = CreatePegasusAppFunc(appConfig);
     
     // Initialize all application event listeners
-    mApplication->GetShaderManager()->RegisterEventListener( Editor::GetInstance().GetShaderLibraryWidget()->GetShaderManagerEventListener() );
+    mApplication->GetShaderManagerProxy()->RegisterEventListener( Editor::GetInstance().GetShaderLibraryWidget()->GetShaderManagerEventListener() );
 
     // Run the initialization process of the application
     mApplication->Initialize();
@@ -242,7 +242,7 @@ Pegasus::Timeline::ITimelineProxy * Application::GetTimelineProxy() const
 {
     if (mApplication != nullptr)
     {
-        return mApplication->GetTimeline();
+        return mApplication->GetTimelineProxy();
     }
     else
     {
@@ -257,14 +257,30 @@ Pegasus::Shader::IShaderManagerProxy * Application::GetShaderManagerProxy() cons
 {
     if (mApplication != nullptr)
     {
-        return mApplication->GetShaderManager();
+        return mApplication->GetShaderManagerProxy();
     }
     else
     {
-        ED_FAILSTR("Invalid Pegasus application object when getting the shadermanager proxy");
+        ED_FAILSTR("Invalid Pegasus application object when getting the shader manager proxy");
         return nullptr;
     }
 }
+
+//----------------------------------------------------------------------------------------
+
+Pegasus::Texture::ITextureManagerProxy * Application::GetTextureManagerProxy() const
+{
+    if (mApplication != nullptr)
+    {
+        return mApplication->GetTextureManagerProxy();
+    }
+    else
+    {
+        ED_FAILSTR("Invalid Pegasus application object when getting the texture manager proxy");
+        return nullptr;
+    }
+}
+
 //----------------------------------------------------------------------------------------
 
 void Application::EmitLogFromApplication(Pegasus::Core::LogChannel logChannel, const QString & msgStr)

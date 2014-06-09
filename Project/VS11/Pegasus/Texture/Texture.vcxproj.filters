@@ -71,6 +71,15 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\ITextureProxy.h">
       <Filter>Include\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\ITextureManagerProxy.h">
+      <Filter>Include\Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureManagerProxy.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureTracker.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Texture.cpp">
@@ -101,6 +110,12 @@
       <Filter>Source\Generator</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureProxy.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureManagerProxy.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureTracker.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>

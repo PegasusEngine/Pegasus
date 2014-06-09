@@ -13,25 +13,19 @@
 #define PEGASUS_SHARED_APPPROXY_H
 
 #if PEGASUS_ENABLE_PROXIES
+
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
+#include "Pegasus/Application/Application.h"
+#include "Pegasus/Timeline/TimelineProxy.h"
+
 #if PEGASUS_USE_GRAPH_EVENTS
 #include "Pegasus/Mesh/Shared/MeshEvent.h"
 #include "Pegasus/Texture/Shared/TextureEvent.h"
 #endif
 
-// Forward declarations
-namespace Pegasus {
-    namespace App {
-        class Application;
-    }
-    
-    namespace Shader {
-        class IShaderManagerProxy;
-    }
-}
-
 namespace Pegasus {
 namespace App {
+
 
 //! Proxy application class for use with a DLL
 class ApplicationProxy : public IApplicationProxy
@@ -49,23 +43,22 @@ public:
 #endif
     virtual Wnd::IWindowProxy* AttachWindow(const AppWindowConfig& config);
     virtual void DetachWindow(Wnd::IWindowProxy* wnd);
-    virtual Shader::IShaderManagerProxy * GetShaderManager() { return mShaderManager; }
+    virtual Timeline::ITimelineProxy * GetTimelineProxy() { return mObject->GetTimeline()->GetProxy(); }
+    virtual Shader::IShaderManagerProxy * GetShaderManagerProxy() { return mShaderManagerProxy; }
+    virtual Texture::ITextureManagerProxy * GetTextureManagerProxy() { return mTextureManagerProxy; }
 
     // Stateflow API
     virtual void Initialize();
     virtual void Shutdown();
     virtual void Load();
 
-    //! \todo Temporary. Remove as soon as the proper interfaces are defined
-    virtual unsigned int GetTextures(void * textureList);
 #if PEGASUS_USE_GRAPH_EVENTS
-
     //! \todo Temporary. Remove as soon as the proper interfaces are defined
     virtual void RegisterTextureEventListener(Texture::ITextureEventListener * eventListener);
 
     //! \todo Temporary. Remove as soon as the proper interfaces are defined
     virtual void RegisterMeshEventListener(Mesh::IMeshEventListener * eventListener);
-#endif
+#endif  // PEGASUS_USE_GRAPH_EVENTS
 
     // Proxy accessors
     virtual Timeline::ITimelineProxy* GetTimeline() const;
@@ -73,7 +66,10 @@ public:
 private:
     //! The proxied application object
     Application* mObject;
-    Shader::IShaderManagerProxy * mShaderManager; 
+
+    //! \todo Make those proxies owned by the managers themselves (look at Timeline)
+    Shader::IShaderManagerProxy * mShaderManagerProxy; 
+    Texture::ITextureManagerProxy * mTextureManagerProxy; 
 };
 
 

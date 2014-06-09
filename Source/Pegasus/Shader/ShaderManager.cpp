@@ -117,7 +117,6 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::LoadShaderSta
         {
 #if PEGASUS_ENABLE_PROXIES
             stage->SetShaderTracker(&mShaderTracker);
-            stage->SetShaderTracker(&mShaderTracker);
             mShaderTracker.InsertShader(&(*stage));
 #endif
         }

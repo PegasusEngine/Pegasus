@@ -36,6 +36,9 @@ namespace Pegasus {
     namespace Shader {
         class IShaderManagerProxy;
     }
+    namespace Texture {
+        class ITextureManagerProxy;
+    }
 }
 
 
@@ -90,8 +93,12 @@ public:
     Pegasus::Timeline::ITimelineProxy * GetTimelineProxy() const;
 
     //! Get the shader manager proxy object
-    //! \return Pointer to the shader manager object
+    //! \return Pointer to the shader manager proxy object
     Pegasus::Shader::IShaderManagerProxy * GetShaderManagerProxy() const;
+
+    //! Get the texture manager proxy object
+    //! \return Pointer to the texture manager proxy object
+    Pegasus::Texture::ITextureManagerProxy * GetTextureManagerProxy() const;
 
     //! Function called by the log handler, emitting the \a LogSentFromApplication signal
     //! \warning To be called in the application thread, not the editor thread

@@ -14,6 +14,7 @@
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/Texture/TextureProxy.h"
+#include "Pegasus/Texture/TextureTracker.h"
 #endif  // PEGASUS_ENABLE_PROXIES
 
 namespace Pegasus {
@@ -27,6 +28,7 @@ Texture::Texture(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAl
 #if PEGASUS_ENABLE_PROXIES
     //! Create the proxy associated with the texture
     mProxy = PG_NEW(nodeAllocator, -1, "Texture::Texture::mProxy", Pegasus::Alloc::PG_MEM_PERM) TextureProxy(this);
+    mTracker = nullptr;
 #endif  // PEGASUS_ENABLE_PROXIES
 }
 
@@ -40,6 +42,7 @@ Texture::Texture(const TextureConfiguration & configuration,
 #if PEGASUS_ENABLE_PROXIES
     //! Create the proxy associated with the texture
     mProxy = PG_NEW(nodeAllocator, -1, "Texture::Texture::mProxy", Pegasus::Alloc::PG_MEM_PERM) TextureProxy(this);
+    mTracker = nullptr;
 #endif  // PEGASUS_ENABLE_PROXIES
 }
 
@@ -113,6 +116,16 @@ void Texture::ReleaseDataAndPropagate()
 
 //----------------------------------------------------------------------------------------
 
+#if PEGASUS_ENABLE_PROXIES
+void Texture::SetTracker(TextureTracker * tracker)
+{
+    PG_ASSERTSTR(tracker != nullptr, "Invalid tracker given to a tracker");
+    mTracker = tracker;
+}
+#endif  // PEGASUS_ENABLE_PROXIES
+
+//----------------------------------------------------------------------------------------
+
 void Texture::ReleaseGPUData()
 {
     bool dummyVariable = false;
@@ -129,6 +142,16 @@ Texture::~Texture()
     ReleaseGPUData();
 
 #if PEGASUS_ENABLE_PROXIES
+    // Unregister the texture from the tracker
+    if (mTracker != nullptr)
+    {
+        mTracker->DeleteTexture(this);
+    }
+    else
+    {
+        PG_FAILSTR("Trying to delete a texture that has no associated tracker");
+    }
+
     //! Destroy the proxy associated with the texture
     PG_DELETE(GetNodeAllocator(), mProxy);
 #endif

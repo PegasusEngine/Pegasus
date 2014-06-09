@@ -18,6 +18,7 @@
 #include "Application/ApplicationManager.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Texture/Shared/ITextureProxy.h"
+#include "Pegasus/Texture/Shared/ITextureManagerProxy.h"
 
 #include <QMdiSubWindow>
 #include <QMenuBar>
@@ -61,8 +62,8 @@ TextureEditorDockWidget::TextureEditorDockWidget(QWidget *parent)
 
     // Create the viewport widget that will contain the previewer
     mViewportWidget = new ViewportWidget(VIEWPORTTYPE_TEXTURE_EDITOR_PREVIEW, ui.mainWidget);
-    mViewportWidget->setMinimumSize(256, 256);
-    mViewportWidget->setMaximumSize(256, 256);
+    mViewportWidget->setMinimumSize(512, 512);
+    mViewportWidget->setMaximumSize(512, 512);
     ui.propertiesVerticalLayout->insertWidget(0, mViewportWidget);
 
     // Connect the Refresh button to the graph changed message
@@ -82,18 +83,24 @@ TextureEditorDockWidget::~TextureEditorDockWidget()
 void TextureEditorDockWidget::UpdateUIForAppLoaded()
 {
     //! \todo Temporary code to load the list of textures and create a tab for each
-    static Pegasus::Texture::ITextureProxy * textureProxies[16] = { nullptr };
-    const unsigned int numTextures = Editor::GetInstance().GetApplicationManager().GetApplication()->GetApplicationProxy()
-                                            ->GetTextures(textureProxies);
+    Pegasus::Texture::ITextureManagerProxy * textureManagerProxy =
+                        Editor::GetInstance().GetApplicationManager().GetApplication()->GetTextureManagerProxy();
+    const unsigned int numTextures = textureManagerProxy->GetNumTextures();
     for (unsigned int t = 0; t < numTextures; ++t)
     {
+        Pegasus::Texture::ITextureProxy * textureProxy = textureManagerProxy->GetTexture(t);
+        
         TextureGraphEditorGraphicsView * graphicsView = new TextureGraphEditorGraphicsView;
         QMdiSubWindow * subWindow = ui.mdiArea->addSubWindow(graphicsView);
         subWindow->setWidget(graphicsView);
         subWindow->setAttribute(Qt::WA_DeleteOnClose);
-        subWindow->setWindowTitle(textureProxies[t]->GetName());
+        const char * test = textureProxy->GetName();
+        subWindow->setWindowTitle(test);
         subWindow->show();
     }
+
+    //! \todo Temporary, we need to create a TextureEditorPage object
+    UpdateTextureProperties();
 }
 
 //----------------------------------------------------------------------------------------
@@ -101,4 +108,13 @@ void TextureEditorDockWidget::UpdateUIForAppLoaded()
 void TextureEditorDockWidget::UpdateUIForAppClosed()
 {
 
+}
+
+//----------------------------------------------------------------------------------------
+
+void TextureEditorDockWidget::UpdateTextureProperties()
+{
+    //! \todo Temporary, we need to create a TextureEditorPage object
+    ui.resolutionValueLabel->setText(QString("%1 x %2 x %3").arg(/***/256).arg(/***/256).arg(/***/1));
+    ui.layersValueLabel->setText(QString("%1").arg(/***/1));
 }

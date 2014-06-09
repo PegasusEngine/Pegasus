@@ -148,14 +148,6 @@ void TestApp1::ShutdownApp()
 
 //----------------------------------------------------------------------------------------
 
-//! \todo Temporary. Remove as soon as the proper interface is defined
-unsigned int TestApp1::GetTextures(void * textureList)
-{
-    return mTextureTestBlock->GetTextures(textureList);
-}
-
-//----------------------------------------------------------------------------------------
-
 Pegasus::App::Application * CreateApplication(const Pegasus::App::ApplicationConfig& config)
 {
     Pegasus::Alloc::IAllocator* globalAlloc = Pegasus::Memory::GetGlobalAllocator();

@@ -147,31 +147,6 @@ void TextureTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
 
 //----------------------------------------------------------------------------------------
 
-unsigned int TextureTestBlock::GetTextures(void * textureList)
-{
-#if PEGASUS_ENABLE_PROXIES
-    //! \todo Everything here is temporary
-    mTexture1->SetName("Color 1");
-    mTexture2->SetName("Color 2");
-    mTextureGradient1->SetName("Gradient 1");
-    mTextureGradient2->SetName("Gradient 2");
-    mTextureAdd1->SetName("Add 1");
-    mTextureAdd2->SetName("Add 2");
-    Pegasus::Texture::TextureProxy ** textures = reinterpret_cast<Pegasus::Texture::TextureProxy **>(textureList);
-    textures[0] = mTexture1->GetProxy();
-    textures[1] = mTexture2->GetProxy();
-    textures[2] = mTextureGradient1->GetProxy();
-    textures[3] = mTextureGradient2->GetProxy();
-    textures[4] = mTextureAdd1->GetProxy();
-    textures[5] = mTextureAdd2->GetProxy();
-    return 6;
-#else
-    return 0;
-#endif
-}
-
-//----------------------------------------------------------------------------------------
-
 void TextureTestBlock::CreateTexture1()
 {
     using namespace Pegasus::Texture;
@@ -191,6 +166,10 @@ void TextureTestBlock::CreateTexture1()
     mTexture1->Update();
 
     mTextureGenerator1 = constantColorGenerator1Node;
+
+#if PEGASUS_ENABLE_PROXIES
+    mTexture1->SetName("Color1");
+#endif
 }
 
 //----------------------------------------------------------------------------------------
@@ -214,6 +193,10 @@ void TextureTestBlock::CreateTexture2()
     mTexture2->Update();
 
     mTextureGenerator2 = constantColorGenerator2Node;
+
+#if PEGASUS_ENABLE_PROXIES
+    mTexture2->SetName("Color2");
+#endif
 }
 
 //----------------------------------------------------------------------------------------
@@ -240,6 +223,10 @@ void TextureTestBlock::CreateTextureGradient1()
     mTextureGradient1->Update();
 
     mTextureGradientGenerator1 = gradientGenerator1Node;
+
+#if PEGASUS_ENABLE_PROXIES
+    mTextureGradient1->SetName("Gradient1");
+#endif
 }
 
 //----------------------------------------------------------------------------------------
@@ -266,6 +253,10 @@ void TextureTestBlock::CreateTextureGradient2()
     mTextureGradient2->Update();
 
     mTextureGradientGenerator2 = gradientGenerator2Node;
+
+#if PEGASUS_ENABLE_PROXIES
+    mTextureGradient2->SetName("Gradient2");
+#endif
 }
 
 //----------------------------------------------------------------------------------------
@@ -288,6 +279,10 @@ void TextureTestBlock::CreateTextureAdd1()
     mTextureAdd1 = textureManager->CreateTextureNode(texConfig);
     mTextureAdd1->SetOperatorInput(addOperator1Node);
     mTextureAdd1->Update();
+
+#if PEGASUS_ENABLE_PROXIES
+    mTextureAdd1->SetName("Add1");
+#endif
 }
 
 //----------------------------------------------------------------------------------------
@@ -310,4 +305,8 @@ void TextureTestBlock::CreateTextureAdd2()
     mTextureAdd2 = textureManager->CreateTextureNode(texConfig);
     mTextureAdd2->SetOperatorInput(addOperator2Node);
     mTextureAdd2->Update();
+
+#if PEGASUS_ENABLE_PROXIES
+    mTextureAdd2->SetName("Add2");
+#endif
 }

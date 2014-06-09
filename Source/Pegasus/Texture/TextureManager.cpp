@@ -29,13 +29,14 @@ namespace Texture {
     
 TextureManager::TextureManager(Graph::NodeManager * nodeManager, ITextureFactory * textureFactory)
 :   mNodeManager(nodeManager), mFactory(textureFactory)
+#if PEGASUS_ENABLE_PROXIES
+    , mTracker()
+#endif
 #if PEGASUS_USE_GRAPH_EVENTS
     //initialize without an event listener
     , mEventListener(nullptr)
 #endif
 {
-
-
     if (nodeManager != nullptr)
     {
         RegisterAllTextureNodes();
@@ -75,6 +76,12 @@ TextureReturn TextureManager::CreateTextureNode(const TextureConfiguration & con
         TextureRef texture = mNodeManager->CreateNode("Texture");
         texture->SetConfiguration(configuration);
         texture->SetFactory(mFactory);
+
+#if PEGASUS_ENABLE_PROXIES
+        texture->SetTracker(&mTracker);
+        mTracker.InsertTexture(texture);
+#endif
+
         return texture;
     }
     else

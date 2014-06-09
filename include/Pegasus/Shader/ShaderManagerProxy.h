@@ -61,6 +61,11 @@ private:
     //! reference to internal program
     ShaderManager * mObject;
 
+    //! \todo Remove the two arrays below. They are arrays parallel to the lists
+    //!       inside ShaderTracker. They actually get out of sync
+    //!       when ShaderTracker::DeleteProgram/Shader() is called.
+    //!       See job000118
+
     //! pool of memory of shader proxies
     ShaderProxy  mShaderProxyPool [ShaderTracker::MAX_SHADER_CONTAINER];
 
