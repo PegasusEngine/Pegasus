@@ -16,7 +16,7 @@
 
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Application/Application.h"
-#include "Pegasus/Timeline/TimelineProxy.h"
+#include "Pegasus/Timeline/Proxy/TimelineProxy.h"
 
 #if PEGASUS_USE_GRAPH_EVENTS
 #include "Pegasus/Mesh/Shared/MeshEvent.h"
@@ -43,9 +43,9 @@ public:
 #endif
     virtual Wnd::IWindowProxy* AttachWindow(const AppWindowConfig& config);
     virtual void DetachWindow(Wnd::IWindowProxy* wnd);
-    virtual Timeline::ITimelineProxy * GetTimelineProxy() { return mObject->GetTimeline()->GetProxy(); }
-    virtual Shader::IShaderManagerProxy * GetShaderManagerProxy() { return mShaderManagerProxy; }
-    virtual Texture::ITextureManagerProxy * GetTextureManagerProxy() { return mTextureManagerProxy; }
+    virtual Timeline::ITimelineProxy * GetTimelineProxy() { return mApplication->GetTimeline()->GetProxy(); }
+    virtual Shader::IShaderManagerProxy * GetShaderManagerProxy() { return mApplication->GetShaderManager()->GetProxy(); }
+    virtual Texture::ITextureManagerProxy * GetTextureManagerProxy() { return mApplication->GetTextureManager()->GetProxy(); }
 
     // Stateflow API
     virtual void Initialize();
@@ -62,11 +62,10 @@ public:
 
 private:
     //! The proxied application object
-    Application* mObject;
+    Application* mApplication;
 
     //! \todo Make those proxies owned by the managers themselves (look at Timeline)
-    Shader::IShaderManagerProxy * mShaderManagerProxy; 
-    Texture::ITextureManagerProxy * mTextureManagerProxy; 
+    Shader::IShaderManagerProxy * mShaderManagerProxy;
 };
 
 

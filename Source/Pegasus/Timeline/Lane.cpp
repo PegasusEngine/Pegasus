@@ -14,8 +14,8 @@
 #include "Pegasus/Math/Scalar.h"
 
 #if PEGASUS_ENABLE_PROXIES
-#include "Pegasus/Timeline/LaneProxy.h"
-#include "Pegasus/Timeline/BlockProxy.h"
+#include "Pegasus/Timeline/Proxy/LaneProxy.h"
+#include "Pegasus/Timeline/Proxy/BlockProxy.h"
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"
 #include <string.h>
 #endif  // PEGASUS_ENABLE_PROXIES
@@ -25,10 +25,13 @@ namespace Timeline {
 
 
 Lane::Lane(Alloc::IAllocator * allocator, Timeline * timeline)
-:   mAllocator(allocator),
-    mTimeline(timeline),
-    mFirstBlockIndex(0),
-    mNumBlocks(0)
+:   mAllocator(allocator)
+,   mTimeline(timeline)
+,   mFirstBlockIndex(0)
+,   mNumBlocks(0)
+#if PEGASUS_ENABLE_PROXIES
+,   mProxy(this)
+#endif
 {
     PG_ASSERTSTR(allocator != nullptr, "Invalid allocator given to a timeline Lane object");
     PG_ASSERTSTR(timeline != nullptr, "Invalid timeline given to a timeline Lane object");
@@ -44,11 +47,8 @@ Lane::Lane(Alloc::IAllocator * allocator, Timeline * timeline)
     mBlockRecords[0].mNext = 0; // == mFirstBlockIndex
 
 #if PEGASUS_ENABLE_PROXIES
-    // Create the proxy associated with the lane
-    mProxy = PG_NEW(allocator, -1, "Timeline::Lane::mProxy", Pegasus::Alloc::PG_MEM_PERM) LaneProxy(this);
-
     mName[0] = '\0';
-#endif  // PEGASUS_ENABLE_PROXIES
+#endif
 }
 
 //----------------------------------------------------------------------------------------
@@ -63,11 +63,6 @@ Lane::~Lane()
             PG_DELETE(mAllocator, mBlockRecords[b].mBlock);
         }
     }
-
-#if PEGASUS_ENABLE_PROXIES
-    // Destroy the proxy associated with the lane
-    PG_DELETE(mAllocator, mProxy);
-#endif
 }
 
 //----------------------------------------------------------------------------------------

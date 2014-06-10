@@ -13,8 +13,8 @@
 #include "Pegasus/Texture/ITextureFactory.h"
 
 #if PEGASUS_ENABLE_PROXIES
-#include "Pegasus/Texture/TextureProxy.h"
-#include "Pegasus/Texture/TextureTracker.h"
+#include "Pegasus/Texture/Proxy/TextureProxy.h"
+#include "Pegasus/Texture/Proxy/TextureTracker.h"
 #endif  // PEGASUS_ENABLE_PROXIES
 
 namespace Pegasus {
@@ -22,12 +22,11 @@ namespace Texture {
 
 
 Texture::Texture(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
-:   Graph::OutputNode(nodeAllocator, nodeDataAllocator),
-    mConfiguration()
+:   Graph::OutputNode(nodeAllocator, nodeDataAllocator)
+,   mConfiguration()
 #if PEGASUS_ENABLE_PROXIES
-    //! Create the proxy associated with the texture
-    ,mProxy(this)
-    ,mTracker(nullptr)
+,   mProxy(this)
+,   mTracker(nullptr)
 #endif  // PEGASUS_ENABLE_PROXIES
 {
 }
@@ -36,12 +35,11 @@ Texture::Texture(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAl
 
 Texture::Texture(const TextureConfiguration & configuration,
                  Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
-:   Graph::OutputNode(nodeAllocator, nodeDataAllocator),
-    mConfiguration(configuration)
+:   Graph::OutputNode(nodeAllocator, nodeDataAllocator)
+,   mConfiguration(configuration)
 #if PEGASUS_ENABLE_PROXIES
-    //! Create the proxy associated with the texture
-    ,mProxy(this)
-    ,mTracker(nullptr)
+,   mProxy(this)
+,   mTracker(nullptr)
 #endif  // PEGASUS_ENABLE_PROXIES
 {
 }

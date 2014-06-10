@@ -14,7 +14,7 @@ PEGASUS_AVOID_EMPTY_FILE_WARNING
 
 #if PEGASUS_ENABLE_PROXIES
 
-#include "Pegasus/Texture/TextureProxy.h"
+#include "Pegasus/Texture/Proxy/TextureProxy.h"
 #include "Pegasus/Texture/Texture.h"
 
 namespace Pegasus {

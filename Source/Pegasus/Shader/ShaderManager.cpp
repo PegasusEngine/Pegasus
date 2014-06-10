@@ -42,11 +42,14 @@ static struct PegasusExtensionMappings
 #define REGISTER_SHADER_NODE(className) mNodeManager->RegisterNode(#className, className::CreateNode);
 
 Pegasus::Shader::ShaderManager::ShaderManager(Pegasus::Graph::NodeManager * nodeManager, Pegasus::Shader::IShaderFactory * factory)
-:
-mNodeManager(nodeManager)
-, mFactory(factory)
+:   mNodeManager(nodeManager)
+,   mFactory(factory)
+#if PEGASUS_ENABLE_PROXIES
+,   mProxy(this)
+,   mShaderTracker()
+#endif  // PEGASUS_ENABLE_PROXIES
 #if PEGASUS_USE_GRAPH_EVENTS
-, mEventListener(nullptr)
+,   mEventListener(nullptr)
 #endif
 {
     if (nodeManager != nullptr)

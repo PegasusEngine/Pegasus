@@ -19,6 +19,12 @@
 
 class ViewportWidget;
 
+namespace Pegasus {
+    namespace Texture {
+        class ITextureProxy;
+    }
+}
+
 
 //! Dock widget for the texture editor
 class TextureEditorDockWidget : public QDockWidget
@@ -54,6 +60,10 @@ public slots:
 
     //! Called when an application is closed
     void UpdateUIForAppClosed();
+
+    //! Called to open a new tab for a given texture
+    //! \param textureProxy Proxy of the texture to attach to the tab
+    void OpenTabForTexture(Pegasus::Texture::ITextureProxy * textureProxy);
 
     //! Called when the properties of the textures must be updated
     void UpdateTextureProperties();

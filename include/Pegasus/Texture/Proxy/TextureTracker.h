@@ -9,8 +9,8 @@
 //! \date	09th June 2014
 //! \brief	Container class tracking all currently allocated textures
 
-#ifndef PEGASUS_TEXTURE_TEXTURETRACKER_H
-#define PEGASUS_TEXTURE_TEXTURETRACKER_H
+#ifndef PEGASUS_TEXTURE_PROXY_TEXTURETRACKER_H
+#define PEGASUS_TEXTURE_PROXY_TEXTURETRACKER_H
 
 #if PEGASUS_ENABLE_PROXIES
 
@@ -71,4 +71,4 @@ private:
 }   // namespace Pegasus
 
 #endif  // PEGASUS_ENABLE_PROXIES
-#endif  // PEGASUS_TEXTURE_TEXTURETRACKER_H
+#endif  // PEGASUS_TEXTURE_PROXY_TEXTURETRACKER_H

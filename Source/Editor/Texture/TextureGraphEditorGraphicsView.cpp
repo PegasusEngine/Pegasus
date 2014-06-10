@@ -12,10 +12,14 @@
 #include "Texture/TextureGraphEditorGraphicsView.h"
 
 
-TextureGraphEditorGraphicsView::TextureGraphEditorGraphicsView(QWidget *parent)
-:   GraphEditorGraphicsView(parent)
+TextureGraphEditorGraphicsView::TextureGraphEditorGraphicsView(Pegasus::Texture::ITextureProxy * textureProxy,
+                                                               QWidget * parent)
+:   GraphEditorGraphicsView(parent),
+    mTextureProxy(textureProxy)
 {
+    //! \todo Transmit the texture proxy to the parent graphics view, in a generic way
 
+    ED_ASSERTSTR(textureProxy != nullptr, "Invalid texture proxy given to a texture editor tab");
 }
 
 //----------------------------------------------------------------------------------------

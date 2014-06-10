@@ -14,12 +14,12 @@
 
 #include "Pegasus/Timeline/Shared/BlockDefs.h"
 #include "Pegasus/Timeline/Shared/TimelineDefs.h"
+#include "Pegasus/Timeline/Proxy/BlockProxy.h"
 #include "Pegasus/Window/IWindowContext.h"
 
 namespace Pegasus {
     namespace Timeline {
         class Lane;
-        class BlockProxy;
     }
 
     namespace Wnd {
@@ -76,7 +76,11 @@ public:
 
 
     //! Get the proxy associated with the block
-    inline BlockProxy * GetProxy() const { return mProxy; }
+    //! \return Proxy associated with the block
+    //@{
+    inline BlockProxy * GetProxy() { return &mProxy; }
+    inline const BlockProxy * GetProxy() const { return &mProxy; }
+    //@}
 
 #endif  // PEGASUS_ENABLE_PROXIES
 
@@ -166,7 +170,7 @@ private:
 #if PEGASUS_ENABLE_PROXIES
 
     //! Proxy associated with the block
-    BlockProxy * mProxy;
+    BlockProxy mProxy;
 
 #endif  // PEGASUS_ENABLE_PROXIES
 

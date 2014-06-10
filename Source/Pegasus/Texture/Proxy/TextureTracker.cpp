@@ -9,7 +9,7 @@
 //! \date	09th June 2014
 //! \brief	Container class tracking all currently allocated textures
 
-#include "Pegasus/Texture/TextureTracker.h"
+#include "Pegasus/Texture/Proxy/TextureTracker.h"
 #include "Pegasus/Utils/Memset.h"
 
 #if PEGASUS_ENABLE_PROXIES

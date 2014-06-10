@@ -14,10 +14,10 @@ PEGASUS_AVOID_EMPTY_FILE_WARNING
 
 #if PEGASUS_ENABLE_PROXIES
 
-#include "Pegasus/Timeline/BlockProxy.h"
+#include "Pegasus/Timeline/Proxy/BlockProxy.h"
+#include "Pegasus/Timeline/Proxy/LaneProxy.h"
 #include "Pegasus/Timeline/Block.h"
 #include "Pegasus/Timeline/Lane.h"
-#include "Pegasus/Timeline/LaneProxy.h"
 
 namespace Pegasus {
 namespace Timeline {

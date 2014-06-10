@@ -9,8 +9,8 @@
 //! \date	08th June 2014
 //! \brief	Proxy object, used by the editor to interact with a texture
 
-#ifndef PEGASUS_TEXTURE_TEXTUREPROXY_H
-#define PEGASUS_TEXTURE_TEXTUREPROXY_H
+#ifndef PEGASUS_TEXTURE_PROXY_TEXTUREPROXY_H
+#define PEGASUS_TEXTURE_PROXY_TEXTUREPROXY_H
 
 #if PEGASUS_ENABLE_PROXIES
 
@@ -80,4 +80,4 @@ private:
 }   // namespace Pegasus
 
 #endif  // PEGASUS_ENABLE_PROXIES
-#endif  // PEGASUS_TEXTURE_TEXTUREPROXY_H
+#endif  // PEGASUS_TEXTURE_PROXY_TEXTUREPROXY_H

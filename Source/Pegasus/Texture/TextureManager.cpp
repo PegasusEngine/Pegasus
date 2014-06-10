@@ -28,13 +28,15 @@ namespace Texture {
 //----------------------------------------------------------------------------------------
     
 TextureManager::TextureManager(Graph::NodeManager * nodeManager, ITextureFactory * textureFactory)
-:   mNodeManager(nodeManager), mFactory(textureFactory)
+:   mNodeManager(nodeManager)
+,   mFactory(textureFactory)
 #if PEGASUS_ENABLE_PROXIES
-    , mTracker()
-#endif
+,   mProxy(this)
+,   mTracker()
+#endif  // PEGASUS_ENABLE_PROXIES
 #if PEGASUS_USE_GRAPH_EVENTS
-    //initialize without an event listener
-    , mEventListener(nullptr)
+    // Initialize without an event listener
+,   mEventListener(nullptr)
 #endif
 {
     if (nodeManager != nullptr)

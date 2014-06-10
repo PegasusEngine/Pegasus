@@ -9,8 +9,8 @@
 //! \date	09th November 2013
 //! \brief	Proxy object, used by the editor to interact with the timeline blocks
 
-#ifndef PEGASUS_TIMELINE_BLOCKPROXY_H
-#define PEGASUS_TIMELINE_BLOCKPROXY_H
+#ifndef PEGASUS_TIMELINE_PROXY_BLOCKPROXY_H
+#define PEGASUS_TIMELINE_PROXY_BLOCKPROXY_H
 
 #if PEGASUS_ENABLE_PROXIES
 
@@ -83,4 +83,4 @@ private:
 }   // namespace Pegasus
 
 #endif  // PEGASUS_ENABLE_PROXIES
-#endif  // PEGASUS_TIMELINE_BLOCKPROXY_H
+#endif  // PEGASUS_TIMELINE_PROXY_BLOCKPROXY_H

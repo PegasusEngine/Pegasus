@@ -89,17 +89,10 @@ void TextureEditorDockWidget::UpdateUIForAppLoaded()
     for (unsigned int t = 0; t < numTextures; ++t)
     {
         Pegasus::Texture::ITextureProxy * textureProxy = textureManagerProxy->GetTexture(t);
-        
-        TextureGraphEditorGraphicsView * graphicsView = new TextureGraphEditorGraphicsView;
-        QMdiSubWindow * subWindow = ui.mdiArea->addSubWindow(graphicsView);
-        subWindow->setWidget(graphicsView);
-        subWindow->setAttribute(Qt::WA_DeleteOnClose);
-        const char * test = textureProxy->GetName();
-        subWindow->setWindowTitle(test);
-        subWindow->show();
+        OpenTabForTexture(textureProxy);
     }
 
-    //! \todo Temporary, we need to create a TextureEditorPage object
+    //! \todo Temporary, use proper Qt signals to make it happen
     UpdateTextureProperties();
 }
 
@@ -108,6 +101,34 @@ void TextureEditorDockWidget::UpdateUIForAppLoaded()
 void TextureEditorDockWidget::UpdateUIForAppClosed()
 {
 
+}
+
+//----------------------------------------------------------------------------------------
+
+void TextureEditorDockWidget::OpenTabForTexture(Pegasus::Texture::ITextureProxy * textureProxy)
+{
+    if (textureProxy == nullptr)
+    {
+        ED_FAILSTR("Trying to open a new tab in the texture editor with a null texture");
+        return;
+    }
+
+    //! \todo Check that the tab has not been opened yet
+
+    const char * textureName = textureProxy->GetName();
+    ED_LOG("Opening tab for texture \"%s\" in the texture editor", textureName)
+
+    // Create a graph editor view associated with the texture
+    TextureGraphEditorGraphicsView * graphicsView = new TextureGraphEditorGraphicsView(textureProxy);
+
+    // Create a subwindow (tab) and associate the graph editor graphics view with it
+    QMdiSubWindow * subWindow = ui.mdiArea->addSubWindow(graphicsView);
+    //subWindow->setWidget(graphicsView);
+    subWindow->setAttribute(Qt::WA_DeleteOnClose);
+    subWindow->setWindowTitle(textureName);
+
+    // Show the new tab
+    subWindow->show();
 }
 
 //----------------------------------------------------------------------------------------

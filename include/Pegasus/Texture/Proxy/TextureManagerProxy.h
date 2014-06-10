@@ -9,15 +9,14 @@
 //! \date	09th June 2014
 //! \brief	Proxy object, used by the editor to interact with the textures
 
-#ifndef PEGASUS_TEXTURE_TEXTUREMANAGERPROXY_H
-#define PEGASUS_TEXTURE_TEXTUREMANAGERPROXY_H
+#ifndef PEGASUS_TEXTURE_PROXY_TEXTUREMANAGERPROXY_H
+#define PEGASUS_TEXTURE_PROXY_TEXTUREMANAGERPROXY_H
 
 #if PEGASUS_ENABLE_PROXIES
 
 #include "Pegasus/Texture/Shared/ITextureManagerProxy.h"
-#include "Pegasus/Texture/TextureTracker.h"
-#include "Pegasus/Texture/TextureProxy.h"
-#include "Pegasus/Texture/TextureManager.h"
+#include "Pegasus/Texture/Proxy/TextureTracker.h"
+#include "Pegasus/Texture/Proxy/TextureProxy.h"
 
 namespace Pegasus {
 namespace Texture {
@@ -69,4 +68,4 @@ private:
 }   // namespace Pegasus
 
 #endif  // PEGASUS_ENABLE_PROXIES
-#endif  // PEGASUS_TEXTURE_TEXTUREMANAGERPROXY_H
+#endif  // PEGASUS_TEXTURE_PROXY_TEXTUREMANAGERPROXY_H

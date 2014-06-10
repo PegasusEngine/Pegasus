@@ -12,6 +12,12 @@
     <Filter Include="Include\Shared">
       <UniqueIdentifier>{5ee830ce-e8cf-4be2-bdd6-13c295ff0175}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Include\Proxy">
+      <UniqueIdentifier>{4d5c1745-9aeb-4ace-880d-78107ec0d246}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Proxy">
+      <UniqueIdentifier>{0c04a1c2-2479-4d2f-a444-e49d66c3c83b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Timeline.h">
@@ -26,17 +32,8 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Lane.h">
       <Filter>Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\LaneProxy.h">
-      <Filter>Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\TimelineProxy.h">
-      <Filter>Include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Shared\IBlockProxy.h">
       <Filter>Include\Shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\BlockProxy.h">
-      <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Block.h">
       <Filter>Include</Filter>
@@ -50,25 +47,34 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Shared\BlockDefs.h">
       <Filter>Include\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Proxy\BlockProxy.h">
+      <Filter>Include\Proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Proxy\LaneProxy.h">
+      <Filter>Include\Proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Proxy\TimelineProxy.h">
+      <Filter>Include\Proxy</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\Timeline.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\LaneProxy.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\Lane.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\TimelineProxy.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\BlockProxy.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\Block.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\Proxy\BlockProxy.cpp">
+      <Filter>Source\Proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\Proxy\LaneProxy.cpp">
+      <Filter>Source\Proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\Proxy\TimelineProxy.cpp">
+      <Filter>Source\Proxy</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -16,9 +16,10 @@
 #include "Pegasus/Texture/Texture.h"
 #include "Pegasus/Texture/TextureGenerator.h"
 #include "Pegasus/Texture/TextureOperator.h"
+#include "Pegasus/Texture/Proxy/TextureManagerProxy.h"
 
 #if PEGASUS_ENABLE_PROXIES
-#include "Pegasus/Texture/TextureTracker.h"
+#include "Pegasus/Texture/Proxy/TextureTracker.h"
 #endif
 
 namespace Pegasus {
@@ -35,6 +36,7 @@ class ITextureFactory;
 #if PEGASUS_USE_GRAPH_EVENTS
 class ITextureEventListener;
 #endif
+
 
 //! Global texture node manager, including the factory features
 class TextureManager
@@ -78,15 +80,28 @@ public:
                                                     const TextureConfiguration & configuration);
 
 #if PEGASUS_ENABLE_PROXIES
+
+    //! Get the proxy associated with the texture manager
+    //! \return Proxy associated with the texture manager
+    //@{
+    inline TextureManagerProxy * GetProxy() { return &mProxy; }
+    inline const TextureManagerProxy * GetProxy() const { return &mProxy; }
+    //@}
+
     //! Returns the texture tracker, to get a list of texture proxies
-    const TextureTracker & GetTracker() const { return mTracker; }
-#endif
+    inline const TextureTracker & GetTracker() const { return mTracker; }
+
+#endif  // PEGASUS_ENABLE_PROXIES
 
 #if PEGASUS_USE_GRAPH_EVENTS
+
     //! Registers an event listener so we can listen to texture specific events whilst constructing nodes.
     //! \param the event listener to use
     void RegisterEventListener(ITextureEventListener * eventListener) { mEventListener = eventListener; }
-#endif
+
+#endif  // PEGASUS_USE_GRAPH_EVENTS
+
+    //------------------------------------------------------------------------------------
     
 private:
 
@@ -101,13 +116,18 @@ private:
     //! Pointer to the node manager (!= nullptr)
     Graph::NodeManager * mNodeManager;
 
-    //! Pointer to the GPU factory. Generates GPU data from cpu texture data
+    //! Pointer to the GPU factory. Generates GPU data from CPU texture data
     ITextureFactory * mFactory;
 
 #if PEGASUS_ENABLE_PROXIES
+
+    //! Proxy associated with the texture manager
+    TextureManagerProxy mProxy;
+
     //! Texture tracker, to get a list of texture proxies
     TextureTracker mTracker;
-#endif
+
+#endif  // PEGASUS_ENABLE_PROXIES
 
 #if PEGASUS_USE_GRAPH_EVENTS
     ITextureEventListener * mEventListener;

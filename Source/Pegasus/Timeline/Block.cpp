@@ -12,7 +12,7 @@
 #include "Pegasus/Timeline/Block.h"
 
 #if PEGASUS_ENABLE_PROXIES
-#include "Pegasus/Timeline/BlockProxy.h"
+#include "Pegasus/Timeline/Proxy/BlockProxy.h"
 #endif  // PEGASUS_ENABLE_PROXIES
 
 namespace Pegasus {
@@ -20,34 +20,26 @@ namespace Timeline {
 
 
 Block::Block(Alloc::IAllocator * allocator, Wnd::IWindowContext * appContext)
-:   mAllocator(allocator),
-    mAppContext(appContext),
-    mBeat(0),
-    mDuration(1),
-    mLane(nullptr)
+:   mAllocator(allocator)
+,   mAppContext(appContext)
+,   mBeat(0)
+,   mDuration(1)
+,   mLane(nullptr)
+#if PEGASUS_ENABLE_PROXIES
+,   mProxy(this)
+,   mColorRed(128)
+,   mColorGreen(128)
+,   mColorBlue(128)
+#endif  // PEGASUS_ENABLE_PROXIES
 {
     PG_ASSERTSTR(allocator != nullptr, "Invalid allocator given to a timeline Block object");
     PG_ASSERTSTR(appContext != nullptr, "Invalid application context given to a timeline Block object");
-
-#if PEGASUS_ENABLE_PROXIES
-    //! Create the proxy associated with the block
-    mProxy = PG_NEW(allocator, -1, "Timeline::Block::mProxy", Pegasus::Alloc::PG_MEM_PERM) BlockProxy(this);
-
-    // Default color
-    mColorRed = 128;
-    mColorGreen = 128;
-    mColorBlue = 128;
-#endif  // PEGASUS_ENABLE_PROXIES
 }
 
 //----------------------------------------------------------------------------------------
 
 Block::~Block()
 {
-#if PEGASUS_ENABLE_PROXIES
-    //! Destroy the proxy associated with the block
-    PG_DELETE(mAllocator, mProxy);
-#endif
 }
 
 //----------------------------------------------------------------------------------------

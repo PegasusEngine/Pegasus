@@ -14,6 +14,12 @@
 
 #include "Graph/GraphEditorGraphicsView.h"
 
+namespace Pegasus {
+    namespace Texture {
+        class ITextureProxy;
+    }
+}
+
 
 class TextureGraphEditorGraphicsView : public GraphEditorGraphicsView
 {
@@ -21,13 +27,21 @@ class TextureGraphEditorGraphicsView : public GraphEditorGraphicsView
 
 public:
 
-    TextureGraphEditorGraphicsView(QWidget *parent = 0);
+    //! Constructor
+    //! \param textureProxy Texture proxy associated with the graphics view (!= nullptr)
+    //! \param parent Parent widget of the graphics view
+    TextureGraphEditorGraphicsView(Pegasus::Texture::ITextureProxy * textureProxy,
+                                   QWidget * parent = 0);
+
+    //! Destructor
     ~TextureGraphEditorGraphicsView();
 
     //------------------------------------------------------------------------------------
     
 private:
-    
+
+    //! Texture proxy associated with the graphics view (!= nullptr)
+    Pegasus::Texture::ITextureProxy * const mTextureProxy;
 };
 
 

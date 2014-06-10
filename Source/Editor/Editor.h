@@ -63,7 +63,6 @@ public:
     //! \return True if the application manager has been created
     inline bool IsApplicationManagerAvailable() const { return mApplicationManager != nullptr; }
 
-
     //------------------------------------------------------------------------------------
 
 public:

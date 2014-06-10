@@ -17,7 +17,7 @@
 #include "Pegasus/Utils/Memcpy.h"
 
 #if PEGASUS_ENABLE_PROXIES
-#include "Pegasus/Timeline/TimelineProxy.h"
+#include "Pegasus/Timeline/Proxy/TimelineProxy.h"
 #endif  // PEGASUS_ENABLE_PROXIES
 
 #include <string.h>
@@ -31,28 +31,25 @@ const float Timeline::INVALID_BEAT = -1.0f;
 //----------------------------------------------------------------------------------------
 
 Timeline::Timeline(Alloc::IAllocator * allocator, Wnd::IWindowContext * appContext)
-:   mAllocator(allocator),
-    mAppContext(appContext),
-    mNumRegisteredBlocks(0),
-    mNumTicksPerBeat(128),
-    mNumTicksPerBeatFloat(128.0f),
-    mRcpNumTicksPerBeat(1.0f / 128.0f),
-    mBeatsPerMinute(120.0f),
-    mNumBeats(128),
-    mNumLanes(0),
-    mPlayMode(PLAYMODE_REALTIME),
-    mCurrentBeat(INVALID_BEAT),
-    mStartPegasusTime(0.0)
+:   mAllocator(allocator)
+,   mAppContext(appContext)
+,   mNumRegisteredBlocks(0)
+,   mNumTicksPerBeat(128)
+,   mNumTicksPerBeatFloat(128.0f)
+,   mRcpNumTicksPerBeat(1.0f / 128.0f)
+,   mBeatsPerMinute(120.0f)
+,   mNumBeats(128)
+,   mNumLanes(0)
+,   mPlayMode(PLAYMODE_REALTIME)
+,   mCurrentBeat(INVALID_BEAT)
+,   mStartPegasusTime(0.0)
+#if PEGASUS_ENABLE_PROXIES
+,   mProxy(this)
+,   mRequiresStartTimeComputation(false)
+#endif
 {
     PG_ASSERTSTR(allocator != nullptr, "Invalid allocator given to the timeline object");
     PG_ASSERTSTR(appContext != nullptr, "Invalid application context given to the timeline object");
-
-#if PEGASUS_ENABLE_PROXIES
-    //! Create the proxy associated with the timeline
-    mProxy = PG_NEW(allocator, -1, "Timeline::mProxy", Pegasus::Alloc::PG_MEM_PERM) TimelineProxy(this);
-
-    mRequiresStartTimeComputation = false;
-#endif  // PEGASUS_ENABLE_PROXIES
 
     // Create the initial default lane
     Clear();
@@ -66,11 +63,6 @@ Timeline::~Timeline()
     {
         PG_DELETE(mAllocator, mLanes[lane]);
     }
-
-#if PEGASUS_ENABLE_PROXIES
-    //! Destroy the proxy associated with the timeline
-    PG_DELETE(mAllocator, mProxy);
-#endif
 }
 
 //----------------------------------------------------------------------------------------

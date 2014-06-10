@@ -14,11 +14,11 @@
 
 #include "Pegasus/Timeline/Shared/LaneDefs.h"
 #include "Pegasus/Timeline/Shared/TimelineDefs.h"
+#include "Pegasus/Timeline/Proxy/LaneProxy.h"
 
 namespace Pegasus {
     namespace Timeline {
         class Timeline;
-        class LaneProxy;
         class Block;
         class IBlockProxy;
     }
@@ -118,9 +118,12 @@ public:
     //! \return Number of block proxy pointers written to the \a blockList array (<= LANE_MAX_NUM_BLOCKS)
     unsigned int GetBlocks(IBlockProxy ** blocks) const;
 
-
     //! Get the proxy associated with the lane
-    inline LaneProxy * GetProxy() const { return mProxy; }
+    //! \return Proxy associated with the lane
+    //@{
+    inline LaneProxy * GetProxy() { return &mProxy; }
+    inline const LaneProxy * GetProxy() const { return &mProxy; }
+    //@}
 
     //! Maximum length of the name for the lane
     enum { MAX_NAME_LENGTH = 31 };
@@ -250,7 +253,7 @@ private:
 #if PEGASUS_ENABLE_PROXIES
 
     //! Proxy associated with the lane
-    LaneProxy * mProxy;
+    LaneProxy mProxy;
 
     //! Name of the lane, can be empty or nullptr, but no longer than MAX_NAME_LENGTH
     char mName[MAX_NAME_LENGTH + 1];

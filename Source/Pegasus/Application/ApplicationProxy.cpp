@@ -13,12 +13,12 @@
 #include "Pegasus/Application/ApplicationProxy.h"
 #include "Pegasus/Application/Application.h"
 #include "Pegasus/Memory/MemoryManager.h"
-#include "Pegasus/Timeline/TimelineProxy.h"
+#include "Pegasus/Timeline/Proxy/TimelineProxy.h"
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Window/WindowProxy.h"
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/Shader/ShaderManagerProxy.h"
-#include "Pegasus/Texture/TextureManagerProxy.h"
+#include "Pegasus/Texture/Proxy/TextureManagerProxy.h"
 
 extern Pegasus::App::Application* CreateApplication(const Pegasus::App::ApplicationConfig& config);
 extern void DestroyApplication(Pegasus::App::Application* app);
@@ -30,37 +30,21 @@ namespace App {
 
 ApplicationProxy::ApplicationProxy(const ApplicationConfig& config)
 {
-    mObject = CreateApplication(config);
-
-    //! \todo Make those proxies owned by the managers themselves (look at Timeline)
-    mShaderManagerProxy = PG_NEW( 
-             Memory::GetGlobalAllocator(), 
-             -1, 
-            "ShaderManagerProxy", 
-             Alloc::PG_MEM_PERM
-             ) Shader::ShaderManagerProxy(mObject->GetShaderManager());
-    mTextureManagerProxy = PG_NEW( 
-             Memory::GetGlobalAllocator(), 
-             -1, 
-            "TextureManagerProxy", 
-             Alloc::PG_MEM_PERM
-             ) Texture::TextureManagerProxy(mObject->GetTextureManager());
+    mApplication = CreateApplication(config);
 }
 
 //----------------------------------------------------------------------------------------
 
 ApplicationProxy::~ApplicationProxy()
 {
-    PG_DELETE(Memory::GetGlobalAllocator(), mShaderManagerProxy);
-    PG_DELETE(Memory::GetGlobalAllocator(), mTextureManagerProxy);
-    DestroyApplication(mObject);
+    DestroyApplication(mApplication);
 }
 
 //----------------------------------------------------------------------------------------
 
 const char* ApplicationProxy::GetMainWindowType() const
 {
-    return mObject->GetWindowRegistry()->GetMainWindowType();
+    return mApplication->GetWindowRegistry()->GetMainWindowType();
 }
 
 //----------------------------------------------------------------------------------------
@@ -69,14 +53,14 @@ const char* ApplicationProxy::GetMainWindowType() const
     
 const char* ApplicationProxy::GetSecondaryWindowType() const
 {
-    return mObject->GetWindowRegistry()->GetSecondaryWindowType();
+    return mApplication->GetWindowRegistry()->GetSecondaryWindowType();
 }
 
 //----------------------------------------------------------------------------------------
 
 const char* ApplicationProxy::GetTextureEditorPreviewWindowType() const
 {
-    return mObject->GetWindowRegistry()->GetTextureEditorPreviewWindowType();
+    return mApplication->GetWindowRegistry()->GetTextureEditorPreviewWindowType();
 }
 
 #endif  // PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
@@ -85,7 +69,7 @@ const char* ApplicationProxy::GetTextureEditorPreviewWindowType() const
 
 Wnd::IWindowProxy* ApplicationProxy::AttachWindow(const AppWindowConfig& config)
 {
-    Wnd::Window* wnd = mObject->AttachWindow(config);
+    Wnd::Window* wnd = mApplication->AttachWindow(config);
     return wnd->GetProxy();
 }
 
@@ -93,28 +77,28 @@ Wnd::IWindowProxy* ApplicationProxy::AttachWindow(const AppWindowConfig& config)
 
 void ApplicationProxy::DetachWindow(Wnd::IWindowProxy* wnd)
 {
-    mObject->DetachWindow(wnd->Unwrap()); // Unwrap and destroy proxied window
+    mApplication->DetachWindow(wnd->Unwrap()); // Unwrap and destroy proxied window
 }
 
 //----------------------------------------------------------------------------------------
 
 void ApplicationProxy::Initialize()
 {
-    mObject->Initialize();
+    mApplication->Initialize();
 }
 
 //----------------------------------------------------------------------------------------
 
 void ApplicationProxy::Shutdown()
 {
-    mObject->Shutdown();
+    mApplication->Shutdown();
 }
 
 //----------------------------------------------------------------------------------------
 
 void ApplicationProxy::Load()
 {
-    mObject->Load();
+    mApplication->Load();
 }
 
 //----------------------------------------------------------------------------------------
@@ -123,7 +107,7 @@ void ApplicationProxy::Load()
 
 void ApplicationProxy::RegisterMeshEventListener(Mesh::IMeshEventListener * eventListener)
 {
-    mObject->GetMeshManager()->RegisterEventListener(eventListener);
+    mApplication->GetMeshManager()->RegisterEventListener(eventListener);
 }
 
 #endif
@@ -132,7 +116,7 @@ void ApplicationProxy::RegisterMeshEventListener(Mesh::IMeshEventListener * even
 
 Timeline::ITimelineProxy* ApplicationProxy::GetTimeline() const
 {
-    return mObject->GetTimeline()->GetProxy();
+    return mApplication->GetTimeline()->GetProxy();
 }
 
 

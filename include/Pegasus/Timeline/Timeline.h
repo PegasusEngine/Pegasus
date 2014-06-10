@@ -13,12 +13,12 @@
 #define PEGASUS_TIMELINE_TIMELINE_H
 
 #include "Pegasus/Timeline/Shared/TimelineDefs.h"
+#include "Pegasus/Timeline/Proxy/TimelineProxy.h"
 
 namespace Pegasus {
     namespace Timeline {
         class Block;
         class Lane;
-        class TimelineProxy;
     }
 
     namespace Wnd {
@@ -194,7 +194,11 @@ public:
 #if PEGASUS_ENABLE_PROXIES
 
     //! Get the proxy associated with the timeline
-    inline TimelineProxy * GetProxy() const { return mProxy; }
+    //! \return Proxy associated with the timeline
+    //@{
+    inline TimelineProxy * GetProxy() { return &mProxy; }
+    inline const TimelineProxy * GetProxy() const { return &mProxy; }
+    //@}
 
 #endif  // PEGASUS_ENABLE_PROXIES
 
@@ -240,7 +244,7 @@ private:
 #if PEGASUS_ENABLE_PROXIES
 
     //! Proxy associated with the timeline
-    TimelineProxy * mProxy;
+    TimelineProxy mProxy;
 
     //! True when the real-time play mode has been selected, to update mStartPegasusTime on the next call to Update()
     bool mRequiresStartTimeComputation;
