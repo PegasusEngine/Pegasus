@@ -28,15 +28,8 @@ class IUserData;
 class ShaderProxy : public IShaderProxy
 {
 public:
-    ShaderProxy();
+    explicit ShaderProxy(ShaderStage * object);
     virtual ~ShaderProxy(){}
-
-    //! wraps a shader stage
-    //! \param stage target stage to wrap
-    void Wrap(ShaderStage * stage) { mObject = stage; } 
-
-    //! \return gets the internal shader stage
-    ShaderStage * Unwrap() { return mObject; }
 
     //! \return gets the shader type
     virtual ShaderType GetStageType() const;

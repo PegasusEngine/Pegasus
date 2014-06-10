@@ -15,6 +15,11 @@
 #include "Pegasus/Shader/ProgramProxy.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 
+Pegasus::Shader::ProgramProxy::ProgramProxy(Pegasus::Shader::ProgramLinkage * object)
+: mObject(object)
+{
+}
+
 int Pegasus::Shader::ProgramProxy::GetShaderCount() const
 {
     return mObject->GetNumInputs();
@@ -26,8 +31,7 @@ Pegasus::Shader::IShaderProxy * Pegasus::Shader::ProgramProxy::GetShader(unsigne
     {
         Pegasus::Shader::ShaderStageRef shaderInput = mObject->GetInput(i);
         Pegasus::Shader::ShaderStage * shaderInputUnsafe = &(*shaderInput);
-        mShaderProxyPool[i].Wrap(shaderInputUnsafe);        
-        return &mShaderProxyPool[i];
+        return shaderInputUnsafe->GetProxy();
     }
     else
     {

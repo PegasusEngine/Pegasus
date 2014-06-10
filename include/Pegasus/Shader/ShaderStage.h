@@ -15,6 +15,7 @@
 #include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
 #include "Pegasus/Shader/Shared/ShaderEvent.h"
+#include "Pegasus/Shader/ShaderProxy.h"
 #include "Pegasus/Core/Io.h"
 
 
@@ -96,6 +97,9 @@ public:
 
     //! \return the file name of this shader
     const char * GetFileName() const { return mName; }
+
+    //! returns the proxy of this particular shader    
+    IShaderProxy * GetProxy() { return &mProxy; }
 #endif
 
 protected:
@@ -124,6 +128,8 @@ private:
     char mName[METADATA_NAME_LENGTH];
     char mPath[METADATA_NAME_LENGTH];
     ShaderTracker * mShaderTracker; //! reference to tracker
+
+    ShaderProxy mProxy;
 
 #endif
 

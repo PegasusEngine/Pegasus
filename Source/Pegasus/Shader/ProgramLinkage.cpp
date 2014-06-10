@@ -17,6 +17,10 @@ unsigned char ToStageFlag(Pegasus::Shader::ShaderType type)
 Pegasus::Shader::ProgramLinkage::ProgramLinkage(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :
 Pegasus::Graph::OperatorNode(nodeAllocator, nodeDataAllocator), mStageFlags(0), mFactory(nullptr)
+#if PEGASUS_ENABLE_PROXIES
+    //initializing proxy
+    ,mProxy(this)
+#endif
 {
     GRAPH_EVENT_INIT_DISPATCHER
 }

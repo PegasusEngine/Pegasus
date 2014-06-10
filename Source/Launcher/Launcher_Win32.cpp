@@ -18,7 +18,9 @@
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Application/IWindowRegistry.h"
 #include "Pegasus/Window/Shared/IWindowProxy.h"
+#include "Pegasus/Texture/Shared/ITextureManagerProxy.h"
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
+
 
 #if PEGASUS_PLATFORM_WINDOWS
 #define WIN32_LEAN_AND_MEAN
@@ -299,7 +301,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     Pegasus::Launcher::LauncherMeshListener    meshListener(appConfig.mLoghandler, appConfig.mAssertHandler);
 
     application->GetShaderManagerProxy()->RegisterEventListener(&shaderListener);
-    application->RegisterTextureEventListener(&textureListener);
+    application->GetTextureManagerProxy()->RegisterEventListener(&textureListener);
     application->RegisterMeshEventListener(&meshListener);
 
 

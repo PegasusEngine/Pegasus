@@ -111,9 +111,6 @@ public:
 #if PEGASUS_USE_GRAPH_EVENTS
 
     //! \todo Temporary. Remove as soon as the proper interface is defined
-    virtual void RegisterTextureEventListener(Texture::ITextureEventListener * eventListener) = 0;
-
-    //! \todo Temporary. Remove as soon as the proper interface is defined
     virtual void RegisterMeshEventListener(Mesh::IMeshEventListener * eventListener) = 0;
 
 #endif  // PEGASUS_USE_GRAPH_EVENTS

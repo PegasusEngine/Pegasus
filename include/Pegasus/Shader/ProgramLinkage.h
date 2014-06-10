@@ -13,6 +13,7 @@
 
 #include "Pegasus/Graph/OperatorNode.h"
 #include "Pegasus/Shader/ShaderStage.h"
+#include "Pegasus/Shader/ProgramProxy.h"
 
 namespace Pegasus
 {
@@ -22,6 +23,8 @@ namespace Shader
 
 // forward declarations
 class IShaderFactory;
+class IProgramProxy;
+class ProgramProxy;
 
 
 //! Program linkage class. Represents a set of linked shader stages
@@ -97,7 +100,11 @@ public:
     
     //! sets the name of this shader to be used
     void SetName(const char * name);
+
+    //! returns the proxy accessor for this program. Only available in dev mode.
+    IProgramProxy * GetProxy() { return &mProxy; }
 #endif
+
 protected:
     //! overrides, do not use
     virtual void AddInput(Pegasus::Graph::NodeIn node);
@@ -132,6 +139,10 @@ private:
     //! this allows this node to behave like a set with a static
     //! topology.
     unsigned char mStageFlags;
+
+#if PEGASUS_ENABLE_PROXIES
+    ProgramProxy mProxy;    
+#endif
 };
 
 typedef       Pegasus::Core::Ref<ProgramLinkage>   ProgramLinkageRef;

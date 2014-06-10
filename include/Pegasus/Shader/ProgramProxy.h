@@ -33,7 +33,7 @@ class ProgramLinkage;
 class ProgramProxy : public IProgramProxy
 {
 public:
-    ProgramProxy(){}
+    ProgramProxy(ProgramLinkage * object);
     virtual ~ProgramProxy() {}
 
     //! returns the number of shaders this program holds.
@@ -56,21 +56,10 @@ public:
     //! \return user data reference
     virtual Pegasus::Graph::IGraphUserData * GetUserData() const;
 
-    //! sets the internal implementation of shader linkage
-    //! \param object the program linkage internal object.
-    void Wrap(ProgramLinkage * object) { mObject = object; }
-
-    //! \return Returns the internal program linkage owned.
-    ProgramLinkage * Unwrap() const { return mObject; }
-
 private:
 
     //! internal worker, obfuscated
     ProgramLinkage * mObject;
-    
-    //! pool of shader proxies.
-    ShaderProxy mShaderProxyPool[SHADER_STAGES_COUNT];
-    
 };
 
 }

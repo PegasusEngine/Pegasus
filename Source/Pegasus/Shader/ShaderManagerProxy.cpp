@@ -29,8 +29,7 @@ Pegasus::Shader::IProgramProxy * Pegasus::Shader::ShaderManagerProxy::GetProgram
 {
     if (i >= 0 && i < GetProgramCount())
     {
-        Pegasus::Shader::ProgramProxy * proxyWrapper = &mProgramProxyPool[i];
-        proxyWrapper->Wrap(mObject->GetShaderTracker()->GetProgram(i));
+        Pegasus::Shader::IProgramProxy * proxyWrapper = mObject->GetShaderTracker()->GetProgram(i)->GetProxy();
         return proxyWrapper;
     }
     return nullptr;
@@ -45,8 +44,7 @@ Pegasus::Shader::IShaderProxy * Pegasus::Shader::ShaderManagerProxy::GetShader(i
 {
     if (i >= 0 && i < GetShaderCount())
     {
-        Pegasus::Shader::ShaderProxy * proxyWrapper = &mShaderProxyPool[i];
-        proxyWrapper->Wrap(mObject->GetShaderTracker()->GetShaderStage(i));
+        Pegasus::Shader::IShaderProxy * proxyWrapper = mObject->GetShaderTracker()->GetShaderStage(i)->GetProxy();
         return proxyWrapper;
     }
     return nullptr;

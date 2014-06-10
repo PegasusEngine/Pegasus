@@ -46,6 +46,7 @@ Pegasus::Shader::ShaderStage::ShaderStage(Pegasus::Alloc::IAllocator * allocator
       mFactory(nullptr)
 #if PEGASUS_ENABLE_PROXIES
       , mShaderTracker(nullptr)
+      , mProxy(this)
 #endif
 {
     GRAPH_EVENT_INIT_DISPATCHER

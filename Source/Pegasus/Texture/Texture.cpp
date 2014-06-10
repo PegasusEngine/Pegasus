@@ -24,12 +24,12 @@ namespace Texture {
 Texture::Texture(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :   Graph::OutputNode(nodeAllocator, nodeDataAllocator),
     mConfiguration()
-{
 #if PEGASUS_ENABLE_PROXIES
     //! Create the proxy associated with the texture
-    mProxy = PG_NEW(nodeAllocator, -1, "Texture::Texture::mProxy", Pegasus::Alloc::PG_MEM_PERM) TextureProxy(this);
-    mTracker = nullptr;
+    ,mProxy(this)
+    ,mTracker(nullptr)
 #endif  // PEGASUS_ENABLE_PROXIES
+{
 }
 
 //----------------------------------------------------------------------------------------
@@ -38,12 +38,12 @@ Texture::Texture(const TextureConfiguration & configuration,
                  Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :   Graph::OutputNode(nodeAllocator, nodeDataAllocator),
     mConfiguration(configuration)
-{
 #if PEGASUS_ENABLE_PROXIES
     //! Create the proxy associated with the texture
-    mProxy = PG_NEW(nodeAllocator, -1, "Texture::Texture::mProxy", Pegasus::Alloc::PG_MEM_PERM) TextureProxy(this);
-    mTracker = nullptr;
+    ,mProxy(this)
+    ,mTracker(nullptr)
 #endif  // PEGASUS_ENABLE_PROXIES
+{
 }
 
 //----------------------------------------------------------------------------------------
@@ -151,9 +151,6 @@ Texture::~Texture()
     {
         PG_FAILSTR("Trying to delete a texture that has no associated tracker");
     }
-
-    //! Destroy the proxy associated with the texture
-    PG_DELETE(GetNodeAllocator(), mProxy);
 #endif
 }
 

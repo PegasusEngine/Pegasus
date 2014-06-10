@@ -17,6 +17,7 @@
 #include "Pegasus/Texture/TextureData.h"
 #include "Pegasus/Texture/TextureGenerator.h"
 #include "Pegasus/Texture/TextureOperator.h"
+#include "Pegasus/Texture/TextureProxy.h"
 
 namespace Pegasus {
 namespace Texture {
@@ -97,7 +98,8 @@ public:
 #if PEGASUS_ENABLE_PROXIES
 
     //! Get the proxy associated with the texture
-    inline TextureProxy * GetProxy() const { return mProxy; }
+    inline TextureProxy * GetProxy() { return &mProxy; }
+    const inline TextureProxy * GetProxy() const { return &mProxy; }
 
     //! Set the tracker associated with the texture
     //! \param tracker Global tracker used to get the list of textures in the editor
@@ -121,7 +123,7 @@ private:
 
 #if PEGASUS_ENABLE_PROXIES
     //! Proxy associated with the texture
-    TextureProxy * mProxy;
+    TextureProxy mProxy;
 
     //! Tracker associated with the texture
     TextureTracker * mTracker;

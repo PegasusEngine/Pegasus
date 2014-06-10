@@ -55,6 +55,12 @@ ITextureProxy * TextureManagerProxy::GetTexture(unsigned int index) const
     }
 }
 
+//----------------------------------------------------------------------------------------
+
+void TextureManagerProxy::RegisterEventListener(ITextureEventListener * eventListener)
+{
+    mTextureManager->RegisterEventListener(eventListener);
+}
 
 }   // namespace Texture
 }   // namespace Pegasus

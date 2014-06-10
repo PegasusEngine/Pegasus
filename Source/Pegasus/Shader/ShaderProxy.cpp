@@ -15,8 +15,8 @@
 #include "Pegasus/Shader/ShaderStage.h"
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
 
-Pegasus::Shader::ShaderProxy::ShaderProxy()
-: mObject(nullptr)
+Pegasus::Shader::ShaderProxy::ShaderProxy(Pegasus::Shader::ShaderStage * object)
+: mObject(object)
 {
 }
 
