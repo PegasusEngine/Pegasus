@@ -17,13 +17,9 @@
 #include "Pegasus/Texture/Shared/ITextureProxy.h"
 
 namespace Pegasus {
-    namespace Texture {
-        class Texture;
-    }
-}
-
-namespace Pegasus {
 namespace Texture {
+
+class Texture;
 
 
 //! Proxy object, used by the editor to interact with a texture
@@ -47,25 +43,9 @@ public:
     //! \return Name of the texture
     virtual const char * GetName() const;
 
-    //! \todo Add support for the texture type
-
-    //! \todo Add support for the pixel format
-
-    //! Get the width of the texture
-    //! \return Horizontal resolution of the texture in pixels (>= 1)
-    virtual unsigned int GetWidth() const;
-
-    //! Get the height of the texture
-    //! \return Vertical resolution of the texture in pixels (>= 1)
-    virtual unsigned int GetHeight() const;
-
-    //! Get the depth of the texture
-    //! \return Depth of the texture in pixels (>= 1)
-    virtual unsigned int GetDepth() const;
-
-    //! Get the number of layers of the texture
-    //! \return Number of layers for array textures, 6 for cube maps, 1 otherwise
-    virtual unsigned int GetNumLayers() const;
+    //! Get the configuration of the texture
+    //! \return Configuration proxy of the texture
+    virtual const ITextureConfigurationProxy * GetConfiguration() const;
 
     //------------------------------------------------------------------------------------
     

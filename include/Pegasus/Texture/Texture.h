@@ -136,7 +136,7 @@ private:
     //! Configuration of the texture, such as the resolution and pixel format
     TextureConfiguration mConfiguration;
 
-    //! Pointer to the GPU factory. Generates GPU data from cpu texture data
+    //! Pointer to the GPU factory. Generates GPU data from CPU texture data
     ITextureFactory * mFactory;
 };
 

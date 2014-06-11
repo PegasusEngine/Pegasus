@@ -14,7 +14,6 @@
 #include "Pegasus/Math/Scalar.h"
 
 #if PEGASUS_ENABLE_PROXIES
-#include "Pegasus/Timeline/Proxy/LaneProxy.h"
 #include "Pegasus/Timeline/Proxy/BlockProxy.h"
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"
 #include <string.h>

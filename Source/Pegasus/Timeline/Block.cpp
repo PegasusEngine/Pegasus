@@ -11,10 +11,6 @@
 
 #include "Pegasus/Timeline/Block.h"
 
-#if PEGASUS_ENABLE_PROXIES
-#include "Pegasus/Timeline/Proxy/BlockProxy.h"
-#endif  // PEGASUS_ENABLE_PROXIES
-
 namespace Pegasus {
 namespace Timeline {
 

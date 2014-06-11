@@ -19,6 +19,7 @@
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Texture/Shared/ITextureProxy.h"
 #include "Pegasus/Texture/Shared/ITextureManagerProxy.h"
+#include "Pegasus/Texture/Shared/ITextureConfigurationProxy.h"
 
 #include <QMdiSubWindow>
 #include <QMenuBar>
@@ -93,7 +94,7 @@ void TextureEditorDockWidget::UpdateUIForAppLoaded()
     }
 
     //! \todo Temporary, use proper Qt signals to make it happen
-    UpdateTextureProperties();
+    //UpdateTextureProperties();
 }
 
 //----------------------------------------------------------------------------------------
@@ -129,13 +130,25 @@ void TextureEditorDockWidget::OpenTabForTexture(Pegasus::Texture::ITextureProxy 
 
     // Show the new tab
     subWindow->show();
+
+    //! \todo **** Temporary, to test UpdateTextureProperties
+    UpdateTextureProperties(subWindow);
 }
 
 //----------------------------------------------------------------------------------------
 
-void TextureEditorDockWidget::UpdateTextureProperties()
+void TextureEditorDockWidget::UpdateTextureProperties(QMdiSubWindow * subWindow)
 {
-    //! \todo Temporary, we need to create a TextureEditorPage object
-    ui.resolutionValueLabel->setText(QString("%1 x %2 x %3").arg(/***/256).arg(/***/256).arg(/***/1));
-    ui.layersValueLabel->setText(QString("%1").arg(/***/1));
+    ED_ASSERTSTR(subWindow != nullptr, "Trying to update the texture properties with an invalid current subwindow");
+    const TextureGraphEditorGraphicsView * graphicsView = static_cast<TextureGraphEditorGraphicsView *>(subWindow->widget());
+    ED_ASSERTSTR(graphicsView != nullptr, "Trying to update the texture properties with an invalid current graphics view");
+    const Pegasus::Texture::ITextureProxy * textureProxy = graphicsView->GetTextureProxy();
+    ED_ASSERTSTR(textureProxy != nullptr, "Trying to update the texture properties with an invalid current texture");
+    const Pegasus::Texture::ITextureConfigurationProxy * textureConfigurationProxy = textureProxy->GetConfiguration();
+    ED_ASSERTSTR(textureConfigurationProxy != nullptr, "Trying to update the texture properties with an invalid current texture configuration");
+    
+    ui.resolutionValueLabel->setText(QString("%1 x %2 x %3").arg(textureConfigurationProxy->GetWidth())
+                                                            .arg(textureConfigurationProxy->GetHeight())
+                                                            .arg(textureConfigurationProxy->GetDepth()));
+    ui.layersValueLabel->setText(QString("%1").arg(textureConfigurationProxy->GetNumLayers()));
 }

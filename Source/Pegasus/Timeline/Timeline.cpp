@@ -16,10 +16,6 @@
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/Memcpy.h"
 
-#if PEGASUS_ENABLE_PROXIES
-#include "Pegasus/Timeline/Proxy/TimelineProxy.h"
-#endif  // PEGASUS_ENABLE_PROXIES
-
 #include <string.h>
 
 namespace Pegasus {

@@ -13,6 +13,8 @@
 #ifndef PEGASUS_TEXTURE_TEXTURECONFIGURATION_H
 #define PEGASUS_TEXTURE_TEXTURECONFIGURATION_H
 
+#include "Pegasus/Texture/Proxy/TextureConfigurationProxy.h"
+
 namespace Pegasus {
 namespace Texture {
 
@@ -121,9 +123,27 @@ public:
     //! \return True if the configurations are compatible
     bool IsCompatible(const TextureConfiguration & configuration) const;
 
+
+#if PEGASUS_ENABLE_PROXIES
+
+    //! Get the proxy associated with the texture configuration
+    //! \return Proxy associated with the texture configuration
+    //@{
+    inline TextureConfigurationProxy * GetProxy() { return &mProxy; }
+    inline const TextureConfigurationProxy * GetProxy() const { return &mProxy; }
+    //@}
+
+#endif  // PEGASUS_ENABLE_PROXIES
+
     //------------------------------------------------------------------------------------
     
 private:
+
+#if PEGASUS_ENABLE_PROXIES
+    //! Proxy associated with the texture configuration
+    TextureConfigurationProxy mProxy;
+#endif  // PEGASUS_ENABLE_PROXIES
+
 
     //! Type of the texture (TextureData::TYPE_xxx constant)
     Type mType;

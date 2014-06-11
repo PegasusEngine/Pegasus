@@ -17,6 +17,7 @@
 #include "Pegasus/Texture/TextureConfiguration.h"
 #include "Pegasus/Texture/TextureData.h"
 #include "Pegasus/Texture/TextureDeclaration.h"
+#include "Pegasus/Texture/Proxy/TextureGeneratorProxy.h"
 
 namespace Pegasus {
 namespace Texture {
@@ -66,6 +67,18 @@ public:
     //!       Redefine this function in derived classes to change its behavior
     //virtual NodeDataReturn GetUpdatedData(bool & updated);
 
+
+#if PEGASUS_ENABLE_PROXIES
+
+    //! Get the proxy associated with the texture generator
+    //! \return Proxy associated with the texture generator
+    //@{
+    inline TextureGeneratorProxy * GetProxy() { return &mProxy; }
+    inline const TextureGeneratorProxy * GetProxy() const { return &mProxy; }
+    //@}
+
+#endif  // PEGASUS_ENABLE_PROXIES
+
     //------------------------------------------------------------------------------------
     
 protected:
@@ -96,6 +109,12 @@ private:
 
     //! Configuration of the generator, such as the resolution and pixel format
     TextureConfiguration mConfiguration;
+
+
+#if PEGASUS_ENABLE_PROXIES
+    //! Proxy associated with the texture generator
+    TextureGeneratorProxy mProxy;
+#endif  // PEGASUS_ENABLE_PROXIES
 };
 
 //----------------------------------------------------------------------------------------

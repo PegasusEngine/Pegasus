@@ -15,6 +15,8 @@ PEGASUS_AVOID_EMPTY_FILE_WARNING
 #if PEGASUS_ENABLE_PROXIES
 
 #include "Pegasus/Texture/Proxy/TextureManagerProxy.h"
+#include "Pegasus/Texture/Proxy/TextureConfigurationProxy.h"
+#include "Pegasus/Texture/Proxy/TextureGeneratorProxy.h"
 #include "Pegasus/Texture/TextureManager.h"
 
 namespace Pegasus {
@@ -51,6 +53,29 @@ ITextureProxy * TextureManagerProxy::GetTexture(unsigned int index) const
     }
     else
     {
+        return nullptr;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+ITextureGeneratorProxy * TextureManagerProxy::CreateGeneratorNode(const char * className,
+                                                                  ITextureConfigurationProxy * configurationProxy)
+{
+    // Convert the abstract configuration proxy to a concrete proxy, relying on the fact that
+    // TextureConfigurationProxy is the only possible derived class from ITextureConfigurationProxy
+    TextureConfigurationProxy * textureConfigurationProxy = static_cast<TextureConfigurationProxy *>(configurationProxy);
+    if (configurationProxy != nullptr)
+    {
+        TextureGeneratorRef generator = mTextureManager->CreateTextureGeneratorNode(className, *textureConfigurationProxy->GetConfiguration());
+
+        //! \todo What to do with the pointer?
+
+        return generator->GetProxy();
+    }
+    else
+    {
+        PG_FAILSTR("Invalid configuration proxy given to the texture generator creation function");
         return nullptr;
     }
 }

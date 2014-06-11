@@ -18,6 +18,7 @@
 #include "ui_TextureEditorDockWidget.h"
 
 class ViewportWidget;
+class QMdiSubWindow;
 
 namespace Pegasus {
     namespace Texture {
@@ -65,12 +66,14 @@ public slots:
     //! \param textureProxy Proxy of the texture to attach to the tab
     void OpenTabForTexture(Pegasus::Texture::ITextureProxy * textureProxy);
 
-    //! Called when the properties of the textures must be updated
-    void UpdateTextureProperties();
-
     //------------------------------------------------------------------------------------
     
 private:
+
+    //! Called when the properties of the textures must be updated
+    //! \param subWindow MDI subwindow that is currently active
+    void UpdateTextureProperties(QMdiSubWindow * subWindow);
+
 
     //! UI associated with the dock widget
     Ui::TextureEditorDockWidget ui;

@@ -4,38 +4,32 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	ITextureProxy.h
+//! \file	ITextureGeneratorProxy.h
 //! \author	Kevin Boulanger
-//! \date	08th June 2014
-//! \brief	Proxy interface, used by the editor to interact with a texture
+//! \date	11th June 2014
+//! \brief	Proxy interface, used by the editor to interact with a texture generator node
 
-#ifndef PEGASUS_TEXTURE_SHARED_ITEXTUREPROXY_H
-#define PEGASUS_TEXTURE_SHARED_ITEXTUREPROXY_H
+#ifndef PEGASUS_TEXTURE_SHARED_ITEXTUREGENERATORPROXY_H
+#define PEGASUS_TEXTURE_SHARED_ITEXTUREGENERATORPROXY_H
 
 #if PEGASUS_ENABLE_PROXIES
 
 namespace Pegasus {
 namespace Texture {
 
-class ITextureConfigurationProxy;
 
-
-//! Proxy interface, used by the editor to interact with a texture
-class ITextureProxy
+//! Proxy interface, used by the editor to interact with a texture generator node
+class ITextureGeneratorProxy
 {
 public:
 
     //! Destructor
-    virtual ~ITextureProxy() {};
+    virtual ~ITextureGeneratorProxy() {};
 
 
-    //! Get the name of the texture
-    //! \return Name of the texture
+    //! Get the name of the texture generator
+    //! \return Name of the texture generator
     virtual const char * GetName() const = 0;
-
-    //! Get the configuration of the texture
-    //! \return Configuration proxy of the texture
-    virtual const ITextureConfigurationProxy * GetConfiguration() const = 0;
 };
 
 
@@ -43,4 +37,4 @@ public:
 }   // namespace Pegasus
 
 #endif  // PEGASUS_ENABLE_PROXIES
-#endif  // PEGASUS_TEXTURE_SHARED_ITEXTUREPROXY_H
+#endif  // PEGASUS_TEXTURE_SHARED_ITEXTUREGENERATORPROXY_H

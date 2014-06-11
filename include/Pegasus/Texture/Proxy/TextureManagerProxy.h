@@ -51,6 +51,15 @@ public:
     //! \return Proxy to the desired texture
     virtual ITextureProxy * GetTexture(unsigned int index) const;
 
+
+    //! Create a texture generator node by class name
+    //! \param className Name of the texture generator node class to instantiate
+    //! \param configurationProxy Proxy for the configuration of the texture, such as resolution and pixel format
+    //! \return Reference to the created node, null reference if an error occurred
+    virtual ITextureGeneratorProxy * CreateGeneratorNode(const char * className,
+                                                         ITextureConfigurationProxy * configurationProxy);
+
+
     //! Sets the event listener to be used for the texture manager
     //! \param event listener reference
     virtual void RegisterEventListener(ITextureEventListener * eventListener);

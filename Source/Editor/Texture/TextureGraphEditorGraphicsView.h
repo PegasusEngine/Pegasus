@@ -36,6 +36,11 @@ public:
     //! Destructor
     ~TextureGraphEditorGraphicsView();
 
+
+    //! Get the texture proxy associated with the graphics view
+    //! \return Texture proxy associated with the graphics view (!= nullptr)
+    inline Pegasus::Texture::ITextureProxy * GetTextureProxy() const { return mTextureProxy; }
+
     //------------------------------------------------------------------------------------
     
 private:

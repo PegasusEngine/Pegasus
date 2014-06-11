@@ -23,6 +23,9 @@ TextureConfiguration::TextureConfiguration()
 ,   mHeight(256)
 ,   mDepth(1)
 ,   mNumLayers(1)
+#if PEGASUS_ENABLE_PROXIES
+,   mProxy(this)
+#endif
 {
 }
 
@@ -34,6 +37,9 @@ TextureConfiguration::TextureConfiguration(Type type,
                                            unsigned int height,
                                            unsigned int depth,
                                            unsigned int numLayers)
+#if PEGASUS_ENABLE_PROXIES
+:   mProxy(this)
+#endif
 {
     // Copy the parameters with validation, and correct if required
 
@@ -141,6 +147,9 @@ TextureConfiguration::TextureConfiguration(Type type,
 //----------------------------------------------------------------------------------------
 
 TextureConfiguration::TextureConfiguration(const TextureConfiguration & other)
+#if PEGASUS_ENABLE_PROXIES
+:   mProxy(this)
+#endif
 {
     *this = other;
 }
