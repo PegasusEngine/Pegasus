@@ -18,14 +18,9 @@ namespace Mesh {
 MeshData::MeshData(const MeshConfiguration & configuration, Alloc::IAllocator* allocator)
 :   Graph::NodeData(allocator),
     mConfiguration(configuration),
-    mIndexBuffer(nullptr)
+    mIndexCount(0),
+    mVertexCount(0)
 {
-    //initialize stream pool
-    for (int i = 0; i < MESH_MAX_STREAMS; ++i)
-    {
-        mVertexStreams[i] = nullptr; 
-        mVertexStreamStrides[i] = 0;
-    }
     
     //fill in stream strides
     const MeshInputLayout * inputLayout = configuration.GetInputLayout();
@@ -33,22 +28,32 @@ MeshData::MeshData(const MeshConfiguration & configuration, Alloc::IAllocator* a
     {
         const MeshInputLayout::AttrDesc& desc = inputLayout->GetAttributeDesc(i);
         int size = MeshInputLayout::AttrTypeSizes[desc.mType] * desc.mAttributeTypeCount;
-        mVertexStreamStrides[desc.mStreamIndex] += size;
+        int prevStride = mVertexStreams[desc.mStreamIndex].GetStride();
+        mVertexStreams[desc.mStreamIndex].SetStride(prevStride + size);
     }
 
+    mIndexBuffer.SetStride(sizeof(unsigned short));
+
+}
+
+
+void MeshData::AllocateVertexes(int count)
+{
+    mVertexCount = count;
+    
     //allocate streams
     for (int stream = 0; stream < MESH_MAX_STREAMS; ++stream)
     {
-        int streamSize = mVertexStreamStrides[stream] * configuration.GetVertexCount();
-        if (streamSize > 0)
-        {
-            mVertexStreams[stream] = PG_NEW_ARRAY(GetAllocator(), -1, "MeshData::mVertexStream[i]", Alloc::PG_MEM_TEMP, char, streamSize);           
-        }
+        mVertexStreams[stream].Grow(GetAllocator(), count);        
     }
 
-    if (configuration.GetIsIndexed())
+}
+
+void MeshData::AllocateIndexes(int count)
+{
+    if (mConfiguration.GetIsIndexed())
     {
-        mIndexBuffer = PG_NEW_ARRAY(GetAllocator(), -1, "MeshData::mIndexBuffer", Alloc::PG_MEM_TEMP, unsigned short, configuration.GetIndexCount());
+        mIndexBuffer.Grow(GetAllocator(), count);
     }
 }
 
@@ -58,18 +63,51 @@ MeshData::~MeshData()
 {
     for (int s = 0; s < MESH_MAX_STREAMS; ++s)
     { 
-        if (mVertexStreams[s] != nullptr)
+        if (mVertexStreams[s].GetBuffer() != nullptr)
         {
-            PG_DELETE_ARRAY(GetAllocator(), (char*)mVertexStreams[s]);           
+            mVertexStreams[s].Destroy(GetAllocator());
         }
     }
     
-    if (mIndexBuffer != nullptr)
+    if (mIndexBuffer.GetBuffer() != nullptr)
     {
-        PG_DELETE_ARRAY(GetAllocator(), mIndexBuffer);
+        mIndexBuffer.Destroy(GetAllocator());
     }
 }
 
 
+MeshData::Stream::Stream()
+    : mBuffer(nullptr), mStride(0), mByteSize(0)
+{
+}
+
+void MeshData::Stream::Grow(Alloc::IAllocator * allocator, int count)
+{
+    int newByteSize = count * mStride;
+    if (newByteSize > mByteSize || newByteSize < (mByteSize / 2))
+    {
+         if (mByteSize > 0)
+         {
+            Destroy(allocator);
+         }
+         mBuffer = PG_NEW_ARRAY(allocator, -1, "MeshData::Stream[i].mBuffer", Alloc::PG_MEM_TEMP, char, newByteSize);
+         mByteSize = newByteSize;
+    }
+}
+
+void MeshData::Stream::Destroy(Alloc::IAllocator * allocator)
+{
+    PG_ASSERT(mBuffer != nullptr);
+    PG_DELETE_ARRAY(allocator, mBuffer); 
+    mBuffer = nullptr;
+    mByteSize = 0;
+}
+
+MeshData::Stream::~Stream()
+{
+    PG_ASSERTSTR(mBuffer == nullptr, "Destroy must be called explicitely on this stream");
+}
+
 }   // namespace Mesh
 }   // namespace Pegasus
+

@@ -64,12 +64,6 @@ public:
     
     //! Gets wether this mesh is static or dynamic
     bool    GetIsDynamic() const { return mIsDynamic; }
-    
-    //! Gets the vertex count for this mesh
-    int     GetVertexCount() const { return mVertexCount; }
-
-    //! Gets the index count for this mesh, if is indexed
-    int     GetIndexCount() const { return mIndexCount; }
 
     //! Gets the primitive type for this mesh
     MeshPrim GetMeshPrimitiveType() const { return mPrimitiveType; }
@@ -79,12 +73,6 @@ public:
 
     //! Sets wether this mesh is dynamic or static
     void    SetIsDynamic(bool isDynamic) { mIsDynamic = isDynamic; }
-    
-    //! Sets the vertex count for this mesh config
-    void    SetVertexCount(int vertexCount) { mVertexCount = vertexCount; }
-
-    //! Sets the index count for this mesh config
-    void    SetIndexCount(int indexCount) { mIndexCount = indexCount; }
 
     //! Sets the primitive type for this mesh
     void    SetMeshPrimitiveType(MeshPrim primitiveType) { mPrimitiveType = primitiveType; }
@@ -95,12 +83,6 @@ private:
 
     //! boolean that determines if the buffer is dynamic (for draw)
     bool     mIsDynamic;
-
-    //! the vertex count
-    int      mVertexCount;
-
-    //! the index count
-    int      mIndexCount;
 
     //! the primitive type
     MeshPrim mPrimitiveType;

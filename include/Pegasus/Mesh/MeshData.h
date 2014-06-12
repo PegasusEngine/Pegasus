@@ -43,44 +43,107 @@ public:
 
     //! Gets the stride size count of the stream
     //! \param i the stream index
-    int GetStreamStride(int i) const { return mVertexStreamStrides[i]; };
+    int GetStreamStride(int i) const { return mVertexStreams[i].GetStride(); };
 
     //! Convinience function that returns the total byte size of a stream
-    int GetStreamByteSize(int i) const { return mVertexStreamStrides[i] * mConfiguration.GetVertexCount(); }
+    int GetStreamByteSize(int i) const { return mVertexStreams[i].GetByteSize(); }
 
     //! Gets the index buffer reference
-    unsigned short * GetIndexBuffer() { return mIndexBuffer; }
+    unsigned short * GetIndexBuffer() { return static_cast<unsigned short*>(mIndexBuffer.GetBuffer()); }
+
+    //! Gets the vertex count
+    int GetVertexCount() const { return mVertexCount; }
+
+    //! Gets the index buffer count
+    int GetIndexCount() const { return mIndexCount; }
+
+    //! Allocates vertex buffer elements.
+    void AllocateVertexes(int count);
+
+    //! Allocates index buffer elements
+    void AllocateIndexes(int count);
     
 protected:
 
     //! Destructor
     virtual ~MeshData();
 
+    //! Destroys the vertex streams
+    void DestroyVertexStreams();
+
+    //! Destroys the index buffer
+    void DestroyIndexBuffer();
+
     //------------------------------------------------------------------------------------
     
 private:
+
+    //!helper class, encoding a stream buffer of bytes
+    class Stream
+    {
+    public:
+        Stream();
+        ~Stream();
+
+        //! returns the stride
+        int GetStride() const { return mStride; }
+
+        //! returns the byte size of this stream
+        int GetByteSize() const { return mByteSize; }
+        
+        //! returns the actual buffer of this stream
+        void* GetBuffer() { return mBuffer; }
+
+        //! sets the stride of this stream
+        void SetStride(int stride) { mStride = stride; }
+
+        //! attempts to grow the stream. If the space is half as big then it is deallocated.
+        //! if the requested size is different the stream size is grown. 
+        //! \param  the vertex size to attempt to grow to. count * mStride is the total byte size
+        //! \note after calling Grow, the memory returned from GetBuffer is uninitialized.
+        void Grow(Pegasus::Alloc::IAllocator * allocator, int count);
+
+        //! Destroys whatever dynamic memory is inside this stream.
+        //! call this before deleting the class. Failing to do so will cause an assert and a leak
+        //! on the streams destructor
+        void Destroy(Pegasus::Alloc::IAllocator * allocator);
+        
+    private:
+        char * mBuffer;
+        int    mStride;
+        int    mByteSize;
+    };
 
     // Node data cannot be copied, only references to them
     PG_DISABLE_COPY(MeshData)
 
     //! Configuration of the mesh data
     MeshConfiguration mConfiguration;
-    void  * mVertexStreams[MESH_MAX_STREAMS];
-    unsigned short * mIndexBuffer;
-    int     mVertexStreamStrides[MESH_MAX_STREAMS];
+
+    //! Stream list of this mesh
+    Stream  mVertexStreams[MESH_MAX_STREAMS];
+
+    //! the index buffer of this mesh
+    Stream  mIndexBuffer;
+    
+    //! total count of vertices
+    int mVertexCount;
+
+    //! total count of indices
+    int mIndexCount;
 };
 
 
 template<class T>
 T * MeshData::GetStream(int stream)
 {
-    PG_ASSERTSTR(sizeof(T) == mVertexStreamStrides[stream], "stream strides must match!");
-    return static_cast<T*>(mVertexStreams[stream]);
+    PG_ASSERTSTR(sizeof(T) == mVertexStreams[stream].GetStride(), "stream strides must match!");
+    return static_cast<T*>(mVertexStreams[stream].GetBuffer());
 }
 template<>
 void * MeshData::GetStream(int stream)
 {
-    return (mVertexStreams[stream]);
+    return (mVertexStreams[stream].GetBuffer());
 }
 //----------------------------------------------------------------------------------------
 

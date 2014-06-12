@@ -23,9 +23,6 @@ QuadGenerator::QuadGenerator(Pegasus::Alloc::IAllocator* nodeAllocator,
 {
     //setting up the basic format of node data
 
-    //allocate 4 vertexes
-    mConfiguration.SetVertexCount(6); 
-
     //set not indexed
     mConfiguration.SetIsIndexed(false);
 
@@ -52,6 +49,8 @@ void QuadGenerator::GenerateData()
 
     MeshDataRef meshData = GetData();
     PG_ASSERT(meshData != nullptr);
+
+    meshData->AllocateVertexes(6);
 
     struct Vertex
     {

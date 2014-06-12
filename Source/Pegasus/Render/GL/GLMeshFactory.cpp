@@ -116,7 +116,7 @@ void GLMeshFactory::GenerateMeshGPUData(Pegasus::Mesh::MeshData * nodeData)
     const Pegasus::Mesh::MeshConfiguration& meshConfig = nodeData->GetConfiguration();
 
     // configuring draw state
-    gpuData->mDrawState.mVertexCount = meshConfig.GetVertexCount();
+    gpuData->mDrawState.mVertexCount = nodeData->GetVertexCount();
     gpuData->mDrawState.mPrimitive = sPrimitiveMap[meshConfig.GetMeshPrimitiveType()];
 
     for (int stream = 0; stream < MESH_MAX_STREAMS; ++stream)
@@ -137,13 +137,13 @@ void GLMeshFactory::GenerateMeshGPUData(Pegasus::Mesh::MeshData * nodeData)
     if (meshConfig.GetIsIndexed())
     {
         gpuData->mDrawState.mIsIndexed = true;
-        gpuData->mDrawState.mIndexCount = meshConfig.GetIndexCount();
+        gpuData->mDrawState.mIndexCount = nodeData->GetIndexCount();
         if (gpuData->mIndexBuffer == GL_INVALID_INDEX)
         {
             glGenBuffers(1, &gpuData->mIndexBuffer);
         }
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gpuData->mIndexBuffer);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(short) * meshConfig.GetIndexCount(), 
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(short) * nodeData->GetIndexCount(), 
                      nodeData->GetIndexBuffer(),
                      meshConfig.GetIsDynamic() ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 
