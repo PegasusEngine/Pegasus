@@ -249,14 +249,23 @@ bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, Pegasus::Texture::
             uniformEntry->mType == GL_SAMPLER_2D_SHADOW,
         "Setting a uniform of the wrong type!");
         glActiveTexture(GL_TEXTURE0 + uniformEntry->mTextureSlot);
-        Pegasus::Render::OGLTextureGPUData * textureGPUData = 
-            PEGASUS_GRAPH_GPUDATA_SAFECAST(
-                Pegasus::Render::OGLTextureGPUData,
-                texture->GetUpdatedTextureData()->GetNodeGPUData()
-            );
-        glBindTexture(GL_TEXTURE_2D, textureGPUData->mHandle);
-        glUniform1i(uniformEntry->mSlot, uniformEntry->mTextureSlot);
-        return true;
+        Pegasus::Texture::TextureDataRef nodeData = texture->GetUpdatedTextureData();
+        PG_ASSERT(nodeData->GetNodeGPUData() != nullptr);
+#if PEGASUS_ENABLE_ASSERT
+        if (nodeData->GetNodeGPUData() != nullptr)
+
+#endif
+        {
+            Pegasus::Render::OGLTextureGPUData * textureGPUData = 
+                PEGASUS_GRAPH_GPUDATA_SAFECAST(
+                    Pegasus::Render::OGLTextureGPUData,
+                    nodeData->GetNodeGPUData()
+                );
+            glBindTexture(GL_TEXTURE_2D, textureGPUData->mHandle);
+            glUniform1i(uniformEntry->mSlot, uniformEntry->mTextureSlot);
+            return true;
+        }
+
     }
     return false;
 }
