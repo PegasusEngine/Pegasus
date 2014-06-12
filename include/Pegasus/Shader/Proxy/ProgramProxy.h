@@ -15,7 +15,7 @@
 #if PEGASUS_ENABLE_PROXIES
 
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
-#include "Pegasus/Shader/ShaderProxy.h"
+#include "Pegasus/Shader/Proxy/ShaderProxy.h"
 
 namespace Pegasus
 {

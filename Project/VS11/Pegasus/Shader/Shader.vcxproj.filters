@@ -12,6 +12,12 @@
     <Filter Include="Include\Shared">
       <UniqueIdentifier>{90b94d7c-4433-4a62-b91b-fd29f48a8553}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Proxy">
+      <UniqueIdentifier>{343ab1d7-4175-42b5-b5fa-b1ba7b24f5c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Proxy">
+      <UniqueIdentifier>{59b5ef5e-9cb7-4bd8-89d8-001dd3fc1e3a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\ShaderEvent.h">
@@ -35,20 +41,20 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\IShaderProxy.h">
       <Filter>Include\Shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderManagerProxy.h">
-      <Filter>Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderProxy.h">
-      <Filter>Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ProgramProxy.h">
-      <Filter>Include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderTracker.h">
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\IShaderFactory.h">
       <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Proxy\ProgramProxy.h">
+      <Filter>Include\Proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Proxy\ShaderManagerProxy.h">
+      <Filter>Include\Proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Proxy\ShaderProxy.h">
+      <Filter>Include\Proxy</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -61,17 +67,17 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ProgramLinkage.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ProgramProxy.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderManagerProxy.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderProxy.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderTracker.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\Proxy\ProgramProxy.cpp">
+      <Filter>Source\Proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\Proxy\ShaderManagerProxy.cpp">
+      <Filter>Source\Proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\Proxy\ShaderProxy.cpp">
+      <Filter>Source\Proxy</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

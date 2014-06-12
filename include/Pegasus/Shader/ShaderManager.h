@@ -2,7 +2,7 @@
 #define PEGASUS_SHADERMANAGER_H
 
 #include "Pegasus/Shader/ProgramLinkage.h"
-#include "Pegasus/Shader/ShaderManagerProxy.h"
+#include "Pegasus/Shader/Proxy/ShaderManagerProxy.h"
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/Shader/ShaderTracker.h"

@@ -15,7 +15,7 @@
 #include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
 #include "Pegasus/Shader/Shared/ShaderEvent.h"
-#include "Pegasus/Shader/ShaderProxy.h"
+#include "Pegasus/Shader/Proxy/ShaderProxy.h"
 #include "Pegasus/Core/Io.h"
 
 

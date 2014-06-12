@@ -13,7 +13,7 @@
 
 #include "Pegasus/Graph/OperatorNode.h"
 #include "Pegasus/Shader/ShaderStage.h"
-#include "Pegasus/Shader/ProgramProxy.h"
+#include "Pegasus/Shader/Proxy/ProgramProxy.h"
 
 namespace Pegasus
 {

@@ -11,7 +11,7 @@
 
 #if PEGASUS_ENABLE_PROXIES
 
-#include "Pegasus/Shader/ShaderProxy.h"
+#include "Pegasus/Shader/Proxy/ShaderProxy.h"
 #include "Pegasus/Shader/ShaderStage.h"
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
 

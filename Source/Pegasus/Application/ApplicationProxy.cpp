@@ -17,7 +17,7 @@
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Window/WindowProxy.h"
 #include "Pegasus/Window/Window.h"
-#include "Pegasus/Shader/ShaderManagerProxy.h"
+#include "Pegasus/Shader/Proxy/ShaderManagerProxy.h"
 #include "Pegasus/Texture/Proxy/TextureManagerProxy.h"
 
 extern Pegasus::App::Application* CreateApplication(const Pegasus::App::ApplicationConfig& config);

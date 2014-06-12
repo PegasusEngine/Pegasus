@@ -16,7 +16,7 @@
 
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
 #include "Pegasus/Shader/ShaderTracker.h"
-#include "Pegasus/Shader/ProgramProxy.h"
+#include "Pegasus/Shader/Proxy/ProgramProxy.h"
 
 namespace Pegasus
 {

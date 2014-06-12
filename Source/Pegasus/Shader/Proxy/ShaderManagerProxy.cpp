@@ -11,8 +11,8 @@
 
 #if PEGASUS_ENABLE_PROXIES
 
-#include "Pegasus/Shader/ShaderManagerProxy.h"
-#include "Pegasus/Shader/ProgramProxy.h"
+#include "Pegasus/Shader/Proxy/ShaderManagerProxy.h"
+#include "Pegasus/Shader/Proxy/ProgramProxy.h"
 #include "Pegasus/Shader/ShaderManager.h"
 
 Pegasus::Shader::ShaderManagerProxy::ShaderManagerProxy(Pegasus::Shader::ShaderManager * object)
