@@ -43,8 +43,15 @@ NodeDataReturn GeneratorNode::GetUpdatedData(bool & updated)
     // If the data is dirty, re-generate it
     if (IsDataDirty())
     {
+        // No need to re-invalidate the GPU data, it is automatically invalidated
+        // when the node data is invalidated
+
+        // Generate the node data using the generator-specific code
         GenerateData();
+
+        // Validate the node data, the GPU node data is still dirty
         GetData()->Validate();
+
         updated = true;
     }
     PG_ASSERTSTR(!IsDataDirty(), "Node data is supposed to be up-to-date at this point");

@@ -97,8 +97,14 @@ TextureDataReturn Texture::GetUpdatedTextureData()
     PG_ASSERT(mFactory);
     bool updated = false;
     TextureDataRef textureData = Graph::OutputNode::GetUpdatedData(updated);
-    if (updated)
+    if (textureData->IsGPUDataDirty())
     {
+#if PEGASUS_ENABLE_PROXIES
+        PG_LOG('TXTR', "Generating the GPU data of texture \"%s\"", GetName());
+#else
+        PG_LOG('TXTR', "Generating the GPU data of a texture");
+#endif
+
         mFactory->GenerateTextureGPUData(&(*textureData));
     }
     return textureData;
@@ -108,7 +114,9 @@ TextureDataReturn Texture::GetUpdatedTextureData()
 
 void Texture::ReleaseDataAndPropagate()
 {
+    //! \todo See note in ReleaseGPUData()
     ReleaseGPUData();
+
     Graph::Node::ReleaseDataAndPropagate();
 }
 
@@ -126,9 +134,21 @@ void Texture::SetTracker(TextureTracker * tracker)
 
 void Texture::ReleaseGPUData()
 {
+    //! \todo Investigate and optimize this function.
+    //!       This function assumes node GPU data exists only once for the graph used by the texture.
+    //!       This function can destroy GPU data of another graph sharing the same node.
+    //!       GetUpdatedData() is called twice, and the first call might generate the data
+    //!       of the graph that could have been empty, to release the content right after.
+
     bool dummyVariable = false;
     if (GetNumInputs() == 1 && GetInput(0)->GetUpdatedData(dummyVariable) != nullptr && mFactory != nullptr)
     {
+#if PEGASUS_ENABLE_PROXIES
+        PG_LOG('TXTR', "Destroying the GPU data of texture \"%s\"", GetName());
+#else
+        PG_LOG('TXTR', "Destroying the GPU data of a texture");
+#endif
+
         mFactory->DestroyNodeGPUData((TextureData*)&(*GetInput(0)->GetUpdatedData(dummyVariable)));
     }
 }

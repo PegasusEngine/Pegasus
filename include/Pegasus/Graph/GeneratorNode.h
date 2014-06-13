@@ -37,6 +37,9 @@ public:
     //!       can be ORed with the content of the override before returning it.
     //! \note This class implements the default behavior of a generator,
     //!       which returns only the dirty state of the data
+    //! \warning If this base class function is called in a derived class,
+    //!       it must be called at the end, after updating the internal state
+    //!       and invalidating the node data
     //! \return True if the node data is dirty
     virtual bool Update();
 

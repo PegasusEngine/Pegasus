@@ -15,11 +15,12 @@ namespace Pegasus {
 namespace Graph {
 
 
-NodeData::NodeData(Alloc::IAllocator* allocator)
+NodeData::NodeData(Alloc::IAllocator * allocator)
 :   mAllocator(allocator),
     mRefCount(0),
     mNodeGPUData(nullptr),
-    mDirty(true)
+    mDirty(true),
+    mGPUDataDirty(true)
 {
 }
 

@@ -89,8 +89,16 @@ NodeDataReturn OperatorNode::GetUpdatedData(bool & updated)
     // If any input has been updated or if the data is dirty, re-generate them
     if (inputUpdated || IsDataDirty())
     {
+        // If an input has been updated but the current data is not dirty,
+        // re-invalidate the operator data so the GPU data dirty flag is set
+        GetData()->Invalidate();
+
+        // Generate the node data using the operator-specific code
         GenerateData();
+
+        // Validate the node data, the GPU node data is still dirty
         GetData()->Validate();
+
         updated = true;
     }
     PG_ASSERTSTR(!IsDataDirty(), "Node data is supposed to be up-to-date at this point");

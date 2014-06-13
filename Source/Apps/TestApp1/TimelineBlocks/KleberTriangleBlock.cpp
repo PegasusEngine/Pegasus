@@ -74,6 +74,9 @@ void KleberTriangleBlock::Shutdown()
 
 void KleberTriangleBlock::Render(float beat, Pegasus::Wnd::Window * window)
 {
+    // Update the graph of all textures and meshes, in case they have dynamic data
+    mQuadMesh->Update();
+
     Pegasus::Render::Dispatch(mProgram);
     Pegasus::Render::Dispatch(mQuadMesh);
     const float currentTime = beat * 30.0f;

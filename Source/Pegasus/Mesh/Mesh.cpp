@@ -20,6 +20,7 @@ Mesh::Mesh(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocato
 :   Graph::OutputNode(nodeAllocator, nodeDataAllocator),
     mConfiguration()
 {
+    //! \todo Add proxy and tracker (see Texture.cpp)
 }
 
 //----------------------------------------------------------------------------------------
@@ -53,9 +54,15 @@ MeshDataReturn Mesh::GetUpdatedMeshData()
     PG_ASSERT(mFactory);
     bool updated = false;
     MeshDataRef meshData = Graph::OutputNode::GetUpdatedData(updated);
-    if (updated)
+    if (meshData->IsGPUDataDirty())
     {
-        mFactory->GenerateMeshGPUData((MeshData*)&(*meshData));
+#if PEGASUS_ENABLE_PROXIES
+        PG_LOG('MESH', "Generating the GPU data of mesh \"%s\"", GetName());
+#else
+        PG_LOG('MESH', "Generating the GPU data of a mesh");
+#endif
+
+        mFactory->GenerateMeshGPUData(&(*meshData));
     }
     return meshData;
 }
@@ -64,7 +71,9 @@ MeshDataReturn Mesh::GetUpdatedMeshData()
 
 void Mesh::ReleaseDataAndPropagate()
 {
+    //! \todo See note in ReleaseGPUData()
     ReleaseGPUData();
+
     Graph::Node::ReleaseDataAndPropagate();
 }
 
@@ -72,6 +81,12 @@ void Mesh::ReleaseDataAndPropagate()
 
 void Mesh::ReleaseGPUData()
 {
+    //! \todo Investigate and optimize this function.
+    //!       This function assumes node GPU data exists only once for the graph used by the mesh.
+    //!       This function can destroy GPU data of another graph sharing the same node.
+    //!       GetUpdatedData() is called twice, and the first call might generate the data
+    //!       of the graph that could have been empty, to release the content right after.
+
     bool dummyVariable = false;
     if (GetNumInputs() == 1 && GetInput(0)->GetUpdatedData(dummyVariable) != nullptr && mFactory != nullptr)
     {

@@ -32,7 +32,6 @@ FractalCubeBlock::~FractalCubeBlock()
 
 void FractalCubeBlock::Initialize()
 {
-
     //Set up quad
     Pegasus::Mesh::MeshGeneratorRef quadGenerator = GetMeshManager()->CreateMeshGeneratorNode("QuadGenerator");
     mQuad = GetMeshManager()->CreateMeshNode();
@@ -72,6 +71,9 @@ void FractalCubeBlock::Shutdown()
 
 void FractalCubeBlock::Render(float beat, Pegasus::Wnd::Window * window)
 {
+    // Update the graph of all textures and meshes, in case they have dynamic data
+    mQuad->Update();
+
     Pegasus::Render::Dispatch(mProgram);
     Pegasus::Render::Dispatch(mQuad);
 

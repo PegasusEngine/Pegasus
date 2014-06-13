@@ -17,8 +17,8 @@
 namespace Pegasus {
 namespace Render {
 
-//! \return returns a mesh factory implementation.
-//!         this implementation needs to be passed to the MeshManager
+//! \return returns a texture factory implementation.
+//!         this implementation needs to be passed to the TextureManager
 Pegasus::Texture::ITextureFactory * GetRenderTextureFactory();
 
 }

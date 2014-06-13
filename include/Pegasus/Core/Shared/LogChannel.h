@@ -33,11 +33,16 @@ static const LogChannel sLogChannels[] = {
     'APPL',     // Application global information
     'WNDW',     // Window management
     'OGL_',     // OpenGL specific
+ 
     'FILE',     // File management
     'ASST',     // Asset management
+
     'TMLN',     // Timeline info
-    'MUSC',     // Music info
+    'TXTR',     // Texture (generation)
+    'MESH',     // Mesh (generation)
     'SHDR',     // Shader (compilation, info, error)
+    'SOUN',     // Sound info
+    'MUSC',     // Music info
 };
 
 //! Number of defined channels

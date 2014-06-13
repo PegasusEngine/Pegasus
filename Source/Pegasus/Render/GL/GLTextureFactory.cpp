@@ -106,12 +106,12 @@ void GLTextureFactory::DestroyNodeGPUData(Pegasus::Texture::TextureData * nodeDa
         Pegasus::Render::OGLTextureGPUData * textureData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OGLTextureGPUData, nodeData->GetNodeGPUData());
         glDeleteTextures(1, &textureData->mHandle);
         PG_DELETE(mAllocator, textureData);
-        nodeData->SetNodeGPUData(nullptr);
+        nodeData->SetNodeGPUData(nullptr);  // sets the dirty flag of the GPU node data
     }
     
 }
 
-//! define a global static mesh factory api
+//! define a global static texture factory API
 static GLTextureFactory gGlobalTextureFactory;
 
 Pegasus::Texture::ITextureFactory * Pegasus::Render::GetRenderTextureFactory()

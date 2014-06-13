@@ -193,7 +193,7 @@ void GLMeshFactory::DestroyNodeGPUData(Pegasus::Mesh::MeshData * nodeData)
     }
 }
 
-//! define a global static mesh factory api
+//! define a global static mesh factory API
 static GLMeshFactory gGlobalMeshFactory;
 
 Pegasus::Mesh::IMeshFactory * Pegasus::Render::GetRenderMeshFactory()

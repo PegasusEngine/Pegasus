@@ -106,6 +106,15 @@ void TextureTestBlock::Shutdown()
 
 void TextureTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
 {
+    // Update the graph of all textures and meshes, in case they have dynamic data
+    mTexture1->Update();
+    mTexture2->Update();
+    mTextureGradient1->Update();
+    mTextureGradient2->Update();
+    mTextureAdd1->Update();
+    mTextureAdd2->Update();
+    mQuad->Update();
+
     Pegasus::Render::Dispatch(mProgram);
     Pegasus::Render::Dispatch(mQuad);
 

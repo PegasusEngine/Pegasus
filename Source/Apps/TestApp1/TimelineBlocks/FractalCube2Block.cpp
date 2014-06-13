@@ -68,6 +68,8 @@ void FractalCube2Block::Shutdown()
 
 void FractalCube2Block::Render(float beat, Pegasus::Wnd::Window * window)
 {
+    // Update the graph of all textures and meshes, in case they have dynamic data
+    mQuad->Update();
 
     Pegasus::Render::Dispatch(mProgram);
     Pegasus::Render::Dispatch(mQuad);

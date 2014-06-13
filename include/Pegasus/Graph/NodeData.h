@@ -30,14 +30,14 @@ public:
     //! Default constructor
     //! \param allocator Allocator used for the node data
     //! \note Sets the dirty flag
-    NodeData(Alloc::IAllocator* allocator);
+    NodeData(Alloc::IAllocator * allocator);
 
     //! Destructor
     virtual ~NodeData();
 
     //! Set the data as dirty, meaning it will need to be recomputed to be valid
     //! \note Does not deallocate any memory, only sets a flag
-    inline void Invalidate() { mDirty = true; }
+    inline void Invalidate() { mDirty = true; mGPUDataDirty = true; }
 
     //! Set the data as non-dirty, usually after a call to \a GenerateData()
     inline void Validate() { mDirty = false; }
@@ -46,14 +46,23 @@ public:
     //! \return True if the dirty flag is set
     inline bool IsDirty() const { return mDirty; }
 
-    //! Sets custom node GPU data by user code.
-    void  SetNodeGPUData (NodeGPUData * nodeGPUData) { mNodeGPUData = nodeGPUData; }
+    //! Test if the GPU data is dirty
+    //! \return True if the GPU data dirty flag is set
+    inline bool IsGPUDataDirty() const { return mGPUDataDirty; }
 
-    //! Gets custom node GPU data set by user.
-    NodeGPUData * GetNodeGPUData () { return mNodeGPUData; }
+    //! Set custom node GPU data by user code,
+    //! the data is considered as validated, except if nodeGPUData is set to nullptr
+    //! \param nodeGPUData External GPU data to store in the node data
+    inline void SetNodeGPUData (NodeGPUData * nodeGPUData)
+        { mNodeGPUData = nodeGPUData; mGPUDataDirty = (nodeGPUData == nullptr); }
 
-    //! Gets custom read only node GPU data set by user.
-    const NodeGPUData * GetNodeGPUData () const { return mNodeGPUData; }
+    //! Get custom node GPU data set by user
+    //! \return External GPU data stored in the node data, can be nullptr if invalid or dirty
+    inline NodeGPUData * GetNodeGPUData () { return mNodeGPUData; }
+
+    //! Get custom read only node GPU data set by user
+    //! \return External GPU data stored in the node data, can be nullptr if invalid or dirty
+    inline const NodeGPUData * GetNodeGPUData () const { return mNodeGPUData; }
 
     //------------------------------------------------------------------------------------
     
@@ -61,7 +70,7 @@ protected:
 
     //! Get the allocator for the node data, to be used in every derived class
     //! \return Node allocator
-    inline Alloc::IAllocator* GetAllocator() const { return mAllocator; }
+    inline Alloc::IAllocator * GetAllocator() const { return mAllocator; }
 
     //------------------------------------------------------------------------------------
     
@@ -86,7 +95,7 @@ private:
     NodeGPUData * mNodeGPUData;
 
     //! Allocator for this object
-    Alloc::IAllocator* mAllocator;
+    Alloc::IAllocator * mAllocator;
 
     //! Reference counter
     //! \todo Use atomic integer
@@ -95,6 +104,8 @@ private:
     //! True when the data is dirty, meaning it will need to be recomputed to be valid
     bool mDirty;
 
+    //! True when the GPU data is dirty, meaning it will need to be recomputed to be valid
+    bool mGPUDataDirty;
 };
 
 //----------------------------------------------------------------------------------------
