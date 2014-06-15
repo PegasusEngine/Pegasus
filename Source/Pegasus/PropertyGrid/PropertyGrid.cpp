@@ -16,6 +16,7 @@ namespace PropertyGrid {
 
 
 PropertyGrid::PropertyGrid()
+:   mDirty(true)
 {
     //! \todo Implement
 }

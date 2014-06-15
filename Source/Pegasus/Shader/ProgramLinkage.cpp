@@ -37,6 +37,14 @@ void Pegasus::Shader::ProgramLinkage::ReleaseDataAndPropagate()
 {
     if (GetData() != nullptr)
     {
+#if PEGASUS_ENABLE_DETAILED_LOG
+#if PEGASUS_ENABLE_PROXIES
+        PG_LOG('SHDR', "Destroying the GPU data of program linkage \"%s\"", GetName());
+#else
+        PG_LOG('SHDR', "Destroying the GPU data of a program linkage");
+#endif
+#endif  // PEGASUS_ENABLE_DETAILED_LOG
+
         mFactory->DestroyProgramGPUData(&(*GetData()));
     }
 }
@@ -55,6 +63,15 @@ Pegasus::Graph::NodeData* Pegasus::Shader::ProgramLinkage::AllocateData() const
 void Pegasus::Shader::ProgramLinkage::GenerateData()
 {
     PG_ASSERT(GetData() != nullptr);
+
+#if PEGASUS_ENABLE_DETAILED_LOG
+#if PEGASUS_ENABLE_PROXIES
+    PG_LOG('SHDR', "Generating the GPU data of program linkage \"%s\"", GetName());
+#else
+    PG_LOG('SHDR', "Generating the GPU data of a program linkage");
+#endif
+#endif  // PEGASUS_ENABLE_DETAILED_LOG
+        
     mFactory->GenerateProgramGPUData(&(*this), &(*GetData()));
 }
 

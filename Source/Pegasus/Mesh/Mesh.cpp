@@ -56,11 +56,13 @@ MeshDataReturn Mesh::GetUpdatedMeshData()
     MeshDataRef meshData = Graph::OutputNode::GetUpdatedData(updated);
     if (meshData->IsGPUDataDirty())
     {
+#if PEGASUS_ENABLE_DETAILED_LOG
 #if PEGASUS_ENABLE_PROXIES
         PG_LOG('MESH', "Generating the GPU data of mesh \"%s\"", GetName());
 #else
         PG_LOG('MESH', "Generating the GPU data of a mesh");
 #endif
+#endif  // PEGASUS_ENABLE_DETAILED_LOG
 
         mFactory->GenerateMeshGPUData(&(*meshData));
     }
@@ -90,6 +92,14 @@ void Mesh::ReleaseGPUData()
     bool dummyVariable = false;
     if (GetNumInputs() == 1 && GetInput(0)->GetUpdatedData(dummyVariable) != nullptr && mFactory != nullptr)
     {
+#if PEGASUS_ENABLE_DETAILED_LOG
+#if PEGASUS_ENABLE_PROXIES
+        PG_LOG('TXTR', "Destroying the GPU data of mesh \"%s\"", GetName());
+#else
+        PG_LOG('TXTR', "Destroying the GPU data of a mesh");
+#endif
+#endif  // PEGASUS_ENABLE_DETAILED_LOG
+
         mFactory->DestroyNodeGPUData((MeshData*)&(*GetInput(0)->GetUpdatedData(dummyVariable)));
     }
 }

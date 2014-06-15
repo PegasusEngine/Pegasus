@@ -43,9 +43,19 @@ bool OperatorNode::Update()
         dirtyFlagSet |= GetInput(i)->Update();
     }
 
+    if (IsDataAllocated() && GetPropertyGrid().IsDirty())
+    {
+        // If the property grid has members that are updated, invalidate the data
+        dirtyFlagSet = true;
+    }
+
+    // Validate the property grid to track any subsequent changes
+    GetPropertyGrid().Validate();
+
     if (dirtyFlagSet)
     {
-        // If any input is dirty, invalidate the node data if allocated
+        // If any input is dirty or if the property grid has changes,
+        // invalidate the node data if allocated
         InvalidateData();
         return true;
     }

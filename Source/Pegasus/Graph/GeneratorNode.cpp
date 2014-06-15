@@ -24,6 +24,15 @@ GeneratorNode::GeneratorNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator
 
 bool GeneratorNode::Update()
 {
+    if (IsDataAllocated() && GetPropertyGrid().IsDirty())
+    {
+        // If the property grid has members that are updated, invalidate the data
+        GetData()->Invalidate();
+    }
+
+    // Validate the property grid to track any subsequent changes
+    GetPropertyGrid().Validate();
+
     // Since the node is a generator, there is no input node to check.
     // We directly return the state of the node data.
     return IsDataDirty();

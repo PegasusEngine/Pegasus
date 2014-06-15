@@ -14,6 +14,7 @@
 #include "Pegasus/Texture/Generator/ConstantColorGenerator.h"
 #include "Pegasus/Texture/Generator/GradientGenerator.h"
 #include "Pegasus/Texture/Operator/AddOperator.h"
+#include "Pegasus/Math/Scalar.h"
 
 
 static const char * VERTEX_SHADER = "Shaders\\TextureTest.vs";
@@ -40,7 +41,6 @@ void TextureTestBlock::Initialize()
     Pegasus::Mesh::MeshGeneratorRef quadGenerator = GetMeshManager()->CreateMeshGeneratorNode("QuadGenerator");
     mQuad = GetMeshManager()->CreateMeshNode();
     mQuad->SetGeneratorInput(quadGenerator);
-    mQuad->GetUpdatedMeshData();
 
     // Set up shaders
     Pegasus::Shader::ShaderManager * const shaderManager = GetShaderManager();
@@ -106,6 +106,12 @@ void TextureTestBlock::Shutdown()
 
 void TextureTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
 {
+    // Test dynamic data for the gradients
+    Pegasus::Texture::GradientGenerator * gradientGenerator1 = static_cast<Pegasus::Texture::GradientGenerator *>(mTextureGradientGenerator1);
+    Pegasus::Math::Vec3 & point0 = gradientGenerator1->GetPoint0();
+    point0.y = Pegasus::Math::Sin(beat * 2.0f) * 0.5f + 0.5f;
+    gradientGenerator1->SetPoint0(point0);
+
     // Update the graph of all textures and meshes, in case they have dynamic data
     mTexture1->Update();
     mTexture2->Update();

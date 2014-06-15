@@ -290,6 +290,9 @@ void GLShaderFactory::GenerateShaderGPUData (Pegasus::Shader::ShaderStage * shad
         );
     }
     nodeData->SetNodeGPUData(reinterpret_cast<Pegasus::Graph::NodeGPUData*>(gpuData));
+
+    // Since the shader data has been updated, set the node GPU data as non-dirty
+    nodeData->ValidateGPUData();
 }
 
 //! Destroy GPU data to shader stage
@@ -388,8 +391,9 @@ void GLShaderFactory::GenerateProgramGPUData (Pegasus::Shader::ProgramLinkage * 
         // populate reflection data for quick draw calls in meshes
         Pegasus::Render::PopulateReflectionInfo(mAllocator, gpuData->mHandle, gpuData->mReflection);
     }
-    
 
+    // Since the shader data has been updated, set the node GPU data as non-dirty
+    nodeData->ValidateGPUData();
 }
 
 //! Destroy GPU data to program

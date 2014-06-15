@@ -71,6 +71,14 @@ void Pegasus::Shader::ShaderStage::ReleaseDataAndPropagate()
 {
     if (GetData() != nullptr)
     {
+#if PEGASUS_ENABLE_DETAILED_LOG
+#if PEGASUS_ENABLE_PROXIES
+    PG_LOG('SHDR', "Destroying the GPU data of shader stage \"%s\"", GetName());
+#else
+    PG_LOG('SHDR', "Destroying the GPU data of a shader stage");
+#endif
+#endif  // PEGASUS_ENABLE_DETAILED_LOG
+
         mFactory->DestroyShaderGPUData(&(*GetData()));
     }
     Pegasus::Graph::Node::ReleaseDataAndPropagate();
@@ -172,6 +180,15 @@ Pegasus::Graph::NodeData * Pegasus::Shader::ShaderStage::AllocateData() const
 void Pegasus::Shader::ShaderStage::GenerateData()
 {
     PG_ASSERT(GetData() != nullptr);
+
+#if PEGASUS_ENABLE_DETAILED_LOG
+#if PEGASUS_ENABLE_PROXIES
+    PG_LOG('SHDR', "Generating the GPU data of shader stage \"%s\"", GetName());
+#else
+    PG_LOG('SHDR', "Generating the GPU data of a shader stage");
+#endif
+#endif  // PEGASUS_ENABLE_DETAILED_LOG
+
     GRAPH_EVENT_DISPATCH(
         this,
         Pegasus::Shader::CompilationNotification, 
@@ -180,6 +197,7 @@ void Pegasus::Shader::ShaderStage::GenerateData()
         0, // unused
         "" // unused
     );
+
     mFactory->GenerateShaderGPUData(&(*this), &(*GetData()));
 } 
 

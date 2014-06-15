@@ -36,65 +36,70 @@ public:
     virtual void GenerateMeshGPUData(Pegasus::Mesh::MeshData * nodeData);
     virtual void DestroyNodeGPUData(Pegasus::Mesh::MeshData * nodeData);
 private:
-    Pegasus::Render::OGLMeshGPUData * GetOrAllocateGPUData(Pegasus::Mesh::MeshData * nodeData);
+    Pegasus::Render::OGLMeshGPUData * AllocateGPUData(Pegasus::Mesh::MeshData * nodeData);
+    Pegasus::Render::OGLMeshGPUData * GetGPUData(Pegasus::Mesh::MeshData * nodeData);
     Pegasus::Alloc::IAllocator * mAllocator;
 };
 
 
-Pegasus::Render::OGLMeshGPUData * GLMeshFactory::GetOrAllocateGPUData(Pegasus::Mesh::MeshData * nodeData)
+Pegasus::Render::OGLMeshGPUData * GLMeshFactory::AllocateGPUData(Pegasus::Mesh::MeshData * nodeData)
 {
-    Pegasus::Render::OGLMeshGPUData * meshGPUData = nullptr;
-    if (nodeData->GetNodeGPUData() == nullptr)
+    PG_ASSERT(nodeData != nullptr);
+    PG_ASSERT(nodeData->GetNodeGPUData() == nullptr);
+
+    Pegasus::Render::OGLMeshGPUData * meshGPUData =
+            PG_NEW(mAllocator,
+                   -1,
+                   "Mesh GPU Data",
+                   Pegasus::Alloc::PG_MEM_TEMP)
+                   Pegasus::Render::OGLMeshGPUData();
+
+    // setup the draw state
+    meshGPUData->mDrawState.mIsIndexed = false;
+    meshGPUData->mDrawState.mIndexCount  = 0;
+    meshGPUData->mDrawState.mVertexCount = 0;
+    meshGPUData->mDrawState.mPrimitive = GL_TRIANGLES; // defaulting to triangles
+
+    // setting up empty VAO table
+    meshGPUData->mVAOTableSize = VAO_TABLE_INCREMENT;
+    meshGPUData->mVAOTableCount = 0;
+    meshGPUData->mVAOTable  = PG_NEW_ARRAY (
+        mAllocator,
+        -1,
+        "Mesh GPU VAO table",
+        Pegasus::Alloc::PG_MEM_TEMP,
+        Pegasus::Render::OGLMeshGPUData::VAOEntry,
+        VAO_TABLE_INCREMENT
+    );
+
+    GLuint VAONames[VAO_TABLE_INCREMENT];
+    glGenVertexArrays(VAO_TABLE_INCREMENT, VAONames);
+
+    for (int i = 0; i < VAO_TABLE_INCREMENT; ++i)
     {
-        meshGPUData = PG_NEW(
-            mAllocator,
-            -1,
-            "Mesh GPU Data",
-            Pegasus::Alloc::PG_MEM_TEMP)
-            Pegasus::Render::OGLMeshGPUData();
-
-        //setup the draw state
-        meshGPUData->mDrawState.mIsIndexed = false;
-        meshGPUData->mDrawState.mIndexCount  = 0;
-        meshGPUData->mDrawState.mVertexCount = 0;
-        meshGPUData->mDrawState.mPrimitive = GL_TRIANGLES; // defaulting to triangles
-
-        // setting up empty vao table
-        meshGPUData->mVAOTableSize = VAO_TABLE_INCREMENT;
-        meshGPUData->mVAOTableCount = 0;
-        meshGPUData->mVAOTable  = PG_NEW_ARRAY (
-            mAllocator,
-            -1,
-            "Mesh GPU VAO table",
-            Pegasus::Alloc::PG_MEM_TEMP,
-            Pegasus::Render::OGLMeshGPUData::VAOEntry,
-            VAO_TABLE_INCREMENT
-        );
-
-        GLuint VAONames[VAO_TABLE_INCREMENT];
-        glGenVertexArrays(VAO_TABLE_INCREMENT, VAONames);
-
-        for (int i = 0; i < VAO_TABLE_INCREMENT; ++i)
-        {
-            meshGPUData->mVAOTable[i].mVAOName = VAONames[i];
-        }
-
-        // setting up stream table
-        for (int i = 0; i < MESH_MAX_STREAMS; ++i)
-        {
-            meshGPUData->mBufferTable[i] = GL_INVALID_INDEX;
-        }
-
-        meshGPUData->mIndexBuffer = GL_INVALID_INDEX;
-
-        //set the brand new mesh gpu data
-        nodeData->SetNodeGPUData(reinterpret_cast<Pegasus::Graph::NodeGPUData*>(meshGPUData));
+        meshGPUData->mVAOTable[i].mVAOName = VAONames[i];
     }
-    else
+
+    // setting up stream table
+    for (int i = 0; i < MESH_MAX_STREAMS; ++i)
     {
-        meshGPUData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OGLMeshGPUData, nodeData->GetNodeGPUData());
+        meshGPUData->mBufferTable[i] = GL_INVALID_INDEX;
     }
+
+    meshGPUData->mIndexBuffer = GL_INVALID_INDEX;
+
+    // set the brand new mesh GPU data
+    nodeData->SetNodeGPUData(reinterpret_cast<Pegasus::Graph::NodeGPUData*>(meshGPUData));
+
     return meshGPUData;
+}
+
+Pegasus::Render::OGLMeshGPUData * GLMeshFactory::GetGPUData(Pegasus::Mesh::MeshData * nodeData)
+{
+    PG_ASSERT(nodeData != nullptr);
+    PG_ASSERT(nodeData->GetNodeGPUData() != nullptr);
+
+    return PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OGLMeshGPUData, nodeData->GetNodeGPUData());
 }
 
 //! API function that converts from a nodeData to a GPU valid OpenGL handle for a mesh
@@ -111,8 +116,20 @@ void GLMeshFactory::GenerateMeshGPUData(Pegasus::Mesh::MeshData * nodeData)
         GL_POINT
     };
 
-    Pegasus::Render::OGLMeshGPUData * gpuData = GetOrAllocateGPUData(nodeData);
-    // count the streams we have and allocate appropiate size of streams.
+    Pegasus::Render::OGLMeshGPUData * gpuData = nullptr;
+    bool newlyAllocated = false;
+    if (nodeData->GetNodeGPUData() != nullptr)
+    {
+        gpuData = GetGPUData(nodeData);
+    }
+    else
+    {
+        newlyAllocated = true;
+        gpuData = AllocateGPUData(nodeData);
+    }
+    PG_ASSERT(gpuData != nullptr);
+
+    // count the streams we have and allocate appropriate size of streams.
     const Pegasus::Mesh::MeshConfiguration& meshConfig = nodeData->GetConfiguration();
 
     // configuring draw state
@@ -129,8 +146,16 @@ void GLMeshFactory::GenerateMeshGPUData(Pegasus::Mesh::MeshData * nodeData)
                 glGenBuffers(1, &gpuData->mBufferTable[stream]);
             }
             glBindBuffer(GL_COPY_WRITE_BUFFER, gpuData->mBufferTable[stream]);
-            glBufferData(GL_COPY_WRITE_BUFFER, byteSize, nodeData->GetStream<void>(stream),
-                meshConfig.GetIsDynamic() ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+            if (newlyAllocated)
+            {
+                glBufferData(GL_COPY_WRITE_BUFFER, byteSize, nodeData->GetStream<void>(stream),
+                             meshConfig.GetIsDynamic() ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+            }
+            else
+            {
+                //! \todo Investigate the use of glMapBuffer(), may be faster
+                glBufferSubData(GL_COPY_WRITE_BUFFER, 0, byteSize, nodeData->GetStream<void>(stream));
+            }
         }
     }
 
@@ -143,15 +168,25 @@ void GLMeshFactory::GenerateMeshGPUData(Pegasus::Mesh::MeshData * nodeData)
             glGenBuffers(1, &gpuData->mIndexBuffer);
         }
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gpuData->mIndexBuffer);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(short) * nodeData->GetIndexCount(), 
-                     nodeData->GetIndexBuffer(),
-                     meshConfig.GetIsDynamic() ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-
+        if (newlyAllocated)
+        {
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(short) * nodeData->GetIndexCount(), 
+                         nodeData->GetIndexBuffer(),
+                         meshConfig.GetIsDynamic() ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+        }
+        else
+        {
+            glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(short) * nodeData->GetIndexCount(), 
+                            nodeData->GetIndexBuffer());
+        }
     }
     else
     {
         gpuData->mDrawState.mIsIndexed = false;
     }
+
+    // Since the mesh data has been updated, set the node GPU data as non-dirty
+    nodeData->ValidateGPUData();
 }
 
 //! API function that deletes any GPU data inside the node data, if any

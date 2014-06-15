@@ -164,7 +164,7 @@ struct PropertyDefinition<Math::Color8RGBA>
 #define DECLARE_PROPERTY(type, name)                                                \
     public:                                                                         \
         inline PropertyGrid::PropertyDefinition<type>::ReturnType Get##name() const { return mProperty##name; }         \
-        inline void Set##name(PropertyGrid::PropertyDefinition<type>::ParamType value) { mProperty##name = value; }     \
+        inline void Set##name(PropertyGrid::PropertyDefinition<type>::ParamType value) { mProperty##name = value; GetPropertyGrid().Invalidate(); }     \
     private:                                                                        \
         PropertyGrid::PropertyDefinition<type>::VarType mProperty##name;            \
 
@@ -222,6 +222,18 @@ public:
     //! \note Called by \a IMPLEMENT_PROPERTY()
     template <typename T>
     void RegisterProperty(const char * name, T * varPtr, const char * className);
+
+    //! Invalidate the property grid, to be called after a member is updated,
+    //! to tell the property grid owner to regenerate its data
+    inline void Invalidate() { mDirty = true; }
+
+    //! Test if the property grid is dirty, meaning that at least one member has changed
+    //! \return True if the dirty flag is set
+    inline bool IsDirty() const { return mDirty; }
+
+    //! Validate the property grid, to be called by the property grid owner
+    //! to tell its data has been regenerated with the current member data
+    inline void Validate() { mDirty = false; }
 
     //------------------------------------------------------------------------------------
 
@@ -285,6 +297,9 @@ private:
     void RegisterProperty(PropertyType type, int size, const char * name,
                           void * varPtr, const char * className);
 
+    //! Set to true after a member is updated,
+    //! to tell the property grid owner to regenerate its data
+    bool mDirty;
 
     //! \todo Store list of PropertyRecord, filled by RegisterProperty()
 };

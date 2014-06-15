@@ -41,34 +41,51 @@ public:
     virtual void DestroyNodeGPUData(Pegasus::Texture::TextureData * nodeData);
 
 private:
-    Pegasus::Render::OGLTextureGPUData * GetOrAllocateGPUData(Pegasus::Texture::TextureData * textureData);
+    Pegasus::Render::OGLTextureGPUData * AllocateGPUData(Pegasus::Texture::TextureData * textureData);
+    Pegasus::Render::OGLTextureGPUData * GetGPUData(Pegasus::Texture::TextureData * textureData);
     Pegasus::Alloc::IAllocator * mAllocator;
 };
 
-Pegasus::Render::OGLTextureGPUData * GLTextureFactory::GetOrAllocateGPUData(Pegasus::Texture::TextureData * nodeData)
+Pegasus::Render::OGLTextureGPUData * GLTextureFactory::AllocateGPUData(Pegasus::Texture::TextureData * nodeData)
 {
-    Pegasus::Render::OGLTextureGPUData * textureGPUData = nullptr;
-    if (nodeData->GetNodeGPUData() == nullptr)
-    {
-        textureGPUData = PG_NEW(
-            mAllocator,
-            -1,
-            "Texture GPU Data",
-            Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Render::OGLTextureGPUData();
+    PG_ASSERT(nodeData != nullptr);
+    PG_ASSERT(nodeData->GetNodeGPUData() == nullptr);
 
-        glGenTextures(1, &textureGPUData->mHandle);
-        nodeData->SetNodeGPUData(reinterpret_cast<Pegasus::Graph::NodeGPUData*>(textureGPUData));
-    }
-    else
-    {
-        textureGPUData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OGLTextureGPUData, nodeData->GetNodeGPUData());
-    }
+    Pegasus::Render::OGLTextureGPUData * textureGPUData =
+            PG_NEW(mAllocator,
+                   -1,
+                   "Texture GPU Data",
+                   Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Render::OGLTextureGPUData();
+
+    glGenTextures(1, &textureGPUData->mHandle);
+    nodeData->SetNodeGPUData(reinterpret_cast<Pegasus::Graph::NodeGPUData*>(textureGPUData));
+
     return textureGPUData;
+}
+
+Pegasus::Render::OGLTextureGPUData * GLTextureFactory::GetGPUData(Pegasus::Texture::TextureData * nodeData)
+{
+    PG_ASSERT(nodeData != nullptr);
+    PG_ASSERT(nodeData->GetNodeGPUData() != nullptr);
+
+    return PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OGLTextureGPUData, nodeData->GetNodeGPUData());
 }
 
 void GLTextureFactory::GenerateTextureGPUData(Pegasus::Texture::TextureData * nodeData)
 {
-    Pegasus::Render::OGLTextureGPUData * gpuData = GetOrAllocateGPUData(nodeData);
+    Pegasus::Render::OGLTextureGPUData * gpuData = nullptr;
+    bool newlyAllocated = false;
+    if (nodeData->GetNodeGPUData() != nullptr)
+    {
+        gpuData = GetGPUData(nodeData);
+    }
+    else
+    {
+        newlyAllocated = true;
+        gpuData = AllocateGPUData(nodeData);
+    }
+    PG_ASSERT(gpuData != nullptr);
+    
     glBindTexture(GL_TEXTURE_2D, gpuData->mHandle);
 
     const Pegasus::Texture::TextureConfiguration& texConfig = nodeData->GetConfiguration();
@@ -80,23 +97,45 @@ void GLTextureFactory::GenerateTextureGPUData(Pegasus::Texture::TextureData * no
         GL_RGBA
     };
 
-    glTexImage2D(
-            GL_TEXTURE_2D, 
+    //! \todo Support all texture types
+    PG_ASSERTSTR(texConfig.GetType() == Pegasus::Texture::TextureConfiguration::TYPE_2D,
+                 "Unsupported texture format. Only 2D textures are supported for the moment");
+
+    if (newlyAllocated)
+    {
+        glTexImage2D(
+            GL_TEXTURE_2D,
             0, 
             GLPixelFormatTranslation[texConfig.GetPixelFormat()],
-            texConfig.GetWidth(), 
-            texConfig.GetHeight(), 
-            0, 
+            texConfig.GetWidth(),
+            texConfig.GetHeight(),
+            0,
             GLPixelFormatTranslation[texConfig.GetPixelFormat()],
             GL_UNSIGNED_BYTE,
             texData);
+    }
+    else
+    {
+        glTexSubImage2D(
+            GL_TEXTURE_2D,
+            0,
+            0,
+            0,
+            texConfig.GetWidth(),
+            texConfig.GetHeight(),
+            GLPixelFormatTranslation[texConfig.GetPixelFormat()],
+            GL_UNSIGNED_BYTE,
+            texData);
+    }
 
-    //Default filter
+    // Default filter
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    
+
+    // Since the texture data has been updated, set the node GPU data as non-dirty
+    nodeData->ValidateGPUData();
 }
 
 void GLTextureFactory::DestroyNodeGPUData(Pegasus::Texture::TextureData * nodeData)

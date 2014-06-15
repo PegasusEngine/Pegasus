@@ -60,7 +60,6 @@ void KleberTriangleBlock::Initialize()
     Pegasus::Mesh::MeshGeneratorRef quadGenerator = GetMeshManager()->CreateMeshGeneratorNode("QuadGenerator");
     mQuadMesh = GetMeshManager()->CreateMeshNode();
     mQuadMesh->SetGeneratorInput(quadGenerator);
-    mQuadMesh->GetUpdatedMeshData();
 }
 
 //----------------------------------------------------------------------------------------

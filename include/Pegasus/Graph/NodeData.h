@@ -42,6 +42,9 @@ public:
     //! Set the data as non-dirty, usually after a call to \a GenerateData()
     inline void Validate() { mDirty = false; }
 
+    //! Set the GPU data as non-dirty
+    inline void ValidateGPUData() { mGPUDataDirty = false; }
+
     //! Test if the data is dirty
     //! \return True if the dirty flag is set
     inline bool IsDirty() const { return mDirty; }
@@ -50,11 +53,11 @@ public:
     //! \return True if the GPU data dirty flag is set
     inline bool IsGPUDataDirty() const { return mGPUDataDirty; }
 
-    //! Set custom node GPU data by user code,
-    //! the data is considered as validated, except if nodeGPUData is set to nullptr
+    //! Set custom node GPU data by user code
+    //! \note If nodeGPUData is set to nullptr, the GPU data is invalidated
     //! \param nodeGPUData External GPU data to store in the node data
     inline void SetNodeGPUData (NodeGPUData * nodeGPUData)
-        { mNodeGPUData = nodeGPUData; mGPUDataDirty = (nodeGPUData == nullptr); }
+        { mNodeGPUData = nodeGPUData; if (nodeGPUData == nullptr) { mGPUDataDirty = true; } }
 
     //! Get custom node GPU data set by user
     //! \return External GPU data stored in the node data, can be nullptr if invalid or dirty

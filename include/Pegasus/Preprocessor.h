@@ -265,6 +265,10 @@
 // Enable logging in the console output
 #define PEGASUS_ENABLE_LOG                  (PEGASUS_DEBUG || PEGASUS_OPT)
 
+// Enable the detailed logging
+// (performance issue, can flood the log window, but useful in the early stages of development)
+#define PEGASUS_ENABLE_DETAILED_LOG         (PEGASUS_ENABLE_LOG && PEGASUS_DEBUG)
+
 // Enable the assertion tests
 #define PEGASUS_ENABLE_ASSERT               (PEGASUS_DEBUG || PEGASUS_OPT)
 
@@ -284,15 +288,15 @@
     
 // Enable native application file opening, closing (or c runtime implementation)
 // See the implementation of the functions living in the Pegasus::Io namespace for more details
-#define PEGASUS_USE_NATIVE_IO_CALLS           1
+#define PEGASUS_USE_NATIVE_IO_CALLS         1
 
 //Enable node events only if dev mode. In rel mode the boiler plate code gets removed
 //Events are used to communicate information to an editor app.
-#define PEGASUS_USE_GRAPH_EVENTS      PEGASUS_DEV
+#define PEGASUS_USE_GRAPH_EVENTS            PEGASUS_DEV
 
-#define PEGASUS_SHADER_USE_SHADER_EVENTS      PEGASUS_DEV
+#define PEGASUS_SHADER_USE_SHADER_EVENTS    PEGASUS_DEV
 
-//Enable gpu data runTime Type Information, for safe casting (asserts thrown if wrong type being casted)
+// Enable GPU data RunTime Type Information, for safe casting (asserts thrown if wrong type being casted)
 #define PEGASUS_GRAPH_GPUDATA_RTTI          PEGASUS_DEBUG 
 
 #endif  // PEGASUS_PREPROCESSOR_H

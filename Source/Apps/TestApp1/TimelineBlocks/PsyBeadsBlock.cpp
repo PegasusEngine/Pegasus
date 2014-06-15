@@ -36,7 +36,6 @@ void PsyBeadsBlock::Initialize()
     Pegasus::Mesh::MeshGeneratorRef quadGenerator = GetMeshManager()->CreateMeshGeneratorNode("QuadGenerator");
     mQuad = GetMeshManager()->CreateMeshNode();
     mQuad->SetGeneratorInput(quadGenerator);
-    mQuad->GetUpdatedMeshData();
 
     // Set up shaders
     Pegasus::Shader::ShaderManager * const shaderManager = GetShaderManager();
