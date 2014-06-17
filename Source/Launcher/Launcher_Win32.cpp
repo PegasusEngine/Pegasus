@@ -302,7 +302,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     application->GetShaderManagerProxy()->RegisterEventListener(&shaderListener);
     application->GetTextureManagerProxy()->RegisterEventListener(&textureListener);
-    application->RegisterMeshEventListener(&meshListener);
+    application->GetMeshManagerProxy()->RegisterEventListener(&meshListener);
 
 
     // Set up window config

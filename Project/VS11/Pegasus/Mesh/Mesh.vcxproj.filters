@@ -24,6 +24,12 @@
     <Filter Include="Include\Shared">
       <UniqueIdentifier>{d48793c3-c08f-4592-8540-5abffbca8dc7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Include\Proxy">
+      <UniqueIdentifier>{873c09f9-da0b-4094-8d1f-1513153b2f98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Proxy">
+      <UniqueIdentifier>{a1f8d380-d0ff-4427-b230-49b678e74843}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\Mesh.h">
@@ -59,6 +65,15 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\Shared\MeshEvent.h">
       <Filter>Include\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\Generator\CubeGenerator.h">
+      <Filter>Include\Generator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\Proxy\MeshManagerProxy.h">
+      <Filter>Include\Proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\Shared\IMeshManagerProxy.h">
+      <Filter>Include\Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Mesh.cpp">
@@ -84,6 +99,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Generator\QuadGenerator.cpp">
       <Filter>Source\Generator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Generator\CubeGenerator.cpp">
+      <Filter>Source\Generator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Proxy\MeshManagerProxy.cpp">
+      <Filter>Source\Proxy</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

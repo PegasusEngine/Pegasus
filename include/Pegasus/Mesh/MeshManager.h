@@ -18,6 +18,10 @@
 #include "Pegasus/Mesh/MeshGenerator.h"
 #include "Pegasus/Mesh/MeshOperator.h"
 
+#if PEGASUS_ENABLE_PROXIES
+#include "Pegasus/Mesh/Proxy/MeshManagerProxy.h"
+#endif
+
 namespace Pegasus {
     namespace Graph {
         class NodeManager;
@@ -73,6 +77,15 @@ public:
     //! \param the event listener to use
     void RegisterEventListener(IMeshEventListener * eventListener) { mEventListener = eventListener; }
 #endif
+
+#if PEGASUS_ENABLE_PROXIES
+    //! Get the proxy associated with the mesh manager
+    //! \return Proxy associated with the mesh manager
+    //@{
+    inline MeshManagerProxy * GetProxy() { return &mProxy; }
+    inline const MeshManagerProxy * GetProxy() const { return &mProxy; }
+    //@}
+#endif
     
 private:
 
@@ -91,6 +104,9 @@ private:
 
 #if PEGASUS_USE_GRAPH_EVENTS
     IMeshEventListener * mEventListener;
+#endif
+#if PEGASUS_ENABLE_PROXIES
+    MeshManagerProxy mProxy;
 #endif
 };
 

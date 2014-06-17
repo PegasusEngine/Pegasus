@@ -46,16 +46,12 @@ public:
     virtual Timeline::ITimelineProxy * GetTimelineProxy() { return mApplication->GetTimeline()->GetProxy(); }
     virtual Shader::IShaderManagerProxy * GetShaderManagerProxy() { return mApplication->GetShaderManager()->GetProxy(); }
     virtual Texture::ITextureManagerProxy * GetTextureManagerProxy() { return mApplication->GetTextureManager()->GetProxy(); }
+    virtual Mesh::IMeshManagerProxy * GetMeshManagerProxy() { return mApplication->GetMeshManager()->GetProxy(); }
 
     // Stateflow API
     virtual void Initialize();
     virtual void Shutdown();
     virtual void Load();
-
-#if PEGASUS_USE_GRAPH_EVENTS
-    //! \todo Temporary. Remove as soon as the proper interfaces are defined
-    virtual void RegisterMeshEventListener(Mesh::IMeshEventListener * eventListener);
-#endif  // PEGASUS_USE_GRAPH_EVENTS
 
     // Proxy accessors
     virtual Timeline::ITimelineProxy* GetTimeline() const;

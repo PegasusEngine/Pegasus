@@ -53,6 +53,7 @@ void MeshData::AllocateIndexes(int count)
 {
     if (mConfiguration.GetIsIndexed())
     {
+        mIndexCount = count;
         mIndexBuffer.Grow(GetAllocator(), count);
     }
 }

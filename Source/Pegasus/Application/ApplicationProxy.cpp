@@ -103,17 +103,6 @@ void ApplicationProxy::Load()
 
 //----------------------------------------------------------------------------------------
 
-#if PEGASUS_USE_GRAPH_EVENTS
-
-void ApplicationProxy::RegisterMeshEventListener(Mesh::IMeshEventListener * eventListener)
-{
-    mApplication->GetMeshManager()->RegisterEventListener(eventListener);
-}
-
-#endif
-
-//----------------------------------------------------------------------------------------
-
 Timeline::ITimelineProxy* ApplicationProxy::GetTimeline() const
 {
     return mApplication->GetTimeline()->GetProxy();

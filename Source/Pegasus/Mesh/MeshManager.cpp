@@ -11,6 +11,7 @@
 
 #include "Pegasus/Mesh/MeshManager.h"
 #include "Pegasus/Mesh/Generator/QuadGenerator.h"
+#include "Pegasus/Mesh/Generator/CubeGenerator.h"
 #include "Pegasus/Mesh/IMeshFactory.h"
 #include "Pegasus/Graph/NodeManager.h"
 
@@ -26,6 +27,9 @@ namespace Mesh {
     
 MeshManager::MeshManager(Graph::NodeManager * nodeManager, IMeshFactory * factory)
 :   mNodeManager(nodeManager), mFactory(factory)
+#if PEGASUS_ENABLE_PROXIES
+    ,mProxy(this)
+#endif
 #if PEGASUS_USE_GRAPH_EVENTS
     //initialize without an event listener
     , mEventListener(nullptr)
@@ -138,6 +142,7 @@ void MeshManager::RegisterAllMeshNodes()
     // IMPORTANT! Add here every mesh generator node that is created,
     //            and update the list of #includes above
     REGISTER_MESH_NODE(QuadGenerator);
+    REGISTER_MESH_NODE(CubeGenerator);
 
 }
 

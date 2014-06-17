@@ -41,6 +41,7 @@ namespace Pegasus {
     }
 
     namespace Mesh {
+        class IMeshManagerProxy;
 #if PEGASUS_USE_GRAPH_EVENTS
         class IMeshEventListener;
 #endif
@@ -97,6 +98,10 @@ public:
     //! \return Texture manager
     virtual Texture::ITextureManagerProxy * GetTextureManagerProxy() = 0;
 
+    //! Gets the mesh manager, for mesh and GPU program controls
+    //! \return Mesh manager
+    virtual Mesh::IMeshManagerProxy * GetMeshManagerProxy() = 0;
+
 
     //! Initializes this application
     //! \param config  Config structure for the application.
@@ -107,15 +112,6 @@ public:
 
     //! Load the assets required to render the timeline blocks
     virtual void Load() = 0;
-
-#if PEGASUS_USE_GRAPH_EVENTS
-
-    //! \todo Temporary. Remove as soon as the proper interface is defined
-    virtual void RegisterMeshEventListener(Mesh::IMeshEventListener * eventListener) = 0;
-
-#endif  // PEGASUS_USE_GRAPH_EVENTS
-
-
     //! \todo Set update mode
 
 

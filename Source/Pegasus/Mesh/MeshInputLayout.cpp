@@ -89,10 +89,10 @@ void MeshInputLayout::GenerateEditorLayout(MeshInputLayout::LayoutUsageBitMask m
     {
         AttrDesc attrNorm = {
             MeshInputLayout::NORMAL,
-            MeshInputLayout::SHORT, // 16 bit precision
+            MeshInputLayout::FLOAT, // 16 bit precision
             offset, // byte offset
             0, // semantic index
-            3, // vec3
+            3, // vec3 
             0, // use the first stream
             true, // snorm
         };
