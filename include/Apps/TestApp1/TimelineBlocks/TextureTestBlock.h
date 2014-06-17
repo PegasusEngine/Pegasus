@@ -67,7 +67,7 @@ private:
     Pegasus::Render::Uniform mScreenRatioUniform;
     Pegasus::Render::Uniform mTextureUniform;
     Pegasus::Render::Uniform mTextureUniform2;
-    Pegasus::Texture::TextureGeneratorRef mTextureGenerator1, mTextureGenerator2, mTextureGradientGenerator1, mTextureGradientGenerator2;
+    Pegasus::Texture::TextureGeneratorRef mTextureGenerator1, mTextureGenerator2, mTextureGradientGenerator1, mTextureGradientGenerator2, mTexturePixelsGenerator1;
     Pegasus::Texture::TextureRef mTexture1, mTexture2, mTextureGradient1, mTextureGradient2, mTextureAdd1, mTextureAdd2;
     //GLuint mTextureSampler;
 };

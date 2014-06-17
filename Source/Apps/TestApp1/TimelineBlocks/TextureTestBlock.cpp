@@ -13,6 +13,7 @@
 #include "Pegasus/Render/Render.h"
 #include "Pegasus/Texture/Generator/ConstantColorGenerator.h"
 #include "Pegasus/Texture/Generator/GradientGenerator.h"
+#include "Pegasus/Texture/Generator/PixelsGenerator.h"
 #include "Pegasus/Texture/Operator/AddOperator.h"
 #include "Pegasus/Math/Scalar.h"
 
@@ -106,11 +107,13 @@ void TextureTestBlock::Shutdown()
 
 void TextureTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
 {
-    // Test dynamic data for the gradients
+    // Test dynamic data for the first gradient and the pixels generator
     Pegasus::Texture::GradientGenerator * gradientGenerator1 = static_cast<Pegasus::Texture::GradientGenerator *>(mTextureGradientGenerator1);
     Pegasus::Math::Vec3 & point0 = gradientGenerator1->GetPoint0();
     point0.y = Pegasus::Math::Sin(beat * 2.0f) * 0.5f + 0.5f;
     gradientGenerator1->SetPoint0(point0);
+    Pegasus::Texture::PixelsGenerator * pixelsGenerator1 = static_cast<Pegasus::Texture::PixelsGenerator *>(mTexturePixelsGenerator1);
+    pixelsGenerator1->SetNumPixels((unsigned int)(Pegasus::Math::Saturate((beat - 12.0f) / 3.0f) * 16384.0f));
 
     // Update the graph of all textures and meshes, in case they have dynamic data
     mTexture1->Update();
@@ -291,8 +294,19 @@ void TextureTestBlock::CreateTextureAdd1()
     addOperator1Node->AddGeneratorInput(mTextureGradientGenerator1);
     addOperator1Node->AddGeneratorInput(mTextureGradientGenerator2);
 
+    mTexturePixelsGenerator1 = textureManager->CreateTextureGeneratorNode("PixelsGenerator", texConfig);
+    PixelsGenerator * pixelsGenerator1 = static_cast<PixelsGenerator *>(mTexturePixelsGenerator1);
+    pixelsGenerator1->SetBackgroundColor(Color8RGBA(0, 32, 0, 255));
+    pixelsGenerator1->SetColor0(Color8RGBA(0, 255, 0, 255));
+
+    TextureOperatorRef addOperator2Node = textureManager->CreateTextureOperatorNode("AddOperator", texConfig);
+    AddOperator * addOperator2 = static_cast<AddOperator *>(addOperator2Node);
+    addOperator2->SetClamp(true);
+    addOperator2Node->AddOperatorInput(addOperator1Node);
+    addOperator2Node->AddGeneratorInput(mTexturePixelsGenerator1);
+
     mTextureAdd1 = textureManager->CreateTextureNode(texConfig);
-    mTextureAdd1->SetOperatorInput(addOperator1Node);
+    mTextureAdd1->SetOperatorInput(addOperator2Node);
     mTextureAdd1->Update();
 
 #if PEGASUS_ENABLE_PROXIES

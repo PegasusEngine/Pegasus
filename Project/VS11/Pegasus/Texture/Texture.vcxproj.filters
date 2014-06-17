@@ -98,6 +98,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Proxy\TextureGeneratorProxy.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Generator\PixelsGenerator.h">
+      <Filter>Include\Generator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Texture.cpp">
@@ -141,6 +144,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Proxy\TextureGeneratorProxy.cpp">
       <Filter>Source\Proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Generator\PixelsGenerator.cpp">
+      <Filter>Source\Generator</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

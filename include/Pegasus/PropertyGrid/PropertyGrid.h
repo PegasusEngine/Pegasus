@@ -24,6 +24,7 @@ enum PropertyType
 {
     PROPERTYTYPE_BOOL = 0,
     PROPERTYTYPE_INT,
+    PROPERTYTYPE_UINT,
 
     PROPERTYTYPE_FLOAT,
     PROPERTYTYPE_VEC2,
@@ -63,6 +64,15 @@ struct PropertyDefinition<bool>
     typedef bool VarType;
     typedef bool ParamType;
     typedef bool ReturnType;
+};
+
+template <>
+struct PropertyDefinition<unsigned int>
+{
+    static const PropertyType PROPERTY_TYPE = PROPERTYTYPE_UINT;
+    typedef unsigned int VarType;
+    typedef unsigned int ParamType;
+    typedef unsigned int ReturnType;
 };
 
 template <>
