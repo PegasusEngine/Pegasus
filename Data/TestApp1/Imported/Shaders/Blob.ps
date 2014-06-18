@@ -36,7 +36,7 @@ void main()
             j = i; 
         }
     }
-    vec4 sphere = (d < 0.001 ? 1.0f : 0.0f) * vec4(0.7f * float(j)/32.0f + 0.2f, float(j)/32.0f + 0.1f,0,0);
+    vec4 sphere = (d < 0.001 ? 1.0 : 0.0) * vec4(0.7 * float(j)/32.0 + 0.2, float(j)/32.0 + 0.1,0,0);
     color = vec4(0,0,0.2,1) + sphere ;
 }
 
