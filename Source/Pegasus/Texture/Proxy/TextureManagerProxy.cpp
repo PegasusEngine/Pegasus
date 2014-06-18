@@ -16,7 +16,7 @@ PEGASUS_AVOID_EMPTY_FILE_WARNING
 
 #include "Pegasus/Texture/Proxy/TextureManagerProxy.h"
 #include "Pegasus/Texture/Proxy/TextureConfigurationProxy.h"
-#include "Pegasus/Texture/Proxy/TextureGeneratorProxy.h"
+#include "Pegasus/Texture/Proxy/TextureNodeProxy.h"
 #include "Pegasus/Texture/TextureManager.h"
 
 namespace Pegasus {
@@ -44,7 +44,7 @@ unsigned int TextureManagerProxy::GetNumTextures() const
 
 //----------------------------------------------------------------------------------------
 
-ITextureProxy * TextureManagerProxy::GetTexture(unsigned int index) const
+ITextureNodeProxy * TextureManagerProxy::GetTexture(unsigned int index) const
 {
     Texture * texture = mTextureManager->GetTracker().GetTexture(index);
     if (texture != nullptr)
@@ -59,8 +59,8 @@ ITextureProxy * TextureManagerProxy::GetTexture(unsigned int index) const
 
 //----------------------------------------------------------------------------------------
 
-ITextureGeneratorProxy * TextureManagerProxy::CreateGeneratorNode(const char * className,
-                                                                  ITextureConfigurationProxy * configurationProxy)
+ITextureNodeProxy * TextureManagerProxy::CreateGeneratorNode(const char * className,
+                                                             ITextureConfigurationProxy * configurationProxy)
 {
     // Convert the abstract configuration proxy to a concrete proxy, relying on the fact that
     // TextureConfigurationProxy is the only possible derived class from ITextureConfigurationProxy

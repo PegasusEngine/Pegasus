@@ -22,7 +22,7 @@ class QMdiSubWindow;
 
 namespace Pegasus {
     namespace Texture {
-        class ITextureProxy;
+        class ITextureNodeProxy;
     }
 }
 
@@ -64,7 +64,7 @@ public slots:
 
     //! Called to open a new tab for a given texture
     //! \param textureProxy Proxy of the texture to attach to the tab
-    void OpenTabForTexture(Pegasus::Texture::ITextureProxy * textureProxy);
+    void OpenTabForTexture(Pegasus::Texture::ITextureNodeProxy * textureProxy);
 
     //------------------------------------------------------------------------------------
     

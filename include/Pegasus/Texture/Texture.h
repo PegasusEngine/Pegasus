@@ -17,7 +17,7 @@
 #include "Pegasus/Texture/TextureData.h"
 #include "Pegasus/Texture/TextureGenerator.h"
 #include "Pegasus/Texture/TextureOperator.h"
-#include "Pegasus/Texture/Proxy/TextureProxy.h"
+#include "Pegasus/Texture/Proxy/TextureNodeProxy.h"
 
 namespace Pegasus {
 namespace Texture {
@@ -99,8 +99,8 @@ public:
     //! Get the proxy associated with the texture
     //! \return Proxy associated with the texture
     //@{
-    inline TextureProxy * GetProxy() { return &mProxy; }
-    inline const TextureProxy * GetProxy() const { return &mProxy; }
+    inline TextureNodeProxy * GetProxy() { return &mProxy; }
+    inline const TextureNodeProxy * GetProxy() const { return &mProxy; }
     //@}
 
     //! Set the tracker associated with the texture
@@ -125,7 +125,7 @@ private:
 
 #if PEGASUS_ENABLE_PROXIES
     //! Proxy associated with the texture
-    TextureProxy mProxy;
+    TextureNodeProxy mProxy;
 
     //! Tracker associated with the texture
     TextureTracker * mTracker;

@@ -17,7 +17,7 @@
 #include "Pegasus/Texture/TextureConfiguration.h"
 #include "Pegasus/Texture/TextureData.h"
 #include "Pegasus/Texture/TextureDeclaration.h"
-#include "Pegasus/Texture/Proxy/TextureGeneratorProxy.h"
+#include "Pegasus/Texture/Proxy/TextureNodeProxy.h"
 
 namespace Pegasus {
 namespace Texture {
@@ -73,8 +73,8 @@ public:
     //! Get the proxy associated with the texture generator
     //! \return Proxy associated with the texture generator
     //@{
-    inline TextureGeneratorProxy * GetProxy() { return &mProxy; }
-    inline const TextureGeneratorProxy * GetProxy() const { return &mProxy; }
+    inline TextureNodeProxy * GetProxy() { return &mProxy; }
+    inline const TextureNodeProxy * GetProxy() const { return &mProxy; }
     //@}
 
 #endif  // PEGASUS_ENABLE_PROXIES
@@ -113,7 +113,7 @@ private:
 
 #if PEGASUS_ENABLE_PROXIES
     //! Proxy associated with the texture generator
-    TextureGeneratorProxy mProxy;
+    TextureNodeProxy mProxy;
 #endif  // PEGASUS_ENABLE_PROXIES
 };
 

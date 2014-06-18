@@ -36,6 +36,8 @@ Node::Node(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocato
     //strncpy(mDOTDescription, "\"", MAX_DOT_DESCRIPTION_LENGTH);
     //strlcat(mDOTDescription, mName, MAX_DOT_DESCRIPTION_LENGTH);
     //strlcat(mDOTDescription, "\"", MAX_DOT_DESCRIPTION_LENGTH);
+
+    mNodeType = NODETYPE_UNKNOWN;
 #endif  // PEGASUS_ENABLE_PROXIES
 }
 
@@ -60,6 +62,42 @@ Node::~Node()
 
 void Node::InitProperties()
 {
+}
+
+//----------------------------------------------------------------------------------------
+
+Pegasus::Core::Ref<Node> Node::GetInput(unsigned int index) const
+{
+    if (index < GetNumInputs())
+    {
+        PG_ASSERTSTR(mInputs[index] != nullptr, "Trying to get the input node with index %d, but the node pointer is invalid", index);
+        return mInputs[index];
+    }
+    else
+    {
+        PG_FAILSTR("Trying to get the input node with index %d, but there are only %d inputs attached", index, mNumInputs);
+        return nullptr;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+bool Node::IsInput(const Pegasus::Core::Ref<Node> & inputNode) const
+{
+    PG_ASSERTSTR(inputNode != nullptr, "Trying to test if a nullptr node is an input of another one");
+
+    if (inputNode != nullptr)
+    {
+        for (unsigned int i = 0; i < mNumInputs; ++i)
+        {
+            if (mInputs[i] == inputNode)
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 //----------------------------------------------------------------------------------------
@@ -217,42 +255,6 @@ void Node::ReplaceInput(unsigned int index, const Pegasus::Core::Ref<Node> & inp
             mData->Invalidate();
         }
     }
-}
-
-//----------------------------------------------------------------------------------------
-
-Pegasus::Core::Ref<Node> Node::GetInput(unsigned int index) const
-{
-    if (index < GetNumInputs())
-    {
-        PG_ASSERTSTR(mInputs[index] != nullptr, "Trying to get the input node with index %d, but the node pointer is invalid", index);
-        return mInputs[index];
-    }
-    else
-    {
-        PG_FAILSTR("Trying to get the input node with index %d, but there are only %d inputs attached", index, mNumInputs);
-        return nullptr;
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
-bool Node::IsInput(const Pegasus::Core::Ref<Node> & inputNode) const
-{
-    PG_ASSERTSTR(inputNode != nullptr, "Trying to test if a nullptr node is an input of another one");
-
-    if (inputNode != nullptr)
-    {
-        for (unsigned int i = 0; i < mNumInputs; ++i)
-        {
-            if (mInputs[i] == inputNode)
-            {
-                return true;
-            }
-        }
-    }
-
-    return false;
 }
 
 //----------------------------------------------------------------------------------------

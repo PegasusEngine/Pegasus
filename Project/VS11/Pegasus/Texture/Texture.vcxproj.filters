@@ -71,23 +71,14 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\TextureEvent.h">
       <Filter>Include\Shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\ITextureProxy.h">
-      <Filter>Include\Shared</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\ITextureManagerProxy.h">
       <Filter>Include\Shared</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Proxy\TextureManagerProxy.h">
       <Filter>Include\Proxy</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Proxy\TextureProxy.h">
-      <Filter>Include\Proxy</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Proxy\TextureTracker.h">
       <Filter>Include\Proxy</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\ITextureGeneratorProxy.h">
-      <Filter>Include\Shared</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\ITextureConfigurationProxy.h">
       <Filter>Include\Shared</Filter>
@@ -100,6 +91,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Generator\PixelsGenerator.h">
       <Filter>Include\Generator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\ITextureNodeProxy.h">
+      <Filter>Include\Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Proxy\TextureNodeProxy.h">
+      <Filter>Include\Proxy</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -133,20 +130,17 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Proxy\TextureManagerProxy.cpp">
       <Filter>Source\Proxy</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Proxy\TextureProxy.cpp">
-      <Filter>Source\Proxy</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Proxy\TextureTracker.cpp">
       <Filter>Source\Proxy</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Proxy\TextureConfigurationProxy.cpp">
       <Filter>Source\Proxy</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Proxy\TextureGeneratorProxy.cpp">
-      <Filter>Source\Proxy</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Generator\PixelsGenerator.cpp">
       <Filter>Source\Generator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Proxy\TextureNodeProxy.cpp">
+      <Filter>Source\Proxy</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -18,6 +18,9 @@ namespace Graph {
 OutputNode::OutputNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :   Node(nodeAllocator, nodeDataAllocator)
 {
+#if PEGASUS_ENABLE_PROXIES
+    mNodeType = NODETYPE_OUTPUT;
+#endif  // PEGASUS_ENABLE_PROXIES
 }
 
 //----------------------------------------------------------------------------------------

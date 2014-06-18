@@ -16,7 +16,7 @@
 
 #include "Pegasus/Texture/Shared/ITextureManagerProxy.h"
 #include "Pegasus/Texture/Proxy/TextureTracker.h"
-#include "Pegasus/Texture/Proxy/TextureProxy.h"
+#include "Pegasus/Texture/Proxy/TextureNodeProxy.h"
 
 namespace Pegasus {
 namespace Texture {
@@ -49,15 +49,15 @@ public:
     //! Get one of the currently allocated textures
     //! \param index Index of the texture to get (< GetNumTextures())
     //! \return Proxy to the desired texture
-    virtual ITextureProxy * GetTexture(unsigned int index) const;
+    virtual ITextureNodeProxy * GetTexture(unsigned int index) const;
 
 
     //! Create a texture generator node by class name
     //! \param className Name of the texture generator node class to instantiate
     //! \param configurationProxy Proxy for the configuration of the texture, such as resolution and pixel format
-    //! \return Reference to the created node, null reference if an error occurred
-    virtual ITextureGeneratorProxy * CreateGeneratorNode(const char * className,
-                                                         ITextureConfigurationProxy * configurationProxy);
+    //! \return Proxy to the created node, null reference if an error occurred
+    virtual ITextureNodeProxy * CreateGeneratorNode(const char * className,
+                                                    ITextureConfigurationProxy * configurationProxy);
 
 
     //! Sets the event listener to be used for the texture manager

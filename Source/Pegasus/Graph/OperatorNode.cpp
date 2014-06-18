@@ -18,6 +18,9 @@ namespace Graph {
 OperatorNode::OperatorNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :   Node(nodeAllocator, nodeDataAllocator)
 {
+#if PEGASUS_ENABLE_PROXIES
+    mNodeType = NODETYPE_OPERATOR;
+#endif  // PEGASUS_ENABLE_PROXIES
 }
 
 //----------------------------------------------------------------------------------------

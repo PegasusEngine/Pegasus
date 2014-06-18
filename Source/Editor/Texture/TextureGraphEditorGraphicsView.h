@@ -16,7 +16,7 @@
 
 namespace Pegasus {
     namespace Texture {
-        class ITextureProxy;
+        class ITextureNodeProxy;
     }
 }
 
@@ -30,7 +30,7 @@ public:
     //! Constructor
     //! \param textureProxy Texture proxy associated with the graphics view (!= nullptr)
     //! \param parent Parent widget of the graphics view
-    TextureGraphEditorGraphicsView(Pegasus::Texture::ITextureProxy * textureProxy,
+    TextureGraphEditorGraphicsView(Pegasus::Texture::ITextureNodeProxy * textureProxy,
                                    QWidget * parent = 0);
 
     //! Destructor
@@ -39,14 +39,14 @@ public:
 
     //! Get the texture proxy associated with the graphics view
     //! \return Texture proxy associated with the graphics view (!= nullptr)
-    inline Pegasus::Texture::ITextureProxy * GetTextureProxy() const { return mTextureProxy; }
+    inline Pegasus::Texture::ITextureNodeProxy * GetTextureProxy() const { return mTextureProxy; }
 
     //------------------------------------------------------------------------------------
     
 private:
 
     //! Texture proxy associated with the graphics view (!= nullptr)
-    Pegasus::Texture::ITextureProxy * const mTextureProxy;
+    Pegasus::Texture::ITextureNodeProxy * const mTextureProxy;
 };
 
 

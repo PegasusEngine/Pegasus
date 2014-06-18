@@ -13,7 +13,7 @@
 #include "Pegasus/Texture/ITextureFactory.h"
 
 #if PEGASUS_ENABLE_PROXIES
-#include "Pegasus/Texture/Proxy/TextureProxy.h"
+#include "Pegasus/Texture/Proxy/TextureNodeProxy.h"
 #include "Pegasus/Texture/Proxy/TextureTracker.h"
 #endif  // PEGASUS_ENABLE_PROXIES
 

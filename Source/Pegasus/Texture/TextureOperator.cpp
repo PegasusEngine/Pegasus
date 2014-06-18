@@ -18,6 +18,9 @@ namespace Texture {
 TextureOperator::TextureOperator(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :   Graph::OperatorNode(nodeAllocator, nodeDataAllocator),
     mConfiguration()
+#if PEGASUS_ENABLE_PROXIES
+,   mProxy(this)
+#endif
 {
     //initialize event user data
     GRAPH_EVENT_INIT_DISPATCHER
@@ -29,6 +32,9 @@ TextureOperator::TextureOperator(const TextureConfiguration & configuration,
                                  Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :   Graph::OperatorNode(nodeAllocator, nodeDataAllocator),
     mConfiguration(configuration)
+#if PEGASUS_ENABLE_PROXIES
+,   mProxy(this)
+#endif
 {
     //initialize event user data
     GRAPH_EVENT_INIT_DISPATCHER

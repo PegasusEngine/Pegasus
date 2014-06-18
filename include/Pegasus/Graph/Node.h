@@ -44,6 +44,22 @@ public:
     //! \return Number of input nodes (from 0 to MAX_NUM_INPUTS - 1)
     inline unsigned int GetNumInputs() const { return mNumInputs; }
 
+    //! Test if an input node index is valid
+    //! \param index Index to test
+    //! \return True if the index is valid
+    inline bool IsInputIndexValid(unsigned int index) const { return (index < mNumInputs); }
+
+    //! Get an input node
+    //! \param Index of the input node to get (0 <= index < mNumInputs)
+    //! \return Reference to the input node, empty reference in case of error
+    //!         (equivalent to NodeReturn)
+    Pegasus::Core::Ref<Node> GetInput(unsigned int index) const;
+
+    //! Test if a node is attached as an input node of the current node
+    //! \param inputNode Node to test (equivalent to NodeIn)
+    //! \return True if inputNode is attached to the current node as an input node
+    bool IsInput(const Pegasus::Core::Ref<Node> & inputNode) const;
+
             
     //! Update the node internal state by pulling external parameters.
     //! This function sets the dirty flag of the node data if the internal state has changed
@@ -92,6 +108,20 @@ public:
     //! Test if the name of the node is defined
     //! \return True if the name is not an empty string
     inline bool IsNameDefined() const { return (mName[0] != '\0'); }
+
+    //! Definition of the different types of nodes
+    enum NodeType
+    {
+        NODETYPE_GENERATOR = 0,
+        NODETYPE_OPERATOR,
+        NODETYPE_OUTPUT,
+        NUM_NODETYPES,
+        NODETYPE_UNKNOWN = NUM_NODETYPES
+    };
+
+    //! Get the type of node
+    //! \return Type of the node (NODETYPE_xxx constant)
+    inline NodeType GetNodeType() const { return mNodeType; }
 
 #endif  // PEGASUS_ENABLE_PROXIES
 
@@ -164,22 +194,6 @@ protected:
     //! \param inputNode Replacement node (equivalent to NodeIn), must be non-null
     virtual void ReplaceInput(unsigned int index, const Pegasus::Core::Ref<Node> & inputNode);
 
-    //! Test if an input node index is valid
-    //! \param index Index to test
-    //! \return True if the index is valid
-    inline bool IsInputIndexValid(unsigned int index) const { return (index < mNumInputs); }
-
-    //! Get an input node
-    //! \param Index of the input node to get (0 <= index < mNumInputs)
-    //! \return Reference to the input node, empty reference in case of error
-    //!         (equivalent to NodeReturn)
-    Pegasus::Core::Ref<Node> GetInput(unsigned int index) const;
-
-    //! Test if a node is attached as an input node of the current node
-    //! \param inputNode Node to test (equivalent to NodeIn)
-    //! \return True if inputNode is attached to the current node as an input node
-    bool IsInput(const Pegasus::Core::Ref<Node> & inputNode) const;
-
     //! Remove an input node by reference
     //! \param inputNode Input node to remove from the current node (equivalent to NodeIn)
     //! \note Removes every instance of the given input node
@@ -218,6 +232,9 @@ protected:
 
     //! Maximum length of the node DOT description
     enum { MAX_DOT_DESCRIPTION_LENGTH = 95 };
+
+    //! Type of the node (NODETYPE_xxx constant)
+    NodeType mNodeType;
 
 #endif  // PEGASUS_ENABLE_PROXIES
 

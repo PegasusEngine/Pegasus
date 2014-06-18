@@ -10,9 +10,10 @@
 //! \brief	Specialization of the graph editor for textures
 
 #include "Texture/TextureGraphEditorGraphicsView.h"
+#include "Pegasus/Texture/Shared/ITextureNodeProxy.h"
 
 
-TextureGraphEditorGraphicsView::TextureGraphEditorGraphicsView(Pegasus::Texture::ITextureProxy * textureProxy,
+TextureGraphEditorGraphicsView::TextureGraphEditorGraphicsView(Pegasus::Texture::ITextureNodeProxy * textureProxy,
                                                                QWidget * parent)
 :   GraphEditorGraphicsView(parent),
     mTextureProxy(textureProxy)
@@ -20,6 +21,7 @@ TextureGraphEditorGraphicsView::TextureGraphEditorGraphicsView(Pegasus::Texture:
     //! \todo Transmit the texture proxy to the parent graphics view, in a generic way
 
     ED_ASSERTSTR(textureProxy != nullptr, "Invalid texture proxy given to a texture editor tab");
+    ED_ASSERTSTR(textureProxy->GetNodeType() == Pegasus::Texture::ITextureNodeProxy::NODETYPE_OUTPUT, "Invalid node type for a texture node proxy");
 }
 
 //----------------------------------------------------------------------------------------

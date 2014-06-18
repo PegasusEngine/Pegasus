@@ -17,7 +17,7 @@
 #include "Editor.h"
 #include "Application/ApplicationManager.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
-#include "Pegasus/Texture/Shared/ITextureProxy.h"
+#include "Pegasus/Texture/Shared/ITextureNodeProxy.h"
 #include "Pegasus/Texture/Shared/ITextureManagerProxy.h"
 #include "Pegasus/Texture/Shared/ITextureConfigurationProxy.h"
 
@@ -89,7 +89,8 @@ void TextureEditorDockWidget::UpdateUIForAppLoaded()
     const unsigned int numTextures = textureManagerProxy->GetNumTextures();
     for (unsigned int t = 0; t < numTextures; ++t)
     {
-        Pegasus::Texture::ITextureProxy * textureProxy = textureManagerProxy->GetTexture(t);
+        Pegasus::Texture::ITextureNodeProxy * textureProxy = textureManagerProxy->GetTexture(t);
+        ED_ASSERTSTR(textureProxy->GetNodeType() == Pegasus::Texture::ITextureNodeProxy::NODETYPE_OUTPUT, "Invalid node type for a texture node proxy");
         OpenTabForTexture(textureProxy);
     }
 
@@ -106,14 +107,15 @@ void TextureEditorDockWidget::UpdateUIForAppClosed()
 
 //----------------------------------------------------------------------------------------
 
-void TextureEditorDockWidget::OpenTabForTexture(Pegasus::Texture::ITextureProxy * textureProxy)
+void TextureEditorDockWidget::OpenTabForTexture(Pegasus::Texture::ITextureNodeProxy * textureProxy)
 {
     if (textureProxy == nullptr)
     {
         ED_FAILSTR("Trying to open a new tab in the texture editor with a null texture");
         return;
     }
-
+    ED_ASSERTSTR(textureProxy->GetNodeType() == Pegasus::Texture::ITextureNodeProxy::NODETYPE_OUTPUT, "Invalid node type for a texture node proxy");
+        
     //! \todo Check that the tab has not been opened yet
 
     const char * textureName = textureProxy->GetName();
@@ -142,7 +144,7 @@ void TextureEditorDockWidget::UpdateTextureProperties(QMdiSubWindow * subWindow)
     ED_ASSERTSTR(subWindow != nullptr, "Trying to update the texture properties with an invalid current subwindow");
     const TextureGraphEditorGraphicsView * graphicsView = static_cast<TextureGraphEditorGraphicsView *>(subWindow->widget());
     ED_ASSERTSTR(graphicsView != nullptr, "Trying to update the texture properties with an invalid current graphics view");
-    const Pegasus::Texture::ITextureProxy * textureProxy = graphicsView->GetTextureProxy();
+    const Pegasus::Texture::ITextureNodeProxy * textureProxy = graphicsView->GetTextureProxy();
     ED_ASSERTSTR(textureProxy != nullptr, "Trying to update the texture properties with an invalid current texture");
     const Pegasus::Texture::ITextureConfigurationProxy * textureConfigurationProxy = textureProxy->GetConfiguration();
     ED_ASSERTSTR(textureConfigurationProxy != nullptr, "Trying to update the texture properties with an invalid current texture configuration");

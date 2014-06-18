@@ -18,6 +18,9 @@ namespace Graph {
 GeneratorNode::GeneratorNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :   Node(nodeAllocator, nodeDataAllocator)
 {
+#if PEGASUS_ENABLE_PROXIES
+    mNodeType = NODETYPE_GENERATOR;
+#endif  // PEGASUS_ENABLE_PROXIES
 }
 
 //----------------------------------------------------------------------------------------
