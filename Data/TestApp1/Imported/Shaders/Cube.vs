@@ -15,20 +15,18 @@ void main()
 {
 	float hRot = 2.2 * uTime;
 	vec2 sincosHRot = vec2(cos(hRot),sin(hRot));
-	p0.xyz = vec3( dot(p0.xz,sincosHRot.xy), p0.y, dot(p0.xz,vec2(-sincosHRot.y,sincosHRot.x)) );
+	p = vec4( dot(p0.xz,sincosHRot.xy), p0.y, dot(p0.xz,vec2(-sincosHRot.y,sincosHRot.x)), p0.w );
 
 	float vRot = 6.226 * uTime;
 	vec2 sincosVRot = vec2(cos(vRot),sin(vRot));
-	p0.xyz = vec3( p0.x, dot(p0.yz,sincosVRot.xy), dot(p0.yz,vec2(-sincosVRot.y,sincosVRot.x)) );
+	p.xyz = vec3( p.x, dot(p.yz,sincosVRot.xy), dot(p.yz,vec2(-sincosVRot.y,sincosVRot.x)) );
 
-	p0 *= 0.4;
+	p *= 0.4;
     
     //aspect correctness
-    p0.y *= 900.0f / 720.0f;
+    p.y *= 900.0 / 720.0;
 
 	normal = n0;
-    gl_Position.xyz = vec4(p0.xyz, 1.0);
-
-    p = p0;
+    gl_Position = vec4(p.xyz, 1.0);
 }
 
