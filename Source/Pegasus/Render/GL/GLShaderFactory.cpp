@@ -80,8 +80,9 @@ void GLShaderFactory::Initialize(Pegasus::Alloc::IAllocator * allocator)
 }
 
 //! processes an error log from OpenGL compilation
-static void ProcessErrorLog(Pegasus::Shader::ShaderStage * shaderNode, const char * log)
+static int ProcessErrorLog(Pegasus::Shader::ShaderStage * shaderNode, const char * log)
 {
+    int errorCount = 0;
 #if PEGASUS_USE_GRAPH_EVENTS 
     //parsing log to extract line & column
     const char  * s = log;
@@ -112,27 +113,32 @@ static void ProcessErrorLog(Pegasus::Shader::ShaderStage * shaderNode, const cha
             line = 10*line + (*s - '0');
         }
 
-        char descriptionError[512];
-        int idx = 0;
-        //skip to new line or end of string
-        while ( *s != '\0' && *s != '\n') 
+        if (foundNumber)
         {
-            if (idx < 511)
-                descriptionError[idx++] = *s; 
-            ++s;
-        } 
-        descriptionError[idx] = '\0';
-        GRAPH_EVENT_DISPATCH(
-            shaderNode,
-            Pegasus::Shader::CompilationNotification,
-            // Shader Event specific arguments
-            Pegasus::Shader::CompilationNotification::COMPILATION_ERROR,
-            line,
-            descriptionError
-        );
+            ++errorCount;
+            char descriptionError[512];
+            int idx = 0;
+            //  skip to new line or end of string
+            while ( *s != '\0' && *s != '\n') 
+            {
+                if (idx < 511)
+                    descriptionError[idx++] = *s; 
+                ++s;
+            } 
+            descriptionError[idx] = '\0';
+            GRAPH_EVENT_DISPATCH(
+                shaderNode,
+                Pegasus::Shader::CompilationNotification,
+                // Shader Event specific arguments
+                Pegasus::Shader::CompilationNotification::COMPILATION_ERROR,
+                line,
+                descriptionError
+            );
+        }
 
     }
 #endif
+    return errorCount;
 }
 
 //! allocates lazily or returns an existent shader data type
@@ -260,35 +266,21 @@ void GLShaderFactory::GenerateShaderGPUData (Pegasus::Shader::ShaderStage * shad
     glCompileShader(gpuData->mHandle);
     GLint shaderCompiled = GL_TRUE;
     glGetShaderiv(gpuData->mHandle, GL_COMPILE_STATUS, &shaderCompiled);
-    if (shaderCompiled == GL_FALSE)
-    {
-        //failure shenanigans
-        const GLsizei bufferSize = 256;
-        char logBuffer[bufferSize];
-        GLsizei logLength = 0;
-        glGetShaderInfoLog(gpuData->mHandle, bufferSize, &logLength, logBuffer);
-        
-        ProcessErrorLog(shaderNode, logBuffer);
-    
-        GRAPH_EVENT_DISPATCH (
-            shaderNode,
-            Pegasus::Shader::CompilationEvent,
-            // Event specific arguments
-            false, //compilation success status
-            logBuffer
-        );
-
-    }
-    else
-    {
-        GRAPH_EVENT_DISPATCH (
-            shaderNode,
-            Pegasus::Shader::CompilationEvent,
-            // Event specific arguments
-            true, //compilation success status
-            "" // unused
-        );
-    }
+    //failure shenanigans
+    const GLsizei bufferSize = 256;
+    char logBuffer[bufferSize];
+    GLsizei logLength = 0;
+    glGetShaderInfoLog(gpuData->mHandle, bufferSize, &logLength, logBuffer);
+       
+    int errorCount = ProcessErrorLog(shaderNode, logBuffer);
+    shaderCompiled = shaderCompiled && errorCount == 0;
+    GRAPH_EVENT_DISPATCH (
+        shaderNode,
+        Pegasus::Shader::CompilationEvent,
+        // Event specific arguments
+        shaderCompiled ? true : false, //compilation success status
+        shaderCompiled ? "" : logBuffer
+    );
     nodeData->SetNodeGPUData(reinterpret_cast<Pegasus::Graph::NodeGPUData*>(gpuData));
 
     // Since the shader data has been updated, set the node GPU data as non-dirty

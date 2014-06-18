@@ -32,7 +32,7 @@ void main()
     pos.y *= uAspect;
 
 	normal = n0;
-    gl_Position.xyz = vec4(pos.xyz, 1.0);
+    gl_Position = vec4(pos.xyz, 1.0);
 
     p = pos;
 }
