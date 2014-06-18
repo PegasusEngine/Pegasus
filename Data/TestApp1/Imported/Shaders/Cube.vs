@@ -9,24 +9,31 @@ in vec3 n0;
 out vec4 p;
 out vec3 normal;
 
-uniform float uTime;
+layout(std140) uniform uniformState
+{
+    float uTime;
+    float uAspect;
+};
 
 void main()
 {
 	float hRot = 2.2 * uTime;
 	vec2 sincosHRot = vec2(cos(hRot),sin(hRot));
-	p = vec4( dot(p0.xz,sincosHRot.xy), p0.y, dot(p0.xz,vec2(-sincosHRot.y,sincosHRot.x)), p0.w );
+    vec4 pos = p0;
+	pos.xyz = vec3( dot(pos.xz,sincosHRot.xy), pos.y, dot(pos.xz,vec2(-sincosHRot.y,sincosHRot.x)) );
 
 	float vRot = 6.226 * uTime;
 	vec2 sincosVRot = vec2(cos(vRot),sin(vRot));
-	p.xyz = vec3( p.x, dot(p.yz,sincosVRot.xy), dot(p.yz,vec2(-sincosVRot.y,sincosVRot.x)) );
+	pos.xyz = vec3( pos.x, dot(pos.yz,sincosVRot.xy), dot(pos.yz,vec2(-sincosVRot.y,sincosVRot.x)) );
 
-	p *= 0.4;
+	pos *= 0.4;
     
     //aspect correctness
-    p.y *= 900.0 / 720.0;
+    pos.y *= uAspect;
 
 	normal = n0;
-    gl_Position = vec4(p.xyz, 1.0);
+    gl_Position.xyz = vec4(pos.xyz, 1.0);
+
+    p = pos;
 }
 

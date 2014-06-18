@@ -25,12 +25,18 @@ namespace Render
     {
         static const int UNIFORM_TABLE_INCREMENT = 16; //16 uniforms at a time
     
-        int total = 0;
-        glGetProgramiv(programHandle, GL_ACTIVE_UNIFORMS, &total);
+        int totalUniforms = 0;
+        glGetProgramiv(programHandle, GL_ACTIVE_UNIFORMS, &totalUniforms);
+
+        int totalUniformBlocks = 0;
+        glGetProgramiv(programHandle, GL_ACTIVE_UNIFORM_BLOCKS, &totalUniformBlocks);
+
+        int total = totalUniforms + totalUniformBlocks;
+    
         if (total > table->mTableSize)
         {
             // round up the table size by the table uniform increment size
-            table->mTableSize = ((total / UNIFORM_TABLE_INCREMENT) + 1) * UNIFORM_TABLE_INCREMENT;
+            table->mTableSize = ((total/UNIFORM_TABLE_INCREMENT + 1)) * UNIFORM_TABLE_INCREMENT;
 
             // delete any previous data if existed, we need to grow the buffer
             if (table->mTable != nullptr)
@@ -58,10 +64,12 @@ namespace Render
         // iterate over all the total uniforms that the shader has,
         // and cache their data into the uniform table
         int textureSlotAllocation = 0;
-        for (int i = 0; i < total; ++i)
+        for (int i = 0; i < totalUniforms; ++i)
         {
             int nameLen = 0;
-            GLShaderUniform * uniform = &table->mTable[i];
+            //re-initialize uniform by rerunning its constructor.
+            GLShaderUniform * uniform = new(&table->mTable[i]) GLShaderUniform();
+
             int arraySize = 0;
             glGetActiveUniform(
                 programHandle, 
@@ -74,7 +82,8 @@ namespace Render
             );
             PG_ASSERTSTR(arraySize == 1, "Uniform arrays not supported. Please use uniform blocks instead");
             uniform->mName[nameLen] = 0;
-            uniform->mSlot = glGetUniformLocation(programHandle, uniform->mName);
+            uniform->mSlot = glGetUniformLocation(programHandle, uniform->mName); // uniform->mSlot == GL_INVALID_INDEX means is
+                                                                                  // part of a uniform block
             if (
                    uniform->mType == GL_SAMPLER_1D ||
                    uniform->mType == GL_SAMPLER_2D ||
@@ -89,7 +98,37 @@ namespace Render
             else
             {
                 uniform->mTextureSlot = -1; //invalid slot
-            }
+            }            
+        }
+
+        //iterate over all the total uniform blocks the shader has
+        for (int i = 0; i < totalUniformBlocks; ++i)
+        {
+            //re-initialize uniform by rerunning its constructor.
+            GLShaderUniform * uniform = new(&table->mTable[i + totalUniforms]) GLShaderUniform();
+
+            uniform->mType = GL_BUFFER;
+
+            int nameLen = 0;
+
+            glGetActiveUniformBlockName(
+                programHandle,
+                GLuint(i),
+                PEGASUS_RENDER_MAX_UNIFORM_NAME_LEN - 1,
+                &nameLen,
+                uniform->mName
+            );
+
+            uniform->mName[nameLen] = 0;
+            
+            glGetActiveUniformBlockiv (
+                programHandle,
+                GLuint(i),
+                GL_UNIFORM_BLOCK_DATA_SIZE,
+                &uniform->mUniformBlockSize
+            );
+
+            uniform->mSlot = glGetUniformBlockIndex(programHandle, uniform->mName);
             PG_ASSERT(uniform->mSlot != GL_INVALID_INDEX);
         }
     }

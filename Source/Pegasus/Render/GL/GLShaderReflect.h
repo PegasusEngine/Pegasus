@@ -41,12 +41,16 @@ struct GLShaderUniform
     GLuint mSlot;
     GLenum mType;
     GLint  mTextureSlot;
+    GLint  mUniformBlockSize;
+
     GLShaderUniform()
     {
         mSlot = GL_INVALID_INDEX;
         mType = GL_ZERO;
         mName[0] = 0;
+        mUniformBlockSize = -1;
     }
+    
 };
 
 //! structure that contains the cached attribute location for this shader

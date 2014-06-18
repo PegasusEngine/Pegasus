@@ -44,7 +44,15 @@ private:
 
     Pegasus::Shader::ProgramLinkageRef mBlockProgram;
     Pegasus::Mesh::MeshRef mCubeMesh;
-    Pegasus::Render::Uniform mTimeUniform;
+
+    Pegasus::Render::Uniform mUniformBlock;
+    Pegasus::Render::Buffer  mUniformStateBuffer;
+    
+    struct UniformState
+    {
+        float mTime;
+        float mAspect;
+    } mState;
 
 
 };

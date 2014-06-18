@@ -228,6 +228,7 @@ bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, float value)
     Pegasus::Render::GLShaderUniform * uniformEntry = GetUpdatedGLUniformLocation(u);
     if (uniformEntry != nullptr)
     {
+        PG_ASSERT(uniformEntry->mSlot != GL_INVALID_INDEX);
         PG_ASSERTSTR(uniformEntry->mType == GL_FLOAT, "Setting a uniform of the wrong type!");
         glUniform1f(uniformEntry->mSlot, value);
         return true;
@@ -240,6 +241,7 @@ bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, Pegasus::Texture::
     Pegasus::Render::GLShaderUniform * uniformEntry = GetUpdatedGLUniformLocation(u);
     if (uniformEntry != nullptr)
     {
+        PG_ASSERT(uniformEntry->mSlot != GL_INVALID_INDEX);
         PG_ASSERTSTR(
             uniformEntry->mType == GL_SAMPLER_1D ||
             uniformEntry->mType == GL_SAMPLER_2D ||
@@ -270,6 +272,30 @@ bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, Pegasus::Texture::
     return false;
 }
 
+bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, const Buffer& buffer)
+{
+    Pegasus::Render::GLShaderUniform * uniformEntry = GetUpdatedGLUniformLocation(u);
+    if (uniformEntry != nullptr )
+    {
+        PG_ASSERT(uniformEntry->mSlot != GL_INVALID_INDEX);
+        if (uniformEntry->mUniformBlockSize == buffer.mSize)
+        {
+            GLuint name = (GLuint) (buffer.mInternalData & 0x00000000ffffffff);
+            glBindBuffer(GL_UNIFORM_BUFFER, name);
+            glBindBufferBase(GL_UNIFORM_BUFFER, uniformEntry->mSlot, name);
+            return true;
+        }
+        else
+        {
+            PG_LOG('OGL_',
+                "Error setting uniform: %s. "
+                "Please ensure its layout is std140 or that the size matches what the CPU is trying to push. "
+                "Shader size: %d, Buffer size :%d", u.mName, uniformEntry->mUniformBlockSize, buffer.mSize);
+        }
+    }
+    return false;
+}
+
 void Pegasus::Render::Draw()
 {
     PG_ASSERT(gOGLState.mDispatchedShader != nullptr);
@@ -283,6 +309,31 @@ void Pegasus::Render::Draw()
     {
         glDrawArrays(drawState.mPrimitive, 0, drawState.mVertexCount);
     }
+}
+
+void Pegasus::Render::CreateUniformBuffer(int size, Pegasus::Render::Buffer& outputBuffer)
+{
+    PG_ASSERTSTR(outputBuffer.mInternalData == 0, "Warning! buffer not deallocated, this will occur in a memory leak in the GPU");
+    const GLuint usage = GL_DYNAMIC_DRAW; //set multiple times, used only in draw calls
+    outputBuffer.mSize = size;
+    outputBuffer.mInternalData |= (unsigned long long)usage << 32; //encode usage. Unused now, but will be useful later
+    GLuint name = GL_INVALID_INDEX;
+    glGenBuffers(1, &name);
+    PG_ASSERT(name != GL_INVALID_INDEX);
+    outputBuffer.mInternalData |= (unsigned int)name; //encode name in the lower dword
+
+    //allocate memory
+    glBindBuffer(GL_UNIFORM_BUFFER, name);
+    glBufferData(GL_UNIFORM_BUFFER, size, nullptr, usage);
+}
+
+void Pegasus::Render::SetBuffer(Pegasus::Render::Buffer& dstBuffer, void * src, int size, int offset)
+{
+    GLuint sizeToUse = size == -1 ? dstBuffer.mSize : size;
+    GLuint name = (GLuint) (dstBuffer.mInternalData & 0x00000000ffffffff);
+    PG_ASSERTSTR(size + offset <= dstBuffer.mSize,"Warning! exceeding the byte capacity of this buffer. A memory stom will occur on the next calls.");
+    glBindBuffer(GL_UNIFORM_BUFFER, name);
+    glBufferSubData(GL_UNIFORM_BUFFER, (GLintptr)offset, sizeToUse, src);
 }
 
 #endif

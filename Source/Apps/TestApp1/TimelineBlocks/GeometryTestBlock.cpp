@@ -49,7 +49,8 @@ void GeometryTestBlock::Initialize()
     bool updated = false; 
     mBlockProgram->GetUpdatedData(updated);
 
-    Pegasus::Render::GetUniformLocation(mBlockProgram, "uTime", mTimeUniform);
+    Pegasus::Render::GetUniformLocation(mBlockProgram, "uniformState", mUniformBlock);
+    Pegasus::Render::CreateUniformBuffer(sizeof(mState), mUniformStateBuffer);
 
     Pegasus::Mesh::MeshManager * const meshManager = GetMeshManager();
     mCubeMesh = meshManager->CreateMeshNode();
@@ -67,6 +68,17 @@ void GeometryTestBlock::Shutdown()
 void GeometryTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
 {
     Pegasus::Render::Dispatch(mBlockProgram);
+
+    //dispatch uniforms, all packed in a nice cbuffer:
+    unsigned int viewportWidth = 0;
+    unsigned int viewportHeight = 0;
+    window->GetDimensions(viewportWidth, viewportHeight);
+    mState.mTime = (float)beat * 0.2f;
+    mState.mAspect = (float)viewportWidth / (float)viewportHeight;
+    Pegasus::Render::SetBuffer(mUniformStateBuffer, &mState, sizeof(mState));
+    Pegasus::Render::SetUniform(mUniformBlock, mUniformStateBuffer);
+
+
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     
@@ -74,7 +86,6 @@ void GeometryTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
     glClearDepth(0.0);
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    Pegasus::Render::SetUniform(mTimeUniform, beat * 0.2f);
     Pegasus::Render::Dispatch(mCubeMesh);
 
     Pegasus::Render::Draw();
