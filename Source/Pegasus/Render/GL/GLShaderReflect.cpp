@@ -21,7 +21,12 @@ namespace Pegasus
 namespace Render
 {
 
-    void PopulateUniformTable(Alloc::IAllocator * allocator, GLuint programHandle, GLShaderReflect::UniformTable * table)
+    void PopulateUniformTable(
+        Alloc::IAllocator * allocator, 
+        GLuint programHandle, 
+        GLShaderReflect::UniformTable * table,
+        bool& triggerAlignmentWarning
+    )
     {
         static const int UNIFORM_TABLE_INCREMENT = 16; //16 uniforms at a time
     
@@ -128,22 +133,36 @@ namespace Render
                 &uniform->mUniformBlockSize
             );
                 
-            PG_ASSERTSTR(
-                (uniform->mUniformBlockSize & 0x1f) == 0x10,
-                "Your shader uniform block \"%s\" is not 16 byte (vec4) aligned. "
-                "Make sure to pack your uniform blocks in the shader in vec4 chunks (or add float padding). "
-                "Not doing so could cause compatibility issues with hardware vendors that misinterpret the std140 "
-                "alignment specification.",
-                uniform->mName
-            );
+            //if the uniform block is not 16 byte aligned, then do some error handling
+            if  ((uniform->mUniformBlockSize & 0x0f) != 0x0)
+            {
+                PG_LOG(
+                    'ERR_', 
+                    "Your shader uniform block \"%s\" is not 16 byte (vec4) aligned. "
+                    "Make sure to pack your uniform blocks in the shader in vec4 chunks (or add float padding). "
+                    "Not doing so could cause compatibility issues with hardware vendors that misinterpret the std140 "
+                    "alignment specification.",
+                    uniform->mName
+                );
+
+                triggerAlignmentWarning = true;
+            }
 
             uniform->mSlot = glGetUniformBlockIndex(programHandle, uniform->mName);
             PG_ASSERT(uniform->mSlot != GL_INVALID_INDEX);
         }
     }
 
-    void PopulateReflectionInfo(Alloc::IAllocator * allocator, GLuint programHandle, GLShaderReflect& information)
+    void PopulateReflectionInfo(
+        Alloc::IAllocator * allocator, 
+        GLuint programHandle, 
+        GLShaderReflect& information,
+        bool& triggerAlignmentWarning
+    )
     {
+        //assume no alignment issue
+        triggerAlignmentWarning = false;
+
         PG_ASSERTSTR(MESH_MAX_SEMANTIC_INDEX < 10, " if semantic index is greater than 10, this algorithm needs to change!");
         //generate attribute name table
         for (int s = 0; s < Mesh::MeshInputLayout::SEMANTIC_COUNT; ++s)
@@ -170,7 +189,12 @@ namespace Render
         //generate shader uniform table
         if (programHandle != 0)
         {
-            PopulateUniformTable(allocator, programHandle, &information.mUniformTable);
+            PopulateUniformTable(
+                allocator, 
+                programHandle, 
+                &information.mUniformTable,
+                triggerAlignmentWarning
+            );
         }
     }
     

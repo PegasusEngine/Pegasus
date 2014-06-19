@@ -75,7 +75,13 @@ struct GLShaderReflect
 //! Populates the attribute table based on the attribute description, defined in the string table of MeshInputLayout
 //! \param programHandle the program handle to extract known attribute data from.
 //! \param information the reflection information struct to fill
-void PopulateReflectionInfo(Pegasus::Alloc::IAllocator * alloc, GLuint programHandle, GLShaderReflect& information);
+//! \param triggerAlignmentWarning output variable. True if there is an alignment issue
+void PopulateReflectionInfo(
+    Pegasus::Alloc::IAllocator * alloc,
+    GLuint programHandle, 
+    GLShaderReflect& information,
+    bool& triggerAlignmentWarning 
+);
 
 //! Destroys shader reflection info
 //! \param alloc the allocator used originally

@@ -278,20 +278,17 @@ bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, const Buffer& buff
     if (uniformEntry != nullptr )
     {
         PG_ASSERT(uniformEntry->mSlot != GL_INVALID_INDEX);
-        if (uniformEntry->mUniformBlockSize == buffer.mSize)
+        if (uniformEntry->mUniformBlockSize != buffer.mSize)
         {
-            GLuint name = (GLuint) (buffer.mInternalData);
-            glBindBuffer(GL_UNIFORM_BUFFER, name);
-            glBindBufferBase(GL_UNIFORM_BUFFER, uniformEntry->mSlot, name);
-            return true;
-        }
-        else
-        {
-            PG_LOG('OGL_',
-                "Error setting uniform: %s. "
-                "Please ensure its layout is std140 or that the size matches what the CPU is trying to push. "
-                "Shader size: %d, Buffer size :%d", u.mName, uniformEntry->mUniformBlockSize, buffer.mSize);
-        }
+            PG_LOG('WARN',
+            "Error setting uniform: %s. "
+            "Please ensure its layout is std140 or that the size matches what the CPU is trying to push. "
+            "Shader size: %d, Buffer size :%d", u.mName, uniformEntry->mUniformBlockSize, buffer.mSize);
+        }        
+        GLuint name = (GLuint) (buffer.mInternalData);
+        glBindBuffer(GL_UNIFORM_BUFFER, name);
+        glBindBufferBase(GL_UNIFORM_BUFFER, uniformEntry->mSlot, name);
+        return true;
     }
     return false;
 }
@@ -313,7 +310,7 @@ void Pegasus::Render::Draw()
 
 void Pegasus::Render::CreateUniformBuffer(int size, Pegasus::Render::Buffer& outputBuffer)
 {
-    PG_ASSERTSTR((size & 0x1f) == 0x10, "The size of the uniform buffer being allocated must be 16 byte aligned. Pack your buffer in chunks of 16 bytes (4 components of 4 bytes).");
+    PG_ASSERTSTR((size & 0x0f) == 0x0, "The size of the uniform buffer being allocated must be 16 byte aligned. Pack your buffer in chunks of 16 bytes (4 components of 4 bytes).");
     PG_ASSERTSTR(outputBuffer.mInternalData == 0, "Warning! buffer not deallocated, this will occur in a memory leak in the GPU");
     const GLuint usage = GL_DYNAMIC_DRAW; //set multiple times, used only in draw calls
     outputBuffer.mSize = size;

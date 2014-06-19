@@ -176,7 +176,8 @@ static Pegasus::Render::OGLProgramGPUData * GetOrAllocateProgramGPUData(Pegasus:
             gpuData->mShaderCachedHandles[i] = 0;
         }
         //initializes reflection data to a null state
-        Pegasus::Render::PopulateReflectionInfo(nullptr, 0, gpuData->mReflection);
+        bool unusedTriggerUnalignWarning = false;
+        Pegasus::Render::PopulateReflectionInfo(nullptr, 0, gpuData->mReflection, unusedTriggerUnalignWarning);
 
         //assign a GUID
         gpuData->mGUID = GLShaderFactory::sProgramGUIDCounter++;
@@ -371,17 +372,39 @@ void GLShaderFactory::GenerateProgramGPUData (Pegasus::Shader::ProgramLinkage * 
     }
     else
     {
-        gpuData->mVersion++; //shader has been compiled, increase the version
-        GRAPH_EVENT_DISPATCH (
-            programNode,
-            Pegasus::Shader::LinkingEvent,
-            // Event specific arguments:
-            Pegasus::Shader::LinkingEvent::LINKING_SUCCESS,
-            ""
-        );
         
+        //output variable from reflector
+        bool triggerAlignmentWarning = false;
         // populate reflection data for quick draw calls in meshes
-        Pegasus::Render::PopulateReflectionInfo(mAllocator, gpuData->mHandle, gpuData->mReflection);
+        Pegasus::Render::PopulateReflectionInfo(
+            mAllocator, 
+            gpuData->mHandle, 
+            gpuData->mReflection,
+            triggerAlignmentWarning
+        );
+
+        gpuData->mVersion++; //shader has been compiled, increase the version
+
+        if (triggerAlignmentWarning)
+        {
+            GRAPH_EVENT_DISPATCH (
+                programNode,
+                Pegasus::Shader::LinkingEvent,
+                // Event specific arguments:
+                Pegasus::Shader::LinkingEvent::LINKING_FAIL,
+                "There is a buffer alignment issue. Check the Console for more details."
+            );
+        }
+        else
+        {
+            GRAPH_EVENT_DISPATCH (
+                programNode,
+                Pegasus::Shader::LinkingEvent,
+                // Event specific arguments:
+                Pegasus::Shader::LinkingEvent::LINKING_SUCCESS,
+                ""
+            );
+        }
     }
 
     // Since the shader data has been updated, set the node GPU data as non-dirty
