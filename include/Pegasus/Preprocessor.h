@@ -254,6 +254,18 @@
 #define PEGASUS_AVOID_EMPTY_FILE_WARNING
 #endif
 
+//! Macro combination that sets up struct alignment in c++
+#if PEGASUS_COMPILER_MSVC
+#define PEGASUS_ALIGN_BEGIN(n) __declspec(align(n))
+#define PEGASUS_ALIGN_END(n)
+#elif PEGASUS_COMPILER_GCC
+#define PEGASUS_ALIGN_BEGIN(n)
+#define PEGASUS_ALIGN_END(n) __attribute__ ((aligned(n)))
+#elif
+    #error "Declare the appropiate alignment set of macros"
+#endif
+
+
 //----------------------------------------------------------------------------------------
 
 // Flags telling if features are enabled based on the compilation profile.

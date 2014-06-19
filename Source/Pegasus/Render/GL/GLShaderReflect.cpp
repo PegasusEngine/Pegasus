@@ -127,6 +127,15 @@ namespace Render
                 GL_UNIFORM_BLOCK_DATA_SIZE,
                 &uniform->mUniformBlockSize
             );
+                
+            PG_ASSERTSTR(
+                (uniform->mUniformBlockSize & 0x1f) == 0x10,
+                "Your shader uniform block \"%s\" is not 16 byte (vec4) aligned. "
+                "Make sure to pack your uniform blocks in the shader in vec4 chunks (or add float padding). "
+                "Not doing so could cause compatibility issues with hardware vendors that misinterpret the std140 "
+                "alignment specification.",
+                uniform->mName
+            );
 
             uniform->mSlot = glGetUniformBlockIndex(programHandle, uniform->mName);
             PG_ASSERT(uniform->mSlot != GL_INVALID_INDEX);

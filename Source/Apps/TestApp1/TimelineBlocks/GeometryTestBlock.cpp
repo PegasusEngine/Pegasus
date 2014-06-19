@@ -62,6 +62,7 @@ void GeometryTestBlock::Initialize()
 //! Shutdown used by block
 void GeometryTestBlock::Shutdown()
 {
+    Pegasus::Render::DeleteBuffer(mUniformStateBuffer);
 }
 
 //! Render function

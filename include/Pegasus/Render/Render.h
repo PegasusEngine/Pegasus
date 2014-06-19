@@ -51,7 +51,7 @@ namespace Render
     struct Buffer
     {
         int mSize;
-        unsigned long long mInternalData; //! 64 bit compressed data, used internally
+        int mInternalData; //! 64 bit compressed data, used internally
     public:
         Buffer()
            : mInternalData(0), mSize(0)

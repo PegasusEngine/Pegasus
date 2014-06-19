@@ -11,25 +11,24 @@ out vec3 normal;
 
 layout(std140) uniform uniformState
 {
-    float uTime;
-    float uAspect;
+    vec4 T_A_unused;
 };
 
 void main()
 {
-	float hRot = 2.2 * uTime;
+	float hRot = 2.2 * T_A_unused.x;
 	vec2 sincosHRot = vec2(cos(hRot),sin(hRot));
     vec4 pos = p0;
 	pos.xyz = vec3( dot(pos.xz,sincosHRot.xy), pos.y, dot(pos.xz,vec2(-sincosHRot.y,sincosHRot.x)) );
 
-	float vRot = 6.226 * uTime;
+	float vRot = 6.226 * T_A_unused.x;
 	vec2 sincosVRot = vec2(cos(vRot),sin(vRot));
 	pos.xyz = vec3( pos.x, dot(pos.yz,sincosVRot.xy), dot(pos.yz,vec2(-sincosVRot.y,sincosVRot.x)) );
 
 	pos *= 0.4;
     
     //aspect correctness
-    pos.y *= uAspect;
+    pos.y *= T_A_unused.y;
 
 	normal = n0;
     gl_Position = vec4(pos.xyz, 1.0);

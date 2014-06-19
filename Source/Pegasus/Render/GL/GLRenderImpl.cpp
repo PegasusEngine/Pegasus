@@ -280,7 +280,7 @@ bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, const Buffer& buff
         PG_ASSERT(uniformEntry->mSlot != GL_INVALID_INDEX);
         if (uniformEntry->mUniformBlockSize == buffer.mSize)
         {
-            GLuint name = (GLuint) (buffer.mInternalData & 0x00000000ffffffff);
+            GLuint name = (GLuint) (buffer.mInternalData);
             glBindBuffer(GL_UNIFORM_BUFFER, name);
             glBindBufferBase(GL_UNIFORM_BUFFER, uniformEntry->mSlot, name);
             return true;
@@ -313,14 +313,14 @@ void Pegasus::Render::Draw()
 
 void Pegasus::Render::CreateUniformBuffer(int size, Pegasus::Render::Buffer& outputBuffer)
 {
+    PG_ASSERTSTR((size & 0x1f) == 0x10, "The size of the uniform buffer being allocated must be 16 byte aligned. Pack your buffer in chunks of 16 bytes (4 components of 4 bytes).");
     PG_ASSERTSTR(outputBuffer.mInternalData == 0, "Warning! buffer not deallocated, this will occur in a memory leak in the GPU");
     const GLuint usage = GL_DYNAMIC_DRAW; //set multiple times, used only in draw calls
     outputBuffer.mSize = size;
-    outputBuffer.mInternalData |= (unsigned long long)usage << 32; //encode usage. Unused now, but will be useful later
     GLuint name = GL_INVALID_INDEX;
     glGenBuffers(1, &name);
     PG_ASSERT(name != GL_INVALID_INDEX);
-    outputBuffer.mInternalData |= (unsigned int)name; //encode name in the lower dword
+    outputBuffer.mInternalData = (int)name; //encode name in the lower dword
 
     //allocate memory
     glBindBuffer(GL_UNIFORM_BUFFER, name);
@@ -330,10 +330,19 @@ void Pegasus::Render::CreateUniformBuffer(int size, Pegasus::Render::Buffer& out
 void Pegasus::Render::SetBuffer(Pegasus::Render::Buffer& dstBuffer, void * src, int size, int offset)
 {
     GLuint sizeToUse = size == -1 ? dstBuffer.mSize : size;
-    GLuint name = (GLuint) (dstBuffer.mInternalData & 0x00000000ffffffff);
+    GLuint name = (GLuint) (dstBuffer.mInternalData);
     PG_ASSERTSTR(size + offset <= dstBuffer.mSize,"Warning! exceeding the byte capacity of this buffer. A memory stom will occur on the next calls.");
     glBindBuffer(GL_UNIFORM_BUFFER, name);
     glBufferSubData(GL_UNIFORM_BUFFER, (GLintptr)offset, sizeToUse, src);
+}
+
+void Pegasus::Render::DeleteBuffer(Pegasus::Render::Buffer& buffer)
+{
+    PG_ASSERT(buffer.mInternalData != 0);
+    glDeleteBuffers(1, (GLuint*)&buffer.mInternalData);
+    //clear buffer
+    buffer.mInternalData = 0;
+    buffer.mSize = 0;
 }
 
 #endif

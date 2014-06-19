@@ -17,8 +17,12 @@
 namespace Pegasus {
 namespace Render {
 
-static HGLRC gRenderContextHandle = 0; //!< Opaque GL context handle
-static int   gRenderContextHandleReferences = 0; //reference count for the GL context
+
+// We must run all the windows and render context drawing calls in the same thread, therefor enforcing this by
+// making the following globals part of the thread local storage.    
+__declspec( thread ) static HGLRC gRenderContextHandle = 0; //!< Opaque GL context handle
+__declspec( thread ) static int   gRenderContextHandleReferences = 0; //reference count for the GL context
+__declspec( thread ) static HDC   gDeviceContextHandle = 0; // unique device context handle, for window display
 
 // Global pixel format descriptor for RGBA 32-bits
 static PIXELFORMATDESCRIPTOR sPixelFormat = {
@@ -128,9 +132,12 @@ RenderContextImpl_Win32::~RenderContextImpl_Win32()
 //----------------------------------------------------------------------------------------
 void RenderContextImpl_Win32::Bind() const
 {    
-    wglMakeCurrent(mDeviceContextHandle, gRenderContextHandle);
-
-    PG_LOG('OGL_', "%u is now the active context", gRenderContextHandle);
+    if (gDeviceContextHandle != mDeviceContextHandle)
+    {
+        wglMakeCurrent(mDeviceContextHandle, gRenderContextHandle);
+        gDeviceContextHandle = mDeviceContextHandle;
+        PG_LOG('OGL_', "%u is now the active context", gRenderContextHandle);
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -138,7 +145,7 @@ void RenderContextImpl_Win32::Bind() const
 void RenderContextImpl_Win32::Unbind() const
 {
     wglMakeCurrent(mDeviceContextHandle, NULL);
-
+    gDeviceContextHandle = NULL;
     PG_LOG('OGL_', "NULL is now the active context");
 }
 

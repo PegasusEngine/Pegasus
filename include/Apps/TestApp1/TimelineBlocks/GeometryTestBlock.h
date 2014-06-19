@@ -48,11 +48,13 @@ private:
     Pegasus::Render::Uniform mUniformBlock;
     Pegasus::Render::Buffer  mUniformStateBuffer;
     
+    PEGASUS_ALIGN_BEGIN(16)
     struct UniformState
     {
         float mTime;
         float mAspect;
-    } mState;
+    } mState
+    PEGASUS_ALIGN_END(16);
 
 
 };
