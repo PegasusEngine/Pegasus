@@ -138,7 +138,7 @@ public:
 
 signals:
     //! triggered when any compilation state changes. Use a queued connection
-    void CompilationResultsChanged(void* shaderPointer);
+    void CompilationResultsChanged();
 
     //! triggered when any compilation error is posted. This event can be triggered
     //! several times during the same compilation
@@ -146,6 +146,9 @@ signals:
 
     //! triggered when compilation begins
     void OnCompilationBegin(void* shaderPointer);
+
+    //! triggered when compilation ends, posts the log string
+    void OnCompilationEnd(QString log);
     
     //! triggered when a linking event occurs (error, warning or an actual positive linking)
     void OnLinkingEvent(void* shaderPointer, QString message, int messageType);

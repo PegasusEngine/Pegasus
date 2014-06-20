@@ -4,12 +4,12 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	CubeGenerator.cpp
+//! \file	BoxGenerator.cpp
 //! \author	Kleber Garcia
 //! \date	June 16th 2014
 //! \brief	Cube Generator
 
-#include "Pegasus/Mesh/Generator/CubeGenerator.h"
+#include "Pegasus/Mesh/Generator/BoxGenerator.h"
 #include "Pegasus/Math/Vector.h"
 
 namespace Pegasus
@@ -18,7 +18,7 @@ namespace Mesh
 {
 
 
-CubeGenerator::CubeGenerator(Pegasus::Alloc::IAllocator* nodeAllocator, 
+BoxGenerator::BoxGenerator(Pegasus::Alloc::IAllocator* nodeAllocator, 
               Pegasus::Alloc::IAllocator* nodeDataAllocator) 
 : MeshGenerator(nodeAllocator, nodeDataAllocator)
 {
@@ -31,11 +31,11 @@ CubeGenerator::CubeGenerator(Pegasus::Alloc::IAllocator* nodeAllocator,
     mConfiguration.GetInputLayout()->GenerateEditorLayout(MeshInputLayout::USE_POSITION | MeshInputLayout::USE_UV | MeshInputLayout::USE_NORMAL);
 }
 
-CubeGenerator::~CubeGenerator()
+BoxGenerator::~BoxGenerator()
 {
 }
 
-void CubeGenerator::GenerateData()
+void BoxGenerator::GenerateData()
 {
     using namespace Pegasus::Math;
     

@@ -9,26 +9,25 @@ in vec3 n0;
 out vec4 p;
 out vec3 normal;
 
-layout(std140) uniform uniformState
+layout(std140, row_major) uniform uniformState
 {
-    vec4 T_A_unused;
+    // place here all the uniforms to be used. Be sure to manually pad to a multiple of 16 bytes.
+    mat4x4 uTransform;
 };
 
 void main()
 {
-	float hRot = 2.2 * T_A_unused.x;
-	vec2 sincosHRot = vec2(cos(hRot),sin(hRot));
-    vec4 pos = p0;
-	pos.xyz = vec3( dot(pos.xz,sincosHRot.xy), pos.y, dot(pos.xz,vec2(-sincosHRot.y,sincosHRot.x)) );
+    // IMPORTANT NOTE!!!
+    // OpenGL is column major by default. Our math library is row major.
+    // To do transformations correctly we either do:
+    //  p0 * uTransform
+    // or use a layout(row_major) query in the uniform (or buffer) we are using.
+    // in the case of this uniform block, we actually use the row_major query
+    vec4 pos = uTransform * p0;
+      
 
-	float vRot = 6.226 * T_A_unused.x;
-	vec2 sincosVRot = vec2(cos(vRot),sin(vRot));
-	pos.xyz = vec3( pos.x, dot(pos.yz,sincosVRot.xy), dot(pos.yz,vec2(-sincosVRot.y,sincosVRot.x)) );
 
 	pos *= 0.4;
-    
-    //aspect correctness
-    pos.y *= T_A_unused.y;
 
 	normal = n0;
     gl_Position = vec4(pos.xyz, 1.0);

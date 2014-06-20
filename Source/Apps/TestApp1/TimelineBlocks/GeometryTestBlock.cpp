@@ -12,6 +12,7 @@
 #include "Apps/TestApp1/TimelineBlocks/GeometryTestBlock.h"
 
 #include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
+#include "Pegasus/Math/Quaternion.h"
 
 
 //Constructor
@@ -55,8 +56,10 @@ void GeometryTestBlock::Initialize()
     Pegasus::Mesh::MeshManager * const meshManager = GetMeshManager();
     mCubeMesh = meshManager->CreateMeshNode();
     mCubeMesh->SetGeneratorInput(
-        meshManager->CreateMeshGeneratorNode("CubeGenerator")
+        meshManager->CreateMeshGeneratorNode("BoxGenerator")
     );
+
+    Pegasus::Math::SetIdentity(mState.mRotation);
 }
 
 //! Shutdown used by block
@@ -70,12 +73,20 @@ void GeometryTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
 {
     Pegasus::Render::Dispatch(mBlockProgram);
 
+    Pegasus::Math::Vec3 rotAxis(0.3f, 0.4f, 0.01f);
+    Pegasus::Math::SetRotation(mState.mRotation, rotAxis, (float)beat * 0.22f);
+
     //dispatch uniforms, all packed in a nice cbuffer:
     unsigned int viewportWidth = 0;
     unsigned int viewportHeight = 0;
     window->GetDimensions(viewportWidth, viewportHeight);
-    mState.mTime = (float)beat * 0.2f;
-    mState.mAspect = (float)viewportWidth / (float)viewportHeight;
+    float aspect = static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight);
+
+    // do aspect ratio correctness on y axis
+    mState.mRotation.m21 *= aspect;
+    mState.mRotation.m22 *= aspect;
+    mState.mRotation.m23 *= aspect;
+
     Pegasus::Render::SetBuffer(mUniformStateBuffer, &mState, sizeof(mState));
     Pegasus::Render::SetUniform(mUniformBlock, mUniformStateBuffer);
 

@@ -65,14 +65,14 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\Shared\MeshEvent.h">
       <Filter>Include\Shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\Generator\CubeGenerator.h">
-      <Filter>Include\Generator</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\Proxy\MeshManagerProxy.h">
       <Filter>Include\Proxy</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\Shared\IMeshManagerProxy.h">
       <Filter>Include\Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\Generator\BoxGenerator.h">
+      <Filter>Include\Generator</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -100,11 +100,11 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Generator\QuadGenerator.cpp">
       <Filter>Source\Generator</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Generator\CubeGenerator.cpp">
-      <Filter>Source\Generator</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Proxy\MeshManagerProxy.cpp">
       <Filter>Source\Proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Generator\BoxGenerator.cpp">
+      <Filter>Source\Generator</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

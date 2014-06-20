@@ -36,7 +36,7 @@ public slots:
     void UpdateUIForAppLoaded();
 
     //! updates the ui items laytout
-    void UpdateUIItemsLayout(void* targetShader);
+    void UpdateUIItemsLayout();
 
     //! slot triggered when app is unloaded
     void UpdateUIForAppFinished();

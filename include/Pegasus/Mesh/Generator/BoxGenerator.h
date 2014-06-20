@@ -4,7 +4,7 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	CubeGenerator.h
+//! \file	BoxGenerator.h
 //! \author	Kleber Garcia
 //! \date	June 16th 2014
 //! \brief	Cube Generator
@@ -21,18 +21,18 @@ namespace Mesh
 {
 
 //! Mesh cube generator. Generates a cube
-class CubeGenerator : public MeshGenerator
+class BoxGenerator : public MeshGenerator
 {
 public:
-    DECLARE_MESH_GENERATOR_NODE(CubeGenerator)
+    DECLARE_MESH_GENERATOR_NODE(BoxGenerator)
 
     //! Cube generator constructor
     //!\param nodeAllocator the allocator for the node properties (if any)
     //!\param nodeDataAllocator the allocator of the node data
-    CubeGenerator(Pegasus::Alloc::IAllocator* nodeAllocator, 
+    BoxGenerator(Pegasus::Alloc::IAllocator* nodeAllocator, 
                   Pegasus::Alloc::IAllocator* nodeDataAllocator);
 
-    virtual ~CubeGenerator();
+    virtual ~BoxGenerator();
 
 protected:
 

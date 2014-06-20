@@ -30,6 +30,7 @@
 #include <QMutex>
 #include <QSet>
 #include <QAction>
+#include <QStatusBar>
 
 static const char * DOCKABLE_DESC = "Dockable: Allow to be docked when hovering over main window.";
 static const char * UNDOCKABLE_DESC = "Undockable: Allow to hover over window w/o docking.";
@@ -91,9 +92,14 @@ void ShaderEditorWidget::SetupUi()
         mUi.mTabWidget, SIGNAL(tabCloseRequested(int)),
         this, SLOT(RequestClose(int))
     );
+
+    //setup the status bar
+    mUi.mStatusBar = new QStatusBar(this);
+    
     
     mUi.mMainLayout->addWidget(toolBar);
     mUi.mMainLayout->addWidget(mUi.mTabWidget);
+    mUi.mMainLayout->addWidget(mUi.mStatusBar);
     
     for (int i = 0; i < MAX_TEXT_TABS; ++i)
     {
@@ -154,9 +160,32 @@ void ShaderEditorWidget::SignalCompilationError(void * shaderPtr, int line, QStr
         userData->InsertMessage(line, errorString);
         int id = FindIndex(target);
         ED_ASSERT(id < mTabCount);
+        PostStatusBarMessage(errorString);
         if (id != -1) //is there a ui element for this shader?
         {
             UpdateSyntaxForLine(id, line);
+        }
+    }
+}
+
+void ShaderEditorWidget::SignalLinkingEvent(void * program, QString message, int eventType)
+{
+    Pegasus::Shader::IProgramProxy * target = static_cast<Pegasus::Shader::IProgramProxy*>(program);
+    ED_ASSERT(target != nullptr);
+    ProgramUserData * programUserData = static_cast<ProgramUserData*>(target->GetUserData());
+    if (programUserData != nullptr)
+    {
+        if (static_cast<Pegasus::Shader::LinkingEvent::Type>(eventType) != Pegasus::Shader::LinkingEvent::LINKING_SUCCESS)
+        {
+            //do not opaque the previous string if this one is empty
+            if (mUi.mStatusBarMessage == "" && message != "")
+            {
+                PostStatusBarMessage(message);
+            }
+        }
+        else
+        {
+             PostStatusBarMessage("");
         }
     }
 }
@@ -176,6 +205,12 @@ void ShaderEditorWidget::SignalCompilationBegin(void * shader)
             UpdateSyntaxForLine(id, line);
         }
     }
+}
+
+void ShaderEditorWidget::SignalCompilationEnd(QString log)
+{
+    //update the status bar with whichever compilation error.
+    PostStatusBarMessage(log);
 }
 
 void ShaderEditorWidget::SignalPinActionTriggered()
@@ -203,11 +238,6 @@ void ShaderEditorWidget::UpdateSyntaxForLine(int id, int line)
     mInternalBlockTextUpdated = false;
 }
 
-void ShaderEditorWidget::ShaderUIChanged(Pegasus::Shader::IShaderProxy * target)
-{
-    //TODO any event that requires the shader editor to reupdate
-}
-
 int ShaderEditorWidget::FindIndex(Pegasus::Shader::IShaderProxy * target)
 {
     for (int i = 0; i < mTabCount; ++i)
@@ -230,6 +260,12 @@ int ShaderEditorWidget::FindIndex(ShaderTextEditorWidget * target)
         }
     }
     return -1;
+}
+
+void ShaderEditorWidget::PostStatusBarMessage(const QString& message)
+{
+    mUi.mStatusBarMessage = message;
+    mUi.mStatusBar->showMessage(message);
 }
 
 void ShaderEditorWidget::SynchronizeTextEditWidgetSyntaxStyle(int i)

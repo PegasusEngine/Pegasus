@@ -50,18 +50,21 @@ ShaderLibraryWidget::ShaderLibraryWidget(QWidget * parent, ShaderEditorWidget * 
     connect(ui.ProgramTreeView, SIGNAL(doubleClicked(QModelIndex)),
             this, SLOT(DispatchShaderEditorThroughProgramView(QModelIndex)));
 
-    connect(mShaderManagerEventListener, SIGNAL(CompilationResultsChanged(void*)),
-        this, SLOT(UpdateUIItemsLayout(void*)), Qt::QueuedConnection);
+    connect(mShaderManagerEventListener, SIGNAL(CompilationResultsChanged()),
+        this, SLOT(UpdateUIItemsLayout()), Qt::QueuedConnection);
 
     //Queued connections, from events than come directly from the app
     connect(mShaderManagerEventListener, SIGNAL(OnCompilationError(void*,int,QString)),
         mShaderEditorWidget, SLOT(SignalCompilationError(void*,int,QString)), Qt::QueuedConnection);
 
+    connect(mShaderManagerEventListener, SIGNAL(OnLinkingEvent(void*,QString,int)),
+        mShaderEditorWidget, SLOT(SignalLinkingEvent(void*,QString,int)), Qt::QueuedConnection);
+
     connect(mShaderManagerEventListener, SIGNAL(OnCompilationBegin(void*)),
         mShaderEditorWidget, SLOT(SignalCompilationBegin(void*)), Qt::QueuedConnection);
 
-    connect(mShaderManagerEventListener, SIGNAL(OnLinkingEvent(void*,QString,int)),
-            this, SLOT(OnProgramLinkingEvent(void*,QString,int)), Qt::QueuedConnection);
+    connect(mShaderManagerEventListener, SIGNAL(OnCompilationEnd(QString)),
+        mShaderEditorWidget, SLOT(SignalCompilationEnd(QString)), Qt::QueuedConnection);
 
     ui.ProgramTreeView->setModel(mProgramTreeModel);
     ui.ProgramTreeView->setSelectionModel(mProgramSelectionModel);
@@ -185,12 +188,8 @@ void ShaderLibraryWidget::UpdateUIForAppLoaded()
     ActivateButtons(true);
 }
 
-void ShaderLibraryWidget::UpdateUIItemsLayout(void* targetShader)
+void ShaderLibraryWidget::UpdateUIItemsLayout()
 {
-    if (targetShader != nullptr)
-    {
-        mShaderEditorWidget->ShaderUIChanged(static_cast<Pegasus::Shader::IShaderProxy*>(targetShader));
-    } 
     ui.ProgramTreeView->doItemsLayout();
     ui.ShaderTreeView->doItemsLayout();
 }

@@ -37,12 +37,8 @@ void ShaderManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * userDa
     if (userData != nullptr)
     {
         ShaderUserData * shaderUserData = static_cast<ShaderUserData*>(userData);
-        bool previousIsValid = shaderUserData->IsValid();
         shaderUserData->SetIsValid(e.IsSuccess());
-        if (previousIsValid != e.IsSuccess())
-        {
-            emit(CompilationResultsChanged(shaderUserData->GetShader()));
-        }
+        emit( OnCompilationEnd(e.GetLogString()) );
     }
 }
 
@@ -51,7 +47,15 @@ void ShaderManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * userDa
     if (userData != nullptr)
     {
         ProgramUserData * programUserData = static_cast<ProgramUserData*>(userData); 
+        bool previousIsValid = programUserData->IsValid();
+        bool isSuccess = Pegasus::Shader::LinkingEvent::LINKING_SUCCESS == e.GetEventType();
+        programUserData->SetIsValid(isSuccess);
+        programUserData->SetErrorMessage(e.GetLog());
         emit(OnLinkingEvent(programUserData->GetProgram(), e.GetLog(), e.GetEventType()));
+        if (previousIsValid != isSuccess)
+        {
+            emit(CompilationResultsChanged());
+        }
     }
 }
 

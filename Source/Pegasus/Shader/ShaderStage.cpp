@@ -183,7 +183,7 @@ void Pegasus::Shader::ShaderStage::GenerateData()
 
 #if PEGASUS_ENABLE_DETAILED_LOG
 #if PEGASUS_ENABLE_PROXIES
-    PG_LOG('SHDR', "Generating the GPU data of shader stage \"%s\"", GetName());
+    PG_LOG('SHDR', "Generating the GPU data of shader stage \"%s\"", GetFileName());
 #else
     PG_LOG('SHDR', "Generating the GPU data of a shader stage");
 #endif

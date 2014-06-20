@@ -13,6 +13,7 @@
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Mesh/Mesh.h"
 #include "Pegasus/Timeline/Block.h"
+#include "Pegasus/Math/Matrix.h"
 
 // timeline block for GeometryTestBlock
 
@@ -51,8 +52,7 @@ private:
     PEGASUS_ALIGN_BEGIN(16)
     struct UniformState
     {
-        float mTime;
-        float mAspect;
+        Pegasus::Math::Mat44 mRotation;
     } mState
     PEGASUS_ALIGN_END(16);
 

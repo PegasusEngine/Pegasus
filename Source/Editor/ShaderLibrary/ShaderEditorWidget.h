@@ -21,6 +21,7 @@ namespace Pegasus {
 }
 
 class QVBoxLayout;
+class QStatusBar;
 class QTabWidget;
 class QSyntaxHighlighter;
 class QSignalMapper;
@@ -82,12 +83,22 @@ private slots:
     //! \param the error message string of the failed compilation
     void SignalCompilationError(void* shader, int line, QString errorString);
 
+    //! signal triggered when a linking event has occured
+    //! \param the program that triggered this event
+    //! \param message the message of such error
+    //! \param eventType the event type
+    void SignalLinkingEvent(void* program, QString message, int eventType);
+
     //! signals the begining of a compilation request. Used to set UI states and clear stuff 
     //! \param the shader pointer
     void SignalCompilationBegin(void* shader);
 
+    //! signals the end of a compilation request. Used to display any compilation error in the status bar
+    void SignalCompilationEnd(QString log);
+
     //! signal triggered when pin icon is pressed in the toolbar
     void SignalPinActionTriggered(); 
+    
 
 private:
 
@@ -111,9 +122,14 @@ private:
     //! Updates the syntax and style of a specific textedit widget
     void SynchronizeTextEditWidgetSyntaxStyle(int i);
 
+    //! Sets the status bar message
+    void PostStatusBarMessage(const QString& string);
+
     //! ui component pool
     struct Ui
     {
+        QString       mStatusBarMessage;
+        QStatusBar  * mStatusBar; 
         QVBoxLayout * mMainLayout; //! the main layout of the text editor
         QTabWidget  * mTabWidget; //! the tab widget
         QWidget   * mWidgetPool[MAX_TEXT_TABS]; //! pool of widgets for tabs
