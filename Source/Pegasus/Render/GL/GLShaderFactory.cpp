@@ -382,9 +382,9 @@ void GLShaderFactory::GenerateProgramGPUData (Pegasus::Shader::ProgramLinkage * 
             ""
         );
 #if PEGASUS_ENABLE_PROXIES
-        PG_LOG('ERR_', "(%s)Shader Link Failure: %s", programNode->GetName(), logBuffer);
+        PG_LOG('ERR_', "(%s)Program Link Failure: %s", programNode->GetName(), logBuffer);
 #else
-        PG_LOG('ERR_', "Shader Link Failure: %s", logBuffer);
+        PG_LOG('ERR_', "Program Link Failure: %s", logBuffer);
 #endif
     }
     else
@@ -412,9 +412,9 @@ void GLShaderFactory::GenerateProgramGPUData (Pegasus::Shader::ProgramLinkage * 
                 "There is a buffer alignment issue. Check the Console for more details."
             );
 #if PEGASUS_ENABLE_PROXIES
-        PG_LOG('ERR_', "(%s)Shader Link Failure (byte alignment issue)");
+        PG_LOG('ERR_', "(%s)Program Link Failure (byte alignment issue)", programNode->GetName());
 #else
-        PG_LOG('ERR_', "Shader Link Failure (byte alignment issue");
+        PG_LOG('ERR_', "Program Link Failure (byte alignment issue");
 #endif
         }
         else
