@@ -282,6 +282,18 @@ void GLShaderFactory::GenerateShaderGPUData (Pegasus::Shader::ShaderStage * shad
         shaderCompiled ? true : false, //compilation success status
         shaderCompiled ? "" : logBuffer
     );
+
+#if PEGASUS_ENABLE_LOG
+    if (!shaderCompiled)
+    {
+#if PEGASUS_ENABLE_PROXIES
+        PG_LOG('ERR_', "(%s)Shader Compilation Failure: %s", shaderNode->GetFileName(), logBuffer);
+#else
+        PG_LOG('ERR_', "Shader Compilation Failure: %s", logBuffer);
+#endif
+    }
+#endif
+
     nodeData->SetNodeGPUData(reinterpret_cast<Pegasus::Graph::NodeGPUData*>(gpuData));
 
     // Since the shader data has been updated, set the node GPU data as non-dirty
@@ -369,6 +381,11 @@ void GLShaderFactory::GenerateProgramGPUData (Pegasus::Shader::ProgramLinkage * 
             Pegasus::Shader::LinkingEvent::LINKING_FAIL,
             ""
         );
+#if PEGASUS_ENABLE_PROXIES
+        PG_LOG('ERR_', "(%s)Shader Link Failure: %s", programNode->GetName(), logBuffer);
+#else
+        PG_LOG('ERR_', "Shader Link Failure: %s", logBuffer);
+#endif
     }
     else
     {
@@ -394,6 +411,11 @@ void GLShaderFactory::GenerateProgramGPUData (Pegasus::Shader::ProgramLinkage * 
                 Pegasus::Shader::LinkingEvent::LINKING_FAIL,
                 "There is a buffer alignment issue. Check the Console for more details."
             );
+#if PEGASUS_ENABLE_PROXIES
+        PG_LOG('ERR_', "(%s)Shader Link Failure (byte alignment issue)");
+#else
+        PG_LOG('ERR_', "Shader Link Failure (byte alignment issue");
+#endif
         }
         else
         {
