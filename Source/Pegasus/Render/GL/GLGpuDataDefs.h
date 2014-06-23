@@ -86,6 +86,14 @@ struct OGLMeshGPUData
     
 };
 
+//! basic internal container class with OpenGL handles for render targets (super set of textures)
+struct OGLRenderTargetGPUData
+{
+    PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(OGLRenderTargetGPUData, 0x5);
+    OGLTextureGPUData mTextureView;
+    GLuint            mFrameBufferName;
+};
+
 } // namespace Render
 } // namespace Pegasus
 

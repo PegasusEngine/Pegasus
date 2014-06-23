@@ -12,9 +12,7 @@
 #define GLEW_STATIC 1
 #include "TestApp1Window.h"
 #include "Pegasus/Render/RenderContext.h"
-
-//! TODO remove this direct dependency once our mesh & shader packages are fully complete
-#include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
+#include "Pegasus/Render/Render.h"
 
 TestApp1Window::TestApp1Window(const Pegasus::Wnd::WindowConfig& config)
     : Pegasus::Wnd::Window(config), mAllocator(config.mAllocator)
@@ -54,10 +52,19 @@ void TestApp1Window::Render()
     unsigned int viewportWidth = 0;
     unsigned int viewportHeight = 0;
     GetDimensions(viewportWidth, viewportHeight);
-    glViewport(0, 0, viewportWidth, viewportHeight);
+    
+    // set default render target
+    Pegasus::Render::Viewport regularViewport(viewportWidth, viewportHeight);
+    Pegasus::Render::DispatchDefaultRenderTarget(regularViewport);
 
-    // Clear screen
-    glClear(GL_COLOR_BUFFER_BIT);
+    // set clear color and depth
+    Pegasus::Render::SetClearColorValue(Pegasus::Math::ColorRGBA(0.0, 0.0, 0.0, 1.0));
+
+    // - todo inverted depth
+    Pegasus::Render::SetDepthClearValue(0.0);
+    
+    // clear buffers
+    Pegasus::Render::Clear(/*color*/true, /*depth*/ true, /*stencil*/false);
 
     // Render the content of the timeline
     GetWindowContext()->GetTimeline()->Render(this);

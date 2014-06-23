@@ -79,7 +79,10 @@ void BoxGenerator::GenerateData()
         stream[i].normal = Vec3 (face * g16, -face * b8a16, face * ng8);
 		
 		//set the uvs by broadening the area that each face can cover the most
-        stream[i].uv = Vec2(v1 + (i / 8), v2 + (-face + 1.0f)*0.5f) / 3.0f;
+        stream[i].uv = Vec2(
+             (v1 + 1.0f)*0.5f + (i / 8), 
+             (v2 + 1.0f)*0.5f + (face + 1.0f)*0.5f
+        ) / 3.0f;
     }
 
 	//set the index data

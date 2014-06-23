@@ -6,22 +6,32 @@
 
 in vec4 p;
 in vec3 normal;
-out vec4 color;
+in vec2 t;
 
+out vec4 color;
+uniform sampler2D cubeTex;
 void main()
 {
+	vec3 col = texture(cubeTex, t*3.0).rgb;
+	vec3 nn = normalize(normalize(p.xyz)+(2.0*vec3(0,1.0,0.1)*col.y));
+
 	vec3 pNormal = normalize(normal);
 	vec3 m1 = clamp(normal,0, 1);
 	vec3 m2 = clamp(-(normal),0, 1);
 	vec3 c1 = vec3(1,0,1);
-	vec3 c2 = vec3(0.2,0.2,0.2);
+	vec3 c2 = vec3(0.9,0.0,0.9);
 	vec3 c3 = vec3(1,0,0);
-	vec3 c4 = vec3(0,1,0);
+	vec3 c4 = vec3(0,1,0); 
 	vec3 c5 = vec3(0,0.3,0.355);
 	vec3 c6 = vec3(1,0.9,0.9);
-    color.rgb = c1*m1.x + c2*m1.y + c3*m1.z + c4*m2.x + c5*m2.y + c6*m2.z;
+	vec3 cubeAlbedo = c1*m1.x + c2*m1.y + c3*m1.z + c4*m2.x + c5*m2.y + c6*m2.z + col.zzz;
+
+	vec3 view = normalize(p.xyz-vec3(0.0,0.0,1.0));
+    vec3 fakeSpec = 1.9*vec3(pow(1.0-clamp(dot(view,nn),0.0, 1.0),3.0 ));
+	vec3 rim = 0.1*vec3(pow(clamp(dot(view,nn),0.0, 1.0),1.5 ));
+	float diff = 0.9*clamp(dot(nn,normalize(vec3(0.2,0.6,1.0))),0.0,1.0);
+	vec3 amb = vec3(0.01,0.01,0.1);
+
+	color.rgb = vec3(col.xxx*cubeAlbedo*fakeSpec*vec3(0.7,0.5,0.5))*vec3(diff) +  rim  + amb;
     color.a   = 1.0;
 }
-
-
-

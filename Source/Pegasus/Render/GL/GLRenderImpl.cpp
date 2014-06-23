@@ -18,6 +18,9 @@
 #include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
 
 
+//////////////////        GLOBALS CODE BLOCK     //////////////////////////////
+//         All globals holding state data are declared on this blocka       ///
+///////////////////////////////////////////////////////////////////////////////
 //! helper state (in local thread storage) to keep track of current gpu state
 //!
 #if PEGASUS_PLATFORM_WINDOWS
@@ -45,6 +48,25 @@ GLenum gOGLAttrTypeTranslation[Pegasus::Mesh::MeshInputLayout::ATTRTYPE_COUNT] =
     GL_UNSIGNED_BYTE   //BOOL    
 };
 
+// global viewport state
+// used to avoid setting state and viewport in opengl
+Pegasus::Render::Viewport gCurrentViewport(-1,-1,-1,-1);
+
+// pointer used to determine if we set the render target to the global state
+Pegasus::Render::RenderTarget gDefaultRenderTarget;
+
+// pointer used to determine if we disable color rendering
+Pegasus::Render::RenderTarget gNullRenderTarget;
+
+bool gEnableColorBuffer = false;
+
+// ---------------------------------------------------------------------------
+
+///////////////////////////////////////////////////////////////////////////////
+/////////////   DISPATCH FUNCTIONS IMPLEMENTATION /////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+
 void Pegasus::Render::Dispatch (Pegasus::Shader::ProgramLinkageInOut program)
 {
     bool updated = false;
@@ -58,6 +80,8 @@ void Pegasus::Render::Dispatch (Pegasus::Shader::ProgramLinkageInOut program)
     glUseProgram(programGPUData->mHandle);
     gOGLState.mDispatchedShader = programGPUData;
 }
+
+// ---------------------------------------------------------------------------
 
 void Pegasus::Render::Dispatch (Pegasus::Mesh::MeshInOut mesh)
 {
@@ -151,7 +175,142 @@ void Pegasus::Render::Dispatch (Pegasus::Mesh::MeshInOut mesh)
     gOGLState.mDispatchedMeshGPUData = meshGPUData;
 }
 
+// ---------------------------------------------------------------------------
 
+void Pegasus::Render::Dispatch(Pegasus::Render::RenderTarget& renderTarget, const Viewport& viewport, int renderTargetSlot)
+{
+    PG_ASSERTSTR(renderTargetSlot == 0, "multiple render targets not supported yet!");
+
+    if (&renderTarget == &gNullRenderTarget)
+    {
+        glDisable(GL_COLOR_BUFFER_BIT);
+        gEnableColorBuffer = false;
+    }
+    else
+    {
+        if (!gEnableColorBuffer)
+        {
+            glEnable(GL_COLOR_BUFFER_BIT);
+            gEnableColorBuffer = true;
+        }
+        if (&renderTarget == &gDefaultRenderTarget)
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0); //bind the basic render target
+        }
+        else
+        {
+                
+            PG_ASSERT(renderTarget.mInternalData != nullptr);
+            Pegasus::Render::OGLRenderTargetGPUData * gpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OGLRenderTargetGPUData, renderTarget.mInternalData);
+            glBindFramebuffer(GL_FRAMEBUFFER, gpuData->mFrameBufferName);
+        }
+
+        if (viewport.mXOffset != gCurrentViewport.mXOffset || 
+            viewport.mYOffset != gCurrentViewport.mYOffset ||
+            viewport.mWidth   != gCurrentViewport.mWidth   ||
+            viewport.mHeight  != gCurrentViewport.mHeight   )
+        {
+            glViewport(viewport.mXOffset, viewport.mYOffset, viewport.mWidth, viewport.mHeight);  
+            gCurrentViewport = viewport;
+        }
+    }
+}
+
+
+// ---------------------------------------------------------------------------
+
+void Pegasus::Render::DispatchNullRenderTarget()
+{
+    Pegasus::Render::Dispatch(gNullRenderTarget, Pegasus::Render::Viewport(), 0);
+}
+
+// ---------------------------------------------------------------------------
+
+void Pegasus::Render::DispatchDefaultRenderTarget(const Pegasus::Render::Viewport& viewport)
+{
+    Pegasus::Render::Dispatch(gDefaultRenderTarget, viewport, 0);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/////////////   Clear Functions                         ///////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+void Pegasus::Render::Clear(bool color, bool depth, bool stencil)
+{
+    GLuint flags = color ? GL_COLOR_BUFFER_BIT : 0;
+    flags |= depth ? GL_DEPTH_BUFFER_BIT : 0;
+    flags |= stencil ? GL_STENCIL_BUFFER_BIT : 0;
+    glClear(flags);
+}
+
+void Pegasus::Render::SetClearColorValue(const Pegasus::Math::ColorRGBA& color)
+{
+    PG_ASSERTSTR(
+        color.red >= 0.0 && color.red <= 1.0 &&
+        color.green >= 0.0 && color.green <= 1.0 &&
+        color.blue >= 0.0 && color.blue <= 1.0 &&
+        color.alpha >= 0.0 && color.alpha <= 1.0,
+        "Color ranges for clear must be normalized (from 0 to 1)"
+    );
+    glClearColor(
+        color.red,
+        color.green,
+        color.blue,
+        color.alpha
+    );
+
+}
+
+// ---------------------------------------------------------------------------
+
+void Pegasus::Render::SetDepthClearValue(float d)
+{
+    PG_ASSERTSTR(d >= 0.0 && d <= 1.0, "Depth clear value must be from 0 to 1");
+    glClearDepth(d);
+}
+
+// ---------------------------------------------------------------------------
+
+void Pegasus::Render::Dispatch(Pegasus::Render::RenderTarget& renderTarget)
+{
+    Viewport viewport(0, 0, renderTarget.mConfig.mWidth, renderTarget.mConfig.mHeight);
+    PG_ASSERT (renderTarget.mConfig.mWidth > 0 && renderTarget.mConfig.mHeight > 0);
+    Dispatch(renderTarget, viewport, 0);
+}
+
+// ---------------------------------------------------------------------------
+
+///////////////////////////////////////////////////////////////////////////////
+/////////////   DRAW FUNCTION IMPLEMENTATION      /////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+void Pegasus::Render::Draw()
+{
+    PG_ASSERT(gOGLState.mDispatchedShader != nullptr);
+    PG_ASSERT(gOGLState.mDispatchedMeshGPUData != nullptr);    
+    Pegasus::Render::OGLMeshGPUData::DrawState& drawState = gOGLState.mDispatchedMeshGPUData->mDrawState;
+    if (drawState.mIsIndexed)
+    {
+        glDrawElements(drawState.mPrimitive, drawState.mIndexCount, GL_UNSIGNED_SHORT, (void*)0x0);
+    }
+    else
+    {
+        glDrawArrays(drawState.mPrimitive, 0, drawState.mVertexCount);
+    }
+}
+
+// ---------------------------------------------------------------------------
+
+///////////////////////////////////////////////////////////////////////////////
+/////////////   GET UNIFORM FUNCTION IMPLEMENTATIONS    ///////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+// ---------------------------------------------------------------------------
+//! Private function
+//! Gets the location of a uniform by searching the uniform table of the specified program.
+//! \param programGPUData the program GL and Reflection cached data.
+//! \param outputUniform output uniform to fill with this data
+//! \return true if the uniform was found and outputUniform was populated correctly, false otherwise
 static bool GetUniformLocationInternal(Pegasus::Render::OGLProgramGPUData * programGPUData, Pegasus::Render::Uniform& outputUniform)
 {
     Pegasus::Render::GLShaderReflect::UniformTable * table = &programGPUData->mReflection.mUniformTable;
@@ -171,21 +330,13 @@ static bool GetUniformLocationInternal(Pegasus::Render::OGLProgramGPUData * prog
     return false;
 }
 
-bool Pegasus::Render::GetUniformLocation(Pegasus::Shader::ProgramLinkageInOut program, const char * name, Pegasus::Render::Uniform& outputUniform)
-{
-    bool updated = false;
-    Pegasus::Graph::NodeGPUData * gpuData = program->GetUpdatedData(updated)->GetNodeGPUData();
-    PG_ASSERT(gpuData != nullptr);
-
-    Pegasus::Render::OGLProgramGPUData * programGPUData = PEGASUS_GRAPH_GPUDATA_SAFECAST(
-         Pegasus::Render::OGLProgramGPUData, 
-         gpuData
-    );
-    Pegasus::Utils::Memcpy(outputUniform.mName, name, PEGASUS_RENDER_MAX_UNIFORM_NAME_LEN); 
-
-    return GetUniformLocationInternal(programGPUData, outputUniform);
-}
-
+// ---------------------------------------------------------------------------
+//! Private function
+//! Attempts to recache the correct reflection uniform indices inside u. If the shader has not changed, this
+//! functions becomes a nop
+//! \param u the uniform to update if necesary. Otherwise (if it belogns to the current shader version then
+//!        no touch
+//! \return true if the uniform still exists, false otherwise
 static bool UpdateUniform(Pegasus::Render::OGLProgramGPUData * dispatchedShader, Pegasus::Render::Uniform& u)
 {
      
@@ -205,6 +356,15 @@ static bool UpdateUniform(Pegasus::Render::OGLProgramGPUData * dispatchedShader,
     return false;
 }
 
+// ---------------------------------------------------------------------------
+//! Private function
+//! Checks the current uniform, updates it if necesary (if shader changed) otherwise keeps it
+//! For example, if the shader has not changed, we simply return the GL internal data, if the shader
+//! changed, we recache the uniform data in u and return the updated uniform. If for some reason the user
+//! removed the uniform declaration in the shader, we return nullptr as the internal data.
+//! This functions assumes a shader has been dispatched.
+//! \param u the uniform to update if necesary, and to find its internal data.
+//! \return returns the internal opengl handles and metadata, otherwise (if not found) returns nullptr.
 static Pegasus::Render::GLShaderUniform * GetUpdatedGLUniformLocation(Pegasus::Render::Uniform& u)
 {
     Pegasus::Render::OGLProgramGPUData * dispatchedShader = gOGLState.mDispatchedShader; 
@@ -222,7 +382,73 @@ static Pegasus::Render::GLShaderUniform * GetUpdatedGLUniformLocation(Pegasus::R
         return nullptr;
     }
 }
+// ---------------------------------------------------------------------------
 
+bool Pegasus::Render::GetUniformLocation(Pegasus::Shader::ProgramLinkageInOut program, const char * name, Pegasus::Render::Uniform& outputUniform)
+{
+    bool updated = false;
+    Pegasus::Graph::NodeGPUData * gpuData = program->GetUpdatedData(updated)->GetNodeGPUData();
+    PG_ASSERT(gpuData != nullptr);
+
+    Pegasus::Render::OGLProgramGPUData * programGPUData = PEGASUS_GRAPH_GPUDATA_SAFECAST(
+         Pegasus::Render::OGLProgramGPUData, 
+         gpuData
+    );
+    Pegasus::Utils::Memcpy(outputUniform.mName, name, PEGASUS_RENDER_MAX_UNIFORM_NAME_LEN); 
+
+    return GetUniformLocationInternal(programGPUData, outputUniform);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+/////////////   CREATEUNIFORMBUFFER IMPLEMENTATION      ///////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+void Pegasus::Render::CreateUniformBuffer(int size, Pegasus::Render::Buffer& outputBuffer)
+{
+    PG_ASSERTSTR((size & 0x0f) == 0x0, "The size of the uniform buffer being allocated must be 16 byte aligned. Pack your buffer in chunks of 16 bytes (4 components of 4 bytes).");
+    PG_ASSERTSTR(outputBuffer.mInternalData == 0, "Warning! buffer not deallocated, this will occur in a memory leak in the GPU");
+    const GLuint usage = GL_DYNAMIC_DRAW; //set multiple times, used only in draw calls
+    outputBuffer.mSize = size;
+    GLuint name = GL_INVALID_INDEX;
+    glGenBuffers(1, &name);
+    PG_ASSERT(name != GL_INVALID_INDEX);
+    outputBuffer.mInternalData = (int)name; //encode name in the lower dword
+
+    //allocate memory
+    glBindBuffer(GL_UNIFORM_BUFFER, name);
+    glBufferData(GL_UNIFORM_BUFFER, size, nullptr, usage);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/////////////   SETBUFFER IMPLEMENTATION                ///////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+void Pegasus::Render::SetBuffer(Pegasus::Render::Buffer& dstBuffer, void * src, int size, int offset)
+{
+    GLuint sizeToUse = size == -1 ? dstBuffer.mSize : size;
+    GLuint name = (GLuint) (dstBuffer.mInternalData);
+    PG_ASSERTSTR(size + offset <= dstBuffer.mSize,"Warning! exceeding the byte capacity of this buffer. A memory stom will occur on the next calls.");
+    glBindBuffer(GL_UNIFORM_BUFFER, name);
+    glBufferSubData(GL_UNIFORM_BUFFER, (GLintptr)offset, sizeToUse, src);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/////////////   DELETE BUFFER IMPLEMENTATION            ///////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+void Pegasus::Render::DeleteBuffer(Pegasus::Render::Buffer& buffer)
+{
+    PG_ASSERT(buffer.mInternalData != 0);
+    glDeleteBuffers(1, (GLuint*)&buffer.mInternalData);
+    //clear buffer
+    buffer.mInternalData = 0;
+    buffer.mSize = 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/////////////   SETUNIFORMS IMPLEMENTATIONS             ///////////////////////
+///////////////////////////////////////////////////////////////////////////////
 bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, float value)
 {
     Pegasus::Render::GLShaderUniform * uniformEntry = GetUpdatedGLUniformLocation(u);
@@ -236,7 +462,9 @@ bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, float value)
     return false;
 }
 
-bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, Pegasus::Texture::TextureInOut texture)
+// ---------------------------------------------------------------------------
+
+static bool InternalSetTextureUniform(Pegasus::Render::Uniform& u, Pegasus::Render::OGLTextureGPUData * gpuData)
 {
     Pegasus::Render::GLShaderUniform * uniformEntry = GetUpdatedGLUniformLocation(u);
     if (uniformEntry != nullptr)
@@ -251,19 +479,12 @@ bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, Pegasus::Texture::
             uniformEntry->mType == GL_SAMPLER_2D_SHADOW,
         "Setting a uniform of the wrong type!");
         glActiveTexture(GL_TEXTURE0 + uniformEntry->mTextureSlot);
-        Pegasus::Texture::TextureDataRef nodeData = texture->GetUpdatedTextureData();
-        PG_ASSERT(nodeData->GetNodeGPUData() != nullptr);
 #if PEGASUS_ENABLE_ASSERT
-        if (nodeData->GetNodeGPUData() != nullptr)
+        if (gpuData != nullptr)
 
 #endif
         {
-            Pegasus::Render::OGLTextureGPUData * textureGPUData = 
-                PEGASUS_GRAPH_GPUDATA_SAFECAST(
-                    Pegasus::Render::OGLTextureGPUData,
-                    nodeData->GetNodeGPUData()
-                );
-            glBindTexture(GL_TEXTURE_2D, textureGPUData->mHandle);
+            glBindTexture(GL_TEXTURE_2D, gpuData->mHandle);
             glUniform1i(uniformEntry->mSlot, uniformEntry->mTextureSlot);
             return true;
         }
@@ -271,6 +492,22 @@ bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, Pegasus::Texture::
     }
     return false;
 }
+
+// ---------------------------------------------------------------------------
+
+bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, Pegasus::Texture::TextureInOut texture)
+{
+    Pegasus::Texture::TextureDataRef nodeData = texture->GetUpdatedTextureData();
+    PG_ASSERT(nodeData->GetNodeGPUData() != nullptr);
+    Pegasus::Render::OGLTextureGPUData * textureGPUData = 
+        PEGASUS_GRAPH_GPUDATA_SAFECAST(
+            Pegasus::Render::OGLTextureGPUData,
+            nodeData->GetNodeGPUData()
+        );
+    return InternalSetTextureUniform(u, textureGPUData);
+}
+
+// ---------------------------------------------------------------------------
 
 bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, const Buffer& buffer)
 {
@@ -293,53 +530,20 @@ bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, const Buffer& buff
     return false;
 }
 
-void Pegasus::Render::Draw()
+// ---------------------------------------------------------------------------
+
+bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, const RenderTarget& renderTarget)
 {
-    PG_ASSERT(gOGLState.mDispatchedShader != nullptr);
-    PG_ASSERT(gOGLState.mDispatchedMeshGPUData != nullptr);    
-    Pegasus::Render::OGLMeshGPUData::DrawState& drawState = gOGLState.mDispatchedMeshGPUData->mDrawState;
-    if (drawState.mIsIndexed)
-    {
-        glDrawElements(drawState.mPrimitive, drawState.mIndexCount, GL_UNSIGNED_SHORT, (void*)0x0);
-    }
-    else
-    {
-        glDrawArrays(drawState.mPrimitive, 0, drawState.mVertexCount);
-    }
+    Pegasus::Render::GLShaderUniform * uniformEntry = GetUpdatedGLUniformLocation(u);
+
+    PG_ASSERT(&renderTarget != &gDefaultRenderTarget);
+    PG_ASSERT(&renderTarget != &gNullRenderTarget);
+    PG_ASSERT(renderTarget.mInternalData != nullptr);
+
+    Pegasus::Render::OGLRenderTargetGPUData * gpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OGLRenderTargetGPUData, renderTarget.mInternalData);
+    return InternalSetTextureUniform(u, &gpuData->mTextureView);
 }
 
-void Pegasus::Render::CreateUniformBuffer(int size, Pegasus::Render::Buffer& outputBuffer)
-{
-    PG_ASSERTSTR((size & 0x0f) == 0x0, "The size of the uniform buffer being allocated must be 16 byte aligned. Pack your buffer in chunks of 16 bytes (4 components of 4 bytes).");
-    PG_ASSERTSTR(outputBuffer.mInternalData == 0, "Warning! buffer not deallocated, this will occur in a memory leak in the GPU");
-    const GLuint usage = GL_DYNAMIC_DRAW; //set multiple times, used only in draw calls
-    outputBuffer.mSize = size;
-    GLuint name = GL_INVALID_INDEX;
-    glGenBuffers(1, &name);
-    PG_ASSERT(name != GL_INVALID_INDEX);
-    outputBuffer.mInternalData = (int)name; //encode name in the lower dword
+// ---------------------------------------------------------------------------
 
-    //allocate memory
-    glBindBuffer(GL_UNIFORM_BUFFER, name);
-    glBufferData(GL_UNIFORM_BUFFER, size, nullptr, usage);
-}
-
-void Pegasus::Render::SetBuffer(Pegasus::Render::Buffer& dstBuffer, void * src, int size, int offset)
-{
-    GLuint sizeToUse = size == -1 ? dstBuffer.mSize : size;
-    GLuint name = (GLuint) (dstBuffer.mInternalData);
-    PG_ASSERTSTR(size + offset <= dstBuffer.mSize,"Warning! exceeding the byte capacity of this buffer. A memory stom will occur on the next calls.");
-    glBindBuffer(GL_UNIFORM_BUFFER, name);
-    glBufferSubData(GL_UNIFORM_BUFFER, (GLintptr)offset, sizeToUse, src);
-}
-
-void Pegasus::Render::DeleteBuffer(Pegasus::Render::Buffer& buffer)
-{
-    PG_ASSERT(buffer.mInternalData != 0);
-    glDeleteBuffers(1, (GLuint*)&buffer.mInternalData);
-    //clear buffer
-    buffer.mInternalData = 0;
-    buffer.mSize = 0;
-}
-
-#endif
+#endif //PEGASUS_GAPI_GL

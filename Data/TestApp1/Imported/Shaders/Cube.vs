@@ -5,8 +5,11 @@
 #version 330 core
 
 in vec4 p0;
+in vec2 t0;
 in vec3 n0;
 out vec4 p;
+out vec2 t;
+
 out vec3 normal;
 
 layout(std140, row_major) uniform uniformState
@@ -24,14 +27,14 @@ void main()
     // or use a layout(row_major) query in the uniform (or buffer) we are using.
     // in the case of this uniform block, we actually use the row_major query
     vec4 pos = uTransform * p0;
-      
+    t = t0;
 
-
-	pos *= 0.4;
+	pos *= 0.2;
 
 	normal = n0;
     gl_Position = vec4(pos.xyz, 1.0);
 
     p = pos;
 }
+
 

@@ -32,7 +32,6 @@
     <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TimelineBlocks\FractalCube2Block.cpp" />
     <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TimelineBlocks\FractalCubeBlock.cpp" />
     <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TimelineBlocks\GeometryTestBlock.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TimelineBlocks\KleberTriangleBlock.cpp" />
     <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TimelineBlocks\PsyBeadsBlock.cpp" />
     <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TimelineBlocks\TextureTestBlock.cpp" />
   </ItemGroup>
@@ -42,7 +41,6 @@
     <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TimelineBlocks\FractalCube2Block.h" />
     <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TimelineBlocks\FractalCubeBlock.h" />
     <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TimelineBlocks\GeometryTestBlock.h" />
-    <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TimelineBlocks\KleberTriangleBlock.h" />
     <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TimelineBlocks\PsyBeadsBlock.h" />
     <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TimelineBlocks\TextureTestBlock.h" />
   </ItemGroup>

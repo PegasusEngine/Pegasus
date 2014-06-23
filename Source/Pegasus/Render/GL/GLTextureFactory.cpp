@@ -11,6 +11,7 @@
 
 #if PEGASUS_GAPI_GL
 
+#include "Pegasus/Render/Render.h"
 #include "../Source/Pegasus/Render/GL/GLGPUDataDefs.h"
 #include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
 #include "Pegasus/Allocator/IAllocator.h"
@@ -40,26 +41,37 @@ public:
     //! \param nodeData 
     virtual void DestroyNodeGPUData(Pegasus::Texture::TextureData * nodeData);
 
+    //! Creates a render target with the assigned texture configuration
+    //! \param configuration of the render target
+    //! \param output render target to fill / create
+    void InternalCreateRenderTarget(Pegasus::Render::RenderTargetConfig& config, Pegasus::Render::RenderTarget& outputRenderTarget);
+
+    //! Destroys a render target with the assigned configuration
+    //! \param output render target to fill / create
+    void InternalDeleteRenderTarget(Pegasus::Render::RenderTarget& renderTarget);
+
 private:
-    Pegasus::Render::OGLTextureGPUData * AllocateGPUData(Pegasus::Texture::TextureData * textureData);
+    Pegasus::Render::OGLTextureGPUData * AllocateGPUData();
+    void AllocateGPUData(Pegasus::Render::OGLTextureGPUData& output);
+    void DeallocateTextureData(Pegasus::Render::OGLTextureGPUData& textureGPUData);
     Pegasus::Render::OGLTextureGPUData * GetGPUData(Pegasus::Texture::TextureData * textureData);
     Pegasus::Alloc::IAllocator * mAllocator;
 };
 
-Pegasus::Render::OGLTextureGPUData * GLTextureFactory::AllocateGPUData(Pegasus::Texture::TextureData * nodeData)
+void GLTextureFactory::AllocateGPUData(Pegasus::Render::OGLTextureGPUData& outputData)
 {
-    PG_ASSERT(nodeData != nullptr);
-    PG_ASSERT(nodeData->GetNodeGPUData() == nullptr);
+    glGenTextures(1, &outputData.mHandle);
+}
 
+Pegasus::Render::OGLTextureGPUData * GLTextureFactory::AllocateGPUData()
+{
     Pegasus::Render::OGLTextureGPUData * textureGPUData =
             PG_NEW(mAllocator,
                    -1,
                    "Texture GPU Data",
                    Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Render::OGLTextureGPUData();
 
-    glGenTextures(1, &textureGPUData->mHandle);
-    nodeData->SetNodeGPUData(reinterpret_cast<Pegasus::Graph::NodeGPUData*>(textureGPUData));
-
+    AllocateGPUData(*textureGPUData);
     return textureGPUData;
 }
 
@@ -82,10 +94,13 @@ void GLTextureFactory::GenerateTextureGPUData(Pegasus::Texture::TextureData * no
     else
     {
         newlyAllocated = true;
-        gpuData = AllocateGPUData(nodeData);
+        gpuData = AllocateGPUData();
+        nodeData->SetNodeGPUData(reinterpret_cast<Pegasus::Graph::NodeGPUData*>(gpuData));
     }
     PG_ASSERT(gpuData != nullptr);
     
+    GLint prevHandle = 0;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &prevHandle);
     glBindTexture(GL_TEXTURE_2D, gpuData->mHandle);
 
     const Pegasus::Texture::TextureConfiguration& texConfig = nodeData->GetConfiguration();
@@ -136,6 +151,13 @@ void GLTextureFactory::GenerateTextureGPUData(Pegasus::Texture::TextureData * no
 
     // Since the texture data has been updated, set the node GPU data as non-dirty
     nodeData->ValidateGPUData();
+    glBindTexture(GL_TEXTURE_2D, (GLuint)prevHandle);
+}
+
+void GLTextureFactory::DeallocateTextureData(Pegasus::Render::OGLTextureGPUData& textureGPUData)
+{
+    glDeleteTextures(1, &textureGPUData.mHandle);
+    textureGPUData.mHandle = 0; 
 }
 
 void GLTextureFactory::DestroyNodeGPUData(Pegasus::Texture::TextureData * nodeData)
@@ -143,11 +165,59 @@ void GLTextureFactory::DestroyNodeGPUData(Pegasus::Texture::TextureData * nodeDa
     if (nodeData->GetNodeGPUData() != nullptr)
     {
         Pegasus::Render::OGLTextureGPUData * textureData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OGLTextureGPUData, nodeData->GetNodeGPUData());
-        glDeleteTextures(1, &textureData->mHandle);
+
+        DeallocateTextureData(*textureData);
         PG_DELETE(mAllocator, textureData);
         nodeData->SetNodeGPUData(nullptr);  // sets the dirty flag of the GPU node data
     }
     
+}
+
+void GLTextureFactory::InternalCreateRenderTarget(
+    Pegasus::Render::RenderTargetConfig& config, 
+    Pegasus::Render::RenderTarget& outputRenderTarget
+)
+{
+    PG_ASSERT(outputRenderTarget.mInternalData == nullptr);
+
+    Pegasus::Render::OGLRenderTargetGPUData * gpuData = 
+            PG_NEW(mAllocator,
+                   -1,
+                   "Render Target GPU Data",
+                   Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Render::OGLRenderTargetGPUData();
+    //create internal texture names
+    GLTextureFactory::AllocateGPUData(gpuData->mTextureView);
+    glBindTexture(GL_TEXTURE_2D, gpuData->mTextureView.mHandle);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0, //depth
+        GL_RGBA, 
+        config.mWidth,
+        config.mHeight,
+        0, //border, always 0
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        nullptr
+    );
+
+    //create frame buffer
+    glGenFramebuffers(1, &gpuData->mFrameBufferName);
+    glBindFramebuffer(GL_FRAMEBUFFER, gpuData->mFrameBufferName);
+
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, gpuData->mTextureView.mHandle, 0);
+    outputRenderTarget.mConfig = config;
+    outputRenderTarget.mInternalData = reinterpret_cast<void*>(gpuData);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void GLTextureFactory::InternalDeleteRenderTarget(
+    Pegasus::Render::RenderTarget& renderTarget
+)
+{
+    PG_ASSERT(renderTarget.mInternalData != nullptr);
+    Pegasus::Render::OGLRenderTargetGPUData * gpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OGLRenderTargetGPUData, renderTarget.mInternalData);
+    glDeleteFramebuffers(1, &gpuData->mFrameBufferName);
+    DeallocateTextureData(gpuData->mTextureView);
 }
 
 //! define a global static texture factory API
@@ -156,6 +226,25 @@ static GLTextureFactory gGlobalTextureFactory;
 Pegasus::Texture::ITextureFactory * Pegasus::Render::GetRenderTextureFactory()
 {
     return &gGlobalTextureFactory;
+}
+
+// SPECIAL RENDER API IMPLEMENTATIONS //
+// These are the implementations that must be aware of the Texture Factory for allocations and other stuff
+
+///////////////////////////////////////////////////////////////////////////////
+/////////////   CREATE RENDER TARGET IMPLEMENTATION /////////////////////////// 
+///////////////////////////////////////////////////////////////////////////////
+void Pegasus::Render::CreateRenderTarget(Pegasus::Render::RenderTargetConfig& config, Pegasus::Render::RenderTarget& renderTarget)
+{
+    gGlobalTextureFactory.InternalCreateRenderTarget(config, renderTarget);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/////////////   DELETE BUFFER IMPLEMENTATION            ///////////////////////
+///////////////////////////////////////////////////////////////////////////////
+void Pegasus::Render::DeleteRenderTarget(Pegasus::Render::RenderTarget& renderTarget)
+{
+    gGlobalTextureFactory.InternalDeleteRenderTarget(renderTarget);
 }
 
 #endif //PEGASUS_GAPI_GL

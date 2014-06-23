@@ -44,10 +44,21 @@ private:
     PG_DISABLE_COPY(GeometryTestBlock)
 
     Pegasus::Shader::ProgramLinkageRef mBlockProgram;
+    Pegasus::Shader::ProgramLinkageRef mDiscoSpeaker;
+
+    Pegasus::Mesh::MeshRef mQuad;
     Pegasus::Mesh::MeshRef mCubeMesh;
 
+    // block program uniforms
+    Pegasus::Render::Uniform mCubeTextureUniform;
     Pegasus::Render::Uniform mUniformBlock;
     Pegasus::Render::Buffer  mUniformStateBuffer;
+
+    // screen program uniforms
+    Pegasus::Render::Uniform mAspectUniform;
+    Pegasus::Render::Uniform mTimeUniform;
+
+    Pegasus::Render::RenderTarget mCubeFaceRenderTarget;
     
     PEGASUS_ALIGN_BEGIN(16)
     struct UniformState

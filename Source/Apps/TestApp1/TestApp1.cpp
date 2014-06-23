@@ -14,7 +14,6 @@
 #include "TestApp1Window.h"
 #include "Pegasus/AppExport.h" // Needs including, for exported functions.  Only include this once!
 
-#include "TimelineBlocks/KleberTriangleBlock.h"
 #include "TimelineBlocks/PsyBeadsBlock.h"
 #include "TimelineBlocks/FractalCubeBlock.h"
 #include "TimelineBlocks/FractalCube2Block.h"
@@ -77,7 +76,6 @@ TestApp1::~TestApp1()
 
 void TestApp1::RegisterTimelineBlocks()
 {
-    REGISTER_TIMELINE_BLOCK(KleberTriangleBlock);
     REGISTER_TIMELINE_BLOCK(PsyBeadsBlock);
     REGISTER_TIMELINE_BLOCK(FractalCubeBlock);
     REGISTER_TIMELINE_BLOCK(FractalCube2Block);
@@ -105,17 +103,17 @@ void TestApp1::InitializeApp()
     timeline->GetLane(2)->SetName("Blob");
 #endif
 
-    Pegasus::Timeline::Block * kleberTriangleBlock = timeline->CreateBlock("KleberTriangleBlock");
-#if PEGASUS_ENABLE_PROXIES
-    kleberTriangleBlock->SetColor(255, 255, 128);
-#endif
-    timeline->GetLane(2)->InsertBlock(kleberTriangleBlock, 6 * TICKS_PER_BEAT, 4 * TICKS_PER_BEAT);
-
     Pegasus::Timeline::Block * psyBeadBlock = timeline->CreateBlock("PsyBeadsBlock");
 #if PEGASUS_ENABLE_PROXIES
     psyBeadBlock->SetColor(255, 128, 128);
 #endif
     timeline->GetLane(0)->InsertBlock(psyBeadBlock, 0 * TICKS_PER_BEAT, 8 * TICKS_PER_BEAT);
+
+    Pegasus::Timeline::Block * geometryTestBlock = timeline->CreateBlock("GeometryTestBlock");
+#if PEGASUS_ENABLE_PROXIES
+    geometryTestBlock->SetColor(19, 55, 28);
+#endif
+    timeline->GetLane(0)->InsertBlock(geometryTestBlock, 8 * TICKS_PER_BEAT, 10 * TICKS_PER_BEAT);
 
     Pegasus::Timeline::Block * psyBeadBlock2 = timeline->CreateBlock("PsyBeadsBlock");
 #if PEGASUS_ENABLE_PROXIES
@@ -123,17 +121,11 @@ void TestApp1::InitializeApp()
 #endif
     timeline->GetLane(0)->InsertBlock(psyBeadBlock2, 19 * TICKS_PER_BEAT, 10 * TICKS_PER_BEAT);
 
-    Pegasus::Timeline::Block * fractalCubeBlock = timeline->CreateBlock("FractalCubeBlock");
-#if PEGASUS_ENABLE_PROXIES
-    fractalCubeBlock->SetColor(128, 255, 128);
-#endif
-    timeline->GetLane(1)->InsertBlock(fractalCubeBlock, 8 * TICKS_PER_BEAT, 5 * TICKS_PER_BEAT);
-
     Pegasus::Timeline::Block * fractalCube2Block = timeline->CreateBlock("FractalCube2Block");
 #if PEGASUS_ENABLE_PROXIES
     fractalCube2Block->SetColor(128, 255, 192);
 #endif
-    timeline->GetLane(1)->InsertBlock(fractalCube2Block, 13 * TICKS_PER_BEAT, 12 * TICKS_PER_BEAT);
+    timeline->GetLane(1)->InsertBlock(fractalCube2Block, 18 * TICKS_PER_BEAT, 6 * TICKS_PER_BEAT);
 
     mTextureTestBlock = timeline->CreateBlock("TextureTestBlock");
 #if PEGASUS_ENABLE_PROXIES
@@ -141,11 +133,11 @@ void TestApp1::InitializeApp()
 #endif
     timeline->GetLane(2)->InsertBlock(mTextureTestBlock, 25 * TICKS_PER_BEAT, 18 * TICKS_PER_BEAT);
 
-    Pegasus::Timeline::Block * geometryTestBlock = timeline->CreateBlock("GeometryTestBlock");
+    Pegasus::Timeline::Block * fractalCubeBlock = timeline->CreateBlock("FractalCubeBlock");
 #if PEGASUS_ENABLE_PROXIES
-    geometryTestBlock->SetColor(19, 55, 28);
+    fractalCubeBlock->SetColor(128, 255, 128);
 #endif
-    timeline->GetLane(0)->InsertBlock(geometryTestBlock, 43 * TICKS_PER_BEAT, 10 * TICKS_PER_BEAT);
+    timeline->GetLane(1)->InsertBlock(fractalCubeBlock, 43 * TICKS_PER_BEAT, 5 * TICKS_PER_BEAT);
 }
 
 //----------------------------------------------------------------------------------------
