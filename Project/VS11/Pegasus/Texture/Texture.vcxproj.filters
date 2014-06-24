@@ -86,9 +86,6 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Proxy\TextureConfigurationProxy.h">
       <Filter>Include\Proxy</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Proxy\TextureGeneratorProxy.h">
-      <Filter>Include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Generator\PixelsGenerator.h">
       <Filter>Include\Generator</Filter>
     </ClInclude>

@@ -23,9 +23,12 @@
 
 
 ApplicationInterface::ApplicationInterface(Application * application, QObject * parent)
-:   QObject(parent),
-    mApplication(application)/*,
-    mAssertionBeingHandled(false)*/
+:   QObject(parent)
+,   mApplication(application)
+,   mSetCurrentBeatEnqueued(false)
+,   mSetCurrentBeatEnqueuedBeat(0.0f)
+,   mRedrawAllViewportsForBlockMovedEnqueued(false)
+//,   mAssertionBeingHandled(false)
     //! \todo Seems not useful anymore. Test and remove if possible
 {
     ED_ASSERTSTR(application != nullptr, "Invalid application object given to the application interface");
@@ -66,12 +69,15 @@ ApplicationInterface::ApplicationInterface(Application * application, QObject * 
                 Qt::QueuedConnection);
 
         connect(timelineDockWidget, SIGNAL(BeatUpdated(float)),
-                this, SLOT(SetCurrentBeat(float)),
+                this, SLOT(RequestSetCurrentBeatAfterBeatUpdated(float)));
+        connect(this, SIGNAL(EnqueuedBeatUpdated()),
+                this, SLOT(SetCurrentBeat()),
                 Qt::QueuedConnection);
 
-        //! \todo Handle multiple blocks being moved at the same time
         connect(timelineDockWidget, SIGNAL(BlockMoved()),
-                this, SLOT(RedrawAllViewports()),
+                this, SLOT(RequestRedrawAllViewportsAfterBlockMoved()));
+        connect(this, SIGNAL(EnqueuedBlockMoved()),
+                this, SLOT(RedrawAllViewportsForBlockMoved()),
                 Qt::QueuedConnection);
     }
     else
@@ -213,6 +219,93 @@ bool ApplicationInterface::RedrawTextureEditorPreview()
 
 //----------------------------------------------------------------------------------------
 
+void ApplicationInterface::RequestSetCurrentBeatAfterBeatUpdated(float beat)
+{
+    // Always set the enqueued beat even after the enqueued flag has been set
+    // so the last beat of the enqueued requests is used rather than the first one
+    mSetCurrentBeatEnqueuedBeat = beat;
+
+    if (!mSetCurrentBeatEnqueued)
+    {
+        // The first time that function is called, consider the request as enqueued.
+        // All subsequent calls are not calling emit, until the application thread
+        // takes care of the enqueued request
+        mSetCurrentBeatEnqueued = true;
+        emit EnqueuedBeatUpdated();
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::RequestRedrawAllViewportsAfterBlockMoved()
+{
+    if (!mRedrawAllViewportsForBlockMovedEnqueued)
+    {
+        // The first time that function is called, consider the request as enqueued.
+        // All subsequent calls are not calling emit, until the application thread
+        // takes care of the enqueued request
+        mRedrawAllViewportsForBlockMovedEnqueued = true;
+        emit EnqueuedBlockMoved();
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::SetCurrentBeat()
+{
+    Pegasus::Timeline::ITimelineProxy * timeline = mApplication->GetTimelineProxy();
+    ED_ASSERT(timeline != nullptr);
+
+    // Set the timeline beat with the last enqueued beat rather than the first one
+    timeline->SetCurrentBeat(mSetCurrentBeatEnqueuedBeat);
+
+    // Since the enqueued beat has been taken into account, we can now reset the enqueued flag
+    // to allow now requests to be enqueued
+    mSetCurrentBeatEnqueued = false;
+
+    RedrawAllViewports();
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::RedrawAllViewportsForBlockMoved()
+{
+    // Since the enqueued redraw has been taken into account, we can now reset the enqueued flag
+    // to allow now requests to be enqueued
+    mRedrawAllViewportsForBlockMovedEnqueued = false;
+
+    RedrawAllViewports();
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::ReceiveShaderCompilationRequest(int id)
+{
+    ShaderLibraryWidget * shaderLibraryWidget = Editor::GetInstance().GetShaderLibraryWidget();
+    if (shaderLibraryWidget != nullptr)
+    {
+        ShaderEditorWidget * shaderEditorWidget = shaderLibraryWidget->GetShaderEditorWidget();
+        if (shaderEditorWidget != nullptr)
+        {
+            shaderEditorWidget->FlushShaderTextEditorToShader(id);
+
+            //refresh viewport
+            mApplication->GetShaderManagerProxy()->UpdateAllPrograms();
+            RedrawAllViewports();
+        }
+        else
+        {
+            ED_FAILSTR("Unable to get the shader editor widget");
+        }
+    }
+    else
+    {
+        ED_FAILSTR("Unable to get the shader library dock widget");
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 void ApplicationInterface::TogglePlayMode(bool enabled)
 {
     Pegasus::Timeline::ITimelineProxy * timeline = mApplication->GetTimelineProxy();
@@ -249,43 +342,4 @@ void ApplicationInterface::RequestFrameInPlayMode()
 
     // We are still in play mode, inform the linked objects that will request a refresh of the viewports
     emit ViewportRedrawnInPlayMode(timeline->GetCurrentBeat());
-}
-
-//----------------------------------------------------------------------------------------
-
-void ApplicationInterface::SetCurrentBeat(float beat)
-{
-    Pegasus::Timeline::ITimelineProxy * timeline = mApplication->GetTimelineProxy();
-    ED_ASSERT(timeline != nullptr);
-
-    timeline->SetCurrentBeat(beat);
-
-    RedrawAllViewports();
-}
-
-//----------------------------------------------------------------------------------------
-
-void ApplicationInterface::ReceiveShaderCompilationRequest(int id)
-{
-    ShaderLibraryWidget * shaderLibraryWidget = Editor::GetInstance().GetShaderLibraryWidget();
-    if (shaderLibraryWidget != nullptr)
-    {
-        ShaderEditorWidget * shaderEditorWidget = shaderLibraryWidget->GetShaderEditorWidget();
-        if (shaderEditorWidget != nullptr)
-        {
-            shaderEditorWidget->FlushShaderTextEditorToShader(id);
-
-            //refresh viewport
-            mApplication->GetShaderManagerProxy()->UpdateAllPrograms();
-            RedrawAllViewports();
-        }
-        else
-        {
-            ED_FAILSTR("Unable to get the shader editor widget");
-        }
-    }
-    else
-    {
-        ED_FAILSTR("Unable to get the shader library dock widget");
-    }
 }

@@ -48,6 +48,12 @@ signals:
     //! \param beat Beat used to render the last frame in the viewport, can have fractional part
     void ViewportRedrawnInPlayMode(float beat);
 
+    //! Signal emitted when \a RequestSetCurrentBeatAfterBeatUpdated() has been called at least once
+    void EnqueuedBeatUpdated();
+
+    //! Signal emitted when \a RequestRedrawAllViewportsAfterBlockMoved() has been called at least once
+    void EnqueuedBlockMoved();
+
     //------------------------------------------------------------------------------------
     
 private slots:
@@ -77,20 +83,31 @@ private slots:
     bool RedrawTextureEditorPreview();
 
 
+    //! Request a set current beat call in the application thread after the current beat has been updated on the timeline
+    //! \param beat Current beat, can have fractional part
+    void RequestSetCurrentBeatAfterBeatUpdated(float beat);
+
+    //! Request a redraw all viewports call in the application thread after a block has been moved on the timeline
+    void RequestRedrawAllViewportsAfterBlockMoved();
+
+    //! Called when the current beat has been updated, to force a redraw of all viewports
+    //! \note Uses mSetCurrentBeatEnqueuedBeat for the beat to use
+    void SetCurrentBeat();
+
+    //! Called when a timeline block has been moved, to force a redraw of all viewports
+    void RedrawAllViewportsForBlockMoved();
+
+    //! Called when the current beat has been updated
+    //! \param id ID of the shader
+    void ReceiveShaderCompilationRequest(int id);
+
+
     //! Enable or disable the play mode of the demo timeline
     //! \param enabled True if the play mode has just been enabled, false if it has just been disabled
     void TogglePlayMode(bool enabled);
 
     //! Request the rendering of a new frame while in play mode
     void RequestFrameInPlayMode();
-
-    //! Called when the current beat has been updated
-    //! \param beat Current beat, can have fractional part
-    void SetCurrentBeat(float beat);
-
-    //! Called when the current beat has been updated
-    //! \param beat Current beat, can have fractional part
-    void ReceiveShaderCompilationRequest(int id);
 
     //------------------------------------------------------------------------------------
 
@@ -102,6 +119,15 @@ private:
     //! True while an assertion dialog box is shown to prevent any paint message to reach the application windows
     //! \todo Seems not useful anymore. Test and remove if possible
     //bool mAssertionBeingHandled;
+
+    //! True while a set current beat call has been enqueued (to avoid duplicated calls, reset by the Pegasus thread)
+    bool mSetCurrentBeatEnqueued;
+
+    //! Enqueued beat to use for a set current beat call
+    float mSetCurrentBeatEnqueuedBeat;
+
+    //! True while a redraw all viewports call has been enqueued (to avoid duplicated calls, reset by the Pegasus thread)
+    bool mRedrawAllViewportsForBlockMovedEnqueued;
 };
 
 

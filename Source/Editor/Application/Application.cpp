@@ -42,6 +42,9 @@ Application::Application(QObject *parent)
     mApplication(nullptr),
     mAssertionReturnCode(AssertionManager::ASSERTION_INVALID)
 {
+    // Make the application thread priority lower than the UI, so the UI is way more reactive
+    setPriority(QThread::LowPriority);
+
     for (unsigned int w = 0; w < NUM_VIEWPORT_TYPES; ++w)
     {
         mAppWindow[w] = nullptr;

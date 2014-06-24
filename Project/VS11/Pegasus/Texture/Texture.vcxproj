@@ -33,7 +33,6 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\ITextureFactory.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Operator\AddOperator.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Proxy\TextureConfigurationProxy.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Proxy\TextureGeneratorProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Proxy\TextureManagerProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Proxy\TextureNodeProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Proxy\TextureTracker.h" />
