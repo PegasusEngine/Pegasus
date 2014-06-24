@@ -60,6 +60,20 @@ Pegasus::Render::RenderTarget gNullRenderTarget;
 
 bool gEnableColorBuffer = false;
 
+const GLuint MAX_TEX_BINDINGS = static_cast<int>(GL_TEXTURE31 - GL_TEXTURE0 + 1);
+
+GLuint gActiveTex = GL_INVALID_INDEX;
+
+struct GLTexBinding
+{
+    GLuint mHandle;
+public:
+    GLTexBinding()
+    : mHandle(GL_INVALID_INDEX)
+    {
+    }
+} gTexBindingCache[MAX_TEX_BINDINGS];
+
 // ---------------------------------------------------------------------------
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -183,14 +197,14 @@ void Pegasus::Render::Dispatch(Pegasus::Render::RenderTarget& renderTarget, cons
 
     if (&renderTarget == &gNullRenderTarget)
     {
-        glDisable(GL_COLOR_BUFFER_BIT);
+        glColorMask(false,false,false,false);
         gEnableColorBuffer = false;
     }
     else
     {
         if (!gEnableColorBuffer)
         {
-            glEnable(GL_COLOR_BUFFER_BIT);
+            glColorMask(true,true,true,true);
             gEnableColorBuffer = true;
         }
         if (&renderTarget == &gDefaultRenderTarget)
@@ -202,6 +216,29 @@ void Pegasus::Render::Dispatch(Pegasus::Render::RenderTarget& renderTarget, cons
                 
             PG_ASSERT(renderTarget.mInternalData != nullptr);
             Pegasus::Render::OGLRenderTargetGPUData * gpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OGLRenderTargetGPUData, renderTarget.mInternalData);
+            //if this render target is used for reading at any place, then unbind
+            GLuint lastTexture = gActiveTex;
+            for (GLuint i = 0; i < MAX_TEX_BINDINGS; ++i)
+            {             
+                GLTexBinding& binding = gTexBindingCache[i];
+                GLuint activeTex = i + GL_TEXTURE0;
+                if (gpuData->mTextureView.mHandle == binding.mHandle)
+                {
+                    binding.mHandle = GL_INVALID_INDEX;
+                    lastTexture = activeTex;
+                    glActiveTexture(activeTex);
+                    glBindTexture(GL_TEXTURE_2D, 0);
+                    
+                }
+            } 
+
+            //restore the original active texture slot
+            if (lastTexture != gActiveTex)
+            {
+                glActiveTexture(gActiveTex);
+            }
+
+            //clear any binding we might have
             glBindFramebuffer(GL_FRAMEBUFFER, gpuData->mFrameBufferName);
         }
 
@@ -478,7 +515,10 @@ static bool InternalSetTextureUniform(Pegasus::Render::Uniform& u, Pegasus::Rend
             uniformEntry->mType == GL_SAMPLER_1D_SHADOW ||
             uniformEntry->mType == GL_SAMPLER_2D_SHADOW,
         "Setting a uniform of the wrong type!");
-        glActiveTexture(GL_TEXTURE0 + uniformEntry->mTextureSlot);
+
+        gActiveTex = GL_TEXTURE0 + uniformEntry->mTextureSlot;
+        glActiveTexture(gActiveTex);
+        
 #if PEGASUS_ENABLE_ASSERT
         if (gpuData != nullptr)
 
@@ -486,6 +526,8 @@ static bool InternalSetTextureUniform(Pegasus::Render::Uniform& u, Pegasus::Rend
         {
             glBindTexture(GL_TEXTURE_2D, gpuData->mHandle);
             glUniform1i(uniformEntry->mSlot, uniformEntry->mTextureSlot);
+            PG_ASSERT(uniformEntry->mSlot >= 0 && uniformEntry->mSlot < MAX_TEX_BINDINGS);
+            gTexBindingCache[uniformEntry->mSlot].mHandle = gpuData->mHandle;
             return true;
         }
 

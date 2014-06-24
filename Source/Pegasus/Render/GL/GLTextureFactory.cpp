@@ -98,7 +98,6 @@ void GLTextureFactory::GenerateTextureGPUData(Pegasus::Texture::TextureData * no
         nodeData->SetNodeGPUData(reinterpret_cast<Pegasus::Graph::NodeGPUData*>(gpuData));
     }
     PG_ASSERT(gpuData != nullptr);
-    
     GLint prevHandle = 0;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &prevHandle);
     glBindTexture(GL_TEXTURE_2D, gpuData->mHandle);
@@ -187,6 +186,8 @@ void GLTextureFactory::InternalCreateRenderTarget(
                    Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Render::OGLRenderTargetGPUData();
     //create internal texture names
     GLTextureFactory::AllocateGPUData(gpuData->mTextureView);
+    GLint prevHandle = 0;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, &prevHandle);
     glBindTexture(GL_TEXTURE_2D, gpuData->mTextureView.mHandle);
     glTexImage2D(
         GL_TEXTURE_2D,
@@ -208,6 +209,7 @@ void GLTextureFactory::InternalCreateRenderTarget(
     outputRenderTarget.mConfig = config;
     outputRenderTarget.mInternalData = reinterpret_cast<void*>(gpuData);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, (GLuint)prevHandle);
 }
 
 void GLTextureFactory::InternalDeleteRenderTarget(
