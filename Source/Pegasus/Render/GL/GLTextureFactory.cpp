@@ -206,8 +206,11 @@ void GLTextureFactory::InternalCreateRenderTarget(
     glBindFramebuffer(GL_FRAMEBUFFER, gpuData->mFrameBufferName);
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, gpuData->mTextureView.mHandle, 0);
+    GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+    glDrawBuffers(1, DrawBuffers);
     outputRenderTarget.mConfig = config;
     outputRenderTarget.mInternalData = reinterpret_cast<void*>(gpuData);
+    PG_ASSERTSTR(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "something went really wrong in the creation of this!");
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, (GLuint)prevHandle);
 }
