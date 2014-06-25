@@ -200,6 +200,12 @@ void GLTextureFactory::InternalCreateRenderTarget(
         GL_UNSIGNED_BYTE,
         nullptr
     );
+    
+    // Default filter, todo: create sampler
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_WRAP_BORDER);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_WRAP_BORDER);
 
     //create frame buffer
     glGenFramebuffers(1, &gpuData->mFrameBufferName);
