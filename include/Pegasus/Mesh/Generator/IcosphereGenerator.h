@@ -25,6 +25,11 @@ class IcosphereGenerator : public MeshGenerator
 public:
     DECLARE_MESH_GENERATOR_NODE(IcosphereGenerator)
 
+    BEGIN_DECLARE_PROPERTIES()
+        DECLARE_PROPERTY(int,   Degree)
+        DECLARE_PROPERTY(float, Radius)
+    END_DECLARE_PROPERTIES()
+
     //! Icosphere generator constructor
     //!\param nodeAllocator the allocator for the node properties (if any)
     //!\param nodeDataAllocator the allocator of the node data
@@ -49,7 +54,6 @@ protected:
     //! recursive function that tesselates the icosphere
     void Tesselate(MeshData * meshData, int level, unsigned short a, unsigned short b, unsigned short c);
 
-    int mDegree; //tesselation factor degree, TODO: make part of property grid
     Utils::TesselationTable mIdxCache;
        
 };

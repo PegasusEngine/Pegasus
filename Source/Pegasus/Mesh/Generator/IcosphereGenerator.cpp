@@ -39,11 +39,15 @@ namespace Pegasus
 namespace Mesh
 {
 
+BEGIN_IMPLEMENT_PROPERTIES(IcosphereGenerator)
+    IMPLEMENT_PROPERTY(int,   Degree, 1)
+    IMPLEMENT_PROPERTY(float, Radius, 1.0f)
+END_IMPLEMENT_PROPERTIES()
+
 IcosphereGenerator::IcosphereGenerator(Pegasus::Alloc::IAllocator * nodeAllocator,
                                        Pegasus::Alloc::IAllocator * nodeDataAllocator)
 : MeshGenerator(nodeAllocator, nodeDataAllocator),
-  mIdxCache(nodeAllocator, sizeof(unsigned short)),
-  mDegree(3)
+  mIdxCache(nodeAllocator, sizeof(unsigned short))
 {
     
     mConfiguration.SetIsIndexed(true);
@@ -75,7 +79,7 @@ unsigned short IcosphereGenerator::GenChild(MeshData * meshData, unsigned short 
         newVert.position =  (v1->position + v2->position) * 0.5;
         Vec3 normalizedP = newVert.position.xyz;
         Normalize(normalizedP);
-        newVert.position = Vec4(normalizedP, 1.0);
+        newVert.position = Vec4(GetRadius()*normalizedP, 1.0);
         newVert.normal = normalizedP;
         newVert.uv = GenUvs(normalizedP);
         
@@ -180,18 +184,18 @@ void IcosphereGenerator::GenerateData()
         Vertex v;
         Vec3 pos = Vec3(icosahedron[i + 0], icosahedron[i + 1], icosahedron[i + 2]);
         Normalize(pos);
-        v.position = Vec4(pos, 1.0);
+        v.position = Vec4(GetRadius()*pos, 1.0);
         v.normal = pos;
         v.uv = GenUvs(pos);
         meshData->PushVertex<Vertex>(&v, 0);
     }
-
+    PG_ASSERT(GetDegree() > 0);
     // do tesseleation step on icosahedron so we generate an icosphere
     for (int i = 0; i < sizeof(icotriangles)/sizeof(unsigned short); i += 3)
     {
         Tesselate(
             &(*meshData),
-            mDegree,
+            GetDegree() <= 0 ? 1 : GetDegree(),
             icotriangles[i],
             icotriangles[i + 1],
             icotriangles[i + 2]

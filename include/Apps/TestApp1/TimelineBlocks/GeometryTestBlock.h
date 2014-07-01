@@ -17,6 +17,8 @@
 
 // timeline block for GeometryTestBlock
 
+#define MAX_SPHERES 4
+
 class GeometryTestBlock : public Pegasus::Timeline::Block
 {
 
@@ -48,6 +50,9 @@ private:
 
     Pegasus::Mesh::MeshRef mQuad;
     Pegasus::Mesh::MeshRef mCubeMesh;
+
+    
+    Pegasus::Mesh::MeshRef mSphereMeshes[MAX_SPHERES];
 
     // block program uniforms
     Pegasus::Render::Uniform mCubeTextureUniform;

@@ -13,6 +13,7 @@
 
 #include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
 #include "Pegasus/Math/Quaternion.h"
+#include "Pegasus/Mesh/Generator/IcosphereGenerator.h"
 
 
 //Constructor
@@ -84,6 +85,20 @@ void GeometryTestBlock::Initialize()
     mQuad->SetGeneratorInput(
         meshManager->CreateMeshGeneratorNode("QuadGenerator")
     );
+    int Degrees[MAX_SPHERES] = {3,2,1,1};
+    for (int i = 0; i < MAX_SPHERES; ++i)
+    {
+        mSphereMeshes[i] = meshManager->CreateMeshNode();
+        Pegasus::Mesh::MeshGeneratorRef generator = meshManager->CreateMeshGeneratorNode("IcosphereGenerator");
+        Pegasus::Mesh::IcosphereGenerator * icosphere = static_cast<Pegasus::Mesh::IcosphereGenerator*>(generator);
+        icosphere->SetDegree(Degrees[i]);
+        icosphere->SetRadius( 0.45f);
+        mSphereMeshes[i]->SetGeneratorInput(
+            generator
+        );
+        //force update
+        mSphereMeshes[i]->GetUpdatedMeshData();
+    }
 
     //setup render targets
     Pegasus::Render::RenderTargetConfig c;
@@ -144,6 +159,27 @@ void GeometryTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
 
     Pegasus::Render::Dispatch(mCubeMesh);
     Pegasus::Render::Draw();
+
+    for (int i = 0; i < MAX_SPHERES; ++i)
+    {
+        Pegasus::Render::Dispatch(mSphereMeshes[i]);
+
+        float fi = 2.0f * ((float)i / (float)MAX_SPHERES) - 1.0f;
+        
+        static const int maxDepth = 4;
+        for (int j = 0; j < maxDepth; ++j)
+        {
+            float fj = 2.0f * ((float)j / (float)maxDepth) - 1.0f; 
+            float ox = 2.7f*Pegasus::Math::Cos(beat * 0.6f + 4.7f*fj * fi);
+            float oy = 2.7f*Pegasus::Math::Sin(beat * 0.6f - 6.0f*fj + 3.0f*fi);
+            mState.mRotation.m14 = 6.0f * fi + ox;
+            mState.mRotation.m24 = 6.0f * fj + oy;
+            mState.mRotation.m34 = 0.5;
+            mState.mRotation.m44 = 1.0f;
+            Pegasus::Render::SetBuffer(mUniformStateBuffer, &mState, sizeof(mState));
+            Pegasus::Render::Draw();
+        }
+    }
     
     glDisable(GL_DEPTH_TEST);
 }
