@@ -9,10 +9,14 @@
 //! \date   30th March 2014
 //! \brief  Pegasus Unit tests for the Utils package, implementation
 
+#include "Pegasus/Memory/MallocFreeAllocator.h"
 #include "Pegasus/UnitTests/UtilsTests.h"
 #include "Pegasus/Utils/Memset.h"
 #include "Pegasus/Utils/Memcpy.h"
 #include "Pegasus/Utils/String.h"
+#include "Pegasus/Utils/TesselationTable.h"
+
+static Pegasus::Memory::MallocFreeAllocator sGlobalAllocator(0);
 
 bool UNIT_TEST_Memcpy1()
 {
@@ -255,4 +259,98 @@ bool UNIT_TEST_Atoi3()
 {
     const char * n = "1";
     return Pegasus::Utils::Atoi(n) == 1;
+}
+
+bool UNIT_TEST_TesselationTable1()
+{
+    Pegasus::Utils::TesselationTable t (&sGlobalAllocator, sizeof(int));
+
+    const int a = 992;
+    const int b = 290;
+    const int c = 2901375;
+    t.Insert(0,0, a);
+    t.Insert(29, 2, b);
+    t.Insert(8, 45, c);
+
+    int v1;
+    int v2;
+    int v3;
+
+    bool r1 = t.Get(0,0,v1);
+    bool r2 = t.Get(29, 2, v2);
+    bool r3 = t.Get(8, 45, v3);
+    
+    return r1 && r2 && r3 && v1 == a && v2 == b && v3 == c;
+}
+
+bool UNIT_TEST_TesselationTable2()
+{
+    struct IntegrityCheck
+    {
+        char a;
+        char b;
+        char c;
+        long long p;
+    } integrityObject = { 0x1, 0x9, 0x5, 90099};
+
+    Pegasus::Utils::TesselationTable t (&sGlobalAllocator, sizeof(integrityObject));
+
+    for (int r = 0; r < 2024; ++r)
+    {
+        for (int c = 0; c <= r; ++c)
+        {
+            //do a checksum
+            IntegrityCheck o = integrityObject;
+            o.p = r * c + c;
+            t.Insert(r,c,o); 
+        }
+    }
+
+    bool check = true;
+    
+    for (int r = 0; r < 2024; ++r)
+    {
+        for (int c = 0; c <= r; ++c)
+        {
+            //do a checksum
+            IntegrityCheck o = {0x0, 0x0, 0x0, 0x0};
+            bool found = t.Get(r,c,o); 
+            if (!found || o.a != integrityObject.a || o.b != integrityObject.b || o.c != integrityObject.c || o.p != r * c + c)
+            {
+                check = false;
+            }
+        }
+    }
+
+    return check;
+}
+
+bool UNIT_TEST_TesselationTable3()
+{
+    Pegasus::Utils::TesselationTable t (&sGlobalAllocator, sizeof(int));
+    int val = 99;
+    t.Insert(1,3, val);
+    int res = 0;
+    t.Get(3,1, res);
+    t.Insert(511,3, val);
+    int res2;
+    t.Get(3,511,res2);
+
+    return (res == val) && (res2 == val);
+}
+
+bool UNIT_TEST_TesselationTable4()
+{
+    
+    Pegasus::Utils::TesselationTable t (&sGlobalAllocator, sizeof(int));
+    int val = 99;
+    t.Insert(789, 23, val);
+    t.Clear();
+    int res1 = 0;
+    t.Get(789,23, res1);
+    t.Insert(23, 789, val);
+    int res2 = 0;
+    t.Get(789,23, res2);
+
+    return res1 == 0 && res2 == val;
 }

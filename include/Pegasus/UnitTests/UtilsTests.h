@@ -75,4 +75,12 @@ bool UNIT_TEST_Atoi2();
 
 bool UNIT_TEST_Atoi3();
 
+bool UNIT_TEST_TesselationTable1();
+
+bool UNIT_TEST_TesselationTable2();
+
+bool UNIT_TEST_TesselationTable3();
+
+bool UNIT_TEST_TesselationTable4();
+
 #endif

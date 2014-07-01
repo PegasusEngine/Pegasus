@@ -10,6 +10,7 @@
 //! \brief	Mesh node data, used by all mesh nodes, including generators and operators
 
 #include "Pegasus/Mesh/MeshData.h"
+#include "Pegasus/Utils/Memcpy.h"
 
 namespace Pegasus {
 namespace Mesh {
@@ -36,29 +37,62 @@ MeshData::MeshData(const MeshConfiguration & configuration, Alloc::IAllocator* a
 
 }
 
+unsigned short MeshData::InternalPushVertex(const void * vertex, int streamId)
+{
+    PG_ASSERT(streamId < MESH_MAX_STREAMS);
+
+    int newElementIndex = GetVertexCount();
+    int stride = mVertexStreams[streamId].GetStride();
+    int byteOffset = newElementIndex * stride;
+
+    InternalAllocateVertexes(GetVertexCount() + 1, true);
+
+    PG_ASSERT(mVertexStreams[streamId].GetByteSize() >= GetVertexCount() * stride);
+
+    char * s = static_cast<char * >(GetStream<void>(streamId)) + byteOffset;
+
+    Pegasus::Utils::Memcpy(s, vertex, stride);
+    return static_cast<unsigned short>(newElementIndex);
+    
+}
+
+void MeshData::PushIndex(unsigned short index)
+{
+    int idxOffset = GetIndexCount();
+    InternalAllocateIndexes(GetIndexCount() + 1, true);
+    PG_ASSERT(mIndexBuffer.GetByteSize() >= GetIndexCount() * mIndexBuffer.GetStride());
+    unsigned short * idxBuffer = GetIndexBuffer();
+    idxBuffer[idxOffset] = index;
+}
 
 void MeshData::AllocateVertexes(int count)
 {
-    mVertexCount = count;
-    
-    //allocate streams
-    for (int stream = 0; stream < MESH_MAX_STREAMS; ++stream)
-    {
-        mVertexStreams[stream].Grow(GetAllocator(), count);        
-    }
-
+    InternalAllocateVertexes(count, false);
 }
 
 void MeshData::AllocateIndexes(int count)
 {
-    if (mConfiguration.GetIsIndexed())
+    InternalAllocateIndexes(count, false);
+}
+
+void MeshData::InternalAllocateVertexes(int count, bool preserveElements)
+{
+    mVertexCount = count;
+    
+    for (int stream = 0; stream < MESH_MAX_STREAMS; ++stream)
     {
-        mIndexCount = count;
-        mIndexBuffer.Grow(GetAllocator(), count);
+        mVertexStreams[stream].Grow(GetAllocator(), count, preserveElements);        
     }
 }
 
-//----------------------------------------------------------------------------------------
+void MeshData::InternalAllocateIndexes(int count, bool preserveElements)
+{
+    if (mConfiguration.GetIsIndexed())
+    {
+        mIndexCount = count;
+        mIndexBuffer.Grow(GetAllocator(), count, preserveElements);
+    }
+}
 
 MeshData::~MeshData()
 {
@@ -82,17 +116,29 @@ MeshData::Stream::Stream()
 {
 }
 
-void MeshData::Stream::Grow(Alloc::IAllocator * allocator, int count)
+void MeshData::Stream::Grow(Alloc::IAllocator * allocator, int count, bool preserveElements)
 {
-    int newByteSize = count * mStride;
-    if (newByteSize > mByteSize || newByteSize < (mByteSize / 2))
+    if (mStride > 0)
     {
-         if (mByteSize > 0)
-         {
-            Destroy(allocator);
-         }
-         mBuffer = PG_NEW_ARRAY(allocator, -1, "MeshData::Stream[i].mBuffer", Alloc::PG_MEM_TEMP, char, newByteSize);
-         mByteSize = newByteSize;
+        const int MINIMUM_BYTE_GROWTH = 32 * mStride; //grow on 
+
+        int newByteSize = ((count * mStride) / MINIMUM_BYTE_GROWTH + 1) * MINIMUM_BYTE_GROWTH;
+
+        if (newByteSize > mByteSize || newByteSize < (mByteSize / 2))
+        {
+            char * newList = PG_NEW_ARRAY(allocator, -1, "MeshData::Stream[i].mBuffer", Alloc::PG_MEM_TEMP, char, newByteSize);
+            if (mByteSize > 0)
+            {
+                if (preserveElements)
+                {
+                    int preserveSize = newByteSize < mByteSize ? newByteSize : mByteSize;
+                    Pegasus::Utils::Memcpy(newList, mBuffer, preserveSize);
+                }   
+                Destroy(allocator);
+            }
+            mBuffer =  newList;
+            mByteSize = newByteSize;
+        }
     }
 }
 

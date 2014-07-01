@@ -88,6 +88,13 @@ int main()
     RUN_TEST(Atoi1);
     RUN_TEST(Atoi2);
     RUN_TEST(Atoi3);
+
+    //TesselationTable
+    RUN_TEST(TesselationTable1);
+    RUN_TEST(TesselationTable2);
+    RUN_TEST(TesselationTable3);
+    RUN_TEST(TesselationTable4);
+
     ///////////////////////////////////////////////////////////
 
     printf("Final Results: %d out of %d succeeded\n", successes, total);

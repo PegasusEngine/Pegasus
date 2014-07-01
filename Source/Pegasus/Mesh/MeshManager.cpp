@@ -12,6 +12,7 @@
 #include "Pegasus/Mesh/MeshManager.h"
 #include "Pegasus/Mesh/Generator/QuadGenerator.h"
 #include "Pegasus/Mesh/Generator/BoxGenerator.h"
+#include "Pegasus/Mesh/Generator/IcosphereGenerator.h"
 #include "Pegasus/Mesh/IMeshFactory.h"
 #include "Pegasus/Graph/NodeManager.h"
 
@@ -143,6 +144,7 @@ void MeshManager::RegisterAllMeshNodes()
     //            and update the list of #includes above
     REGISTER_MESH_NODE(QuadGenerator);
     REGISTER_MESH_NODE(BoxGenerator);
+    REGISTER_MESH_NODE(IcosphereGenerator);
 
 }
 

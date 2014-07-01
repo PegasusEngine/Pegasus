@@ -36,31 +36,54 @@ public:
     inline const MeshConfiguration & GetConfiguration() const { return mConfiguration; }
 
     //! Gets the stream, casted properly
-    template <class T> T * GetStream(int stream);    
+    //! \param streamId the id of the stream
+    //! \return the actual stream memory
+    template <class T> 
+    T * GetStream(int streamId);    
     
     //! Gets the stream, as a void pointer
-    template <> void * GetStream(int stream);    
+    //! \param streamId the id of the stream
+    //! \return the actual stream memory
+    template <> void * GetStream(int streamId);    
+
+    //! Pushes (and does respective allocations) a vertex element
+    //! \param vertex the vertex structure to push
+    //! \param streamId the target stream to set this vertex element to
+    //! \return the new index
+    template<class T>
+    unsigned short PushVertex(const T * vertex, int streamId);
+
+    //! Pushes (and does respective allocations) an index element
+    //! \param index the index to push
+    void PushIndex(unsigned short index);
 
     //! Gets the stride size count of the stream
     //! \param i the stream index
     int GetStreamStride(int i) const { return mVertexStreams[i].GetStride(); };
 
     //! Convinience function that returns the total byte size of a stream
+    //! \param i the identifier for the stream to get the size from
+    //! \return the byte size
     int GetStreamByteSize(int i) const { return mVertexStreams[i].GetByteSize(); }
 
     //! Gets the index buffer reference
+    //! \return  the index buffer pointer
     unsigned short * GetIndexBuffer() { return static_cast<unsigned short*>(mIndexBuffer.GetBuffer()); }
 
     //! Gets the vertex count
+    //! \return the count of vertex elements
     int GetVertexCount() const { return mVertexCount; }
 
     //! Gets the index buffer count
+    //! \return the count of index buffers elements
     int GetIndexCount() const { return mIndexCount; }
 
     //! Allocates vertex buffer elements.
+    //! \param count the number of vertices to allocate
     void AllocateVertexes(int count);
 
     //! Allocates index buffer elements
+    //! \param count the number of indices to allocate
     void AllocateIndexes(int count);
     
 protected:
@@ -77,6 +100,23 @@ protected:
     //------------------------------------------------------------------------------------
     
 private:
+    //! Pushes (and does respective allocations) a vertex element
+    //! \param vertex the vertex structure to push
+    //! \param streamId the target stream to set this vertex element to
+    //! \return the new index
+    unsigned short InternalPushVertex(const void * vertex, int streamId);
+
+    //! internally allocates vertices if necessary
+    //! \param count new count of elements
+    //! \param preserveElements if true, the old elements are copied (truncated if necessary) to
+    //!        the new buffer
+    void InternalAllocateVertexes(int count, bool preserveElements);
+
+    //! internally allocates indices if necessary
+    //! \param count new count of elements
+    //! \param preserveElements if true, the old elements are copied (truncated if necessary) to
+    //!        the new buffer
+    void InternalAllocateIndexes(int count, bool preserveElements);
 
     //!helper class, encoding a stream buffer of bytes
     class Stream
@@ -99,9 +139,11 @@ private:
 
         //! attempts to grow the stream. If the space is half as big then it is deallocated.
         //! if the requested size is different the stream size is grown. 
+        //! \param  allocator the allocator for memory management
         //! \param  the vertex size to attempt to grow to. count * mStride is the total byte size
+        //! \param  preserveElements  copy previous elements or allocate new ones if needed
         //! \note after calling Grow, the memory returned from GetBuffer is uninitialized.
-        void Grow(Pegasus::Alloc::IAllocator * allocator, int count);
+        void Grow(Pegasus::Alloc::IAllocator * allocator, int count, bool preserveElements);
 
         //! Destroys whatever dynamic memory is inside this stream.
         //! call this before deleting the class. Failing to do so will cause an assert and a leak
@@ -135,16 +177,25 @@ private:
 
 
 template<class T>
-T * MeshData::GetStream(int stream)
+T * MeshData::GetStream(int streamId)
 {
-    PG_ASSERTSTR(sizeof(T) == mVertexStreams[stream].GetStride(), "stream strides must match!");
-    return static_cast<T*>(mVertexStreams[stream].GetBuffer());
+    PG_ASSERTSTR(sizeof(T) == mVertexStreams[streamId].GetStride(), "stream strides must match!");
+    return static_cast<T*>(mVertexStreams[streamId].GetBuffer());
 }
+
 template<>
 void * MeshData::GetStream(int stream)
 {
     return (mVertexStreams[stream].GetBuffer());
 }
+
+template<class T>
+unsigned short MeshData::PushVertex(const T * vertex, int streamId)
+{
+    PG_ASSERTSTR(sizeof(T) == mVertexStreams[streamId].GetStride(), "stream strides must match!");
+    return InternalPushVertex(static_cast<const void *>(vertex), streamId);
+}
+
 //----------------------------------------------------------------------------------------
 
 //! Reference to a MeshData, typically used when declaring a variable of reference type
