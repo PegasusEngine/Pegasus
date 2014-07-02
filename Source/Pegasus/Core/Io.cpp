@@ -15,6 +15,7 @@
 #include "Pegasus/Core/Assertion.h"
 #include "Pegasus/Core/Log.h"
 #include "Pegasus/Allocator/Alloc.h"
+#include "Pegasus/Utils/String.h"
 #include "stdio.h" //using the windows libraries to produce file IO
 #if PEGASUS_USE_NATIVE_IO_CALLS
 #if PEGASUS_PLATFORM_WINDOWS
@@ -96,6 +97,44 @@ Pegasus::Io::IoError NativeOpenFileToBuffer(const char* path, Pegasus::Io::FileB
     return Pegasus::Io::ERR_NONE;
 }
 
+Pegasus::Io::IoError NativeSaveBufferToFile(const char* path, const Pegasus::Io::FileBuffer& outputBuffer)
+{
+    HANDLE fileHandle = CreateFile(
+                            path,
+                            GENERIC_WRITE,
+                            0,
+                            NULL,
+                            CREATE_ALWAYS,
+                            FILE_ATTRIBUTE_NORMAL,
+                            NULL
+                        );
+
+    if (fileHandle == INVALID_HANDLE_VALUE)
+    {
+        PG_LOG('FILE', "IO Error (CreateFile): %s", path);
+        return Pegasus::Io::ERR_OPENING_FILE;
+    }
+    
+    DWORD bytesWritten = 0;
+    BOOL res = WriteFile (
+        fileHandle,
+        outputBuffer.GetBuffer(),
+        outputBuffer.GetFileSize(),
+        &bytesWritten,
+        NULL
+    );
+    SetEndOfFile(fileHandle);
+    CloseHandle(fileHandle);
+    DWORD lastErr = GetLastError();
+    if (!res || (GetLastError() != 0 && GetLastError() != ERROR_ALREADY_EXISTS))
+    {
+        PG_LOG('FILE', "IO Error (WriteFile): %s", path);
+        return Pegasus::Io::ERR_WRITING_FILE;
+    }
+    PG_LOG('FILE', "Saved: %s", path);
+    return Pegasus::Io::ERR_NONE;
+}
+
 #else
     #error No native implementation for IO functions in current platform!
 #endif //platform selection
@@ -126,9 +165,11 @@ IoError IOManager::OpenFileToBuffer(const char* relativePath, FileBuffer& output
     char pathBuffer[MAX_FILEPATH_LENGTH];
 
     // Configure the path
-    strncpy_s(pathBuffer, MAX_FILEPATH_LENGTH, mRootDirectory, MAX_FILEPATH_LENGTH);
+    pathBuffer[0] = '\0';
+    PG_ASSERTSTR(Pegasus::Utils::Strlen(relativePath) < MAX_FILEPATH_LENGTH, "Path str is too little! be prepared for some mem stomps!");
+    Pegasus::Utils::Strcat(pathBuffer, mRootDirectory);
     pathBuffer[MAX_FILEPATH_LENGTH - 1] = '\0';
-    strncat_s(pathBuffer, relativePath, MAX_FILEPATH_LENGTH);
+    Pegasus::Utils::Strcat(pathBuffer, relativePath);
     pathBuffer[MAX_FILEPATH_LENGTH - 1] = '\0';
 
     // Load the file
@@ -157,7 +198,7 @@ IoError IOManager::OpenFileToBuffer(const char* relativePath, FileBuffer& output
         {
             outputBuffer.OwnBuffer (
                 alloc,
-                PG_NEW_ARRAY(alloc, "file buffer", Pegasus::Alloc::PG_MEM_PERM) char[fileSize],
+                PG_NEW_ARRAY(alloc, -1, "file buffer", Pegasus::Alloc::PG_MEM_PERM, char, fileSize),
                 fileSize
             );
         }
@@ -179,7 +220,7 @@ IoError IOManager::OpenFileToBuffer(const char* relativePath, FileBuffer& output
     } 
     else
     {
-        PG_LOG('FILE', "File not found" \"%s\"", pathBuffer);
+        PG_LOG('FILE', "File not found \"%s\"", pathBuffer);
 
         return Pegasus::Io::ERR_FILE_NOT_FOUND;
     }
@@ -187,6 +228,46 @@ IoError IOManager::OpenFileToBuffer(const char* relativePath, FileBuffer& output
     PG_LOG('FILE', "Successfully opened file \"%s\"", pathBuffer);
     return Pegasus::Io::ERR_NONE; 
 #endif
+}
+
+//----------------------------------------------------------------------------------------
+
+
+Pegasus::Io::IoError Pegasus::Io::IOManager::SaveFileToBuffer(const char* relativePath, const Pegasus::Io::FileBuffer& inputBuffer)
+{
+    //todo - implement saving to a file :)
+    char pathBuffer[MAX_FILEPATH_LENGTH];
+
+    // Configure the path
+    pathBuffer[0] = '\0';
+    PG_ASSERTSTR(Pegasus::Utils::Strlen(relativePath) < MAX_FILEPATH_LENGTH, "Path str is too little! be prepared for some mem stomps!");
+    Pegasus::Utils::Strcat(pathBuffer, mRootDirectory);
+    pathBuffer[MAX_FILEPATH_LENGTH - 1] = '\0';
+    Pegasus::Utils::Strcat(pathBuffer, relativePath);
+    pathBuffer[MAX_FILEPATH_LENGTH - 1] = '\0';
+
+#if PEGASUS_USE_NATIVE_IO_CALLS
+    return internal::NativeSaveBufferToFile(pathBuffer, inputBuffer);
+#else
+    FILE * fileHandle = nullptr;
+    fopen_s(&fileHandle, pathBuffer, "wb");
+    if (fileHandle == 0)
+    {
+        PG_LOG('FILE', "IO Error (fopen): %s", pathBuffer);
+        return Pegasus::Io::ERR_OPENING_FILE;
+    }
+    size_t v = fwrite(inputBuffer.GetBuffer(), 1, inputBuffer.GetFileSize(), fileHandle);
+    fclose(fileHandle);    
+    if (static_cast<int>(v) != inputBuffer.GetFileSize())
+    {        
+         PG_LOG('FILE', "IO Error (fwrite): %s", pathBuffer);
+         return Pegasus::Io::ERR_WRITING_FILE;
+    }
+    PG_LOG('FILE', "Saved: %s", pathBuffer);
+    return Pegasus::Io::ERR_NONE;
+    
+#endif
+
 }
 
 //----------------------------------------------------------------------------------------

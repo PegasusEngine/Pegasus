@@ -36,7 +36,15 @@ static const char * DOCKABLE_DESC = "Dockable: Allow to be docked when hovering 
 static const char * UNDOCKABLE_DESC = "Undockable: Allow to hover over window w/o docking.";
 
 ShaderEditorWidget::ShaderEditorWidget (QWidget * parent)
-: QDockWidget(parent), mTabCount(0), mCompilationRequestPending(false), mInternalBlockTextUpdated(false)
+: 
+    QDockWidget(parent),
+    mTabCount(0), 
+    mCompilationRequestPending(false), 
+    mInternalBlockTextUpdated(false),
+    mPinAction(nullptr),
+    mSaveAction(nullptr),
+    mShaderEditorSignalMapper(nullptr),
+    mCompilationRequestMutex(nullptr)
 {
     mCompilationRequestMutex = new QMutex();
     SetupUi();
@@ -65,7 +73,9 @@ void ShaderEditorWidget::SetupUi()
     QIcon singleIcon(tr(":/ShaderEditor/single.png"));
     QIcon verticalIcon(tr(":/ShaderEditor/vertical.png"));
     QIcon horizontalIcon(tr(":/ShaderEditor/horizontal.png"));
-    toolBar->addAction(saveIcon, tr("COMING SOON: save shader to its file"));
+
+    mSaveAction = toolBar->addAction(saveIcon, tr("save shader to its file"));
+
     toolBar->addAction(singleIcon, tr("COMING SOON: single view"));
     toolBar->addAction(verticalIcon, tr("COMING SOON: split views vertically"));
     toolBar->addAction(horizontalIcon, tr("COMING SOON: split views horizontally"));
@@ -78,8 +88,14 @@ void ShaderEditorWidget::SetupUi()
 
     toolBar->setIconSize(QSize(16,16));
 
+    // connect toolbar actions
     connect(mPinAction, SIGNAL(triggered(bool)),
             this, SLOT(SignalPinActionTriggered()));
+    
+
+    mSaveAction->setShortcut(tr("Ctrl+S"));
+    connect(mSaveAction, SIGNAL(triggered(bool)),
+            this, SLOT(SignalSaveCurrentShader()));
 
     resize(550, 700);
     setWindowTitle(tr("Shader Editor"));
@@ -228,6 +244,35 @@ void ShaderEditorWidget::SignalPinActionTriggered()
         mPinAction->setIcon(mUnpinIcon);
         mPinAction->setText(tr(UNDOCKABLE_DESC));
     } 
+}
+
+void ShaderEditorWidget::SignalSaveCurrentShader()
+{
+    ED_ASSERT(mUi.mTabWidget != nullptr);
+    int idx = mUi.mTabWidget->currentIndex();
+    if (idx >= 0)
+    {
+        ShaderTextEditorWidget * texEd = mUi.mTextEditPool[idx];
+        Pegasus::Shader::IShaderProxy * shader = texEd->GetShader();
+        if (shader != nullptr)
+        {
+            //ensure that no compilation is happening while saving this file
+            mCompilationRequestMutex->lock();
+            shader->SaveSourceToFile();
+            mCompilationRequestMutex->unlock();
+        }
+    }
+}
+
+void ShaderEditorWidget::SignalSavedFileSuccess()
+{
+    PostStatusBarMessage(tr("File Saved."));
+}
+
+void ShaderEditorWidget::SignalSavedFileIoError(int ioError, QString msg)
+{
+    QString barMsg = tr("IO ERROR: file not saved correctly: ") + msg;
+    PostStatusBarMessage(barMsg);
 }
 
 void ShaderEditorWidget::UpdateSyntaxForLine(int id, int line)

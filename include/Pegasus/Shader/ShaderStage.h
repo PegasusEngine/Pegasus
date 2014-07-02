@@ -63,11 +63,12 @@ public:
     void GetSource (const char ** outSrc, int& outSize) const;
 
     //! Open a file and load its source internally
+    //! \note - must set the IO manager before doing this call!
     //! \param  type the type of shader stage
     //! \param  path the path of the file to open
     //! \param  loader loader controller
     //! \return  true if succeeds loading the file, false if loading fails
-    bool SetSourceFromFile(ShaderType type, const char * path, Io::IOManager * loader);
+    bool SetSourceFromFile(ShaderType type, const char * path);
 
     //! Return the stage type
     //! \return the shader type
@@ -77,6 +78,11 @@ public:
     //! compilation and linkage
     //! \param factory factory with GPU implementation to be set.
     void SetFactory(IShaderFactory * factory) { mFactory = factory; }
+
+    //! Sets the io manager of this particular shader (for file IO operations)
+    //! NOTE - must be set before doing any IO file loading operatoin.
+    //! \param loader the actual loader to be used
+    void SetIoManager(Pegasus::Io::IOManager * loader) { mLoader = loader;}
 
     //! Deallocate the data of the current node and ask the input nodes to do the same.
     //! Typically used when keeping the graph in memory but not the associated data,
@@ -98,6 +104,9 @@ public:
     //! \return the file name of this shader
     const char * GetFileName() const { return mName; }
 
+    //! save the source to a file using the file loader
+    void SaveSourceToFile();
+
     //! returns the proxy of this particular shader    
     IShaderProxy * GetProxy() { return &mProxy; }
 #endif
@@ -115,6 +124,7 @@ private:
     Alloc::IAllocator* mAllocator; //! Allocator to use when creating this object
     IShaderFactory   * mFactory; //! reference to GPU shader factory
     ShaderType         mType; //! type of shader stage
+    Pegasus::Io::IOManager * mLoader; //! reference to a loader
 
 //! editor metadata
 #if PEGASUS_ENABLE_PROXIES
@@ -127,8 +137,8 @@ private:
     static const int METADATA_NAME_LENGTH = 256;
     char mName[METADATA_NAME_LENGTH];
     char mPath[METADATA_NAME_LENGTH];
+    char mFullPath[METADATA_NAME_LENGTH * 2];
     ShaderTracker * mShaderTracker; //! reference to tracker
-
     ShaderProxy mProxy;
 
 #endif

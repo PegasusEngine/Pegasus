@@ -127,6 +127,12 @@ public:
     //! \note Buffer must be deallocated by the caller
     IoError OpenFileToBuffer(const char* relativePath, FileBuffer& outputBuffer, bool allocateBuffer = false, Alloc::IAllocator* alloc = nullptr);
 
+    //! Utility function that writes binary data to a file
+    //! \param relativePath Relative path to the file, within the asset root.
+    //! \param inputBuffer the file buffer to dump into the file.
+    //! \return Error code.
+    IoError SaveFileToBuffer(const char* relativePath, const FileBuffer& inputBuffer);
+
 
     static const unsigned int MAX_FILEPATH_LENGTH = 256; //!< Max length for a file path
 

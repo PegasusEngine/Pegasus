@@ -94,6 +94,9 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::LoadShaderSta
     const char * extension = Pegasus::Utils::Strrchr(properties.mPath, '.');
     Pegasus::Shader::ShaderType targetStage = Pegasus::Shader::SHADER_STAGE_INVALID;
     Pegasus::Shader::ShaderStageRef stage = mNodeManager->CreateNode("ShaderStage");
+    PG_ASSERT(properties.mLoader != nullptr);
+    stage->SetIoManager(properties.mLoader);
+
 #if PEGASUS_USE_GRAPH_EVENTS
     stage->SetEventListener(mEventListener);
 #endif
@@ -116,7 +119,7 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::LoadShaderSta
     
     if (targetStage >= 0 && targetStage < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT))
     {
-        if (stage->SetSourceFromFile(targetStage, properties.mPath, properties.mLoader))
+        if (stage->SetSourceFromFile(targetStage, properties.mPath))
         {
 #if PEGASUS_ENABLE_PROXIES
             stage->SetShaderTracker(&mShaderTracker);

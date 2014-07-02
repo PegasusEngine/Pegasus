@@ -40,6 +40,11 @@ void Pegasus::Shader::ShaderProxy::SetSource(const char * src, int size)
     mObject->SetSource(src, size);
 }
 
+void Pegasus::Shader::ShaderProxy::SaveSourceToFile()
+{
+    mObject->SaveSourceToFile();
+}
+
 void Pegasus::Shader::ShaderProxy::SetUserData(Pegasus::Graph::IGraphUserData * userData)
 {
 #if PEGASUS_USE_GRAPH_EVENTS

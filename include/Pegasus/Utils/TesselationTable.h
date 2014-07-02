@@ -117,12 +117,14 @@ private:
 template <class T>
 void TesselationTable::Insert(int i, int j, const T& element)
 {
+    PG_ASSERTSTR(sizeof(T) == mElementSize, "FATAL! this will copy garbage to the target bucket");
     Insert(i, j, reinterpret_cast<const char*>(&element));
 }
 
 template <class T>
 bool TesselationTable::Get(int i, int j, T& element)
 {
+    PG_ASSERTSTR(sizeof(T) == mElementSize, "FATAL! be ready to have the stack trashed.");
     return Get(i, j, reinterpret_cast<char*>(&element));
 }
 

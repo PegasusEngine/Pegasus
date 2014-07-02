@@ -66,6 +66,12 @@ ShaderLibraryWidget::ShaderLibraryWidget(QWidget * parent, ShaderEditorWidget * 
     connect(mShaderManagerEventListener, SIGNAL(OnCompilationEnd(QString)),
         mShaderEditorWidget, SLOT(SignalCompilationEnd(QString)), Qt::QueuedConnection);
 
+    connect(mShaderManagerEventListener, SIGNAL(OnSignalSaveSuccess()),
+        mShaderEditorWidget, SLOT(SignalSavedFileSuccess()), Qt::QueuedConnection);
+
+    connect(mShaderManagerEventListener, SIGNAL(OnSignalSavedFileError(int, QString)),
+        mShaderEditorWidget, SLOT(SignalSavedFileIoError(int,QString)), Qt::QueuedConnection);
+
     ui.ProgramTreeView->setModel(mProgramTreeModel);
     ui.ProgramTreeView->setSelectionModel(mProgramSelectionModel);
 

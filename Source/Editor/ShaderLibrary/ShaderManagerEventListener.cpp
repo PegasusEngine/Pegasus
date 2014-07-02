@@ -61,8 +61,14 @@ void ShaderManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * userDa
 
 void ShaderManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Shader::FileOperationEvent& e)
 {
-    //error loading a shader file
-    ED_ASSERTSTR("Shader file not found: %s", e.GetMessage());
+    if (e.GetType() == Pegasus::Shader::FileOperationEvent::IO_FILE_SAVE_SUCCESS)
+    {
+        emit(OnSignalSaveSuccess());
+    }
+    else if (e.GetType() == Pegasus::Shader::FileOperationEvent::IO_FILE_SAVE_ERROR)
+    {
+        emit(OnSignalSavedFileError(e.GetIoError(), QString(e.GetMessage())));
+    }
 }
 
 void ShaderManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Shader::ShaderLoadedEvent& e)

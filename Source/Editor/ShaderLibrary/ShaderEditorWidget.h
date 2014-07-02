@@ -98,6 +98,15 @@ private slots:
 
     //! signal triggered when pin icon is pressed in the toolbar
     void SignalPinActionTriggered(); 
+
+    //! signal triggered when the user clicks on the save button
+    void SignalSaveCurrentShader();
+
+    //! signal triggered when a file save has ended successfuly
+    void SignalSavedFileSuccess();
+
+    //! signal triggered when a file save has ended badly
+    void SignalSavedFileIoError(int ioError, QString msg);
     
 
 private:
@@ -139,6 +148,7 @@ private:
     QIcon mPinIcon;
     QIcon mUnpinIcon;
     QAction * mPinAction;
+    QAction * mSaveAction;
 
     int mTabCount; //! count of tabs
 

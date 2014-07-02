@@ -43,7 +43,8 @@ Pegasus::Shader::ShaderStage::ShaderStage(Pegasus::Alloc::IAllocator * allocator
     : Pegasus::Graph::GeneratorNode(allocator, nodeDataAllocator), 
       mAllocator(allocator),
       mType(Pegasus::Shader::SHADER_STAGE_INVALID),
-      mFactory(nullptr)
+      mFactory(nullptr),
+      mLoader(nullptr)
 #if PEGASUS_ENABLE_PROXIES
       , mShaderTracker(nullptr)
       , mProxy(this)
@@ -120,8 +121,10 @@ void Pegasus::Shader::ShaderStage::GetSource ( const char ** outSrc, int& outSiz
     outSize = mFileBuffer.GetFileSize();
 }
 
-bool Pegasus::Shader::ShaderStage::SetSourceFromFile(Pegasus::Shader::ShaderType type, const char * path, Io::IOManager * loader)
+bool Pegasus::Shader::ShaderStage::SetSourceFromFile(Pegasus::Shader::ShaderType type, const char * path)
 {
+    PG_ASSERTSTR(mLoader != nullptr, "You must set the file loader first before calling any IO!");
+
     if (GetData() != nullptr)
     {
         GetData()->Invalidate();
@@ -132,7 +135,7 @@ bool Pegasus::Shader::ShaderStage::SetSourceFromFile(Pegasus::Shader::ShaderType
     if (mType != Pegasus::Shader::SHADER_STAGE_INVALID)
     {
         mFileBuffer.DestroyBuffer(); //clear any buffers pre-allocated to this
-        Pegasus::Io::IoError ioError = loader->OpenFileToBuffer(path, mFileBuffer, true, mAllocator);
+        Pegasus::Io::IoError ioError = mLoader->OpenFileToBuffer(path, mFileBuffer, true, mAllocator);
         if (ioError == Pegasus::Io::ERR_NONE)
         {
             GRAPH_EVENT_DISPATCH(
@@ -209,6 +212,9 @@ void Pegasus::Shader::ShaderStage::SetFullFilePath(const char * name)
     int len = 0;
     if (name)
     {
+        mFullPath[0] = '\0';
+        PG_ASSERT(Pegasus::Utils::Strlen(name) < METADATA_NAME_LENGTH * 2); //does it all fit?
+        Pegasus::Utils::Strcat(mFullPath, name);
         int fullLen = Pegasus::Utils::Strlen(name);
         const char * nameString1 = Pegasus::Utils::Strrchr(name, '/');
         const char * nameString2 = Pegasus::Utils::Strrchr(name, '\\');
@@ -231,6 +237,37 @@ void Pegasus::Shader::ShaderStage::SetFullFilePath(const char * name)
         }
     }
 } 
+
+void Pegasus::Shader::ShaderStage::SaveSourceToFile()
+{
+    Pegasus::Io::IoError err = mLoader->SaveFileToBuffer(mFullPath, mFileBuffer);
+    if (err == Pegasus::Io::ERR_NONE)
+    {
+        GRAPH_EVENT_DISPATCH(
+            this,
+            Pegasus::Shader::FileOperationEvent, 
+            // Event specific arguments:
+            Pegasus::Shader::FileOperationEvent::IO_FILE_SAVE_SUCCESS,
+            err,
+            mFullPath,
+            ""
+        );
+    }
+    else
+    {
+        GRAPH_EVENT_DISPATCH (
+            this,
+            Pegasus::Shader::FileOperationEvent, 
+            // Event specific arguments:
+            Pegasus::Shader::FileOperationEvent::IO_FILE_SAVE_ERROR,
+            err,
+            mFullPath,
+            "Error saving file :/"
+        );
+    }
+
+}
+
 #endif
 
 

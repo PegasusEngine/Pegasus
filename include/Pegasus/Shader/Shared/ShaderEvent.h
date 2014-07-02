@@ -138,7 +138,9 @@ namespace Shader
         enum Type
         {
             WRONG_EXTENSION, //wrong extension
-            IO_ERROR //an IO error, more details in the GetIoError() function
+            IO_ERROR, //an IO error, more details in the GetIoError() function
+            IO_FILE_SAVE_SUCCESS, //success signal when a file has been saved
+            IO_FILE_SAVE_ERROR, //success signal when a file has been saved
         };
 
         //! constructor
