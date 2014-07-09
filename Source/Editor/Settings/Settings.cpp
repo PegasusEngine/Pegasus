@@ -302,6 +302,13 @@ void Settings::Save()
 
 //----------------------------------------------------------------------------------------
 
+void Settings::NotifySettingsChanged()
+{
+    emit(OnShaderEditorStyleChanged());
+}
+
+//----------------------------------------------------------------------------------------
+
 bool Settings::GetConsoleFilterStateForLogChannel(Pegasus::Core::LogChannel logChannel) const
 {
     if (mLogChannelFilterTable.contains(logChannel))

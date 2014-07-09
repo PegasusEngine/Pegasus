@@ -46,6 +46,9 @@ public:
     //! \note The function does not fail. If saving of the settings fails, nothing happens
     void Save();
 
+    //! Forces a signal that the settings have been changed.
+    void NotifySettingsChanged();
+
     //------------------------------------------------------------------------------------
 
 public:

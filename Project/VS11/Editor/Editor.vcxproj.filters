@@ -343,6 +343,15 @@
     <ClCompile Include="..\..\..\Source\Editor\Texture\TextureGraphEditorGraphicsView.cpp">
       <Filter>Source\Texture</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\ShaderLibrary\ShaderTextEditorTreeWidget.cpp">
+      <Filter>Source\ShaderLibrary</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ShaderTextEditorTreeWidget.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ShaderTextEditorTreeWidget.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -449,6 +458,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Texture\TextureGraphEditorGraphicsView.h">
       <Filter>Source\Texture</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\ShaderLibrary\ShaderTextEditorTreeWidget.h">
+      <Filter>Source\ShaderLibrary</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

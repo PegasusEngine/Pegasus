@@ -201,8 +201,8 @@ protected:
     
 };
 
-ShaderTextEditorWidget::ShaderTextEditorWidget()
-: QTextEdit(nullptr), mShader(nullptr)
+ShaderTextEditorWidget::ShaderTextEditorWidget(QWidget * parent)
+: QTextEdit(parent), mShader(nullptr), mIsFocus(false)
 {
     mSyntaxHighlighter = new ShaderSyntaxHighlighter(document());
 }
@@ -216,21 +216,29 @@ ShaderTextEditorWidget::~ShaderTextEditorWidget()
 void ShaderTextEditorWidget::Initialize(Pegasus::Shader::IShaderProxy * shader)
 {
     mShader = shader;
-    static_cast<ShaderSyntaxHighlighter*>(mSyntaxHighlighter)->SetShaderUserData(static_cast<ShaderUserData*>(shader->GetUserData()));
-
-    //set the text of the current text editor
-    const char * srcChar = nullptr;
-    int srcSize = 0;
-    shader->GetSource(&srcChar, srcSize);
-    QChar * qchar = new QChar[srcSize];
-    for (int i = 0; i < srcSize; ++i)
+    if (shader != nullptr)
     {
-       qchar[i] = srcChar[i];
-    }
+        static_cast<ShaderSyntaxHighlighter*>(mSyntaxHighlighter)->SetShaderUserData(static_cast<ShaderUserData*>(shader->GetUserData()));
 
-    QString srcQString(qchar, srcSize);
-    setText(srcQString);
-    delete[] qchar;            
+        //set the text of the current text editor
+        const char * srcChar = nullptr;
+        int srcSize = 0;
+        shader->GetSource(&srcChar, srcSize);
+        QChar * qchar = new QChar[srcSize];
+        for (int i = 0; i < srcSize; ++i)
+        {
+            qchar[i] = srcChar[i];
+        }
+
+        QString srcQString(qchar, srcSize);
+        setText(srcQString);
+        delete[] qchar;            
+    }
+    else
+    {
+        static_cast<ShaderSyntaxHighlighter*>(mSyntaxHighlighter)->SetShaderUserData(nullptr);
+        setText(tr(""));
+    }
 }
 
 void ShaderTextEditorWidget::Uninitialize()
@@ -253,6 +261,22 @@ void ShaderTextEditorWidget::UpdateLineSyntax(int line)
 
 void ShaderTextEditorWidget::UpdateAllDocumentSyntax()
 {
+    
+    QPalette p = palette();
+    p.setColor(QPalette::Base, Editor::GetInstance().GetSettings()->GetShaderSyntaxColor(Settings::SYNTAX_BACKGROUND));
+    p.setColor(QPalette::Text, Editor::GetInstance().GetSettings()->GetShaderSyntaxColor(Settings::SYNTAX_NORMAL_TEXT));
+    int fontSize = Editor::GetInstance().GetSettings()->GetShaderEditorFontSize();
+    int tabStop  = Editor::GetInstance().GetSettings()->GetShaderEditorTabSize();
+
+    QFont f("Courier");
+    f.setPointSize(fontSize);
+    
+    QFontMetrics metrics(f);
+
+    setFont(f);
+    setPalette(p);
+    setTabStopWidth(tabStop * metrics.width(' '));
+
     mSyntaxHighlighter->rehighlight();
 }
 
@@ -279,6 +303,19 @@ bool ShaderTextEditorWidget::event(QEvent * e)
         }
     }
     return QTextEdit::event(e);
+}
+
+void ShaderTextEditorWidget::focusInEvent(QFocusEvent * e)
+{
+    mIsFocus = true;
+    QTextEdit::focusInEvent(e);
+    emit(SignalSelected());
+}
+
+void ShaderTextEditorWidget::focusOutEvent(QFocusEvent * e)
+{
+    mIsFocus = false;
+    QTextEdit::focusOutEvent(e);
 }
 
 void ShaderTextEditorWidget::FlushTextToShader()

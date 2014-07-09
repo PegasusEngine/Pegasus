@@ -28,7 +28,7 @@ class ShaderTextEditorWidget : public QTextEdit
     Q_OBJECT;
 public:
     //! constructor
-    ShaderTextEditorWidget();
+    ShaderTextEditorWidget(QWidget * parent);
 
     //! destructor
     virtual ~ShaderTextEditorWidget();
@@ -54,13 +54,29 @@ public:
     //! flushes the text container to the shader internals
     void FlushTextToShader();
 
+    //! \return true if the user has this widget in focus, false otherwise
+    bool IsFocus() const { return mIsFocus; }
+
+signals:
+    void SignalSelected();
+
 protected:
     //! event callback
     virtual bool event(QEvent * e);
 
+    //! focus in event callbacks
+    virtual void focusInEvent(QFocusEvent * e);
+
+    //! focus out event callbacks
+    virtual void focusOutEvent(QFocusEvent * e);
+
 private:
+    //! variable that tells if this widget is in focus
+    bool mIsFocus;
+
     //! shader reference
     Pegasus::Shader::IShaderProxy * mShader;
+
 
     QSyntaxHighlighter * mSyntaxHighlighter;
 };

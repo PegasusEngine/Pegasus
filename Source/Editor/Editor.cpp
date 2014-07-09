@@ -120,6 +120,9 @@ Editor::Editor(QWidget *parent)
             mTextureEditorDockWidget, SLOT(UpdateUIForAppLoaded()));
     connect(mApplicationManager, SIGNAL(ApplicationFinished()),
             mTextureEditorDockWidget, SLOT(UpdateUIForAppClosed()));
+
+    sSettings->NotifySettingsChanged();
+
 }
 
 //----------------------------------------------------------------------------------------

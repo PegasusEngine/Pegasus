@@ -13,6 +13,7 @@
 #define EDITOR_SHADEREDITORWIDGET_H
 
 #include <QDockWidget>
+#include "ShaderLibrary/ShaderTextEditorTreeWidget.h"
 
 namespace Pegasus {
     namespace Shader {
@@ -27,6 +28,8 @@ class QSyntaxHighlighter;
 class QSignalMapper;
 class QMutex;
 class QAction;
+class QTab;
+class ShaderTextEditorTreeWidget;
 class ShaderTextEditorWidget;
 
 //! Graphics Widget meant for shader text editing
@@ -64,7 +67,6 @@ public:
     //! \param the id of the editor (tab id). If the id is -1, then all programs are queried for compilaton
     void CompileShader(int id);
 
-
 signals:
     void RequestShaderCompilation(int id);
 
@@ -76,6 +78,10 @@ private slots:
     //! slot called whenever a tab changes its text.
     //! \param the widget that changed its text, should be casted to a QTextEdit object
     void OnTextChanged(QWidget *);
+
+    //! slot called when the user clicks on a text editor window
+    //! \param the widget that has been selected.
+    void OnTextWindowSelected(QWidget *);
 
     //! signals a compilation error.
     //! \param the shader reference to set the compilation error
@@ -107,6 +113,10 @@ private slots:
 
     //! signal triggered when a file save has ended badly
     void SignalSavedFileIoError(int ioError, QString msg);
+
+    //! signal triggered when the user clicks on a tab in the tab bar.
+    //! selects and visualizes a shader for opening
+    void SignalViewShader(int tabId);
     
 
 private:
@@ -114,10 +124,7 @@ private:
     //! request a syntax highlight update for a particular line
     //! \param the id of the text editor
     //! \param the line number to update
-    void UpdateSyntaxForLine(int id, int line);
-
-    //! maximum number of shader tabs to have open
-    static const int MAX_TEXT_TABS = 50;
+    void UpdateSyntaxForLine(ShaderTextEditorWidget * editor, int line);
 
     //! sets the ui. To be used internally
     void SetupUi();
@@ -128,32 +135,36 @@ private:
     //! finds the index of a particular text edit
     int  FindIndex(ShaderTextEditorWidget * target);
 
-    //! Updates the syntax and style of a specific textedit widget
-    void SynchronizeTextEditWidgetSyntaxStyle(int i);
-
     //! Sets the status bar message
     void PostStatusBarMessage(const QString& string);
 
     //! ui component pool
     struct Ui
     {
+        ShaderTextEditorTreeWidget::SignalCombination mTextEditorSignals;
         QString       mStatusBarMessage;
-        QStatusBar  * mStatusBar; 
+        QStatusBar * mStatusBar; 
         QVBoxLayout * mMainLayout; //! the main layout of the text editor
-        QTabWidget  * mTabWidget; //! the tab widget
-        QWidget   * mWidgetPool[MAX_TEXT_TABS]; //! pool of widgets for tabs
-        ShaderTextEditorWidget * mTextEditPool[MAX_TEXT_TABS]; //! pool of text editor tabs
+        QTabBar     * mTabWidget;
+        ShaderTextEditorTreeWidget * mTreeEditor;
     } mUi;
+
+    //! maximum number of shader tabs to have open
+    static const int MAX_OPENED_SHADERS = 50;
+    Pegasus::Shader::IShaderProxy * mOpenedShaders[MAX_OPENED_SHADERS];
+    int mOpenShaderCount;
+
+    //! poitns to the id of the previous tab index.
+    int mPreviousTabIndex;
+
     //! toolbar actions
     QIcon mPinIcon;
     QIcon mUnpinIcon;
     QAction * mPinAction;
     QAction * mSaveAction;
-
-    int mTabCount; //! count of tabs
-
-    //! signal mapper for shader text editors
-    QSignalMapper * mShaderEditorSignalMapper;
+    QAction * mCloseViewAction;
+    QAction * mHorizontalAction;
+    QAction * mVerticalAction;
 
     //! compilation barrier. Throttles compilation if a signal has been sent
     bool mCompilationRequestPending;
