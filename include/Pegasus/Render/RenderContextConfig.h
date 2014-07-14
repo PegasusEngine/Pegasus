@@ -13,6 +13,7 @@
 #define PEGASUS_RENDER_RENDERCONTEXTCONFIG_H
 
 #include "Pegasus/Render/RenderDefs.h"
+#include "Pegasus/Render/IDevice.h"
 
 namespace Pegasus {
 namespace Render {
@@ -22,15 +23,15 @@ struct ContextConfig
 {
 public:
     //! Constructor
-    ContextConfig() : mAllocator(nullptr), mDeviceContextHandle(0), mStartupContext(false) {};
+    ContextConfig() : mAllocator(nullptr), mDevice(nullptr), mDeviceContextHandle(0) {};
 
     //! Destructor
     ~ContextConfig() {};
 
 
     Alloc::IAllocator* mAllocator; //!< Allocator to use when creating this object
+    IDevice * mDevice; //!< Parent device for this context (represents graphics device)
     DeviceContextHandle mDeviceContextHandle; //!< Opaque context handle
-    bool mStartupContext; //!< Startup context flag, indicating how the context should be created
 };
 
 

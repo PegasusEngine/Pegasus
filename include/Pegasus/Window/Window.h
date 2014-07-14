@@ -20,6 +20,7 @@ namespace Pegasus {
         class Application;
     }
     namespace Render {
+        class IDevice;
         class Context;
     }
     namespace Wnd {
@@ -49,11 +50,16 @@ public:
 
     //! Gets the handle for this window
     //! \return Window handle.
-    WindowHandle GetHandle() const;
+    Os::WindowHandle GetHandle() const;
+
+    //! Gets the device assigned to this window
+    //! \return IDevice interface
+    inline Render::IDevice* GetRenderDevice() const { return mDevice; }
 
     //! Gets the render context used by this window
     //! \return Render context.
     inline Render::Context* GetRenderContext() const { return mRenderContext; };
+
 
     //! Gets the dimensions of this window
     //! \param width Width outParam.
@@ -116,6 +122,7 @@ private:
     IWindowImpl* mPrivateImpl; //!< Private implementation, platform-specific
     WindowMessageHandler* mMessageHandler; //!< Message handler object
     IWindowContext* mWindowContext; //!< Context for this window to operate in
+    Render::IDevice * mDevice;
     Render::Context* mRenderContext; //!< Rendering context
     bool mContextCreated; //!< Window created flag
     unsigned int mWidth; //!< Current width

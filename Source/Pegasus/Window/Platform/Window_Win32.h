@@ -35,7 +35,7 @@ public:
 
 
     // IWindowImpl interface
-    virtual WindowHandle GetHandle() const { return (WindowHandle) mHWND; }
+    virtual Os::WindowHandle GetHandle() const { return (Os::WindowHandle) mHWND; }
     virtual void Resize(unsigned int width, unsigned int height);
     virtual void SetAsMainWindow() { mIsMainWindow = true; }
     

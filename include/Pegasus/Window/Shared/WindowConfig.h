@@ -12,7 +12,7 @@
 #ifndef PEGASUS_WND_WINDOWCONFIG_H
 #define PEGASUS_WND_WINDOWCONFIG_H
 
-#include "Pegasus/Window/WindowDefs.h"
+#include "Pegasus/Render/IDevice.h"
 
 // Forward declarations
 namespace Pegasus {
@@ -41,16 +41,15 @@ public:
     //! Defined only when mIsChild == true
     //! \warning Assuming that mParentWindowHandle == 0 results in a non-child window will become a problem
     //!          if an operating system considers 0 as a valid handle. mIsChild is used to define if a parent window is actually defined
-    WindowHandle mParentWindowHandle;
+    Os::WindowHandle mParentWindowHandle;
 
     Alloc::IAllocator* mAllocator; //!< Allocator to use when creating this window
     Alloc::IAllocator* mRenderAllocator; //!< Allocator to use when creating this window's render resources
-    ModuleHandle mModuleHandle; //!< Opaque application instance
+    Render::IDevice * mDevice; //!< Pointer to device
     IWindowContext* mWindowContext; //!< Context for this window
     int mWidth; //!< Initial width of the window in pixels (> 0)
     int mHeight; //!< Initial height of the window in pixels (> 0)
     bool mCreateVisible; //!< Whether to create the window as initially visible or not
-    bool mUseBasicContext; //!< Whether to use a basic or extended context for this window
 
     //! Constructor
     inline WindowConfig()
@@ -58,12 +57,11 @@ public:
             mParentWindowHandle(0),
             mAllocator(nullptr),
             mRenderAllocator(nullptr),
-            mModuleHandle(0),
+            mDevice(nullptr),
             mWindowContext(nullptr),
             mWidth(960),
             mHeight(540),
-            mCreateVisible(false),
-            mUseBasicContext(false)
+            mCreateVisible(false)
         { }
 };
 

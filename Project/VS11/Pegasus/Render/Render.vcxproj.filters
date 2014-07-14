@@ -12,9 +12,6 @@
     <Filter Include="Source\GL">
       <UniqueIdentifier>{a1f5371a-5199-4e2c-a0b0-c28c66b20ba1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Platform">
-      <UniqueIdentifier>{55b7f802-9c98-41ee-a634-4d634343223d}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\RenderContext.h">
@@ -22,12 +19,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\RenderDefs.h">
       <Filter>Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\Platform\RenderContext_Win32.h">
-      <Filter>Source\Platform</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\IRenderContextImpl.h">
-      <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\RenderContextConfig.h">
       <Filter>Include</Filter>
@@ -56,16 +47,16 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\TextureFactory.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Render\IDevice.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLDeviceWin32.h">
+      <Filter>Source\GL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.cpp">
       <Filter>Source\GL</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\RenderContext.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Platform\RenderContext_Win32.cpp">
-      <Filter>Source\Platform</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLEWStaticInclude.cpp">
       <Filter>Source\GL</Filter>
@@ -83,6 +74,12 @@
       <Filter>Source\GL</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLTextureFactory.cpp">
+      <Filter>Source\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLRenderContextWin32.cpp">
+      <Filter>Source\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLDeviceWin32.cpp">
       <Filter>Source\GL</Filter>
     </ClCompile>
   </ItemGroup>

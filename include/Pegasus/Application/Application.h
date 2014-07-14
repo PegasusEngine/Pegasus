@@ -22,9 +22,14 @@ namespace Pegasus {
     namespace App {
         class AppWindowManager;
     }
+
     namespace Wnd {
         struct WindowConfig;
         class Window;
+    }
+
+    namespace Render {
+        class IDevice;
     }
 
     namespace Shader {
@@ -123,6 +128,7 @@ private:
 
     bool mInitialized;                          //!< Initialized flag
     ApplicationConfig        mConfig;           //!< Cached config object
+    Render::IDevice*         mDevice;           //!< Render device
     AppWindowManager*        mWindowManager;    //!< Window manager
     Io::IOManager*           mIoManager;        //!< IO manager
     Graph::NodeManager*      mNodeManager;      //!< Graph node manager

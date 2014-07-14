@@ -12,6 +12,7 @@
 #ifndef PEGASUS_WND_IWINDOWIMPL_H
 #define PEGASUS_WND_IWINDOWIMPL_H
 
+#include "Pegasus/Core/Shared/OsDefs.h"
 #include "Pegasus/Window/Shared/WindowConfig.h"
 #include "../Source/Pegasus/Window/IWindowMessageHandler.h"
 
@@ -43,7 +44,7 @@ public:
 
     //! Gets the handle for this window
     //! \return Window handle.
-    virtual WindowHandle GetHandle() const = 0;
+    virtual Os::WindowHandle GetHandle() const = 0;
 
 
     //! Resize this window

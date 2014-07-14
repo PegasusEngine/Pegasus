@@ -15,6 +15,7 @@
 
 #include "Viewport/ViewportWidget.h"
 #include "Pegasus/Preprocessor.h"
+#include "Pegasus/Core/Shared/OsDefs.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Shader/Shared/ShaderEvent.h"
@@ -123,7 +124,7 @@ void Application::run()
     Pegasus::App::DestroyPegasusAppFuncPtr DestroyPegasusAppFunc = (Pegasus::App::DestroyPegasusAppFuncPtr) destroyAppProcAddress;
 
     // Set up app config
-    appConfig.mModuleHandle = (Pegasus::Wnd::ModuleHandle) GetModuleHandle(NULL); // Use the handle of the Editor EXE
+    appConfig.mModuleHandle = (Pegasus::Os::ModuleHandle) GetModuleHandle(NULL); // Use the handle of the Editor EXE
     appConfig.mMaxWindowTypes = NUM_VIEWPORT_TYPES;
     appConfig.mMaxNumWindows = NUM_VIEWPORT_TYPES;
     appConfig.mBasePath = ASSET_ROOT;

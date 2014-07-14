@@ -288,9 +288,7 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Window\IWindowContext.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Window\Shared\IWindowProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Window\Shared\WindowConfig.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Window\StartupWindow.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Window\Window.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Window\WindowDefs.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Window\WindowProxy.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Window\IWindowImpl.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Window\IWindowMessageHandler.h" />
@@ -298,7 +296,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Window\Platform\Window_Win32.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Window\StartupWindow.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Window\Window.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Window\WindowProxy.cpp" />
   </ItemGroup>

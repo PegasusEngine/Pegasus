@@ -280,7 +280,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     Pegasus::App::DestroyPegasusAppFuncPtr DestroyPegasusAppFunc = (Pegasus::App::DestroyPegasusAppFuncPtr) destroyAppProcAddress;
     
     // Set up the app config
-    appConfig.mModuleHandle = (Pegasus::Wnd::ModuleHandle) hInstance;
+    appConfig.mModuleHandle = (Pegasus::Os::ModuleHandle) hInstance;
     appConfig.mMaxWindowTypes = Pegasus::App::NUM_WND_TYPES;
     appConfig.mMaxNumWindows = 1;
     appConfig.mBasePath = ASSET_ROOT;

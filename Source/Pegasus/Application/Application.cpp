@@ -16,6 +16,7 @@
 #include "Pegasus/Core/Time.h"
 #include "Pegasus/Graph/NodeManager.h"
 #include "Pegasus/Memory/MemoryManager.h"
+#include "Pegasus/Render/IDevice.h"
 #include "Pegasus/Render/ShaderFactory.h"
 #include "Pegasus/Render/TextureFactory.h"
 #include "Pegasus/Render/MeshFactory.h"
@@ -23,14 +24,10 @@
 #include "Pegasus/Texture/TextureManager.h"
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Window/Window.h"
-#include "Pegasus/Window/StartupWindow.h"
 #include "Pegasus/Render/RenderContext.h"
 
 namespace Pegasus {
 namespace App {
-
-// Constants
-const char* STARTUP_WND_TYPE = "INTERNAL__Startup";
 
 //----------------------------------------------------------------------------------------
 
@@ -44,7 +41,6 @@ Application::Application(const ApplicationConfig& config)
     Alloc::IAllocator* timelineAlloc = Memory::GetTimelineAllocator();
 
     AppWindowManagerConfig windowManagerConfig;
-    WindowRegistration reg;
 
     // Set up debugging facilities
 #if PEGASUS_ENABLE_LOG
@@ -65,11 +61,6 @@ Application::Application(const ApplicationConfig& config)
     windowManagerConfig.mMaxNumWindows = config.mMaxNumWindows;
     mWindowManager = PG_NEW(windowAlloc, -1, "AppWindowManager", Alloc::PG_MEM_PERM) AppWindowManager(windowManagerConfig);
 
-    // Register startup window
-    reg.mTypeTag = Pegasus::App::WINDOW_TYPE_INVALID;
-    reg.mDescription = "INTERNAL Startup Window";
-    reg.mCreateFunc = Wnd::StartupWindow::Create;
-    mWindowManager->RegisterWindowClass(STARTUP_WND_TYPE, reg);
 
     // Set up node managers
     mNodeManager = PG_NEW(nodeAlloc, -1, "NodeManager", Alloc::PG_MEM_PERM) Graph::NodeManager(nodeAlloc, nodeDataAlloc);
@@ -107,8 +98,6 @@ Application::~Application()
     // Sanity check
     PG_ASSERTSTR(!mInitialized, "Application still initialized in destructor!");
 
-    // Free windows
-    mWindowManager->UnregisterWindowClass(STARTUP_WND_TYPE);
     PG_DELETE(windowAlloc, mWindowManager);
 
     // Delete the timeline
@@ -203,6 +192,7 @@ IWindowRegistry* Application::GetWindowRegistry()
 
 Wnd::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig)
 {
+    PG_ASSERTSTR(mDevice != nullptr, "Application requries render device before attaching window!");
     Alloc::IAllocator* renderAlloc = Memory::GetRenderAllocator();
     Alloc::IAllocator* windowAlloc = Memory::GetWindowAllocator();
     Wnd::Window* newWnd = nullptr;
@@ -211,14 +201,14 @@ Wnd::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig)
     // Create window
     config.mAllocator = windowAlloc;
     config.mRenderAllocator = renderAlloc;
-    config.mModuleHandle = mConfig.mModuleHandle;
+    config.mDevice = mDevice;
     config.mWindowContext = this;
     config.mIsChild = appWindowConfig.mIsChild;
     config.mParentWindowHandle = appWindowConfig.mParentWindowHandle;
     config.mWidth = appWindowConfig.mWidth;
     config.mHeight = appWindowConfig.mHeight;
     config.mCreateVisible = true;
-    config.mUseBasicContext = false;
+    
     newWnd = mWindowManager->CreateNewWindow(appWindowConfig.mWindowType, config);
 
     if (newWnd != nullptr)
@@ -249,35 +239,20 @@ void Application::DetachWindow(Wnd::Window* wnd)
 void Application::StartupAppInternal()
 {
     Alloc::IAllocator* renderAlloc = Memory::GetRenderAllocator();
-    Alloc::IAllocator* windowAlloc = Memory::GetWindowAllocator();
-    Wnd::Window* newWnd = nullptr;
-    Wnd::WindowConfig config;
+    Pegasus::Render::DeviceConfig deviceConfig;
+    deviceConfig.mModuleHandle = mConfig.mModuleHandle;
 
-    // Create window and immediately destroy it
-    config.mAllocator = windowAlloc;
-    config.mRenderAllocator = renderAlloc;
-    config.mModuleHandle = mConfig.mModuleHandle;
-    config.mWindowContext = this;
-    config.mIsChild = false;
-    config.mWidth = 128;
-    config.mHeight = 128;
-    config.mCreateVisible = false;
-    config.mUseBasicContext = true;
-    newWnd = mWindowManager->CreateNewWindow(STARTUP_WND_TYPE, config);
-    PG_ASSERTSTR(newWnd != nullptr, "[FATAL] Failed to create startup window!");
-    newWnd->GetRenderContext()->CheckRenderingExtensions();
-    
-    // Destroy the window, it is no longer needed
-    mWindowManager->DestroyWindow(newWnd);
-
-    PG_LOG('APPL', "Startup successful");
+    mDevice = Pegasus::Render::IDevice::CreatePlatformDevice(deviceConfig, renderAlloc);
+    PG_LOG('APPL', "Startup finished");
 }
 
 //----------------------------------------------------------------------------------------
 
 void Application::ShutdownAppInternal()
 {
-       
+    PG_DELETE(Memory::GetRenderAllocator(), mDevice);    
+    mDevice = nullptr;
+    PG_LOG('APPL', "Device Destroyed");
 }
 
 

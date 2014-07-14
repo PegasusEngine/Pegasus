@@ -18,7 +18,6 @@
 
 #include "Pegasus/Core/Shared/LogChannel.h"
 #include "Pegasus/Core/Shared/AssertReturnCode.h"
-#include "Pegasus/Window/WindowDefs.h"
 
 class ApplicationInterface;
 class ViewportWidget;

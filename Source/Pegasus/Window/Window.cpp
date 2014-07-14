@@ -25,7 +25,7 @@ namespace Wnd {
 class WindowMessageHandler : public IWindowMessageHandler
 {
 public:
-    WindowMessageHandler(bool useBasicContext, Window* parent);
+    explicit WindowMessageHandler(Window* parent);
     virtual ~WindowMessageHandler();
 
     // IWindowMessageHandler interface
@@ -44,8 +44,8 @@ private:
 
 //----------------------------------------------------------------------------------------
 
-WindowMessageHandler::WindowMessageHandler(bool useBasicContext, Window* parent)
-    : mUseBasicContext(useBasicContext), mParent(parent)
+WindowMessageHandler::WindowMessageHandler(Window* parent)
+ : mParent(parent)
 {
 }
 
@@ -64,7 +64,7 @@ void WindowMessageHandler::OnCreate(Render::DeviceContextHandle handle)
     // Create context
     contextConfig.mAllocator = mParent->mRenderAllocator;
     contextConfig.mDeviceContextHandle = handle;
-    contextConfig.mStartupContext = mUseBasicContext;
+    contextConfig.mDevice = mParent->GetRenderDevice();
     mParent->mRenderContext = PG_NEW(mParent->mRenderAllocator, -1, "Render::Context", Pegasus::Alloc::PG_MEM_PERM) Render::Context(contextConfig);
     mParent->mContextCreated = true;
 }
@@ -101,6 +101,7 @@ void WindowMessageHandler::OnResize(unsigned int width, unsigned int height)
 Window::Window(const WindowConfig& config)
 :   mAllocator(config.mAllocator),
     mRenderAllocator(config.mRenderAllocator),
+    mDevice(config.mDevice),
     mWindowContext(config.mWindowContext),
     mRenderContext(nullptr),
     mContextCreated(false),
@@ -109,7 +110,7 @@ Window::Window(const WindowConfig& config)
     mIsChild(config.mIsChild)
 {
     // Create platform stuff
-    mMessageHandler = PG_NEW(mAllocator, -1, "Window message handler", Pegasus::Alloc::PG_MEM_PERM) WindowMessageHandler(config.mUseBasicContext, this);
+    mMessageHandler = PG_NEW(mAllocator, -1, "Window message handler", Pegasus::Alloc::PG_MEM_PERM) WindowMessageHandler(this);
     mPrivateImpl = IWindowImpl::CreateImpl(config, mAllocator, mMessageHandler);
 
 #if PEGASUS_ENABLE_PROXIES
@@ -134,7 +135,7 @@ Window::~Window()
 
 //----------------------------------------------------------------------------------------
 
-WindowHandle Window::GetHandle() const
+Os::WindowHandle Window::GetHandle() const
 {
     return mPrivateImpl->GetHandle();
 }

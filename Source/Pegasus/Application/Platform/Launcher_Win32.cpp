@@ -207,7 +207,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     int retVal = 0;
 
     // Set up the app config
-    appConfig.mModuleHandle = (Pegasus::Wnd::ModuleHandle) hInstance;
+    appConfig.mModuleHandle = (Pegasus::Os::ModuleHandle) hInstance;
     appConfig.mMaxWindowTypes = 1;
     appConfig.mMaxNumWindows = 1;
     appConfig.mBasePath = ASSET_ROOT;

@@ -38,8 +38,9 @@ void IWindowImpl::DestroyImpl(IWindowImpl* impl, Alloc::IAllocator* alloc)
 //----------------------------------------------------------------------------------------
 
 WindowImpl_Win32::WindowImpl_Win32(const WindowConfig& config, IWindowMessageHandler* messageHandler)
-    : mModule((HMODULE) config.mModuleHandle), mHandler(messageHandler), mIsMainWindow(false)
+    : mHandler(messageHandler), mIsMainWindow(false)
 {
+    mModule = reinterpret_cast<HMODULE>(config.mDevice->GetConfig().mModuleHandle);
     // Register window class if need be
     if (!WindowImpl_Win32::IsWindowClassRegistered(mModule))
     {
@@ -183,7 +184,7 @@ void WindowImpl_Win32::Internal_CreateWindow(const WindowConfig& config)
                                   windowWidth, windowHeight,
                                   config.mIsChild ? (HWND)config.mParentWindowHandle : NULL,
                                   NULL,
-                                  (HINSTANCE) config.mModuleHandle,
+                                  (HINSTANCE) mModule,
                                   (LPVOID) this);
     if (windowHandle == NULL)
     {

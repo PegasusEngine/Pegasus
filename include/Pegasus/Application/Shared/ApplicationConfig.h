@@ -14,7 +14,7 @@
 
 #include "Pegasus/Core/Shared/LogChannel.h"
 #include "Pegasus/Core/Shared/AssertReturnCode.h"
-#include "Pegasus/Window/WindowDefs.h"
+#include "Pegasus/Core/Shared/OsDefs.h"
 
 namespace Pegasus {
 namespace App {
@@ -23,7 +23,7 @@ namespace App {
 struct ApplicationConfig
 {
 public:
-    Wnd::ModuleHandle mModuleHandle; //!< Handle to the module containing this application
+    Os::ModuleHandle mModuleHandle; //!< Handle to the module containing this application
     unsigned int mMaxWindowTypes; //!< Maximum number of window types this app can contain
     unsigned int mMaxNumWindows; //!< Maximum number of windows this app can contain
     const char* mBasePath; //!< The base path to load all assets from
@@ -60,7 +60,7 @@ public:
     //! Defined only when mIsChild == true
     //! \warning Assuming that mParentWindowHandle == 0 results in a non-child window will become a problem
     //!          if an operating system considers 0 as a valid handle. mIsChild is used to define if a parent window is actually defined
-    Wnd::WindowHandle mParentWindowHandle;
+    Os::WindowHandle mParentWindowHandle;
 
     const char* mWindowType; //!< Type string for the window
     int mWidth; //!< Initial width of the window in pixels (> 0)

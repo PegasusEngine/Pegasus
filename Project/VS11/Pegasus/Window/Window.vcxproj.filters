@@ -20,9 +20,6 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Window\Window.h">
       <Filter>Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Window\WindowDefs.h">
-      <Filter>Include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\Source\Pegasus\Window\Platform\Window_Win32.h">
       <Filter>Source\Platform</Filter>
     </ClInclude>
@@ -33,9 +30,6 @@
       <Filter>Include\Shared</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Window\WindowProxy.h">
-      <Filter>Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Window\StartupWindow.h">
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Window\IWindowContext.h">
@@ -56,9 +50,6 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Window\WindowProxy.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Window\StartupWindow.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>

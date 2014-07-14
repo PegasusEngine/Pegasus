@@ -14,13 +14,6 @@
 
 #include "Pegasus/Render/RenderContextConfig.h"
 
-// Forward declarations
-namespace Pegasus {
-    namespace Render {
-        class IRenderContextImpl;
-    }
-}
-
 //----------------------------------------------------------------------------------------
 
 namespace Pegasus {
@@ -46,17 +39,17 @@ public:
 
     //! Swaps the backbuffer chain, presenting a completed image to the display
     void Swap() const;
-    
-    //! At initialization only, check for all the extensions from the render api
-    void CheckRenderingExtensions() const;
 
+    //! Gets the parent device of this context
+    IDevice * GetDevice() const { return mParentDevice; }
+    
 private:
     // No copies allowed
     PG_DISABLE_COPY(Context);
 
-
     Alloc::IAllocator* mAllocator; //!< Allocator for this object
-    IRenderContextImpl* mPrivateImpl; //!< Private implementation -- platform-specific
+    IDevice * mParentDevice;
+    DeviceContextHandle mDeviceContextHandle; //!< Opaque context handle
 };
 
 
