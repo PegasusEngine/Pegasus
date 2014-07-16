@@ -58,6 +58,8 @@ private:
     Pegasus::Mesh::MeshRef mQuad;
     Pegasus::Render::Uniform mTimeUniform;
     Pegasus::Render::Uniform mScreenRatioUniform;
+    Pegasus::Render::BlendingState mCurrentBlockBlendingState;
+    Pegasus::Render::BlendingState mDefaultBlendingState;
 };
 
 

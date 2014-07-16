@@ -211,5 +211,6 @@ namespace Render
     }
 }
 }
-
+#else
+PEGASUS_AVOID_EMPTY_FILE_WARNING
 #endif //Pegasus GL def

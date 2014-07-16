@@ -119,6 +119,80 @@ namespace Render
         }
     };
 
+    //! Structure containing configuration for rasterizer state
+    struct RasterizerConfig
+    {
+        enum PegasusDepthFunc
+        {
+            NONE_DF,
+            GREATER_DF,
+            LESSER_DF,
+            GREATER_EQUAL_DF,
+            LESSER_EQUAL_DF,
+            EQUAL_DF
+        };
+
+        enum PegasusCullMode
+        {
+            NONE_CM,
+            CCW_CM,
+            CW_CM
+        };
+
+        RasterizerConfig ()
+        :    mCullMode(NONE_CM),
+             mDepthFunc(NONE_DF)
+        { 
+        }    
+
+        PegasusCullMode  mCullMode;
+        PegasusDepthFunc mDepthFunc;
+
+       
+    };
+
+    //! Structure representing a rasterizer state
+    struct RasterizerState
+    {
+        void * mInternalData;
+        RasterizerConfig mConfig;
+    };
+
+    //! Structure containing configuration for blending state
+    struct BlendingConfig
+    {
+        enum BlendOperator
+        {
+            NONE_BO,
+            ADD_BO,
+            MUL_BO
+        };
+
+        enum Multiplicator
+        {
+            ZERO_M,
+            ONE_M
+        };
+
+        BlendingConfig()
+        : mBlendingOperator(NONE_BO),
+          mSource(ZERO_M),
+          mDest(ZERO_M)
+        {
+        }
+        
+        BlendOperator mBlendingOperator;
+        Multiplicator mSource;
+        Multiplicator mDest;
+    };
+
+    //! Structure representing a blending state
+    struct BlendingState
+    {
+        void * mInternalData;
+        BlendingConfig mConfig;
+    };
+
     //! Dispatches a shader.
     //! \param program the shader program to dispatch
     void Dispatch (Shader::ProgramLinkageInOut program);
@@ -154,6 +228,14 @@ namespace Render
     //! \note the components must be normalized (from 0 to 1)
     void SetClearColorValue(const Pegasus::Math::ColorRGBA& col);
 
+    //! Sets the rasterizer state
+    //! \param rasterState
+    void SetRasterizerState(const RasterizerState& rasterState);
+
+    //! Sets the blending state
+    //! \param blendingState
+    void SetBlendingState(const BlendingState& blendignState);
+
     //! Sets the depth clear value
     //! \param the depth scalar value to clear to
     //! \note the value must be from 0 to 1
@@ -180,6 +262,24 @@ namespace Render
     //! \param configuration of the render target
     //! \param output render target to fill / create
     void CreateRenderTarget(RenderTargetConfig& config, RenderTarget& renderTarget);
+
+    //! Creates a rasterizer state given a configuration.
+    //! \param config the configuration structure
+    //! \param output rasterizer state created
+    void CreateRasterizerState(RasterizerConfig& config, RasterizerState& rasterizerState);
+
+    //! Creates a blending state given a configuration.
+    //! \param config the configuration structure
+    //! \param output blendign state created
+    void CreateBlendingState(BlendingConfig& config, BlendingState& blendingState);
+
+    //! Deletes a rasterizer state
+    //! \param rasterizer state to delete
+    void DeleteRasterizerState(RasterizerState& state);
+
+    //! Deletes a rasterizer state
+    //! \param blending state to delete
+    void DeleteBlendingState(BlendingState& blendingState);
 
     //! Memcpys a buffer to the gpu destination.
     //! \param dstBuffer the GPU destination buffer to copy to

@@ -64,6 +64,9 @@ private:
     Pegasus::Render::Uniform mTimeUniform;
 
     Pegasus::Render::RenderTarget mCubeFaceRenderTarget;
+
+    Pegasus::Render::RasterizerState mDefaultRasterState;
+    Pegasus::Render::RasterizerState mCurrentBlockRasterState;
     
     PEGASUS_ALIGN_BEGIN(16)
     struct UniformState

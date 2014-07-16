@@ -9,6 +9,7 @@
 //! \date   11th June 2013
 //! \brief  Management of GL and WGL extensions, available throughout the engine
 //!         to check if features are available before using them
+#if PEGASUS_GAPI_GL
 
 #include "../Source/Pegasus/Render/GL/GLExtensions.h"
 #include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h" 
@@ -138,3 +139,6 @@ bool GLExtensions::IsProfileValid(Profile profile) const
 
 }   // namespace Render
 }   // namespace Pegasus
+#else
+PEGASUS_AVOID_EMPTY_FILE_WARNING
+#endif

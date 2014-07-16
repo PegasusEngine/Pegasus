@@ -10,9 +10,6 @@
 //! \brief	Timeline block for the FractalCube2 effect (colored fractal with shadows)
 
 #include "TimelineBlocks/FractalCube2Block.h"
-//! TODO remove this direct dependency once our mesh & shader packages are fully complete
-#include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
-
 
 static const char * VERTEX_SHADER = "Shaders\\Cubefractal2.vs";
 static const char * FRAGMENT_SHADER = "Shaders\\CubeFractal2.ps";
@@ -34,6 +31,16 @@ FractalCube2Block::~FractalCube2Block()
 
 void FractalCube2Block::Initialize()
 {
+    //Setup blending states
+    Pegasus::Render::BlendingConfig blendingConfig;
+    blendingConfig.mBlendingOperator = Pegasus::Render::BlendingConfig::ADD_BO;
+    blendingConfig.mSource = Pegasus::Render::BlendingConfig::ONE_M;
+    blendingConfig.mDest = Pegasus::Render::BlendingConfig::ONE_M;
+    Pegasus::Render::CreateBlendingState(blendingConfig, mCurrentBlockBlendingState);
+
+    blendingConfig.mBlendingOperator = Pegasus::Render::BlendingConfig::NONE_BO;
+    Pegasus::Render::CreateBlendingState(blendingConfig, mDefaultBlendingState);
+
     //Set up quad
     Pegasus::Mesh::MeshGeneratorRef quadGenerator = GetMeshManager()->CreateMeshGeneratorNode("QuadGenerator");
     mQuad = GetMeshManager()->CreateMeshNode();
@@ -60,7 +67,8 @@ void FractalCube2Block::Initialize()
 
 void FractalCube2Block::Shutdown()
 {
-    //! \todo Uninitialize VAOs, buffers, shaders
+    Pegasus::Render::DeleteBlendingState(mCurrentBlockBlendingState);
+    Pegasus::Render::DeleteBlendingState(mDefaultBlendingState);
 }
 
 //----------------------------------------------------------------------------------------
@@ -79,14 +87,12 @@ void FractalCube2Block::Render(float beat, Pegasus::Wnd::Window * window)
     window->GetDimensions(viewportWidth, viewportHeight);
 
     // Enable additive blending
-    glEnable(GL_BLEND);
-    glBlendEquation(GL_ADD);
-    glBlendFunc(GL_ONE, GL_ONE);
+    Pegasus::Render::SetBlendingState(mCurrentBlockBlendingState);
 
     Pegasus::Render::SetUniform(mTimeUniform, currentTime);
     Pegasus::Render::SetUniform(mScreenRatioUniform, static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight));
     
     Pegasus::Render::Draw();
-
-    glDisable(GL_BLEND);
+    
+    Pegasus::Render::SetBlendingState(mDefaultBlendingState);
 }

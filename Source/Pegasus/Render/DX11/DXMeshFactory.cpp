@@ -4,14 +4,30 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   GLEWStaticInclude.cpp
-//! \author David Worsham
-//! \date   02 Nov 2013
-//! \brief  Static include header for GLEW.
+//! \file   DXMeshFactory.cpp
+//! \author Kleber Garcia
+//! \date   15th July of 2014
+//! \brief  DirectX 11 mesh factory implementation
 
-#if PEGASUS_GAPI_GL
-#include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
-#include "Pegasus/Libs/GLEW/glew.c"
+#if PEGASUS_GAPI_DX
+
+#include "Pegasus/Render/MeshFactory.h"
+
+namespace Pegasus
+{
+
+namespace Render
+{
+
+Mesh::IMeshFactory * GetRenderMeshFactory()
+{
+    return nullptr;
+}
+
+}
+
+}
+
 #else
 PEGASUS_AVOID_EMPTY_FILE_WARNING
 #endif

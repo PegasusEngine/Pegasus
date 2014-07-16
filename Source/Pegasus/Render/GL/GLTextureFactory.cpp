@@ -257,5 +257,6 @@ void Pegasus::Render::DeleteRenderTarget(Pegasus::Render::RenderTarget& renderTa
 {
     gGlobalTextureFactory.InternalDeleteRenderTarget(renderTarget);
 }
-
+#else
+PEGASUS_AVOID_EMPTY_FILE_WARNING
 #endif //PEGASUS_GAPI_GL

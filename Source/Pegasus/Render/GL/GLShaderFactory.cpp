@@ -446,5 +446,6 @@ Pegasus::Shader::IShaderFactory * Pegasus::Render::GetRenderShaderFactory()
 {
     return &gGlobalStaticFactory;
 }
-
+#else
+PEGASUS_AVOID_EMPTY_FILE_WARNING
 #endif //PEGASUS_GAPI_GL

@@ -4,14 +4,24 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   GLEWStaticInclude.cpp
-//! \author David Worsham
-//! \date   02 Nov 2013
-//! \brief  Static include header for GLEW.
+//! \file   DXGpuDataDefs.h
+//! \author Kleber Garcia
+//! \date   15th July of 2014
+//! \brief  Pegasus directx11 definitions of gpu data for render elements
 
-#if PEGASUS_GAPI_GL
-#include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
-#include "Pegasus/Libs/GLEW/glew.c"
-#else
-PEGASUS_AVOID_EMPTY_FILE_WARNING
+#ifndef PEGASUS_DXGPUDATADEF_H
+#define PEGASUS_DXGPUDATADEF_H
+
+#include "Pegasus/Graph/NodeGPUData.h"
+
+namespace Pegasus
+{
+
+namespace Render
+{
+}
+
+}
+
+
 #endif

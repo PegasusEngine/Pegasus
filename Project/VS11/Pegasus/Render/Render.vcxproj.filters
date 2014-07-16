@@ -12,6 +12,9 @@
     <Filter Include="Source\GL">
       <UniqueIdentifier>{a1f5371a-5199-4e2c-a0b0-c28c66b20ba1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\DX11">
+      <UniqueIdentifier>{501c8e72-289b-4d34-8656-1302362ff7dd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\RenderContext.h">
@@ -53,6 +56,12 @@
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLDeviceWin32.h">
       <Filter>Source\GL</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX11\DXDevice.h">
+      <Filter>Source\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX11\DXGpuDataDefs.h">
+      <Filter>Source\DX11</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.cpp">
@@ -81,6 +90,24 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLDeviceWin32.cpp">
       <Filter>Source\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX11\DXDevice.cpp">
+      <Filter>Source\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX11\DXMeshFactory.cpp">
+      <Filter>Source\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX11\DXRenderContext.cpp">
+      <Filter>Source\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX11\DXRenderImpl.cpp">
+      <Filter>Source\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX11\DXShaderFactory.cpp">
+      <Filter>Source\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX11\DXTextureFactory.cpp">
+      <Filter>Source\DX11</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

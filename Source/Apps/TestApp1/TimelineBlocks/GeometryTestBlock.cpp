@@ -11,7 +11,6 @@
 
 #include "Apps/TestApp1/TimelineBlocks/GeometryTestBlock.h"
 
-#include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
 #include "Pegasus/Math/Quaternion.h"
 #include "Pegasus/Mesh/Generator/IcosphereGenerator.h"
 
@@ -33,6 +32,18 @@ GeometryTestBlock::~GeometryTestBlock()
 //! Initializer
 void GeometryTestBlock::Initialize()
 {
+
+    //setup raster states
+    Pegasus::Render::RasterizerConfig rasterConfig;
+    rasterConfig.mCullMode = Pegasus::Render::RasterizerConfig::CW_CM;
+    rasterConfig.mDepthFunc = Pegasus::Render::RasterizerConfig::GREATER_DF;
+
+    Pegasus::Render::CreateRasterizerState(rasterConfig, mCurrentBlockRasterState);
+    rasterConfig.mCullMode = Pegasus::Render::RasterizerConfig::NONE_CM;
+    rasterConfig.mDepthFunc = Pegasus::Render::RasterizerConfig::NONE_DF;
+
+    Pegasus::Render::CreateRasterizerState(rasterConfig, mDefaultRasterState);
+    
     // setup shaders
     Pegasus::Shader::ShaderManager * const shaderManager = GetShaderManager();
     mBlockProgram = shaderManager->CreateProgram("CubeProgram");
@@ -112,6 +123,8 @@ void GeometryTestBlock::Shutdown()
 {
     Pegasus::Render::DeleteBuffer(mUniformStateBuffer);
     Pegasus::Render::DeleteRenderTarget(mCubeFaceRenderTarget);
+    Pegasus::Render::DeleteRasterizerState(mCurrentBlockRasterState);
+    Pegasus::Render::DeleteRasterizerState(mDefaultRasterState);
 }
 
 //! Render function
@@ -151,11 +164,7 @@ void GeometryTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
     Pegasus::Render::SetUniform(mUniformBlock, mUniformStateBuffer);
     Pegasus::Render::SetUniform(mCubeTextureUniform, mCubeFaceRenderTarget);
 
-    // todo - add functions to handle depth
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    
-    glDepthFunc(GL_GREATER);
+    Pegasus::Render::SetRasterizerState(mCurrentBlockRasterState);
 
     Pegasus::Render::Dispatch(mCubeMesh);
     Pegasus::Render::Draw();
@@ -181,5 +190,5 @@ void GeometryTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
         }
     }
     
-    glDisable(GL_DEPTH_TEST);
+    Pegasus::Render::SetRasterizerState(mDefaultRasterState);
 }

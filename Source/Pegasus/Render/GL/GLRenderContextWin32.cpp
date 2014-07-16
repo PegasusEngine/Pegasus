@@ -9,7 +9,7 @@
 //! \date   05th July 2013
 //! \brief  Class that encapsulates an OGL rendering context, for windows specific platforms.
 
-#if PEGASUS_PLATFORM_WINDOWS
+#if PEGASUS_GAPI_GL && PEGASUS_PLATFORM_WINDOWS
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -106,5 +106,6 @@ void Context::Swap() const
 
 }   // namespace Render
 }   // namespace Pegasus
-
+#else
+PEGASUS_AVOID_EMPTY_FILE_WARNING
 #endif //PEGASUS_PLATFORM_WINDOWS

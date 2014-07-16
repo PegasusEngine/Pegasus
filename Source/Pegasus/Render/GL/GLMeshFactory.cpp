@@ -236,4 +236,6 @@ Pegasus::Mesh::IMeshFactory * Pegasus::Render::GetRenderMeshFactory()
     return &gGlobalMeshFactory;
 }
 
+#else
+PEGASUS_AVOID_EMPTY_FILE_WARNING
 #endif //PEGASUS_GAPI_GL

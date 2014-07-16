@@ -298,6 +298,84 @@ void Pegasus::Render::SetClearColorValue(const Pegasus::Math::ColorRGBA& color)
 
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/////////////   SETRASTERIZERSTATE IMPLEMENTATION      ///////////////////////
+///////////////////////////////////////////////////////////////////////////////
+void Pegasus::Render::SetRasterizerState(const RasterizerState& rasterState)
+{
+    PG_ASSERT(rasterState.mInternalData == reinterpret_cast<void*>(0xdeadbeef));
+    const RasterizerConfig& config = rasterState.mConfig;
+    if (config.mCullMode == Pegasus::Render::RasterizerConfig::NONE_CM)
+    {
+        glDisable(GL_CULL_FACE);
+    }
+    else
+    {
+        glEnable(GL_CULL_FACE);
+        static const GLenum sCullLookup[] = {
+            0,
+            GL_FRONT,
+            GL_BACK
+        };
+        PG_ASSERT(config.mCullMode < (sizeof(sCullLookup) / sizeof(GLenum)));
+        glCullFace(sCullLookup[config.mCullMode]);
+    }   
+
+    if (config.mDepthFunc == Pegasus::Render::RasterizerConfig::NONE_DF)
+    {
+        glDisable(GL_DEPTH_TEST);
+    }
+    else
+    {
+        glEnable(GL_DEPTH_TEST);
+        static const GLenum sDepthLookup[] = {
+            0,
+            GL_GREATER,
+            GL_LESS,
+            GL_GEQUAL,
+            GL_LEQUAL,
+            GL_EQUAL
+        };
+        PG_ASSERT(config.mDepthFunc < sizeof(sDepthLookup) / sizeof(GLenum));
+        glDepthFunc(sDepthLookup[config.mDepthFunc]);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/////////////   SETBLENDINGSTATE IMPLEMENTATION      ///////////////////////
+///////////////////////////////////////////////////////////////////////////////
+void Pegasus::Render::SetBlendingState(const Pegasus::Render::BlendingState& blendingState)
+{
+    PG_ASSERT(blendingState.mInternalData == reinterpret_cast<void*>(0xf00ba7));
+    const Pegasus::Render::BlendingConfig& config = blendingState.mConfig;
+    if (config.mBlendingOperator == Pegasus::Render::BlendingConfig::NONE_BO)
+    {
+        glDisable(GL_BLEND);
+    }
+    else
+    {
+        glEnable(GL_BLEND);
+        
+        static const GLenum sBlendingFuncs[] = {
+            0,
+            GL_ADD,
+            GL_MULT
+        };
+        PG_ASSERT(config.mBlendingOperator < sizeof(sBlendingFuncs) / sizeof(GLenum));
+        glBlendEquation(sBlendingFuncs[config.mBlendingOperator]);
+
+        static const GLenum sBlendingFuncMult[] = {
+            GL_ZERO,
+            GL_ONE
+        };
+
+        PG_ASSERT(config.mSource < sizeof(sBlendingFuncMult) / sizeof(GLenum));
+        PG_ASSERT(config.mDest < sizeof(sBlendingFuncMult) / sizeof(GLenum));
+
+        glBlendFunc(sBlendingFuncMult[config.mSource], sBlendingFuncMult[config.mDest]);
+    }
+}
+
 // ---------------------------------------------------------------------------
 
 void Pegasus::Render::SetDepthClearValue(float d)
@@ -458,6 +536,43 @@ void Pegasus::Render::CreateUniformBuffer(int size, Pegasus::Render::Buffer& out
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+/////////////   CREATERASTERSTATE IMPLEMENTATION      ///////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+void Pegasus::Render::CreateRasterizerState(Pegasus::Render::RasterizerConfig& config, Pegasus::Render::RasterizerState& rasterizerState)
+{
+    rasterizerState.mConfig = config;
+    rasterizerState.mInternalData = reinterpret_cast<void*>(0xdeadbeef);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/////////////   CREATEBLENDIGNSTATE IMPLEMENTATION      ///////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+void Pegasus::Render::CreateBlendingState(Pegasus::Render::BlendingConfig& config, Pegasus::Render::BlendingState& blendingState)
+{
+    blendingState.mConfig = config;
+    blendingState.mInternalData = reinterpret_cast<void*>(0xf00ba7);
+}
+///////////////////////////////////////////////////////////////////////////////
+/////////////   DELETERASTERSTATE IMPLEMENTATION      ///////////////////////
+///////////////////////////////////////////////////////////////////////////////
+void Pegasus::Render::DeleteRasterizerState(Pegasus::Render::RasterizerState& state)
+{
+    PG_ASSERT(state.mInternalData == reinterpret_cast<void*>(0xdeadbeef));
+    //nop for OpenGL
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/////////////   DELETEBLENDIGNSTATE IMPLEMENTATION      ///////////////////////
+///////////////////////////////////////////////////////////////////////////////
+void Pegasus::Render::DeleteBlendingState(Pegasus::Render::BlendingState& blendingState)
+{
+    PG_ASSERT(blendingState.mInternalData == reinterpret_cast<void*>(0xf00ba7));
+    //nop for OpenGL
+}
+
+///////////////////////////////////////////////////////////////////////////////
 /////////////   SETBUFFER IMPLEMENTATION                ///////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -587,5 +702,6 @@ bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, const RenderTarget
 }
 
 // ---------------------------------------------------------------------------
-
+#else
+PEGASUS_AVOID_EMPTY_FILE_WARNING
 #endif //PEGASUS_GAPI_GL
