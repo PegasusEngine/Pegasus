@@ -13,16 +13,42 @@
 
 #include "Pegasus/Render/Render.h"
 #include "Pegasus/Render/TextureFactory.h"
+#include "Pegasus/Texture/TextureData.h"
+
+class DXTextureFactory : public Pegasus::Texture::ITextureFactory
+{
+public:
+    DXTextureFactory(){}
+    virtual ~DXTextureFactory(){}
+
+    virtual void Initialize(Pegasus::Alloc::IAllocator * allocator);
+
+    virtual void GenerateTextureGPUData(Pegasus::Texture::TextureData * nodeData);
+
+    virtual void DestroyNodeGPUData(Pegasus::Texture::TextureData * nodeData);
+};
+
+void DXTextureFactory::Initialize(Pegasus::Alloc::IAllocator * allocator)
+{
+}
+
+void DXTextureFactory::GenerateTextureGPUData(Pegasus::Texture::TextureData * nodeData)
+{
+}
+
+void DXTextureFactory::DestroyNodeGPUData(Pegasus::Texture::TextureData * nodeData)
+{
+}
 
 namespace Pegasus
 {
 
 namespace Render
 {
-
+DXTextureFactory gTextureFactory;
 Texture::ITextureFactory * GetRenderTextureFactory()
 {
-    return nullptr;
+    return &gTextureFactory;
 }
 
 }

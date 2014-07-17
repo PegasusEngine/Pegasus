@@ -12,7 +12,9 @@
 #ifndef PEGASUS_DXDEVICE_H
 #define PEGASUS_DXDEVICE_H
 
+#include <D3D11.h>
 #include "Pegasus/Render/IDevice.h"
+
 
 namespace Pegasus
 {
@@ -27,7 +29,16 @@ public:
     //! \param config the configuration needed
     //! \param render allocator for internal allocations
     DXDevice(const DeviceConfig& config, Alloc::IAllocator * allocator);
-    ~DXDevice();
+    virtual ~DXDevice();
+    
+    ID3D11Device * GetDevice() const { return mD3D11Device; }
+    ID3D11DeviceContext * GetImmContext() const { return mD3D11ImmContext; }
+    
+private:
+    ID3D11Device * mD3D11Device;
+    ID3D11DeviceContext * mD3D11ImmContext;
+    
+    
 };
 
 }

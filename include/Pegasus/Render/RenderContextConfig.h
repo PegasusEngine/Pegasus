@@ -12,7 +12,7 @@
 #ifndef PEGASUS_RENDER_RENDERCONTEXTCONFIG_H
 #define PEGASUS_RENDER_RENDERCONTEXTCONFIG_H
 
-#include "Pegasus/Render/RenderDefs.h"
+#include "Pegasus/Core/Shared/OsDefs.h"
 #include "Pegasus/Render/IDevice.h"
 
 namespace Pegasus {
@@ -23,7 +23,7 @@ struct ContextConfig
 {
 public:
     //! Constructor
-    ContextConfig() : mAllocator(nullptr), mDevice(nullptr), mDeviceContextHandle(0) {};
+    ContextConfig() : mAllocator(nullptr), mDevice(nullptr), mOwnerWindowHandle(0) {};
 
     //! Destructor
     ~ContextConfig() {};
@@ -31,7 +31,7 @@ public:
 
     Alloc::IAllocator* mAllocator; //!< Allocator to use when creating this object
     IDevice * mDevice; //!< Parent device for this context (represents graphics device)
-    DeviceContextHandle mDeviceContextHandle; //!< Opaque context handle
+    Os::WindowHandle mOwnerWindowHandle; //!< Opaque owner window handle
 };
 
 

@@ -29,7 +29,7 @@ public:
     virtual ~WindowMessageHandler();
 
     // IWindowMessageHandler interface
-    virtual void OnCreate(Render::DeviceContextHandle handle);
+    virtual void OnCreate(Os::WindowHandle handle);
     virtual void OnDestroy();
     virtual void OnRepaint();
     virtual void OnResize(unsigned int width, unsigned int height);
@@ -57,13 +57,13 @@ WindowMessageHandler::~WindowMessageHandler()
 
 //----------------------------------------------------------------------------------------
 
-void WindowMessageHandler::OnCreate(Render::DeviceContextHandle handle)
+void WindowMessageHandler::OnCreate(Os::WindowHandle handle)
 {
     Render::ContextConfig contextConfig;
 
     // Create context
     contextConfig.mAllocator = mParent->mRenderAllocator;
-    contextConfig.mDeviceContextHandle = handle;
+    contextConfig.mOwnerWindowHandle = handle;
     contextConfig.mDevice = mParent->GetRenderDevice();
     mParent->mRenderContext = PG_NEW(mParent->mRenderAllocator, -1, "Render::Context", Pegasus::Alloc::PG_MEM_PERM) Render::Context(contextConfig);
     mParent->mContextCreated = true;

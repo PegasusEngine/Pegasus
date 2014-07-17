@@ -12,7 +12,7 @@
 #ifndef PEGASUS_WND_IWINDOWMESSAGEHANDLER_H
 #define PEGASUS_WND_IWINDOWMESSAGEHANDLER_H
 
-#include "Pegasus/Render/RenderDefs.h"
+#include "Pegasus/Core/Shared/OsDefs.h"
 
 namespace Pegasus {
 namespace Wnd {
@@ -27,7 +27,7 @@ public:
 
 
     //! Handles the create message
-    virtual void OnCreate(Render::DeviceContextHandle handle) = 0;
+    virtual void OnCreate(Os::WindowHandle handle) = 0;
 
     //! Handles the destroy message
     virtual void OnDestroy() = 0;

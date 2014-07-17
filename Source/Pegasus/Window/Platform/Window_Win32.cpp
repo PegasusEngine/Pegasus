@@ -272,7 +272,7 @@ WindowImpl_Win32::HandleMessageReturn WindowImpl_Win32::HandleMessage(unsigned i
     switch(message)
     {
     case WM_CREATE: // Window is being created
-        mHandler->OnCreate((Pegasus::Render::DeviceContextHandle) GetDC(mHWND));
+        mHandler->OnCreate((Pegasus::Os::WindowHandle) mHWND);
         ret.handled = true; ret.retcode = 0;
         break;
     case WM_DESTROY: // Window is being destroyed

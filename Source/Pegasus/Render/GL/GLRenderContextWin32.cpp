@@ -29,22 +29,22 @@ static HDC   gDeviceContextHandle = 0; // unique device context handle, for wind
 
 Context::Context(const ContextConfig& config)
     : mAllocator(config.mAllocator),
-      mParentDevice(config.mDevice),
-      mDeviceContextHandle(config.mDeviceContextHandle)
+      mParentDevice(config.mDevice)
 {
     PG_ASSERT(mParentDevice != nullptr);
+    HDC deviceContextHandle = GetDC((HWND)config.mOwnerWindowHandle); 
+    mPrivateData = static_cast<PrivateContextData>(deviceContextHandle);
     GLDeviceWin32 * winDevice = static_cast<GLDeviceWin32*>(mParentDevice);
-    HDC drawContextHandle = reinterpret_cast<HDC>(mDeviceContextHandle);
 
     // Full context
-    int nPixelFormat = ChoosePixelFormat(drawContextHandle, winDevice->GetPixelFormatDescriptor());
+    int nPixelFormat = ChoosePixelFormat(deviceContextHandle, winDevice->GetPixelFormatDescriptor());
 
     // Setup pixel format for backbuffer
-    SetPixelFormat(drawContextHandle, nPixelFormat, winDevice->GetPixelFormatDescriptor());
+    SetPixelFormat(deviceContextHandle, nPixelFormat, winDevice->GetPixelFormatDescriptor());
     if (gRenderContextHandleReferences == 0)
     {
         // Make a new OpenGL context
-        gRenderContextHandle = (HGLRC)wglCreateContextAttribsARB(drawContextHandle, 0, winDevice->GetContextAttributes());
+        gRenderContextHandle = (HGLRC)wglCreateContextAttribsARB(deviceContextHandle, 0, winDevice->GetContextAttributes());
     }
 
     PG_ASSERTSTR(gRenderContextHandle != 0x0, "Cannot instantiate render context! Check if your graphcis card supports the minor and major version");
@@ -78,10 +78,12 @@ Context::~Context()
 
 void Context::Bind() const
 {
-    if (gDeviceContextHandle != (HDC)mDeviceContextHandle)
+    HDC deviceContextHandle = static_cast<HDC>(mPrivateData);
+
+    if (gDeviceContextHandle != deviceContextHandle)
     {
-        wglMakeCurrent((HDC)mDeviceContextHandle, gRenderContextHandle);
-        gDeviceContextHandle = (HDC)mDeviceContextHandle;
+        wglMakeCurrent(deviceContextHandle, gRenderContextHandle);
+        gDeviceContextHandle = deviceContextHandle;
         PG_LOG('OGL_', "%u is now the active context", gRenderContextHandle);
     }
 }
@@ -90,7 +92,8 @@ void Context::Bind() const
 
 void Context::Unbind() const
 { 
-    wglMakeCurrent((HDC)mDeviceContextHandle, NULL);
+    HDC deviceContextHandle = static_cast<HDC>(mPrivateData);
+    wglMakeCurrent(deviceContextHandle, NULL);
     gDeviceContextHandle = NULL;
     PG_LOG('OGL_', "NULL is now the active context");
 }
@@ -100,7 +103,8 @@ void Context::Unbind() const
 void Context::Swap() const
 {
     // Present (no need for glFlush() since SwapBuffers() takes care of it)
-    SwapBuffers((HDC)mDeviceContextHandle);
+    HDC deviceContextHandle = static_cast<HDC>(mPrivateData);
+    SwapBuffers(deviceContextHandle);
 }
 
 

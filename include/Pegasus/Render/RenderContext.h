@@ -13,11 +13,14 @@
 #define PEGASUS_RENDER_RENDERCONTEXT_H
 
 #include "Pegasus/Render/RenderContextConfig.h"
+#include "Pegasus/Core/Shared/OsDefs.h"
 
 //----------------------------------------------------------------------------------------
 
 namespace Pegasus {
 namespace Render {
+
+typedef void* PrivateContextData;
 
 //! Class that encapsulates an OGL rendering context.
 class Context
@@ -49,7 +52,7 @@ private:
 
     Alloc::IAllocator* mAllocator; //!< Allocator for this object
     IDevice * mParentDevice;
-    DeviceContextHandle mDeviceContextHandle; //!< Opaque context handle
+    PrivateContextData mPrivateData; //!< Opaque context handle
 };
 
 

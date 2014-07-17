@@ -29,7 +29,7 @@ class IDevice
 {
 public:
     //! destructor
-    ~IDevice(){}
+    virtual ~IDevice(){}
 
     //! Gets the config of this device
     const DeviceConfig& GetConfig() const { return mConfig; }

@@ -20,9 +20,6 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\RenderContext.h">
       <Filter>Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Render\RenderDefs.h">
-      <Filter>Include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\RenderContextConfig.h">
       <Filter>Include</Filter>
     </ClInclude>

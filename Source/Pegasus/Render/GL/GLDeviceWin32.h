@@ -27,7 +27,7 @@ public:
     //! \param config the configuration needed
     //! \param render allocator for internal allocations
     GLDeviceWin32(const DeviceConfig& config, Alloc::IAllocator * allocator);
-    ~GLDeviceWin32();
+    virtual ~GLDeviceWin32();
     
     //! Gets the pixel format descriptor for this device
     PIXELFORMATDESCRIPTOR* GetPixelFormatDescriptor();    

@@ -11,7 +11,11 @@
 
 #if PEGASUS_GAPI_DX
 
+#pragma comment(lib, "d3d11")
+
 #include "../Source/Pegasus/Render/DX11/DXDevice.h"
+
+D3D_FEATURE_LEVEL gFeatureLevel[] = { D3D_FEATURE_LEVEL_11_0 };
 
 namespace Pegasus
 {
@@ -21,10 +25,30 @@ namespace Render
 DXDevice::DXDevice(const DeviceConfig& config, Alloc::IAllocator * allocator)
 : IDevice(config, allocator)
 {
+    mD3D11Device = NULL;
+    mD3D11ImmContext = NULL;
+
+    D3D_FEATURE_LEVEL targetFeatureLevel;
+    D3D11CreateDevice(
+        NULL, // use default adapter
+        D3D_DRIVER_TYPE_HARDWARE, //use hardware capabilities
+        NULL, // no software rasterizer handle
+        D3D11_CREATE_DEVICE_SINGLETHREADED,
+        gFeatureLevel,
+        sizeof(gFeatureLevel) / sizeof(D3D_FEATURE_LEVEL),
+        D3D11_SDK_VERSION,
+        &mD3D11Device,
+        &targetFeatureLevel,
+        &mD3D11ImmContext
+    );
+
+    PG_ASSERTSTR(targetFeatureLevel == D3D_FEATURE_LEVEL_11_0, "DirectX 11 not supported on this machine! check the driver and your graphics card settings");
 }
 
 DXDevice::~DXDevice()
 {
+    mD3D11ImmContext->Release();
+    mD3D11Device->Release();
 }
 
 //! platform implementation of device

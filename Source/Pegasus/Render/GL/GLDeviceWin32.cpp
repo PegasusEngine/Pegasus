@@ -19,6 +19,8 @@
 #include "Pegasus/Render/RenderContextConfig.h"
 #include "Pegasus/Render/RenderContext.h"
 
+#pragma comment(lib, "opengl32")
+
 
 static const char* PEGASUS_INIT_WND_CLASSNAME = "InitWindow_PegasusEngine";
 static int gIsGlewInit = false;
