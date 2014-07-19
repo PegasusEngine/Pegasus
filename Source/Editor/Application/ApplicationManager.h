@@ -40,7 +40,10 @@ public:
     void OpenApplication(const QString & fileName);
 
     //! Close the currently opened application
-    void CloseApplication();
+    //! /param asyncHandleDestruction
+    //!    if true, the Application fires an application finished message.
+    //!       false, the application does not fire the finished message.
+    void CloseApplication(bool asyncHandleDestruction = true);
 
     //! Get the currently opened application
     //! \return Pointer to the opened application, nullptr if there is none
@@ -54,6 +57,11 @@ public:
     //! \return True if an application is running (only after the loading occurred)
     inline bool IsApplicationRunning() const { return mIsApplicationRunning; }
 
+    //! Test if an application thread is alive
+    //! \return True if an application is running (only after the loading occurred)
+    //! \WARNING: this function is not const since it blocks the application thread for 10ms
+    bool PollApplicationThreadIsDone();
+
     //------------------------------------------------------------------------------------
 
 signals:
@@ -66,6 +74,10 @@ signals:
 
     //------------------------------------------------------------------------------------
     
+public slots:
+    //! Called when the application has finished executing
+    void OnApplicationFinished();
+
 private slots:
 
 	//! Called when an error occurred when loading the application
@@ -74,9 +86,6 @@ private slots:
 
     //! Called when the application has successfully loaded (not running)
     void OnLoadingSucceeded();
-
-    //! Called when the application has finished executing
-    void OnApplicationFinished();
 
     //------------------------------------------------------------------------------------
 

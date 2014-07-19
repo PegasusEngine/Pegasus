@@ -118,6 +118,11 @@ public:
                                                                  int line,
                                                                  const QString & msgStr);
 
+    void SetAsyncHandleDestruction(bool asyncHandleDestruction)
+    {
+        mAsyncHandleDestruction = asyncHandleDestruction;
+    }
+
     //------------------------------------------------------------------------------------
     
 signals:
@@ -145,6 +150,9 @@ signals:
     //! Emitted when a frame is requested after the previous frame is done rendering
     //! while being in play mode
     void FrameRequestedInPlayMode();
+
+    //! Emitted when unloading of an application has succeeded
+    void ApplicationFinished();
 
     //------------------------------------------------------------------------------------
 
@@ -226,6 +234,10 @@ private:
     //! The value is not the default only when leaving an assertion dialog box.
     //! This is used to freeze the application thread until a return code is present
     AssertionManager::ReturnCode mAssertionReturnCode;
+
+    //! if true, the application fires an OnApplicationFinished message when closed, this allows the message
+    //   pump of the editor window to destroy any child windows
+    bool mAsyncHandleDestruction;
 };
 
 

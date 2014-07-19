@@ -41,6 +41,7 @@ Application::Application(QObject *parent)
     mApplicationInterface(nullptr),
     mFileName(),
     mApplication(nullptr),
+    mAsyncHandleDestruction(true),
     mAssertionReturnCode(AssertionManager::ASSERTION_INVALID)
 {
     // Make the application thread priority lower than the UI, so the UI is way more reactive
@@ -194,7 +195,7 @@ void Application::run()
     // Uses QThread::exec() rather than QEventLoop::exec() to allow timers to work.
     this->exec();
 
-    //! \todo Make sure the play mode gets disabled
+
 
     // Kill the interface with the application
     delete mApplicationInterface;
@@ -223,6 +224,10 @@ void Application::run()
 #else
 #error "Implement the unloading of the application library"
 #endif  // PEGASUS_PLATFORM_WINDOWS
+    if (mAsyncHandleDestruction)
+    {
+        emit(ApplicationFinished());
+    }
 }
 
 //----------------------------------------------------------------------------------------

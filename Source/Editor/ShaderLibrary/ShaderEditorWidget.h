@@ -117,6 +117,9 @@ private slots:
     //! signal triggered when the user clicks on a tab in the tab bar.
     //! selects and visualizes a shader for opening
     void SignalViewShader(int tabId);
+
+    //! signal to update the UI for the editor once the app is finished
+    void UpdateUIForAppFinished();
     
 
 private:

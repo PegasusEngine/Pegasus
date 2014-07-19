@@ -469,3 +469,12 @@ void ShaderEditorWidget::RequestOpen(Pegasus::Shader::IShaderProxy * shaderProxy
     }
 }
 
+void ShaderEditorWidget::UpdateUIForAppFinished()
+{
+    //compress the opened shader list
+    while (mOpenShaderCount > 0)
+    {
+        RequestClose(0);
+    }
+}
+

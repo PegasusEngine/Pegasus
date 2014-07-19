@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 	app.setApplicationName(EDITOR_APPLICATION_NAME);
 
     // Show the main window
-    Editor w;
+    Editor w(&app);
     w.show();
 
     return app.exec();

@@ -32,9 +32,10 @@ Settings * Editor::sSettings = nullptr;
 
 //----------------------------------------------------------------------------------------
 
-Editor::Editor(QWidget *parent)
-:   QMainWindow(parent),
-    mApplicationManager(nullptr)
+Editor::Editor(QApplication * parentApplication)
+:   QMainWindow(nullptr),
+    mApplicationManager(nullptr),
+    mQtApplication(parentApplication)
 {
     sInstance = this;
 
@@ -112,6 +113,8 @@ Editor::Editor(QWidget *parent)
             mShaderLibraryWidget, SLOT(UpdateUIForAppLoaded()));
     connect(mApplicationManager, SIGNAL(ApplicationFinished()),
             mShaderLibraryWidget, SLOT(UpdateUIForAppFinished()));
+    connect(mApplicationManager, SIGNAL(ApplicationFinished()),
+            mShaderEditorWidget, SLOT(UpdateUIForAppFinished()));
 
     connect(sSettings, SIGNAL(OnShaderEditorStyleChanged()),
             mShaderLibraryWidget, SLOT(UpdateEditorStyle())); 
@@ -451,44 +454,27 @@ void Editor::CreateStatusBar()
 
 //----------------------------------------------------------------------------------------
 
+void Editor::InternalCloseAndPumpEvents()
+{
+   mApplicationManager->CloseApplication(false);
+   while (!mApplicationManager->PollApplicationThreadIsDone())
+   {
+       //let the operating system process any extra events internally, such as detection of destruction of child windows
+       mQtApplication->processEvents();
+   }
+   mApplicationManager->OnApplicationFinished();
+}
+
+//----------------------------------------------------------------------------------------
+
 void Editor::closeEvent(QCloseEvent * event)
 {
-    //! \todo Handle the thread management in the viewport
-    //! \todo Handle the saving of unsaved files
-    //! \todo Add log messages for the different close events
-
-	// If an application thread is not created or has been destroyed
-	//if (!engineThread)
-	//{
-	//	_event->accept();
-	//	return;
-	//}
-	
-	// If an application is running, quit it but do not close the main window
-	//if (engineThread->isRunning())
-	//{
-	//	/***********/hide();
-	//	DestroyN3DDockWidgets();
-	//	N3D_DELETE(n3DInterface);
-
-	//	N3D_Engine::Quit();
-	//	event->ignore();
-	//}
-
-	// Once the application has quit, the thread object can be destroyed and
-	// the window can be closed
-	//else
-	//{
-	//	//N3D_DELETE(n3DInterface);
-	//	N3D_DELETE(engineThread);
-	//	N3D_DELETE(viewportsSceneGraph);
-
-    // Close the current application if one is open
+     // Close the current application if one is open
     if (mApplicationManager != nullptr)
     {
         if (mApplicationManager->IsApplicationOpened())
         {
-            mApplicationManager->CloseApplication();
+            InternalCloseAndPumpEvents();
         }
     }
  
@@ -499,9 +485,6 @@ void Editor::closeEvent(QCloseEvent * event)
     }
     delete sSettings;
     sSettings = nullptr;
-
-	//	event->accept();
-	//}
 }
 
 //----------------------------------------------------------------------------------------
@@ -531,6 +514,12 @@ void Editor::OpenApp()
 	// Import the file to the current scene
 	if (!fileName.isEmpty())
     {
+        //if an application is already opened, close it first
+        if (mApplicationManager->IsApplicationOpened())
+        {
+            InternalCloseAndPumpEvents();
+        }
+
         mApplicationManager->OpenApplication(fileName);
         //! \todo Handle errors
     }
@@ -540,7 +529,10 @@ void Editor::OpenApp()
 
 void Editor::CloseApp()
 {
-    //! \todo If a scene is open, handle its saving and closing (maybe use closeEvent?)
+    if (mApplicationManager->IsApplicationOpened())
+    {
+        mApplicationManager->CloseApplication();
+    }
 }
 
 //----------------------------------------------------------------------------------------

@@ -43,7 +43,7 @@ class Editor : public QMainWindow
 
 public:
 
-    Editor(QWidget *parent = 0);
+    explicit Editor(QApplication * parentApplication);
     virtual ~Editor();
 
     //! Return the unique instance of the editor
@@ -140,6 +140,10 @@ private:
 
     //! Create the status bar of the main window
     void CreateStatusBar();
+   
+    //! closes the application using a pump event pattern (to allow for operating system window events to 
+    //! be handled
+    void InternalCloseAndPumpEvents();
 
     //------------------------------------------------------------------------------------
 
@@ -315,6 +319,9 @@ private:
 
     //! Application manager, taking take of opening and closing applications
     ApplicationManager * mApplicationManager;
+
+    //! qt ui application, used to poll events manually when closing the editor
+    QApplication * mQtApplication;
 };
 
 

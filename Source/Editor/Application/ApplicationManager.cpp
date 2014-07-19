@@ -38,10 +38,7 @@ ApplicationManager::ApplicationManager(Editor * editor, QObject *parent)
 
 ApplicationManager::~ApplicationManager()
 {
-    if (IsApplicationOpened())
-    {
-        CloseApplication();
-    }
+    ED_ASSERT(mApplication == nullptr);
 }
 
 //----------------------------------------------------------------------------------------
@@ -64,7 +61,7 @@ void ApplicationManager::OpenApplication(const QString & fileName)
     // Connect the engine messages
 	connect(mApplication, SIGNAL(LoadingError(Application::Error)), this, SLOT(OnLoadingError(Application::Error)));
 	connect(mApplication, SIGNAL(LoadingSucceeded()), this, SLOT(OnLoadingSucceeded()));
-	connect(mApplication, SIGNAL(finished()), this, SLOT(OnApplicationFinished()));
+    connect(mApplication, SIGNAL(ApplicationFinished()), this, SLOT(OnApplicationFinished()));
 
     // Start the application thread
     ED_LOG("Starting the application thread");
@@ -73,17 +70,19 @@ void ApplicationManager::OpenApplication(const QString & fileName)
 
 //----------------------------------------------------------------------------------------
 
-void ApplicationManager::CloseApplication()
+void ApplicationManager::CloseApplication(bool asyncHandleDestruction)
 {
     ED_LOG("Closing the current application");
     ED_ASSERTSTR(mApplication != nullptr, "Trying to close an application that is not opened.");
+    
+    //trigger any UI events that require killing the ui
+    emit(ApplicationFinished());
 
     if (mApplication != nullptr)
     {
-        //! \todo Implement the application closing
-
-        delete mApplication;
-        mApplication = nullptr;
+        //notify if this application is destroyed with an async message pumping, or manual
+        mApplication->SetAsyncHandleDestruction(asyncHandleDestruction);
+        mApplication->quit();
     }
 }
 
@@ -135,15 +134,13 @@ void ApplicationManager::OnLoadingSucceeded()
 
 void ApplicationManager::OnApplicationFinished()
 {
-    ED_LOG("The application exited");
-    mIsApplicationRunning = false;
+    mApplication->wait();        
+    delete mApplication;
+    mApplication = nullptr;
+}
 
-    // Destroy the application object
-    if (mApplication != nullptr)
-    {
-        delete mApplication;
-        mApplication = nullptr;
-    }
-
-    emit(ApplicationFinished());
+bool ApplicationManager::PollApplicationThreadIsDone()
+{
+    mApplication->wait(1);
+    return mApplication->isFinished();
 }

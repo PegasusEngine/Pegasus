@@ -21,6 +21,8 @@ namespace Wnd {
 static const char* PEGASUS_WND_CLASSNAME = "PegasusEngine";
 static const char* PEGASUS_WND_WNDNAME = "PegasusEngine";
 
+static int gPegasusWinClassReferences = 0;
+
 //----------------------------------------------------------------------------------------
 
 IWindowImpl* IWindowImpl::CreateImpl(const WindowConfig& config, Alloc::IAllocator* alloc, IWindowMessageHandler* messageHandler)
@@ -42,27 +44,35 @@ WindowImpl_Win32::WindowImpl_Win32(const WindowConfig& config, IWindowMessageHan
 {
     mModule = reinterpret_cast<HMODULE>(config.mDevice->GetConfig().mModuleHandle);
     // Register window class if need be
-    if (!WindowImpl_Win32::IsWindowClassRegistered(mModule))
+    if (gPegasusWinClassReferences == 0)
     {
+        PG_ASSERT(!WindowImpl_Win32::IsWindowClassRegistered(mModule));
         WindowImpl_Win32::RegisterWindowClass(mModule);
     }
 
     // Create the window
     Internal_CreateWindow(config);
+    ++gPegasusWinClassReferences;
 }
 
 //----------------------------------------------------------------------------------------
 
 WindowImpl_Win32::~WindowImpl_Win32()
 {
-    // Destroy our window
+        // Destroy our window
     DestroyWindow(mHWND);
-
-    // Unregister window class if need be
-    if (WindowImpl_Win32::IsWindowClassRegistered(mModule))
+    --gPegasusWinClassReferences;
+    
+        // Unregister window class if need be
+    if (gPegasusWinClassReferences == 0)
     {
+        PG_ASSERT(WindowImpl_Win32::IsWindowClassRegistered(mModule));
+
         WindowImpl_Win32::UnregisterWindowClass(mModule);
+
+        PG_ASSERT(!WindowImpl_Win32::IsWindowClassRegistered(mModule));
     }
+
 }
 
 //----------------------------------------------------------------------------------------
@@ -188,7 +198,8 @@ void WindowImpl_Win32::Internal_CreateWindow(const WindowConfig& config)
                                   (LPVOID) this);
     if (windowHandle == NULL)
     {
-        PG_FAILSTR("Unable to create window!");
+        DWORD err = GetLastError();
+        PG_FAILSTR("Unable to create window! %d(%X)", err, err);
     }
     else
     {
