@@ -476,5 +476,6 @@ void ShaderEditorWidget::UpdateUIForAppFinished()
     {
         RequestClose(0);
     }
+    mCompilationRequestPending = false; //kill any compilation request
 }
 

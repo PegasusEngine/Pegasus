@@ -156,7 +156,7 @@ private:
             mTreeChild = nullptr;
         };
         
-    } mChildren[MAX_CHILDREN];
+    } mChildren[MAX_CHILDREN + 1]; //the extra space is to allow temporary insertion of 1 element when reshaping the tree
 
     //! number of children
     int mChildrenCount;

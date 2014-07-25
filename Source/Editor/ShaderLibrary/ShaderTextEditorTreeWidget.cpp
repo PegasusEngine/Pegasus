@@ -240,6 +240,7 @@ ShaderTextEditorWidget * ShaderTextEditorTreeWidget::FindShadersInEditors(Pegasu
 
 void ShaderTextEditorTreeWidget::InternalPushChild(ShaderTextEditorTreeWidget::Child& c, int i)
 {
+    ED_ASSERTSTR(mChildrenCount <= MAX_CHILDREN, "Memory stomp! do not call InternalPushChild if the tree is at its maximum capacity");
     int targetIndex = i + 1;
     if (i == -1)
     {
