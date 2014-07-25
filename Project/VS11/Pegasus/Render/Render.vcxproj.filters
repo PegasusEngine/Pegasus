@@ -59,6 +59,9 @@
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX11\DXGpuDataDefs.h">
       <Filter>Source\DX11</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX11\DXRenderContext.h">
+      <Filter>Source\DX11</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.cpp">

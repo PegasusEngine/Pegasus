@@ -31,8 +31,8 @@ public:
     DXDevice(const DeviceConfig& config, Alloc::IAllocator * allocator);
     virtual ~DXDevice();
     
-    ID3D11Device * GetDevice() const { return mD3D11Device; }
-    ID3D11DeviceContext * GetImmContext() const { return mD3D11ImmContext; }
+    ID3D11Device * GetD3D() const { return mD3D11Device; }
+    ID3D11DeviceContext * GetD3DImmContext() const { return mD3D11ImmContext; }
     
 private:
     ID3D11Device * mD3D11Device;

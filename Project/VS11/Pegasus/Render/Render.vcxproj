@@ -36,6 +36,7 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\TextureFactory.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX11\DXDevice.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX11\DXGpuDataDefs.h" />
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX11\DXRenderContext.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLDeviceWin32.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLGpuDataDefs.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLEWStaticInclude.h" />
