@@ -10,9 +10,20 @@
 //! \brief	Geometry test
 
 #include "Apps/TestApp1/TimelineBlocks/GeometryTestBlock.h"
+#include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
 
 #include "Pegasus/Math/Quaternion.h"
 #include "Pegasus/Mesh/Generator/IcosphereGenerator.h"
+
+#if PEGASUS_GAPI_GL
+
+#define GEOMTESTBLOCK_SHADER_ROOT "Shaders\\glsl"
+
+#elif PEGASUS_GAPI_DX
+
+#define GEOMTESTBLOCK_SHADER_ROOT "Shaders\\hlsl"
+
+#endif
 
 
 //Constructor
@@ -50,24 +61,54 @@ void GeometryTestBlock::Initialize()
     
     Pegasus::Shader::ShaderStageFileProperties fileLoadProperties;
     fileLoadProperties.mLoader = GetIOManager();
-    fileLoadProperties.mPath = "Shaders\\Cube.vs";
+    fileLoadProperties.mPath = GEOMTESTBLOCK_SHADER_ROOT"\\Cube.vs";
     mBlockProgram->SetShaderStage(  
         shaderManager->LoadShaderStageFromFile(fileLoadProperties)
     );
 
-    fileLoadProperties.mPath = "Shaders\\Cube.ps";
+    fileLoadProperties.mPath = GEOMTESTBLOCK_SHADER_ROOT"\\Cube.ps";
     mBlockProgram->SetShaderStage(  
         shaderManager->LoadShaderStageFromFile(fileLoadProperties)
     );
 
     mDiscoSpeaker = shaderManager->CreateProgram("DiscoSpeaker");
     
-    fileLoadProperties.mPath = "Shaders\\DiscoSpeaker.vs";
+    fileLoadProperties.mPath = GEOMTESTBLOCK_SHADER_ROOT"\\DiscoSpeaker.vs";
     mDiscoSpeaker->SetShaderStage(
         shaderManager->LoadShaderStageFromFile(fileLoadProperties)
     );
-    fileLoadProperties.mPath = "Shaders\\DiscoSpeaker.ps";
+    fileLoadProperties.mPath = GEOMTESTBLOCK_SHADER_ROOT"\\DiscoSpeaker.ps";
     mDiscoSpeaker->SetShaderStage(
+        shaderManager->LoadShaderStageFromFile(fileLoadProperties)
+    );
+
+    mBlurHorizontal = shaderManager->CreateProgram("BlurHorizontal");
+    fileLoadProperties.mPath = GEOMTESTBLOCK_SHADER_ROOT"\\DiscoSpeaker.vs";
+    mBlurHorizontal->SetShaderStage(
+        shaderManager->LoadShaderStageFromFile(fileLoadProperties)
+    );
+    fileLoadProperties.mPath = GEOMTESTBLOCK_SHADER_ROOT"\\BlurHorizontal.ps";
+    mBlurHorizontal->SetShaderStage(
+        shaderManager->LoadShaderStageFromFile(fileLoadProperties)
+    );
+
+    mBlurVertical = shaderManager->CreateProgram("BlurVertical");
+    fileLoadProperties.mPath = GEOMTESTBLOCK_SHADER_ROOT"\\DiscoSpeaker.vs";
+    mBlurVertical->SetShaderStage(
+        shaderManager->LoadShaderStageFromFile(fileLoadProperties)
+    );
+    fileLoadProperties.mPath = GEOMTESTBLOCK_SHADER_ROOT"\\BlurVertical.ps";
+    mBlurVertical->SetShaderStage(
+        shaderManager->LoadShaderStageFromFile(fileLoadProperties)
+    );
+
+    mComposite = shaderManager->CreateProgram("mComposite");
+    fileLoadProperties.mPath = GEOMTESTBLOCK_SHADER_ROOT"\\DiscoSpeaker.vs";
+    mComposite->SetShaderStage(
+        shaderManager->LoadShaderStageFromFile(fileLoadProperties)
+    );
+    fileLoadProperties.mPath = GEOMTESTBLOCK_SHADER_ROOT"\\Composite.ps";
+    mComposite->SetShaderStage(
         shaderManager->LoadShaderStageFromFile(fileLoadProperties)
     );
 
@@ -84,6 +125,11 @@ void GeometryTestBlock::Initialize()
 
     Pegasus::Render::GetUniformLocation(mDiscoSpeaker, "aspect",   mAspectUniform);
     Pegasus::Render::GetUniformLocation(mDiscoSpeaker, "time",   mTimeUniform);
+
+    Pegasus::Render::GetUniformLocation(mComposite, "inputTexture1", mCompositeInput1);
+    Pegasus::Render::GetUniformLocation(mComposite, "inputTexture2", mCompositeInput2);
+    Pegasus::Render::GetUniformLocation(mBlurHorizontal, "inputTexture", mHorizontalInput);
+    Pegasus::Render::GetUniformLocation(mBlurVertical, "inputTexture", mVerticalInput);
 
     //setup meshes
     Pegasus::Mesh::MeshManager * const meshManager = GetMeshManager();
@@ -116,12 +162,23 @@ void GeometryTestBlock::Initialize()
     c.mWidth = 512;
     c.mHeight = 512;
     Pegasus::Render::CreateRenderTarget(c, mCubeFaceRenderTarget);
+
+    c.mWidth = 1280;
+    c.mHeight = 720;
+    Pegasus::Render::CreateRenderTarget(c, mTempTarget1);
+    c.mWidth /= 4;
+    c.mHeight /= 4;
+    Pegasus::Render::CreateRenderTarget(c, mTempTarget2);
+    Pegasus::Render::CreateRenderTarget(c, mTempTarget3);
 }
 
 //! Shutdown used by block
 void GeometryTestBlock::Shutdown()
 {
     Pegasus::Render::DeleteBuffer(mUniformStateBuffer);
+    Pegasus::Render::DeleteRenderTarget(mTempTarget1);
+    Pegasus::Render::DeleteRenderTarget(mTempTarget2);
+    Pegasus::Render::DeleteRenderTarget(mTempTarget3);
     Pegasus::Render::DeleteRenderTarget(mCubeFaceRenderTarget);
     Pegasus::Render::DeleteRasterizerState(mCurrentBlockRasterState);
     Pegasus::Render::DeleteRasterizerState(mDefaultRasterState);
@@ -137,6 +194,9 @@ void GeometryTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
     window->GetDimensions(viewportWidth, viewportHeight);
     float aspect = static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight);
 
+    ///////////////////////////////////////////////
+    //******** PASS 1: texture of box ***********//
+    ///////////////////////////////////////////////
     // rendering to the face of the disco a normal map and a detail map
     Pegasus::Render::Dispatch(mCubeFaceRenderTarget); //use the fractal surface, no depth
     Pegasus::Render::Clear(/*color*/true, /*depth*/false, /*stencil*/false); //clear the surface
@@ -148,8 +208,11 @@ void GeometryTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
 
     Pegasus::Render::Draw();
 
-    // render the cube with the speaker
-    Pegasus::Render::DispatchDefaultRenderTarget(Pegasus::Render::Viewport(viewportWidth, viewportHeight));
+    ///////////////////////////////////////////////
+    //******** PASS 2: scene          ***********//
+    ///////////////////////////////////////////////
+    Pegasus::Render::Dispatch(mTempTarget1);
+    Pegasus::Render::Clear(/*color*/true, /*depth*/false, /*stencil*/false); //clear the surface
     Pegasus::Render::Dispatch(mBlockProgram);
 
     Pegasus::Math::Vec3 rotAxis(0.3f, 0.4f, 0.01f);
@@ -190,5 +253,34 @@ void GeometryTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
         }
     }
     
+    ///////////////////////////////////////////////
+    //******** PASS 3: horizontal blur***********//
+    ///////////////////////////////////////////////
+    Pegasus::Render::Dispatch(mTempTarget2);
+    Pegasus::Render::Dispatch(mBlurHorizontal);
+    Pegasus::Render::Dispatch(mQuad);
+    Pegasus::Render::SetUniform(mHorizontalInput, mTempTarget1);
+    Pegasus::Render::Draw();
+    
+    ///////////////////////////////////////////////
+    //******** PASS 4: vertical   blur***********//
+    ///////////////////////////////////////////////
+    Pegasus::Render::Dispatch(mTempTarget3);
+    Pegasus::Render::Dispatch(mBlurVertical);
+    Pegasus::Render::Dispatch(mQuad);
+    Pegasus::Render::SetUniform(mVerticalInput, mTempTarget2);
+    Pegasus::Render::Draw();
+
+    ///////////////////////////////////////////////
+    //******** PASS 5: final compositing ********//
+    ///////////////////////////////////////////////
+    Pegasus::Render::DispatchDefaultRenderTarget(Pegasus::Render::Viewport(viewportWidth, viewportHeight));
+    Pegasus::Render::Dispatch(mComposite);
+    Pegasus::Render::Dispatch(mQuad);
+    Pegasus::Render::SetUniform(mCompositeInput1, mTempTarget1); //original scene
+    Pegasus::Render::SetUniform(mCompositeInput2, mTempTarget3); //bloomed scene
+    Pegasus::Render::Draw();
+
     Pegasus::Render::SetRasterizerState(mDefaultRasterState);
+
 }

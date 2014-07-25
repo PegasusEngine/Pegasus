@@ -17,9 +17,17 @@
 #include "Pegasus/Texture/Operator/AddOperator.h"
 #include "Pegasus/Math/Scalar.h"
 
+#if PEGASUS_GAPI_GL
 
-static const char * VERTEX_SHADER = "Shaders\\TextureTest.vs";
-static const char * FRAGMENT_SHADER = "Shaders\\TextureTest.ps";
+static const char * VERTEX_SHADER = "Shaders\\glsl\\TextureTest.vs";
+static const char * FRAGMENT_SHADER = "Shaders\\glsl\\TextureTest.ps";
+
+#elif PEGASUS_GAPI_DX
+
+static const char * VERTEX_SHADER = "Shaders\\hlsl\\TextureTest.vs";
+static const char * FRAGMENT_SHADER = "Shaders\\hlsl\\TextureTest.ps";
+
+#endif
 
 //----------------------------------------------------------------------------------------
     

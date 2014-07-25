@@ -162,6 +162,8 @@ Context::Context(const ContextConfig& config)
     {
         PG_FAILSTR("failed creating swap chain / context");
     }
+
+    Bind();
 }
 
 

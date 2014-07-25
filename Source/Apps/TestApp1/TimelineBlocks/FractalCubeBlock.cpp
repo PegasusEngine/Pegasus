@@ -12,8 +12,17 @@
 #include "TimelineBlocks/FractalCubeBlock.h"
 #include "Pegasus/Render/Render.h"
 
-static const char * VERTEX_SHADER = "Shaders\\Cubefractal.vs";
-static const char * FRAGMENT_SHADER = "Shaders\\CubeFractal.ps";
+#if PEGASUS_GAPI_GL
+
+static const char * VERTEX_SHADER = "Shaders\\glsl\\Cubefractal.vs";
+static const char * FRAGMENT_SHADER = "Shaders\\glsl\\CubeFractal.ps";
+
+#elif PEGASUS_GAPI_DX
+
+static const char * VERTEX_SHADER = "Shaders\\hlsl\\Cubefractal.vs";
+static const char * FRAGMENT_SHADER = "Shaders\\hlsl\\CubeFractal.ps";
+
+#endif
 
 //----------------------------------------------------------------------------------------
 

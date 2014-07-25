@@ -12,8 +12,17 @@
 #include "TimelineBlocks/PsyBeadsBlock.h"
 #include "Pegasus/Render/Render.h"
 
-static const char * VERTEX_SHADER = "Shaders\\Psybeads.vs";
-static const char * FRAGMENT_SHADER = "Shaders\\Psybeads.ps";
+#if PEGASUS_GAPI_GL
+
+static const char * VERTEX_SHADER = "Shaders\\glsl\\Psybeads.vs";
+static const char * FRAGMENT_SHADER = "Shaders\\glsl\\Psybeads.ps";
+
+#else
+
+static const char * VERTEX_SHADER = "Shaders\\hlsl\\Psybeads.vs";
+static const char * FRAGMENT_SHADER = "Shaders\\hlsl\\Psybeads.ps";
+
+#endif
 
 //----------------------------------------------------------------------------------------
     

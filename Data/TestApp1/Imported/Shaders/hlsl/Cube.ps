@@ -1,0 +1,45 @@
+//
+// Cube.ps, by Kleber Garcia 2014
+// 
+
+
+
+Texture2D cubeTex;
+
+SamplerState CubeTextSampler
+{
+	MipFilter = LINEAR;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+};
+
+void main(
+	in float4 p : POSITION0,
+	in float3 normal : NORMAL0,
+	in float2 t : TEXTURE0,
+	out float4 color : SV_Target
+)
+{
+	float3 col = cubeTex.Sample(CubeTextSampler, t*3.0).rgb;
+	float3 nn = normalize(normalize(p.xyz)+(2.0*float3(0,1.0,0.1)*col.y));
+
+	float3 pNormal = normalize(normal);
+	float3 m1 = clamp(normal,0, 1);
+	float3 m2 = clamp(-(normal),0, 1);
+	float3 c1 = float3(1,0,1);
+	float3 c2 = float3(0.9,0.0,0.9);
+	float3 c3 = float3(1,0,0);
+	float3 c4 = float3(0,1,0); 
+	float3 c5 = float3(0,0.3,0.355);
+	float3 c6 = float3(1,0.9,0.9); \
+	float3 cubeAlbedo = c1*m1.x + c2*m1.y + c3*m1.z + c4*m2.x + c5*m2.y + c6*m2.z + col.zzz;
+
+	float3 view = normalize(p.xyz-float3(0.0,0.0,1.0));
+    float3 fakeSpec = 3.9*pow(1.0-clamp(dot(view,nn),0.0, 1.0),2.0 ).xxx;
+	float3 rim = 0.1*pow(clamp(dot(view,nn),0.0, 1.0),1.5 ).xxx;
+	float diff = 0.9*clamp(dot(nn,normalize(float3(0.2,0.6,1.0))),0.0,1.0);
+	float3 amb = float3(0.01,0.01,0.1);
+
+	color.rgb = float3(col.xxx*cubeAlbedo*fakeSpec*float3(0.7,0.5,0.5))*diff.xxx +  rim  + amb;
+    color.a   = 1.0;
+}

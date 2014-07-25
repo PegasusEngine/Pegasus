@@ -1,0 +1,20 @@
+//
+// DiscoSpeaker ps, by Kleber Garcia 2014
+//
+
+#version 330 core
+
+in vec4 p;
+out vec4 color;
+uniform sampler2D inputTexture1;
+uniform sampler2D inputTexture2;
+
+
+void main()
+{
+	vec2 uv = p.xy * 0.5 + 0.5;
+	vec3 col = texture(inputTexture1, uv).rgb;
+	vec3 col2 = texture(inputTexture2, uv).rgb;
+    color = vec4(clamp(col+col2*0.9,0,1),1);   
+
+} 

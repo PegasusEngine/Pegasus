@@ -1,0 +1,26 @@
+//
+//Psybeads ps, by Kevin Boulanger 2013
+//translated to hlsl by Kleber Garcia 2014
+//
+
+
+
+void main(
+	in float3 p : TEXTURE0,
+	in float3 d : TEXTURE1,
+	out float4 color : SV_Target
+)
+{
+    float3 e=normalize(d),r;
+    float f,t=0;
+    int i=0;
+    do
+    {
+        r=frac(e*t+float3(p.xy,0))-.5;
+        f=min(.25*(length(r.yz)+length(r.xy)),length(r.xz))-.1;
+        t+=.5*f;
+    }
+    while(f>.01&&i++<100);
+    f=sin(t);
+    color=float4(f*.5+.2+smoothstep(.6,.62,i*.01)*smoothstep(.64,.62,i*.01),f*.6+.2,f*.7+.3,1);
+}

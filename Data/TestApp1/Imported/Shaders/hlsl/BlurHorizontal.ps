@@ -1,0 +1,47 @@
+//
+// BlurVertical ps, by Kleber Garcia 2014
+//
+
+#version 330 core
+
+in vec4 p;
+out vec4 color;
+uniform sampler2D inputTexture;
+
+
+const vec2 sampleDim = vec2(1.0/960.0,1.0/540.0);
+const vec2 dims = vec2(960.0,540.0);
+
+
+#define SAMPLE_RADIUS 16.0
+#define SAMPLE_COUNT (SAMPLE_RADIUS*2 + 1)
+
+float filter(float i)
+{
+	return exp(-i*0.019);
+}
+vec3 lowPass(vec3 inp)
+{
+	float lum = dot(vec3(0.2126,0.7152,0.0722),inp);
+	return pow(inp*(1 + lum*lum*lum),vec3(2.0));
+}
+void main()
+{
+	vec2 uv = p.xy * 0.5 + 0.5;
+	vec3 col = vec3(0,0,0);
+	float acc = 0;
+
+	for (int i = 0; i < SAMPLE_COUNT; ++i)
+	{
+		float sample = float(i - SAMPLE_RADIUS);
+		float f = filter(abs(sample/float(SAMPLE_RADIUS)));
+
+		col += lowPass(
+			texture(inputTexture,vec2(uv.x + sampleDim.x*sample,uv.y) ).rgb
+			)*f;
+		acc += f;
+
+
+	}
+    color = vec4(col / acc ,1);
+} 

@@ -1,0 +1,22 @@
+//
+// TextureTest ps, by Kevin Boulanger 2014
+// translated to hlsl by Kleber Garcia 2014
+//
+
+
+Texture2D inputTexture;
+
+SamplerState S
+{
+	MipFilter = LINEAR;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+};
+
+void main(
+	in float2 texCoords : TEXCOORD0,
+	out float4 color : SV_Target
+)
+{
+    color = inputTexture.Sample(S, texCoords);
+}
