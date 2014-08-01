@@ -14,7 +14,10 @@
 
 #include <d3d11.h>
 #include <atlbase.h>
+#include <d3dcompiler.h>
 #include "Pegasus/Graph/NodeGPUData.h"
+#include "Pegasus/Shader/Shared/ShaderDefs.h"
+#include "Pegasus/Mesh/MeshInputLayout.h"
 
 namespace Pegasus
 {
@@ -49,6 +52,23 @@ struct DXProgramGPUData
    CComPtr<ID3D11HullShader>     mHull;
    CComPtr<ID3D11GeometryShader> mGeometry;
    CComPtr<ID3D11ComputeShader>  mCompute;
+};
+
+struct DXMeshGPUData
+{
+    static const int MAX_INPUT_ELEMENTS_DESC = 16;
+    
+    //input layout info
+    PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(DXMeshGPUData, 0x3);
+    D3D11_INPUT_ELEMENT_DESC mInputElementsDesc[MAX_INPUT_ELEMENTS_DESC];
+    UINT mInputElementsCount;
+    
+    // buffer description
+    D3D11_BUFFER_DESC mVertexBufferDesc[MESH_MAX_STREAMS];
+    CComPtr<ID3D11Buffer> mVertexBuffer[MESH_MAX_STREAMS];
+
+    D3D11_BUFFER_DESC mIndexBufferDesc;
+    CComPtr<ID3D11Buffer> mIndexBuffer;
 };
 
 

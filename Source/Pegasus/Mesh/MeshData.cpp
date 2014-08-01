@@ -94,7 +94,7 @@ void MeshData::InternalAllocateIndexes(int count, bool preserveElements)
     }
 }
 
-MeshData::~MeshData()
+void MeshData::Clear()
 {
     for (int s = 0; s < MESH_MAX_STREAMS; ++s)
     { 
@@ -108,6 +108,14 @@ MeshData::~MeshData()
     {
         mIndexBuffer.Destroy(GetAllocator());
     }
+    
+    mVertexCount = 0;
+    mIndexCount = 0;
+}
+
+MeshData::~MeshData()
+{
+    Clear();
 }
 
 

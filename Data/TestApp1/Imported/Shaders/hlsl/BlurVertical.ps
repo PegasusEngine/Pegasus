@@ -2,15 +2,17 @@
 // BlurVertical ps, by Kleber Garcia 2014
 //
 
-#version 330 core
+Texture2D inputTexture;
 
-in vec4 p;
-out vec4 color;
-uniform sampler2D inputTexture;
+SamplerState S
+{
+	MipFilter = LINEAR;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+};
 
-
-const vec2 sampleDim = vec2(1.0/960.0,1.0/540.0);
-const vec2 dims = vec2(960.0,540.0);
+static const float2 sampleDim = float2(1.0/960.0,1.0/540.0);
+static const float2 dims = float2(960.0,540.0);
 
 
 #define SAMPLE_RADIUS 16.0
@@ -21,22 +23,21 @@ float filter(float i)
 }
 
 
-void main()
+void main(float4 p : POSITION0, out float4 color : SV_Target)
 {
-	vec2 uv = p.xy * 0.5 + 0.5;
-	vec3 col = vec3(0,0,0);
+	float2 uv = p.xy * 0.5 + 0.5;
+	float3 col = float3(0,0,0);
 	float acc = 0;
 
 	for (int i = 0; i < SAMPLE_COUNT; ++i)
 	{
 		float sample = float(i - SAMPLE_RADIUS);
 		float f = filter(abs(sample/float(SAMPLE_RADIUS)));
-		col += texture(
-			inputTexture, 
-			vec2(uv.x, uv.y + sampleDim.y*sample)).rgb*f;
+		col += 
+			inputTexture.Sample(S,float2(uv.x, uv.y + sampleDim.y*sample)).rgb*f;
 		acc += f;
 
  
 	}
-    color = vec4(col / acc,1);
+    color = float4(col / acc,1);
 } 

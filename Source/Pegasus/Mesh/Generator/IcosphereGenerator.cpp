@@ -135,6 +135,9 @@ void IcosphereGenerator::GenerateData()
     MeshDataRef meshData = GetData();
     PG_ASSERT(meshData != nullptr); 
 
+    // clear any previous data
+    meshData->Clear();
+
     //hardcoded icosahedron
     static const float g = (1.0f + 2.2360679775f) / 2.0f;//golden ratio
 

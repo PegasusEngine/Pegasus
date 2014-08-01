@@ -44,7 +44,6 @@ static PIXELFORMATDESCRIPTOR gPixelFormat = {
     0, 0, 0}; //! layer masks ignored
 
 static int gOglContextAttributes[] = {
-                            WGL_CONTEXT_DEBUG_BIT_ARB, 1,
                             WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
                             WGL_CONTEXT_MINOR_VERSION_ARB , 3,
                             WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,

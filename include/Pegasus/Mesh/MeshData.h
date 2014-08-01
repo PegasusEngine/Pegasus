@@ -85,6 +85,9 @@ public:
     //! Allocates index buffer elements
     //! \param count the number of indices to allocate
     void AllocateIndexes(int count);
+
+    //! Destroys all internal data and initializes this mesh data as completely new
+    void Clear();
     
 protected:
 

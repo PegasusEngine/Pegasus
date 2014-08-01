@@ -11,8 +11,6 @@
 
 #if PEGASUS_GAPI_DX
 
-#include <d3dcompiler.h>
-#include <atlbase.h>
 
 #pragma comment(lib, "d3dcompiler")
 #pragma comment(lib, "dxguid")
@@ -49,17 +47,6 @@ private:
     Pegasus::Render::DXProgramGPUData* GetOrCreateProgramGpuData(Pegasus::Graph::NodeData* nodeData);
     Pegasus::Alloc::IAllocator * mAllocator;
 };
-
-//! convinience function to get the d3d11 device and contexts
-static void GetDeviceAndContext(ID3D11Device ** device, ID3D11DeviceContext ** contextPointer)
-{
-    Pegasus::Render::DXRenderContext * context = Pegasus::Render::DXRenderContext::GetBindedContext();
-    PG_ASSERT(context != nullptr);
-    *contextPointer = context->GetD3D();
-    PG_ASSERT(*contextPointer != nullptr);
-    *device = context->GetDevice()->GetD3D();
-    PG_ASSERT(*device != nullptr);
-}
 
 //! initializes the factory
 void DXShaderFactory::Initialize(Pegasus::Alloc::IAllocator * allocator)
@@ -185,7 +172,7 @@ void DXShaderFactory::GenerateShaderGPUData(Pegasus::Shader::ShaderStage * shade
 {
     ID3D11DeviceContext * context;
     ID3D11Device * device;
-    GetDeviceAndContext(&device, &context);
+    Pegasus::Render::GetDeviceAndContext(&device, &context);
     const char * shaderSource = nullptr;
     int shaderSourceSize = 0;
     shaderNode->GetSource(&shaderSource, shaderSourceSize);
@@ -452,6 +439,15 @@ void DXShaderFactory::DestroyProgramGPUData (Pegasus::Graph::NodeData * nodeData
     if (nodeGPUData != nullptr)
     {
         Pegasus::Render::DXProgramGPUData* programData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXProgramGPUData, nodeGPUData);
+
+        //delete all Com shader references
+        programData->mVertex   = nullptr;
+        programData->mPixel    = nullptr;
+        programData->mDomain   = nullptr;
+        programData->mHull     = nullptr;
+        programData->mGeometry = nullptr;
+        programData->mCompute  = nullptr;
+
         PG_DELETE(mAllocator, programData);
         nodeData->SetNodeGPUData(nullptr);
     }

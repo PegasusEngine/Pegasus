@@ -2,19 +2,22 @@
 // DiscoSpeaker ps, by Kleber Garcia 2014
 //
 
-#version 330 core
+Texture2D inputTexture1;
+Texture2D inputTexture2;
 
-in vec4 p;
-out vec4 color;
-uniform sampler2D inputTexture1;
-uniform sampler2D inputTexture2;
-
-
-void main()
+SamplerState S
 {
-	vec2 uv = p.xy * 0.5 + 0.5;
-	vec3 col = texture(inputTexture1, uv).rgb;
-	vec3 col2 = texture(inputTexture2, uv).rgb;
-    color = vec4(clamp(col+col2*0.9,0,1),1);   
+	MipFilter = LINEAR;
+    MinFilter = LINEAR;
+    MagFilter = LINEAR;
+};
+
+
+void main(float4 p : POSITION0, out float4 color : SV_Target)
+{
+	float2 uv = p.xy * 0.5 + 0.5;
+	float3 col = inputTexture1.Sample(S, uv).rgb;
+	float3 col2 = inputTexture2.Sample(S, uv).rgb;
+    color = float4(clamp(col+col2*0.9,0,1),1);   
 
 } 

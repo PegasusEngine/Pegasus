@@ -16,10 +16,21 @@
 #include <d3d11.h>
 #include <dxgi1_2.h>
 
+#if PEGASUS_ENABLE_ASSERT
+#define VALID_DECLARE(exp) HRESULT hr = exp;PG_ASSERT(hr==S_OK)
+#define VALID(exp) hr = exp;PG_ASSERT(hr == S_OK)
+#else
+#define VALID_DECLARE(exp) exp
+#define VALID(exp) exp
+#endif
+
 namespace Pegasus
 {
 namespace Render
 {
+
+//! convinience function to get the d3d11 device and contexts
+void GetDeviceAndContext(ID3D11Device ** device, ID3D11DeviceContext ** contextPointer);
 
 class DXDevice;
 

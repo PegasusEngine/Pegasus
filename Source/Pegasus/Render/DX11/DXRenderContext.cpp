@@ -17,14 +17,6 @@
 #include "../Source/Pegasus/Render/DX11/DXRenderContext.h"
 #include "../Source/Pegasus/Render/DX11/DXDevice.h"
 
-#if PEGASUS_ENABLE_ASSERT
-#define VALID_DECLARE(exp) HRESULT hr = exp;PG_ASSERT(hr==S_OK)
-#define VALID(exp) hr = exp;PG_ASSERT(hr == S_OK)
-#else
-#define VALID_DECLARE(exp) exp
-#define VALID(exp) exp
-#endif
-
 namespace RenderPrivate
 {
     Pegasus::Render::DXRenderContext * gBindedContext = nullptr;
@@ -32,6 +24,16 @@ namespace RenderPrivate
 
 namespace Pegasus {
 namespace Render {
+
+void GetDeviceAndContext(ID3D11Device ** device, ID3D11DeviceContext ** contextPointer)
+{
+    Pegasus::Render::DXRenderContext * context = Pegasus::Render::DXRenderContext::GetBindedContext();
+    PG_ASSERT(context != nullptr);
+    *contextPointer = context->GetD3D();
+    PG_ASSERT(*contextPointer != nullptr);
+    *device = context->GetDevice()->GetD3D();
+    PG_ASSERT(*device != nullptr);
+}
 
 
 DXRenderContext* DXRenderContext::GetBindedContext()
