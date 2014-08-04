@@ -56,7 +56,7 @@ void ApplicationManager::OpenApplication(const QString & fileName)
 
     // Create the application object, and set its parameters
     mApplication = new Application(this);
-    mApplication->SetFile(fileName);
+    mApplication->SetFileName(fileName);
 
     // Connect the engine messages
 	connect(mApplication, SIGNAL(LoadingError(Application::Error)), this, SLOT(OnLoadingError(Application::Error)));
@@ -75,12 +75,12 @@ void ApplicationManager::CloseApplication(bool asyncHandleDestruction)
     ED_LOG("Closing the current application");
     ED_ASSERTSTR(mApplication != nullptr, "Trying to close an application that is not opened.");
     
-    //trigger any UI events that require killing the ui
+    // Trigger any UI events that require killing the ui
     emit(ApplicationFinished());
 
     if (mApplication != nullptr)
     {
-        //notify if this application is destroyed with an async message pumping, or manual
+        // Notify if this application is destroyed with an async message pumping, or manual
         mApplication->SetAsyncHandleDestruction(asyncHandleDestruction);
         mApplication->quit();
     }
@@ -138,6 +138,8 @@ void ApplicationManager::OnApplicationFinished()
     delete mApplication;
     mApplication = nullptr;
 }
+
+//----------------------------------------------------------------------------------------
 
 bool ApplicationManager::PollApplicationThreadIsDone()
 {

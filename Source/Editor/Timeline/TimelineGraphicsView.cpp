@@ -29,11 +29,7 @@
 
 TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
 :   QGraphicsView(parent),
-    mRightClickCursorDraggingEnabled(true),
-    mNumBeats(32),
-    mNumLanes(0),
-    mHorizontalScale(1.0f),
-    mZoom(1.0f)
+    mRightClickCursorDraggingEnabled(true)
 {
     // Set the scrollbars to be always visible
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -69,20 +65,16 @@ TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
     // Enable the selection of blocks using a drag box
     setDragMode(QGraphicsView::RubberBandDrag);
 
-    // Create the cursor
-    mCursorItem = new TimelineCursorGraphicsItem(1, mHorizontalScale);
-    scene->addItem(mCursorItem);
-
-    // Create the default lane
-    CreateLanes(0, 1);
-    CreateBackgroundGraphicsItems(0, mNumBeats);
+    // Initialize members to default value, but do not create the default lane,
+    // this will be done by a call to Initialize()
+    Clear();
 }
 
 //----------------------------------------------------------------------------------------
 
 TimelineGraphicsView::~TimelineGraphicsView()
 {
-    //! \todo Empty the graphics view, delete all items
+    Clear();
 }
 
 //----------------------------------------------------------------------------------------
@@ -149,14 +141,27 @@ void TimelineGraphicsView::RefreshFromTimeline()
             RefreshLaneFromTimelineLane(l, timeline->GetLane(l));
         }
     }
-    else
-    {
-        // Application closed or failed to load
+}
 
-        // Reset the timeline graphics view to its default state
-        //! \todo Implement
-        /****/
-    }
+//----------------------------------------------------------------------------------------
+
+void TimelineGraphicsView::Initialize()
+{
+    // Clear the content of the timeline
+    Clear();
+
+    ED_LOG("Creating the default lane in the timeline graphics view");
+
+    // Create the cursor
+    mCursorItem = new TimelineCursorGraphicsItem(1, mHorizontalScale);
+    scene()->addItem(mCursorItem);
+
+    // Create the default lane
+    CreateLanes(0, 1);
+    CreateBackgroundGraphicsItems(0, mNumBeats);
+
+    // Update the scene bounding box for the default lane
+    UpdateSceneRect();
 }
 
 //----------------------------------------------------------------------------------------
@@ -390,6 +395,32 @@ void TimelineGraphicsView::wheelEvent(QWheelEvent *event)
 //    //painter->setBrush(Qt::NoBrush);
 //    //painter->drawRect(sceneRect);
 //}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineGraphicsView::Clear()
+{
+    // Invalidate the cache of the view, so that the background does not keep
+    // ghosts of the previous blocks
+    resetCachedContent();
+
+    // Destroy the cached lists of items
+    mBackgroundBeatItems.clear();
+    mBackgroundBeatLineItems.clear();
+    mLaneHeaderItems.clear();
+    mBlockItems.clear();
+    mCursorItem = nullptr;
+
+    // Set the default member values
+    mNumBeats = 32;
+    mNumLanes = 0;
+    mHorizontalScale = 1.0f;
+    mZoom = 1.0f;
+
+    // Clear the list of items in the graphics view
+    scene()->clear();
+    SetZoom(mZoom);
+}
 
 //----------------------------------------------------------------------------------------
 

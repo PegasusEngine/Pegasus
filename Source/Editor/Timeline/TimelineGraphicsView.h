@@ -62,6 +62,9 @@ public:
     //! \param enable True to enable antialiasing
     void EnableAntialiasing(bool enable);
 
+    //! Clear the entire content of the graphics scene and initialize it to a default timeline
+    void Initialize();
+
     //! Refresh the content of the graphics view from the application timeline
     void RefreshFromTimeline();
 
@@ -126,6 +129,9 @@ protected:
     //------------------------------------------------------------------------------------
 
 private:
+
+    //! Clear the entire content of the graphics scene
+    void Clear();
 
     //! Update the bounds of the scene
     void UpdateSceneRect();

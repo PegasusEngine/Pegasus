@@ -163,6 +163,7 @@ private slots:
     //! Slots for the actions of the File menu
     void NewScene();
     void OpenApp();
+    void ReloadApp();
     void CloseApp();
     void Quit();
     //@}
@@ -201,6 +202,13 @@ private slots:
     void About();
     //@}
 
+
+    //! Called when an application is successfully loaded
+    void UpdateUIForAppLoaded();
+
+    //! Called when an application is closed
+    void UpdateUIForAppClosed();
+
     //------------------------------------------------------------------------------------
 
 public slots:
@@ -221,6 +229,7 @@ private:
     //! Actions triggered when an item of the File menu is selected
     QAction * mActionFileNewScene;
     QAction * mActionFileOpenApp;
+    QAction * mActionFileReloadApp;
     QAction * mActionFileCloseApp;
     QAction * mActionFileQuit;
     //@}

@@ -61,7 +61,7 @@ Application::~Application()
 
 //----------------------------------------------------------------------------------------
 
-void Application::SetFile(const QString & fileName)
+void Application::SetFileName(const QString & fileName)
 {
     ED_ASSERTSTR(!fileName.isEmpty(), "Invalid application to open, the name cannot be an empty string.");
     mFileName = fileName;

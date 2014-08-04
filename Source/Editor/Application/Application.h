@@ -58,7 +58,11 @@ public:
     //! Set the file name of the application to load
     //! \param fileName Path and name of the library file to open
     //! \todo Add error management
-    void SetFile(const QString & fileName);
+    void SetFileName(const QString & fileName);
+
+    //! Get the file name of the loaded application
+    //! \return Path and name of the opened library file
+    inline const QString & GetFileName() const { return mFileName; }
 
 
     //! Error codes for the application thread

@@ -59,7 +59,7 @@ public:
 
     //! Test if an application thread is alive
     //! \return True if an application is running (only after the loading occurred)
-    //! \WARNING: this function is not const since it blocks the application thread for 10ms
+    //! \warning This function is not const since it blocks the application thread for 10ms
     bool PollApplicationThreadIsDone();
 
     //------------------------------------------------------------------------------------

@@ -35,7 +35,15 @@ Settings * Editor::sSettings = nullptr;
 Editor::Editor(QApplication * parentApplication)
 :   QMainWindow(nullptr),
     mApplicationManager(nullptr),
-    mQtApplication(parentApplication)
+    mQtApplication(parentApplication),
+    mMainViewportDockWidget(nullptr),
+    mSecondaryViewportDockWidget(nullptr),
+    mTimelineDockWidget(nullptr),
+    mHistoryDockWidget(nullptr),
+    mShaderLibraryWidget(nullptr),
+    mShaderEditorWidget(nullptr),
+    mConsoleDockWidget(nullptr),
+    mTextureEditorDockWidget(nullptr)
 {
     sInstance = this;
 
@@ -103,6 +111,11 @@ Editor::Editor(QApplication * parentApplication)
 
     // Create the application manager
     mApplicationManager = new ApplicationManager(this, this);
+
+    connect(mApplicationManager, SIGNAL(ApplicationLoaded()),
+            this, SLOT(UpdateUIForAppLoaded()));
+    connect(mApplicationManager, SIGNAL(ApplicationFinished()),
+            this, SLOT(UpdateUIForAppClosed()));
 
     connect(mApplicationManager, SIGNAL(ApplicationLoaded()),
             mTimelineDockWidget, SLOT(UpdateUIForAppLoaded()));
@@ -222,12 +235,21 @@ void Editor::CreateActions()
 	mActionFileOpenApp->setStatusTip(tr("Open an existing app"));
 	connect(mActionFileOpenApp, SIGNAL(triggered()), this, SLOT(OpenApp()));
 
-	mActionFileCloseApp = new QAction(tr("&Close App"), this);
+	mActionFileReloadApp = new QAction(tr("&Reload App"), this);
+	//! \todo Use the correct icon
+    mActionFileReloadApp->setIcon(QIcon(":/Toolbar/File/OpenApp24.png"));
+	mActionFileReloadApp->setShortcut(tr("Ctrl+R"));
+	mActionFileReloadApp->setStatusTip(tr("Reload the current app"));
+	connect(mActionFileReloadApp, SIGNAL(triggered()), this, SLOT(ReloadApp()));
+    mActionFileReloadApp->setEnabled(false);
+
+    mActionFileCloseApp = new QAction(tr("&Close App"), this);
 	//! \todo Use the correct icon
     mActionFileCloseApp->setIcon(QIcon(":/Toolbar/File/SaveScene24.png"));
 	mActionFileCloseApp->setShortcut(tr("Shift+F4"));
 	mActionFileCloseApp->setStatusTip(tr("Close the current app"));
 	connect(mActionFileCloseApp, SIGNAL(triggered()), this, SLOT(CloseApp()));
+    mActionFileCloseApp->setEnabled(false);
 
     mActionFileQuit = new QAction(tr("&Quit"), this);
 	mActionFileQuit->setShortcut(tr("Alt+F4"));
@@ -321,6 +343,7 @@ void Editor::CreateMenu()
     QMenu * fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(mActionFileNewScene);
     fileMenu->addAction(mActionFileOpenApp);
+    fileMenu->addAction(mActionFileReloadApp);
     fileMenu->addAction(mActionFileCloseApp);
     fileMenu->addSeparator();
     fileMenu->addAction(mActionFileQuit);
@@ -369,6 +392,7 @@ void Editor::CreateToolBars()
 	fileToolBar->setAllowedAreas(Qt::TopToolBarArea);
 	fileToolBar->addAction(mActionFileNewScene);
 	fileToolBar->addAction(mActionFileOpenApp);
+	fileToolBar->addAction(mActionFileReloadApp);
     fileToolBar->addAction(mActionFileCloseApp);
 
 	QToolBar * editToolBar = addToolBar(tr("Edit"));
@@ -527,6 +551,22 @@ void Editor::OpenApp()
 
 //----------------------------------------------------------------------------------------
 
+void Editor::ReloadApp()
+{
+    ED_ASSERTSTR(mApplicationManager->IsApplicationOpened(), "An application must be opened to be able to reload it");
+
+    // Get the filename of the current app
+    const QString appFileName = mApplicationManager->GetApplication()->GetFileName();
+
+    // Close the current app
+    InternalCloseAndPumpEvents();
+
+    // Open the app again with the cached file name
+    mApplicationManager->OpenApplication(appFileName);
+}
+
+//----------------------------------------------------------------------------------------
+
 void Editor::CloseApp()
 {
     if (mApplicationManager->IsApplicationOpened())
@@ -640,6 +680,22 @@ void Editor::HelpIndex()
 void Editor::About()
 {
     //! /todo Show the about dialog box
+}
+
+//----------------------------------------------------------------------------------------
+
+void Editor::UpdateUIForAppLoaded()
+{
+    mActionFileReloadApp->setEnabled(true);
+    mActionFileCloseApp->setEnabled(true);
+}
+
+//----------------------------------------------------------------------------------------
+
+void Editor::UpdateUIForAppClosed()
+{
+    mActionFileReloadApp->setEnabled(false);
+    mActionFileCloseApp->setEnabled(false);
 }
 
 //----------------------------------------------------------------------------------------

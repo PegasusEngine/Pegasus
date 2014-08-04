@@ -179,20 +179,18 @@ void TimelineDockWidget::UpdateUIForAppClosed()
 
     ui.playButton->setEnabled(false);
     ui.playButton->setChecked(false);
+
+    // Clear the content of the timeline graphics view and set the default timeline
+    ui.graphicsView->Initialize();
     ui.graphicsView->OnPlayModeToggled(false);
 
     ui.bpmSpin->setEnabled(false);
+    ui.bpmSpin->setValue(120.0);
     ui.snapCombo->setEnabled(false);
     ui.snapCombo->setCurrentIndex(0);
     mSnapNumTicks = 1;
     UpdateUIFromBeat(0.0f);
     ui.graphicsView->setEnabled(false);
-
-    // Clear the content of the timeline graphics view
-    if (Editor::GetInstance().IsApplicationManagerAvailable())
-    {
-        ui.graphicsView->RefreshFromTimeline();
-    }
 }
 
 //----------------------------------------------------------------------------------------
