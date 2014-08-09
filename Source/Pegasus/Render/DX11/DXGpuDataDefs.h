@@ -40,23 +40,28 @@ struct DXShaderGPUData
        ID3D11DeviceChild*    mDeviceChild;
     };
 
+    CComPtr<ID3DBlob> mBlob;
     CComPtr<ID3D11ShaderReflection> mReflectionInfo;
 };
 
 struct DXProgramGPUData
 {
-   PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(DXProgramGPUData, 0x2);
-   CComPtr<ID3D11PixelShader>    mPixel;
-   CComPtr<ID3D11VertexShader>   mVertex;
-   CComPtr<ID3D11DomainShader>   mDomain;
-   CComPtr<ID3D11HullShader>     mHull;
-   CComPtr<ID3D11GeometryShader> mGeometry;
-   CComPtr<ID3D11ComputeShader>  mCompute;
+    PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(DXProgramGPUData, 0x2);
+    CComPtr<ID3D11PixelShader>    mPixel;
+    CComPtr<ID3D11VertexShader>   mVertex;
+    CComPtr<ID3D11DomainShader>   mDomain;
+    CComPtr<ID3D11HullShader>     mHull;
+    CComPtr<ID3D11GeometryShader> mGeometry;
+    CComPtr<ID3D11ComputeShader>  mCompute;
+    CComPtr<ID3DBlob>     mInputLayoutBlob;
+    int mProgramGuid;
+    int mProgramVersion;
 };
 
 struct DXMeshGPUData
 {
     static const int MAX_INPUT_ELEMENTS_DESC = 16;
+    static const int INPUT_LAYOUT_TABLE_INCREMENT = 8;
     
     //input layout info
     PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(DXMeshGPUData, 0x3);
@@ -69,6 +74,15 @@ struct DXMeshGPUData
 
     D3D11_BUFFER_DESC mIndexBufferDesc;
     CComPtr<ID3D11Buffer> mIndexBuffer;
+
+    struct InputLayoutEntry
+    {
+        CComPtr<ID3D11InputLayout> mInputLayout;
+        int mProgramGuid;
+        int mProgramVersion;
+    }* mInputLayoutTable;
+    int mInputLayoutTableCount;
+    int mInputLayoutTableCapacity;
 };
 
 

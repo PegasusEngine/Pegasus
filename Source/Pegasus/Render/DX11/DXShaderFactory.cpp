@@ -25,6 +25,8 @@
 #include "../Source/Pegasus/Render/DX11/DXRenderContext.h"
 #include "../Source/Pegasus/Render/DX11/DXDevice.h"
 
+static int gNextProgramGuid = 1;
+
 //! internal definition of shader factory API
 class DXShaderFactory : public Pegasus::Shader::IShaderFactory
 {
@@ -71,6 +73,7 @@ Pegasus::Render::DXShaderGPUData* DXShaderFactory::GetOrCreateShaderGpuData(Pega
         shaderGPUData->mType = Pegasus::Shader::SHADER_STAGE_INVALID;
         shaderGPUData->mDeviceChild = nullptr;
         shaderGPUData->mReflectionInfo = nullptr;
+        shaderGPUData->mBlob = nullptr;
         data->SetNodeGPUData(reinterpret_cast<Pegasus::Graph::NodeGPUData*>(shaderGPUData));
     }
     else
@@ -195,7 +198,7 @@ void DXShaderFactory::GenerateShaderGPUData(Pegasus::Shader::ShaderStage * shade
     if (shaderGPUData->mType < Pegasus::Shader::SHADER_STAGES_COUNT)
     {
         
-        CComPtr<ID3DBlob> outBlob;
+        shaderGPUData->mBlob = nullptr; //clear any previous blob reference
         CComPtr<ID3DBlob> errBlob;
 
         HRESULT result = D3DCompile(
@@ -208,7 +211,7 @@ void DXShaderFactory::GenerateShaderGPUData(Pegasus::Shader::ShaderStage * shade
             sTargets[shaderNode->GetStageType()],
             D3DCOMPILE_IEEE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL0 | D3DCOMPILE_WARNINGS_ARE_ERRORS | D3DCOMPILE_ENABLE_STRICTNESS,
             0, //no effect flags
-            &outBlob,
+            &shaderGPUData->mBlob,
             &errBlob
         );  
                     
@@ -231,47 +234,47 @@ void DXShaderFactory::GenerateShaderGPUData(Pegasus::Shader::ShaderStage * shade
         }
         else
         {
-            PG_ASSERT(outBlob != nullptr);
+            PG_ASSERT(shaderGPUData->mBlob != nullptr);
             HRESULT res = S_OK;
             switch(shaderGPUData->mType)
             {
             case Pegasus::Shader::FRAGMENT:
                 res = device->CreatePixelShader(
-                    outBlob->GetBufferPointer(), 
-                    outBlob->GetBufferSize(), NULL, &shaderGPUData->mPixel);
+                    shaderGPUData->mBlob->GetBufferPointer(), 
+                    shaderGPUData->mBlob->GetBufferSize(), NULL, &shaderGPUData->mPixel);
                 break;
             case Pegasus::Shader::VERTEX:
                 res = device->CreateVertexShader(
-                    outBlob->GetBufferPointer(), 
-                    outBlob->GetBufferSize(), NULL, &shaderGPUData->mVertex);
+                    shaderGPUData->mBlob->GetBufferPointer(), 
+                    shaderGPUData->mBlob->GetBufferSize(), NULL, &shaderGPUData->mVertex);
                 break;
             case Pegasus::Shader::TESSELATION_CONTROL:
                 res = device->CreateHullShader(
-                    outBlob->GetBufferPointer(), 
-                    outBlob->GetBufferSize(), NULL, &shaderGPUData->mHull);
+                    shaderGPUData->mBlob->GetBufferPointer(), 
+                    shaderGPUData->mBlob->GetBufferSize(), NULL, &shaderGPUData->mHull);
                 break;
             case Pegasus::Shader::TESSELATION_EVALUATION:
                 res = device->CreateDomainShader(
-                    outBlob->GetBufferPointer(), 
-                    outBlob->GetBufferSize(), NULL, &shaderGPUData->mDomain);
+                    shaderGPUData->mBlob->GetBufferPointer(), 
+                    shaderGPUData->mBlob->GetBufferSize(), NULL, &shaderGPUData->mDomain);
                 break;
             case Pegasus::Shader::GEOMETRY:
                 res = device->CreateGeometryShader(
-                    outBlob->GetBufferPointer(), 
-                    outBlob->GetBufferSize(), NULL, &shaderGPUData->mGeometry);
+                    shaderGPUData->mBlob->GetBufferPointer(), 
+                    shaderGPUData->mBlob->GetBufferSize(), NULL, &shaderGPUData->mGeometry);
                 break;
             case Pegasus::Shader::COMPUTE:
                 res = device->CreateComputeShader(
-                    outBlob->GetBufferPointer(), 
-                    outBlob->GetBufferSize(), NULL, &shaderGPUData->mCompute);
+                    shaderGPUData->mBlob->GetBufferPointer(), 
+                    shaderGPUData->mBlob->GetBufferSize(), NULL, &shaderGPUData->mCompute);
                 break;
             };
             PG_ASSERT(shaderGPUData->mDeviceChild != nullptr);
             PG_ASSERT(res == S_OK);
 
             res = D3DReflect (
-                outBlob->GetBufferPointer(),
-                outBlob->GetBufferSize(),
+                shaderGPUData->mBlob->GetBufferPointer(),
+                shaderGPUData->mBlob->GetBufferSize(),
                 IID_ID3D11ShaderReflection,
                 (void**)&shaderGPUData->mReflectionInfo
             );
@@ -319,6 +322,8 @@ Pegasus::Render::DXProgramGPUData* DXShaderFactory::GetOrCreateProgramGpuData(Pe
         ) Pegasus::Render::DXProgramGPUData;
 
         nodeData->SetNodeGPUData(reinterpret_cast<Pegasus::Graph::NodeGPUData*>(programGPUData));
+        programGPUData->mProgramGuid = gNextProgramGuid++;
+        programGPUData->mProgramVersion = 0;
     }
     else
     {
@@ -339,6 +344,7 @@ void DXShaderFactory::GenerateProgramGPUData(Pegasus::Shader::ProgramLinkage * p
     programGPUData->mHull = nullptr;
     programGPUData->mGeometry = nullptr;
     programGPUData->mCompute = nullptr;
+    programGPUData->mInputLayoutBlob = nullptr;
     
     bool isProgramComplete = true; //assume true
     for (unsigned i = 0; i < programNode->GetNumInputs(); ++i)
@@ -358,6 +364,8 @@ void DXShaderFactory::GenerateProgramGPUData(Pegasus::Shader::ProgramLinkage * p
             case Pegasus::Shader::VERTEX:
                 isProgramComplete = isProgramComplete && shaderStageGPUData->mVertex != nullptr;
                 programGPUData->mVertex = shaderStageGPUData->mVertex;
+                PG_ASSERT(programGPUData->mInputLayoutBlob == nullptr);
+                programGPUData->mInputLayoutBlob = shaderStageGPUData->mBlob;
                 break;
             case Pegasus::Shader::TESSELATION_CONTROL:
                 isProgramComplete = shaderStageGPUData->mHull != nullptr;
@@ -406,6 +414,7 @@ void DXShaderFactory::GenerateProgramGPUData(Pegasus::Shader::ProgramLinkage * p
     }
     else if (isProgramComplete)
     {
+        ++programGPUData->mProgramVersion;
         GRAPH_EVENT_DISPATCH (
             programNode,
             Pegasus::Shader::LinkingEvent,

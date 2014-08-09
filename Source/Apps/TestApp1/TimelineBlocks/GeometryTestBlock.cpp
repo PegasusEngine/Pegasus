@@ -155,6 +155,9 @@ void GeometryTestBlock::Initialize()
         );
         //force update
         mSphereMeshes[i]->GetUpdatedMeshData();
+        icosphere->SetDegree(3);
+		icosphere->Update();
+        mSphereMeshes[i]->GetUpdatedMeshData();
     }
 
     //setup render targets

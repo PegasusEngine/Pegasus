@@ -35,6 +35,7 @@ public:
 
     virtual void GenerateMeshGPUData(Pegasus::Mesh::MeshData * nodeData);
     virtual void DestroyNodeGPUData(Pegasus::Mesh::MeshData * nodeData);
+	virtual Pegasus::Alloc::IAllocator* GetAllocator() { return mAllocator; }
 private:
     Pegasus::Render::OGLMeshGPUData * AllocateGPUData(Pegasus::Mesh::MeshData * nodeData);
     Pegasus::Render::OGLMeshGPUData * GetGPUData(Pegasus::Mesh::MeshData * nodeData);

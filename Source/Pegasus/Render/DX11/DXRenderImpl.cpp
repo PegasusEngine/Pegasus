@@ -11,11 +11,22 @@
 
 #if PEGASUS_GAPI_DX
 
+#include "Pegasus/Render/MeshFactory.h"
 #include "Pegasus/Render/Render.h"
+#include "../Source/Pegasus/Render/DX11/DXRenderContext.h"
+#include "../Source/Pegasus/Render/DX11/DXGpuDataDefs.h"
 
 //////////////////        GLOBALS CODE BLOCK     //////////////////////////////
 //         All globals holding state data are declared on this block       ////
 ///////////////////////////////////////////////////////////////////////////////
+
+
+__declspec( thread )
+struct DXState
+{
+    Pegasus::Render::DXProgramGPUData * mDispatchedShader;
+    Pegasus::Render::DXMeshGPUData    * mDispatchedMeshGpuData;
+} gDXState = { nullptr, nullptr };
 
 // ---------------------------------------------------------------------------
 
@@ -26,12 +37,115 @@
 
 void Pegasus::Render::Dispatch (Pegasus::Shader::ProgramLinkageInOut program)
 {
+    bool updated = false;
+    Pegasus::Graph::NodeGPUData * nodeGpuData = program->GetUpdatedData(updated)->GetNodeGPUData();
+    Pegasus::Render::DXProgramGPUData * shaderGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXProgramGPUData, nodeGpuData);
+
+    if (gDXState.mDispatchedShader != shaderGpuData)
+    {
+        ID3D11DeviceContext * context;
+        ID3D11Device * device;
+        Pegasus::Render::GetDeviceAndContext(&device, &context);
+        gDXState.mDispatchedShader = shaderGpuData;
+        context->VSSetShader(shaderGpuData->mVertex, nullptr, 0);
+        context->PSSetShader(shaderGpuData->mPixel, nullptr, 0);
+        context->DSSetShader(shaderGpuData->mDomain, nullptr, 0);
+        context->HSSetShader(shaderGpuData->mHull, nullptr, 0);
+        context->GSSetShader(shaderGpuData->mGeometry, nullptr, 0);
+        context->CSSetShader(shaderGpuData->mCompute, nullptr, 0);
+    }
 }
 
 // ---------------------------------------------------------------------------
 
 void Pegasus::Render::Dispatch (Pegasus::Mesh::MeshInOut mesh)
 {
+    ID3D11DeviceContext * context;
+    ID3D11Device * device;
+    Pegasus::Render::GetDeviceAndContext(&device, &context);
+    Pegasus::Graph::NodeGPUData * nodeGpuData = mesh->GetUpdatedMeshData()->GetNodeGPUData();
+    Pegasus::Render::DXMeshGPUData * meshGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXMeshGPUData, nodeGpuData);
+    Pegasus::Render::DXProgramGPUData * programGpuData = gDXState.mDispatchedShader;
+    PG_ASSERTSTR(programGpuData != nullptr, "Must dispatch a shader first before dispatching a geometry");
+    
+    Pegasus::Render::DXMeshGPUData::InputLayoutEntry * inputLayoutEntry = nullptr;
+
+    bool regenerateInputLayout = false;
+
+    //try to find an already created layout entry if it exists
+    for (int i = 0; i < meshGpuData->mInputLayoutTableCount; ++i)
+    {
+        if (programGpuData->mProgramGuid == meshGpuData->mInputLayoutTable[i].mProgramGuid)
+        {
+            inputLayoutEntry = &meshGpuData->mInputLayoutTable[i];
+            if (programGpuData->mProgramVersion != meshGpuData->mInputLayoutTable[i].mProgramVersion)
+            {
+                meshGpuData->mInputLayoutTable[i].mInputLayout = nullptr;
+                regenerateInputLayout = true;
+            }
+            break;
+        }
+    }
+
+    //no entry found! try to allocate a new one!
+    if (inputLayoutEntry == nullptr)
+    {
+        regenerateInputLayout = true;
+        if (meshGpuData->mInputLayoutTableCapacity - 1 ==  meshGpuData->mInputLayoutTableCount)
+        {
+            //no more space! grow the table
+            meshGpuData->mInputLayoutTableCapacity += Pegasus::Render::DXMeshGPUData::INPUT_LAYOUT_TABLE_INCREMENT;
+            Pegasus::Render::DXMeshGPUData::InputLayoutEntry * newTable = PG_NEW_ARRAY (
+                Pegasus::Render::GetRenderMeshFactory()->GetAllocator(),
+                -1,
+                "MeshGPUData inputLayoutTable",
+                Pegasus::Alloc::PG_MEM_TEMP,
+                Pegasus::Render::DXMeshGPUData::InputLayoutEntry,
+                meshGpuData->mInputLayoutTableCapacity
+            );
+
+            //copy all the pointers
+            for (int i = 0; i < meshGpuData->mInputLayoutTableCount; ++i)
+            {
+                Pegasus::Render::DXMeshGPUData::InputLayoutEntry& entry = meshGpuData->mInputLayoutTable[i];
+                newTable[i].mInputLayout = entry.mInputLayout;
+                newTable[i].mProgramGuid  = entry.mProgramGuid;
+            }
+
+            //now that pointers are safe, now delete the previous table
+            PG_DELETE_ARRAY(Pegasus::Render::GetRenderMeshFactory()->GetAllocator(), meshGpuData->mInputLayoutTable);
+
+            meshGpuData->mInputLayoutTable = newTable;
+        }
+
+        //get the next available element
+        PG_ASSERT(meshGpuData->mInputLayoutTableCount < meshGpuData->mInputLayoutTableCapacity);
+        inputLayoutEntry = &meshGpuData->mInputLayoutTable[meshGpuData->mInputLayoutTableCount++];
+    }
+
+    if (regenerateInputLayout)
+    {
+        PG_ASSERT(
+                inputLayoutEntry != nullptr &&
+                inputLayoutEntry->mInputLayout == nullptr &&
+                programGpuData->mInputLayoutBlob->GetBufferPointer() != nullptr
+        );
+        VALID_DECLARE(
+            device->CreateInputLayout(
+                meshGpuData->mInputElementsDesc,
+				meshGpuData->mInputElementsCount,
+                programGpuData->mInputLayoutBlob->GetBufferPointer(),
+                programGpuData->mInputLayoutBlob->GetBufferSize(),
+                &inputLayoutEntry->mInputLayout
+            )
+        );
+        inputLayoutEntry->mProgramGuid = programGpuData->mProgramGuid;
+        inputLayoutEntry->mProgramVersion = programGpuData->mProgramVersion;
+    }
+
+    PG_ASSERT(inputLayoutEntry != nullptr);
+    context->IASetInputLayout(inputLayoutEntry->mInputLayout);
+   
 }
 
 

@@ -48,6 +48,8 @@ namespace Mesh {
         //! Destroys GPU data for a mesh data node. 
         //! \param nodeData 
         virtual void DestroyNodeGPUData(MeshData * nodeData) = 0;
+
+        virtual Pegasus::Alloc::IAllocator* GetAllocator() = 0;
     };
 }
 

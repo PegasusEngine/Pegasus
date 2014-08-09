@@ -11,7 +11,7 @@ cbuffer uniformState
 
 void main(
 	in float4 p0 : POSITION0,
-	in float2 t0 : TEXTURE0,
+	in float2 t0 : TEXCOORD0,
 	in float3 n0 : NORMAL0,
 	out float4 pos : SV_Position,
 	out float4 p : POSITION,
