@@ -6,13 +6,18 @@
 
 float time : register(c0);
 float screenRatio : register(c1);
-void main(
+struct VS_OUT
+{
+	float3 p : TEXCOORD1;
+	float3 d : TEXCOORD0;
+};
+VS_OUT main(
 	in float2 p0 : POSITION0,
-	out float4 pos : SV_Position,
-	out float3 p : TEXCOORD1,
-	out float3 d : TEXCOORD0
+	out float4 pos : SV_Position
 ){
+	VS_OUT vo;
     pos=float4(p0.x,p0.y*screenRatio,0.0,1.0);
-    p = float3(0,0,time*.6);
-    d = float3(p0.x * cos(time) + sin(time), p0.y + .4*sin(time), cos(time) - p0.x * sin(time));
+    vo.p = float3(0,0,time*.6);
+    vo.d = float3(p0.x * cos(time) + sin(time), p0.y + .4*sin(time), cos(time) - p0.x * sin(time));
+	return vo;
 }

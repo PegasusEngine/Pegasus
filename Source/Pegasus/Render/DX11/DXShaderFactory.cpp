@@ -324,6 +324,7 @@ Pegasus::Render::DXProgramGPUData* DXShaderFactory::GetOrCreateProgramGpuData(Pe
         nodeData->SetNodeGPUData(reinterpret_cast<Pegasus::Graph::NodeGPUData*>(programGPUData));
         programGPUData->mProgramGuid = gNextProgramGuid++;
         programGPUData->mProgramVersion = 0;
+        programGPUData->mProgramValid = false;
     }
     else
     {
@@ -345,6 +346,7 @@ void DXShaderFactory::GenerateProgramGPUData(Pegasus::Shader::ProgramLinkage * p
     programGPUData->mGeometry = nullptr;
     programGPUData->mCompute = nullptr;
     programGPUData->mInputLayoutBlob = nullptr;
+    programGPUData->mProgramValid = false;
     
     bool isProgramComplete = true; //assume true
     for (unsigned i = 0; i < programNode->GetNumInputs(); ++i)
@@ -414,6 +416,7 @@ void DXShaderFactory::GenerateProgramGPUData(Pegasus::Shader::ProgramLinkage * p
     }
     else if (isProgramComplete)
     {
+		programGPUData->mProgramValid = true;
         ++programGPUData->mProgramVersion;
         GRAPH_EVENT_DISPATCH (
             programNode,

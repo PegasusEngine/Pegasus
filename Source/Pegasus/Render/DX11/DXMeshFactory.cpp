@@ -96,6 +96,11 @@ Pegasus::Render::DXMeshGPUData* DXMeshFactory::GetOrAllocateGPUData(Pegasus::Mes
             Pegasus::Render::DXMeshGPUData::InputLayoutEntry,
             meshGpuData->mInputLayoutTableCapacity
         );
+        meshGpuData->mIsIndexed = false;
+        meshGpuData->mVertexCount = 0;
+        meshGpuData->mIndexCount = 0;
+
+
         Pegasus::Utils::Memset8(&meshGpuData->mVertexBufferDesc, 0x0, sizeof(meshGpuData->mVertexBufferDesc));
         Pegasus::Utils::Memset8(&meshGpuData->mIndexBufferDesc, 0x0, sizeof(meshGpuData->mIndexBufferDesc));
         nodeGpuData = reinterpret_cast<Pegasus::Graph::NodeGPUData*>(meshGpuData);
@@ -120,8 +125,10 @@ void DXMeshFactory::GenerateMeshGPUData(Pegasus::Mesh::MeshData * nodeData)
     const Pegasus::Mesh::MeshConfiguration& configuration = nodeData->GetConfiguration();
     const Pegasus::Mesh::MeshInputLayout*   meshInputLayout = configuration.GetInputLayout();
     Pegasus::Render::DXMeshGPUData*   meshGpuData = GetOrAllocateGPUData(nodeData);
+    meshGpuData->mIsIndexed = configuration.GetIsIndexed();
 
     int vertexCount = nodeData->GetVertexCount();
+    meshGpuData->mVertexCount = vertexCount;
 
     for (int streamIndex = 0; streamIndex < MESH_MAX_STREAMS; ++streamIndex)
     {
@@ -179,6 +186,7 @@ void DXMeshFactory::GenerateMeshGPUData(Pegasus::Mesh::MeshData * nodeData)
 
         if (meshGpuData->mIndexBuffer == nullptr)
         {
+            meshGpuData->mIndexCount = nodeData->GetIndexCount();
             D3D11_BUFFER_DESC& bufferDesc = meshGpuData->mIndexBufferDesc;
             bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
             bufferDesc.ByteWidth = nodeData->GetIndexCount() * sizeof(unsigned short);

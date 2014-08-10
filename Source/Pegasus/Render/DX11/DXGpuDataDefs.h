@@ -56,6 +56,7 @@ struct DXProgramGPUData
     CComPtr<ID3DBlob>     mInputLayoutBlob;
     int mProgramGuid;
     int mProgramVersion;
+    bool mProgramValid;
 };
 
 struct DXMeshGPUData
@@ -72,6 +73,7 @@ struct DXMeshGPUData
     D3D11_BUFFER_DESC mVertexBufferDesc[MESH_MAX_STREAMS];
     CComPtr<ID3D11Buffer> mVertexBuffer[MESH_MAX_STREAMS];
 
+    bool mIsIndexed;
     D3D11_BUFFER_DESC mIndexBufferDesc;
     CComPtr<ID3D11Buffer> mIndexBuffer;
 
@@ -83,6 +85,9 @@ struct DXMeshGPUData
     }* mInputLayoutTable;
     int mInputLayoutTableCount;
     int mInputLayoutTableCapacity;
+
+    int mIndexCount;
+    int mVertexCount;
 };
 
 

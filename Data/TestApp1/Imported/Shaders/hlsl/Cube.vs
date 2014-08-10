@@ -9,24 +9,28 @@ cbuffer uniformState
 	float4x4 uTransform;
 };
 
-void main(
+struct VS_OUT
+{
+	float4 p : POSITION;
+	float2 t : TEXTURE0;
+	float3 normal : NORMAL0;
+};
+VS_OUT  main(
 	in float4 p0 : POSITION0,
 	in float2 t0 : TEXCOORD0,
 	in float3 n0 : NORMAL0,
-	out float4 pos : SV_Position,
-	out float4 p : POSITION,
-	out float2 t : TEXTURE0,
-	out float3 normal : NORMAL0
+	out float4 pos : SV_Position
 )
 {
-
+	VS_OUT vo;
     pos = mul(uTransform, p0);
-    p = pos;
+    vo.p = pos;
 
-    t = t0.xy;
+    vo.t = t0.xy;
 	pos *= 0.2;
 
-	normal = n0;
+	vo.normal = n0;
+	return vo;
 
 }
 

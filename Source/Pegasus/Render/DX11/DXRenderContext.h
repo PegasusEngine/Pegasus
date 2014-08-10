@@ -65,7 +65,8 @@ public:
     //! get the device context
     ID3D11DeviceContext * GetD3D() const { return mCachedD3DContext; }
 
-
+    //! get the render taret
+    ID3D11RenderTargetView* GetRenderTarget() { return mFrameBuffer; }
 private:
 
     //! initializes a frame for rendering

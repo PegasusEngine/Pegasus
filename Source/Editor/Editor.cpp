@@ -237,7 +237,7 @@ void Editor::CreateActions()
 
 	mActionFileReloadApp = new QAction(tr("&Reload App"), this);
 	//! \todo Use the correct icon
-    mActionFileReloadApp->setIcon(QIcon(":/Toolbar/File/OpenApp24.png"));
+    mActionFileReloadApp->setIcon(QIcon(":/Toolbar/File/refresh-512.png"));
 	mActionFileReloadApp->setShortcut(tr("Ctrl+R"));
 	mActionFileReloadApp->setStatusTip(tr("Reload the current app"));
 	connect(mActionFileReloadApp, SIGNAL(triggered()), this, SLOT(ReloadApp()));
