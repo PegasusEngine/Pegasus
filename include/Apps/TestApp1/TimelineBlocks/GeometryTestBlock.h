@@ -69,8 +69,14 @@ private:
     Pegasus::Render::Uniform mCompositeInput2;
 
     // screen program uniforms
-    Pegasus::Render::Uniform mAspectUniform;
-    Pegasus::Render::Uniform mTimeUniform;
+    Pegasus::Render::Uniform mSpeakerUniformBlock;
+    Pegasus::Render::Buffer  mSpeakerStateBuffer;
+    PEGASUS_ALIGN_BEGIN(16)
+    struct SpeakerUniformState
+    {
+        float time;
+    } mSpeakerState
+    PEGASUS_ALIGN_END(16);
 
     Pegasus::Render::RenderTarget mCubeFaceRenderTarget;
 

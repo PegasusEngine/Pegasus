@@ -43,6 +43,9 @@ public:
     //! Swaps the backbuffer chain, presenting a completed image to the display
     void Swap() const;
 
+    //! Triggered when the window has resized
+    void Resize(int width, int height);
+
     //! Gets the parent device of this context
     IDevice * GetDevice() const { return mParentDevice; }
     

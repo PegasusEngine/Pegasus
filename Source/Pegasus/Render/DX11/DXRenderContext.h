@@ -59,14 +59,21 @@ public:
     //! final function that presents the frame and swaps
     void Present();
 
+    //! callback when the window has resized
+    void Resize(int width, int height);
+
     //! get the device
     DXDevice* GetDevice() const { return mDevice; }
 
     //! get the device context
     ID3D11DeviceContext * GetD3D() const { return mCachedD3DContext; }
 
-    //! get the render taret
+    //! get the render target
     ID3D11RenderTargetView* GetRenderTarget() { return mFrameBuffer; }
+
+    //! get the depth stencil
+    ID3D11DepthStencilView* GetDepthStencil() { return mFrameBufferDepthStencil; }
+
 private:
 
     //! initializes a frame for rendering
@@ -83,6 +90,15 @@ private:
 
     //! frame buffer
     ID3D11RenderTargetView* mFrameBuffer;
+
+    //! depth stencil
+    ID3D11DepthStencilView* mFrameBufferDepthStencil;
+
+    //! target frame buffer width
+    int mFrameBufferWidth;
+
+    //! target frame buffer height
+    int mFrameBufferHeight;
 
 };
 

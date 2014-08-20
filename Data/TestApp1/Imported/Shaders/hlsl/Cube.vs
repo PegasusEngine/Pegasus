@@ -12,8 +12,9 @@ cbuffer uniformState
 struct VS_OUT
 {
 	float4 p : POSITION;
-	float2 t : TEXTURE0;
 	float3 normal : NORMAL0;
+	float2 t : TEXTURE0;
+
 };
 VS_OUT  main(
 	in float4 p0 : POSITION0,
@@ -23,12 +24,19 @@ VS_OUT  main(
 )
 {
 	VS_OUT vo;
-    pos = mul(uTransform, p0);
-    vo.p = pos;
-
+    vo.p = mul(p0, uTransform);
+	
     vo.t = t0.xy;
-	pos *= 0.2;
+	vo.p.xyz *= 0.2;
+	pos = vo.p;
+	
+	//dx11 the y axis is inverted
+	vo.p.y = -vo.p.y;
+	pos.x = pos.x;
+	pos.z = pos.z*0.5+ 0.5; 
+	pos.w = 1.0;
 
+	
 	vo.normal = n0;
 	return vo;
 

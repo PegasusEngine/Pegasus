@@ -68,8 +68,8 @@ void FractalCube2Block::Initialize()
     mProgram->SetShaderStage( shaderManager->LoadShaderStageFromFile(fileLoadProperties) );
 
     // Set up shader uniforms
-    Pegasus::Render::GetUniformLocation(mProgram, "screenRatio", mScreenRatioUniform);
-    Pegasus::Render::GetUniformLocation(mProgram, "time", mTimeUniform);
+    Pegasus::Render::CreateUniformBuffer(sizeof(mState), mStateBuffer);
+    Pegasus::Render::GetUniformLocation(mProgram, "uniformState", mStateBufferUniform);
 }
 
 //----------------------------------------------------------------------------------------
@@ -78,6 +78,7 @@ void FractalCube2Block::Shutdown()
 {
     Pegasus::Render::DeleteBlendingState(mCurrentBlockBlendingState);
     Pegasus::Render::DeleteBlendingState(mDefaultBlendingState);
+    Pegasus::Render::DeleteBuffer(mStateBuffer);
 }
 
 //----------------------------------------------------------------------------------------
@@ -98,8 +99,11 @@ void FractalCube2Block::Render(float beat, Pegasus::Wnd::Window * window)
     // Enable additive blending
     Pegasus::Render::SetBlendingState(mCurrentBlockBlendingState);
 
-    Pegasus::Render::SetUniform(mTimeUniform, currentTime);
-    Pegasus::Render::SetUniform(mScreenRatioUniform, static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight));
+    // Set up uniforms
+    mState.ratio = static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight);
+    mState.time = currentTime;
+    Pegasus::Render::SetBuffer(mStateBuffer, &mState);
+    Pegasus::Render::SetUniform(mStateBufferUniform, mStateBuffer);
     
     Pegasus::Render::Draw();
     

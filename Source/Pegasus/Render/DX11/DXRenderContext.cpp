@@ -52,7 +52,10 @@ DXRenderContext::DXRenderContext()
   mDevice(nullptr),
   mCachedD3DContext(nullptr),
   mSwapChain(nullptr),
-  mFrameBuffer(nullptr)
+  mFrameBuffer(nullptr),
+  mFrameBufferDepthStencil(nullptr),
+  mFrameBufferHeight(0),
+  mFrameBufferWidth(0)
 {
 }
 
@@ -91,8 +94,11 @@ bool DXRenderContext::Initialize(const ContextConfig& config)
     swapChainDesc.BufferCount = 1;
 
     // Set the width and height of the back buffer.
-    swapChainDesc.Width = 600;
-    swapChainDesc.Height = 600;
+    swapChainDesc.Width = config.mWidth;
+    swapChainDesc.Height = config.mHeight;
+
+    mFrameBufferWidth = config.mWidth;
+    mFrameBufferHeight = config.mHeight;
 
     // Set regular 32-bit surface for the back buffer.
     swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -137,10 +143,61 @@ bool DXRenderContext::Initialize(const ContextConfig& config)
 
 void DXRenderContext::InitializeFrame()
 {
-    ID3D11Texture2D* backBuffer;
+    ID3D11Device * device = GetDevice()->GetD3D();
+    ID3D11Texture2D* backBuffer = nullptr;;
     VALID_DECLARE(mSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backBuffer));
-    GetDevice()->GetD3D()->CreateRenderTargetView(backBuffer, NULL, &mFrameBuffer);
+    VALID(device->CreateRenderTargetView(backBuffer, NULL, &mFrameBuffer));
+
+    ID3D11Texture2D* depthStencilTexture = nullptr;
+    D3D11_TEXTURE2D_DESC descDepth;
+    descDepth.Width = mFrameBufferWidth;
+    descDepth.Height = mFrameBufferHeight;
+    descDepth.MipLevels = 1;
+    descDepth.ArraySize = 1;
+    descDepth.Format = DXGI_FORMAT_D32_FLOAT;
+    descDepth.SampleDesc.Count = 1;
+    descDepth.SampleDesc.Quality = 0;
+    descDepth.Usage = D3D11_USAGE_DEFAULT;
+    descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+    descDepth.CPUAccessFlags = 0;
+    descDepth.MiscFlags = 0;
+    VALID(device->CreateTexture2D( &descDepth, NULL, &depthStencilTexture ));
+
+    D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
+    depthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
+    depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    depthStencilViewDesc.Flags = 0;
+    depthStencilViewDesc.Texture2D.MipSlice = 0;
+    VALID(device->CreateDepthStencilView(depthStencilTexture, &depthStencilViewDesc, &mFrameBufferDepthStencil));
+
     backBuffer->Release();
+    depthStencilTexture->Release();
+}
+
+void DXRenderContext::Resize(int width, int height)
+{
+    GetD3D()->OMSetRenderTargets(0,0,0);
+	mFrameBuffer->Release();
+    mFrameBuffer = nullptr;
+
+    mFrameBufferDepthStencil->Release();
+    mFrameBufferDepthStencil = nullptr;
+
+    VALID_DECLARE(
+        mSwapChain->ResizeBuffers(
+            0, //buffers
+            width,
+            height,
+            DXGI_FORMAT_UNKNOWN,
+            0
+        )
+    );
+
+    mFrameBufferWidth = width;
+    mFrameBufferHeight = height;
+
+    InitializeFrame();
+    
 }
 
 Context::Context(const ContextConfig& config)
@@ -192,6 +249,12 @@ void Context::Swap() const
 {
     DXRenderContext * context = static_cast<DXRenderContext*>(mPrivateData);
     context->Present();
+}
+
+void Context::Resize(int width, int height)
+{
+    DXRenderContext * context = static_cast<DXRenderContext*>(mPrivateData);
+    context->Resize(width, height);
 }
 
 }//namespace Render

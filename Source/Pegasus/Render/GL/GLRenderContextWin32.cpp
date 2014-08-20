@@ -107,6 +107,11 @@ void Context::Swap() const
     SwapBuffers(deviceContextHandle);
 }
 
+//----------------------------------------------------------------------------------------
+void Context::Resize(int width, int height)
+{
+    //nop - in opengl no need to apply this silliness
+}
 
 }   // namespace Render
 }   // namespace Pegasus

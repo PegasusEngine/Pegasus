@@ -3,9 +3,11 @@
 //translated to hlsl by Kleber Garcia 2014
 //
 
-
-float time : register(c0);
-float screenRatio : register(c1);
+cbuffer uniformState
+{
+float screenRatio;
+float time;
+}
 struct VS_OUT
 {
 	float3 p : TEXCOORD1;

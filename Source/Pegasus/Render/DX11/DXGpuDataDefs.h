@@ -19,6 +19,9 @@
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
 #include "Pegasus/Mesh/MeshInputLayout.h"
 
+#define MAX_UNIFORM_NAME 64
+#define UNIFORM_DATA_INCREMENT 16
+
 namespace Pegasus
 {
 
@@ -54,6 +57,36 @@ struct DXProgramGPUData
     CComPtr<ID3D11GeometryShader> mGeometry;
     CComPtr<ID3D11ComputeShader>  mCompute;
     CComPtr<ID3DBlob>     mInputLayoutBlob;
+
+    struct UniformReflectionData
+    {
+        char mUniformName[MAX_UNIFORM_NAME];
+        int  mStageCount;
+        struct StageBinding
+        {
+            Pegasus::Shader::ShaderType mPipelineType;
+            int mBindPoint;
+            int mBindCount;      
+            int mSize;
+            D3D_SHADER_INPUT_TYPE mType;
+
+            StageBinding()
+            : mPipelineType(Pegasus::Shader::SHADER_STAGE_INVALID),
+              mBindPoint(-1),
+              mBindCount(-1),
+              mSize(-1)
+            {
+            }
+        } mStageBindings[Pegasus::Shader::SHADER_STAGES_COUNT];
+
+        UniformReflectionData()
+        : mStageCount(0)
+        {
+            mUniformName[0] = '\0';
+        }             
+    }* mReflectionData;
+    int mReflectionDataCount;
+    int mReflectionDataCapacity;
     int mProgramGuid;
     int mProgramVersion;
     bool mProgramValid;
@@ -91,9 +124,28 @@ struct DXMeshGPUData
 };
 
 
-}
+struct DXTextureGPUData
+{
+    PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(DXTextureGPUData, 0x4);
 
-}
+    D3D11_TEXTURE2D_DESC mDesc;
+    CComPtr<ID3D11Texture2D> mTexture;
+
+    D3D11_SHADER_RESOURCE_VIEW_DESC mSrvDesc;
+    CComPtr<ID3D11ShaderResourceView> mSrv;
+};
+
+struct DXRenderTargetGPUData
+{
+    PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(DXRenderTargetGPUData, 0x5);
+    DXTextureGPUData mTextureView;
+    
+    D3D11_RENDER_TARGET_VIEW_DESC mDesc;
+    CComPtr<ID3D11RenderTargetView> mRenderTarget;
+};
+
+} //namespace Render
+} //namespace Pegasus
 
 
 #endif

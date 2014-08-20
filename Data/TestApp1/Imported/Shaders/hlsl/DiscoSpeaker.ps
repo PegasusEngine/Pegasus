@@ -2,8 +2,10 @@
 // DiscoSpeaker ps, by Kleber Garcia 2014
 //
 
-
-float time : register(c0);
+cbuffer uniformState
+{
+float time;
+}
 
 static const float E = 2.7182818284;
 

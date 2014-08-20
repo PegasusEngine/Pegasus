@@ -63,8 +63,8 @@ void FractalCubeBlock::Initialize()
     mProgram->GetUpdatedData(updated);
 
     // Set up shader uniforms
-    Pegasus::Render::GetUniformLocation(mProgram, "screenRatio", mScreenRatioUniform);
-    Pegasus::Render::GetUniformLocation(mProgram, "time", mTimeUniform);
+    Pegasus::Render::CreateUniformBuffer(sizeof(mState), mStateBuffer);
+    Pegasus::Render::GetUniformLocation(mProgram, "uniformState", mStateBufferUniform);
 
 }
 
@@ -73,6 +73,7 @@ void FractalCubeBlock::Initialize()
 void FractalCubeBlock::Shutdown()
 {
     //! \todo Uninitialize VAOs, buffers, shaders
+    Pegasus::Render::DeleteBuffer(mStateBuffer);
 }
 
 //----------------------------------------------------------------------------------------
@@ -91,8 +92,10 @@ void FractalCubeBlock::Render(float beat, Pegasus::Wnd::Window * window)
     window->GetDimensions(viewportWidth, viewportHeight);
 
     // Set up uniforms
-    Pegasus::Render::SetUniform(mTimeUniform, currentTime);
-    Pegasus::Render::SetUniform(mScreenRatioUniform, static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight));
+    mState.ratio = static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight);
+    mState.time = currentTime;
+    Pegasus::Render::SetBuffer(mStateBuffer, &mState);
+    Pegasus::Render::SetUniform(mStateBufferUniform, mStateBuffer);
     
     Pegasus::Render::Draw();
 }

@@ -21,6 +21,8 @@
 #include "Pegasus/Graph/NodeData.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Shader/ShaderStage.h"
+#include "Pegasus/Utils/String.h"
+#include "Pegasus/Utils/Memcpy.h"
 #include "../Source/Pegasus/Render/DX11/DXGpuDataDefs.h"
 #include "../Source/Pegasus/Render/DX11/DXRenderContext.h"
 #include "../Source/Pegasus/Render/DX11/DXDevice.h"
@@ -47,6 +49,7 @@ public:
 private:
     Pegasus::Render::DXShaderGPUData* GetOrCreateShaderGpuData(Pegasus::Graph::NodeData* nodeData);
     Pegasus::Render::DXProgramGPUData* GetOrCreateProgramGpuData(Pegasus::Graph::NodeData* nodeData);
+    void PopulateReflectionData(Pegasus::Render::DXProgramGPUData* programData, const CComPtr<ID3D11ShaderReflection>& reflectionInfo, Pegasus::Shader::ShaderType shaderType);
     Pegasus::Alloc::IAllocator * mAllocator;
 };
 
@@ -325,6 +328,10 @@ Pegasus::Render::DXProgramGPUData* DXShaderFactory::GetOrCreateProgramGpuData(Pe
         programGPUData->mProgramGuid = gNextProgramGuid++;
         programGPUData->mProgramVersion = 0;
         programGPUData->mProgramValid = false;
+        programGPUData->mReflectionData = nullptr;
+        programGPUData->mReflectionDataCount = 0;
+        programGPUData->mReflectionDataCapacity = 0;
+        
     }
     else
     {
@@ -347,6 +354,7 @@ void DXShaderFactory::GenerateProgramGPUData(Pegasus::Shader::ProgramLinkage * p
     programGPUData->mCompute = nullptr;
     programGPUData->mInputLayoutBlob = nullptr;
     programGPUData->mProgramValid = false;
+    programGPUData->mReflectionDataCount = 0; //empty the reflection data
     
     bool isProgramComplete = true; //assume true
     for (unsigned i = 0; i < programNode->GetNumInputs(); ++i)
@@ -386,6 +394,11 @@ void DXShaderFactory::GenerateProgramGPUData(Pegasus::Shader::ProgramLinkage * p
                 programGPUData->mCompute = shaderStageGPUData->mCompute;
                 break;
             }
+            PG_ASSERT(shaderStage->GetStageType() < Pegasus::Shader::SHADER_STAGES_COUNT);
+			if (isProgramComplete)
+			{
+				PopulateReflectionData(programGPUData, shaderStageGPUData->mReflectionInfo, shaderStage->GetStageType());
+			}
         }
     }
     
@@ -444,6 +457,75 @@ void DXShaderFactory::GenerateProgramGPUData(Pegasus::Shader::ProgramLinkage * p
     nodeData->ValidateGPUData();
 }
 
+void DXShaderFactory::PopulateReflectionData(Pegasus::Render::DXProgramGPUData* programData, const CComPtr<ID3D11ShaderReflection>& reflectionInfo, Pegasus::Shader::ShaderType shaderType)
+{
+    D3D11_SHADER_DESC shaderDesc;
+    D3D11_SHADER_INPUT_BIND_DESC inputBindDesc;
+    VALID_DECLARE(reflectionInfo->GetDesc(&shaderDesc));
+    for (UINT i = 0; i < shaderDesc.BoundResources; ++i)
+    {
+	    int size = 0;
+        VALID(reflectionInfo->GetResourceBindingDesc(i, &inputBindDesc));
+		if (inputBindDesc.Type == D3D_SIT_CBUFFER)
+		{
+			ID3D11ShaderReflectionConstantBuffer* cBuffer = reflectionInfo->GetConstantBufferByName(inputBindDesc.Name);
+			D3D11_SHADER_BUFFER_DESC cbufferDesc;
+			VALID(cBuffer->GetDesc(&cbufferDesc));
+			size = cbufferDesc.Size;
+		}
+
+
+        //find semantic
+        Pegasus::Render::DXProgramGPUData::UniformReflectionData* targetReflectionData = nullptr;
+        for (int r = 0; r < programData->mReflectionDataCount; ++r)
+        {
+            Pegasus::Render::DXProgramGPUData::UniformReflectionData& candidate = programData->mReflectionData[r];
+            if (!Pegasus::Utils::Strcmp(inputBindDesc.Name, candidate.mUniformName))
+            {
+                targetReflectionData = &candidate;
+                break;
+            }
+        }
+
+        //means is not found, so create a new piece of memory!
+        if (targetReflectionData == nullptr)
+        {
+            if (programData->mReflectionDataCount >= programData->mReflectionDataCapacity)
+            {
+                int newCapacity = programData->mReflectionDataCapacity + UNIFORM_DATA_INCREMENT;
+                Pegasus::Render::DXProgramGPUData::UniformReflectionData * newList = PG_NEW_ARRAY(
+                    mAllocator,
+                    -1,
+                    "New Reflection Data List",
+                    Pegasus::Alloc::PG_MEM_TEMP,
+                    Pegasus::Render::DXProgramGPUData::UniformReflectionData,
+                    newCapacity
+                );
+
+				if (programData->mReflectionData != nullptr)
+				{
+					Pegasus::Utils::Memcpy(newList, programData->mReflectionData, programData->mReflectionDataCapacity);
+					PG_DELETE_ARRAY(mAllocator, programData->mReflectionData);
+				}
+                programData->mReflectionData = newList;
+                programData->mReflectionDataCapacity = newCapacity;
+            }
+            targetReflectionData = &programData->mReflectionData[programData->mReflectionDataCount++];
+            targetReflectionData->mUniformName[0] = '\0';
+            targetReflectionData->mStageCount = 0;
+            Pegasus::Utils::Strcat(targetReflectionData->mUniformName, inputBindDesc.Name);
+        }
+
+        PG_ASSERT(targetReflectionData->mStageCount < Pegasus::Shader::SHADER_STAGES_COUNT);
+        Pegasus::Render::DXProgramGPUData::UniformReflectionData::StageBinding& stage = targetReflectionData->mStageBindings[targetReflectionData->mStageCount++];
+        stage.mPipelineType = shaderType;
+        stage.mBindPoint = inputBindDesc.BindPoint;
+        stage.mBindCount = inputBindDesc.BindCount;
+        stage.mType = inputBindDesc.Type;
+        stage.mSize = size;
+    }
+}
+
 //Dedestroy gpu data of program
 void DXShaderFactory::DestroyProgramGPUData (Pegasus::Graph::NodeData * nodeData)
 {
@@ -460,8 +542,13 @@ void DXShaderFactory::DestroyProgramGPUData (Pegasus::Graph::NodeData * nodeData
         programData->mGeometry = nullptr;
         programData->mCompute  = nullptr;
 
+        if (programData->mReflectionData != nullptr)
+        {
+            PG_DELETE_ARRAY(mAllocator, programData->mReflectionData);
+        }
         PG_DELETE(mAllocator, programData);
         nodeData->SetNodeGPUData(nullptr);
+
     }
 }
 

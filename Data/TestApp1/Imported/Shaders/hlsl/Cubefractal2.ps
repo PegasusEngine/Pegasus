@@ -35,8 +35,9 @@ void main(
             k*=1.7;
 		}
 		t+=.7*f;
+		i++;
 	}
-	while(f>.0006 && i++<100);
+	while(f>.0006 && i<100);
     color = float4(abs(c) / (1+t) / (1.+float(i)*.05), 1);
     
     t-=.72*f;
@@ -59,8 +60,9 @@ void main(
             k*=1.7;
 		}
 		t+=.7*f;
+		i++;
 	}
-	while(f>.0006 && i++<70);
+	while(f>.0006 && i<70);
     t-=.7*f;
     if (t < .9*length(ip-lp))
         color.xyz *= .4;

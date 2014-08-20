@@ -51,7 +51,7 @@ namespace Render
     struct Buffer
     {
         int mSize;
-        int mInternalData; //! 64 bit compressed data, used internally
+        void* mInternalData; //! 64 bit compressed data, used internally
     public:
         Buffer()
            : mInternalData(0), mSize(0)
@@ -155,6 +155,7 @@ namespace Render
     struct RasterizerState
     {
         void * mInternalData;
+        void * mInternalDataAux;
         RasterizerConfig mConfig;
     };
 
@@ -165,7 +166,7 @@ namespace Render
         {
             NONE_BO,
             ADD_BO,
-            MUL_BO
+            SUB_BO
         };
 
         enum Multiplicator
@@ -181,6 +182,7 @@ namespace Render
         {
         }
         
+        void * mInternalData;
         BlendOperator mBlendingOperator;
         Multiplicator mSource;
         Multiplicator mDest;

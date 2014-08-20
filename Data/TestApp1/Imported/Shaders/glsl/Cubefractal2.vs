@@ -5,8 +5,11 @@
 #version 330 core
 in vec2 p0;
 out vec3 p,d;
-uniform float time;
-uniform float screenRatio;
+layout(std140) uniform uniformState
+{
+float screenRatio;
+float time;
+};
 void main(){
     gl_Position=vec4(p0.x,p0.y*screenRatio,0.0,1.0);
     p = vec3(0,0,time*.6);

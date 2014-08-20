@@ -3,9 +3,12 @@
 //translated to hlsl by Kleber Garcia 2014
 //
 
+cbuffer uniformState
+{
+float screenRatio;
+float time ;
 
-float time : register(c0);
-float screenRatio : register(c1);
+};
 struct VS_OUT
 {
 

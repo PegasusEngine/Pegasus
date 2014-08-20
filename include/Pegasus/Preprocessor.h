@@ -195,9 +195,9 @@
 // Graphics API
 #if PEGASUS_PLATFORM_WINDOWS
 
-#define PEGASUS_GAPI_GL             1
+#define PEGASUS_GAPI_GL             0
 #define PEGASUS_GAPI_GLES           0
-#define PEGASUS_GAPI_DX             0
+#define PEGASUS_GAPI_DX             1
 
 #else
 

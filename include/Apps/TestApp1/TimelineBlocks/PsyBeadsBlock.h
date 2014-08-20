@@ -55,9 +55,19 @@ private:
     PG_DISABLE_COPY(PsyBeadsBlock)
 
     Pegasus::Shader::ProgramLinkageRef mProgram;
-    Pegasus::Render::Uniform mTimeUniform;
-    Pegasus::Render::Uniform mScreenRatioUniform;
     Pegasus::Mesh::MeshRef mQuad;
+
+    Pegasus::Render::Buffer mStateBuffer;
+    Pegasus::Render::Uniform mStateBufferUniform;
+    PEGASUS_ALIGN_BEGIN(16)
+    struct UniformState
+    {
+        float ratio;
+        float time;
+    } mState;
+    PEGASUS_ALIGN_END(16);
+
+    
 };
 
 

@@ -20,7 +20,7 @@ void main(
 	out float4 color : SV_Target
 )
 {
-	float3 col = cubeTex.Sample(CubeTextSampler, t*3.0).rgb;
+	float3 col = cubeTex.Sample(CubeTextSampler, fmod(t*3.0,1.0)).rgb;
 	float3 nn = normalize(normalize(p.xyz)+(2.0*float3(0,1.0,0.1)*col.y));
 
 	float3 pNormal = normalize(normal);

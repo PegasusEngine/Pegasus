@@ -13,6 +13,7 @@
 #define TESTAPP1WINDOW_H
 
 #include "Pegasus/Pegasus.h"
+#include "Pegasus/Render/Render.h"
 
 //! This is a specialized window for the TestApp1 application main window
 //! Place specialized rendering code here.
@@ -33,6 +34,7 @@ public:
 
 private:
     Pegasus::Alloc::IAllocator * mAllocator;
+    Pegasus::Render::RasterizerState mRasterState;
 };
 
 #endif  // TESTAPP1WINDOW_H

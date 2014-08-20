@@ -123,8 +123,8 @@ void GeometryTestBlock::Initialize()
     Pegasus::Render::CreateUniformBuffer(sizeof(mState), mUniformStateBuffer);
     Pegasus::Math::SetIdentity(mState.mRotation);
 
-    Pegasus::Render::GetUniformLocation(mDiscoSpeaker, "aspect",   mAspectUniform);
-    Pegasus::Render::GetUniformLocation(mDiscoSpeaker, "time",   mTimeUniform);
+    Pegasus::Render::GetUniformLocation(mDiscoSpeaker, "uniformState",   mSpeakerUniformBlock);
+    Pegasus::Render::CreateUniformBuffer(sizeof(mSpeakerState), mSpeakerStateBuffer);
 
     Pegasus::Render::GetUniformLocation(mComposite, "inputTexture1", mCompositeInput1);
     Pegasus::Render::GetUniformLocation(mComposite, "inputTexture2", mCompositeInput2);
@@ -155,9 +155,6 @@ void GeometryTestBlock::Initialize()
         );
         //force update
         mSphereMeshes[i]->GetUpdatedMeshData();
-        icosphere->SetDegree(3);
-		icosphere->Update();
-        mSphereMeshes[i]->GetUpdatedMeshData();
     }
 
     //setup render targets
@@ -179,6 +176,7 @@ void GeometryTestBlock::Initialize()
 void GeometryTestBlock::Shutdown()
 {
     Pegasus::Render::DeleteBuffer(mUniformStateBuffer);
+    Pegasus::Render::DeleteBuffer(mSpeakerStateBuffer);
     Pegasus::Render::DeleteRenderTarget(mTempTarget1);
     Pegasus::Render::DeleteRenderTarget(mTempTarget2);
     Pegasus::Render::DeleteRenderTarget(mTempTarget3);
@@ -206,8 +204,9 @@ void GeometryTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
     Pegasus::Render::Dispatch(mDiscoSpeaker); // dispatch the shader
     Pegasus::Render::Dispatch(mQuad); // screen space
 
-    Pegasus::Render::SetUniform(mAspectUniform, aspect);
-    Pegasus::Render::SetUniform(mTimeUniform, beat);
+    mSpeakerState.time = beat;
+    Pegasus::Render::SetBuffer(mSpeakerStateBuffer, &mSpeakerState);
+    Pegasus::Render::SetUniform(mSpeakerUniformBlock, mSpeakerStateBuffer);
 
     Pegasus::Render::Draw();
 

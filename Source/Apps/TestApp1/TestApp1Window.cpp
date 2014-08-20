@@ -36,12 +36,17 @@ Pegasus::Wnd::Window* TestApp1Window::Create(const Pegasus::Wnd::WindowConfig& c
 
 void TestApp1Window::Initialize()
 {
+    Pegasus::Render::RasterizerConfig rasterConfig;
+    rasterConfig.mDepthFunc = Pegasus::Render::RasterizerConfig::NONE_DF;
+    rasterConfig.mCullMode = Pegasus::Render::RasterizerConfig::CW_CM;
+    Pegasus::Render::CreateRasterizerState(rasterConfig, mRasterState);
 }
 
 //----------------------------------------------------------------------------------------
 
 void TestApp1Window::Shutdown()
 {
+    Pegasus::Render::DeleteRasterizerState(mRasterState);
 }
 
 //----------------------------------------------------------------------------------------
@@ -56,6 +61,7 @@ void TestApp1Window::Render()
     // set default render target
     Pegasus::Render::Viewport regularViewport(viewportWidth, viewportHeight);
     Pegasus::Render::DispatchDefaultRenderTarget(regularViewport);
+    Pegasus::Render::SetRasterizerState(mRasterState);
 
     // set clear color and depth
     Pegasus::Render::SetClearColorValue(Pegasus::Math::ColorRGBA(0.0, 0.0, 0.0, 1.0));

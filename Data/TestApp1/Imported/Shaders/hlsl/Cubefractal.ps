@@ -35,7 +35,8 @@ void main(
             k*=1.7;
 		}
 		t+=.7*f;
+		i++;
 	}
-	while(f>.0006 && i++<100);
+	while(f>.0006 && i<100);
     color = abs(c) / (1+t) / (1.+float(i)*.05);
 }

@@ -358,8 +358,8 @@ void Pegasus::Render::SetBlendingState(const Pegasus::Render::BlendingState& ble
         
         static const GLenum sBlendingFuncs[] = {
             0,
-            GL_ADD,
-            GL_MULT
+            GL_FUNC_ADD,
+            GL_FUNC_SUBTRACT
         };
         PG_ASSERT(config.mBlendingOperator < sizeof(sBlendingFuncs) / sizeof(GLenum));
         glBlendEquation(sBlendingFuncs[config.mBlendingOperator]);
@@ -528,7 +528,7 @@ void Pegasus::Render::CreateUniformBuffer(int size, Pegasus::Render::Buffer& out
     GLuint name = GL_INVALID_INDEX;
     glGenBuffers(1, &name);
     PG_ASSERT(name != GL_INVALID_INDEX);
-    outputBuffer.mInternalData = (int)name; //encode name in the lower dword
+    outputBuffer.mInternalData = reinterpret_cast<void*>(name); //encode name in the lower dword
 
     //allocate memory
     glBindBuffer(GL_UNIFORM_BUFFER, name);
@@ -604,9 +604,8 @@ void Pegasus::Render::DeleteBuffer(Pegasus::Render::Buffer& buffer)
 bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, float value)
 {
     Pegasus::Render::GLShaderUniform * uniformEntry = GetUpdatedGLUniformLocation(u);
-    if (uniformEntry != nullptr)
+    if (uniformEntry != nullptr && uniformEntry->mSlot != GL_INVALID_INDEX)
     {
-        PG_ASSERT(uniformEntry->mSlot != GL_INVALID_INDEX);
         PG_ASSERTSTR(uniformEntry->mType == GL_FLOAT, "Setting a uniform of the wrong type!");
         glUniform1f(uniformEntry->mSlot, value);
         return true;
@@ -619,9 +618,8 @@ bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, float value)
 static bool InternalSetTextureUniform(Pegasus::Render::Uniform& u, Pegasus::Render::OGLTextureGPUData * gpuData)
 {
     Pegasus::Render::GLShaderUniform * uniformEntry = GetUpdatedGLUniformLocation(u);
-    if (uniformEntry != nullptr)
+    if (uniformEntry != nullptr && uniformEntry->mSlot != GL_INVALID_INDEX)
     {
-        PG_ASSERT(uniformEntry->mSlot != GL_INVALID_INDEX);
         PG_ASSERTSTR(
             uniformEntry->mType == GL_SAMPLER_1D ||
             uniformEntry->mType == GL_SAMPLER_2D ||
@@ -669,9 +667,8 @@ bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, Pegasus::Texture::
 bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, const Buffer& buffer)
 {
     Pegasus::Render::GLShaderUniform * uniformEntry = GetUpdatedGLUniformLocation(u);
-    if (uniformEntry != nullptr )
+    if (uniformEntry != nullptr && uniformEntry->mSlot != GL_INVALID_INDEX)
     {
-        PG_ASSERT(uniformEntry->mSlot != GL_INVALID_INDEX);
         if (uniformEntry->mUniformBlockSize != buffer.mSize)
         {
             PG_LOG('WARN',

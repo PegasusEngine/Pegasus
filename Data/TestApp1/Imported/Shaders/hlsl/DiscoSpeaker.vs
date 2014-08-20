@@ -11,7 +11,7 @@ VS_OUT main(
 )
 {
 	VS_OUT vo;
-    pos=float4(p0.x,p0.y,0.0,1.0);
+    pos=float4(p0.x,p0.y,0.01,1.0);
 	vo.p = pos;
 	return vo;
 }

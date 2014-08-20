@@ -56,8 +56,15 @@ private:
 
     Pegasus::Shader::ProgramLinkageRef mProgram;
     Pegasus::Mesh::MeshRef mQuad;
-    Pegasus::Render::Uniform mTimeUniform;
-    Pegasus::Render::Uniform mScreenRatioUniform;
+    Pegasus::Render::Buffer mStateBuffer;
+    Pegasus::Render::Uniform mStateBufferUniform;
+    PEGASUS_ALIGN_BEGIN(16)
+    struct UniformState
+    {
+        float ratio;
+        float time;
+    } mState;
+    PEGASUS_ALIGN_END(16);
     Pegasus::Render::BlendingState mCurrentBlockBlendingState;
     Pegasus::Render::BlendingState mDefaultBlendingState;
 };

@@ -23,7 +23,7 @@ struct ContextConfig
 {
 public:
     //! Constructor
-    ContextConfig() : mAllocator(nullptr), mDevice(nullptr), mOwnerWindowHandle(0) {};
+    ContextConfig() : mAllocator(nullptr), mDevice(nullptr), mWidth(0), mHeight(0), mOwnerWindowHandle(0) {};
 
     //! Destructor
     ~ContextConfig() {};
@@ -32,6 +32,8 @@ public:
     Alloc::IAllocator* mAllocator; //!< Allocator to use when creating this object
     IDevice * mDevice; //!< Parent device for this context (represents graphics device)
     Os::WindowHandle mOwnerWindowHandle; //!< Opaque owner window handle
+    unsigned int mWidth; //frame buffer width
+    unsigned int mHeight; //frame buffer height
 };
 
 

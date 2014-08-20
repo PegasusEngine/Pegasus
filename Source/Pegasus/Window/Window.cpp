@@ -65,6 +65,7 @@ void WindowMessageHandler::OnCreate(Os::WindowHandle handle)
     contextConfig.mAllocator = mParent->mRenderAllocator;
     contextConfig.mOwnerWindowHandle = handle;
     contextConfig.mDevice = mParent->GetRenderDevice();
+    mParent->GetDimensions(contextConfig.mWidth, contextConfig.mHeight);
     mParent->mRenderContext = PG_NEW(mParent->mRenderAllocator, -1, "Render::Context", Pegasus::Alloc::PG_MEM_PERM) Render::Context(contextConfig);
     mParent->mContextCreated = true;
 }
@@ -94,6 +95,7 @@ void WindowMessageHandler::OnResize(unsigned int width, unsigned int height)
 {
     mParent->mWidth = width;
     mParent->mHeight = height;
+    mParent->mRenderContext->Resize(width, height);
 }
 
 //----------------------------------------------------------------------------------------
