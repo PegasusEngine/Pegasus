@@ -20,4 +20,6 @@ void main()
     while(f>.01&&i++<100);
     f=sin(t);
     color=vec4(f*.5+.2+smoothstep(.6,.62,i*.01)*smoothstep(.64,.62,i*.01),f*.6+.2,f*.7+.3,1);
+
+	color.xyz *= 1.0 / (1.0 + fract(4.0 * p.z / 3.0));
 }

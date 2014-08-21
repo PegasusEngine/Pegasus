@@ -150,7 +150,7 @@ void TimelineDockWidget::UpdateUIForAppLoaded()
     }
     else
     {
-        ui.bpmSpin->setValue(120.0);
+        ui.bpmSpin->setValue(138.0);
     }
     ui.bpmSpin->setEnabled(true);
 
@@ -185,7 +185,7 @@ void TimelineDockWidget::UpdateUIForAppClosed()
     ui.graphicsView->OnPlayModeToggled(false);
 
     ui.bpmSpin->setEnabled(false);
-    ui.bpmSpin->setValue(120.0);
+    ui.bpmSpin->setValue(138.0);
     ui.snapCombo->setEnabled(false);
     ui.snapCombo->setCurrentIndex(0);
     mSnapNumTicks = 1;

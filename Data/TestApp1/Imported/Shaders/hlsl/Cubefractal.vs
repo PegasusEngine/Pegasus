@@ -20,7 +20,7 @@ VS_OUT main(
 ){
 	VS_OUT vo;
     pos=float4(p0.x,p0.y*screenRatio,0.0,1.0);
-    vo.p = float3(0,0,time*.6);
-    vo.d = float3(p0.x * cos(time) + sin(time), p0.y + .4*sin(time), cos(time) - p0.x * sin(time));
+    vo.p = float3(0,0,time*0.15);
+    vo.d = float3(p0.x * cos(time*0.25) + sin(time*0.25), p0.y + .4*sin(time*0.25), cos(time*0.25) - p0.x * sin(time*0.25));
 	return vo;
 }

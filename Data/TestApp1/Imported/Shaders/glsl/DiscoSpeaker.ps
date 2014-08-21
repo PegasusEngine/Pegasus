@@ -15,7 +15,7 @@ void main()
 	vec2 circle = p.xy;
 
 	circle *= circle;
-	float pulse1 = clamp(mod(4.0*time,3.0),1.0,1.6);
+	float pulse1 = clamp(fract(time)*3.0,1.0,1.6);
 	float c = dot(circle, vec2(1.0,1.0))*pulse1;
 	float rad = clamp(50.0*c,0.0,40.0);
  

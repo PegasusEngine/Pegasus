@@ -135,7 +135,6 @@ void TextureTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
     Pegasus::Render::Dispatch(mProgram);
     Pegasus::Render::Dispatch(mQuad);
 
-    const float currentTime = beat * 0.25f;
     unsigned int viewportWidth = 0;
     unsigned int viewportHeight = 0;
     window->GetDimensions(viewportWidth, viewportHeight);

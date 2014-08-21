@@ -209,6 +209,11 @@
 
 //----------------------------------------------------------------------------------------
 
+// Sound API
+#define PEGASUS_SAPI_FMOD           1
+
+//----------------------------------------------------------------------------------------
+
 // DLL mode for the application, used when compiling the app as a dynamic library, in DEV mode
 #ifdef _PEGASUSAPP_DLL
 #if PEGASUS_REL
@@ -310,5 +315,9 @@
 
 // Enable GPU data RunTime Type Information, for safe casting (asserts thrown if wrong type being casted)
 #define PEGASUS_GRAPH_GPUDATA_RTTI          PEGASUS_DEBUG 
+
+// Enable to stream the music file from disk rather than preloading it
+#define PEGASUS_SOUND_STREAM_MUSIC          0
+
 
 #endif  // PEGASUS_PREPROCESSOR_H

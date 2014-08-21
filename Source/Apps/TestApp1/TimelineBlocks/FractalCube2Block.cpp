@@ -91,7 +91,6 @@ void FractalCube2Block::Render(float beat, Pegasus::Wnd::Window * window)
     Pegasus::Render::Dispatch(mProgram);
     Pegasus::Render::Dispatch(mQuad);
 
-    const float currentTime = beat * 0.25f;
     unsigned int viewportWidth = 0;
     unsigned int viewportHeight = 0;
     window->GetDimensions(viewportWidth, viewportHeight);
@@ -101,7 +100,7 @@ void FractalCube2Block::Render(float beat, Pegasus::Wnd::Window * window)
 
     // Set up uniforms
     mState.ratio = static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight);
-    mState.time = currentTime;
+    mState.time = beat;
     Pegasus::Render::SetBuffer(mStateBuffer, &mState);
     Pegasus::Render::SetUniform(mStateBufferUniform, mStateBuffer);
     

@@ -33,7 +33,7 @@ Timeline::Timeline(Alloc::IAllocator * allocator, Wnd::IWindowContext * appConte
 ,   mNumTicksPerBeat(128)
 ,   mNumTicksPerBeatFloat(128.0f)
 ,   mRcpNumTicksPerBeat(1.0f / 128.0f)
-,   mBeatsPerMinute(120.0f)
+,   mBeatsPerMinute(138.0f)
 ,   mNumBeats(128)
 ,   mNumLanes(0)
 ,   mPlayMode(PLAYMODE_REALTIME)

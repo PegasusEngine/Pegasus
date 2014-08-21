@@ -13,6 +13,7 @@
 #include "Pegasus/Render/RenderContext.h"
 #include "Pegasus/Window/IWindowContext.h"
 #include "../Source/Pegasus/Window/IWindowImpl.h"
+#include "Pegasus/Sound/Sound.h"
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/Window/WindowProxy.h"
@@ -154,6 +155,13 @@ void Window::Refresh(bool updateTimeline)
             mWindowContext->GetTimeline()->Update();
         }
         Render();
+
+        //! \todo Update the sound system once per frame, not per window. Same thing for the timeline above.
+        if (!Sound::IsPlayingMusic())
+        {
+            Sound::PlayMusic();
+        }
+        Sound::Update();
     }
     else
     {

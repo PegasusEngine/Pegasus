@@ -21,6 +21,7 @@
 #include "TimelineBlocks/GeometryTestBlock.h"
 
 #include "Pegasus/Timeline/Lane.h"
+#include "Pegasus/Sound/Sound.h"
 
 
 // Variables
@@ -92,7 +93,7 @@ void TestApp1::InitializeApp()
     // Create the content of the timeline
     const unsigned int TICKS_PER_BEAT = 128;
     timeline->SetNumTicksPerBeat(TICKS_PER_BEAT);
-    timeline->SetBeatsPerMinute(120.0f);
+    timeline->SetBeatsPerMinute(138.0f);
     timeline->CreateLane();
     timeline->CreateLane();
     timeline->CreateLane();
@@ -113,31 +114,34 @@ void TestApp1::InitializeApp()
 #if PEGASUS_ENABLE_PROXIES
     geometryTestBlock->SetColor(19, 55, 28);
 #endif
-    timeline->GetLane(0)->InsertBlock(geometryTestBlock, 8 * TICKS_PER_BEAT, 10 * TICKS_PER_BEAT);
+    timeline->GetLane(0)->InsertBlock(geometryTestBlock, 8 * TICKS_PER_BEAT, 8 * TICKS_PER_BEAT);
 
     Pegasus::Timeline::Block * psyBeadBlock2 = timeline->CreateBlock("PsyBeadsBlock");
 #if PEGASUS_ENABLE_PROXIES
     psyBeadBlock2->SetColor(255, 128, 192);
 #endif
-    timeline->GetLane(0)->InsertBlock(psyBeadBlock2, 19 * TICKS_PER_BEAT, 10 * TICKS_PER_BEAT);
+    timeline->GetLane(0)->InsertBlock(psyBeadBlock2, 16 * TICKS_PER_BEAT, 16 * TICKS_PER_BEAT);
 
     Pegasus::Timeline::Block * fractalCube2Block = timeline->CreateBlock("FractalCube2Block");
 #if PEGASUS_ENABLE_PROXIES
     fractalCube2Block->SetColor(128, 255, 192);
 #endif
-    timeline->GetLane(1)->InsertBlock(fractalCube2Block, 18 * TICKS_PER_BEAT, 6 * TICKS_PER_BEAT);
+    timeline->GetLane(1)->InsertBlock(fractalCube2Block, 16 * TICKS_PER_BEAT, 8 * TICKS_PER_BEAT);
 
     mTextureTestBlock = timeline->CreateBlock("TextureTestBlock");
 #if PEGASUS_ENABLE_PROXIES
     mTextureTestBlock->SetColor(192, 255, 128);
 #endif
-    timeline->GetLane(2)->InsertBlock(mTextureTestBlock, 25 * TICKS_PER_BEAT, 18 * TICKS_PER_BEAT);
+    timeline->GetLane(2)->InsertBlock(mTextureTestBlock, 24 * TICKS_PER_BEAT, 18 * TICKS_PER_BEAT);
 
     Pegasus::Timeline::Block * fractalCubeBlock = timeline->CreateBlock("FractalCubeBlock");
 #if PEGASUS_ENABLE_PROXIES
     fractalCubeBlock->SetColor(128, 255, 128);
 #endif
-    timeline->GetLane(1)->InsertBlock(fractalCubeBlock, 43 * TICKS_PER_BEAT, 5 * TICKS_PER_BEAT);
+    timeline->GetLane(1)->InsertBlock(fractalCubeBlock, 42 * TICKS_PER_BEAT, 6 * TICKS_PER_BEAT);
+
+    // Set the music file to play
+    Pegasus::Sound::LoadMusic("..\\..\\..\\..\\Data\\TestApp1\\Imported\\Music\\Test.mp3");
 }
 
 //----------------------------------------------------------------------------------------

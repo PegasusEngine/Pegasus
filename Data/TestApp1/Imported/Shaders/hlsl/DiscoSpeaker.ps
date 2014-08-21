@@ -17,7 +17,7 @@ void main(
 	float2 circle = p.xy;
 
 	circle *= circle;
-	float pulse1 = clamp(fmod(4.0*time,3.0),1.0,1.6);
+	float pulse1 = clamp(frac(time)*3.0,1.0,1.6);
 	float c = dot(circle, float2(1.0,1.0))*pulse1;
 	float rad = clamp(50.0*c,0.0,40.0);
  

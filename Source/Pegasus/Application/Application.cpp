@@ -25,6 +25,7 @@
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/Render/RenderContext.h"
+#include "Pegasus/Sound/Sound.h"
 
 namespace Pegasus {
 namespace App {
@@ -144,7 +145,7 @@ void Application::Initialize()
     RegisterTimelineBlocks();
     InitializeApp();
 
-    // Initted
+    // Initialized
     mInitialized = true;
 }
 
@@ -167,7 +168,7 @@ void Application::Shutdown()
     // Tear down IO manager
     PG_DELETE(coreAlloc, mIoManager);
 
-    // No longer initted
+    // No longer initialized
     mInitialized = false;
 }
 
@@ -244,12 +245,16 @@ void Application::StartupAppInternal()
 
     mDevice = Pegasus::Render::IDevice::CreatePlatformDevice(deviceConfig, renderAlloc);
     PG_LOG('APPL', "Startup finished");
+
+    Sound::Initialize();
 }
 
 //----------------------------------------------------------------------------------------
 
 void Application::ShutdownAppInternal()
 {
+    Sound::Release();
+
     PG_DELETE(Memory::GetRenderAllocator(), mDevice);    
     mDevice = nullptr;
     PG_LOG('APPL', "Device Destroyed");
