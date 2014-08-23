@@ -6,8 +6,11 @@
 
 in vec4 p;
 out vec4 color;
-uniform float time;
 
+layout(std140) uniform uniformState
+{
+  float time;
+};
 const float E = 2.7182818284;
 
 void main()

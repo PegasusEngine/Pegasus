@@ -25,6 +25,8 @@ extern void DestroyApplication(Pegasus::App::Application* app);
 
 //----------------------------------------------------------------------------------------
 
+extern void Internal_GetEngineDesc(Pegasus::PegasusDesc& engineDesc);
+
 namespace Pegasus {
 namespace App {
 
@@ -106,6 +108,14 @@ void ApplicationProxy::Load()
 Timeline::ITimelineProxy* ApplicationProxy::GetTimeline() const
 {
     return mApplication->GetTimeline()->GetProxy();
+}
+
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationProxy::GetEngineDesc(Pegasus::PegasusDesc& engineDesc) const
+{
+    Internal_GetEngineDesc(engineDesc);
 }
 
 

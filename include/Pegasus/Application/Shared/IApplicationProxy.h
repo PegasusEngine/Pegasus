@@ -12,6 +12,8 @@
 #ifndef PEGASUS_SHARED_IAPPPROXY_H
 #define PEGASUS_SHARED_IAPPPROXY_H
 
+#include "Pegasus/Version.h"
+
 #if PEGASUS_ENABLE_PROXIES
 // Forward declarations
 namespace Pegasus {
@@ -52,6 +54,7 @@ namespace Pegasus {
 
 namespace Pegasus {
 namespace App {
+
 
 //! Proxy application interface.
 class IApplicationProxy
@@ -115,9 +118,13 @@ public:
     //! \todo Set update mode
 
 
-    // Get the timeline proxy object
+    //! Get the timeline proxy object
     //! \return Timeline proxy object
     virtual Timeline::ITimelineProxy* GetTimeline() const = 0;
+
+    //! Get the about struct for the application 
+    //! \param appDesc the output description structure
+    virtual void GetEngineDesc(Pegasus::PegasusDesc& engineDesc) const = 0;
 
 };
 

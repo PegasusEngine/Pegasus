@@ -12,21 +12,36 @@
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/Version.h"
 
-//! Version of the engine
-unsigned int sEngineVersion = 0;
+// Pegasus Engine version
+#define PEGASUS_ENGINE_VERSION_MAJOR 0
+#define PEGASUS_ENGINE_VERSION_MINOR 2
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+// Pegasus Developers namelist
+const char * const gCredits [] = {
+    "Kevin Boulanger",
+    "Kleber Garcia",
+    "David Worsham",
+    nullptr
+};
 
-PEGASUSAPP_SHARED unsigned int GetPegasusVersion()
+void Internal_GetEngineDesc(Pegasus::PegasusDesc& engineDesc)
 {
-    return sEngineVersion;
-}
-
-#ifdef __cplusplus
-}
+#if PEGASUS_GAPI_GL
+    engineDesc.mGapiType = Pegasus::PegasusDesc::OPEN_GL;
+    engineDesc.mGapiVersion = 4;
+#elif PEGASUS_GAPI_DX
+    engineDesc.mGapiType = Pegasus::PegasusDesc::DIRECT_3D;
+    engineDesc.mGapiVersion = 11; 
+#elif PEGASUS_GAPI_GLES
+    #error Unsupported Pegasus GAPI GLES
+#else
+    #error Undefined GAPI
 #endif
+
+    engineDesc.mPegasusVersionMajor = PEGASUS_ENGINE_VERSION_MAJOR;
+    engineDesc.mPegasusVersionMinor = PEGASUS_ENGINE_VERSION_MINOR;
+    engineDesc.mPegasusCredits = gCredits;
+}
 
 #else
 PEGASUS_AVOID_EMPTY_FILE_WARNING;

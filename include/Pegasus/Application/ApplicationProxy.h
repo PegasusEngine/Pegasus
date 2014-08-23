@@ -56,6 +56,10 @@ public:
     // Proxy accessors
     virtual Timeline::ITimelineProxy* GetTimeline() const;
 
+    //! Get the about struct for the application 
+    //! \param engineDesc the output description structure
+    virtual void GetEngineDesc(Pegasus::PegasusDesc& engineDesc) const;
+
 private:
     //! The proxied application object
     Application* mApplication;

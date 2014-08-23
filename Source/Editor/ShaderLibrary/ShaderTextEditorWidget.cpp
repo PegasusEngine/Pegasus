@@ -11,6 +11,11 @@
 #include "ShaderLibrary/ShaderTextEditorWidget.h"
 #include "ShaderLibrary/ShaderManagerEventListener.h"
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
+#include "Pegasus/Application/Shared/IApplicationProxy.h"
+#include "Pegasus/Version.h"
+#include "Application/Application.h"
+#include "Application/ApplicationManager.h"
+
 #include <QEvent>
 #include <QHelpEvent>
 #include <QString>
@@ -29,7 +34,15 @@ public:
     ShaderSyntaxHighlighter(QTextDocument * parent)
     : QSyntaxHighlighter(parent), mSignalSyntaxError(false), mShaderUserData(nullptr)
     {
-        static const char  * keywords[] = {
+    }
+
+    virtual ~ShaderSyntaxHighlighter() {}
+
+    void SetShaderUserData(const ShaderUserData * shaderUserData) { mShaderUserData = shaderUserData;}
+
+    void SetSyntaxLanguage(Pegasus::PegasusDesc::GapiType gapi)
+    {
+        static const char  * glslKeywords[] = {
             "\\b[0-9]*\\.?[0-9]+f?\\b",
             "\\bsin\\b",
             "\\bcos\\b",
@@ -54,13 +67,73 @@ public:
             "\\blayout\\b",
             "\\bin\\b",
             "\\bpow\\b",
+            "\\bout\\b",
             nullptr
         };
 
+        static const char  * hlslKeywords[] = {
+            "\\b[0-9]*\\.?[0-9]+f?\\b",
+            "\\bsin\\b",
+            "\\bcos\\b",
+            "\\bsincos\\b",
+            "\\blerp\\b",
+            "\\bdot\\b",
+            "\\bnormalize\\b",
+            "\\bdistance\\b",
+            "\\bvoid\\b",
+            "\\bfloat[1-4]?\\b",
+            "\\bbool\\b",
+            "\\bint\\b",
+            "\\buint\\b",
+            "\\bfloat\\b",
+            "\\bdouble\\b",
+            "\\bfloat[1-4]x?[1-4]?\\b",
+            "\\buniform\\b",
+            "\\bregister\\b",
+            "\\bcbuffer\\b",
+            "\\bTexture[123]D\\b",
+            "\\bSamplerState\\b",
+            "\\bSample\\b",
+            "\\bSampleLevel\\b",
+            "\\bGatherRed\\b",
+            "\\bGatherGreen\\b",
+            "\\bGatherBlue\\b",
+            "\\bGatherAlpha\\b",
+            "\\bSV_Position\\b",
+            "\\bPOSITION[0-9]\\b",
+            "\\bTEXCOORD[0-9]\\b",
+            "\\bCOLOR[0-9]\\b",
+            "\\bNORAL[0-9]\\b",
+            "\\bBINORAL[0-9]\\b",
+            "\\bTANGENT[0-9]\\b",
+            "\\bSV_Target[0-9]?\\b",
+            "\\bclamp\\b",
+            "\\bsaturate\\b",
+            "\\bstep\\b",
+            "\\bin\\b",
+            "\\bout\\b",
+            nullptr
+        };
+
+        const char ** keywords = nullptr;
+
+        if (gapi == Pegasus::PegasusDesc::OPEN_GL || gapi == Pegasus::PegasusDesc::OPEN_GLES)
+        {
+            keywords = glslKeywords;
+        }
+        else if (gapi == Pegasus::PegasusDesc::DIRECT_3D)
+        {
+            keywords = hlslKeywords;
+        }
+        else
+        {
+            ED_FAILSTR("No graphics library defined :(");
+        }
+
+        mRules.clear();
         const char * ptr = keywords[0];
         int i = 0;
         QTextCharFormat keywordFormat;
-        keywordFormat.setForeground(QColor(130,225,50,255)); 
         while (ptr != nullptr)
         {
             QRegExp keywordExp(ptr);
@@ -68,10 +141,6 @@ public:
             ptr = keywords[++i]; 
         }
     }
-
-    virtual ~ShaderSyntaxHighlighter() {}
-
-    void SetShaderUserData(const ShaderUserData * shaderUserData) { mShaderUserData = shaderUserData;}
     
     
 protected:
@@ -219,6 +288,20 @@ void ShaderTextEditorWidget::Initialize(Pegasus::Shader::IShaderProxy * shader)
     if (shader != nullptr)
     {
         static_cast<ShaderSyntaxHighlighter*>(mSyntaxHighlighter)->SetShaderUserData(static_cast<ShaderUserData*>(shader->GetUserData()));
+        Application * application = Editor::GetInstance().GetApplicationManager().GetApplication();
+        Pegasus::App::IApplicationProxy * app = application->GetApplicationProxy();
+        Pegasus::PegasusDesc::GapiType gapi = Pegasus::PegasusDesc::OPEN_GL;
+        if (app != nullptr)
+        {
+            Pegasus::PegasusDesc desc;
+            app->GetEngineDesc(desc);
+            gapi = desc.mGapiType;
+        }
+        else
+        {
+            ED_FAILSTR("No Gapi defined!");
+        }
+        static_cast<ShaderSyntaxHighlighter*>(mSyntaxHighlighter)->SetSyntaxLanguage(gapi);
 
         //set the text of the current text editor
         const char * srcChar = nullptr;
@@ -233,6 +316,8 @@ void ShaderTextEditorWidget::Initialize(Pegasus::Shader::IShaderProxy * shader)
         QString srcQString(qchar, srcSize);
         setText(srcQString);
         delete[] qchar;            
+        
+
     }
     else
     {
