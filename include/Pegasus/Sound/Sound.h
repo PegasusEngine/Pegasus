@@ -34,6 +34,10 @@ void PlayMusic();
 //! \return True if \a PlayMusic() has been called once
 bool IsPlayingMusic();
 
+//! Return the currently playing music's position
+//! \return Position of the music in milliseconds
+unsigned int GetMusicPosition();
+
 //! Sound update function, to be called once per rendered frame
 void Update();
 

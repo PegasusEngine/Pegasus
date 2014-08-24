@@ -24,6 +24,21 @@ namespace Pegasus {
 namespace Sound {
 
 
+//! Size of a mixing buffer for FMOD. The lower, the more CPU it takes.
+//! 1024 (21.5ms) is a recommended value. For longer latencies, it is better to increase the number of buffers
+static const int DSP_BUFFER_SIZE = 1024;
+
+//! Number of mixing buffers. The higher, the more stable the sound is, but the more latency.
+//! The total latency of the output is DSP_BUFFER_SIZE * DSP_NUM_BUFFERS
+static const int DSP_NUM_BUFFERS = 1;
+
+//! Estimated latency in milliseconds between the mixing of the output buffer and the actual sound output.
+//! This is completely hardware dependent, and until we have a reliable way to know it,
+//! we have to keep an average value
+static const int OUTPUT_ESTIMATED_LATENCY = 100;
+    
+//----------------------------------------------------------------------------------------
+
 //! FMOD system global object
 static FMOD::System * gSystem = nullptr;
 
@@ -61,6 +76,14 @@ void Initialize()
     }
 
     //! \todo Give info about the sound card, its name and the number of speakers
+
+    // Set the DSP buffer size to control the latency of the output
+    // (the default values result in the music not syncing up well with the timeline)
+    result = gSystem->setDSPBufferSize(DSP_BUFFER_SIZE, DSP_NUM_BUFFERS);
+    if (result != FMOD_OK)
+    {
+        PG_LOG('SOUN', "Unable to set the DSP buffer size of the FMOD sound system. Latency will probably be high.");
+    }
 
     // Initialize the FMOD system
     const int MAX_NUM_CHANNELS = 32;
@@ -135,6 +158,26 @@ bool IsPlayingMusic()
     {
         return false;
     }
+}
+
+//----------------------------------------------------------------------------------------
+
+unsigned int GetMusicPosition()
+{
+    if (gChannel != nullptr)
+    {
+        unsigned int musicPosition = 0;
+        FMOD_RESULT result = gChannel->getPosition(&musicPosition, FMOD_TIMEUNIT_MS);
+        if (result == FMOD_OK)
+        {
+            if (musicPosition > OUTPUT_ESTIMATED_LATENCY)
+            {
+                return musicPosition - OUTPUT_ESTIMATED_LATENCY;
+            }
+        }
+    }
+
+    return 0;
 }
 
 //----------------------------------------------------------------------------------------

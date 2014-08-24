@@ -150,11 +150,6 @@ void Window::Refresh(bool updateTimeline)
     if (mRenderContext != nullptr)
     {
         mRenderContext->Bind();
-        if (updateTimeline)
-        {
-            mWindowContext->GetTimeline()->Update();
-        }
-        Render();
 
         //! \todo Update the sound system once per frame, not per window. Same thing for the timeline above.
         if (!Sound::IsPlayingMusic())
@@ -162,6 +157,13 @@ void Window::Refresh(bool updateTimeline)
             Sound::PlayMusic();
         }
         Sound::Update();
+
+        if (updateTimeline)
+        {
+            const unsigned int musicPosition = Sound::GetMusicPosition();
+            mWindowContext->GetTimeline()->Update(musicPosition);
+        }
+        Render();
     }
     else
     {

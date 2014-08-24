@@ -175,7 +175,8 @@ public:
     void SetPlayMode(PlayMode playMode);
 
     //! Update the current state of the timeline based on the play mode and the current time
-    void Update();
+    //! \param musicPosition Currently heard position of the music (in milliseconds), 0 if unknown
+    void Update(unsigned int musicPosition = 0);
 
     //! Render the content of the timeline for the given window
     //! \param window Window in which the timeline is being rendered
@@ -246,7 +247,8 @@ private:
     //! Proxy associated with the timeline
     TimelineProxy mProxy;
 
-    //! True when the real-time play mode has been selected, to update mStartPegasusTime on the next call to Update()
+    //! True when the real-time play mode has been selected, to update mStartPegasusTime
+    //! on the next call to Update() (used by the editor to set the current beat)
     bool mRequiresStartTimeComputation;
 
 #endif  // PEGASUS_ENABLE_PROXIES
@@ -286,6 +288,9 @@ private:
 
     //! Pegasus time returned by \a GetPegasusTime() when the timeline was started being played
     double mStartPegasusTime;
+
+    //! True if the start time has been modified to synchronize the beat of the timeline with the music
+    bool mSyncedToMusic;
 };
 
 

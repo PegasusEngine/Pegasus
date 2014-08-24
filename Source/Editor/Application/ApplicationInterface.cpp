@@ -191,6 +191,7 @@ void ApplicationInterface::RedrawAllViewports()
         Pegasus::Timeline::ITimelineProxy * timeline = mApplication->GetTimelineProxy();
         if (timeline != nullptr)
         {
+            //! \todo Handle music position
             timeline->Update();
         }
     }

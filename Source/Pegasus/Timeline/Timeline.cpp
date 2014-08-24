@@ -39,6 +39,7 @@ Timeline::Timeline(Alloc::IAllocator * allocator, Wnd::IWindowContext * appConte
 ,   mPlayMode(PLAYMODE_REALTIME)
 ,   mCurrentBeat(INVALID_BEAT)
 ,   mStartPegasusTime(0.0)
+,   mSyncedToMusic(false)
 #if PEGASUS_ENABLE_PROXIES
 ,   mProxy(this)
 ,   mRequiresStartTimeComputation(false)
@@ -334,7 +335,7 @@ void Timeline::InitializeBlocks()
 
 //----------------------------------------------------------------------------------------
     
-void Timeline::Update()
+void Timeline::Update(unsigned int musicPosition)
 {
     if ((mCurrentBeat == INVALID_BEAT) || (mCurrentBeat < 0.0f))
     {
@@ -346,7 +347,21 @@ void Timeline::Update()
     {
         if (mPlayMode == PLAYMODE_REALTIME)
         {
+            // Update the internal clock for the next frame
             Core::UpdatePegasusTime();
+
+            // Attempt to synchronize the timeline with the music
+            // (do not do it on the first frame to avoid potential invalid synchronization).
+            if (!mSyncedToMusic && (musicPosition > 0))
+            {
+                // Current time that we should have got from the timer for the current beat and the current tempo
+                double requiredCurrentTime = static_cast<double>(musicPosition) * 0.001;
+
+                // Move the start Pegasus time to simulate a non-stop execution of the timeline until the current beat
+                mStartPegasusTime = static_cast<float>(Core::GetPegasusTime() - requiredCurrentTime);
+
+                mSyncedToMusic = true;
+            }
 
 #if PEGASUS_ENABLE_PROXIES
             // If the start time needs to be recomputed (typically when the cursor position is changed,
@@ -363,6 +378,7 @@ void Timeline::Update()
             }
 #endif  // PEGASUS_ENABLE_PROXIES
 
+            // Update the current beat from the current time
             const double currentTime = Core::GetPegasusTime() - mStartPegasusTime;
             mCurrentBeat = static_cast<float>(currentTime * (mBeatsPerMinute * (1.0f / 60.0f)));
 
