@@ -49,6 +49,8 @@ int main()
     //memset
     RUN_TEST(Memset1);
     RUN_TEST(Memset2);
+    RUN_TEST(Memset3);
+    RUN_TEST(Memset4);
 
     //strcmp
     RUN_TEST(Strcmp1);

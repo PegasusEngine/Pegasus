@@ -81,16 +81,10 @@ void DXTextureFactory::Initialize(Pegasus::Alloc::IAllocator * allocator)
 
 void DXTextureFactory::Get2DConfigTranslation(const Pegasus::Texture::TextureConfiguration& config, D3D11_TEXTURE2D_DESC& d3dDesc)
 {
-    PG_ASSERTSTR(
-        config.GetPixelFormat() != Pegasus::Texture::TextureConfiguration::PIXELFORMAT_RGB8, 
-        "This format does not exist in dx11! if we want to support it, we would have to keep a copy "
-        "of the texture data in the TexGpu side, which would suck :/ Is probably better to not support this format");
-
     PG_ASSERT(config.GetPixelFormat() < Pegasus::Texture::TextureConfiguration::NUM_PIXELFORMATS);
     PG_ASSERTSTR(config.GetNumLayers() == 1, "Pegasus only supports 1 dimensional arrays for nowL");
 
     static const DXGI_FORMAT sTextureFormatTranslation[Pegasus::Texture::TextureConfiguration::NUM_PIXELFORMATS] = {
-        DXGI_FORMAT_R8G8B8A8_UNORM, //PEGASUS HACK!! the texture will look corrupted :/
         DXGI_FORMAT_R8G8B8A8_UNORM
     };
     d3dDesc.Width = config.GetWidth();

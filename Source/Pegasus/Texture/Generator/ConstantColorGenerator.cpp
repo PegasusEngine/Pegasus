@@ -10,6 +10,8 @@
 //! \brief	Texture generator that fills the image with a constant color
 
 #include "Pegasus/Texture/Generator/ConstantColorGenerator.h"
+#include "Pegasus/Math/Types.h"
+#include "Pegasus/Utils/Memset.h"
 
 namespace Pegasus {
 namespace Texture {
@@ -30,17 +32,15 @@ void ConstantColorGenerator::GenerateData()
     TextureData * data = static_cast<TextureData *>(&(*dataRef));
     PG_ASSERT(data != nullptr);
 
-    const Math::PUInt8 * color8 = GetColor().rgba;
     const Math::PUInt32 color32 = GetColor().rgba32;
     
     const TextureConfiguration & configuration = GetConfiguration();
     const unsigned int numBytesPerPixel = configuration.GetNumBytesPerPixel();
     const unsigned int numLayers = configuration.GetNumLayers();
-    const unsigned int numPixelsPerLayer = configuration.GetNumPixelsPerLayer();
+    const unsigned int numBytesPerLayer = configuration.GetNumBytesPerLayer();
     
     unsigned char * layerData;
-    Math::PUInt32 * layerData32;
-    unsigned int layer, p;
+    unsigned int layer;
 
     // For each layer
     for (layer = 0; layer < numLayers; ++layer)
@@ -49,25 +49,10 @@ void ConstantColorGenerator::GenerateData()
 
         switch (numBytesPerPixel)
         {
-            case 3:
-                // For each pixel, copy the constant color
-                for (p = 0; p < numPixelsPerLayer; ++p)
-                {
-                    const unsigned int p3 = p * 3;
-                    layerData[p3    ] = color8[0];
-                    layerData[p3 + 1] = color8[1];
-                    layerData[p3 + 2] = color8[2];
-                }
-            break;
-
             case 4:
                 // For each pixel, copy the constant color
-                layerData32 = reinterpret_cast<Math::PUInt32 *>(layerData);
-                for (p = 0; p < numPixelsPerLayer; ++p)
-                {
-                    layerData32[p] = color32;
-                }
-            break;
+                Utils::Memset32(layerData, color32, numBytesPerLayer);
+                break;
 
             default:
                 PG_FAILSTR("Unsupported number of bytes per pixel (%d) for ConstantColorGenerator", numBytesPerPixel);

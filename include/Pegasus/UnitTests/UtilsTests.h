@@ -25,6 +25,10 @@ bool UNIT_TEST_Memset1();
 
 bool UNIT_TEST_Memset2();
 
+bool UNIT_TEST_Memset3();
+
+bool UNIT_TEST_Memset4();
+
 bool UNIT_TEST_Strcmp1();
 
 bool UNIT_TEST_Strcmp2();

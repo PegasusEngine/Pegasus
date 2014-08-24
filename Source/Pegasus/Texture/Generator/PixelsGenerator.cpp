@@ -10,6 +10,8 @@
 //! \brief	Texture generator that renders randomly located pixels
 
 #include "Pegasus/Texture/Generator/PixelsGenerator.h"
+#include "Pegasus/Math/Types.h"
+#include "Pegasus/Utils/Memset.h"
 #include <stdlib.h>
 
 namespace Pegasus {
@@ -63,9 +65,7 @@ void PixelsGenerator::GenerateData()
     TextureData * data = static_cast<TextureData *>(&(*dataRef));
     PG_ASSERT(data != nullptr);
 
-    const Math::PUInt8 * backColor8 = GetBackgroundColor().rgba;
     const Math::PUInt32 backColor32 = GetBackgroundColor().rgba32;
-    const Math::PUInt8 * color0_8 = GetColor0().rgba;
     const Math::PUInt32 color0_32 = GetColor0().rgba32;
     
     const TextureConfiguration & configuration = GetConfiguration();
@@ -74,7 +74,7 @@ void PixelsGenerator::GenerateData()
     const unsigned int depth  = configuration.GetDepth ();
     const unsigned int numBytesPerPixel = configuration.GetNumBytesPerPixel();
     const unsigned int numLayers = configuration.GetNumLayers();
-    const unsigned int numPixelsPerLayer = configuration.GetNumPixelsPerLayer();
+    const unsigned int numBytesPerLayer = configuration.GetNumBytesPerLayer();
 
     const unsigned int numPixelsToRender = GetNumPixels();
 
@@ -92,41 +92,15 @@ void PixelsGenerator::GenerateData()
 
         switch (numBytesPerPixel)
         {
-            case 3:
-                // For each background pixel, copy the background color
-                for (p = 0; p < numPixelsPerLayer; ++p)
-                {
-                    //! \todo Use a utility function to avoid duplicated code
-                    const unsigned int p3 = p * 3;
-                    layerData[p3    ] = backColor8[0];
-                    layerData[p3 + 1] = backColor8[1];
-                    layerData[p3 + 2] = backColor8[2];
-                }
-
-                // For each random pixel
-                for (p = 0; p < numPixelsToRender; ++p)
-                {
-                    const unsigned int p3 = Internal::ChooseRandomPixel(width, height, depth) * 3;
-                    layerData[p3    ] = color0_8[0];
-                    layerData[p3 + 1] = color0_8[1];
-                    layerData[p3 + 2] = color0_8[2];
-                }
-            break;
-
             case 4:
                 // For each background pixel, copy the background color
                 layerData32 = reinterpret_cast<Math::PUInt32 *>(layerData);
-                for (p = 0; p < numPixelsPerLayer; ++p)
-                {
-                    //! \todo Use a utility function to avoid duplicated code
-                    layerData32[p] = backColor32;
-                }
+                Utils::Memset32(layerData32, backColor32, numBytesPerLayer);
 
                 // For each random pixel
                 for (p = 0; p < numPixelsToRender; ++p)
                 {
-                    const unsigned int pp = Internal::ChooseRandomPixel(width, height, depth);
-                    layerData32[pp] = color0_32;
+                    layerData32[Internal::ChooseRandomPixel(width, height, depth)] = color0_32;
                 }
             break;
 

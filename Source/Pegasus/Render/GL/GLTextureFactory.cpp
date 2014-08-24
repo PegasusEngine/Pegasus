@@ -107,7 +107,6 @@ void GLTextureFactory::GenerateTextureGPUData(Pegasus::Texture::TextureData * no
 
     static const GLint GLPixelFormatTranslation[Pegasus::Texture::TextureConfiguration::NUM_PIXELFORMATS] =
     {
-        GL_RGB,
         GL_RGBA
     };
 

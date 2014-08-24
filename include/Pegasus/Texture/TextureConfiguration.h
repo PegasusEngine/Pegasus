@@ -41,8 +41,7 @@ public:
     //! Available pixel formats
     enum PixelFormat
     {
-        PIXELFORMAT_RGB8 = 0,
-        PIXELFORMAT_RGBA8,
+        PIXELFORMAT_RGBA8 = 0,
 
         NUM_PIXELFORMATS
     };

@@ -75,9 +75,25 @@ bool UNIT_TEST_Memset1()
 bool UNIT_TEST_Memset2()
 {
     int values[100];
-    for (int i = 0; i < 100; ++i) values[i] = i;
-    Pegasus::Utils::Memset8(values, 0, sizeof(values));
-    for (int i = 0; i < 100; ++i) if (values[i] != 0) return false;
+    for (int i = 0; i < 100; ++i) values[i] = i + 2;
+    Pegasus::Utils::Memset8(values, 1, sizeof(values));
+    for (int i = 0; i < 100; ++i) if (values[i] != ((1 << 24) | (1 << 16) | (1 << 8) | 1)) return false;
+    return true;
+}
+
+bool UNIT_TEST_Memset3()
+{
+    unsigned long p = 100; 
+    Pegasus::Utils::Memset32(&p, 0x12345678, 4);
+    return p == 0x12345678;
+}
+
+bool UNIT_TEST_Memset4()
+{
+    int values[100];
+    for (int i = 0; i < 100; ++i) values[i] = i + 2;
+    Pegasus::Utils::Memset32(values, 1, sizeof(values));
+    for (int i = 0; i < 100; ++i) if (values[i] != 1) return false;
     return true;
 }
 

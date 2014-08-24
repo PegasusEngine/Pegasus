@@ -18,7 +18,7 @@ namespace Texture {
 
 TextureConfiguration::TextureConfiguration()
 :   mType(TYPE_2D)
-,   mPixelFormat(PIXELFORMAT_RGB8)
+,   mPixelFormat(PIXELFORMAT_RGBA8)
 ,   mWidth(256)
 ,   mHeight(256)
 ,   mDepth(1)
@@ -62,7 +62,7 @@ TextureConfiguration::TextureConfiguration(Type type,
     else
     {
         PG_FAILSTR("Invalid pixel format for a texture (%d), it must be < %d", pixelFormat, NUM_PIXELFORMATS);
-        mPixelFormat = PIXELFORMAT_RGB8;
+        mPixelFormat = PIXELFORMAT_RGBA8;
     }
 
     // Width
@@ -181,7 +181,6 @@ unsigned int TextureConfiguration::GetNumBytesPerPixel() const
 {
     switch (mPixelFormat)
     {
-        case PIXELFORMAT_RGB8:          return 3;
         case PIXELFORMAT_RGBA8:         return 4;
 
         default:
