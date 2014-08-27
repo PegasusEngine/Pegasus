@@ -64,9 +64,18 @@ private:
 
     Pegasus::Shader::ProgramLinkageRef mProgram;
     Pegasus::Mesh::MeshRef mQuad;
-    Pegasus::Render::Uniform mScreenRatioUniform;
     Pegasus::Render::Uniform mTextureUniform;
     Pegasus::Render::Uniform mTextureUniform2;
+    Pegasus::Render::Uniform mUniformState;
+    Pegasus::Render::Buffer  mUniformBuffer;
+
+    PEGASUS_ALIGN_BEGIN(16)
+    struct UniformState
+    {
+        float screenRatio;
+    } mState
+    PEGASUS_ALIGN_END(16);
+
     Pegasus::Texture::TextureGeneratorRef mTextureGenerator1, mTextureGenerator2, mTextureGradientGenerator1, mTextureGradientGenerator2, mTexturePixelsGenerator1;
     Pegasus::Texture::TextureRef mTexture1, mTexture2, mTextureGradient1, mTextureGradient2, mTextureAdd1, mTextureAdd2;
     //GLuint mTextureSampler;

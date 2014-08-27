@@ -77,11 +77,9 @@ public:
 // ---------------------------------------------------------------------------
 
 ///////////////////////////////////////////////////////////////////////////////
-/////////////   DISPATCH FUNCTIONS IMPLEMENTATION /////////////////////////////
+/////////////   SetProgram FUNCTIONS IMPLEMENTATION /////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-
-
-void Pegasus::Render::Dispatch (Pegasus::Shader::ProgramLinkageInOut program)
+void Pegasus::Render::SetProgram (Pegasus::Shader::ProgramLinkageInOut program)
 {
     bool updated = false;
     Pegasus::Graph::NodeGPUData * gpuData = program->GetUpdatedData(updated)->GetNodeGPUData();
@@ -97,7 +95,10 @@ void Pegasus::Render::Dispatch (Pegasus::Shader::ProgramLinkageInOut program)
 
 // ---------------------------------------------------------------------------
 
-void Pegasus::Render::Dispatch (Pegasus::Mesh::MeshInOut mesh)
+///////////////////////////////////////////////////////////////////////////////
+/////////////   SetMesh FUNCTION IMPLEMENTATION /////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+void Pegasus::Render::SetMesh (Pegasus::Mesh::MeshInOut mesh)
 {
     PG_ASSERTSTR(gOGLState.mDispatchedShader != nullptr, "Must dispatch a shader first in order to dispatch a mesh");
     Pegasus::Mesh::MeshDataRef meshData = mesh->GetUpdatedMeshData();
@@ -191,7 +192,10 @@ void Pegasus::Render::Dispatch (Pegasus::Mesh::MeshInOut mesh)
 
 // ---------------------------------------------------------------------------
 
-void Pegasus::Render::Dispatch(Pegasus::Render::RenderTarget& renderTarget, const Viewport& viewport, int renderTargetSlot)
+///////////////////////////////////////////////////////////////////////////////
+/////////////   SetRenderTargets FUNCTION IMPLEMENTATION //////////////////////
+///////////////////////////////////////////////////////////////////////////////
+void Pegasus::Render::SetRenderTargets(Pegasus::Render::RenderTarget& renderTarget, const Viewport& viewport, int renderTargetSlot)
 {
     PG_ASSERTSTR(renderTargetSlot == 0, "multiple render targets not supported yet!");
 
@@ -258,14 +262,14 @@ void Pegasus::Render::Dispatch(Pegasus::Render::RenderTarget& renderTarget, cons
 
 void Pegasus::Render::DispatchNullRenderTarget()
 {
-    Pegasus::Render::Dispatch(gNullRenderTarget, Pegasus::Render::Viewport(), 0);
+    Pegasus::Render::SetRenderTargets(gNullRenderTarget, Pegasus::Render::Viewport(), 0);
 }
 
 // ---------------------------------------------------------------------------
 
 void Pegasus::Render::DispatchDefaultRenderTarget(const Pegasus::Render::Viewport& viewport)
 {
-    Pegasus::Render::Dispatch(gDefaultRenderTarget, viewport, 0);
+    Pegasus::Render::SetRenderTargets(gDefaultRenderTarget, viewport, 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -386,11 +390,11 @@ void Pegasus::Render::SetDepthClearValue(float d)
 
 // ---------------------------------------------------------------------------
 
-void Pegasus::Render::Dispatch(Pegasus::Render::RenderTarget& renderTarget)
+void Pegasus::Render::SetRenderTarget(Pegasus::Render::RenderTarget& renderTarget)
 {
     Viewport viewport(0, 0, renderTarget.mConfig.mWidth, renderTarget.mConfig.mHeight);
     PG_ASSERT (renderTarget.mConfig.mWidth > 0 && renderTarget.mConfig.mHeight > 0);
-    Dispatch(renderTarget, viewport, 0);
+    SetRenderTargets(renderTarget, viewport, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -598,21 +602,6 @@ void Pegasus::Render::DeleteBuffer(Pegasus::Render::Buffer& buffer)
     buffer.mSize = 0;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/////////////   SETUNIFORMS IMPLEMENTATIONS             ///////////////////////
-///////////////////////////////////////////////////////////////////////////////
-bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, float value)
-{
-    Pegasus::Render::GLShaderUniform * uniformEntry = GetUpdatedGLUniformLocation(u);
-    if (uniformEntry != nullptr && uniformEntry->mSlot != GL_INVALID_INDEX)
-    {
-        PG_ASSERTSTR(uniformEntry->mType == GL_FLOAT, "Setting a uniform of the wrong type!");
-        glUniform1f(uniformEntry->mSlot, value);
-        return true;
-    }
-    return false;
-}
-
 // ---------------------------------------------------------------------------
 
 static bool InternalSetTextureUniform(Pegasus::Render::Uniform& u, Pegasus::Render::OGLTextureGPUData * gpuData)
@@ -650,7 +639,7 @@ static bool InternalSetTextureUniform(Pegasus::Render::Uniform& u, Pegasus::Rend
 
 // ---------------------------------------------------------------------------
 
-bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, Pegasus::Texture::TextureInOut texture)
+bool Pegasus::Render::SetUniformTexture(Pegasus::Render::Uniform& u, Pegasus::Texture::TextureInOut texture)
 {
     Pegasus::Texture::TextureDataRef nodeData = texture->GetUpdatedTextureData();
     PG_ASSERT(nodeData->GetNodeGPUData() != nullptr);
@@ -664,7 +653,7 @@ bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, Pegasus::Texture::
 
 // ---------------------------------------------------------------------------
 
-bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, const Buffer& buffer)
+bool Pegasus::Render::SetUniformBuffer(Pegasus::Render::Uniform& u, const Buffer& buffer)
 {
     Pegasus::Render::GLShaderUniform * uniformEntry = GetUpdatedGLUniformLocation(u);
     if (uniformEntry != nullptr && uniformEntry->mSlot != GL_INVALID_INDEX)
@@ -686,7 +675,7 @@ bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, const Buffer& buff
 
 // ---------------------------------------------------------------------------
 
-bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, const RenderTarget& renderTarget)
+bool Pegasus::Render::SetUniformTextureRenderTarget(Pegasus::Render::Uniform& u, const RenderTarget& renderTarget)
 {
     Pegasus::Render::GLShaderUniform * uniformEntry = GetUpdatedGLUniformLocation(u);
 

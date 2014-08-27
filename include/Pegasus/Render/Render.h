@@ -195,26 +195,26 @@ namespace Render
         BlendingConfig mConfig;
     };
 
-    //! Dispatches a shader.
+    //! Dispatches a shader pipeline.
     //! \param program the shader program to dispatch
-    void Dispatch (Shader::ProgramLinkageInOut program);
+    void SetProgram (Shader::ProgramLinkageInOut program);
 
     //! Dispatches a mesh.
     //! \param mesh that the system will dispatch.
     //! \WARNING: a shader must have been dispatched before this call.
     //!           not dispatching a shader will cause the mesh to be incorrectly rendered
     //!           or throw an assert
-    void Dispatch (Mesh::MeshInOut mesh);
+    void SetMesh (Mesh::MeshInOut mesh);
 
-    //! Dispatches a render target
+    //! Dispatches render targets
     //! \param render target to dispatch
     //! \param viewport to use for the render target
-    void Dispatch (RenderTarget& renderTarget, const Viewport& viewport, int renderTargetSlot);
+    void SetRenderTargets (RenderTarget& renderTarget, const Viewport& viewport, int renderTargetSlot);
 
     //! Dispatches a render target 
     //! \param render target to dispatch
     //! \NOTE it will use the entire viewport width and height
-    void Dispatch(RenderTarget& renderTarget);
+    void SetRenderTarget (RenderTarget& renderTarget);
 
     //! Dispatches a null render target. This disables any color rendering internally.
     void DispatchNullRenderTarget();
@@ -299,29 +299,23 @@ namespace Render
     //! \param outputBuffer the buffer to delete
     void DeleteBuffer(Buffer& outputBuffer);
 
-    //! Sets the uniform value
-    //! \param u uniform to set the value to
-    //! \param value the actual value set
-    //! \return boolean, true on success, false on error
-    bool SetUniform(Uniform& u, float value);
-
     //! Sets the uniform value to a texture
     //! \param u uniform to set the value to
     //! \param texture to set to the uniform slot
     //! \return boolean, true on success, false on error
-    bool SetUniform(Uniform& u, Texture::TextureInOut texture);
+    bool SetUniformTexture(Uniform& u, Texture::TextureInOut texture);
 
     //! Sets the uniform block buffer
     //! \param u uniform block to set the value to
     //! \param buffer to set to the uniform block slot
     //! \return boolean, true on success, false on error
-    bool SetUniform(Uniform& u, const Buffer& buffer);
+    bool SetUniformBuffer(Uniform& u, const Buffer& buffer);
 
-    //! Sets the render target as a texture view in the specified uniform target
+    //! Sets the render target as a texture view in the specified uniform location 
     //! \param u uniform parameter to set the value
     //! \param renderTarget render target to set as a texture view
     //! \return boolean, true on success, false on error
-    bool SetUniform(Uniform& u, const RenderTarget& renderTarget);
+    bool SetUniformTextureRenderTarget(Uniform& u, const RenderTarget& renderTarget);
 
 }
 }

@@ -3,8 +3,10 @@
 // translated to hlsl by Kleber Garcia 2014
 //
 
-
-float screenRatio : register(c0);
+cbuffer uniformState
+{
+	float screenRatio;
+}
 struct VS_OUT
 {
 	float2 texCoords : TEXCOORD0;	

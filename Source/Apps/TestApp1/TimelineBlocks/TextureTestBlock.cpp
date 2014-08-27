@@ -67,13 +67,6 @@ void TextureTestBlock::Initialize()
     bool updated = false;
     mProgram->GetUpdatedData(updated);
 
-    // Set up shader uniforms
-    Pegasus::Render::GetUniformLocation(
-        mProgram,
-        "screenRatio",
-        mScreenRatioUniform
-    ); 
-
     Pegasus::Render::GetUniformLocation(
         mProgram,
         "inputTexture",
@@ -84,6 +77,17 @@ void TextureTestBlock::Initialize()
         mProgram,
         "inputTexture2",
         mTextureUniform2
+    );
+
+    Pegasus::Render::GetUniformLocation(
+        mProgram,
+        "uniformState",
+        mUniformState
+    );
+
+    Pegasus::Render::CreateUniformBuffer(
+        sizeof(mState),
+        mUniformBuffer
     );
 
     // Create the textures
@@ -109,6 +113,7 @@ void TextureTestBlock::Initialize()
 void TextureTestBlock::Shutdown()
 {
     //! \todo Uninitialize VAOs, buffers, shaders
+    Pegasus::Render::DeleteBuffer(mUniformBuffer);
 }
 
 //----------------------------------------------------------------------------------------
@@ -132,40 +137,42 @@ void TextureTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
     mTextureAdd2->Update();
     mQuad->Update();
 
-    Pegasus::Render::Dispatch(mProgram);
-    Pegasus::Render::Dispatch(mQuad);
+    Pegasus::Render::SetProgram(mProgram);
+    Pegasus::Render::SetMesh(mQuad);
 
     unsigned int viewportWidth = 0;
     unsigned int viewportHeight = 0;
     window->GetDimensions(viewportWidth, viewportHeight);
 
-    Pegasus::Render::SetUniform(mScreenRatioUniform, static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight));
+	mState.screenRatio = static_cast<float>(viewportWidth)/ static_cast<float>(viewportHeight);
+    Pegasus::Render::SetBuffer(mUniformBuffer, &mState);
+    Pegasus::Render::SetUniformBuffer(mUniformState, mUniformBuffer);
 
     if (beat < 3.0f)
     {
-        Pegasus::Render::SetUniform(mTextureUniform, mTexture1);
+        Pegasus::Render::SetUniformTexture(mTextureUniform, mTexture1);
     }
     else if (beat < 6.0f)
     {
-        Pegasus::Render::SetUniform(mTextureUniform, mTexture2);
+        Pegasus::Render::SetUniformTexture(mTextureUniform, mTexture2);
     }
     else if (beat < 9.0f)
     {
-        Pegasus::Render::SetUniform(mTextureUniform, mTextureGradient1);
+        Pegasus::Render::SetUniformTexture(mTextureUniform, mTextureGradient1);
     }
     else if (beat < 12.0f)
     {
-        Pegasus::Render::SetUniform(mTextureUniform, mTextureGradient2);
+        Pegasus::Render::SetUniformTexture(mTextureUniform, mTextureGradient2);
     }
     else if (beat < 15.0f)
     {
-        Pegasus::Render::SetUniform(mTextureUniform, mTextureAdd1);
+        Pegasus::Render::SetUniformTexture(mTextureUniform, mTextureAdd1);
     }
     else
     {
-        Pegasus::Render::SetUniform(mTextureUniform, mTextureAdd2);
+        Pegasus::Render::SetUniformTexture(mTextureUniform, mTextureAdd2);
     }
-    Pegasus::Render::SetUniform(mTextureUniform2, mTextureAdd2);
+    Pegasus::Render::SetUniformTexture(mTextureUniform2, mTextureAdd2);
 
     Pegasus::Render::Draw();
 }

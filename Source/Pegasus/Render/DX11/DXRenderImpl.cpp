@@ -39,11 +39,9 @@ struct DXState
 // ---------------------------------------------------------------------------
 
 ///////////////////////////////////////////////////////////////////////////////
-/////////////   DISPATCH FUNCTIONS IMPLEMENTATION /////////////////////////////
+/////////////   SetProgram FUNCTION IMPLEMENTATION /////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-
-
-void Pegasus::Render::Dispatch (Pegasus::Shader::ProgramLinkageInOut program)
+void Pegasus::Render::SetProgram (Pegasus::Shader::ProgramLinkageInOut program)
 {
     bool updated = false;
     Pegasus::Graph::NodeGPUData * nodeGpuData = program->GetUpdatedData(updated)->GetNodeGPUData();
@@ -65,9 +63,10 @@ void Pegasus::Render::Dispatch (Pegasus::Shader::ProgramLinkageInOut program)
     }
 }
 
-// ---------------------------------------------------------------------------
-
-void Pegasus::Render::Dispatch (Pegasus::Mesh::MeshInOut mesh)
+///////////////////////////////////////////////////////////////////////////////
+/////////////   SetMesh FUNCTION IMPLEMENTATION /////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+void Pegasus::Render::SetMesh (Pegasus::Mesh::MeshInOut mesh)
 {
     ID3D11DeviceContext * context;
     ID3D11Device * device;
@@ -140,21 +139,31 @@ void Pegasus::Render::Dispatch (Pegasus::Mesh::MeshInOut mesh)
                 inputLayoutEntry->mInputLayout == nullptr &&
                 programGpuData->mInputLayoutBlob->GetBufferPointer() != nullptr
         );
-        VALID_DECLARE(
+        HRESULT res = 
             device->CreateInputLayout(
                 meshGpuData->mInputElementsDesc,
 				meshGpuData->mInputElementsCount,
                 programGpuData->mInputLayoutBlob->GetBufferPointer(),
                 programGpuData->mInputLayoutBlob->GetBufferSize(),
                 &inputLayoutEntry->mInputLayout
-            )
-        );
+            );
+        if (res != S_OK)
+        {
+            PG_LOG('WARN', "Incompatible input layout in shader and mesh");
+        }
         inputLayoutEntry->mProgramGuid = programGpuData->mProgramGuid;
         inputLayoutEntry->mProgramVersion = programGpuData->mProgramVersion;
     }
 
-    PG_ASSERT(inputLayoutEntry != nullptr);
-    context->IASetInputLayout(inputLayoutEntry->mInputLayout);
+	PG_ASSERT(inputLayoutEntry != nullptr);
+    if (inputLayoutEntry->mInputLayout != nullptr)
+    {
+        context->IASetInputLayout(inputLayoutEntry->mInputLayout);
+    }
+    else
+    {
+        PG_LOG('WARN', "Incompatible input layout in shader and mesh");
+    }
     
     if (gDXState.mDispatchedMeshGpuData != meshGpuData)
     {
@@ -184,15 +193,15 @@ void Pegasus::Render::Dispatch (Pegasus::Mesh::MeshInOut mesh)
         }
         gDXState.mDispatchedMeshGpuData = meshGpuData;
     }
-
-    
-   
 }
 
 
 // ---------------------------------------------------------------------------
 
-void Pegasus::Render::Dispatch(Pegasus::Render::RenderTarget& renderTarget, const Viewport& viewport, int renderTargetSlot)
+///////////////////////////////////////////////////////////////////////////////
+/////////////   SetRenderTargets FUNCTION IMPLEMENTATION //////////////////////
+///////////////////////////////////////////////////////////////////////////////
+void Pegasus::Render::SetRenderTargets(Pegasus::Render::RenderTarget& renderTarget, const Viewport& viewport, int renderTargetSlot)
 {
     PG_ASSERTSTR(renderTargetSlot == 0, "Only supporting one render target.");
     DXRenderContext * ctx = DXRenderContext::GetBindedContext();
@@ -337,7 +346,7 @@ void Pegasus::Render::SetDepthClearValue(float d)
 
 // ---------------------------------------------------------------------------
 
-void Pegasus::Render::Dispatch(Pegasus::Render::RenderTarget& renderTarget)
+void Pegasus::Render::SetRenderTarget(Pegasus::Render::RenderTarget& renderTarget)
 {
     Pegasus::Render::DXRenderTargetGPUData* rtGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXRenderTargetGPUData, renderTarget.mInternalData);
     Pegasus::Render::Viewport v;
@@ -345,7 +354,7 @@ void Pegasus::Render::Dispatch(Pegasus::Render::RenderTarget& renderTarget)
     v.mYOffset = 0;
     v.mWidth =  static_cast<int>(rtGpuData->mTextureView.mDesc.Width);
     v.mHeight = static_cast<int>(rtGpuData->mTextureView.mDesc.Height);
-    Pegasus::Render::Dispatch(renderTarget, v, 0);
+    Pegasus::Render::SetRenderTargets(renderTarget, v, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -623,14 +632,6 @@ void Pegasus::Render::DeleteBuffer(Pegasus::Render::Buffer& buffer)
     buffer.mInternalData = nullptr;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/////////////   SETUNIFORMS IMPLEMENTATIONS             ///////////////////////
-///////////////////////////////////////////////////////////////////////////////
-bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, float value)
-{
-    return false;
-}
-
 // ---------------------------------------------------------------------------
 
 static bool InternalSetTextureUniform(Pegasus::Render::Uniform& u, Pegasus::Render::DXTextureGPUData* texGpuData)
@@ -678,7 +679,7 @@ static bool InternalSetTextureUniform(Pegasus::Render::Uniform& u, Pegasus::Rend
     return false;
 }
 
-bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, Pegasus::Texture::TextureInOut texture)
+bool Pegasus::Render::SetUniformTexture(Pegasus::Render::Uniform& u, Pegasus::Texture::TextureInOut texture)
 {
 	Pegasus::Graph::NodeGPUData* nodeGpuData = texture->GetUpdatedTextureData()->GetNodeGPUData();
     Pegasus::Render::DXTextureGPUData * texGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXTextureGPUData, nodeGpuData);
@@ -687,7 +688,7 @@ bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, Pegasus::Texture::
 
 // ---------------------------------------------------------------------------
 
-bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, const Buffer& buffer)
+bool Pegasus::Render::SetUniformBuffer(Pegasus::Render::Uniform& u, const Buffer& buffer)
 {
     ID3D11DeviceContext * context;
     ID3D11Device * device;
@@ -738,7 +739,7 @@ bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, const Buffer& buff
 
 // ---------------------------------------------------------------------------
 
-bool Pegasus::Render::SetUniform(Pegasus::Render::Uniform& u, const RenderTarget& renderTarget)
+bool Pegasus::Render::SetUniformTextureRenderTarget(Pegasus::Render::Uniform& u, const RenderTarget& renderTarget)
 {
     Pegasus::Render::DXRenderTargetGPUData * renderTargetGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXRenderTargetGPUData, renderTarget.mInternalData);
     return InternalSetTextureUniform(u, &renderTargetGpuData->mTextureView);

@@ -83,8 +83,8 @@ void FractalCubeBlock::Render(float beat, Pegasus::Wnd::Window * window)
     // Update the graph of all textures and meshes, in case they have dynamic data
     mQuad->Update();
 
-    Pegasus::Render::Dispatch(mProgram);
-    Pegasus::Render::Dispatch(mQuad);
+    Pegasus::Render::SetProgram(mProgram);
+    Pegasus::Render::SetMesh(mQuad);
 
     unsigned int viewportWidth = 0;
     unsigned int viewportHeight = 0;
@@ -94,7 +94,7 @@ void FractalCubeBlock::Render(float beat, Pegasus::Wnd::Window * window)
     mState.ratio = static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight);
     mState.time = beat;
     Pegasus::Render::SetBuffer(mStateBuffer, &mState);
-    Pegasus::Render::SetUniform(mStateBufferUniform, mStateBuffer);
+    Pegasus::Render::SetUniformBuffer(mStateBufferUniform, mStateBuffer);
     
     Pegasus::Render::Draw();
 }

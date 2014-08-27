@@ -5,7 +5,12 @@
 #version 330 core
 
 layout(location = 0) in vec2 p0;
-uniform float screenRatio;
+
+layout(std140) uniform uniformState
+{
+float screenRatio;
+};
+
 out vec2 texCoords;
 
 void main()

@@ -199,23 +199,23 @@ void GeometryTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
     //******** PASS 1: texture of box ***********//
     ///////////////////////////////////////////////
     // rendering to the face of the disco a normal map and a detail map
-    Pegasus::Render::Dispatch(mCubeFaceRenderTarget); //use the fractal surface, no depth
+    Pegasus::Render::SetRenderTarget(mCubeFaceRenderTarget); //use the fractal surface, no depth
     Pegasus::Render::Clear(/*color*/true, /*depth*/false, /*stencil*/false); //clear the surface
-    Pegasus::Render::Dispatch(mDiscoSpeaker); // dispatch the shader
-    Pegasus::Render::Dispatch(mQuad); // screen space
+    Pegasus::Render::SetProgram(mDiscoSpeaker); // dispatch the shader
+    Pegasus::Render::SetMesh(mQuad); // screen space
 
     mSpeakerState.time = beat;
     Pegasus::Render::SetBuffer(mSpeakerStateBuffer, &mSpeakerState);
-    Pegasus::Render::SetUniform(mSpeakerUniformBlock, mSpeakerStateBuffer);
+    Pegasus::Render::SetUniformBuffer(mSpeakerUniformBlock, mSpeakerStateBuffer);
 
     Pegasus::Render::Draw();
 
     ///////////////////////////////////////////////
     //******** PASS 2: scene          ***********//
     ///////////////////////////////////////////////
-    Pegasus::Render::Dispatch(mTempTarget1);
+    Pegasus::Render::SetRenderTarget(mTempTarget1);
     Pegasus::Render::Clear(/*color*/true, /*depth*/false, /*stencil*/false); //clear the surface
-    Pegasus::Render::Dispatch(mBlockProgram);
+    Pegasus::Render::SetProgram(mBlockProgram);
 
     Pegasus::Math::Vec3 rotAxis(0.3f, 0.4f, 0.01f);
     Pegasus::Math::SetRotation(mState.mRotation, rotAxis, (float)beat * 0.92f);
@@ -226,17 +226,17 @@ void GeometryTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
     mState.mRotation.m23 *= aspect;
 
     Pegasus::Render::SetBuffer(mUniformStateBuffer, &mState, sizeof(mState));
-    Pegasus::Render::SetUniform(mUniformBlock, mUniformStateBuffer);
-    Pegasus::Render::SetUniform(mCubeTextureUniform, mCubeFaceRenderTarget);
+    Pegasus::Render::SetUniformBuffer(mUniformBlock, mUniformStateBuffer);
+    Pegasus::Render::SetUniformTextureRenderTarget(mCubeTextureUniform, mCubeFaceRenderTarget);
 
     Pegasus::Render::SetRasterizerState(mCurrentBlockRasterState);
 
-    Pegasus::Render::Dispatch(mCubeMesh);
+    Pegasus::Render::SetMesh(mCubeMesh);
     Pegasus::Render::Draw();
 
     for (int i = 0; i < MAX_SPHERES; ++i)
     {
-        Pegasus::Render::Dispatch(mSphereMeshes[i]);
+        Pegasus::Render::SetMesh(mSphereMeshes[i]);
 
         float fi = 2.0f * ((float)i / (float)MAX_SPHERES) - 1.0f;
         
@@ -258,29 +258,29 @@ void GeometryTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
     ///////////////////////////////////////////////
     //******** PASS 3: horizontal blur***********//
     ///////////////////////////////////////////////
-    Pegasus::Render::Dispatch(mTempTarget2);
-    Pegasus::Render::Dispatch(mBlurHorizontal);
-    Pegasus::Render::Dispatch(mQuad);
-    Pegasus::Render::SetUniform(mHorizontalInput, mTempTarget1);
+    Pegasus::Render::SetRenderTarget(mTempTarget2);
+    Pegasus::Render::SetProgram(mBlurHorizontal);
+    Pegasus::Render::SetMesh(mQuad);
+    Pegasus::Render::SetUniformTextureRenderTarget(mHorizontalInput, mTempTarget1);
     Pegasus::Render::Draw();
     
     ///////////////////////////////////////////////
     //******** PASS 4: vertical   blur***********//
     ///////////////////////////////////////////////
-    Pegasus::Render::Dispatch(mTempTarget3);
-    Pegasus::Render::Dispatch(mBlurVertical);
-    Pegasus::Render::Dispatch(mQuad);
-    Pegasus::Render::SetUniform(mVerticalInput, mTempTarget2);
+    Pegasus::Render::SetRenderTarget(mTempTarget3);
+    Pegasus::Render::SetProgram(mBlurVertical);
+    Pegasus::Render::SetMesh(mQuad);
+    Pegasus::Render::SetUniformTextureRenderTarget(mVerticalInput, mTempTarget2);
     Pegasus::Render::Draw();
 
     ///////////////////////////////////////////////
     //******** PASS 5: final compositing ********//
     ///////////////////////////////////////////////
     Pegasus::Render::DispatchDefaultRenderTarget(Pegasus::Render::Viewport(viewportWidth, viewportHeight));
-    Pegasus::Render::Dispatch(mComposite);
-    Pegasus::Render::Dispatch(mQuad);
-    Pegasus::Render::SetUniform(mCompositeInput1, mTempTarget1); //original scene
-    Pegasus::Render::SetUniform(mCompositeInput2, mTempTarget3); //bloomed scene
+    Pegasus::Render::SetProgram(mComposite);
+    Pegasus::Render::SetMesh(mQuad);
+    Pegasus::Render::SetUniformTextureRenderTarget(mCompositeInput1, mTempTarget1); //original scene
+    Pegasus::Render::SetUniformTextureRenderTarget(mCompositeInput2, mTempTarget3); //bloomed scene
     Pegasus::Render::Draw();
 
     Pegasus::Render::SetRasterizerState(mDefaultRasterState);
