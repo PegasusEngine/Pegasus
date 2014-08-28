@@ -23,5 +23,6 @@
         <file>ShaderEditor/vertical.png</file>
         <file>ShaderEditor/single.png</file>
         <file>Toolbar/File/refresh-512.png</file>
+        <file>SettingsDialog/DarkStyle.qss</file>
     </qresource>
 </RCC>

@@ -14,16 +14,16 @@
 
 
 ColorPickerBox::ColorPickerBox(const QColor & color, QWidget * parent)
-:	QFrame(parent),
-	mColor(color)
+:   QFrame(parent),
+    mColor(color)
 {
-	setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
-	setAutoFillBackground(true);
-	SetBackgroundColor(color);
-	setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
+    setAutoFillBackground(true);
+    SetBackgroundColor(color);
+    setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-	connect(this, SIGNAL(ColorChanged(const QColor &)),
-			this, SLOT(SetBackgroundColor(const QColor &)));
+    connect(this, SIGNAL(ColorChanged(const QColor &)),
+            this, SLOT(SetBackgroundColor(const QColor &)));
 }
 
 //----------------------------------------------------------------------------------------
@@ -37,37 +37,37 @@ ColorPickerBox::~ColorPickerBox()
 void ColorPickerBox::SetColor(const QColor & color)
 {
     mColor = color;
-	emit ColorChanged(mColor);
+    emit ColorChanged(mColor);
 }
 
 //----------------------------------------------------------------------------------------
 
 QSize ColorPickerBox::sizeHint() const
 {
-	return QSize(28, 21);
+    return QSize(28, 21);
 }
 
 //----------------------------------------------------------------------------------------
 
 void ColorPickerBox::mousePressEvent(QMouseEvent * e)
 {
-	OpenColorPicker();
+    OpenColorPicker();
 }
 
 //----------------------------------------------------------------------------------------
 
 void ColorPickerBox::OpenColorPicker()
 {
-	QColor newColor = QColorDialog::getColor(mColor, this);
-	if (newColor.isValid())
-	{
+    QColor newColor = QColorDialog::getColor(mColor, this);
+    if (newColor.isValid())
+    {
         SetColor(newColor);
-	}
+    }
 }
 
 //----------------------------------------------------------------------------------------
 	
 void ColorPickerBox::SetBackgroundColor(const QColor & color)
 {
-	setPalette(QPalette(color));
+    setStyleSheet("ColorPickerBox { background: " + color.name() + "; }");
 }

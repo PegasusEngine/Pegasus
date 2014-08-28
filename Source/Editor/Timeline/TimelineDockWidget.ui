@@ -38,6 +38,9 @@
       <property name="leftMargin">
        <number>6</number>
       </property>
+      <property name="topMargin">
+       <number>2</number>
+      </property>
       <property name="rightMargin">
        <number>6</number>
       </property>

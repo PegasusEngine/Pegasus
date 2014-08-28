@@ -61,7 +61,7 @@ ConsoleDockWidget::ConsoleDockWidget(QWidget *parent)
     horizontalLayout->setContentsMargins(0, 0, 0, 0);
 
     // Create the text widget displaying the log messages
-    mTextWidget = new QPlainTextEdit(mainWidget);
+    mTextWidget = new ConsoleTextEditWidget(mainWidget);
 	mTextWidget->setAcceptDrops(false);
 	mTextWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	mTextWidget->setUndoRedoEnabled(false);
@@ -186,9 +186,8 @@ void ConsoleDockWidget::SetBackgroundColor(const QColor & color)
 {
 	ED_ASSERT(mTextWidget != nullptr);
 
-	QPalette palette = mTextWidget->palette();
-	palette.setColor(QPalette::Base, color);
-	mTextWidget->setPalette(palette);
+    mTextWidgetBackgroundColor = color;
+    SetTextEditStyleSheetFromColors();
 }
 
 //----------------------------------------------------------------------------------------
@@ -197,9 +196,8 @@ void ConsoleDockWidget::SetTextDefaultColor(const QColor & color)
 {
 	ED_ASSERT(mTextWidget != nullptr);
 
-	QPalette palette = mTextWidget->palette();
-	palette.setColor(QPalette::Text, color);
-	mTextWidget->setPalette(palette);
+    mTextWidgetDefaultTextColor = color;
+    SetTextEditStyleSheetFromColors();
 
     // No need to go through the text blocks.
     // No HTML tag is used when the default color is used, so the color changes
@@ -266,4 +264,15 @@ void ConsoleDockWidget::ContextMenuRequested(const QPoint & pos)
 void ConsoleDockWidget::Clear()
 {
     mTextWidget->clear();
+}
+
+//----------------------------------------------------------------------------------------
+
+void ConsoleDockWidget::SetTextEditStyleSheetFromColors()
+{
+    mTextWidget->setStyleSheet(   "ConsoleTextEditWidget { background: "
+                               + mTextWidgetBackgroundColor.name()
+                               + "; color: "
+                               + mTextWidgetDefaultTextColor.name()
+                               + "; }");
 }

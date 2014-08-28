@@ -13,6 +13,7 @@
 
 #include <QStyleFactory>
 #include <QStyle>
+#include <QFile>
 #include <QSettings>
 #include <QApplication>
 #include <QMainWindow>
@@ -38,12 +39,22 @@ const char * Settings::sShaderEditorSyntaxStyleNames[Settings::SYNTAX_COUNT] =
     "magic number"
 };
 
+// Suffix added to the style name when a dark style is supported
+static const QString gDarkStyleNameSuffix(" (dark)");
+
+//----------------------------------------------------------------------------------------
+
 Settings::Settings(QMainWindow * mainWindow)
 :   QObject(),
     mMainWindow(mainWindow)
 {
     // Set internal variables
     mWidgetStyleNameList = QStyleFactory::keys();
+    if (mWidgetStyleNameList.contains("fusion", Qt::CaseInsensitive))
+    {
+        // Add supported dark themes
+        mWidgetStyleNameList << ("Fusion" + gDarkStyleNameSuffix);
+    }
     ED_ASSERTSTR(!mWidgetStyleNameList.isEmpty(), "Invalid list of themes for the UI.");
     mOriginalPalette = QApplication::palette();
 
@@ -77,18 +88,14 @@ void Settings::Load()
     settings.beginGroup("Appearance");
     {
         // Widget style
-        //! \todo Select the proper initial style in the combo box
-        /*if (widgetStyleNameList.contains("WindowsVista"))
-        widgetStyleName = "WindowsVista";
-        else if (widgetStyleNameList.contains("WindowsXP"))
-        widgetStyleName = "WindowsXP";
-        else if (widgetStyleNameList.contains("Macintosh"))
-        widgetStyleName = "Macintosh";
-        else if (widgetStyleNameList.contains("Cleanlooks"))
-        widgetStyleName = "Cleanlooks";
-        else if (widgetStyleNameList.contains("Plastique"))
-        widgetStyleName = "Plastique";
-        else widgetStyleName = */mWidgetStyleNameList[0];
+        if (mWidgetStyleNameList.contains("WindowsVista"))
+        {
+            mWidgetStyleName = "WindowsVista";
+        }
+        else
+        {
+            mWidgetStyleName = mWidgetStyleNameList[0];
+        }
         SetWidgetStyleName(settings.value("WidgetStyle",
                                           mWidgetStyleName).toString());
 
@@ -385,12 +392,35 @@ void Settings::SetWidgetStyleName(const QString & name)
     {
         ED_LOG("Applying the style '%s' to the user interface", name.toLatin1().constData());
 
+        // Detect if the dark style is used
+        QString qtStyleName(name);
+        bool useDarkStyle = false;
+        if (name.endsWith(gDarkStyleNameSuffix))
+        {
+            qtStyleName = name.left(name.length() - gDarkStyleNameSuffix.length());
+            useDarkStyle = true;
+        }
+
         // Apply the new widget style
         mWidgetStyleName = name;
-        QApplication::setStyle(QStyleFactory::create(mWidgetStyleName));
+        QApplication::setStyle(QStyleFactory::create(qtStyleName));
 
         // Set the palette of the new widget style
         SetUseWidgetStylePalette(mUseWidgetStylePalette);
+
+        if (useDarkStyle)
+        {
+            // Load the dark theme stylesheet
+            QFile styleFile( ":/SettingsDialog/DarkStyle.qss");
+            styleFile.open(QFile::ReadOnly);
+            QString style(styleFile.readAll());
+            Editor::GetInstance().GetQtApplication()->setStyleSheet(style);
+        }
+        else
+        {
+            // Remove the dark theme stylesheet
+            Editor::GetInstance().GetQtApplication()->setStyleSheet("");
+        }
     }
 }
 

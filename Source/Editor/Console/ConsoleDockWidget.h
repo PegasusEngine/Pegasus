@@ -13,10 +13,23 @@
 #define EDITOR_CONSOLEDOCKWIDGET_H
 
 #include <QDockWidget>
+#include <QPlainTextEdit>
+#include <QColor>
 
-class QPlainTextEdit;
 class QMenu;
 
+
+//! Text widget object inherited from QPlainTextEdit so its stylesheet can be set without affecting other text edit widgets
+class ConsoleTextEditWidget : public QPlainTextEdit
+{
+    Q_OBJECT
+
+public:
+
+    ConsoleTextEditWidget(QWidget * parent) : QPlainTextEdit(parent) { }
+};
+
+//----------------------------------------------------------------------------------------
 
 //! Dock widget containing the timeline graphics view
 class ConsoleDockWidget : public QDockWidget
@@ -25,7 +38,7 @@ class ConsoleDockWidget : public QDockWidget
 
 public:
 
-    ConsoleDockWidget(QWidget *parent);
+    ConsoleDockWidget(QWidget * parent);
     virtual ~ConsoleDockWidget();
 
     //! Add a message to the console text view (default color, no tag)
@@ -74,8 +87,18 @@ private slots:
 
 private:
 
+    //! Set the stylesheet of the text edit depending on the current color state
+    void SetTextEditStyleSheetFromColors();
+
+
 	//! Text widget displaying the log messages
-	QPlainTextEdit * mTextWidget;
+	ConsoleTextEditWidget * mTextWidget;
+
+    //! Current background color of the text widget
+    QColor mTextWidgetBackgroundColor;
+
+    //! Current default text color of the text widget
+    QColor mTextWidgetDefaultTextColor;
 
     //! Context menu associated with the text field
     QMenu * mContextMenu;

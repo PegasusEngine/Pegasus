@@ -81,6 +81,10 @@ public:
     //! \param command Command to add to the list of the undo manager, != nullptr
     void PushUndoCommand(QUndoCommand * command);
 
+    //! Get the global Qt application
+    //! \return Global Qt application
+    inline QApplication * GetQtApplication() const { return mQtApplication; }
+
 	//------------------------------------------------------------------------------------
 
 public:
@@ -329,7 +333,7 @@ private:
     //! Application manager, taking take of opening and closing applications
     ApplicationManager * mApplicationManager;
 
-    //! qt ui application, used to poll events manually when closing the editor
+    //! Global Qt application
     QApplication * mQtApplication;
 };
 
