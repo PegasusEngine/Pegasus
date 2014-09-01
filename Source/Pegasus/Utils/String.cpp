@@ -95,7 +95,7 @@ char * Pegasus::Utils::Strcat(char * dst, const char * src)
     const char * srcPtr = src;
     char * dstPtr = dst + len;
     *dstPtr = *srcPtr;
-    do
+    if (*srcPtr != 0) do
     {
         *(++dstPtr) = *(++srcPtr);
     } while(*srcPtr != 0);
@@ -148,4 +148,30 @@ int Pegasus::Utils::Atoi(const char * str)
         return sign * val;
     }
     return 0;
+}
+
+float Pegasus::Utils::Atof(const char * str)
+{
+    const char * p = str;
+    float sign = *str == '-' ? -1.0f : 1.0f;
+    float f = 0.0;
+    float r = 10.0;
+    bool pastPoint = false;
+    
+    while (*p != '\0')
+    {
+        if (*p == '.')
+        {
+            pastPoint = true;
+        }
+        else
+        {
+            float n = static_cast<float>(*p - '0');
+            f = (pastPoint ? (n / r) : n ) + (pastPoint ? f : (f * 10.0f));
+            r = pastPoint ? r * 10.0f : r;
+        }
+		++p;
+    }
+
+    return f * sign;
 }

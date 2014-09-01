@@ -29,7 +29,7 @@ namespace internal {
 //! \param file Filename of the allocation.
 //! \param line Line number of the allocation.
 template <typename T>
-inline T* NewArray(const IAllocator* alloc, Flags flags, unsigned int count, Category category, const char* debug_str, const char* file, unsigned int line)
+inline T* NewArray(IAllocator* alloc, Flags flags, unsigned int count, Category category, const char* debug_str, const char* file, unsigned int line)
 {
     // Grab memory, and request an extra int for the size
     const unsigned int blockSize = sizeof(T) * count + sizeof(unsigned int);
@@ -61,7 +61,7 @@ inline T* NewArray(const IAllocator* alloc, Flags flags, unsigned int count, Cat
 //! \param file Filename of the allocation.
 //! \param line Line number of the allocation.
 template <typename T>
-inline T* NewArrayAligned(const IAllocator* alloc, Alignment align, Flags flags, unsigned int count, Category category, const char* debug_str, const char* file, unsigned int line)
+inline T* NewArrayAligned(IAllocator* alloc, Alignment align, Flags flags, unsigned int count, Category category, const char* debug_str, const char* file, unsigned int line)
 {
     // Grab memory, and request an extra int for the size
     const unsigned int blockSize = sizeof(T) * count + sizeof(unsigned int);
@@ -87,7 +87,7 @@ inline T* NewArrayAligned(const IAllocator* alloc, Alignment align, Flags flags,
 //! \param alloc Allocator to use when freeing the memory.
 //! \param ptr Pointer to the object.
 template <typename T>
-inline void Delete(const IAllocator* alloc, T* ptr)
+inline void Delete(IAllocator* alloc, T* ptr)
 {
     if (ptr != nullptr)
     {
@@ -103,7 +103,7 @@ inline void Delete(const IAllocator* alloc, T* ptr)
 //! \param alloc Allocator to use when freeing the memory.
 //! \param arrayPtr Pointer to the array.
 template <typename T>
-inline void DeleteArray(const IAllocator* alloc, T* arrayPtr)
+inline void DeleteArray(IAllocator* alloc, T* arrayPtr)
 {
     if (arrayPtr != nullptr)
     {

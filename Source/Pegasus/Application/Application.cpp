@@ -26,6 +26,7 @@
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/Render/RenderContext.h"
 #include "Pegasus/Sound/Sound.h"
+#include <stdio.h>
 
 namespace Pegasus {
 namespace App {
@@ -126,7 +127,6 @@ Application::~Application()
 void Application::Initialize()
 {
     Alloc::IAllocator* coreAlloc = Memory::GetCoreAllocator();
-    Io::IOManagerConfig ioManagerConfig;
     Wnd::Window* startupWindow = nullptr;
 
     // Sanity check
@@ -134,9 +134,9 @@ void Application::Initialize()
 
     // Set up IO manager
     // This must be done here because of the GetAppName virtual
-    ioManagerConfig.mBasePath = mConfig.mBasePath;
-    ioManagerConfig.mAppName = GetAppName();
-    mIoManager = PG_NEW(coreAlloc, -1, "IOManager", Pegasus::Alloc::PG_MEM_PERM) Io::IOManager(ioManagerConfig);
+    char rootPath[Io::IOManager::MAX_FILEPATH_LENGTH];
+    sprintf_s(rootPath, Io::IOManager::MAX_FILEPATH_LENGTH - 1, "%s%s\\Imported\\", mConfig.mBasePath, GetAppName()); // Hardcode imported for now
+    mIoManager = PG_NEW(coreAlloc, -1, "IOManager", Pegasus::Alloc::PG_MEM_PERM) Io::IOManager(rootPath);
 
     // Start up the app, which creates and destroys the dummy window
     StartupAppInternal();

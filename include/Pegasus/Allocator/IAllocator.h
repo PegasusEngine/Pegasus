@@ -47,7 +47,7 @@ public:
     //! \param file File that made this allocation.
     //! \param line Line number of this allocation.
     //! \return Allocated memory.
-    virtual void* Alloc(size_t size, Flags flags, Category category = -1, const char* debugText = nullptr, const char* file = nullptr, unsigned int line = 0) const = 0;
+    virtual void* Alloc(size_t size, Flags flags, Category category = -1, const char* debugText = nullptr, const char* file = nullptr, unsigned int line = 0) = 0;
 
     //! Allocate a block of memory, aligned
     //! \param Size of the allocation, in bytes.
@@ -58,12 +58,12 @@ public:
     //! \param file File that made this allocation.
     //! \param line Line number of this allocation.
     //! \return Allocated memory.
-    virtual void* AllocAlign(size_t size, Alignment align, Flags flags, Category category = -1, const char* debugText = nullptr, const char* file = nullptr, unsigned int line = 0) const = 0;
+    virtual void* AllocAlign(size_t size, Alignment align, Flags flags, Category category = -1, const char* debugText = nullptr, const char* file = nullptr, unsigned int line = 0) = 0;
 
 
     //! Free a block of memory
     //! \param ptr Address of the memory.
-    virtual void Delete(void* ptr) const = 0;
+    virtual void Delete(void* ptr) = 0;
 };
 
 

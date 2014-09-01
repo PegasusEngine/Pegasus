@@ -143,12 +143,10 @@ Pegasus::Io::IoError NativeSaveBufferToFile(const char* path, const Pegasus::Io:
 
 //----------------------------------------------------------------------------------------
 
-IOManager::IOManager(const IOManagerConfig& config)
+IOManager::IOManager(const char* rootPath)
 {
     // Configure the path
-    sprintf_s(mRootDirectory, MAX_FILEPATH_LENGTH, "%s%s\\Imported\\", config.mBasePath, config.mAppName); // Hardcode imported for now
-    mRootDirectory[MAX_FILEPATH_LENGTH - 1] = '\0';
-
+    sprintf_s(mRootDirectory, MAX_FILEPATH_LENGTH, "%s", rootPath); // Hardcode imported for now
     PG_LOG('FILE', "Asset root set to \"%s\"", mRootDirectory);
 }
 

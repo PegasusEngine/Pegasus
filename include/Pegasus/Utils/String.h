@@ -46,6 +46,9 @@ namespace Utils
     //! convert a string to int
     int Atoi(const char * str);
     
+    //! convert a string to a float
+    float Atof(const char * str);
+    
 }
 }
 

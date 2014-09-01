@@ -85,29 +85,13 @@ private:
 
 //----------------------------------------------------------------------------------------
 
-//! Config structure for the IO manager
-struct IOManagerConfig
-{
-public:
-    //! Constructor
-    IOManagerConfig() : mBasePath(nullptr), mAppName(nullptr) {}
-
-    //! Destructor
-    ~IOManagerConfig() {}
-
-
-    const char* mBasePath; //!< The base path to load all assets from
-    const char* mAppName; //!< Name of the app containing this manager, for building the path
-};
-
-
 //! IO manager, loads files/assets from a given root filesystem
 class IOManager
 {
 public:
     //! Constructor
     //! \param Configuration structure for this IOManager.
-    IOManager(const IOManagerConfig& config);
+    explicit IOManager(const char* rootPath);
 
     //! Destructor
     ~IOManager();

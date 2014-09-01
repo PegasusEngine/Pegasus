@@ -30,9 +30,9 @@ public:
 
 
     // IAllocator interface
-    virtual void* Alloc(size_t size, Alloc::Flags flags, Alloc::Category category, const char* debugText, const char* file, unsigned int line) const;
-    virtual void* AllocAlign(size_t size, Alloc::Alignment align, Alloc::Flags flags, Alloc::Category category, const char* debugText, const char* file, unsigned int line) const;
-    virtual void Delete(void* ptr) const;
+    virtual void* Alloc(size_t size, Alloc::Flags flags, Alloc::Category category, const char* debugText, const char* file, unsigned int line);
+    virtual void* AllocAlign(size_t size, Alloc::Alignment align, Alloc::Flags flags, Alloc::Category category, const char* debugText, const char* file, unsigned int line);
+    virtual void Delete(void* ptr);
 
 private:
     // No copies allowed

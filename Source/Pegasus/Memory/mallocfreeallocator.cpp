@@ -27,7 +27,7 @@ MallocFreeAllocator::~MallocFreeAllocator()
 
 //----------------------------------------------------------------------------------------
 
-void* MallocFreeAllocator::Alloc(size_t size, Alloc::Flags flags, Alloc::Category category, const char* debugText, const char* file, unsigned int line) const
+void* MallocFreeAllocator::Alloc(size_t size, Alloc::Flags flags, Alloc::Category category, const char* debugText, const char* file, unsigned int line)
 {
     //! \todo Platform-specific allocs
     // Grab the chunk with an extra int at the front for the allocator ID
@@ -43,7 +43,7 @@ void* MallocFreeAllocator::Alloc(size_t size, Alloc::Flags flags, Alloc::Categor
 
 //----------------------------------------------------------------------------------------
 
-void* MallocFreeAllocator::AllocAlign(size_t size, Alloc::Alignment align, Alloc::Flags flags, Alloc::Category category, const char* debugText, const char* file, unsigned int line) const
+void* MallocFreeAllocator::AllocAlign(size_t size, Alloc::Alignment align, Alloc::Flags flags, Alloc::Category category, const char* debugText, const char* file, unsigned int line)
 {
     //! \todo Platform-specific allocs
     // Grab the chunk with an extra int at the front for the allocator ID
@@ -59,7 +59,7 @@ void* MallocFreeAllocator::AllocAlign(size_t size, Alloc::Alignment align, Alloc
 
 //----------------------------------------------------------------------------------------
 
-void MallocFreeAllocator::Delete(void* ptr) const
+void MallocFreeAllocator::Delete(void* ptr)
 {
     if (ptr != nullptr)
     {
