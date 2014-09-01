@@ -118,6 +118,20 @@ void TextureTestBlock::Shutdown()
 
 //----------------------------------------------------------------------------------------
 
+void TextureTestBlock::Update(float beat, Pegasus::Wnd::Window * window)
+{
+    // Update the graph of all textures and meshes, in case they have dynamic data
+    mTexture1->Update();
+    mTexture2->Update();
+    mTextureGradient1->Update();
+    mTextureGradient2->Update();
+    mTextureAdd1->Update();
+    mTextureAdd2->Update();
+    mQuad->Update();
+}
+
+//----------------------------------------------------------------------------------------
+
 void TextureTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
 {
     // Test dynamic data for the first gradient and the pixels generator
@@ -128,23 +142,10 @@ void TextureTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
     Pegasus::Texture::PixelsGenerator * pixelsGenerator1 = static_cast<Pegasus::Texture::PixelsGenerator *>(mTexturePixelsGenerator1);
     pixelsGenerator1->SetNumPixels((unsigned int)(Pegasus::Math::Saturate((beat - 12.0f) / 3.0f) * 16384.0f));
 
-    // Update the graph of all textures and meshes, in case they have dynamic data
-    mTexture1->Update();
-    mTexture2->Update();
-    mTextureGradient1->Update();
-    mTextureGradient2->Update();
-    mTextureAdd1->Update();
-    mTextureAdd2->Update();
-    mQuad->Update();
-
     Pegasus::Render::SetProgram(mProgram);
     Pegasus::Render::SetMesh(mQuad);
 
-    unsigned int viewportWidth = 0;
-    unsigned int viewportHeight = 0;
-    window->GetDimensions(viewportWidth, viewportHeight);
-
-	mState.screenRatio = static_cast<float>(viewportWidth)/ static_cast<float>(viewportHeight);
+	mState.screenRatio = window->GetRatio();
     Pegasus::Render::SetBuffer(mUniformBuffer, &mState);
     Pegasus::Render::SetUniformBuffer(mUniformState, mUniformBuffer);
 

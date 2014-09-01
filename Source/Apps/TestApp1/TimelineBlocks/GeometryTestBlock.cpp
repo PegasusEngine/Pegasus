@@ -26,7 +26,6 @@
 #endif
 
 
-//Constructor
 GeometryTestBlock::GeometryTestBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Wnd::IWindowContext * appContext)
     : Pegasus::Timeline::Block(allocator, appContext)
 
@@ -34,13 +33,15 @@ GeometryTestBlock::GeometryTestBlock(Pegasus::Alloc::IAllocator * allocator, Peg
 
 }
 
-//Destructor
+//----------------------------------------------------------------------------------------
+
 GeometryTestBlock::~GeometryTestBlock()
 {
 
 }
 
-//! Initializer
+//----------------------------------------------------------------------------------------
+
 void GeometryTestBlock::Initialize()
 {
 
@@ -172,7 +173,8 @@ void GeometryTestBlock::Initialize()
     Pegasus::Render::CreateRenderTarget(c, mTempTarget3);
 }
 
-//! Shutdown used by block
+//----------------------------------------------------------------------------------------
+
 void GeometryTestBlock::Shutdown()
 {
     Pegasus::Render::DeleteBuffer(mUniformStateBuffer);
@@ -185,15 +187,20 @@ void GeometryTestBlock::Shutdown()
     Pegasus::Render::DeleteRasterizerState(mDefaultRasterState);
 }
 
-//! Render function
+//----------------------------------------------------------------------------------------
+
+void GeometryTestBlock::Update(float beat, Pegasus::Wnd::Window * window)
+{
+}
+
+//----------------------------------------------------------------------------------------
+
 void GeometryTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
 {
-
     //figure out aspect ratio
-    unsigned int viewportWidth = 0;
-    unsigned int viewportHeight = 0;
-    window->GetDimensions(viewportWidth, viewportHeight);
-    float aspect = static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight);
+    const unsigned int viewportWidth = window->GetWidth();
+    const unsigned int viewportHeight = window->GetHeight();
+    const float aspect = window->GetRatio();
 
     ///////////////////////////////////////////////
     //******** PASS 1: texture of box ***********//

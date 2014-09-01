@@ -83,25 +83,25 @@ void FractalCube2Block::Shutdown()
 
 //----------------------------------------------------------------------------------------
 
-void FractalCube2Block::Render(float beat, Pegasus::Wnd::Window * window)
+void FractalCube2Block::Update(float beat, Pegasus::Wnd::Window * window)
 {
     // Update the graph of all textures and meshes, in case they have dynamic data
     mQuad->Update();
+}
 
+//----------------------------------------------------------------------------------------
+
+void FractalCube2Block::Render(float beat, Pegasus::Wnd::Window * window)
+{
     Pegasus::Render::SetProgram(mProgram);
     Pegasus::Render::SetMesh(mQuad);
-
-    const float currentTime = beat * 0.25f;
-    unsigned int viewportWidth = 0;
-    unsigned int viewportHeight = 0;
-    window->GetDimensions(viewportWidth, viewportHeight);
 
     // Enable additive blending
     Pegasus::Render::SetBlendingState(mCurrentBlockBlendingState);
 
     // Set up uniforms
-    mState.ratio = static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight);
-    mState.time = currentTime;
+    mState.ratio = window->GetRatio();
+    mState.time = beat;
     Pegasus::Render::SetBuffer(mStateBuffer, &mState);
     Pegasus::Render::SetUniformBuffer(mStateBufferUniform, mStateBuffer);
     

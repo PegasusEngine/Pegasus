@@ -64,7 +64,19 @@ public:
     //! Gets the dimensions of this window
     //! \param width Width outParam.
     //! \param Height outParam.
-    inline void GetDimensions(unsigned int& width, unsigned int& height) { width = mWidth; height = mHeight; }
+    inline void GetDimensions(unsigned int& width, unsigned int& height) const { width = mWidth; height = mHeight; }
+
+    //! Get the width of this window
+    //! \return Width of the window in pixels
+    inline unsigned int GetWidth() const { return mWidth; }
+
+    //! Get the height of this window
+    //! \return Height of the window in pixels
+    inline unsigned int GetHeight() const { return mHeight; }
+
+    //! Get the aspect ratio of this window
+    //! \return Aspect ratio window (== width / height), 1.0f if height is undefined
+    inline float GetRatio() const { return mRatio; }
 
 
     //! Initialize this window
@@ -127,6 +139,7 @@ private:
     bool mContextCreated; //!< Window created flag
     unsigned int mWidth; //!< Current width
     unsigned int mHeight; //!< Current height
+    float mRatio; //!< Aspect ratio (== width / height), 1.0f if height is undefined
     bool mIsChild; //!< Current state, wether is child window or not
 
     friend class WindowMessageHandler;

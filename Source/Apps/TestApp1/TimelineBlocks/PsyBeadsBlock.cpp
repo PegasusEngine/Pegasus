@@ -78,19 +78,20 @@ void PsyBeadsBlock::Shutdown()
 
 //----------------------------------------------------------------------------------------
 
-void PsyBeadsBlock::Render(float beat, Pegasus::Wnd::Window * window)
+void PsyBeadsBlock::Update(float beat, Pegasus::Wnd::Window * window)
 {
     // Update the graph of all textures and meshes, in case they have dynamic data
     mQuad->Update();
+}
 
+//----------------------------------------------------------------------------------------
+
+void PsyBeadsBlock::Render(float beat, Pegasus::Wnd::Window * window)
+{
     Pegasus::Render::SetProgram(mProgram);
     Pegasus::Render::SetMesh(mQuad);
 
-    unsigned int viewportWidth = 0;
-    unsigned int viewportHeight = 0;
-    window->GetDimensions(viewportWidth, viewportHeight);
-
-    mState.ratio = static_cast<float>(viewportWidth) / static_cast<float>(viewportHeight);
+    mState.ratio = window->GetRatio();
     mState.time = beat;
     Pegasus::Render::SetBuffer(mStateBuffer, &mState);
     Pegasus::Render::SetUniformBuffer(mStateBufferUniform, mStateBuffer);

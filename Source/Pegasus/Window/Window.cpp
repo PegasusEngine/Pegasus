@@ -96,6 +96,7 @@ void WindowMessageHandler::OnResize(unsigned int width, unsigned int height)
 {
     mParent->mWidth = width;
     mParent->mHeight = height;
+    mParent->mRatio = (height > 0 ? static_cast<float>(width) / static_cast<float>(height) : 1.0f);
     mParent->mRenderContext->Resize(width, height);
 }
 
@@ -110,6 +111,7 @@ Window::Window(const WindowConfig& config)
     mContextCreated(false),
     mWidth(config.mWidth),
     mHeight(config.mHeight),
+    mRatio(config.mHeight > 0 ? static_cast<float>(config.mWidth) / static_cast<float>(config.mHeight) : 1.0f),
     mIsChild(config.mIsChild)
 {
     // Create platform stuff
@@ -178,6 +180,7 @@ void Window::Resize(unsigned int width, unsigned int height)
     mPrivateImpl->Resize(width, height);
     mWidth = width;
     mHeight = height;
+    mRatio = (height > 0 ? static_cast<float>(width) / static_cast<float>(height) : 1.0f);
 }
 
 //----------------------------------------------------------------------------------------

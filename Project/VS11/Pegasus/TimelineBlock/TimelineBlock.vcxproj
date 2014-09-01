@@ -27,19 +27,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Include\Pegasus\AppExport.h" />
-    <ClInclude Include="..\..\..\Include\Pegasus\Pegasus.h" />
-    <ClInclude Include="..\..\..\Include\Pegasus\PegasusInternal.h" />
-    <ClInclude Include="..\..\..\Include\Pegasus\Preprocessor.h" />
-    <ClInclude Include="..\..\..\Include\Pegasus\Version.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\TimelineBlock\Camera\CameraLineBlock.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\TimelineBlock\TimelineBlockRegistration.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Source\Pegasus\Version.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\TimelineBlock\Camera\CameraLineBlock.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\TimelineBlock\TimelineBlockRegistration.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{98BF1395-48CE-4C98-8921-7890B74889AD}</ProjectGuid>
+    <ProjectGuid>{F656A267-C929-4A76-9B76-49641A93E2DF}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>Pegasus</RootNamespace>
+    <RootNamespace>TimelineBlock</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'" Label="Configuration">
@@ -109,33 +107,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
     <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</OutDir>
-    <TargetName>$(ProjectName)</TargetName>
-    <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">
     <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</OutDir>
-    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Debug|Win32'">
     <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</OutDir>
-    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Final|Win32'">
     <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</OutDir>
-    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Profile|Win32'">
     <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</OutDir>
-    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Small|Win32'">
     <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</OutDir>
-    <TargetName>$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
     <ClCompile>
@@ -143,8 +134,8 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUSAPP_DLL;_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_DEBUG</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_DEBUG</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <SmallerTypeCheck>true</SmallerTypeCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -161,8 +152,6 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Camera.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;TimelineBlock.lib;Window.lib;Utils.lib</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -174,13 +163,12 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUSAPP_DLL;_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_OPT</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_OPT</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <ExceptionHandling>false</ExceptionHandling>
       <ForcedIncludeFiles>Pegasus/PegasusInternal.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -193,8 +181,6 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Camera.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;TimelineBlock.lib;Window.lib;Utils.lib</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -205,7 +191,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_REL;_PEGASUS_DEBUG</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <SmallerTypeCheck>true</SmallerTypeCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -222,27 +208,27 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Camera.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;TimelineBlock.lib;Window.lib;Utils.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Final|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_REL;_PEGASUS_FINAL</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <ExceptionHandling>false</ExceptionHandling>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <ForcedIncludeFiles>Pegasus/PegasusInternal.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -255,8 +241,8 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Camera.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;TimelineBlock.lib;Window.lib;Utils.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -269,14 +255,13 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_REL;_PEGASUS_PROFILE</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <ExceptionHandling>false</ExceptionHandling>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <ForcedIncludeFiles>Pegasus/PegasusInternal.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -289,8 +274,8 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Camera.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;TimelineBlock.lib;Window.lib;Utils.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -303,14 +288,13 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_REL;_PEGASUS_SMALL</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <ExceptionHandling>false</ExceptionHandling>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <ForcedIncludeFiles>Pegasus/PegasusInternal.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -323,8 +307,8 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Camera.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;TimelineBlock.lib;Window.lib;Utils.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>

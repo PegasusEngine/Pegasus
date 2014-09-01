@@ -102,6 +102,12 @@ public:
     // Tell all the blocks of the lane to initialize their content (calling their Initialize() function)
     void InitializeBlocks();
 
+    //! Update the content of the lane for the given window (done once per frame if active)
+    //! \param beat Current beat, measured in ticks, can have fractional part
+    //! \param window Window in which the lane is being rendered
+    //! \todo That dependency is ugly. Find a way to remove that dependency
+    void Update(float beat, Wnd::Window * window);
+
     //! Render the content of the lane for the given window
     //! \param beat Current beat, measured in ticks, can have fractional part
     //! \param window Window in which the lane is being rendered
@@ -152,6 +158,13 @@ public:
     //------------------------------------------------------------------------------------
 
 private:
+
+    //! Given a beat on the timeline, return the index of the current (or previous) block
+    //! \param beat Input beat, measured in ticks
+    //! \return Resulting block index intersected by the given beat,
+    //!         or just before the beat if the next block is not reached yet.
+    //!         INVALID_RECORD_INDEX if the beat is before the first beat, or no block is defined on the timeline
+    int FindCurrentBlock(Beat beat) const;
 
     //! Given a beat on the timeline, return the index of the current (or previous) block and the next one (not reached yet)
     //! \param beat Input beat, measured in ticks
@@ -219,6 +232,16 @@ private:
 
     // Lanes cannot be copied
     PG_DISABLE_COPY(Lane)
+
+    //! Find the current block given a beat on the timeline,
+    //! and compute the beat relative to the beginning of the block
+    //! \param beat Input beat, measured in ticks
+    //! \param block Output pointer to the found block, unchanged if not found
+    //! \param relativeBeat Output beat relative to the beginning of the block,
+    //!                     unchanged if the block is not found
+    //! \return True if both the block and the relative beat are defined
+    bool FindBlockAndComputeRelativeBeat(float beat, Block * & block, float & relativeBeat);
+
 
     //! Allocator used for all timeline allocations
     Alloc::IAllocator * mAllocator;

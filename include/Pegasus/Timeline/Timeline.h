@@ -31,6 +31,22 @@ namespace Pegasus {
 namespace Timeline {
 
 
+//! Macro to register a Pegasus-side timeline block
+//! \note Requires the external timeline variable to be defined, a pointer to the application timeline
+//! \param className Name of the class to register, without quotes
+#if PEGASUS_ENABLE_PROXIES
+
+#define REGISTER_BASE_TIMELINE_BLOCK(className)                                                        \
+    timeline->RegisterBlock(#className, className::GetStaticEditorString(), className::CreateBlock);   \
+
+#else
+
+#define REGISTER_BASE_TIMELINE_BLOCK(className)                    \
+    timeline->RegisterBlock(#className, className::CreateBlock);   \
+
+#endif  // PEGASUS_ENABLE_PROXIES
+    
+
 //! Macro to register a timeline block inside the Application class
 //! \param className Name of the class to register, without quotes
 #if PEGASUS_ENABLE_PROXIES

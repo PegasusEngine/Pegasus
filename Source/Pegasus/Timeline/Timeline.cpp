@@ -399,8 +399,21 @@ void Timeline::Render(Wnd::Window * window)
 {
     if (window != nullptr)
     {
+        unsigned int l;
+
+        // Update the content of each lane from top to bottom
+        for (l = 0; l < mNumLanes; ++l)
+        {
+            Lane * lane = GetLane(l);
+            if (lane != nullptr)
+            {
+                lane->Update(mCurrentBeat, window);
+            }
+        }
+
         // Render the content of each lane from top to bottom
-        for (unsigned int l = 0; l < mNumLanes; ++l)
+        //! \todo Add support for render passes
+        for (l = 0; l < mNumLanes; ++l)
         {
             Lane * lane = GetLane(l);
             if (lane != nullptr)

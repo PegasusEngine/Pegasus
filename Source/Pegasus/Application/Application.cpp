@@ -23,6 +23,7 @@
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Texture/TextureManager.h"
 #include "Pegasus/Timeline/Timeline.h"
+#include "Pegasus/TimelineBlock/TimelineBlockRegistration.h"
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/Render/RenderContext.h"
 #include "Pegasus/Sound/Sound.h"
@@ -140,6 +141,9 @@ void Application::Initialize()
 
     // Start up the app, which creates and destroys the dummy window
     StartupAppInternal();
+
+    // Register the Pegasus-side timeline blocks
+    TimelineBlock::RegisterBaseBlocks(GetTimeline());
 
     // Custom initialization, done in the user application
     RegisterTimelineBlocks();

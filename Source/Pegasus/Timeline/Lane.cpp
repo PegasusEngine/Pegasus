@@ -317,39 +317,31 @@ void Lane::InitializeBlocks()
 
 //----------------------------------------------------------------------------------------
 
+void Lane::Update(float beat, Wnd::Window * window)
+{
+    //! \todo The current approach is extremely brute force and inefficient.
+    //! \todo Cache the current selected block in function of the timeline time.
+
+    Block * block = nullptr;
+    float relativeBeat = 0.0f;
+    if (FindBlockAndComputeRelativeBeat(beat, block, relativeBeat))
+    {
+        block->Update(relativeBeat, window);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 void Lane::Render(float beat, Wnd::Window * window)
 {
     //! \todo The current approach is extremely brute force and inefficient.
     //! \todo Cache the current selected block in function of the timeline time.
 
-    if (mNumBlocks > 0)
+    Block * block = nullptr;
+    float relativeBeat = 0.0f;
+    if (FindBlockAndComputeRelativeBeat(beat, block, relativeBeat))
     {
-        // Convert the time in floating point format to a tick
-        const unsigned int tick = static_cast<unsigned int>(Pegasus::Math::Floor(beat * mTimeline->GetNumTicksPerBeatFloat()));
-
-        // Find the current block index (block the tick is on or right after)
-        // and the next block index (block that is not started yet)
-        int currentBlockIndex = INVALID_RECORD_INDEX;
-        int nextBlockIndex = INVALID_RECORD_INDEX;
-        FindCurrentAndNextBlocks(tick, currentBlockIndex, nextBlockIndex);
-
-        if (currentBlockIndex != INVALID_RECORD_INDEX)
-        {
-            Block * const block = mBlockRecords[currentBlockIndex].mBlock;
-
-            // Compute the number of ticks since the beginning of the block.
-            // If the number is strictly lower than the duration in ticks,
-            // the block is rendered
-            const unsigned int blockTick = tick - block->GetBeat();
-            if (blockTick < block->GetDuration())
-            {
-                // Compute the beat relative to the beginning of the block.
-                // This time is measured in beats, not in ticks.
-                const float relativeBeat = static_cast<float>(blockTick) * mTimeline->GetRcpNumTicksPerBeat();
-
-                block->Render(relativeBeat, window);
-            }
-        }
+        block->Render(relativeBeat, window);
     }
 }
 
@@ -448,6 +440,41 @@ void Lane::DumpToLog()
     }
 }
 #endif  // PEGASUS_DEBUG
+
+//----------------------------------------------------------------------------------------
+
+int Lane::FindCurrentBlock(Beat beat) const
+{
+    // If the list of blocks is empty, no valid index can be returned
+    if (mNumBlocks == 0)
+    {
+        PG_ASSERTSTR(mBlockRecords[mFirstBlockIndex].mBlock == nullptr, "Invalid first block record in the lane, it is supposed to be nullptr");
+        return INVALID_RECORD_INDEX;
+    }
+
+    // Test if we are before the first block
+    PG_ASSERTSTR(mBlockRecords[mFirstBlockIndex].mBlock != nullptr, "Invalid first block record in the lane, it is supposed to be a valid one");
+    if (beat < mBlockRecords[mFirstBlockIndex].mBlock->GetBeat())
+    {
+        return INVALID_RECORD_INDEX;
+    }
+
+    // Look for the space between two blocks where the beat can fit
+    int current = mFirstBlockIndex;
+    int next = mBlockRecords[mFirstBlockIndex].mNext;
+    PG_ASSERTSTR(mBlockRecords[next].mBlock != nullptr, "Invalid block record in the lane, it is supposed to be a valid one");
+    while (   (next != mFirstBlockIndex)
+           && (beat >= mBlockRecords[next].mBlock->GetBeat()) )
+    {
+        current = next;
+        next = mBlockRecords[next].mNext;
+        PG_ASSERTSTR(next != INVALID_RECORD_INDEX, "Invalid block record in the lane, it is supposed to have a next record");
+        PG_ASSERTSTR(mBlockRecords[next].mBlock != nullptr, "Invalid block record in the lane, it is supposed to be a valid one");
+    }
+
+    // Output the block indexes
+    return current;
+}
 
 //----------------------------------------------------------------------------------------
 
@@ -877,6 +904,43 @@ void Lane::MoveBlockToLane(int blockIndex, Lane * newLane, Beat beat)
     {
         PG_FAILSTR("Invalid block record index (%d), it should be >= 0 and < %u", blockIndex, LANE_MAX_NUM_BLOCKS);
     }
+}
+
+//----------------------------------------------------------------------------------------
+
+bool Lane::FindBlockAndComputeRelativeBeat(float beat, Block * & block, float & relativeBeat)
+{
+    //! \todo The current approach is extremely brute force and inefficient.
+    //! \todo Cache the current selected block in function of the timeline time.
+
+    if (mNumBlocks > 0)
+    {
+        // Convert the time in floating point format to a tick
+        const unsigned int tick = static_cast<unsigned int>(Pegasus::Math::Floor(beat * mTimeline->GetNumTicksPerBeatFloat()));
+
+        // Find the current block index (block the tick is on or right after)
+        const int currentBlockIndex = FindCurrentBlock(tick);
+        if (currentBlockIndex != INVALID_RECORD_INDEX)
+        {
+            block = mBlockRecords[currentBlockIndex].mBlock;
+
+            // Compute the number of ticks since the beginning of the block.
+            // If the number is strictly lower than the duration in ticks,
+            // the block is rendered
+            const unsigned int blockTick = tick - block->GetBeat();
+            if (blockTick < block->GetDuration())
+            {
+                // Compute the beat relative to the beginning of the block.
+                // This time is measured in beats, not in ticks.
+                relativeBeat = static_cast<float>(blockTick) * mTimeline->GetRcpNumTicksPerBeat();
+
+                // Valid block and relative beat
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 
