@@ -67,15 +67,17 @@ void PrettyPrint::Visit(StmtList* n)
     {
         Indent();
         n->GetStmt()->Access(this);
-        mStr("\n");
         if (n->GetTail() != nullptr)
+        {
+            mStr("\n");
             n->GetTail()->Access(this);
+        }
     }
 }
 
 void PrettyPrint::Visit(ArgDec* n)
 {
-    mStr(n->GetVar()->GetName()); mStr(" : "); mStr(n->GetType()->GetName());
+    mStr(n->GetVar()); mStr(" : "); mStr(n->GetType());
 }
 
 void PrettyPrint::Visit(ArgList* n)
@@ -120,7 +122,7 @@ void PrettyPrint::Visit(Binop* n)
 
 void PrettyPrint::Visit(FunCall* n)
 {
-    n->GetIdd()->Access(this);
+	mStr(n->GetName());
     mStr("(");
     n->GetArgs()->Access(this);
     mStr(")");
@@ -133,6 +135,7 @@ void PrettyPrint::Visit(Imm* n)
 
 void PrettyPrint::Visit(StmtExp* n)
 {
+    Indent();
     n->GetExp()->Access(this);
     mStr(";");
 }
@@ -145,24 +148,89 @@ void PrettyPrint::Visit(StmtTreeModifier* n)
     mStr(");");
 }
 
-void PrettyPrint::Visit(StmtFunDec* n)
+void PrettyPrint::Visit(StmtWhile* n)
 {
     Indent();
-    n->GetRet()->Access(this);
-    mStr(" ");
-    n->GetName()->Access(this);
-    mStr("(");
-    n->GetArgList()->Access(this);
+    mStr("while ( ");
+    n->GetExp()->Access(this);
     mStr(") {\n");
     ++mScope;
     n->GetStmtList()->Access(this);
-    mStr("}\n");
     --mScope;
+    mStr("\n");
+    Indent();
+    mStr("}\n");
+}
+
+void PrettyPrint::Visit(StmtFunDec* n)
+{
+    Indent();
+    mStr(n->GetRet());
+    mStr(" ");
+    mStr(n->GetName());
+    mStr("(");
+    n->GetArgList()->Access(this);
+	Ast::StmtList* sl = n->GetStmtList();
+    if (sl == nullptr)
+    {
+        mStr(") ;");
+    }
+	else
+	{
+        mStr(") {\n");
+        ++mScope;
+        n->GetStmtList()->Access(this);
+        mStr("\n}\n");
+        --mScope;
+	}
 }
 
 void PrettyPrint::Visit(StmtIfElse* n)
 {
-    PG_FAILSTR("not implemented yet.");
+    Indent();
+    mStr("if (");
+    n->GetExp()->Access(this);
+    mStr(") {\n");
+    ++mScope;
+    n->GetStmtList()->Access(this);
+    --mScope;
+    mStr("\n");
+    Indent();
+    mStr("}\n");
+    if (n->GetTail() != nullptr)
+    {
+        n->GetTail()->Access(this);
+    }
+}
+
+void PrettyPrint::Visit(ElseIfTail* n)
+{
+    Indent();
+    mStr("elif ( ");
+    n->GetExp()->Access(this);
+    mStr(") {\n");
+    ++mScope;
+    n->GetStmtList()->Access(this);
+    --mScope;
+    mStr("\n");
+    Indent();
+    mStr("}\n");
+    if (n->GetTail() != nullptr)
+    {
+        n->GetTail()->Access(this);
+    }
+}
+
+void PrettyPrint::Visit(ElseTail* n)
+{
+    Indent();
+    mStr("else {\n");
+    ++mScope;
+    n->GetStmtList()->Access(this);
+    --mScope;
+    mStr("\n");
+    Indent();
+    mStr("}\n");
 }
 
 void PrettyPrint::Visit(StmtReturn* n)

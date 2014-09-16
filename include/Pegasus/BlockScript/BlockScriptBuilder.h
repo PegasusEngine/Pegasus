@@ -14,6 +14,10 @@
 #define BLOCK_SCRIPT_BUILDER_H
 
 #include "Pegasus/BlockScript/AstAllocator.h"
+#include "Pegasus/BlockScript/TypeTable.h"
+#include "Pegasus/BlockScript/FunTable.h"
+#include "Pegasus/BlockScript/StackFrameInfo.h"
+#include "Pegasus/BlockScript/Container.h"
 
 namespace Pegasus
 {
@@ -47,7 +51,7 @@ class BlockScriptBuilder
 {
 public:
     typedef void (*ErrorMsgCallback) (const char*);
-    explicit BlockScriptBuilder() : mOnError(nullptr) {}
+    explicit BlockScriptBuilder() : mOnError(nullptr), mCurrentFrame(0), mErrorCount(0) {}
 	
     struct CompilationResult
     {
@@ -73,21 +77,47 @@ public:
     Ast::StmtList* CreateStmtList();
 
     //! Node builders
-    Ast::Binop* BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs);
-    Ast::FunCall* BuildFunCall(Ast::ExpList* args, const char * name);
-    Ast::Imm*   BuildImm   (Ast::Variant& v);
+    Ast::Exp* BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs);
+    Ast::Exp* BuildFunCall(Ast::ExpList* args, const char * name);
+    Ast::Exp*   BuildImmFloat   (float v);
+    Ast::Exp*   BuildImmInt     (int   v);
     Ast::Idd*   BuildIdd   (const char * name);
     Ast::StmtExp* BuildStmtExp(Ast::Exp* exp);
     Ast::StmtReturn* BuildStmtReturn(Ast::Exp* exp);
     Ast::StmtTreeModifier* BuildStmtTreeModifier(Ast::ExpList* expList, Ast::Idd* var);
+    Ast::StmtWhile*  BuildStmtWhile(Ast::Exp* exp, Ast::StmtList* stmtList);
     Ast::StmtFunDec* BuildStmtFunDec(Ast::ArgList* argList, Ast::StmtList* stmtList, const char * returnIdd, const char * nameIdd);
-    Ast::StmtIfElse* BuildStmtIfElse(Ast::Exp* exp, Ast::StmtList* ifBlock, Ast::StmtList* elseBlock);
-    Ast::ArgDec* BuildArgDec(Ast::Idd* var, Ast::Idd* type);
-    
+    Ast::StmtIfElse* BuildStmtIfElse(Ast::Exp* exp, Ast::StmtList* ifBlock, Ast::ElseTail* tail);
+    Ast::ElseIfTail* BuildStmtElseIfTail(Ast::Exp* exp, Ast::StmtList* ifBlock, Ast::ElseTail* tail);
+    Ast::ElseTail*   BuildStmtElseTail(Ast::StmtList* ifBlock);
+    Ast::ArgDec* BuildArgDec(const char* var, const char* type);
+
+    void IncErrorCount() { ++mErrorCount; }
+
+    int GetErrorCount() const { return mErrorCount; }
+
+    void StartNewFrame();
+    void PopFrame();
+
 private:
-    AstAllocator mAllocator;
+
+    // registers a member into the stack. Returns the offset of the current stack frame.
+    int RegisterStackMember(const char* name, int type);
+
+    // attempts a stack push when entering a function declaration through arguments or argument list
+    void AttemptFunctionStackPush();
+    
+    Alloc::IAllocator* mGeneralAllocator;
+    AstAllocator       mAllocator;
+    TypeTable          mTypeTable;
+    FunTable           mFunTable;
     ErrorMsgCallback   mOnError;
 	CompilationResult  mActiveResult;
+
+    int                mCurrentFrame;
+    int                mErrorCount;
+
+    Container<StackFrameInfo> mStackFrames;
 };
 
 }

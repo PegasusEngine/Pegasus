@@ -17,7 +17,9 @@
 
 using namespace Pegasus;
 
-void onError(const char * str) { printf("%s\n", str); }
+extern int BS_line;
+extern char* BS_text;
+void onError(const char * str) { printf("%d: %s [around token \"%s\"]\n", BS_line, str, BS_text); }
 extern void Bison_BlockScriptParse(const Io::FileBuffer* fileBuffer, BlockScript::BlockScriptBuilder* builder, BlockScript::IddStrPool* iddStrPool);
 
 BlockScript::BlockScript::BlockScript(Alloc::IAllocator* allocator)
@@ -39,7 +41,7 @@ bool BlockScript::BlockScript::Compile(const Io::FileBuffer* fb)
     BlockScriptBuilder::CompilationResult cr;
 	mBuilder.EndBuild(cr);
     mAst = cr.mAst;
-    return mAst != nullptr;
+    return mAst != nullptr && mBuilder.GetErrorCount() == 0;
 }
 
 void BlockScript::BlockScript::Reset()

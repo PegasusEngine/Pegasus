@@ -80,7 +80,22 @@ public:
     //! Frees the memory and resets the counters. Use this when doing a garbage collection pass or when memory must be freed
     void FreeMemory();
 
+    //! \return the allocator
     Alloc::IAllocator* GetInternalAlloc() { return mAllocator; }
+
+    //! \return gets the page memory
+    char** const GetMemoryPages() const { return mMemoryPages; }
+
+    //! \return gets the page memory
+    char** GetMemoryPages() { return mMemoryPages; }
+
+    //! \return gets the page memory
+    char** const GetMemoryPagesConst() const { return mMemoryPages; }
+
+    //! \return gets the memory size
+    int GetMemorySize() const { return mMemorySize; }
+
+    int GetPageSize() const { return mPageSize; }
 
 private:
     static const int sPageIncrement; 

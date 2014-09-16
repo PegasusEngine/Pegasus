@@ -50,22 +50,25 @@ extern int BS_debug;
      I_INT = 259,
      IDENTIFIER = 260,
      K_IF = 261,
-     K_SEMICOLON = 262,
-     K_L_PAREN = 263,
-     K_R_PAREN = 264,
-     K_L_BRAC = 265,
-     K_R_BRAC = 266,
-     K_COMMA = 267,
-     K_COL = 268,
-     K_RETURN = 269,
-     O_MUL = 270,
-     O_PLUS = 271,
-     O_MINUS = 272,
-     O_DIV = 273,
-     O_ACCESS = 274,
-     O_EQ = 275,
-     O_SET = 276,
-     O_TREE = 277
+     K_ELSE_IF = 262,
+     K_ELSE = 263,
+     K_SEMICOLON = 264,
+     K_L_PAREN = 265,
+     K_R_PAREN = 266,
+     K_L_BRAC = 267,
+     K_R_BRAC = 268,
+     K_COMMA = 269,
+     K_COL = 270,
+     K_RETURN = 271,
+     K_WHILE = 272,
+     O_MUL = 273,
+     O_PLUS = 274,
+     O_MINUS = 275,
+     O_DIV = 276,
+     O_ACCESS = 277,
+     O_EQ = 278,
+     O_SET = 279,
+     O_TREE = 280
    };
 #endif
 
@@ -86,7 +89,7 @@ typedef union YYSTYPE
 
 
 /* Line 2058 of yacc.c  */
-#line 90 "bs.parser.hpp"
+#line 93 "bs.parser.hpp"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

@@ -24,6 +24,9 @@ BS_PROCESS(StmtExp)
 BS_PROCESS(StmtTreeModifier)
 BS_PROCESS(StmtFunDec)
 BS_PROCESS(StmtIfElse)
+BS_PROCESS(ElseIfTail)
+BS_PROCESS(ElseTail)
+BS_PROCESS(StmtWhile)
 BS_PROCESS(StmtReturn)
 
 

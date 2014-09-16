@@ -82,11 +82,33 @@
 
 %}
 
+%x IN_LINE_COMMENT
+%x MULTI_COMMENT
+
 %%
+<IN_LINE_COMMENT>
+{
+\n   { ++BS_line; BEGIN(INITIAL); }
+.    ;
+}
+<MULTI_COMMENT>
+{
+\*\/ { BEGIN(INITIAL); }
+\n   { ++BS_line; }
+.    ;
+}
+
+<INITIAL>
+{
+\/\/            { BEGIN(IN_LINE_COMMENT);}
+\/\*            { BEGIN(MULTI_COMMENT);  }
 [ \t]            ;
 \n              { ++BS_line; }
 if              { return K_IF;     }
+elif            { return K_ELSE_IF;}
+else            { return K_ELSE;}
 return          { return K_RETURN; }
+while           { return K_WHILE; }
 [0-9]+\.[0-9]+  { BS_FLOAT(I_FLOAT);  }
 [0-9]+          { BS_INT(I_INT);    }
 ;               { BS_TOKEN(K_SEMICOLON); }
@@ -105,4 +127,6 @@ return          { return K_RETURN; }
 ,               { return K_COMMA;  }
 :               { return K_COL; }
 .               ;
+}
+
 %%

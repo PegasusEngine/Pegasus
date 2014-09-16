@@ -44,6 +44,21 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\BlockScript.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\TypeDesc.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\TypeTable.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\StackFrameInfo.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\FunDesc.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\FunTable.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\bs.parser.hpp">
@@ -68,6 +83,24 @@
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockScript.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\TypeDesc.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\TypeTable.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\Container.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\StackFrameInfo.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\FunDesc.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\FunTable.h">
       <Filter>Include</Filter>
     </ClInclude>
   </ItemGroup>

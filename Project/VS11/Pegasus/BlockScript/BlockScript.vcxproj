@@ -38,8 +38,13 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\BlockScriptBuilder.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\bs.lexer.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\bs.parser.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\FunDesc.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\FunTable.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\IddStrPool.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\PrettyPrint.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\StackFrameInfo.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\TypeDesc.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\TypeTable.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\AstAllocator.h" />
@@ -47,9 +52,15 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockScriptAst.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockScriptBuilder.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\bs.parser.hpp" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\Container.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\FunDesc.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\FunTable.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\IddStrPool.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\IVisitor.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\PrettyPrint.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\StackFrameInfo.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\TypeDesc.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\TypeTable.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6BFF7812-D698-42F9-9F0F-B77348A9C723}</ProjectGuid>

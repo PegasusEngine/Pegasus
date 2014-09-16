@@ -58,8 +58,11 @@ void* AstAllocator::Alloc(
         PG_ASSERT(targetPage == mMemoryPageListCount);
         int newPagesCount = mMemoryPageListCount + sPageIncrement;
         char ** newList = static_cast<char**>(mAllocator->Alloc(static_cast<size_t>(newPagesCount * sizeof(char*)), Alloc::PG_MEM_PERM, -1, "Page Vector", __FILE__, __LINE__));            
-        Utils::Memcpy(newList, mMemoryPages, static_cast<unsigned>(mMemoryPageListCount * sizeof(char*)));
-        mAllocator->Delete(mMemoryPages);
+		if (mMemoryPages != nullptr)
+		{
+			Utils::Memcpy(newList, mMemoryPages, static_cast<unsigned>(mMemoryPageListCount * sizeof(char*)));
+			mAllocator->Delete(mMemoryPages);
+		}
         mMemoryPages = newList;
         mMemoryPageListCount = newPagesCount;
     }
@@ -72,11 +75,14 @@ void* AstAllocator::Alloc(
         ++mMemoryPageListSize;
     }
 
+	
     int prevPage = (mMemorySize / mPageSize);
+	bool isUnaligned = (((mMemorySize + size) % mPageSize) != 0) && (prevPage != targetPage);
     int currentOffset = mMemorySize % mPageSize;
-    int offset = prevPage != targetPage ? 0 : currentOffset ;
-    mMemorySize = newMemSize + (prevPage != targetPage ? mPageSize - currentOffset : 0);
-    return mMemoryPages[targetPage] + offset;
+    int offset = isUnaligned ? 0 : currentOffset ;
+	int actualPage = isUnaligned ? targetPage : prevPage;
+    mMemorySize = newMemSize + (isUnaligned ? mPageSize - currentOffset : 0);
+    return mMemoryPages[actualPage] + offset;
 }
 
 void* AstAllocator::AllocAlign(
@@ -110,7 +116,11 @@ void AstAllocator::FreeMemory()
     {
         mAllocator->Delete(mMemoryPages[p]);
     }
-    mAllocator->Delete(mMemoryPages);
+    if (mMemoryPages != nullptr)
+    {
+        mAllocator->Delete(mMemoryPages);
+	}
     mMemoryPages = nullptr;
     mMemoryPageListCount = 0;
+    mMemoryPageListSize = 0;
 }

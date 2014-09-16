@@ -52,15 +52,15 @@
     const FileBuffer*   BS_GlobalFileBuffer = nullptr;
     IddStrPool*         BS_GlobalIddStrPool = nullptr;
 
-    void BS_error(const char *s) { printf("%d : ERROR: %s near token '%s'\n", BS_line, s, BS_text); }
+    void BS_error(const char *s) { BS_GlobalBuilder->IncErrorCount(); printf("%d : ERROR: %s near token '%s'\n", BS_line, s, BS_text); }
     
     //***************************************************//
     //              Let the insanity begin               //
     //***************************************************//
 %}
 
-// expect 12 reduce/shift warnings due to grammar ambiguity
-%expect 12
+// expect 50 reduce/shift warnings due to grammar ambiguity
+%expect 50 
 
 %union {
     int    token;
@@ -76,6 +76,8 @@
 %token <integerValue> I_INT
 %token <identifierText> IDENTIFIER
 %token <token> K_IF
+%token <token> K_ELSE_IF
+%token <token> K_ELSE
 %token <token> K_SEMICOLON
 %token <token> K_L_PAREN
 %token <token> K_R_PAREN
@@ -84,6 +86,7 @@
 %token <token> K_COMMA
 %token <token> K_COL
 %token <token> K_RETURN
+%token <token> K_WHILE
 %token <token> O_MUL
 %token <token> O_PLUS 
 %token <token> O_MINUS
@@ -94,10 +97,13 @@
 %token <token> O_TREE
 %type <vProgram> program
 %type <vExp>  exp 
-%type <vImm>  numeric
+%type <vExp>  numeric
 %type <vIdd>  ident
 %type <vExpList> exp_list
 %type <vStmtList> stmt_list
+%type <vElseIfTail> stmt_else_if_tail
+%type <vElseTail>   stmt_else_tail
+%type <vStmtList> fun_stmt_list
 %type <vStmt> stmt
 %type <vArgList> arg_list
 %type <vArgDec>  arg_dec
@@ -129,12 +135,70 @@ stmt_list : stmt_list stmt {
 stmt    : exp K_SEMICOLON { BS_BUILD($$, BuildStmtExp($1)); }
         | ident O_TREE K_L_PAREN exp_list K_R_PAREN K_SEMICOLON { BS_BUILD($$, BuildStmtTreeModifier($4, $1)); }
         | K_RETURN exp K_SEMICOLON { BS_BUILD($$, BuildStmtReturn($2)); }
-        | IDENTIFIER IDENTIFIER K_L_PAREN arg_list K_R_PAREN K_L_BRAC stmt_list K_R_BRAC {BS_BUILD($$, BuildStmtFunDec($4, $7, $1, $2));}
-        | K_IF K_L_PAREN exp K_R_PAREN K_L_BRAC K_R_BRAC { BS_BUILD($$, BuildStmtIfElse($3, nullptr, nullptr));}
+        | IDENTIFIER IDENTIFIER K_L_PAREN arg_list K_R_PAREN fun_stmt_list  {BS_BUILD($$, BuildStmtFunDec($4, $6, $1, $2));}
+        | while_keyword K_L_PAREN exp K_R_PAREN K_L_BRAC stmt_list K_R_BRAC { BS_BUILD($$, BuildStmtWhile($3, $6));}
+        | if_keyword K_L_PAREN exp K_R_PAREN K_L_BRAC stmt_list K_R_BRAC stmt_else_if_tail stmt_else_tail 
+                 { 
+                    if ($9 != nullptr && $8 != nullptr)
+                    {
+                        Pegasus::BlockScript::Ast::ElseTail* tail = $8;
+                        while (tail->GetTail() != nullptr) tail = tail->GetTail();
+                        tail->SetTail($9); //else is the last statement
+                    }
+                    if ($9 != nullptr && $8 == nullptr)
+                    {
+                        BS_BUILD($$, BuildStmtIfElse($3, $6, $9));
+                    }
+                    else
+                    {
+                        BS_BUILD($$, BuildStmtIfElse($3, $6, $8));
+                    }
+                 }
         ;
 
-numeric : I_INT  { Variant v; v.i[0] = $1; BS_BUILD($$, BuildImm(v)); }
-        | I_FLOAT { Variant v; v.f[0] = $1; BS_BUILD($$, BuildImm(v)); }
+while_keyword : K_WHILE { BS_GlobalBuilder->StartNewFrame(); }
+              ; 
+
+if_keyword : K_IF { BS_GlobalBuilder->StartNewFrame(); }
+           ; 
+
+stmt_else_if_tail :  stmt_else_if_tail else_if_keyword K_L_PAREN exp K_R_PAREN K_L_BRAC stmt_list K_R_BRAC
+                    {
+                        $$ = $1;
+                        BS_CHECKLIST($1);
+                        Pegasus::BlockScript::Ast::ElseTail* tail = $1;
+                        while (tail->GetTail() != nullptr)
+                        {
+                            tail = tail->GetTail();
+                        }
+                        
+                        tail->SetTail(
+                            BS_GlobalBuilder->BuildStmtElseIfTail($4, $7, nullptr)
+                        ); 
+                    }
+                  |  else_if_keyword K_L_PAREN exp K_R_PAREN K_L_BRAC stmt_list K_R_BRAC
+                   {
+                        $$ = BS_GlobalBuilder->BuildStmtElseIfTail($3, $6, nullptr);
+                   }
+                  | /*empty*/ { $$ = nullptr; }
+                  ;
+
+else_if_keyword : K_ELSE_IF { BS_GlobalBuilder->StartNewFrame(); }
+                ;
+
+stmt_else_tail : else_keyword K_L_BRAC stmt_list K_R_BRAC { BS_BUILD($$, BuildStmtElseTail($3)); }
+               | /* empty */  { $$ = nullptr; } 
+               ;
+
+else_keyword  : K_ELSE { BS_GlobalBuilder->StartNewFrame(); }
+              ;
+
+fun_stmt_list : K_L_BRAC stmt_list K_R_BRAC { $$ = $2; }
+              | K_SEMICOLON { $$ = nullptr; }
+              ;
+
+numeric : I_INT   { BS_BUILD($$, BuildImmInt($1)); }
+        | I_FLOAT { BS_BUILD($$, BuildImmFloat($1)); }
         ;
 
 exp_list : exp_list K_COMMA exp {
@@ -176,7 +240,7 @@ arg_list : arg_list K_COMMA arg_dec {
          ;
 
 
-arg_dec : ident K_COL ident { BS_BUILD($$, BuildArgDec($1, $3)); }
+arg_dec : IDENTIFIER K_COL IDENTIFIER { BS_BUILD($$, BuildArgDec($1, $3)); }
         ;
 
 %%         

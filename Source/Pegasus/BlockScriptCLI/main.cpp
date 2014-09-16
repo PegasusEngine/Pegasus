@@ -15,6 +15,7 @@
 #include "Pegasus/Core/Shared/LogChannel.h"
 #include "Pegasus/Core/Log.h"
 #include "Pegasus/Core/Assertion.h"
+#include "Pegasus/BlockScript/Container.h"
 #include <stdio.h>
 
 using namespace Pegasus::Io;
@@ -39,7 +40,7 @@ AssertReturnCode AssertHandler(const char * testStr,
 
 void printstr(const char * s)
 {
-    printf(s);
+    printf("%s",s);
 }
 
 void printint(int i)
@@ -63,7 +64,6 @@ int main(int argc, char* argv[])
 	FileBuffer fb;
 	IoError err;
     IOManager mgr("");
-
     if (argc == 2)
     {
         err = mgr.OpenFileToBuffer(
@@ -99,3 +99,5 @@ int main(int argc, char* argv[])
     }
 	
 }
+
+

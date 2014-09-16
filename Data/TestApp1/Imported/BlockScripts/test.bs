@@ -1,23 +1,12 @@
-p = Program(); return  1+2.0*3.7+4;
-doSomething( poop, pap, pep);
-t = p;
-s = Shader(file = something.vs);
-s2 = Shader(file = something.ps);
-p2 = Program(s, s2);
-p->(Name = Something);
-quadOut = Mesh(Quad());
-rt = RenderTarget(Format = R8B8G8A8_FLOAT, Width, Height);
-u = UniformBlock(program = p, name = mUniformState, fa = 1);
-u->(k = ketch);
-
-
-float4 someFunc (v1 : float3, x : Program, y : Shader, z : MeshOutput)
+f = 2;
+if (f)
 {
-    u->(a = test);
-    p->(b = a, d = 12.2, x = float4(x,1,90));
-    return 0;
+    s = 1.0;
 }
-
-void main (time : float) 
+elif(f)
 {
 }
+else 
+{
+}
+s = 2;
