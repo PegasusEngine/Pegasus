@@ -27,7 +27,6 @@
     #include "Pegasus/BlockScript/BlockScriptBuilder.h"
     #include "Pegasus/BlockScript/BlockScriptAst.h"
     #include "Pegasus/BlockScript/bs.parser.hpp"
-    #include "Pegasus/BlockScript/IddStrPool.h"
     #include "Pegasus/Utils/String.h"
     #include "Pegasus/Utils/Memcpy.h"
     #include "Pegasus/Core/Io.h"
@@ -40,7 +39,7 @@
                             BS_error("Identifier string too long!\n");\
                             yyterminate();\
                           }else{\
-                            char * str = BS_GlobalIddStrPool->AllocateString();\
+                            char * str = BS_GlobalBuilder->GetStringPool().AllocateString();\
                             if (str == nullptr) { BS_error("Out of identifier memory!"); yyterminate(); }\
                             BS_lval.identifierText = str;\
                             str[0] = '\0';\
@@ -62,7 +61,7 @@
 
     int BS_bufferPosition = 0;
     extern const FileBuffer* BS_GlobalFileBuffer;
-    extern IddStrPool*       BS_GlobalIddStrPool;
+    extern BlockScriptBuilder* BS_GlobalBuilder;
 
     bool BS_HasNext()
     {
@@ -80,10 +79,14 @@
     }
     extern void BS_error(const char *s);
 
+    char BS_StringBlockAccumulator[512];
+    int  BS_StringBlockAccumulatorPos = 0;
+
 %}
 
 %x IN_LINE_COMMENT
 %x MULTI_COMMENT
+%x STRING_BLOCK
 
 %%
 <IN_LINE_COMMENT>
@@ -98,34 +101,68 @@
 .    ;
 }
 
+<STRING_BLOCK>
+{
+\"  {
+        BEGIN(INITIAL); 
+        PG_ASSERT(BS_StringBlockAccumulatorPos < 512);
+        BS_StringBlockAccumulator[BS_StringBlockAccumulatorPos] = '\0';
+        BS_lval.identifierText = BS_StringBlockAccumulator;
+        return I_STRING;
+    }
+.   {
+        if (BS_StringBlockAccumulatorPos >= 511)
+        {
+            BS_error("Out of string block memory! keep imm strings within 512 chars.");
+            yyterminate();
+        }
+        else
+        {
+             BS_StringBlockAccumulator[BS_StringBlockAccumulatorPos++] = *BS_text;
+        }
+    }
+}
+
 <INITIAL>
 {
 \/\/            { BEGIN(IN_LINE_COMMENT);}
 \/\*            { BEGIN(MULTI_COMMENT);  }
+\"              { BS_StringBlockAccumulatorPos = 0; BEGIN(STRING_BLOCK); }
 [ \t]            ;
-\n              { ++BS_line; }
+\n              { ++BS_line;       }
 if              { return K_IF;     }
 elif            { return K_ELSE_IF;}
-else            { return K_ELSE;}
+else            { return K_ELSE;   }
 return          { return K_RETURN; }
-while           { return K_WHILE; }
-[0-9]+\.[0-9]+  { BS_FLOAT(I_FLOAT);  }
-[0-9]+          { BS_INT(I_INT);    }
+struct          { return K_STRUCT; }
+while           { return K_WHILE;  }
+[0-9]+\.[0-9]+  { BS_FLOAT(I_FLOAT);     }
+[0-9]+          { BS_INT(I_INT);         }
 ;               { BS_TOKEN(K_SEMICOLON); }
-[_\.a-zA-Z0-9]+ { BS_STRING(IDENTIFIER); }
-\*              { BS_TOKEN(O_MUL);   }
+[_a-zA-Z0-9]+   { BS_STRING(IDENTIFIER); }
 \+              { BS_TOKEN(O_PLUS);  }
 \-              { BS_TOKEN(O_MINUS); }
+\*              { BS_TOKEN(O_MUL);   }
 \/              { BS_TOKEN(O_DIV);   }
-==              { BS_TOKEN(O_EQ);  }
-=               { BS_TOKEN(O_SET); }
-->              { BS_TOKEN(O_TREE);  }
+%               { BS_TOKEN(O_MOD);   }
+==              { BS_TOKEN(O_EQ);    }
+>               { BS_TOKEN(O_GT);    }
+\<              { BS_TOKEN(O_LT);    }
+>=              { BS_TOKEN(O_GTE);   }
+\<=             { BS_TOKEN(O_LTE);   }
+&&              { BS_TOKEN(O_LAND); }
+\|\|            { BS_TOKEN(O_LOR);  }
+=               { BS_TOKEN(O_SET);  }
+->              { BS_TOKEN(O_TREE); }
+\.              { BS_TOKEN(O_DOT); }
 \(              { return K_L_PAREN; }
 \)              { return K_R_PAREN; }
-\{              { return K_L_BRAC; }
-\}              { return K_R_BRAC; }
-,               { return K_COMMA;  }
-:               { return K_COL; }
+\{              { return K_L_BRAC;  }
+\}              { return K_R_BRAC;  }
+\[              { return K_L_LACE;  }
+\]              { return K_R_LACE;  }
+,               { return K_COMMA;   }
+:               { return K_COL;     }
 .               ;
 }
 

@@ -18,6 +18,13 @@ namespace Pegasus
 {
 namespace BlockScript
 {
+
+class StackFrameInfo;
+
+class TypeDesc;
+
+class FunDesc;
+
 namespace Ast
 {
 
@@ -57,20 +64,20 @@ class Exp : public Node
 {
 public:
 
-    Exp() : mTypeId(-1) {}
+    Exp() : mTypeDesc(nullptr) {}
 
     virtual ~Exp(){}
 
-    int GetTypeId() const { return mTypeId; }
+    const TypeDesc* GetTypeDesc() const { return mTypeDesc; }
 
-    void SetTypeId(int id) { mTypeId = id; }
+    void SetTypeDesc(const TypeDesc* typeDesc) { mTypeDesc = typeDesc; }
 
     virtual int GetExpType() const = 0;
 
     VISITOR_ACCESS
 
 protected:
-    int mTypeId;
+    const TypeDesc* mTypeDesc;
 };
 
 //! tail recursive expression list base class
@@ -105,7 +112,7 @@ public:
 
     static const int sType;
 
-    explicit Idd (const char * name) : mOffset(-1), mFrame(-1) { mName = name; }
+    explicit Idd (const char * name) : mOffset(-1), mFrameOffset(-1), mIsGlobal(false) { mName = name; }
 
     virtual ~Idd(){}
 
@@ -115,9 +122,13 @@ public:
 
     void SetOffset(int offset) { mOffset = offset; }
 
-    int GetFrame() const { return mFrame; }
+    int GetFrameOffset() const { return mFrameOffset; }
 
-    void SetFrame(int frame) { mFrame = frame; }
+    void SetFrameOffset(int frameOffset) { mFrameOffset = frameOffset; }
+
+    bool IsGlobal() const { return mIsGlobal; }
+
+    void SetIsGlobal(bool isGlobal) { mIsGlobal = isGlobal; }
 
     VISITOR_ACCESS
 
@@ -127,7 +138,31 @@ private:
 
     const char* mName;
     int  mOffset;
-    int  mFrame;
+    int  mFrameOffset;
+    bool mIsGlobal;
+};
+
+class Unop : public Exp
+{
+public:
+    static const int sType;
+
+    Unop(int op, Exp* exp) : mOp(op), mExp(exp) {}
+
+    virtual ~Unop() {}
+
+    Exp* GetExp() const { return mExp; } 
+   
+    int GetOp() const { return mOp; }
+
+    VISITOR_ACCESS
+
+    EXP_RTTI_DECL
+
+private:
+    Exp* mExp;
+    
+    int  mOp;
 };
 
 //! binary operator expression class
@@ -168,7 +203,7 @@ public:
 
     static const int sType;
 
-    FunCall(ExpList* args, const char * name) : mDescId(-1) {mArgs = args; mName = name;}
+    FunCall(ExpList* args, const char * name) : mDesc(nullptr) {mArgs = args; mName = name;}
 
     virtual ~FunCall(){}
 
@@ -176,9 +211,9 @@ public:
 
     const char*     GetName() { return mName; }
 
-    void     SetDescId(int id) { mDescId = id; }
+    void     SetDesc(const FunDesc* d) { mDesc = d; }
 
-    int      GetDescId() const { return mDescId; }
+    const FunDesc*   GetDesc() const { return mDesc; }
 
     VISITOR_ACCESS
 
@@ -188,7 +223,7 @@ private:
 
     ExpList* mArgs;
     const char* mName;
-    int  mDescId;
+    const FunDesc*  mDesc;
 };
 
 //! immediate value operator expression
@@ -214,6 +249,29 @@ public:
 private:
 
     Variant mVariant;
+};
+
+//! immediate string
+class StrImm : public Exp
+{
+public:
+    
+    static const int sType;
+
+    explicit StrImm(char* str) : mStr(str)
+    {
+    }
+
+    virtual ~StrImm(){}
+
+    char* GetStr() { return mStr; }
+
+    VISITOR_ACCESS
+
+    EXP_RTTI_DECL
+
+private:
+    char* mStr;
 };
 
 //! statement base class
@@ -333,12 +391,41 @@ private:
 
 };
 
+//! struct definition
+class StmtStructDef : public Stmt
+{
+public:
+    StmtStructDef(const char* structName, ArgList* argList)
+        : mName(structName), mArgList(argList), mFrameInfo(nullptr)
+    {
+    }
+
+    virtual ~StmtStructDef()
+    {
+    }
+
+    const char* GetName() const { return mName; }
+
+    ArgList* GetArgList() const { return mArgList; }
+
+    const StackFrameInfo* GetFrameInfo() const { return mFrameInfo; }
+
+    void SetFrameInfo(const StackFrameInfo* frameInfo) { mFrameInfo = frameInfo; }
+
+    VISITOR_ACCESS
+
+private:
+    const char* mName;
+    ArgList*    mArgList;
+    const StackFrameInfo* mFrameInfo;
+};
+
 //! function declarator
 class StmtFunDec : public Stmt
 {
 public:
 
-    StmtFunDec(ArgList* argList, StmtList * stmtList, const char* ret, const char* name) : mArgList(argList), mStmtList(stmtList), mRet(ret), mName(name), mReturnType(-1), mFrame(-1), mDescId(-1) {}
+    StmtFunDec(ArgList* argList, const char* ret, const char* name) : mArgList(argList), mStmtList(nullptr), mRet(ret), mName(name), mReturnType(nullptr), mFrame(nullptr), mDesc(nullptr) {}
 
     virtual ~StmtFunDec() {}
 
@@ -350,17 +437,19 @@ public:
 
     const char* GetRet() const { return mRet; }
 
-    int GetReturnType() const { return mReturnType; }
+    const TypeDesc* GetReturnType() const { return mReturnType; }
 
-    void SetReturnType(int retType) { mReturnType = retType; }
+    void SetReturnType(const TypeDesc* retType) { mReturnType = retType; }
 
-    int GetFrame() const { return mFrame; }
+    const StackFrameInfo* GetFrame() const { return mFrame; }
 
-    void SetFrame(int frame) { mFrame = frame; }
+    void SetFrame(const StackFrameInfo* frame) { mFrame = frame; }
 
-    int GetDescId() const { return mDescId; }
+    const FunDesc* GetDesc() const { return mDesc; }
 
-    void SetDescId(int id) { mDescId = id; }
+    void SetDesc(const FunDesc* d) { mDesc = d; }
+    
+    void SetStmtList(StmtList* stmtList) { mStmtList = stmtList; }
 
     VISITOR_ACCESS
 
@@ -374,23 +463,27 @@ private:
 
     const char* mName;
 
-    int  mReturnType;
+    const TypeDesc*  mReturnType;
 
-    int  mFrame;
+    const StackFrameInfo*  mFrame;
 
-    int  mDescId;
+    const FunDesc* mDesc;
 };
 
 class StmtWhile : public Stmt
 {
 public:
-    StmtWhile(Exp* exp, StmtList* stmtList) : mExp(exp), mStmtList(stmtList) {}
+    StmtWhile(Exp* exp, StmtList* stmtList) : mExp(exp), mStmtList(stmtList), mFrame(nullptr) {}
     ~StmtWhile(){}
 
     Exp* GetExp() const { return mExp; }
 
     StmtList* GetStmtList() const { return mStmtList; }
 
+    const StackFrameInfo* GetFrame() const { return mFrame; }
+
+    void SetFrame(const StackFrameInfo* frame) { mFrame = frame; }
+
     VISITOR_ACCESS
 
 private:
@@ -399,40 +492,8 @@ private:
     
     StmtList* mStmtList;
 
-};
+    const StackFrameInfo* mFrame;
 
-class ElseTail : public Node
-{
-public:
-    explicit ElseTail(StmtList* stmtList, ElseTail* tail) : mStmtList(stmtList), mTail(tail) {}
-    ~ElseTail() {}
-    StmtList* GetStmtList() const { return mStmtList; }
-
-    ElseTail* GetTail() const { return mTail; }
-
-    void SetTail(ElseTail* tail) { mTail = tail; }
-
-    VISITOR_ACCESS
-
-private:
-    StmtList* mStmtList;
-    ElseTail* mTail;
-};
-
-class ElseIfTail : public ElseTail
-{
-public:
-    ElseIfTail (
-        Exp* exp,
-        StmtList* stmtList,
-        ElseTail* tail
-    ) :  ElseTail(stmtList, tail), mExp(exp) {}
-
-    Exp* GetExp() const { return mExp; }
-    VISITOR_ACCESS
-
-private:
-    Exp* mExp;
 };
 
 //! ifthenelse
@@ -443,8 +504,9 @@ public:
     StmtIfElse(
         Exp * exp, 
         StmtList* ifBlock, 
-        ElseTail* elseTail
-    ) : mExp(exp), mIf(ifBlock), mTail(elseTail) {}
+        StmtIfElse* elseTail,
+        const StackFrameInfo* frame
+    ) : mExp(exp), mIf(ifBlock), mTail(elseTail), mFrame(frame) {}
 
     virtual ~StmtIfElse() {}
 
@@ -452,7 +514,11 @@ public:
 
     StmtList * GetStmtList() const { return mIf; }
 
-    ElseTail * GetTail() const { return mTail; }
+    StmtIfElse* GetTail() const { return mTail; }
+
+    void        SetTail(StmtIfElse* tail) { mTail = tail; }
+
+    const StackFrameInfo* GetFrame() const { return mFrame; }
 
     VISITOR_ACCESS
 
@@ -462,7 +528,9 @@ private:
 
     StmtList* mIf;
 
-    ElseTail* mTail;
+    StmtIfElse* mTail;
+
+    const StackFrameInfo* mFrame;
 };
 
 //! function argument description
@@ -470,21 +538,13 @@ class ArgDec : public Node
 {
 public:
 
-    ArgDec(const char* var, const char* type) : mVar(var), mType(type), mTypeId(-1), mFrame(-1), mOffset(-1) {}
+    ArgDec(const char* var, const TypeDesc* type) : mVar(var), mType(type), mOffset(-1) {}
 
     virtual ~ArgDec() {}
 
     const char* GetVar() const { return mVar; }
 
-    const char* GetType() const { return mType; }
-
-    void SetTypeId(int id)  { mTypeId = id; }
-
-    int  GetTypeId() const { return mTypeId; }
-
-    void SetFrame(int frame) { mFrame = frame; }
-    
-    int  GetFrame() const { return mFrame; }
+    const TypeDesc*  GetType() const { return mType; }
 
     void SetOffset(int offset) { mOffset = offset; }
 
@@ -495,10 +555,8 @@ public:
 private:
 
     const char* mVar;
-    const char* mType;
-    int  mTypeId;
-    int  mFrame;
-    int  mOffset;
+    const TypeDesc*  mType;
+    int              mOffset;
 };
 
 //! argument list

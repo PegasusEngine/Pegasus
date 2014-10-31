@@ -13,6 +13,8 @@
 #define PEGASUS_FUN_DESC
 
 #include "Pegasus/BlockScript/IddStrPool.h"
+#include "Pegasus/BlockScript/BsIntrinsics.h"
+#include "Pegasus/BlockScript/FunCallback.h"
 
 #define MAX_SIGNATURE_LENGTH 256
 
@@ -49,6 +51,14 @@ public:
     //! \return the name of this function
     const char* GetName() const { return mName; }
 
+    //! Gets the signature
+    //! \return byte signature
+    const char* GetSignature() const { return mSignature; }
+
+    //! Gets the signature length
+    //! \return byte signature length
+    int GetSignatureLength() const { return mSignatureLength; }
+
     //! Constructs the implementation of a function
     //! \param the implementation of this function
     void ConstructImpl(Ast::StmtFunDec* funDec);
@@ -59,19 +69,34 @@ public:
 
     //! Compares this function description with another function description
     //! \return true if equal otherwise false
-    bool Equals(const FunDesc* other);
+    bool Equals(const FunDesc* other) const ; 
 
     //! returns the declaration of a function
     //! \return the declaration of a function
     const Ast::StmtFunDec* GetDec() const { return mFunDec; }
+
+    //! returns true if this function is a callback, false otherwise
+    bool IsCallback() const { return mCallback != nullptr; }
+
+    //! sets the callback
+    void SetCallback(FunCallback callback) { mCallback = callback; }
+
+    //! returns the callback for intrinsic functions
+    FunCallback GetCallback() const { return mCallback; } 
+
+    //! returns the total size of the concatenated input arguments.
+    int GetInputArgumentsByteSize() const { return mInputArgumentByteSize; }
 
 
 private:
     char mName[IddStrPool::sCharsPerString];
     char mSignature[MAX_SIGNATURE_LENGTH];
     int  mSignatureLength;
+    int  mInputArgumentByteSize;
     Ast::StmtFunDec* mFunDec;
     int mGuid;
+
+    FunCallback mCallback;
 };
 
 }

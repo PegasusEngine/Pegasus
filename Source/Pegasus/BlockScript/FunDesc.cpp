@@ -11,6 +11,7 @@
 
 #include "Pegasus/Core/Assertion.h"
 #include "Pegasus/BlockScript/FunDesc.h"
+#include "Pegasus/BlockScript/TypeDesc.h"
 #include "Pegasus/BlockScript/BlockScriptAst.h"
 #include "Pegasus/Utils/Memcpy.h"
 #include "Pegasus/Utils/String.h"
@@ -20,7 +21,7 @@ using namespace Pegasus::BlockScript;
 using namespace Pegasus::BlockScript::Ast;
 
 FunDesc::FunDesc()
-: mGuid(-1), mFunDec(nullptr), mSignatureLength(0)
+: mGuid(-1), mFunDec(nullptr), mSignatureLength(0), mCallback(nullptr), mInputArgumentByteSize(0)
 {
     mName[0] = '\0'; 
     mSignature[0] = '\0';
@@ -43,18 +44,21 @@ void FunDesc::ConstructImpl(StmtFunDec* funDec)
     int sz = Utils::Strlen(mName);
 
     ArgList* head = funDec->GetArgList();
+
+    mInputArgumentByteSize = 0;
     
     while (head != nullptr)
     {
         ArgDec* argDec = head->GetArgDec();
-        if (argDec != nullptr)\
+        if (argDec != nullptr)
         {
             mSignature[sz++] = '_';
             PG_ASSERT(sz < MAX_SIGNATURE_LENGTH);
-			int tid = argDec->GetTypeId();
+            int tid = argDec->GetType()->GetGuid();
             Utils::Memcpy(&mSignature[sz], &tid, sizeof(int));
             sz += sizeof(int);
             PG_ASSERT(sz < MAX_SIGNATURE_LENGTH);
+            mInputArgumentByteSize += argDec->GetType()->GetByteSize();
         }
 
         head = head->GetTail();
@@ -87,7 +91,7 @@ void FunDesc::ConstructDec(FunCall* funDec)
         {
             mSignature[sz++] = '_';
             PG_ASSERT(sz < MAX_SIGNATURE_LENGTH);
-			int tid = argDec->GetTypeId();
+            int tid = argDec->GetTypeDesc()->GetGuid();
             Utils::Memcpy(&mSignature[sz], &tid, sizeof(int));
             sz += sizeof(int);
             PG_ASSERT(sz < MAX_SIGNATURE_LENGTH);
@@ -101,7 +105,7 @@ void FunDesc::ConstructDec(FunCall* funDec)
     mSignatureLength = sz;
     mFunDec = nullptr;
 }
-bool FunDesc::Equals(const FunDesc* other)
+bool FunDesc::Equals(const FunDesc* other) const
 {
     if (mSignatureLength != other->mSignatureLength)
     {

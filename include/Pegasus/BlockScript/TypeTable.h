@@ -16,10 +16,16 @@
 namespace Pegasus
 {
 
+
 //forward declarations
 namespace Alloc
 {
     class IAllocator;
+}
+
+namespace Ast
+{
+    class StmtStructDef;
 }
 
 namespace BlockScript
@@ -48,11 +54,13 @@ public:
     //! \param child the child id of this type
     //! \param the modifier property. See TypeDesc for more details
     //! \return the guid of this type.
-    int CreateType(
+    TypeDesc* CreateType(
         TypeDesc::Modifier modifier,
         const char * name,
-        int child = -1,
-        int modifierProperty = 0
+        const TypeDesc* child = nullptr,
+        int modifierProperty = 0,
+        TypeDesc::AluEngine engine = TypeDesc::E_NONE,
+        Ast::StmtStructDef* structDef = nullptr
     );
 
     //! Gets a type description structure
@@ -65,10 +73,10 @@ public:
     //! \return the description handle 
 	int GetTypeByName(const char* name) const;
 
-    //! Computes the size of a type
-    bool ComputeSize(int guid, int& outSize) const;
-
 private:
+    //! Computes the size of a type
+    bool ComputeSize(const TypeDesc* type, int& outSize) const;
+
     void InternalRegisterIntrinsicTypes();
     Container<TypeDesc> mTypeDescPool;
 };

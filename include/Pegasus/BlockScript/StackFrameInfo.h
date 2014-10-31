@@ -29,13 +29,26 @@ class StackFrameInfo
 
 public:
 
+    struct Entry
+    {
+    public:
+        Entry() : mOffset(-1), mType(-1), mIsArg(false) { mName[0] = '\0';}
+        ~Entry(){}
+        char mName[IddStrPool::sCharsPerString];
+        int  mOffset;
+        int  mType;
+        int  mIsArg;
+    };
+
     //! Creator constructs of a stack frame
     enum  CreatorCategory
     {
         NONE,     //invalid category
         IF_STMT,  //a stack frame on an if stmt
-        FOR_LOOP, //a stack frame on a for loop
-        FUN_BODY  //a stack frame on a function body
+        LOOP, //a stack frame on a for loop
+        FUN_BODY,  //a stack frame on a function body
+        GLOBAL,  // the global body, accessible for all functions
+        STRUCT_DEF //to be used to determine offsets within this stack frame. This frame should have a null parent
     };
 
     //! Constructor
@@ -55,47 +68,57 @@ public:
     //! \return gets the size in bytes of the current stack frame
     int GetSize() const { return mSize; }
 
+    //! \return gets the size in bytes of the total temporal space in memory
+    int GetTempSize() const { return mTempSize; }
+
+    //! \return the total size of this frame plus the temporal space size
+    int GetTotalFrameSize() const { return mSize + mTempSize; }
+
     //! \param type sets the type id to allocate.
     //! \param typeTable type table containing all the type information
     //! \return returns the byte offset for this allocation.
-    int Allocate(const char* name, int type, TypeTable& typeTable);
+    int Allocate(const char* name, int type, TypeTable& typeTable, bool isFunctionArgument = false);
+
+    //! Allocates a temp variable
+    //! \param the byte size to allocate
+    int AllocateTemporal(int byteSize);
 
     //! \param name the name for this allocation
-    //! \return true if found, false otherwise.
-    bool FindDeclaration(const char* name, int& offset, int& type);
+    //! \return null if not found, otherwise true.
+    Entry* FindDeclaration(const char* name);
 
-    //! Sets the debug information for this stack frame
-    //! \param line the line where this stack frame was created
-    //! \param category the category of ast node that created this stack frame
-    void SetDebugInfo(int line, CreatorCategory category); 
+    //! Sets the creator category of this stack frame
+    //! \param the creator category
+    void SetCreatorCategory(CreatorCategory category) { mCreatorCategory = category; }
 
-    //! Gets the debug information for this stack frame
-    //! \param line the output parameter for the line
-    //! \param category the output parameter for the category
-    void GetDebugInfo(int& line, CreatorCategory& category);
+    //! Gets the creator category
+    //! \return category the category
+    CreatorCategory GetCreatorCategory() const { return mCreatorCategory; }
 
     //! sets the parent stack frame id
     //! \param parent parent stack frame
     void SetParentStackFrame(int parent) { PG_ASSERT(mParent == -1); mParent = parent; }
 
+    //! Unlinks this frame to its parent. Usually only done on struct frames to prevent getting parent frame definitions
+    void UnlinkParentStackFrame() { mParent = -1; }
+
     //! \return gets the parent stack frame id
-    int GetParentStackFrame() { return mParent; }
+    int GetParentStackFrame() const { return mParent; }
+
+    //! \return gets the guid of this frame
+    int GetGuid() const { return mGuid; }
+
+    //! sets the guid of this frame
+    //! \param guid the unique id
+    void SetGuid(int guid) { mGuid = guid; }
 
 private:
     int mSize; 
+    int mTempSize;
     CreatorCategory mCreatorCategory;
-    struct Entry
-    {
-    public:
-        Entry() : mOffset(-1), mType(-1) { mName[0] = '\0';}
-        ~Entry(){}
-        char mName[IddStrPool::sCharsPerString];
-        int  mOffset;
-        int  mType;
-    };
     Container<Entry> mEntries;
-    int  mCreatedLine;
     int  mParent;
+    int  mGuid;
 };
 
 }

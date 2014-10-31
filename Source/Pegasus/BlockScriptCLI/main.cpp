@@ -9,6 +9,7 @@
 
 #include "Pegasus/BlockScript/BlockScriptAst.h"
 #include "Pegasus/BlockScript/BlockScript.h"
+#include "Pegasus/BlockScript/FunCallback.h"
 #include "Pegasus/BlockScript/PrettyPrint.h"
 #include "Pegasus/Core/Io.h"
 #include "Pegasus/Memory/MemoryManager.h"
@@ -24,7 +25,10 @@ using namespace Pegasus::Core;
 
 void LogHandler(LogChannel channel, const char * msg)
 {
-    printf("log: %s\n", msg);
+    if (channel == 'TEMP')
+    {
+        printf("log: %s\n", msg);
+    }
 }
 
 #if PEGASUS_ENABLE_ASSERT
@@ -38,20 +42,99 @@ AssertReturnCode AssertHandler(const char * testStr,
 }
 #endif
 
-void printstr(const char * s)
+int printstr(const char * s)
 {
-    printf("%s",s);
+    return printf("%s",s);
 }
 
-void printint(int i)
+int printint(int i)
 {
-    printf("%d",i);
+    return printf("%d",i);
 }
 
-void printfloat(float f)
+int printfloat(float f)
 {
-    printf("%f",f);
+    return printf("%f",f);
 }
+
+struct Options
+{
+public:
+    bool printAssembly;
+    bool printAst;
+    bool runScript;
+    bool requestHelp;
+    char* fileToParse;
+    Options() : 
+        printAssembly(false),
+        printAst(false),
+        runScript(true),
+        requestHelp(false),
+        fileToParse(nullptr)
+    {
+    }
+};
+
+bool ParseCommandLineOptions(char** argv, int argc, Options& output)
+{
+    if (argc < 2)
+    {
+        return false;
+    }
+
+    for (int i = 1; i < argc; ++i)
+    {
+        char* candidate = argv[i];
+        if (candidate[0] == '-')
+        {
+            if (candidate[1] == 'a')
+            {
+                output.printAssembly = true;
+            }
+            else if (candidate[1] == 't')
+            {
+                output.printAst = true;
+            }
+            else if (candidate[1] == 'n')
+            {
+                output.runScript = false;
+            }
+            else if (candidate[1] == 'h')
+            {
+                output.requestHelp = true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else if (output.fileToParse == nullptr)
+        {
+            output.fileToParse = candidate;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+void printHelp()
+{
+    printf("###################################################\n");
+    printf("############# Block Script CLI  ###################\n");
+    printf("###################################################\n");
+    printf("#########  by Kleber Garcia (c) 2014 ##############\n");
+    printf("---------------------------------------------------\n\n");
+    printf("usage: BlockScriptCLI.exe <bs_script> [<options>]\n");
+    printf("Available options:\n");
+    printf("-h print this help menu.\n");
+    printf("-a print abstract syntax tree (ast).\n");
+    printf("-t print the assembly.\n");
+    printf("-n Do not attempt to run the program.\n");
+}
+
 
 int main(int argc, char* argv[])
 {
@@ -64,39 +147,72 @@ int main(int argc, char* argv[])
 	FileBuffer fb;
 	IoError err;
     IOManager mgr("");
-    if (argc == 2)
+    Options opts;
+    bool res = ParseCommandLineOptions(argv, argc, opts);
+    if (!res)
     {
-        err = mgr.OpenFileToBuffer(
-            argv[1],
-            fb,
-            true,
-            GetGlobalAllocator()    
-        );
-
-		if (err == ERR_NONE)
-        {
-			Pegasus::BlockScript::BlockScript bs(GetGlobalAllocator());
-			bool res = bs.Compile(&fb);
-            if (!res)
-            {
-                printf("invalid program!");
-            }
-            else
-            {
-                Pegasus::BlockScript::PrettyPrint pp(printstr, printint, printfloat);
-				pp.Print(bs.GetAst());
-            }
-			bs.Reset();	
-		}
-        else
-        {
-            printf("io error!\n");
-        }
+        printf("Invalid command line option! use -h command for help.");
+        return -1;
     }
     else
     {
-        printf("usage: BlockScriptCLI.exe <bs_script>");
+        if (opts.requestHelp)
+        {
+            printHelp();
+        }
+        else
+        {
+            err = mgr.OpenFileToBuffer(
+                argv[1],
+                fb,
+                true,
+                GetGlobalAllocator()    
+            );
+
+		    if (err == ERR_NONE)
+            {
+		    	Pegasus::BlockScript::BlockScript bs(GetGlobalAllocator());
+                bool res = bs.Compile(&fb);
+	
+                if (!res)
+                {
+                    printf("invalid program!");
+                    return -1;
+                }
+                else
+                {
+                    //setup IO for the actual virtual machine:
+                    Pegasus::BlockScript::SystemCallbacks::gPrintStrCallback = printstr;
+                    Pegasus::BlockScript::SystemCallbacks::gPrintIntCallback = printint;
+                    Pegasus::BlockScript::SystemCallbacks::gPrintFloatCallback = printfloat;
+
+                    Pegasus::BlockScript::PrettyPrint pp(printstr, printint, printfloat);
+                    if (opts.printAst)
+                    {
+                        printf("----------------- SRC -------------------\n");
+		    		    pp.Print(bs.GetAst());
+                        printf("\n");
+                    }
+
+                    if (opts.printAssembly)
+                    {
+                        printf("\n----------------- ASM -------------------\n");
+                        pp.PrintAsm(bs.GetAsm());
+                        printf("\n");
+                    }
+
+                    if (opts.runScript)
+                    {
+                        bs.Run();
+                    }
+                }
+		    	
+                bs.Reset();	
+		    }
+        }
     }
+    
+    return 0;
 	
 }
 

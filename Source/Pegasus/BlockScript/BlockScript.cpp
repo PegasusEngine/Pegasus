@@ -19,38 +19,79 @@ using namespace Pegasus;
 
 extern int BS_line;
 extern char* BS_text;
-void onError(const char * str) { printf("%d: %s [around token \"%s\"]\n", BS_line, str, BS_text); }
-extern void Bison_BlockScriptParse(const Io::FileBuffer* fileBuffer, BlockScript::BlockScriptBuilder* builder, BlockScript::IddStrPool* iddStrPool);
+extern BlockScript::BlockScriptBuilder* BS_GlobalBuilder;
+void onError(const char * str) { BS_GlobalBuilder->IncErrorCount(); printf("%d: %s [around token \"%s\"]\n", BS_line, str, BS_text); }
+extern void Bison_BlockScriptParse(const Io::FileBuffer* fileBuffer, BlockScript::BlockScriptBuilder* builder);
+
 
 BlockScript::BlockScript::BlockScript(Alloc::IAllocator* allocator)
 : mAllocator(allocator), mAst(nullptr)
 {
-    mIddStrPool.Initialize(mAllocator);
     mBuilder.Initialize(mAllocator, onError);
+    mVmState.Initialize(allocator);
 }
 
 BlockScript::BlockScript::~BlockScript()
 {
-    mIddStrPool.Clear();
 }
 
 bool BlockScript::BlockScript::Compile(const Io::FileBuffer* fb)
 {
     mBuilder.BeginBuild(); 
-    Bison_BlockScriptParse(fb, &mBuilder, &mIddStrPool);
+    Bison_BlockScriptParse(fb, &mBuilder);
     BlockScriptBuilder::CompilationResult cr;
 	mBuilder.EndBuild(cr);
     mAst = cr.mAst;
+    mAsm = cr.mAsm;
     return mAst != nullptr && mBuilder.GetErrorCount() == 0;
 }
 
 void BlockScript::BlockScript::Reset()
 {
     mBuilder.Reset();
-    mIddStrPool.Clear();
+    mVmState.Reset();
     mAst = nullptr;
 }
 
-void BlockScript::BlockScript::Run() { /*todo implement*/ }
+void BlockScript::BlockScript::Run() 
+{ 
+    // rrrrrrrrun!! boy
+    mVm.Run(GetAsm(), mVmState);
+}
 
+BlockScript::FunBindPoint BlockScript::BlockScript::GetFunctionBindPoint(
+    const char* funName,
+    const char** argTypes,
+    int argumentListCount
+) const
+{
+    return Pegasus::BlockScript::GetFunctionBindPoint(
+        &mBuilder,
+        mAsm,
+        funName,
+        argTypes,
+        argumentListCount
+    );
+}
+
+bool BlockScript::BlockScript::ExecuteFunction(
+    FunBindPoint functionBindPoint,
+    void* inputBuffer,
+    int   inputBufferSize,
+    void* outputBuffer,
+    int   outputBufferSize
+)
+{
+    return Pegasus::BlockScript::ExecuteFunction(
+        functionBindPoint,
+        &mBuilder,
+        mAsm,
+        mVmState,
+        mVm,
+        inputBuffer,
+        inputBufferSize,
+        outputBuffer,
+        outputBufferSize
+    );
+}
 

@@ -49,26 +49,44 @@ extern int BS_debug;
      I_FLOAT = 258,
      I_INT = 259,
      IDENTIFIER = 260,
-     K_IF = 261,
-     K_ELSE_IF = 262,
-     K_ELSE = 263,
-     K_SEMICOLON = 264,
-     K_L_PAREN = 265,
-     K_R_PAREN = 266,
-     K_L_BRAC = 267,
-     K_R_BRAC = 268,
-     K_COMMA = 269,
-     K_COL = 270,
-     K_RETURN = 271,
-     K_WHILE = 272,
-     O_MUL = 273,
-     O_PLUS = 274,
-     O_MINUS = 275,
-     O_DIV = 276,
-     O_ACCESS = 277,
-     O_EQ = 278,
-     O_SET = 279,
-     O_TREE = 280
+     I_STRING = 261,
+     K_IF = 262,
+     K_ELSE_IF = 263,
+     K_ELSE = 264,
+     K_SEMICOLON = 265,
+     K_L_PAREN = 266,
+     K_R_PAREN = 267,
+     K_L_BRAC = 268,
+     K_R_BRAC = 269,
+     K_L_LACE = 270,
+     K_R_LACE = 271,
+     K_COMMA = 272,
+     K_COL = 273,
+     K_RETURN = 274,
+     K_WHILE = 275,
+     K_STRUCT = 276,
+     O_PLUS = 277,
+     O_MINUS = 278,
+     O_MUL = 279,
+     O_DIV = 280,
+     O_MOD = 281,
+     O_EQ = 282,
+     O_GT = 283,
+     O_LT = 284,
+     O_GTE = 285,
+     O_LTE = 286,
+     O_LAND = 287,
+     O_LOR = 288,
+     O_SET = 289,
+     O_DOT = 290,
+     O_ACCESS = 291,
+     O_ARRAY_CONSTRUCTOR = 292,
+     O_TREE = 293,
+     O_IMPLICIT_CAST = 294,
+     O_EXPLICIT_CAST = 295,
+     ACCESS_PREC = 296,
+     CAST = 297,
+     NEG = 298
    };
 #endif
 
@@ -77,19 +95,21 @@ extern int BS_debug;
 typedef union YYSTYPE
 {
 /* Line 2058 of yacc.c  */
-#line 65 "bs.y"
+#line 67 "bs.y"
 
     int    token;
     int    integerValue;
     float  floatValue;
     char*  identifierText;
+    const  Pegasus::BlockScript::StackFrameInfo* vFrameInfo;
+    const  Pegasus::BlockScript::TypeDesc*       vTypeDesc;
     #define BS_PROCESS(N) Pegasus::BlockScript::Ast::N* v##N;
     #include "Pegasus/BlockScript/Ast.inl"
     #undef BS_PROCESS
 
 
 /* Line 2058 of yacc.c  */
-#line 93 "bs.parser.hpp"
+#line 113 "bs.parser.hpp"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

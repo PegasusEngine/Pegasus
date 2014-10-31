@@ -536,6 +536,17 @@ inline Vec4Return operator / (Vec4In vec, PFloat32 cst)
     }
 //@}
 
+//@{
+//! Divide a vector by another vector
+//! \param vec1 The vector to multiply (which contains the result)
+//! \param vec2 Second vector
+//! \return The result vector
+inline Vec2Return operator / (Vec2In vec1, Vec2In vec2) { return Vec2(vec1.x / vec2.x, vec1.y / vec2.y);                                   }
+inline Vec3Return operator / (Vec3In vec1, Vec3In vec2) { return Vec3(vec1.x / vec2.x, vec1.y / vec2.y, vec1.z / vec2.z);                  }
+inline Vec4Return operator / (Vec4In vec1, Vec4In vec2) { return Vec4(vec1.x / vec2.x, vec1.y / vec2.y, vec1.z / vec2.z, vec1.w / vec2.w); }
+//@}
+
+
 //----------------------------------------------------------------------------------------
 
 //@{

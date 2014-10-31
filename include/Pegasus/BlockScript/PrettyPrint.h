@@ -13,24 +13,27 @@
 #define PRETTY_PRINT_H
 
 #include "Pegasus/BlockScript/IVisitor.h"
+#include "Pegasus/BlockScript/Container.h"
+#include "Pegasus/BlockScript/BlockScriptCanon.h"
+#include "Pegasus/BlockScript/FunCallback.h"
 
 namespace Pegasus
 {
 namespace BlockScript
 {
 
+class TypeDesc;
+struct Assembly;
+
 class PrettyPrint : public IVisitor
 {
 public:
-
-typedef void (*PrintStringCallback)(const char *);
-typedef void (*PrintIntCallback)(int);
-typedef void (*PrintFloatCallback)(float);
-
-PrettyPrint(PrintStringCallback str, PrintIntCallback pint, PrintFloatCallback pfloat) :mStr(str), mInt(pint), mFloat(pfloat), mScope(0) {}
-virtual ~PrettyPrint(){}    
-
-void Print(Ast::Program* p);
+    PrettyPrint(PrintStringCallbackType str, PrintIntCallbackType pint, PrintFloatCallbackType pfloat) :mStr(str), mInt(pint), mFloat(pfloat), mScope(0) {}
+    virtual ~PrettyPrint(){}    
+    
+    void Print(Ast::Program* p);
+    
+    void PrintAsm(Assembly& assembly);
 
 
 private:
@@ -38,11 +41,17 @@ private:
     #include "Pegasus/BlockScript/Ast.inl"
     #undef BS_PROCESS
 
+    void PrintBlock(Canon::Block& b);
+
+    void PrintRegister(Canon::Register r);
+
+    void PrintType(const TypeDesc* type);
+
     void Indent();
 
-    PrintStringCallback mStr;
-    PrintIntCallback    mInt;
-    PrintFloatCallback  mFloat;
+    PrintStringCallbackType mStr;
+    PrintIntCallbackType    mInt;
+    PrintFloatCallbackType  mFloat;
     int mScope;
 };
 

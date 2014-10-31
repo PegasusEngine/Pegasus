@@ -1,12 +1,30 @@
-f = 2;
-if (f)
+
+/*
+Block script sample program
+*/
+//a = 2;
+
+float2 factorial(f : int)
 {
-    s = 1.0;
+    q = 5;
+    if (f == 0)
+    {
+        return float2(1, q);
+    }
+    
+    return float2((float)f, 1.0) * factorial(f - 1);
 }
-elif(f)
-{
-}
-else 
-{
-}
-s = 2;
+float4 testKecho(a : int, b : int) { return float4((float)(2 * (a + b)), 1.0, 2.0, 3.0); }
+echo (factorial(3).y);
+echo(" ");
+echo (factorial(3).x);
+
+
+
+/*
+todos:
+- string and echo stuff
+- exception and array error handling
+- ui editor
+- api stuff and trees
+*/

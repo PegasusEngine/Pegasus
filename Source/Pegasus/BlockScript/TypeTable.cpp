@@ -34,15 +34,18 @@ void TypeTable::Initialize(Alloc::IAllocator* alloc)
 void TypeTable::InternalRegisterIntrinsicTypes()
 {
     //Register ints and scalars
-    int floatId = CreateType(
+    TypeDesc* floatT = CreateType(
         TypeDesc::M_SCALAR,
         "float"
     );
 
-    int intId   = CreateType(
+    floatT->SetAluEngine(TypeDesc::E_FLOAT);
+
+    TypeDesc* intT   = CreateType(
         TypeDesc::M_SCALAR,
         "int"
     );
+    intT->SetAluEngine(TypeDesc::E_INT);
 
     char fStr[25];
     fStr[0] = '\0';
@@ -59,20 +62,17 @@ void TypeTable::InternalRegisterIntrinsicTypes()
         iStr[iStrLen] = i + '0';
         fStr[fStrLen+1] = '\0';
         iStr[iStrLen+1] = '\0';
-        CreateType(
+        TypeDesc* t1 = CreateType(
             TypeDesc::M_VECTOR,
             fStr,
-            floatId,
+            floatT,
             i
         );
+        t1->SetAluEngine(static_cast<TypeDesc::AluEngine>(TypeDesc::E_FLOAT + i - 1));
 
-        CreateType(
-            TypeDesc::M_VECTOR,
-            iStr,
-            intId,
-            i
-        );
     }
+
+    CreateType(TypeDesc::M_REFERECE, "string");
 }
 
 void TypeTable::Shutdown()
@@ -80,11 +80,13 @@ void TypeTable::Shutdown()
     mTypeDescPool.Reset();
 }
 
-int TypeTable::CreateType(
+TypeDesc* TypeTable::CreateType(
     TypeDesc::Modifier modifier,
     const char * name,
-    int child,
-    int modifierProperty
+    const TypeDesc* child,
+    int modifierProperty,
+    TypeDesc::AluEngine engine,
+    Pegasus::BlockScript::Ast::StmtStructDef* structDef
 )
 {
     PG_ASSERT(modifier != TypeDesc::M_INVALID);
@@ -103,12 +105,7 @@ int TypeTable::CreateType(
                     modifierProperty == t->GetModifierProperty()
                )
             {
-                return i;
-            }
-            else
-            {
-                PG_ASSERT("WTF!!");
-                return -1;
+                return t;
             }
         }
     }
@@ -121,7 +118,15 @@ int TypeTable::CreateType(
     newDesc.SetModifier(modifier);
     newDesc.SetChild(child);
     newDesc.SetModifierProperty(modifierProperty);
-    return idx;
+    newDesc.SetAluEngine(engine);
+    newDesc.SetStructDef(structDef);
+
+    int newSize = 0;
+    bool success = ComputeSize(&newDesc, newSize);
+    PG_ASSERTSTR(success, "Fail computing size for type!");
+    newDesc.SetByteSize(newSize);
+
+    return &newDesc;
 }
 
 const TypeDesc* TypeTable::GetTypeDesc(int guid) const
@@ -135,7 +140,7 @@ int TypeTable::GetTypeByName(const char* name) const
     int s = mTypeDescPool.Size();
     for (int i = 0; i < s; ++i)
     {
-        if(!Utils::Strcmp(name, mTypeDescPool[i].GetName()))
+        if(!Utils::Strcmp(name, mTypeDescPool[i].GetName()) && mTypeDescPool[i].GetModifier() != TypeDesc::M_ARRAY)
         {
             PG_ASSERT(mTypeDescPool[i].GetGuid() == i);
             return i;
@@ -144,11 +149,10 @@ int TypeTable::GetTypeByName(const char* name) const
     return -1;
 }
 
-bool TypeTable::ComputeSize(int guid, int& outSize) const
+bool TypeTable::ComputeSize(const TypeDesc* t, int& outSize) const
 {
-    if (guid >= 0 && guid < mTypeDescPool.Size())
+    if (t != nullptr)
     {
-        const TypeDesc* t = GetTypeDesc(guid);
         switch (t->GetModifier())
         {
         case TypeDesc::M_SCALAR:
@@ -162,13 +166,25 @@ bool TypeTable::ComputeSize(int guid, int& outSize) const
             return true;
         case TypeDesc::M_ARRAY:
             {
-                int tmpSz = 0;
-                bool found = ComputeSize(t->GetChild(), tmpSz);
-                outSize = tmpSz * t->GetModifierProperty();
-                return found;
+                outSize = t->GetModifierProperty() * t->GetChild()->GetByteSize(); //4 bytes for reference.
+            return true;
             }
-        case TypeDesc::M_TREE:
-            outSize = t->GetModifierProperty();
+        case TypeDesc::M_STRUCT:
+            {
+                const Ast::StmtStructDef* structDef = t->GetStructDef();
+                PG_ASSERT(structDef != nullptr);
+                Ast::ArgList* argList = structDef->GetArgList();
+                int totalSize = 0;
+                while (argList != nullptr)
+                {
+                    int computedSize = 0;
+                    const TypeDesc* typeDesc = argList->GetArgDec()->GetType();
+
+                    totalSize += typeDesc->GetByteSize();
+                    argList = argList->GetTail();
+                }
+                outSize = totalSize;
+            }
             return true;
         default:
             return false;

@@ -37,7 +37,7 @@ void FunTable::Reset()
     mContainer.Reset();
 }
 
-int FunTable::Find(Ast::FunCall* funCall)
+const FunDesc* FunTable::Find(Ast::FunCall* funCall)
 {
     int sz = mContainer.Size();
 
@@ -50,20 +50,14 @@ int FunTable::Find(Ast::FunCall* funCall)
         if (candidate.Equals(&curr))
         {
             PG_ASSERT(candidate.GetGuid() == i);
-            return candidate.GetGuid();
+            return &candidate;
         }
     }
 
-    return -1;
+    return nullptr;
 }
 
-const FunDesc* FunTable::GetDesc(int guid)
-{
-    PG_ASSERT(guid >= 0 && guid < mContainer.Size());    
-    return &mContainer[guid];
-}
-
-int FunTable::Insert(StmtFunDec* funDec)
+const FunDesc* FunTable::Insert(StmtFunDec* funDec)
 {
     int sz = mContainer.Size();
     FunDesc curr;
@@ -79,7 +73,7 @@ int FunTable::Insert(StmtFunDec* funDec)
             if (candidate.GetDec()->GetStmtList() != nullptr)
             {
                 // function body already exists
-                return -1;
+                return nullptr;
             }
             else
             {
@@ -97,5 +91,13 @@ int FunTable::Insert(StmtFunDec* funDec)
     }
 
     foundDeclaration->ConstructImpl(funDec);
-	return foundDeclaration->GetGuid();
+	return foundDeclaration;
 }
+
+void FunTable::BindIntrinsic(int guid, FunCallback callback)
+{
+    PG_ASSERT(guid < mContainer.Size());
+    FunDesc* desc = &mContainer[guid];
+    desc->SetCallback(callback);
+}
+

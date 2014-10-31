@@ -22,8 +22,10 @@ TypeDesc::TypeDesc()
 :
 mGuid(-1),
 mModifier(M_INVALID),
-mChild(-1),
-mModifierProperty(0)
+mAluEngine(E_NONE),
+mChild(nullptr),
+mModifierProperty(0),
+mStructDef(nullptr)
 {
     mName[0] = '\0';
 }

@@ -21,8 +21,8 @@ using namespace Pegasus::BlockScript;
 StackFrameInfo::StackFrameInfo()
  : 
 mSize(0),
+mTempSize(0),
 mCreatorCategory(StackFrameInfo::NONE),
-mCreatedLine(-1),
 mParent(-1)
 {
 }
@@ -43,21 +43,27 @@ void StackFrameInfo::Reset()
     mEntries.Reset();
 }
 
-int StackFrameInfo::Allocate(const char* name, int type, TypeTable& typeTable)
+int StackFrameInfo::Allocate(const char* name, int type, TypeTable& typeTable, bool isFunArg)
 {
     StackFrameInfo::Entry& e = mEntries.PushEmpty();
     PG_ASSERT(Utils::Strlen(name) + 1 < IddStrPool::sCharsPerString);
     Utils::Strcat(e.mName, name);
-    int sz = 0;
-    bool res = typeTable.ComputeSize(type, sz);
-    PG_ASSERT(res);
+    int sz = typeTable.GetTypeDesc(type)->GetByteSize();    
     e.mOffset = mSize;
     e.mType = type;
+    e.mIsArg = isFunArg;
     mSize += sz;
     return e.mOffset;
 }
 
-bool StackFrameInfo::FindDeclaration(const char* name, int& offset, int& type)
+int StackFrameInfo::AllocateTemporal(int newSize)
+{
+    int targetOffset = mTempSize;
+    mTempSize += newSize;
+    return targetOffset;
+}
+
+StackFrameInfo::Entry* StackFrameInfo::FindDeclaration(const char* name)
 {
     int total = mEntries.Size();
     for (int i = 0; i < total; ++i)
@@ -65,23 +71,9 @@ bool StackFrameInfo::FindDeclaration(const char* name, int& offset, int& type)
         StackFrameInfo::Entry& e = mEntries[i];
         if (!Utils::Strcmp(name, e.mName))
         {
-            offset = e.mOffset;
-            type   = e.mType;
-            return true;
+            return &e;
         }
     }
 
-    return false;
-}
-
-void StackFrameInfo::SetDebugInfo(int line, CreatorCategory category)
-{
-    mCreatedLine = line;    
-    mCreatorCategory = category;
-}
-
-void StackFrameInfo::GetDebugInfo(int& line, CreatorCategory& category)
-{
-    line = mCreatedLine;
-    mCreatorCategory = category;
+    return nullptr;
 }
