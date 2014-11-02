@@ -12,7 +12,7 @@
 #ifndef PEGASUS_EVENTLISTENERS_H
 #define PEGASUS_EVENTLISTENERS_H
 
-#include "Pegasus/Shader/Shared/ShaderEvent.h"
+#include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Texture/Shared/TextureEvent.h"
 #include "Pegasus/Mesh/Shared/MeshEvent.h"
 #include "Pegasus/Core/Shared/LogChannel.h"
@@ -44,18 +44,18 @@ private:
 };
 
 // The following are event listeners for each event occuring within an app
-class LauncherShaderListener : public Shader::IShaderEventListener, LogAssertDispatcher
+class LauncherShaderListener : public Core::CompilerEvents::ICompilerEventListener, LogAssertDispatcher
 {
 public:
     LauncherShaderListener(Core::LogHandlerFunc logHandler, Core::AssertionHandlerFunc assertHandler)
     : LogAssertDispatcher(logHandler, assertHandler) {}
     ~LauncherShaderListener(){}
 
-    virtual void OnEvent(Graph::IGraphUserData * u, Shader::ShaderLoadedEvent& e);
-    virtual void OnEvent(Graph::IGraphUserData * u, Shader::CompilationEvent& e);
-    virtual void OnEvent(Graph::IGraphUserData * u, Shader::CompilationNotification& e);
-    virtual void OnEvent(Graph::IGraphUserData * u, Shader::LinkingEvent& e);
-    virtual void OnEvent(Graph::IGraphUserData * u, Shader::FileOperationEvent& e);
+    virtual void OnEvent(Graph::IGraphUserData * u, Core::CompilerEvents::SourceLoadedEvent& e);
+    virtual void OnEvent(Graph::IGraphUserData * u, Core::CompilerEvents::CompilationEvent& e);
+    virtual void OnEvent(Graph::IGraphUserData * u, Core::CompilerEvents::CompilationNotification& e);
+    virtual void OnEvent(Graph::IGraphUserData * u, Core::CompilerEvents::LinkingEvent& e);
+    virtual void OnEvent(Graph::IGraphUserData * u, Core::CompilerEvents::FileOperationEvent& e);
 };
 
 

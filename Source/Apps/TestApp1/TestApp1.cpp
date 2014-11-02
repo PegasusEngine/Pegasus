@@ -114,6 +114,13 @@ void TestApp1::InitializeApp()
 #endif
     timeline->GetLane(0)->InsertBlock(cameraLineBlock, 0 * TICKS_PER_BEAT, 8 * TICKS_PER_BEAT);
 
+    Pegasus::Timeline::Block * scriptingBlock = timeline->CreateBlock("Block");
+#if PEGASUS_ENABLE_PROXIES
+    scriptingBlock->SetColor(233, 25, 80);
+#endif
+    timeline->GetLane(2)->InsertBlock(scriptingBlock, 0 * TICKS_PER_BEAT, 15 * TICKS_PER_BEAT);
+    scriptingBlock->OpenScript("BlockScripts/test.bs");
+
     Pegasus::Timeline::Block * psyBeadBlock = timeline->CreateBlock("PsyBeadsBlock");
 #if PEGASUS_ENABLE_PROXIES
     psyBeadBlock->SetColor(255, 128, 128);

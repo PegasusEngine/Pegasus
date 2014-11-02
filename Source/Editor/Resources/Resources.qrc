@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>ShaderLibrary/success.png</file>
         <file>Toolbar/File/NewScene24.png</file>
         <file>Toolbar/File/OpenApp24.png</file>
         <file>Toolbar/File/SaveScene24.png</file>
@@ -10,19 +9,20 @@
         <file>SettingsDialog/Appearance.png</file>
         <file>TimelineToolbar/Add16.png</file>
         <file>TimelineToolbar/Delete16.png</file>
-        <file>ShaderLibrary/error.png</file>
         <file>TimelineToolbar/Play16.png</file>
         <file>TimelineToolbar/Remove16.png</file>
         <file>TimelineToolbar/Pause16.png</file>
         <file>SettingsDialog/Console.png</file>
-        <file>SettingsDialog/ShaderEditor.png</file>
-        <file>ShaderEditor/pin.png</file>
-        <file>ShaderEditor/unpin.png</file>
-        <file>ShaderEditor/horizontal.png</file>
-        <file>ShaderEditor/save.png</file>
-        <file>ShaderEditor/vertical.png</file>
-        <file>ShaderEditor/single.png</file>
         <file>Toolbar/File/refresh-512.png</file>
         <file>SettingsDialog/DarkStyle.qss</file>
+        <file>CodeEditor/horizontal.png</file>
+        <file>CodeEditor/pin.png</file>
+        <file>CodeEditor/save.png</file>
+        <file>CodeEditor/single.png</file>
+        <file>CodeEditor/unpin.png</file>
+        <file>CodeEditor/vertical.png</file>
+        <file>AssetLibrary/error.png</file>
+        <file>AssetLibrary/success.png</file>
+        <file>SettingsDialog/CodeEditor.png</file>
     </qresource>
 </RCC>

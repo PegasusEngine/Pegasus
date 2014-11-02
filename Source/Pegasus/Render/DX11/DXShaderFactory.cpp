@@ -16,7 +16,7 @@
 #pragma comment(lib, "dxguid")
 
 
-
+#include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Render/ShaderFactory.h"
 #include "Pegasus/Graph/NodeData.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
@@ -26,6 +26,8 @@
 #include "../Source/Pegasus/Render/DX11/DXGpuDataDefs.h"
 #include "../Source/Pegasus/Render/DX11/DXRenderContext.h"
 #include "../Source/Pegasus/Render/DX11/DXDevice.h"
+
+using namespace Pegasus::Core;
 
 static int gNextProgramGuid = 1;
 
@@ -130,9 +132,9 @@ static int ProcessErrorLog(Pegasus::Shader::ShaderStage * shaderNode, const char
             descriptionError[idx] = '\0';
             GRAPH_EVENT_DISPATCH(
                 shaderNode,
-                Pegasus::Shader::CompilationNotification,
+                CompilerEvents::CompilationNotification,
                 // Shader Event specific arguments
-                Pegasus::Shader::CompilationNotification::COMPILATION_ERROR,
+                CompilerEvents::CompilationNotification::COMPILATION_ERROR,
                 line,
                 descriptionError
             );
@@ -286,7 +288,7 @@ void DXShaderFactory::GenerateShaderGPUData(Pegasus::Shader::ShaderStage * shade
 
         GRAPH_EVENT_DISPATCH (
             shaderNode,
-            Pegasus::Shader::CompilationEvent,
+            CompilerEvents::CompilationEvent,
             // Event specific arguments
             shaderCompiled ? true : false, //compilation success status
             shaderCompiled ? "" : logBuffer
@@ -416,9 +418,9 @@ void DXShaderFactory::GenerateProgramGPUData(Pegasus::Shader::ProgramLinkage * p
     {
         GRAPH_EVENT_DISPATCH (
             programNode,
-            Pegasus::Shader::LinkingEvent,
+            CompilerEvents::LinkingEvent,
             // Event specific arguments:
-            Pegasus::Shader::LinkingEvent::INCOMPLETE_STAGES_FAIL,
+            CompilerEvents::LinkingEvent::INCOMPLETE_STAGES_FAIL,
             "Incomplete shader stages"
         );
 #if PEGASUS_ENABLE_PROXIES
@@ -433,9 +435,9 @@ void DXShaderFactory::GenerateProgramGPUData(Pegasus::Shader::ProgramLinkage * p
         ++programGPUData->mProgramVersion;
         GRAPH_EVENT_DISPATCH (
             programNode,
-            Pegasus::Shader::LinkingEvent,
+            CompilerEvents::LinkingEvent,
             // Event specific arguments:
-            Pegasus::Shader::LinkingEvent::LINKING_SUCCESS,
+            CompilerEvents::LinkingEvent::LINKING_SUCCESS,
             ""
         );
     }
@@ -443,9 +445,9 @@ void DXShaderFactory::GenerateProgramGPUData(Pegasus::Shader::ProgramLinkage * p
     {
         GRAPH_EVENT_DISPATCH (
             programNode,
-            Pegasus::Shader::LinkingEvent,
+            CompilerEvents::LinkingEvent,
             // Event specific arguments:
-            Pegasus::Shader::LinkingEvent::LINKING_FAIL,
+            CompilerEvents::LinkingEvent::LINKING_FAIL,
             "Linking failed"
         );
 #if PEGASUS_ENABLE_PROXIES

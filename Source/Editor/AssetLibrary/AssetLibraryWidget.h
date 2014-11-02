@@ -4,7 +4,7 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	ShaderLibraryWidget.h
+//! \file	AssetLibraryWidget.h
 //! \author	Kleber Garcia
 //! \date	16 Match 2014
 //! \brief	Graphics widget representing the shader library form.
@@ -14,22 +14,22 @@
 
 #include <QDockWidget>
 #include <QAction>
-#include "ui_ShaderLibraryWidget.h"
+#include "ui_AssetLibraryWidget.h"
 
 class QItemSelectionModel;
-class ShaderEditorWidget;
+class CodeEditorWidget;
 class ProgramTreeModel;
-class ShaderListModel;
-class ShaderManagerEventListener;
+class SourceCodeListModel;
+class SourceCodeManagerEventListener;
 
 //! Graphics Widget meant for shader navigation & management
-class ShaderLibraryWidget : public QDockWidget
+class AssetLibraryWidget : public QDockWidget
 {
     Q_OBJECT
 
 public:
-    ShaderLibraryWidget(QWidget * parent, ShaderEditorWidget * editorWidget);
-    virtual ~ShaderLibraryWidget();
+    AssetLibraryWidget(QWidget * parent, CodeEditorWidget * editorWidget);
+    virtual ~AssetLibraryWidget();
 
 public slots:
     //! slot triggered when app is loaded
@@ -48,10 +48,10 @@ public slots:
     void DispatchProgramEditButton();
 
     //! slot triggered when something has been selected through shader tree view
-    void DispatchShaderEditorThroughShaderView(const QModelIndex& index);
+    void DispatchTextEditorThroughShaderView(const QModelIndex& index);
 
     //! slot triggered when something has been selected through program tree view
-    void DispatchShaderEditorThroughProgramView(const QModelIndex& index);
+    void DispatchTextEditorThroughProgramView(const QModelIndex& index);
     
     //! slot triggered when the editor style has changed, forces the text editor to resync styles
     void UpdateEditorStyle();
@@ -60,10 +60,10 @@ public slots:
     void OnProgramLinkingEvent(void * program, QString message, int eventType);
 
     //! gets the shader editor widget
-    ShaderEditorWidget * GetShaderEditorWidget() { return mShaderEditorWidget; }
+    CodeEditorWidget * GetCodeEditorWidget() { return mCodeEditorWidget; }
 
     //! gets the shader manager event listener
-    ShaderManagerEventListener * GetShaderManagerEventListener() { return mShaderManagerEventListener;}
+    SourceCodeManagerEventListener * GetSourceCodeManagerEventListener() { return mSourceCodeManagerEventListener;}
 
 private:
     //! toggle the buttons on this widget on / off
@@ -76,7 +76,7 @@ private:
     void UninitializeInternalUserData();
 
     //! ui components
-    Ui::ShaderLibraryWidget ui;
+    Ui::AssetLibraryWidget ui;
 
     //! reference to the program tree data model
     ProgramTreeModel * mProgramTreeModel;
@@ -85,16 +85,16 @@ private:
     QItemSelectionModel * mProgramSelectionModel;
 
     //! reference to the shader list data model
-    ShaderListModel * mShaderListModel;
+    SourceCodeListModel * mShaderListModel;
 
     //! reference to the shader list selection model (used to determine what shader is selected)
     QItemSelectionModel * mShaderListSelectionModel;
     
     //! reference to the shader text editor widget
-    ShaderEditorWidget * mShaderEditorWidget;
+    CodeEditorWidget * mCodeEditorWidget;
 
     //! shader manager event listener
-    ShaderManagerEventListener * mShaderManagerEventListener;
+    SourceCodeManagerEventListener * mSourceCodeManagerEventListener;
 
 };
 

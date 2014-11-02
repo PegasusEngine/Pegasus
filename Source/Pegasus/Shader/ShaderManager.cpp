@@ -9,10 +9,10 @@
 //! \date   1st December 2013
 //! \brief  Main shader interface
 
+#include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Shader/IShaderFactory.h"
-#include "Pegasus/Shader/Shared/ShaderEvent.h"
 #include "Pegasus/Graph/NodeManager.h"
 #include "Pegasus/Utils/String.h"
 

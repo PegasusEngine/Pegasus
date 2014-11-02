@@ -1,6 +1,6 @@
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Shader/IShaderFactory.h"
-
+#include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/Memcpy.h"
 

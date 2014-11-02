@@ -14,10 +14,13 @@
 
 #include "Pegasus/Math/Vector.h"
 #include "Pegasus/Math/Color.h"
+#include "Pegasus/Utils/Memcpy.h"
 
 namespace Pegasus {
 namespace PropertyGrid {
 
+//! Static string types for property grid
+typedef char String64[64];
 
 //! Enumerant for the different property types. Those are the only ones supported
 enum PropertyType
@@ -33,6 +36,8 @@ enum PropertyType
 
     PROPERTYTYPE_COLOR8RGB,
     PROPERTYTYPE_COLOR8RGBA,
+
+    PROPERTYTYPE_STRING64,
 
     NUM_PROPERTY_TYPES,
 
@@ -64,6 +69,7 @@ struct PropertyDefinition<bool>
     typedef bool VarType;
     typedef bool ParamType;
     typedef bool ReturnType;
+    static void SetProperty(ParamType paramIn, VarType& paramOut) { paramOut = paramIn; }
 };
 
 template <>
@@ -73,6 +79,7 @@ struct PropertyDefinition<unsigned int>
     typedef unsigned int VarType;
     typedef unsigned int ParamType;
     typedef unsigned int ReturnType;
+    static void SetProperty(ParamType paramIn, VarType& paramOut) { paramOut = paramIn; }
 };
 
 template <>
@@ -82,6 +89,7 @@ struct PropertyDefinition<int>
     typedef int VarType;
     typedef int ParamType;
     typedef int ReturnType;
+    static void SetProperty(ParamType paramIn, VarType& paramOut) { paramOut = paramIn; }
 };
 
 template <>
@@ -91,6 +99,7 @@ struct PropertyDefinition<float>
     typedef float VarType;
     typedef float ParamType;
     typedef float ReturnType;
+    static void SetProperty(ParamType paramIn, VarType& paramOut) { paramOut = paramIn; }
 };
 
 template <>
@@ -100,6 +109,7 @@ struct PropertyDefinition<Math::Vec2>
     typedef Math::Vec2       VarType;
     typedef Math::Vec2In     ParamType;
     typedef Math::Vec2Return ReturnType;
+    static void SetProperty(ParamType paramIn, VarType& paramOut) { paramOut = paramIn; }
 };
 
 template <>
@@ -109,6 +119,7 @@ struct PropertyDefinition<Math::Vec3>
     typedef Math::Vec3       VarType;
     typedef Math::Vec3In     ParamType;
     typedef Math::Vec3Return ReturnType;
+    static void SetProperty(ParamType paramIn, VarType& paramOut) { paramOut = paramIn; }
 };
 
 template <>
@@ -118,6 +129,7 @@ struct PropertyDefinition<Math::Vec4>
     typedef Math::Vec4       VarType;
     typedef Math::Vec4In     ParamType;
     typedef Math::Vec4Return ReturnType;
+    static void SetProperty(ParamType paramIn, VarType& paramOut) { paramOut = paramIn; }
 };
 
 template <>
@@ -127,6 +139,7 @@ struct PropertyDefinition<Math::Color8RGB>
     typedef Math::Color8RGB       VarType;
     typedef Math::Color8RGBIn     ParamType;
     typedef Math::Color8RGBReturn ReturnType;
+    static void SetProperty(ParamType paramIn, VarType& paramOut) { paramOut = paramIn; }
 };
 
 template <>
@@ -136,6 +149,17 @@ struct PropertyDefinition<Math::Color8RGBA>
     typedef Math::Color8RGBA       VarType;
     typedef Math::Color8RGBAIn     ParamType;
     typedef Math::Color8RGBAReturn ReturnType;
+    static void SetProperty(ParamType paramIn, VarType& paramOut) { paramOut = paramIn; }
+};
+
+template <>
+struct PropertyDefinition<String64>
+{
+    static const PropertyType PROPERTY_TYPE = PROPERTYTYPE_STRING64;
+    typedef String64     VarType;
+    typedef const char*  ParamType;
+    typedef const char*  ReturnType;
+    static void SetProperty(ParamType paramIn, VarType& paramOut) { Pegasus::Utils::Memcpy(paramOut, paramIn, sizeof(VarType)); }
 };
 //@}
 
@@ -174,7 +198,7 @@ struct PropertyDefinition<Math::Color8RGBA>
 #define DECLARE_PROPERTY(type, name)                                                \
     public:                                                                         \
         inline PropertyGrid::PropertyDefinition<type>::ReturnType Get##name() const { return mProperty##name; }         \
-        inline void Set##name(PropertyGrid::PropertyDefinition<type>::ParamType value) { mProperty##name = value; GetPropertyGrid().Invalidate(); }     \
+        inline void Set##name(PropertyGrid::PropertyDefinition<type>::ParamType value) { PropertyGrid::PropertyDefinition<type>::SetProperty(value, mProperty##name); GetPropertyGrid().Invalidate(); }     \
     private:                                                                        \
         PropertyGrid::PropertyDefinition<type>::VarType mProperty##name;            \
 
@@ -199,7 +223,7 @@ struct PropertyDefinition<Math::Color8RGBA>
 //! \param defaultValue Default value of the property, use Math::Type(values) with math types
 //! \warning To be used after \a BEGIN_IMPLEMENT_PROPERTIES() and before END_IMPLEMENT_PROPERTIES()
 #define IMPLEMENT_PROPERTY(type, name, defaultValue)                                \
-    mProperty##name = defaultValue;                                                 \
+    Pegasus::PropertyGrid::PropertyDefinition<type>::SetProperty(defaultValue,mProperty##name);                                                 \
     GetPropertyGrid().RegisterProperty<type>(#name, &mProperty##name, sClassName);  \
 
 

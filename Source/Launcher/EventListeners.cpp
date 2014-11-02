@@ -1,5 +1,7 @@
 #include "Launcher/EventListeners.h"
 
+using namespace Pegasus::Core;
+
 namespace Pegasus
 {
 namespace Launcher
@@ -18,27 +20,27 @@ namespace Launcher
         mLogHandler(channel, msg);
     }
 
-    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, Shader::ShaderLoadedEvent& e)
+    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, CompilerEvents::SourceLoadedEvent& e)
     {
         Log('SHDR', "Shader text has been set.");
     }
 
-    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, Shader::CompilationEvent& e)
+    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, CompilerEvents::CompilationEvent& e)
     {
         Assert(e.IsSuccess(), e.GetLogString());
     }
 
-    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, Shader::CompilationNotification& e)
+    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, CompilerEvents::CompilationNotification& e)
     {
         //ignore notifications
     }
 
-    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, Shader::LinkingEvent& e)
+    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, CompilerEvents::LinkingEvent& e)
     {
-        Assert(e.GetEventType() == Shader::LinkingEvent::LINKING_SUCCESS, e.GetLog());
+        Assert(e.GetEventType() == CompilerEvents::LinkingEvent::LINKING_SUCCESS, e.GetLog());
     }
 
-    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, Shader::FileOperationEvent& e)
+    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, CompilerEvents::FileOperationEvent& e)
     {
         Assert(false, "Pegasus Shader IO Error.");
     }

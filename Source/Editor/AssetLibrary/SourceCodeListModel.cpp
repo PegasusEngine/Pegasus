@@ -4,59 +4,57 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   ShaderListModel.cpp
+//! \file   SourceCodeListModel.cpp
 //! \author Kleber Garcia
 //! \date   21st March 2013
-//! \brief  Pegasus Shader list  model
+//! \brief  Pegasus Source Code list  model
 
-#include "Editor.h"
 #include "Log.h"
 #include "Assertion.h"
-#include "ShaderLibrary/ShaderListModel.h"
-#include "ShaderLibrary/ShaderManagerEventListener.h"
+#include "AssetLibrary/SourceCodeListModel.h"
+#include "CodeEditor/SourceCodeManagerEventListener.h"
 #include "Application/ApplicationManager.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
-#include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
-#include "Pegasus/Shader/Shared/IShaderProxy.h"
+#include "Pegasus/Core/Shared/ISourceCodeManagerProxy.h"
 
 
 //----------------------------------------------------------------------------------------
 
-ShaderListModel::ShaderListModel(QObject * parent)
+SourceCodeListModel::SourceCodeListModel(QObject * parent)
 : 
     QAbstractListModel(parent),
-    mShaderManager(nullptr)
+    mSourceCodeManager(nullptr)
     
 {
-    mWorkingIcon.addFile(QStringLiteral(":/ShaderLibrary/success.png"), QSize(), QIcon::Normal, QIcon::On);   
-    mWarningIcon.addFile(QStringLiteral(":/ShaderLibrary/error.png"), QSize(), QIcon::Normal, QIcon::On);   
+    mWorkingIcon.addFile(QStringLiteral(":/AssetLibrary/success.png"), QSize(), QIcon::Normal, QIcon::On);   
+    mWarningIcon.addFile(QStringLiteral(":/AssetLibrary/error.png"), QSize(), QIcon::Normal, QIcon::On);   
 }
 
 //----------------------------------------------------------------------------------------
 
-ShaderListModel::~ShaderListModel()
+SourceCodeListModel::~SourceCodeListModel()
 {
 }
 
 //----------------------------------------------------------------------------------------
 
-int ShaderListModel::rowCount (const QModelIndex& parent) const
+int SourceCodeListModel::rowCount (const QModelIndex& parent) const
 {
-    if (mShaderManager != nullptr)
+    if (mSourceCodeManager != nullptr)
     {
-        return mShaderManager->GetShaderCount();
+        return mSourceCodeManager->GetSourceCount();
     }
     return 0;
 }
 
 //----------------------------------------------------------------------------------------
 
-QVariant ShaderListModel::data(const QModelIndex &index, int role) const
+QVariant SourceCodeListModel::data(const QModelIndex &index, int role) const
 {
     int id = index.row();
-    if (id >= 0 && id < mShaderManager->GetShaderCount())
+    if (id >= 0 && id < mSourceCodeManager->GetSourceCount())
     {
-        Pegasus::Shader::IShaderProxy * proxy = mShaderManager->GetShader(id);
+        Pegasus::Core::ISourceCodeProxy * proxy = mSourceCodeManager->GetSource(id);
         switch (role)
         {
         case Qt::DisplayRole:
@@ -64,7 +62,8 @@ QVariant ShaderListModel::data(const QModelIndex &index, int role) const
             break;
         case Qt::DecorationRole:
             {
-                ShaderUserData * userData = static_cast<ShaderUserData*>(proxy->GetUserData());
+                CodeUserData * userData = static_cast<CodeUserData*>(proxy->GetUserData());
+                ED_ASSERT(!userData->IsProgram());
                 if (userData!=nullptr)
                 {
                     return userData->IsValid() ? mWorkingIcon : mWarningIcon;
@@ -83,45 +82,35 @@ QVariant ShaderListModel::data(const QModelIndex &index, int role) const
 
 //----------------------------------------------------------------------------------------
 
-Pegasus::Shader::IShaderProxy * ShaderListModel::Translate(const QModelIndex& index)
+Pegasus::Core::ISourceCodeProxy * SourceCodeListModel::Translate(const QModelIndex& index)
 {
-    if (mShaderManager != nullptr)
+    if (mSourceCodeManager != nullptr)
     {
-        return mShaderManager->GetShader(index.row());
+        return mSourceCodeManager->GetSource(index.row());
     }
     return nullptr;
 }
 
 //----------------------------------------------------------------------------------------
 
-QVariant ShaderListModel::headerData (int section, Qt::Orientation orientation, int role) const
+QVariant SourceCodeListModel::headerData (int section, Qt::Orientation orientation, int role) const
 {
     return QVariant();
 }
 
 //----------------------------------------------------------------------------------------
 
-void ShaderListModel::OnAppLoaded()
+void SourceCodeListModel::OnAppLoaded(Pegasus::Core::ISourceCodeManagerProxy* dataProvider)
 {
-    Application * app = Editor::GetInstance().GetApplicationManager().GetApplication(); 
-    ED_ASSERTSTR(app != nullptr, "App cannot be nulL!");
-    if (app != nullptr)
-    {
-        Pegasus::App::IApplicationProxy * appProxy = app->GetApplicationProxy();
-        ED_ASSERTSTR(appProxy != nullptr, "App proxy cannot be null!");
-        if (appProxy != nullptr)
-        {
-            mShaderManager = appProxy->GetShaderManagerProxy();
-            ED_ASSERTSTR(mShaderManager != nullptr, "Failed retrieving shader manager");            
-        }
-    }
+    ED_ASSERT(dataProvider != nullptr);
+    mSourceCodeManager = dataProvider; 
 }
 
 //----------------------------------------------------------------------------------------
 
-void ShaderListModel::OnAppDestroyed()
+void SourceCodeListModel::OnAppDestroyed()
 {
     //set everything off
-    mShaderManager = nullptr;
+    mSourceCodeManager = nullptr;
 }
 

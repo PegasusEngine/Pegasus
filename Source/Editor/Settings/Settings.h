@@ -56,7 +56,7 @@ public:
     // definitions
 
     //syntax style list
-    enum ShaderEditorSyntaxStyle
+    enum CodeEditorSyntaxStyle
     {
         SYNTAX_BACKGROUND = 0,
         SYNTAX_CPP_COMMENT,
@@ -68,7 +68,7 @@ public:
     };
 
     //name of syntax styles
-    static const char * sShaderEditorSyntaxStyleNames[SYNTAX_COUNT];
+    static const char * sCodeEditorSyntaxStyleNames[SYNTAX_COUNT];
 
     static const QColor sDefaultSyntaxHighlightColors[SYNTAX_COUNT];
 
@@ -123,32 +123,32 @@ public:
     bool IsConsoleTextColorDefinedForLogChannel(Pegasus::Core::LogChannel logChannel) const;
 
 
-    // Shader editor settings
+    // Code editor settings
 
-    //! Set shader editor style color
+    //! Set Code editor style color
     //! \param style the syntax to set for a particular color
     //! \param color the color
-    void SetShaderEditorColor(ShaderEditorSyntaxStyle style, const QColor& color);
+    void SetCodeEditorColor(CodeEditorSyntaxStyle style, const QColor& color);
 
-    //! Returns the shader editor color from a particular syntax style
+    //! Returns the Code editor color from a particular syntax style
     //! \return the syntax style to get the color from
-    const QColor& GetShaderSyntaxColor(ShaderEditorSyntaxStyle style) const { return mShaderEditorColorStyles[style]; }
+    const QColor& GetCodeSyntaxColor(CodeEditorSyntaxStyle style) const { return mCodeEditorColorStyles[style]; }
 
-    //! Returns the font size of the shader editor font
+    //! Returns the font size of the Code editor font
     //! \return the font size
-    int GetShaderEditorFontSize() const { return mShaderEditorFontSize; }
+    int GetCodeEditorFontSize() const { return mCodeEditorFontSize; }
 
-    //! Returns the tab size of the shader editor
+    //! Returns the tab size of the Code editor
     //! \return the tab size
-    int GetShaderEditorTabSize()  const { return mShaderEditorTabSize; }
+    int GetCodeEditorTabSize()  const { return mCodeEditorTabSize; }
 
     //! sets the editor font size and emits UI update event
     //! \param the new font size
-    void SetShaderEditorFontSize(int newFontSize);
+    void SetCodeEditorFontSize(int newFontSize);
 
     //! sets the editor tab size and emits UI update event
     //! \param the new tab size
-    void SetShaderEditorTabSize(int newTabSize);
+    void SetCodeEditorTabSize(int newTabSize);
 
 
 
@@ -201,7 +201,7 @@ public slots:
     //------------------------------------------------------------------------------------
 
 signals:
-    void OnShaderEditorStyleChanged();
+    void OnCodeEditorStyleChanged();
 
 public:
 
@@ -267,13 +267,13 @@ private:
     LogChannelColorTable mLogChannelColorTable;
 
     //! list of colors for syntax highlight
-    QColor mShaderEditorColorStyles[SYNTAX_COUNT];
+    QColor mCodeEditorColorStyles[SYNTAX_COUNT];
 
-    //! font size for shader editor
-    int mShaderEditorFontSize;
+    //! font size for Code editor
+    int mCodeEditorFontSize;
 
-    //! tab size for shader editor
-    int mShaderEditorTabSize;
+    //! tab size for Code editor
+    int mCodeEditorTabSize;
 
     //------------------------------------------------------------------------------------
 

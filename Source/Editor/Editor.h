@@ -17,8 +17,8 @@
 #include "Console/ConsoleDockWidget.h"
 #include "History/HistoryDockWidget.h"
 #include "Timeline/TimelineDockWidget.h"
-#include "ShaderLibrary/ShaderLibraryWidget.h"
-#include "ShaderLibrary/ShaderEditorWidget.h"
+#include "AssetLibrary/AssetLibraryWidget.h"
+#include "CodeEditor/CodeEditorWidget.h"
 #include "Texture/TextureEditorDockWidget.h"
 #include "Viewport/ViewportDockWidget.h"
 #include "Viewport/ViewportWidget.h"
@@ -114,13 +114,13 @@ public:
     //! \return Pointer to the console dock widget
     inline ConsoleDockWidget * GetConsoleDockWidget() const { return mConsoleDockWidget; }
 
-    //! Get the shader editor widget
-    //! \return Pointer to shader editor widget
-    inline ShaderEditorWidget * GetShaderEditorWidget() const { return mShaderEditorWidget; }
+    //! Get the Code editor widget
+    //! \return Pointer to Code editor widget
+    inline CodeEditorWidget * GetCodeEditorWidget() const { return mCodeEditorWidget; }
 
-    //! Get the shader library widget
-    //! \return Pointer to shader library widget
-    inline ShaderLibraryWidget * GetShaderLibraryWidget() const { return mShaderLibraryWidget; }
+    //! Get the asset library widget
+    //! \return Pointer to asset library widget
+    inline AssetLibraryWidget * GetAssetLibraryWidget() const { return mAssetLibraryWidget; }
 
     //! Get the texture editor dock widget
     //! \return Pointer to the texture editor dock widget
@@ -195,8 +195,8 @@ private slots:
     void OpenTimelineWindow();
     void OpenHistoryWindow();
     void OpenConsoleWindow();
-    void OpenShaderEditorWindow();
-    void OpenShaderLibraryWindow();
+    void OpenCodeEditorWindow();
+    void OpenAssetLibraryWindow();
     void OpenTextureEditorWindow();
     //@}
 
@@ -263,8 +263,8 @@ private:
     QAction * mActionWindowTimeline;
     QAction * mActionWindowHistory;
     QAction * mActionWindowConsole;
-    QAction * mActionWindowShaderEditor;
-    QAction * mActionWindowShaderLibrary;
+    QAction * mActionWindowCodeEditor;
+    QAction * mActionWindowAssetLibrary;
     QAction * mActionWindowTextureEditor;
     //@}
 
@@ -317,8 +317,8 @@ private:
     ViewportDockWidget      * mSecondaryViewportDockWidget;
     TimelineDockWidget      * mTimelineDockWidget;
     HistoryDockWidget       * mHistoryDockWidget;
-    ShaderLibraryWidget     * mShaderLibraryWidget;
-    ShaderEditorWidget      * mShaderEditorWidget;
+    AssetLibraryWidget      * mAssetLibraryWidget;
+    CodeEditorWidget      * mCodeEditorWidget;
     ConsoleDockWidget       * mConsoleDockWidget;
     TextureEditorDockWidget * mTextureEditorDockWidget;
     //@}

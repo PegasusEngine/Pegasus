@@ -38,7 +38,6 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\IProgramProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\IShaderProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\ShaderDefs.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\ShaderEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ProgramLinkage.cpp" />

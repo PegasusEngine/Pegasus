@@ -15,8 +15,18 @@
 #if PEGASUS_ENABLE_PROXIES
 
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
+#include "Pegasus/Core/Shared/ISourceCodeProxy.h"
+#include "Pegasus/Shader/Shared/IShaderProxy.h"
 #include "Pegasus/Shader/ShaderTracker.h"
 #include "Pegasus/Shader/Proxy/ProgramProxy.h"
+
+namespace Pegasus {
+    namespace Core {
+        namespace CompilerEvents {
+            class ICompilerEventListener;
+        }
+    }
+}
 
 namespace Pegasus
 {
@@ -24,7 +34,6 @@ namespace Shader
 {
 
 class IProgramProxy;
-class IEventListener;
 class ShaderManager;
 
 //! Implementation of IShaderManagerProxy and wrapper proxy to expose to the editor
@@ -50,10 +59,16 @@ public:
 
     //! Sets the event listener to be used for the shader
     //! \param event listener reference
-    virtual void RegisterEventListener(IShaderEventListener * eventListener);
+    virtual void RegisterEventListener(Pegasus::Core::CompilerEvents::ICompilerEventListener * eventListener);
 
     //! Updates all the programs, only those which changed
     virtual void UpdateAllPrograms();
+
+    //! number of shaders is the number of sources
+    virtual int GetSourceCount() const { return GetShaderCount(); }
+
+    //! returns the respective shader
+    virtual Pegasus::Core::ISourceCodeProxy* GetSource(int id) { return GetShader(id); }
 
 private:
 

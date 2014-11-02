@@ -12,8 +12,8 @@
 
 #include "Application/ApplicationInterface.h"
 #include "Application/Application.h"
-#include "ShaderLibrary/ShaderLibraryWidget.h"
-#include "ShaderLibrary/ShaderEditorWidget.h"
+#include "AssetLibrary/AssetLibraryWidget.h"
+#include "CodeEditor/CodeEditorWidget.h"
 
 #include "Pegasus/Preprocessor.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
@@ -85,25 +85,25 @@ ApplicationInterface::ApplicationInterface(Application * application, QObject * 
         ED_FAILSTR("Unable to get the timeline dock widget");
     }
 
-    // Connect the shader library widget and the shader editor widget through queued connections
-    ShaderLibraryWidget * shaderLibraryWidget = Editor::GetInstance().GetShaderLibraryWidget();
-    if (shaderLibraryWidget != nullptr)
+    // Connect the asset library widget and the shader editor widget through queued connections
+    AssetLibraryWidget * assetLibraryWidget = Editor::GetInstance().GetAssetLibraryWidget();
+    if (assetLibraryWidget != nullptr)
     {
-        ShaderEditorWidget * shaderEditorWidget = shaderLibraryWidget->GetShaderEditorWidget();
-        if (shaderEditorWidget != nullptr)
+        CodeEditorWidget * codeEditorWidget = assetLibraryWidget->GetCodeEditorWidget();
+        if (codeEditorWidget  != nullptr)
         {
-            connect(shaderEditorWidget, SIGNAL(RequestShaderCompilation(int)),
-                    this, SLOT(ReceiveShaderCompilationRequest(int)),
+            connect(codeEditorWidget , SIGNAL(RequestCodeCompilation(int)),
+                    this, SLOT(ReceiveCompilationRequest(int)),
                     Qt::QueuedConnection);
         }
         else
         {
-            ED_FAILSTR("Unable to get the shader editor widget");
+            ED_FAILSTR("Unable to get the code editor widget");
         }
     }
     else
     {
-        ED_FAILSTR("Unable to get the shader library dock widget");
+        ED_FAILSTR("Unable to get the asset library dock widget");
     }
 
     // Connect the texture editor messages through queued connections
@@ -280,15 +280,15 @@ void ApplicationInterface::RedrawAllViewportsForBlockMoved()
 
 //----------------------------------------------------------------------------------------
 
-void ApplicationInterface::ReceiveShaderCompilationRequest(int id)
+void ApplicationInterface::ReceiveCompilationRequest(int id)
 {
-    ShaderLibraryWidget * shaderLibraryWidget = Editor::GetInstance().GetShaderLibraryWidget();
-    if (shaderLibraryWidget != nullptr)
+    AssetLibraryWidget * assetLibraryWidget = Editor::GetInstance().GetAssetLibraryWidget();
+    if (assetLibraryWidget != nullptr)
     {
-        ShaderEditorWidget * shaderEditorWidget = shaderLibraryWidget->GetShaderEditorWidget();
-        if (shaderEditorWidget != nullptr)
+        CodeEditorWidget * codeEditorWidget = assetLibraryWidget->GetCodeEditorWidget();
+        if (codeEditorWidget != nullptr)
         {
-            shaderEditorWidget->FlushShaderTextEditorToShader(id);
+            codeEditorWidget->FlushTextEditorToCode(id);
 
             //refresh viewport
             mApplication->GetShaderManagerProxy()->UpdateAllPrograms();
@@ -296,12 +296,12 @@ void ApplicationInterface::ReceiveShaderCompilationRequest(int id)
         }
         else
         {
-            ED_FAILSTR("Unable to get the shader editor widget");
+            ED_FAILSTR("Unable to get the code editor widget");
         }
     }
     else
     {
-        ED_FAILSTR("Unable to get the shader library dock widget");
+        ED_FAILSTR("Unable to get the asset library dock widget");
     }
 }
 

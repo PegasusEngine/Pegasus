@@ -12,8 +12,8 @@
 #include "Editor.h"
 #include "Log.h"
 #include "Assertion.h"
-#include "ShaderLibrary/ProgramTreeModel.h"
-#include "ShaderLibrary/ShaderManagerEventListener.h"
+#include "AssetLibrary/ProgramTreeModel.h"
+#include "CodeEditor/SourceCodeManagerEventListener.h"
 #include "Application/ApplicationManager.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
@@ -28,8 +28,8 @@ ProgramTreeModel::ProgramTreeModel(
       mShaderManager(nullptr)
 
 {
-    mWorkingIcon.addFile(QStringLiteral(":/ShaderLibrary/success.png"), QSize(), QIcon::Normal, QIcon::On);   
-    mWarningIcon.addFile(QStringLiteral(":/ShaderLibrary/error.png"), QSize(), QIcon::Normal, QIcon::On);   
+    mWorkingIcon.addFile(QStringLiteral(":/AssetLibrary/success.png"), QSize(), QIcon::Normal, QIcon::On);   
+    mWarningIcon.addFile(QStringLiteral(":/AssetLibrary/error.png"), QSize(), QIcon::Normal, QIcon::On);   
 }
 
 //----------------------------------------------------------------------------------------
@@ -217,7 +217,8 @@ QIcon ProgramTreeModel::GetIconFromIndex(const QModelIndex& index) const
         const Pegasus::Shader::IProgramProxy * proxy = mShaderManager->GetProgram(index.row()); 
         if (proxy != nullptr)
         {
-            ProgramUserData * userData = static_cast<ProgramUserData*>(proxy->GetUserData());
+            CodeUserData * userData = static_cast<CodeUserData*>(proxy->GetUserData());
+            ED_ASSERT(userData->IsProgram());
             if (userData != nullptr)
             {
                 return userData->IsValid() ? mWorkingIcon : mWarningIcon;
@@ -236,7 +237,8 @@ QIcon ProgramTreeModel::GetIconFromIndex(const QModelIndex& index) const
             Pegasus::Shader::IShaderProxy * shaderProxy = proxy->GetShader(index.row());
             if (shaderProxy != nullptr)
             {
-                ShaderUserData * userData =  static_cast<ShaderUserData*>(shaderProxy->GetUserData());
+                CodeUserData * userData =  static_cast<CodeUserData*>(shaderProxy->GetUserData());
+                ED_ASSERT(!userData->IsProgram());
                 if (userData != nullptr)
                 {
                     return userData->IsValid() ? mWorkingIcon : mWarningIcon;

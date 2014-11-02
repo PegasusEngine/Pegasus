@@ -53,14 +53,17 @@
     <Filter Include="Source\History">
       <UniqueIdentifier>{cc49ef2d-91fd-491e-8c9f-e87edbefeec5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\ShaderLibrary">
-      <UniqueIdentifier>{e8de268e-9236-40a3-b3db-76cceac2b24d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Texture">
       <UniqueIdentifier>{1b62beab-7720-420e-85cb-4f0c1b4f1a43}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Graph">
       <UniqueIdentifier>{2af47436-0925-4092-8689-19cbaa6f17d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\AssetLibrary">
+      <UniqueIdentifier>{8abc09a7-997a-48fd-82cc-d327bdaba4fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\CodeEditor">
+      <UniqueIdentifier>{d13f51e8-45e0-4947-a4e3-2ac8b9867ad1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -265,57 +268,6 @@
     <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineUndoCommands.cpp">
       <Filter>Source\Timeline</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Source\Editor\ShaderLibrary\ShaderLibraryWidget.cpp">
-      <Filter>Source\ShaderLibrary</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ShaderLibraryWidget.cpp">
-      <Filter>Generated\Dev-Opt</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ShaderLibraryWidget.cpp">
-      <Filter>Generated\Dev-Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Source\Editor\ShaderLibrary\ProgramTreeModel.cpp">
-      <Filter>Source\ShaderLibrary</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Source\Editor\ShaderLibrary\ShaderListModel.cpp">
-      <Filter>Source\ShaderLibrary</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Source\Editor\ShaderLibrary\ShaderEditorWidget.cpp">
-      <Filter>Source\ShaderLibrary</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ShaderEditorWidget.cpp">
-      <Filter>Generated\Dev-Opt</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ShaderEditorWidget.cpp">
-      <Filter>Generated\Dev-Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Source\Editor\Settings\SettingsShaderEditorPage.cpp">
-      <Filter>Source\Settings</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_SettingsShaderEditorPage.cpp">
-      <Filter>Generated\Dev-Opt</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_SettingsShaderEditorPage.cpp">
-      <Filter>Generated\Dev-Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Source\Editor\ShaderLibrary\ShaderManagerEventListener.cpp">
-      <Filter>Source\ShaderLibrary</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ShaderManagerEventListener.cpp">
-      <Filter>Generated\Dev-Opt</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ShaderManagerEventListener.cpp">
-      <Filter>Generated\Dev-Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Source\Editor\ShaderLibrary\ShaderTextEditorWidget.cpp">
-      <Filter>Source\ShaderLibrary</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ShaderTextEditorWidget.cpp">
-      <Filter>Generated\Dev-Opt</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ShaderTextEditorWidget.cpp">
-      <Filter>Generated\Dev-Debug</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Dev-Opt\moc_TextureEditorDockWidget.cpp">
       <Filter>Generated\Dev-Opt</Filter>
     </ClCompile>
@@ -343,13 +295,64 @@
     <ClCompile Include="..\..\..\Source\Editor\Texture\TextureGraphEditorGraphicsView.cpp">
       <Filter>Source\Texture</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Source\Editor\ShaderLibrary\ShaderTextEditorTreeWidget.cpp">
-      <Filter>Source\ShaderLibrary</Filter>
+    <ClCompile Include="..\..\..\Source\Editor\AssetLibrary\AssetLibraryWidget.cpp">
+      <Filter>Source\AssetLibrary</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ShaderTextEditorTreeWidget.cpp">
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_AssetLibraryWidget.cpp">
       <Filter>Generated\Dev-Opt</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ShaderTextEditorTreeWidget.cpp">
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_AssetLibraryWidget.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\AssetLibrary\ProgramTreeModel.cpp">
+      <Filter>Source\AssetLibrary</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\AssetLibrary\SourceCodeListModel.cpp">
+      <Filter>Source\AssetLibrary</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\CodeEditor\CodeEditorWidget.cpp">
+      <Filter>Source\CodeEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_CodeEditorWidget.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_CodeEditorWidget.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\CodeEditor\CodeTextEditorTreeWidget.cpp">
+      <Filter>Source\CodeEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_CodeTextEditorTreeWidget.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_CodeTextEditorTreeWidget.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\CodeEditor\CodeTextEditorWidget.cpp">
+      <Filter>Source\CodeEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_CodeTextEditorWidget.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_CodeTextEditorWidget.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\CodeEditor\SourceCodeManagerEventListener.cpp">
+      <Filter>Source\CodeEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_SourceCodeManagerEventListener.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_SourceCodeManagerEventListener.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Settings\SettingsCodeEditorPage.cpp">
+      <Filter>Source\Settings</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_SettingsCodeEditorPage.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_SettingsCodeEditorPage.cpp">
       <Filter>Generated\Dev-Debug</Filter>
     </ClCompile>
   </ItemGroup>
@@ -429,24 +432,6 @@
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineUndoCommands.h">
       <Filter>Source\Timeline</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\Source\Editor\ShaderLibrary\ShaderLibraryWidget.ui">
-      <Filter>Forms</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\Source\Editor\ShaderLibrary\ShaderLibraryWidget.h">
-      <Filter>Source\ShaderLibrary</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\Source\Editor\ShaderLibrary\ShaderEditorWidget.h">
-      <Filter>Source\ShaderLibrary</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\Source\Editor\Settings\SettingsShaderEditorPage.h">
-      <Filter>Source\Settings</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\Source\Editor\ShaderLibrary\ShaderManagerEventListener.h">
-      <Filter>Source\ShaderLibrary</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\Source\Editor\ShaderLibrary\ShaderTextEditorWidget.h">
-      <Filter>Source\ShaderLibrary</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Texture\TextureEditorDockWidget.h">
       <Filter>Source\Texture</Filter>
     </CustomBuild>
@@ -459,8 +444,26 @@
     <CustomBuild Include="..\..\..\Source\Editor\Texture\TextureGraphEditorGraphicsView.h">
       <Filter>Source\Texture</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\Source\Editor\ShaderLibrary\ShaderTextEditorTreeWidget.h">
-      <Filter>Source\ShaderLibrary</Filter>
+    <CustomBuild Include="..\..\..\Source\Editor\AssetLibrary\AssetLibraryWidget.h">
+      <Filter>Source\AssetLibrary</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\AssetLibrary\AssetLibraryWidget.ui">
+      <Filter>Source\AssetLibrary</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\CodeEditor\CodeEditorWidget.h">
+      <Filter>Source\CodeEditor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\CodeEditor\CodeTextEditorTreeWidget.h">
+      <Filter>Source\CodeEditor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\CodeEditor\CodeTextEditorWidget.h">
+      <Filter>Source\CodeEditor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\CodeEditor\SourceCodeManagerEventListener.h">
+      <Filter>Source\CodeEditor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Settings\SettingsCodeEditorPage.h">
+      <Filter>Source\Settings</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -479,14 +482,17 @@
     <ClInclude Include="..\..\..\Source\Editor\Timeline\TimelineLaneHeaderGraphicsItem.h">
       <Filter>Source\Timeline</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Source\Editor\ShaderLibrary\ProgramTreeModel.h">
-      <Filter>Source\ShaderLibrary</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Source\Editor\ShaderLibrary\ShaderListModel.h">
-      <Filter>Source\ShaderLibrary</Filter>
-    </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_TextureEditorDockWidget.h">
       <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_AssetLibraryWidget.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\AssetLibrary\ProgramTreeModel.h">
+      <Filter>Source\AssetLibrary</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\AssetLibrary\SourceCodeListModel.h">
+      <Filter>Source\AssetLibrary</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

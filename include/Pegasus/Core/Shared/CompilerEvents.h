@@ -4,35 +4,37 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	ShaderEvent.h
+//! \file	CompilerEvents.h
 //! \author	Kleber Garcia
-//! \date	16th October 2013
-//! \brief	Event classes for shaders
+//! \date	1st November 2014
+//! \brief	Event classes for a generic compiler
 
-#ifndef PEGASUS_SHADEREVENT_H 
-#define PEGASUS_SHADEREVENT_H
+#ifndef PEGASUS_COMPILEREVENTS_H 
+#define PEGASUS_COMPILEREVENTS_H
 
 #include "Pegasus/Core/Shared/IoErrors.h"
 #include "Pegasus/Graph/Shared/GraphEventDefs.h"
 
 namespace Pegasus
 {
-namespace Shader
+namespace Core
 {
-    //! loading event: fired when shader loading is finished
-    class ShaderLoadedEvent
+namespace CompilerEvents
+{
+    //! loading event: fired when source loading is finished
+    class SourceLoadedEvent
     {
     public:
         //! constructor
-        ShaderLoadedEvent(const char * src, int length)
+        SourceLoadedEvent(const char * src, int length)
         : mSrc(src), mBufferLength(length)
         {}
 
         //! destructor
-        virtual ~ShaderLoadedEvent(){}
+        virtual ~SourceLoadedEvent(){}
         
-        //! Gets the source of a shader once loaded
-        const char * GetShaderSrc() const { return mSrc; }
+        //! Gets the source of  once loaded
+        const char * GetSrc() const { return mSrc; }
 
         //! returns the src buffer length
         int GetSrcBufferLength() const { return mBufferLength; }
@@ -57,14 +59,14 @@ namespace Shader
         //! returns the log string cached
         const char * GetLogString() const { return mLogString; }
 
-        //! returns success whether shader compilation succeded or failed
+        //! returns success whether compilation succeded or failed
         bool IsSuccess() const { return mSuccess; }
     private:
         const char * mLogString;
         bool mSuccess;
     };
 
-    //! a particular compilation issue on a shader, to be used by a shader IDE
+    //! a particular compilation issue , to be used by a code IDE
     class CompilationNotification 
     {
     public:
@@ -177,17 +179,16 @@ namespace Shader
         
     };
 
-    GRAPH_EVENT_BEGIN_REGISTRY (IShaderEventListener)
-        GRAPH_EVENT_REGISTER (ShaderLoadedEvent)
+    GRAPH_EVENT_BEGIN_REGISTRY (ICompilerEventListener)
+        GRAPH_EVENT_REGISTER (SourceLoadedEvent)
         GRAPH_EVENT_REGISTER (CompilationEvent)
         GRAPH_EVENT_REGISTER (CompilationNotification)
         GRAPH_EVENT_REGISTER (LinkingEvent)
         GRAPH_EVENT_REGISTER (FileOperationEvent)
     GRAPH_EVENT_END_REGISTRY
 
-}
-
-
-}
+} //namespace CompilationEvents
+} //namespace Core
+} //namespace Pegasus
 
 #endif

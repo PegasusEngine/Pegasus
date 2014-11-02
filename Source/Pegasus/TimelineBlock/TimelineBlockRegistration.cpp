@@ -14,6 +14,9 @@
 
 #include "Pegasus/TimelineBlock/Camera/CameraLineBlock.h"
 
+using namespace Pegasus;
+using namespace Pegasus::Timeline;
+
 namespace Pegasus {
 namespace TimelineBlock {
 
@@ -21,6 +24,9 @@ namespace TimelineBlock {
 void RegisterBaseBlocks(Timeline::Timeline * timeline)
 {
     PG_ASSERTSTR(timeline != nullptr, "Trying to register base timeline blocks with an undefined timeline");
+
+    // Empty block
+    REGISTER_BASE_TIMELINE_BLOCK(Block);
 
     // Camera blocks
     REGISTER_BASE_TIMELINE_BLOCK(CameraLineBlock);

@@ -13,14 +13,16 @@
 
 #include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
 #include "../Source/Pegasus/Render/GL/GLGPUDataDefs.h"
+#include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/Allocator/Alloc.h"
-#include "Pegasus/Shader/shared/ShaderEvent.h"
 #include "Pegasus/Shader/IShaderFactory.h"
 #include "Pegasus/Shader/ShaderStage.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Render/ShaderFactory.h"
 #include "Pegasus/Graph/NodeData.h"
+
+using namespace Pegasus::Core;
 
 namespace PegasusShaderPrivate {
 
@@ -128,9 +130,9 @@ static int ProcessErrorLog(Pegasus::Shader::ShaderStage * shaderNode, const char
             descriptionError[idx] = '\0';
             GRAPH_EVENT_DISPATCH(
                 shaderNode,
-                Pegasus::Shader::CompilationNotification,
+                CompilerEvents::CompilationNotification,
                 // Shader Event specific arguments
-                Pegasus::Shader::CompilationNotification::COMPILATION_ERROR,
+                CompilerEvents::CompilationNotification::COMPILATION_ERROR,
                 line,
                 descriptionError
             );
@@ -238,7 +240,7 @@ void GLShaderFactory::GenerateShaderGPUData (Pegasus::Shader::ShaderStage * shad
         //empty shader, ignore compilation
         GRAPH_EVENT_DISPATCH (
             shaderNode,
-            Pegasus::Shader::CompilationEvent,
+            CompilerEvents::CompilationEvent,
             // Event specific arguments
             false, //compilation success status
             "invalid shader"
@@ -277,7 +279,7 @@ void GLShaderFactory::GenerateShaderGPUData (Pegasus::Shader::ShaderStage * shad
     shaderCompiled = shaderCompiled && errorCount == 0;
     GRAPH_EVENT_DISPATCH (
         shaderNode,
-        Pegasus::Shader::CompilationEvent,
+        CompilerEvents::CompilationEvent,
         // Event specific arguments
         shaderCompiled ? true : false, //compilation success status
         shaderCompiled ? "" : logBuffer
@@ -356,9 +358,9 @@ void GLShaderFactory::GenerateProgramGPUData (Pegasus::Shader::ProgramLinkage * 
     {
         GRAPH_EVENT_DISPATCH (
             programNode,
-            Pegasus::Shader::LinkingEvent,
+            CompilerEvents::LinkingEvent,
             // Event specific arguments:
-            Pegasus::Shader::LinkingEvent::INCOMPLETE_STAGES_FAIL,
+            CompilerEvents::LinkingEvent::INCOMPLETE_STAGES_FAIL,
             ""
         );
 
@@ -376,9 +378,9 @@ void GLShaderFactory::GenerateProgramGPUData (Pegasus::Shader::ProgramLinkage * 
         glGetProgramInfoLog(gpuData->mHandle, bufferSize, &logLength, logBuffer);
         GRAPH_EVENT_DISPATCH (
             programNode,
-            Pegasus::Shader::LinkingEvent,
+            CompilerEvents::LinkingEvent,
             // Event specific arguments:
-            Pegasus::Shader::LinkingEvent::LINKING_FAIL,
+            CompilerEvents::LinkingEvent::LINKING_FAIL,
             ""
         );
 #if PEGASUS_ENABLE_PROXIES
@@ -406,9 +408,9 @@ void GLShaderFactory::GenerateProgramGPUData (Pegasus::Shader::ProgramLinkage * 
         {
             GRAPH_EVENT_DISPATCH (
                 programNode,
-                Pegasus::Shader::LinkingEvent,
+                CompilerEvents::LinkingEvent,
                 // Event specific arguments:
-                Pegasus::Shader::LinkingEvent::LINKING_FAIL,
+                CompilerEvents::LinkingEvent::LINKING_FAIL,
                 "There is a buffer alignment issue. Check the Console for more details."
             );
 #if PEGASUS_ENABLE_PROXIES
@@ -421,9 +423,9 @@ void GLShaderFactory::GenerateProgramGPUData (Pegasus::Shader::ProgramLinkage * 
         {
             GRAPH_EVENT_DISPATCH (
                 programNode,
-                Pegasus::Shader::LinkingEvent,
+                CompilerEvents::LinkingEvent,
                 // Event specific arguments:
-                Pegasus::Shader::LinkingEvent::LINKING_SUCCESS,
+                CompilerEvents::LinkingEvent::LINKING_SUCCESS,
                 ""
             );
         }

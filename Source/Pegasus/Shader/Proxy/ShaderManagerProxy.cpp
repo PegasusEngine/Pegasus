@@ -50,7 +50,7 @@ Pegasus::Shader::IShaderProxy * Pegasus::Shader::ShaderManagerProxy::GetShader(i
     return nullptr;
 }
 
-void Pegasus::Shader::ShaderManagerProxy::RegisterEventListener(Pegasus::Shader::IShaderEventListener * eventListener)
+void Pegasus::Shader::ShaderManagerProxy::RegisterEventListener(Pegasus::Core::CompilerEvents::ICompilerEventListener * eventListener)
 {
 #if PEGASUS_USE_GRAPH_EVENTS
     mObject->RegisterEventListener(eventListener);

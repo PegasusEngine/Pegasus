@@ -21,6 +21,7 @@ Block::Block(Alloc::IAllocator * allocator, Wnd::IWindowContext * appContext)
 ,   mBeat(0)
 ,   mDuration(1)
 ,   mLane(nullptr)
+,   mScriptHelper(allocator, appContext)
 #if PEGASUS_ENABLE_PROXIES
 ,   mProxy(this)
 ,   mColorRed(128)
@@ -36,6 +37,7 @@ Block::Block(Alloc::IAllocator * allocator, Wnd::IWindowContext * appContext)
 
 Block::~Block()
 {
+
 }
 
 //----------------------------------------------------------------------------------------
@@ -71,7 +73,7 @@ void Block::Initialize()
 
 void Block::Shutdown()
 {
-    // No default implementation
+    mScriptHelper.Shutdown(); //if no script is open then this is a NOP
 }
 
 //----------------------------------------------------------------------------------------
@@ -79,6 +81,32 @@ void Block::Shutdown()
 void Block::SetBeat(Beat beat)
 {
     mBeat = beat;
+}
+
+void Block::UpdateViaScript(float beat, Wnd::Window* window)
+{
+    mScriptHelper.CallUpdate(beat);
+}
+
+//----------------------------------------------------------------------------------------
+
+void Block::RenderViaScript(float beat, Wnd::Window* window)
+{
+    mScriptHelper.CallRender(beat);
+}
+
+//----------------------------------------------------------------------------------------
+
+bool Block::OpenScript(const char* scriptFileName)
+{
+    return mScriptHelper.OpenScript(scriptFileName);
+}
+
+//----------------------------------------------------------------------------------------
+
+void Block::ShutdownScript()
+{
+    mScriptHelper.Shutdown();
 }
 
 //----------------------------------------------------------------------------------------

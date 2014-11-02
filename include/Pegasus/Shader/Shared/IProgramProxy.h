@@ -22,6 +22,8 @@ namespace Graph
 namespace Shader
 {
 
+class IShaderProxy;
+
 //! shader program proxy interface
 class IProgramProxy
 {

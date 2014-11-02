@@ -8,6 +8,14 @@
 #include "Pegasus/Shader/ShaderTracker.h"
 #endif
 
+namespace Pegasus {
+    namespace Core {
+        namespace CompilerEvents {
+            class ICompilerEventListener;
+        }
+    }
+}
+
 namespace Pegasus
 {
 namespace Graph
@@ -18,7 +26,6 @@ namespace Graph
 namespace Shader
 {
 
-class IShaderEventListener;
 class IShaderFactory;
 
 //! ShaderManager, manages and keeps up with shader data
@@ -62,7 +69,7 @@ public:
 #endif
 
 #if PEGASUS_USE_GRAPH_EVENTS
-    void RegisterEventListener(IShaderEventListener * eventListener) { mEventListener = eventListener; }
+    void RegisterEventListener(Pegasus::Core::CompilerEvents::ICompilerEventListener * eventListener) { mEventListener = eventListener; }
 #endif
 
 private:
@@ -86,7 +93,7 @@ private:
 #endif
 
 #if PEGASUS_USE_GRAPH_EVENTS
-    IShaderEventListener * mEventListener;
+    Pegasus::Core::CompilerEvents::ICompilerEventListener * mEventListener;
 #endif
 };
 

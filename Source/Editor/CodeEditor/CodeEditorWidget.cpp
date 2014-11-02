@@ -4,20 +4,20 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   ShaderEditorWidget.cpp	
+//! \file   CodeEditorWidget.cpp	
 //! \author	Kleber Garcia
 //! \date	30th Match 2014
-//! \brief	Shader Editor IDE
+//! \brief	Code Editor IDE
 
 #include "Editor.h"
 #include "Log.h"
 #include "Assertion.h"
 #include "Settings/Settings.h"
-#include "ShaderLibrary/ShaderEditorWidget.h"
-#include "ShaderLibrary/ShaderTextEditorWidget.h"
-#include "ShaderLibrary/ShaderManagerEventListener.h"
-#include "ShaderLibrary/ShaderTextEditorTreeWidget.h"
-#include "Pegasus/Shader/Shared/IShaderProxy.h"
+#include "CodeEditor/CodeEditorWidget.h"
+#include "CodeEditor/CodeTextEditorWidget.h"
+#include "CodeEditor/SourceCodeManagerEventListener.h"
+#include "CodeEditor/CodeTextEditorTreeWidget.h"
+#include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 #include <QVBoxLayout>
 #include <QTabWidget>
 #include <QToolBar>
@@ -36,12 +36,12 @@
 static const char * DOCKABLE_DESC = "Dockable: Allow to be docked when hovering over main window.";
 static const char * UNDOCKABLE_DESC = "Undockable: Allow to hover over window w/o docking.";
 
-ShaderEditorWidget::ShaderEditorWidget (QWidget * parent)
+CodeEditorWidget::CodeEditorWidget (QWidget * parent)
 : 
     QDockWidget(parent),
     mCompilationRequestPending(false), 
     mInternalBlockTextUpdated(false),
-    mOpenShaderCount(0),
+    mOpenCodeCount(0),
     mPreviousTabIndex(-1),
     mCloseViewAction(nullptr),
     mPinAction(nullptr),
@@ -54,12 +54,12 @@ ShaderEditorWidget::ShaderEditorWidget (QWidget * parent)
     SetupUi();
 }
 
-ShaderEditorWidget::~ShaderEditorWidget()
+CodeEditorWidget::~CodeEditorWidget()
 {
     delete mCompilationRequestMutex;
 }
 
-void ShaderEditorWidget::SetupUi()
+void CodeEditorWidget::SetupUi()
 {
     QWidget * mainWidget = new QWidget(this);
     mUi.mMainLayout = new QVBoxLayout();
@@ -74,12 +74,12 @@ void ShaderEditorWidget::SetupUi()
 
     QToolBar * toolBar = new QToolBar(mainWidget);
     //TODO hook up these actions
-    QIcon saveIcon(tr(":/ShaderEditor/save.png"));
-    QIcon singleIcon(tr(":/ShaderEditor/single.png"));
-    QIcon verticalIcon(tr(":/ShaderEditor/vertical.png"));
-    QIcon horizontalIcon(tr(":/ShaderEditor/horizontal.png"));
+    QIcon saveIcon(tr(":/CodeEditor/save.png"));
+    QIcon singleIcon(tr(":/CodeEditor/single.png"));
+    QIcon verticalIcon(tr(":/CodeEditor/vertical.png"));
+    QIcon horizontalIcon(tr(":/CodeEditor/horizontal.png"));
 
-    mSaveAction = toolBar->addAction(saveIcon, tr("save shader to its file"));
+    mSaveAction = toolBar->addAction(saveIcon, tr("save this source to its file"));
 
     mCloseViewAction  = toolBar->addAction(singleIcon, tr("close current view"));
     mVerticalAction   = toolBar->addAction(verticalIcon, tr("split views vertically"));
@@ -87,8 +87,8 @@ void ShaderEditorWidget::SetupUi()
 
     toolBar->addSeparator();
 
-    mPinIcon.addFile(tr(":/ShaderEditor/pin.png"));
-    mUnpinIcon.addFile(tr(":/ShaderEditor/unpin.png"));
+    mPinIcon.addFile(tr(":/CodeEditor/pin.png"));
+    mUnpinIcon.addFile(tr(":/CodeEditor/unpin.png"));
     mPinAction = toolBar->addAction(mUnpinIcon, tr(UNDOCKABLE_DESC));   
 
     toolBar->setIconSize(QSize(16,16));
@@ -100,11 +100,11 @@ void ShaderEditorWidget::SetupUi()
 
     mSaveAction->setShortcut(tr("Ctrl+S"));
     connect(mSaveAction, SIGNAL(triggered(bool)),
-            this, SLOT(SignalSaveCurrentShader()));
+            this, SLOT(SignalSaveCurrentCode()));
 
     resize(550, 700);
-    setWindowTitle(tr("Shader Editor"));
-    setObjectName("ShaderEditor");
+    setWindowTitle(tr("Code Editor"));
+    setObjectName("CodeEditor");
 
     mUi.mTabWidget = new QTabBar(mainWidget);
     mUi.mTabWidget->setTabsClosable(true);
@@ -122,7 +122,7 @@ void ShaderEditorWidget::SetupUi()
         selectedSignalMapper
     );
 
-    mUi.mTreeEditor = new ShaderTextEditorTreeWidget(mUi.mTextEditorSignals, mainWidget);
+    mUi.mTreeEditor = new CodeTextEditorTreeWidget(mUi.mTextEditorSignals, mainWidget);
 
     connect(
         textChangedMapper, SIGNAL(mapped(QWidget *)),
@@ -154,7 +154,7 @@ void ShaderEditorWidget::SetupUi()
 
     connect(
         mUi.mTabWidget, SIGNAL(currentChanged(int)),
-        this,   SLOT(SignalViewShader(int))
+        this,   SLOT(SignalViewCode(int))
     );
     //setup the status bar
     mUi.mStatusBar = new QStatusBar(mainWidget);
@@ -166,7 +166,7 @@ void ShaderEditorWidget::SetupUi()
 
 }
 
-bool ShaderEditorWidget::AsyncHasCompilationRequestPending()
+bool CodeEditorWidget::AsyncHasCompilationRequestPending()
 {
     bool tmp;
     mCompilationRequestMutex->lock();
@@ -176,38 +176,38 @@ bool ShaderEditorWidget::AsyncHasCompilationRequestPending()
 }
 
 
-void ShaderEditorWidget::AsyncSetCompilationRequestPending()
+void CodeEditorWidget::AsyncSetCompilationRequestPending()
 {
     mCompilationRequestMutex->lock();
     mCompilationRequestPending = true;
     mCompilationRequestMutex->unlock();
 }
 
-void ShaderEditorWidget::FlushShaderTextEditorToShader(int id)
+void CodeEditorWidget::FlushTextEditorToCode(int id)
 {
     mCompilationRequestMutex->lock();
-    if (id >= 0 && id < mOpenShaderCount) //is there a ui element for this shader?
+    if (id >= 0 && id < mOpenCodeCount) //is there a ui element for this code?
     {
-        ShaderTextEditorWidget * editor = mUi.mTreeEditor->FindShadersInEditors(mOpenedShaders[id]);
+        CodeTextEditorWidget * editor = mUi.mTreeEditor->FindCodeInEditors(mOpenedCodes[id]);
         if (editor != nullptr)
         {
-            editor->FlushTextToShader();
+            editor->FlushTextToCode();
         }
     }
     mCompilationRequestPending = false;
     mCompilationRequestMutex->unlock();
 }
 
-void ShaderEditorWidget::SignalCompilationError(void * shaderPtr, int line, QString errorString)
+void CodeEditorWidget::SignalCompilationError(void * srcPtr, int line, QString errorString)
 {
-    Pegasus::Shader::IShaderProxy* target = static_cast<Pegasus::Shader::IShaderProxy*>(shaderPtr);
-    ShaderUserData * userData = static_cast<ShaderUserData*>(target->GetUserData());
+    Pegasus::Core::ISourceCodeProxy* target = static_cast<Pegasus::Core::ISourceCodeProxy*>(srcPtr);
+    CodeUserData * userData = static_cast<CodeUserData*>(target->GetUserData());
     if (userData != nullptr)
     {
         userData->InvalidateLine(line);
         userData->InsertMessage(line, errorString);
         PostStatusBarMessage(errorString);
-        ShaderTextEditorWidget * editor = mUi.mTreeEditor->FindShadersInEditors(target);
+        CodeTextEditorWidget * editor = mUi.mTreeEditor->FindCodeInEditors(target);
         if (editor != nullptr)
         {
             UpdateSyntaxForLine(editor, line);
@@ -215,14 +215,15 @@ void ShaderEditorWidget::SignalCompilationError(void * shaderPtr, int line, QStr
     }
 }
 
-void ShaderEditorWidget::SignalLinkingEvent(void * program, QString message, int eventType)
+void CodeEditorWidget::SignalLinkingEvent(void * program, QString message, int eventType)
 {
     Pegasus::Shader::IProgramProxy * target = static_cast<Pegasus::Shader::IProgramProxy*>(program);
     ED_ASSERT(target != nullptr);
-    ProgramUserData * programUserData = static_cast<ProgramUserData*>(target->GetUserData());
+    CodeUserData * programUserData = static_cast<CodeUserData*>(target->GetUserData());
+    ED_ASSERT(programUserData->IsProgram());
     if (programUserData != nullptr)
     {
-        if (static_cast<Pegasus::Shader::LinkingEvent::Type>(eventType) != Pegasus::Shader::LinkingEvent::LINKING_SUCCESS)
+        if (static_cast<Pegasus::Core::CompilerEvents::LinkingEvent::Type>(eventType) != Pegasus::Core::CompilerEvents::LinkingEvent::LINKING_SUCCESS)
         {
             //do not opaque the previous string if this one is empty
             if (mUi.mStatusBarMessage == "" && message != "")
@@ -237,15 +238,16 @@ void ShaderEditorWidget::SignalLinkingEvent(void * program, QString message, int
     }
 }
 
-void ShaderEditorWidget::SignalCompilationBegin(void * shader)
+void CodeEditorWidget::SignalCompilationBegin(void * code)
 {
-    Pegasus::Shader::IShaderProxy* target = static_cast<Pegasus::Shader::IShaderProxy*>(shader);
-    ShaderTextEditorWidget * editor = mUi.mTreeEditor->FindShadersInEditors(target);
+    Pegasus::Core::ISourceCodeProxy* target = static_cast<Pegasus::Core::ISourceCodeProxy*>(code);
+    CodeTextEditorWidget * editor = mUi.mTreeEditor->FindCodeInEditors(target);
     if (editor != nullptr && target->GetUserData() != nullptr)
     {
-        ShaderUserData * shaderUserData = static_cast<ShaderUserData*>(target->GetUserData());
-        QSet<int> lineSetCopy = shaderUserData->GetInvalidLineSet();
-        shaderUserData->ClearInvalidLines();
+        CodeUserData * codeUserData = static_cast<CodeUserData*>(target->GetUserData());
+        ED_ASSERT(!codeUserData->IsProgram());
+        QSet<int> lineSetCopy = codeUserData->GetInvalidLineSet();
+        codeUserData->ClearInvalidLines();
         for (int line : lineSetCopy)
         {
             UpdateSyntaxForLine(editor, line);
@@ -253,13 +255,13 @@ void ShaderEditorWidget::SignalCompilationBegin(void * shader)
     }
 }
 
-void ShaderEditorWidget::SignalCompilationEnd(QString log)
+void CodeEditorWidget::SignalCompilationEnd(QString log)
 {
     //update the status bar with whichever compilation error.
     PostStatusBarMessage(log);
 }
 
-void ShaderEditorWidget::SignalPinActionTriggered()
+void CodeEditorWidget::SignalPinActionTriggered()
 {
     ED_ASSERT(mPinAction != nullptr);
     if (allowedAreas() == Qt::NoDockWidgetArea)
@@ -276,64 +278,64 @@ void ShaderEditorWidget::SignalPinActionTriggered()
     } 
 }
 
-void ShaderEditorWidget::SignalSaveCurrentShader()
+void CodeEditorWidget::SignalSaveCurrentCode()
 {
     int idx = mUi.mTabWidget->currentIndex();
-    if (idx >= 0 && idx < mOpenShaderCount)
+    if (idx >= 0 && idx < mOpenCodeCount)
     {
-        Pegasus::Shader::IShaderProxy * shader = mOpenedShaders[idx];
-        if (shader != nullptr)
+        Pegasus::Core::ISourceCodeProxy * code = mOpenedCodes[idx];
+        if (code != nullptr)
         {
             //ensure that no compilation is happening while saving this file
             mCompilationRequestMutex->lock();
-            shader->SaveSourceToFile();
+            code->SaveSourceToFile();
             mCompilationRequestMutex->unlock();
         }
     }
 }
 
-void ShaderEditorWidget::SignalSavedFileSuccess()
+void CodeEditorWidget::SignalSavedFileSuccess()
 {
     PostStatusBarMessage(tr("File Saved."));
 }
 
-void ShaderEditorWidget::SignalViewShader(int tabId)
+void CodeEditorWidget::SignalViewCode(int tabId)
 {
     if (tabId != -1)
     {
-        ED_ASSERT(tabId >= 0 && tabId < mOpenShaderCount);
+        ED_ASSERT(tabId >= 0 && tabId < mOpenCodeCount);
 
-        ShaderTextEditorWidget * editor = nullptr;
+        CodeTextEditorWidget * editor = nullptr;
 
-        if (mPreviousTabIndex >= 0 && mPreviousTabIndex < mOpenShaderCount)
+        if (mPreviousTabIndex >= 0 && mPreviousTabIndex < mOpenCodeCount)
         {
-            editor = mUi.mTreeEditor->FindShadersInEditors(mOpenedShaders[mPreviousTabIndex]);
+            editor = mUi.mTreeEditor->FindCodeInEditors(mOpenedCodes[mPreviousTabIndex]);
         }
 
-        mUi.mTreeEditor->DisplayShader(mOpenedShaders[tabId], editor);
+        mUi.mTreeEditor->DisplayCode(mOpenedCodes[tabId], editor);
 
         mPreviousTabIndex = tabId;
     }
 }
 
-void ShaderEditorWidget::SignalSavedFileIoError(int ioError, QString msg)
+void CodeEditorWidget::SignalSavedFileIoError(int ioError, QString msg)
 {
     QString barMsg = tr("IO ERROR: file not saved correctly: ") + msg;
     PostStatusBarMessage(barMsg);
 }
 
-void ShaderEditorWidget::UpdateSyntaxForLine(ShaderTextEditorWidget * editor, int line)
+void CodeEditorWidget::UpdateSyntaxForLine(CodeTextEditorWidget * editor, int line)
 {
     mInternalBlockTextUpdated = true;
     editor->UpdateLineSyntax(line);
     mInternalBlockTextUpdated = false;
 }
 
-int ShaderEditorWidget::FindIndex(Pegasus::Shader::IShaderProxy * target)
+int CodeEditorWidget::FindIndex(Pegasus::Core::ISourceCodeProxy * target)
 {
-    for (int i = 0; i < mOpenShaderCount; ++i)
+    for (int i = 0; i < mOpenCodeCount; ++i)
     {
-        if (target->GetGuid() == mOpenedShaders[i]->GetGuid())
+        if (target->GetGuid() == mOpenedCodes[i]->GetGuid())
         {
             return i;
         }
@@ -341,12 +343,12 @@ int ShaderEditorWidget::FindIndex(Pegasus::Shader::IShaderProxy * target)
     return -1;
 }
 
-int ShaderEditorWidget::FindIndex(ShaderTextEditorWidget * target)
+int CodeEditorWidget::FindIndex(CodeTextEditorWidget * target)
 {
-    Pegasus::Shader::IShaderProxy * shader = target->GetShader();
-    if (shader != nullptr)
+    Pegasus::Core::ISourceCodeProxy * code = target->GetCode();
+    if (code != nullptr)
     {
-        return FindIndex(shader);
+        return FindIndex(code);
     }
     else
     {
@@ -354,60 +356,60 @@ int ShaderEditorWidget::FindIndex(ShaderTextEditorWidget * target)
     }
 }
 
-void ShaderEditorWidget::PostStatusBarMessage(const QString& message)
+void CodeEditorWidget::PostStatusBarMessage(const QString& message)
 {
     mUi.mStatusBarMessage = message;
     mUi.mStatusBar->showMessage(message);
 }
 
-void ShaderEditorWidget::OnSettingsChanged()
+void CodeEditorWidget::OnSettingsChanged()
 {
     mUi.mTreeEditor->ForceUpdateAllStyles();
 }
 
-void ShaderEditorWidget::RequestClose(int index)
+void CodeEditorWidget::RequestClose(int index)
 {
-    ED_ASSERT(index >= 0 && index < mOpenShaderCount);
+    ED_ASSERT(index >= 0 && index < mOpenCodeCount);
     //remove tab
-    mUi.mTreeEditor->HideShader(mOpenedShaders[index]);
+    mUi.mTreeEditor->HideCode(mOpenedCodes[index]);
 
-    //compress the opened shader list
-    for (int i = index; i < mOpenShaderCount - 1; ++i)
+    //compress the opened code list
+    for (int i = index; i < mOpenCodeCount - 1; ++i)
     {
-        ED_ASSERT(i < MAX_OPENED_SHADERS);
-        mOpenedShaders[i] = mOpenedShaders[i + 1];
+        ED_ASSERT(i < MAX_OPENED_CODES);
+        mOpenedCodes[i] = mOpenedCodes[i + 1];
         
     }
-    --mOpenShaderCount;
+    --mOpenCodeCount;
     mUi.mTabWidget->removeTab(index);
 }
 
-void ShaderEditorWidget::OnTextChanged(QWidget * sender)
+void CodeEditorWidget::OnTextChanged(QWidget * sender)
 {
     //do not trigger a text update event if the syntax highlighter rehighlights
     if (mInternalBlockTextUpdated)
         return;
 
-    ShaderTextEditorWidget * textEditor = static_cast<ShaderTextEditorWidget*>(sender);
+    CodeTextEditorWidget * textEditor = static_cast<CodeTextEditorWidget*>(sender);
     int id = FindIndex(textEditor);
     if (id != -1)
     {
 
-        CompileShader(id);
+        CompileCode(id);
         //we are reducing here the number of accesses to the mutex
       
     }
 }
 
-void ShaderEditorWidget::OnTextWindowSelected(QWidget * sender)
+void CodeEditorWidget::OnTextWindowSelected(QWidget * sender)
 {
-    ShaderTextEditorWidget * textEditor = static_cast<ShaderTextEditorWidget*>(sender);
+    CodeTextEditorWidget * textEditor = static_cast<CodeTextEditorWidget*>(sender);
     if (textEditor != nullptr)
     {
-        Pegasus::Shader::IShaderProxy * shader = textEditor->GetShader();
-        if (shader != nullptr)
+        Pegasus::Core::ISourceCodeProxy * code = textEditor->GetCode();
+        if (code != nullptr)
         {
-            int i = FindIndex(shader);
+            int i = FindIndex(code);
             if (i >= 0 && i < mUi.mTabWidget->count() && i != mUi.mTabWidget->currentIndex())
             {
                 mUi.mTabWidget->setCurrentIndex(i);
@@ -416,20 +418,20 @@ void ShaderEditorWidget::OnTextWindowSelected(QWidget * sender)
     }
 }
 
-void ShaderEditorWidget::CompileShader(int id)
+void CodeEditorWidget::CompileCode(int id)
 {
     // The following snippet is meant to optimize this set of functions:
     //if (!AsyncHasCompilationRequestPending()) 
     //{
     //    AsyncSetCompilationRequestPending();
-    //    emit(RequestShaderCompilation(id));
+    //    emit(RequestCodeCompilation(id));
     //}
     mCompilationRequestMutex->lock(); 
     if (!mCompilationRequestPending)
     {
         mCompilationRequestPending = true;            
         mCompilationRequestMutex->unlock();
-        emit(RequestShaderCompilation(id));
+        emit(RequestCodeCompilation(id));
     }
     else
     {
@@ -437,42 +439,42 @@ void ShaderEditorWidget::CompileShader(int id)
     }
 }
 
-void ShaderEditorWidget::RequestOpen(Pegasus::Shader::IShaderProxy * shaderProxy)
+void CodeEditorWidget::RequestOpen(Pegasus::Core::ISourceCodeProxy * codeProxy)
 {
-    int currentTabIndex = FindIndex(shaderProxy);
+    int currentTabIndex = FindIndex(codeProxy);
     if (currentTabIndex == -1)
     {
-        if (mOpenShaderCount >= MAX_OPENED_SHADERS)
+        if (mOpenCodeCount >= MAX_OPENED_CODES)
         {
-            ED_LOG("Maximum number of opened shaders reached!");
+            ED_LOG("Maximum number of opened codes reached!");
         }
         else
         {
-            //try to find and focus the previous shader selected.
-            //this will make the shader selected appear in the screen.
+            //try to find and focus the previous code selected.
+            //this will make the code selected appear in the screen.
             currentTabIndex = mUi.mTabWidget->count();
 
             //  pattern must be appending to the end
-            ED_ASSERT(currentTabIndex == mOpenShaderCount);
-            mOpenedShaders[currentTabIndex] = shaderProxy;
-            ++mOpenShaderCount;
+            ED_ASSERT(currentTabIndex == mOpenCodeCount);
+            mOpenedCodes[currentTabIndex] = codeProxy;
+            ++mOpenCodeCount;
 
             //is this opened already in the pool?
-            mUi.mTabWidget->addTab(QString(shaderProxy->GetName()));
+            mUi.mTabWidget->addTab(QString(codeProxy->GetName()));
 
         }
     }
     mUi.mTabWidget->setCurrentIndex(currentTabIndex); 
     if (currentTabIndex == mUi.mTabWidget->currentIndex())
     {
-        SignalViewShader(currentTabIndex);
+        SignalViewCode(currentTabIndex);
     }
 }
 
-void ShaderEditorWidget::UpdateUIForAppFinished()
+void CodeEditorWidget::UpdateUIForAppFinished()
 {
-    //compress the opened shader list
-    while (mOpenShaderCount > 0)
+    //compress the opened code list
+    while (mOpenCodeCount > 0)
     {
         RequestClose(0);
     }

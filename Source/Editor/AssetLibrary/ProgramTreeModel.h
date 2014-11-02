@@ -108,7 +108,7 @@ private:
     //! \return the icon data from the program or shader passed in index
     QIcon ProgramTreeModel::GetIconFromIndex(const QModelIndex& index) const;
 
-    //! miscelaneous icons and the invaluable shader manager proxy
+    //! miscelaneous icons and the invaluable code manager proxy
     QIcon mWorkingIcon;
     QIcon mWarningIcon;
     Pegasus::Shader::IShaderManagerProxy * mShaderManager;

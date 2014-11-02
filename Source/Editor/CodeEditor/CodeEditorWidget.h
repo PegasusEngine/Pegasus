@@ -4,20 +4,20 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	ShaderEditorWidget.h
+//! \file	CodeEditorWidget.h
 //! \author	Kleber Garcia
 //! \date	30th Match 2014
-//! \brief	Shader Editor IDE
+//! \brief	Code Editor IDE
 
-#ifndef EDITOR_SHADEREDITORWIDGET_H
-#define EDITOR_SHADEREDITORWIDGET_H
+#ifndef EDITOR_CODEEDITORWIDGET_H
+#define EDITOR_CODEEDITORWIDGET_H
 
 #include <QDockWidget>
-#include "ShaderLibrary/ShaderTextEditorTreeWidget.h"
+#include "CodeEditor/CodeTextEditorTreeWidget.h"
 
 namespace Pegasus {
-    namespace Shader {
-        class IShaderProxy;
+    namespace Core {
+        class ISourceCodeProxy;
     }
 }
 
@@ -29,21 +29,21 @@ class QSignalMapper;
 class QMutex;
 class QAction;
 class QTab;
-class ShaderTextEditorTreeWidget;
-class ShaderTextEditorWidget;
+class CodeTextEditorTreeWidget;
+class CodeTextEditorWidget;
 
-//! Graphics Widget meant for shader text editing
-class ShaderEditorWidget : public QDockWidget
+//! Graphics Widget meant for code text editing
+class CodeEditorWidget : public QDockWidget
 {
     Q_OBJECT
 
 public:
-    explicit ShaderEditorWidget(QWidget * parent);
-    virtual ~ShaderEditorWidget();
+    explicit CodeEditorWidget(QWidget * parent);
+    virtual ~CodeEditorWidget();
 
-    //! opens a shader proxy in the text editor
-    //! \param shaderProxy the shader to open
-    void RequestOpen(Pegasus::Shader::IShaderProxy * shaderProxy);
+    //! opens a ISourceCodeProxy in the text editor
+    //! \param ISourceCodeProxy the code to open
+    void RequestOpen(Pegasus::Core::ISourceCodeProxy * shaderProxy);
 
     //! called whenever settings have been changed
     void OnSettingsChanged();
@@ -54,25 +54,25 @@ public:
     //! Sets a pending compilation request has been sent and is on its way to be cleard
     void AsyncSetCompilationRequestPending();
     
-    //! Clears the compilation request and flushes the internal text of a shader tab
-    //! into the internal shader source container
-    //! \param id of the shader editor to flush
-    void FlushShaderTextEditorToShader(int id);
+    //! Clears the compilation request and flushes the internal text of a code tab
+    //! into the internal code source container
+    //! \param id of the code editor to flush
+    void FlushTextEditorToCode(int id);
 
-    //! Called when a shader compilation status has been changed
-    //! \param shader that has been updated
-    void ShaderUIChanged(Pegasus::Shader::IShaderProxy * shader);
+    //! Called when a code compilation status has been changed
+    //! \param code that has been updated
+    void CodeUIChanged(Pegasus::Core::ISourceCodeProxy * code);
 
-    //! Requests a shaders to compile
+    //! Requests a code to compile
     //! \param the id of the editor (tab id). If the id is -1, then all programs are queried for compilaton
-    void CompileShader(int id);
+    void CompileCode(int id);
 
 signals:
-    void RequestShaderCompilation(int id);
+    void RequestCodeCompilation(int id);
 
 private slots:
-    //! slot to be called when a shader wants to be closed.
-    //! \param index index of shader to close
+    //! slot to be called when a code wants to be closed.
+    //! \param index code to close
     void RequestClose(int index);
 
     //! slot called whenever a tab changes its text.
@@ -84,10 +84,10 @@ private slots:
     void OnTextWindowSelected(QWidget *);
 
     //! signals a compilation error.
-    //! \param the shader reference to set the compilation error
-    //! \param the line number that such shader failed at
+    //! \param the code reference to set the compilation error
+    //! \param the line number that such code failed at
     //! \param the error message string of the failed compilation
-    void SignalCompilationError(void* shader, int line, QString errorString);
+    void SignalCompilationError(void* code, int line, QString errorString);
 
     //! signal triggered when a linking event has occured
     //! \param the program that triggered this event
@@ -96,8 +96,8 @@ private slots:
     void SignalLinkingEvent(void* program, QString message, int eventType);
 
     //! signals the begining of a compilation request. Used to set UI states and clear stuff 
-    //! \param the shader pointer
-    void SignalCompilationBegin(void* shader);
+    //! \param the code pointer
+    void SignalCompilationBegin(void* code);
 
     //! signals the end of a compilation request. Used to display any compilation error in the status bar
     void SignalCompilationEnd(QString log);
@@ -106,7 +106,7 @@ private slots:
     void SignalPinActionTriggered(); 
 
     //! signal triggered when the user clicks on the save button
-    void SignalSaveCurrentShader();
+    void SignalSaveCurrentCode();
 
     //! signal triggered when a file save has ended successfuly
     void SignalSavedFileSuccess();
@@ -115,8 +115,8 @@ private slots:
     void SignalSavedFileIoError(int ioError, QString msg);
 
     //! signal triggered when the user clicks on a tab in the tab bar.
-    //! selects and visualizes a shader for opening
-    void SignalViewShader(int tabId);
+    //! selects and visualizes a Code for opening
+    void SignalViewCode(int tabId);
 
     //! signal to update the UI for the editor once the app is finished
     void UpdateUIForAppFinished();
@@ -127,16 +127,16 @@ private:
     //! request a syntax highlight update for a particular line
     //! \param the id of the text editor
     //! \param the line number to update
-    void UpdateSyntaxForLine(ShaderTextEditorWidget * editor, int line);
+    void UpdateSyntaxForLine(CodeTextEditorWidget * editor, int line);
 
     //! sets the ui. To be used internally
     void SetupUi();
 
-    //! finds the index of a particular shader
-    int  FindIndex(Pegasus::Shader::IShaderProxy * target);
+    //! finds the index of a particular Code
+    int  FindIndex(Pegasus::Core::ISourceCodeProxy * target);
 
     //! finds the index of a particular text edit
-    int  FindIndex(ShaderTextEditorWidget * target);
+    int  FindIndex(CodeTextEditorWidget * target);
 
     //! Sets the status bar message
     void PostStatusBarMessage(const QString& string);
@@ -144,18 +144,18 @@ private:
     //! ui component pool
     struct Ui
     {
-        ShaderTextEditorTreeWidget::SignalCombination mTextEditorSignals;
+        CodeTextEditorTreeWidget::SignalCombination mTextEditorSignals;
         QString       mStatusBarMessage;
         QStatusBar * mStatusBar; 
         QVBoxLayout * mMainLayout; //! the main layout of the text editor
         QTabBar     * mTabWidget;
-        ShaderTextEditorTreeWidget * mTreeEditor;
+        CodeTextEditorTreeWidget * mTreeEditor;
     } mUi;
 
-    //! maximum number of shader tabs to have open
-    static const int MAX_OPENED_SHADERS = 50;
-    Pegasus::Shader::IShaderProxy * mOpenedShaders[MAX_OPENED_SHADERS];
-    int mOpenShaderCount;
+    //! maximum number of Code tabs to have open
+    static const int MAX_OPENED_CODES = 50;
+    Pegasus::Core::ISourceCodeProxy * mOpenedCodes[MAX_OPENED_CODES];
+    int mOpenCodeCount;
 
     //! poitns to the id of the previous tab index.
     int mPreviousTabIndex;

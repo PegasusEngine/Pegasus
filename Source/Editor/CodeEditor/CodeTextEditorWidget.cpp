@@ -4,13 +4,13 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	ShaderTextEditorWidget.h
+//! \file	CodeTextEditorWidget.h
 //! \author	Kleber Garcia
 //! \date	22nd April 2014
-//! \brief	Graphics widget representing a single shader text editor
-#include "ShaderLibrary/ShaderTextEditorWidget.h"
-#include "ShaderLibrary/ShaderManagerEventListener.h"
-#include "Pegasus/Shader/Shared/IShaderProxy.h"
+//! \brief	Graphics widget representing a single source code text editor
+#include "CodeEditor/CodeTextEditorWidget.h"
+#include "CodeEditor/SourceCodeManagerEventListener.h"
+#include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Version.h"
 #include "Application/Application.h"
@@ -28,17 +28,17 @@
 
 
 //! internal class serving as the syntax highlighter for shade code
-class ShaderSyntaxHighlighter : public QSyntaxHighlighter
+class CodeSyntaxHighlighter : public QSyntaxHighlighter
 {
 public:
-    ShaderSyntaxHighlighter(QTextDocument * parent)
-    : QSyntaxHighlighter(parent), mSignalSyntaxError(false), mShaderUserData(nullptr)
+    CodeSyntaxHighlighter(QTextDocument * parent)
+    : QSyntaxHighlighter(parent), mSignalSyntaxError(false), mCodeUserData(nullptr)
     {
     }
 
-    virtual ~ShaderSyntaxHighlighter() {}
+    virtual ~CodeSyntaxHighlighter() {}
 
-    void SetShaderUserData(const ShaderUserData * shaderUserData) { mShaderUserData = shaderUserData;}
+    void SetCodeUserData(const CodeUserData * codeUserData) { mCodeUserData = codeUserData;}
 
     void SetSyntaxLanguage(Pegasus::PegasusDesc::GapiType gapi)
     {
@@ -149,13 +149,13 @@ protected:
     
     bool mWrongLines;
     bool mSignalSyntaxError;
-    const ShaderUserData * mShaderUserData;
+    const CodeUserData * mCodeUserData;
 
     //! sets the formats for comments
     void SetCCommentStyle(int start, int end, Settings * settings)
     {
         QTextCharFormat f;
-        f.setForeground(settings->GetShaderSyntaxColor(Settings::SYNTAX_C_COMMENT));
+        f.setForeground(settings->GetCodeSyntaxColor(Settings::SYNTAX_C_COMMENT));
         if (mSignalSyntaxError) f.setUnderlineStyle(QTextCharFormat::WaveUnderline);
         setFormat(start, end, f);
     }
@@ -164,7 +164,7 @@ protected:
     void SetCPPCommentStyle(int start, int end, Settings * settings)
     {
         QTextCharFormat f;
-        f.setForeground(settings->GetShaderSyntaxColor(Settings::SYNTAX_CPP_COMMENT));
+        f.setForeground(settings->GetCodeSyntaxColor(Settings::SYNTAX_CPP_COMMENT));
         if (mSignalSyntaxError) f.setUnderlineStyle(QTextCharFormat::WaveUnderline);
         setFormat(start, end, f);
     }
@@ -173,7 +173,7 @@ protected:
     void SetNormalStyle(int start, int end, Settings * settings)
     {
         QTextCharFormat f;
-        f.setForeground(settings->GetShaderSyntaxColor(Settings::SYNTAX_NORMAL_TEXT));
+        f.setForeground(settings->GetCodeSyntaxColor(Settings::SYNTAX_NORMAL_TEXT));
         if (mSignalSyntaxError) f.setUnderlineStyle(QTextCharFormat::WaveUnderline);
         setFormat(start, end, f);
     }
@@ -193,7 +193,7 @@ protected:
         int start = 0;
         bool isCommentLine = false;
 
-        mSignalSyntaxError = mShaderUserData == nullptr ? false : mShaderUserData->IsInvalidLine(currentBlock().firstLineNumber()+1);
+        mSignalSyntaxError = mCodeUserData == nullptr ? false : mCodeUserData->IsInvalidLine(currentBlock().firstLineNumber()+1);
 
         // for every character
         for (int i = 0; i < text.length(); ++i)
@@ -251,9 +251,9 @@ protected:
                     {
                         start = index + length;
                     }
-                    Settings::ShaderEditorSyntaxStyle style = i == 0 ? Settings::SYNTAX_NUMBER_VALUE : Settings::SYNTAX_KEYWORD;
+                    Settings::CodeEditorSyntaxStyle style = i == 0 ? Settings::SYNTAX_NUMBER_VALUE : Settings::SYNTAX_KEYWORD;
                     QTextCharFormat f;
-                    f.setForeground(settings->GetShaderSyntaxColor(style));
+                    f.setForeground(settings->GetCodeSyntaxColor(style));
                     if (mSignalSyntaxError) f.setUnderlineStyle(QTextCharFormat::WaveUnderline);
                     setFormat(index, length, f);
                     index = pattern.indexIn(text, index + length);
@@ -270,24 +270,24 @@ protected:
     
 };
 
-ShaderTextEditorWidget::ShaderTextEditorWidget(QWidget * parent)
-: QTextEdit(parent), mShader(nullptr), mIsFocus(false)
+CodeTextEditorWidget::CodeTextEditorWidget(QWidget * parent)
+: QTextEdit(parent), mCode(nullptr), mIsFocus(false)
 {
-    mSyntaxHighlighter = new ShaderSyntaxHighlighter(document());
+    mSyntaxHighlighter = new CodeSyntaxHighlighter(document());
 }
 
 
-ShaderTextEditorWidget::~ShaderTextEditorWidget()
+CodeTextEditorWidget::~CodeTextEditorWidget()
 {
     delete mSyntaxHighlighter;
 }
 
-void ShaderTextEditorWidget::Initialize(Pegasus::Shader::IShaderProxy * shader)
+void CodeTextEditorWidget::Initialize(Pegasus::Core::ISourceCodeProxy * code)
 {
-    mShader = shader;
-    if (shader != nullptr)
+    mCode = code;
+    if (code != nullptr)
     {
-        static_cast<ShaderSyntaxHighlighter*>(mSyntaxHighlighter)->SetShaderUserData(static_cast<ShaderUserData*>(shader->GetUserData()));
+        static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetCodeUserData(static_cast<CodeUserData*>(code->GetUserData()));
         Application * application = Editor::GetInstance().GetApplicationManager().GetApplication();
         Pegasus::App::IApplicationProxy * app = application->GetApplicationProxy();
         Pegasus::PegasusDesc::GapiType gapi = Pegasus::PegasusDesc::OPEN_GL;
@@ -301,12 +301,12 @@ void ShaderTextEditorWidget::Initialize(Pegasus::Shader::IShaderProxy * shader)
         {
             ED_FAILSTR("No Gapi defined!");
         }
-        static_cast<ShaderSyntaxHighlighter*>(mSyntaxHighlighter)->SetSyntaxLanguage(gapi);
+        static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetSyntaxLanguage(gapi);
 
         //set the text of the current text editor
         const char * srcChar = nullptr;
         int srcSize = 0;
-        shader->GetSource(&srcChar, srcSize);
+        code->GetSource(&srcChar, srcSize);
         QChar * qchar = new QChar[srcSize];
         for (int i = 0; i < srcSize; ++i)
         {
@@ -321,19 +321,19 @@ void ShaderTextEditorWidget::Initialize(Pegasus::Shader::IShaderProxy * shader)
     }
     else
     {
-        static_cast<ShaderSyntaxHighlighter*>(mSyntaxHighlighter)->SetShaderUserData(nullptr);
+        static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetCodeUserData(nullptr);
         setText(tr(""));
     }
 }
 
-void ShaderTextEditorWidget::Uninitialize()
+void CodeTextEditorWidget::Uninitialize()
 {
-    mShader = nullptr;
-    static_cast<ShaderSyntaxHighlighter*>(mSyntaxHighlighter)->SetShaderUserData(nullptr);
+    mCode = nullptr;
+    static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetCodeUserData(nullptr);
     
 }
 
-void ShaderTextEditorWidget::UpdateLineSyntax(int line)
+void CodeTextEditorWidget::UpdateLineSyntax(int line)
 {
     QTextDocument * doc = document();
     int lineId = line - 1;
@@ -344,14 +344,14 @@ void ShaderTextEditorWidget::UpdateLineSyntax(int line)
     }
 }
 
-void ShaderTextEditorWidget::UpdateAllDocumentSyntax()
+void CodeTextEditorWidget::UpdateAllDocumentSyntax()
 {
     
     QPalette p = palette();
-    p.setColor(QPalette::Base, Editor::GetInstance().GetSettings()->GetShaderSyntaxColor(Settings::SYNTAX_BACKGROUND));
-    p.setColor(QPalette::Text, Editor::GetInstance().GetSettings()->GetShaderSyntaxColor(Settings::SYNTAX_NORMAL_TEXT));
-    int fontSize = Editor::GetInstance().GetSettings()->GetShaderEditorFontSize();
-    int tabStop  = Editor::GetInstance().GetSettings()->GetShaderEditorTabSize();
+    p.setColor(QPalette::Base, Editor::GetInstance().GetSettings()->GetCodeSyntaxColor(Settings::SYNTAX_BACKGROUND));
+    p.setColor(QPalette::Text, Editor::GetInstance().GetSettings()->GetCodeSyntaxColor(Settings::SYNTAX_NORMAL_TEXT));
+    int fontSize = Editor::GetInstance().GetSettings()->GetCodeEditorFontSize();
+    int tabStop  = Editor::GetInstance().GetSettings()->GetCodeEditorTabSize();
 
     QFont f("Courier");
     f.setPointSize(fontSize);
@@ -365,16 +365,16 @@ void ShaderTextEditorWidget::UpdateAllDocumentSyntax()
     mSyntaxHighlighter->rehighlight();
 }
 
-bool ShaderTextEditorWidget::event(QEvent * e)
+bool CodeTextEditorWidget::event(QEvent * e)
 {
     if (e->type() == QEvent::ToolTip)
     {
-        if (mShader != nullptr)
+        if (mCode != nullptr)
         {
-            ShaderUserData * shaderUserData = static_cast<ShaderUserData*>(mShader->GetUserData()); 
-            if (shaderUserData != nullptr)
+            CodeUserData * codeUserData = static_cast<CodeUserData*>(mCode->GetUserData()); 
+            if (codeUserData != nullptr)
             {
-                QMap<int, QString>& messageMap = shaderUserData->GetMessageMap();
+                QMap<int, QString>& messageMap = codeUserData->GetMessageMap();
                 QHelpEvent * helpEvent = static_cast<QHelpEvent*>(e);
                 const QPoint& pos = helpEvent->pos();
                 QTextCursor cursor = cursorForPosition(pos);
@@ -390,27 +390,27 @@ bool ShaderTextEditorWidget::event(QEvent * e)
     return QTextEdit::event(e);
 }
 
-void ShaderTextEditorWidget::focusInEvent(QFocusEvent * e)
+void CodeTextEditorWidget::focusInEvent(QFocusEvent * e)
 {
     mIsFocus = true;
     QTextEdit::focusInEvent(e);
     emit(SignalSelected());
 }
 
-void ShaderTextEditorWidget::focusOutEvent(QFocusEvent * e)
+void CodeTextEditorWidget::focusOutEvent(QFocusEvent * e)
 {
     mIsFocus = false;
     QTextEdit::focusOutEvent(e);
 }
 
-void ShaderTextEditorWidget::FlushTextToShader()
+void CodeTextEditorWidget::FlushTextToCode()
 {
-    if (mShader != nullptr)
+    if (mCode != nullptr)
     {
         QString qs = toPlainText();
         QByteArray arr = qs.toLocal8Bit();
         const char * source = arr.data();
         int sourceSize = qs.size();
-        mShader->SetSource(source, sourceSize);
+        mCode->SetSource(source, sourceSize);
     }
 }

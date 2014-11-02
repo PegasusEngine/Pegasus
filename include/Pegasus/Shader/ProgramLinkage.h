@@ -15,6 +15,14 @@
 #include "Pegasus/Shader/ShaderStage.h"
 #include "Pegasus/Shader/Proxy/ProgramProxy.h"
 
+namespace Pegasus {
+    namespace Core {
+        namespace CompilerEvents {
+            class ICompilerEventListener;
+        }
+    }
+}
+
 namespace Pegasus
 {
 namespace Shader
@@ -36,7 +44,7 @@ class ProgramLinkage : public Pegasus::Graph::OperatorNode
     friend class ProgramProxy;
 #endif
     
-    GRAPH_EVENT_DECLARE_DISPATCHER(IShaderEventListener)
+    GRAPH_EVENT_DECLARE_DISPATCHER(Pegasus::Core::CompilerEvents::ICompilerEventListener)
 
 public:
 

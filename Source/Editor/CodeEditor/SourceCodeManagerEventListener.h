@@ -3,51 +3,62 @@
 /*                                       Pegasus                                        */
 /*                                                                                      */
 /****************************************************************************************/
-//! \file   ShaderManagerEventListener.h
+//! \file   SourceCodeManagerEventListener.h
 //! \author Kleber Garcia
 //! \date   4rth April 2014
-//! \brief  Pegasus Shader Manager Event Listener	
+//! \brief  Pegasus Source Code Manager Event Listener	
 
-#include "Pegasus/Shader/Shared/ShaderEvent.h"
-#include "Pegasus/Shader/Shared/IShaderProxy.h"
+#include "Pegasus/Core/Shared/CompilerEvents.h"
+#include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
 #include <QObject>
 #include <QSet>
 #include <QMap>
 
-#ifndef EDITOR_SHADERMANAGEREVENTLISTENER_H
-#define EDITOR_SHADERMANAGEREVENTLISTENER_H
+#ifndef EDITOR_CODEMANAGEREVENTLISTENER_H
+#define EDITOR_CODEMANAGEREVENTLISTENER_H
 
-class ShaderLibraryWidget;
+class AssetLibraryWidget;
 
-//! User interface state user data for shaders
-class ShaderUserData : public Pegasus::Graph::IGraphUserData
+//! User interface state user data for code
+class CodeUserData : public Pegasus::Graph::IGraphUserData
 {
 public:
     //! constructor
-    //! \param parent shader
-    explicit ShaderUserData(Pegasus::Shader::IShaderProxy * shader);
+    //! \param parent code
+    explicit CodeUserData(Pegasus::Core::ISourceCodeProxy * codeProxy);
+
+    //! constructor
+    //! \param parent code
+    explicit CodeUserData(Pegasus::Shader::IProgramProxy * programProxy);
 
     //! destructor
-    virtual ~ShaderUserData(){}
+    virtual ~CodeUserData(){}
 
-    //! gets the shader that owns this user data
-    //! \return the shader returned
-    Pegasus::Shader::IShaderProxy * GetShader() const { return mShader; }
+    //! gets the code that owns this user data
+    //! \return the code
+    Pegasus::Core::ISourceCodeProxy * GetSourceCode() const { return mData.mSourceCode; }
 
-    //! sets wether this is a valid shader or an invalid (compilation or loading error)
+    //! gets the program that owns this user data
+    //! \return the program
+    Pegasus::Shader::IProgramProxy * GetProgram() const { return mData.mProgram; }
+
+    //! true if this holds a program, false if it holds a source code
+    bool IsProgram() const { return mIsProgram; }
+
+    //! sets wether this is a valid code or an invalid (compilation or loading error)
     //! \param the value set
     void SetIsValid(bool value) { mIsValid = value; }
 
-    //! whether a shader is valid or not
-    //! \return validity return value: true if shader runs, false if its errord
+    //! whether a code is valid or not
+    //! \return validity return value: true if code runs, false if its errord
     bool IsValid() const { return mIsValid; }
 
-    //! clears all the invalid lines regustered in the shader
+    //! clears all the invalid lines regustered in the code
     void ClearInvalidLines() { mInvalidLinesSet.clear(); mMessagesMap.clear(); }
 
     //TODO: mix these two into the same data structure
-    //! invalidates a line in the shader
+    //! invalidates a line in the code
     //! \param line to tag as invalid for syntax highlighing and presentation
     void InvalidateLine(int line) { mInvalidLinesSet.insert(line); }
     
@@ -67,74 +78,54 @@ public:
     //! \return gets the map with lines & messages to display in case of compilation errors
     QMap<int, QString>& GetMessageMap() { return mMessagesMap; }
 
-private:
-    Pegasus::Shader::IShaderProxy * mShader;
-    bool mIsValid;
-    QSet<int> mInvalidLinesSet;
-    QMap<int, QString> mMessagesMap;
-    
-};
-
-//! User interface state user data for shader programs
-class ProgramUserData : public Pegasus::Graph::IGraphUserData
-{
-public:
-    //! constructor
-    //! \param owner program of this user data
-    explicit ProgramUserData(Pegasus::Shader::IProgramProxy * program);
-
-    //! destructor
-    virtual ~ProgramUserData(){}
-
-    //! gets the owner program of this user data
-    //! \param the program that has this user data
-    Pegasus::Shader::IProgramProxy * GetProgram() const { return mProgram; }
-
-    //! checks wether this program is valid or invalid
-    //! \param true if this program can run, false otherwise
-    bool IsValid() const { return mIsValid; }
-
     //! gets the error message that this program has
     //! \return the last error message that this program had (in case of linking errors)
     const QString& GetErrorMessage() const { return mErrorMessage; }
 
-    //! sets validity of program
-    //! \param determines if this is a valid program
-    void SetIsValid(bool valid) { mIsValid = valid; }
+    //! Sets an error message to be carried. 
     void SetErrorMessage(const QString& message) { mErrorMessage = message; }
+
 private:
-    Pegasus::Shader::IProgramProxy * mProgram;
     bool mIsValid;
+    QSet<int> mInvalidLinesSet;
+    QMap<int, QString> mMessagesMap;
     QString mErrorMessage;
+    bool mIsProgram;
+    
+    union {
+        Pegasus::Shader::IProgramProxy* mProgram;
+        Pegasus::Core::ISourceCodeProxy* mSourceCode;
+    } mData;
+    
 };
 
-//! event listener bridge, which implements the app's shader compiler event listener
+//! event listener bridge, which implements the app's code compiler event listener
 //! this class serves as a bridge across the app and the user interface to present data
 //! all the signals of this app must be queued connections, and no state should be set within
 //! these event callbacks
 //! this event must be pushed before the application loads any data
-class ShaderManagerEventListener : public QObject, public Pegasus::Shader::IShaderEventListener 
+class SourceCodeManagerEventListener : public QObject, public Pegasus::Core::CompilerEvents::ICompilerEventListener
 {
     Q_OBJECT;
 
 public:
-    explicit ShaderManagerEventListener(ShaderLibraryWidget * widget);
-    virtual ~ShaderManagerEventListener();
+    explicit SourceCodeManagerEventListener(AssetLibraryWidget * widget);
+    virtual ~SourceCodeManagerEventListener();
 
     //! Dispatch event callback on a compilation event
-    virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Shader::CompilationEvent& e);
+    virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::CompilationEvent& e);
 
     //! Dispatch event callback on a linker event
-    virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Shader::LinkingEvent& e);
+    virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::LinkingEvent& e);
 
     //! Dispatch event callback on a file operation event
-    virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Shader::FileOperationEvent& e);
+    virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::FileOperationEvent& e);
 
     //! Dispatch event callback on a loading event
-    virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Shader::ShaderLoadedEvent& e);
+    virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::SourceLoadedEvent& e);
 
     //! Dispatch event callback on a compilation notification event
-    virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Shader::CompilationNotification& e);
+    virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::CompilationNotification& e);
 
 signals:
     //! triggered when any compilation state changes. Use a queued connection
@@ -142,16 +133,16 @@ signals:
 
     //! triggered when any compilation error is posted. This event can be triggered
     //! several times during the same compilation
-    void OnCompilationError(void* shaderPointer, int row, QString message);
+    void OnCompilationError(void* code, int row, QString message);
 
     //! triggered when compilation begins
-    void OnCompilationBegin(void* shaderPointer);
+    void OnCompilationBegin(void* code);
 
     //! triggered when compilation ends, posts the log string
     void OnCompilationEnd(QString log);
     
     //! triggered when a linking event occurs (error, warning or an actual positive linking)
-    void OnLinkingEvent(void* shaderPointer, QString message, int messageType);
+    void OnLinkingEvent(void* code, QString message, int messageType);
 
     //! triggered when a file has been saved successfully
     void OnSignalSaveSuccess();
@@ -160,7 +151,7 @@ signals:
     void OnSignalSavedFileError(int ioError, QString msg);
 
 private:
-    ShaderLibraryWidget * mLibraryWidget;
+    AssetLibraryWidget * mLibraryWidget;
 
 };
 

@@ -4,25 +4,25 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   ShaderTextEditorTreeWidget.cpp
+//! \file   CodeTextEditorTreeWidget.cpp
 //! \author	Kleber Garcia
 //! \date	July 6th, 2014
-//! \brief	Shader Editor Tree of views. Allows recursive subdivision of views
+//! \brief	Code Editor Tree of views. Allows recursive subdivision of views
 
-#include "ShaderLibrary/ShaderTextEditorTreeWidget.h"
-#include "ShaderLibrary/ShaderTextEditorWidget.h"
+#include "CodeEditor/CodeTextEditorTreeWidget.h"
+#include "CodeEditor/CodeTextEditorWidget.h"
 #include <QSplitter>
 #include <QHBoxLayout>
 #include <QPushButton>
 
 
-void ShaderTextEditorTreeWidget::SignalCombination::Initialize(QSignalMapper * textChanged, QSignalMapper * selected)
+void CodeTextEditorTreeWidget::SignalCombination::Initialize(QSignalMapper * textChanged, QSignalMapper * selected)
 {
     mTextChangedMapper = textChanged;
     mSelectedSignalMapper = selected;
 }
 
-void ShaderTextEditorTreeWidget::SignalCombination::Bind(ShaderTextEditorWidget * editor)
+void CodeTextEditorTreeWidget::SignalCombination::Bind(CodeTextEditorWidget * editor)
 {
     mTextChangedMapper->setMapping(editor, static_cast<QWidget*>(editor));
     connect ( editor, SIGNAL(textChanged()),
@@ -34,7 +34,7 @@ void ShaderTextEditorTreeWidget::SignalCombination::Bind(ShaderTextEditorWidget 
 
 }
 
-void ShaderTextEditorTreeWidget::SignalCombination::Unbind(ShaderTextEditorWidget * editor)
+void CodeTextEditorTreeWidget::SignalCombination::Unbind(CodeTextEditorWidget * editor)
 {
     disconnect ( editor, SIGNAL(textChanged()),
              mTextChangedMapper, SLOT(map()) );
@@ -45,8 +45,8 @@ void ShaderTextEditorTreeWidget::SignalCombination::Unbind(ShaderTextEditorWidge
     mSelectedSignalMapper->removeMappings(editor);
 }
 
-ShaderTextEditorTreeWidget::ShaderTextEditorTreeWidget(
-    ShaderTextEditorTreeWidget::SignalCombination& signalCombo,
+CodeTextEditorTreeWidget::CodeTextEditorTreeWidget(
+    CodeTextEditorTreeWidget::SignalCombination& signalCombo,
     Qt::Orientation orientation, 
     QWidget * parent
 )
@@ -56,8 +56,8 @@ ShaderTextEditorTreeWidget::ShaderTextEditorTreeWidget(
     PushLeafChild();
 }
 
-ShaderTextEditorTreeWidget::ShaderTextEditorTreeWidget(
-    ShaderTextEditorTreeWidget::SignalCombination& signalCombo,
+CodeTextEditorTreeWidget::CodeTextEditorTreeWidget(
+    CodeTextEditorTreeWidget::SignalCombination& signalCombo,
     QWidget * parent
 )
 : QSplitter(Qt::Vertical, parent), mOrientation(Qt::Vertical), mChildrenCount(0)
@@ -66,11 +66,11 @@ ShaderTextEditorTreeWidget::ShaderTextEditorTreeWidget(
     PushLeafChild();
 }
 
-ShaderTextEditorTreeWidget::~ShaderTextEditorTreeWidget()
+CodeTextEditorTreeWidget::~CodeTextEditorTreeWidget()
 {
 }
 
-void ShaderTextEditorTreeWidget::ForceUpdateAllStyles()
+void CodeTextEditorTreeWidget::ForceUpdateAllStyles()
 {
     for (int i = 0; i < mChildrenCount; ++i)
     {
@@ -85,7 +85,7 @@ void ShaderTextEditorTreeWidget::ForceUpdateAllStyles()
     }
 }
 
-void ShaderTextEditorTreeWidget::InternalSplit(int childIndex, Qt::Orientation orientation)
+void CodeTextEditorTreeWidget::InternalSplit(int childIndex, Qt::Orientation orientation)
 {
     if (orientation == mOrientation)
     {
@@ -100,11 +100,11 @@ void ShaderTextEditorTreeWidget::InternalSplit(int childIndex, Qt::Orientation o
     {
         //remove the current child
         ED_ASSERT(mChildren[childIndex].mIsLeaf);
-        ShaderTextEditorWidget * oldWidget = mChildren[childIndex].mLeafChild;
+        CodeTextEditorWidget * oldWidget = mChildren[childIndex].mLeafChild;
 
         //replace with a new tree
         mChildren[childIndex].mIsLeaf = false;
-        mChildren[childIndex].mTreeChild = new ShaderTextEditorTreeWidget(mSignalCombo, orientation, this);
+        mChildren[childIndex].mTreeChild = new CodeTextEditorTreeWidget(mSignalCombo, orientation, this);
         mChildren[childIndex].mTreeChild->ForceUpdateAllStyles();
 
         insertWidget(childIndex, mChildren[childIndex].mTreeChild);
@@ -114,17 +114,17 @@ void ShaderTextEditorTreeWidget::InternalSplit(int childIndex, Qt::Orientation o
     }
 }
 
-bool ShaderTextEditorTreeWidget::RecurseSplit(Qt::Orientation orientation)
+bool CodeTextEditorTreeWidget::RecurseSplit(Qt::Orientation orientation)
 {
     //do we have within our children a selected view?    
     for (int i = 0; i < mChildrenCount; ++i)
     {
-        ShaderTextEditorTreeWidget::Child& child = mChildren[i];
+        CodeTextEditorTreeWidget::Child& child = mChildren[i];
         if (child.mIsLeaf)
         {
             if (child.mLeafChild->IsFocus())
             {
-                ShaderTextEditorWidget * cachedLeaf = child.mLeafChild;
+                CodeTextEditorWidget * cachedLeaf = child.mLeafChild;
                 InternalSplit(i, orientation);
                 cachedLeaf->setFocus();//refocus this widget
                 return true;
@@ -141,7 +141,7 @@ bool ShaderTextEditorTreeWidget::RecurseSplit(Qt::Orientation orientation)
     return false;
 }
 
-void ShaderTextEditorTreeWidget::RemoveChild(int i)
+void CodeTextEditorTreeWidget::RemoveChild(int i)
 {
     ED_ASSERT(i < mChildrenCount && mChildrenCount > 0);
     for (; i < mChildrenCount - 1; ++i)
@@ -151,12 +151,12 @@ void ShaderTextEditorTreeWidget::RemoveChild(int i)
     --mChildrenCount;
 }
 
-bool ShaderTextEditorTreeWidget::RecurseCloseSplit()
+bool CodeTextEditorTreeWidget::RecurseCloseSplit()
 {
     //find the child that is focused 
     for (int i = 0; i < mChildrenCount; ++i)
     {
-        ShaderTextEditorTreeWidget::Child& child = mChildren[i];
+        CodeTextEditorTreeWidget::Child& child = mChildren[i];
         if (child.mIsLeaf)
         {
             if (child.mLeafChild->IsFocus())
@@ -187,11 +187,11 @@ bool ShaderTextEditorTreeWidget::RecurseCloseSplit()
     return false;
 }
 
-bool ShaderTextEditorTreeWidget::RecurseDisplayShader(Pegasus::Shader::IShaderProxy * proxy)
+bool CodeTextEditorTreeWidget::RecurseDisplayCode(Pegasus::Core::ISourceCodeProxy * proxy)
 {
     for (int i = 0; i < mChildrenCount; ++i)
     {
-        ShaderTextEditorTreeWidget::Child& child = mChildren[i];
+        CodeTextEditorTreeWidget::Child& child = mChildren[i];
         if (child.mIsLeaf)
         {
             if (child.mLeafChild->IsFocus())
@@ -202,7 +202,7 @@ bool ShaderTextEditorTreeWidget::RecurseDisplayShader(Pegasus::Shader::IShaderPr
         }
         else
         {
-            if (child.mTreeChild->RecurseDisplayShader(proxy))
+            if (child.mTreeChild->RecurseDisplayCode(proxy))
             {
                 return true;
             }
@@ -211,16 +211,16 @@ bool ShaderTextEditorTreeWidget::RecurseDisplayShader(Pegasus::Shader::IShaderPr
     return false;
 }
 
-ShaderTextEditorWidget * ShaderTextEditorTreeWidget::FindShadersInEditors(Pegasus::Shader::IShaderProxy * proxy)
+CodeTextEditorWidget * CodeTextEditorTreeWidget::FindCodeInEditors(Pegasus::Core::ISourceCodeProxy * proxy)
 {
     for (int i = 0; i < mChildrenCount; ++i)
     {
-        ShaderTextEditorTreeWidget::Child& child = mChildren[i];
+        CodeTextEditorTreeWidget::Child& child = mChildren[i];
         if (child.mIsLeaf)
         {
             if (
-                (proxy == nullptr && child.mLeafChild->GetShader() == nullptr) || //next available editor slot is empty?
-                (proxy != nullptr && child.mLeafChild->GetShader() != nullptr && child.mLeafChild->GetShader()->GetGuid() == proxy->GetGuid())
+                (proxy == nullptr && child.mLeafChild->GetCode() == nullptr) || //next available editor slot is empty?
+                (proxy != nullptr && child.mLeafChild->GetCode() != nullptr && child.mLeafChild->GetCode()->GetGuid() == proxy->GetGuid())
                )
             {
                 return child.mLeafChild;
@@ -228,7 +228,7 @@ ShaderTextEditorWidget * ShaderTextEditorTreeWidget::FindShadersInEditors(Pegasu
         }
         else
         {
-            ShaderTextEditorWidget * editor = child.mTreeChild->FindShadersInEditors(proxy);
+            CodeTextEditorWidget * editor = child.mTreeChild->FindCodeInEditors(proxy);
             if (editor != nullptr)
             {
                 return editor;
@@ -238,7 +238,7 @@ ShaderTextEditorWidget * ShaderTextEditorTreeWidget::FindShadersInEditors(Pegasu
     return nullptr;
 }
 
-void ShaderTextEditorTreeWidget::InternalPushChild(ShaderTextEditorTreeWidget::Child& c, int i)
+void CodeTextEditorTreeWidget::InternalPushChild(CodeTextEditorTreeWidget::Child& c, int i)
 {
     ED_ASSERTSTR(mChildrenCount <= MAX_CHILDREN, "Memory stomp! do not call InternalPushChild if the tree is at its maximum capacity");
     int targetIndex = i + 1;
@@ -260,17 +260,17 @@ void ShaderTextEditorTreeWidget::InternalPushChild(ShaderTextEditorTreeWidget::C
     mChildrenCount++;
 }
 
-bool ShaderTextEditorTreeWidget::PushLeafChild(int i, ShaderTextEditorWidget * allocation)
+bool CodeTextEditorTreeWidget::PushLeafChild(int i, CodeTextEditorWidget * allocation)
 {
     ED_ASSERT(i < mChildrenCount);
     if (mChildrenCount < MAX_CHILDREN)
     {
-        ShaderTextEditorTreeWidget::Child child;
+        CodeTextEditorTreeWidget::Child child;
         child.mIsLeaf = true;
         child.mLeafChild = allocation;
         if (child.mLeafChild == nullptr)
         {
-            child.mLeafChild = new ShaderTextEditorWidget(this);
+            child.mLeafChild = new CodeTextEditorWidget(this);
             mSignalCombo.Bind(child.mLeafChild);
         };
         InternalPushChild(child, i);
@@ -280,21 +280,21 @@ bool ShaderTextEditorTreeWidget::PushLeafChild(int i, ShaderTextEditorWidget * a
     return false;
 }
 
-void ShaderTextEditorTreeWidget::DisplayShader(Pegasus::Shader::IShaderProxy * proxy, ShaderTextEditorWidget * finalEditor)
+void CodeTextEditorTreeWidget::DisplayCode(Pegasus::Core::ISourceCodeProxy * proxy, CodeTextEditorWidget * finalEditor)
 {
-    ShaderTextEditorWidget * editor = FindShadersInEditors(proxy);
+    CodeTextEditorWidget * editor = FindCodeInEditors(proxy);
     if (editor != nullptr)
     {
         editor->setFocus();
     }
     else
     {
-        bool foundShader = RecurseDisplayShader(proxy);
+        bool foundCode = RecurseDisplayCode(proxy);
     
-        if (!foundShader)
+        if (!foundCode)
         {
             //no text editor in focus? no problem. Lets find the next available empty slot
-            editor = FindShadersInEditors(nullptr);
+            editor = FindCodeInEditors(nullptr);
             if (editor != nullptr)
             {
                 editor->Initialize(proxy);
@@ -309,16 +309,16 @@ void ShaderTextEditorTreeWidget::DisplayShader(Pegasus::Shader::IShaderProxy * p
     }
 }
 
-void ShaderTextEditorTreeWidget::HideShader(Pegasus::Shader::IShaderProxy * proxy)
+void CodeTextEditorTreeWidget::HideCode(Pegasus::Core::ISourceCodeProxy * proxy)
 {
-    ShaderTextEditorWidget * editor = FindShadersInEditors(proxy);
+    CodeTextEditorWidget * editor = FindCodeInEditors(proxy);
     if (editor != nullptr)
     {
         editor->Initialize(nullptr);
     }
 }
 
-void ShaderTextEditorTreeWidget::CloseSplit()
+void CodeTextEditorTreeWidget::CloseSplit()
 {
     if (
         mChildrenCount > 1 ||
@@ -329,12 +329,12 @@ void ShaderTextEditorTreeWidget::CloseSplit()
     }
 }
 
-void ShaderTextEditorTreeWidget::HorizontalSplit()
+void CodeTextEditorTreeWidget::HorizontalSplit()
 {
     RecurseSplit(Qt::Horizontal);
 }
 
-void ShaderTextEditorTreeWidget::VerticalSplit()
+void CodeTextEditorTreeWidget::VerticalSplit()
 {
     RecurseSplit(Qt::Vertical);
 }

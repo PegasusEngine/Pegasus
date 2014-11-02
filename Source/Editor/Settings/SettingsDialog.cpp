@@ -12,7 +12,7 @@
 #include "Settings/SettingsDialog.h"
 #include "Settings/SettingsAppearancePage.h"
 #include "Settings/SettingsConsolePage.h"
-#include "Settings/SettingsShaderEditorPage.h"
+#include "Settings/SettingsCodeEditorPage.h"
 
 #include <QListWidgetItem>
 #include <QListWidget>
@@ -41,7 +41,7 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     mSettingsPages = new QStackedWidget();
     mSettingsPages->addWidget(new SettingsAppearancePage(this));
     mSettingsPages->addWidget(new SettingsConsolePage(this));
-    mSettingsPages->addWidget(new SettingsShaderEditorPage(this));
+    mSettingsPages->addWidget(new SettingsCodeEditorPage(this));
     mIcons->setCurrentRow(PAGE_APPEARANCE);
 
     // Close button
@@ -114,11 +114,11 @@ void SettingsDialog::CreateIcons()
     consoleButton->setTextAlignment(Qt::AlignHCenter);
     consoleButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
-    QListWidgetItem * shaderEditorButton = new QListWidgetItem(mIcons);
-    shaderEditorButton->setIcon(QIcon(":/SettingsDialog/ShaderEditor.png"));
-    shaderEditorButton->setText(tr("Shader Editor"));
-    shaderEditorButton->setTextAlignment(Qt::AlignHCenter);
-    shaderEditorButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+    QListWidgetItem * codeEditorButton = new QListWidgetItem(mIcons);
+    codeEditorButton->setIcon(QIcon(":/SettingsDialog/CodeEditor.png"));
+    codeEditorButton->setText(tr("Code Editor"));
+    codeEditorButton->setTextAlignment(Qt::AlignHCenter);
+    codeEditorButton->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
     connect(mIcons, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
             this, SLOT(ChangePage(QListWidgetItem *, QListWidgetItem*)));

@@ -29,7 +29,7 @@ const QColor Settings::sDefaultSyntaxHighlightColors[Settings::SYNTAX_COUNT] =
     QColor(230, 54, 0, 255) //imm number value
 };
 
-const char * Settings::sShaderEditorSyntaxStyleNames[Settings::SYNTAX_COUNT] =
+const char * Settings::sCodeEditorSyntaxStyleNames[Settings::SYNTAX_COUNT] =
 {
     "background",
     "cpp comment",
@@ -181,7 +181,7 @@ void Settings::Load()
     }
     settings.endGroup();    // Console
 
-    settings.beginGroup("ShaderEditor");
+    settings.beginGroup("CodeEditor");
     {
         settings.beginGroup("SyntaxColors");
         {
@@ -189,8 +189,8 @@ void Settings::Load()
             for (unsigned i = 0; i < Settings::SYNTAX_COUNT; ++i)
             {
                 sprintf_s(syntaxColorStrName, "SyntaxCol%d", i);
-                SetShaderEditorColor(
-                        static_cast<Settings::ShaderEditorSyntaxStyle>(i), 
+                SetCodeEditorColor(
+                        static_cast<Settings::CodeEditorSyntaxStyle>(i), 
                         settings.value(
                             syntaxColorStrName,
                             sDefaultSyntaxHighlightColors[i]).value<QColor>()
@@ -199,10 +199,10 @@ void Settings::Load()
         }
         settings.endGroup();    // SyntaxColors
 
-        SetShaderEditorFontSize( settings.value("FontSize", 11).toInt() );
-        SetShaderEditorTabSize( settings.value("TabSize", 4).toInt() );
+        SetCodeEditorFontSize( settings.value("FontSize", 11).toInt() );
+        SetCodeEditorTabSize( settings.value("TabSize", 4).toInt() );
      }
-    settings.endGroup();    // ShaderEditor
+    settings.endGroup();    // CodeEditor
 }
 
 //----------------------------------------------------------------------------------------
@@ -285,7 +285,7 @@ void Settings::Save()
     }
     settings.endGroup();    // Console
 
-    settings.beginGroup("ShaderEditor");
+    settings.beginGroup("CodeEditor");
     {
         settings.beginGroup("SyntaxColors");
         {
@@ -295,23 +295,23 @@ void Settings::Save()
                 sprintf_s(syntaxColorStrName, "SyntaxCol%d", i);
                 settings.setValue(
                       syntaxColorStrName,
-                      GetShaderSyntaxColor(static_cast<Settings::ShaderEditorSyntaxStyle>(i))
+                      GetCodeSyntaxColor(static_cast<Settings::CodeEditorSyntaxStyle>(i))
                 );
             } 
         }
         settings.endGroup();    // SyntaxColors
 
-        settings.setValue("FontSize", GetShaderEditorFontSize());
-        settings.setValue("TabSize", GetShaderEditorTabSize());
+        settings.setValue("FontSize", GetCodeEditorFontSize());
+        settings.setValue("TabSize", GetCodeEditorTabSize());
     }
-    settings.endGroup();    // ShaderEditor
+    settings.endGroup();    // CodeEditor
 }
 
 //----------------------------------------------------------------------------------------
 
 void Settings::NotifySettingsChanged()
 {
-    emit(OnShaderEditorStyleChanged());
+    emit(OnCodeEditorStyleChanged());
 }
 
 //----------------------------------------------------------------------------------------
@@ -358,30 +358,30 @@ bool Settings::IsConsoleTextColorDefinedForLogChannel(Pegasus::Core::LogChannel 
 
 //----------------------------------------------------------------------------------------
 
-void Settings::SetShaderEditorColor(ShaderEditorSyntaxStyle style, const QColor& color)
+void Settings::SetCodeEditorColor(CodeEditorSyntaxStyle style, const QColor& color)
 {
     ED_LOG("Setting syntax highlight color");
-    mShaderEditorColorStyles[style] = color;
+    mCodeEditorColorStyles[style] = color;
     
-    emit(OnShaderEditorStyleChanged());
+    emit(OnCodeEditorStyleChanged());
 }
 
 //----------------------------------------------------------------------------------------
 
-void Settings::SetShaderEditorFontSize(int newFontSize)
+void Settings::SetCodeEditorFontSize(int newFontSize)
 {
-    ED_LOG("Setting shader editor font size");
-    mShaderEditorFontSize = newFontSize;
-    emit (OnShaderEditorStyleChanged());
+    ED_LOG("Setting Code editor font size");
+    mCodeEditorFontSize = newFontSize;
+    emit (OnCodeEditorStyleChanged());
 }
 
 //----------------------------------------------------------------------------------------
 
-void Settings::SetShaderEditorTabSize(int newTabSize)
+void Settings::SetCodeEditorTabSize(int newTabSize)
 {
-    ED_LOG("Setting shader editor tab size");
-    mShaderEditorTabSize = newTabSize;
-    emit (OnShaderEditorStyleChanged());
+    ED_LOG("Setting Code editor tab size");
+    mCodeEditorTabSize = newTabSize;
+    emit (OnCodeEditorStyleChanged());
 }
 
 //----------------------------------------------------------------------------------------

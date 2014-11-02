@@ -9,12 +9,14 @@
 //! \date   1st December 2013
 //! \brief  Pegasus Shader Stage	
 
-#include "Pegasus/Shader/Shared/ShaderEvent.h"
+#include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Shader/ShaderStage.h"
 #include "Pegasus/Shader/IShaderFactory.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/Memcpy.h"
 #include "Pegasus/Shader/ShaderTracker.h"
+
+using namespace Pegasus::Core;
 
 
 //! private data structures
@@ -140,7 +142,7 @@ bool Pegasus::Shader::ShaderStage::SetSourceFromFile(Pegasus::Shader::ShaderType
         {
             GRAPH_EVENT_DISPATCH(
                 this,
-                Pegasus::Shader::ShaderLoadedEvent, 
+                CompilerEvents::SourceLoadedEvent, 
                 // Event specific arguments:
                 mFileBuffer.GetBuffer(), 
                 mFileBuffer.GetFileSize()
@@ -151,9 +153,9 @@ bool Pegasus::Shader::ShaderStage::SetSourceFromFile(Pegasus::Shader::ShaderType
         {
             GRAPH_EVENT_DISPATCH(
                 this,
-                Pegasus::Shader::FileOperationEvent, 
+                CompilerEvents::FileOperationEvent, 
                 // Event specific arguments:
-                Pegasus::Shader::FileOperationEvent::IO_ERROR, 
+                CompilerEvents::FileOperationEvent::IO_ERROR, 
                 ioError,
                 path, 
                 "Io error"
@@ -164,9 +166,9 @@ bool Pegasus::Shader::ShaderStage::SetSourceFromFile(Pegasus::Shader::ShaderType
     {
         GRAPH_EVENT_DISPATCH(
             this,
-            Pegasus::Shader::FileOperationEvent, 
+            CompilerEvents::FileOperationEvent, 
             // Event specific arguments:
-            Pegasus::Shader::FileOperationEvent::WRONG_EXTENSION, 
+            CompilerEvents::FileOperationEvent::WRONG_EXTENSION, 
             Pegasus::Io::ERR_NONE,
             path, 
             "wrong file format"
@@ -194,9 +196,9 @@ void Pegasus::Shader::ShaderStage::GenerateData()
 
     GRAPH_EVENT_DISPATCH(
         this,
-        Pegasus::Shader::CompilationNotification, 
+        CompilerEvents::CompilationNotification, 
         // Event specific arguments:
-        Pegasus::Shader::CompilationNotification::COMPILATION_BEGIN, 
+        CompilerEvents::CompilationNotification::COMPILATION_BEGIN, 
         0, // unused
         "" // unused
     );
@@ -245,9 +247,9 @@ void Pegasus::Shader::ShaderStage::SaveSourceToFile()
     {
         GRAPH_EVENT_DISPATCH(
             this,
-            Pegasus::Shader::FileOperationEvent, 
+            CompilerEvents::FileOperationEvent, 
             // Event specific arguments:
-            Pegasus::Shader::FileOperationEvent::IO_FILE_SAVE_SUCCESS,
+            CompilerEvents::FileOperationEvent::IO_FILE_SAVE_SUCCESS,
             err,
             mFullPath,
             ""
@@ -257,9 +259,9 @@ void Pegasus::Shader::ShaderStage::SaveSourceToFile()
     {
         GRAPH_EVENT_DISPATCH (
             this,
-            Pegasus::Shader::FileOperationEvent, 
+            CompilerEvents::FileOperationEvent, 
             // Event specific arguments:
-            Pegasus::Shader::FileOperationEvent::IO_FILE_SAVE_ERROR,
+            CompilerEvents::FileOperationEvent::IO_FILE_SAVE_ERROR,
             err,
             mFullPath,
             "Error saving file :/"

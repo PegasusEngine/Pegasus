@@ -4,18 +4,18 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	ShaderTextEditorWidget.h
+//! \file	CodeTextEditorWidget.h
 //! \author	Kleber Garcia
 //! \date	22nd April 2014
-//! \brief	Graphics widget representing a single shader text editor
+//! \brief	Graphics widget representing a single source code text editor
 
-#ifndef EDITOR_SHADERTEXTEDITORWIDGET_H
-#define EDITOR_SHADERTEXTEDITORWIDGET_H
+#ifndef EDITOR_CODETEXTEDITORWIDGET_H
+#define EDITOR_CODETEXTEDITORWIDGET_H
 #include <QTextEdit>
 
 namespace Pegasus {
-    namespace Shader {
-        class IShaderProxy;
+    namespace Core {
+        class ISourceCodeProxy;
     }
 }
  
@@ -23,25 +23,25 @@ class QEvent;
 class QSyntaxHighlighter;
 
 //! text editor widget class. Represents the text editor widget
-class ShaderTextEditorWidget : public QTextEdit
+class CodeTextEditorWidget : public QTextEdit
 {
     Q_OBJECT;
 public:
     //! constructor
-    ShaderTextEditorWidget(QWidget * parent);
+    CodeTextEditorWidget(QWidget * parent);
 
     //! destructor
-    virtual ~ShaderTextEditorWidget();
+    virtual ~CodeTextEditorWidget();
 
-    //! initialization function. Call whenever you want a shader to be opened
-    void Initialize(Pegasus::Shader::IShaderProxy * shader); 
+    //! initialization function. Call whenever you want a source code to be opened
+    void Initialize(Pegasus::Core::ISourceCodeProxy * code); 
 
     //! function that clears the state of the widget
     void Uninitialize(); 
 
-    //! gets the shader being used
-    //! \return the shader assigned
-    Pegasus::Shader::IShaderProxy * GetShader() { return mShader; }
+    //! gets the source code being used
+    //! \return the source code assigned
+    Pegasus::Core::ISourceCodeProxy * GetCode() { return mCode; }
 
     //! updates the syntax of a single line in the document.
     //! \param the line to update. If the line is out of range nothing happens
@@ -51,8 +51,8 @@ public:
     //! \warning this function is very expensive
     void UpdateAllDocumentSyntax();
 
-    //! flushes the text container to the shader internals
-    void FlushTextToShader();
+    //! flushes the text container to the source code internals
+    void FlushTextToCode();
 
     //! \return true if the user has this widget in focus, false otherwise
     bool IsFocus() const { return mIsFocus; }
@@ -74,8 +74,8 @@ private:
     //! variable that tells if this widget is in focus
     bool mIsFocus;
 
-    //! shader reference
-    Pegasus::Shader::IShaderProxy * mShader;
+    //! source code reference
+    Pegasus::Core::ISourceCodeProxy * mCode;
 
 
     QSyntaxHighlighter * mSyntaxHighlighter;

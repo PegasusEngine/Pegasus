@@ -4,27 +4,27 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   ShaderTextEditorTreeWidget.h
+//! \file   CodeTextEditorTreeWidget.h
 //! \author	Kleber Garcia
 //! \date	July 6th, 2014
-//! \brief	Shader Editor Tree of views. Allows recursive subdivision of views
+//! \brief	Code Editor Tree of views. Allows recursive subdivision of views
 
-#ifndef EDITOR_SHADERTEXTEDITORTREEWIDGET_H
-#define EDITOR_SHADERTEXTEDITORTREEWIDGET_H
+#ifndef EDITOR_CODETEXTEDITORTREEWIDGET_H
+#define EDITOR_CODETEXTEDITORTREEWIDGET_H
 
-#include "Pegasus/Shader/Shared/IShaderProxy.h"
+#include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 #include <QWidget>
 #include <QSplitter>
 #include <QSignalMapper>
 
 
 
-class ShaderTextEditorWidget;
+class CodeTextEditorWidget;
 class QLayout;
 
 
 //! the class represents a view that can be splitted recursively
-class ShaderTextEditorTreeWidget : public QSplitter
+class CodeTextEditorTreeWidget : public QSplitter
 {
     Q_OBJECT;
 
@@ -45,12 +45,12 @@ public:
         void Initialize(QSignalMapper * textChanged, QSignalMapper * selected);
 
         //! Binds the signals and slots to the mappers
-        //! \param shader text editor widget target (leaf)
-        void Bind(ShaderTextEditorWidget * editor);
+        //! \param source code text editor widget target (leaf)
+        void Bind(CodeTextEditorWidget * editor);
 
         //! Unbinds the signals and slots to the mappers
-        //! \param shader text editor widget target (leaf)
-        void Unbind(ShaderTextEditorWidget * editor);
+        //! \param source code text editor widget target (leaf)
+        void Unbind(CodeTextEditorWidget * editor);
 
     private:
         QSignalMapper * mTextChangedMapper;
@@ -58,39 +58,39 @@ public:
     };
 
     //! Constructor
-    ShaderTextEditorTreeWidget(
+    CodeTextEditorTreeWidget(
         SignalCombination& signalCombo, 
         Qt::Orientation orientation, 
         QWidget * parent
     );
 
     //! Constructor
-    ShaderTextEditorTreeWidget(
+    CodeTextEditorTreeWidget(
         SignalCombination& signalCombo,
         QWidget * parent
     );
 
     //! Destructor
-    ~ShaderTextEditorTreeWidget();
+    ~CodeTextEditorTreeWidget();
 
-    //! Displays a shader in the current text view
-    //! \param shader the shader node
+    //! Displays a source code in the current text view
+    //! \param source code the source code node
     //! \param finalEditor an auxiliary editor, if all the subeditors are used, it will fall into this leaf editor
-    void DisplayShader(Pegasus::Shader::IShaderProxy * shader, ShaderTextEditorWidget * finalEditor);
+    void DisplayCode(Pegasus::Core::ISourceCodeProxy * code, CodeTextEditorWidget * finalEditor);
 
-    //! Takes the shader out of the tree view
-    //! \param shader target shader to show
-    void HideShader(Pegasus::Shader::IShaderProxy * shader);
+    //! Takes the source code out of the tree view
+    //! \param source code target source code to show
+    void HideCode(Pegasus::Core::ISourceCodeProxy * code);
 
-    //! searches for the leaf that contains the current shader
-    //! \param proxy the shader to find
-    //! \return the editor containign the shader, null if there isn't
-    ShaderTextEditorWidget * FindShadersInEditors(Pegasus::Shader::IShaderProxy * proxy);
+    //! searches for the leaf that contains the current source code 
+    //! \param proxy the source code to find
+    //! \return the editor containign the source code, null if there isn't
+    CodeTextEditorWidget * FindCodeInEditors(Pegasus::Core::ISourceCodeProxy * proxy);
 
 signals:
-    //! triggers when the text has changed on the ShaderTextEditor
+    //! triggers when the text has changed on the CodeTextEditor
     //! \param sender the text editor leaf that changed
-    void OnTextChanged(ShaderTextEditorWidget * sender);
+    void OnTextChanged(CodeTextEditorWidget * sender);
     
 public slots:
     //! splits the current selected view in half recursively (horizontally)
@@ -119,7 +119,7 @@ private:
     //! \param i the place to push the child into. -1 if we append it to the end
     //! \allocation if we want to allocate the child leaf outside or internally (by passing nullptr)
     //! \return true if success, false otherwise
-    bool PushLeafChild(int i = -1, ShaderTextEditorWidget * allocation = nullptr);
+    bool PushLeafChild(int i = -1, CodeTextEditorWidget * allocation = nullptr);
 
     //! splits recursively the current tree view
     //! \param orientation the orientation
@@ -128,9 +128,9 @@ private:
     //! \return true if success on splitting (a focused view was split)
     bool RecurseCloseSplit();
 
-    //! \param proxy the shader to display
+    //! \param proxy the source code to display
     //! \return true if success (a focused view grabbed it) false otherwise
-    bool RecurseDisplayShader(Pegasus::Shader::IShaderProxy * proxy);
+    bool RecurseDisplayCode(Pegasus::Core::ISourceCodeProxy * proxy);
 
     //! signal set for events in the leafs
     SignalCombination mSignalCombo;
@@ -145,8 +145,8 @@ private:
         bool mIsLeaf;
 
         union {
-            ShaderTextEditorTreeWidget * mTreeChild;
-            ShaderTextEditorWidget     * mLeafChild;
+            CodeTextEditorTreeWidget * mTreeChild;
+            CodeTextEditorWidget     * mLeafChild;
             QWidget                    * mWidget;
         };
         

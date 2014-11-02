@@ -4,12 +4,12 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	SettingsShaderEditorPage.cpp
+//! \file	SettingsCodeEditorPage.cpp
 //! \author	Kleber Garcia
 //! \date   4rth March 2014	
-//! \brief	Page to configure the appearance settings of the shader IDE editor
+//! \brief	Page to configure the appearance settings of the Code IDE editor
 
-#include "Settings/SettingsShaderEditorPage.h"
+#include "Settings/SettingsCodeEditorPage.h"
 #include "Editor.h"
 
 #include <QGroupBox>
@@ -21,15 +21,15 @@
 #include <QSignalMapper>
 #include "Widgets/ColorPickerBox.h"
 
-const int gShaderFontSizes[] = {
+const int gCodeFontSizes[] = {
     8, 9, 10, 11, 12, 13, 14, 18, 22, 24, 32
 };
 
-const int gShaderTabSizes[] = {
+const int gCodeTabSizes[] = {
     2, 3, 4, 5, 6, 8
 };
 
-SettingsShaderEditorPage::SettingsShaderEditorPage(QWidget *parent)
+SettingsCodeEditorPage::SettingsCodeEditorPage(QWidget *parent)
 :   QWidget(parent)
 {
     const Settings * const settings = Editor::GetSettings();
@@ -37,17 +37,17 @@ SettingsShaderEditorPage::SettingsShaderEditorPage(QWidget *parent)
     mColorPickersList = new ColorPickerBox* [Settings::SYNTAX_COUNT];
     mSignalMapper = new QSignalMapper(this);
     mSignalDefaultButtonMapper = new QSignalMapper(this);
-    QGroupBox * colorGroup = new QGroupBox(tr("Shader Editor Colors")); 
+    QGroupBox * colorGroup = new QGroupBox(tr("Code Editor Colors")); 
     QGridLayout * colorLayout = new QGridLayout();
     for (unsigned i = 0; i < Settings::SYNTAX_COUNT; ++i)
     {
-        mColorPickersList[i] = new ColorPickerBox(settings->GetShaderSyntaxColor(static_cast<Settings::ShaderEditorSyntaxStyle>(i)), this);
+        mColorPickersList[i] = new ColorPickerBox(settings->GetCodeSyntaxColor(static_cast<Settings::CodeEditorSyntaxStyle>(i)), this);
         mSignalMapper->setMapping(mColorPickersList[i], i);
         
         connect(mColorPickersList[i], SIGNAL(ColorChanged(const QColor &)),
                 mSignalMapper, SLOT(map()));    
          
-        QLabel * informationLayout = new QLabel(tr(Settings::sShaderEditorSyntaxStyleNames[i]));
+        QLabel * informationLayout = new QLabel(tr(Settings::sCodeEditorSyntaxStyleNames[i]));
 
         QPushButton * colorDefaultButton = new QPushButton(tr("Set Default"));
         mSignalDefaultButtonMapper->setMapping(colorDefaultButton, i);
@@ -61,25 +61,25 @@ SettingsShaderEditorPage::SettingsShaderEditorPage(QWidget *parent)
 
     colorGroup->setLayout(colorLayout); 
 
-    QGroupBox * miscGroup = new QGroupBox(tr("Shader Editor Misc"));
+    QGroupBox * miscGroup = new QGroupBox(tr("Code Editor Misc"));
     QGridLayout * miscLayout = new QGridLayout();
     QLabel * fontSizeLabel = new QLabel(tr("Font size:"));
     miscLayout->addWidget(fontSizeLabel, 0, 0);
     mFontSizeCombo = new QComboBox(this);
     int currentFontIndex = 0;
-    for (int i = 0; i < sizeof(gShaderFontSizes)/sizeof(int); ++i)
+    for (int i = 0; i < sizeof(gCodeFontSizes)/sizeof(int); ++i)
     {
-        if (gShaderFontSizes[i] == settings->GetShaderEditorFontSize())
+        if (gCodeFontSizes[i] == settings->GetCodeEditorFontSize())
         {
             currentFontIndex = i;
         }
-        mFontSizeCombo->addItem(QString::number(gShaderFontSizes[i]), i);
+        mFontSizeCombo->addItem(QString::number(gCodeFontSizes[i]), i);
     }
 
     mFontSizeCombo->setCurrentIndex(currentFontIndex);
 
     connect(mFontSizeCombo, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(ApplyShaderFontSize(int)));
+            this, SLOT(ApplyCodeFontSize(int)));
 
     miscLayout->addWidget(mFontSizeCombo, 0, 1);
 
@@ -88,19 +88,19 @@ SettingsShaderEditorPage::SettingsShaderEditorPage(QWidget *parent)
     mTabSizeCombo = new QComboBox(this);
 
     int currentTabIndex = 0;
-    for (int i = 0; i < sizeof(gShaderTabSizes)/sizeof(int); ++i)
+    for (int i = 0; i < sizeof(gCodeTabSizes)/sizeof(int); ++i)
     {
-        if (gShaderTabSizes[i] == settings->GetShaderEditorTabSize())
+        if (gCodeTabSizes[i] == settings->GetCodeEditorTabSize())
         {
             currentTabIndex = i;
         }
-        mTabSizeCombo->addItem(QString::number(gShaderTabSizes[i]), i);
+        mTabSizeCombo->addItem(QString::number(gCodeTabSizes[i]), i);
     }
 
     mTabSizeCombo->setCurrentIndex(currentTabIndex);
 
     connect(mTabSizeCombo, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(ApplyShaderTabSize(int)));
+            this, SLOT(ApplyCodeTabSize(int)));
 
     miscLayout->addWidget(mTabSizeCombo , 0, 3);
     
@@ -121,39 +121,39 @@ SettingsShaderEditorPage::SettingsShaderEditorPage(QWidget *parent)
 
 //----------------------------------------------------------------------------------------
 
-void SettingsShaderEditorPage::ApplyColor(int i)
+void SettingsCodeEditorPage::ApplyColor(int i)
 {
     Settings * settings = Editor::GetSettings();
-    settings->SetShaderEditorColor(static_cast<Settings::ShaderEditorSyntaxStyle>(i), mColorPickersList[i]->GetColor());
+    settings->SetCodeEditorColor(static_cast<Settings::CodeEditorSyntaxStyle>(i), mColorPickersList[i]->GetColor());
 }
 
 //----------------------------------------------------------------------------------------
 
-void SettingsShaderEditorPage::ApplyShaderFontSize(int index)
+void SettingsCodeEditorPage::ApplyCodeFontSize(int index)
 {
     Settings * settings = Editor::GetSettings();
-    settings->SetShaderEditorFontSize(gShaderFontSizes[index]);
+    settings->SetCodeEditorFontSize(gCodeFontSizes[index]);
 }
 
 //----------------------------------------------------------------------------------------
 
-void SettingsShaderEditorPage::ApplyShaderTabSize(int index)
+void SettingsCodeEditorPage::ApplyCodeTabSize(int index)
 {
     Settings * settings = Editor::GetSettings();
-    settings->SetShaderEditorTabSize(gShaderTabSizes[index]);
+    settings->SetCodeEditorTabSize(gCodeTabSizes[index]);
 }
 
 //----------------------------------------------------------------------------------------
 
-void SettingsShaderEditorPage::SetDefaultColor(int i)
+void SettingsCodeEditorPage::SetDefaultColor(int i)
 {
     Settings * settings = Editor::GetSettings();
-    settings->SetShaderEditorColor(static_cast<Settings::ShaderEditorSyntaxStyle>(i), Settings::sDefaultSyntaxHighlightColors[i]);
+    settings->SetCodeEditorColor(static_cast<Settings::CodeEditorSyntaxStyle>(i), Settings::sDefaultSyntaxHighlightColors[i]);
     mColorPickersList[i]->SetColor(Settings::sDefaultSyntaxHighlightColors[i]);
 }
 //----------------------------------------------------------------------------------------
 
-SettingsShaderEditorPage::~SettingsShaderEditorPage()
+SettingsCodeEditorPage::~SettingsCodeEditorPage()
 {
 
     delete [] mColorPickersList;

@@ -12,6 +12,16 @@
 #ifndef PEGASUS_SHADERMGR_PROXY_H
 #define PEGASUS_SHADERMGR_PROXY_H
 
+#include "Pegasus/Core/Shared/ISourceCodeManagerProxy.h"
+
+
+namespace Pegasus {
+    namespace Core {
+        namespace CompilerEvents {
+            class ICompilerEventListener;
+        }
+    }
+}
 
 namespace Pegasus
 {
@@ -20,9 +30,8 @@ namespace Shader
 
 class IProgramProxy;
 class IShaderProxy;
-class IShaderEventListener;
 
-class IShaderManagerProxy
+class IShaderManagerProxy : public Pegasus::Core::ISourceCodeManagerProxy
 {
 
 public:
@@ -45,10 +54,6 @@ public:
     //! \param id index position of shader proxy to get
     //! \return shader proxy
     virtual IShaderProxy* GetShader(int id) = 0; 
-
-    //! Sets the event listener to be used for the shader
-    //! \param event listener reference
-    virtual void RegisterEventListener(IShaderEventListener * eventListener) = 0;
 
     //! Updates all the programs, only those which changed
     virtual void UpdateAllPrograms() = 0;

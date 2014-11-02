@@ -2,7 +2,7 @@
 /*
 Block script sample program
 */
-//a = 2;
+a = 1;
 
 float2 factorial(f : int)
 {
@@ -18,6 +18,18 @@ float4 testKecho(a : int, b : int) { return float4((float)(2 * (a + b)), 1.0, 2.
 echo (factorial(3).y);
 echo(" ");
 echo (factorial(3).x);
+
+int Timeline_Update(beat : float)
+{
+    echo ("calling update from script!");
+    return a;
+}
+
+int Timeline_Render(beat : float)
+{
+    echo(beat);
+    return 10;
+}
 
 
 

@@ -11,10 +11,10 @@
 #ifndef PEGASUS_SHADER_STAGE_H
 #define PEGASUS_SHADER_STAGE_H
 #include "Pegasus/Core/Ref.h"
+#include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Graph/GeneratorNode.h"
 #include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
-#include "Pegasus/Shader/Shared/ShaderEvent.h"
 #include "Pegasus/Shader/Proxy/ShaderProxy.h"
 #include "Pegasus/Core/Io.h"
 
@@ -32,7 +32,7 @@ class ShaderTracker;
 class ShaderStage : public Graph::GeneratorNode
 {
     friend class ShaderManager;
-    GRAPH_EVENT_DECLARE_DISPATCHER(IShaderEventListener)
+    GRAPH_EVENT_DECLARE_DISPATCHER(Pegasus::Core::CompilerEvents::ICompilerEventListener)
 
 public:
     //! Default constructor

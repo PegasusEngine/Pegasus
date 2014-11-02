@@ -15,6 +15,7 @@
 #include "Pegasus/Timeline/Shared/BlockDefs.h"
 #include "Pegasus/Timeline/Shared/TimelineDefs.h"
 #include "Pegasus/Timeline/Proxy/BlockProxy.h"
+#include "Pegasus/Timeline/ScriptHelper.h"
 #include "Pegasus/Window/IWindowContext.h"
 
 namespace Pegasus {
@@ -25,6 +26,10 @@ namespace Pegasus {
     namespace Wnd {
         class Window;
     }
+
+    namespace BlockScript {
+        class BlockScript;
+    }
 }
 
 namespace Pegasus {
@@ -34,6 +39,8 @@ namespace Timeline {
 //! Timeline block, describing the instance of an effect on the timeline
 class Block
 {
+    DECLARE_TIMELINE_BLOCK(Block, "Block");
+
 public:
 
     //! Constructor
@@ -57,13 +64,16 @@ public:
     //! \return Lane the block belongs to, nullptr when the block is not associated with a lane yet
     inline Lane * GetLane() const { return mLane; }
 
+    //! Attempts to open and compile a script. True if success, false otherwise.
+    //! \param scriptFileName - the file name to open. 
+    //! \return true if successful, false otherwise
+    bool OpenScript(const char* scriptFileName);
+
+    //! Attempts to shutdown a script if it has been opened
+    void ShutdownScript();
+
 
 #if PEGASUS_ENABLE_PROXIES
-
-    //! Get the string displayed by the editor (usually class name without the "Block" suffix)
-    //! \warning To be defined in each derived class, using the DECLARE_TIMELINE_BLOCK macro
-    //! \return String displayed by the editor
-    virtual const char * GetEditorString() const = 0;
 
     //! Set the color of the block for the editor
     //! \param red Red component (0-255)
@@ -101,18 +111,33 @@ public:
     //!             can have fractional part (>= 0.0f)
     //! \param window Window in which the lane is being rendered
     //! \todo That dependency is ugly. Find a way to remove that dependency
-    virtual void Update(float beat, Wnd::Window * window) = 0;
+    virtual void Update(float beat, Wnd::Window * window) { UpdateViaScript(beat, window); };
 
     //! Render the content of the block
     //! \param beat Current beat relative to the beginning of the block,
     //!             can have fractional part (>= 0.0f)
     //! \param window Window in which the lane is being rendered
     //! \todo That dependency is ugly. Find a way to remove that dependency
-    virtual void Render(float beat, Wnd::Window * window) = 0;
+    virtual void Render(float beat, Wnd::Window * window) { RenderViaScript(beat, window); };
 
     //------------------------------------------------------------------------------------
 
 protected:
+
+    //! Update the content of the block by calling the script callback within.
+    //! \note if the script does not implement an "int Timeline_Update(beat : float)" function, 
+    //!        then update becomes a NOP for this block.
+    //! \param beat Current beat relative to the beginning of the block,
+    //!             can have fractional part (>= 0.0f)
+    //! \param window Window in which the lane is being rendered
+    void UpdateViaScript(float beat, Wnd::Window * window);
+
+    //! Render the content of the block by calling the script callback within
+    //! \note if the script does not implement a "int Timeline_Render(beat : float)" function, 
+    //!        then render becomes a NOP for this block.
+    //! \param beat the beat
+    //! \param window Window in which the lane is being rendered
+    void RenderViaScript(float beat, Wnd::Window * window);
 
     // Accessors to the global manager for the derived classes
     
@@ -187,6 +212,9 @@ private:
 
     //! Duration of the block, measured in ticks (> 0)
     Duration mDuration;
+
+    //! script helper object
+    ScriptHelper mScriptHelper;
 
     //! Lane the block belongs to, nullptr when the block is not associated with a lane yet
     Lane * mLane;

@@ -40,8 +40,8 @@ Editor::Editor(QApplication * parentApplication)
     mSecondaryViewportDockWidget(nullptr),
     mTimelineDockWidget(nullptr),
     mHistoryDockWidget(nullptr),
-    mShaderLibraryWidget(nullptr),
-    mShaderEditorWidget(nullptr),
+    mAssetLibraryWidget(nullptr),
+    mCodeEditorWidget(nullptr),
     mConsoleDockWidget(nullptr),
     mTextureEditorDockWidget(nullptr)
 {
@@ -123,14 +123,14 @@ Editor::Editor(QApplication * parentApplication)
             mTimelineDockWidget, SLOT(UpdateUIForAppClosed()));
 
     connect(mApplicationManager, SIGNAL(ApplicationLoaded()),
-            mShaderLibraryWidget, SLOT(UpdateUIForAppLoaded()));
+            mAssetLibraryWidget, SLOT(UpdateUIForAppLoaded()));
     connect(mApplicationManager, SIGNAL(ApplicationFinished()),
-            mShaderLibraryWidget, SLOT(UpdateUIForAppFinished()));
+            mAssetLibraryWidget, SLOT(UpdateUIForAppFinished()));
     connect(mApplicationManager, SIGNAL(ApplicationFinished()),
-            mShaderEditorWidget, SLOT(UpdateUIForAppFinished()));
+            mCodeEditorWidget, SLOT(UpdateUIForAppFinished()));
 
-    connect(sSettings, SIGNAL(OnShaderEditorStyleChanged()),
-            mShaderLibraryWidget, SLOT(UpdateEditorStyle())); 
+    connect(sSettings, SIGNAL(OnCodeEditorStyleChanged()),
+            mAssetLibraryWidget, SLOT(UpdateEditorStyle())); 
 
     connect(mApplicationManager, SIGNAL(ApplicationLoaded()),
             mTextureEditorDockWidget, SLOT(UpdateUIForAppLoaded()));
@@ -310,13 +310,13 @@ void Editor::CreateActions()
 	mActionWindowConsole->setStatusTip(tr("Open the console window"));
 	connect(mActionWindowConsole, SIGNAL(triggered()), this, SLOT(OpenConsoleWindow()));
 
-    mActionWindowShaderEditor = new QAction(tr("&Shader Editor"), this);
-	mActionWindowShaderEditor->setStatusTip(tr("Open the shader editor"));
-	connect(mActionWindowShaderEditor, SIGNAL(triggered()), this, SLOT(OpenShaderEditorWindow()));
+    mActionWindowCodeEditor = new QAction(tr("&Code Editor"), this);
+	mActionWindowCodeEditor->setStatusTip(tr("Open the code editor"));
+	connect(mActionWindowCodeEditor, SIGNAL(triggered()), this, SLOT(OpenCodeEditorWindow()));
 
-    mActionWindowShaderLibrary = new QAction(tr("&Shader Library"), this);
-	mActionWindowShaderLibrary->setStatusTip(tr("Open the shader library"));
-	connect(mActionWindowShaderLibrary, SIGNAL(triggered()), this, SLOT(OpenShaderLibraryWindow()));
+    mActionWindowAssetLibrary = new QAction(tr("&Asset Library"), this);
+	mActionWindowAssetLibrary->setStatusTip(tr("Open the asset library"));
+	connect(mActionWindowAssetLibrary, SIGNAL(triggered()), this, SLOT(OpenAssetLibraryWindow()));
 
     mActionWindowTextureEditor = new QAction(tr("Te&xture Editor"), this);
 	mActionWindowTextureEditor->setStatusTip(tr("Open the texture editor window"));
@@ -371,8 +371,8 @@ void Editor::CreateMenu()
     windowMenu->addAction(mActionWindowTimeline);
     windowMenu->addAction(mActionWindowHistory);
     windowMenu->addAction(mActionWindowConsole);
-    windowMenu->addAction(mActionWindowShaderEditor);
-    windowMenu->addAction(mActionWindowShaderLibrary);
+    windowMenu->addAction(mActionWindowCodeEditor);
+    windowMenu->addAction(mActionWindowAssetLibrary);
     windowMenu->addAction(mActionWindowTextureEditor);
 
     QMenu * helpMenu = menuBar()->addMenu(tr("&Help"));
@@ -451,14 +451,14 @@ void Editor::CreateDockWidgets()
     //mConsoleDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
     addDockWidget(Qt::BottomDockWidgetArea, mConsoleDockWidget);
 
-    mShaderEditorWidget = new ShaderEditorWidget(this);
-    addDockWidget(Qt::BottomDockWidgetArea, mShaderEditorWidget);
-    mShaderEditorWidget->setFloating(true);
+    mCodeEditorWidget = new CodeEditorWidget(this);
+    addDockWidget(Qt::BottomDockWidgetArea, mCodeEditorWidget);
+    mCodeEditorWidget->setFloating(true);
 
-    mShaderLibraryWidget = new ShaderLibraryWidget(this, mShaderEditorWidget);
-    // ** do not add the shader library as default, instead hide it **
-    addDockWidget(Qt::RightDockWidgetArea, mShaderLibraryWidget);        
-    mShaderLibraryWidget->setFloating(true);
+    mAssetLibraryWidget = new AssetLibraryWidget(this, mCodeEditorWidget);
+    // ** do not add the Code library as default, instead hide it **
+    addDockWidget(Qt::RightDockWidgetArea, mAssetLibraryWidget);        
+    mAssetLibraryWidget->setFloating(true);
 
     mTextureEditorDockWidget = new TextureEditorDockWidget(this);
     //mTextureEditorDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
@@ -649,16 +649,16 @@ void Editor::OpenConsoleWindow()
 
 //----------------------------------------------------------------------------------------
 
-void Editor::OpenShaderEditorWindow()
+void Editor::OpenCodeEditorWindow()
 {
-    mShaderEditorWidget->show();
+    mCodeEditorWidget->show();
 }
 
 //----------------------------------------------------------------------------------------
 
-void Editor::OpenShaderLibraryWindow()
+void Editor::OpenAssetLibraryWindow()
 {
-    mShaderLibraryWidget->show();
+    mAssetLibraryWidget->show();
 }
 
 //----------------------------------------------------------------------------------------

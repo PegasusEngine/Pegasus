@@ -98,8 +98,8 @@ private slots:
     void RedrawAllViewportsForBlockMoved();
 
     //! Called when the current beat has been updated
-    //! \param id ID of the shader
-    void ReceiveShaderCompilationRequest(int id);
+    //! \param id ID of the source code
+    void ReceiveCompilationRequest(int id);
 
 
     //! Enable or disable the play mode of the demo timeline

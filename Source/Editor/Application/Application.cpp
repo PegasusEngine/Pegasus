@@ -18,10 +18,10 @@
 #include "Pegasus/Core/Shared/OsDefs.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
-#include "Pegasus/Shader/Shared/ShaderEvent.h"
+#include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Window/Shared/IWindowProxy.h"
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
-#include "ShaderLibrary\ShaderManagerEventListener.h"
+#include "CodeEditor\SourceCodeManagerEventListener.h"
 
 #include <QTimer>
 #include <stdio.h>
@@ -154,7 +154,7 @@ void Application::run()
     mApplication = CreatePegasusAppFunc(appConfig);
     
     // Initialize all application event listeners
-    mApplication->GetShaderManagerProxy()->RegisterEventListener( Editor::GetInstance().GetShaderLibraryWidget()->GetShaderManagerEventListener() );
+    mApplication->GetShaderManagerProxy()->RegisterEventListener( Editor::GetInstance().GetAssetLibraryWidget()->GetSourceCodeManagerEventListener() );
 
     // Run the initialization process of the application
     mApplication->Initialize();
