@@ -87,4 +87,8 @@ bool UNIT_TEST_TesselationTable3();
 
 bool UNIT_TEST_TesselationTable4();
 
+bool UNIT_TEST_Vector1();
+
+bool UNIT_TEST_Vector2();
+
 #endif

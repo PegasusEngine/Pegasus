@@ -28,6 +28,13 @@ namespace Core
 class ISourceCodeProxy
 {
 public:
+    //! definition of how the script is compiled 
+    enum CompilationPolicy
+    {
+        POLICY_USER_DEFINED, //! user decides if compilation occurs per keystroke or only at save
+        POLICY_FORCE_ON_SAVE //! compilation only occurs at save
+    };
+   
     //! Constructor
     ISourceCodeProxy(){}
 
@@ -58,6 +65,10 @@ public:
     //! Gets the user data for this particular source code file
     //! \return user data reference
     virtual Pegasus::Graph::IGraphUserData * GetUserData() const = 0;
+
+    //! Returns the compilation policy that this script has.
+    //! \return the policy for the editor to use
+    virtual CompilationPolicy GetCompilationPolicy() const = 0;
 
     //! returns a 64 bit guid for a particular source code file.
     //! \return the guid must correspond to a single source code filestage instance

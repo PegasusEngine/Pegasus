@@ -72,6 +72,10 @@ public:
     //! Attempts to shutdown a script if it has been opened
     void ShutdownScript();
 
+    //! Returns the script of this block, null if none is attached.
+    //! \return the script object, null if not attached
+    ScriptHelper* GetScript() { return mScriptHelper; }
+
 
 #if PEGASUS_ENABLE_PROXIES
 
@@ -214,7 +218,13 @@ private:
     Duration mDuration;
 
     //! script helper object
-    ScriptHelper mScriptHelper;
+    ScriptHelper* mScriptHelper;
+
+    //! virtual machine state
+    BlockScript::BsVmState* mVmState;
+
+    //! version of the script, used for global variable initialization
+    int mScriptVersion;
 
     //! Lane the block belongs to, nullptr when the block is not associated with a lane yet
     Lane * mLane;

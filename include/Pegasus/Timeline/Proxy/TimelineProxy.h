@@ -116,6 +116,18 @@ public:
     //! \return Current beat, measured in ticks, can have fractional part
     virtual float GetCurrentBeat() const;
 
+    //! Returns the number of sources this manager has
+    //! \return source count in the application
+    virtual int GetSourceCount() const;
+
+    //! Gets the program based on its id. The id range goes from 0 to ProgramCount
+    //! \return program proxy
+    virtual Core::ISourceCodeProxy* GetSource(int id);
+
+    //! Sets the event listener to be used for the shader
+    //! \param event listener reference
+    virtual void RegisterEventListener(Pegasus::Core::CompilerEvents::ICompilerEventListener * eventListener);
+
     //------------------------------------------------------------------------------------
     
 private:

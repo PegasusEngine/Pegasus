@@ -9,6 +9,7 @@
 //! \date   1st December 2013
 //! \brief  Main shader interface
 
+#include "Pegasus/Memory/MemoryManager.h"
 #include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
@@ -46,7 +47,7 @@ Pegasus::Shader::ShaderManager::ShaderManager(Pegasus::Graph::NodeManager * node
 ,   mFactory(factory)
 #if PEGASUS_ENABLE_PROXIES
 ,   mProxy(this)
-,   mShaderTracker()
+,   mShaderTracker(Pegasus::Memory::GetGlobalAllocator())
 #endif  // PEGASUS_ENABLE_PROXIES
 #if PEGASUS_USE_GRAPH_EVENTS
 ,   mEventListener(nullptr)

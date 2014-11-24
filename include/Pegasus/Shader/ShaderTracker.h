@@ -13,8 +13,15 @@
 #define PEGASUS_SHADERTRACKER_H
 #if PEGASUS_ENABLE_PROXIES
 
+#include "Pegasus/Utils/Vector.h"
+
 namespace Pegasus
 {
+
+namespace Alloc{
+    class IAllocator;
+}
+
 namespace Shader
 {
 
@@ -26,11 +33,8 @@ class ShaderStage;
 class ShaderTracker
 {
 public:
-    ShaderTracker();
+    explicit ShaderTracker(Alloc::IAllocator* alloc);
     ~ShaderTracker(){}
-
-    //! Maximum amount of elements the static container has
-    static const int MAX_SHADER_CONTAINER = 256;
 
     //! Inserts a program to the container
     //! \param reference to a program
@@ -79,23 +83,17 @@ public:
     ShaderStage*     GetShaderStage(int id) const;
 
     //! \return returns the number of shaders
-    int ShaderSize() const { return mShaderSize; }
+    int ShaderSize() const { return mShaderStages.GetSize(); }
 
     //! \return returns the number of programs
-    int ProgramSize() const { return mProgramSize; }
+    int ProgramSize() const { return mProgramLinkages.GetSize(); }
 
 private:
     //! pool of program linkages references
-    void* mProgramLinkages[MAX_SHADER_CONTAINER];
+    Utils::Vector<ProgramLinkage*> mProgramLinkages;
 
     //! pool of shader linkage references
-    void* mShaderStages[MAX_SHADER_CONTAINER];
-
-    //! internal int containing sizes of shaders
-    int mShaderSize;
-
-    //! internal int containing sizes of programs
-    int mProgramSize;
+    Utils::Vector<ShaderStage*> mShaderStages;
 };
 
 }

@@ -97,6 +97,10 @@ int main()
     RUN_TEST(TesselationTable3);
     RUN_TEST(TesselationTable4);
 
+    //Vector
+    RUN_TEST(Vector1);
+    RUN_TEST(Vector2);
+
     ///////////////////////////////////////////////////////////
 
     printf("Final Results: %d out of %d succeeded\n", successes, total);

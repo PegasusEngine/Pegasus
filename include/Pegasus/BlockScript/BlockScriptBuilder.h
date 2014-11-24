@@ -37,6 +37,8 @@ namespace Pegasus
         #undef BS_PROCESS
         union Variant;
         }
+
+        class IBlockScriptCompilerListener;
     }
 
     namespace Alloc
@@ -53,8 +55,7 @@ namespace BlockScript
 class BlockScriptBuilder
 {
 public:
-    typedef void (*ErrorMsgCallback) (const char*);
-    explicit BlockScriptBuilder() : mOnError(nullptr), mCurrentFrame(0), mErrorCount(0), mInFunBody(false) {}
+    explicit BlockScriptBuilder() : mEventListener(nullptr), mCurrentFrame(0), mErrorCount(0), mInFunBody(false), mCurrentLineNumber(1) {}
 	
     struct CompilationResult
     {
@@ -62,7 +63,7 @@ public:
         Assembly         mAsm;
     };
 
-    void Initialize(Pegasus::Alloc::IAllocator* allocator, ErrorMsgCallback onError);
+    void Initialize(Pegasus::Alloc::IAllocator* allocator);
     ~BlockScriptBuilder(){}
 
     //! Begins construction of abstract syntax tree
@@ -123,6 +124,14 @@ public:
 
     char* AllocateBigString(int size);
 
+    int GetCurrentLine() const { return mCurrentLineNumber; }
+
+    void IncrementLine() { ++mCurrentLineNumber; }
+
+    IBlockScriptCompilerListener* GetEventListener() const { return mEventListener; }
+
+    void SetEventListener(IBlockScriptCompilerListener* eventListener) { mEventListener = eventListener; }
+
 private:
 
     // registers a member into the stack. Returns the offset of the current stack frame.
@@ -146,16 +155,18 @@ private:
     AstAllocator       mAllocator;
     TypeTable          mTypeTable;
     FunTable           mFunTable;
-    ErrorMsgCallback   mOnError;
 	CompilationResult  mActiveResult;
     IddStrPool         mStrPool;
 
     int                mCurrentFrame;
     int                mErrorCount;
+    int                mCurrentLineNumber;
 
     Container<StackFrameInfo> mStackFrames;
 
     Canonizer mCanonizer;
+
+    IBlockScriptCompilerListener* mEventListener;
 
     bool mInFunBody;
 };

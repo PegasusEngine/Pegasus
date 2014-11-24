@@ -16,6 +16,8 @@ PEGASUS_AVOID_EMPTY_FILE_WARNING
 
 #include "Pegasus/Timeline/Proxy/TimelineProxy.h"
 #include "Pegasus/Timeline/Proxy/LaneProxy.h"
+#include "Pegasus/Core/Shared/CompilerEvents.h"
+#include "Pegasus/Timeline/ScriptHelper.h"
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Timeline/Lane.h"
 
@@ -155,6 +157,21 @@ void TimelineProxy::SetCurrentBeat(float beat)
 float TimelineProxy::GetCurrentBeat() const
 {
     return mTimeline->GetCurrentBeat();
+}
+
+int TimelineProxy::GetSourceCount() const
+{
+    return mTimeline->GetScriptTracker()->GetScriptCount();
+}
+
+Core::ISourceCodeProxy* TimelineProxy::GetSource(int id)
+{
+    return mTimeline->GetScriptTracker()->GetScriptById(id)->GetProxy();
+}
+
+void TimelineProxy::RegisterEventListener(Pegasus::Core::CompilerEvents::ICompilerEventListener * eventListener)
+{
+    mTimeline->RegisterEventListener(eventListener);
 }
 
 

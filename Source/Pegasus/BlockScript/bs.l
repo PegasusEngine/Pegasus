@@ -36,11 +36,11 @@
     #define BS_FLOAT(t)   BS_lval.floatValue = Pegasus::Utils::Atof(BS_text); return t;
     #define BS_STRING(t)  int strLen = Pegasus::Utils::Strlen(BS_text) + 1;\
                           if (strLen >=  Pegasus::BlockScript::IddStrPool::sCharsPerString){\
-                            BS_error("Identifier string too long!\n");\
+                            BS_ErrorDispatcher(BS_GlobalBuilder, "Identifier string too long!\n");\
                             yyterminate();\
                           }else{\
                             char * str = BS_GlobalBuilder->GetStringPool().AllocateString();\
-                            if (str == nullptr) { BS_error("Out of identifier memory!"); yyterminate(); }\
+                            if (str == nullptr) { BS_ErrorDispatcher( BS_GlobalBuilder, "Out of identifier memory!"); yyterminate(); }\
                             BS_lval.identifierText = str;\
                             str[0] = '\0';\
                             Pegasus::Utils::Strcat(str, BS_text);\
@@ -54,14 +54,15 @@
     #undef YY_INPUT
     #define YY_INPUT(buffer, bytesToRead, maxToRead) BS_readInput(buffer, bytesToRead, maxToRead)
 
-    int BS_line = 1;
-
     using namespace Pegasus::BlockScript;
     using namespace Pegasus::Io;
 
     int BS_bufferPosition = 0;
     extern const FileBuffer* BS_GlobalFileBuffer;
     extern BlockScriptBuilder* BS_GlobalBuilder;
+
+    extern void BS_ErrorDispatcher(BlockScriptBuilder* builder, const char* message) ;
+
 
     bool BS_HasNext()
     {
@@ -77,7 +78,6 @@
         result = static_cast<yy_size_t>(bytesRead);
         return 0;//always correct
     }
-    extern void BS_error(const char *s);
 
     char BS_StringBlockAccumulator[512];
     int  BS_StringBlockAccumulatorPos = 0;
@@ -91,13 +91,13 @@
 %%
 <IN_LINE_COMMENT>
 {
-\n   { ++BS_line; BEGIN(INITIAL); }
+\n   { BS_GlobalBuilder->IncrementLine(); BEGIN(INITIAL); }
 .    ;
 }
 <MULTI_COMMENT>
 {
 \*\/ { BEGIN(INITIAL); }
-\n   { ++BS_line; }
+\n   { BS_GlobalBuilder->IncrementLine(); }
 .    ;
 }
 
@@ -113,7 +113,7 @@
 .   {
         if (BS_StringBlockAccumulatorPos >= 511)
         {
-            BS_error("Out of string block memory! keep imm strings within 512 chars.");
+            BS_ErrorDispatcher(BS_GlobalBuilder, "Out of string block memory! keep imm strings within 512 chars.");
             yyterminate();
         }
         else
@@ -129,7 +129,7 @@
 \/\*            { BEGIN(MULTI_COMMENT);  }
 \"              { BS_StringBlockAccumulatorPos = 0; BEGIN(STRING_BLOCK); }
 [ \t]            ;
-\n              { ++BS_line;       }
+\n              { BS_GlobalBuilder->IncrementLine();       }
 if              { return K_IF;     }
 elif            { return K_ELSE_IF;}
 else            { return K_ELSE;   }

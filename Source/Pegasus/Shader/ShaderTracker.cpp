@@ -13,112 +13,104 @@
 #include "Pegasus/Shader/ShaderTracker.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Shader/ShaderStage.h"
+#include "Pegasus/Allocator/IAllocator.h"
 
+using namespace Pegasus;
+using namespace Pegasus::Utils;
 using namespace Pegasus::Shader;
 
-static void AppendPointerList(void** list, int& size, void * element)
-{
-    if (size < ShaderTracker::MAX_SHADER_CONTAINER)
-    {
-        list[size] = element;
-        ++size;
-    }
-    else
-    {
-        PG_FAILSTR("Increase container size for shader tracker");
-    }
-}
-
-static void*  DeletePackPointerList(void** list, int& listSize, int id) 
-{
-    if (id >= 0 && id < listSize)
-    {
-        void * foundVal = list[id];
-        //pack and delete backwards
-        for (int i = id; i < listSize - 1; ++i)
-        {
-            list[i] = list[i + 1];
-        }
-        --listSize;
-        
-        return foundVal;
-    }
-    return nullptr;
-}
-
-
-static int FindPointerList( void * const * list , int listSize, void * element)
-{
-    for (int i = 0; i < listSize; ++i)
-    {
-        if (element == list[i]) return i;
-    }
-    return -1; 
-}
-
-
-ShaderTracker::ShaderTracker()
+ShaderTracker::ShaderTracker(Alloc::IAllocator* alloc)
 :
-    mShaderSize(0), mProgramSize(0)
+    mShaderStages(alloc), mProgramLinkages(alloc)
 {
 }
 
 void ShaderTracker::InsertProgram(ProgramLinkage * program)
 {
-    AppendPointerList(mProgramLinkages, mProgramSize, program);    
+    mProgramLinkages.PushEmpty() = program;
 }
 
 void ShaderTracker::InsertShader (ShaderStage * shader)
 {
-    AppendPointerList(mShaderStages, mShaderSize, shader);    
+    mShaderStages.PushEmpty() = shader;
 }    
 
 void ShaderTracker::DeleteProgram(ProgramLinkage * program)
 {
-    int id = FindProgramIndex(program);     
-    DeleteProgram(id);
+    for (int i = 0; i < mProgramLinkages.GetSize(); ++i)
+    {
+        if (mProgramLinkages[i] == program)
+        {
+            mProgramLinkages.Delete(i);
+            return;
+        }
+    }
 }
 
 void ShaderTracker::DeleteShader (ShaderStage * shader)
 {
-    int id = FindShaderIndex(shader);     
-    DeleteShader(id);
+    for (int i = 0; i < mShaderStages.GetSize(); ++i)
+    {
+        if (mShaderStages[i] == shader)
+        {
+            mShaderStages.Delete(i);
+            return;
+        }
+    }
 }
 
 ShaderStage* ShaderTracker::DeleteShader (int id)
 {
-    return static_cast<ShaderStage*>(DeletePackPointerList(mShaderStages, mShaderSize, id)); 
+    ShaderStage* stage = mShaderStages[id];
+    mShaderStages.Delete(id);
+    return stage;
 }
 
 ProgramLinkage* ShaderTracker::DeleteProgram(int id)
 {
-    return static_cast<ProgramLinkage*>(DeletePackPointerList(mProgramLinkages, mProgramSize, id)); 
+    ProgramLinkage* prog = mProgramLinkages[id];
+    mProgramLinkages.Delete(id);
+    return prog;
 }
 
 int ShaderTracker::FindShaderIndex(ShaderStage* shader) const
 {
-    return FindPointerList(mShaderStages, mShaderSize, shader);
+    for (int i = 0; i < mShaderStages.GetSize(); ++i)
+    {
+        if (mShaderStages[i] == shader)
+        {
+            return i;
+        }
+    }
+    return -1;
 }
 
 int ShaderTracker::FindProgramIndex(ProgramLinkage* program) const
 {
-    return FindPointerList(mProgramLinkages, mProgramSize, program);
+    for (int i = 0; i < mProgramLinkages.GetSize(); ++i)
+    {
+        if (mProgramLinkages[i] == program)
+        {
+            return i;
+        }
+    }
+    return -1;
 }
 
 ProgramLinkage*  ShaderTracker::GetProgram(int id) const
 {
-    if (id >= 0 && id < mProgramSize)
+    if (id >= 0 && id < ProgramSize())
     {
-        return static_cast<ProgramLinkage*>(mProgramLinkages[id]);
+        return mProgramLinkages[id];
     }
     return nullptr;
 }
 
 ShaderStage*  ShaderTracker::GetShaderStage(int id) const
 {
-    if (id >= 0 && id < mShaderSize)
+    if (id >= 0 && id < ShaderSize())
     {
-        return static_cast<ShaderStage*>(mShaderStages[id]);
+        return mShaderStages[id];
     }
     return nullptr;
 }

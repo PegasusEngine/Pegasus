@@ -59,6 +59,12 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\ScriptHelper.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\ScriptTracker.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Proxy\ScriptProxy.h">
+      <Filter>Include\Proxy</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\Timeline.cpp">
@@ -81,6 +87,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\ScriptHelper.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\ScriptTracker.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\Proxy\ScriptProxy.cpp">
+      <Filter>Source\Proxy</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

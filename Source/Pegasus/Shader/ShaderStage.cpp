@@ -89,11 +89,8 @@ void Pegasus::Shader::ShaderStage::ReleaseDataAndPropagate()
 
 void Pegasus::Shader::ShaderStage::SetSource(Pegasus::Shader::ShaderType type, const char * src, int srcSize)
 {
-    //! mark data as dirty
-    if (GetData() != nullptr)
-    {
-        GetData()->Invalidate();
-    }
+
+    InvalidateData();
 
     //reallocate buffer size if more space requested on recompilation
     if (srcSize > mFileBuffer.GetFileSize())
@@ -125,13 +122,8 @@ void Pegasus::Shader::ShaderStage::GetSource ( const char ** outSrc, int& outSiz
 
 bool Pegasus::Shader::ShaderStage::SetSourceFromFile(Pegasus::Shader::ShaderType type, const char * path)
 {
+    InvalidateData();
     PG_ASSERTSTR(mLoader != nullptr, "You must set the file loader first before calling any IO!");
-
-    if (GetData() != nullptr)
-    {
-        GetData()->Invalidate();
-    }
-
     PG_ASSERT(path != nullptr);
     mType = type;
     if (mType != Pegasus::Shader::SHADER_STAGE_INVALID)
@@ -175,6 +167,16 @@ bool Pegasus::Shader::ShaderStage::SetSourceFromFile(Pegasus::Shader::ShaderType
         );
     }
     return false;
+}
+
+
+void Pegasus::Shader::ShaderStage::InvalidateData()
+{
+    //! mark data as dirty
+    if (GetData() != nullptr)
+    {
+        GetData()->Invalidate();
+    }
 }
 
 Pegasus::Graph::NodeData * Pegasus::Shader::ShaderStage::AllocateData() const

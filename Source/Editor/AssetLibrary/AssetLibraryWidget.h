@@ -52,6 +52,9 @@ public slots:
 
     //! slot triggered when something has been selected through program tree view
     void DispatchTextEditorThroughProgramView(const QModelIndex& index);
+
+     //! slot triggered when something has been selected through blockscript tree view
+    void DispatchTextEditorThroughBlockScriptView(const QModelIndex& index);
     
     //! slot triggered when the editor style has changed, forces the text editor to resync styles
     void UpdateEditorStyle();
@@ -87,8 +90,14 @@ private:
     //! reference to the shader list data model
     SourceCodeListModel * mShaderListModel;
 
+    //! reference to the block script list data model
+    SourceCodeListModel * mBlockScriptListModel;
+
     //! reference to the shader list selection model (used to determine what shader is selected)
     QItemSelectionModel * mShaderListSelectionModel;
+
+    //! reference to the shader list selection model (used to determine what shader is selected)
+    QItemSelectionModel * mBlockScriptListSelectionModel;
     
     //! reference to the shader text editor widget
     CodeEditorWidget * mCodeEditorWidget;

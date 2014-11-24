@@ -563,11 +563,11 @@ char *BS_text;
     #define BS_FLOAT(t)   BS_lval.floatValue = Pegasus::Utils::Atof(BS_text); return t;
     #define BS_STRING(t)  int strLen = Pegasus::Utils::Strlen(BS_text) + 1;\
                           if (strLen >=  Pegasus::BlockScript::IddStrPool::sCharsPerString){\
-                            BS_error("Identifier string too long!\n");\
+                            BS_ErrorDispatcher(BS_GlobalBuilder, "Identifier string too long!\n");\
                             yyterminate();\
                           }else{\
                             char * str = BS_GlobalBuilder->GetStringPool().AllocateString();\
-                            if (str == nullptr) { BS_error("Out of identifier memory!"); yyterminate(); }\
+                            if (str == nullptr) { BS_ErrorDispatcher( BS_GlobalBuilder, "Out of identifier memory!"); yyterminate(); }\
                             BS_lval.identifierText = str;\
                             str[0] = '\0';\
                             Pegasus::Utils::Strcat(str, BS_text);\
@@ -581,14 +581,15 @@ char *BS_text;
     #undef YY_INPUT
     #define YY_INPUT(buffer, bytesToRead, maxToRead) BS_readInput(buffer, bytesToRead, maxToRead)
 
-    int BS_line = 1;
-
     using namespace Pegasus::BlockScript;
     using namespace Pegasus::Io;
 
     int BS_bufferPosition = 0;
     extern const FileBuffer* BS_GlobalFileBuffer;
     extern BlockScriptBuilder* BS_GlobalBuilder;
+
+    extern void BS_ErrorDispatcher(BlockScriptBuilder* builder, const char* message) ;
+
 
     bool BS_HasNext()
     {
@@ -604,7 +605,6 @@ char *BS_text;
         result = static_cast<yy_size_t>(bytesRead);
         return 0;//always correct
     }
-    extern void BS_error(const char *s);
 
     char BS_StringBlockAccumulator[512];
     int  BS_StringBlockAccumulatorPos = 0;
@@ -883,7 +883,7 @@ case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
 #line 94 "bs.l"
-{ ++BS_line; BEGIN(INITIAL); }
+{ BS_GlobalBuilder->IncrementLine(); BEGIN(INITIAL); }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
@@ -902,7 +902,7 @@ case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
 #line 100 "bs.l"
-{ ++BS_line; }
+{ BS_GlobalBuilder->IncrementLine(); }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
@@ -929,7 +929,7 @@ YY_RULE_SETUP
 {
         if (BS_StringBlockAccumulatorPos >= 511)
         {
-            BS_error("Out of string block memory! keep imm strings within 512 chars.");
+            BS_ErrorDispatcher(BS_GlobalBuilder, "Out of string block memory! keep imm strings within 512 chars.");
             yyterminate();
         }
         else
@@ -965,7 +965,7 @@ case 12:
 /* rule 12 can match eol */
 YY_RULE_SETUP
 #line 132 "bs.l"
-{ ++BS_line;       }
+{ BS_GlobalBuilder->IncrementLine();       }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP

@@ -35,6 +35,8 @@
 
 static const char * DOCKABLE_DESC = "Dockable: Allow to be docked when hovering over main window.";
 static const char * UNDOCKABLE_DESC = "Undockable: Allow to hover over window w/o docking.";
+static const char * INSTANT_COMPILATION_DESC_ON = "Turn instant compilation ON\nInstant Compilation Mode: code gets compiled at every key stroke, in an efficient manner. ";
+static const char * INSTANT_COMPILATION_DESC_OFF = "Turn instant compilation OFF\nInstant Compilation Mode: code gets compiled at every key stroke, in an efficient manner. ";
 
 CodeEditorWidget::CodeEditorWidget (QWidget * parent)
 : 
@@ -48,7 +50,10 @@ CodeEditorWidget::CodeEditorWidget (QWidget * parent)
     mSaveAction(nullptr),
     mHorizontalAction(nullptr),
     mVerticalAction(nullptr),
-    mCompilationRequestMutex(nullptr)
+    mCompilationRequestMutex(nullptr),
+    mInstantCompilationFlag(true), //on by default
+    mSavedInstantCompilationFlag(true),
+    mCompilationPolicy(Pegasus::Core::ISourceCodeProxy::POLICY_USER_DEFINED)
 {
     mCompilationRequestMutex = new QMutex();
     SetupUi();
@@ -78,12 +83,15 @@ void CodeEditorWidget::SetupUi()
     QIcon singleIcon(tr(":/CodeEditor/single.png"));
     QIcon verticalIcon(tr(":/CodeEditor/vertical.png"));
     QIcon horizontalIcon(tr(":/CodeEditor/horizontal.png"));
+    QIcon compileIcon(tr(":/CodeEditor/compile.png"));
 
     mSaveAction = toolBar->addAction(saveIcon, tr("save this source to its file"));
 
     mCloseViewAction  = toolBar->addAction(singleIcon, tr("close current view"));
     mVerticalAction   = toolBar->addAction(verticalIcon, tr("split views vertically"));
     mHorizontalAction = toolBar->addAction(horizontalIcon, tr("split views horizontally"));
+    mCompileAction    = toolBar->addAction(compileIcon, tr("compile current code (Ctrl + F7)"));
+    mCompileAction->setShortcut(tr("Ctrl+F7"));
 
     toolBar->addSeparator();
 
@@ -91,11 +99,18 @@ void CodeEditorWidget::SetupUi()
     mUnpinIcon.addFile(tr(":/CodeEditor/unpin.png"));
     mPinAction = toolBar->addAction(mUnpinIcon, tr(UNDOCKABLE_DESC));   
 
+    mOnInstantCompilationIcon.addFile(tr(":/Toolbar/Edit/switchon.png"));
+    mOffInstantCompilationIcon.addFile(tr(":/Toolbar/Edit/switchoff.png"));
+
+    mInstantCompilationAction = toolBar->addAction(mOnInstantCompilationIcon, INSTANT_COMPILATION_DESC_OFF);
     toolBar->setIconSize(QSize(16,16));
 
     // connect toolbar actions
     connect(mPinAction, SIGNAL(triggered(bool)),
             this, SLOT(SignalPinActionTriggered()));
+
+    connect(mInstantCompilationAction, SIGNAL(triggered(bool)),
+            this, SLOT(SignalInstantCompilationActionTriggered()));
     
 
     mSaveAction->setShortcut(tr("Ctrl+S"));
@@ -153,6 +168,11 @@ void CodeEditorWidget::SetupUi()
     );
 
     connect(
+        mCompileAction, SIGNAL(triggered(bool)),
+        this, SLOT(SignalCompileCurrentCode())
+    );
+
+    connect(
         mUi.mTabWidget, SIGNAL(currentChanged(int)),
         this,   SLOT(SignalViewCode(int))
     );
@@ -193,9 +213,24 @@ void CodeEditorWidget::FlushTextEditorToCode(int id)
         {
             editor->FlushTextToCode();
         }
+
     }
     mCompilationRequestPending = false;
     mCompilationRequestMutex->unlock();
+}
+
+void CodeEditorWidget::SignalCompileCurrentCode()
+{
+    int idx = mUi.mTabWidget->currentIndex();
+    if (idx >= 0 && idx < mOpenCodeCount)
+    {
+        Pegasus::Core::ISourceCodeProxy * code = mOpenedCodes[idx];
+        if (code != nullptr)
+        {
+            //ensure that no compilation is happening while saving this file
+            CompileCode(idx);
+        }
+    }
 }
 
 void CodeEditorWidget::SignalCompilationError(void * srcPtr, int line, QString errorString)
@@ -225,15 +260,7 @@ void CodeEditorWidget::SignalLinkingEvent(void * program, QString message, int e
     {
         if (static_cast<Pegasus::Core::CompilerEvents::LinkingEvent::Type>(eventType) != Pegasus::Core::CompilerEvents::LinkingEvent::LINKING_SUCCESS)
         {
-            //do not opaque the previous string if this one is empty
-            if (mUi.mStatusBarMessage == "" && message != "")
-            {
-                PostStatusBarMessage(message);
-            }
-        }
-        else
-        {
-             PostStatusBarMessage("");
+            PostStatusBarMessage(message);
         }
     }
 }
@@ -244,6 +271,7 @@ void CodeEditorWidget::SignalCompilationBegin(void * code)
     CodeTextEditorWidget * editor = mUi.mTreeEditor->FindCodeInEditors(target);
     if (editor != nullptr && target->GetUserData() != nullptr)
     {
+        PostStatusBarMessage("");
         CodeUserData * codeUserData = static_cast<CodeUserData*>(target->GetUserData());
         ED_ASSERT(!codeUserData->IsProgram());
         QSet<int> lineSetCopy = codeUserData->GetInvalidLineSet();
@@ -258,7 +286,14 @@ void CodeEditorWidget::SignalCompilationBegin(void * code)
 void CodeEditorWidget::SignalCompilationEnd(QString log)
 {
     //update the status bar with whichever compilation error.
-    PostStatusBarMessage(log);
+    if (log != "")
+    {
+        PostStatusBarMessage(log);
+    }
+    else
+    {
+         PostStatusBarMessage("File Compiled Successfuly.");
+    }
 }
 
 void CodeEditorWidget::SignalPinActionTriggered()
@@ -278,8 +313,34 @@ void CodeEditorWidget::SignalPinActionTriggered()
     } 
 }
 
+void CodeEditorWidget::SetInstantCompilationState(bool state)
+{
+    if (state)
+    {
+        mInstantCompilationAction->setIcon(mOnInstantCompilationIcon);
+        mInstantCompilationAction->setToolTip(tr(INSTANT_COMPILATION_DESC_OFF));
+    }
+    else
+    {   
+        mInstantCompilationAction->setIcon(mOffInstantCompilationIcon);
+        mInstantCompilationAction->setToolTip(tr(INSTANT_COMPILATION_DESC_ON));
+    }
+    mInstantCompilationFlag = state;
+}
+
+void CodeEditorWidget::EnableModeInstantCompilationButton(bool enableMode)
+{
+    mInstantCompilationAction->setDisabled(!enableMode);
+}
+
+void CodeEditorWidget::SignalInstantCompilationActionTriggered()
+{
+    SetInstantCompilationState(!mInstantCompilationFlag);
+}
+
 void CodeEditorWidget::SignalSaveCurrentCode()
 {
+    PostStatusBarMessage("");
     int idx = mUi.mTabWidget->currentIndex();
     if (idx >= 0 && idx < mOpenCodeCount)
     {
@@ -311,8 +372,11 @@ void CodeEditorWidget::SignalViewCode(int tabId)
         {
             editor = mUi.mTreeEditor->FindCodeInEditors(mOpenedCodes[mPreviousTabIndex]);
         }
-
+        mInternalBlockTextUpdated = true;
         mUi.mTreeEditor->DisplayCode(mOpenedCodes[tabId], editor);
+        mInternalBlockTextUpdated = false;
+
+        UpdateInstantCompilationButton(mOpenedCodes[tabId]);
 
         mPreviousTabIndex = tabId;
     }
@@ -335,7 +399,7 @@ int CodeEditorWidget::FindIndex(Pegasus::Core::ISourceCodeProxy * target)
 {
     for (int i = 0; i < mOpenCodeCount; ++i)
     {
-        if (target->GetGuid() == mOpenedCodes[i]->GetGuid())
+        if (target == mOpenedCodes[i])
         {
             return i;
         }
@@ -358,8 +422,12 @@ int CodeEditorWidget::FindIndex(CodeTextEditorWidget * target)
 
 void CodeEditorWidget::PostStatusBarMessage(const QString& message)
 {
-    mUi.mStatusBarMessage = message;
-    mUi.mStatusBar->showMessage(message);
+    // do not opaque the previous error
+    if (message == "" || mUi.mStatusBarMessage == "")
+    {
+        mUi.mStatusBarMessage = message;
+        mUi.mStatusBar->showMessage(message);
+    }
 }
 
 void CodeEditorWidget::OnSettingsChanged()
@@ -371,7 +439,9 @@ void CodeEditorWidget::RequestClose(int index)
 {
     ED_ASSERT(index >= 0 && index < mOpenCodeCount);
     //remove tab
+    mInternalBlockTextUpdated = true;
     mUi.mTreeEditor->HideCode(mOpenedCodes[index]);
+    mInternalBlockTextUpdated = false;
 
     //compress the opened code list
     for (int i = index; i < mOpenCodeCount - 1; ++i)
@@ -387,17 +457,14 @@ void CodeEditorWidget::RequestClose(int index)
 void CodeEditorWidget::OnTextChanged(QWidget * sender)
 {
     //do not trigger a text update event if the syntax highlighter rehighlights
-    if (mInternalBlockTextUpdated)
+    if (!mInstantCompilationFlag || mInternalBlockTextUpdated)
         return;
 
     CodeTextEditorWidget * textEditor = static_cast<CodeTextEditorWidget*>(sender);
     int id = FindIndex(textEditor);
     if (id != -1)
     {
-
         CompileCode(id);
-        //we are reducing here the number of accesses to the mutex
-      
     }
 }
 
@@ -407,6 +474,7 @@ void CodeEditorWidget::OnTextWindowSelected(QWidget * sender)
     if (textEditor != nullptr)
     {
         Pegasus::Core::ISourceCodeProxy * code = textEditor->GetCode();
+
         if (code != nullptr)
         {
             int i = FindIndex(code);
@@ -439,8 +507,48 @@ void CodeEditorWidget::CompileCode(int id)
     }
 }
 
+void CodeEditorWidget::UpdateInstantCompilationButton(Pegasus::Core::ISourceCodeProxy* proxy)
+{
+    if (mCompilationPolicy != proxy->GetCompilationPolicy())
+    {
+        mCompilationPolicy = proxy->GetCompilationPolicy();
+        if (mCompilationPolicy == Pegasus::Core::ISourceCodeProxy::POLICY_USER_DEFINED)
+        {
+            if (!mInstantCompilationAction->isEnabled())
+            {
+                EnableModeInstantCompilationButton(true);
+                SetInstantCompilationState(mSavedInstantCompilationFlag);
+            }
+        }
+        else
+        {
+            ED_ASSERT(mCompilationPolicy == Pegasus::Core::ISourceCodeProxy::POLICY_FORCE_ON_SAVE);
+            mSavedInstantCompilationFlag = mInstantCompilationFlag;
+            SetInstantCompilationState(false);
+            EnableModeInstantCompilationButton(false);
+        }
+    }
+
+}
+
 void CodeEditorWidget::RequestOpen(Pegasus::Core::ISourceCodeProxy * codeProxy)
 {
+    //dump code contents to document text
+    //set the text of the current text editor
+    const char * srcChar = nullptr;
+    int srcSize = 0;
+    codeProxy->GetSource(&srcChar, srcSize);
+    QChar * qchar = new QChar[srcSize];
+    for (int i = 0; i < srcSize; ++i)
+    {
+        qchar[i] = srcChar[i];
+    }
+
+    CodeUserData* codeUserData = static_cast<CodeUserData*>(codeProxy->GetUserData());
+    QString srcQString(qchar, srcSize);
+    codeUserData->GetDocument()->setPlainText(srcQString);
+    delete[] qchar;            
+
     int currentTabIndex = FindIndex(codeProxy);
     if (currentTabIndex == -1)
     {
@@ -461,7 +569,6 @@ void CodeEditorWidget::RequestOpen(Pegasus::Core::ISourceCodeProxy * codeProxy)
 
             //is this opened already in the pool?
             mUi.mTabWidget->addTab(QString(codeProxy->GetName()));
-
         }
     }
     mUi.mTabWidget->setCurrentIndex(currentTabIndex); 
@@ -480,4 +587,3 @@ void CodeEditorWidget::UpdateUIForAppFinished()
     }
     mCompilationRequestPending = false; //kill any compilation request
 }
-

@@ -11,24 +11,19 @@
 
 #include "Pegasus/BlockScript/BlockScript.h"
 #include "Pegasus/BlockScript/BlockScriptAst.h"
+#include "Pegasus/BlockScript/IBlockScriptCompilerListener.h"
 #include "Pegasus/Core/Io.h"
 
 #include <stdio.h>
 
 using namespace Pegasus;
 
-extern int BS_line;
-extern char* BS_text;
-extern BlockScript::BlockScriptBuilder* BS_GlobalBuilder;
-void onError(const char * str) { BS_GlobalBuilder->IncErrorCount(); printf("%d: %s [around token \"%s\"]\n", BS_line, str, BS_text); }
 extern void Bison_BlockScriptParse(const Io::FileBuffer* fileBuffer, BlockScript::BlockScriptBuilder* builder);
-
 
 BlockScript::BlockScript::BlockScript(Alloc::IAllocator* allocator)
 : mAllocator(allocator), mAst(nullptr)
 {
-    mBuilder.Initialize(mAllocator, onError);
-    mVmState.Initialize(allocator);
+    mBuilder.Initialize(mAllocator);
 }
 
 BlockScript::BlockScript::~BlockScript()
@@ -49,14 +44,13 @@ bool BlockScript::BlockScript::Compile(const Io::FileBuffer* fb)
 void BlockScript::BlockScript::Reset()
 {
     mBuilder.Reset();
-    mVmState.Reset();
     mAst = nullptr;
 }
 
-void BlockScript::BlockScript::Run() 
+void BlockScript::BlockScript::Run(BsVmState* vmState) 
 { 
     // rrrrrrrrun!! boy
-    mVm.Run(GetAsm(), mVmState);
+    mVm.Run(GetAsm(), *vmState);
 }
 
 BlockScript::FunBindPoint BlockScript::BlockScript::GetFunctionBindPoint(
@@ -75,6 +69,7 @@ BlockScript::FunBindPoint BlockScript::BlockScript::GetFunctionBindPoint(
 }
 
 bool BlockScript::BlockScript::ExecuteFunction(
+    BsVmState* vmState,
     FunBindPoint functionBindPoint,
     void* inputBuffer,
     int   inputBufferSize,
@@ -86,12 +81,17 @@ bool BlockScript::BlockScript::ExecuteFunction(
         functionBindPoint,
         &mBuilder,
         mAsm,
-        mVmState,
+        *vmState,
         mVm,
         inputBuffer,
         inputBufferSize,
         outputBuffer,
         outputBufferSize
     );
+}
+
+void BlockScript::BlockScript::SetCompilerEventListener(Pegasus::BlockScript::IBlockScriptCompilerListener* listener)
+{
+    mBuilder.SetEventListener(listener);
 }
 

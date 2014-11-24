@@ -105,11 +105,17 @@ private slots:
     //! signal triggered when pin icon is pressed in the toolbar
     void SignalPinActionTriggered(); 
 
+    //! signal triggered when pin icon is pressed in the toolbar
+    void SignalInstantCompilationActionTriggered(); 
+
     //! signal triggered when the user clicks on the save button
     void SignalSaveCurrentCode();
 
     //! signal triggered when a file save has ended successfuly
     void SignalSavedFileSuccess();
+
+    //! Compiles current code
+    void SignalCompileCurrentCode();
 
     //! signal triggered when a file save has ended badly
     void SignalSavedFileIoError(int ioError, QString msg);
@@ -120,6 +126,10 @@ private slots:
 
     //! signal to update the UI for the editor once the app is finished
     void UpdateUIForAppFinished();
+
+    //! function that disables or enables the instant compilation button.
+    //! \param true to enable the button, false otherwise
+    void EnableModeInstantCompilationButton(bool enableValue);
     
 
 private:
@@ -129,8 +139,14 @@ private:
     //! \param the line number to update
     void UpdateSyntaxForLine(CodeTextEditorWidget * editor, int line);
 
+    //! Sets the state and updates the UI of the instant compilation switch
+    //! \param state, if true the ui updates the instant compilation switch on, otherwise off
+    void SetInstantCompilationState(bool state);
+
     //! sets the ui. To be used internally
     void SetupUi();
+
+    void UpdateInstantCompilationButton(Pegasus::Core::ISourceCodeProxy* proxy);
 
     //! finds the index of a particular Code
     int  FindIndex(Pegasus::Core::ISourceCodeProxy * target);
@@ -163,17 +179,31 @@ private:
     //! toolbar actions
     QIcon mPinIcon;
     QIcon mUnpinIcon;
+    QIcon mOnInstantCompilationIcon;
+    QIcon mOffInstantCompilationIcon;
+
     QAction * mPinAction;
     QAction * mSaveAction;
     QAction * mCloseViewAction;
     QAction * mHorizontalAction;
     QAction * mVerticalAction;
+    QAction * mInstantCompilationAction;
+    QAction * mCompileAction;
 
     //! compilation barrier. Throttles compilation if a signal has been sent
     bool mCompilationRequestPending;
     QMutex * mCompilationRequestMutex;
 
     bool mInternalBlockTextUpdated;
+
+    //flags for autocompilation
+    bool mInstantCompilationFlag;
+    
+    // flag saved when it is automatically forced
+    bool mSavedInstantCompilationFlag;
+
+    Pegasus::Core::ISourceCodeProxy::CompilationPolicy mCompilationPolicy;
+
 
     
     

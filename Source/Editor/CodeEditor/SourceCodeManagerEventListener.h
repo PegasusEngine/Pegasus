@@ -20,6 +20,8 @@
 
 class AssetLibraryWidget;
 
+class QTextDocument;
+
 //! User interface state user data for code
 class CodeUserData : public Pegasus::Graph::IGraphUserData
 {
@@ -85,11 +87,18 @@ public:
     //! Sets an error message to be carried. 
     void SetErrorMessage(const QString& message) { mErrorMessage = message; }
 
+    //! sets the intermediate document
+    void SetDocument(QTextDocument* document) { mIntermediateDocument = document; }
+
+    //! gets the intermediate document
+    QTextDocument* GetDocument() const { return mIntermediateDocument; }
+
 private:
     bool mIsValid;
     QSet<int> mInvalidLinesSet;
     QMap<int, QString> mMessagesMap;
     QString mErrorMessage;
+    QTextDocument* mIntermediateDocument;
     bool mIsProgram;
     
     union {

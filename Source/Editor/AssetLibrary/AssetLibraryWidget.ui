@@ -16,7 +16,7 @@
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QHBoxLayout" name="horizontalLayout_2">
     <item>
-     <widget class="QTabWidget" name="BlockScriptTreeView">
+     <widget class="QTabWidget" name="MasterTabWidget">
       <property name="currentIndex">
        <number>2</number>
       </property>
@@ -145,7 +145,7 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QTreeView" name="treeView"/>
+         <widget class="QTreeView" name="BlockScriptTreeView"/>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_5">

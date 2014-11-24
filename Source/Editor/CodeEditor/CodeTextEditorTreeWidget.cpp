@@ -220,7 +220,7 @@ CodeTextEditorWidget * CodeTextEditorTreeWidget::FindCodeInEditors(Pegasus::Core
         {
             if (
                 (proxy == nullptr && child.mLeafChild->GetCode() == nullptr) || //next available editor slot is empty?
-                (proxy != nullptr && child.mLeafChild->GetCode() != nullptr && child.mLeafChild->GetCode()->GetGuid() == proxy->GetGuid())
+                (proxy != nullptr && child.mLeafChild->GetCode() != nullptr && child.mLeafChild->GetCode() == proxy)
                )
             {
                 return child.mLeafChild;

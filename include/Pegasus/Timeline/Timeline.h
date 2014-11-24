@@ -14,8 +14,16 @@
 
 #include "Pegasus/Timeline/Shared/TimelineDefs.h"
 #include "Pegasus/Timeline/Proxy/TimelineProxy.h"
+#include "Pegasus/Timeline/ScriptTracker.h"
 
 namespace Pegasus {
+
+    namespace Core {
+        namespace CompilerEvents {
+            class ICompilerEventListener;
+        }
+    }
+
     namespace Timeline {
         class Block;
         class Lane;
@@ -207,6 +215,20 @@ public:
     //! \return Current beat, in number of ticks, can have fractional part
     inline float GetCurrentBeat() const { return mCurrentBeat; }
 
+#if PEGASUS_USE_GRAPH_EVENTS
+    //! Register a compiler event listener for blocks that have scripts and get compiled.
+    //! \param eventListener - the listener to events during compilation
+    void RegisterEventListener(Pegasus::Core::CompilerEvents::ICompilerEventListener * eventListener);
+
+    //! Gets the event listener registered
+    //! \return the event listener registered.
+    Pegasus::Core::CompilerEvents::ICompilerEventListener* GetEventListener() const { return mEventListener; }
+#endif
+
+    //! Gets the script tracker registered
+    //! \return the script tracker
+    ScriptTracker* GetScriptTracker() { return &mScriptTracker; }
+
 
 #if PEGASUS_ENABLE_PROXIES
 
@@ -307,6 +329,13 @@ private:
 
     //! True if the start time has been modified to synchronize the beat of the timeline with the music
     bool mSyncedToMusic;
+
+#if PEGASUS_USE_GRAPH_EVENTS
+    //! Reference to the event listener
+    Core::CompilerEvents::ICompilerEventListener* mEventListener;
+#endif
+    
+    ScriptTracker mScriptTracker;
 };
 
 

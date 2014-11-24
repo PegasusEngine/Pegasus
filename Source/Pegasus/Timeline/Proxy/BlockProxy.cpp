@@ -18,6 +18,8 @@ PEGASUS_AVOID_EMPTY_FILE_WARNING
 #include "Pegasus/Timeline/Proxy/LaneProxy.h"
 #include "Pegasus/Timeline/Block.h"
 #include "Pegasus/Timeline/Lane.h"
+#include "Pegasus/Timeline/ScriptHelper.h"
+#include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 
 namespace Pegasus {
 namespace Timeline {
@@ -85,8 +87,21 @@ void BlockProxy::GetColor(unsigned char & red, unsigned char & green, unsigned c
     mBlock->GetColor(red, green, blue);
 }
 
+//----------------------------------------------------------------------------------------
+
+Core::ISourceCodeProxy* BlockProxy::GetScript() const
+{
+    ScriptHelper* helper = mBlock->GetScript();
+    if (helper != nullptr)
+    {
+        return helper->GetProxy();
+    }
+
+    return nullptr;
+}
 
 }   // namespace Timeline
 }   // namespace Pegasus
+
 
 #endif  // PEGASUS_ENABLE_PROXIES

@@ -84,6 +84,9 @@ public:
     //! \param loader the actual loader to be used
     void SetIoManager(Pegasus::Io::IOManager * loader) { mLoader = loader;}
 
+    //! Invalidates internal data, next update will cause a recompilation.
+    void InvalidateData();
+
     //! Deallocate the data of the current node and ask the input nodes to do the same.
     //! Typically used when keeping the graph in memory but not the associated data,
     //! to save memory and to be able to restore the data later

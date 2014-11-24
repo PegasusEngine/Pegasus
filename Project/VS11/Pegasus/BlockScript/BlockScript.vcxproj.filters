@@ -136,5 +136,8 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\FunCallback.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\IBlockScriptCompilerListener.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

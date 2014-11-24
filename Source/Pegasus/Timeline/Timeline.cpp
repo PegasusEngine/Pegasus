@@ -10,7 +10,9 @@
 //! \brief	Timeline management, manages a set of blocks stored in lanes to sequence demo rendering
 
 #include "Pegasus/Timeline/Timeline.h"
+#include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Timeline/Lane.h"
+#include "Pegasus/Timeline/ScriptHelper.h"
 #include "Pegasus/Core/Time.h"
 #include "Pegasus/Math/Scalar.h"
 #include "Pegasus/Utils/String.h"
@@ -44,6 +46,10 @@ Timeline::Timeline(Alloc::IAllocator * allocator, Wnd::IWindowContext * appConte
 ,   mProxy(this)
 ,   mRequiresStartTimeComputation(false)
 #endif
+#if PEGASUS_USE_GRAPH_EVENTS
+,   mEventListener(nullptr)
+#endif
+,   mScriptTracker(allocator)
 {
     PG_ASSERTSTR(allocator != nullptr, "Invalid allocator given to the timeline object");
     PG_ASSERTSTR(appContext != nullptr, "Invalid application context given to the timeline object");
@@ -477,6 +483,20 @@ void Timeline::SetCurrentBeat(float beat)
     }
 #endif  // PEGASUS_ENABLE_PROXIES
 }
+
+//----------------------------------------------------------------------------------------
+
+
+#if PEGASUS_USE_GRAPH_EVENTS
+void Timeline::RegisterEventListener(Pegasus::Core::CompilerEvents::ICompilerEventListener * eventListener)
+{
+    for (int i = 0; i < mScriptTracker.GetScriptCount(); ++i)
+    {
+        mScriptTracker.GetScriptById(i)->SetEventListener(mEventListener);
+    }
+    mEventListener = eventListener;
+}
+#endif
 
 //----------------------------------------------------------------------------------------
 

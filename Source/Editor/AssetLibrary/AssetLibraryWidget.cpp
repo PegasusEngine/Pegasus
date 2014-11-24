@@ -23,7 +23,9 @@
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
+#include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 #include <QItemSelectionModel>
+#include <QTextDocument>
 
 AssetLibraryWidget::AssetLibraryWidget(QWidget * parent, CodeEditorWidget * editorWidget)
 : QDockWidget(parent), mCodeEditorWidget(editorWidget)
@@ -33,6 +35,9 @@ AssetLibraryWidget::AssetLibraryWidget(QWidget * parent, CodeEditorWidget * edit
 
     mShaderListModel = new SourceCodeListModel(this);
     mShaderListSelectionModel = new QItemSelectionModel(mShaderListModel);
+
+    mBlockScriptListModel = new SourceCodeListModel(this);
+    mBlockScriptListSelectionModel = new QItemSelectionModel(mBlockScriptListModel);
 
     mSourceCodeManagerEventListener = new SourceCodeManagerEventListener(this);
 
@@ -50,6 +55,9 @@ AssetLibraryWidget::AssetLibraryWidget(QWidget * parent, CodeEditorWidget * edit
 
     connect(ui.ProgramTreeView, SIGNAL(doubleClicked(QModelIndex)),
             this, SLOT(DispatchTextEditorThroughProgramView(QModelIndex)));
+
+    connect(ui.BlockScriptTreeView, SIGNAL(doubleClicked(QModelIndex)),
+            this, SLOT(DispatchTextEditorThroughBlockScriptView(QModelIndex)));
 
     connect(mSourceCodeManagerEventListener, SIGNAL(CompilationResultsChanged()),
         this, SLOT(UpdateUIItemsLayout()), Qt::QueuedConnection);
@@ -79,6 +87,9 @@ AssetLibraryWidget::AssetLibraryWidget(QWidget * parent, CodeEditorWidget * edit
     ui.ShaderTreeView->setModel(mShaderListModel);
     ui.ShaderTreeView->setSelectionModel(mShaderListSelectionModel);
 
+    ui.BlockScriptTreeView->setModel(mBlockScriptListModel);
+    ui.BlockScriptTreeView->setSelectionModel(mBlockScriptListSelectionModel);
+
     ActivateButtons(false);
 }
 
@@ -94,8 +105,13 @@ void AssetLibraryWidget::ActivateButtons(bool activation)
     ui.ShaderAddButton->setDisabled(/*!activation*/ true);
     ui.ShaderRemoveButton->setDisabled(/*!activation*/ true);
 
+    //! TODO pegasus can't add or remove shader elements yet. Force these buttons to be disabled
+    ui.BlockScriptAddButton->setDisabled(/*!activation*/ true);
+    ui.BlockScriptRemoveButton->setDisabled(/*!activation*/ true);
+
     ui.ProgramEditButton->setDisabled(!activation);
     ui.ShaderEditorButton->setDisabled(!activation);
+    ui.BlockScriptEditorButton->setDisabled(!activation);
 }
 
 
@@ -129,6 +145,17 @@ void AssetLibraryWidget::DispatchTextEditorThroughShaderView(const QModelIndex& 
     Pegasus::Core::ISourceCodeProxy * code = mShaderListModel->Translate(index);
     mCodeEditorWidget->RequestOpen(code);
 }
+
+//----------------------------------------------------------------------------------------
+
+void AssetLibraryWidget::DispatchTextEditorThroughBlockScriptView(const QModelIndex& index)
+{
+    mCodeEditorWidget->show();
+    mCodeEditorWidget->activateWindow();
+    Pegasus::Core::ISourceCodeProxy * code = mBlockScriptListModel->Translate(index);
+    mCodeEditorWidget->RequestOpen(code);
+}
+
 
 //----------------------------------------------------------------------------------------
 
@@ -206,6 +233,13 @@ void AssetLibraryWidget::UpdateUIForAppLoaded()
                 ui.ProgramTreeView->doItemsLayout();
             }
 
+            Pegasus::Timeline::ITimelineProxy* timelineProxy = appProxy->GetTimelineProxy();
+            if (timelineProxy != nullptr)
+            {
+                mBlockScriptListModel->OnAppLoaded(timelineProxy);
+                ui.BlockScriptTreeView->doItemsLayout();
+            }
+
             ActivateButtons(true);
         }
     }
@@ -236,6 +270,7 @@ void AssetLibraryWidget::InitializeInternalUserData()
                 Pegasus::Core::ISourceCodeProxy * code = static_cast<Pegasus::Core::ISourceCodeProxy*>(shaderManager->GetShader(i));
                 CodeUserData * newUserData = new CodeUserData(code);                   
                 code->SetUserData(newUserData);
+                newUserData->SetDocument( new QTextDocument() );
             } 
 
             for (int i = 0; i < shaderManager->GetProgramCount(); ++i)
@@ -244,6 +279,15 @@ void AssetLibraryWidget::InitializeInternalUserData()
                 CodeUserData * newUserData = new CodeUserData(program);
                 program->SetUserData(newUserData);
             } 
+
+            Pegasus::Core::ISourceCodeManagerProxy* blockScripts = appProxy->GetTimelineProxy();
+            for (int i = 0; i < blockScripts->GetSourceCount(); ++i)
+            {
+                Pegasus::Core::ISourceCodeProxy* scProxy = blockScripts->GetSource(i);
+                CodeUserData* newUserData = new CodeUserData(scProxy);
+                scProxy->SetUserData(newUserData);
+                newUserData->SetDocument( new QTextDocument() );
+            }
             
             //send compilation request to all code
             mCodeEditorWidget->CompileCode(-1);
@@ -269,8 +313,14 @@ void AssetLibraryWidget::UninitializeInternalUserData()
             for (int i = 0; i < shaderManager->GetShaderCount(); ++i)
             {
                 Pegasus::Core::ISourceCodeProxy * code = static_cast<Pegasus::Core::ISourceCodeProxy*>(shaderManager->GetShader(i));
-                delete code->GetUserData();
+                CodeUserData* userData = static_cast<CodeUserData*>(code->GetUserData());
+                if (userData->GetDocument() != nullptr)
+                {
+                    delete userData->GetDocument();
+                }
+                delete userData;
                 code->SetUserData(nullptr);
+
             } 
 
             for (int i = 0; i < shaderManager->GetProgramCount(); ++i)
@@ -279,6 +329,19 @@ void AssetLibraryWidget::UninitializeInternalUserData()
                 delete program->GetUserData();
                 program->SetUserData(nullptr);
             } 
+
+            Pegasus::Core::ISourceCodeManagerProxy* blockScripts = appProxy->GetTimelineProxy();
+            for (int i = 0; i < blockScripts->GetSourceCount(); ++i)
+            {
+                Pegasus::Core::ISourceCodeProxy* scProxy = blockScripts->GetSource(i);                
+                CodeUserData* userData = static_cast<CodeUserData*>(scProxy->GetUserData());
+                if (userData ->GetDocument() != nullptr)
+                {
+                    delete userData ->GetDocument();
+                }
+                delete userData;
+                scProxy->SetUserData(nullptr);
+            }
         }
     }
 }
@@ -292,6 +355,9 @@ void AssetLibraryWidget::UpdateUIForAppFinished()
 
     mShaderListModel->OnAppDestroyed();
     ui.ShaderTreeView->doItemsLayout();
+
+    mBlockScriptListModel->OnAppDestroyed();
+    ui.BlockScriptTreeView->doItemsLayout();
 
     ActivateButtons(false);
 

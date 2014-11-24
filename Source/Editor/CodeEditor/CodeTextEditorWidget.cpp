@@ -273,7 +273,8 @@ protected:
 CodeTextEditorWidget::CodeTextEditorWidget(QWidget * parent)
 : QTextEdit(parent), mCode(nullptr), mIsFocus(false)
 {
-    mSyntaxHighlighter = new CodeSyntaxHighlighter(document());
+    mSyntaxHighlighter = new CodeSyntaxHighlighter(nullptr);
+    setDocument(nullptr);
 }
 
 
@@ -287,7 +288,8 @@ void CodeTextEditorWidget::Initialize(Pegasus::Core::ISourceCodeProxy * code)
     mCode = code;
     if (code != nullptr)
     {
-        static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetCodeUserData(static_cast<CodeUserData*>(code->GetUserData()));
+        CodeUserData* userData = static_cast<CodeUserData*>(code->GetUserData());
+        setDocument(userData->GetDocument());
         Application * application = Editor::GetInstance().GetApplicationManager().GetApplication();
         Pegasus::App::IApplicationProxy * app = application->GetApplicationProxy();
         Pegasus::PegasusDesc::GapiType gapi = Pegasus::PegasusDesc::OPEN_GL;
@@ -301,26 +303,15 @@ void CodeTextEditorWidget::Initialize(Pegasus::Core::ISourceCodeProxy * code)
         {
             ED_FAILSTR("No Gapi defined!");
         }
+        mSyntaxHighlighter->setDocument(userData->GetDocument());
         static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetSyntaxLanguage(gapi);
-
-        //set the text of the current text editor
-        const char * srcChar = nullptr;
-        int srcSize = 0;
-        code->GetSource(&srcChar, srcSize);
-        QChar * qchar = new QChar[srcSize];
-        for (int i = 0; i < srcSize; ++i)
-        {
-            qchar[i] = srcChar[i];
-        }
-
-        QString srcQString(qchar, srcSize);
-        setText(srcQString);
-        delete[] qchar;            
-        
-
+        static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetCodeUserData(static_cast<CodeUserData*>(code->GetUserData()));
+        UpdateAllDocumentSyntax();
     }
     else
     {
+        setDocument(nullptr);
+        mSyntaxHighlighter->setDocument(nullptr);
         static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetCodeUserData(nullptr);
         setText(tr(""));
     }
@@ -346,7 +337,7 @@ void CodeTextEditorWidget::UpdateLineSyntax(int line)
 
 void CodeTextEditorWidget::UpdateAllDocumentSyntax()
 {
-    
+    if (document() == nullptr) return;
     QPalette p = palette();
     p.setColor(QPalette::Base, Editor::GetInstance().GetSettings()->GetCodeSyntaxColor(Settings::SYNTAX_BACKGROUND));
     p.setColor(QPalette::Text, Editor::GetInstance().GetSettings()->GetCodeSyntaxColor(Settings::SYNTAX_NORMAL_TEXT));
@@ -358,11 +349,11 @@ void CodeTextEditorWidget::UpdateAllDocumentSyntax()
     
     QFontMetrics metrics(f);
 
-    setFont(f);
+    document()->setDefaultFont(f);
     setPalette(p);
     setTabStopWidth(tabStop * metrics.width(' '));
 
-    mSyntaxHighlighter->rehighlight();
+   // mSyntaxHighlighter->rehighlight();
 }
 
 bool CodeTextEditorWidget::event(QEvent * e)

@@ -24,5 +24,8 @@
         <file>AssetLibrary/error.png</file>
         <file>AssetLibrary/success.png</file>
         <file>SettingsDialog/CodeEditor.png</file>
+        <file>Toolbar/Edit/switchoff.png</file>
+        <file>Toolbar/Edit/switchon.png</file>
+        <file>CodeEditor/compile.png</file>
     </qresource>
 </RCC>

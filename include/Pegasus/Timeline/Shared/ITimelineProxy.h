@@ -15,6 +15,7 @@
 #if PEGASUS_ENABLE_PROXIES
 
 #include "Pegasus/Timeline/Shared/TimelineDefs.h"
+#include "Pegasus/Core/Shared/ISourceCodeManagerProxy.h"
 
 namespace Pegasus {
     namespace Timeline {
@@ -27,7 +28,7 @@ namespace Timeline {
 
 
 //! Proxy interface, used by the editor to interact with the timeline
-class ITimelineProxy
+class ITimelineProxy : public Core::ISourceCodeManagerProxy
 {
 public:
 

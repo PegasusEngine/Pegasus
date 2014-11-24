@@ -59,6 +59,10 @@ public:
     //! \return user data reference
     virtual Pegasus::Graph::IGraphUserData * GetUserData() const;
 
+    //! Compilation policy user defined: meaning that the user picks wether this script gets compiled on
+    //! every key stroke, or only during save.
+    virtual Pegasus::Core::ISourceCodeProxy::CompilationPolicy GetCompilationPolicy() const { return Pegasus::Core::ISourceCodeProxy::POLICY_USER_DEFINED; }
+
     //! returns a 64 bit guid for a particular shader.
     //! \return the guid must correspond to a single shaderstage instance, on this
     //!         case is the address of the shader stage object, which should be unique

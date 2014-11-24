@@ -63,9 +63,10 @@ QVariant SourceCodeListModel::data(const QModelIndex &index, int role) const
         case Qt::DecorationRole:
             {
                 CodeUserData * userData = static_cast<CodeUserData*>(proxy->GetUserData());
-                ED_ASSERT(!userData->IsProgram());
+
                 if (userData!=nullptr)
                 {
+                    ED_ASSERT(!userData->IsProgram());
                     return userData->IsValid() ? mWorkingIcon : mWarningIcon;
                 }
                 else

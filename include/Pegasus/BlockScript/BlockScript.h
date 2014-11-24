@@ -38,6 +38,7 @@ namespace Pegasus
     {
     
 		class IddStrPool;
+        class IBlockScriptCompilerListener;
     
         namespace Ast
         {
@@ -71,15 +72,20 @@ public:
     void Reset();
 
     //! Runs the block script
-    void Run(); 
+    void Run(BsVmState* vmState); 
 
     //! Gets the abstract syntax tree constructed from Compile
     //! \return the abstract syntax tree
     Ast::Program* GetAst() { return mAst; }
 
     //! Gets the virtual machine assembly produced from the block script source
+    //! \param the virtual machine state
     //! \return list of blocks
     Assembly GetAsm() { return mAsm; }
+
+    //! Sets the compiler event listener, to be used to listen to internal blockscript compiler events
+    //! \param eventListener the listener to push
+    void SetCompilerEventListener(IBlockScriptCompilerListener* eventListener);
 
     //! Gets a function bind point to be used to call.
     //! funName - the string name of the function
@@ -93,6 +99,7 @@ public:
     ) const;
 
     //! Executes a function from a specific bind point.
+    //! vmState - the state of the VM to run
     //! bindPoint - the function bind point. If an invalid bind point is passed, we return false.
     //! inputBuffer - the input buffer. Pack all function arguments on this structure. For heap arguments, such as strings,
     //!               register them manually on the vm state and then get an identifier int. Pass this int then in the buffer.
@@ -100,6 +107,7 @@ public:
     //! outputBuffer - the output buffer to be used. 
     //! outputBufferSize - the size of the return buffer. If this size does not match the return value size, then this function returns false.
     bool ExecuteFunction(
+        BsVmState*   vmState,
         FunBindPoint functionBindPoint,
         void* inputBuffer,
         int   inputBufferSize,
@@ -113,9 +121,8 @@ private:
     Ast::Program*            mAst;
     Assembly                 mAsm;
 
-    // Virtual machine and state instances
+    // Virtual machine (state of this vm is pushed by the user through BsVmState class)
     BsVm      mVm;
-    BsVmState mVmState;
 };
 
 }

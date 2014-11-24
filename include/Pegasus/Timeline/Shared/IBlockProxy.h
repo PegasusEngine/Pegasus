@@ -17,6 +17,11 @@
 #include "Pegasus/Timeline/Shared/TimelineDefs.h"
 
 namespace Pegasus {
+
+    namespace Core {
+        class ISourceCodeProxy;
+    }
+    
     namespace Timeline {
         class ILaneProxy;
     }
@@ -61,6 +66,10 @@ public:
 
     //! Get the color of the block
     virtual void GetColor(unsigned char & red, unsigned char & green, unsigned char & blue) const = 0;
+
+    //! Gets the script proxy if available, null if not available
+    //! \return the source code proxy, null if it does not exist.
+    virtual Core::ISourceCodeProxy* GetScript() const = 0;
 };
 
 

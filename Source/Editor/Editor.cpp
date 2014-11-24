@@ -122,13 +122,13 @@ Editor::Editor(QApplication * parentApplication)
     connect(mApplicationManager, SIGNAL(ApplicationFinished()),
             mTimelineDockWidget, SLOT(UpdateUIForAppClosed()));
 
+    connect(mApplicationManager, SIGNAL(ApplicationFinished()),
+            mCodeEditorWidget, SLOT(UpdateUIForAppFinished()));
     connect(mApplicationManager, SIGNAL(ApplicationLoaded()),
             mAssetLibraryWidget, SLOT(UpdateUIForAppLoaded()));
     connect(mApplicationManager, SIGNAL(ApplicationFinished()),
             mAssetLibraryWidget, SLOT(UpdateUIForAppFinished()));
-    connect(mApplicationManager, SIGNAL(ApplicationFinished()),
-            mCodeEditorWidget, SLOT(UpdateUIForAppFinished()));
-
+   
     connect(sSettings, SIGNAL(OnCodeEditorStyleChanged()),
             mAssetLibraryWidget, SLOT(UpdateEditorStyle())); 
 

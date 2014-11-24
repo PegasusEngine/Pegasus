@@ -15,6 +15,7 @@
 #include "Pegasus/Utils/Memcpy.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/TesselationTable.h"
+#include "Pegasus/Utils/Vector.h"
 
 static Pegasus::Memory::MallocFreeAllocator sGlobalAllocator(0);
 
@@ -369,4 +370,52 @@ bool UNIT_TEST_TesselationTable4()
     t.Get(789,23, res2);
 
     return res1 == 0 && res2 == val;
+}
+
+bool UNIT_TEST_Vector1()
+{
+    Pegasus::Utils::Vector<int> v(&sGlobalAllocator);
+    for (int i = 0; i < 400; ++i) v.PushEmpty() = i;
+
+    bool rightOrdering = true;
+
+    int last = -1;
+
+    for (int i = 0; i < v.GetSize(); ++i)
+    {
+        if ((v[i] - last) != 1) return false;
+        last = v[i];
+    }
+
+    return true;
+}
+
+bool UNIT_TEST_Vector2()
+{
+    struct Ss
+    {
+        char c;
+        int i;
+    };
+    Pegasus::Utils::Vector<Ss> v(&sGlobalAllocator);
+    for (int i = 0; i < 300; ++i)
+    {
+        Ss& st = v.PushEmpty();
+        st.i = i;
+        st.c = i % 56;
+    }
+
+    for (int i = 0; i < 150; ++i)
+    {
+        v.Delete(i);
+    }
+
+    if (v.GetSize() != 150) return false;
+
+    for (int i = 0; i < v.GetSize(); ++i)
+    {
+        Ss& st = v[i];
+        if (st.i != (2*i + 1) || st.c != (st.i % 56)) return false;
+    }
+    return true;
 }

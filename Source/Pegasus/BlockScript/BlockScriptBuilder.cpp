@@ -12,6 +12,7 @@
 
 #include "Pegasus/BlockScript/BlockScriptBuilder.h"
 #include "Pegasus/BlockScript/BlockScriptAst.h"
+#include "Pegasus/BlockScript/IBlockScriptCompilerListener.h"
 #include "Pegasus/BlockScript/BsIntrinsics.h"
 #include "Pegasus/BlockScript/FunCallback.h"
 #include "Pegasus/BlockScript/TypeTable.h"
@@ -41,8 +42,10 @@ const int Imm::sType     = 3;
 const int StrImm::sType  = 4;
 const int Unop::sType    = 5;
 
+//function defined in parser generator, bs.y
+extern void BS_ErrorDispatcher(BlockScriptBuilder* builder, const char* message);
 
-void BlockScriptBuilder::Initialize(Pegasus::Alloc::IAllocator* allocator, BlockScriptBuilder::ErrorMsgCallback onError)
+void BlockScriptBuilder::Initialize(Pegasus::Alloc::IAllocator* allocator)
 {
     mErrorCount = 0;
     mGeneralAllocator = allocator;
@@ -50,13 +53,14 @@ void BlockScriptBuilder::Initialize(Pegasus::Alloc::IAllocator* allocator, Block
 	mStackFrames.Initialize(allocator);
     mCanonizer.Initialize(allocator);
     mStrPool.Initialize(allocator);
-    mOnError = onError;
+    mCurrentLineNumber = 1;
 }
 
 void BlockScriptBuilder::BeginBuild()
 {
     mCurrentFrame = 0;
     mErrorCount = 0;
+    mCurrentLineNumber = 1;
     mInFunBody = false;
     mStackFrames.PushEmpty().Initialize(mGeneralAllocator);
     mStackFrames[0].SetGuid(0);
@@ -65,6 +69,11 @@ void BlockScriptBuilder::BeginBuild()
     mFunTable.Initialize(mGeneralAllocator);
     mActiveResult.mAst = nullptr;
     mActiveResult.mAsm.mBlocks = nullptr;
+    
+    if (mEventListener != nullptr)
+    {
+        mEventListener->OnCompilationBegin();
+    }
 }
 
 void BlockScriptBuilder::EndBuild(BlockScriptBuilder::CompilationResult& result)
@@ -79,7 +88,7 @@ void BlockScriptBuilder::EndBuild(BlockScriptBuilder::CompilationResult& result)
             if (funDesc->GetDec()->GetStmtList() == nullptr && !funDesc->IsCallback())
             {
                 ++mErrorCount;
-                mOnError("Missing function body.");
+                BS_ErrorDispatcher(this, "Missing function body.");
                 break;
             }
         }
@@ -102,6 +111,13 @@ void BlockScriptBuilder::EndBuild(BlockScriptBuilder::CompilationResult& result)
     {
         mActiveResult.mAsm.mBlocks = nullptr;
     }
+
+    if (mEventListener != nullptr)
+    {
+        //TODO: would be nice to pass down stats of the compilation here (such as assembly count,
+        //      compilation time and so on
+        mEventListener->OnCompilationEnd(mErrorCount == 0);
+    }
     
     result = mActiveResult;
 }
@@ -115,6 +131,8 @@ void BlockScriptBuilder::Reset()
     mCanonizer.Reset();
     mStrPool.Clear();
     mErrorCount = 0;
+    mCurrentFrame = 0;
+    mCurrentLineNumber = 1;
 	mActiveResult.mAst = nullptr;
     mInFunBody = false;
 }
@@ -289,7 +307,7 @@ Exp* BlockScriptBuilder::BuildBinopArrayAccess (Ast::Exp* lhs, int op, Ast::Exp*
             int arrayCount = 0;
             if (rhs->GetTypeDesc() == nullptr || rhs->GetExpType() != Imm::sType || rhs->GetTypeDesc()->GetAluEngine() != TypeDesc::E_INT)
             {
-                mOnError("Array constructor size type must be a constant int");
+                BS_ErrorDispatcher(this, "Array constructor size type must be a constant int");
                 return nullptr;
             }
             else
@@ -309,7 +327,7 @@ Exp* BlockScriptBuilder::BuildBinopArrayAccess (Ast::Exp* lhs, int op, Ast::Exp*
 
             if (rhs->GetExpType() != Imm::sType)
             {
-                mOnError("Array rhs must be a numeric constant value.");
+                BS_ErrorDispatcher(this, "Array rhs must be a numeric constant value.");
                 return nullptr;
             }
     
@@ -324,7 +342,7 @@ Exp* BlockScriptBuilder::BuildBinopArrayAccess (Ast::Exp* lhs, int op, Ast::Exp*
         int arrayCount = 0;
         if (rhs->GetTypeDesc() == nullptr || rhs->GetExpType() != Imm::sType || rhs->GetTypeDesc()->GetAluEngine() != TypeDesc::E_INT)
         {
-            mOnError("Array constructor size type must be a constant int");
+            BS_ErrorDispatcher(this, "Array constructor size type must be a constant int");
             return nullptr;
         }
         else
@@ -351,26 +369,26 @@ Exp* BlockScriptBuilder::BuildBinopArrayAccess (Ast::Exp* lhs, int op, Ast::Exp*
     const TypeDesc* tid1 = lhs->GetTypeDesc();
     if (tid1 == nullptr)
     {
-        mOnError("Undefined array.");
+        BS_ErrorDispatcher(this, "Undefined array.");
         return nullptr;
     }
 
     if (tid1->GetModifier() != TypeDesc::M_ARRAY)
     {
-        mOnError("Access [] operator only allowed on array type.");
+        BS_ErrorDispatcher(this, "Access [] operator only allowed on array type.");
         return nullptr;
     }
 
     const TypeDesc* tid2 = rhs->GetTypeDesc();
     if (tid2 == nullptr)
     {
-        mOnError("Undefined index symbol for array lookup.");
+        BS_ErrorDispatcher(this, "Undefined index symbol for array lookup.");
         return nullptr;
     }
 
     if (tid2->GetAluEngine() != TypeDesc::E_INT)
     {
-        mOnError("Array index must be an integer.");
+        BS_ErrorDispatcher(this, "Array index must be an integer.");
         return nullptr;
     }
 
@@ -393,7 +411,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
     {
         if (tid2 == nullptr)
         {
-            mOnError("Undefined type on = operator.");
+            BS_ErrorDispatcher(this, "Undefined type on = operator.");
             return nullptr;
         }
         else
@@ -424,7 +442,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
 
                 if (tid1->GetGuid() != tid2->GetGuid())
                 {
-                    mOnError("Incompatible types not allowed on operation.");
+                    BS_ErrorDispatcher(this, "Incompatible types not allowed on operation.");
                     return nullptr;
                 }
                 else
@@ -436,7 +454,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
             {
                 if (tid1 == nullptr || tid2 == nullptr)
                 {
-                    mOnError("undefined member on = operator.");
+                    BS_ErrorDispatcher(this, "undefined member on = operator.");
                     return nullptr;
                 }
     
@@ -445,7 +463,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
 
                 if (tid1->GetGuid() != tid2->GetGuid())
                 {
-                    mOnError("incompatible types on = operator.");
+                    BS_ErrorDispatcher(this, "incompatible types on = operator.");
                     return nullptr;
                 }
 
@@ -457,7 +475,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
             }
             else
             {
-                mOnError("lhs can only be an accessor operation.");
+                BS_ErrorDispatcher(this, "lhs can only be an accessor operation.");
                 return nullptr;
             }
         }
@@ -470,7 +488,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
         accessOffset->SetIsGlobal(false);//not a global
         if (tid1 == nullptr)
         {
-            mOnError("undefined lhs of dot operator");
+            BS_ErrorDispatcher(this, "undefined lhs of dot operator");
             return nullptr;
         }
         
@@ -500,7 +518,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
 
             if (tid2 == nullptr)
             {
-                mOnError("Member of struct not found.");
+                BS_ErrorDispatcher(this, "Member of struct not found.");
             }
 
             output = BS_NEW Binop(lhs, op, rhs);
@@ -512,7 +530,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
             if (lhs->GetExpType() == Binop::sType &&
                 static_cast<Binop*>(lhs)->GetOp() == O_DOT)
             {
-                mOnError("Nested swizzle access not allowed.");
+                BS_ErrorDispatcher(this, "Nested swizzle access not allowed.");
                 return nullptr;
             }
 
@@ -520,7 +538,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
             int swizzleLen = Utils::Strlen(swizzleName);
             if (swizzleLen > 4)
             {
-                mOnError("Vector swizzle too long");
+                BS_ErrorDispatcher(this, "Vector swizzle too long");
                 return nullptr;
             }
 
@@ -531,7 +549,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
             {
                 if (swizzleName[i] < 'w' || swizzleName[i] > 'z')
                 {
-                    mOnError("vector access can only be 'x', 'y', 'z', 'w'");
+                    BS_ErrorDispatcher(this, "vector access can only be 'x', 'y', 'z', 'w'");
                     return nullptr;
                 }
 
@@ -541,7 +559,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
 
             if (maxChar >= dimensionality)
             {
-                mOnError("Invalid subscript, make sure the vector's dimensions are accessed correctly.");
+                BS_ErrorDispatcher(this, "Invalid subscript, make sure the vector's dimensions are accessed correctly.");
                 return nullptr;
             }
 
@@ -570,7 +588,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
         }
         else
         {
-            mOnError("dot operator can only be executed in structs types");
+            BS_ErrorDispatcher(this, "dot operator can only be executed in structs types");
             return nullptr;
         }
     }
@@ -582,7 +600,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
     {
         if (tid1 == nullptr || tid2  == nullptr)
         {
-            mOnError("undefined symbol.");
+            BS_ErrorDispatcher(this, "undefined symbol.");
             return nullptr;
         }
 
@@ -594,13 +612,13 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
 
         if (tid1->GetGuid() != tid2->GetGuid())
         {
-            mOnError("Incompatible types not allowed on operation.");
+            BS_ErrorDispatcher(this, "Incompatible types not allowed on operation.");
             return nullptr;
         }
 
         if (!IsBinopValid(tid1, op))
         {
-            mOnError("Arithmetic operation is invalid for type.");
+            BS_ErrorDispatcher(this, "Arithmetic operation is invalid for type.");
             return nullptr;
         }
 
@@ -631,7 +649,7 @@ Exp* BlockScriptBuilder::BuildExplicitCast(Exp* exp, const char* type)
         return unop;
     }
     
-    mOnError("Unknown type cast requested.");
+    BS_ErrorDispatcher(this, "Unknown type cast requested.");
     return nullptr;
 }
 
@@ -652,7 +670,7 @@ Exp*  BlockScriptBuilder::BuildStrImm(const char* strToCopy)
     int len = Utils::Strlen(strToCopy);
     if (len >= mAllocator.GetPageSize())
     {
-        mOnError("String immediate value too big.");
+        BS_ErrorDispatcher(this, "String immediate value too big.");
         return nullptr;
     } 
 
@@ -660,7 +678,7 @@ Exp*  BlockScriptBuilder::BuildStrImm(const char* strToCopy)
     
     if (destStr == nullptr)
     {
-        mOnError("internal compiler error while allocting imm string");
+        BS_ErrorDispatcher(this, "internal compiler error while allocting imm string");
         return nullptr;
     }
 
@@ -727,7 +745,7 @@ Exp* BlockScriptBuilder::BuildFunCall(ExpList* args, const char* name)
     {
         if (tail->GetExp()->GetTypeDesc() == nullptr)
         {
-            mOnError("undefined parameter passed to function call.");
+            BS_ErrorDispatcher(this, "undefined parameter passed to function call.");
             return nullptr;
         }
         tail = tail->GetTail();
@@ -744,7 +762,7 @@ Exp* BlockScriptBuilder::BuildFunCall(ExpList* args, const char* name)
     }
     else
     {
-        mOnError("No function declaration found.");
+        BS_ErrorDispatcher(this, "No function declaration found.");
         return nullptr;
     }
 }
@@ -757,13 +775,13 @@ StmtExp* BlockScriptBuilder::BuildStmtExp(Exp* exp)
         Binop* binop = static_cast<Binop*>(exp);
         if (binop->GetOp() != O_SET)
         {
-            mOnError("Empty expressions not allowed! value must be stored in a variable");
+            BS_ErrorDispatcher(this, "Empty expressions not allowed! value must be stored in a variable");
             return nullptr;
         }
     }
     else if (exp->GetExpType() != FunCall::sType)
     {
-        mOnError("Empty expressions not allowed! expression must be a function call, did you forget passing parameters ?");
+        BS_ErrorDispatcher(this, "Empty expressions not allowed! expression must be a function call, did you forget passing parameters ?");
         return nullptr;
     }
     return BS_NEW StmtExp(exp);
@@ -774,7 +792,7 @@ StmtReturn* BlockScriptBuilder::BuildStmtReturn(Exp* exp)
     PG_ASSERT(exp != nullptr);
     if (mInFunBody == false)
     {
-        mOnError("return statements not allowed on global scope.");
+        BS_ErrorDispatcher(this, "return statements not allowed on global scope.");
         return nullptr;
     }
     return BS_NEW StmtReturn(exp);
@@ -797,7 +815,7 @@ StmtFunDec* BlockScriptBuilder::BuildStmtFunDec(Ast::ArgList* argList, const cha
     int retType = mTypeTable.GetTypeByName(returnIdd);
     if (retType == -1)
     {
-        mOnError("Unknown return type.");
+        BS_ErrorDispatcher(this, "Unknown return type.");
         return nullptr;
     }
 
@@ -818,7 +836,7 @@ StmtFunDec* BlockScriptBuilder::BuildStmtFunDec(Ast::ArgList* argList, const cha
 
     if (description == nullptr)
     {
-        mOnError("Duplicate function declaration found.");
+        BS_ErrorDispatcher(this, "Duplicate function declaration found.");
         return nullptr;
     }
 
@@ -892,13 +910,13 @@ StmtStructDef* BlockScriptBuilder::BuildStmtStructDef(const char* name, ArgList*
     //first make sure that there is no struct redefinition.
     if (mTypeTable.GetTypeByName(name) != -1)
     {
-        mOnError("Struct type is trying to redefine a type.");
+        BS_ErrorDispatcher(this, "Struct type is trying to redefine a type.");
         return nullptr;
     }
 
     if (mInFunBody)
     {
-        mOnError("Struct definitions not allowed inside function bodies.");
+        BS_ErrorDispatcher(this, "Struct definitions not allowed inside function bodies.");
         return nullptr;
     }
     
@@ -949,7 +967,7 @@ StmtStructDef* BlockScriptBuilder::BuildStmtStructDef(const char* name, ArgList*
     {
         if (count >= MAX_CHILD_MEMBERS)
         {
-            mOnError("Too many members in structure");
+            BS_ErrorDispatcher(this, "Too many members in structure");
             return nullptr;
         }
 
@@ -976,7 +994,7 @@ StmtStructDef* BlockScriptBuilder::BuildStmtStructDef(const char* name, ArgList*
 
     if (newStructType == nullptr)
     {
-        mOnError("An error occured creating the type for this struct.");
+        BS_ErrorDispatcher(this, "An error occured creating the type for this struct.");
         return nullptr;
     }
     
@@ -992,7 +1010,7 @@ ArgDec*  BlockScriptBuilder::BuildArgDec(const char* var, const TypeDesc* type)
     StackFrameInfo::Entry* found = mStackFrames[mCurrentFrame].FindDeclaration(var);
     if (found != nullptr)
     {
-        mOnError("Duplicate name of declaration\n");
+        BS_ErrorDispatcher(this, "Duplicate name of declaration\n");
         return nullptr;
     }
 

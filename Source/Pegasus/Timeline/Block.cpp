@@ -10,6 +10,7 @@
 //! \brief	Timeline block, describing the instance of an effect on the timeline
 
 #include "Pegasus/Timeline/Block.h"
+#include "Pegasus/Timeline/ScriptTracker.h"
 
 namespace Pegasus {
 namespace Timeline {
@@ -21,7 +22,9 @@ Block::Block(Alloc::IAllocator * allocator, Wnd::IWindowContext * appContext)
 ,   mBeat(0)
 ,   mDuration(1)
 ,   mLane(nullptr)
-,   mScriptHelper(allocator, appContext)
+,   mScriptHelper(nullptr)
+,   mVmState(nullptr)
+,   mScriptVersion(-1)
 #if PEGASUS_ENABLE_PROXIES
 ,   mProxy(this)
 ,   mColorRed(128)
@@ -73,7 +76,14 @@ void Block::Initialize()
 
 void Block::Shutdown()
 {
-    mScriptHelper.Shutdown(); //if no script is open then this is a NOP
+    if (mScriptHelper != nullptr)
+    {
+        mScriptHelper->Shutdown(); //if no script is open then this is a NOP
+        mAppContext->GetTimeline()->GetScriptTracker()->UnregisterScript(mScriptHelper);
+        PG_DELETE(mAllocator, mScriptHelper);
+
+        PG_DELETE(mAllocator, mVmState);
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -85,28 +95,54 @@ void Block::SetBeat(Beat beat)
 
 void Block::UpdateViaScript(float beat, Wnd::Window* window)
 {
-    mScriptHelper.CallUpdate(beat);
+    if (mScriptHelper != nullptr)
+    {
+        mScriptHelper->CallUpdate(beat, mVmState, mScriptVersion);
+    }
 }
 
 //----------------------------------------------------------------------------------------
 
 void Block::RenderViaScript(float beat, Wnd::Window* window)
 {
-    mScriptHelper.CallRender(beat);
+    if (mScriptHelper != nullptr)
+    {
+        mScriptHelper->CallRender(beat, mVmState);
+    }
 }
 
 //----------------------------------------------------------------------------------------
 
 bool Block::OpenScript(const char* scriptFileName)
 {
-    return mScriptHelper.OpenScript(scriptFileName);
+    if (mScriptHelper == nullptr)
+    {
+        mScriptHelper = PG_NEW(mAllocator, -1, "Script Helper", Pegasus::Alloc::PG_MEM_PERM) ScriptHelper(mAllocator, GetIOManager());
+        mAppContext->GetTimeline()->GetScriptTracker()->RegisterScript(mScriptHelper);
+
+        PG_ASSERT(mVmState == nullptr);
+        mVmState = PG_NEW(mAllocator, -1, "Vm State", Pegasus::Alloc::PG_MEM_PERM) BlockScript::BsVmState();
+        mVmState->Initialize(mAllocator);
+
+#if PEGASUS_USE_GRAPH_EVENTS
+        //register event listener
+        mScriptHelper->SetEventListener(mAppContext->GetTimeline()->GetEventListener());
+#endif
+        mScriptHelper->InvalidateData();
+    }
+    else
+    {
+        mVmState->Reset();
+    }
+    mScriptVersion = -1; //restart and invalidate script version
+    return mScriptHelper->OpenScript(scriptFileName);
 }
 
 //----------------------------------------------------------------------------------------
 
 void Block::ShutdownScript()
 {
-    mScriptHelper.Shutdown();
+    mScriptHelper->Shutdown();
 }
 
 //----------------------------------------------------------------------------------------

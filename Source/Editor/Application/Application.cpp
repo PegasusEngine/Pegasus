@@ -18,6 +18,7 @@
 #include "Pegasus/Core/Shared/OsDefs.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
+#include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 #include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Window/Shared/IWindowProxy.h"
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
@@ -155,6 +156,7 @@ void Application::run()
     
     // Initialize all application event listeners
     mApplication->GetShaderManagerProxy()->RegisterEventListener( Editor::GetInstance().GetAssetLibraryWidget()->GetSourceCodeManagerEventListener() );
+    mApplication->GetTimelineProxy()->RegisterEventListener( Editor::GetInstance().GetAssetLibraryWidget()->GetSourceCodeManagerEventListener() );
 
     // Run the initialization process of the application
     mApplication->Initialize();

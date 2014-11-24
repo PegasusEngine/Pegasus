@@ -26,6 +26,7 @@
     //     reason: the generated code has a lot of warnings generated regarding this.
     #pragma warning(disable : 4065)
     #include "Pegasus/BlockScript/BlockScriptBuilder.h"
+    #include "Pegasus/BlockScript/IBlockScriptCompilerListener.h"
     #include "Pegasus/BlockScript/BlockScriptAst.h"
     #include "Pegasus/BlockScript/StackFrameInfo.h"
     #include "Pegasus/BlockScript/BsIntrinsics.h"
@@ -38,6 +39,7 @@
     #define BS_BUILD(r, exp) if ((r = BS_GlobalBuilder->exp) == nullptr) YYERROR ;
     #define BS_CHECKLIST(l) if (l == nullptr) {BS_error("Empty list element, syntax error."); YYERROR;}
 
+
     using namespace Pegasus::Io;
     using namespace Pegasus::BlockScript;
     using namespace Pegasus::BlockScript::Ast;
@@ -47,14 +49,23 @@
     // Pegasus hooks
     extern int BS_lex();
     extern char* BS_text;
-    extern int  BS_line;
     extern bool BS_HasNext();
     extern int BS_bufferPosition;
 
     BlockScriptBuilder* BS_GlobalBuilder    = nullptr;
     const FileBuffer*   BS_GlobalFileBuffer = nullptr;
 
-    void BS_error(const char *s) { BS_GlobalBuilder->IncErrorCount(); printf("%d : ERROR: %s near token '%s'\n", BS_line, s, BS_text); }
+
+    void BS_ErrorDispatcher(BlockScriptBuilder* builder, const char* message) 
+    {
+        builder->IncErrorCount();
+        if (builder->GetEventListener() != nullptr)
+        {
+            builder->GetEventListener()->OnCompilationError(builder->GetCurrentLine(), message, BS_text);
+        }
+    }
+
+    #define BS_error(s) BS_ErrorDispatcher(BS_GlobalBuilder, s)
     
     //***************************************************//
     //              Let the insanity begin               //
@@ -359,11 +370,11 @@ arg_dec : IDENTIFIER K_COL type_desc { BS_BUILD($$, BuildArgDec($1, $3)); }
 //              Let the insanity end                 //
 //***************************************************//
 
+extern void BS_restart(FILE* f);
 
 
 void Bison_BlockScriptParse(const FileBuffer* fileBuffer, BlockScriptBuilder* builder) 
 {          
-    BS_line = 1;
     BS_bufferPosition = 0;
     BS_GlobalBuilder = builder;
     BS_GlobalFileBuffer = fileBuffer;
@@ -374,7 +385,8 @@ void Bison_BlockScriptParse(const FileBuffer* fileBuffer, BlockScriptBuilder* bu
     do 
     {
 	    BS_parse();
-    } while (BS_HasNext());
-    
+    } while (BS_HasNext() && BS_GlobalBuilder->GetErrorCount() == 0);
+
+    BS_restart(nullptr);
 }
 

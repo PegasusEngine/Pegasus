@@ -168,7 +168,8 @@ int main(int argc, char* argv[])
                 true,
                 GetGlobalAllocator()    
             );
-
+            Pegasus::BlockScript::BsVmState vmState;
+            vmState.Initialize(GetGlobalAllocator());
 		    if (err == ERR_NONE)
             {
 		    	Pegasus::BlockScript::BlockScript bs(GetGlobalAllocator());
@@ -203,11 +204,12 @@ int main(int argc, char* argv[])
 
                     if (opts.runScript)
                     {
-                        bs.Run();
+                        bs.Run(&vmState);
                     }
                 }
 		    	
                 bs.Reset();	
+                vmState.Reset();
 		    }
         }
     }

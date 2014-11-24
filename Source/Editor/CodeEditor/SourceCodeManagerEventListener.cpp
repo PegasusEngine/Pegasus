@@ -12,7 +12,7 @@
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
 
 CodeUserData::CodeUserData(Pegasus::Core::ISourceCodeProxy * code)
-: mIsValid(true)
+: mIsValid(true), mIntermediateDocument(nullptr)
 {
     mData.mSourceCode = code;
     mIsProgram = false;
