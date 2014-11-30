@@ -35,13 +35,12 @@ namespace BlockScript
 {
 
 class TypeTable;
-class FunTable;
-class TypeDesc;
+class SymbolTable;
 
 // function map entry that contains a function id mapped to a block in the assembly
 struct FunMapEntry
 {
-    int mFunId;
+    const FunDesc* mFunDesc;
     int mAssemblyBlock;
 };
 
@@ -56,17 +55,17 @@ struct Assembly
 class Canonizer : private IVisitor
 {
 public:
+
     //Constructor
     Canonizer() : 
         mInternalAllocator(nullptr),
-        mCurrentBlock(0), 
-        mCurrentTempAllocationSize(0),
+        mSymbolTable(nullptr),
         mRebuiltExpression(nullptr), 
         mRebuiltExpList(nullptr), 
-        mCurrentTypeTable(nullptr),
-        mCurrentFunTable(nullptr),
-        mCurrFrames(nullptr),
-        mCurrentStackFrame(0),
+        mCurrentStackFrame(nullptr),
+        mCurrentFunDesc(nullptr),
+        mCurrentBlock(0), 
+        mCurrentTempAllocationSize(0),
         mNextLabel(0)
     {
     }
@@ -87,9 +86,7 @@ public:
     //! \param stackFrameInfos the set of stack frames
     void Canonize(
         Ast::Program* program,
-        TypeTable* typeTable,
-        FunTable*  funTable,
-        Container<StackFrameInfo>* stackFrameInfos
+        SymbolTable*  symbolTable
     );
 
     //! Gets the assembly generated from the canonizer step.
@@ -138,7 +135,6 @@ private:
     //! \param  the address where the register is saved
     void EndSaveRet(Ast::Idd* idd);
 
-
     //! Processes a function call
     void ProcessFunCall(Ast::FunCall* funCall);
 
@@ -151,14 +147,12 @@ private:
     void HandleDotOperator(Ast::Binop* op);
 
     Alloc::IAllocator* mInternalAllocator;
-    TypeTable* mCurrentTypeTable;
-    FunTable*  mCurrentFunTable;
-    Container<StackFrameInfo> * mCurrFrames;
+    SymbolTable*  mSymbolTable;
+
     Ast::Exp* mRebuiltExpression;
     Ast::ExpList* mRebuiltExpList;
-
-    const StackFrameInfo* mCurrentStackFrame;
-    const FunDesc*        mCurrentFunDesc;
+    StackFrameInfo* mCurrentStackFrame;
+    const FunDesc*  mCurrentFunDesc;
     int mCurrentBlock;
     int mCurrentTempAllocationSize;
     int mNextLabel;

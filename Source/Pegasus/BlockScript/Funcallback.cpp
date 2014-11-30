@@ -62,7 +62,7 @@ bool Pegasus::BlockScript::CreateIntrinsicFunction(BlockScriptBuilder* builder, 
         }
 
         //test types exist
-        if (builder->GetTypeTable()->GetTypeByName(argType) == -1)
+        if (builder->GetTypeByName(argType) == nullptr)
         {
             PG_LOG('ERR_', "Type '%s' not found in current context.", argType);
             return false;
@@ -74,7 +74,7 @@ bool Pegasus::BlockScript::CreateIntrinsicFunction(BlockScriptBuilder* builder, 
         return false;
     }
 
-    if (builder->GetTypeTable()->GetTypeByName(returnType) == -1)
+    if (builder->GetTypeByName(returnType) == nullptr)
     {
         PG_LOG('ERR_', "Type %s not found in current context", returnType);
     }
@@ -87,9 +87,8 @@ bool Pegasus::BlockScript::CreateIntrinsicFunction(BlockScriptBuilder* builder, 
     {
         char* argTypeCpy = CopyString(argTypes[i], builder);
         char* argNameCpy = CopyString(argNames[i], builder);
-        int typeId = builder->GetTypeTable()->GetTypeByName(argTypeCpy);
-        PG_ASSERT(typeId != -1);
-        const TypeDesc* currType = builder->GetTypeTable()->GetTypeDesc(typeId);
+        const TypeDesc* currType = builder->GetTypeByName(argTypeCpy);
+        PG_ASSERT(currType != nullptr);
         if (argList == nullptr)
         {
             argList = builder->CreateArgList();
@@ -131,16 +130,13 @@ FunBindPoint Pegasus::BlockScript::GetFunctionBindPoint(
     int argumentListCount
 )
 {
-    const TypeTable* typeTable = builder->GetTypeTable();
-    const FunTable*  funTable  = builder->GetFunTable();
-
     const Container<FunMapEntry>* funEntries = assembly.mFunBlockMap;
     int funEntriesSize = funEntries->Size();
 
     for (int funCandidateId = 0; funCandidateId < funEntriesSize; ++funCandidateId)
     {
         const FunMapEntry funMapEntry = (*funEntries)[funCandidateId];
-        const FunDesc* funDescEntry = funTable->GetDesc(funMapEntry.mFunId);
+        const FunDesc* funDescEntry = funMapEntry.mFunDesc;
         PG_ASSERT(funDescEntry != nullptr);
         const Ast::StmtFunDec* funDecEntry = funDescEntry->GetDec();
         PG_ASSERT(funDecEntry != nullptr);
@@ -165,16 +161,14 @@ FunBindPoint Pegasus::BlockScript::GetFunctionBindPoint(
             Ast::ArgDec* argDec = argList->GetArgDec();
             
             const char* argTypeName = argTypes[i];
-            int typeId = typeTable->GetTypeByName(argTypeName);
+            const TypeDesc* type = builder->GetTypeByName(argTypeName);
 
-            if (typeId == -1)
+            if (type == nullptr)
             {
                 return FUN_INVALID_BIND_POINT;
             }
-            const TypeDesc* type = typeTable->GetTypeDesc(typeId);
-            PG_ASSERT(type != nullptr);
 
-            if (type->GetGuid() != argDec->GetType()->GetGuid())
+            if (type != argDec->GetType())
             {
                 foundFun = false;
                 break;
@@ -217,7 +211,8 @@ bool Pegasus::BlockScript::ExecuteFunction(
 
     const FunMapEntry funMapEntry = (*assembly.mFunBlockMap)[bindPoint];
 
-    const FunDesc* funDesc = builder->GetFunTable()->GetDesc(funMapEntry.mFunId);
+    const FunDesc* funDesc = funMapEntry.mFunDesc;
+
     //if there is a function description and the current state is in the global pointer
     if (funDesc != nullptr && state.GetStackLevels() == 0)
     {

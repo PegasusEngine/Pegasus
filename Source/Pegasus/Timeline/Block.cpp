@@ -117,7 +117,7 @@ bool Block::OpenScript(const char* scriptFileName)
 {
     if (mScriptHelper == nullptr)
     {
-        mScriptHelper = PG_NEW(mAllocator, -1, "Script Helper", Pegasus::Alloc::PG_MEM_PERM) ScriptHelper(mAllocator, GetIOManager());
+        mScriptHelper = PG_NEW(mAllocator, -1, "Script Helper", Pegasus::Alloc::PG_MEM_PERM) ScriptHelper(mAllocator, mAppContext);
         mAppContext->GetTimeline()->GetScriptTracker()->RegisterScript(mScriptHelper);
 
         PG_ASSERT(mVmState == nullptr);

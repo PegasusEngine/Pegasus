@@ -29,8 +29,7 @@
     #include "Pegasus/BlockScript/IBlockScriptCompilerListener.h"
     #include "Pegasus/BlockScript/BlockScriptAst.h"
     #include "Pegasus/BlockScript/StackFrameInfo.h"
-    #include "Pegasus/BlockScript/BsIntrinsics.h"
-    #include "Pegasus/BlockScript/TypeTable.h"
+    #include "Pegasus/BlockScript/SymbolTable.h"
     #include "Pegasus/BlockScript/TypeDesc.h"
     #include "Pegasus/BlockScript/bs.parser.hpp"
     #include "Pegasus/Memory/MemoryManager.h"
@@ -80,7 +79,7 @@
     int    integerValue;
     float  floatValue;
     char*  identifierText;
-    const  Pegasus::BlockScript::StackFrameInfo* vFrameInfo;
+    Pegasus::BlockScript::StackFrameInfo* vFrameInfo;
     const  Pegasus::BlockScript::TypeDesc*       vTypeDesc;
     #define BS_PROCESS(N) Pegasus::BlockScript::Ast::N* v##N;
     #include "Pegasus/BlockScript/Ast.inl"
@@ -315,8 +314,7 @@ arg_list : arg_list K_COMMA arg_dec {
          ;
 
 type_desc : type_desc K_L_LACE I_INT K_R_LACE { 
-                Pegasus::BlockScript::TypeTable* typeTable = BS_GlobalBuilder->GetTypeTable();
-                const Pegasus::BlockScript::TypeDesc* resultType = typeTable->CreateType(
+                const Pegasus::BlockScript::TypeDesc* resultType = BS_GlobalBuilder->GetSymbolTable()->CreateType(
                     Pegasus::BlockScript::TypeDesc::M_ARRAY,
                     $1->GetName(), //name
                     $1,  // child type
@@ -333,12 +331,11 @@ type_desc : type_desc K_L_LACE I_INT K_R_LACE {
                     YYERROR;
                 }
               }
-            | IDENTIFIER {
-                Pegasus::BlockScript::TypeTable* typeTable = BS_GlobalBuilder->GetTypeTable();
-                int typeId = typeTable->GetTypeByName($1);
-                if (typeId != -1)
+            | IDENTIFIER {                
+                const TypeDesc* typeDesc = BS_GlobalBuilder->GetTypeByName($1);
+                if (typeDesc != nullptr)
                 {
-                    $$ = typeTable->GetTypeDesc(typeId);
+                    $$ = typeDesc;
                 }
                 else
                 {
@@ -378,9 +375,6 @@ void Bison_BlockScriptParse(const FileBuffer* fileBuffer, BlockScriptBuilder* bu
     BS_bufferPosition = 0;
     BS_GlobalBuilder = builder;
     BS_GlobalFileBuffer = fileBuffer;
-
-    //register intrinsic callbacks
-    Pegasus::BlockScript::RegisterIntrinsics(builder);
 
     do 
     {

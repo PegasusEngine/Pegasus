@@ -408,16 +408,16 @@ public:
 
     ArgList* GetArgList() const { return mArgList; }
 
-    const StackFrameInfo* GetFrameInfo() const { return mFrameInfo; }
+    StackFrameInfo* GetFrameInfo() const { return mFrameInfo; }
 
-    void SetFrameInfo(const StackFrameInfo* frameInfo) { mFrameInfo = frameInfo; }
+    void SetFrameInfo(StackFrameInfo* frameInfo) { mFrameInfo = frameInfo; }
 
     VISITOR_ACCESS
 
 private:
     const char* mName;
     ArgList*    mArgList;
-    const StackFrameInfo* mFrameInfo;
+    StackFrameInfo* mFrameInfo;
 };
 
 //! function declarator
@@ -441,13 +441,13 @@ public:
 
     void SetReturnType(const TypeDesc* retType) { mReturnType = retType; }
 
-    const StackFrameInfo* GetFrame() const { return mFrame; }
+    StackFrameInfo* GetFrame() const { return mFrame; }
 
-    void SetFrame(const StackFrameInfo* frame) { mFrame = frame; }
+    void SetFrame(StackFrameInfo* frame) { mFrame = frame; }
 
-    const FunDesc* GetDesc() const { return mDesc; }
+    FunDesc* GetDesc() const { return mDesc; }
 
-    void SetDesc(const FunDesc* d) { mDesc = d; }
+    void SetDesc(FunDesc* d) { mDesc = d; }
     
     void SetStmtList(StmtList* stmtList) { mStmtList = stmtList; }
 
@@ -465,9 +465,9 @@ private:
 
     const TypeDesc*  mReturnType;
 
-    const StackFrameInfo*  mFrame;
+    StackFrameInfo*  mFrame;
 
-    const FunDesc* mDesc;
+    FunDesc* mDesc;
 };
 
 class StmtWhile : public Stmt
@@ -480,9 +480,9 @@ public:
 
     StmtList* GetStmtList() const { return mStmtList; }
 
-    const StackFrameInfo* GetFrame() const { return mFrame; }
+    StackFrameInfo* GetFrame() const { return mFrame; }
 
-    void SetFrame(const StackFrameInfo* frame) { mFrame = frame; }
+    void SetFrame(StackFrameInfo* frame) { mFrame = frame; }
 
     VISITOR_ACCESS
 
@@ -492,7 +492,7 @@ private:
     
     StmtList* mStmtList;
 
-    const StackFrameInfo* mFrame;
+    StackFrameInfo* mFrame;
 
 };
 
@@ -505,7 +505,7 @@ public:
         Exp * exp, 
         StmtList* ifBlock, 
         StmtIfElse* elseTail,
-        const StackFrameInfo* frame
+        StackFrameInfo* frame
     ) : mExp(exp), mIf(ifBlock), mTail(elseTail), mFrame(frame) {}
 
     virtual ~StmtIfElse() {}
@@ -518,7 +518,7 @@ public:
 
     void        SetTail(StmtIfElse* tail) { mTail = tail; }
 
-    const StackFrameInfo* GetFrame() const { return mFrame; }
+    StackFrameInfo* GetFrame() const { return mFrame; }
 
     VISITOR_ACCESS
 
@@ -530,7 +530,7 @@ private:
 
     StmtIfElse* mTail;
 
-    const StackFrameInfo* mFrame;
+    StackFrameInfo* mFrame;
 };
 
 //! function argument description

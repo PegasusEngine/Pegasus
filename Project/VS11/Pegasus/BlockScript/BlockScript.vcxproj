@@ -35,8 +35,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\AstAllocator.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\BlockLib.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\BlockScript.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\BlockScriptBuilder.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\BlockScriptCompiler.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\BlockScriptManager.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\bs.lexer.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\bs.parser.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\BsIntrinsics.cpp" />
@@ -48,15 +51,19 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\IddStrPool.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\PrettyPrint.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\StackFrameInfo.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\SymbolTable.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\TypeDesc.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\TypeTable.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\AstAllocator.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockLib.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockScript.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockScriptAst.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockScriptBuilder.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockScriptCanon.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockScriptCompiler.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockScriptManager.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\bs.parser.hpp" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BsIntrinsics.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BsVm.h" />
@@ -71,6 +78,7 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\IVisitor.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\PrettyPrint.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\StackFrameInfo.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\SymbolTable.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\TypeDesc.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\TypeTable.h" />
   </ItemGroup>

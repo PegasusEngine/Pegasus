@@ -21,7 +21,7 @@ namespace Pegasus
 
 namespace BlockScript
 {
-    class TypeTable;
+    class TypeDesc;
     
 //! Class representing the stack frame information
 class StackFrameInfo
@@ -32,11 +32,11 @@ public:
     struct Entry
     {
     public:
-        Entry() : mOffset(-1), mType(-1), mIsArg(false) { mName[0] = '\0';}
+        Entry() : mOffset(-1), mType(nullptr), mIsArg(false) { mName[0] = '\0';}
         ~Entry(){}
         char mName[IddStrPool::sCharsPerString];
         int  mOffset;
-        int  mType;
+        const TypeDesc* mType;
         int  mIsArg;
     };
 
@@ -77,7 +77,7 @@ public:
     //! \param type sets the type id to allocate.
     //! \param typeTable type table containing all the type information
     //! \return returns the byte offset for this allocation.
-    int Allocate(const char* name, int type, TypeTable& typeTable, bool isFunctionArgument = false);
+    int Allocate(const char* name, const TypeDesc* type, bool isFunctionArgument = false);
 
     //! Allocates a temp variable
     //! \param the byte size to allocate
@@ -97,28 +97,20 @@ public:
 
     //! sets the parent stack frame id
     //! \param parent parent stack frame
-    void SetParentStackFrame(int parent) { PG_ASSERT(mParent == -1); mParent = parent; }
+    void SetParentStackFrame(StackFrameInfo* parent) { PG_ASSERT(mParent == nullptr); mParent = parent; }
 
     //! Unlinks this frame to its parent. Usually only done on struct frames to prevent getting parent frame definitions
-    void UnlinkParentStackFrame() { mParent = -1; }
+    void UnlinkParentStackFrame() { mParent = nullptr; }
 
     //! \return gets the parent stack frame id
-    int GetParentStackFrame() const { return mParent; }
-
-    //! \return gets the guid of this frame
-    int GetGuid() const { return mGuid; }
-
-    //! sets the guid of this frame
-    //! \param guid the unique id
-    void SetGuid(int guid) { mGuid = guid; }
+    StackFrameInfo* GetParentStackFrame() const { return mParent; }
 
 private:
     int mSize; 
     int mTempSize;
     CreatorCategory mCreatorCategory;
     Container<Entry> mEntries;
-    int  mParent;
-    int  mGuid;
+    StackFrameInfo*  mParent;
 };
 
 }

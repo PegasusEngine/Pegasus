@@ -14,6 +14,7 @@
 #include "Pegasus/Window/IWindowContext.h"
 #include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Core/Assertion.h"
+#include "Pegasus/BlockScript/BlockScriptManager.h"
 #include "Pegasus/BlockScript/BlockScript.h"
 #include "Pegasus/BlockScript/FunCallback.h"
 #include "Pegasus/Utils/String.h"
@@ -44,17 +45,17 @@ static int Pegasus_PrintFloat(float f)
     return 0;
 }
 
-ScriptHelper::ScriptHelper(IAllocator* allocator, Io::IOManager* ioManager)
+ScriptHelper::ScriptHelper(IAllocator* allocator, Wnd::IWindowContext* appContext)
     :
     mSerialVersion(0),
     mAllocator(allocator),
-    mScript(allocator),
+    mScript(nullptr),
     mIsDirty(false),
     mIoStatus(Io::ERR_FILE_NOT_FOUND), //no script opened
     mUpdateBindPoint(BlockScript::FUN_INVALID_BIND_POINT),
     mRenderBindPoint(BlockScript::FUN_INVALID_BIND_POINT),
     mScriptActive(false),
-    mIoManager(ioManager)
+    mAppContext(appContext)
 #if PEGASUS_ENABLE_PROXIES
     ,mProxy(this)
 #endif
@@ -79,7 +80,8 @@ ScriptHelper::ScriptHelper(IAllocator* allocator, Io::IOManager* ioManager)
         Pegasus::BlockScript::SystemCallbacks::gPrintFloatCallback = Pegasus_PrintFloat;
     }
 
-    mScript.SetCompilerEventListener(this);
+    mScript = appContext->GetBlockScriptManager()->CreateBlockScript();
+    mScript->SetCompilerEventListener(this);
 }
 
 bool ScriptHelper::OpenScript(const char* scriptFile)
@@ -98,7 +100,8 @@ bool ScriptHelper::OpenScript(const char* scriptFile)
 
         mFileBuffer.DestroyBuffer();
 
-        mIoStatus = mIoManager->OpenFileToBuffer(
+        Io::IOManager* ioManager = mAppContext->GetIOManager();
+        mIoStatus = ioManager->OpenFileToBuffer(
             scriptFile,
             mFileBuffer,
             true,
@@ -136,7 +139,7 @@ bool ScriptHelper::OpenScript(const char* scriptFile)
 
 void ScriptHelper::Shutdown()
 {
-    mScript.Reset();
+    mScript->Reset();
     mUpdateBindPoint = BlockScript::FUN_INVALID_BIND_POINT;
     mRenderBindPoint = BlockScript::FUN_INVALID_BIND_POINT;
     mScriptActive = false;
@@ -147,7 +150,7 @@ void ScriptHelper::CallGlobalScopeInit(BsVmState* state)
 {
     if (mScriptActive)
     {
-        mScript.Run(state);
+        mScript->Run(state);
     }
 }
 
@@ -157,18 +160,18 @@ bool ScriptHelper::CompileScript()
     {
         if (mIoStatus == Io::ERR_NONE)
         {
-            mScriptActive = mScript.Compile(&mFileBuffer);
+            mScriptActive = mScript->Compile(&mFileBuffer);
             const char* types[] = { "float" }; //the only type of this functions is the beat
 
             if (mScriptActive)
             {
-                mUpdateBindPoint = mScript.GetFunctionBindPoint(
+                mUpdateBindPoint = mScript->GetFunctionBindPoint(
                     "Timeline_Update",
                     types,
                     1
                 );
 
-                mRenderBindPoint = mScript.GetFunctionBindPoint(
+                mRenderBindPoint = mScript->GetFunctionBindPoint(
                     "Timeline_Render",
                     types,
                     1
@@ -178,7 +181,7 @@ bool ScriptHelper::CompileScript()
             }
             else
             {
-                mScript.Reset(); //cleanup, ready for next compilation attempt
+                mScript->Reset(); //cleanup, ready for next compilation attempt
             }
         }
     }
@@ -194,20 +197,23 @@ void ScriptHelper::CallUpdate(float beat, BsVmState* state, int& version)
         CompileScript();
     }
 
-    if (mSerialVersion != version)
+    if (mScriptActive)
     {
-        version = mSerialVersion;
-        state->Reset();
-        mScript.Run(state);
-    }
-
-    if (mScriptActive && mUpdateBindPoint != BlockScript::FUN_INVALID_BIND_POINT)
-    {
-        int output = -1; //the dummy output
-        bool res = mScript.ExecuteFunction(state, mUpdateBindPoint, &beat, sizeof(beat), &output, sizeof(output));
-        if (!res)
+        if (mSerialVersion != version)
         {
-            PG_LOG('ERR_', "Error executing Update function of script %s.", GetScriptName());
+            version = mSerialVersion;
+            state->Reset();
+            mScript->Run(state);
+        }
+
+        if (mUpdateBindPoint != BlockScript::FUN_INVALID_BIND_POINT)
+        {
+            int output = -1; //the dummy output
+            bool res = mScript->ExecuteFunction(state, mUpdateBindPoint, &beat, sizeof(beat), &output, sizeof(output));
+            if (!res)
+            {
+                PG_LOG('ERR_', "Error executing Update function of script %s.", GetScriptName());
+            }
         }
     }
 }
@@ -239,7 +245,7 @@ void ScriptHelper::CallRender(float beat, BsVmState* state)
     if (mScriptActive && mRenderBindPoint != BlockScript::FUN_INVALID_BIND_POINT)
     {
         int output = -1; //the dummy output
-        bool res = mScript.ExecuteFunction(state, mRenderBindPoint, &beat, sizeof(beat), &output, sizeof(output));
+        bool res = mScript->ExecuteFunction(state, mRenderBindPoint, &beat, sizeof(beat), &output, sizeof(output));
         if (!res)
         {
             PG_LOG('ERR_', "Error executing Render function of script %s.", GetScriptName());
@@ -249,6 +255,7 @@ void ScriptHelper::CallRender(float beat, BsVmState* state)
 
 ScriptHelper::~ScriptHelper()
 {
+    mAppContext->GetBlockScriptManager()->DestroyBlockScript(mScript);
 }
 
 void ScriptHelper::OnCompilationBegin()
@@ -303,7 +310,8 @@ void ScriptHelper::OnCompilationEnd(bool success)
 #if PEGASUS_ENABLE_PROXIES
 void ScriptHelper::SaveScriptToFile()
 {
-    Pegasus::Io::IoError err = mIoManager->SaveFileToBuffer(mScriptName, mFileBuffer);
+    Io::IOManager* ioManager = mAppContext->GetIOManager();
+    Pegasus::Io::IoError err = ioManager->SaveFileToBuffer(mScriptName, mFileBuffer);
     if (err == Pegasus::Io::ERR_NONE)
     {
         GRAPH_EVENT_DISPATCH(

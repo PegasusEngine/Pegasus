@@ -14,6 +14,7 @@
 #define BLOCK_SCRIPT_BUILDER_H
 
 #include "Pegasus/BlockScript/AstAllocator.h"
+#include "Pegasus/BlockScript/SymbolTable.h"
 #include "Pegasus/BlockScript/TypeTable.h"
 #include "Pegasus/BlockScript/FunTable.h"
 #include "Pegasus/BlockScript/StackFrameInfo.h"
@@ -55,7 +56,7 @@ namespace BlockScript
 class BlockScriptBuilder
 {
 public:
-    explicit BlockScriptBuilder() : mEventListener(nullptr), mCurrentFrame(0), mErrorCount(0), mInFunBody(false), mCurrentLineNumber(1) {}
+    explicit BlockScriptBuilder() : mEventListener(nullptr), mCurrentFrame(nullptr), mErrorCount(0), mInFunBody(false), mCurrentLineNumber(1) {}
 	
     struct CompilationResult
     {
@@ -98,7 +99,7 @@ public:
     Ast::StmtWhile*  BuildStmtWhile(Ast::Exp* exp, Ast::StmtList* stmtList);
     Ast::StmtFunDec* BuildStmtFunDec(Ast::ArgList* argList, const char * returnIdd, const char * nameIdd);
     Ast::StmtFunDec* BindFunImplementation(Ast::StmtFunDec* funDec, Ast::StmtList* stmts);
-    Ast::StmtIfElse* BuildStmtIfElse(Ast::Exp* exp, Ast::StmtList* ifBlock, Ast::StmtIfElse* tail, const StackFrameInfo* frame);
+    Ast::StmtIfElse* BuildStmtIfElse(Ast::Exp* exp, Ast::StmtList* ifBlock, Ast::StmtIfElse* tail, StackFrameInfo* frame);
     Ast::StmtStructDef* BuildStmtStructDef(const char* name, Ast::ArgList* definitions);
     Ast::ArgDec* BuildArgDec(const char* var, const TypeDesc* type);
     Ast::Exp* BuildStrImm(const char* strToCopy);
@@ -107,16 +108,10 @@ public:
 
     int GetErrorCount() const { return mErrorCount; }
 
-    const StackFrameInfo* StartNewFrame();
+    StackFrameInfo* StartNewFrame();
     void PopFrame();
 
-    TypeTable* GetTypeTable() { return &mTypeTable; }
-
     FunTable* GetFunTable() { return &mFunTable; }
-
-    const TypeTable* GetTypeTable() const { return &mTypeTable; }
-
-    const FunTable* GetFunTable() const { return &mFunTable; }
 
     void BindIntrinsic(Ast::StmtFunDec* funDec, FunCallback callback);
 
@@ -132,11 +127,19 @@ public:
 
     void SetEventListener(IBlockScriptCompilerListener* eventListener) { mEventListener = eventListener; }
 
+    const TypeDesc* GetTypeByName(const char* name) const;
+
+    FunDesc* FindFunctionDescription(Ast::FunCall* fcSignature);
+
+    FunDesc* RegisterFunctionDeclaration(Ast::StmtFunDec* funDec);
+
+    SymbolTable* GetSymbolTable() { return &mSymbolTable; }
+
 private:
 
     // registers a member into the stack. Returns the offset of the current stack frame.
     //! returns the offset of such member
-    int RegisterStackMember(const char* name, int type);
+    int RegisterStackMember(const char* name, const TypeDesc* type);
 
     //! builds a binary operator for array access. Determines whether its an array or not.
     //! returns the expression corresponding to such array element.
@@ -151,18 +154,17 @@ private:
     //! \return a new expression if success, otherwise returns the same expression passed.
     Ast::Exp* AttemptTypePromotion(Ast::Exp* exp, const TypeDesc* targetType);
 
+
     Alloc::IAllocator* mGeneralAllocator;
     AstAllocator       mAllocator;
-    TypeTable          mTypeTable;
     FunTable           mFunTable;
 	CompilationResult  mActiveResult;
     IddStrPool         mStrPool;
+    SymbolTable        mSymbolTable;
 
-    int                mCurrentFrame;
+    StackFrameInfo*    mCurrentFrame;
     int                mErrorCount;
     int                mCurrentLineNumber;
-
-    Container<StackFrameInfo> mStackFrames;
 
     Canonizer mCanonizer;
 

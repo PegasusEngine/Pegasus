@@ -26,53 +26,6 @@ void TypeTable::Initialize(Alloc::IAllocator* alloc)
 {
     PG_ASSERT(mTypeDescPool.Size() == 0);
     mTypeDescPool.Initialize(alloc);
-    
-    //type description pool is ready, lets register some intrinsic types
-    InternalRegisterIntrinsicTypes();
-}
-
-void TypeTable::InternalRegisterIntrinsicTypes()
-{
-    //Register ints and scalars
-    TypeDesc* floatT = CreateType(
-        TypeDesc::M_SCALAR,
-        "float"
-    );
-
-    floatT->SetAluEngine(TypeDesc::E_FLOAT);
-
-    TypeDesc* intT   = CreateType(
-        TypeDesc::M_SCALAR,
-        "int"
-    );
-    intT->SetAluEngine(TypeDesc::E_INT);
-
-    char fStr[25];
-    fStr[0] = '\0';
-    char iStr[25];
-    iStr[0] = '\0';
-    Utils::Strcat(fStr, "float");
-    Utils::Strcat(iStr, "int");
-    int fStrLen = Utils::Strlen(fStr);
-    int iStrLen = Utils::Strlen(iStr);
-    PG_ASSERT(Ast::gMaxAluDimensions < 10); //only 1 digit numbers
-    for (int i = 2; i <= Ast::gMaxAluDimensions; ++i)
-    {
-        fStr[fStrLen] = i + '0';
-        iStr[iStrLen] = i + '0';
-        fStr[fStrLen+1] = '\0';
-        iStr[iStrLen+1] = '\0';
-        TypeDesc* t1 = CreateType(
-            TypeDesc::M_VECTOR,
-            fStr,
-            floatT,
-            i
-        );
-        t1->SetAluEngine(static_cast<TypeDesc::AluEngine>(TypeDesc::E_FLOAT + i - 1));
-
-    }
-
-    CreateType(TypeDesc::M_REFERECE, "string");
 }
 
 void TypeTable::Shutdown()
@@ -114,7 +67,6 @@ TypeDesc* TypeTable::CreateType(
     int idx = mTypeDescPool.Size();
     TypeDesc& newDesc = mTypeDescPool.PushEmpty();
     newDesc.SetName(name);
-    newDesc.SetGuid(idx);
     newDesc.SetModifier(modifier);
     newDesc.SetChild(child);
     newDesc.SetModifierProperty(modifierProperty);
@@ -129,24 +81,17 @@ TypeDesc* TypeTable::CreateType(
     return &newDesc;
 }
 
-const TypeDesc* TypeTable::GetTypeDesc(int guid) const
-{
-    PG_ASSERT(guid >= 0 && guid < mTypeDescPool.Size());
-    return &mTypeDescPool[guid];
-}
-
-int TypeTable::GetTypeByName(const char* name) const
+const TypeDesc* TypeTable::GetTypeByName(const char* name) const
 {
     int s = mTypeDescPool.Size();
     for (int i = 0; i < s; ++i)
     {
         if(!Utils::Strcmp(name, mTypeDescPool[i].GetName()) && mTypeDescPool[i].GetModifier() != TypeDesc::M_ARRAY)
         {
-            PG_ASSERT(mTypeDescPool[i].GetGuid() == i);
-            return i;
+            return &(mTypeDescPool[i]);
         }
     }
-    return -1;
+    return nullptr;
 }
 
 bool TypeTable::ComputeSize(const TypeDesc* t, int& outSize) const

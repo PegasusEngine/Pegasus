@@ -43,6 +43,10 @@ namespace Pegasus {
     namespace Mesh {
         class MeshManager;
     }
+
+    namespace BlockScript {
+        class BlockScriptManager;
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -108,12 +112,13 @@ public:
 
 
     // IWindowContext interface
-    virtual Io::IOManager*           GetIOManager()      const { return mIoManager;      }
-    virtual Graph::NodeManager*      GetNodeManager()    const { return mNodeManager;    }
-    virtual Texture::TextureManager* GetTextureManager() const { return mTextureManager; }
-    virtual Mesh::MeshManager*       GetMeshManager()    const { return mMeshManager;    }
-    virtual Shader::ShaderManager*   GetShaderManager()  const { return mShaderManager;  }
-    virtual Timeline::Timeline*      GetTimeline()       const { return mTimeline;       }
+    virtual Io::IOManager*                   GetIOManager()          const { return mIoManager;          }
+    virtual Graph::NodeManager*              GetNodeManager()        const { return mNodeManager;        }
+    virtual Texture::TextureManager*         GetTextureManager()     const { return mTextureManager;     }
+    virtual Mesh::MeshManager*               GetMeshManager()        const { return mMeshManager;        }
+    virtual Shader::ShaderManager*           GetShaderManager()      const { return mShaderManager;      }
+    virtual Timeline::Timeline*              GetTimeline()           const { return mTimeline;           }
+    virtual BlockScript::BlockScriptManager* GetBlockScriptManager() const { return mBlockScriptManager; }
 
 private:
     // No copies allowed
@@ -126,16 +131,17 @@ private:
     void ShutdownAppInternal();
 
 
-    bool mInitialized;                          //!< Initialized flag
-    ApplicationConfig        mConfig;           //!< Cached config object
-    Render::IDevice*         mDevice;           //!< Render device
-    AppWindowManager*        mWindowManager;    //!< Window manager
-    Io::IOManager*           mIoManager;        //!< IO manager
-    Graph::NodeManager*      mNodeManager;      //!< Graph node manager
-    Shader::ShaderManager*   mShaderManager;    //!< Shader node manager
-    Texture::TextureManager* mTextureManager;   //!< Texture node manager
-    Mesh::MeshManager*       mMeshManager;      //!< Mesh node manager
-    Timeline::Timeline*      mTimeline;         //!< Timeline object
+    bool mInitialized;                                    //!< Initialized flag
+    ApplicationConfig                mConfig;             //!< Cached config object
+    Render::IDevice*                 mDevice;             //!< Render device
+    AppWindowManager*                mWindowManager;      //!< Window manager
+    Io::IOManager*                   mIoManager;          //!< IO manager
+    Graph::NodeManager*              mNodeManager;        //!< Graph node manager
+    Shader::ShaderManager*           mShaderManager;      //!< Shader node manager
+    Texture::TextureManager*         mTextureManager;     //!< Texture node manager
+    Mesh::MeshManager*               mMeshManager;        //!< Mesh node manager
+    Timeline::Timeline*              mTimeline;           //!< Timeline object
+    BlockScript::BlockScriptManager* mBlockScriptManager; //!< BlockScriptManager manager.
 };
 
 }   // namespace App

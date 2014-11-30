@@ -47,29 +47,24 @@ extern void BS_ErrorDispatcher(BlockScriptBuilder* builder, const char* message)
 
 void BlockScriptBuilder::Initialize(Pegasus::Alloc::IAllocator* allocator)
 {
-    mErrorCount = 0;
     mGeneralAllocator = allocator;
     mAllocator.Initialize(STRING_PAGE_SIZE, allocator);
-	mStackFrames.Initialize(allocator);
     mCanonizer.Initialize(allocator);
     mStrPool.Initialize(allocator);
-    mCurrentLineNumber = 1;
+    mSymbolTable.Initialize(allocator);
+    Reset();
 }
 
 void BlockScriptBuilder::BeginBuild()
 {
-    mCurrentFrame = 0;
-    mErrorCount = 0;
-    mCurrentLineNumber = 1;
-    mInFunBody = false;
-    mStackFrames.PushEmpty().Initialize(mGeneralAllocator);
-    mStackFrames[0].SetGuid(0);
-    mStackFrames[0].SetCreatorCategory(StackFrameInfo::GLOBAL);
-	mTypeTable.Initialize(mGeneralAllocator);
-    mFunTable.Initialize(mGeneralAllocator);
-    mActiveResult.mAst = nullptr;
-    mActiveResult.mAsm.mBlocks = nullptr;
-    
+    PG_ASSERTSTR(
+        mErrorCount == 0 &&
+        mCurrentLineNumber == 1 &&
+        mActiveResult.mAst == nullptr &&
+        mActiveResult.mAsm.mBlocks == nullptr &&
+        mInFunBody == false,
+        "Reset() must be called prior to compiling on BlockScriptBuilder!"
+    );
     if (mEventListener != nullptr)
     {
         mEventListener->OnCompilationBegin();
@@ -81,10 +76,11 @@ void BlockScriptBuilder::EndBuild(BlockScriptBuilder::CompilationResult& result)
     //check that all functions have a body
     if (mErrorCount == 0)
     {
-        int funSize = mFunTable.GetSize();
+        FunTable* funTable = mSymbolTable.GetRootFunTable();
+        int funSize = funTable->GetSize();
         for (int f = 0; f < funSize; ++f)
         {
-            const FunDesc* funDesc = mFunTable.GetDesc(f);
+            FunDesc* funDesc = funTable->GetDesc(f);
             if (funDesc->GetDec()->GetStmtList() == nullptr && !funDesc->IsCallback())
             {
                 ++mErrorCount;
@@ -100,9 +96,7 @@ void BlockScriptBuilder::EndBuild(BlockScriptBuilder::CompilationResult& result)
         //build of AST is done, lets canonize now (canonization process should not error out)
         mCanonizer.Canonize(
             mActiveResult.mAst,
-            &mTypeTable,   
-            &mFunTable,
-            &mStackFrames
+            &mSymbolTable
         );
 
         mActiveResult.mAsm = mCanonizer.GetAssembly();
@@ -124,17 +118,24 @@ void BlockScriptBuilder::EndBuild(BlockScriptBuilder::CompilationResult& result)
 
 void BlockScriptBuilder::Reset()
 {
-    mAllocator.Reset();
-    mTypeTable.Shutdown();
-    mStackFrames.Reset();
-    mFunTable.Reset();
-    mCanonizer.Reset();
-    mStrPool.Clear();
+    //initialize compilation state variables
     mErrorCount = 0;
-    mCurrentFrame = 0;
     mCurrentLineNumber = 1;
-	mActiveResult.mAst = nullptr;
+    mActiveResult.mAst = nullptr;
+    mActiveResult.mAsm.mBlocks = nullptr;
     mInFunBody = false;
+
+    //Reset and initialize symbol containers
+    mAllocator.Reset();
+
+
+    mSymbolTable.Reset();
+    mCurrentFrame = mSymbolTable.CreateFrame();
+    mCurrentFrame->SetCreatorCategory(StackFrameInfo::GLOBAL);
+
+    mCanonizer.Reset();
+
+    mStrPool.Clear();
 }
 
 bool BlockScriptBuilder::StartNewFunction()
@@ -151,27 +152,25 @@ bool BlockScriptBuilder::StartNewFunction()
     return true;
 }
 
-const StackFrameInfo* BlockScriptBuilder::StartNewFrame()
+StackFrameInfo* BlockScriptBuilder::StartNewFrame()
 {
-    StackFrameInfo& newFrame = mStackFrames.PushEmpty();
-    newFrame.Initialize(mGeneralAllocator);
-    newFrame.SetParentStackFrame(mCurrentFrame);
-    mCurrentFrame = mStackFrames.Size() - 1;
-    newFrame.SetGuid(mCurrentFrame);
-    return &newFrame;
+    StackFrameInfo* newFrame = mSymbolTable.CreateFrame();
+    newFrame->SetParentStackFrame(mCurrentFrame);
+    mCurrentFrame = newFrame;
+    return newFrame;
 }
 
 void BlockScriptBuilder::PopFrame()
 {
     //pop to the previous frame
-    mCurrentFrame = mStackFrames[mCurrentFrame].GetParentStackFrame();
+    mCurrentFrame = mCurrentFrame->GetParentStackFrame();
 }
 
 void BlockScriptBuilder::BindIntrinsic(Ast::StmtFunDec* funDec, FunCallback callback)
 {
     PG_ASSERT(mInFunBody);
-    const FunDesc* desc = funDec->GetDesc();
-    mFunTable.BindIntrinsic(desc->GetGuid(), callback);
+    FunDesc* desc = funDec->GetDesc();
+    desc->SetCallback(callback);
 
     PopFrame();
     mInFunBody = false;
@@ -199,11 +198,15 @@ StmtList* BlockScriptBuilder::CreateStmtList()
     return BS_NEW StmtList;
 }
 
-int BlockScriptBuilder::RegisterStackMember(const char* name, int type)
+const TypeDesc* BlockScriptBuilder::GetTypeByName(const char* name) const
 {
-    PG_ASSERT(type != -1);
-    StackFrameInfo& currentFrame = mStackFrames[mCurrentFrame];
-    int offset = currentFrame.Allocate(name, type, mTypeTable, true /*is an Arg*/);
+    return mSymbolTable.GetTypeByName(name);
+}
+
+int BlockScriptBuilder::RegisterStackMember(const char* name, const TypeDesc* type)
+{
+    PG_ASSERT(type != nullptr);
+    int offset = mCurrentFrame->Allocate(name, type, true /*is an Arg*/);
     return offset;
 }
 
@@ -298,12 +301,9 @@ Exp* BlockScriptBuilder::BuildBinopArrayAccess (Ast::Exp* lhs, int op, Ast::Exp*
     if (lhs->GetExpType() == Idd::sType)
     {
         Idd* lhsIdd = static_cast<Idd*>(lhs);
-        int t = mTypeTable.GetTypeByName(lhsIdd->GetName());
-        if (t != -1)
+        const TypeDesc* arrayType = GetTypeByName(lhsIdd->GetName());
+        if (arrayType != nullptr)
         {
-            const TypeDesc* arrayType = mTypeTable.GetTypeDesc(t);
-            PG_ASSERT(arrayType != nullptr);
-
             int arrayCount = 0;
             if (rhs->GetTypeDesc() == nullptr || rhs->GetExpType() != Imm::sType || rhs->GetTypeDesc()->GetAluEngine() != TypeDesc::E_INT)
             {
@@ -315,7 +315,7 @@ Exp* BlockScriptBuilder::BuildBinopArrayAccess (Ast::Exp* lhs, int op, Ast::Exp*
                 arrayCount = static_cast<Imm*>(rhs)->GetVariant().i[0];
             }
 
-            arrayType = mTypeTable.CreateType(
+            arrayType = mSymbolTable.CreateType(
                 TypeDesc::M_ARRAY,
                 lhsIdd->GetName(),
                 arrayType,
@@ -352,7 +352,7 @@ Exp* BlockScriptBuilder::BuildBinopArrayAccess (Ast::Exp* lhs, int op, Ast::Exp*
 
         //recursively create the array constructor
         const TypeDesc* childType = lhs->GetTypeDesc();
-        TypeDesc* newArrayType = mTypeTable.CreateType(
+        TypeDesc* newArrayType = mSymbolTable.CreateType(
             TypeDesc::M_ARRAY,
             childType->GetName(),
             childType,
@@ -425,9 +425,8 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
                     //register into stack
                     idd->SetTypeDesc(tid2);
 					tid1 = tid2;
-                    StackFrameInfo& currentFrame = mStackFrames[mCurrentFrame];
                     //TODO: simplify this
-                    int offset = currentFrame.Allocate(idd->GetName(), tid2->GetGuid(), mTypeTable);
+                    int offset = mCurrentFrame->Allocate(idd->GetName(), tid2);
                     idd->SetOffset(offset);
                     idd->SetFrameOffset(0);
                 }
@@ -440,7 +439,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
 
                 output = BS_NEW Binop(lhs, op, rhs);
 
-                if (tid1->GetGuid() != tid2->GetGuid())
+                if (tid1 != tid2)
                 {
                     BS_ErrorDispatcher(this, "Incompatible types not allowed on operation.");
                     return nullptr;
@@ -461,7 +460,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
                 rhs = AttemptTypePromotion(rhs, tid1);
                 tid2 = rhs->GetTypeDesc();
 
-                if (tid1->GetGuid() != tid2->GetGuid())
+                if (tid1 != tid2)
                 {
                     BS_ErrorDispatcher(this, "incompatible types on = operator.");
                     return nullptr;
@@ -572,13 +571,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
                 Utils::Strcat(newName, str);
             }
 
-            TypeDesc* newType = mTypeTable.CreateType(
-                swizzleLen >= 2 ? TypeDesc::M_VECTOR : TypeDesc::M_SCALAR,
-                newName,
-                swizzleLen >= 2 ? tid1->GetChild() : nullptr,
-                swizzleLen >= 2 ? swizzleLen : 0,
-                static_cast<TypeDesc::AluEngine>(static_cast<int>(tid1->GetAluEngine()) + (tid1->GetModifier() == TypeDesc::M_SCALAR ? 0 : swizzleLen))
-            );
+            const TypeDesc* newType = mSymbolTable.GetTypeByName(newName);
 
             Binop* newBinop = BS_NEW Binop(
                 lhs, op, rhs);
@@ -610,7 +603,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
         rhs = AttemptTypePromotion(rhs, tid1); 
         tid2 = rhs->GetTypeDesc();
 
-        if (tid1->GetGuid() != tid2->GetGuid())
+        if (tid1 != tid2)
         {
             BS_ErrorDispatcher(this, "Incompatible types not allowed on operation.");
             return nullptr;
@@ -638,12 +631,10 @@ Exp* BlockScriptBuilder::BuildUnop(int op, Exp* exp)
 
 Exp* BlockScriptBuilder::BuildExplicitCast(Exp* exp, const char* type)
 {
-    int typeId = mTypeTable.GetTypeByName(type);
+    const TypeDesc* targetType = GetTypeByName(type);
     
-    if (typeId != -1)
+    if (targetType != nullptr)
     {
-        const TypeDesc* targetType = mTypeTable.GetTypeDesc(typeId);
-        PG_ASSERT(targetType != nullptr);
         Unop* unop = BS_NEW Unop(O_EXPLICIT_CAST, exp);        
         unop->SetTypeDesc(targetType);
         return unop;
@@ -658,9 +649,9 @@ Exp*   BlockScriptBuilder::BuildImmInt   (int i)
     Ast::Variant v;
     v.i[0] = i;
     Imm* imm = BS_NEW Imm(v);
-    int typeId = mTypeTable.GetTypeByName("int");
-    PG_ASSERT(typeId != -1);
-    imm->SetTypeDesc(mTypeTable.GetTypeDesc(typeId));
+    const TypeDesc* typeDesc = GetTypeByName("int");
+    PG_ASSERT(typeDesc != nullptr);
+    imm->SetTypeDesc(typeDesc);
     return imm;
 }
 
@@ -685,10 +676,8 @@ Exp*  BlockScriptBuilder::BuildStrImm(const char* strToCopy)
     destStr[0] = '\0';
     Utils::Strcat(destStr, strToCopy);
 
-    int strTypeId = mTypeTable.GetTypeByName("string");
-    PG_ASSERT(strTypeId != -1);
-    
-    const TypeDesc* strTypeDesc = mTypeTable.GetTypeDesc(strTypeId);
+    const TypeDesc* strTypeDesc = GetTypeByName("string");
+    PG_ASSERT(strTypeDesc != nullptr);
 
     StrImm* strImm = BS_NEW StrImm(destStr);
     strImm->SetTypeDesc(strTypeDesc);
@@ -701,9 +690,9 @@ Exp*   BlockScriptBuilder::BuildImmFloat   (float f)
     Ast::Variant v;
     v.f[0] = f;
     Imm* imm = BS_NEW Imm(v);
-    int typeId = mTypeTable.GetTypeByName("float");
-    PG_ASSERT(typeId != -1);
-    imm->SetTypeDesc(mTypeTable.GetTypeDesc(typeId));
+    const TypeDesc* typeDesc = GetTypeByName("float");
+    PG_ASSERT(typeDesc != nullptr);
+    imm->SetTypeDesc(typeDesc);
     return imm;
 }
 
@@ -713,25 +702,30 @@ Idd*   BlockScriptBuilder::BuildIdd   (const char * name)
     Idd* idd = BS_NEW Idd(name);
 
     //find type
-    int currentFrame = mCurrentFrame; 
+    StackFrameInfo* currentFrame = mCurrentFrame; 
     int frameOffset = 0;
-    while (currentFrame != -1)
+    while (currentFrame != nullptr)
     {
-        StackFrameInfo& info = mStackFrames[currentFrame];
-        StackFrameInfo::Entry* found = info.FindDeclaration(name);
+        StackFrameInfo* info = currentFrame;
+        StackFrameInfo::Entry* found = info->FindDeclaration(name);
         if (found != nullptr) {
             idd->SetOffset(found->mOffset);
             idd->SetFrameOffset(frameOffset);
-            idd->SetTypeDesc(mTypeTable.GetTypeDesc(found->mType));
+            idd->SetTypeDesc(found->mType);
             idd->SetIsGlobal(currentFrame == 0);
             break;
         }
-        currentFrame = info.GetParentStackFrame();
+        currentFrame = info->GetParentStackFrame();
         frameOffset++;
     }
 
 
     return idd;
+}
+
+FunDesc* BlockScriptBuilder::FindFunctionDescription(FunCall* fcSignature)
+{
+    return mSymbolTable.FindFunctionDescription(fcSignature);
 }
 
 Exp* BlockScriptBuilder::BuildFunCall(ExpList* args, const char* name)
@@ -752,7 +746,7 @@ Exp* BlockScriptBuilder::BuildFunCall(ExpList* args, const char* name)
     }
     
     FunCall* fc = BS_NEW FunCall(args, name);
-    const FunDesc* desc = mFunTable.Find(fc);
+    FunDesc* desc = FindFunctionDescription(fc);
     if (desc != nullptr)
     {
         fc->SetDesc(desc);
@@ -805,6 +799,11 @@ StmtTreeModifier* BlockScriptBuilder::BuildStmtTreeModifier(ExpList* expList, Id
     return BS_NEW StmtTreeModifier(expList, var);
 }
 
+FunDesc* BlockScriptBuilder::RegisterFunctionDeclaration(Ast::StmtFunDec* funDec)
+{
+    return mSymbolTable.CreateFunctionDescription(funDec);
+}
+
 StmtFunDec* BlockScriptBuilder::BuildStmtFunDec(Ast::ArgList* argList, const char * returnIdd, const char * nameIdd)
 {
     PG_ASSERT(returnIdd != nullptr);
@@ -812,8 +811,8 @@ StmtFunDec* BlockScriptBuilder::BuildStmtFunDec(Ast::ArgList* argList, const cha
 
 
     //first, find the return type
-    int retType = mTypeTable.GetTypeByName(returnIdd);
-    if (retType == -1)
+    const TypeDesc* retType = GetTypeByName(returnIdd);
+    if (retType == nullptr)
     {
         BS_ErrorDispatcher(this, "Unknown return type.");
         return nullptr;
@@ -821,18 +820,18 @@ StmtFunDec* BlockScriptBuilder::BuildStmtFunDec(Ast::ArgList* argList, const cha
 
     StmtFunDec* funDec = BS_NEW StmtFunDec(argList, returnIdd, nameIdd);
 
-    funDec->SetReturnType(mTypeTable.GetTypeDesc(retType));
+    funDec->SetReturnType(retType);
 
     // record the frame for this function
-    funDec->SetFrame(&mStackFrames[mCurrentFrame]);
+    funDec->SetFrame(mCurrentFrame);
 
-    mStackFrames[mCurrentFrame].SetCreatorCategory(StackFrameInfo::FUN_BODY);
+    mCurrentFrame->SetCreatorCategory(StackFrameInfo::FUN_BODY);
 
     
-    PG_ASSERT(mCurrentFrame != -1);
+    PG_ASSERT(mCurrentFrame != nullptr);
 
     //register in the function table
-    const FunDesc* description = mFunTable.Insert(funDec);
+    FunDesc* description = RegisterFunctionDeclaration(funDec);
 
     if (description == nullptr)
     {
@@ -867,9 +866,9 @@ StmtWhile* BlockScriptBuilder::BuildStmtWhile(Exp* exp, StmtList* stmtList)
 
     StmtWhile* stmtWhile = BS_NEW StmtWhile(exp, stmtList);
 
-    stmtWhile->SetFrame(&mStackFrames[mCurrentFrame]);
+    stmtWhile->SetFrame(mCurrentFrame);
 
-    mStackFrames[mCurrentFrame].SetCreatorCategory(StackFrameInfo::LOOP);
+    mCurrentFrame->SetCreatorCategory(StackFrameInfo::LOOP);
 
     //pop to the previous frame
     PopFrame();
@@ -877,11 +876,11 @@ StmtWhile* BlockScriptBuilder::BuildStmtWhile(Exp* exp, StmtList* stmtList)
     return stmtWhile; 
 }
 
-StmtIfElse* BlockScriptBuilder::BuildStmtIfElse(Exp* exp, StmtList* ifBlock, StmtIfElse* tail, const StackFrameInfo* frame)
+StmtIfElse* BlockScriptBuilder::BuildStmtIfElse(Exp* exp, StmtList* ifBlock, StmtIfElse* tail, StackFrameInfo* frame)
 {
     StmtIfElse* stmtIfElse = BS_NEW StmtIfElse(exp, ifBlock, tail, frame);
 
-    mStackFrames[mCurrentFrame].SetCreatorCategory(StackFrameInfo::IF_STMT);
+    mCurrentFrame->SetCreatorCategory(StackFrameInfo::IF_STMT);
 
     return stmtIfElse;
 }
@@ -908,7 +907,7 @@ StmtStructDef* BlockScriptBuilder::BuildStmtStructDef(const char* name, ArgList*
     PG_ASSERT(definitions != nullptr);
 
     //first make sure that there is no struct redefinition.
-    if (mTypeTable.GetTypeByName(name) != -1)
+    if (GetTypeByName(name) != nullptr)
     {
         BS_ErrorDispatcher(this, "Struct type is trying to redefine a type.");
         return nullptr;
@@ -922,19 +921,19 @@ StmtStructDef* BlockScriptBuilder::BuildStmtStructDef(const char* name, ArgList*
     
     StmtStructDef* newDef = BS_NEW StmtStructDef(name, definitions);
 
-    StackFrameInfo& frameInfo = mStackFrames[mCurrentFrame];
+    StackFrameInfo* frameInfo = mCurrentFrame;
 
-    newDef->SetFrameInfo(&frameInfo);
+    newDef->SetFrameInfo(frameInfo);
 
-    frameInfo.SetCreatorCategory(StackFrameInfo::STRUCT_DEF);
+    frameInfo->SetCreatorCategory(StackFrameInfo::STRUCT_DEF);
 
     //pop to the previous frame
     PopFrame();
 
     // unlink this to any parent, preventing searches on parent frames. this is now an orphan stack frame
-    frameInfo.UnlinkParentStackFrame();
+    frameInfo->UnlinkParentStackFrame();
 
-    TypeDesc* newStructType = mTypeTable.CreateType(
+    TypeDesc* newStructType = mSymbolTable.CreateType(
         TypeDesc::M_STRUCT,
         name,
         nullptr, // no child type
@@ -1007,14 +1006,14 @@ ArgDec*  BlockScriptBuilder::BuildArgDec(const char* var, const TypeDesc* type)
     PG_ASSERT(var != nullptr);
     PG_ASSERT(type != nullptr);
 
-    StackFrameInfo::Entry* found = mStackFrames[mCurrentFrame].FindDeclaration(var);
+    StackFrameInfo::Entry* found = mCurrentFrame->FindDeclaration(var);
     if (found != nullptr)
     {
         BS_ErrorDispatcher(this, "Duplicate name of declaration\n");
         return nullptr;
     }
 
-    int offset = RegisterStackMember(var, type->GetGuid());
+    int offset = RegisterStackMember(var, type);
     
     ArgDec* argDec = BS_NEW ArgDec(var, type);
     argDec->SetOffset(offset);

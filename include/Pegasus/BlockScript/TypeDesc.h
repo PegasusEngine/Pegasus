@@ -43,14 +43,6 @@ public:
     //! \return the name of this type
     const char * GetName() const { return mName; }
 
-    //! Sets the guid of this typedesc
-    //! \param guid the guid of such type
-    void SetGuid(int guid) { mGuid = guid; }
-
-    //!  Gets the guid of this typedesc
-    //! \return the guid of such type
-    int  GetGuid() const { return mGuid; }
-
     //! public enumeration of type modifiers
     enum Modifier
     {
@@ -127,7 +119,6 @@ private:
     TypeDesc(TypeDesc&);
     TypeDesc& operator=(TypeDesc&);
 
-    int        mGuid;
     char       mName[sMaxTypeName];
     Modifier   mModifier;
     AluEngine  mAluEngine;

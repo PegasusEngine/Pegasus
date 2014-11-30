@@ -17,6 +17,7 @@
 #include "Pegasus/Core/Log.h"
 #include "Pegasus/Core/Assertion.h"
 #include "Pegasus/BlockScript/Container.h"
+#include "Pegasus/BlockScript/BlockScriptManager.h"
 #include <stdio.h>
 
 using namespace Pegasus::Io;
@@ -148,6 +149,7 @@ int main(int argc, char* argv[])
 	IoError err;
     IOManager mgr("");
     Options opts;
+    Pegasus::BlockScript::BlockScriptManager bsManager(GetGlobalAllocator());
     bool res = ParseCommandLineOptions(argv, argc, opts);
     if (!res)
     {
@@ -172,8 +174,8 @@ int main(int argc, char* argv[])
             vmState.Initialize(GetGlobalAllocator());
 		    if (err == ERR_NONE)
             {
-		    	Pegasus::BlockScript::BlockScript bs(GetGlobalAllocator());
-                bool res = bs.Compile(&fb);
+                Pegasus::BlockScript::BlockScript* bs = bsManager.CreateBlockScript();
+                bool res = bs->Compile(&fb);
 	
                 if (!res)
                 {
@@ -191,25 +193,26 @@ int main(int argc, char* argv[])
                     if (opts.printAst)
                     {
                         printf("----------------- SRC -------------------\n");
-		    		    pp.Print(bs.GetAst());
+		    		    pp.Print(bs->GetAst());
                         printf("\n");
                     }
 
                     if (opts.printAssembly)
                     {
                         printf("\n----------------- ASM -------------------\n");
-                        pp.PrintAsm(bs.GetAsm());
+                        pp.PrintAsm(bs->GetAsm());
                         printf("\n");
                     }
 
                     if (opts.runScript)
                     {
-                        bs.Run(&vmState);
+                        bs->Run(&vmState);
                     }
                 }
 		    	
-                bs.Reset();	
+                bs->Reset();	
                 vmState.Reset();
+                bsManager.DestroyBlockScript(bs);
 		    }
         }
     }

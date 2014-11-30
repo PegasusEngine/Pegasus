@@ -13,17 +13,16 @@
 #include "Pegasus/BlockScript/BlockScriptAst.h"
 #include "Pegasus/BlockScript/IBlockScriptCompilerListener.h"
 #include "Pegasus/Core/Io.h"
+#include "Pegasus/BlockScript/SymbolTable.h"
+#include "Pegasus/BlockScript/BlockLib.h"
 
 #include <stdio.h>
 
 using namespace Pegasus;
 
-extern void Bison_BlockScriptParse(const Io::FileBuffer* fileBuffer, BlockScript::BlockScriptBuilder* builder);
-
-BlockScript::BlockScript::BlockScript(Alloc::IAllocator* allocator)
-: mAllocator(allocator), mAst(nullptr)
+BlockScript::BlockScript::BlockScript(Alloc::IAllocator* allocator, BlockLib* runtimeLib)
+: BlockScript::BlockScriptCompiler(allocator), mRuntimeLib(runtimeLib)
 {
-    mBuilder.Initialize(mAllocator);
 }
 
 BlockScript::BlockScript::~BlockScript()
@@ -32,40 +31,17 @@ BlockScript::BlockScript::~BlockScript()
 
 bool BlockScript::BlockScript::Compile(const Io::FileBuffer* fb)
 {
-    mBuilder.BeginBuild(); 
-    Bison_BlockScriptParse(fb, &mBuilder);
-    BlockScriptBuilder::CompilationResult cr;
-	mBuilder.EndBuild(cr);
-    mAst = cr.mAst;
-    mAsm = cr.mAsm;
-    return mAst != nullptr && mBuilder.GetErrorCount() == 0;
-}
+    //prepare runtime library
+    mBuilder.GetSymbolTable()->RegisterChild(mRuntimeLib->GetSymbolTable());
 
-void BlockScript::BlockScript::Reset()
-{
-    mBuilder.Reset();
-    mAst = nullptr;
+    //compile
+    return BlockScriptCompiler::Compile(fb);
 }
 
 void BlockScript::BlockScript::Run(BsVmState* vmState) 
 { 
     // rrrrrrrrun!! boy
     mVm.Run(GetAsm(), *vmState);
-}
-
-BlockScript::FunBindPoint BlockScript::BlockScript::GetFunctionBindPoint(
-    const char* funName,
-    const char** argTypes,
-    int argumentListCount
-) const
-{
-    return Pegasus::BlockScript::GetFunctionBindPoint(
-        &mBuilder,
-        mAsm,
-        funName,
-        argTypes,
-        argumentListCount
-    );
 }
 
 bool BlockScript::BlockScript::ExecuteFunction(
@@ -80,7 +56,7 @@ bool BlockScript::BlockScript::ExecuteFunction(
     return Pegasus::BlockScript::ExecuteFunction(
         functionBindPoint,
         &mBuilder,
-        mAsm,
+        GetAsm(),
         *vmState,
         mVm,
         inputBuffer,
@@ -89,9 +65,3 @@ bool BlockScript::BlockScript::ExecuteFunction(
         outputBufferSize
     );
 }
-
-void BlockScript::BlockScript::SetCompilerEventListener(Pegasus::BlockScript::IBlockScriptCompilerListener* listener)
-{
-    mBuilder.SetEventListener(listener);
-}
-

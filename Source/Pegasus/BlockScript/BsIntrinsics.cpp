@@ -14,7 +14,6 @@
 #include "Pegasus/BlockScript/BlockScriptAst.h"
 #include "Pegasus/BlockScript/FunDesc.h"
 #include "Pegasus/BlockScript/FunCallback.h"
-#include "Pegasus/BlockScript/TypeTable.h"
 #include "Pegasus/BlockScript/BsVm.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Math/Vector.h"
@@ -252,10 +251,58 @@ void Echo_Float(FunCallbackContext& context)
 
 }
 
+static void RegisterIntrinsicTypes(BlockScriptBuilder* builder)
+{
+    SymbolTable* symbolTable = builder->GetSymbolTable();
+    PG_ASSERT(symbolTable != nullptr);
+
+    //Register ints and scalars
+    TypeDesc* floatT = symbolTable->CreateType(
+        TypeDesc::M_SCALAR,
+        "float"
+    );
+
+    floatT->SetAluEngine(TypeDesc::E_FLOAT);
+
+    TypeDesc* intT   = symbolTable->CreateType(
+        TypeDesc::M_SCALAR,
+        "int"
+    );
+    intT->SetAluEngine(TypeDesc::E_INT);
+
+    char fStr[25];
+    fStr[0] = '\0';
+    char iStr[25];
+    iStr[0] = '\0';
+    Utils::Strcat(fStr, "float");
+    Utils::Strcat(iStr, "int");
+    int fStrLen = Utils::Strlen(fStr);
+    int iStrLen = Utils::Strlen(iStr);
+    PG_ASSERT(BlockScript::Ast::gMaxAluDimensions < 10); //only 1 digit numbers
+    for (int i = 2; i <= BlockScript::Ast::gMaxAluDimensions; ++i)
+    {
+        fStr[fStrLen] = i + '0';
+        iStr[iStrLen] = i + '0';
+        fStr[fStrLen+1] = '\0';
+        iStr[iStrLen+1] = '\0';
+        TypeDesc* t1 = symbolTable->CreateType(
+            TypeDesc::M_VECTOR,
+            fStr,
+            floatT,
+            i
+        );
+        t1->SetAluEngine(static_cast<TypeDesc::AluEngine>(TypeDesc::E_FLOAT + i - 1));
+
+    }
+
+    symbolTable->CreateType(TypeDesc::M_REFERECE, "string");
+}
 
 // Conversion API
 void Pegasus::BlockScript::RegisterIntrinsics(BlockScriptBuilder* builder)
 {
+    RegisterIntrinsicTypes(builder);
+
     static struct ConstructorDesc
     {
         const char* funName;

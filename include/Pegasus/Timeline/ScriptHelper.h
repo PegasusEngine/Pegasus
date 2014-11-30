@@ -31,8 +31,8 @@ namespace Pegasus {
         class IAllocator;
     }
 
-    namespace Io {
-        class IOManager;
+    namespace Wnd {
+        class IWindowContext;
     }
 }
 
@@ -46,7 +46,7 @@ class ScriptHelper : public BlockScript::IBlockScriptCompilerListener
 
 public:
     //! Constructor
-    ScriptHelper(Alloc::IAllocator* alloc, Io::IOManager* ioManager);
+    ScriptHelper(Alloc::IAllocator* alloc, Wnd::IWindowContext* appContext);
 
     //! Destructor
     ~ScriptHelper();
@@ -119,7 +119,7 @@ private:
     Alloc::IAllocator* mAllocator;
 
     //! internal script structure
-    BlockScript::BlockScript mScript;
+    BlockScript::BlockScript* mScript;
 
     //! status of last IO operation
     Io::IoError mIoStatus;
@@ -145,8 +145,8 @@ private:
     //! Serial version
     int mSerialVersion;
 
-    //! The io manager, for file manipulation
-    Io::IOManager * mIoManager;
+    //! IWindowContext reference to access application data
+    Wnd::IWindowContext* mAppContext;
 
 #if PEGASUS_ENABLE_PROXIES
     ScriptProxy mProxy;

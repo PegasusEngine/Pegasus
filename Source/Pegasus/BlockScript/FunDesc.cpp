@@ -54,9 +54,9 @@ void FunDesc::ConstructImpl(StmtFunDec* funDec)
         {
             mSignature[sz++] = '_';
             PG_ASSERT(sz < MAX_SIGNATURE_LENGTH);
-            int tid = argDec->GetType()->GetGuid();
-            Utils::Memcpy(&mSignature[sz], &tid, sizeof(int));
-            sz += sizeof(int);
+            long long tid = reinterpret_cast<long long>(argDec->GetType());
+            Utils::Memcpy(&mSignature[sz], &tid, sizeof(long long));
+            sz += sizeof(long long);
             PG_ASSERT(sz < MAX_SIGNATURE_LENGTH);
             mInputArgumentByteSize += argDec->GetType()->GetByteSize();
         }
@@ -91,9 +91,9 @@ void FunDesc::ConstructDec(FunCall* funDec)
         {
             mSignature[sz++] = '_';
             PG_ASSERT(sz < MAX_SIGNATURE_LENGTH);
-            int tid = argDec->GetTypeDesc()->GetGuid();
-            Utils::Memcpy(&mSignature[sz], &tid, sizeof(int));
-            sz += sizeof(int);
+            long long tid = reinterpret_cast<long long>(argDec->GetTypeDesc());
+            Utils::Memcpy(&mSignature[sz], &tid, sizeof(long long));
+            sz += sizeof(long long);
             PG_ASSERT(sz < MAX_SIGNATURE_LENGTH);
         }
 

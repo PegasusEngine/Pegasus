@@ -20,7 +20,6 @@ using namespace Pegasus::BlockScript;
 
 TypeDesc::TypeDesc()
 :
-mGuid(-1),
 mModifier(M_INVALID),
 mAluEngine(E_NONE),
 mChild(nullptr),

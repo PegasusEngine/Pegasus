@@ -19,8 +19,9 @@ namespace BlockScript
 
 class BlockScriptBuilder;
 
-//! registers all the default intrinsics. To be called within the builder
+//! registers all the default intrinsics and runtime types (int, float etc).
 void RegisterIntrinsics(BlockScriptBuilder* builder);
+
 
 }
 }

@@ -16,7 +16,7 @@
 #include "Pegasus/BlockScript/BsIntrinsics.h"
 #include "Pegasus/BlockScript/FunCallback.h"
 
-#define MAX_SIGNATURE_LENGTH 256
+#define MAX_SIGNATURE_LENGTH 1024
 
 namespace Pegasus
 {

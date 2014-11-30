@@ -85,6 +85,9 @@ Application::Application(const ApplicationConfig& config)
     // Set up timeline
     mTimeline = PG_NEW(timelineAlloc, -1, "Timeline", Alloc::PG_MEM_PERM) Timeline::Timeline(timelineAlloc, this);
 
+    // Set up blockscript. Use the same timeline allocator
+    mBlockScriptManager = PG_NEW(timelineAlloc, -1, "BlockScript Manager", Alloc::PG_MEM_PERM) BlockScript::BlockScriptManager(timelineAlloc);
+
     // Cache config
     mConfig = config;
 }

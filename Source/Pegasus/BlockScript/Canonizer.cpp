@@ -13,8 +13,7 @@
 #include "Pegasus/BlockScript/Canonizer.h"
 #include "Pegasus/BlockScript/BlockScriptAst.h"
 #include "Pegasus/BlockScript/bs.parser.hpp"
-#include "Pegasus/BlockScript/TypeTable.h"
-#include "Pegasus/BlockScript/FunTable.h"
+#include "Pegasus/BlockScript/SymbolTable.h"
 #include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/Allocator/Alloc.h"
 #include "Pegasus/Core/Assertion.h"
@@ -35,17 +34,16 @@ void Canonizer::Initialize(Alloc::IAllocator* alloc)
     mAllocator.Initialize(CANON_PAGE_SIZE, alloc);
     mBlocks.Initialize(mInternalAllocator);
     mFunBlockMap.Initialize(mInternalAllocator);
-    mCurrentBlock = -1;
-    mRebuiltExpression = nullptr;
-    mRebuiltExpList = nullptr;
     mStrPool.Initialize(alloc);
     mLabelMap.Initialize(alloc);
 
-    mCurrFrames = nullptr;
+    mCurrentBlock = -1;
+    mRebuiltExpression = nullptr;
+    mRebuiltExpList = nullptr;
+
     mCurrentStackFrame = nullptr;
     mCurrentFunDesc = nullptr;
-    mCurrentFunTable = nullptr;
-    mCurrentTypeTable = nullptr;
+    mSymbolTable = nullptr;
     mCurrentTempAllocationSize = 0;
     mNextLabel = 0;
 }
@@ -62,10 +60,8 @@ void Canonizer::Reset()
     mRebuiltExpression = nullptr;
     mCurrentFunDesc = nullptr;
     mRebuiltExpList = nullptr;
-    mCurrFrames = nullptr;
     mCurrentStackFrame = nullptr;
-    mCurrentFunTable = nullptr;
-    mCurrentTypeTable = nullptr;
+    mSymbolTable = nullptr;
     mCurrentTempAllocationSize = 0;
     mNextLabel = 0;
 }
@@ -96,11 +92,10 @@ void Canonizer::PushCanon(CanonNode* n)
 
 Idd* Canonizer::AllocateTemporal(const TypeDesc* typeDesc)
 {
-    StackFrameInfo& stackFrameInfo = (*mCurrFrames)[mCurrentStackFrame->GetGuid()];
     int requestSize = typeDesc->GetByteSize();
-    if (requestSize + mCurrentTempAllocationSize > stackFrameInfo.GetTempSize())
+    if (requestSize + mCurrentTempAllocationSize > mCurrentStackFrame->GetTempSize())
     {
-        stackFrameInfo.AllocateTemporal(requestSize);
+        mCurrentStackFrame->AllocateTemporal(requestSize);
     }
 
     int offset = mCurrentTempAllocationSize;
@@ -111,7 +106,7 @@ Idd* Canonizer::AllocateTemporal(const TypeDesc* typeDesc)
     idd[1] = 't';
     idd[2] = '\0';
     Idd* iddTree = CANON_NEW Idd(idd);
-    iddTree->SetOffset(stackFrameInfo.GetSize() + offset);
+    iddTree->SetOffset(mCurrentStackFrame->GetSize() + offset);
     iddTree->SetFrameOffset(0);
     iddTree->SetTypeDesc(typeDesc);
 
@@ -147,10 +142,11 @@ void Canonizer::RegisterFunLabel(const FunDesc* funDesc, int label)
 
 void Canonizer::BuildFunctionAsm()
 {
-    int funSz = mCurrentFunTable->GetSize();
+    FunTable* funTable = mSymbolTable->GetRootFunTable();
+    int funSz = funTable->GetSize();
     for (int i = 0; i < funSz; ++i)
     {
-        const FunDesc* fd = mCurrentFunTable->GetDesc(i);
+        const FunDesc* fd = funTable->GetDesc(i);
 
         // if its a callback, ignore and do not generate assembly
         if (fd->IsCallback())
@@ -166,7 +162,7 @@ void Canonizer::BuildFunctionAsm()
 
         //record this label with this function
         FunMapEntry& funBlockEntry = mFunBlockMap.PushEmpty();
-        funBlockEntry.mFunId = fd->GetGuid();
+        funBlockEntry.mFunDesc = fd;
         funBlockEntry.mAssemblyBlock = label;
        
         AddBlock(label);
@@ -181,22 +177,18 @@ void Canonizer::BuildFunctionAsm()
 
 void Canonizer::Canonize(
         Program* program,
-        TypeTable* typeTable,
-        FunTable*  funTable,
-        Container<StackFrameInfo>* stackFrameInfos
+        SymbolTable* symbolTable
     )
 {
     PG_ASSERTSTR(mBlocks.Size() == 0 && mCurrentBlock == -1, "Must call reset if planning to recanonize!");
-    mCurrentTypeTable = typeTable;
-    mCurrentFunTable = funTable;
-    mCurrFrames = stackFrameInfos;
+    mSymbolTable = symbolTable;
     program->Access(this);
 }
 
 void Canonizer::Visit(Program* n)
 {
     AddBlock(CreateBlock());
-    mCurrentStackFrame = &(*mCurrFrames)[0];
+    mCurrentStackFrame = mSymbolTable->GetRootGlobalFrame();
     PushCanon( CANON_NEW PushFrame(mCurrentStackFrame));
     StmtList* stmtList = n->GetStmtList();
     if (stmtList != nullptr)
@@ -751,11 +743,19 @@ void Canonizer::Visit(Unop* unop)
                 ExpList* arguments = CANON_NEW ExpList();
                 arguments->SetExp(unop->GetExp());
                 FunCall* newCall = CANON_NEW FunCall(arguments, funName);
-                const FunDesc* fd = mCurrentFunTable->Find(newCall);
+                FunDesc* fd = mSymbolTable->FindFunctionDescription(newCall);
                 PG_ASSERT(fd != nullptr);
                 newCall->SetDesc(fd);
                 newCall->SetTypeDesc(fd->GetDec()->GetReturnType());
                 newCall->Access(this);
+            }
+            else if (targetType->GetAluEngine() == sourceType->GetAluEngine())
+            {                         
+                mRebuiltExpression = unop->GetExp();
+            }
+            else
+            {
+                PG_FAILSTR("Unhandled condition!");
             }
         }
     }
@@ -786,7 +786,7 @@ Idd* Canonizer::BeginSaveRet()
 
     if (shouldSaveRet)
     {
-        const TypeDesc* td = mCurrentTypeTable->GetTypeDesc(mCurrentTypeTable->GetTypeByName("int"));
+        const TypeDesc* td = mSymbolTable->GetTypeByName("int");
         tempSavRet = AllocateTemporal(td);
         PushCanon(CANON_NEW Save(tempSavRet, R_RET));
     }
@@ -870,7 +870,7 @@ void Canonizer::Visit(StmtIfElse* n)
     n->GetExp()->Access(this);
     JmpCond* lastJmp = CANON_NEW JmpCond(mRebuiltExpression, 0);
     PushCanon(lastJmp);
-    const StackFrameInfo* prevFrame = mCurrentStackFrame;
+    StackFrameInfo* prevFrame = mCurrentStackFrame;
     mCurrentStackFrame = n->GetFrame();
     PushCanon( CANON_NEW PushFrame(n->GetFrame()) );
     n->GetStmtList()->Access(this);
@@ -926,7 +926,7 @@ void Canonizer::Visit(StmtWhile* n)
     int topLabel = CreateBlock();
     int endLabel = CreateBlock();
 
-    const StackFrameInfo* prevFrame = mCurrentStackFrame;
+    StackFrameInfo* prevFrame = mCurrentStackFrame;
     mCurrentStackFrame = n->GetFrame();
     PushCanon( CANON_NEW PushFrame( n->GetFrame() ) );
     AddBlock(topLabel);
@@ -960,11 +960,10 @@ void Canonizer::Visit(StmtReturn* n)
     }
 
     //TODO: ugh improve this!!
-    const StackFrameInfo* theFrame = mCurrentStackFrame;
+    StackFrameInfo* theFrame = mCurrentStackFrame;
     while (theFrame->GetCreatorCategory() != StackFrameInfo::FUN_BODY)
     {
-        int parentFrame = theFrame->GetParentStackFrame();
-        theFrame = &((*mCurrFrames)[parentFrame]);
+        theFrame = theFrame->GetParentStackFrame();
         PushCanon( CANON_NEW PopFrame );
     }
     PushCanon( CANON_NEW Ret );

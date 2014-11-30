@@ -18,6 +18,7 @@
 #include "Pegasus/Texture/TextureManager.h"
 #include "Pegasus/Mesh/MeshManager.h"
 #include "Pegasus/Timeline/Timeline.h"
+#include "Pegasus/BlockScript/BlockScriptManager.h"
 
 namespace Pegasus {
 namespace Wnd {
@@ -54,6 +55,10 @@ public:
     //! Gets the timeline for use by this window
     //! \return The timeline.
     virtual Timeline::Timeline* GetTimeline() const = 0;
+
+    //! Gets the blockscript manager to construct / create block script libraries / scripts
+    //! \return the BlockScriptManager
+    virtual BlockScript::BlockScriptManager* GetBlockScriptManager() const = 0;
 };
 
 

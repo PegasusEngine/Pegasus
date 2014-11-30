@@ -95,13 +95,13 @@ extern int BS_debug;
 typedef union YYSTYPE
 {
 /* Line 2058 of yacc.c  */
-#line 78 "bs.y"
+#line 77 "bs.y"
 
     int    token;
     int    integerValue;
     float  floatValue;
     char*  identifierText;
-    const  Pegasus::BlockScript::StackFrameInfo* vFrameInfo;
+    Pegasus::BlockScript::StackFrameInfo* vFrameInfo;
     const  Pegasus::BlockScript::TypeDesc*       vTypeDesc;
     #define BS_PROCESS(N) Pegasus::BlockScript::Ast::N* v##N;
     #include "Pegasus/BlockScript/Ast.inl"

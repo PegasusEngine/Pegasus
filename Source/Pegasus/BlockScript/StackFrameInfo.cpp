@@ -13,7 +13,7 @@
 #include "Pegasus/Core/Assertion.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/BlockScript/StackFrameInfo.h"
-#include "Pegasus/BlockScript/TypeTable.h"
+#include "Pegasus/BlockScript/TypeDesc.h"
 
 using namespace Pegasus;
 using namespace Pegasus::BlockScript;
@@ -23,7 +23,7 @@ StackFrameInfo::StackFrameInfo()
 mSize(0),
 mTempSize(0),
 mCreatorCategory(StackFrameInfo::NONE),
-mParent(-1)
+mParent(nullptr)
 {
 }
 
@@ -39,16 +39,16 @@ void StackFrameInfo::Initialize(Alloc::IAllocator* allocator)
 
 void StackFrameInfo::Reset()
 {
-    mParent = -1;
+    mParent = nullptr;
     mEntries.Reset();
 }
 
-int StackFrameInfo::Allocate(const char* name, int type, TypeTable& typeTable, bool isFunArg)
+int StackFrameInfo::Allocate(const char* name, const TypeDesc* type, bool isFunArg)
 {
     StackFrameInfo::Entry& e = mEntries.PushEmpty();
     PG_ASSERT(Utils::Strlen(name) + 1 < IddStrPool::sCharsPerString);
     Utils::Strcat(e.mName, name);
-    int sz = typeTable.GetTypeDesc(type)->GetByteSize();    
+    int sz = type->GetByteSize();    
     e.mOffset = mSize;
     e.mType = type;
     e.mIsArg = isFunArg;

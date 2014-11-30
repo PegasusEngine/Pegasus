@@ -64,20 +64,13 @@ public:
     );
 
     //! Gets a type description structure
-    //! \param guid the id of the type requested
-    //! \return the description structure
-    const TypeDesc* GetTypeDesc(int guid) const;
-
-    //! Gets a type description structure
     //! \param name unique name
     //! \return the description handle 
-	int GetTypeByName(const char* name) const;
+	const TypeDesc* GetTypeByName(const char* name) const;
 
 private:
     //! Computes the size of a type
     bool ComputeSize(const TypeDesc* type, int& outSize) const;
-
-    void InternalRegisterIntrinsicTypes();
     Container<TypeDesc> mTypeDescPool;
 };
 
