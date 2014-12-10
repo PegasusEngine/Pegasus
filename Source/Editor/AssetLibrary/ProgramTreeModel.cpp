@@ -217,8 +217,7 @@ QIcon ProgramTreeModel::GetIconFromIndex(const QModelIndex& index) const
         const Pegasus::Shader::IProgramProxy * proxy = mShaderManager->GetProgram(index.row()); 
         if (proxy != nullptr)
         {
-            CodeUserData * userData = static_cast<CodeUserData*>(proxy->GetUserData());
-            ED_ASSERT(userData->IsProgram());
+            CodeUserData * userData = static_cast<CodeUserData*>(proxy->GetUserData());           
             if (userData != nullptr)
             {
                 return userData->IsValid() ? mWorkingIcon : mWarningIcon;
@@ -238,7 +237,7 @@ QIcon ProgramTreeModel::GetIconFromIndex(const QModelIndex& index) const
             if (shaderProxy != nullptr)
             {
                 CodeUserData * userData =  static_cast<CodeUserData*>(shaderProxy->GetUserData());
-                ED_ASSERT(!userData->IsProgram());
+                ED_ASSERT(userData != nullptr && !userData->IsProgram());
                 if (userData != nullptr)
                 {
                     return userData->IsValid() ? mWorkingIcon : mWarningIcon;

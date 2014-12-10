@@ -16,8 +16,6 @@
 #include "Pegasus/BlockScript/BsIntrinsics.h"
 #include "Pegasus/BlockScript/FunCallback.h"
 
-#define MAX_SIGNATURE_LENGTH 1024
-
 namespace Pegasus
 {
 namespace BlockScript
@@ -27,6 +25,8 @@ namespace Ast
 {
     class FunCall;
     class StmtFunDec;
+    class ArgList;
+    class ExpList;
 }
 
 class FunDesc
@@ -47,25 +47,17 @@ public:
     //! \return the guid
     int   GetGuid() const { return mGuid; }
 
-    //! Gets the name of this function
-    //! \return the name of this function
-    const char* GetName() const { return mName; }
+    //! initializes with the current function declaration
+    //! \param function declaration to use
+    void Initialize(Ast::StmtFunDec* funDec); 
 
-    //! Gets the signature
-    //! \return byte signature
-    const char* GetSignature() const { return mSignature; }
-
-    //! Gets the signature length
-    //! \return byte signature length
-    int GetSignatureLength() const { return mSignatureLength; }
-
-    //! Constructs the implementation of a function
+    //! Returns true if this function is compatible with this call. False otherwise
     //! \param the implementation of this function
-    void ConstructImpl(Ast::StmtFunDec* funDec);
+    bool IsCompatible(const Ast::FunCall* funCall) const;
 
-    //! Constructs the implementation of a function
+    //! Returns true if this function is compatible with this call. False otherwise
     //! \param the implementation of this function
-    void ConstructDec(Ast::FunCall* funDec);
+    bool IsCompatible(const Ast::StmtFunDec* funDec) const;
 
     //! Compares this function description with another function description
     //! \return true if equal otherwise false
@@ -87,14 +79,23 @@ public:
     //! returns the total size of the concatenated input arguments.
     int GetInputArgumentsByteSize() const { return mInputArgumentByteSize; }
 
+    //! returns true if these type arg lists are equal, false otherwise
+    bool AreSignaturesEqual(const char* name, Ast::ArgList* argList) const;
+
+    //! returns true if these type arg lists are equal, false otherwise
+    bool AreSignaturesEqual(const char* name, Ast::ExpList* argList) const;
+
+    //! returns wether this function declaration is a method or not
+    bool IsMethod() const { return mIsMethod; }
+
+    //! Sets if this function is a method or not
+    void SetIsMethod(bool isMethod) { mIsMethod = isMethod; }
 
 private:
-    char mName[IddStrPool::sCharsPerString];
-    char mSignature[MAX_SIGNATURE_LENGTH];
-    int  mSignatureLength;
     int  mInputArgumentByteSize;
     Ast::StmtFunDec* mFunDec;
     int mGuid;
+    bool mIsMethod;
 
     FunCallback mCallback;
 };

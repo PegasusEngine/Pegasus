@@ -23,10 +23,22 @@ namespace Ast
     class StmtStructDef;
 }
 
+
+
 //! the descriptor class
 class TypeDesc
 {
 public:
+    //! an enumeration description
+    struct EnumNode
+    {
+        const char* mIdd;
+        int         mGuid;
+        EnumNode*   mNext;
+    public:
+        EnumNode() : mIdd(nullptr), mGuid(0), mNext(nullptr) {}
+    };
+
     static const int sMaxTypeName = 64;
 
     //! the constructor for the type descriptor.
@@ -49,8 +61,9 @@ public:
         M_INVALID,
         M_SCALAR, //int, float
         M_VECTOR, //float2, float3 and float4
-        M_ARRAY, //array or structure
+        M_ARRAY,  //array or structure
         M_STRUCT, //user defined struct
+        M_ENUM,   //user defined enumeration 
         M_REFERECE, // custom c++ object reference
     };
 
@@ -77,6 +90,11 @@ public:
     //! Sets the child of this type
     //! \param child the child to set
     void  SetChild(const TypeDesc* child) { mChild = child; }
+
+    //! Comparison function
+    //! \param other the other pointer
+    //! \return true if both are semantically equal, false otherwise
+    bool Equals(const TypeDesc* other) const;
 
     //! Gets the child of this type
     //! \return the typedesc of the child
@@ -114,16 +132,26 @@ public:
     //! gets the logical and arithmetic engine to be used in the runtime
     AluEngine GetAluEngine() const { return mAluEngine; }
 
+    //! sets the enumeration node for this type
+    void  SetEnumNode(EnumNode* enumNode) { mEnumNode = enumNode; }
+
+    //! gets the enumeration node for this type
+    const EnumNode* GetEnumNode() const { return mEnumNode; }
+
 private:
     //no copy constructor / destructor of object
     TypeDesc(TypeDesc&);
     TypeDesc& operator=(TypeDesc&);
+
+    bool CmpStructProperty(const TypeDesc* other) const;
+    bool CmpEnumProperty(const TypeDesc* other) const;
 
     char       mName[sMaxTypeName];
     Modifier   mModifier;
     AluEngine  mAluEngine;
     const TypeDesc*  mChild;
     Ast::StmtStructDef* mStructDef;
+    EnumNode*           mEnumNode;
     int        mModifierProperty;
     int        mByteSize;
 };

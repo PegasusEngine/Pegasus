@@ -165,6 +165,24 @@ private:
     int  mOp;
 };
 
+//! Array constructor
+class ArrayConstructor : public Exp
+{
+public:
+
+    static const int sType;
+
+    ArrayConstructor()
+    {
+    }
+
+    virtual ~ArrayConstructor(){}
+
+    VISITOR_ACCESS
+
+    EXP_RTTI_DECL
+};
+
 //! binary operator expression class
 class Binop : public Exp
 {
@@ -203,17 +221,21 @@ public:
 
     static const int sType;
 
-    FunCall(ExpList* args, const char * name) : mDesc(nullptr) {mArgs = args; mName = name;}
+    FunCall(ExpList* args, const char * name) : mDesc(nullptr), mIsMethod(false) {mArgs = args; mName = name;}
 
     virtual ~FunCall(){}
 
     ExpList* GetArgs() const { return mArgs; }
 
-    const char*     GetName() { return mName; }
+    const char*     GetName() const { return mName; }
 
     void     SetDesc(const FunDesc* d) { mDesc = d; }
 
     const FunDesc*   GetDesc() const { return mDesc; }
+
+    bool IsMethod() const { return mIsMethod; } 
+
+    void SetIsMethod(bool val) { mIsMethod = val; }
 
     VISITOR_ACCESS
 
@@ -224,6 +246,7 @@ private:
     ExpList* mArgs;
     const char* mName;
     const FunDesc*  mDesc;
+    bool mIsMethod;
 };
 
 //! immediate value operator expression
@@ -286,6 +309,21 @@ public:
     VISITOR_ACCESS
 
 private:
+};
+
+class StmtEnumTypeDef : public Stmt
+{
+public:
+    explicit StmtEnumTypeDef(const TypeDesc* enumType) : mEnumType(enumType) {}
+
+    virtual ~StmtEnumTypeDef(){}
+
+    const TypeDesc* GetEnumType() const { return mEnumType; }
+
+    VISITOR_ACCESS
+
+private:
+    const TypeDesc* mEnumType;
 };
 
 //! statement list class
@@ -351,27 +389,6 @@ private:
     Exp * mExp;
 };
 
-//! tree modifier statement (for tree node properties)
-class StmtTreeModifier : public Stmt
-{
-public:
-
-    StmtTreeModifier(ExpList * expList, Idd * var) : mIdd(var), mExpList(expList) {}
-
-    virtual ~StmtTreeModifier(){}
-
-    ExpList * GetExpList() const { return mExpList; }
-
-    Idd     * GetIdd()     const { return mIdd; }
-
-    VISITOR_ACCESS
-
-private:
-
-    Idd     * mIdd;
-    ExpList * mExpList;
-};
-
 //! return statement
 class StmtReturn : public Stmt
 {
@@ -425,7 +442,7 @@ class StmtFunDec : public Stmt
 {
 public:
 
-    StmtFunDec(ArgList* argList, const char* ret, const char* name) : mArgList(argList), mStmtList(nullptr), mRet(ret), mName(name), mReturnType(nullptr), mFrame(nullptr), mDesc(nullptr) {}
+    StmtFunDec(ArgList* argList, const TypeDesc* retType, const char* name) : mArgList(argList), mStmtList(nullptr), mName(name), mReturnType(retType), mFrame(nullptr), mDesc(nullptr) {}
 
     virtual ~StmtFunDec() {}
 
@@ -435,11 +452,7 @@ public:
 
     const char* GetName() const { return mName; }
 
-    const char* GetRet() const { return mRet; }
-
     const TypeDesc* GetReturnType() const { return mReturnType; }
-
-    void SetReturnType(const TypeDesc* retType) { mReturnType = retType; }
 
     StackFrameInfo* GetFrame() const { return mFrame; }
 
@@ -458,8 +471,6 @@ private:
     ArgList  *  mArgList;
 
     StmtList * mStmtList;
-
-    const char* mRet;
 
     const char* mName;
 

@@ -49,7 +49,7 @@ static char* CopyString(const char* strIn, BlockScriptBuilder* builder)
     return Utils::Strcat(newStr, strIn);
 }
 
-bool Pegasus::BlockScript::CreateIntrinsicFunction(BlockScriptBuilder* builder, const char* funName, const char** argTypes, const char** argNames, int argCount, const char* returnType, FunCallback callback)
+bool Pegasus::BlockScript::CreateIntrinsicFunction(BlockScriptBuilder* builder, const char* funName, const char** argTypes, const char** argNames, int argCount, const char* returnType, FunCallback callback, bool isMethod)
 {
     //step 1, check that strings and types exist.
     for (int i = 0; i < argCount; ++i)
@@ -73,14 +73,14 @@ bool Pegasus::BlockScript::CreateIntrinsicFunction(BlockScriptBuilder* builder, 
     {
         return false;
     }
-
-    if (builder->GetTypeByName(returnType) == nullptr)
+    const TypeDesc* returnTypeDesc = builder->GetTypeByName(returnType);
+    if (returnTypeDesc == nullptr)
     {
         PG_LOG('ERR_', "Type %s not found in current context", returnType);
     }
 
     //step 2, setup the argument description of this function
-    builder->StartNewFunction();
+    builder->StartNewFunction(returnTypeDesc);
     Ast::ArgList* argList = nullptr;
     Ast::ArgList* currNode = nullptr;
     for (int i = 0; i < argCount; ++i)
@@ -105,19 +105,21 @@ bool Pegasus::BlockScript::CreateIntrinsicFunction(BlockScriptBuilder* builder, 
         currNode->SetArgDec(argDec);
     }
 
-    char* returnTypeCpy = CopyString(returnType, builder);
     char* funNameCpy = CopyString(funName, builder);
 
+
     //step 3, build the statement
-    StmtFunDec* funDec = builder->BuildStmtFunDec(argList, returnTypeCpy, funNameCpy);
+    StmtFunDec* funDec = builder->BuildStmtFunDec(argList, returnTypeDesc, funNameCpy);
     
     if (funDec == nullptr)
     {
         PG_LOG('ERR_', "failed creating intrinsic function %s.", funNameCpy);
         return false;
     }
-
+    
+    funDec->GetDesc()->SetIsMethod(isMethod);
     builder->BindIntrinsic(funDec, callback);
+    
     
     return true;
 }
@@ -168,7 +170,7 @@ FunBindPoint Pegasus::BlockScript::GetFunctionBindPoint(
                 return FUN_INVALID_BIND_POINT;
             }
 
-            if (type != argDec->GetType())
+            if (!type->Equals(argDec->GetType()))
             {
                 foundFun = false;
                 break;

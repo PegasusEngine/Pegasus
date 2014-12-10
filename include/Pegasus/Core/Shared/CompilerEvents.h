@@ -21,6 +21,33 @@ namespace Core
 {
 namespace CompilerEvents
 {
+    //! Code Object Operations by user.
+    class ObjectOperation 
+    {
+    public:
+        enum Operation 
+        {
+            CREATED_OPERATION,
+            DESTROYED_OPERATION
+        };
+
+        //! constructor
+        ObjectOperation(Operation op, const char* name) : mOp(op), mName(name) {}
+        
+        //! Destructor
+        ~ObjectOperation() {}
+    
+        //! Returns the name of the object 
+        const char* GetName() const { return mName; }
+
+        //! Gets the operation of this object 
+        Operation GetOp() const { return mOp; }
+
+    private:
+        const char* mName;
+        Operation   mOp;
+    };
+
     //! loading event: fired when source loading is finished
     class SourceLoadedEvent
     {
@@ -180,6 +207,7 @@ namespace CompilerEvents
     };
 
     GRAPH_EVENT_BEGIN_REGISTRY (ICompilerEventListener)
+        GRAPH_EVENT_REGISTER (ObjectOperation)
         GRAPH_EVENT_REGISTER (SourceLoadedEvent)
         GRAPH_EVENT_REGISTER (CompilationEvent)
         GRAPH_EVENT_REGISTER (CompilationNotification)

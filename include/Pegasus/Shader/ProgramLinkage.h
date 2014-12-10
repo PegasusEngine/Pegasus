@@ -63,7 +63,7 @@ public:
 
     //! Minimum number of input nodes
     //! \return the minimum number of input nodes
-    virtual unsigned int GetMinNumInputNodes() const { return 1;}
+    virtual unsigned int GetMinNumInputNodes() const { return 0;}
 
     //! Maximum number of input nodes
     //! \return the maximum number of input nodes
@@ -111,6 +111,9 @@ public:
 
     //! returns the proxy accessor for this program. Only available in dev mode.
     IProgramProxy * GetProxy() { return &mProxy; }
+
+    //! Sets the shader tracker for shader / program book keeping
+    void SetShaderTracker(ShaderTracker* shaderTracker) { mShaderTracker = shaderTracker; }
 #endif
 
 protected:
@@ -150,6 +153,7 @@ private:
 
 #if PEGASUS_ENABLE_PROXIES
     ProgramProxy mProxy;    
+    ShaderTracker* mShaderTracker;
 #endif
 };
 

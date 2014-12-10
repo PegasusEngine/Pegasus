@@ -42,7 +42,8 @@ int SourceCodeListModel::rowCount (const QModelIndex& parent) const
 {
     if (mSourceCodeManager != nullptr)
     {
-        return mSourceCodeManager->GetSourceCount();
+        int count = mSourceCodeManager->GetSourceCount();
+        return count;
     }
     return 0;
 }

@@ -43,6 +43,11 @@ public:
     //! Resets the state of this structure
     void Reset();
 
+    //! Sets the user context (to be acquired by callbacks in the need of so).
+    void SetUserContext(void* userContext) { mUserContext = userContext; }
+
+    //! Gets the user context 
+    void* GetUserContext() const { return mUserContext; }
     
     // gets registers
     int  GetReg(Canon::Register reg) const { return mR[reg]; }
@@ -89,6 +94,9 @@ public:
 
 private:
 
+    // the user context
+    void* mUserContext;
+
     // memory ram (stack)
     char* mRam;
     int   mRamCount;
@@ -103,6 +111,8 @@ private:
     // allocator
     Alloc::IAllocator* mAllocator;
 
+    //! heap random access lookup.
+    //! every heap object reference has an id passed around.
     Container<HeapElement> mHeapContainer;
 
     

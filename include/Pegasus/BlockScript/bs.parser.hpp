@@ -49,44 +49,46 @@ extern int BS_debug;
      I_FLOAT = 258,
      I_INT = 259,
      IDENTIFIER = 260,
-     I_STRING = 261,
-     K_IF = 262,
-     K_ELSE_IF = 263,
-     K_ELSE = 264,
-     K_SEMICOLON = 265,
-     K_L_PAREN = 266,
-     K_R_PAREN = 267,
-     K_L_BRAC = 268,
-     K_R_BRAC = 269,
-     K_L_LACE = 270,
-     K_R_LACE = 271,
-     K_COMMA = 272,
-     K_COL = 273,
-     K_RETURN = 274,
-     K_WHILE = 275,
-     K_STRUCT = 276,
-     O_PLUS = 277,
-     O_MINUS = 278,
-     O_MUL = 279,
-     O_DIV = 280,
-     O_MOD = 281,
-     O_EQ = 282,
-     O_GT = 283,
-     O_LT = 284,
-     O_GTE = 285,
-     O_LTE = 286,
-     O_LAND = 287,
-     O_LOR = 288,
-     O_SET = 289,
-     O_DOT = 290,
-     O_ACCESS = 291,
-     O_ARRAY_CONSTRUCTOR = 292,
-     O_TREE = 293,
-     O_IMPLICIT_CAST = 294,
-     O_EXPLICIT_CAST = 295,
-     ACCESS_PREC = 296,
-     CAST = 297,
-     NEG = 298
+     TYPE_IDENTIFIER = 261,
+     I_STRING = 262,
+     K_IF = 263,
+     K_ELSE_IF = 264,
+     K_ELSE = 265,
+     K_SEMICOLON = 266,
+     K_L_PAREN = 267,
+     K_R_PAREN = 268,
+     K_L_BRAC = 269,
+     K_R_BRAC = 270,
+     K_L_LACE = 271,
+     K_R_LACE = 272,
+     K_COMMA = 273,
+     K_COL = 274,
+     K_RETURN = 275,
+     K_WHILE = 276,
+     K_STRUCT = 277,
+     K_ENUM = 278,
+     K_STATIC_ARRAY = 279,
+     O_PLUS = 280,
+     O_MINUS = 281,
+     O_MUL = 282,
+     O_DIV = 283,
+     O_MOD = 284,
+     O_EQ = 285,
+     O_GT = 286,
+     O_LT = 287,
+     O_GTE = 288,
+     O_LTE = 289,
+     O_LAND = 290,
+     O_LOR = 291,
+     O_SET = 292,
+     O_DOT = 293,
+     O_ACCESS = 294,
+     O_METHOD_CALL = 295,
+     O_IMPLICIT_CAST = 296,
+     O_EXPLICIT_CAST = 297,
+     ACCESS_PREC = 298,
+     CAST = 299,
+     NEG = 300
    };
 #endif
 
@@ -101,15 +103,16 @@ typedef union YYSTYPE
     int    integerValue;
     float  floatValue;
     char*  identifierText;
-    Pegasus::BlockScript::StackFrameInfo* vFrameInfo;
-    const  Pegasus::BlockScript::TypeDesc*       vTypeDesc;
+    Pegasus::BlockScript::StackFrameInfo*                  vFrameInfo;
+    const  Pegasus::BlockScript::TypeDesc*                 vTypeDesc;
+    Pegasus::BlockScript::TypeDesc::EnumNode*       vEnumNode;
     #define BS_PROCESS(N) Pegasus::BlockScript::Ast::N* v##N;
     #include "Pegasus/BlockScript/Ast.inl"
     #undef BS_PROCESS
 
 
 /* Line 2058 of yacc.c  */
-#line 113 "bs.parser.hpp"
+#line 116 "bs.parser.hpp"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

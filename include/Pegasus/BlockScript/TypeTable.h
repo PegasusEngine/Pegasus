@@ -60,7 +60,8 @@ public:
         const TypeDesc* child = nullptr,
         int modifierProperty = 0,
         TypeDesc::AluEngine engine = TypeDesc::E_NONE,
-        Ast::StmtStructDef* structDef = nullptr
+        Ast::StmtStructDef* structDef = nullptr,
+        TypeDesc::EnumNode* enumNode = nullptr
     );
 
     //! Gets a type description structure
@@ -68,10 +69,20 @@ public:
     //! \return the description handle 
 	const TypeDesc* GetTypeByName(const char* name) const;
 
+    //! \param name the name of the enumeration value
+    //! \param outEnumNode a pointer to fill in with the enumeration node 
+    //! \param outEnumType a pointer to fill in with the enumeration type
+    //! \return true if found it, false otherwise
+    bool FindEnumByName(const char* name, const TypeDesc::EnumNode** outEnumNode, const TypeDesc** outEnumType) const;
+
+    //! returns a new enum node
+    TypeDesc::EnumNode* NewEnumNode();
+
 private:
     //! Computes the size of a type
     bool ComputeSize(const TypeDesc* type, int& outSize) const;
     Container<TypeDesc> mTypeDescPool;
+    Container<TypeDesc::EnumNode> mEnumNodePool;
 };
 
 }

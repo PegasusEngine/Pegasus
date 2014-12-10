@@ -121,6 +121,9 @@ public:
     explicit SourceCodeManagerEventListener(AssetLibraryWidget * widget);
     virtual ~SourceCodeManagerEventListener();
 
+    //! Dispatch event callback on a user creation of a code object event 
+    virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::ObjectOperation& e);
+
     //! Dispatch event callback on a compilation event
     virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::CompilationEvent& e);
 
@@ -151,13 +154,19 @@ signals:
     void OnCompilationEnd(QString log);
     
     //! triggered when a linking event occurs (error, warning or an actual positive linking)
-    void OnLinkingEvent(void* code, QString message, int messageType);
+    void OnLinkingEvent(QString message, int messageType);
 
     //! triggered when a file has been saved successfully
     void OnSignalSaveSuccess();
 
     //! triggered when a file has been not saved and there is an io error
     void OnSignalSavedFileError(int ioError, QString msg);
+
+    //! triggered when a code object is created
+    void OnSignalNewObject(QString objectName);
+
+    //! triggered when a code object is destroyed
+    void OnSignalDestroyObject(void* userData, QString objectName);
 
 private:
     AssetLibraryWidget * mLibraryWidget;

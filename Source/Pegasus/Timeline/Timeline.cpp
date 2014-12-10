@@ -13,6 +13,7 @@
 #include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Timeline/Lane.h"
 #include "Pegasus/Timeline/ScriptHelper.h"
+#include "Pegasus/Timeline/ScriptRenderApi.h"
 #include "Pegasus/Core/Time.h"
 #include "Pegasus/Math/Scalar.h"
 #include "Pegasus/Utils/String.h"
@@ -56,6 +57,9 @@ Timeline::Timeline(Alloc::IAllocator * allocator, Wnd::IWindowContext * appConte
 
     // Create the initial default lane
     Clear();
+
+    // register the entire render api into the blockscript manager
+    RegisterRenderApi(appContext);
 }
 
 //----------------------------------------------------------------------------------------

@@ -51,6 +51,7 @@ public:
     : LogAssertDispatcher(logHandler, assertHandler) {}
     ~LauncherShaderListener(){}
 
+    virtual void OnEvent(Graph::IGraphUserData * u, Core::CompilerEvents::ObjectOperation& e) { /*unused*/ }
     virtual void OnEvent(Graph::IGraphUserData * u, Core::CompilerEvents::SourceLoadedEvent& e);
     virtual void OnEvent(Graph::IGraphUserData * u, Core::CompilerEvents::CompilationEvent& e);
     virtual void OnEvent(Graph::IGraphUserData * u, Core::CompilerEvents::CompilationNotification& e);

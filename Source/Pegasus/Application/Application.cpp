@@ -82,11 +82,12 @@ Application::Application(const ApplicationConfig& config)
     mTextureManager = PG_NEW(nodeAlloc, -1, "TextureManager", Alloc::PG_MEM_PERM) Texture::TextureManager(mNodeManager, textureFactory);
     mMeshManager    = PG_NEW(nodeAlloc, -1, "MeshManager", Alloc::PG_MEM_PERM) Mesh::MeshManager(mNodeManager, meshFactory);
 
-    // Set up timeline
-    mTimeline = PG_NEW(timelineAlloc, -1, "Timeline", Alloc::PG_MEM_PERM) Timeline::Timeline(timelineAlloc, this);
-
     // Set up blockscript. Use the same timeline allocator
     mBlockScriptManager = PG_NEW(timelineAlloc, -1, "BlockScript Manager", Alloc::PG_MEM_PERM) BlockScript::BlockScriptManager(timelineAlloc);
+
+    // Set up timeline, block script manager has to be initialized first so timeline can push the graphics library within.
+    mTimeline = PG_NEW(timelineAlloc, -1, "Timeline", Alloc::PG_MEM_PERM) Timeline::Timeline(timelineAlloc, this);
+
 
     // Cache config
     mConfig = config;

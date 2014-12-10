@@ -11,6 +11,7 @@
 
 #include "Pegasus/Timeline/Block.h"
 #include "Pegasus/Timeline/ScriptTracker.h"
+#include "Pegasus/Timeline/ScriptRenderApi.h"
 
 namespace Pegasus {
 namespace Timeline {
@@ -82,6 +83,11 @@ void Block::Shutdown()
         mAppContext->GetTimeline()->GetScriptTracker()->UnregisterScript(mScriptHelper);
         PG_DELETE(mAllocator, mScriptHelper);
 
+        if (mVmState->GetUserContext() != nullptr)
+        {
+            NodeContainer* userCtx = static_cast<NodeContainer*>( mVmState->GetUserContext() );
+            PG_DELETE(mAllocator, userCtx);
+        }
         PG_DELETE(mAllocator, mVmState);
     }
 }
@@ -124,6 +130,9 @@ bool Block::OpenScript(const char* scriptFileName)
         mVmState = PG_NEW(mAllocator, -1, "Vm State", Pegasus::Alloc::PG_MEM_PERM) BlockScript::BsVmState();
         mVmState->Initialize(mAllocator);
 
+        NodeContainer* userContext = PG_NEW(mAllocator, -1, "Vm State", Pegasus::Alloc::PG_MEM_PERM) NodeContainer(mAllocator, mAppContext);
+        mVmState->SetUserContext(userContext);
+
 #if PEGASUS_USE_GRAPH_EVENTS
         //register event listener
         mScriptHelper->SetEventListener(mAppContext->GetTimeline()->GetEventListener());
@@ -132,6 +141,11 @@ bool Block::OpenScript(const char* scriptFileName)
     }
     else
     {
+        NodeContainer* userCtx = static_cast<NodeContainer*>( mVmState->GetUserContext() );
+        if (userCtx != nullptr)
+        {
+            userCtx->Clean();
+        }
         mVmState->Reset();
     }
     mScriptVersion = -1; //restart and invalidate script version

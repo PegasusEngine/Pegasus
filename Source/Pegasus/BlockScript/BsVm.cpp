@@ -131,7 +131,7 @@ void SaveExpression(void* location, Ast::Exp* exp, BsVmState& state)
         }
         Pegasus::Utils::Memcpy(location, target, exp->GetTypeDesc()->GetByteSize());
     }
-    else if (expType->GetModifier() == TypeDesc::M_REFERECE)
+    else if (expType->GetModifier() == TypeDesc::M_REFERECE || expType->GetModifier() == TypeDesc::M_ENUM)
     {
         int val = gIntExpEngine.Eval(exp, state);
         *(reinterpret_cast<int*>(location)) = val;
@@ -279,7 +279,7 @@ void FunGoCommand(Canon::FunGo* fungo, BsVmState& state)
     if (funDesc->IsCallback())
     {
         int outputBufferSize = fc->GetTypeDesc()->GetByteSize();
-        void* outputBuffer = outputBufferSize >= CANON_REGISTER_BYTESIZE
+        void* outputBuffer = outputBufferSize > CANON_REGISTER_BYTESIZE
                 ? static_cast<void*>(state.Ram() + state.GetReg(R_RET))
                 : static_cast<void*>(state.GetRegBuffer() + R_RET) ;
                  
@@ -372,7 +372,8 @@ BsVmState::BsVmState()
     mRamSize(0),
     mRamCount(0),
     mAllocator(nullptr),
-    mStackLevels(-1)
+    mStackLevels(-1),
+    mUserContext(nullptr)
 {
     Reset();
 }
@@ -400,10 +401,10 @@ void BsVmState::Reset()
 void BsVmState::Grow(int byteCount)
 {
     int newRamSize = mRamSize + byteCount;
-    if (newRamSize > mRamCount)
+    if (newRamSize >= mRamCount)
     {
         char* oldRam = mRam;
-        int newCount = newRamSize + BS_VM_PAGE_SIZE;
+        int newCount = mRamSize + (1 + (byteCount / BS_VM_PAGE_SIZE)) * BS_VM_PAGE_SIZE;
         mRam = PG_NEW_ARRAY(mAllocator, -1, "BS VM RAM", Alloc::PG_MEM_TEMP, char, newCount);
         if (oldRam != nullptr)
         {

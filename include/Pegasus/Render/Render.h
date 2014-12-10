@@ -129,14 +129,16 @@ namespace Render
             LESSER_DF,
             GREATER_EQUAL_DF,
             LESSER_EQUAL_DF,
-            EQUAL_DF
+            EQUAL_DF,
+            COUNT_DF
         };
 
         enum PegasusCullMode
         {
             NONE_CM,
             CCW_CM,
-            CW_CM
+            CW_CM,
+            COUNT_CM
         };
 
         RasterizerConfig ()
@@ -154,9 +156,9 @@ namespace Render
     //! Structure representing a rasterizer state
     struct RasterizerState
     {
+        RasterizerConfig mConfig;
         void * mInternalData;
         void * mInternalDataAux;
-        RasterizerConfig mConfig;
     };
 
     //! Structure containing configuration for blending state
@@ -166,13 +168,15 @@ namespace Render
         {
             NONE_BO,
             ADD_BO,
-            SUB_BO
+            SUB_BO,
+            COUNT_BO
         };
 
         enum Multiplicator
         {
             ZERO_M,
-            ONE_M
+            ONE_M,
+            COUNT_M
         };
 
         BlendingConfig()
@@ -182,17 +186,17 @@ namespace Render
         {
         }
         
-        void * mInternalData;
         BlendOperator mBlendingOperator;
         Multiplicator mSource;
         Multiplicator mDest;
+        void * mInternalData;
     };
 
     //! Structure representing a blending state
     struct BlendingState
     {
-        void * mInternalData;
         BlendingConfig mConfig;
+        void * mInternalData;
     };
 
     //! Dispatches a shader pipeline.

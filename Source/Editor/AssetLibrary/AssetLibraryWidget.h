@@ -68,6 +68,12 @@ public slots:
     //! gets the shader manager event listener
     SourceCodeManagerEventListener * GetSourceCodeManagerEventListener() { return mSourceCodeManagerEventListener;}
 
+    //! updates any layout requiring an update
+    void UpdateAssetViewLayout(QString objName);
+
+    //! a user has closed a code object, so delete the user data. 
+    void UpdateRemovedCodeObject(void* userData, QString objName);
+
 private:
     //! toggle the buttons on this widget on / off
     void ActivateButtons(bool activation);
@@ -77,6 +83,15 @@ private:
 
     //! delete all user data inside shaders and program nodes
     void UninitializeInternalUserData();
+
+    //! updates all the program user data (fills in for programs lacking of user data).
+    void UpdateProgramUserData();
+
+    //! updates all the shader user data (fills in for shaders lacking of user data).
+    void UpdateShaderUserData();
+
+    //! updates all the blockscript user data (fills in for blockscripts lacking of user data).
+    void UpdateBlockScriptUserData();
 
     //! ui components
     Ui::AssetLibraryWidget ui;

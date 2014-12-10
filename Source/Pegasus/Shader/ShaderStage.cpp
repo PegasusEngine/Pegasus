@@ -68,6 +68,14 @@ Pegasus::Shader::ShaderStage::~ShaderStage()
     }
 #endif
 
+    GRAPH_EVENT_DISPATCH(
+        this,
+        Pegasus::Core::CompilerEvents::ObjectOperation, 
+        // Event specific arguments:
+        Pegasus::Core::CompilerEvents::ObjectOperation::DESTROYED_OPERATION,
+        "ShaderStage"
+    );
+
 }
 
 void Pegasus::Shader::ShaderStage::ReleaseDataAndPropagate()

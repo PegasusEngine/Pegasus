@@ -250,22 +250,15 @@ void CodeEditorWidget::SignalCompilationError(void * srcPtr, int line, QString e
     }
 }
 
-void CodeEditorWidget::SignalLinkingEvent(void * program, QString message, int eventType)
+void CodeEditorWidget::SignalLinkingEvent(QString message, int eventType)
 {
-    Pegasus::Shader::IProgramProxy * target = static_cast<Pegasus::Shader::IProgramProxy*>(program);
-    ED_ASSERT(target != nullptr);
-    CodeUserData * programUserData = static_cast<CodeUserData*>(target->GetUserData());
-    ED_ASSERT(programUserData->IsProgram());
-    if (programUserData != nullptr)
+    if (static_cast<Pegasus::Core::CompilerEvents::LinkingEvent::Type>(eventType) != Pegasus::Core::CompilerEvents::LinkingEvent::LINKING_SUCCESS)
     {
-        if (static_cast<Pegasus::Core::CompilerEvents::LinkingEvent::Type>(eventType) != Pegasus::Core::CompilerEvents::LinkingEvent::LINKING_SUCCESS)
-        {
-            PostStatusBarMessage(message);
-        }
+        PostStatusBarMessage(message);
     }
 }
 
-void CodeEditorWidget::SignalCompilationBegin(void * code)
+void CodeEditorWidget::SignalCompilationBegin(void* code)
 {
     Pegasus::Core::ISourceCodeProxy* target = static_cast<Pegasus::Core::ISourceCodeProxy*>(code);
     CodeTextEditorWidget * editor = mUi.mTreeEditor->FindCodeInEditors(target);

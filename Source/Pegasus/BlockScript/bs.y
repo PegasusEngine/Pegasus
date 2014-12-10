@@ -71,16 +71,17 @@
     //***************************************************//
 %}
 
-// expect 88 reduce/shift warnings due to grammar ambiguity
-%expect 88
+// expect 108 reduce/shift warnings due to grammar ambiguity
+%expect 108
 
 %union {
     int    token;
     int    integerValue;
     float  floatValue;
     char*  identifierText;
-    Pegasus::BlockScript::StackFrameInfo* vFrameInfo;
-    const  Pegasus::BlockScript::TypeDesc*       vTypeDesc;
+    Pegasus::BlockScript::StackFrameInfo*                  vFrameInfo;
+    const  Pegasus::BlockScript::TypeDesc*                 vTypeDesc;
+    Pegasus::BlockScript::TypeDesc::EnumNode*       vEnumNode;
     #define BS_PROCESS(N) Pegasus::BlockScript::Ast::N* v##N;
     #include "Pegasus/BlockScript/Ast.inl"
     #undef BS_PROCESS
@@ -89,6 +90,7 @@
 %token <floatValue> I_FLOAT
 %token <integerValue> I_INT
 %token <identifierText> IDENTIFIER
+%token <identifierText> TYPE_IDENTIFIER
 %token <identifierText> I_STRING
 %token <token> K_IF
 %token <token> K_ELSE_IF
@@ -105,6 +107,8 @@
 %token <token> K_RETURN
 %token <token> K_WHILE
 %token <token> K_STRUCT
+%token <token> K_ENUM
+%token <token> K_STATIC_ARRAY
 %token <token> O_PLUS 
 %token <token> O_MINUS
 %token <token> O_MUL
@@ -120,8 +124,7 @@
 %token <token> O_SET
 %token <token> O_DOT
 %token <token> O_ACCESS
-%token <token> O_ARRAY_CONSTRUCTOR
-%token <token> O_TREE
+%token <token> O_METHOD_CALL
 %token <token> O_IMPLICIT_CAST
 %token <token> O_EXPLICIT_CAST
 %type <vFrameInfo> if_begin_scope
@@ -130,7 +133,7 @@
 %type <vProgram> program
 %type <vExp>  exp 
 %type <vExp>  numeric
-%type <vIdd>  ident
+%type <vExp>  ident
 %type <vExpList> exp_list
 %type <vStmtList> stmt_list
 %type <vStmtIfElse>   stmt_else_if_tail
@@ -141,8 +144,9 @@
 %type <vArgList> arg_list
 %type <vArgList> struct_def_list
 %type <vArgDec>  arg_dec
-%type <identifierText> fun_type
+%type <vTypeDesc> fun_type
 %type <vTypeDesc> type_desc
+%type <vEnumNode> enum_list
 
 %left O_SET
 %left O_EQ
@@ -152,6 +156,7 @@
 %left O_PLUS O_MINUS
 %left O_MUL
 %left O_DIV
+%left O_METHOD_CALL
 %left ACCESS_PREC
 %left NEG CAST
 %left O_DOT
@@ -178,11 +183,32 @@ stmt_list : stmt_list stmt {
           ;
 
 stmt    : exp K_SEMICOLON { BS_BUILD($$, BuildStmtExp($1)); }
-        | ident O_TREE K_L_PAREN exp_list K_R_PAREN K_SEMICOLON { BS_BUILD($$, BuildStmtTreeModifier($4, $1)); }
         | K_RETURN exp K_SEMICOLON { BS_BUILD($$, BuildStmtReturn($2)); }
         | fun_declaration fun_stmt_list  {BS_BUILD($$, BindFunImplementation($1, $2));}
         | while_keyword K_L_PAREN exp K_R_PAREN K_L_BRAC stmt_list K_R_BRAC { BS_BUILD($$, BuildStmtWhile($3, $6));}
         | struct_keyword IDENTIFIER K_L_BRAC struct_def_list K_R_BRAC K_SEMICOLON { BS_BUILD($$, BuildStmtStructDef($2, $4)); }
+        | K_ENUM IDENTIFIER K_L_BRAC enum_list K_R_BRAC K_SEMICOLON 
+        { 
+            if (BS_GlobalBuilder->GetSymbolTable()->GetTypeByName($2) == nullptr)
+            {
+                const Pegasus::BlockScript::TypeDesc* enumType = BS_GlobalBuilder->GetSymbolTable()->CreateType(
+                    Pegasus::BlockScript::TypeDesc::M_ENUM,
+                    $2,
+                    nullptr, //no child
+                    0, //no property
+                    Pegasus::BlockScript::TypeDesc::E_NONE, //no ALU engine
+                    nullptr, //no struct def
+                    $4 //the definition!
+                );
+        
+                BS_BUILD($$, BuildStmtEnumTypeDef(enumType));
+            }
+            else
+            {
+                BS_error("Syntax error. Enum type re-declaration. A type with this name already exists");
+                YYERROR; 
+            }
+        }
         | K_IF K_L_PAREN exp if_begin_scope stmt_list K_R_BRAC stmt_else_if_tail stmt_else_tail 
                  { 
                     if ($8 != nullptr && $7 != nullptr)
@@ -210,7 +236,7 @@ struct_keyword  : K_STRUCT { BS_BUILD($$, StartNewFrame()); }
 if_begin_scope : K_R_PAREN K_L_BRAC { BS_BUILD($$, StartNewFrame()); }
                ;
 
-fun_type : IDENTIFIER { $$ = $1; if (!BS_GlobalBuilder->StartNewFunction()) {BS_error("cannot declare function within a function"); YYERROR;} }
+fun_type : type_desc { $$ = $1; if ($$ == nullptr) { BS_error("Syntax error. Invalid function type.");YYERROR; }; if (!BS_GlobalBuilder->StartNewFunction($$)) {BS_error("cannot declare function within a function"); YYERROR;} }
          ;
 
 while_keyword : K_WHILE { BS_GlobalBuilder->StartNewFrame(); }
@@ -252,6 +278,22 @@ stmt_else_tail : else_keyword K_L_BRAC stmt_list K_R_BRAC { BS_BUILD($$, BuildSt
 else_keyword  : K_ELSE { BS_GlobalBuilder->PopFrame(); BS_BUILD($$, StartNewFrame()); }
               ;
 
+enum_list : enum_list K_COMMA IDENTIFIER {
+                Pegasus::BlockScript::TypeDesc::EnumNode* enumNode = BS_GlobalBuilder->GetSymbolTable()->NewEnumNode(); 
+                enumNode->mIdd = $3;
+                Pegasus::BlockScript::TypeDesc::EnumNode* tailList = $1;
+                while (tailList->mNext != nullptr) { tailList = tailList->mNext; }
+                tailList->mNext = enumNode;
+                enumNode->mGuid = tailList->mGuid + 1; 
+                $$ = $1;
+          }
+          | IDENTIFIER {
+                Pegasus::BlockScript::TypeDesc::EnumNode* enumNode = BS_GlobalBuilder->GetSymbolTable()->NewEnumNode(); 
+                enumNode->mIdd = $1;
+                $$ = enumNode;
+          }
+          ;
+
 fun_stmt_list : K_L_BRAC stmt_list K_R_BRAC { $$ = $2; }
               | K_SEMICOLON { $$ = nullptr; }
               ;
@@ -277,9 +319,13 @@ ident   : IDENTIFIER { BS_BUILD($$, BuildIdd($1)); }
         ;
 
 exp     : ident  { $$ = $1; }
-        | IDENTIFIER K_L_PAREN exp_list K_R_PAREN { BS_BUILD($$, BuildFunCall($3, $1)); }
+        | IDENTIFIER      K_L_PAREN exp_list K_R_PAREN { BS_BUILD($$, BuildFunCall($3, $1)); }
+        | TYPE_IDENTIFIER K_L_PAREN exp_list K_R_PAREN { BS_BUILD($$, BuildFunCall($3, $1)); }
+        | K_STATIC_ARRAY O_LT type_desc  O_GT { BS_BUILD($$, BuildStaticArrayDec($3)); }
         | I_STRING { BS_BUILD($$, BuildStrImm($1)); }
         | numeric { $$ = $1; }
+        | exp O_METHOD_CALL IDENTIFIER K_L_PAREN exp_list K_R_PAREN { BS_BUILD($$, BuildMethodCall($1, $3, $5)); }
+        | exp O_METHOD_CALL TYPE_IDENTIFIER K_L_PAREN exp_list K_R_PAREN { BS_BUILD($$, BuildMethodCall($1, $3, $5)); }
         | exp O_SET exp    { BS_BUILD($$, BuildBinop($1, $2, $3)); }
         | exp O_PLUS exp   { BS_BUILD($$, BuildBinop($1, $2, $3)); }
         | exp O_MINUS exp  { BS_BUILD($$, BuildBinop($1, $2, $3)); }
@@ -296,7 +342,7 @@ exp     : ident  { $$ = $1; }
         | exp O_DOT ident    { BS_BUILD($$, BuildBinop($1, $2, $3)); }
         | exp K_L_LACE exp K_R_LACE %prec ACCESS_PREC { BS_BUILD($$, BuildBinop($1, O_ACCESS, $3)); }
         | O_MINUS exp %prec NEG   { BS_BUILD($$, BuildUnop($1, $2)); }
-        | K_L_PAREN IDENTIFIER K_R_PAREN exp %prec CAST   { BS_BUILD($$, BuildExplicitCast($4, $2)); }
+        | K_L_PAREN type_desc K_R_PAREN exp %prec CAST   { BS_BUILD($$, BuildExplicitCast($4, $2)); }
         | K_L_PAREN exp K_R_PAREN { $$ = $2; }
         ;
 
@@ -327,11 +373,11 @@ type_desc : type_desc K_L_LACE I_INT K_R_LACE {
                 }
                 else
                 {
-                    BS_error("Fatal error, unknown type specified.");
+                    BS_error("Semantics error, unknown type specified.");
                     YYERROR;
                 }
               }
-            | IDENTIFIER {                
+            | TYPE_IDENTIFIER {                
                 const TypeDesc* typeDesc = BS_GlobalBuilder->GetTypeByName($1);
                 if (typeDesc != nullptr)
                 {
@@ -339,7 +385,7 @@ type_desc : type_desc K_L_LACE I_INT K_R_LACE {
                 }
                 else
                 {
-                    BS_error("Fatal error, unknown type specified.");
+                    BS_error("Semantics error, unknown type specified.");
                     YYERROR;
                 }
             }

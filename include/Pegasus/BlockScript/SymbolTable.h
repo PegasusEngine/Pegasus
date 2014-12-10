@@ -69,6 +69,14 @@ public:
     //! \return gets the type description from the type name specified (non arrayd)
     const TypeDesc* GetTypeByName(const char* typeName) const;
 
+    //! \param name the name of the enumeration value
+    //! \param outEnumNode a pointer to fill in with the enumeration node 
+    //! \param outEnumType a pointer to fill in with the enumeration type
+    //! \return true if found it, false otherwise
+    bool FindEnumByName(const char* name, const TypeDesc::EnumNode** outEnumNode, const TypeDesc** outEnumType) const;
+
+    TypeDesc::EnumNode* NewEnumNode();
+
     //! Creates a new type if it does not exist. If the type exists already, it will find it and return it
     //! \param modifier  the modifier to be using
     //! \param name the actual string name of this type
@@ -81,7 +89,8 @@ public:
         const TypeDesc* child = nullptr,
         int modifierProperty = 0,
         TypeDesc::AluEngine engine = TypeDesc::E_NONE,
-        Ast::StmtStructDef* structDef = nullptr
+        Ast::StmtStructDef* structDef = nullptr,
+        TypeDesc::EnumNode* enumNode = nullptr
     );
 
     //! Returns the root (only on the scope of this module) function table

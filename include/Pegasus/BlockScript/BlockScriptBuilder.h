@@ -56,7 +56,7 @@ namespace BlockScript
 class BlockScriptBuilder
 {
 public:
-    explicit BlockScriptBuilder() : mEventListener(nullptr), mCurrentFrame(nullptr), mErrorCount(0), mInFunBody(false), mCurrentLineNumber(1) {}
+    explicit BlockScriptBuilder() : mEventListener(nullptr), mCurrentFrame(nullptr), mErrorCount(0), mInFunBody(false), mCurrentLineNumber(1), mReturnTypeContext(nullptr) {}
 	
     struct CompilationResult
     {
@@ -77,7 +77,7 @@ public:
     void Reset ();
 
     //! true if we can start a new function. False otherwise
-    bool StartNewFunction();
+    bool StartNewFunction(const TypeDesc* returnType);
 
     //! Creation functions, of node general containers
     Ast::Program*  CreateProgram();
@@ -88,19 +88,21 @@ public:
     //! Node builders
     Ast::Exp* BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs);
     Ast::Exp* BuildUnop  (int op, Ast::Exp* exp);
-    Ast::Exp* BuildExplicitCast  (Ast::Exp* exp, const char* type);
-    Ast::Exp* BuildFunCall(Ast::ExpList* args, const char * name);
+    Ast::Exp* BuildExplicitCast  (Ast::Exp* exp, const TypeDesc* type);
+    Ast::Exp* BuildFunCall(Ast::ExpList* args, const char * name, bool isMethod = false);
+    Ast::Exp* BuildMethodCall(Ast::Exp* caller, const char * name, Ast::ExpList* args);
     Ast::Exp*   BuildImmFloat   (float v);
     Ast::Exp*   BuildImmInt     (int   v);
-    Ast::Idd*   BuildIdd   (const char * name);
+    Ast::Exp*   BuildIdd   (const char * name);
     Ast::StmtExp* BuildStmtExp(Ast::Exp* exp);
     Ast::StmtReturn* BuildStmtReturn(Ast::Exp* exp);
-    Ast::StmtTreeModifier* BuildStmtTreeModifier(Ast::ExpList* expList, Ast::Idd* var);
     Ast::StmtWhile*  BuildStmtWhile(Ast::Exp* exp, Ast::StmtList* stmtList);
-    Ast::StmtFunDec* BuildStmtFunDec(Ast::ArgList* argList, const char * returnIdd, const char * nameIdd);
+    Ast::StmtFunDec* BuildStmtFunDec(Ast::ArgList* argList, const TypeDesc* returnType, const char * nameIdd);
     Ast::StmtFunDec* BindFunImplementation(Ast::StmtFunDec* funDec, Ast::StmtList* stmts);
     Ast::StmtIfElse* BuildStmtIfElse(Ast::Exp* exp, Ast::StmtList* ifBlock, Ast::StmtIfElse* tail, StackFrameInfo* frame);
+    Ast::Exp*        BuildStaticArrayDec(const TypeDesc* arrayType);
     Ast::StmtStructDef* BuildStmtStructDef(const char* name, Ast::ArgList* definitions);
+    Ast::StmtEnumTypeDef* BuildStmtEnumTypeDef(const TypeDesc* type);
     Ast::ArgDec* BuildArgDec(const char* var, const TypeDesc* type);
     Ast::Exp* BuildStrImm(const char* strToCopy);
 
@@ -161,6 +163,7 @@ private:
 	CompilationResult  mActiveResult;
     IddStrPool         mStrPool;
     SymbolTable        mSymbolTable;
+    const TypeDesc*    mReturnTypeContext;
 
     StackFrameInfo*    mCurrentFrame;
     int                mErrorCount;

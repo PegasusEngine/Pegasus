@@ -35,12 +35,13 @@ using namespace Pegasus::Utils;
 
 //declaration of unique type iid for expression optimization
 
-const int Idd::sType     = 0;
-const int Binop::sType   = 1;
-const int FunCall::sType = 2;
-const int Imm::sType     = 3;
-const int StrImm::sType  = 4;
-const int Unop::sType    = 5;
+const int Idd::sType                 = 0;
+const int Binop::sType               = 1;
+const int FunCall::sType             = 2;
+const int Imm::sType                 = 3;
+const int StrImm::sType              = 4;
+const int Unop::sType                = 5;
+const int ArrayConstructor::sType    = 6;
 
 //function defined in parser generator, bs.y
 extern void BS_ErrorDispatcher(BlockScriptBuilder* builder, const char* message);
@@ -124,6 +125,7 @@ void BlockScriptBuilder::Reset()
     mActiveResult.mAst = nullptr;
     mActiveResult.mAsm.mBlocks = nullptr;
     mInFunBody = false;
+    mReturnTypeContext = nullptr;
 
     //Reset and initialize symbol containers
     mAllocator.Reset();
@@ -138,7 +140,7 @@ void BlockScriptBuilder::Reset()
     mStrPool.Clear();
 }
 
-bool BlockScriptBuilder::StartNewFunction()
+bool BlockScriptBuilder::StartNewFunction(const TypeDesc* returnTypeContext)
 {
     if (mInFunBody)
     {
@@ -147,6 +149,8 @@ bool BlockScriptBuilder::StartNewFunction()
     else
     {
         mInFunBody = true;
+        PG_ASSERT(mReturnTypeContext == nullptr);
+        mReturnTypeContext = returnTypeContext;
         StartNewFrame();
     }
     return true;
@@ -174,6 +178,7 @@ void BlockScriptBuilder::BindIntrinsic(Ast::StmtFunDec* funDec, FunCallback call
 
     PopFrame();
     mInFunBody = false;
+    mReturnTypeContext = nullptr;
 }
 
 Program* BlockScriptBuilder::CreateProgram()
@@ -293,79 +298,25 @@ Exp* BlockScriptBuilder::AttemptTypePromotion(Exp* exp, const TypeDesc* targetTy
     return exp;
 }
 
+Exp* BlockScriptBuilder::BuildStaticArrayDec(const TypeDesc* arrayType)
+{
+    if (arrayType->GetModifier() != TypeDesc::M_ARRAY)
+    {
+        BS_ErrorDispatcher(this, "Type passed into static_array construct must be an n dimensional array.");
+        return nullptr;
+    }
+
+    //promote this node to an array constructor
+    ArrayConstructor* arrayConstructor = BS_NEW ArrayConstructor();
+    
+    arrayConstructor->SetTypeDesc(arrayType);
+    return arrayConstructor;
+}
 
 Exp* BlockScriptBuilder::BuildBinopArrayAccess (Ast::Exp* lhs, int op, Ast::Exp* rhs)
 {
     PG_ASSERT(op == O_ACCESS);
-    //determine if lhs is a typed element
-    if (lhs->GetExpType() == Idd::sType)
-    {
-        Idd* lhsIdd = static_cast<Idd*>(lhs);
-        const TypeDesc* arrayType = GetTypeByName(lhsIdd->GetName());
-        if (arrayType != nullptr)
-        {
-            int arrayCount = 0;
-            if (rhs->GetTypeDesc() == nullptr || rhs->GetExpType() != Imm::sType || rhs->GetTypeDesc()->GetAluEngine() != TypeDesc::E_INT)
-            {
-                BS_ErrorDispatcher(this, "Array constructor size type must be a constant int");
-                return nullptr;
-            }
-            else
-            {
-                arrayCount = static_cast<Imm*>(rhs)->GetVariant().i[0];
-            }
 
-            arrayType = mSymbolTable.CreateType(
-                TypeDesc::M_ARRAY,
-                lhsIdd->GetName(),
-                arrayType,
-                arrayCount
-            );
-
-            lhsIdd->SetOffset(-1);
-            lhsIdd->SetFrameOffset(-1);
-
-            if (rhs->GetExpType() != Imm::sType)
-            {
-                BS_ErrorDispatcher(this, "Array rhs must be a numeric constant value.");
-                return nullptr;
-            }
-    
-            //promote this node to an array constructor
-            Binop* newBinop = BS_NEW Binop(lhs, O_ARRAY_CONSTRUCTOR, rhs);
-            newBinop->SetTypeDesc(arrayType);
-            return newBinop;
-        }
-    }
-    else if ( lhs->GetExpType() == Binop::sType && static_cast<Binop*>(lhs)->GetOp() == O_ARRAY_CONSTRUCTOR)
-    {
-        int arrayCount = 0;
-        if (rhs->GetTypeDesc() == nullptr || rhs->GetExpType() != Imm::sType || rhs->GetTypeDesc()->GetAluEngine() != TypeDesc::E_INT)
-        {
-            BS_ErrorDispatcher(this, "Array constructor size type must be a constant int");
-            return nullptr;
-        }
-        else
-        {
-            arrayCount = static_cast<Imm*>(rhs)->GetVariant().i[0];
-        }
-
-        //recursively create the array constructor
-        const TypeDesc* childType = lhs->GetTypeDesc();
-        TypeDesc* newArrayType = mSymbolTable.CreateType(
-            TypeDesc::M_ARRAY,
-            childType->GetName(),
-            childType,
-            arrayCount
-        );
-
-        //promote this node to an array constructor
-        Binop* newBinop = BS_NEW Binop(lhs, O_ARRAY_CONSTRUCTOR, rhs);
-        newBinop->SetTypeDesc(newArrayType);
-        return newBinop;
-    }
-
-    //if we made it here, means this is not a constructor, is just an array accessor
     const TypeDesc* tid1 = lhs->GetTypeDesc();
     if (tid1 == nullptr)
     {
@@ -439,7 +390,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
 
                 output = BS_NEW Binop(lhs, op, rhs);
 
-                if (tid1 != tid2)
+                if (!tid1->Equals(tid2))
                 {
                     BS_ErrorDispatcher(this, "Incompatible types not allowed on operation.");
                     return nullptr;
@@ -460,7 +411,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
                 rhs = AttemptTypePromotion(rhs, tid1);
                 tid2 = rhs->GetTypeDesc();
 
-                if (tid1 != tid2)
+                if (!tid1->Equals(tid2))
                 {
                     BS_ErrorDispatcher(this, "incompatible types on = operator.");
                     return nullptr;
@@ -603,7 +554,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
         rhs = AttemptTypePromotion(rhs, tid1); 
         tid2 = rhs->GetTypeDesc();
 
-        if (tid1 != tid2)
+        if (!tid1->Equals(tid2))
         {
             BS_ErrorDispatcher(this, "Incompatible types not allowed on operation.");
             return nullptr;
@@ -629,19 +580,12 @@ Exp* BlockScriptBuilder::BuildUnop(int op, Exp* exp)
     return unop;
 }
 
-Exp* BlockScriptBuilder::BuildExplicitCast(Exp* exp, const char* type)
+Exp* BlockScriptBuilder::BuildExplicitCast(Exp* exp, const TypeDesc* type)
 {
-    const TypeDesc* targetType = GetTypeByName(type);
-    
-    if (targetType != nullptr)
-    {
-        Unop* unop = BS_NEW Unop(O_EXPLICIT_CAST, exp);        
-        unop->SetTypeDesc(targetType);
-        return unop;
-    }
-    
-    BS_ErrorDispatcher(this, "Unknown type cast requested.");
-    return nullptr;
+    //TODO: fix cast explicit! right now everything is reinterpret_cast
+    Unop* unop = BS_NEW Unop(O_EXPLICIT_CAST, exp);        
+    unop->SetTypeDesc(type);
+    return unop;
 }
 
 Exp*   BlockScriptBuilder::BuildImmInt   (int i)
@@ -696,31 +640,49 @@ Exp*   BlockScriptBuilder::BuildImmFloat   (float f)
     return imm;
 }
 
-Idd*   BlockScriptBuilder::BuildIdd   (const char * name)
+Exp*   BlockScriptBuilder::BuildIdd   (const char * name)
 {
-    //create the idd
-    Idd* idd = BS_NEW Idd(name);
-
-    //find type
-    StackFrameInfo* currentFrame = mCurrentFrame; 
-    int frameOffset = 0;
-    while (currentFrame != nullptr)
+    //see if this id is actually an enumeration
+    const TypeDesc::EnumNode* enumNode = nullptr;
+    const TypeDesc* enumType = nullptr;
+    bool found = mSymbolTable.FindEnumByName(name, &enumNode, &enumType);
+    if (found)
     {
-        StackFrameInfo* info = currentFrame;
-        StackFrameInfo::Entry* found = info->FindDeclaration(name);
-        if (found != nullptr) {
-            idd->SetOffset(found->mOffset);
-            idd->SetFrameOffset(frameOffset);
-            idd->SetTypeDesc(found->mType);
-            idd->SetIsGlobal(currentFrame == 0);
-            break;
+        Variant v;
+        v.i[0] = enumNode->mGuid;
+        Imm* enumVal = BS_NEW Imm(v);
+        enumVal->SetTypeDesc(enumType);
+        return enumVal;
+    }
+    else
+    {
+        PG_ASSERT(enumNode == nullptr && enumType == nullptr);
+
+        //create the idd
+        Idd* idd = BS_NEW Idd(name);
+
+        //find type
+        StackFrameInfo* currentFrame = mCurrentFrame; 
+        int frameOffset = 0;
+        while (currentFrame != nullptr)
+        {
+            StackFrameInfo* info = currentFrame;
+            StackFrameInfo::Entry* found = info->FindDeclaration(name);
+            if (found != nullptr) {
+                idd->SetOffset(found->mOffset);
+                idd->SetFrameOffset(frameOffset);
+                idd->SetTypeDesc(found->mType);
+                idd->SetIsGlobal(currentFrame == 0);
+                break;
+            }
+            currentFrame = info->GetParentStackFrame();
+            frameOffset++;
         }
-        currentFrame = info->GetParentStackFrame();
-        frameOffset++;
+
+        return idd;
     }
 
-
-    return idd;
+    return nullptr;
 }
 
 FunDesc* BlockScriptBuilder::FindFunctionDescription(FunCall* fcSignature)
@@ -728,7 +690,15 @@ FunDesc* BlockScriptBuilder::FindFunctionDescription(FunCall* fcSignature)
     return mSymbolTable.FindFunctionDescription(fcSignature);
 }
 
-Exp* BlockScriptBuilder::BuildFunCall(ExpList* args, const char* name)
+Exp* BlockScriptBuilder::BuildMethodCall(Exp* exp, const char* name, ExpList* args)
+{
+    ExpList* newList = BS_NEW ExpList();
+    newList->SetExp(exp);
+    newList->SetTail(args);
+    return BuildFunCall(newList, name, true);
+}
+
+Exp* BlockScriptBuilder::BuildFunCall(ExpList* args, const char* name, bool isMethod)
 {
     PG_ASSERT(args != nullptr);
     PG_ASSERT(name != nullptr);
@@ -746,6 +716,7 @@ Exp* BlockScriptBuilder::BuildFunCall(ExpList* args, const char* name)
     }
     
     FunCall* fc = BS_NEW FunCall(args, name);
+    fc->SetIsMethod(isMethod);
     FunDesc* desc = FindFunctionDescription(fc);
     if (desc != nullptr)
     {
@@ -784,19 +755,23 @@ StmtExp* BlockScriptBuilder::BuildStmtExp(Exp* exp)
 StmtReturn* BlockScriptBuilder::BuildStmtReturn(Exp* exp)
 {
     PG_ASSERT(exp != nullptr);
+    if (exp->GetTypeDesc() == nullptr)
+    {
+        BS_ErrorDispatcher(this, "Identifier not found for return statement.");
+        return nullptr;
+    }
     if (mInFunBody == false)
     {
         BS_ErrorDispatcher(this, "return statements not allowed on global scope.");
         return nullptr;
     }
-    return BS_NEW StmtReturn(exp);
-}
 
-StmtTreeModifier* BlockScriptBuilder::BuildStmtTreeModifier(ExpList* expList, Idd* var)
-{
-    PG_ASSERT(expList != nullptr);
-    PG_ASSERT(var     != nullptr);
-    return BS_NEW StmtTreeModifier(expList, var);
+    if (!exp->GetTypeDesc()->Equals(mReturnTypeContext))
+    {
+        BS_ErrorDispatcher(this, "return type must match that of the current function context.");
+        return nullptr;
+    }
+    return BS_NEW StmtReturn(exp);
 }
 
 FunDesc* BlockScriptBuilder::RegisterFunctionDeclaration(Ast::StmtFunDec* funDec)
@@ -804,23 +779,12 @@ FunDesc* BlockScriptBuilder::RegisterFunctionDeclaration(Ast::StmtFunDec* funDec
     return mSymbolTable.CreateFunctionDescription(funDec);
 }
 
-StmtFunDec* BlockScriptBuilder::BuildStmtFunDec(Ast::ArgList* argList, const char * returnIdd, const char * nameIdd)
+StmtFunDec* BlockScriptBuilder::BuildStmtFunDec(Ast::ArgList* argList, const TypeDesc* returnType, const char * nameIdd)
 {
-    PG_ASSERT(returnIdd != nullptr);
     PG_ASSERT(nameIdd != nullptr);
 
 
-    //first, find the return type
-    const TypeDesc* retType = GetTypeByName(returnIdd);
-    if (retType == nullptr)
-    {
-        BS_ErrorDispatcher(this, "Unknown return type.");
-        return nullptr;
-    }
-
-    StmtFunDec* funDec = BS_NEW StmtFunDec(argList, returnIdd, nameIdd);
-
-    funDec->SetReturnType(retType);
+    StmtFunDec* funDec = BS_NEW StmtFunDec(argList, returnType, nameIdd);
 
     // record the frame for this function
     funDec->SetFrame(mCurrentFrame);
@@ -853,6 +817,7 @@ StmtFunDec* BlockScriptBuilder::BindFunImplementation(StmtFunDec* funDec, StmtLi
 
     //pop to the previous frame
     mInFunBody = false;
+    mReturnTypeContext = nullptr;
 
 
     PopFrame();
@@ -900,6 +865,12 @@ static void StructGenericConstructor(FunCallbackContext& ctx)
     {
         Pegasus::Utils::Memset8(argout, 0, argoutByteSize);
     }
+}
+
+StmtEnumTypeDef* BlockScriptBuilder::BuildStmtEnumTypeDef(const TypeDesc* typeDesc)
+{
+    PG_ASSERT(typeDesc != nullptr);
+    return BS_NEW StmtEnumTypeDef(typeDesc);
 }
 
 StmtStructDef* BlockScriptBuilder::BuildStmtStructDef(const char* name, ArgList* definitions)

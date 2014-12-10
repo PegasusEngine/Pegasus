@@ -21,106 +21,104 @@ using namespace Pegasus::BlockScript;
 using namespace Pegasus::BlockScript::Ast;
 
 FunDesc::FunDesc()
-: mGuid(-1), mFunDec(nullptr), mSignatureLength(0), mCallback(nullptr), mInputArgumentByteSize(0)
+: mGuid(-1), mFunDec(nullptr), mCallback(nullptr), mInputArgumentByteSize(0), mIsMethod(false)
 {
-    mName[0] = '\0'; 
-    mSignature[0] = '\0';
 }
 
 FunDesc::~FunDesc()
 {
 }
 
-void FunDesc::ConstructImpl(StmtFunDec* funDec)
+void FunDesc::Initialize(StmtFunDec* funDec)
 {
-    //construct function declaration by first using the name
-    mName[0] = '\0';
-    Utils::Strcat(mName, funDec->GetName());
-
-    mSignature[0] = '\0';
-    mSignatureLength = 0;
-    Utils::Strcat(&mSignature[0], mName);
-
-    int sz = Utils::Strlen(mName);
-
-    ArgList* head = funDec->GetArgList();
-
-    mInputArgumentByteSize = 0;
-    
-    while (head != nullptr)
-    {
-        ArgDec* argDec = head->GetArgDec();
-        if (argDec != nullptr)
-        {
-            mSignature[sz++] = '_';
-            PG_ASSERT(sz < MAX_SIGNATURE_LENGTH);
-            long long tid = reinterpret_cast<long long>(argDec->GetType());
-            Utils::Memcpy(&mSignature[sz], &tid, sizeof(long long));
-            sz += sizeof(long long);
-            PG_ASSERT(sz < MAX_SIGNATURE_LENGTH);
-            mInputArgumentByteSize += argDec->GetType()->GetByteSize();
-        }
-
-        head = head->GetTail();
-    }
-
-    mSignature[sz++] = '\0';
-    PG_ASSERT(sz < MAX_SIGNATURE_LENGTH);
-    mSignatureLength = sz;
     mFunDec = funDec;
-}
 
-void FunDesc::ConstructDec(FunCall* funDec)
-{
-    //construct function declaration by first using the name
-    mName[0] = '\0';
-    Utils::Strcat(mName, funDec->GetName());
-
-    mSignature[0] = '\0';
-    mSignatureLength = 0;
-    Utils::Strcat(&mSignature[0], mName);
-
-    int sz = Utils::Strlen(mName);
-    
-    ExpList* head = funDec->GetArgs();
-    
-    while (head != nullptr)
+    ArgList* argList = funDec->GetArgList();
+    while (argList != nullptr)
     {
-        Exp* argDec = head->GetExp();
-        if (argDec != nullptr)\
+        if (argList->GetArgDec() != nullptr)
         {
-            mSignature[sz++] = '_';
-            PG_ASSERT(sz < MAX_SIGNATURE_LENGTH);
-            long long tid = reinterpret_cast<long long>(argDec->GetTypeDesc());
-            Utils::Memcpy(&mSignature[sz], &tid, sizeof(long long));
-            sz += sizeof(long long);
-            PG_ASSERT(sz < MAX_SIGNATURE_LENGTH);
+            mInputArgumentByteSize += argList->GetArgDec()->GetType()->GetByteSize();
         }
-
-        head = head->GetTail();
+        argList = argList->GetTail();
     }
-
-    mSignature[sz++] = '\0';
-    PG_ASSERT(sz < MAX_SIGNATURE_LENGTH);
-    mSignatureLength = sz;
-    mFunDec = nullptr;
 }
+
 bool FunDesc::Equals(const FunDesc* other) const
 {
-    if (mSignatureLength != other->mSignatureLength)
+    return AreSignaturesEqual(other->mFunDec->GetName(), other->mFunDec->GetArgList());
+}
+
+bool FunDesc::AreSignaturesEqual(const char* name, Ast::ArgList* argList) const
+{
+    if (Utils::Strcmp(name, mFunDec->GetName()))
     {
         return false;
     }
-    else
+
+    ArgList* argList1 = argList;
+    ArgList* argList2 = mFunDec->GetArgList();
+
+    while (argList1 != nullptr && argList2 != nullptr)
     {
-        for (int byte = 0; byte < mSignatureLength; ++byte)
+        ArgDec* argDec1 = argList1->GetArgDec();
+        ArgDec* argDec2 = argList2->GetArgDec();
+        if (argDec1 != nullptr && argDec2 != nullptr)
         {
-            if (mSignature[byte] != other->mSignature[byte])
+            if (!argDec1->GetType()->Equals(argDec2->GetType()))
             {
                 return false;
             }
         }
+        else
+        {
+            return argDec1 == argDec2;
+        }
+        argList1 = argList1->GetTail();        
+        argList2 = argList2->GetTail();        
     }
 
-    return true;
+    return ((argList1 == nullptr || argList1->GetArgDec() == nullptr) && (argList2 == nullptr || argList2->GetArgDec() == nullptr));
+}
+
+bool FunDesc::AreSignaturesEqual(const char* name, Ast::ExpList* argList) const
+{
+    if (Utils::Strcmp(name, mFunDec->GetName()))
+    {
+        return false;
+    }
+
+    ExpList* argList1 = argList;
+    ArgList* argList2 = mFunDec->GetArgList();
+
+    while (argList1 != nullptr && argList2 != nullptr)
+    {
+        Exp*    argDec1 = argList1->GetExp();
+        ArgDec* argDec2 = argList2->GetArgDec();
+        if (argDec1 != nullptr && argDec2 != nullptr)
+        {
+            if (!argDec1->GetTypeDesc()->Equals(argDec2->GetType()))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return argDec1 == nullptr && argDec2 == nullptr;
+        }
+        argList1 = argList1->GetTail();        
+        argList2 = argList2->GetTail();        
+    }
+
+    return ((argList1 == nullptr || argList1->GetExp() == nullptr) && (argList2 == nullptr || argList2->GetArgDec() == nullptr));
+}
+
+bool FunDesc::IsCompatible(const FunCall* funCall) const
+{
+    return mIsMethod == funCall->IsMethod() && AreSignaturesEqual(funCall->GetName(), funCall->GetArgs());
+}
+
+bool FunDesc::IsCompatible(const StmtFunDec* funDec) const
+{
+    return mIsMethod == false && AreSignaturesEqual(funDec->GetName(), funDec->GetArgList());
 }

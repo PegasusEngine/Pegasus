@@ -15,13 +15,14 @@
 
 #include "Pegasus/BlockScript/Container.h"
 #include "Pegasus/BlockScript/IddStrPool.h"
+#include "Pegasus/BlockScript/TypeDesc.h"
 
 namespace Pegasus
 {
 
 namespace BlockScript
 {
-    class TypeDesc;
+
     
 //! Class representing the stack frame information
 class StackFrameInfo

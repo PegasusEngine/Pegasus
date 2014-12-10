@@ -39,8 +39,13 @@ void SourceCodeManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * us
     if (userData != nullptr)
     {
         CodeUserData * codeUserData = static_cast<CodeUserData*>(userData);
+        bool previousVal = codeUserData->IsValid();
         codeUserData->SetIsValid(e.IsSuccess());
         emit( OnCompilationEnd(e.GetLogString()) );
+        if (previousVal != e.IsSuccess())
+        {
+            emit(CompilationResultsChanged());
+        }
     }
 }
 
@@ -54,7 +59,7 @@ void SourceCodeManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * us
         bool isSuccess = Pegasus::Core::CompilerEvents::LinkingEvent::LINKING_SUCCESS == e.GetEventType();
         programUserData->SetIsValid(isSuccess);
         programUserData->SetErrorMessage(e.GetLog());
-        emit(OnLinkingEvent(programUserData->GetProgram(), e.GetLog(), e.GetEventType()));
+        emit(OnLinkingEvent(e.GetLog(), e.GetEventType()));
         if (previousIsValid != isSuccess)
         {
             emit(CompilationResultsChanged());
@@ -71,6 +76,24 @@ void SourceCodeManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * us
     else if (e.GetType() == Pegasus::Core::CompilerEvents::FileOperationEvent::IO_FILE_SAVE_ERROR)
     {
         emit(OnSignalSavedFileError(e.GetIoError(), QString(e.GetMessage())));
+    }
+}
+
+void SourceCodeManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::ObjectOperation& e)
+{
+    if (e.GetOp() == Pegasus::Core::CompilerEvents::ObjectOperation::CREATED_OPERATION)
+    {
+        QString objName = e.GetName();
+        emit(OnSignalNewObject(objName));
+    }
+    else if (e.GetOp() == Pegasus::Core::CompilerEvents::ObjectOperation::DESTROYED_OPERATION)
+    {
+        QString objName = e.GetName();
+        emit(OnSignalDestroyObject(userData, objName));
+    }
+    else
+    {
+        ED_FAILSTR("unhandled object operation.");
     }
 }
 

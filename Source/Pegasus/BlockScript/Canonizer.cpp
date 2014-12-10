@@ -395,8 +395,7 @@ void Canonizer::HandleSetOperator(Binop* n)
         }
     }
     else if (
-        n->GetRhs()->GetExpType() == Binop::sType && 
-        static_cast<Binop*>(n->GetRhs())->GetOp() == O_ARRAY_CONSTRUCTOR
+        n->GetRhs()->GetExpType() == ArrayConstructor::sType
     )
     {
         PG_ASSERT(newLhs->GetExpType() == Idd::sType); //dont allow array declarations on existant types
@@ -663,35 +662,33 @@ void Canonizer::HandleDotOperator(Binop* n)
     }
 }
 
+void Canonizer::Visit(ArrayConstructor* n)
+{
+    mRebuiltExpression = AllocateTemporal(n->GetTypeDesc());
+}
+
 void Canonizer::Visit(Binop* n)
 {
-    if (n->GetOp() == O_ARRAY_CONSTRUCTOR)
+    if (n->GetOp() == O_SET)
     {
-        mRebuiltExpression = AllocateTemporal(n->GetTypeDesc());
+        HandleSetOperator(n);
+    }
+    else if (n->GetOp() == O_DOT)
+    {     
+        HandleDotOperator(n);
+    }
+    else if (n->GetOp() == O_ACCESS)
+    {
+        HandleArrayAccessOperator(n);
     }
     else
     {
-        if (n->GetOp() == O_SET)
-        {
-            HandleSetOperator(n);
-        }
-        else if (n->GetOp() == O_DOT)
-        {     
-            HandleDotOperator(n);
-        }
-        else if (n->GetOp() == O_ACCESS)
-        {
-            HandleArrayAccessOperator(n);
-        }
-        else
-        {
-            n->GetLhs()->Access(this);
-            Exp* newLhs = mRebuiltExpression;
+        n->GetLhs()->Access(this);
+        Exp* newLhs = mRebuiltExpression;
 
-            n->GetRhs()->Access(this);
-            mRebuiltExpression = CANON_NEW Binop(newLhs, n->GetOp(), mRebuiltExpression);
-            mRebuiltExpression->SetTypeDesc(n->GetTypeDesc());
-        }
+        n->GetRhs()->Access(this);
+        mRebuiltExpression = CANON_NEW Binop(newLhs, n->GetOp(), mRebuiltExpression);
+        mRebuiltExpression->SetTypeDesc(n->GetTypeDesc());
     }
 }
 
@@ -749,14 +746,22 @@ void Canonizer::Visit(Unop* unop)
                 newCall->SetTypeDesc(fd->GetDec()->GetReturnType());
                 newCall->Access(this);
             }
-            else if (targetType->GetAluEngine() == sourceType->GetAluEngine())
+            else if (targetType->GetAluEngine() == sourceType->GetAluEngine() || targetType->GetModifier() == TypeDesc::M_ENUM)
             {                         
                 mRebuiltExpression = unop->GetExp();
-            }
+            }            
             else
             {
                 PG_FAILSTR("Unhandled condition!");
             }
+        }
+        else if (sourceType->GetModifier() == TypeDesc::M_ENUM && targetType->GetModifier() == TypeDesc::M_SCALAR)
+        {
+            mRebuiltExpression = unop->GetExp();
+        }
+        else
+        {
+            PG_FAILSTR("Unhandled cast exception!");
         }
     }
 }
@@ -849,10 +854,6 @@ void Canonizer::Visit(StmtExp* n)
     n->GetExp()->Access(this);
 }
 
-void Canonizer::Visit(StmtTreeModifier* n)
-{
-}
-
 void Canonizer::Visit(StmtFunDec* n)
 {
     //register this label
@@ -942,6 +943,11 @@ void Canonizer::Visit(StmtWhile* n)
 }
 
 void Canonizer::Visit(StmtStructDef* n)
+{
+    // Nothing! this should be already existant :)
+}
+
+void Canonizer::Visit(StmtEnumTypeDef* n)
 {
     // Nothing! this should be already existant :)
 }

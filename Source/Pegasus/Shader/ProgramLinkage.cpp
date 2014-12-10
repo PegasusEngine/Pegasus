@@ -1,8 +1,10 @@
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Shader/IShaderFactory.h"
+#include "Pegasus/Shader/ShaderTracker.h"
 #include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/Memcpy.h"
+
 
 //! private data structures
 namespace PegasusShaderPrivate {
@@ -20,6 +22,7 @@ Pegasus::Graph::OperatorNode(nodeAllocator, nodeDataAllocator), mStageFlags(0), 
 #if PEGASUS_ENABLE_PROXIES
     //initializing proxy
     ,mProxy(this)
+    ,mShaderTracker(nullptr)
 #endif
 {
     GRAPH_EVENT_INIT_DISPATCHER
@@ -31,6 +34,21 @@ Pegasus::Shader::ProgramLinkage::~ProgramLinkage()
     {
         mFactory->DestroyProgramGPUData(&(*GetData()));
     }
+
+#if PEGASUS_ENABLE_PROXIES
+    if (mShaderTracker != nullptr)
+    {
+        mShaderTracker->DeleteProgram(this);
+    }
+#endif
+
+    GRAPH_EVENT_DISPATCH(
+        this,
+        Pegasus::Core::CompilerEvents::ObjectOperation, 
+        // Event specific arguments:
+        Pegasus::Core::CompilerEvents::ObjectOperation::DESTROYED_OPERATION,
+        "Program"
+    );
 }
 
 void Pegasus::Shader::ProgramLinkage::ReleaseDataAndPropagate()

@@ -16,13 +16,13 @@
 #include "Pegasus/BlockScript/Container.h"
 #include "Pegasus/BlockScript/BlockScriptCanon.h"
 #include "Pegasus/BlockScript/FunCallback.h"
+#include "Pegasus/BlockScript/TypeDesc.h"
 
 namespace Pegasus
 {
 namespace BlockScript
 {
 
-class TypeDesc;
 struct Assembly;
 
 class PrettyPrint : public IVisitor

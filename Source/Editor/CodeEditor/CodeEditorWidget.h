@@ -66,15 +66,21 @@ public:
     //! Requests a code to compile
     //! \param the id of the editor (tab id). If the id is -1, then all programs are queried for compilaton
     void CompileCode(int id);
+    
+    //! finds the index of a particular Code
+    int  FindIndex(Pegasus::Core::ISourceCodeProxy * target);
 
+    //! finds the index of a particular text edit
+    int  FindIndex(CodeTextEditorWidget * target);
 signals:
     void RequestCodeCompilation(int id);
 
-private slots:
+public slots:
     //! slot to be called when a code wants to be closed.
     //! \param index code to close
     void RequestClose(int index);
 
+private slots:
     //! slot called whenever a tab changes its text.
     //! \param the widget that changed its text, should be casted to a QTextEdit object
     void OnTextChanged(QWidget *);
@@ -93,7 +99,7 @@ private slots:
     //! \param the program that triggered this event
     //! \param message the message of such error
     //! \param eventType the event type
-    void SignalLinkingEvent(void* program, QString message, int eventType);
+    void SignalLinkingEvent(QString message, int eventType);
 
     //! signals the begining of a compilation request. Used to set UI states and clear stuff 
     //! \param the code pointer
@@ -130,7 +136,6 @@ private slots:
     //! function that disables or enables the instant compilation button.
     //! \param true to enable the button, false otherwise
     void EnableModeInstantCompilationButton(bool enableValue);
-    
 
 private:
 
@@ -148,11 +153,6 @@ private:
 
     void UpdateInstantCompilationButton(Pegasus::Core::ISourceCodeProxy* proxy);
 
-    //! finds the index of a particular Code
-    int  FindIndex(Pegasus::Core::ISourceCodeProxy * target);
-
-    //! finds the index of a particular text edit
-    int  FindIndex(CodeTextEditorWidget * target);
 
     //! Sets the status bar message
     void PostStatusBarMessage(const QString& string);

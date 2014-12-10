@@ -17,6 +17,7 @@
 #include "Pegasus/BlockScript/BlockScriptManager.h"
 #include "Pegasus/BlockScript/BlockScript.h"
 #include "Pegasus/BlockScript/FunCallback.h"
+#include "Pegasus/Timeline/ScriptRenderApi.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Core/Log.h"
 
@@ -202,6 +203,11 @@ void ScriptHelper::CallUpdate(float beat, BsVmState* state, int& version)
         if (mSerialVersion != version)
         {
             version = mSerialVersion;
+            if (state->GetUserContext() != nullptr)
+            {
+                NodeContainer* nodeContaier = static_cast<NodeContainer*>(state->GetUserContext());
+                nodeContaier->Clean();
+            }
             state->Reset();
             mScript->Run(state);
         }
@@ -304,6 +310,7 @@ void ScriptHelper::OnCompilationEnd(bool success)
         success ? true : false, //compilation success status
         success ? "" : "Blockscript Compilation Failed."
     );
+
 }
 
 

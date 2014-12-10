@@ -69,10 +69,30 @@ TypeDesc* SymbolTable::CreateType(
     const TypeDesc* child,
     int modifierProperty,
     TypeDesc::AluEngine engine,
-    BlockScript::Ast::StmtStructDef* structDef 
+    BlockScript::Ast::StmtStructDef* structDef,
+    TypeDesc::EnumNode* enumNode 
 )
 {
-    return mTypeTable.CreateType(modifier, name, child, modifierProperty, engine, structDef);
+    return mTypeTable.CreateType(modifier, name, child, modifierProperty, engine, structDef, enumNode);
+}
+
+bool SymbolTable::FindEnumByName(const char* name, const TypeDesc::EnumNode** outEnumNode, const TypeDesc** outEnumType) const
+{
+    int childCount = mChildren.Size();
+    for (int i = 0; i < childCount; ++i)
+    {
+        if (mChildren[i]->FindEnumByName(name, outEnumNode, outEnumType))
+        {
+            return true;
+        }
+    }
+
+    return mTypeTable.FindEnumByName(name, outEnumNode, outEnumType);
+}
+
+TypeDesc::EnumNode* SymbolTable::NewEnumNode()
+{
+    return mTypeTable.NewEnumNode();
 }
 
 FunDesc* SymbolTable::FindFunctionDescription(BlockScript::Ast::FunCall* functionCall)

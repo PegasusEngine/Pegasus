@@ -105,6 +105,8 @@ const FunBindPoint FUN_INVALID_BIND_POINT = -1;
 //! \param a string list of the argument names.
 //! \param a string with the return type
 //! \param callback the actual c++ callback
+//! \param isMethod - if true, it means that the function definition is a method (first artType must be an object).
+//!                   this means that the -> notation will be used                        
 //! \return true if successful. False on failure. 
 bool CreateIntrinsicFunction(
     BlockScriptBuilder* builder, 
@@ -113,7 +115,8 @@ bool CreateIntrinsicFunction(
     const char** argNames, 
     int argCount, 
     const char* returnType, 
-    FunCallback callback
+    FunCallback callback,
+    bool isMethod = false
 );
 
 //! Gets a function bind point to be used to call.

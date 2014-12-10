@@ -257,6 +257,11 @@ void PrettyPrint::Visit(Stmt* n)
     PG_FAILSTR("unreachable node [Stmt].");
 }
 
+void PrettyPrint::Visit(ArrayConstructor* n)
+{
+    mStr("static_array<"); PrintType(n->GetTypeDesc()); mStr(">");
+}
+
 void PrettyPrint::Visit(StmtList* n)
 {
     if (n->GetStmt() != nullptr)
@@ -349,7 +354,6 @@ void PrettyPrint::Visit(Binop* n)
         break;
     case O_SET: mStr(" = ");
         break;
-    case O_ARRAY_CONSTRUCTOR:
     case O_ACCESS: mStr("[");
         break;
     case O_DOT: mStr(".");
@@ -359,7 +363,7 @@ void PrettyPrint::Visit(Binop* n)
     }
     n->GetRhs()->Access(this);
     
-    if (n->GetOp() == O_ACCESS || n->GetOp() == O_ARRAY_CONSTRUCTOR)
+    if (n->GetOp() == O_ACCESS)
     {
         mStr("]");
     }
@@ -382,10 +386,21 @@ void PrettyPrint::Visit(Unop* n)
 }
 void PrettyPrint::Visit(FunCall* n)
 {
-	mStr(n->GetName());
-    mStr("(");
-    n->GetArgs()->Access(this);
-    mStr(")");
+    if (n->IsMethod())
+    {
+        n->GetArgs()->GetExp()->Access(this);
+	    mStr(n->GetName());
+        mStr("->(");
+        n->GetArgs()->GetTail()->Access(this);
+        mStr(")");
+    }
+    else
+    {
+	    mStr(n->GetName());
+        mStr("(");
+        n->GetArgs()->Access(this);
+        mStr(")");
+    }
 }
 
 void PrettyPrint::Visit(Imm* n)
@@ -407,14 +422,6 @@ void PrettyPrint::Visit(StmtExp* n)
     mStr(";");
 }
 
-void PrettyPrint::Visit(StmtTreeModifier* n)
-{
-    mStr(n->GetIdd()->GetName()); 
-    mStr("->(");
-    n->GetExpList()->Access(this);
-    mStr(");");
-}
-
 void PrettyPrint::Visit(StmtWhile* n)
 {
     Indent();
@@ -432,7 +439,7 @@ void PrettyPrint::Visit(StmtWhile* n)
 void PrettyPrint::Visit(StmtFunDec* n)
 {
     Indent();
-    mStr(n->GetRet());
+    mStr(n->GetReturnType()->GetName());
     mStr(" ");
     mStr(n->GetName());
     mStr("(");
@@ -497,6 +504,21 @@ void PrettyPrint::Visit(StmtReturn* n)
     mStr(";\n");
 }
 
+
+void PrettyPrint::Visit(StmtEnumTypeDef* enumDef)
+{
+    Indent();
+    mStr("enum "); mStr(enumDef->GetEnumType()->GetName()); mStr("{\n");
+    const TypeDesc::EnumNode* node = enumDef->GetEnumType()->GetEnumNode();
+    while (node != nullptr)
+    {
+        Indent();Indent();
+        mStr(node->mIdd);
+        mStr( node->mNext == nullptr ? "\n" : ",\n");
+        node = node->mNext;
+    }
+    mStr("};\n");
+}
 
 void PrettyPrint::Visit(StmtStructDef* structDef)
 {

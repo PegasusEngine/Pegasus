@@ -41,13 +41,10 @@ FunDesc* FunTable::Find(Ast::FunCall* funCall)
 {
     int sz = mContainer.Size();
 
-    FunDesc curr;
-    curr.ConstructDec(funCall);
-
     for (int i = 0; i < sz; ++i)
     {
         FunDesc& candidate = mContainer[i];
-        if (candidate.Equals(&curr))
+        if (candidate.IsCompatible(funCall))
         {
             PG_ASSERT(candidate.GetGuid() == i);
             return &candidate;
@@ -60,14 +57,12 @@ FunDesc* FunTable::Find(Ast::FunCall* funCall)
 FunDesc* FunTable::Insert(StmtFunDec* funDec)
 {
     int sz = mContainer.Size();
-    FunDesc curr;
-    curr.ConstructImpl(funDec);
     FunDesc* foundDeclaration = nullptr;
     for (int i = 0; i < sz; ++i)
     {
         FunDesc& candidate = mContainer[i];
         if (
-            candidate.Equals(&curr) 
+            candidate.IsCompatible(funDec) 
         )
         {
             if (candidate.GetDec()->GetStmtList() != nullptr)
@@ -90,7 +85,7 @@ FunDesc* FunTable::Insert(StmtFunDec* funDec)
         foundDeclaration->SetGuid(sz);
     }
 
-    foundDeclaration->ConstructImpl(funDec);
+    foundDeclaration->Initialize(funDec);
 	return foundDeclaration;
 }
 

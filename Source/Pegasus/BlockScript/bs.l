@@ -34,21 +34,6 @@
     #define BS_TOKEN(t)   return (BS_lval.token = t);
     #define BS_INT(t)     BS_lval.integerValue = Pegasus::Utils::Atoi(BS_text); return t;
     #define BS_FLOAT(t)   BS_lval.floatValue = Pegasus::Utils::Atof(BS_text); return t;
-    #define BS_STRING(t)  int strLen = Pegasus::Utils::Strlen(BS_text) + 1;\
-                          if (strLen >=  Pegasus::BlockScript::IddStrPool::sCharsPerString){\
-                            BS_ErrorDispatcher(BS_GlobalBuilder, "Identifier string too long!\n");\
-                            yyterminate();\
-                          }else{\
-                            char * str = BS_GlobalBuilder->GetStringPool().AllocateString();\
-                            if (str == nullptr) { BS_ErrorDispatcher( BS_GlobalBuilder, "Out of identifier memory!"); yyterminate(); }\
-                            BS_lval.identifierText = str;\
-                            str[0] = '\0';\
-                            Pegasus::Utils::Strcat(str, BS_text);\
-                          }\
-                          return t;\
-                                
-                            
-                             
 
     //customize input
     #undef YY_INPUT
@@ -135,11 +120,28 @@ elif            { return K_ELSE_IF;}
 else            { return K_ELSE;   }
 return          { return K_RETURN; }
 struct          { return K_STRUCT; }
+enum            { return K_ENUM;   }
 while           { return K_WHILE;  }
+static_array    { return K_STATIC_ARRAY; }
 [0-9]+\.[0-9]+  { BS_FLOAT(I_FLOAT);     }
 [0-9]+          { BS_INT(I_INT);         }
 ;               { BS_TOKEN(K_SEMICOLON); }
-[_a-zA-Z0-9]+   { BS_STRING(IDENTIFIER); }
+[_a-zA-Z0-9]+   { 
+                    bool isTypeString = false;
+                    int strLen = Pegasus::Utils::Strlen(BS_text) + 1;
+                    if (strLen >=  Pegasus::BlockScript::IddStrPool::sCharsPerString){
+                        BS_ErrorDispatcher(BS_GlobalBuilder, "Identifier string too long!\n");
+                        yyterminate();
+                    }else{
+                        char * str = BS_GlobalBuilder->GetStringPool().AllocateString();
+                        if (str == nullptr) { BS_ErrorDispatcher( BS_GlobalBuilder, "Out of identifier memory!"); yyterminate(); }
+                        BS_lval.identifierText = str;
+                        str[0] = '\0';
+                        Pegasus::Utils::Strcat(str, BS_text);
+                        isTypeString = BS_GlobalBuilder->GetSymbolTable()->GetTypeByName(str) != nullptr;
+                    }
+                    return isTypeString ? TYPE_IDENTIFIER : IDENTIFIER;
+                }
 \+              { BS_TOKEN(O_PLUS);  }
 \-              { BS_TOKEN(O_MINUS); }
 \*              { BS_TOKEN(O_MUL);   }
@@ -153,7 +155,7 @@ while           { return K_WHILE;  }
 &&              { BS_TOKEN(O_LAND); }
 \|\|            { BS_TOKEN(O_LOR);  }
 =               { BS_TOKEN(O_SET);  }
-->              { BS_TOKEN(O_TREE); }
+->              { BS_TOKEN(O_METHOD_CALL); }
 \.              { BS_TOKEN(O_DOT); }
 \(              { return K_L_PAREN; }
 \)              { return K_R_PAREN; }
