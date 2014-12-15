@@ -9,8 +9,8 @@
 //! \date   December 4th, 2014
 //! \brief  BlockScript registration of Parr callbacks, so scripts can call, use and abuse
 //!         of rendering nodes.
-
-#include "Pegasus/Timeline/ScriptRenderApi.h"
+#include "Pegasus/Application/RenderCollection.h"
+#include "Pegasus/Application/ScriptRenderApi.h"
 #include "Pegasus/Window/IWindowContext.h"
 #include "Pegasus/BlockScript/BlockScriptManager.h"
 #include "Pegasus/BlockScript/BlockScript.h"
@@ -28,45 +28,6 @@ using namespace Pegasus;
 using namespace Pegasus::Timeline;
 using namespace Pegasus::BlockScript;
 using namespace Pegasus::BlockScript::Ast;
-
-/////////////////////////////////////////////////////////////////////////////////////////
-//! Node container definitions
-/////////////////////////////////////////////////////////////////////////////////////////
-NodeContainer::NodeContainer(Alloc::IAllocator* allocator, Wnd::IWindowContext* context)
-    : mAppContext(context),
-      mPrograms(allocator),
-      mShaders(allocator),
-      mTextures(allocator),
-      mTexturesGenerators(allocator),
-      mTexturesOperators(allocator),
-      mMeshes(allocator),
-      mMeshesGenerators(allocator)
-{
-}
-
-void NodeContainer::Clean()
-{
-    for (int i = 0; i < mPrograms.GetSize(); ++i)           { mPrograms[i] = nullptr; }
-    for (int i = 0; i < mShaders.GetSize(); ++i)            { mShaders[i] = nullptr; }
-    for (int i = 0; i < mTextures.GetSize(); ++i)           { mTextures[i] = nullptr; }
-    for (int i = 0; i < mTexturesGenerators.GetSize(); ++i) { mTexturesGenerators[i] = nullptr; }
-    for (int i = 0; i < mTexturesOperators.GetSize(); ++i)  { mTexturesOperators[i] = nullptr; }
-    for (int i = 0; i < mMeshes.GetSize(); ++i)             { mMeshes[i] = nullptr; }
-    for (int i = 0; i < mMeshesGenerators.GetSize(); ++i)   { mMeshesGenerators[i] = nullptr; }
-    mPrograms.Clear();
-    mShaders.Clear();
-    mTextures.Clear();
-    mTexturesGenerators.Clear();
-    mTexturesOperators.Clear();
-    mMeshes.Clear();
-    mMeshesGenerators.Clear();
-}
-
-NodeContainer::~NodeContainer()
-{
-    Clean();
-}
-
 
 static void RegisterTypes        (BlockLib* lib);
 static void RegisterFunctions    (BlockLib* lib);
@@ -105,37 +66,17 @@ void Node_CreateMeshGenerator(FunCallbackContext& context);
 //! the blockscript runtime lib
 ///////////////////////////////////////////////////////////////////////////////////
 
-char* CopyStr(BlockLib* lib, const char* str)
+void Pegasus::Application::RegisterRenderApi(BlockScript::BlockLib* rtLib)
 {
-    char* newStr = lib->GetBuilder()->GetStringPool().AllocateString();
-    newStr[0] = '\0';
-    PG_ASSERT(Utils::Strlen(str) + 1 < IddStrPool::sCharsPerString );
-    return Utils::Strcat(newStr, str);
-}
-
-void Pegasus::Timeline::RegisterRenderApi(Pegasus::Wnd::IWindowContext* appContext)
-{
-    BlockScriptManager* bsMgr = appContext->GetBlockScriptManager();
-    BlockLib* rtLib = bsMgr->GetRuntimeLib();
- 
     RegisterTypes(rtLib);
     RegisterFunctions(rtLib);
 }
 
 static void RegisterRenderEnums(BlockLib* lib)
 {
-    SymbolTable* st = lib->GetSymbolTable();
-
     using namespace Pegasus::Render;
 
-    const struct EnumDef {
-        const char* typeName;
-        const struct EnumData{
-            const char* enumName;
-            int enumVal;         
-        } enumList[50];
-        int   count;
-    } enumDefs[] = {
+    const EnumDeclarationDesc enumDefs[] = {
         {
             "PegasusDepthFunc",
             { 
@@ -175,81 +116,21 @@ static void RegisterRenderEnums(BlockLib* lib)
             BlendingConfig::COUNT_M
         }
     };
-
-    int enumDefsCount = sizeof(enumDefs) / sizeof(enumDefs[0]);
-    for (int i = 0; i < enumDefsCount; ++i)
-    {
-        const EnumDef& def = enumDefs[i];
-        TypeDesc::EnumNode* enumNode = st->NewEnumNode();
-        TypeDesc::EnumNode* lastEl = enumNode;
-
-        for (int enVal = 0; enVal < def.count; ++enVal)
-        {
-            lastEl->mIdd = CopyStr(lib, def.enumList[enVal].enumName);
-            lastEl->mGuid = def.enumList[enVal].enumVal;
-            if (enVal != def.count - 1)
-            {
-                lastEl->mNext = st->NewEnumNode();
-                lastEl = lastEl->mNext;
-            }
-        }
-
-        st->CreateType(
-            TypeDesc::M_ENUM,
-            CopyStr(lib, def.typeName),
-            nullptr, //no child
-            0, //no modifier property
-            TypeDesc::E_NONE, //no ALU engine
-            nullptr, //no struct def
-            enumNode
-        );
-    }
-}
-
-static void RegisterStruct(BlockLib* lib, const char* structName, const char* const* types, const char* const* typeNames)
-{
-    BlockScriptBuilder* builder = lib->GetBuilder();
-    SymbolTable* st = lib->GetSymbolTable();
-    builder->StartNewFrame();
     
-    int c = 0;
-    const char* currType = types[c];
-    ArgList* argList = builder->CreateArgList();
-    ArgList* currArgList = argList;
-    while (currType != nullptr)
-    {
-        const TypeDesc* typeDesc = st->GetTypeByName(currType);
-        PG_ASSERTSTR(typeDesc != nullptr, "Type cannot be null! check the registration of the enums and stuff");
-        ArgDec* argDec = builder->BuildArgDec(CopyStr(lib, typeNames[c]), typeDesc);
-
-        currArgList->SetArgDec(argDec);
-        currType = types[++c];
-
-        if (currType != nullptr)
-        {
-            currArgList->SetTail(builder->CreateArgList());
-            currArgList = currArgList->GetTail();
-        }
-    }
-
-    StmtStructDef* def = builder->BuildStmtStructDef(CopyStr(lib, structName), argList);
-    PG_ASSERTSTR(def != nullptr, "FATAL! could not register the structure definition %s.", structName);
+    lib->CreateEnumTypes(enumDefs, sizeof(enumDefs)/sizeof(enumDefs[0]));
 }
+
 
 static void RegisterRenderStructs(BlockLib* lib)
 {
+    //creating an internal render pointer size (in case of 64 bit)
     TypeDesc* ptrType = lib->GetSymbolTable()->CreateType(
         TypeDesc::M_SCALAR,
         "void_ptr"
     );
     ptrType->SetByteSize(sizeof(void*));
 
-    const struct StructDef
-    {
-        const char* name;
-        const char* types[20];
-        const char* memberNames[20];
-    } structDefs[] = {
+    const StructDeclarationDesc structDefs[] = {
         { 
             "Uniform", 
             {"string", "int"           , "int"           , "int"             , nullptr},
@@ -298,39 +179,20 @@ static void RegisterRenderStructs(BlockLib* lib)
     };
 
     const int structDefSize = sizeof(structDefs) / sizeof(structDefs[0]);
-    for (int i = 0; i < structDefSize; ++i)
-    {
-        const StructDef& def = structDefs[i];
-        RegisterStruct(lib, def.name, def.types, def.memberNames);
-        
-    }
+    lib->CreateStructTypes(structDefs, structDefSize);
 }
 
 static void RegisterNodes(BlockLib* lib)
 {
-    struct NodeDef {
-        const char* name;
-        struct NodeMethods {
-            const char* methodName;
-            const char* methodReturnType;
-            FunCallback callback;
-            const char* types[20];
-            const char* parameterNames[20];
-        } mMethods[50];
-        int methodsCount;
-    } nodeDefs[] = {
+    const ClassTypeDesc nodeDefs[] = {
         {
             "ShaderStage",
-            {}, 0
+            {}, 0 //no methods
         },
         {
             "ProgramLinkage",
-            {
-                {
-                    "SetShaderStage", "int", Program_SetShaderStage,
-                    {"ProgramLinkage", "ShaderStage", nullptr},
-                    {"this", "stage", nullptr}
-                }
+            { //method list
+                { "SetShaderStage", "int", {"ProgramLinkage", "ShaderStage", nullptr}, {"this", "stage", nullptr}, Program_SetShaderStage }
             },
             1
         },
@@ -341,11 +203,7 @@ static void RegisterNodes(BlockLib* lib)
         {
             "Mesh",
             {
-                {
-                    "SetGeneratorInput", "int", MeshGenerator_SetGeneratorInput,
-                    {"Mesh", "MeshGenerator", nullptr},
-                    {"this", "meshGenerator", nullptr}
-                },
+                { "SetGeneratorInput", "int", {"Mesh", "MeshGenerator", nullptr}, {"this", "meshGenerator", nullptr}, MeshGenerator_SetGeneratorInput }
             },
             1
         },
@@ -356,71 +214,21 @@ static void RegisterNodes(BlockLib* lib)
         {
             "TextureOperator",
             {
-                {
-                    "AddGeneratorInput", "int", TextureOperator_AddGeneratorInput,
-                    { "TextureOperator", "TextureGenerator", nullptr },
-                    { "this", "texGenerator", nullptr }
-                },
-                {
-                    "AddOperatorInput", "int", TextureOperator_AddOperatorInput,
-                    { "TextureOperator", "TextureOperator", nullptr },
-                    { "this", "texOperator", nullptr }
-                },
+                { "AddGeneratorInput", "int", { "TextureOperator", "TextureGenerator", nullptr }, { "this", "texGenerator", nullptr }, TextureOperator_AddGeneratorInput },
+                { "AddOperatorInput",  "int", { "TextureOperator", "TextureOperator", nullptr },  { "this", "texOperator", nullptr },  TextureOperator_AddOperatorInput  }
             },
             2
         },
         {
             "Texture",
             {
-                {
-                    "AddGeneratorInput", "int", Texture_AddGeneratorInput,
-                    { "Texture", "TextureGenerator", nullptr },
-                    { "this", "texGenerator", nullptr }
-                },
-                {
-                    "AddOperatorInput", "int", Texture_AddOperatorInput,
-                    { "Texture", "TextureOperator", nullptr },
-                    { "this", "texOperator", nullptr }
-                },
+                { "AddGeneratorInput", "int", { "Texture", "TextureGenerator", nullptr }, { "this", "texGenerator", nullptr }, Texture_AddGeneratorInput },
+                { "AddOperatorInput",  "int", { "Texture", "TextureOperator", nullptr },  { "this", "texOperator", nullptr }, Texture_AddOperatorInput }
             },
             2
         }
     };
-    
-    SymbolTable* st = lib->GetSymbolTable();
-    int nodeDefCount = sizeof(nodeDefs) / sizeof(nodeDefs[0]);
-    for (int i = 0; i < nodeDefCount; ++i)
-    {
-        NodeDef& def = nodeDefs[i];    
-        //register the type first
-        st->CreateType(
-            TypeDesc::M_REFERECE,
-            def.name,
-            nullptr, //no child
-            0, //no modifier property yet...
-            TypeDesc::E_NONE, //no engine
-            nullptr, //no struct definition
-            nullptr // no enumeration mode
-        );
-
-        for (int m = 0; m < def.methodsCount; ++m)
-        {
-            int paramCount = -1;
-            while(def.mMethods[m].types[++paramCount] != nullptr);
-            PG_ASSERT(paramCount > 0);
-            bool result = CreateIntrinsicFunction(
-                lib->GetBuilder(),
-                def.mMethods[m].methodName,
-                def.mMethods[m].types,
-                def.mMethods[m].parameterNames,
-                paramCount,
-                def.mMethods[m].methodReturnType,
-                def.mMethods[m].callback,
-                true //these are in the -> notation
-            );
-            PG_ASSERTSTR(result, "failed registering api");
-        }
-    }
+    lib->CreateClassTypes(nodeDefs, sizeof(nodeDefs)/sizeof(nodeDefs[0]));
 }
 
 static void RegisterTypes(BlockLib* lib)
@@ -432,14 +240,7 @@ static void RegisterTypes(BlockLib* lib)
 
 static void RegisterFunctions(BlockLib* lib)
 {
-    struct FunDeclaration
-    {
-        const char* name;
-        const char*  returnType;
-        const char* types[20];
-        const char* arguments[20];
-        FunCallback callback;
-    } funDeclarations[] = {
+    const FunctionDeclarationDesc funDeclarations[] = {
         {
             "CreateProgramLinkage",
             "ProgramLinkage",
@@ -491,23 +292,8 @@ static void RegisterFunctions(BlockLib* lib)
         }
     };
 
-    int apiFunCount = sizeof(funDeclarations) / sizeof(funDeclarations[0]);
-    for (int i = 0; i < apiFunCount; ++i)
-    {
-        FunDeclaration& dec = funDeclarations[i];
-        int argCount = -1;
-        while(dec.types[++argCount] != nullptr);
-        bool result = CreateIntrinsicFunction(
-            lib->GetBuilder(), 
-            dec.name,
-            dec.types,
-            dec.arguments,
-            argCount,
-            dec.returnType,
-            dec.callback
-        );
-        PG_ASSERTSTR(result, "failed registering API");
-    }
+    lib->CreateIntrinsicFunctions(funDeclarations, sizeof(funDeclarations) / sizeof(funDeclarations[0]));
+    
 }
 
 
@@ -516,9 +302,9 @@ static void RegisterFunctions(BlockLib* lib)
 //! Implementation of API wrappers / manipulation of a node container
 //////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////
-static NodeContainer* GetContainer(BsVmState* state)
+static Application::RenderCollection* GetContainer(BsVmState* state)
 {
-    NodeContainer* container = static_cast<NodeContainer*>(state->GetUserContext());
+    Application::RenderCollection* container = static_cast<Application::RenderCollection*>(state->GetUserContext());
     PG_ASSERT(container != nullptr);
     return container;
 }
@@ -529,17 +315,18 @@ static NodeContainer* GetContainer(BsVmState* state)
 void Program_SetShaderStage(FunCallbackContext& context)
 {
     BsVmState* state = context.GetVmState();
-    NodeContainer* container = GetContainer(state);    
+    Application::RenderCollection* container = GetContainer(state);    
 
     
     int* output = static_cast<int*>(context.GetRawOutputBuffer());
-    int programId = *static_cast<int*>(context.GetRawInputBuffer());
-    int stageId   = *(static_cast<int*>(context.GetRawInputBuffer()) + 1);
-    if (programId != -1 && stageId != -1)
+    Application::RenderCollection::CollectionHandle programId = *static_cast<int*>(context.GetRawInputBuffer());
+    Application::RenderCollection::CollectionHandle stageId   = *(static_cast<int*>(context.GetRawInputBuffer()) + 1);
+    if (programId != Application::RenderCollection::INVALID_HANDLE && stageId != Application::RenderCollection::INVALID_HANDLE)
     {
-        PG_ASSERT(programId >= 0 && programId < container->mPrograms.GetSize());
-        PG_ASSERT(stageId   >= 0 && stageId < container->mShaders.GetSize());
-        container->mPrograms[programId]->SetShaderStage(container->mShaders[stageId]);
+        PG_ASSERT(programId >= 0 && programId < container->GetProgramCount());
+        PG_ASSERT(stageId   >= 0 && stageId < container->GetShaderCount());
+        Shader::ShaderStageRef currShader = container->GetShader(stageId);
+        container->GetProgram(programId)->SetShaderStage(currShader);
         *output = 1;
     }
     else
@@ -588,41 +375,37 @@ void Texture_AddGeneratorInput(FunCallbackContext& context)
 void Node_CreateProgramLinkage(FunCallbackContext& context)
 {
     BsVmState* state = context.GetVmState();
-    NodeContainer* container = GetContainer(state);
+    Application::RenderCollection* container = GetContainer(state);
 
     int* inptStr = static_cast<int*>(context.GetRawInputBuffer());
     const char* name = static_cast<const char*>(state->GetHeapElement(*inptStr).mObject);
-    Shader::ProgramLinkageRef prog = container->mAppContext->GetShaderManager()->CreateProgram(name);
-    int* output = static_cast<int*>(context.GetRawOutputBuffer());
-    Shader::ProgramLinkageRef& newProg = container->mPrograms.PushEmpty();
-    newProg = prog;
-    *output = container->mPrograms.GetSize() - 1;
+    Shader::ProgramLinkageRef prog = container->GetAppContext()->GetShaderManager()->CreateProgram(name);
+    Application::RenderCollection::CollectionHandle* output = static_cast<int*>(context.GetRawOutputBuffer());
+    *output = container->AddProgram(&(*prog));
 }
 
 void Node_LoadShaderStage(FunCallbackContext& context)
 {
     BsVmState* state = context.GetVmState();
-    NodeContainer* container = GetContainer(state);
+    Application::RenderCollection* container = GetContainer(state);
 
     int* inptStr = static_cast<int*>(context.GetRawInputBuffer());
     const char* path = static_cast<const char*>(state->GetHeapElement(*inptStr).mObject);
 
     Shader::ShaderStageFileProperties fileProps;
     fileProps.mPath = path;
-    fileProps.mLoader = container->mAppContext->GetIOManager();
+    fileProps.mLoader = container->GetAppContext()->GetIOManager();
     fileProps.mUserData = nullptr;
 
-    Shader::ShaderStageRef shaderStage = container->mAppContext->GetShaderManager()->LoadShaderStageFromFile(fileProps);
-    int* output = static_cast<int*>(context.GetRawOutputBuffer());
+    Shader::ShaderStageRef shaderStage = container->GetAppContext()->GetShaderManager()->LoadShaderStageFromFile(fileProps);
+    Application::RenderCollection::CollectionHandle* output = static_cast<int*>(context.GetRawOutputBuffer());
     if (shaderStage != nullptr)
     {
-        Shader::ShaderStageRef& newStage = container->mShaders.PushEmpty();
-        newStage = shaderStage;
-        *output = container->mShaders.GetSize() - 1;
+        *output = container->AddShader(&(*shaderStage));
     }
     else
     {
-        *output = -1; //an invalid id
+        *output = Application::RenderCollection::INVALID_HANDLE; //an invalid id
     }
 }
 

@@ -14,6 +14,7 @@
 #include "Pegasus/BlockScript/BlockScriptAst.h"
 #include "Pegasus/BlockScript/FunDesc.h"
 #include "Pegasus/BlockScript/FunCallback.h"
+#include "Pegasus/BlockScript/BlockLib.h"
 #include "Pegasus/BlockScript/BsVm.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Math/Vector.h"
@@ -251,9 +252,9 @@ void Echo_Float(FunCallbackContext& context)
 
 }
 
-static void RegisterIntrinsicTypes(BlockScriptBuilder* builder)
+static void RegisterIntrinsicTypes(BlockLib* lib)
 {
-    SymbolTable* symbolTable = builder->GetSymbolTable();
+    SymbolTable* symbolTable = lib->GetSymbolTable();
     PG_ASSERT(symbolTable != nullptr);
 
     //Register ints and scalars
@@ -298,91 +299,37 @@ static void RegisterIntrinsicTypes(BlockScriptBuilder* builder)
     symbolTable->CreateType(TypeDesc::M_REFERECE, "string");
 }
 
-// Conversion API
-void Pegasus::BlockScript::RegisterIntrinsics(BlockScriptBuilder* builder)
+void Pegasus::BlockScript::RegisterIntrinsics(BlockLib* lib)
 {
-    RegisterIntrinsicTypes(builder);
+    RegisterIntrinsicTypes(lib);
 
-    static struct ConstructorDesc
+    const Pegasus::BlockScript::FunctionDeclarationDesc funConstructors[] =
     {
-        const char* funName;
-        const char* returnType;
-        struct funDefinition
-        {
-            int argCounts;
-            const char* argTypes[50];
-            const char* argNames[50];
-            FunCallback callback;
-        } mDefinitions[10];
-        int overrideCounts;
-    } FunConstructors[] =
-    {
-        {
-            "float4", //fun name
-            "float4",  // return type
-            {
-                { 4, {"float", "float", "float", "float", nullptr}, {"x", "y", "z", "w", nullptr}, Private_VectorConstructors::ConstructFloat4_float_float_float_float },
-                { 2, {"float3", "float", nullptr}, {"xyz", "w", nullptr}, Private_VectorConstructors::ConstructFloat4_float_float_float_float },
-                { 4, {"int", "int", "int", "int", nullptr}, {"x", "y", "z", "w", nullptr}, Private_VectorConstructors::ConstructFloat4_int_int_int_int },
-                { 1, {"float", nullptr}, {"xyzw", nullptr}, Private_VectorConstructors::ConstructFloat4_float },
-                { 1, {"int", nullptr}, {"xyzw", nullptr}, Private_VectorConstructors::ConstructFloat4_int }
-            },
-            5
-        },
-        {
-            "float3", //fun name
-            "float3",  // return type
-            {
-                { 3,{"float" , "float", "float", nullptr}, {"x", "y", "z", nullptr}, Private_VectorConstructors::ConstructFloat3_float_float_float },
-                { 2,{"float2", "float", nullptr}, {"x", "y", "z", nullptr}, Private_VectorConstructors::ConstructFloat3_float_float_float },
-                { 3,{"int", "int", "int", nullptr}, {"x", "y", "z", nullptr}, Private_VectorConstructors::ConstructFloat3_int_int_int },
-                { 1,{"float", nullptr}, {"xyz", nullptr}, Private_VectorConstructors::ConstructFloat3_float },
-                { 1,{"int", nullptr}, {"xyz", nullptr}, Private_VectorConstructors::ConstructFloat3_int },
-            },
-            5
-        },
-        {
-            "float2", //fun name
-            "float2",  // return type
-            {
-                {2,{"float", "float", nullptr}, {"x", "y", nullptr}, Private_VectorConstructors::ConstructFloat2_float_float },
-                {2,{"int", "int", nullptr}, {"x", "y", nullptr}, Private_VectorConstructors::ConstructFloat2_int_int },
-                {1,{"float", nullptr}, {"xy", nullptr}, Private_VectorConstructors::ConstructFloat2_float },
-                {1,{"int", nullptr}, {"xy", nullptr}, Private_VectorConstructors::ConstructFloat2_int },
-            },
-            4
-        },
-        {
-            "echo", //fun name
-            "int",  // return type
-            {
-                {1,{"string", nullptr}, {"input", nullptr}, Private_Utilities::Echo_String },
-                {1,{"int", nullptr}, {"input", nullptr}, Private_Utilities::Echo_Int },
-                {1,{"float", nullptr}, {"input", nullptr}, Private_Utilities::Echo_Float },
-            },
-            3
-        }
+        //*funName | retType | argsTypes                                   |  argNames                    | callback
+        ///////////////////////////////////////////float4///////////////////////////////////////////////////////////////
+        { "float4", "float4", {"float", "float", "float", "float", nullptr}, {"x", "y", "z", "w", nullptr}, Private_VectorConstructors::ConstructFloat4_float_float_float_float },
+        { "float4", "float4", {"float3", "float", nullptr},                  {"xyz", "w", nullptr},         Private_VectorConstructors::ConstructFloat4_float_float_float_float },
+        { "float4", "float4", {"int", "int", "int", "int", nullptr},         {"x", "y", "z", "w", nullptr}, Private_VectorConstructors::ConstructFloat4_int_int_int_int },
+        { "float4", "float4", {"float", nullptr},                            {"xyzw", nullptr},             Private_VectorConstructors::ConstructFloat4_float },
+        { "float4", "float4", {"int", nullptr},                              {"xyzw", nullptr},             Private_VectorConstructors::ConstructFloat4_int },
+        ///////////////////////////////////////////float3///////////////////////////////////////////////////////////////
+        { "float3", "float3", {"float" , "float", "float", nullptr},         {"x", "y", "z", nullptr},      Private_VectorConstructors::ConstructFloat3_float_float_float },
+        { "float3", "float3", {"float2", "float", nullptr},                  {"x", "y", "z", nullptr},      Private_VectorConstructors::ConstructFloat3_float_float_float },
+        { "float3", "float3", {"int", "int", "int", nullptr},                {"x", "y", "z", nullptr},      Private_VectorConstructors::ConstructFloat3_int_int_int },
+        { "float3", "float3", {"float", nullptr},                            {"xyz", nullptr},              Private_VectorConstructors::ConstructFloat3_float },
+        { "float3", "float3", {"int", nullptr},                              {"xyz", nullptr},              Private_VectorConstructors::ConstructFloat3_int },
+        ///////////////////////////////////////////float2///////////////////////////////////////////////////////////////
+        {"float2", "float2",  {"float", "float", nullptr},                   {"x", "y", nullptr},           Private_VectorConstructors::ConstructFloat2_float_float },
+        {"float2", "float2",  {"int", "int", nullptr},                       {"x", "y", nullptr},           Private_VectorConstructors::ConstructFloat2_int_int },
+        {"float2", "float2",  {"float", nullptr},                            {"xy", nullptr},               Private_VectorConstructors::ConstructFloat2_float },
+        {"float2", "float2",  {"int", nullptr},                              {"xy", nullptr},               Private_VectorConstructors::ConstructFloat2_int },
+        ///////////////////////////////////////////echo///////////////////////////////////////////////////////////////
+        {"echo",   "int",     {"string", nullptr},                           {"input", nullptr},            Private_Utilities::Echo_String },
+        {"echo",   "int",     {"int", nullptr},                              {"input", nullptr},            Private_Utilities::Echo_Int },
+        {"echo",   "int",     {"float", nullptr},                            {"input", nullptr},            Private_Utilities::Echo_Float },
     };
 
-    static const int ConstructorCount = sizeof(FunConstructors) / sizeof(ConstructorDesc); 
-    
-    for (int i = 0; i < ConstructorCount; ++i)
-    {
-        ConstructorDesc& constructorDesc = FunConstructors[i];
-        for (int j = 0; j < constructorDesc.overrideCounts; ++j)
-        {
-            bool result = CreateIntrinsicFunction(
-                builder,
-                constructorDesc.funName,
-                constructorDesc.mDefinitions[j].argTypes,
-                constructorDesc.mDefinitions[j].argNames,
-                constructorDesc.mDefinitions[j].argCounts,
-                constructorDesc.returnType,
-                constructorDesc.mDefinitions[j].callback
-            );
-            
-            PG_ASSERT(result);
-        }
-    }
+     lib->CreateIntrinsicFunctions(funConstructors, sizeof(funConstructors) / sizeof(funConstructors[0])); 
+        
 }
 

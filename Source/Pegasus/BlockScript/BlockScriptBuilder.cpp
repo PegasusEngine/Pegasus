@@ -850,6 +850,96 @@ StmtIfElse* BlockScriptBuilder::BuildStmtIfElse(Exp* exp, StmtList* ifBlock, Stm
     return stmtIfElse;
 }
 
+static bool TestStringLength(const char * str)
+{
+    if (Strlen(str) + 1 > IddStrPool::sCharsPerString)
+    {
+        return false;
+    }
+    return true;
+}
+
+char* BlockScriptBuilder::CopyString(const char* strIn)
+{
+    PG_ASSERT (Strlen(strIn)  < IddStrPool::sCharsPerString)
+    char* newStr = GetStringPool().AllocateString();
+    newStr[0] = '\0';
+    return Utils::Strcat(newStr, strIn);
+}
+
+void BlockScriptBuilder::CreateIntrinsicFunction(const char* funName, const char* const* argTypes, const char* const* argNames, int argCount, const char* returnType, FunCallback callback, bool isMethod)
+{
+    //step 1, check that strings and types exist.
+    for (int i = 0; i < argCount; ++i)
+    {
+        const char* argType = argTypes[i];
+        const char* argName = argNames[i];
+        if (!TestStringLength(argType) || !TestStringLength(argName))
+        {
+            PG_FAILSTR("length of argument type %s or name %s is too big.", argType, argName);
+            return;
+        }
+
+        //test types exist
+        if (GetTypeByName(argType) == nullptr)
+        {
+            PG_FAILSTR("Type '%s' not found in current context.", argType);
+            return;
+        }
+    }
+
+    if (!TestStringLength(returnType) || !TestStringLength(funName))
+    {
+        PG_FAILSTR("The length of the return type is too big.");
+        return;
+    }
+    const TypeDesc* returnTypeDesc = GetTypeByName(returnType);
+    if (returnTypeDesc == nullptr)
+    {
+        PG_FAILSTR("Type %s not found in current context", returnType);
+    }
+
+    //step 2, setup the argument description of this function
+    StartNewFunction(returnTypeDesc);
+    Ast::ArgList* argList = nullptr;
+    Ast::ArgList* currNode = nullptr;
+    for (int i = 0; i < argCount; ++i)
+    {
+        char* argTypeCpy = CopyString(argTypes[i]);
+        char* argNameCpy = CopyString(argNames[i]);
+        const TypeDesc* currType = GetTypeByName(argTypeCpy);
+        PG_ASSERT(currType != nullptr);
+        if (argList == nullptr)
+        {
+            argList = CreateArgList();
+            currNode = argList;
+        }
+        else
+        {
+            currNode->SetTail( CreateArgList());
+            currNode = currNode->GetTail();
+        }
+
+        ArgDec* argDec = BuildArgDec(argNameCpy, currType);
+        PG_ASSERT(argDec != nullptr);
+        currNode->SetArgDec(argDec);
+    }
+
+    char* funNameCpy = CopyString(funName);
+
+
+    //step 3, build the statement
+    StmtFunDec* funDec = BuildStmtFunDec(argList, returnTypeDesc, funNameCpy);
+    
+    if (funDec == nullptr)
+    {
+        PG_FAILSTR("failed creating intrinsic function %s", funNameCpy);
+    }
+    
+    funDec->GetDesc()->SetIsMethod(isMethod);
+    BindIntrinsic(funDec, callback);
+}
+
 static void StructGenericConstructor(FunCallbackContext& ctx)
 {
     void* argin = ctx.GetRawInputBuffer();
@@ -914,8 +1004,7 @@ StmtStructDef* BlockScriptBuilder::BuildStmtStructDef(const char* name, ArgList*
     );
 
     //Create empty constructor
-    bool result = CreateIntrinsicFunction(
-        this,
+    CreateIntrinsicFunction(
         name,
         nullptr, //no argins types
         nullptr, //no argins names
@@ -923,8 +1012,6 @@ StmtStructDef* BlockScriptBuilder::BuildStmtStructDef(const char* name, ArgList*
         name,
         StructGenericConstructor
     );
-    PG_ASSERT(result);
-
     
     static const int MAX_CHILD_MEMBERS = 255;
 
@@ -948,8 +1035,7 @@ StmtStructDef* BlockScriptBuilder::BuildStmtStructDef(const char* name, ArgList*
     }
 
     //Create constructor
-    result = CreateIntrinsicFunction(
-        this,
+    CreateIntrinsicFunction(
         name,
         sMassiveCharTypeContainer, //no argins types
         sMassiveCharNameContainer, //no argins names
@@ -957,7 +1043,6 @@ StmtStructDef* BlockScriptBuilder::BuildStmtStructDef(const char* name, ArgList*
         name,
         StructGenericConstructor
     );
-    PG_ASSERT(result);
 
     //copy all the declaration info
     

@@ -11,6 +11,7 @@
 //!         Manages access to the Pegasus runtime.
 
 #include "Pegasus/Application/Application.h"
+#include "Pegasus/Application/ScriptRenderApi.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Application/AppWindowManager.h"
 #include "Pegasus/Core/Time.h"
@@ -88,6 +89,8 @@ Application::Application(const ApplicationConfig& config)
     // Set up timeline, block script manager has to be initialized first so timeline can push the graphics library within.
     mTimeline = PG_NEW(timelineAlloc, -1, "Timeline", Alloc::PG_MEM_PERM) Timeline::Timeline(timelineAlloc, this);
 
+    // register the entire render api
+    Pegasus::Application::RegisterRenderApi(mBlockScriptManager->GetRuntimeLib());
 
     // Cache config
     mConfig = config;

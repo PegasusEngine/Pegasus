@@ -16,10 +16,9 @@
 #include "Pegasus/Core/Assertion.h"
 #include "Pegasus/BlockScript/BlockScriptManager.h"
 #include "Pegasus/BlockScript/BlockScript.h"
-#include "Pegasus/BlockScript/FunCallback.h"
-#include "Pegasus/Timeline/ScriptRenderApi.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Core/Log.h"
+#include "Pegasus/Application/RenderCollection.h"
 
 using namespace Pegasus;
 using namespace Pegasus::Timeline;
@@ -205,7 +204,7 @@ void ScriptHelper::CallUpdate(float beat, BsVmState* state, int& version)
             version = mSerialVersion;
             if (state->GetUserContext() != nullptr)
             {
-                NodeContainer* nodeContaier = static_cast<NodeContainer*>(state->GetUserContext());
+                Application::RenderCollection* nodeContaier = static_cast<Application::RenderCollection*>(state->GetUserContext());
                 nodeContaier->Clean();
             }
             state->Reset();

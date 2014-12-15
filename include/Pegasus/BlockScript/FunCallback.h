@@ -17,6 +17,8 @@ namespace Pegasus
 namespace BlockScript
 {
 
+class BlockLib;
+
 typedef int (*PrintStringCallbackType)(const char *);
 typedef int (*PrintIntCallbackType)(int);
 typedef int (*PrintFloatCallbackType)(float);
@@ -98,26 +100,45 @@ typedef int FunBindPoint;
 
 const FunBindPoint FUN_INVALID_BIND_POINT = -1;
 
-//! creates an intrinsic function that can be called from blockscript
-//! \param builder the block script builder (context holdnig the AST)
-//! \param the function name
-//! \param a string list with argument types definitions
-//! \param a string list of the argument names.
-//! \param a string with the return type
-//! \param callback the actual c++ callback
-//! \param isMethod - if true, it means that the function definition is a method (first artType must be an object).
-//!                   this means that the -> notation will be used                        
-//! \return true if successful. False on failure. 
-bool CreateIntrinsicFunction(
-    BlockScriptBuilder* builder, 
-    const char* funName, 
-    const char** argTypes, 
-    const char** argNames, 
-    int argCount, 
-    const char* returnType, 
-    FunCallback callback,
-    bool isMethod = false
-);
+#define MAX_FUN_ARG_LIST 20
+
+struct FunctionDeclarationDesc
+{
+    const char* functionName;
+    const char* returnType;
+    const char* argumentTypes[MAX_FUN_ARG_LIST];
+    const char* argumentNames[MAX_FUN_ARG_LIST];
+    FunCallback callback;
+};
+
+#define MAX_ENUM_MEMBER_LIST 50
+
+struct EnumDeclarationDesc
+{
+    const char*  typeName;
+    const struct enumData{
+        const char* enumName;
+        int enumVal;         
+    } enumList[MAX_ENUM_MEMBER_LIST];
+    int   count;
+};
+
+#define MAX_MEMBER_LIST 20
+
+struct StructDeclarationDesc
+{
+    const char* structTypeName;
+    const char* memberTypes[MAX_MEMBER_LIST];
+    const char* memberNames[MAX_MEMBER_LIST];
+};
+
+#define MAX_OBJECT_METHOD_DESCRIPTORS 50
+struct ClassTypeDesc
+{
+    const char* classTypeName;
+    FunctionDeclarationDesc methodDescriptors[MAX_OBJECT_METHOD_DESCRIPTORS];
+    int methodsCount;
+};
 
 //! Gets a function bind point to be used to call.
 //! builder - the ast builder, containing necessary meta-data

@@ -17,10 +17,11 @@ namespace Pegasus
 namespace BlockScript
 {
 
-class BlockScriptBuilder;
+class BlockLib;
 
 //! registers all the default intrinsics and runtime types (int, float etc).
-void RegisterIntrinsics(BlockScriptBuilder* builder);
+//! \param lib the core runtime library
+void RegisterIntrinsics(BlockLib* lib);
 
 
 }

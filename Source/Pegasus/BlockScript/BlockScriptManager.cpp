@@ -36,7 +36,7 @@ void BlockScriptManager::Initialize(IAllocator* allocator)
 {
     mAllocator = allocator;
     mInternalRuntimeLib = CreateBlockLib();
-    RegisterIntrinsics(mInternalRuntimeLib->GetBuilder());
+    RegisterIntrinsics(mInternalRuntimeLib);
 }
 
 BlockScript* BlockScriptManager::CreateBlockScript()

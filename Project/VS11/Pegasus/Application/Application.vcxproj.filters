@@ -35,6 +35,12 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Application\IWindowRegistry.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Application\ScriptRenderApi.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Application\RenderCollection.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Application\Application.cpp">
@@ -47,6 +53,12 @@
       <Filter>Source\Platform</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Application\AppWindowManager.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Application\ScriptRenderApi.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Application\RenderCollection.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>

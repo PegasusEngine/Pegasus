@@ -111,6 +111,7 @@ public:
     int GetErrorCount() const { return mErrorCount; }
 
     StackFrameInfo* StartNewFrame();
+
     void PopFrame();
 
     FunTable* GetFunTable() { return &mFunTable; }
@@ -136,6 +137,30 @@ public:
     FunDesc* RegisterFunctionDeclaration(Ast::StmtFunDec* funDec);
 
     SymbolTable* GetSymbolTable() { return &mSymbolTable; }
+
+    //! creates an intrinsic function that can be called from blockscript
+    //! \param the function name
+    //! \param a string list with argument types definitions
+    //! \param a string list of the argument names.
+    //! \param a string with the return type
+    //! \param callback the actual c++ callback
+    //! \param isMethod - if true, it means that the function definition is a method (first artType must be an object).
+    //!                   this means that the -> notation will be used                        
+    //! \note  function asserts if it fails
+    void CreateIntrinsicFunction(
+        const char* funName, 
+        const char* const* argTypes, 
+        const char* const* argNames, 
+        int argCount, 
+        const char* returnType, 
+        FunCallback callback,
+        bool isMethod = false
+    );
+
+    //! copies a foreign string into the blockscripts script pool (memory allocation)
+    //! \param the source string
+    //! \return the return parameter
+    char* CopyString(const char* source);
 
 private:
 

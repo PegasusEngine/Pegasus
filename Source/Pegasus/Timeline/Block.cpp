@@ -9,9 +9,9 @@
 //! \date	09th November 2013
 //! \brief	Timeline block, describing the instance of an effect on the timeline
 
+#include "Pegasus/Application/RenderCollection.h"
 #include "Pegasus/Timeline/Block.h"
 #include "Pegasus/Timeline/ScriptTracker.h"
-#include "Pegasus/Timeline/ScriptRenderApi.h"
 
 namespace Pegasus {
 namespace Timeline {
@@ -85,7 +85,7 @@ void Block::Shutdown()
 
         if (mVmState->GetUserContext() != nullptr)
         {
-            NodeContainer* userCtx = static_cast<NodeContainer*>( mVmState->GetUserContext() );
+            Application::RenderCollection* userCtx = static_cast<Application::RenderCollection*>( mVmState->GetUserContext() );
             PG_DELETE(mAllocator, userCtx);
         }
         PG_DELETE(mAllocator, mVmState);
@@ -130,7 +130,7 @@ bool Block::OpenScript(const char* scriptFileName)
         mVmState = PG_NEW(mAllocator, -1, "Vm State", Pegasus::Alloc::PG_MEM_PERM) BlockScript::BsVmState();
         mVmState->Initialize(mAllocator);
 
-        NodeContainer* userContext = PG_NEW(mAllocator, -1, "Vm State", Pegasus::Alloc::PG_MEM_PERM) NodeContainer(mAllocator, mAppContext);
+        Application::RenderCollection* userContext = PG_NEW(mAllocator, -1, "Vm State", Pegasus::Alloc::PG_MEM_PERM) Application::RenderCollection(mAllocator, mAppContext);
         mVmState->SetUserContext(userContext);
 
 #if PEGASUS_USE_GRAPH_EVENTS
@@ -141,7 +141,7 @@ bool Block::OpenScript(const char* scriptFileName)
     }
     else
     {
-        NodeContainer* userCtx = static_cast<NodeContainer*>( mVmState->GetUserContext() );
+        Application::RenderCollection* userCtx = static_cast<Application::RenderCollection*>( mVmState->GetUserContext() );
         if (userCtx != nullptr)
         {
             userCtx->Clean();
