@@ -11,6 +11,8 @@
 #ifndef PEGASUS_IPROGRAMPROXY_H
 #define PEGASUS_IPROGRAMPROXY_H
 
+#include "Pegasus/Core/Shared/ISourceCodeProxy.h"
+
 namespace Pegasus
 {
 
@@ -25,7 +27,7 @@ namespace Shader
 class IShaderProxy;
 
 //! shader program proxy interface
-class IProgramProxy
+class IProgramProxy : public Pegasus::Core::IBasicSourceProxy
 {
 public:
     //! Destructor

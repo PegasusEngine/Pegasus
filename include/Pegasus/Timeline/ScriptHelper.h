@@ -66,10 +66,17 @@ public:
     //! Calls the script once, to call anything executing in the global scope
     void CallGlobalScopeInit(BlockScript::BsVmState* state);
 
+    //! Calls the destruction of a script
+    void CallGlobalScopeDestroy(BlockScript::BsVmState* state);
+
     //! Calls update on the script, If script does not implement Update, then this is a NOP
     //! the version parameter will be checked, if mismatched, it will call init globals and will 
     //! set the version to a new one.
-    void CallUpdate(float beat, BlockScript::BsVmState* state, int& version);
+    void CallUpdate(float beat, BlockScript::BsVmState* state);
+
+    //! Call before update, this will reveal if the internal asset has changed. If so, the script gets recompiled, and
+    //! the serial version is incremented.
+    void CheckAndUpdateCompilationState();
 
     //! Calls render on the script. If scripts does not implement Render, then this is a NOP
     void CallRender(float beat, BlockScript::BsVmState* state);
@@ -113,6 +120,9 @@ public:
     //! \param success true if it was successful, false otherwise
     virtual void OnCompilationEnd(bool success);
 
+    //! \return true if the script has a compilation pending, false otherwise
+    bool IsDirty() const { return mIsDirty; }
+
 private:
 
     //! internal allocator
@@ -129,6 +139,9 @@ private:
 
     //! render callback bind point for script
     BlockScript::FunBindPoint mRenderBindPoint; 
+    
+    //! render callback for script destruction
+    BlockScript::FunBindPoint mDestroyBindPoint; 
 
     //! File data
     Io::FileBuffer mFileBuffer;

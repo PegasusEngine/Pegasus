@@ -65,6 +65,8 @@ public:
         M_STRUCT, //user defined struct
         M_ENUM,   //user defined enumeration 
         M_REFERECE, // custom c++ object reference
+        M_STAR      // only used in c++ callbacks, not in blockscript, grabs the pointer of whichever input is passed.
+                    // the actual type is actually recorded in the funcall list passed in the FunCallback
     };
 
     //! only Types that use arithmetic and logical operations. 

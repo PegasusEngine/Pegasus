@@ -206,26 +206,7 @@ void Canonizer::Visit(Exp* n)
 
 void Canonizer::Visit(ExpList* n)
 {
-    ExpList* node = n;
-    ExpList* newN = CANON_NEW ExpList();
-    ExpList* newList = newN;
-    
-    while (n != nullptr)
-    {
-        if (n->GetExp() != nullptr)
-        {
-            n->GetExp()->Access(this);
-            newList->SetExp(mRebuiltExpression);
-        }
-
-        n = n->GetTail();
-        if (n != nullptr)
-        {
-            newList->SetTail(CANON_NEW ExpList());
-            newList = newList->GetTail();
-        }
-    }
-    mRebuiltExpList = newN;
+    PG_FAILSTR("[Canonizer::Visit(ExpList*)] This node should not be visited!");
 }
 
 void Canonizer::Visit(Stmt* n)
@@ -362,7 +343,7 @@ void Canonizer::HandleSetOperator(Binop* n)
     {   
         FunCall* fc = static_cast<FunCall*>(n->GetRhs());
         //visit all children expression
-        fc->GetArgs()->Access(this);
+        ProcessFunctionExpressionList(fc);
     
         if (fc->GetTypeDesc()->GetByteSize() <= CANON_REGISTER_BYTESIZE)
         {
@@ -807,10 +788,50 @@ void Canonizer::EndSaveRet(Idd* sav)
     }
 }
 
+void Canonizer::ProcessFunctionExpressionList(FunCall* funCall)
+{
+    ExpList* n = funCall->GetArgs();
+    ExpList* node = n;
+    ExpList* newN = CANON_NEW ExpList();
+    ExpList* newList = newN;
+
+    const StmtFunDec* funDec = funCall->GetDesc()->GetDec();
+    ArgList* argList = funDec->GetArgList();
+    
+    while (n != nullptr && n->GetExp() != nullptr)
+    {
+        if (n->GetExp() != nullptr)
+        {
+            n->GetExp()->Access(this);
+
+            const TypeDesc* theType = argList->GetArgDec()->GetType();
+            if (theType->GetModifier() == TypeDesc::M_STAR)
+            {
+                //move the pointer of whatever rebuilt expression was generated to our actual call                
+                Idd* tmp = AllocateTemporal(theType);
+                PushCanon(CANON_NEW LoadAddr(Canon::R_C, mRebuiltExpression));
+                PushCanon(CANON_NEW Save(tmp, Canon::R_C));
+                mRebuiltExpression = tmp;
+            }
+
+            newList->SetExp(mRebuiltExpression);
+        }
+
+        n = n->GetTail();
+        argList = argList->GetTail();
+        if (n != nullptr)
+        {
+            newList->SetTail(CANON_NEW ExpList());
+            newList = newList->GetTail();
+        }
+    }
+    mRebuiltExpList = newN;
+}
+
 void Canonizer::Visit(FunCall* n)
 {
 
-    n->GetArgs()->Access(this);
+    ProcessFunctionExpressionList(n);
 
     //find stack frame for editing
     // allocate (or attempt) a tempgral value

@@ -18,7 +18,6 @@
 #include "Pegasus/BlockScript/BlockScript.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Core/Log.h"
-#include "Pegasus/Application/RenderCollection.h"
 
 using namespace Pegasus;
 using namespace Pegasus::Timeline;
@@ -54,6 +53,7 @@ ScriptHelper::ScriptHelper(IAllocator* allocator, Wnd::IWindowContext* appContex
     mIoStatus(Io::ERR_FILE_NOT_FOUND), //no script opened
     mUpdateBindPoint(BlockScript::FUN_INVALID_BIND_POINT),
     mRenderBindPoint(BlockScript::FUN_INVALID_BIND_POINT),
+    mDestroyBindPoint(BlockScript::FUN_INVALID_BIND_POINT),
     mScriptActive(false),
     mAppContext(appContext)
 #if PEGASUS_ENABLE_PROXIES
@@ -154,6 +154,19 @@ void ScriptHelper::CallGlobalScopeInit(BsVmState* state)
     }
 }
 
+void ScriptHelper::CallGlobalScopeDestroy(BsVmState* state)
+{
+    if (mDestroyBindPoint != BlockScript::FUN_INVALID_BIND_POINT)
+    {
+       int output = -1; //the dummy output
+       bool res = mScript->ExecuteFunction(state, mDestroyBindPoint, nullptr, 0, &output, sizeof(output));
+       if (!res)
+       {
+           PG_LOG('ERR_', "Error executing Timeline_Destroy function of script %s.", GetScriptName());
+       }
+    }
+}
+
 bool ScriptHelper::CompileScript()
 {
     if (mScriptActive == false)
@@ -176,6 +189,12 @@ bool ScriptHelper::CompileScript()
                     types,
                     1
                 );
+    
+                mDestroyBindPoint = mScript->GetFunctionBindPoint(
+                    "Timeline_Destroy",
+                    nullptr,
+                    0
+                );
             
                 ++mSerialVersion;
             }
@@ -189,28 +208,20 @@ bool ScriptHelper::CompileScript()
     return mScriptActive;
 }
 
-void ScriptHelper::CallUpdate(float beat, BsVmState* state, int& version)
+void ScriptHelper::CheckAndUpdateCompilationState()
 {
     if (mIsDirty)
     {
         Shutdown();
         CompileScript();
     }
+}
+
+void ScriptHelper::CallUpdate(float beat, BsVmState* state)
+{
 
     if (mScriptActive)
     {
-        if (mSerialVersion != version)
-        {
-            version = mSerialVersion;
-            if (state->GetUserContext() != nullptr)
-            {
-                Application::RenderCollection* nodeContaier = static_cast<Application::RenderCollection*>(state->GetUserContext());
-                nodeContaier->Clean();
-            }
-            state->Reset();
-            mScript->Run(state);
-        }
-
         if (mUpdateBindPoint != BlockScript::FUN_INVALID_BIND_POINT)
         {
             int output = -1; //the dummy output
@@ -261,6 +272,7 @@ void ScriptHelper::CallRender(float beat, BsVmState* state)
 ScriptHelper::~ScriptHelper()
 {
     mAppContext->GetBlockScriptManager()->DestroyBlockScript(mScript);
+    GRAPH_EVENT_DESTROY_USER_DATA(&mProxy, "BlockScript", GetEventListener());
 }
 
 void ScriptHelper::OnCompilationBegin()

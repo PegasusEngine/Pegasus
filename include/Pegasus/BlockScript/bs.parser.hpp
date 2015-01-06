@@ -68,27 +68,28 @@ extern int BS_debug;
      K_STRUCT = 277,
      K_ENUM = 278,
      K_STATIC_ARRAY = 279,
-     O_PLUS = 280,
-     O_MINUS = 281,
-     O_MUL = 282,
-     O_DIV = 283,
-     O_MOD = 284,
-     O_EQ = 285,
-     O_GT = 286,
-     O_LT = 287,
-     O_GTE = 288,
-     O_LTE = 289,
-     O_LAND = 290,
-     O_LOR = 291,
-     O_SET = 292,
-     O_DOT = 293,
-     O_ACCESS = 294,
-     O_METHOD_CALL = 295,
-     O_IMPLICIT_CAST = 296,
-     O_EXPLICIT_CAST = 297,
-     ACCESS_PREC = 298,
-     CAST = 299,
-     NEG = 300
+     K_SIZE_OF = 280,
+     O_PLUS = 281,
+     O_MINUS = 282,
+     O_MUL = 283,
+     O_DIV = 284,
+     O_MOD = 285,
+     O_EQ = 286,
+     O_GT = 287,
+     O_LT = 288,
+     O_GTE = 289,
+     O_LTE = 290,
+     O_LAND = 291,
+     O_LOR = 292,
+     O_SET = 293,
+     O_DOT = 294,
+     O_ACCESS = 295,
+     O_METHOD_CALL = 296,
+     O_IMPLICIT_CAST = 297,
+     O_EXPLICIT_CAST = 298,
+     ACCESS_PREC = 299,
+     CAST = 300,
+     NEG = 301
    };
 #endif
 
@@ -112,7 +113,7 @@ typedef union YYSTYPE
 
 
 /* Line 2058 of yacc.c  */
-#line 116 "bs.parser.hpp"
+#line 117 "bs.parser.hpp"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

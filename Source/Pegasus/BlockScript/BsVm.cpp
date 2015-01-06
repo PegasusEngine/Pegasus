@@ -131,7 +131,7 @@ void SaveExpression(void* location, Ast::Exp* exp, BsVmState& state)
         }
         Pegasus::Utils::Memcpy(location, target, exp->GetTypeDesc()->GetByteSize());
     }
-    else if (expType->GetModifier() == TypeDesc::M_REFERECE || expType->GetModifier() == TypeDesc::M_ENUM)
+    else if (expType->GetModifier() == TypeDesc::M_REFERECE || expType->GetModifier() == TypeDesc::M_ENUM || expType->GetModifier() == TypeDesc::M_STAR)
     {
         int val = gIntExpEngine.Eval(exp, state);
         *(reinterpret_cast<int*>(location)) = val;

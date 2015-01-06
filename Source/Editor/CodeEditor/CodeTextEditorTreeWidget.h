@@ -12,13 +12,12 @@
 #ifndef EDITOR_CODETEXTEDITORTREEWIDGET_H
 #define EDITOR_CODETEXTEDITORTREEWIDGET_H
 
-#include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 #include <QWidget>
 #include <QSplitter>
 #include <QSignalMapper>
 
 
-
+class CodeUserData;
 class CodeTextEditorWidget;
 class QLayout;
 
@@ -76,16 +75,16 @@ public:
     //! Displays a source code in the current text view
     //! \param source code the source code node
     //! \param finalEditor an auxiliary editor, if all the subeditors are used, it will fall into this leaf editor
-    void DisplayCode(Pegasus::Core::ISourceCodeProxy * code, CodeTextEditorWidget * finalEditor);
+    void DisplayCode(CodeUserData * code, CodeTextEditorWidget * finalEditor);
 
     //! Takes the source code out of the tree view
     //! \param source code target source code to show
-    void HideCode(Pegasus::Core::ISourceCodeProxy * code);
+    void HideCode(CodeUserData * code);
 
     //! searches for the leaf that contains the current source code 
     //! \param proxy the source code to find
     //! \return the editor containign the source code, null if there isn't
-    CodeTextEditorWidget * FindCodeInEditors(Pegasus::Core::ISourceCodeProxy * proxy);
+    CodeTextEditorWidget * FindCodeInEditors(CodeUserData * code);
 
 signals:
     //! triggers when the text has changed on the CodeTextEditor
@@ -130,7 +129,7 @@ private:
 
     //! \param proxy the source code to display
     //! \return true if success (a focused view grabbed it) false otherwise
-    bool RecurseDisplayCode(Pegasus::Core::ISourceCodeProxy * proxy);
+    bool RecurseDisplayCode(CodeUserData * code);
 
     //! signal set for events in the leafs
     SignalCombination mSignalCombo;

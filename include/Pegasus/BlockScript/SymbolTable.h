@@ -69,6 +69,10 @@ public:
     //! \return gets the type description from the type name specified (non arrayd)
     const TypeDesc* GetTypeByName(const char* typeName) const;
 
+    //! \returns a writable type description for patching purposes
+    //! \note use only this function for hacks
+    TypeDesc* GetTypeForPatching(const char* typeName);
+
     //! \param name the name of the enumeration value
     //! \param outEnumNode a pointer to fill in with the enumeration node 
     //! \param outEnumType a pointer to fill in with the enumeration type

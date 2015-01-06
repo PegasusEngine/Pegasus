@@ -135,6 +135,9 @@ private:
     //! \param  the address where the register is saved
     void EndSaveRet(Ast::Idd* idd);
 
+    //! Processes only the exp list of this funCall
+    void ProcessFunctionExpressionList(Ast::FunCall* funCall);
+
     //! Processes a function call
     void ProcessFunCall(Ast::FunCall* funCall);
 

@@ -33,6 +33,26 @@ namespace Graph {
             l->OnEvent(s->GetGraphEventUserData(), e);
         }
     }
+
+    //! \brief internal init user data function, for internal use only
+    template<class ProxyType, class L>
+    void Internal_InitUserData(ProxyType* s, const char* name, L* l) 
+    {
+        if (l != nullptr)
+        {
+            l->OnInitUserData(s, name);
+        }
+    }
+
+    //! \brief internal destroy user data function, for internal use only
+    template<class ProxyType, class L>
+    void Internal_DestroyUserData(ProxyType* s, const char* name, L* l) 
+    {
+        if (l != nullptr)
+        {
+            l->OnDestroyUserData(s, name);
+        }
+    }
 }
 }
 
@@ -41,6 +61,10 @@ namespace Graph {
 
 //! \brief Pass the name of the event struct to register
 #define GRAPH_EVENT_REGISTER(__event) virtual void OnEvent(Pegasus::Graph::IGraphUserData * d, __event& e) = 0;
+
+//! \brief Pass the proxies that will get user data injected
+#define GRAPH_EVENT_REGISTER_PROXY(__proxy) virtual void OnInitUserData(__proxy* proxy, const char* name) = 0; \
+                                            virtual void OnDestroyUserData(__proxy* proxy, const char* name) = 0;
 
 //! \brief call at the end of the event registry once you are done
 #define GRAPH_EVENT_END_REGISTRY };
@@ -52,6 +76,12 @@ namespace Graph {
     _listener_type * GetEventListener() { return __mEventListener; } \
     void SetEventListener(_listener_type * l) { __mEventListener = l; } \
     private: _listener_type * __mEventListener; Pegasus::Graph::IGraphUserData * __mUserData; public:
+
+//! \brief use this init to inject user data into the proxy
+#define GRAPH_EVENT_INIT_USER_DATA(sender, name, listener) Pegasus::Graph::Internal_InitUserData(sender, name, listener)
+
+//! \brief use this destory to destroy user data into the proxy
+#define GRAPH_EVENT_DESTROY_USER_DATA(sender, name, listener) Pegasus::Graph::Internal_DestroyUserData(sender, name, listener)
 
 //! \brief init macro, call at the constructors of the Node classes sending events
 #define GRAPH_EVENT_INIT_DISPATCHER SetEventListener(nullptr);SetGraphEventUserData(nullptr);
@@ -66,11 +96,14 @@ namespace Graph {
 // for events disabled, empty declarations
 
 #define GRAPH_EVENT_BEGIN_REGISTRY(__listener_name) 
+#define GRAPH_EVENT_REGISTER_PROXY(__proxy)
 #define GRAPH_EVENT_REGISTER(__event) 
 #define GRAPH_EVENT_END_REGISTRY
 #define GRAPH_EVENT_DECLARE_DISPATCHER(_listener_type)
 #define GRAPH_EVENT_INIT_DISPATCHER 
 #define GRAPH_EVENT_DISPATCH(sender, event, ...)
+#define GRAPH_EVENT_INIT_USER_DATA(sender, name, listener) 
+#define GRAPH_EVENT_DESTROY_USER_DATA(sender, name, listener)
 
 #endif //PEGASUS_USE_GRAPH_EVENTS
 

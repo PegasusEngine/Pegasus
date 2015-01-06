@@ -68,13 +68,9 @@ Pegasus::Shader::ShaderStage::~ShaderStage()
     }
 #endif
 
-    GRAPH_EVENT_DISPATCH(
-        this,
-        Pegasus::Core::CompilerEvents::ObjectOperation, 
-        // Event specific arguments:
-        Pegasus::Core::CompilerEvents::ObjectOperation::DESTROYED_OPERATION,
-        "ShaderStage"
-    );
+#if PEGASUS_ENABLE_PROXIES
+    GRAPH_EVENT_DESTROY_USER_DATA(&mProxy, "ShaderStage", GetEventListener());
+#endif
 
 }
 

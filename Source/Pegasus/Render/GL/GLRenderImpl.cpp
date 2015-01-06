@@ -459,7 +459,7 @@ static bool GetUniformLocationInternal(Pegasus::Render::OGLProgramGPUData * prog
 static bool UpdateUniform(Pegasus::Render::OGLProgramGPUData * dispatchedShader, Pegasus::Render::Uniform& u)
 {
      
-    PG_ASSERTSTR(u.mInternalOwner == -1 || u.mInternalOwner == dispatchedShader->mGUID, "The uniform does not belong to the shader being dispatched!");
+ 
     if (dispatchedShader != nullptr && (u.mInternalOwner == dispatchedShader->mGUID || u.mInternalOwner == -1))
     {
         if (u.mInternalVersion != dispatchedShader->mVersion)
@@ -471,6 +471,10 @@ static bool UpdateUniform(Pegasus::Render::OGLProgramGPUData * dispatchedShader,
         {
             return true;
         }
+    }
+    else
+    {
+        PG_LOG('ERR_', "Invalid shader dispatched.");
     }
     return false;
 }
@@ -688,6 +692,11 @@ bool Pegasus::Render::SetUniformTextureRenderTarget(Pegasus::Render::Uniform& u,
 }
 
 // ---------------------------------------------------------------------------
+void Pegasus::Render::CleanInternalState()
+{
+    gOGLState.mDispatchedShader = nullptr;
+    gOGLState.mDispatchedMeshGPUData = nullptr;
+}
 #else
 PEGASUS_AVOID_EMPTY_FILE_WARNING
 #endif //PEGASUS_GAPI_GL

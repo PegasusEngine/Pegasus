@@ -25,7 +25,19 @@ namespace Pegasus
 namespace Core
 {
 
-class ISourceCodeProxy
+class IBasicSourceProxy
+{
+public:
+    //! Sets the user data for this particular source code file
+    //! \param userData. the user data to retrieve
+    virtual void SetUserData(Pegasus::Graph::IGraphUserData * userData) = 0;
+
+    //! Gets the user data for this particular source code file
+    //! \return user data reference
+    virtual Pegasus::Graph::IGraphUserData * GetUserData() const = 0;
+};
+
+class ISourceCodeProxy : public IBasicSourceProxy
 {
 public:
     //! definition of how the script is compiled 
@@ -57,14 +69,6 @@ public:
 
     //! Saves the current source code file source to a file
     virtual void SaveSourceToFile() = 0;
-
-    //! Sets the user data for this particular source code file
-    //! \param userData. the user data to retrieve
-    virtual void SetUserData(Pegasus::Graph::IGraphUserData * userData) = 0;
-
-    //! Gets the user data for this particular source code file
-    //! \return user data reference
-    virtual Pegasus::Graph::IGraphUserData * GetUserData() const = 0;
 
     //! Returns the compilation policy that this script has.
     //! \return the policy for the editor to use

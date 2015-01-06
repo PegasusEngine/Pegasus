@@ -95,6 +95,8 @@ ApplicationInterface::ApplicationInterface(Application * application, QObject * 
             connect(codeEditorWidget , SIGNAL(RequestCodeCompilation(int)),
                     this, SLOT(ReceiveCompilationRequest(int)),
                     Qt::QueuedConnection);
+            connect(this, SIGNAL(CompilationEnd()),
+                assetLibraryWidget, SLOT(OnCompilationRedrawEnd()), Qt::QueuedConnection);
         }
         else
         {
@@ -293,6 +295,7 @@ void ApplicationInterface::ReceiveCompilationRequest(int id)
             //refresh viewport
             mApplication->GetShaderManagerProxy()->UpdateAllPrograms();
             RedrawAllViewports();
+            emit CompilationEnd();
         }
         else
         {

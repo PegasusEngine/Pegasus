@@ -63,6 +63,21 @@ const TypeDesc* SymbolTable::GetTypeByName(const char* typeName) const
     return mTypeTable.GetTypeByName(typeName);
 }
 
+TypeDesc* SymbolTable::GetTypeForPatching(const char* typeName)
+{
+    //first find it recursively on the children symbol tables
+    int childCount = mChildren.Size();
+    for (int i = 0; i < childCount; ++i)
+    {
+        TypeDesc* type = mChildren[i]->GetTypeForPatching(typeName);
+        if (type != nullptr)
+        {
+            return type;
+        }
+    }
+    return mTypeTable.GetTypeForPatching(typeName);
+}
+
 TypeDesc* SymbolTable::CreateType(
     TypeDesc::Modifier modifier,
     const char * name,

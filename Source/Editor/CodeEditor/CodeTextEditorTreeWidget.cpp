@@ -9,6 +9,7 @@
 //! \date	July 6th, 2014
 //! \brief	Code Editor Tree of views. Allows recursive subdivision of views
 
+#include "CodeEditor/SourceCodeManagerEventListener.h"
 #include "CodeEditor/CodeTextEditorTreeWidget.h"
 #include "CodeEditor/CodeTextEditorWidget.h"
 #include <QSplitter>
@@ -187,7 +188,7 @@ bool CodeTextEditorTreeWidget::RecurseCloseSplit()
     return false;
 }
 
-bool CodeTextEditorTreeWidget::RecurseDisplayCode(Pegasus::Core::ISourceCodeProxy * proxy)
+bool CodeTextEditorTreeWidget::RecurseDisplayCode(CodeUserData * code)
 {
     for (int i = 0; i < mChildrenCount; ++i)
     {
@@ -196,13 +197,13 @@ bool CodeTextEditorTreeWidget::RecurseDisplayCode(Pegasus::Core::ISourceCodeProx
         {
             if (child.mLeafChild->IsFocus())
             {
-                child.mLeafChild->Initialize(proxy);
+                child.mLeafChild->Initialize(code);
                 return true;
             }
         }
         else
         {
-            if (child.mTreeChild->RecurseDisplayCode(proxy))
+            if (child.mTreeChild->RecurseDisplayCode(code))
             {
                 return true;
             }
@@ -211,7 +212,7 @@ bool CodeTextEditorTreeWidget::RecurseDisplayCode(Pegasus::Core::ISourceCodeProx
     return false;
 }
 
-CodeTextEditorWidget * CodeTextEditorTreeWidget::FindCodeInEditors(Pegasus::Core::ISourceCodeProxy * proxy)
+CodeTextEditorWidget * CodeTextEditorTreeWidget::FindCodeInEditors(CodeUserData * code)
 {
     for (int i = 0; i < mChildrenCount; ++i)
     {
@@ -219,8 +220,8 @@ CodeTextEditorWidget * CodeTextEditorTreeWidget::FindCodeInEditors(Pegasus::Core
         if (child.mIsLeaf)
         {
             if (
-                (proxy == nullptr && child.mLeafChild->GetCode() == nullptr) || //next available editor slot is empty?
-                (proxy != nullptr && child.mLeafChild->GetCode() != nullptr && child.mLeafChild->GetCode() == proxy)
+                (code == nullptr && child.mLeafChild->GetCode() == nullptr) || //next available editor slot is empty?
+                (code != nullptr && child.mLeafChild->GetCode() != nullptr && child.mLeafChild->GetCode() == code)
                )
             {
                 return child.mLeafChild;
@@ -228,7 +229,7 @@ CodeTextEditorWidget * CodeTextEditorTreeWidget::FindCodeInEditors(Pegasus::Core
         }
         else
         {
-            CodeTextEditorWidget * editor = child.mTreeChild->FindCodeInEditors(proxy);
+            CodeTextEditorWidget * editor = child.mTreeChild->FindCodeInEditors(code);
             if (editor != nullptr)
             {
                 return editor;
@@ -280,16 +281,16 @@ bool CodeTextEditorTreeWidget::PushLeafChild(int i, CodeTextEditorWidget * alloc
     return false;
 }
 
-void CodeTextEditorTreeWidget::DisplayCode(Pegasus::Core::ISourceCodeProxy * proxy, CodeTextEditorWidget * finalEditor)
+void CodeTextEditorTreeWidget::DisplayCode(CodeUserData * code, CodeTextEditorWidget * finalEditor)
 {
-    CodeTextEditorWidget * editor = FindCodeInEditors(proxy);
+    CodeTextEditorWidget * editor = FindCodeInEditors(code);
     if (editor != nullptr)
     {
         editor->setFocus();
     }
     else
     {
-        bool foundCode = RecurseDisplayCode(proxy);
+        bool foundCode = RecurseDisplayCode(code);
     
         if (!foundCode)
         {
@@ -297,21 +298,21 @@ void CodeTextEditorTreeWidget::DisplayCode(Pegasus::Core::ISourceCodeProxy * pro
             editor = FindCodeInEditors(nullptr);
             if (editor != nullptr)
             {
-                editor->Initialize(proxy);
+                editor->Initialize(code);
                 editor->setFocus();
             }
             else if (finalEditor != nullptr)
             {
-                finalEditor->Initialize(proxy);
+                finalEditor->Initialize(code);
                 finalEditor->setFocus();
             }
         }
     }
 }
 
-void CodeTextEditorTreeWidget::HideCode(Pegasus::Core::ISourceCodeProxy * proxy)
+void CodeTextEditorTreeWidget::HideCode(CodeUserData * code)
 {
-    CodeTextEditorWidget * editor = FindCodeInEditors(proxy);
+    CodeTextEditorWidget * editor = FindCodeInEditors(code);
     if (editor != nullptr)
     {
         editor->Initialize(nullptr);

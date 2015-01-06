@@ -13,12 +13,7 @@
 #define EDITOR_CODETEXTEDITORWIDGET_H
 #include <QTextEdit>
 
-namespace Pegasus {
-    namespace Core {
-        class ISourceCodeProxy;
-    }
-}
- 
+class CodeUserData;
 class QEvent;
 class QSyntaxHighlighter;
 
@@ -34,14 +29,14 @@ public:
     virtual ~CodeTextEditorWidget();
 
     //! initialization function. Call whenever you want a source code to be opened
-    void Initialize(Pegasus::Core::ISourceCodeProxy * code); 
+    void Initialize(CodeUserData * code); 
 
     //! function that clears the state of the widget
     void Uninitialize(); 
 
     //! gets the source code being used
     //! \return the source code assigned
-    Pegasus::Core::ISourceCodeProxy * GetCode() { return mCode; }
+    CodeUserData * GetCode() { return mCode; }
 
     //! updates the syntax of a single line in the document.
     //! \param the line to update. If the line is out of range nothing happens
@@ -75,7 +70,7 @@ private:
     bool mIsFocus;
 
     //! source code reference
-    Pegasus::Core::ISourceCodeProxy * mCode;
+    CodeUserData* mCode;
 
 
     QSyntaxHighlighter * mSyntaxHighlighter;

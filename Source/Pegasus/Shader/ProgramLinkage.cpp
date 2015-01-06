@@ -42,13 +42,9 @@ Pegasus::Shader::ProgramLinkage::~ProgramLinkage()
     }
 #endif
 
-    GRAPH_EVENT_DISPATCH(
-        this,
-        Pegasus::Core::CompilerEvents::ObjectOperation, 
-        // Event specific arguments:
-        Pegasus::Core::CompilerEvents::ObjectOperation::DESTROYED_OPERATION,
-        "Program"
-    );
+#if PEGASUS_ENABLE_PROXIES
+    GRAPH_EVENT_DESTROY_USER_DATA(&mProxy, "ProgramLinkage", GetEventListener());
+#endif
 }
 
 void Pegasus::Shader::ProgramLinkage::ReleaseDataAndPropagate()

@@ -23,9 +23,6 @@
     <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TestApp1Window.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TimelineBlocks\PsyBeadsBlock.cpp">
-      <Filter>Source\TimelineBlocks</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TimelineBlocks\FractalCubeBlock.cpp">
       <Filter>Source\TimelineBlocks</Filter>
     </ClCompile>
@@ -45,9 +42,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TestApp1Window.h">
       <Filter>Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TimelineBlocks\PsyBeadsBlock.h">
-      <Filter>Include\TimelineBlocks</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TimelineBlocks\FractalCubeBlock.h">
       <Filter>Include\TimelineBlocks</Filter>

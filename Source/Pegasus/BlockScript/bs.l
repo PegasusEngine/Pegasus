@@ -123,6 +123,7 @@ struct          { return K_STRUCT; }
 enum            { return K_ENUM;   }
 while           { return K_WHILE;  }
 static_array    { return K_STATIC_ARRAY; }
+sizeof          { return K_SIZE_OF;      }
 [0-9]+\.[0-9]+  { BS_FLOAT(I_FLOAT);     }
 [0-9]+          { BS_INT(I_INT);         }
 ;               { BS_TOKEN(K_SEMICOLON); }

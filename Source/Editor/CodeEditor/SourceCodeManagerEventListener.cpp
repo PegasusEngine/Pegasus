@@ -10,6 +10,9 @@
 //! \brief  Pegasus Source Code Manager Event Listener	
 #include "CodeEditor/SourceCodeManagerEventListener.h"
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
+#include "AssetLibrary/AssetLibraryWidget.h"
+#include <QTextDocument>
+#include <string.h>
 
 CodeUserData::CodeUserData(Pegasus::Core::ISourceCodeProxy * code)
 : mIsValid(true), mIntermediateDocument(nullptr)
@@ -79,22 +82,41 @@ void SourceCodeManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * us
     }
 }
 
-void SourceCodeManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::ObjectOperation& e)
+void SourceCodeManagerEventListener::OnInitUserData(Pegasus::Core::IBasicSourceProxy* proxy, const char* name)
 {
-    if (e.GetOp() == Pegasus::Core::CompilerEvents::ObjectOperation::CREATED_OPERATION)
+    QString strName = name;
+    if (strName == "ProgramLinkage")
     {
-        QString objName = e.GetName();
-        emit(OnSignalNewObject(objName));
-    }
-    else if (e.GetOp() == Pegasus::Core::CompilerEvents::ObjectOperation::DESTROYED_OPERATION)
-    {
-        QString objName = e.GetName();
-        emit(OnSignalDestroyObject(userData, objName));
+        Pegasus::Shader::IProgramProxy* programProxy = static_cast<Pegasus::Shader::IProgramProxy*>(proxy);
+        CodeUserData* newUserData = new CodeUserData(programProxy);
+        programProxy->SetUserData(newUserData);
     }
     else
     {
-        ED_FAILSTR("unhandled object operation.");
+        CodeUserData* newUserData = new CodeUserData(static_cast<Pegasus::Core::ISourceCodeProxy*>(proxy));
+        proxy->SetUserData(newUserData);
+        emit(OnBlessUserData(newUserData));
     }
+}
+
+void SourceCodeManagerEventListener::OnDestroyUserData(Pegasus::Core::IBasicSourceProxy* proxy, const char* name)
+{
+    //not yet!
+    ED_ASSERT(proxy->GetUserData() != nullptr);
+    CodeUserData* userData = static_cast<CodeUserData*>(proxy->GetUserData());
+    userData->ClearData();
+    QString strName = name;
+    if (strName != "ProgramLinkage")
+    {
+        emit(OnUnblessUserData(userData));
+    }
+}
+
+void SourceCodeManagerEventListener::SafeDestroyUserData(void* userData)
+{
+    ED_ASSERT(userData != nullptr);
+    CodeUserData* codeUserData = static_cast<CodeUserData*>(userData);
+    delete codeUserData;
 }
 
 void SourceCodeManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::SourceLoadedEvent& e)
@@ -108,13 +130,13 @@ void SourceCodeManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * us
         CodeUserData * codeUserData = static_cast<CodeUserData*>(userData);
         if (e.GetType() == Pegasus::Core::CompilerEvents::CompilationNotification::COMPILATION_BEGIN)
         {
-            emit( OnCompilationBegin(codeUserData->GetSourceCode()) ) ;
+            emit( OnCompilationBegin(codeUserData) ) ;
         }
         else
         {        
             emit(
                 OnCompilationError(
-                    codeUserData->GetSourceCode(),
+                    codeUserData,
                     e.GetRow(),
                     QString(e.GetDescription())
                 )

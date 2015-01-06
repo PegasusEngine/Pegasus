@@ -66,8 +66,13 @@ public:
 
     //! Gets a type description structure
     //! \param name unique name
-    //! \return the description handle 
+    //! \return the description struct 
 	const TypeDesc* GetTypeByName(const char* name) const;
+
+    //! Gets a type description structure for writable purposes
+    //! \param name unique name
+    //! \return the description struct for modification
+    TypeDesc* GetTypeForPatching(const char* name);
 
     //! \param name the name of the enumeration value
     //! \param outEnumNode a pointer to fill in with the enumeration node 

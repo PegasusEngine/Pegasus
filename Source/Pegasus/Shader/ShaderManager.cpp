@@ -88,14 +88,10 @@ Pegasus::Shader::ProgramLinkageReturn Pegasus::Shader::ShaderManager::CreateProg
     program->SetShaderTracker(&mShaderTracker);
     mShaderTracker.InsertProgram(&(*program));
 #endif
-    
-    GRAPH_EVENT_DISPATCH(
-        (&(*program)),
-        Pegasus::Core::CompilerEvents::ObjectOperation, 
-        // Event specific arguments:
-        Pegasus::Core::CompilerEvents::ObjectOperation::CREATED_OPERATION,
-        "Program"
-    );
+
+#if PEGASUS_ENABLE_PROXIES
+    GRAPH_EVENT_INIT_USER_DATA(program->GetProxy(), "ProgramLinkage", mEventListener);
+#endif
 
     return program; 
 }
@@ -140,13 +136,9 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::LoadShaderSta
         
     }
     
-    GRAPH_EVENT_DISPATCH(
-        (&(*stage)),
-        Pegasus::Core::CompilerEvents::ObjectOperation, 
-        // Event specific arguments:
-        Pegasus::Core::CompilerEvents::ObjectOperation::CREATED_OPERATION,
-        "ShaderStage"
-    );
+#if PEGASUS_ENABLE_PROXIES
+    GRAPH_EVENT_INIT_USER_DATA(stage->GetProxy(), "ShaderStage", mEventListener);
+#endif
 
     return stage;
 }
@@ -180,13 +172,8 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::CreateShaderS
         PG_FAILSTR("Incorrect config type set");
     }
 
-    GRAPH_EVENT_DISPATCH(
-        (&(*stage)),
-        Pegasus::Core::CompilerEvents::ObjectOperation, 
-        // Event specific arguments:
-        Pegasus::Core::CompilerEvents::ObjectOperation::CREATED_OPERATION,
-        "ShaderStage" 
-    );
-
+#if PEGASUS_ENABLE_PROXIES
+    GRAPH_EVENT_INIT_USER_DATA(stage->GetProxy(), "ShaderStage", mEventListener);
+#endif
     return stage;
 }

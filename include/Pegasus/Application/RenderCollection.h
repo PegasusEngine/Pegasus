@@ -38,6 +38,13 @@ namespace Mesh {
     //class MeshOperator; TODO: implement any mesh operator! yet to be done :)
 }
 
+namespace Render {
+    struct Buffer;
+    struct RasterizerState;
+    struct BlendingState;
+    struct RenderTarget;
+}
+
 namespace Application {    
     class RenderCollectionImpl;
 }
@@ -135,7 +142,7 @@ namespace Application
         Mesh::Mesh* GetMesh(CollectionHandle id);
 
         //! \return the count to the number of meshes
-        int GetMeshCount();
+        int GetMeshCount() const;
 
         //! Adds a reference to a mesh generator
         //!\param the  mesh pointer
@@ -149,11 +156,57 @@ namespace Application
         //! the total count of mesh generators    
         int GetMeshGeneratorCount();
 
-        //! Cleans / Deletes all references to the shaders/nodes/meshes being used
-        void Clean();
+        //! adds a buffer reference. Buffers are structs in render so the struct passed gets copied internally
+        //! \param reference to the buffer created
+        CollectionHandle AddBuffer(const Render::Buffer& buffer);
+
+        //! \returns the buffer pointer stored internally, null if invalid
+        Render::Buffer* GetBuffer(CollectionHandle id);
+
+        //! the total count of buffers
+        int GetBufferCount();
+
+        //! adds a reference
+        // \param the target reference
+        CollectionHandle AddRenderTarget(const Render::RenderTarget& target);
+
+        //! gets a reference from an id
+        //! \param id
+        //! \return the reference
+        Render::RenderTarget* GetRenderTarget(CollectionHandle id);
+
+        //! \return the count of this list
+        int GetRenderTargetCount() const;
+
+        //! adds a reference
+        // \param the target reference
+        CollectionHandle AddRasterizerState(const Render::RasterizerState& state);
+
+        //! gets a reference from an id
+        //! \param id
+        //! \return the reference
+        Render::RasterizerState* GetRasterizerState(CollectionHandle id);
+
+        //! \return the count of this list
+        int GetRasterizerStateCount() const;
+
+        //! adds a reference
+        // \param the target reference
+        CollectionHandle AddBlendingState(const Render::BlendingState& state);
+
+        //! gets a reference from an id
+        //! \param id
+        //! \return the reference
+        Render::BlendingState* GetBlendingState(CollectionHandle id);
+
+        //! \return the count of this list
+        int GetBlendingStateCount() const;
 
         //! \return the application context pointer
         Wnd::IWindowContext* GetAppContext() { return mContext; }
+
+        //! Cleans / Deletes all references to the shaders/nodes/meshes/rendertargets/blendingstates/rasterstates being used
+        void Clean();
 
     private:
         //! internal memory allocator

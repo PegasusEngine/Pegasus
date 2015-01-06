@@ -257,6 +257,12 @@ static void RegisterIntrinsicTypes(BlockLib* lib)
     SymbolTable* symbolTable = lib->GetSymbolTable();
     PG_ASSERT(symbolTable != nullptr);
 
+    //Register the start type
+    symbolTable->CreateType(
+        TypeDesc::M_STAR,
+        "*"
+    );
+
     //Register ints and scalars
     TypeDesc* floatT = symbolTable->CreateType(
         TypeDesc::M_SCALAR,

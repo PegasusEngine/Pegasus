@@ -1,42 +1,39 @@
-
 /*
 Block script sample program
 */
-a = 1;
-
-float2 factorial(f : int)
+struct PsyBeadsState
 {
-    q = 5;
-    if (f == 0)
-    {
-        return float2(1, q);
-    }
-    
-    return float2((float)f, 1.0) * factorial(f - 1);
-}
-float4 testKecho(a : int, b : int) { return float4((float)(2 * (a + b)), 1.0, 2.0, 3.0); }
-echo (factorial(3).y);
-echo(" ");
-echo (factorial(3).x);
+	screenRatio : float;
+	time : float;
+	padding : float2;
+};
+
+
+psyBeadsProgram = CreateProgramLinkage("PSyBeadsRayMarcher");
+psyBeadsProgram->SetShaderStage(LoadShader("shaders/hlsl/Psybeads.vs"));
+psyBeadsProgram->SetShaderStage(LoadShader("shaders/hlsl/Psybeads.ps"));
+
+beadsState = PsyBeadsState(); 
+beadsStateUniform = GetUniformLocation(psyBeadsProgram, "uniformState");
+beadsStateBuffer = CreateUniformBuffer(sizeof(PsyBeadsState));
+
+quad = CreateMesh();
+quadGenerator = CreateMeshGenerator("QuadGenerator");
+quad->SetGeneratorInput(quadGenerator);
 
 int Timeline_Update(beat : float)
 {
-    echo ("calling update from script!");
-    return a;
+
 }
 
 int Timeline_Render(beat : float)
 {
-    echo(beat);
-    return 10;
+	beadsState.screenRatio = beat * 400.0 / 350.0;
+	beadsState.time = 5.0 * beat;
+	
+	SetProgram(psyBeadsProgram);
+	SetBuffer(beadsStateBuffer, beadsState);
+	SetUniformBuffer(beadsStateUniform, beadsStateBuffer);
+	SetMesh(quad);
+	Draw();
 }
-
-
-
-/*
-todos:
-- string and echo stuff
-- exception and array error handling
-- ui editor
-- api stuff and trees
-*/

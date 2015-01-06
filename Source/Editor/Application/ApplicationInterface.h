@@ -54,6 +54,9 @@ signals:
     //! Signal emitted when \a RequestRedrawAllViewportsAfterBlockMoved() has been called at least once
     void EnqueuedBlockMoved();
 
+    //! Signal emitted when a compilation redraw has finished.
+    void CompilationEnd();
+
     //------------------------------------------------------------------------------------
     
 private slots:

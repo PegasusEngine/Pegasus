@@ -21,6 +21,7 @@
 #include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/Window/IWindowContext.h"
 #include "Pegasus/Application/RenderCollection.h"
+#include "Pegasus/Render/Render.h"
 
 using namespace Pegasus::Utils;
 
@@ -44,6 +45,10 @@ namespace Application
         Vector<Texture::TextureOperatorRef>  mTextureOperators;
         Vector<Mesh::MeshRef>                mMeshes;
         Vector<Mesh::MeshGeneratorRef>       mMeshGenerators;
+        Vector<Render::Buffer>               mBuffers;
+        Vector<Render::RasterizerState>      mRasterizerStates;
+        Vector<Render::BlendingState>        mBlendingStates;
+        Vector<Render::RenderTarget>         mRenderTargets;
     };
 
     RenderCollectionImpl::RenderCollectionImpl(Alloc::IAllocator * alloc)
@@ -54,7 +59,11 @@ namespace Application
         mTextureGenerators(alloc),
         mTextureOperators(alloc),
         mMeshes(alloc),
-        mMeshGenerators(alloc)
+        mMeshGenerators(alloc),
+        mBuffers(alloc),
+        mRasterizerStates(alloc),
+        mBlendingStates(alloc),
+        mRenderTargets(alloc)
     {
     }
 
@@ -68,6 +77,27 @@ namespace Application
         for (int i = 0; i < mMeshes.GetSize(); ++i)           { mMeshes[i] = nullptr; }
         for (int i = 0; i < mMeshGenerators.GetSize(); ++i)   { mMeshGenerators[i] = nullptr; }
         
+        //cleanup of buffers using render API
+        for (int i = 0; i < mBuffers.GetSize(); ++i) 
+        {
+            Render::DeleteBuffer(mBuffers[i]);
+        }
+        
+        for (int i = 0; i < mRasterizerStates.GetSize(); ++i)
+        {
+            Render::DeleteRasterizerState(mRasterizerStates[i]);     
+        }
+
+        for (int i = 0; i < mBlendingStates.GetSize(); ++i)
+        {
+            Render::DeleteBlendingState(mBlendingStates[i]);
+        }
+
+        for (int i = 0; i < mRenderTargets.GetSize(); ++i)
+        {
+            Render::DeleteRenderTarget(mRenderTargets[i]);
+        }
+        
         mPrograms.Clear();
         mShaders.Clear();
         mTextures.Clear();
@@ -75,6 +105,13 @@ namespace Application
         mTextureOperators.Clear();
         mMeshes.Clear();
         mMeshGenerators.Clear();
+        mBuffers.Clear();
+        mRasterizerStates.Clear();
+        mBlendingStates.Clear();
+        mRenderTargets.Clear();
+
+        //remove any references if they exist of shaders / programs and meshes internally
+        Render::CleanInternalState();
     }
 
     RenderCollection::RenderCollection(Alloc::IAllocator* alloc, Wnd::IWindowContext* context)
@@ -180,7 +217,7 @@ namespace Application
         return &(*mImpl->mMeshes[id]);
     }
 
-    int RenderCollection::GetMeshCount()
+    int RenderCollection::GetMeshCount() const
     {
         return mImpl->mMeshes.GetSize();
     }
@@ -191,14 +228,84 @@ namespace Application
         return mImpl->mMeshGenerators.GetSize() - 1; 
     }
 
+    Mesh::MeshGenerator* RenderCollection::GetMeshGenerator(RenderCollection::CollectionHandle id)
+    {
+        return &(*mImpl->mMeshGenerators[id]);
+    }
+
     int RenderCollection::GetMeshGeneratorCount()
     {
         return mImpl->mMeshGenerators.GetSize();
     }
 
+    RenderCollection::CollectionHandle RenderCollection::AddBuffer(const Render::Buffer& buffer)
+    {
+        mImpl->mBuffers.PushEmpty() = buffer;
+        return mImpl->mBuffers.GetSize() - 1;
+        
+    }
+
+    Render::Buffer* RenderCollection::GetBuffer(RenderCollection::CollectionHandle id)
+    {
+        return &(mImpl->mBuffers[id]);
+    } 
+
+    int RenderCollection::GetBufferCount()
+    {
+        return mImpl->mBuffers.GetSize();
+    }
+
     void RenderCollection::Clean()
     {
         mImpl->Clean();
+    }
+
+    RenderCollection::CollectionHandle RenderCollection::AddRenderTarget(const Render::RenderTarget& target)
+    {
+        mImpl->mRenderTargets.PushEmpty() = target;        
+        return mImpl->mRenderTargets.GetSize() - 1;
+    }
+
+    Render::RenderTarget* RenderCollection::GetRenderTarget(RenderCollection::CollectionHandle id)
+    {
+        return &(mImpl->mRenderTargets[id]);
+    }
+
+    int RenderCollection::GetRenderTargetCount() const
+    {
+        return mImpl->mRenderTargets.GetSize();
+    }
+
+    RenderCollection::CollectionHandle RenderCollection::AddRasterizerState(const Render::RasterizerState& state)
+    {
+        mImpl->mRasterizerStates.PushEmpty() = state;
+        return mImpl->mRasterizerStates.GetSize() - 1;
+    }
+
+    Render::RasterizerState* RenderCollection::GetRasterizerState(RenderCollection::CollectionHandle id)
+    {
+        return &(mImpl->mRasterizerStates[id]);
+    }
+
+    int RenderCollection::GetRasterizerStateCount() const
+    {
+        return mImpl->mRasterizerStates.GetSize();
+    }
+
+    RenderCollection::CollectionHandle RenderCollection::AddBlendingState(const Render::BlendingState& state)
+    {
+        mImpl->mBlendingStates.PushEmpty() = state;        
+        return mImpl->mBlendingStates.GetSize() - 1;
+    }
+
+    Render::BlendingState* RenderCollection::GetBlendingState(RenderCollection::CollectionHandle id)
+    {
+        return &(mImpl->mBlendingStates[id]);
+    }
+
+    int RenderCollection::GetBlendingStateCount() const
+    {
+        return mImpl->mBlendingStates.GetSize();
     }
 }
 }

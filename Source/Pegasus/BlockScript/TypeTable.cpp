@@ -98,6 +98,21 @@ const TypeDesc* TypeTable::GetTypeByName(const char* name) const
     }
     return nullptr;
 }
+
+//!TODO: figure out how to recycle this code, and respect const correctness
+TypeDesc* TypeTable::GetTypeForPatching(const char* name)
+{
+    int s = mTypeDescPool.Size();
+    for (int i = 0; i < s; ++i)
+    {
+        if(!Utils::Strcmp(name, mTypeDescPool[i].GetName()) && mTypeDescPool[i].GetModifier() != TypeDesc::M_ARRAY)
+        {
+            return &(mTypeDescPool[i]);
+        }
+    }
+    return nullptr;
+}
+
 bool TypeTable::FindEnumByName(const char* name, const TypeDesc::EnumNode** outEnumNode, const TypeDesc** outEnumType) const
 {
     int s = mTypeDescPool.Size();
@@ -128,6 +143,7 @@ bool TypeTable::ComputeSize(const TypeDesc* t, int& outSize) const
     {
         switch (t->GetModifier())
         {
+        case TypeDesc::M_STAR:
         case TypeDesc::M_SCALAR:
         case TypeDesc::M_ENUM:
             outSize = 4; //4 bytes for scalars, enums and imms

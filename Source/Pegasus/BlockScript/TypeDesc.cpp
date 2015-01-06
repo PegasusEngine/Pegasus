@@ -48,14 +48,17 @@ void TypeDesc::SetName(const char * typeName)
 
 bool TypeDesc::Equals(const TypeDesc* other) const
 {
-    return !Utils::Strcmp(mName, other->mName) &&
-            CmpStructProperty(other) &&
-            CmpEnumProperty(other) &&
-            mModifier == other->mModifier &&
-            mAluEngine == other->mAluEngine &&
-            ((mChild == nullptr && other->mChild == nullptr) || (mChild != nullptr && other->mChild != nullptr && mChild->Equals(other->mChild))) &&
-            mModifierProperty == other->mModifierProperty &&
-            mByteSize == other->mByteSize;
+    return  other->mModifier == TypeDesc::M_STAR || mModifier == TypeDesc::M_STAR ||  //star means any type, so accept it
+            (
+                !Utils::Strcmp(mName, other->mName) &&
+                CmpStructProperty(other) &&
+                CmpEnumProperty(other) &&
+                mModifier == other->mModifier &&
+                mAluEngine == other->mAluEngine &&
+                ((mChild == nullptr && other->mChild == nullptr) || (mChild != nullptr && other->mChild != nullptr && mChild->Equals(other->mChild))) &&
+                mModifierProperty == other->mModifierProperty &&
+                mByteSize == other->mByteSize
+            );
 }
 
 bool TypeDesc::CmpEnumProperty(const TypeDesc* other) const

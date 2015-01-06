@@ -17,6 +17,7 @@
 #include "ui_AssetLibraryWidget.h"
 
 class QItemSelectionModel;
+class QSemaphore;
 class CodeEditorWidget;
 class ProgramTreeModel;
 class SourceCodeListModel;
@@ -67,28 +68,19 @@ public slots:
 
     //! gets the shader manager event listener
     SourceCodeManagerEventListener * GetSourceCodeManagerEventListener() { return mSourceCodeManagerEventListener;}
+    
+    //! grays out shader / program views. Prevents any asset view thread race condition while adding new program / shader assets
+    void SetEnabledProgramShaderViews(bool enabled);
 
-    //! updates any layout requiring an update
-    void UpdateAssetViewLayout(QString objName);
+    //! triggered when the ui thread is about to request a redraw on the app thread.(disables all ui shader views)
+    void OnCompilationRedrawBegin();
 
-    //! a user has closed a code object, so delete the user data. 
-    void UpdateRemovedCodeObject(void* userData, QString objName);
+    //! triggered when the main thread has finished a redraw for compilation
+    void OnCompilationRedrawEnd();
 
 private:
     //! toggle the buttons on this widget on / off
     void ActivateButtons(bool activation);
-
-    //! inject all user data inside shaders and program nodes 
-    void InitializeInternalUserData();
-
-    //! delete all user data inside shaders and program nodes
-    void UninitializeInternalUserData();
-
-    //! updates all the program user data (fills in for programs lacking of user data).
-    void UpdateProgramUserData();
-
-    //! updates all the shader user data (fills in for shaders lacking of user data).
-    void UpdateShaderUserData();
 
     //! updates all the blockscript user data (fills in for blockscripts lacking of user data).
     void UpdateBlockScriptUserData();

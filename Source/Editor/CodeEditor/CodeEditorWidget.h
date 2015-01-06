@@ -14,13 +14,10 @@
 
 #include <QDockWidget>
 #include "CodeEditor/CodeTextEditorTreeWidget.h"
+#include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 
-namespace Pegasus {
-    namespace Core {
-        class ISourceCodeProxy;
-    }
-}
 
+class CodeUserData;
 class QVBoxLayout;
 class QStatusBar;
 class QTabWidget;
@@ -41,9 +38,9 @@ public:
     explicit CodeEditorWidget(QWidget * parent);
     virtual ~CodeEditorWidget();
 
-    //! opens a ISourceCodeProxy in the text editor
-    //! \param ISourceCodeProxy the code to open
-    void RequestOpen(Pegasus::Core::ISourceCodeProxy * shaderProxy);
+    //! opens a CodeUserData in the text editor
+    //! \param CodeUserData the code to open
+    void RequestOpen(CodeUserData * code);
 
     //! called whenever settings have been changed
     void OnSettingsChanged();
@@ -61,24 +58,34 @@ public:
 
     //! Called when a code compilation status has been changed
     //! \param code that has been updated
-    void CodeUIChanged(Pegasus::Core::ISourceCodeProxy * code);
+    void CodeUIChanged(CodeUserData * code);
 
     //! Requests a code to compile
     //! \param the id of the editor (tab id). If the id is -1, then all programs are queried for compilaton
     void CompileCode(int id);
     
     //! finds the index of a particular Code
-    int  FindIndex(Pegasus::Core::ISourceCodeProxy * target);
+    int  FindIndex(CodeUserData * target);
 
     //! finds the index of a particular text edit
     int  FindIndex(CodeTextEditorWidget * target);
 signals:
     void RequestCodeCompilation(int id);
 
+    void RequestDisableAssetLibraryUi();
+
+    void RequestSafeDeleteUserData(void* userData);
+
 public slots:
     //! slot to be called when a code wants to be closed.
     //! \param index code to close
     void RequestClose(int index);
+
+    //! bless user data with any UI specific data required
+    void BlessUserData(void* codeUserData);
+
+    //! unbless user data with any UI specific data that was blessed
+    void UnblessUserData(void* codeUserData);
 
 private slots:
     //! slot called whenever a tab changes its text.
@@ -151,7 +158,7 @@ private:
     //! sets the ui. To be used internally
     void SetupUi();
 
-    void UpdateInstantCompilationButton(Pegasus::Core::ISourceCodeProxy* proxy);
+    void UpdateInstantCompilationButton(CodeUserData* code);
 
 
     //! Sets the status bar message
@@ -170,7 +177,7 @@ private:
 
     //! maximum number of Code tabs to have open
     static const int MAX_OPENED_CODES = 50;
-    Pegasus::Core::ISourceCodeProxy * mOpenedCodes[MAX_OPENED_CODES];
+    CodeUserData * mOpenedCodes[MAX_OPENED_CODES];
     int mOpenCodeCount;
 
     //! poitns to the id of the previous tab index.
@@ -203,9 +210,6 @@ private:
     bool mSavedInstantCompilationFlag;
 
     Pegasus::Core::ISourceCodeProxy::CompilationPolicy mCompilationPolicy;
-
-
-    
     
 };
 

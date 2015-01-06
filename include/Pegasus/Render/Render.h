@@ -321,6 +321,10 @@ namespace Render
     //! \return boolean, true on success, false on error
     bool SetUniformTextureRenderTarget(Uniform& u, const RenderTarget& renderTarget);
 
+    //! function that internally cleans any dispatched programs / shaders / meshes
+    //! from the global state.
+    void CleanInternalState();
+
 }
 }
 

@@ -79,6 +79,7 @@ void Block::Shutdown()
 {
     if (mScriptHelper != nullptr)
     {
+        mScriptHelper->CallGlobalScopeDestroy(mVmState);
         mScriptHelper->Shutdown(); //if no script is open then this is a NOP
         mAppContext->GetTimeline()->GetScriptTracker()->UnregisterScript(mScriptHelper);
         PG_DELETE(mAllocator, mScriptHelper);
@@ -103,7 +104,26 @@ void Block::UpdateViaScript(float beat, Wnd::Window* window)
 {
     if (mScriptHelper != nullptr)
     {
-        mScriptHelper->CallUpdate(beat, mVmState, mScriptVersion);
+        if (mScriptHelper->IsDirty())
+        {
+            mScriptHelper->CallGlobalScopeDestroy(mVmState);
+        }
+        mScriptHelper->CheckAndUpdateCompilationState();
+        if (mScriptVersion != mScriptHelper->GetSerialVersion())
+        {
+            mScriptVersion = mScriptHelper->GetSerialVersion();
+
+            if (mVmState->GetUserContext() != nullptr)
+            {
+                Application::RenderCollection* nodeContaier = static_cast<Application::RenderCollection*>(mVmState->GetUserContext());
+                nodeContaier->Clean();
+            }
+            mVmState->Reset();
+
+            //re-initialize everything!
+            mScriptHelper->CallGlobalScopeInit(mVmState);     
+        }
+        mScriptHelper->CallUpdate(beat, mVmState);
     }
 }
 
@@ -136,6 +156,7 @@ bool Block::OpenScript(const char* scriptFileName)
 #if PEGASUS_USE_GRAPH_EVENTS
         //register event listener
         mScriptHelper->SetEventListener(mAppContext->GetTimeline()->GetEventListener());
+        GRAPH_EVENT_INIT_USER_DATA(mScriptHelper->GetProxy(), "BlockScript", mScriptHelper->GetEventListener());
 #endif
         mScriptHelper->InvalidateData();
     }

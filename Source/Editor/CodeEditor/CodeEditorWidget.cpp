@@ -224,7 +224,7 @@ void CodeEditorWidget::SignalCompileCurrentCode()
     int idx = mUi.mTabWidget->currentIndex();
     if (idx >= 0 && idx < mOpenCodeCount)
     {
-        Pegasus::Core::ISourceCodeProxy * code = mOpenedCodes[idx];
+        CodeUserData * code = mOpenedCodes[idx];
         if (code != nullptr)
         {
             //ensure that no compilation is happening while saving this file
@@ -235,14 +235,14 @@ void CodeEditorWidget::SignalCompileCurrentCode()
 
 void CodeEditorWidget::SignalCompilationError(void * srcPtr, int line, QString errorString)
 {
-    Pegasus::Core::ISourceCodeProxy* target = static_cast<Pegasus::Core::ISourceCodeProxy*>(srcPtr);
-    CodeUserData * userData = static_cast<CodeUserData*>(target->GetUserData());
+    CodeUserData * userData = static_cast<CodeUserData*>(srcPtr);
+
     if (userData != nullptr)
     {
         userData->InvalidateLine(line);
         userData->InsertMessage(line, errorString);
         PostStatusBarMessage(errorString);
-        CodeTextEditorWidget * editor = mUi.mTreeEditor->FindCodeInEditors(target);
+        CodeTextEditorWidget * editor = mUi.mTreeEditor->FindCodeInEditors(userData);
         if (editor != nullptr)
         {
             UpdateSyntaxForLine(editor, line);
@@ -258,17 +258,40 @@ void CodeEditorWidget::SignalLinkingEvent(QString message, int eventType)
     }
 }
 
+void CodeEditorWidget::BlessUserData(void* userData)
+{
+    ED_ASSERT(userData != nullptr);
+    CodeUserData* codeUserData = static_cast<CodeUserData*>(userData);
+    codeUserData->SetDocument(new QTextDocument());
+}
+
+void CodeEditorWidget::UnblessUserData(void* userData)
+{
+    ED_ASSERT(userData != nullptr);
+    CodeUserData* codeUserData = static_cast<CodeUserData*>(userData);
+    int index = FindIndex(codeUserData);
+    if (index != -1)
+    {
+        RequestClose(index);
+    }
+
+    delete codeUserData->GetDocument();
+    codeUserData->SetDocument(nullptr);
+
+    //request that user data gets deleted on the app thread.
+    emit(RequestSafeDeleteUserData(userData));
+}
+
 void CodeEditorWidget::SignalCompilationBegin(void* code)
 {
-    Pegasus::Core::ISourceCodeProxy* target = static_cast<Pegasus::Core::ISourceCodeProxy*>(code);
+    CodeUserData* target = static_cast<CodeUserData*>(code);
     CodeTextEditorWidget * editor = mUi.mTreeEditor->FindCodeInEditors(target);
-    if (editor != nullptr && target->GetUserData() != nullptr)
+    if (editor != nullptr)
     {
         PostStatusBarMessage("");
-        CodeUserData * codeUserData = static_cast<CodeUserData*>(target->GetUserData());
-        ED_ASSERT(!codeUserData->IsProgram());
-        QSet<int> lineSetCopy = codeUserData->GetInvalidLineSet();
-        codeUserData->ClearInvalidLines();
+        ED_ASSERT(!target->IsProgram());
+        QSet<int> lineSetCopy = target->GetInvalidLineSet();
+        target->ClearInvalidLines();
         for (int line : lineSetCopy)
         {
             UpdateSyntaxForLine(editor, line);
@@ -337,12 +360,16 @@ void CodeEditorWidget::SignalSaveCurrentCode()
     int idx = mUi.mTabWidget->currentIndex();
     if (idx >= 0 && idx < mOpenCodeCount)
     {
-        Pegasus::Core::ISourceCodeProxy * code = mOpenedCodes[idx];
+        CodeUserData * code = mOpenedCodes[idx];
         if (code != nullptr)
         {
             //ensure that no compilation is happening while saving this file
             mCompilationRequestMutex->lock();
-            code->SaveSourceToFile();
+            ED_ASSERT(!code->IsProgram());
+            if (code->GetSourceCode() != nullptr)
+            {
+                code->GetSourceCode()->SaveSourceToFile();
+            }
             mCompilationRequestMutex->unlock();
         }
     }
@@ -388,7 +415,7 @@ void CodeEditorWidget::UpdateSyntaxForLine(CodeTextEditorWidget * editor, int li
     mInternalBlockTextUpdated = false;
 }
 
-int CodeEditorWidget::FindIndex(Pegasus::Core::ISourceCodeProxy * target)
+int CodeEditorWidget::FindIndex(CodeUserData * target)
 {
     for (int i = 0; i < mOpenCodeCount; ++i)
     {
@@ -402,7 +429,7 @@ int CodeEditorWidget::FindIndex(Pegasus::Core::ISourceCodeProxy * target)
 
 int CodeEditorWidget::FindIndex(CodeTextEditorWidget * target)
 {
-    Pegasus::Core::ISourceCodeProxy * code = target->GetCode();
+    CodeUserData * code = target->GetCode();
     if (code != nullptr)
     {
         return FindIndex(code);
@@ -466,7 +493,7 @@ void CodeEditorWidget::OnTextWindowSelected(QWidget * sender)
     CodeTextEditorWidget * textEditor = static_cast<CodeTextEditorWidget*>(sender);
     if (textEditor != nullptr)
     {
-        Pegasus::Core::ISourceCodeProxy * code = textEditor->GetCode();
+        CodeUserData * code = textEditor->GetCode();
 
         if (code != nullptr)
         {
@@ -492,6 +519,7 @@ void CodeEditorWidget::CompileCode(int id)
     {
         mCompilationRequestPending = true;            
         mCompilationRequestMutex->unlock();
+        emit(RequestDisableAssetLibraryUi());
         emit(RequestCodeCompilation(id));
     }
     else
@@ -500,9 +528,10 @@ void CodeEditorWidget::CompileCode(int id)
     }
 }
 
-void CodeEditorWidget::UpdateInstantCompilationButton(Pegasus::Core::ISourceCodeProxy* proxy)
+void CodeEditorWidget::UpdateInstantCompilationButton(CodeUserData* code)
 {
-    if (mCompilationPolicy != proxy->GetCompilationPolicy())
+    Pegasus::Core::ISourceCodeProxy* proxy = code->GetSourceCode();
+    if (proxy != nullptr && mCompilationPolicy != proxy->GetCompilationPolicy())
     {
         mCompilationPolicy = proxy->GetCompilationPolicy();
         if (mCompilationPolicy == Pegasus::Core::ISourceCodeProxy::POLICY_USER_DEFINED)
@@ -524,8 +553,13 @@ void CodeEditorWidget::UpdateInstantCompilationButton(Pegasus::Core::ISourceCode
 
 }
 
-void CodeEditorWidget::RequestOpen(Pegasus::Core::ISourceCodeProxy * codeProxy)
+void CodeEditorWidget::RequestOpen(CodeUserData* code)
 {
+    Pegasus::Core::ISourceCodeProxy * codeProxy = code->GetSourceCode();
+    if (codeProxy == nullptr || code->GetDocument() == nullptr)
+    {
+        return;
+    }
     //dump code contents to document text
     //set the text of the current text editor
     const char * srcChar = nullptr;
@@ -537,12 +571,11 @@ void CodeEditorWidget::RequestOpen(Pegasus::Core::ISourceCodeProxy * codeProxy)
         qchar[i] = srcChar[i];
     }
 
-    CodeUserData* codeUserData = static_cast<CodeUserData*>(codeProxy->GetUserData());
     QString srcQString(qchar, srcSize);
-    codeUserData->GetDocument()->setPlainText(srcQString);
+    code->GetDocument()->setPlainText(srcQString);
     delete[] qchar;            
 
-    int currentTabIndex = FindIndex(codeProxy);
+    int currentTabIndex = FindIndex(code);
     if (currentTabIndex == -1)
     {
         if (mOpenCodeCount >= MAX_OPENED_CODES)
@@ -557,7 +590,7 @@ void CodeEditorWidget::RequestOpen(Pegasus::Core::ISourceCodeProxy * codeProxy)
 
             //  pattern must be appending to the end
             ED_ASSERT(currentTabIndex == mOpenCodeCount);
-            mOpenedCodes[currentTabIndex] = codeProxy;
+            mOpenedCodes[currentTabIndex] = code;
             ++mOpenCodeCount;
 
             //is this opened already in the pool?

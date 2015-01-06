@@ -72,7 +72,7 @@
 %}
 
 // expect 108 reduce/shift warnings due to grammar ambiguity
-%expect 108
+%expect 115
 
 %union {
     int    token;
@@ -109,6 +109,7 @@
 %token <token> K_STRUCT
 %token <token> K_ENUM
 %token <token> K_STATIC_ARRAY
+%token <token> K_SIZE_OF
 %token <token> O_PLUS 
 %token <token> O_MINUS
 %token <token> O_MUL
@@ -300,6 +301,11 @@ fun_stmt_list : K_L_BRAC stmt_list K_R_BRAC { $$ = $2; }
 
 numeric : I_INT   { BS_BUILD($$, BuildImmInt($1)); }
         | I_FLOAT { BS_BUILD($$, BuildImmFloat($1)); }
+        | K_SIZE_OF K_L_PAREN type_desc K_R_PAREN 
+          {
+            //figure out size at compile time!
+            BS_BUILD($$, BuildImmInt($3->GetByteSize()));
+          }
         ;
 
 exp_list : exp_list K_COMMA exp {

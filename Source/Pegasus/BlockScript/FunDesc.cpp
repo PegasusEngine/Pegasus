@@ -101,6 +101,11 @@ bool FunDesc::AreSignaturesEqual(const char* name, Ast::ExpList* argList) const
             {
                 return false;
             }
+            //only allow id's in star operators
+            else if (argDec2->GetType()->GetModifier() == TypeDesc::M_STAR && argDec1->GetExpType() != Idd::sType)
+            {
+                return false;
+            }
         }
         else
         {

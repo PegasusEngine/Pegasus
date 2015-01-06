@@ -14,7 +14,6 @@
 #include "TestApp1Window.h"
 #include "Pegasus/AppExport.h" // Needs including, for exported functions.  Only include this once!
 
-#include "TimelineBlocks/PsyBeadsBlock.h"
 #include "TimelineBlocks/FractalCubeBlock.h"
 #include "TimelineBlocks/FractalCube2Block.h"
 #include "TimelineBlocks/TextureTestBlock.h"
@@ -79,7 +78,6 @@ TestApp1::~TestApp1()
 
 void TestApp1::RegisterTimelineBlocks()
 {
-    REGISTER_TIMELINE_BLOCK(PsyBeadsBlock);
     REGISTER_TIMELINE_BLOCK(FractalCubeBlock);
     REGISTER_TIMELINE_BLOCK(FractalCube2Block);
     REGISTER_TIMELINE_BLOCK(TextureTestBlock);
@@ -114,18 +112,12 @@ void TestApp1::InitializeApp()
 #endif
     timeline->GetLane(0)->InsertBlock(cameraLineBlock, 0 * TICKS_PER_BEAT, 8 * TICKS_PER_BEAT);
 
-    Pegasus::Timeline::Block * scriptingBlock = timeline->CreateBlock("Block");
-#if PEGASUS_ENABLE_PROXIES
-    scriptingBlock->SetColor(233, 25, 80);
-#endif
-    timeline->GetLane(2)->InsertBlock(scriptingBlock, 0 * TICKS_PER_BEAT, 15 * TICKS_PER_BEAT);
-    scriptingBlock->OpenScript("BlockScripts/test.bs");
-
-    Pegasus::Timeline::Block * psyBeadBlock = timeline->CreateBlock("PsyBeadsBlock");
+    Pegasus::Timeline::Block * psyBeadBlock = timeline->CreateBlock("Block");
 #if PEGASUS_ENABLE_PROXIES
     psyBeadBlock->SetColor(255, 128, 128);
 #endif
     timeline->GetLane(1)->InsertBlock(psyBeadBlock, 0 * TICKS_PER_BEAT, 8 * TICKS_PER_BEAT);
+    psyBeadBlock->OpenScript("BlockScripts/test.bs");
 
     Pegasus::Timeline::Block * geometryTestBlock = timeline->CreateBlock("GeometryTestBlock");
 #if PEGASUS_ENABLE_PROXIES
@@ -133,11 +125,12 @@ void TestApp1::InitializeApp()
 #endif
     timeline->GetLane(1)->InsertBlock(geometryTestBlock, 8 * TICKS_PER_BEAT, 8 * TICKS_PER_BEAT);
 
-    Pegasus::Timeline::Block * psyBeadBlock2 = timeline->CreateBlock("PsyBeadsBlock");
+    Pegasus::Timeline::Block * psyBeadBlock2 = timeline->CreateBlock("Block");
 #if PEGASUS_ENABLE_PROXIES
     psyBeadBlock2->SetColor(255, 128, 192);
 #endif
     timeline->GetLane(1)->InsertBlock(psyBeadBlock2, 16 * TICKS_PER_BEAT, 16 * TICKS_PER_BEAT);
+    psyBeadBlock2->OpenScript("BlockScripts/test.bs");
 
     Pegasus::Timeline::Block * fractalCube2Block = timeline->CreateBlock("FractalCube2Block");
 #if PEGASUS_ENABLE_PROXIES

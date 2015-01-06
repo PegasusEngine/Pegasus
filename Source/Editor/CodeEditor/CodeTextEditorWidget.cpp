@@ -283,13 +283,13 @@ CodeTextEditorWidget::~CodeTextEditorWidget()
     delete mSyntaxHighlighter;
 }
 
-void CodeTextEditorWidget::Initialize(Pegasus::Core::ISourceCodeProxy * code)
+void CodeTextEditorWidget::Initialize(CodeUserData * code)
 {
     mCode = code;
-    if (code != nullptr)
+    if (code != nullptr && code->GetSourceCode() != nullptr)
     {
-        CodeUserData* userData = static_cast<CodeUserData*>(code->GetUserData());
-        setDocument(userData->GetDocument());
+        ED_ASSERT(!code->IsProgram());
+        setDocument(code->GetDocument());
         Application * application = Editor::GetInstance().GetApplicationManager().GetApplication();
         Pegasus::App::IApplicationProxy * app = application->GetApplicationProxy();
         Pegasus::PegasusDesc::GapiType gapi = Pegasus::PegasusDesc::OPEN_GL;
@@ -303,9 +303,9 @@ void CodeTextEditorWidget::Initialize(Pegasus::Core::ISourceCodeProxy * code)
         {
             ED_FAILSTR("No Gapi defined!");
         }
-        mSyntaxHighlighter->setDocument(userData->GetDocument());
+        mSyntaxHighlighter->setDocument(code->GetDocument());
         static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetSyntaxLanguage(gapi);
-        static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetCodeUserData(static_cast<CodeUserData*>(code->GetUserData()));
+        static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetCodeUserData(code);
         UpdateAllDocumentSyntax();
     }
     else
@@ -360,21 +360,18 @@ bool CodeTextEditorWidget::event(QEvent * e)
 {
     if (e->type() == QEvent::ToolTip)
     {
-        if (mCode != nullptr)
+        if (mCode != nullptr && mCode->GetSourceCode() != nullptr)
         {
-            CodeUserData * codeUserData = static_cast<CodeUserData*>(mCode->GetUserData()); 
-            if (codeUserData != nullptr)
+            ED_ASSERT(!mCode->IsProgram());
+            QMap<int, QString>& messageMap = mCode->GetMessageMap();
+            QHelpEvent * helpEvent = static_cast<QHelpEvent*>(e);
+            const QPoint& pos = helpEvent->pos();
+            QTextCursor cursor = cursorForPosition(pos);
+            int line = cursor.block().firstLineNumber() + 1;
+            QMap<int, QString>::iterator it = messageMap.find(line);
+            if (it != messageMap.end())
             {
-                QMap<int, QString>& messageMap = codeUserData->GetMessageMap();
-                QHelpEvent * helpEvent = static_cast<QHelpEvent*>(e);
-                const QPoint& pos = helpEvent->pos();
-                QTextCursor cursor = cursorForPosition(pos);
-                int line = cursor.block().firstLineNumber() + 1;
-                QMap<int, QString>::iterator it = messageMap.find(line);
-                if (it != messageMap.end())
-                {
-                    QToolTip::showText(helpEvent->globalPos(), QString(it.value()));
-                }
+                QToolTip::showText(helpEvent->globalPos(), QString(it.value()));
             }
         }
     }
@@ -396,12 +393,12 @@ void CodeTextEditorWidget::focusOutEvent(QFocusEvent * e)
 
 void CodeTextEditorWidget::FlushTextToCode()
 {
-    if (mCode != nullptr)
+    if (mCode != nullptr && mCode->GetSourceCode() != nullptr)
     {
         QString qs = toPlainText();
         QByteArray arr = qs.toLocal8Bit();
         const char * source = arr.data();
         int sourceSize = qs.size();
-        mCode->SetSource(source, sourceSize);
+        mCode->GetSourceCode()->SetSource(source, sourceSize);
     }
 }

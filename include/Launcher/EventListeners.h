@@ -51,7 +51,8 @@ public:
     : LogAssertDispatcher(logHandler, assertHandler) {}
     ~LauncherShaderListener(){}
 
-    virtual void OnEvent(Graph::IGraphUserData * u, Core::CompilerEvents::ObjectOperation& e) { /*unused*/ }
+    virtual void OnInitUserData(Pegasus::Core::IBasicSourceProxy* proxy, const char* name){}
+    virtual void OnDestroyUserData(Pegasus::Core::IBasicSourceProxy* proxy, const char* name){}
     virtual void OnEvent(Graph::IGraphUserData * u, Core::CompilerEvents::SourceLoadedEvent& e);
     virtual void OnEvent(Graph::IGraphUserData * u, Core::CompilerEvents::CompilationEvent& e);
     virtual void OnEvent(Graph::IGraphUserData * u, Core::CompilerEvents::CompilationNotification& e);

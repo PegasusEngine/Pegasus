@@ -745,6 +745,14 @@ bool Pegasus::Render::SetUniformTextureRenderTarget(Pegasus::Render::Uniform& u,
     return InternalSetTextureUniform(u, &renderTargetGpuData->mTextureView);
 }
 
+// ---------------------------------------------------------------------------
+void Pegasus::Render::CleanInternalState()
+{
+    gDXState.mDispatchedTarget = nullptr;
+    gDXState.mDispatchedMeshGpuData = nullptr;
+    gDXState.mDispatchedShader = nullptr;
+
+}
 
 #else
 PEGASUS_AVOID_EMPTY_FILE_WARNING
