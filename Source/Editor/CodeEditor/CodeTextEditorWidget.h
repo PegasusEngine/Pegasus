@@ -72,6 +72,7 @@ private:
     //! source code reference
     CodeUserData* mCode;
 
+    QTextDocument* mNullDocument;
 
     QSyntaxHighlighter * mSyntaxHighlighter;
 };

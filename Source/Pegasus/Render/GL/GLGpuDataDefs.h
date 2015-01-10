@@ -23,6 +23,9 @@
 #include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
 #include "../Source/Pegasus/Render/GL/GLShaderReflect.h"
 
+//true in most modern cards
+#define GL_COLOR_ATTACHMENTS_COUNT 8
+
 namespace Pegasus
 {
 namespace Render
@@ -92,6 +95,8 @@ struct OGLRenderTargetGPUData
     PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(OGLRenderTargetGPUData, 0x5);
     OGLTextureGPUData mTextureView;
     GLuint            mFrameBufferName;
+    GLuint            mColAttachmentsCache[GL_COLOR_ATTACHMENTS_COUNT];
+    /*GLuint            mDepthAttachmentBufferObj; todo: implement this*/
 };
 
 } // namespace Render

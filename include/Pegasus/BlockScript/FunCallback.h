@@ -17,6 +17,11 @@ namespace Pegasus
 namespace BlockScript
 {
 
+namespace Ast
+{
+    class ExpList;
+}
+
 class BlockLib;
 
 typedef int (*PrintStringCallbackType)(const char *);
@@ -52,12 +57,14 @@ public:
     FunCallbackContext(
         BsVmState* state, 
         const FunDesc* funDesc,
+        const Ast::ExpList* argumentExpressions,
         void* inputBuffer,
         int inputBufferSize,
         void* outputBuffer,
         int outputBufferSize
     ) : mState(state), 
         mFunDesc(funDesc), 
+        mArgExps(argumentExpressions),
         mInputBuffer(inputBuffer), 
         mInputBufferSize(inputBufferSize), 
         mOutputBuffer(outputBuffer), 
@@ -69,6 +76,9 @@ public:
 
     //! \return the virtual machine state.
     BsVmState* GetVmState() { return mState; }
+
+    //! \return gets the argument expressions used in the function call
+    const Ast::ExpList* GetArgExps() { return mArgExps; }
 
     //! \return the raw input buffer. Use offsets manually and reinterpret_cast to the correct types.
     void* GetRawInputBuffer() { return mInputBuffer; }
@@ -86,6 +96,7 @@ private:
 
     BsVmState* mState;
     const FunDesc* mFunDesc;
+    const Ast::ExpList* mArgExps;
     void* mInputBuffer;
     int   mInputBufferSize;
     void* mOutputBuffer;

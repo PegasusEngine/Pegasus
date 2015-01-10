@@ -26,6 +26,12 @@ namespace Pegasus
 namespace Render
 {
 
+    class Constants
+    {
+    public:
+        static const int MAX_RENDER_TARGETS = 8;
+    };
+
     //! Structure representing a uniform location in a particular shader
     //! The name holds a copy of the actual uniform name.
     //! The internal values are obfuscated, not to be used.
@@ -85,6 +91,16 @@ namespace Render
         void* mInternalData;
     public:
         RenderTarget ()
+            : mInternalData(nullptr)
+        {
+        }
+    };
+
+    struct DepthStencilTarget
+    {
+        void* mInternalData;
+    public:
+        DepthStencilTarget()
             : mInternalData(nullptr)
         {
         }
@@ -210,21 +226,49 @@ namespace Render
     //!           or throw an assert
     void SetMesh (Mesh::MeshInOut mesh);
 
-    //! Dispatches render targets
+    //! Sets a viewport
+    //! \param the viewport to set
+    void SetViewport(const Viewport& viewport);
+
+    //! Sets a viewport using the render target's dimensions
+    //! \param the render target's whose dimensions be used as viewport
+    void SetViewport(const RenderTarget& viewport);
+
+    //! Sets a viewport using the depth stencil target's dimensions
+    //! \param the depthstencil target, which dimensions used as viewport
+    void SetViewport(const DepthStencilTarget& viewport);
+
+    //! Dispatches a render target
     //! \param render target to dispatch
-    //! \param viewport to use for the render target
-    void SetRenderTargets (RenderTarget& renderTarget, const Viewport& viewport, int renderTargetSlot);
+    //! \NOTE clears the depth target being dispatched
+    void SetRenderTarget (RenderTarget& renderTarget);
 
     //! Dispatches a render target 
     //! \param render target to dispatch
-    //! \NOTE it will use the entire viewport width and height
-    void SetRenderTarget (RenderTarget& renderTarget);
+    //! \param depth stencil to be set
+    void SetRenderTarget (RenderTarget& renderTarget, DepthStencilTarget& depthStencil);
 
-    //! Dispatches a null render target. This disables any color rendering internally.
-    void DispatchNullRenderTarget();
+    //! Dispatches a set of render targets
+    //! \param number of targets  to dispatch
+    //! \param render target array to dispatch
+    //! \note clears the depth target being dispatched
+    //! \note renderTargetCount must be between 0 and MAX_RENDER_TARGETS
+    void SetRenderTargets (int renderTargetCount, RenderTarget** renderTarget);
+
+    //! Dispatches a set of render targets and depth stencil
+    //! \param number of targets  to dispatch
+    //! \param render target array
+    //! \param depth stencil dispatched
+    //! \note renderTargetCount must be between 0 and MAX_RENDER_TARGETS
+    void SetRenderTargets (int renderTargetNum, RenderTarget** renderTarget, DepthStencilTarget& depthStencil);
+
+    //! Sets all color / depth and stencil to null 
+    //! \note this is equivalent of calling SetRenderTargets(0, nullptr);
+    void ClearAllTargets();
 
     //! Sets the default render target frame buffer (the basic window render target)
-    void DispatchDefaultRenderTarget(const Viewport& viewport);
+    //! Sets also the default depth stencil buffer
+    void DispatchDefaultRenderTarget();
 
     //! Clears the selected buffers
     void Clear(bool color, bool depth, bool stencil);

@@ -14,6 +14,7 @@
 #include "Pegasus/Render/MeshFactory.h"
 #include "Pegasus/Render/Render.h"
 #include "Pegasus/Utils/Memcpy.h"
+#include "Pegasus/Utils/Memset.h"
 #include "Pegasus/Utils/String.h"
 #include "../Source/Pegasus/Render/DX11/DXRenderContext.h"
 #include "../Source/Pegasus/Render/DX11/DXGpuDataDefs.h"
@@ -33,7 +34,8 @@ struct DXState
     int dispatchedMeshVersion;
     Pegasus::Render::DXMeshGPUData    * mDispatchedMeshGpuData;
     Pegasus::Math::ColorRGBA            mClearColorValue;
-	ID3D11RenderTargetView* mDispatchedTarget;
+    int mTargetsCount;
+    ID3D11RenderTargetView* mDispatchedTargets[Pegasus::Render::Constants::MAX_RENDER_TARGETS];
 } gDXState = { 0, nullptr, 0, nullptr, Pegasus::Math::ColorRGBA(0.0, 0.0, 0.0, 0.0) };
 
 // ---------------------------------------------------------------------------
@@ -197,27 +199,15 @@ void Pegasus::Render::SetMesh (Pegasus::Mesh::MeshInOut mesh)
 
 
 // ---------------------------------------------------------------------------
+///////////////////////////////////////////////////////////////////////////////
+/////////////   SetViewport FUNCTION IMPLEMENTATION //////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-/////////////   SetRenderTargets FUNCTION IMPLEMENTATION //////////////////////
-///////////////////////////////////////////////////////////////////////////////
-void Pegasus::Render::SetRenderTargets(Pegasus::Render::RenderTarget& renderTarget, const Viewport& viewport, int renderTargetSlot)
+void Pegasus::Render::SetViewport(const Pegasus::Render::Viewport& viewport)
 {
-    PG_ASSERTSTR(renderTargetSlot == 0, "Only supporting one render target.");
     DXRenderContext * ctx = DXRenderContext::GetBindedContext();
     PG_ASSERTSTR(ctx != nullptr, "must bind a context!!");
     ID3D11DeviceContext * deviceContext = ctx->GetD3D();
-    ID3D11DepthStencilView* depthStencil = ctx->GetDepthStencil();    
-    Pegasus::Render::DXRenderTargetGPUData* rtGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXRenderTargetGPUData, renderTarget.mInternalData);
-    ID3D11RenderTargetView* rt = rtGpuData->mRenderTarget;
-	gDXState.mDispatchedTarget = rt;
-    deviceContext->OMSetRenderTargets(
-        1,
-        &rt,
-    nullptr//    depthStencil
-    );
-    
-    //! TODO: optimize this by recycling the RSSetViewport dx11 call
     D3D11_VIEWPORT vp = {
         static_cast<float>(viewport.mXOffset),
         static_cast<float>(viewport.mYOffset),
@@ -232,16 +222,88 @@ void Pegasus::Render::SetRenderTargets(Pegasus::Render::RenderTarget& renderTarg
     );
 }
 
+void Pegasus::Render::SetViewport(const Pegasus::Render::RenderTarget& viewport)
+{
+    DXRenderContext * ctx = DXRenderContext::GetBindedContext();
+    PG_ASSERTSTR(ctx != nullptr, "must bind a context!!");
+    ID3D11DeviceContext * deviceContext = ctx->GetD3D();
+    D3D11_VIEWPORT vp = {
+        0.0f,
+        0.0f,
+        static_cast<float>(viewport.mConfig.mWidth),
+        static_cast<float>(viewport.mConfig.mHeight),
+        0.0f,
+        1.0f
+    };
+    deviceContext->RSSetViewports(
+        1,
+        &vp
+    );
+}
+
+void Pegasus::Render::SetViewport(const Pegasus::Render::DepthStencilTarget& viewport)
+{
+    DXRenderContext * ctx = DXRenderContext::GetBindedContext();
+    PG_ASSERTSTR(ctx != nullptr, "must bind a context!!");
+    ID3D11DeviceContext * deviceContext = ctx->GetD3D();
+}
 
 // ---------------------------------------------------------------------------
-
-void Pegasus::Render::DispatchNullRenderTarget()
+///////////////////////////////////////////////////////////////////////////////
+/////////////   SetRenderTargets FUNCTION IMPLEMENTATION //////////////////////
+///////////////////////////////////////////////////////////////////////////////
+void Pegasus::Render::SetRenderTarget (Pegasus::Render::RenderTarget& renderTarget)
 {
+    Pegasus::Render::RenderTarget* targetPtr = &renderTarget;
+    Pegasus::Render::SetRenderTargets(1, &targetPtr);
+}
+
+void Pegasus::Render::SetRenderTarget (Pegasus::Render::RenderTarget& renderTarget, Pegasus::Render::DepthStencilTarget& depthStencil)
+{
+    Pegasus::Render::RenderTarget* targetPtr = &renderTarget;
+    Pegasus::Render::SetRenderTargets(1, &targetPtr, depthStencil);
+}
+
+void Pegasus::Render::SetRenderTargets (int renderTargetCount, Pegasus::Render::RenderTarget** renderTarget)
+{
+    Pegasus::Render::SetRenderTargets(renderTargetCount, renderTarget, DepthStencilTarget());
+}
+
+void Pegasus::Render::SetRenderTargets (int renderTargetNum, Pegasus::Render::RenderTarget** renderTarget, Pegasus::Render::DepthStencilTarget& depthStencil)
+{
+    DXRenderContext * ctx = DXRenderContext::GetBindedContext();
+    PG_ASSERTSTR(ctx != nullptr, "must bind a context!!");
+    ID3D11DeviceContext * deviceContext = ctx->GetD3D();
+
+    PG_ASSERT(renderTargetNum >= 0 && renderTargetNum < Pegasus::Render::Constants::MAX_RENDER_TARGETS);
+    ID3D11DepthStencilView* d3dDepthStencil = nullptr;    
+    Pegasus::Utils::Memset32(gDXState.mDispatchedTargets, 0, sizeof(gDXState.mDispatchedTargets));
+
+    gDXState.mTargetsCount = renderTargetNum;
+
+    for (int i = 0; i < renderTargetNum; ++i)
+    {
+        Pegasus::Render::DXRenderTargetGPUData* rtGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXRenderTargetGPUData, renderTarget[i]->mInternalData);
+        gDXState.mDispatchedTargets[i] = rtGpuData->mRenderTarget;
+        
+    }
+    deviceContext->OMSetRenderTargets(
+        renderTargetNum,
+        gDXState.mDispatchedTargets,
+        d3dDepthStencil
+    );
 }
 
 // ---------------------------------------------------------------------------
 
-void Pegasus::Render::DispatchDefaultRenderTarget(const Pegasus::Render::Viewport& viewport)
+void Pegasus::Render::ClearAllTargets()
+{
+    Pegasus::Render::SetRenderTargets(0, nullptr);
+}
+
+// ---------------------------------------------------------------------------
+
+void Pegasus::Render::DispatchDefaultRenderTarget()
 {
     DXRenderContext * ctx = DXRenderContext::GetBindedContext();
     PG_ASSERTSTR(ctx != nullptr, "must bind a context!!");
@@ -253,22 +315,9 @@ void Pegasus::Render::DispatchDefaultRenderTarget(const Pegasus::Render::Viewpor
         &rt,
         depthStencil
     );
-	gDXState.mDispatchedTarget = rt;
-    
-    //! TODO: optimize this by recycling the RSSetViewport dx11 call
-    D3D11_VIEWPORT vp = {
-        static_cast<float>(viewport.mXOffset),
-        static_cast<float>(viewport.mYOffset),
-        static_cast<float>(viewport.mWidth),
-        static_cast<float>(viewport.mHeight),
-        0.0f,
-        1.0f
-    };
-    deviceContext->RSSetViewports(
-        1,
-        &vp
-    );
 
+	gDXState.mDispatchedTargets[0] = rt;
+    gDXState.mTargetsCount = 1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -285,10 +334,13 @@ void Pegasus::Render::Clear(bool color, bool depth, bool stencil)
     if (color)
     {
         Pegasus::Math::ColorRGBA& col = gDXState.mClearColorValue;
-        deviceContext->ClearRenderTargetView(
-			gDXState.mDispatchedTarget,
-            col.rgba
-        );
+        for (int i = 0; i < gDXState.mTargetsCount; ++i)
+        {
+            deviceContext->ClearRenderTargetView(
+		    	gDXState.mDispatchedTargets[i],
+                col.rgba
+            );
+        }
     }
 
 	if (depth)
@@ -342,19 +394,6 @@ void Pegasus::Render::SetBlendingState(const Pegasus::Render::BlendingState& ble
 
 void Pegasus::Render::SetDepthClearValue(float d)
 {
-}
-
-// ---------------------------------------------------------------------------
-
-void Pegasus::Render::SetRenderTarget(Pegasus::Render::RenderTarget& renderTarget)
-{
-    Pegasus::Render::DXRenderTargetGPUData* rtGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXRenderTargetGPUData, renderTarget.mInternalData);
-    Pegasus::Render::Viewport v;
-    v.mXOffset = 0;
-    v.mYOffset = 0;
-    v.mWidth =  static_cast<int>(rtGpuData->mTextureView.mDesc.Width);
-    v.mHeight = static_cast<int>(rtGpuData->mTextureView.mDesc.Height);
-    Pegasus::Render::SetRenderTargets(renderTarget, v, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -748,7 +787,7 @@ bool Pegasus::Render::SetUniformTextureRenderTarget(Pegasus::Render::Uniform& u,
 // ---------------------------------------------------------------------------
 void Pegasus::Render::CleanInternalState()
 {
-    gDXState.mDispatchedTarget = nullptr;
+    gDXState.mTargetsCount = 0;
     gDXState.mDispatchedMeshGpuData = nullptr;
     gDXState.mDispatchedShader = nullptr;
 

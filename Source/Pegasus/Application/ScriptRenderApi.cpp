@@ -33,8 +33,12 @@ using namespace Pegasus::Application;
 using namespace Pegasus::BlockScript::Ast;
 using namespace Pegasus::Math;
 
+//global type, used for dynamic type checking
+const TypeDesc* gRenderTargetType = nullptr;
+
 static void RegisterTypes        (BlockLib* lib);
 static void RegisterFunctions    (BlockLib* lib);
+
 
 ///////////////////////////////////////////////////////////////////////////////////
 //! Forward declaration of API function wrappers
@@ -72,7 +76,13 @@ void Render_SetUniformTexture(FunCallbackContext& context);
 void Render_SetUniformTextureRenderTarget(FunCallbackContext& context);
 void Render_SetProgram(FunCallbackContext& context);
 void Render_SetMesh(FunCallbackContext& context);
+void Render_SetViewport(FunCallbackContext& context);
+void Render_SetViewport2(FunCallbackContext& context);
+void Render_SetViewport3(FunCallbackContext& context);
 void Render_SetRenderTarget(FunCallbackContext& context);
+void Render_SetRenderTarget2(FunCallbackContext& context);
+void Render_SetRenderTargets(FunCallbackContext& context);
+void Render_SetRenderTargets2(FunCallbackContext& context);
 void Render_SetDefaultRenderTarget(FunCallbackContext& context);
 void Render_Clear(FunCallbackContext& context);
 void Render_SetClearColorValue(FunCallbackContext& context);
@@ -207,6 +217,10 @@ static void RegisterNodes(BlockLib* lib)
             {}, 0
         },
         {
+            "DepthStencilTarget",
+            {}, 0
+        },
+        {
             "BlendingState",
             {}, 0
         },
@@ -258,6 +272,7 @@ static void RegisterNodes(BlockLib* lib)
         }
     };
     lib->CreateClassTypes(nodeDefs, sizeof(nodeDefs)/sizeof(nodeDefs[0]));
+    gRenderTargetType = lib->GetSymbolTable()->GetTypeByName("RenderTarget");
 }
 
 static void RegisterTypes(BlockLib* lib)
@@ -379,11 +394,53 @@ static void RegisterFunctions(BlockLib* lib)
             Render_SetMesh
         },
         {
+            "SetViewport",
+            "int",
+            { "Viewport", nullptr },
+            { "vp", nullptr },
+            Render_SetViewport
+        },
+        {
+            "SetViewport",
+            "int",
+            { "RenderTarget", nullptr },
+            { "vp", nullptr },
+            Render_SetViewport2
+        },
+        {
+            "SetViewport",
+            "int",
+            { "DepthStencilTarget", nullptr },
+            { "vp", nullptr },
+            Render_SetViewport3
+        },
+        {
             "SetRenderTarget",
             "int",
             { "RenderTarget", nullptr },
             { "renderTarget", nullptr },
             Render_SetRenderTarget
+        },
+        {
+            "SetRenderTarget",
+            "int",
+            { "RenderTarget", "DepthStencilTarget", nullptr },
+            { "renderTarget", "depthStencilTarget", nullptr },
+            Render_SetRenderTarget2
+        },
+        {
+            "SetRenderTargets",
+            "int",
+            { "int"               , "*"              , "DepthStencilTarget", nullptr },
+            { "renderTargetCounts", "renderTargets[]", "depthStencilTarget", nullptr },
+            Render_SetRenderTargets
+        },
+        {
+            "SetRenderTargets",
+            "int",
+            { "int"               , "*"              ,  nullptr },
+            { "renderTargetCounts", "renderTargets[]",  nullptr },
+            Render_SetRenderTargets2
         },
         {
             "SetDefaultRenderTarget",
@@ -818,6 +875,35 @@ void Render_SetMesh(FunCallbackContext& context)
     }
 }
 
+void Render_SetViewport(FunCallbackContext& context)
+{
+    BsVmState* state = context.GetVmState();
+    PG_ASSERT(context.GetInputBufferSize() == sizeof(Render::Viewport));
+    Render::Viewport* viewport = static_cast<Render::Viewport*>(context.GetRawInputBuffer());
+    Render::SetViewport(*viewport);
+}
+
+void Render_SetViewport2(FunCallbackContext& context)
+{
+    BsVmState* state = context.GetVmState();
+    RenderCollection* collection = static_cast<RenderCollection*>(state->GetUserContext());
+    PG_ASSERT(context.GetInputBufferSize() == sizeof(RenderCollection::CollectionHandle));
+    RenderCollection::CollectionHandle handle = *static_cast<RenderCollection::CollectionHandle*>(context.GetRawInputBuffer());
+    if (handle != RenderCollection::INVALID_HANDLE)
+    {
+        Render::RenderTarget* rt = collection->GetRenderTarget(handle);
+        Pegasus::Render::SetViewport(*rt);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Invalid Render Target passed to set viewport.");
+    }
+}
+
+void Render_SetViewport3(FunCallbackContext& context)
+{
+}
+
 void Render_SetRenderTarget(FunCallbackContext& context)
 {
     BsVmState* state = context.GetVmState();
@@ -834,12 +920,82 @@ void Render_SetRenderTarget(FunCallbackContext& context)
         PG_LOG('ERR_', "Invalid render target being set");
     }
 }
+void Render_SetRenderTarget2(FunCallbackContext& context) 
+{ 
+    //TODO: implement depth render targets
+    PG_LOG('ERR_', "Unimplemented.");
+}
+
+void Render_SetRenderTargets(FunCallbackContext& context)
+{
+    BsVmState* state = context.GetVmState();
+    RenderCollection* renderCollection = static_cast<RenderCollection*>(state->GetUserContext());
+    PG_ASSERT(context.GetInputBufferSize() == 2.0*sizeof(int));
+    int* inputs = static_cast<int*>(context.GetRawInputBuffer());
+    int targetCounts = inputs[0];
+    int targetsOffset = inputs[1];
+    
+    if (targetCounts >= Pegasus::Render::Constants::MAX_RENDER_TARGETS)
+    {
+        PG_LOG('ERR_', "Can't set %i number of targets. Target number must be from 0 to %i", targetCounts, Pegasus::Render::Constants::MAX_RENDER_TARGETS);
+        return;
+    }
+
+    //check the type here of the unknown pointer passed as the second parameter
+    const TypeDesc* unknownType = context.GetArgExps()->GetTail()->GetExp()->GetTypeDesc();
+    if (unknownType->GetModifier() != TypeDesc::M_ARRAY || 
+        unknownType->GetChild() != gRenderTargetType) //quick check, we should use Equals 
+                                                      //but its slower. This type is guaranteed 
+                                                      //to be a singleton so its quicker to compare ptrs.
+    {
+        PG_LOG('ERR_', "Second argument passed on SetRenderTargets must be an array of RenderTarget. Function failed.");
+        return;
+    }
+
+    
+    PG_ASSERT(targetsOffset < state->GetRamSize());
+    char* targetsPtr = state->Ram() + targetsOffset;
+    RenderCollection::CollectionHandle* handles = reinterpret_cast<RenderCollection::CollectionHandle*>(targetsPtr);
+    //dump all into temp buffer
+    Pegasus::Render::RenderTarget* targets[Pegasus::Render::Constants::MAX_RENDER_TARGETS];
+    for (int i = 0; i < targetCounts; ++i)
+    {
+        if (handles[i] != RenderCollection::INVALID_HANDLE)
+        {
+            PG_LOG('ERR_', "Trying to set incorrect handle in SetRenderTargets!");
+            return;
+        }
+        else
+        {
+            targets[i] = renderCollection->GetRenderTarget(handles[i]);
+        }
+    }
+
+    Pegasus::Render::SetRenderTargets(targetCounts, targets);
+}
+
+void Render_SetRenderTargets2(FunCallbackContext& context)
+{
+    BsVmState* state = context.GetVmState();
+    RenderCollection* renderCollection = static_cast<RenderCollection*>(state->GetUserContext());
+    PG_ASSERT(context.GetInputBufferSize() == sizeof(int) + sizeof(RenderCollection::CollectionHandle) );
+    int* inputs = static_cast<int*>(context.GetRawInputBuffer());
+    int targetCounts = inputs[0];
+    int targetsOffset = inputs[1];
+    
+    if (targetCounts >= Pegasus::Render::Constants::MAX_RENDER_TARGETS)
+    {
+        PG_LOG('ERR_', "Can't set %i number of targets. Target number must be from 0 to %i", targetCounts, Pegasus::Render::Constants::MAX_RENDER_TARGETS);
+        return;
+    }
+
+    //check the type here
+    //TODO - implement functions
+}
 
 void Render_SetDefaultRenderTarget(FunCallbackContext& context)
 {
-    BsVmState* state = context.GetVmState();
-    RenderCollection* renderCollection = static_cast<RenderCollection*>(context.GetRawInputBuffer());
-    
+    Pegasus::Render::DispatchDefaultRenderTarget();
 }
 
 void Render_Clear(FunCallbackContext& context)

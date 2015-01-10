@@ -274,7 +274,8 @@ CodeTextEditorWidget::CodeTextEditorWidget(QWidget * parent)
 : QTextEdit(parent), mCode(nullptr), mIsFocus(false)
 {
     mSyntaxHighlighter = new CodeSyntaxHighlighter(nullptr);
-    setDocument(nullptr);
+    mNullDocument = new QTextDocument(this);
+    setDocument(mNullDocument);
 }
 
 
@@ -286,6 +287,7 @@ CodeTextEditorWidget::~CodeTextEditorWidget()
 void CodeTextEditorWidget::Initialize(CodeUserData * code)
 {
     mCode = code;
+    mSyntaxHighlighter->setDocument(nullptr);
     if (code != nullptr && code->GetSourceCode() != nullptr)
     {
         ED_ASSERT(!code->IsProgram());
@@ -305,16 +307,17 @@ void CodeTextEditorWidget::Initialize(CodeUserData * code)
         }
         mSyntaxHighlighter->setDocument(code->GetDocument());
         static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetSyntaxLanguage(gapi);
-        static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetCodeUserData(code);
-        UpdateAllDocumentSyntax();
+        static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetCodeUserData(code); 
     }
     else
     {
-        setDocument(nullptr);
-        mSyntaxHighlighter->setDocument(nullptr);
+        mNullDocument->clear();
+        setDocument(mNullDocument);
+   
         static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetCodeUserData(nullptr);
         setText(tr(""));
     }
+    UpdateAllDocumentSyntax();
 }
 
 void CodeTextEditorWidget::Uninitialize()
@@ -337,7 +340,6 @@ void CodeTextEditorWidget::UpdateLineSyntax(int line)
 
 void CodeTextEditorWidget::UpdateAllDocumentSyntax()
 {
-    if (document() == nullptr) return;
     QPalette p = palette();
     p.setColor(QPalette::Base, Editor::GetInstance().GetSettings()->GetCodeSyntaxColor(Settings::SYNTAX_BACKGROUND));
     p.setColor(QPalette::Text, Editor::GetInstance().GetSettings()->GetCodeSyntaxColor(Settings::SYNTAX_NORMAL_TEXT));

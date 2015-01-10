@@ -209,6 +209,10 @@ void GLTextureFactory::InternalCreateRenderTarget(
     //create frame buffer
     glGenFramebuffers(1, &gpuData->mFrameBufferName);
     glBindFramebuffer(GL_FRAMEBUFFER, gpuData->mFrameBufferName);
+    gpuData->mColAttachmentsCache[0] = gpuData->mTextureView.mHandle;
+
+    //invalidate the rest
+    for (int i = 0; i < GL_COLOR_ATTACHMENTS_COUNT; ++i) gpuData->mColAttachmentsCache[0] = 0;
 
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, gpuData->mTextureView.mHandle, 0);
     GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};

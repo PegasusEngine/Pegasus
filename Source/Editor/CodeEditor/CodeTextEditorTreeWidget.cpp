@@ -41,7 +41,7 @@ void CodeTextEditorTreeWidget::SignalCombination::Unbind(CodeTextEditorWidget * 
              mTextChangedMapper, SLOT(map()) );
     mTextChangedMapper->removeMappings(editor);
 
-    disconnect ( editor, SIGNAL(Selected()),
+    disconnect ( editor, SIGNAL(SignalSelected()),
             mSelectedSignalMapper, SLOT(map()));
     mSelectedSignalMapper->removeMappings(editor);
 }

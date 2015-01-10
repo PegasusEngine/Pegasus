@@ -17,7 +17,6 @@
 #include "../Source/Pegasus/Render/GL/GLGPUDataDefs.h"
 #include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
 
-
 //////////////////        GLOBALS CODE BLOCK     //////////////////////////////
 //         All globals holding state data are declared on this blocka       ///
 ///////////////////////////////////////////////////////////////////////////////
@@ -47,16 +46,6 @@ GLenum gOGLAttrTypeTranslation[Pegasus::Mesh::MeshInputLayout::ATTRTYPE_COUNT] =
     GL_UNSIGNED_SHORT, //USHORT
     GL_UNSIGNED_BYTE   //BOOL    
 };
-
-// global viewport state
-// used to avoid setting state and viewport in opengl
-Pegasus::Render::Viewport gCurrentViewport(-1,-1,-1,-1);
-
-// pointer used to determine if we set the render target to the global state
-Pegasus::Render::RenderTarget gDefaultRenderTarget;
-
-// pointer used to determine if we disable color rendering
-Pegasus::Render::RenderTarget gNullRenderTarget;
 
 bool gEnableColorBuffer = false;
 
@@ -193,83 +182,126 @@ void Pegasus::Render::SetMesh (Pegasus::Mesh::MeshInOut mesh)
 // ---------------------------------------------------------------------------
 
 ///////////////////////////////////////////////////////////////////////////////
+/////////////   SetViewport FUNCTION IMPLEMENTATION //////////////////////
+///////////////////////////////////////////////////////////////////////////////
+void Pegasus::Render::SetViewport(const Viewport& viewport)
+{
+    glViewport(viewport.mXOffset, viewport.mYOffset, viewport.mWidth, viewport.mHeight);  
+}
+
+void Pegasus::Render::SetViewport(const RenderTarget& viewport)
+{
+    glViewport(0, 0, viewport.mConfig.mWidth, viewport.mConfig.mHeight);  
+}
+
+void Pegasus::Render::SetViewport(const DepthStencilTarget& viewport)
+{
+}
+
+///////////////////////////////////////////////////////////////////////////////
 /////////////   SetRenderTargets FUNCTION IMPLEMENTATION //////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-void Pegasus::Render::SetRenderTargets(Pegasus::Render::RenderTarget& renderTarget, const Viewport& viewport, int renderTargetSlot)
+void Pegasus::Render::SetRenderTarget (RenderTarget& renderTarget)
 {
-    PG_ASSERTSTR(renderTargetSlot == 0, "multiple render targets not supported yet!");
+    RenderTarget* targetPtr = &renderTarget;
+    Pegasus::Render::SetRenderTargets(1, &targetPtr);
+}
 
-    if (&renderTarget == &gNullRenderTarget)
+void Pegasus::Render::SetRenderTarget (RenderTarget& renderTarget, DepthStencilTarget& depthStencil)
+{
+    RenderTarget* targetPtr = &renderTarget;
+    Pegasus::Render::SetRenderTargets(1, &targetPtr, depthStencil);
+}
+
+void Pegasus::Render::SetRenderTargets (int renderTargetCount, RenderTarget** renderTargets)
+{
+    Pegasus::Render::SetRenderTargets(renderTargetCount, renderTargets, DepthStencilTarget());
+}
+
+void Pegasus::Render::SetRenderTargets (int renderTargetNum, RenderTarget** renderTarget, DepthStencilTarget& depthStencil)
+{
+    PG_ASSERT(renderTargetNum >= 0 && renderTargetNum < Pegasus::Render::Constants::MAX_RENDER_TARGETS);
+    //TODO: handle depth
+    if (renderTargetNum == 0)
     {
-        glColorMask(false,false,false,false);
-        gEnableColorBuffer = false;
+        ClearAllTargets();
+        return;
     }
-    else
+
+    Pegasus::Render::OGLRenderTargetGPUData * primaryGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OGLRenderTargetGPUData, renderTarget[0]->mInternalData);
+
+    if (!gEnableColorBuffer)
     {
-        if (!gEnableColorBuffer)
+        glColorMask(true,true,true,true);
+        gEnableColorBuffer = true;
+    }
+
+    //flush changes into the primary frame buffer name
+    // this would be unlikely to occur
+    glBindFramebuffer(GL_FRAMEBUFFER, primaryGpuData->mFrameBufferName);
+
+    //if this render target is used for reading at any place, then unbind
+    GLuint lastTexture = gActiveTex;
+
+    for (int i = 1; i < GL_COLOR_ATTACHMENTS_COUNT; ++i)
+    {
+        if (i >= renderTargetNum)
         {
-            glColorMask(true,true,true,true);
-            gEnableColorBuffer = true;
-        }
-        if (&renderTarget == &gDefaultRenderTarget)
-        {
-            glBindFramebuffer(GL_FRAMEBUFFER, 0); //bind the basic render target
+            if (primaryGpuData->mColAttachmentsCache[i] != 0)
+            {
+                primaryGpuData->mColAttachmentsCache[i] = 0;
+                glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, 0, 0);
+            }
         }
         else
         {
-                
-            PG_ASSERT(renderTarget.mInternalData != nullptr);
-            Pegasus::Render::OGLRenderTargetGPUData * gpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OGLRenderTargetGPUData, renderTarget.mInternalData);
-            //if this render target is used for reading at any place, then unbind
-            GLuint lastTexture = gActiveTex;
-            for (GLuint i = 0; i < MAX_TEX_BINDINGS; ++i)
+            Pegasus::Render::OGLRenderTargetGPUData* secondaryTarget = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OGLRenderTargetGPUData, renderTarget[i]->mInternalData);
+            if (primaryGpuData->mColAttachmentsCache[i] != secondaryTarget->mTextureView.mHandle)
+            {
+                primaryGpuData->mColAttachmentsCache[i] = secondaryTarget->mTextureView.mHandle;
+                glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, primaryGpuData->mColAttachmentsCache[i], 0);
+            }        
+
+            //unbind this texture if its binded already
+            for (GLuint b = 0; b < MAX_TEX_BINDINGS; ++b)
             {             
-                GLTexBinding& binding = gTexBindingCache[i];
-                GLuint activeTex = i + GL_TEXTURE0;
-                if (gpuData->mTextureView.mHandle == binding.mHandle)
+                GLTexBinding& binding = gTexBindingCache[b];
+                GLuint activeTex = b + GL_TEXTURE0;
+                if (secondaryTarget->mTextureView.mHandle == binding.mHandle)
                 {
                     binding.mHandle = GL_INVALID_INDEX;
                     lastTexture = activeTex;
                     glActiveTexture(activeTex);
                     glBindTexture(GL_TEXTURE_2D, 0);
-                    
                 }
             } 
-
-            //restore the original active texture slot
-            if (lastTexture != gActiveTex)
-            {
-                glActiveTexture(gActiveTex);
-            }
-
-            //clear any binding we might have
-            glBindFramebuffer(GL_FRAMEBUFFER, gpuData->mFrameBufferName);
         }
+    }
 
-        if (viewport.mXOffset != gCurrentViewport.mXOffset || 
-            viewport.mYOffset != gCurrentViewport.mYOffset ||
-            viewport.mWidth   != gCurrentViewport.mWidth   ||
-            viewport.mHeight  != gCurrentViewport.mHeight   )
-        {
-            glViewport(viewport.mXOffset, viewport.mYOffset, viewport.mWidth, viewport.mHeight);  
-            gCurrentViewport = viewport;
-        }
+    //restore the original active texture slot
+    if (lastTexture != gActiveTex)
+    {
+        glActiveTexture(gActiveTex);
     }
 }
 
-
 // ---------------------------------------------------------------------------
 
-void Pegasus::Render::DispatchNullRenderTarget()
+void Pegasus::Render::DispatchDefaultRenderTarget()
 {
-    Pegasus::Render::SetRenderTargets(gNullRenderTarget, Pegasus::Render::Viewport(), 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); //bind the basic render target
 }
 
-// ---------------------------------------------------------------------------
 
-void Pegasus::Render::DispatchDefaultRenderTarget(const Pegasus::Render::Viewport& viewport)
+///////////////////////////////////////////////////////////////////////////////
+/////////////   ClearAllTargets FUNCTION IMPLEMENTATION //////////////////////
+///////////////////////////////////////////////////////////////////////////////
+void Pegasus::Render::ClearAllTargets()
 {
-    Pegasus::Render::SetRenderTargets(gDefaultRenderTarget, viewport, 0);
+    glColorMask(false,false,false,false);
+    glDepthMask(GL_FALSE);
+    gEnableColorBuffer = false;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0); //bind the basic render target
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -386,15 +418,6 @@ void Pegasus::Render::SetDepthClearValue(float d)
 {
     PG_ASSERTSTR(d >= 0.0 && d <= 1.0, "Depth clear value must be from 0 to 1");
     glClearDepth(d);
-}
-
-// ---------------------------------------------------------------------------
-
-void Pegasus::Render::SetRenderTarget(Pegasus::Render::RenderTarget& renderTarget)
-{
-    Viewport viewport(0, 0, renderTarget.mConfig.mWidth, renderTarget.mConfig.mHeight);
-    PG_ASSERT (renderTarget.mConfig.mWidth > 0 && renderTarget.mConfig.mHeight > 0);
-    SetRenderTargets(renderTarget, viewport, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -683,8 +706,6 @@ bool Pegasus::Render::SetUniformTextureRenderTarget(Pegasus::Render::Uniform& u,
 {
     Pegasus::Render::GLShaderUniform * uniformEntry = GetUpdatedGLUniformLocation(u);
 
-    PG_ASSERT(&renderTarget != &gDefaultRenderTarget);
-    PG_ASSERT(&renderTarget != &gNullRenderTarget);
     PG_ASSERT(renderTarget.mInternalData != nullptr);
 
     Pegasus::Render::OGLRenderTargetGPUData * gpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::OGLRenderTargetGPUData, renderTarget.mInternalData);

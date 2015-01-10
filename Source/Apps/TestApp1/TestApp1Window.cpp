@@ -59,8 +59,8 @@ void TestApp1Window::Render()
     GetDimensions(viewportWidth, viewportHeight);
     
     // set default render target
-    Pegasus::Render::Viewport regularViewport(viewportWidth, viewportHeight);
-    Pegasus::Render::DispatchDefaultRenderTarget(regularViewport);
+    Pegasus::Render::SetViewport(Pegasus::Render::Viewport(viewportWidth, viewportHeight));
+    Pegasus::Render::DispatchDefaultRenderTarget();
     Pegasus::Render::SetRasterizerState(mRasterState);
 
     // set clear color and depth

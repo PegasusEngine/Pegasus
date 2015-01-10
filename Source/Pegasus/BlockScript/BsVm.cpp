@@ -286,6 +286,7 @@ void FunGoCommand(Canon::FunGo* fungo, BsVmState& state)
         FunCallbackContext ctx(
             &state,
             funDesc,
+            fc->GetArgs(),
             state.Ram() + functionStack,
             byteOffset - functionStack,
             outputBuffer,
