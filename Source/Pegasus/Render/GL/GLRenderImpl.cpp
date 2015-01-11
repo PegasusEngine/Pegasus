@@ -95,6 +95,13 @@ void Pegasus::Render::SetMesh (Pegasus::Mesh::MeshInOut mesh)
 
     Pegasus::Render::OGLProgramGPUData * programGPUData = gOGLState.mDispatchedShader;
 
+
+    if (programGPUData == nullptr)
+    {
+        PG_LOG('ERR_', "Error: must set first a program before setting a mesh");
+        return;
+    } 
+
     //find the correct VAO, otherwise, create a new entry
     // PEGASUS TODO: optimize this? if this proves to be a CPU bottleneck we will 
     //               have to weight this VAO table implementation with just doing VertexArrayPtr every frame
@@ -428,9 +435,13 @@ void Pegasus::Render::SetDepthClearValue(float d)
 
 void Pegasus::Render::Draw()
 {
-    PG_ASSERT(gOGLState.mDispatchedShader != nullptr);
-    PG_ASSERT(gOGLState.mDispatchedMeshGPUData != nullptr);    
+    if (gOGLState.mDispatchedMeshGPUData == nullptr)
+    {
+        PG_LOG('ERR_', "A mesh must be set before calling draw!");
+        return;
+    }
     Pegasus::Render::OGLMeshGPUData::DrawState& drawState = gOGLState.mDispatchedMeshGPUData->mDrawState;
+    
     if (drawState.mIsIndexed)
     {
         glDrawElements(drawState.mPrimitive, drawState.mIndexCount, GL_UNSIGNED_SHORT, (void*)0x0);

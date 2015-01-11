@@ -77,7 +77,12 @@ void Pegasus::Render::SetMesh (Pegasus::Mesh::MeshInOut mesh)
     Pegasus::Graph::NodeGPUData * nodeGpuData = meshData->GetNodeGPUData();
     Pegasus::Render::DXMeshGPUData * meshGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXMeshGPUData, nodeGpuData);
     Pegasus::Render::DXProgramGPUData * programGpuData = gDXState.mDispatchedShader;
-    PG_ASSERTSTR(programGpuData != nullptr, "Must dispatch a shader first before dispatching a geometry");
+
+    if (programGpuData == nullptr)
+    {
+        PG_LOG('ERR_', "Must dispatch a program before trying to set a mesh.");
+        return;
+    } 
     
     Pegasus::Render::DXMeshGPUData::InputLayoutEntry * inputLayoutEntry = nullptr;
 
@@ -409,7 +414,11 @@ void Pegasus::Render::Draw()
     Pegasus::Render::GetDeviceAndContext(&device, &context);
 
     context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    PG_ASSERT(gDXState.mDispatchedMeshGpuData != nullptr);
+    if (gDXState.mDispatchedMeshGpuData == nullptr)
+    {
+        PG_LOG('ERR_', "A mesh must be set properly before calling draw!.");
+        return;
+    }
     Pegasus::Render::DXMeshGPUData* mesh = gDXState.mDispatchedMeshGpuData;
     if (mesh->mIsIndexed)
     {

@@ -538,23 +538,25 @@ void Program_SetShaderStage(FunCallbackContext& context)
 {
     BsVmState* state = context.GetVmState();
     Application::RenderCollection* container = GetContainer(state);    
+    FunParamStream stream(context);
 
+    RenderCollection::CollectionHandle& programId = stream.NextArgument<RenderCollection::CollectionHandle>();
+    RenderCollection::CollectionHandle& stageId = stream.NextArgument<RenderCollection::CollectionHandle>();
     
-    int* output = static_cast<int*>(context.GetRawOutputBuffer());
-    Application::RenderCollection::CollectionHandle programId = *static_cast<int*>(context.GetRawInputBuffer());
-    Application::RenderCollection::CollectionHandle stageId   = *(static_cast<int*>(context.GetRawInputBuffer()) + 1);
-    if (programId != Application::RenderCollection::INVALID_HANDLE && stageId != Application::RenderCollection::INVALID_HANDLE)
+    int retVal = 0;
+    if (programId != RenderCollection::INVALID_HANDLE && stageId != RenderCollection::INVALID_HANDLE)
     {
         PG_ASSERT(programId >= 0 && programId < container->GetProgramCount());
         PG_ASSERT(stageId   >= 0 && stageId < container->GetShaderCount());
         Shader::ShaderStageRef currShader = container->GetShader(stageId);
         container->GetProgram(programId)->SetShaderStage(currShader);
-        *output = 1;
+        retVal = 1;
     }
     else
     {
-        *output = 0;
+        PG_LOG('ERR_', "Failed setting shader stage.");
     }
+    stream.SubmitReturn(retVal);
 }
 
 /////////////////////////////////////////////////////////////
@@ -562,16 +564,17 @@ void Program_SetShaderStage(FunCallbackContext& context)
 /////////////////////////////////////////////////////////////
 void MeshGenerator_SetGeneratorInput(FunCallbackContext& context)
 {
-    PG_ASSERT(context.GetInputBufferSize() == 2*sizeof(RenderCollection::CollectionHandle));
     BsVmState* state = context.GetVmState();    
-    RenderCollection* collection = static_cast<RenderCollection*>(state->GetUserContext());
+    RenderCollection* collection = GetContainer(state);
+    FunParamStream stream(context);
     
-    RenderCollection::CollectionHandle* handles = static_cast<RenderCollection::CollectionHandle*>(context.GetRawInputBuffer());
+    RenderCollection::CollectionHandle& meshHandle = stream.NextArgument<RenderCollection::CollectionHandle>();
+    RenderCollection::CollectionHandle& genHandle  = stream.NextArgument<RenderCollection::CollectionHandle>();
     
-    if (handles[0] != RenderCollection::INVALID_HANDLE && handles[1] != RenderCollection::INVALID_HANDLE)
+    if ( meshHandle != RenderCollection::INVALID_HANDLE && genHandle != RenderCollection::INVALID_HANDLE)
     {
-        Mesh::MeshRef mesh = collection->GetMesh(handles[0]);
-        Mesh::MeshGeneratorRef meshGeneratorRef = collection->GetMeshGenerator(handles[1]);
+        Mesh::MeshRef mesh = collection->GetMesh(meshHandle);
+        Mesh::MeshGeneratorRef meshGeneratorRef = collection->GetMeshGenerator(genHandle);
         mesh->SetGeneratorInput(meshGeneratorRef);
     }
     else
@@ -612,23 +615,22 @@ void Texture_SetGeneratorInput(FunCallbackContext& context)
 /////////////////////////////////////////////////////////////
 void Node_CreateProgramLinkage(FunCallbackContext& context)
 {
+    FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
     Application::RenderCollection* container = GetContainer(state);
 
-    int* inptStr = static_cast<int*>(context.GetRawInputBuffer());
-    const char* name = static_cast<const char*>(state->GetHeapElement(*inptStr).mObject);
+    const char* name = stream.NextBsStringArgument();
     Shader::ProgramLinkageRef prog = container->GetAppContext()->GetShaderManager()->CreateProgram(name);
-    Application::RenderCollection::CollectionHandle* output = static_cast<int*>(context.GetRawOutputBuffer());
-    *output = container->AddProgram(&(*prog));
+    stream.SubmitReturn( container->AddProgram(&(*prog)) );
 }
 
 void Node_LoadShaderStage(FunCallbackContext& context)
 {
+    FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
     Application::RenderCollection* container = GetContainer(state);
 
-    int* inptStr = static_cast<int*>(context.GetRawInputBuffer());
-    const char* path = static_cast<const char*>(state->GetHeapElement(*inptStr).mObject);
+    const char* path = stream.NextBsStringArgument();
 
     Shader::ShaderStageFileProperties fileProps;
     fileProps.mPath = path;
@@ -636,18 +638,17 @@ void Node_LoadShaderStage(FunCallbackContext& context)
     fileProps.mUserData = nullptr;
 
     Shader::ShaderStageRef shaderStage = container->GetAppContext()->GetShaderManager()->LoadShaderStageFromFile(fileProps);
-    Application::RenderCollection::CollectionHandle* output = static_cast<int*>(context.GetRawOutputBuffer());
     if (shaderStage != nullptr)
     {
         //force shader compilation
         bool unused = false;
         shaderStage->GetUpdatedData(unused);
 
-        *output = container->AddShader(&(*shaderStage));
+        stream.SubmitReturn( container->AddShader(&(*shaderStage)) );
     }
     else
     {
-        *output = Application::RenderCollection::INVALID_HANDLE; //an invalid id
+        stream.SubmitReturn( Application::RenderCollection::INVALID_HANDLE ); //an invalid id
     }
 }
 
@@ -665,34 +666,31 @@ void Node_CreateTextureOperator(FunCallbackContext& context)
 
 void Node_CreateMesh(FunCallbackContext& context)
 {
-    PG_ASSERT(context.GetOutputBufferSize() == sizeof(RenderCollection::CollectionHandle));
+    FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
-    RenderCollection* collection = static_cast<RenderCollection*>(state->GetUserContext());
+    RenderCollection* collection = GetContainer(state);
     Wnd::IWindowContext* appCtx = collection->GetAppContext();
     Mesh::MeshManager* meshManager = appCtx->GetMeshManager();
     Mesh::MeshRef newMesh = meshManager->CreateMeshNode();
     RenderCollection::CollectionHandle handle = collection->AddMesh(newMesh);
-    *static_cast<RenderCollection::CollectionHandle*>(context.GetRawOutputBuffer()) = handle;
+    stream.SubmitReturn(handle);
 }
 
 void Node_CreateMeshGenerator(FunCallbackContext& context)
 {
-    PG_ASSERT(context.GetInputBufferSize() == sizeof(int)); //int is a memory ref to the string
-    PG_ASSERT(context.GetOutputBufferSize() == sizeof(RenderCollection::CollectionHandle));
+    FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
-    RenderCollection* collection = static_cast<RenderCollection*>(state->GetUserContext());
+    RenderCollection* collection = GetContainer(state);
     Wnd::IWindowContext* appCtx = collection->GetAppContext();
     Mesh::MeshManager* meshManager = appCtx->GetMeshManager();
 
     //get the input
-    int stringRef = *static_cast<int*>(context.GetRawInputBuffer());
-    BsVmState::HeapElement& heapEl = state->GetHeapElement(stringRef);
-    char* name = static_cast<char*>(heapEl.mObject);
+    const char* name = stream.NextBsStringArgument();
 
     //create new mesh generator
     Mesh::MeshGeneratorRef meshGenerator = meshManager->CreateMeshGeneratorNode(name);
     RenderCollection::CollectionHandle handle = collection->AddMeshGenerator(meshGenerator);
-    *static_cast<RenderCollection::CollectionHandle*>(context.GetRawOutputBuffer()) = handle;
+    stream.SubmitReturn(handle);
     
 }
 
@@ -701,27 +699,23 @@ void Node_CreateMeshGenerator(FunCallbackContext& context)
 /////////////////////////////////////////////////////////////
 void Render_CreateUniformBuffer(FunCallbackContext& context)
 {
+    FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
 
-    PG_ASSERT(context.GetInputBufferSize() == sizeof(int));
-    PG_ASSERT(context.GetOutputBufferSize() == sizeof(int));
-
-    int* inputBuffer = static_cast<int*>(context.GetRawInputBuffer()); 
-    int* outputBuffer = static_cast<int*>(context.GetRawOutputBuffer());
-    int bufferSize = inputBuffer[0];
+    int& bufferSize = stream.NextArgument<int>();
 
     if ((bufferSize & 15) != 0)
     {
         PG_LOG('ERR_', "Error: cannot create buffer with unaligend size. Size must be 16 byte aligned.");
-        outputBuffer[0] = Application::RenderCollection::INVALID_HANDLE; 
+        stream.SubmitReturn( RenderCollection::INVALID_HANDLE ); 
     }
     else
     {
      
+        Application::RenderCollection* renderCollection = GetContainer(state);
         Render::Buffer buffer;
         Render::CreateUniformBuffer(bufferSize, buffer);
-        Application::RenderCollection* renderCollection = static_cast<Application::RenderCollection*>(state->GetUserContext());
-        outputBuffer[0] = renderCollection->AddBuffer(buffer);
+        stream.SubmitReturn( renderCollection->AddBuffer(buffer));
 
     }
 }
@@ -730,18 +724,16 @@ void Render_SetBuffer(FunCallbackContext& context)
 {
     PG_ASSERT(context.GetInputBufferSize() == (sizeof(int)/*buffer ref*/ + sizeof(int)/*raw ram ref*/));
 
+    FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
     
-    int* inputBuffers = static_cast<int*>(context.GetRawInputBuffer());
-    int bufferRef = inputBuffers[0];
-    int ramRef = inputBuffers[1];
+    RenderCollection::CollectionHandle& bufferRef = stream.NextArgument<RenderCollection::CollectionHandle>();
+    int& ramRef = stream.NextArgument<int>(); //since the second parameter is a *, we can just gets its pointer in memory
     char* bufferPointer = state->Ram() + ramRef;
-
-   
  
     if (bufferRef != Application::RenderCollection::INVALID_HANDLE)
     {
-        Application::RenderCollection* renderCollection = static_cast<Application::RenderCollection*>(state->GetUserContext());
+        Application::RenderCollection* renderCollection = GetContainer(state);
         Render::Buffer* buff = renderCollection->GetBuffer(bufferRef);
         Render::SetBuffer(*buff, bufferPointer);
     }
@@ -754,16 +746,17 @@ void Render_SetBuffer(FunCallbackContext& context)
 
 void Render_GetUniformLocation(FunCallbackContext& context)
 {
+    FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
-    Application::RenderCollection* renderCollection = static_cast<Application::RenderCollection*>(state->GetUserContext());
-    int programId = static_cast<int*>(context.GetRawInputBuffer())[0];
-    if (programId != -1)
+    Application::RenderCollection* renderCollection = GetContainer(state);
+    RenderCollection::CollectionHandle& programId = stream.NextArgument<RenderCollection::CollectionHandle>();
+    if (programId != RenderCollection::INVALID_HANDLE)
     {
         Shader::ProgramLinkageRef program = renderCollection->GetProgram(programId);
-        int uniformNameRef = static_cast<int*>(context.GetRawInputBuffer())[1];
-        const char* uniformNameStr = static_cast<const char*>(state->GetHeapElement(uniformNameRef).mObject);
+        const char* uniformNameStr = stream.NextBsStringArgument();
+
+        //this is more confusing but avoids an extra memory copy, contrasted if we were using stream.SubmitReturn
         PG_ASSERT(context.GetOutputBufferSize() == sizeof(Render::Uniform));
-        
         Render::Uniform* outUniform = static_cast<Render::Uniform*>(context.GetRawOutputBuffer());
         Render::GetUniformLocation(program, uniformNameStr, *outUniform);
     }
@@ -776,16 +769,17 @@ void Render_GetUniformLocation(FunCallbackContext& context)
 void Render_SetUniformBuffer(FunCallbackContext& context)
 {
     PG_ASSERT(context.GetInputBufferSize() == (sizeof(Render::Uniform) + sizeof(int)));
-
+    
+    FunParamStream stream(context);
     BsVmState * state = context.GetVmState();
-    Render::Uniform* uniform  = static_cast<Render::Uniform*>(context.GetRawInputBuffer()); 
-    int bufferHandle = reinterpret_cast<int*>(static_cast<char*>(context.GetRawInputBuffer()) + sizeof(Render::Uniform))[0];
+    Render::Uniform& uniform  = stream.NextArgument<Render::Uniform>(); 
+    int& bufferHandle = stream.NextArgument<int>();
 
     if (bufferHandle != Application::RenderCollection::INVALID_HANDLE)
     {
-        Application::RenderCollection* renderCollection = static_cast<Application::RenderCollection*>(state->GetUserContext());
+        Application::RenderCollection* renderCollection = GetContainer(state);
         Render::Buffer* buffer = renderCollection->GetBuffer(bufferHandle);
-        bool res = Render::SetUniformBuffer(*uniform, *buffer);
+        bool res = Render::SetUniformBuffer(uniform, *buffer);
         if (!res)
         {
             PG_LOG('ERR_', "Error setting uniform. Check that uniform exists and that program is set.");
@@ -799,17 +793,16 @@ void Render_SetUniformBuffer(FunCallbackContext& context)
 
 void Render_SetUniformTexture(FunCallbackContext& context)
 {
-    PG_ASSERT(context.GetInputBufferSize() == (sizeof(Render::Uniform) + sizeof(int)));
-
+    FunParamStream stream(context);
     BsVmState * state = context.GetVmState();
-    Render::Uniform* uniform  = static_cast<Render::Uniform*>(context.GetRawInputBuffer()); 
-    int texHandle = reinterpret_cast<int*>(static_cast<char*>(context.GetRawInputBuffer()) + sizeof(Render::Uniform))[0];
+    Render::Uniform& uniform  = stream.NextArgument<Render::Uniform>(); 
+    RenderCollection::CollectionHandle& texHandle = stream.NextArgument<RenderCollection::CollectionHandle>();
 
     if (texHandle != Application::RenderCollection::INVALID_HANDLE)
     {
-        Application::RenderCollection* renderCollection = static_cast<Application::RenderCollection*>(state->GetUserContext());
+        Application::RenderCollection* renderCollection = GetContainer(state);
         Texture::TextureRef texture = renderCollection->GetTexture(texHandle);
-        bool res = Render::SetUniformTexture(*uniform, texture);
+        bool res = Render::SetUniformTexture(uniform, texture);
         if (!res)
         {
             PG_LOG('ERR_', "Error setting uniform texture. Check that uniform exists and that program is set.");
@@ -823,16 +816,16 @@ void Render_SetUniformTexture(FunCallbackContext& context)
 
 void Render_SetUniformTextureRenderTarget(FunCallbackContext& context)
 {
+    FunParamStream stream(context);
     BsVmState * state = context.GetVmState();
-    Application::RenderCollection* renderCollection = static_cast<Application::RenderCollection*>(state->GetUserContext());
-    PG_ASSERT(context.GetInputBufferSize() == (sizeof(Render::Uniform) + sizeof(int)));
-    Render::Uniform* uniform = static_cast<Render::Uniform*>(context.GetRawInputBuffer());
-    int renderTargetId = reinterpret_cast<int>(static_cast<char*>(context.GetRawInputBuffer()) + sizeof(Render::Uniform));
+    Application::RenderCollection* renderCollection = GetContainer(state);
+    Render::Uniform& uniform = stream.NextArgument<Render::Uniform>();
+    RenderCollection::CollectionHandle& renderTargetId = stream.NextArgument<RenderCollection::CollectionHandle>();
 
     if (renderTargetId != Application::RenderCollection::INVALID_HANDLE)
     {
         Render::RenderTarget* renderTarget = renderCollection->GetRenderTarget(renderTargetId);
-        Render::SetUniformTextureRenderTarget(*uniform, *renderTarget);
+        Render::SetUniformTextureRenderTarget(uniform, *renderTarget);
     }
     else
     {
@@ -843,10 +836,10 @@ void Render_SetUniformTextureRenderTarget(FunCallbackContext& context)
 
 void Render_SetProgram(FunCallbackContext& context)
 {
+    FunParamStream stream(context);
     BsVmState * state = context.GetVmState();
-    Application::RenderCollection* renderCollection = static_cast<Application::RenderCollection*>(state->GetUserContext());
-    PG_ASSERT(context.GetInputBufferSize() == sizeof(int));
-    int programId = (static_cast<int*>(context.GetRawInputBuffer()))[0];
+    Application::RenderCollection* renderCollection = GetContainer(state);
+    RenderCollection::CollectionHandle& programId = stream.NextArgument<RenderCollection::CollectionHandle>();
     if (programId != Application::RenderCollection::INVALID_HANDLE)
     {
         Shader::ProgramLinkageRef program = renderCollection->GetProgram(programId);
@@ -860,10 +853,10 @@ void Render_SetProgram(FunCallbackContext& context)
 
 void Render_SetMesh(FunCallbackContext& context)
 {
-    PG_ASSERT(context.GetInputBufferSize() == sizeof(int));
+    FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
-    Application::RenderCollection* renderCollection = static_cast<Application::RenderCollection*>(state->GetUserContext());
-    int meshId = (static_cast<int*>(context.GetRawInputBuffer()))[0];
+    Application::RenderCollection* renderCollection = GetContainer(state);
+    RenderCollection::CollectionHandle& meshId = stream.NextArgument<RenderCollection::CollectionHandle>();
     if (meshId != Application::RenderCollection::INVALID_HANDLE)
     {
         Mesh::MeshRef mesh = renderCollection->GetMesh(meshId);
@@ -877,18 +870,18 @@ void Render_SetMesh(FunCallbackContext& context)
 
 void Render_SetViewport(FunCallbackContext& context)
 {
+    FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
-    PG_ASSERT(context.GetInputBufferSize() == sizeof(Render::Viewport));
-    Render::Viewport* viewport = static_cast<Render::Viewport*>(context.GetRawInputBuffer());
-    Render::SetViewport(*viewport);
+    Render::Viewport& viewport = stream.NextArgument<Render::Viewport>();
+    Render::SetViewport(viewport);
 }
 
 void Render_SetViewport2(FunCallbackContext& context)
 {
+    FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
-    RenderCollection* collection = static_cast<RenderCollection*>(state->GetUserContext());
-    PG_ASSERT(context.GetInputBufferSize() == sizeof(RenderCollection::CollectionHandle));
-    RenderCollection::CollectionHandle handle = *static_cast<RenderCollection::CollectionHandle*>(context.GetRawInputBuffer());
+    RenderCollection* collection = GetContainer(state);
+    RenderCollection::CollectionHandle& handle = stream.NextArgument<RenderCollection::CollectionHandle>();
     if (handle != RenderCollection::INVALID_HANDLE)
     {
         Render::RenderTarget* rt = collection->GetRenderTarget(handle);
@@ -906,10 +899,10 @@ void Render_SetViewport3(FunCallbackContext& context)
 
 void Render_SetRenderTarget(FunCallbackContext& context)
 {
+    FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
-    RenderCollection* renderCollection = static_cast<RenderCollection*>(state->GetUserContext());
-    PG_ASSERT(context.GetInputBufferSize() == sizeof(RenderCollection::CollectionHandle));
-    RenderCollection::CollectionHandle rtHandle = *static_cast<RenderCollection::CollectionHandle*>(context.GetRawInputBuffer());
+    RenderCollection* renderCollection = GetContainer(state);
+    RenderCollection::CollectionHandle& rtHandle = stream.NextArgument<RenderCollection::CollectionHandle>();
     if (rtHandle != RenderCollection::INVALID_HANDLE)
     {
         Render::RenderTarget* rt = renderCollection->GetRenderTarget(rtHandle);
@@ -928,12 +921,11 @@ void Render_SetRenderTarget2(FunCallbackContext& context)
 
 void Render_SetRenderTargets(FunCallbackContext& context)
 {
+    FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
-    RenderCollection* renderCollection = static_cast<RenderCollection*>(state->GetUserContext());
-    PG_ASSERT(context.GetInputBufferSize() == 2.0*sizeof(int));
-    int* inputs = static_cast<int*>(context.GetRawInputBuffer());
-    int targetCounts = inputs[0];
-    int targetsOffset = inputs[1];
+    RenderCollection* renderCollection = GetContainer(state);
+    int targetCounts = stream.NextArgument<int>();
+    int targetsOffset = stream.NextArgument<int>();
     
     if (targetCounts >= Pegasus::Render::Constants::MAX_RENDER_TARGETS)
     {
@@ -956,6 +948,7 @@ void Render_SetRenderTargets(FunCallbackContext& context)
     PG_ASSERT(targetsOffset < state->GetRamSize());
     char* targetsPtr = state->Ram() + targetsOffset;
     RenderCollection::CollectionHandle* handles = reinterpret_cast<RenderCollection::CollectionHandle*>(targetsPtr);
+
     //dump all into temp buffer
     Pegasus::Render::RenderTarget* targets[Pegasus::Render::Constants::MAX_RENDER_TARGETS];
     for (int i = 0; i < targetCounts; ++i)
@@ -976,12 +969,11 @@ void Render_SetRenderTargets(FunCallbackContext& context)
 
 void Render_SetRenderTargets2(FunCallbackContext& context)
 {
+    FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
-    RenderCollection* renderCollection = static_cast<RenderCollection*>(state->GetUserContext());
-    PG_ASSERT(context.GetInputBufferSize() == sizeof(int) + sizeof(RenderCollection::CollectionHandle) );
-    int* inputs = static_cast<int*>(context.GetRawInputBuffer());
-    int targetCounts = inputs[0];
-    int targetsOffset = inputs[1];
+    RenderCollection* renderCollection = GetContainer(state);
+    int targetCounts = stream.NextArgument<int>();
+    int targetsOffset = stream.NextArgument<int>(); 
     
     if (targetCounts >= Pegasus::Render::Constants::MAX_RENDER_TARGETS)
     {
@@ -1001,23 +993,26 @@ void Render_SetDefaultRenderTarget(FunCallbackContext& context)
 void Render_Clear(FunCallbackContext& context)
 {
     PG_ASSERT(context.GetInputBufferSize() == 3 * sizeof(int));
-    int* input = static_cast<int*>(context.GetRawInputBuffer());
-    Render::Clear(input[0] == 1, input[1] == 1, input[2] == 1);
+    FunParamStream stream(context);
+    bool col = stream.NextArgument<int>() != 0;
+    bool depth = stream.NextArgument<int>() != 0;
+    bool stencil = stream.NextArgument<int>() != 0;
+    Render::Clear(col, depth, stencil);
 }
 
 void Render_SetClearColorValue(FunCallbackContext& context)
 {
-    PG_ASSERT(context.GetInputBufferSize() == sizeof(Math::Vec4));
-    Math::ColorRGBA* color = static_cast<Math::ColorRGBA*>(context.GetRawInputBuffer());
-    Render::SetClearColorValue(*color);
+    FunParamStream stream(context);
+    Math::ColorRGBA& color = stream.NextArgument<Math::ColorRGBA>();
+    Render::SetClearColorValue(color);
 }
 
 void Render_SetRasterizerState(FunCallbackContext& context)
 {
-    PG_ASSERT(context.GetInputBufferSize() == sizeof(RenderCollection::CollectionHandle));
+    FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
-    RenderCollection* collection = static_cast<RenderCollection*>(state->GetUserContext());
-    RenderCollection::CollectionHandle handle = *static_cast<RenderCollection::CollectionHandle*>(context.GetRawInputBuffer());
+    RenderCollection* collection = GetContainer(state);
+    RenderCollection::CollectionHandle& handle = stream.NextArgument<RenderCollection::CollectionHandle>();
     if (handle != RenderCollection::INVALID_HANDLE)
     {
         Render::RasterizerState* rasterState = collection->GetRasterizerState(handle);
@@ -1031,10 +1026,10 @@ void Render_SetRasterizerState(FunCallbackContext& context)
 
 void Render_SetBlendingState(FunCallbackContext& context)
 {
-    PG_ASSERT(context.GetInputBufferSize() == sizeof(RenderCollection::CollectionHandle));
+    FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
-    RenderCollection* collection = static_cast<RenderCollection*>(state->GetUserContext());
-    RenderCollection::CollectionHandle handle = *static_cast<RenderCollection::CollectionHandle*>(context.GetRawInputBuffer());
+    RenderCollection* collection = GetContainer(state);
+    RenderCollection::CollectionHandle& handle = stream.NextArgument<RenderCollection::CollectionHandle>();
     if (handle != RenderCollection::INVALID_HANDLE)
     {
         Render::BlendingState* blendState = collection->GetBlendingState(handle);
@@ -1048,8 +1043,9 @@ void Render_SetBlendingState(FunCallbackContext& context)
 
 void Render_SetDepthClearValue(FunCallbackContext& context)
 {
-    PG_ASSERT(context.GetInputBufferSize() == sizeof(float));
-    Render::SetDepthClearValue((static_cast<float*>(context.GetRawInputBuffer()))[0]);
+    FunParamStream stream(context);
+    float& depthClearVal = stream.NextArgument<float>();
+    Render::SetDepthClearValue(depthClearVal);
 }
 
 void Render_Draw(FunCallbackContext& context)
@@ -1059,45 +1055,39 @@ void Render_Draw(FunCallbackContext& context)
 
 void Render_CreateRenderTarget(FunCallbackContext& context)
 {
+    FunParamStream stream(context);
     BsVmState* vmState = context.GetVmState();
-    Application::RenderCollection* renderCollection = static_cast<Application::RenderCollection*>(vmState->GetUserContext());
-    PG_ASSERT(context.GetInputBufferSize() == sizeof(Render::RenderTargetConfig));
-    PG_ASSERT(context.GetOutputBufferSize() == sizeof(int));
-    Render::RenderTargetConfig* config = static_cast<Render::RenderTargetConfig*>(context.GetRawInputBuffer());
+    Application::RenderCollection* renderCollection = GetContainer(vmState);
+    Render::RenderTargetConfig& config = stream.NextArgument<Render::RenderTargetConfig>();
     Render::RenderTarget rt;
-    Render::CreateRenderTarget(*config, rt);
-    Application::RenderCollection::CollectionHandle rtHandle = renderCollection->AddRenderTarget(rt);
-    *static_cast<Application::RenderCollection::CollectionHandle*>(context.GetRawOutputBuffer()) = rtHandle;
+    Render::CreateRenderTarget(config, rt);
+    stream.SubmitReturn( renderCollection->AddRenderTarget(rt));
     
 }
 
 void Render_CreateRasterizerState(FunCallbackContext& context)
 {
+    FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
-    RenderCollection* collection = static_cast<RenderCollection*>(state->GetUserContext());
-    PG_ASSERT(context.GetInputBufferSize() == sizeof(Render::RasterizerConfig));
-    PG_ASSERT(context.GetOutputBufferSize() == sizeof(RenderCollection::CollectionHandle));
-    
-    Render::RasterizerConfig* rasterConfig = static_cast<Render::RasterizerConfig*>(context.GetRawInputBuffer());
+    RenderCollection* collection = GetContainer(state);
+   
+    Render::RasterizerConfig& rasterConfig = stream.NextArgument<Render::RasterizerConfig>();
     Render::RasterizerState rasterState;
-    Render::CreateRasterizerState(*rasterConfig, rasterState);
+    Render::CreateRasterizerState(rasterConfig, rasterState);
 
-    RenderCollection::CollectionHandle handle = collection->AddRasterizerState(rasterState);
-    *static_cast<RenderCollection::CollectionHandle*>(context.GetRawOutputBuffer()) = handle;
+    stream.SubmitReturn( collection->AddRasterizerState(rasterState) );
 }
 
 void Render_CreateBlendingState(FunCallbackContext& context)
 {
+    FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
-    RenderCollection* collection = static_cast<RenderCollection*>(state->GetUserContext());
-    PG_ASSERT(context.GetInputBufferSize() == sizeof(Render::BlendingConfig));
-    PG_ASSERT(context.GetOutputBufferSize() == sizeof(RenderCollection::CollectionHandle));
+    RenderCollection* collection = GetContainer(state);
     
     Render::BlendingConfig* blendConfig = static_cast<Render::BlendingConfig*>(context.GetRawOutputBuffer());
     Render::BlendingState blendState;
     Render::CreateBlendingState(*blendConfig, blendState);
     
-    RenderCollection::CollectionHandle handle = collection->AddBlendingState(blendState);
-    *static_cast<RenderCollection::CollectionHandle*>(context.GetRawOutputBuffer()) = handle;
+    stream.SubmitReturn( collection->AddBlendingState(blendState) );
 }
 

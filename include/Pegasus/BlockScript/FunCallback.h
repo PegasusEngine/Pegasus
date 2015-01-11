@@ -103,6 +103,52 @@ private:
     int   mOutputBufferSize;
 };
 
+//class that serves as a convinience function to parse arguments from a blockscript vm runtime
+//and to return values 
+class FunParamStream
+{
+public:
+    //! Constructor
+    //\param ctx the callback context, this context contains all the raw buffers where arguments are located,
+    explicit FunParamStream(FunCallbackContext& ctx) : mContext(&ctx), mBufferPos(0) {}
+
+    //! destructor
+    ~FunParamStream(){}
+
+    //! Resets the reader to the begining
+    void Reset() { mBufferPos = 0; }
+   
+    //! Reads the next argument passed from block script function (starts from leftmost value to right most)
+    //! \param outArgument a pointer to a pointer of the argument to read.
+    template <class T>
+    T& NextArgument()
+    { 
+        return *static_cast<T*>(NextArgument(sizeof(T))); 
+    }
+    
+    //! This is for the blockscript string type. Any type is passed, dont use NextArgument, use this function instead to retrieve it.
+    //! \return c string of the blockscript string
+    const char* NextBsStringArgument();
+    
+    //! equivalent to a block script call to return. Writes to the return buffer, asserts on error
+    //! \param retVal passed by reference, the value that will be returned back up to blockscript
+    template <class T>
+    void SubmitReturn(const T& retVal)
+    {
+        PG_ASSERTSTR(sizeof(T) == mContext->GetOutputBufferSize(), "Incompatible return type from signature.");
+        *static_cast<T*>(mContext->GetRawOutputBuffer()) = retVal;
+    }
+    
+
+private:
+    
+    //! reads the next argument, internal implementation
+    void* NextArgument(int sz);
+
+    int mBufferPos;
+    FunCallbackContext* mContext;
+};
+
 //block script callback for c++
 typedef void (*FunCallback)(FunCallbackContext& context);
 

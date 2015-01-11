@@ -28,6 +28,21 @@ using namespace Pegasus;
 using namespace Pegasus::BlockScript;
 using namespace Pegasus::BlockScript::Ast;
 
+void* Pegasus::BlockScript::FunParamStream::NextArgument(int sz)
+{
+    PG_ASSERTSTR(mBufferPos + sz <= mContext->GetInputBufferSize(), "Invalid number of parameters have been read! make sure you read the proper parameter sizes!");
+    void* outPtr = static_cast<char*>(mContext->GetRawInputBuffer()) + mBufferPos;
+    mBufferPos += sz;
+    return outPtr;
+}
+
+const char* Pegasus::BlockScript::FunParamStream::NextBsStringArgument()
+{
+    int& strRef = NextArgument<int>();
+    BsVmState* state = mContext->GetVmState();
+    return static_cast<const char*>(state->GetHeapElement(strRef).mObject);
+}
+
 Pegasus::BlockScript::PrintStringCallbackType   Pegasus::BlockScript::SystemCallbacks::gPrintStrCallback = nullptr;
 Pegasus::BlockScript::PrintIntCallbackType      Pegasus::BlockScript::SystemCallbacks::gPrintIntCallback = nullptr;
 Pegasus::BlockScript::PrintFloatCallbackType    Pegasus::BlockScript::SystemCallbacks::gPrintFloatCallback = nullptr;
