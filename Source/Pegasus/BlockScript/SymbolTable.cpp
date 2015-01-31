@@ -78,20 +78,103 @@ TypeDesc* SymbolTable::GetTypeForPatching(const char* typeName)
     return mTypeTable.GetTypeForPatching(typeName);
 }
 
-TypeDesc* SymbolTable::CreateType(
+TypeDesc* SymbolTable::InternalCreateType(
     TypeDesc::Modifier modifier,
     const char * name,
     const TypeDesc* child,
     int modifierProperty,
     TypeDesc::AluEngine engine,
     BlockScript::Ast::StmtStructDef* structDef,
-    TypeDesc::EnumNode* enumNode 
+    EnumNode* enumNode ,
+    PropertyNode* propertyNode,
+    GetObjectPropertyRuntimePtrCallback getPropertyCallback
+    
 )
 {
-    return mTypeTable.CreateType(modifier, name, child, modifierProperty, engine, structDef, enumNode);
+    return mTypeTable.CreateType(modifier, name, child, modifierProperty, engine, structDef, enumNode, propertyNode, getPropertyCallback);
 }
 
-bool SymbolTable::FindEnumByName(const char* name, const TypeDesc::EnumNode** outEnumNode, const TypeDesc** outEnumType) const
+TypeDesc* SymbolTable::CreateScalarType(const char* name, TypeDesc::AluEngine aluEngine)
+{
+    return InternalCreateType(
+        TypeDesc::M_SCALAR,
+        name,
+        nullptr, //no child
+        0, //no modifier property
+        aluEngine
+    );
+}
+
+TypeDesc* SymbolTable::CreateVectorType(const char* name, TypeDesc* childType, int vectorSize, TypeDesc::AluEngine aluEngine)
+{
+    return InternalCreateType(
+        TypeDesc::M_VECTOR,
+        name,
+        childType,
+        vectorSize, 
+        aluEngine
+    );
+}
+
+TypeDesc* SymbolTable::CreateObjectType(const char* name, PropertyNode* propertyList, GetObjectPropertyRuntimePtrCallback getPropertyCallback)
+{
+    return InternalCreateType(
+        TypeDesc::M_REFERECE,
+        name,
+        nullptr, // no child
+        0, //no modifier
+        TypeDesc::E_NONE, //no alu engine
+        nullptr, //no struct def
+        nullptr, //no enum definition
+        propertyList, 
+        getPropertyCallback
+    );
+}
+
+TypeDesc* SymbolTable::CreateEnumType(const char* name, EnumNode* enumNode)
+{
+    return InternalCreateType(
+        TypeDesc::M_ENUM,
+        name,
+        nullptr, //no children
+        0, //no modifier property
+        TypeDesc::E_NONE, //no alu engine
+        nullptr, //no struct definition
+        enumNode
+    );
+}
+
+TypeDesc* SymbolTable::CreateStructType(const char* name, Pegasus::BlockScript::Ast::StmtStructDef* def)
+{
+    return InternalCreateType(
+        TypeDesc::M_STRUCT,
+        name,
+        nullptr, //no children
+        0, //no modifier property
+        TypeDesc::E_NONE, //no alu engine
+        def //no struct definition
+    );
+}
+
+TypeDesc* SymbolTable::CreateStarType()
+{
+    return InternalCreateType(
+        TypeDesc::M_STAR,
+        "*"
+    );
+}
+
+TypeDesc* SymbolTable::CreateArrayType(const char* name, const TypeDesc* childType, int count)
+{
+    return InternalCreateType(
+        TypeDesc::M_ARRAY,
+        name,
+        childType,
+        count
+    );
+}
+
+bool SymbolTable::FindEnumByName(const char* name, const EnumNode** outEnumNode, const TypeDesc** outEnumType) const
 {
     int childCount = mChildren.Size();
     for (int i = 0; i < childCount; ++i)
@@ -105,9 +188,14 @@ bool SymbolTable::FindEnumByName(const char* name, const TypeDesc::EnumNode** ou
     return mTypeTable.FindEnumByName(name, outEnumNode, outEnumType);
 }
 
-TypeDesc::EnumNode* SymbolTable::NewEnumNode()
+EnumNode* SymbolTable::NewEnumNode()
 {
     return mTypeTable.NewEnumNode();
+}
+
+PropertyNode* SymbolTable::NewPropertyNode()
+{
+    return mTypeTable.NewPropertyNode();
 }
 
 FunDesc* SymbolTable::FindFunctionDescription(BlockScript::Ast::FunCall* functionCall)

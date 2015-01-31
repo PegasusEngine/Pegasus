@@ -61,7 +61,9 @@ public:
         int modifierProperty = 0,
         TypeDesc::AluEngine engine = TypeDesc::E_NONE,
         Ast::StmtStructDef* structDef = nullptr,
-        TypeDesc::EnumNode* enumNode = nullptr
+        EnumNode* enumNode = nullptr,
+        PropertyNode* propertyNode = nullptr,
+        GetObjectPropertyRuntimePtrCallback getPropCallback = nullptr
     );
 
     //! Gets a type description structure
@@ -78,16 +80,20 @@ public:
     //! \param outEnumNode a pointer to fill in with the enumeration node 
     //! \param outEnumType a pointer to fill in with the enumeration type
     //! \return true if found it, false otherwise
-    bool FindEnumByName(const char* name, const TypeDesc::EnumNode** outEnumNode, const TypeDesc** outEnumType) const;
+    bool FindEnumByName(const char* name, const EnumNode** outEnumNode, const TypeDesc** outEnumType) const;
 
     //! returns a new enum node
-    TypeDesc::EnumNode* NewEnumNode();
+    EnumNode* NewEnumNode();
+
+    //! returns a new property node
+    PropertyNode* NewPropertyNode();
 
 private:
     //! Computes the size of a type
     bool ComputeSize(const TypeDesc* type, int& outSize) const;
     Container<TypeDesc> mTypeDescPool;
-    Container<TypeDesc::EnumNode> mEnumNodePool;
+    Container<EnumNode> mEnumNodePool;
+    Container<PropertyNode> mPropertyNodePool;
 };
 
 }

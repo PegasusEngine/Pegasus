@@ -98,15 +98,15 @@ extern int BS_debug;
 typedef union YYSTYPE
 {
 /* Line 2058 of yacc.c  */
-#line 77 "bs.y"
+#line 83 "bs.y"
 
     int    token;
     int    integerValue;
     float  floatValue;
     char*  identifierText;
-    Pegasus::BlockScript::StackFrameInfo*                  vFrameInfo;
-    const  Pegasus::BlockScript::TypeDesc*                 vTypeDesc;
-    Pegasus::BlockScript::TypeDesc::EnumNode*       vEnumNode;
+    Pegasus::BlockScript::StackFrameInfo*      vFrameInfo;
+    const  Pegasus::BlockScript::TypeDesc*     vTypeDesc;
+    Pegasus::BlockScript::EnumNode*            vEnumNode;
     #define BS_PROCESS(N) Pegasus::BlockScript::Ast::N* v##N;
     #include "Pegasus/BlockScript/Ast.inl"
     #undef BS_PROCESS
@@ -120,7 +120,6 @@ typedef union YYSTYPE
 # define YYSTYPE_IS_DECLARED 1
 #endif
 
-extern YYSTYPE BS_lval;
 
 #ifdef YYPARSE_PARAM
 #if defined __STDC__ || defined __cplusplus
@@ -130,7 +129,7 @@ int BS_parse ();
 #endif
 #else /* ! YYPARSE_PARAM */
 #if defined __STDC__ || defined __cplusplus
-int BS_parse (void);
+int BS_parse (void* scanner);
 #else
 int BS_parse ();
 #endif

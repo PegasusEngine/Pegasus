@@ -245,6 +245,25 @@ void Canonizer::Visit(Idd* n)
     mRebuiltExpression = n;
 }
 
+static const PropertyNode* FindPropertyNode(const TypeDesc* type, const char* name)
+{
+    PG_ASSERT(type->GetModifier() == TypeDesc::M_REFERECE && type->GetPropertyNode() != nullptr);
+    const PropertyNode* propNode = type->GetPropertyNode();
+    while (propNode != nullptr)
+    {
+        if (!Utils::Strcmp(propNode->mName, name))
+        {
+            return propNode;
+        }
+        else
+        {
+            propNode = propNode->mNext;
+        }
+    }                
+    PG_FAILSTR("Property not found? this part of code should be unreachable! type checking must protect against this.");
+    return nullptr;
+}
+
 static int GetSwizzleOffset(char swizzleChar)
 {
     return (swizzleChar - 'w' + 3) % 4;
@@ -327,15 +346,20 @@ void Canonizer::HandleSetOperator(Binop* n)
             static_cast<Binop*>(n->GetLhs())->GetRhs()->GetExpType() == Idd::sType &&
             !IsContinuousSwizzle(static_cast<Idd*>(static_cast<Binop*>(n->GetLhs())->GetRhs()))
         );
+
+    bool isObjectProperty = ( n->GetLhs()->GetExpType() == Binop::sType &&
+                              static_cast<Binop*>(n->GetLhs())->GetOp() == O_DOT &&
+                              static_cast<Binop*>(n->GetLhs())->GetLhs()->GetTypeDesc()->GetModifier() == TypeDesc::M_REFERECE );
     Exp* newLhs = nullptr;
-    if (!lhsIsNonContinuousSwizzle)
+    
+    if (lhsIsNonContinuousSwizzle || isObjectProperty)
     {
-        n->GetLhs()->Access(this);
-        newLhs = mRebuiltExpression;
+        newLhs = AllocateTemporal(n->GetLhs()->GetTypeDesc());
     }
     else
     {
-        newLhs = AllocateTemporal(n->GetLhs()->GetTypeDesc());
+        n->GetLhs()->Access(this);
+        newLhs = mRebuiltExpression;
     }
 
     PG_ASSERT(n->GetOp() == O_SET);
@@ -384,13 +408,26 @@ void Canonizer::HandleSetOperator(Binop* n)
     }
     else
     {
-        n->GetRhs()->Access(this);
         if (newLhs->GetExpType() == Idd::sType)
         {
-            PushCanon( CANON_NEW Move(static_cast<Idd*>(newLhs), mRebuiltExpression));
+            if (n->GetRhs()->GetExpType() == Binop::sType && n->GetRhs()->GetTypeDesc()->GetModifier() == TypeDesc::M_REFERECE && static_cast<Binop*>(n->GetRhs())->GetOp() == O_DOT)
+            {
+                Binop* objProperty = static_cast<Binop*>(n->GetRhs());
+                PG_ASSERT(objProperty->GetRhs()->GetExpType() == Idd::sType);
+                const char* propName = static_cast<Idd*>(objProperty->GetRhs())->GetName();
+                objProperty->GetLhs()->Access(this);
+                Exp* newObjRef = mRebuiltExpression;
+                PushCanon( CANON_NEW ReadObjProp(newLhs, newObjRef, FindPropertyNode(objProperty->GetLhs()->GetTypeDesc(), propName)) );
+            }
+            else
+            {
+                n->GetRhs()->Access(this);
+                PushCanon( CANON_NEW Move(static_cast<Idd*>(newLhs), mRebuiltExpression));
+            }
         }
         else
         {
+            n->GetRhs()->Access(this);
             PG_ASSERT(newLhs->GetExpType() == Binop::sType && static_cast<Binop*>(newLhs)->GetOp() == O_ACCESS);
             PushCanon( CANON_NEW LoadAddr(Canon::R_C, newLhs));
             PushCanon( CANON_NEW CopyToAddr(Canon::R_C, mRebuiltExpression, newLhs->GetTypeDesc()->GetByteSize()));
@@ -467,6 +504,17 @@ void Canonizer::HandleSetOperator(Binop* n)
     
         }
 
+        mRebuiltExpression = newLhs;
+    }
+    else if (isObjectProperty)
+    {
+        Binop* propAccess = static_cast<Binop*>(n->GetLhs());
+        Idd* prop = static_cast<Idd*>(propAccess->GetRhs());
+        const TypeDesc* objType = propAccess->GetLhs()->GetTypeDesc(); 
+        const PropertyNode* propNode = FindPropertyNode(objType, prop->GetName());
+        propAccess->GetLhs()->Access(this);
+        Exp* newObjRef = mRebuiltExpression;
+        PushCanon( CANON_NEW WriteObjProp(newObjRef, propNode, newLhs));
         mRebuiltExpression = newLhs;
     }
     else
@@ -553,7 +601,18 @@ void Canonizer::HandleDotOperator(Binop* n)
     Exp* newLhs = mRebuiltExpression;
 
     Idd* iddRhs = static_cast<Idd*>(n->GetRhs());
-    if (newLhs->GetExpType() == Idd::sType)
+    if (newLhs->GetTypeDesc()->GetModifier() == TypeDesc::M_REFERECE)
+    {
+        const TypeDesc* objType = newLhs->GetTypeDesc();
+        PG_ASSERT(objType->GetPropertyNode() != nullptr);
+        PG_ASSERT(objType->GetModifier() == TypeDesc::M_REFERECE);
+        //find the property node first
+        const PropertyNode* propNode = FindPropertyNode(objType, iddRhs->GetName());
+        Idd* tempValue = AllocateTemporal(propNode->mType);
+        PushCanon( CANON_NEW ReadObjProp(tempValue, newLhs, propNode) );
+        mRebuiltExpression = tempValue;   
+    }
+    else if (newLhs->GetExpType() == Idd::sType)
     {
         Idd* iddLhs = static_cast<Idd*>(newLhs);
 
@@ -570,7 +629,7 @@ void Canonizer::HandleDotOperator(Binop* n)
         }
         else
         {
-            PG_ASSERT(iddLhs->GetTypeDesc()->GetModifier() == TypeDesc::M_VECTOR);
+            PG_ASSERT( iddLhs->GetTypeDesc()->GetModifier() == TypeDesc::M_VECTOR );
             if (IsContinuousSwizzle(iddRhs))
             {
                 int swizzleOffset = GetSwizzleOffset(iddRhs->GetName()[0]);

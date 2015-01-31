@@ -12,6 +12,8 @@
 #ifndef BLOCKSCRIPT_FUNCALLBACK_H
 #define BLOCKSCRIPT_FUNCALLBACK_H
 
+#include "Pegasus/BlockScript/TypeDesc.h"
+
 namespace Pegasus
 {
 namespace BlockScript
@@ -168,6 +170,15 @@ struct FunctionDeclarationDesc
     FunCallback callback;
 };
 
+#define MAX_OBJ_PROPERTY_LIST 20
+
+struct ObjectPropertyDesc
+{
+    const char* propertyTypeName;
+    const char* propertyName;
+    int propertyUniqueId;
+};
+
 #define MAX_ENUM_MEMBER_LIST 50
 
 struct EnumDeclarationDesc
@@ -190,11 +201,15 @@ struct StructDeclarationDesc
 };
 
 #define MAX_OBJECT_METHOD_DESCRIPTORS 50
+
 struct ClassTypeDesc
 {
     const char* classTypeName;
     FunctionDeclarationDesc methodDescriptors[MAX_OBJECT_METHOD_DESCRIPTORS];
     int methodsCount;
+    ObjectPropertyDesc propertyDescriptors[MAX_OBJ_PROPERTY_LIST];
+    int propertyCount;
+    GetObjectPropertyRuntimePtrCallback getPropertyCallback;
 };
 
 //! Gets a function bind point to be used to call.

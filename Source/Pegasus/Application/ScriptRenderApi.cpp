@@ -94,6 +94,55 @@ void Render_CreateRenderTarget(FunCallbackContext& context);
 void Render_CreateRasterizerState(FunCallbackContext& context);
 void Render_CreateBlendingState(FunCallbackContext& context);
 
+// property callback functions
+void* GetMeshOperatorPropertyCallback    (BsVmState* state, int objectHandle, const PropertyNode* propertyDesc);
+void* GetMeshGeneratorPropertyCallback   (BsVmState* state, int objectHandle, const PropertyNode* propertyDesc);
+void* GetTextureOperatorPropertyCallback (BsVmState* state, int objectHandle, const PropertyNode* propertyDesc);
+void* GetTextureGeneratorPropertyCallback(BsVmState* state, int objectHandle, const PropertyNode* propertyDesc);
+
+/////  Declaration of all Texture node properties  /////
+enum TextureProperties
+{
+    TEX_PROP_CLAMP ,
+    TEX_PROP_COLOR ,
+    TEX_PROP_COLOR0,
+    TEX_PROP_COLOR1,
+    TEX_PROP_POINT0,
+    TEX_PROP_POINT1,
+    TEX_PROP_NUMPIXELS,
+    TEX_PROP_SEED,
+    TEX_PROP_BACKGROUNDCOL,
+    MAX_TEX_PROP
+        
+};
+
+//global texture property pool
+const ObjectPropertyDesc TPP[] = {
+    {"int",    "Clamp",  TEX_PROP_CLAMP  },
+    {"float4", "Color",  TEX_PROP_COLOR  },
+    {"float4", "Color0", TEX_PROP_COLOR0 },
+    {"float4", "Color1", TEX_PROP_COLOR1 },
+    {"float3", "Point0", TEX_PROP_POINT0 },
+    {"float3", "Point1", TEX_PROP_POINT1 },
+    {"int",    "NumPixels",       TEX_PROP_NUMPIXELS },
+    {"int",    "Seed",            TEX_PROP_SEED },
+    {"float4", "BackgroundColor", TEX_PROP_BACKGROUNDCOL }
+};
+
+/////  Declaration of all Mesh properties /////
+enum MeshProperties
+{
+    MESH_PROP_DEGREE,
+    MESH_PROP_RADIUS,
+    MAX_MESH_PROP
+};
+
+//global mesh property pool
+const ObjectPropertyDesc MPP[] = {
+    {"float", "Degree", MESH_PROP_DEGREE },
+    {"float", "Radius", MESH_PROP_RADIUS }
+};
+
 ///////////////////////////////////////////////////////////////////////////////////
 //! Node / Render API registration functions. These are pure metadata attachments to
 //! the blockscript runtime lib
@@ -157,13 +206,11 @@ static void RegisterRenderEnums(BlockLib* lib)
 static void RegisterRenderStructs(BlockLib* lib)
 {
     //creating an internal render pointer size (in case of 64 bit)
-    TypeDesc* ptrType = lib->GetSymbolTable()->CreateType(
-        TypeDesc::M_SCALAR,
+    TypeDesc* ptrType = lib->GetSymbolTable()->CreateScalarType(
         "void_ptr",
-        nullptr, // no child
-        0, //no modifier property
         TypeDesc::E_INT //int ALU engine
     );
+
     ptrType->SetByteSize(sizeof(void*));
 
 
@@ -210,49 +257,58 @@ static void RegisterNodes(BlockLib* lib)
     const ClassTypeDesc nodeDefs[] = {
         {
             "Buffer",
-            {}, 0 // no methods for buffer
+            {}, 0, {}, 0, nullptr 
         },
         {
             "RenderTarget",
-            {}, 0
+            {}, 0, {}, 0, nullptr
         },
         {
             "DepthStencilTarget",
-            {}, 0
+            {}, 0, {}, 0, nullptr
         },
         {
             "BlendingState",
-            {}, 0
+            {}, 0, {}, 0, nullptr
         },
         {
             "RasterizerState",
-            {}, 0
+            {}, 0, {}, 0, nullptr
         },
         {
             "ShaderStage",
-            {}, 0 //no methods
+            {}, 0, {}, 0, nullptr
         },
         {
             "ProgramLinkage",
             { //method list
                 { "SetShaderStage", "int", {"ProgramLinkage", "ShaderStage", nullptr}, {"this", "stage", nullptr}, Program_SetShaderStage }
             },
-            1
+            1,
+            {}, 0, nullptr
         },
         {
             "MeshGenerator",
-            {},0
+            {},0,
+            {MPP[MESH_PROP_RADIUS], MPP[MESH_PROP_DEGREE]}, 2, 
+            GetMeshGeneratorPropertyCallback
         },
         {
             "Mesh",
             {
                 { "SetGeneratorInput", "int", {"Mesh", "MeshGenerator", nullptr}, {"this", "meshGenerator", nullptr}, MeshGenerator_SetGeneratorInput }
             },
-            1
+            1,
+            {}, 0, nullptr
         },
         {
             "TextureGenerator",
-            {}, 0
+            {}, 0,
+            {
+                TPP[TEX_PROP_COLOR0], TPP[TEX_PROP_COLOR1], TPP[TEX_PROP_POINT0], TPP[TEX_PROP_POINT1],
+                TPP[TEX_PROP_COLOR], TPP[TEX_PROP_NUMPIXELS], TPP[TEX_PROP_SEED], TPP[TEX_PROP_BACKGROUNDCOL]
+            }, 8,
+            GetTextureGeneratorPropertyCallback
         },
         {
             "TextureOperator",
@@ -260,7 +316,8 @@ static void RegisterNodes(BlockLib* lib)
                 { "AddGeneratorInput", "int", { "TextureOperator", "TextureGenerator", nullptr }, { "this", "texGenerator", nullptr }, TextureOperator_AddGeneratorInput },
                 { "AddOperatorInput",  "int", { "TextureOperator", "TextureOperator", nullptr },  { "this", "texOperator", nullptr },  TextureOperator_AddOperatorInput  }
             },
-            2
+            2,
+            {}, 0, GetTextureOperatorPropertyCallback
         },
         {
             "Texture",
@@ -268,7 +325,8 @@ static void RegisterNodes(BlockLib* lib)
                 { "SetGeneratorInput", "int", { "Texture", "TextureGenerator", nullptr }, { "this", "texGenerator", nullptr }, Texture_SetGeneratorInput },
                 { "SetOperatorInput",  "int", { "Texture", "TextureOperator", nullptr },  { "this", "texOperator", nullptr }, Texture_SetOperatorInput }
             },
-            2
+            2,
+            {}, 0, nullptr
         }
     };
     lib->CreateClassTypes(nodeDefs, sizeof(nodeDefs)/sizeof(nodeDefs[0]));
@@ -1091,3 +1149,27 @@ void Render_CreateBlendingState(FunCallbackContext& context)
     stream.SubmitReturn( collection->AddBlendingState(blendState) );
 }
 
+void* GetMeshOperatorPropertyCallback    (BsVmState* state, int objectHandle, const PropertyNode* propertyDesc)
+{
+    return nullptr;
+}
+
+float gDegreeGlobal = 0.99f;
+void* GetMeshGeneratorPropertyCallback   (BsVmState* state, int objectHandle, const PropertyNode* propertyDesc)
+{
+    if (!Utils::Strcmp(propertyDesc->mName, "Degree"))
+    {
+        return &gDegreeGlobal;
+    }
+    return nullptr;
+}
+
+void* GetTextureOperatorPropertyCallback (BsVmState* state, int objectHandle, const PropertyNode* propertyDesc)
+{
+    return nullptr;
+}
+
+void* GetTextureGeneratorPropertyCallback(BsVmState* state, int objectHandle, const PropertyNode* propertyDesc)
+{
+    return nullptr;
+}

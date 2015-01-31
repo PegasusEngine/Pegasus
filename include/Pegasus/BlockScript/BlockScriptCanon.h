@@ -25,6 +25,7 @@ namespace BlockScript
 {
 
 class StackFrameInfo;
+struct PropertyNode;
 
 //forward declarations
 namespace Ast
@@ -67,6 +68,8 @@ enum CanonTypes
     T_POPFRAME,
     T_COPY_TO_ADDR,
     T_CAST,
+    T_READ_OBJ_PROP,
+    T_WRITE_OBJ_PROP,
     T_EXIT
 };
 
@@ -362,6 +365,49 @@ public:
     PopFrame() {}
     virtual ~PopFrame() {} 
     virtual CanonTypes GetType() const { return T_POPFRAME; }
+};
+
+class ReadObjProp : public CanonNode
+{
+public:
+    ReadObjProp(Ast::Exp* location, Ast::Exp* objRef, const PropertyNode* propertyNode)
+    : mLoc(location), mObj(objRef), mProp(propertyNode) {}
+
+    virtual ~ReadObjProp() {}
+
+    Ast::Exp* GetLoc() const { return mLoc; }
+
+    Ast::Exp* GetObj() const { return mObj; }
+
+    const PropertyNode* GetProp() const { return mProp; }
+
+    virtual CanonTypes GetType() const { return T_READ_OBJ_PROP; }
+private:
+    Ast::Exp* mLoc;
+    Ast::Exp* mObj;
+    const PropertyNode* mProp;
+};
+
+class WriteObjProp : public CanonNode
+{
+public:
+    WriteObjProp(Ast::Exp* objRef, const PropertyNode* propertyNode, Ast::Exp* location)
+    : mLoc(location), mObj(objRef), mProp(propertyNode) {}
+
+    virtual ~WriteObjProp() {}
+
+    Ast::Exp* GetLoc() const { return mLoc; }
+
+    Ast::Exp* GetObj() const { return mObj; }
+
+    const PropertyNode* GetProp() const { return mProp; }
+
+    virtual CanonTypes GetType() const { return T_WRITE_OBJ_PROP; }
+
+private:
+    Ast::Exp* mLoc;
+    Ast::Exp* mObj;
+    const PropertyNode* mProp;
 };
 
 // code block declaration, containing a label header and a list of commands

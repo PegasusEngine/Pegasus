@@ -530,6 +530,38 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
             return newBinop;
 
         }
+        else if (tid1->GetModifier() == TypeDesc::M_REFERECE)
+        {
+            tid2 = nullptr;
+            PG_ASSERT(rhs->GetExpType() == Idd::sType);
+            Idd* idd = static_cast<Idd*>(rhs);
+            const char* propertyName = idd->GetName();
+            const PropertyNode* propertyList = tid1->GetPropertyNode();
+            if (propertyList == nullptr)
+            {
+                BS_ErrorDispatcher(this, "Object has no properties registered.");
+                return nullptr;
+            }
+            
+            while (propertyList != nullptr)
+            {
+                if (!Utils::Strcmp(propertyList->mName, propertyName))
+                {
+                    //found the property! lets fill in the type of this expression
+                    const TypeDesc* expType = propertyList->mType;
+                    Binop* newBinop = BS_NEW Binop(lhs, op, rhs);
+                    newBinop->SetTypeDesc(expType);
+                    return newBinop;
+                }
+                else
+                {
+                    propertyList = propertyList->mNext;
+                }
+            }
+
+            BS_ErrorDispatcher(this, "Property not found for object.");
+            return nullptr;
+        }
         else
         {
             BS_ErrorDispatcher(this, "dot operator can only be executed in structs types");
@@ -599,6 +631,19 @@ Exp*   BlockScriptBuilder::BuildImmInt   (int i)
     return imm;
 }
 
+const char* BlockScriptBuilder::AllocStrImm(const char* strToCopy)
+{
+    StrImm* strImm = static_cast<StrImm*>(BlockScriptBuilder::BuildStrImm(strToCopy));
+    if (strImm != nullptr)
+    {
+        return strImm->GetStr();
+    }
+    else
+    {
+        return nullptr;
+    }    
+}
+
 Exp*  BlockScriptBuilder::BuildStrImm(const char* strToCopy)
 {
 
@@ -643,7 +688,7 @@ Exp*   BlockScriptBuilder::BuildImmFloat   (float f)
 Exp*   BlockScriptBuilder::BuildIdd   (const char * name)
 {
     //see if this id is actually an enumeration
-    const TypeDesc::EnumNode* enumNode = nullptr;
+    const EnumNode* enumNode = nullptr;
     const TypeDesc* enumType = nullptr;
     bool found = mSymbolTable.FindEnumByName(name, &enumNode, &enumType);
     if (found)
@@ -994,12 +1039,8 @@ StmtStructDef* BlockScriptBuilder::BuildStmtStructDef(const char* name, ArgList*
     // unlink this to any parent, preventing searches on parent frames. this is now an orphan stack frame
     frameInfo->UnlinkParentStackFrame();
 
-    TypeDesc* newStructType = mSymbolTable.CreateType(
-        TypeDesc::M_STRUCT,
+    TypeDesc* newStructType = mSymbolTable.CreateStructType(
         name,
-        nullptr, // no child type
-        0, //no modifier property
-        TypeDesc::E_NONE, //no alu engine
         newDef //register this types structural definition AST member
     );
 

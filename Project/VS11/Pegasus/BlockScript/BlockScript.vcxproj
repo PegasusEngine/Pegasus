@@ -45,10 +45,12 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\BsIntrinsics.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\BsVm.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\Canonizer.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\CompilerState.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\FunCallback.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\FunDesc.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\FunTable.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\IddStrPool.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\Preprocessor.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\PrettyPrint.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\StackFrameInfo.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\SymbolTable.cpp" />
@@ -64,10 +66,12 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockScriptCanon.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockScriptCompiler.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockScriptManager.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\bs.lexer.hpp" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\bs.parser.hpp" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BsIntrinsics.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BsVm.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\Canonizer.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\CompilerState.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\Container.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\ExpressionEngine.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\FunCallback.h" />
@@ -76,6 +80,7 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\IBlockScriptCompilerListener.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\IddStrPool.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\IVisitor.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\Preprocessor.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\PrettyPrint.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\StackFrameInfo.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\SymbolTable.h" />

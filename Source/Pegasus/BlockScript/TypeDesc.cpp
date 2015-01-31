@@ -27,7 +27,9 @@ mAluEngine(E_NONE),
 mChild(nullptr),
 mModifierProperty(0),
 mStructDef(nullptr),
-mEnumNode(nullptr)
+mEnumNode(nullptr),
+mPropertyNode(nullptr),
+mPropertyCallback(nullptr)
 {
     mName[0] = '\0';
 }
@@ -69,8 +71,8 @@ bool TypeDesc::CmpEnumProperty(const TypeDesc* other) const
     }
     else
     {
-        TypeDesc::EnumNode* node1 = mEnumNode;
-        TypeDesc::EnumNode* node2 = other->mEnumNode;
+        EnumNode* node1 = mEnumNode;
+        EnumNode* node2 = other->mEnumNode;
     
         while (node1 != nullptr && node2 != nullptr)
         {

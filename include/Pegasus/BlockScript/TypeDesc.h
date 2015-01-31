@@ -13,6 +13,20 @@
 #ifndef BLOCKSCRIPT_TYPEDESC_H
 #define BLOCKSCRIPT_TYPEDESC_H
 
+//forward declarations
+namespace Pegasus
+{
+    namespace BlockScript {
+        class BsVmState;
+        class SymbolTable;
+        class FunCallbackContext;
+        class TypeDesc;
+        struct PropertyNode;
+        struct EnumNode;
+    }
+}
+
+
 namespace Pegasus
 {
 namespace BlockScript
@@ -23,21 +37,38 @@ namespace Ast
     class StmtStructDef;
 }
 
+//! callback definition to get node properties
+//! \param BsVmState the virtual machine state
+//! \param int the handle of the object
+//! \param propertyDesc the description of the property to acquire
+typedef void*     (*GetObjectPropertyRuntimePtrCallback)(BsVmState* state, int, const PropertyNode* propertyDesc);
+
+//! an enumeration description for enumeration types
+struct EnumNode
+{
+    const char* mIdd;
+    int         mGuid;
+    EnumNode*   mNext;
+public:
+    EnumNode() : mIdd(nullptr), mGuid(0), mNext(nullptr) {}
+};
+
+//! a property description for object types
+struct PropertyNode
+{
+    const char* mName;
+    int mGuid;
+    const TypeDesc* mType;
+    PropertyNode*  mNext;
+public:
+    PropertyNode() : mName(nullptr), mGuid(-1), mType(nullptr), mNext(nullptr) {} 
+};
 
 
-//! the descriptor class
+//! the type descriptor class.
 class TypeDesc
 {
 public:
-    //! an enumeration description
-    struct EnumNode
-    {
-        const char* mIdd;
-        int         mGuid;
-        EnumNode*   mNext;
-    public:
-        EnumNode() : mIdd(nullptr), mGuid(0), mNext(nullptr) {}
-    };
 
     static const int sMaxTypeName = 64;
 
@@ -134,11 +165,23 @@ public:
     //! gets the logical and arithmetic engine to be used in the runtime
     AluEngine GetAluEngine() const { return mAluEngine; }
 
-    //! sets the enumeration node for this type
+    //! sets the enumeration node for this type. This function assumes the modifier is an enum.
     void  SetEnumNode(EnumNode* enumNode) { mEnumNode = enumNode; }
+
+    //! sets the property node list for this type. This function assumes the modifier is a Reference
+    void SetPropertyNode(PropertyNode* propNode) { mPropertyNode = propNode; }
 
     //! gets the enumeration node for this type
     const EnumNode* GetEnumNode() const { return mEnumNode; }
+
+    //! gets a property node for this object type.
+    const PropertyNode* GetPropertyNode() const { return mPropertyNode; }
+    
+    //! sets the callback used by the runtime to access a property from an object reference
+    void SetPropertyCallback(GetObjectPropertyRuntimePtrCallback callback) { mPropertyCallback = callback; }
+
+    //! returns the callback used by the runtime to access a property from an object reference
+    GetObjectPropertyRuntimePtrCallback GetPropertyCallback() const { return mPropertyCallback; }
 
 private:
     //no copy constructor / destructor of object
@@ -154,6 +197,8 @@ private:
     const TypeDesc*  mChild;
     Ast::StmtStructDef* mStructDef;
     EnumNode*           mEnumNode;
+    PropertyNode*       mPropertyNode;
+    GetObjectPropertyRuntimePtrCallback mPropertyCallback;
     int        mModifierProperty;
     int        mByteSize;
 };

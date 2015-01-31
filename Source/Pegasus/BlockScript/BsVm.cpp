@@ -19,7 +19,9 @@
 #include "Pegasus/Core/Assertion.h"
 #include "Pegasus/Allocator/Alloc.h"
 #include "Pegasus/Allocator/IAllocator.h"
+#include "Pegasus/Core/Log.h"
 #include "Pegasus/Utils/Memcpy.h"
+#include "Pegasus/Utils/Memset.h"
 #include "Pegasus/BlockScript/ExpressionEngine.h"
 #include "Pegasus/Math/Vector.h"
 
@@ -63,6 +65,29 @@ int GetIddOffset(Ast::Idd* idd, BsVmState& state)
         }
         return sbp + idd->GetOffset();
     }
+}
+
+int GetMemoryOffset(Ast::Exp* mem, BsVmState& state)
+{
+    int offset = 0;
+    if (mem->GetExpType() == Ast::Idd::sType)
+    {
+        offset = GetIddOffset(static_cast<Ast::Idd*>(mem), state);
+    }
+    else
+    {
+        PG_ASSERT(
+            mem->GetExpType() == Ast::Binop::sType &&
+            static_cast<Ast::Binop*>(mem)->GetOp() == O_ACCESS &&
+            static_cast<Ast::Binop*>(mem)->GetRhs()->GetTypeDesc()->GetAluEngine() == TypeDesc::E_INT &&
+            static_cast<Ast::Binop*>(mem)->GetLhs()->GetExpType() == Ast::Idd::sType
+        );
+
+        Ast::Binop* binop = static_cast<Ast::Binop*>(mem);
+        offset = gIntExpEngine.Eval(binop->GetRhs(), state);
+        offset = offset + GetIddOffset(static_cast<Ast::Idd*>(binop->GetLhs()), state);
+    }
+    return offset;
 }
 
 int* GetIddMem(Ast::Idd* idd, BsVmState& state)
@@ -190,6 +215,58 @@ void MoveCommand(Ast::Idd* idd, Ast::Exp* exp, BsVmState& state)
     }
 }
 
+void GetObjectPropertyPtrs(BsVmState& state, Ast::Exp* loc, Ast::Exp* obj, const PropertyNode* prop, void** locPtr, void** propertyPtr, int* byteSize)
+{
+    //get the target memory pointer
+    int targetOffset = GetMemoryOffset(loc, state);
+    *locPtr = state.Ram() + targetOffset;
+
+    //get the object handle
+    int objHandleOffset = GetMemoryOffset(obj, state);
+    int objHandle = *reinterpret_cast<int*>(state.Ram() + objHandleOffset);
+    GetObjectPropertyRuntimePtrCallback cb = obj->GetTypeDesc()->GetPropertyCallback();
+    PG_ASSERTSTR(cb != nullptr, "The property callback cannot be null for this type %s.");
+    *propertyPtr = cb(&state, objHandle, prop);
+
+    //get the byte size
+    *byteSize = prop->mType->GetByteSize();
+
+}
+
+void ReadObjPropCmd(Canon::ReadObjProp* cmd, BsVmState& state)
+{
+    const PropertyNode* propertyNode = cmd->GetProp();
+    void* locPtr = nullptr;
+    void* propertyPtr = nullptr;
+    int byteSize = 0;
+    GetObjectPropertyPtrs(state, cmd->GetLoc(), cmd->GetObj(), cmd->GetProp(), &locPtr, &propertyPtr, &byteSize);
+    if (propertyPtr == nullptr)
+    {
+        PG_LOG('ERR_', "[BLOCKSCRIPT VIRUAL MACHINE ERROR]: No property %s exists for such object.", propertyNode->mName);
+        Utils::Memset8(locPtr, 0, byteSize);
+    }
+    else
+    {
+        Utils::Memcpy(locPtr, propertyPtr, byteSize);
+    }
+}
+
+void WriteObjPropCmd(Canon::WriteObjProp* cmd, BsVmState& state)
+{
+    const PropertyNode* propertyNode = cmd->GetProp();
+    void* locPtr = nullptr;
+    void* propertyPtr = nullptr;
+    int byteSize = 0;
+    GetObjectPropertyPtrs(state, cmd->GetLoc(), cmd->GetObj(), cmd->GetProp(), &locPtr, &propertyPtr, &byteSize);
+    if (propertyPtr == nullptr)
+    {
+        PG_LOG('ERR_', "[BLOCKSCRIPT VIRUAL MACHINE ERROR]: No property %s exists for such object.", propertyNode->mName);
+    }
+    else
+    {
+        Utils::Memcpy(propertyPtr, locPtr, byteSize);
+    }
+}
 void SavCommand(Canon::Register r, Ast::Idd* location, BsVmState& state)
 {
     int* target = GetIddMem(location, state);
@@ -311,24 +388,7 @@ void IsdhCommmand(Ast::Idd* idd, void* Pointer, BsVmState& state)
 
 void LadrCommand(Canon::Register r, Ast::Exp* mem, BsVmState& state)
 {
-    int offset = 0;
-    if (mem->GetExpType() == Ast::Idd::sType)
-    {
-        offset = GetIddOffset(static_cast<Ast::Idd*>(mem), state);
-    }
-    else
-    {
-        PG_ASSERT(
-            mem->GetExpType() == Ast::Binop::sType &&
-            static_cast<Ast::Binop*>(mem)->GetOp() == O_ACCESS &&
-            static_cast<Ast::Binop*>(mem)->GetRhs()->GetTypeDesc()->GetAluEngine() == TypeDesc::E_INT &&
-            static_cast<Ast::Binop*>(mem)->GetLhs()->GetExpType() == Ast::Idd::sType
-        );
-
-        Ast::Binop* binop = static_cast<Ast::Binop*>(mem);
-        offset = gIntExpEngine.Eval(binop->GetRhs(), state);
-        offset = offset + GetIddOffset(static_cast<Ast::Idd*>(binop->GetLhs()), state);
-    }
+    int offset = GetMemoryOffset(mem, state);
     state.SetReg(r, offset);
 }
 
@@ -569,6 +629,20 @@ bool BsVm::StepExecution(const Assembly& assembly, BsVmState& state)
     {
         Canon::Cast* cast = static_cast<Canon::Cast*>(n);
         CastCmd(cast, state);
+        ++state.mR[R_IP];
+    }
+    break;
+    case Canon::T_READ_OBJ_PROP:
+    {
+        Canon::ReadObjProp* objProp = static_cast<Canon::ReadObjProp*>(n);
+        ReadObjPropCmd(objProp, state);
+        ++state.mR[R_IP];
+    }
+    break;
+    case Canon::T_WRITE_OBJ_PROP:
+    {
+        Canon::WriteObjProp* objProp = static_cast<Canon::WriteObjProp*>(n);
+        WriteObjPropCmd(objProp, state);
         ++state.mR[R_IP];
     }
     break;

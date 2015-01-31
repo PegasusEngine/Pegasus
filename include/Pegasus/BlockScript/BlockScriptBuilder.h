@@ -56,7 +56,7 @@ namespace BlockScript
 class BlockScriptBuilder
 {
 public:
-    explicit BlockScriptBuilder() : mEventListener(nullptr), mCurrentFrame(nullptr), mErrorCount(0), mInFunBody(false), mCurrentLineNumber(1), mReturnTypeContext(nullptr) {}
+    explicit BlockScriptBuilder() : mEventListener(nullptr), mCurrentFrame(nullptr), mErrorCount(0), mInFunBody(false), mCurrentLineNumber(1), mReturnTypeContext(nullptr), mScanner(nullptr) {}
 	
     struct CompilationResult
     {
@@ -138,6 +138,8 @@ public:
 
     SymbolTable* GetSymbolTable() { return &mSymbolTable; }
 
+    const char* AllocStrImm(const char* strToCpy);    
+
     //! creates an intrinsic function that can be called from blockscript
     //! \param the function name
     //! \param a string list with argument types definitions
@@ -161,6 +163,9 @@ public:
     //! \param the source string
     //! \return the return parameter
     char* CopyString(const char* source);
+
+    void  SetScanner(void* scanner) { mScanner = scanner; }
+    void* GetScanner() { return mScanner; }
 
 private:
 
@@ -190,6 +195,7 @@ private:
     SymbolTable        mSymbolTable;
     const TypeDesc*    mReturnTypeContext;
 
+    void* mScanner;
     StackFrameInfo*    mCurrentFrame;
     int                mErrorCount;
     int                mCurrentLineNumber;

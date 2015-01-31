@@ -10,7 +10,9 @@
 // \brief  Parser generator file (input to bison tool). 
 //         This file contains a grammar description of the BlockScript scripting language.
 //         This grammar gets parsed and becomes a cpp file containing the necesary functions
-
+%pure-parser
+%lex-param   { void* scanner }
+%parse-param { void* scanner }
 %{
     /****************************************************************************************/
     /*                                                                                      */
@@ -25,6 +27,12 @@
     // warning 4065: missing default clause on switch
     //     reason: the generated code has a lot of warnings generated regarding this.
     #pragma warning(disable : 4065)
+
+    #include "Pegasus/BlockScript/CompilerState.h"
+    #ifndef YY_EXTRA_TYPE
+    #define YY_EXTRA_TYPE Pegasus::BlockScript::CompilerState*
+    #endif
+
     #include "Pegasus/BlockScript/BlockScriptBuilder.h"
     #include "Pegasus/BlockScript/IBlockScriptCompilerListener.h"
     #include "Pegasus/BlockScript/BlockScriptAst.h"
@@ -32,11 +40,14 @@
     #include "Pegasus/BlockScript/SymbolTable.h"
     #include "Pegasus/BlockScript/TypeDesc.h"
     #include "Pegasus/BlockScript/bs.parser.hpp"
+    #include "Pegasus/BlockScript/bs.lexer.hpp"
     #include "Pegasus/Memory/MemoryManager.h"
+    
     #include "Pegasus/Core/Io.h"
 
+    #define BS_GlobalBuilder BS_get_extra(scanner)->mBuilder
     #define BS_BUILD(r, exp) if ((r = BS_GlobalBuilder->exp) == nullptr) YYERROR ;
-    #define BS_CHECKLIST(l) if (l == nullptr) {BS_error("Empty list element, syntax error."); YYERROR;}
+    #define BS_CHECKLIST(l) if (l == nullptr) {BS_parseerror("Empty list element, syntax error."); YYERROR;}
 
 
     using namespace Pegasus::Io;
@@ -46,25 +57,20 @@
     #include <stdio.h>
 
     // Pegasus hooks
-    extern int BS_lex();
-    extern char* BS_text;
-    extern bool BS_HasNext();
-    extern int BS_bufferPosition;
-
-    BlockScriptBuilder* BS_GlobalBuilder    = nullptr;
-    const FileBuffer*   BS_GlobalFileBuffer = nullptr;
-
+    extern bool BS_HasNext(void* scanner);
 
     void BS_ErrorDispatcher(BlockScriptBuilder* builder, const char* message) 
     {
         builder->IncErrorCount();
         if (builder->GetEventListener() != nullptr)
         {
-            builder->GetEventListener()->OnCompilationError(builder->GetCurrentLine(), message, BS_text);
+            yyscan_t scanner = builder->GetScanner();
+            builder->GetEventListener()->OnCompilationError(builder->GetCurrentLine(), message, BS_get_text(scanner));
         }
     }
 
-    #define BS_error(s) BS_ErrorDispatcher(BS_GlobalBuilder, s)
+    #define BS_parseerror(errorstr) BS_ErrorDispatcher(BS_GlobalBuilder, errorstr)
+    #define BS_error(scanner, errorstr)  BS_ErrorDispatcher(BS_GlobalBuilder, errorstr)
     
     //***************************************************//
     //              Let the insanity begin               //
@@ -79,9 +85,9 @@
     int    integerValue;
     float  floatValue;
     char*  identifierText;
-    Pegasus::BlockScript::StackFrameInfo*                  vFrameInfo;
-    const  Pegasus::BlockScript::TypeDesc*                 vTypeDesc;
-    Pegasus::BlockScript::TypeDesc::EnumNode*       vEnumNode;
+    Pegasus::BlockScript::StackFrameInfo*      vFrameInfo;
+    const  Pegasus::BlockScript::TypeDesc*     vTypeDesc;
+    Pegasus::BlockScript::EnumNode*            vEnumNode;
     #define BS_PROCESS(N) Pegasus::BlockScript::Ast::N* v##N;
     #include "Pegasus/BlockScript/Ast.inl"
     #undef BS_PROCESS
@@ -192,13 +198,8 @@ stmt    : exp K_SEMICOLON { BS_BUILD($$, BuildStmtExp($1)); }
         { 
             if (BS_GlobalBuilder->GetSymbolTable()->GetTypeByName($2) == nullptr)
             {
-                const Pegasus::BlockScript::TypeDesc* enumType = BS_GlobalBuilder->GetSymbolTable()->CreateType(
-                    Pegasus::BlockScript::TypeDesc::M_ENUM,
+                const Pegasus::BlockScript::TypeDesc* enumType = BS_GlobalBuilder->GetSymbolTable()->CreateEnumType(
                     $2,
-                    nullptr, //no child
-                    0, //no property
-                    Pegasus::BlockScript::TypeDesc::E_NONE, //no ALU engine
-                    nullptr, //no struct def
                     $4 //the definition!
                 );
         
@@ -206,7 +207,7 @@ stmt    : exp K_SEMICOLON { BS_BUILD($$, BuildStmtExp($1)); }
             }
             else
             {
-                BS_error("Syntax error. Enum type re-declaration. A type with this name already exists");
+                BS_parseerror("Syntax error. Enum type re-declaration. A type with this name already exists");
                 YYERROR; 
             }
         }
@@ -237,7 +238,7 @@ struct_keyword  : K_STRUCT { BS_BUILD($$, StartNewFrame()); }
 if_begin_scope : K_R_PAREN K_L_BRAC { BS_BUILD($$, StartNewFrame()); }
                ;
 
-fun_type : type_desc { $$ = $1; if ($$ == nullptr) { BS_error("Syntax error. Invalid function type.");YYERROR; }; if (!BS_GlobalBuilder->StartNewFunction($$)) {BS_error("cannot declare function within a function"); YYERROR;} }
+fun_type : type_desc { $$ = $1; if ($$ == nullptr) { BS_parseerror("Syntax error. Invalid function type.");YYERROR; }; if (!BS_GlobalBuilder->StartNewFunction($$)) {BS_parseerror("cannot declare function within a function"); YYERROR;} }
          ;
 
 while_keyword : K_WHILE { BS_GlobalBuilder->StartNewFrame(); }
@@ -280,16 +281,16 @@ else_keyword  : K_ELSE { BS_GlobalBuilder->PopFrame(); BS_BUILD($$, StartNewFram
               ;
 
 enum_list : enum_list K_COMMA IDENTIFIER {
-                Pegasus::BlockScript::TypeDesc::EnumNode* enumNode = BS_GlobalBuilder->GetSymbolTable()->NewEnumNode(); 
+                Pegasus::BlockScript::EnumNode* enumNode = BS_GlobalBuilder->GetSymbolTable()->NewEnumNode(); 
                 enumNode->mIdd = $3;
-                Pegasus::BlockScript::TypeDesc::EnumNode* tailList = $1;
+                Pegasus::BlockScript::EnumNode* tailList = $1;
                 while (tailList->mNext != nullptr) { tailList = tailList->mNext; }
                 tailList->mNext = enumNode;
                 enumNode->mGuid = tailList->mGuid + 1; 
                 $$ = $1;
           }
           | IDENTIFIER {
-                Pegasus::BlockScript::TypeDesc::EnumNode* enumNode = BS_GlobalBuilder->GetSymbolTable()->NewEnumNode(); 
+                Pegasus::BlockScript::EnumNode* enumNode = BS_GlobalBuilder->GetSymbolTable()->NewEnumNode(); 
                 enumNode->mIdd = $1;
                 $$ = enumNode;
           }
@@ -366,8 +367,7 @@ arg_list : arg_list K_COMMA arg_dec {
          ;
 
 type_desc : type_desc K_L_LACE I_INT K_R_LACE { 
-                const Pegasus::BlockScript::TypeDesc* resultType = BS_GlobalBuilder->GetSymbolTable()->CreateType(
-                    Pegasus::BlockScript::TypeDesc::M_ARRAY,
+                const Pegasus::BlockScript::TypeDesc* resultType = BS_GlobalBuilder->GetSymbolTable()->CreateArrayType(
                     $1->GetName(), //name
                     $1,  // child type
                     $3   //array count
@@ -379,7 +379,7 @@ type_desc : type_desc K_L_LACE I_INT K_R_LACE {
                 }
                 else
                 {
-                    BS_error("Semantics error, unknown type specified.");
+                    BS_parseerror("Semantics error, unknown type specified.");
                     YYERROR;
                 }
               }
@@ -391,7 +391,7 @@ type_desc : type_desc K_L_LACE I_INT K_R_LACE {
                 }
                 else
                 {
-                    BS_error("Semantics error, unknown type specified.");
+                    BS_parseerror("Semantics error, unknown type specified.");
                     YYERROR;
                 }
             }
@@ -424,15 +424,22 @@ extern void BS_restart(FILE* f);
 
 void Bison_BlockScriptParse(const FileBuffer* fileBuffer, BlockScriptBuilder* builder) 
 {          
-    BS_bufferPosition = 0;
-    BS_GlobalBuilder = builder;
-    BS_GlobalFileBuffer = fileBuffer;
+    CompilerState compilerState;
+    compilerState.mBuilder = builder;
+    compilerState.mFileBuffer = fileBuffer;
+
+    yyscan_t scanner;
+    BS_lex_init_extra(&compilerState, &scanner);
+    builder->SetScanner(scanner);
 
     do 
     {
-	    BS_parse();
-    } while (BS_HasNext() && BS_GlobalBuilder->GetErrorCount() == 0);
+	    BS_parse(scanner);
+    } while (BS_HasNext(scanner) && BS_GlobalBuilder->GetErrorCount() == 0);
 
-    BS_restart(nullptr);
+    builder->SetScanner(nullptr);
+    BS_restart(nullptr, scanner);
+    BS_lex_destroy(scanner);
+
 }
 

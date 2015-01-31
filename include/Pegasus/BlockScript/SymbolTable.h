@@ -77,25 +77,13 @@ public:
     //! \param outEnumNode a pointer to fill in with the enumeration node 
     //! \param outEnumType a pointer to fill in with the enumeration type
     //! \return true if found it, false otherwise
-    bool FindEnumByName(const char* name, const TypeDesc::EnumNode** outEnumNode, const TypeDesc** outEnumType) const;
+    bool FindEnumByName(const char* name, const EnumNode** outEnumNode, const TypeDesc** outEnumType) const;
 
-    TypeDesc::EnumNode* NewEnumNode();
+    //! creates a new node describing an enumeration element
+    EnumNode* NewEnumNode();
 
-    //! Creates a new type if it does not exist. If the type exists already, it will find it and return it
-    //! \param modifier  the modifier to be using
-    //! \param name the actual string name of this type
-    //! \param child the child id of this type
-    //! \param the modifier property. See TypeDesc for more details
-    //! \return the description of this type.
-    TypeDesc* CreateType(
-        TypeDesc::Modifier modifier,
-        const char * name,
-        const TypeDesc* child = nullptr,
-        int modifierProperty = 0,
-        TypeDesc::AluEngine engine = TypeDesc::E_NONE,
-        Ast::StmtStructDef* structDef = nullptr,
-        TypeDesc::EnumNode* enumNode = nullptr
-    );
+    //! creates a new node describing a property of an object
+    PropertyNode* NewPropertyNode();
 
     //! Returns the root (only on the scope of this module) function table
     //! \return the function table.
@@ -103,6 +91,43 @@ public:
     //!          have references to external libraries
     FunTable* GetRootFunTable() { return &mFunTable; }
 
+    //! Returns and creates a scalar type. Scalar types are 4 bytes.
+    //! \param name the block script name that will be used
+    //! \param aluEngine the ALU engine to use for this scalar type
+    //! \return type descriptor structure
+    TypeDesc* CreateScalarType(const char* name, TypeDesc::AluEngine aluEngine);
+
+    //! Returns and creates a vectorial type.
+    //! \param name the name of the vector type
+    //! \param the child type of the vector
+    //! \param the size of the vector (how many scalars or vector children it has
+    //! \param the aluEngine of the vector type
+    TypeDesc* CreateVectorType(const char* name, TypeDesc* childType, int vectorSize, TypeDesc::AluEngine aluEngine);
+
+    //! Returns and creates an object type. Objects are passed around by handles of 4 bytes.
+    //! \param the blockscript name of the type
+    //! \return type descriptor structure
+    TypeDesc* CreateObjectType(const char* name, PropertyNode* propertyList, GetObjectPropertyRuntimePtrCallback getPropertyCallback);
+
+    //! Returns and creates an enumeration type
+    //! \param the name of the enumeration type for blockscript
+    //! \param the linked list of enumeration definitions with their values
+    TypeDesc* CreateEnumType(const char* name, EnumNode* enumNode);
+
+    //! Returns and creates a structure definition from c++ side
+    //! \param name the actual name
+    //! \param def the actual definition structure statement
+    TypeDesc* CreateStructType(const char* name, Ast::StmtStructDef* def);
+
+    //! Creates the * type, which represents "any" value passed by. Used only in c++ callbacks
+    //! \return the star type created
+    TypeDesc* CreateStarType();
+
+    //! Creates a static array type.
+    //! \param name the name of this array. Irrelevant though, since the arrays are found using the array parsing identifiers notation
+    //! \param childType the child type of the array (meaning the basic type)
+    //! \param count the number of elements this static array has
+    TypeDesc* CreateArrayType(const char* name, const TypeDesc* childType, int count);
 
     //! Returns a function description based on an AST function call. The FunDesc
     //! \param functionCall - AST node with function call.
@@ -123,6 +148,24 @@ public:
     StackFrameInfo* GetRootGlobalFrame();
 
 private:
+    //! Creates a new type if it does not exist. If the type exists already, it will find it and return it
+    //! \param modifier  the modifier to be using
+    //! \param name the actual string name of this type
+    //! \param child the child id of this type
+    //! \param the modifier property. See TypeDesc for more details
+    //! \return the description of this type.
+    TypeDesc* InternalCreateType(
+        TypeDesc::Modifier modifier,
+        const char * name,
+        const TypeDesc* child = nullptr,
+        int modifierProperty = 0,
+        TypeDesc::AluEngine engine = TypeDesc::E_NONE,
+        Ast::StmtStructDef* structDef = nullptr,
+        EnumNode* enumNode = nullptr,
+        PropertyNode* propertyNode = nullptr,
+        GetObjectPropertyRuntimePtrCallback getPropertyCallback = nullptr
+    );
+
     //! function table
     FunTable     mFunTable;
 

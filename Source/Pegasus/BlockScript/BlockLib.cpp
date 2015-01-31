@@ -62,8 +62,8 @@ void BlockLib::CreateEnumTypes(const EnumDeclarationDesc* descriptionList, int c
     for (int i = 0; i < count; ++i)
     {
         const EnumDeclarationDesc& def = descriptionList[i];
-        TypeDesc::EnumNode* enumNode = st->NewEnumNode();
-        TypeDesc::EnumNode* lastEl = enumNode;
+        EnumNode* enumNode = st->NewEnumNode();
+        EnumNode* lastEl = enumNode;
 
         for (int enVal = 0; enVal < def.count; ++enVal)
         {
@@ -76,13 +76,8 @@ void BlockLib::CreateEnumTypes(const EnumDeclarationDesc* descriptionList, int c
             }
         }
 
-        st->CreateType(
-            TypeDesc::M_ENUM,
+        st->CreateEnumType(
             builder->CopyString(def.typeName),
-            nullptr, //no child
-            0, //no modifier property
-            TypeDesc::E_NONE, //no ALU engine
-            nullptr, //no struct def
             enumNode
         );
     }
@@ -131,15 +126,37 @@ void BlockLib::CreateClassTypes(const ClassTypeDesc* descriptionList, int count)
     for (int i = 0; i < count; ++i)
     {
         const ClassTypeDesc& desc = descriptionList[i];
+        PropertyNode* propNodeList = nullptr;
+        PropertyNode* currPropNode = nullptr;
 
-        st->CreateType(
-            TypeDesc::M_REFERECE,
+        //create property nodes
+        for (int prop = 0; prop < desc.propertyCount; ++prop)
+        {
+            const ObjectPropertyDesc& propDesc = desc.propertyDescriptors[prop];
+            if (propNodeList == nullptr)
+            {
+                propNodeList = st->NewPropertyNode();
+                currPropNode = propNodeList;
+            }
+            else
+            {
+                currPropNode->mNext = st->NewPropertyNode();
+                currPropNode = currPropNode->mNext;
+            }
+        
+            //create the node
+            currPropNode->mName = builder->CopyString(propDesc.propertyName);
+            const TypeDesc* foundType = st->GetTypeByName(propDesc.propertyTypeName);
+            PG_ASSERTSTR(foundType, "Invalid type not found!");
+            currPropNode->mType = foundType;
+            currPropNode->mGuid = propDesc.propertyUniqueId;
+        
+        }
+
+        st->CreateObjectType(
             desc.classTypeName,
-            nullptr, //no child
-            0, //no modifier property yet...
-            TypeDesc::E_NONE, //no engine
-            nullptr, //no struct definition
-            nullptr // no enumeration mode
+            propNodeList,
+            desc.getPropertyCallback
         );
 
         InternalCreateIntrinsicFunctions(desc.methodDescriptors, desc.methodsCount, /*is a method*/ true);

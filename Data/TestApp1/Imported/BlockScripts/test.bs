@@ -20,17 +20,18 @@ beadsStateBuffer = CreateUniformBuffer(sizeof(PsyBeadsState));
 quad = CreateMesh();
 quadGenerator = CreateMeshGenerator("QuadGenerator");
 quad->SetGeneratorInput(quadGenerator);
+dd = quadGenerator;
 
 int Timeline_Update(beat : float)
 {
-
+	echo(dd.Degree);
 }
 
 int Timeline_Render(beat : float)
 {
 	beadsState.screenRatio = beat * 400.0 / 350.0;
 	beadsState.time = 5.0 * beat;
-	
+
 	SetProgram(psyBeadsProgram);
 	SetBuffer(beadsStateBuffer, beadsState);
 	SetUniformBuffer(beadsStateUniform, beadsStateBuffer);

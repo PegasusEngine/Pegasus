@@ -217,6 +217,24 @@ void PrettyPrint::PrintBlock(Canon::Block& b)
                 mStr("\n");
             }
             break;
+        case Canon::T_WRITE_OBJ_PROP:
+            {
+                Indent();
+                Canon::WriteObjProp* cmd = static_cast<Canon::WriteObjProp*>(node);
+                mStr("WRITEOBJPROP ");
+                mStr(cmd->GetProp()->mName);
+                mStr("\n");
+            }
+            break;
+        case Canon::T_READ_OBJ_PROP:
+            {
+                Indent();
+                Canon::ReadObjProp* cmd = static_cast<Canon::ReadObjProp*>(node);
+                mStr("READOBJPROP ");
+                mStr(cmd->GetProp()->mName);
+                mStr("\n");
+            }
+            break;
         case Canon::T_EXIT:
             {
                 Indent();mStr("EXIT\n");
@@ -509,7 +527,7 @@ void PrettyPrint::Visit(StmtEnumTypeDef* enumDef)
 {
     Indent();
     mStr("enum "); mStr(enumDef->GetEnumType()->GetName()); mStr("{\n");
-    const TypeDesc::EnumNode* node = enumDef->GetEnumType()->GetEnumNode();
+    const EnumNode* node = enumDef->GetEnumType()->GetEnumNode();
     while (node != nullptr)
     {
         Indent();Indent();

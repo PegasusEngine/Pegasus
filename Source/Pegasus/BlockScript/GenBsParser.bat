@@ -15,4 +15,5 @@ set PREFIX=BS_
 
 %BISON% -p %PREFIX% -d -o bs.parser.cpp bs.y
 move bs.parser.hpp %INCLUDES%\.
-%FLEX% -P %PREFIX% --wincompat -o bs.lexer.cpp bs.l
+move bs.lexer.hpp %INCLUDES%\.
+%FLEX% -P %PREFIX% --header-file=bs.lexer.hpp --wincompat -o bs.lexer.cpp bs.l

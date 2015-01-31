@@ -27,12 +27,14 @@ void TypeTable::Initialize(Alloc::IAllocator* alloc)
     PG_ASSERT(mTypeDescPool.Size() == 0);
     mTypeDescPool.Initialize(alloc);
     mEnumNodePool.Initialize(alloc);
+    mPropertyNodePool.Initialize(alloc);
 }
 
 void TypeTable::Shutdown()
 {
     mTypeDescPool.Reset();
     mEnumNodePool.Reset();
+    mPropertyNodePool.Reset();
 }
 
 TypeDesc* TypeTable::CreateType(
@@ -42,7 +44,9 @@ TypeDesc* TypeTable::CreateType(
     int modifierProperty,
     TypeDesc::AluEngine engine,
     Pegasus::BlockScript::Ast::StmtStructDef* structDef,
-    TypeDesc::EnumNode* enumNode
+    EnumNode* enumNode,
+    PropertyNode* propertyNode,
+    GetObjectPropertyRuntimePtrCallback getPropCallback
 )
 {
     PG_ASSERT(modifier != TypeDesc::M_INVALID);
@@ -76,6 +80,8 @@ TypeDesc* TypeTable::CreateType(
     newDesc.SetAluEngine(engine);
     newDesc.SetStructDef(structDef);
     newDesc.SetEnumNode(enumNode);
+    newDesc.SetPropertyNode(propertyNode);
+    newDesc.SetPropertyCallback(getPropCallback);
 
     int newSize = 0;
     bool success = ComputeSize(&newDesc, newSize);
@@ -113,7 +119,7 @@ TypeDesc* TypeTable::GetTypeForPatching(const char* name)
     return nullptr;
 }
 
-bool TypeTable::FindEnumByName(const char* name, const TypeDesc::EnumNode** outEnumNode, const TypeDesc** outEnumType) const
+bool TypeTable::FindEnumByName(const char* name, const EnumNode** outEnumNode, const TypeDesc** outEnumType) const
 {
     int s = mTypeDescPool.Size();
     for (int i = 0; i < s; ++i)
@@ -121,7 +127,7 @@ bool TypeTable::FindEnumByName(const char* name, const TypeDesc::EnumNode** outE
         const TypeDesc& typeDesc = mTypeDescPool[i];
         if(typeDesc.GetModifier() == TypeDesc::M_ENUM)
         {
-            const TypeDesc::EnumNode* node = typeDesc.GetEnumNode();
+            const EnumNode* node = typeDesc.GetEnumNode();
             while (node != nullptr)
             {
                 if (!Utils::Strcmp(node->mIdd, name))
@@ -146,13 +152,11 @@ bool TypeTable::ComputeSize(const TypeDesc* t, int& outSize) const
         case TypeDesc::M_STAR:
         case TypeDesc::M_SCALAR:
         case TypeDesc::M_ENUM:
-            outSize = 4; //4 bytes for scalars, enums and imms
+        case TypeDesc::M_REFERECE:
+            outSize = 4; //4 bytes for scalars, enums, object refs and imms
             return true;
         case TypeDesc::M_VECTOR:
             outSize = 4 * t->GetModifierProperty();
-            return true;
-        case TypeDesc::M_REFERECE:
-            outSize = 4; //4 bytes for references
             return true;
         case TypeDesc::M_ARRAY:
             {
@@ -184,10 +188,13 @@ bool TypeTable::ComputeSize(const TypeDesc* t, int& outSize) const
     return false;
 }
 
-TypeDesc::EnumNode* TypeTable::NewEnumNode()
+EnumNode* TypeTable::NewEnumNode()
 {
     return &mEnumNodePool.PushEmpty();
 }
 
-
+PropertyNode* TypeTable::NewPropertyNode()
+{
+    return &mPropertyNodePool.PushEmpty();
+}
 

@@ -86,6 +86,12 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\BlockLib.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\Preprocessor.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\CompilerState.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\bs.parser.hpp">
@@ -161,6 +167,15 @@
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockLib.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\bs.lexer.hpp">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\CompilerState.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\Preprocessor.h">
       <Filter>Include</Filter>
     </ClInclude>
   </ItemGroup>

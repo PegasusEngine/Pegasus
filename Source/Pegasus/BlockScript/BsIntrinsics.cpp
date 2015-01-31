@@ -257,25 +257,13 @@ static void RegisterIntrinsicTypes(BlockLib* lib)
     SymbolTable* symbolTable = lib->GetSymbolTable();
     PG_ASSERT(symbolTable != nullptr);
 
-    //Register the start type
-    symbolTable->CreateType(
-        TypeDesc::M_STAR,
-        "*"
-    );
+    //Register the start type, which is a pointer to anything
+    symbolTable->CreateStarType();
 
     //Register ints and scalars
-    TypeDesc* floatT = symbolTable->CreateType(
-        TypeDesc::M_SCALAR,
-        "float"
-    );
+    TypeDesc* floatT = symbolTable->CreateScalarType("float", TypeDesc::E_FLOAT);
 
-    floatT->SetAluEngine(TypeDesc::E_FLOAT);
-
-    TypeDesc* intT   = symbolTable->CreateType(
-        TypeDesc::M_SCALAR,
-        "int"
-    );
-    intT->SetAluEngine(TypeDesc::E_INT);
+    TypeDesc* intT   = symbolTable->CreateScalarType("int", TypeDesc::E_INT);
 
     char fStr[25];
     fStr[0] = '\0';
@@ -292,17 +280,16 @@ static void RegisterIntrinsicTypes(BlockLib* lib)
         iStr[iStrLen] = i + '0';
         fStr[fStrLen+1] = '\0';
         iStr[iStrLen+1] = '\0';
-        TypeDesc* t1 = symbolTable->CreateType(
-            TypeDesc::M_VECTOR,
+        TypeDesc* t1 = symbolTable->CreateVectorType(
             fStr,
             floatT,
-            i
+            i,
+            static_cast<TypeDesc::AluEngine>(TypeDesc::E_FLOAT + i - 1)
         );
-        t1->SetAluEngine(static_cast<TypeDesc::AluEngine>(TypeDesc::E_FLOAT + i - 1));
 
     }
 
-    symbolTable->CreateType(TypeDesc::M_REFERECE, "string");
+    symbolTable->CreateObjectType("string",nullptr,nullptr);
 }
 
 void Pegasus::BlockScript::RegisterIntrinsics(BlockLib* lib)
