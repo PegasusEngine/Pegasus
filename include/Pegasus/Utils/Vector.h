@@ -115,6 +115,13 @@ public:
         return *v;
     }
 
+    T Pop()
+    {
+        T val = (*this)[GetSize() - 1];
+        Delete(GetSize() - 1);
+        return val;
+    }
+
     //! deletes element at specified index
     void Delete(int i)
     {

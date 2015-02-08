@@ -11,23 +11,45 @@
 
 #include "Pegasus/BlockScript/CompilerState.h"
 
+using namespace Pegasus;
 using namespace Pegasus::BlockScript;
 
 
 void CompilerState::PushLexerState(int id)
 {
-    PG_ASSERT(mLexerStateCount < 512);
-    mLexerStack[mLexerStateCount++] = id;
+    mLexerStack.PushEmpty() = id;
 }
 
 int CompilerState::GetLexerState()
 {
-    PG_ASSERT(mLexerStateCount > 0);
-    return mLexerStack[mLexerStateCount - 1];
+    return mLexerStack[mLexerStack.GetSize() - 1];
 }
 
 int CompilerState::PopLexerState()
 {
-    PG_ASSERT(mLexerStateCount > 0);
-    return mLexerStack[--mLexerStateCount];
+    return mLexerStack.Pop();
+}
+
+
+void  CompilerState::PushDefineStack(void* bufferId, const BlockScript::Preprocessor::Definition* def)
+{
+    CompilerState::DefineBufferEl& el = mDefineBufferStack.PushEmpty(); 
+    el.mConsumed = false;
+    el.mLexerBufferId = bufferId;
+    el.mDef = def;
+}
+
+int   CompilerState::GetDefineStackCount() const
+{
+    return mDefineBufferStack.GetSize();
+}
+
+CompilerState::DefineBufferEl* CompilerState::GetDefineStackTop()
+{
+    return &mDefineBufferStack[mDefineBufferStack.GetSize() - 1];
+}
+
+void*  CompilerState::PopDefineStack()
+{
+    return mDefineBufferStack.Pop().mLexerBufferId;
 }

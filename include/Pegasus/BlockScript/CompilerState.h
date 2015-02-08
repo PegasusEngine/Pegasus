@@ -13,6 +13,7 @@
 #define PEGASUS_BS_COMPILER_STATE_H
 
 #include "Pegasus/BlockScript/Preprocessor.h"
+#include "Pegasus/Utils/Vector.h"
 #include "Pegasus/Core/Assertion.h"
 
 //fwd declarations
@@ -27,6 +28,11 @@ namespace Pegasus
     {
         class BlockScriptBuilder;
     }
+
+    namespace Alloc
+    {
+        class IAllocator;
+    }
 }
 
 namespace Pegasus
@@ -36,21 +42,28 @@ namespace BlockScript
     class CompilerState 
     {
     public:
+        struct DefineBufferEl
+        {
+            bool mConsumed;
+            void* mLexerBufferId;
+            const BlockScript::Preprocessor::Definition* mDef;
+        };
+
         BlockScript::Preprocessor mPreprocessor;
         BlockScript::BlockScriptBuilder* mBuilder;
         int mBufferPosition;
         const Io::FileBuffer* mFileBuffer;
         char mStringAccumulator[512];
         int  mStringAccumulatorPos;
-        int  mLexerStateCount;
 
-
-        CompilerState()
+        CompilerState(Alloc::IAllocator* allocator)
         : mBuilder(nullptr),
           mBufferPosition(0),
           mFileBuffer(nullptr),
           mStringAccumulatorPos(0),
-          mLexerStateCount(0)
+          mPreprocessor(allocator),
+          mLexerStack(allocator),
+          mDefineBufferStack(allocator)
         {
         }
 
@@ -62,8 +75,18 @@ namespace BlockScript
 
         BlockScript::Preprocessor& GetPreprocessor() { return mPreprocessor; }
 
+        void PushDefineStack(void* bufferId, const BlockScript::Preprocessor::Definition* def);
+
+        int  GetDefineStackCount() const;
+
+        DefineBufferEl* GetDefineStackTop();
+
+        void* PopDefineStack();
+
     private:
-        int  mLexerStack[512];
+
+        Utils::Vector<int>  mLexerStack;
+        Utils::Vector<DefineBufferEl>     mDefineBufferStack;
     };
 }
 }

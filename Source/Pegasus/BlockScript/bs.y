@@ -424,7 +424,7 @@ extern void BS_restart(FILE* f);
 
 void Bison_BlockScriptParse(const FileBuffer* fileBuffer, BlockScriptBuilder* builder) 
 {          
-    CompilerState compilerState;
+    CompilerState compilerState(builder->GetAllocator());
     compilerState.mBuilder = builder;
     compilerState.mFileBuffer = fileBuffer;
 

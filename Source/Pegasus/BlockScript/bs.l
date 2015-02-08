@@ -63,6 +63,7 @@
 %x STRING_BLOCK
 %x PREPROCESSOR
 %x PREPROCESSOR_DEFINE_CAPTURE
+%x PREPROCESSOR_IGNORE_CODE
 
 %%
 <IN_LINE_COMMENT>
@@ -115,9 +116,21 @@
     }
 }
 
+<PREPROCESSOR_IGNORE_CODE>
+{
+#  {
+        BEGIN(PREPROCESSOR);
+   }
+\n { 
+        yyextra->mBuilder->IncrementLine(); 
+   }
+. ;
+}
+
 <PREPROCESSOR_DEFINE_CAPTURE>
 {
 \n  {
+        yyextra->mBuilder->IncrementLine(); 
         if (yyextra->mStringAccumulatorPos >= 511)
         {
             BS_ErrorDispatcher(yyextra->mBuilder, "Out of string block memory! keep macro strings within 512 chars.");
@@ -125,19 +138,28 @@
         }
         else
         {
+             Pegasus::BlockScript::Preprocessor& pp = yyextra->GetPreprocessor();
              yyextra->mStringAccumulator[yyextra->mStringAccumulatorPos++] = '\0';
              const char* copiedString = yyextra->mBuilder->AllocStrImm(yyextra->mStringAccumulator);
-             yyextra->GetPreprocessor().PushCode(copiedString);
+             pp.PushCode(copiedString);
              yyextra->mStringAccumulatorPos = 0;
              yyextra->mBuilder->IncrementLine(); 
              const char* msg = nullptr;
-             if (!yyextra->GetPreprocessor().FlushCommand(&msg))
+             if (!pp.FlushCommand(&msg))
              {
                  BS_ErrorDispatcher(yyextra->mBuilder, msg); yyterminate();
              }
              else
              {
-                 BEGIN(yyextra->PopLexerState()); 
+			     if (pp.IsIfActive())
+				 {
+				     BEGIN(yyextra->PopLexerState()); 
+				 }
+				 else
+				 {
+					 BEGIN(PREPROCESSOR_IGNORE_CODE);
+				 }
+                 
              }
         }
     }
@@ -149,7 +171,8 @@
         }
         else
         {
-             yyextra->mStringAccumulator[yyextra->mStringAccumulatorPos++] = *yytext;
+             if (*yytext != 32)
+                yyextra->mStringAccumulator[yyextra->mStringAccumulatorPos++] = *yytext;
         }
     }
 }
@@ -157,23 +180,100 @@
 <PREPROCESSOR>
 {
 "include" {
-                if (yyextra->GetPreprocessor().GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_NONE)
-                {
-                    BS_ErrorDispatcher(yyextra->mBuilder, "Can't queue preprocessor command 'include' "); yyterminate();
-                }
-                else
-                {
-                    yyextra->GetPreprocessor().IncludeCmd(); 
-                }
+                 Pegasus::BlockScript::Preprocessor& pp = yyextra->GetPreprocessor();
+                 if (pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_NONE)
+                 {
+                     BS_ErrorDispatcher(yyextra->mBuilder, "Can't queue preprocessor command 'include' "); yyterminate();
+                 }
+                 else
+                 {
+                     pp.IncludeCmd(); 
+                 }
            }
 "define"   {  
-                if (yyextra->GetPreprocessor().GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_NONE)
+                 Pegasus::BlockScript::Preprocessor& pp = yyextra->GetPreprocessor();
+                 if (pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_NONE)
+                 {
+                     BS_ErrorDispatcher(yyextra->mBuilder, "Can't queue preprocessor command 'define' "); yyterminate();
+                 }
+                 else
+                 {
+                     pp.DefineCmd(); 
+                 }
+           }
+"ifdef"    {
+                Pegasus::BlockScript::Preprocessor& pp = yyextra->GetPreprocessor();
+                if (pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_NONE)
                 {
-                    BS_ErrorDispatcher(yyextra->mBuilder, "Can't queue preprocessor command 'define' "); yyterminate();
+                    BS_ErrorDispatcher(yyextra->mBuilder, "Can't queue preprocessor command 'ifdef' "); yyterminate();
                 }
                 else
                 {
-                    yyextra->GetPreprocessor().DefineCmd(); 
+                    bool ifActive = pp.IsIfActive();
+                    pp.NewState();
+                    pp.IfCmd();
+                    pp.SetChosePath(false);
+                    pp.SetIfActive(ifActive);
+                }
+           }
+"else"     {
+                Pegasus::BlockScript::Preprocessor& pp = yyextra->GetPreprocessor();
+                if (pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_NONE)
+                {
+                    BS_ErrorDispatcher(yyextra->mBuilder, "Can't queue preprocessor command 'else' "); yyterminate();
+                }
+                else
+                {
+                    if (pp.StateCount() >= 2)
+                    {
+                        bool chosePrevIfStmt = pp.ChosePath(); //was a previous condition true?
+                        pp.PopState();
+                        bool isActive = pp.IsIfActive();
+                        pp.NewState();
+                        pp.ElseCmd();
+                        pp.SetChosePath(chosePrevIfStmt);
+                        pp.SetIfActive(!chosePrevIfStmt && isActive);
+                    }
+                    else
+                    {
+                        BS_ErrorDispatcher(yyextra->mBuilder, "Can't queue preprocessor command 'else' "); yyterminate();
+                    }
+                }
+                
+           }
+"elif"     {
+                Pegasus::BlockScript::Preprocessor& pp = yyextra->GetPreprocessor();
+                if (pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_NONE)
+                {
+                    BS_ErrorDispatcher(yyextra->mBuilder, "Can't queue preprocessor command 'elif' "); yyterminate();
+                }
+                else
+                {
+                    if (pp.StateCount() >= 2)
+                    {
+                        bool chosePrevIfStmt = pp.ChosePath(); //was a previous condition true?
+                        pp.PopState();
+                        bool isActive = pp.IsIfActive();
+                        pp.NewState();
+                        pp.ElseIfCmd();
+                        pp.SetChosePath(chosePrevIfStmt);
+                        pp.SetIfActive(!chosePrevIfStmt && isActive);
+                    }
+                    else
+                    {
+                        BS_ErrorDispatcher(yyextra->mBuilder, "Can't queue preprocessor command 'elif' "); yyterminate();
+                    }
+                }
+           }
+"endif"    {
+                Pegasus::BlockScript::Preprocessor& pp = yyextra->GetPreprocessor();
+                if (pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_NONE)
+                {
+                    BS_ErrorDispatcher(yyextra->mBuilder, "Can't queue preprocessor command 'endif' "); yyterminate();
+                }
+                else
+                {
+                    pp.EndIfCmd();
                 }
            }
 \/\/       { yyextra->PushLexerState(YYSTATE);BEGIN(IN_LINE_COMMENT);}
@@ -190,19 +290,100 @@
            }
 \n         { 
                 yyextra->mBuilder->IncrementLine(); 
-                const char* msg = nullptr;
-                if (!yyextra->GetPreprocessor().FlushCommand(&msg))
+                Pegasus::BlockScript::Preprocessor& pp = yyextra->GetPreprocessor();
+                if (pp.GetCmd() == Pegasus::BlockScript::Preprocessor::PP_CMD_IF || pp.GetCmd() == Pegasus::BlockScript::Preprocessor::PP_CMD_ELSEIF)
                 {
-                    BS_ErrorDispatcher(yyextra->mBuilder, msg); yyterminate();
+                   
+                    const char* preprocessorDefine = pp.GetStringArg();
+                    pp.NoneCmd();
+
+                    if (preprocessorDefine == nullptr)
+                    {
+                        BS_ErrorDispatcher(yyextra->mBuilder, "Invalid argument for PP command"); yyterminate();
+                    }
+                
+                    if (pp.IsIfActive() && !pp.ChosePath())
+                    {
+                        bool isDefined = pp.FindDefinitionByName( preprocessorDefine ) != nullptr;
+                        if (isDefined)
+                        {
+                            pp.SetChosePath(true);
+                            BEGIN(yyextra->PopLexerState());
+                        }
+                        else
+                        {
+                            pp.SetIfActive(false);
+                            BEGIN(PREPROCESSOR_IGNORE_CODE);
+                        }
+                    }
+                    else
+                    {
+                        BEGIN(PREPROCESSOR_IGNORE_CODE);
+                    }
+                    
+                }
+                else if (pp.GetCmd() == Pegasus::BlockScript::Preprocessor::PP_CMD_ELSE)
+                {
+                    pp.NoneCmd();
+                    if (pp.IsIfActive() && !pp.ChosePath())
+                    {
+                        BEGIN(yyextra->PopLexerState());
+                    }
+                    else
+                    {
+                        pp.SetIfActive(false);
+                        BEGIN(PREPROCESSOR_IGNORE_CODE);
+                    }
+                }
+                else if (pp.GetCmd() == Pegasus::BlockScript::Preprocessor::PP_CMD_ENDIF)
+                {
+                    if (pp.StateCount() <= 1)
+                    {
+                        BS_ErrorDispatcher(yyextra->mBuilder, "Can't queue endif preprocessor command"); yyterminate();
+                    }
+                    else
+                    {
+                        pp.PopState();
+                        pp.NoneCmd();
+                        if (pp.IsIfActive())
+                        {
+                            BEGIN(yyextra->PopLexerState());
+                        }
+                        else
+                        {
+                            BEGIN(PREPROCESSOR_IGNORE_CODE);
+                        }
+                    }
                 }
                 else
                 {
-                    BEGIN(yyextra->PopLexerState()); 
+                    const char* msg = nullptr;
+
+                    if (!pp.FlushCommand(&msg))
+                    {
+                        BS_ErrorDispatcher(yyextra->mBuilder, msg); yyterminate();
+                    }
+                    else
+                    {
+                        if (pp.IsIfActive())
+                        {
+                            BEGIN(yyextra->PopLexerState()); 
+                        }
+                        else
+                        {
+                            BEGIN(PREPROCESSOR_IGNORE_CODE);
+                        }
+                    }
                 }
            }
 [ \t]      ;
 [_a-zA-Z0-9]+  {
-                    if (yyextra->GetPreprocessor().GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_DEFINE)
+                    Pegasus::BlockScript::Preprocessor& pp = yyextra->GetPreprocessor();
+                    if (
+                            pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_DEFINE &&
+                            pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_IF     &&
+                            pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_ELSEIF 
+                       )
                     {
                         BS_ErrorDispatcher(yyextra->mBuilder, "Invalid identifier token for preprocessor command."); yyterminate();
                     }
@@ -210,12 +391,18 @@
                     {
                         char * str = yyextra->mBuilder->GetStringPool().AllocateString();
                         if (str == nullptr) { BS_ErrorDispatcher( yyextra->mBuilder, "Out of identifier memory!"); yyterminate(); }
+						str[0] = '\0';
                         Pegasus::Utils::Strcat(str, yytext);
-                        yyextra->GetPreprocessor().PushString(yyextra->mBuilder->AllocStrImm(yytext));
-                        yyextra->mStringAccumulatorPos = 0;
-                        yyextra->mStringAccumulator[yyextra->mStringAccumulatorPos] = '\0';
+                        pp.PushString(yyextra->mBuilder->AllocStrImm(yytext));
+                        
+                        if (pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_IF &&
+                            pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_ELSEIF)
+                        {
+                            yyextra->mStringAccumulatorPos = 0;
+                            yyextra->mStringAccumulator[yyextra->mStringAccumulatorPos] = '\0';
 
-                        BEGIN(PREPROCESSOR_DEFINE_CAPTURE);
+                            BEGIN(PREPROCESSOR_DEFINE_CAPTURE);
+                        }
                     } 
                 }
 .          { BS_ErrorDispatcher( yyextra->mBuilder, "Invalid token for preprocessor."); yyterminate(); }
@@ -253,9 +440,19 @@ sizeof          { return K_SIZE_OF;      }
                         yylval->identifierText = str;
                         str[0] = '\0';
                         Pegasus::Utils::Strcat(str, yytext);
-                        isTypeString = yyextra->mBuilder->GetSymbolTable()->GetTypeByName(str) != nullptr;
+                        
+                        const Pegasus::BlockScript::Preprocessor::Definition* preprocessorDefinition = yyextra->GetPreprocessor().FindDefinitionByName(str);
+                        if (preprocessorDefinition != nullptr)
+                        {
+                            yyextra->PushDefineStack(YY_CURRENT_BUFFER, preprocessorDefinition);
+                            yypush_buffer_state(yy_create_buffer(NULL, YY_BUF_SIZE, yyscanner), yyscanner);
+                        }
+                        else
+                        {
+                            isTypeString = yyextra->mBuilder->GetSymbolTable()->GetTypeByName(str) != nullptr;
+                            return isTypeString ? TYPE_IDENTIFIER : IDENTIFIER;
+                        }
                     }
-                    return isTypeString ? TYPE_IDENTIFIER : IDENTIFIER;
                 }
 \+              { BS_TOKEN(O_PLUS);  }
 \-              { BS_TOKEN(O_MINUS); }
@@ -283,6 +480,17 @@ sizeof          { return K_SIZE_OF;      }
 .               ;
 }
 
+<<EOF>>         {
+                    if (yyextra->GetDefineStackCount() > 0)
+                    {
+                        yy_delete_buffer(YY_CURRENT_BUFFER, yyscanner); 
+                        yy_switch_to_buffer((YY_BUFFER_STATE)yyextra->PopDefineStack(), yyscanner);
+                    }
+					else
+					{
+						yyterminate();
+					}
+                }
 %%
 
 bool BS_HasNext(void* ptr)
@@ -293,10 +501,34 @@ bool BS_HasNext(void* ptr)
 
 int BS_readInput(struct yyguts_t* yyg, char * buffer, yy_size_t& result, int maxToRead)
 {
-    int bytesLeft = yyextra->mFileBuffer->GetFileSize() - yyextra->mBufferPosition;
-    int bytesRead = maxToRead > bytesLeft ? bytesLeft : maxToRead;
-    Pegasus::Utils::Memcpy(buffer, yyextra->mFileBuffer->GetBuffer() + yyextra->mBufferPosition, bytesRead);
-    yyextra->mBufferPosition += bytesRead;
-    result = static_cast<yy_size_t>(bytesRead);
+    if (yyextra->GetDefineStackCount() > 0)
+    {
+        Pegasus::BlockScript::CompilerState::DefineBufferEl* bufferEl = yyextra->GetDefineStackTop();
+        const Pegasus::BlockScript::Preprocessor::Definition* def = bufferEl->mDef;
+        if (def->mValue != nullptr)
+        {
+            if (bufferEl->mConsumed)
+            {
+                result = 0;
+            }
+            else
+            {
+                bufferEl->mConsumed = true;
+                int totalBytes = Pegasus::Utils::Strlen(def->mValue) + 1;        
+                PG_ASSERT(totalBytes < maxToRead);
+			    buffer[0] = '\0';
+                Pegasus::Utils::Strcat(buffer, def->mValue == nullptr ? "" : def->mValue);
+                result = static_cast<yy_size_t>(totalBytes);
+            }
+        }
+    }
+    else
+    {
+        int bytesLeft = yyextra->mFileBuffer->GetFileSize() - yyextra->mBufferPosition;
+        int bytesRead = maxToRead > bytesLeft ? bytesLeft : maxToRead;
+        Pegasus::Utils::Memcpy(buffer, yyextra->mFileBuffer->GetBuffer() + yyextra->mBufferPosition, bytesRead);
+        yyextra->mBufferPosition += bytesRead;
+        result = static_cast<yy_size_t>(bytesRead);
+    }
     return 0;//always correct
 }

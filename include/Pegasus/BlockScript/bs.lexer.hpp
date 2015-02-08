@@ -226,6 +226,7 @@ void BS_free (void * ,yyscan_t yyscanner );
 #define STRING_BLOCK 3
 #define PREPROCESSOR 4
 #define PREPROCESSOR_DEFINE_CAPTURE 5
+#define PREPROCESSOR_IGNORE_CODE 6
 
 #endif
 
@@ -340,9 +341,9 @@ extern int BS_lex \
 #undef YY_DECL
 #endif
 
-#line 285 "bs.l"
+#line 493 "bs.l"
 
 
-#line 347 "bs.lexer.hpp"
+#line 348 "bs.lexer.hpp"
 #undef BS_IN_HEADER
 #endif /* BS_HEADER_H */

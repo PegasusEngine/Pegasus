@@ -167,6 +167,8 @@ public:
     void  SetScanner(void* scanner) { mScanner = scanner; }
     void* GetScanner() { return mScanner; }
 
+    Pegasus::Alloc::IAllocator* GetAllocator() const { return mGeneralAllocator; }
+
 private:
 
     // registers a member into the stack. Returns the offset of the current stack frame.
@@ -187,7 +189,7 @@ private:
     Ast::Exp* AttemptTypePromotion(Ast::Exp* exp, const TypeDesc* targetType);
 
 
-    Alloc::IAllocator* mGeneralAllocator;
+    Pegasus::Alloc::IAllocator* mGeneralAllocator;
     AstAllocator       mAllocator;
     FunTable           mFunTable;
 	CompilationResult  mActiveResult;
