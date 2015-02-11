@@ -24,6 +24,9 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Utils\Vector.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Utils\ByteStream.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Utils\Memcpy.h">
@@ -39,6 +42,9 @@
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Utils\Vector.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Utils\ByteStream.h">
       <Filter>Include</Filter>
     </ClInclude>
   </ItemGroup>

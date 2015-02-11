@@ -41,9 +41,6 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\PrettyPrint.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\AstAllocator.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\BlockScript.cpp">
       <Filter>Source</Filter>
     </ClCompile>
@@ -110,9 +107,6 @@
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\PrettyPrint.h">
-      <Filter>Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\AstAllocator.h">
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockScript.h">

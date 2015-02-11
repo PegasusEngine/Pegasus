@@ -15,11 +15,11 @@
 
 #include "Pegasus/BlockScript/IVisitor.h"
 #include "Pegasus/BlockScript/Container.h"
-#include "Pegasus/BlockScript/AstAllocator.h"
 #include "Pegasus/BlockScript/BlockScriptCanon.h"
 #include "Pegasus/BlockScript/IddStrPool.h"
 #include "Pegasus/BlockScript/StackFrameInfo.h"
 #include "Pegasus/BlockScript/FunDesc.h"
+#include "Pegasus/Memory/BlockAllocator.h"
 
 namespace Pegasus
 {
@@ -160,7 +160,7 @@ private:
     int mCurrentTempAllocationSize;
     int mNextLabel;
 
-    AstAllocator mAllocator;
+    Memory::BlockAllocator mAllocator;
     Container<Canon::Block> mBlocks;
     Container<FunMapEntry>  mFunBlockMap;
 

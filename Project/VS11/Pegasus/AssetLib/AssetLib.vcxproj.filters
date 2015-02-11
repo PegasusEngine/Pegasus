@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Include">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Include\Proxy">
+      <UniqueIdentifier>{1b6d46c0-b6e3-496f-ba24-33e75dbef54c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Shared">
+      <UniqueIdentifier>{a166da0d-dda0-4656-8536-d89715fb8749}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Proxy">
+      <UniqueIdentifier>{65d39e25-4960-47c4-97b0-d7fe021e92e3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Shared\IAssetLibProxy.h">
+      <Filter>Include\Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Proxy\AssetLibProxy.h">
+      <Filter>Include\Proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Asset.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\AssetLib.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\as.lexer.hpp">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\AsCompilerState.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\ASTree.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\as.parser.hpp">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\AssetBuilder.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\Proxy\AssetLibProxy.cpp">
+      <Filter>Source\Proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\Asset.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\AssetLib.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\as.lexer.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\ASTree.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\as.parser.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\AssetBuilder.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\Source\Pegasus\AssetLib\as.l">
+      <Filter>Source</Filter>
+    </None>
+    <None Include="..\..\..\..\Source\Pegasus\AssetLib\as.y">
+      <Filter>Source</Filter>
+    </None>
+    <None Include="..\..\..\..\Source\Pegasus\AssetLib\GenAsParser.bat">
+      <Filter>Source</Filter>
+    </None>
+  </ItemGroup>
+</Project>

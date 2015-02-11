@@ -293,6 +293,7 @@ void Pegasus::Io::FileBuffer::OwnBuffer(Alloc::IAllocator* bufferAlloc, char * b
     mAllocator = bufferAlloc;
     mBuffer = buffer;
     mBufferSize = bufferSize;
+    mFileSize = bufferSize;
 }
 
 //----------------------------------------------------------------------------------------

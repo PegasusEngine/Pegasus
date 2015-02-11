@@ -19,6 +19,7 @@
 #include "Pegasus/Mesh/MeshManager.h"
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/BlockScript/BlockScriptManager.h"
+#include "Pegasus/AssetLib/AssetLib.h"
 
 namespace Pegasus {
 namespace Wnd {
@@ -59,6 +60,10 @@ public:
     //! Gets the blockscript manager to construct / create block script libraries / scripts
     //! \return the BlockScriptManager
     virtual BlockScript::BlockScriptManager* GetBlockScriptManager() const = 0;
+
+    //! Gets the asset library
+    //! \return AssetLibrary
+    virtual AssetLib::AssetLib* GetAssetLib() const = 0;
 };
 
 

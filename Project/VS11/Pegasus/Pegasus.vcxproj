@@ -162,7 +162,7 @@
     </Bscmake>
     <Lib>
       <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Camera.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;TimelineBlock.lib;Window.lib;Utils.lib</AdditionalDependencies>
+      <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Camera.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;TimelineBlock.lib;Window.lib;Utils.lib;AssetLib.lib;</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -194,7 +194,7 @@
     </Bscmake>
     <Lib>
       <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Camera.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;TimelineBlock.lib;Window.lib;Utils.lib</AdditionalDependencies>
+      <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Camera.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;TimelineBlock.lib;Window.lib;Utils.lib;AssetLib.lib;</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -223,7 +223,7 @@
     </Bscmake>
     <Lib>
       <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Camera.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;TimelineBlock.lib;Window.lib;Utils.lib</AdditionalDependencies>
+      <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Camera.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;TimelineBlock.lib;Window.lib;Utils.lib;AssetLib.lib;</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -256,7 +256,7 @@
     </Bscmake>
     <Lib>
       <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Camera.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;TimelineBlock.lib;Window.lib;Utils.lib</AdditionalDependencies>
+      <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Camera.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;TimelineBlock.lib;Window.lib;Utils.lib;AssetLib.lib;</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -290,7 +290,7 @@
     </Bscmake>
     <Lib>
       <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Camera.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;TimelineBlock.lib;Window.lib;Utils.lib</AdditionalDependencies>
+      <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Camera.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;TimelineBlock.lib;Window.lib;Utils.lib;AssetLib.lib;</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>
@@ -324,7 +324,7 @@
     </Bscmake>
     <Lib>
       <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Camera.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;TimelineBlock.lib;Window.lib;Utils.lib</AdditionalDependencies>
+      <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Camera.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;TimelineBlock.lib;Window.lib;Utils.lib;AssetLib.lib;</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
   </ItemDefinitionGroup>

@@ -28,6 +28,8 @@
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/Render/RenderContext.h"
 #include "Pegasus/Sound/Sound.h"
+#include "Pegasus/AssetLib/AssetLib.h"
+#include "Pegasus/AssetLib/Asset.h"
 #include <stdio.h>
 
 namespace Pegasus {
@@ -89,6 +91,9 @@ Application::Application(const ApplicationConfig& config)
     // Set up timeline, block script manager has to be initialized first so timeline can push the graphics library within.
     mTimeline = PG_NEW(timelineAlloc, -1, "Timeline", Alloc::PG_MEM_PERM) Timeline::Timeline(timelineAlloc, this);
 
+    // Set up asset library
+    mAssetLib = PG_NEW(nodeAlloc, -1, "AssetLib", Alloc::PG_MEM_PERM) AssetLib::AssetLib(nodeAlloc, nullptr);
+
     // register the entire render api
     Pegasus::Application::RegisterRenderApi(mBlockScriptManager->GetRuntimeLib());
 
@@ -145,6 +150,10 @@ void Application::Initialize()
     char rootPath[Io::IOManager::MAX_FILEPATH_LENGTH];
     sprintf_s(rootPath, Io::IOManager::MAX_FILEPATH_LENGTH - 1, "%s%s\\Imported\\", mConfig.mBasePath, GetAppName()); // Hardcode imported for now
     mIoManager = PG_NEW(coreAlloc, -1, "IOManager", Pegasus::Alloc::PG_MEM_PERM) Io::IOManager(rootPath);
+
+    //TODO: decide here if we use the pakIoManager or the standard file system IOManager
+    mAssetLib->SetIoManager(mIoManager);
+
 
     // Start up the app, which creates and destroys the dummy window
     StartupAppInternal();

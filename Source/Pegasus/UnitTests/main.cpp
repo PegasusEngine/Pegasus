@@ -101,6 +101,11 @@ int main()
     RUN_TEST(Vector1);
     RUN_TEST(Vector2);
 
+    //ByteStream
+    RUN_TEST(ByteStream1);
+    RUN_TEST(ByteStream2);
+    RUN_TEST(ByteStream3);    
+
     ///////////////////////////////////////////////////////////
 
     printf("Final Results: %d out of %d succeeded\n", successes, total);

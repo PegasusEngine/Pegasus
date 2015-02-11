@@ -27,68 +27,34 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\..\Include\Pegasus\BlockScript\Ast.inl" />
-    <None Include="..\..\..\..\Source\Pegasus\BlockScript\bs.l" />
-    <None Include="..\..\..\..\Source\Pegasus\BlockScript\bs.y" />
-    <None Include="..\..\..\..\Source\Pegasus\BlockScript\ExpressionEngine.inl" />
-    <None Include="..\..\..\..\Source\Pegasus\BlockScript\GenBsParser.bat" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\as.lexer.hpp" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\as.parser.hpp" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\AsCompilerState.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Asset.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\AssetBuilder.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\AssetLib.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\ASTree.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Proxy\AssetLibProxy.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Shared\IAssetLibProxy.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\BlockLib.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\BlockScript.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\BlockScriptBuilder.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\BlockScriptCompiler.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\BlockScriptManager.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\bs.lexer.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\bs.parser.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\BsIntrinsics.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\BsVm.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\Canonizer.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\CompilerState.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\FunCallback.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\FunDesc.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\FunTable.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\IddStrPool.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\Preprocessor.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\PrettyPrint.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\StackFrameInfo.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\SymbolTable.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\TypeDesc.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\BlockScript\TypeTable.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\as.lexer.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\as.parser.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\Asset.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\AssetBuilder.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\AssetLib.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\ASTree.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\Proxy\AssetLibProxy.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockLib.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockScript.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockScriptAst.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockScriptBuilder.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockScriptCanon.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockScriptCompiler.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockScriptManager.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\bs.lexer.hpp" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\bs.parser.hpp" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BsIntrinsics.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BsVm.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\Canonizer.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\CompilerState.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\Container.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\ExpressionEngine.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\FunCallback.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\FunDesc.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\FunTable.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\IBlockScriptCompilerListener.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\IddStrPool.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\IVisitor.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\Preprocessor.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\PrettyPrint.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\StackFrameInfo.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\SymbolTable.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\TypeDesc.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\TypeTable.h" />
+    <None Include="..\..\..\..\Source\Pegasus\AssetLib\as.l" />
+    <None Include="..\..\..\..\Source\Pegasus\AssetLib\as.y" />
+    <None Include="..\..\..\..\Source\Pegasus\AssetLib\GenAsParser.bat" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{6BFF7812-D698-42F9-9F0F-B77348A9C723}</ProjectGuid>
+    <ProjectGuid>{399CC639-4276-42BB-BF88-4A985E28700D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>BlockScript</RootNamespace>
+    <RootNamespace>AssetLib</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'" Label="Configuration">

@@ -4,22 +4,22 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   AstAllocator.cpp
+//! \file   BlockAllocator.cpp
 //! \author Kleber Garcia
-//! \date   1st september 2014
-//! \brief  blockscript AST greedy allocator. All memory gets deallocated at once.
+//! \date   8th February 2015
+//! \brief  BlockAllocator greedy allocator. All memory gets deallocated at once.
 
 #include "Pegasus/Core/Assertion.h"
 #include "Pegasus/Utils/Memcpy.h"
-#include "Pegasus/BlockScript/AstAllocator.h"
+#include "Pegasus/Memory/BlockAllocator.h"
 
 using namespace Pegasus;
-using namespace Pegasus::BlockScript;
+using namespace Pegasus::Memory;
 
 //increase the page list 10 elements at a time
-const int AstAllocator::sPageIncrement = 10;
+const int BlockAllocator::sPageIncrement = 10;
 
-AstAllocator::AstAllocator() : 
+BlockAllocator::BlockAllocator() : 
     mAllocator(nullptr), 
     mMemoryPages(nullptr),
     mMemoryPageListCount(0),
@@ -29,18 +29,18 @@ AstAllocator::AstAllocator() :
 {
 }
 
-AstAllocator::~AstAllocator()
+BlockAllocator::~BlockAllocator()
 {
     FreeMemory();
 }
 
-void AstAllocator::Initialize(int pageSize, Alloc::IAllocator* alloc)
+void BlockAllocator::Initialize(int pageSize, Alloc::IAllocator* alloc)
 {
     mAllocator = alloc;
     mPageSize = pageSize;
 }
 
-void* AstAllocator::Alloc(
+void* BlockAllocator::Alloc(
         size_t tsize, 
         Alloc::Flags flags, 
         Alloc::Category category, 
@@ -85,7 +85,7 @@ void* AstAllocator::Alloc(
     return mMemoryPages[actualPage] + offset;
 }
 
-void* AstAllocator::AllocAlign(
+void* BlockAllocator::AllocAlign(
     size_t size, 
     Alloc::Alignment align, 
     Alloc::Flags flags, 
@@ -95,21 +95,21 @@ void* AstAllocator::AllocAlign(
     unsigned int line
 )
 {
-    PG_FAILSTR("Alloc Align not supported in AstAllocator!");
+    PG_FAILSTR("Alloc Align not supported in BlockAllocator!");
 	return nullptr;
 }
 
-void AstAllocator::Delete(void* ptr)
+void BlockAllocator::Delete(void* ptr)
 {
     PG_FAILSTR("Atomic deletions not allowed in the greedy Ast Allocator!");
 }
 
-void AstAllocator::Reset()
+void BlockAllocator::Reset()
 {
     mMemorySize = 0;
 }
 
-void AstAllocator::FreeMemory()
+void BlockAllocator::FreeMemory()
 {
     Reset();
     for (int p = 0; p < mMemoryPageListSize; ++p)

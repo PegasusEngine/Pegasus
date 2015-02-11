@@ -47,6 +47,10 @@ namespace Pegasus {
     namespace BlockScript {
         class BlockScriptManager;
     }
+
+    namespace AssetLib {
+        class AssetLib;
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -119,6 +123,7 @@ public:
     virtual Shader::ShaderManager*           GetShaderManager()      const { return mShaderManager;      }
     virtual Timeline::Timeline*              GetTimeline()           const { return mTimeline;           }
     virtual BlockScript::BlockScriptManager* GetBlockScriptManager() const { return mBlockScriptManager; }
+    virtual AssetLib::AssetLib*              GetAssetLib()           const { return mAssetLib;           }
 
 private:
     // No copies allowed
@@ -142,6 +147,7 @@ private:
     Mesh::MeshManager*               mMeshManager;        //!< Mesh node manager
     Timeline::Timeline*              mTimeline;           //!< Timeline object
     BlockScript::BlockScriptManager* mBlockScriptManager; //!< BlockScriptManager manager.
+    AssetLib::AssetLib*              mAssetLib;           //!< AssetLib manager
 };
 
 }   // namespace App

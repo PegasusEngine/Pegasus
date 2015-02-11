@@ -48,6 +48,10 @@ namespace Pegasus {
         class IMeshEventListener;
 #endif
     }
+
+    namespace AssetLib {
+        class IAssetLibProxy;
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -104,6 +108,10 @@ public:
     //! Gets the mesh manager, for mesh and GPU program controls
     //! \return Mesh manager
     virtual Mesh::IMeshManagerProxy * GetMeshManagerProxy() = 0;
+
+    //! Gets the asset lib proxy, to control assets
+    //! \return asset library proxy
+    virtual AssetLib::IAssetLibProxy* GetAssetLibProxy() = 0;
 
 
     //! Initializes this application

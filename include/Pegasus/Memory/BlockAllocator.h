@@ -4,30 +4,30 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   AstAllocator.h
+//! \file   BlockAllocator.h
 //! \author Kleber Garcia
-//! \date   1st september 2014
-//! \brief  blockscript AST greedy allocator. All memory gets deallocated at once.
+//! \date   February 8th 2015
+//! \brief  BlockAllocator, greedy allocator. All memory gets deallocated at once.
 
-#ifndef AST_ALLOCATOR_H
-#define AST_ALLOCATOR_H
+#ifndef PEGASUS_BLOCK_ALLOCATOR_H
+#define PEGASUS_BLOCK_ALLOCATOR_H
 
 #include "Pegasus/Allocator/IAllocator.h"
 
 namespace Pegasus
 {
 
-namespace BlockScript
+namespace Memory
 {
 
 //! Ast allocator, following decorator pattern, helps recycling memory across BS sessions.
 //! the AstAllocator destroys all memory at once, and only deallocates on a ForceFree call (or on destruction)
-class AstAllocator : public Alloc::IAllocator
+class BlockAllocator : public Alloc::IAllocator
 {
 public:
 
-    AstAllocator();
-    virtual ~AstAllocator();
+    BlockAllocator();
+    virtual ~BlockAllocator();
     
     //! decorate the underlying allocator. The 
     //! \param alloc the allocator querying underneath

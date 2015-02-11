@@ -47,6 +47,7 @@ public:
     virtual Shader::IShaderManagerProxy * GetShaderManagerProxy() { return mApplication->GetShaderManager()->GetProxy(); }
     virtual Texture::ITextureManagerProxy * GetTextureManagerProxy() { return mApplication->GetTextureManager()->GetProxy(); }
     virtual Mesh::IMeshManagerProxy * GetMeshManagerProxy() { return mApplication->GetMeshManager()->GetProxy(); }
+    virtual AssetLib::IAssetLibProxy* GetAssetLibProxy() { return mApplication->GetAssetLib()->GetProxy(); }
 
     // Stateflow API
     virtual void Initialize();

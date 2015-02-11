@@ -91,4 +91,10 @@ bool UNIT_TEST_Vector1();
 
 bool UNIT_TEST_Vector2();
 
+bool UNIT_TEST_ByteStream1();
+
+bool UNIT_TEST_ByteStream2();
+
+bool UNIT_TEST_ByteStream3();
+
 #endif

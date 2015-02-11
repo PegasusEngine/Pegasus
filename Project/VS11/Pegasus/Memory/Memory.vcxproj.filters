@@ -15,12 +15,18 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Memory\MemoryManager.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Memory\BlockAllocator.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Memory\MallocFreeAllocator.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Memory\MemoryManager.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Memory\BlockAllocator.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>

@@ -16,6 +16,7 @@
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/TesselationTable.h"
 #include "Pegasus/Utils/Vector.h"
+#include "Pegasus/Utils/ByteStream.h"
 
 static Pegasus::Memory::MallocFreeAllocator sGlobalAllocator(0);
 
@@ -418,4 +419,49 @@ bool UNIT_TEST_Vector2()
         if (st.i != (2*i + 1) || st.c != (st.i % 56)) return false;
     }
     return true;
+}
+
+bool UNIT_TEST_ByteStream1()
+{
+    Pegasus::Utils::ByteStream bs(&sGlobalAllocator);
+    int k = 992;
+    bs.Append(&k, sizeof(k));
+    bool test1 = *static_cast<int*>(bs.GetBuffer()) == 992 && bs.GetSize() == sizeof(k);
+    
+    bs.Reset();
+
+    return test1 && bs.GetSize() == 0 && bs.GetBuffer() == nullptr;
+}
+
+bool UNIT_TEST_ByteStream2()
+{
+    Pegasus::Utils::ByteStream bs(&sGlobalAllocator);
+    const char* str1 = "hello world";
+    const char* str2 = "hello world2";
+    const char* str3 = "hello world3";
+
+    int sz1 = Pegasus::Utils::Strlen(str1);
+    int sz2 = Pegasus::Utils::Strlen(str2);
+    int sz3 = Pegasus::Utils::Strlen(str3);
+
+    bs.Append(str1, sz1);
+    bs.Append(str2, sz2);
+    bs.Append(str3, sz3 + 1);
+
+    return !Pegasus::Utils::Strcmp(static_cast<char*>(bs.GetBuffer()), "hello worldhello world2hello world3");
+}
+
+bool UNIT_TEST_ByteStream3()
+{
+    Pegasus::Utils::ByteStream bs(&sGlobalAllocator);
+    Pegasus::Utils::ByteStream bs2(&sGlobalAllocator);
+    const char* str1 = "this is a long string";
+    int sz1 = Pegasus::Utils::Strlen(str1);
+    bs.Append(str1, sz1);
+    bs2.Append(&bs);
+    bs2.Append(bs.GetBuffer(), sz1 + 1);
+    bs.Reset();
+    bs.Append(&bs2);
+
+    return !Pegasus::Utils::Strcmp(static_cast<char*>(bs2.GetBuffer()), static_cast<char*>(bs.GetBuffer()));
 }

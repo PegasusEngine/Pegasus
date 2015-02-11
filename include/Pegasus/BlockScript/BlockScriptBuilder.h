@@ -13,7 +13,6 @@
 #ifndef BLOCK_SCRIPT_BUILDER_H
 #define BLOCK_SCRIPT_BUILDER_H
 
-#include "Pegasus/BlockScript/AstAllocator.h"
 #include "Pegasus/BlockScript/SymbolTable.h"
 #include "Pegasus/BlockScript/TypeTable.h"
 #include "Pegasus/BlockScript/FunTable.h"
@@ -22,6 +21,7 @@
 #include "Pegasus/BlockScript/Canonizer.h"
 #include "Pegasus/BlockScript/IddStrPool.h"
 #include "Pegasus/BlockScript/BlockScriptCanon.h"
+#include "Pegasus/Memory/BlockAllocator.h"
 
 namespace Pegasus
 {
@@ -190,7 +190,7 @@ private:
 
 
     Pegasus::Alloc::IAllocator* mGeneralAllocator;
-    AstAllocator       mAllocator;
+    Memory::BlockAllocator      mAllocator;
     FunTable           mFunTable;
 	CompilationResult  mActiveResult;
     IddStrPool         mStrPool;

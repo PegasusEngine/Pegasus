@@ -12,7 +12,7 @@
 #ifndef PEGASUS_BS_CONTAINER
 #define PEGASUS_BS_CONTAINER
 
-#include "Pegasus/BlockScript/AstAllocator.h"
+#include "Pegasus/Memory/BlockAllocator.h"
 #include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/Core/Assertion.h"
 #include <new>
@@ -31,7 +31,7 @@ namespace BlockScript
 {
     //! Container class, reuses as much memory as possible for rapid empting and rapid filling
     template<class T>
-    class Container : private AstAllocator
+    class Container : private Memory::BlockAllocator
     {
     public:
 
@@ -66,7 +66,7 @@ namespace BlockScript
     template<class T>
     void Container<T>::Initialize(Alloc::IAllocator* alloc)
     {
-        AstAllocator::Initialize(sizeof(T) * CONTAINER_PAGE_SZ, alloc); 
+        Memory::BlockAllocator::Initialize(sizeof(T) * CONTAINER_PAGE_SZ, alloc); 
     }
 
     template<class T>
@@ -91,7 +91,7 @@ namespace BlockScript
             T& t = (*this)[i];
             t.~T();
         }
-		AstAllocator::Reset();
+		Memory::BlockAllocator::Reset();
     }
 
     template<class T>
