@@ -13,6 +13,7 @@
 #include "Pegasus/AssetLib/ASTree.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/ByteStream.h"
+#include "Pegasus/Allocator/Alloc.h"
 
 #include <stdio.h>
 

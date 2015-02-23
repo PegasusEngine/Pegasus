@@ -16,6 +16,7 @@
 #include "Pegasus/Core/Io.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/ByteStream.h"
+#include "Pegasus/Allocator/Alloc.h"
 
 using namespace Pegasus;
 using namespace Pegasus::AssetLib;
