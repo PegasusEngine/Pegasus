@@ -15,23 +15,19 @@
 #include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/Allocator/Alloc.h"
 #include "Pegasus/Core/Assertion.h"
+#include "Pegasus/Core/Io.h"
 #include "Pegasus/Utils/String.h"
 
 using namespace Pegasus;
 using namespace Pegasus::AssetLib;
 
-#define AS_NEW PG_NEW(&mAstAllocator, -1, "AssetLibrary::ASTree", Pegasus::Alloc::PG_MEM_TEMP)
-#define AST_PAGE_SIZE (10 * sizeof(AssetLib::Object))
-#define MAX_STRING_PAGE_SIZE 512
-
 AssetBuilder::AssetBuilder(Alloc::IAllocator* allocator)
 : mArrStack(allocator),
   mObjStack(allocator),
   mFinalAsset(nullptr),
-  mCurrentLine(1)
+  mCurrentLine(1),
+  mErrorCount(0)
 {
-    mAstAllocator.Initialize(AST_PAGE_SIZE, allocator);
-    mStringAllocator.Initialize(MAX_STRING_PAGE_SIZE, allocator);
 }
 
 AssetBuilder::~AssetBuilder()
@@ -44,11 +40,12 @@ void AssetBuilder::Reset()
     mArrStack.Clear();
     mObjStack.Clear();
     mFinalAsset = nullptr;
+    mErrorCount = 0;
 }
 
 Array* AssetBuilder::BeginArray()
 {
-    Array* arr = AS_NEW Array(&mAstAllocator);
+    Array* arr = mFinalAsset->NewArray();
     mArrStack.PushEmpty() = arr;
     return arr;
 }
@@ -65,7 +62,7 @@ void AssetBuilder::EndArray()
 
 Object* AssetBuilder::BeginObject()
 {
-    Object* obj = AS_NEW Object(&mAstAllocator);
+    Object* obj = mFinalAsset->NewObject();
     mObjStack.PushEmpty() = obj; 
     return obj;
 }
@@ -80,32 +77,13 @@ void AssetBuilder::EndObject()
     mObjStack.Pop();
 }
 
-Asset* AssetBuilder::BuildAsset(Object* obj)
+void AssetBuilder::BeginCompilation(Asset* asset)
 {
-    if (obj == nullptr)
-    {
-        return nullptr;
-    }
-    Asset* asset = AS_NEW Asset(obj);
     mFinalAsset = asset; 
-    return asset;
 }
 
 const char* AssetBuilder::CopyString(const char* string)
 {
-
-    int strSize = Utils::Strlen(string) + 1;
-    if (strSize > MAX_STRING_PAGE_SIZE)
-    {
-        return nullptr;
-    }
-
-    char* strAllocation = static_cast<char*>(mStringAllocator.Alloc(
-        strSize,
-        Alloc::PG_MEM_TEMP
-    ));
-
-    strAllocation[0] = '\0';
-    Utils::Strcat(strAllocation, string);
-    return strAllocation;
+    return mFinalAsset->CopyString(string);
 }
+

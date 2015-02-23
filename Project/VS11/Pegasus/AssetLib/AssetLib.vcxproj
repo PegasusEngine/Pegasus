@@ -35,7 +35,10 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\AssetLib.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\ASTree.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Proxy\AssetLibProxy.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Proxy\AssetProxy.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\RuntimeAssetObject.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Shared\IAssetLibProxy.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Shared\IAssetProxy.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\as.lexer.cpp" />
@@ -45,6 +48,8 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\AssetLib.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\ASTree.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\Proxy\AssetLibProxy.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\Proxy\AssetProxy.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\RuntimeAssetObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\Source\Pegasus\AssetLib\as.l" />

@@ -187,13 +187,105 @@ namespace AssetPrivate
     }
 }
 
-Asset::Asset(Object* obj)
-: mRoot(obj)
+#define AS_NEW PG_NEW(&mAstAllocator, -1, "AssetLibrary::ASTree", Pegasus::Alloc::PG_MEM_TEMP)
+#define AST_PAGE_SIZE (10 * sizeof(AssetLib::Object))
+#define MAX_STRING_PAGE_SIZE 512
+
+Asset::Asset(Alloc::IAllocator* allocator, Asset::AssetFormat fmt)
+: 
+  mAllocator(allocator),
+  mFormat(fmt),
+  mChildArrays(allocator),
+  mChildObjects(allocator),
+  mRuntimeData(nullptr)
 {
+    mPathString[0] = '\0';
+    mAstAllocator.Initialize(AST_PAGE_SIZE, allocator);
+    mStringAllocator.Initialize(MAX_STRING_PAGE_SIZE, allocator);
+
+#if PEGASUS_ENABLE_PROXIES
+    mProxy.SetObject(this);
+#endif
 }
 
 Asset::~Asset()
 {
+    if (mFormat == Asset::FMT_STRUCTURED)
+    {
+        Clear();
+    }    
+}
+
+Object* Asset::NewObject()
+{
+    PG_ASSERT(mFormat == Asset::FMT_STRUCTURED);
+    Object * obj = AS_NEW Object(mAllocator);
+    mChildObjects.PushEmpty() = obj;
+    return obj;
+}
+
+Array* Asset::NewArray()
+{
+    PG_ASSERT(mFormat == Asset::FMT_STRUCTURED);
+    Object * obj = AS_NEW Object(mAllocator);
+    Array * arr = AS_NEW Array(mAllocator);
+    mChildArrays.PushEmpty() = arr;
+    return arr;
+}
+
+const char* Asset::CopyString(const char* string)
+{
+
+    int strSize = Utils::Strlen(string) + 1;
+    if (strSize > MAX_STRING_PAGE_SIZE)
+    {
+        return nullptr;
+    }
+
+    char* strAllocation = static_cast<char*>(mStringAllocator.Alloc(
+        strSize,
+        Alloc::PG_MEM_TEMP
+    ));
+
+    strAllocation[0] = '\0';
+    Utils::Strcat(strAllocation, string);
+    return strAllocation;
+}
+
+void Asset::Clear()
+{
+    PG_ASSERT(mFormat == Asset::FMT_STRUCTURED);
+    Object * obj = AS_NEW Object(mAllocator);
+    for (int i = 0; i < mChildObjects.GetSize(); ++i)
+    {
+        mChildObjects[i]->~Object();
+    }
+
+    mChildObjects.Clear();
+
+    for (int i = 0; i < mChildArrays.GetSize(); ++i)
+    {
+        mChildArrays[i]->~Array();
+    }
+
+    mChildArrays.Clear();
+
+    mAstAllocator.FreeMemory();
+    mStringAllocator.FreeMemory();
+    
+    mRoot = nullptr;
+}
+
+void Asset::SetRootObject(Object* obj)
+{
+    PG_ASSERT(mFormat == Asset::FMT_STRUCTURED);
+    mRoot = obj;
+}
+
+void Asset::SetFileBuffer(const Io::FileBuffer& fb)
+{
+    PG_ASSERT(mFormat == Asset::FMT_RAW);
+    mRawAsset = fb;
 }
 
 void Asset::SetPath(const char* path)
@@ -206,6 +298,7 @@ void Asset::SetPath(const char* path)
 
 void Asset::DumpToStream(Utils::ByteStream& stream)
 {
+    PG_ASSERT (mFormat == Asset::FMT_STRUCTURED)
     if (mRoot != nullptr)
     {
         AssetPrivate::DumpElementToStream(0, mRoot, stream);

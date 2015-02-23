@@ -165,7 +165,6 @@ private slots:
 
     //@{
     //! Slots for the actions of the File menu
-    void NewScene();
     void OpenApp();
     void ReloadApp();
     void CloseApp();
@@ -231,7 +230,6 @@ private:
 
     //@{
     //! Actions triggered when an item of the File menu is selected
-    QAction * mActionFileNewScene;
     QAction * mActionFileOpenApp;
     QAction * mActionFileReloadApp;
     QAction * mActionFileCloseApp;
@@ -318,7 +316,7 @@ private:
     TimelineDockWidget      * mTimelineDockWidget;
     HistoryDockWidget       * mHistoryDockWidget;
     AssetLibraryWidget      * mAssetLibraryWidget;
-    CodeEditorWidget      * mCodeEditorWidget;
+    CodeEditorWidget        * mCodeEditorWidget;
     ConsoleDockWidget       * mConsoleDockWidget;
     TextureEditorDockWidget * mTextureEditorDockWidget;
     //@}

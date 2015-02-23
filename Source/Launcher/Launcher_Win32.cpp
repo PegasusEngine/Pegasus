@@ -29,7 +29,7 @@
 
 
 // Since we know where the launcher launches from, hard-code the asset root
-static const char* ASSET_ROOT = "..\\..\\..\\..\\Data\\";
+static const char* ASSET_ROOT = ".";
 
 
 #if PEGASUS_ENABLE_LOG

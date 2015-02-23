@@ -355,7 +355,7 @@ void CodeTextEditorWidget::UpdateAllDocumentSyntax()
     setPalette(p);
     setTabStopWidth(tabStop * metrics.width(' '));
 
-   // mSyntaxHighlighter->rehighlight();
+    mSyntaxHighlighter->rehighlight();
 }
 
 bool CodeTextEditorWidget::event(QEvent * e)

@@ -56,6 +56,12 @@ public:
     //! \return user data reference
     virtual Pegasus::Graph::IGraphUserData * GetUserData() const;
 
+    //! \return the object that belongs to this proxy
+    ProgramLinkage* GetObject() { return mObject; }
+
+    //! \return the object that belongs to this proxy
+    const ProgramLinkage* GetObject() const { return mObject; }
+
 private:
 
     //! internal worker, obfuscated

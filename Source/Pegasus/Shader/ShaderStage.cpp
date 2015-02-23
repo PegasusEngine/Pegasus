@@ -15,6 +15,7 @@
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/Memcpy.h"
 #include "Pegasus/Shader/ShaderTracker.h"
+#include "Pegasus/Shader/ProgramLinkage.h"
 
 using namespace Pegasus::Core;
 
@@ -46,7 +47,8 @@ Pegasus::Shader::ShaderStage::ShaderStage(Pegasus::Alloc::IAllocator * allocator
       mAllocator(allocator),
       mType(Pegasus::Shader::SHADER_STAGE_INVALID),
       mFactory(nullptr),
-      mLoader(nullptr)
+      mParentReferences(allocator),
+      mIsInDestructor(false)
 #if PEGASUS_ENABLE_PROXIES
       , mShaderTracker(nullptr)
       , mProxy(this)
@@ -68,10 +70,37 @@ Pegasus::Shader::ShaderStage::~ShaderStage()
     }
 #endif
 
+    mIsInDestructor = true;
+    int parentSizes = mParentReferences.GetSize();
+    for (int i = 0; i < parentSizes; ++i)
+    {
+        ProgramLinkage* reference = mParentReferences[i];
+        PG_ASSERT( &(*reference->FindShaderStage(mType)) == this);
+        reference->RemoveShaderStage(mType);
+    }
+
 #if PEGASUS_ENABLE_PROXIES
     GRAPH_EVENT_DESTROY_USER_DATA(&mProxy, "ShaderStage", GetEventListener());
 #endif
 
+}
+
+void Pegasus::Shader::ShaderStage::Compile()
+{
+    bool didUpdate = false;
+    GetUpdatedData(didUpdate);
+    if (didUpdate)
+    {
+        int parentCount = mParentReferences.GetSize();
+        for (int i = 0; i < parentCount; ++i)
+        {
+            Pegasus::Shader::ProgramLinkage* program = mParentReferences[i];
+            program->InvalidateData();
+            bool didUpdate = false;
+            program->GetUpdatedData(didUpdate);
+            PG_ASSERT(didUpdate);
+        }
+    }
 }
 
 void Pegasus::Shader::ShaderStage::ReleaseDataAndPropagate()
@@ -89,6 +118,28 @@ void Pegasus::Shader::ShaderStage::ReleaseDataAndPropagate()
         mFactory->DestroyShaderGPUData(&(*GetData()));
     }
     Pegasus::Graph::Node::ReleaseDataAndPropagate();
+}
+
+void Pegasus::Shader::ShaderStage::RegisterParent(Pegasus::Shader::ProgramLinkage* parent)
+{
+    mParentReferences.PushEmpty() = parent;
+}
+
+void Pegasus::Shader::ShaderStage::UnregisterParent(Pegasus::Shader::ProgramLinkage* parent)
+{
+    if (!mIsInDestructor)
+    {
+        int mRefSizes = mParentReferences.GetSize();
+        for (int i = 0; i < mRefSizes; ++i)
+        {
+            if (mParentReferences[i] == parent)
+            {
+                mParentReferences.Delete(i);
+                return;
+            }
+        }
+        PG_FAILSTR("Attempting to delete a connection that does not exist.");
+    }
 }
 
 void Pegasus::Shader::ShaderStage::SetSource(Pegasus::Shader::ShaderType type, const char * src, int srcSize)
@@ -123,56 +174,6 @@ void Pegasus::Shader::ShaderStage::GetSource ( const char ** outSrc, int& outSiz
     *outSrc = mFileBuffer.GetBuffer(); 
     outSize = mFileBuffer.GetFileSize();
 }
-
-bool Pegasus::Shader::ShaderStage::SetSourceFromFile(Pegasus::Shader::ShaderType type, const char * path)
-{
-    InvalidateData();
-    PG_ASSERTSTR(mLoader != nullptr, "You must set the file loader first before calling any IO!");
-    PG_ASSERT(path != nullptr);
-    mType = type;
-    if (mType != Pegasus::Shader::SHADER_STAGE_INVALID)
-    {
-        mFileBuffer.DestroyBuffer(); //clear any buffers pre-allocated to this
-        Pegasus::Io::IoError ioError = mLoader->OpenFileToBuffer(path, mFileBuffer, true, mAllocator);
-        if (ioError == Pegasus::Io::ERR_NONE)
-        {
-            GRAPH_EVENT_DISPATCH(
-                this,
-                CompilerEvents::SourceLoadedEvent, 
-                // Event specific arguments:
-                mFileBuffer.GetBuffer(), 
-                mFileBuffer.GetFileSize()
-            );
-            return true;
-        }
-        else
-        {
-            GRAPH_EVENT_DISPATCH(
-                this,
-                CompilerEvents::FileOperationEvent, 
-                // Event specific arguments:
-                CompilerEvents::FileOperationEvent::IO_ERROR, 
-                ioError,
-                path, 
-                "Io error"
-            );
-        }
-    }
-    else
-    {
-        GRAPH_EVENT_DISPATCH(
-            this,
-            CompilerEvents::FileOperationEvent, 
-            // Event specific arguments:
-            CompilerEvents::FileOperationEvent::WRONG_EXTENSION, 
-            Pegasus::Io::ERR_NONE,
-            path, 
-            "wrong file format"
-        );
-    }
-    return false;
-}
-
 
 void Pegasus::Shader::ShaderStage::InvalidateData()
 {
@@ -248,6 +249,7 @@ void Pegasus::Shader::ShaderStage::SetFullFilePath(const char * name)
 
 void Pegasus::Shader::ShaderStage::SaveSourceToFile()
 {
+/*
     Pegasus::Io::IoError err = mLoader->SaveFileToBuffer(mFullPath, mFileBuffer);
     if (err == Pegasus::Io::ERR_NONE)
     {
@@ -273,6 +275,7 @@ void Pegasus::Shader::ShaderStage::SaveSourceToFile()
             "Error saving file :/"
         );
     }
+*/
 
 }
 

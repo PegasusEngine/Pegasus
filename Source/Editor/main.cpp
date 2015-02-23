@@ -13,6 +13,12 @@
 #include <QtWidgets/QApplication>
 
 
+//include all proxy types to declare meta types
+#include "Pegasus/Shader/Shared/IShaderProxy.h"
+#include "Pegasus/Shader/Shared/IProgramProxy.h"
+#include "Pegasus/Core/Shared/ISourceCodeProxy.h"
+#include "CodeEditor/SourceCodeManagerEventListener.h"
+
 //! Name of the organization creating the software
 #define EDITOR_ORGANIZATION_NAME				"Pegasus"
 
@@ -23,9 +29,23 @@
 #define EDITOR_APPLICATION_NAME					"Pegasus Editor"
 
 //----------------------------------------------------------------------------------------
+//------------------- Public meta type declarations --------------------------------------
+
+Q_DECLARE_METATYPE(Pegasus::Core::ISourceCodeProxy*);
+Q_DECLARE_METATYPE(CodeUserData*);
+
+void RegisterMetaTypes()
+{
+    qRegisterMetaType<Pegasus::Core::ISourceCodeProxy*>();
+    qRegisterMetaType<CodeUserData*>();
+}
+//----------------------------------------------------------------------------------------
 
 int main(int argc, char *argv[])
 {
+    //register all meta types in pegasus
+    RegisterMetaTypes();
+
     QApplication app(argc, argv);
 
     // Handle the quit message

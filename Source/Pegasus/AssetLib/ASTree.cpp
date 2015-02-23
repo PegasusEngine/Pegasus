@@ -31,6 +31,10 @@ Object::Object(Alloc::IAllocator* alloc)
 {
 }
 
+Object::~Object()
+{
+}
+
 int         Object::GetInt(int i) const
 {
     return mInts[i].mEl;

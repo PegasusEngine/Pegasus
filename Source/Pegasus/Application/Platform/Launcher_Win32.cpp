@@ -17,7 +17,7 @@
 #include <windows.h>
 
 // Since this is REL mode only, hard-code the asset root
-static const char* ASSET_ROOT = "..\\..\\..\\..\\Data\\";
+static const char* ASSET_ROOT = ".";
 
 // Typedefs for DLL entry point
 extern Pegasus::App::Application* CreateApplication(const Pegasus::App::ApplicationConfig& config);

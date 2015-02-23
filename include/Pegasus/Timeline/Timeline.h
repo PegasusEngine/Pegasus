@@ -14,6 +14,7 @@
 
 #include "Pegasus/Timeline/Shared/TimelineDefs.h"
 #include "Pegasus/Timeline/Proxy/TimelineProxy.h"
+#include "Pegasus/Timeline/TimelineScript.h"
 #include "Pegasus/Timeline/ScriptTracker.h"
 
 namespace Pegasus {
@@ -32,6 +33,10 @@ namespace Pegasus {
     namespace Wnd {
         class Window;
         class IWindowContext;
+    }
+    
+    namespace AssetLib {
+        class Asset;
     }
 }
 
@@ -224,6 +229,20 @@ public:
     //! \return the event listener registered.
     Pegasus::Core::CompilerEvents::ICompilerEventListener* GetEventListener() const { return mEventListener; }
 #endif
+
+    //! Test wether this asset is a script or not
+    //! \return true if its a blockscript false otherwise
+    bool IsTimelineScript(const AssetLib::Asset* asset) const;
+
+    //! Loads a script from a file
+    //! \param the file of the script name
+    //! \return the timeline script reference
+    TimelineScriptRef LoadScript(const char* scriptName);
+
+    //! Creates a script from an asset
+    //! \param the asset to use to create this script
+    //! \return the timeline script reference
+    TimelineScriptRef CreateScript(AssetLib::Asset* asset);
 
     //! Gets the script tracker registered
     //! \return the script tracker

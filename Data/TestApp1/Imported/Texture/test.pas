@@ -9,7 +9,7 @@
         someasset : "KAKA2",
         anotherstring : "some other string",
         anArray : [66, 2,3 ,4, 5, 5]
-    },
-}
-
+    } 
+}  
+ 
 

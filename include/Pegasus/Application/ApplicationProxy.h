@@ -61,6 +61,9 @@ public:
     //! \param engineDesc the output description structure
     virtual void GetEngineDesc(Pegasus::PegasusDesc& engineDesc) const;
 
+    //! returns the assets root folder
+    virtual const char* GetAssetsRoot() const { return mApplication->GetIOManager()->GetRoot(); }
+
 private:
     //! The proxied application object
     Application* mApplication;

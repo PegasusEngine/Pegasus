@@ -203,17 +203,18 @@ void CodeEditorWidget::AsyncSetCompilationRequestPending()
     mCompilationRequestMutex->unlock();
 }
 
-void CodeEditorWidget::FlushTextEditorToCode(int id)
+void CodeEditorWidget::FlushTextEditorToCodeAndCompile(CodeUserData* userData)
 {
     mCompilationRequestMutex->lock();
-    if (id >= 0 && id < mOpenCodeCount) //is there a ui element for this code?
+    if (userData != nullptr) //is there a ui element for this code?
     {
-        CodeTextEditorWidget * editor = mUi.mTreeEditor->FindCodeInEditors(mOpenedCodes[id]);
+        CodeTextEditorWidget * editor = mUi.mTreeEditor->FindCodeInEditors(userData);
         if (editor != nullptr)
         {
             editor->FlushTextToCode();
+            ED_ASSERT(!userData->IsProgram());
+            userData->GetSourceCode()->Compile();
         }
-
     }
     mCompilationRequestPending = false;
     mCompilationRequestMutex->unlock();
@@ -228,15 +229,13 @@ void CodeEditorWidget::SignalCompileCurrentCode()
         if (code != nullptr)
         {
             //ensure that no compilation is happening while saving this file
-            CompileCode(idx);
+            CompileCode(code);
         }
     }
 }
 
-void CodeEditorWidget::SignalCompilationError(void * srcPtr, int line, QString errorString)
+void CodeEditorWidget::SignalCompilationError(CodeUserData* userData, int line, QString errorString)
 {
-    CodeUserData * userData = static_cast<CodeUserData*>(srcPtr);
-
     if (userData != nullptr)
     {
         userData->InvalidateLine(line);
@@ -258,17 +257,15 @@ void CodeEditorWidget::SignalLinkingEvent(QString message, int eventType)
     }
 }
 
-void CodeEditorWidget::BlessUserData(void* userData)
+void CodeEditorWidget::BlessUserData(CodeUserData* codeUserData)
 {
-    ED_ASSERT(userData != nullptr);
-    CodeUserData* codeUserData = static_cast<CodeUserData*>(userData);
+    ED_ASSERT(codeUserData != nullptr);
     codeUserData->SetDocument(new QTextDocument());
 }
 
-void CodeEditorWidget::UnblessUserData(void* userData)
+void CodeEditorWidget::UnblessUserData(CodeUserData* codeUserData)
 {
-    ED_ASSERT(userData != nullptr);
-    CodeUserData* codeUserData = static_cast<CodeUserData*>(userData);
+    ED_ASSERT(codeUserData != nullptr);
     int index = FindIndex(codeUserData);
     if (index != -1)
     {
@@ -279,12 +276,11 @@ void CodeEditorWidget::UnblessUserData(void* userData)
     codeUserData->SetDocument(nullptr);
 
     //request that user data gets deleted on the app thread.
-    emit(RequestSafeDeleteUserData(userData));
+    emit(RequestSafeDeleteUserData(codeUserData));
 }
 
-void CodeEditorWidget::SignalCompilationBegin(void* code)
+void CodeEditorWidget::SignalCompilationBegin(CodeUserData* target)
 {
-    CodeUserData* target = static_cast<CodeUserData*>(code);
     CodeTextEditorWidget * editor = mUi.mTreeEditor->FindCodeInEditors(target);
     if (editor != nullptr)
     {
@@ -459,8 +455,9 @@ void CodeEditorWidget::RequestClose(int index)
 {
     ED_ASSERT(index >= 0 && index < mOpenCodeCount);
     //remove tab
+    CodeUserData* codeToClose = mOpenedCodes[index]; 
     mInternalBlockTextUpdated = true;
-    mUi.mTreeEditor->HideCode(mOpenedCodes[index]);
+    mUi.mTreeEditor->HideCode(codeToClose);
     mInternalBlockTextUpdated = false;
 
     //compress the opened code list
@@ -472,6 +469,8 @@ void CodeEditorWidget::RequestClose(int index)
     }
     --mOpenCodeCount;
     mUi.mTabWidget->removeTab(index);
+
+    emit(RequestCloseCode(codeToClose));
 }
 
 void CodeEditorWidget::OnTextChanged(QWidget * sender)
@@ -481,10 +480,9 @@ void CodeEditorWidget::OnTextChanged(QWidget * sender)
         return;
 
     CodeTextEditorWidget * textEditor = static_cast<CodeTextEditorWidget*>(sender);
-    int id = FindIndex(textEditor);
-    if (id != -1)
+    if (textEditor->GetCode() != nullptr)
     {
-        CompileCode(id);
+        CompileCode(textEditor->GetCode());
     }
 }
 
@@ -506,7 +504,7 @@ void CodeEditorWidget::OnTextWindowSelected(QWidget * sender)
     }
 }
 
-void CodeEditorWidget::CompileCode(int id)
+void CodeEditorWidget::CompileCode(CodeUserData* code)
 {
     // The following snippet is meant to optimize this set of functions:
     //if (!AsyncHasCompilationRequestPending()) 
@@ -520,7 +518,7 @@ void CodeEditorWidget::CompileCode(int id)
         mCompilationRequestPending = true;            
         mCompilationRequestMutex->unlock();
         emit(RequestDisableAssetLibraryUi());
-        emit(RequestCodeCompilation(id));
+        emit(RequestCodeCompilation(code));
     }
     else
     {

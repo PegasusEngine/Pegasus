@@ -60,57 +60,38 @@ void GeometryTestBlock::Initialize()
     Pegasus::Shader::ShaderManager * const shaderManager = GetShaderManager();
     mBlockProgram = shaderManager->CreateProgram("CubeProgram");
     
-    Pegasus::Shader::ShaderStageFileProperties fileLoadProperties;
-    fileLoadProperties.mLoader = GetIOManager();
-    fileLoadProperties.mPath = GEOMTESTBLOCK_SHADER_ROOT"\\Cube.vs";
     mBlockProgram->SetShaderStage(  
-        shaderManager->LoadShaderStageFromFile(fileLoadProperties)
+        shaderManager->LoadShader(GEOMTESTBLOCK_SHADER_ROOT"\\Cube.vs")
     );
 
-    fileLoadProperties.mPath = GEOMTESTBLOCK_SHADER_ROOT"\\Cube.ps";
     mBlockProgram->SetShaderStage(  
-        shaderManager->LoadShaderStageFromFile(fileLoadProperties)
+        shaderManager->LoadShader(GEOMTESTBLOCK_SHADER_ROOT"\\Cube.ps")
     );
 
-    mDiscoSpeaker = shaderManager->CreateProgram("DiscoSpeaker");
-    
-    fileLoadProperties.mPath = GEOMTESTBLOCK_SHADER_ROOT"\\DiscoSpeaker.vs";
-    mDiscoSpeaker->SetShaderStage(
-        shaderManager->LoadShaderStageFromFile(fileLoadProperties)
-    );
-    fileLoadProperties.mPath = GEOMTESTBLOCK_SHADER_ROOT"\\DiscoSpeaker.ps";
-    mDiscoSpeaker->SetShaderStage(
-        shaderManager->LoadShaderStageFromFile(fileLoadProperties)
-    );
+    mDiscoSpeaker = shaderManager->LoadProgram("Programs/discospeaker.pas");
 
     mBlurHorizontal = shaderManager->CreateProgram("BlurHorizontal");
-    fileLoadProperties.mPath = GEOMTESTBLOCK_SHADER_ROOT"\\DiscoSpeaker.vs";
     mBlurHorizontal->SetShaderStage(
-        shaderManager->LoadShaderStageFromFile(fileLoadProperties)
+        shaderManager->LoadShader(GEOMTESTBLOCK_SHADER_ROOT"\\DiscoSpeaker.vs")
     );
-    fileLoadProperties.mPath = GEOMTESTBLOCK_SHADER_ROOT"\\BlurHorizontal.ps";
     mBlurHorizontal->SetShaderStage(
-        shaderManager->LoadShaderStageFromFile(fileLoadProperties)
+        shaderManager->LoadShader(GEOMTESTBLOCK_SHADER_ROOT"\\BlurHorizontal.ps")
     );
 
     mBlurVertical = shaderManager->CreateProgram("BlurVertical");
-    fileLoadProperties.mPath = GEOMTESTBLOCK_SHADER_ROOT"\\DiscoSpeaker.vs";
     mBlurVertical->SetShaderStage(
-        shaderManager->LoadShaderStageFromFile(fileLoadProperties)
+        shaderManager->LoadShader(GEOMTESTBLOCK_SHADER_ROOT"\\DiscoSpeaker.vs")
     );
-    fileLoadProperties.mPath = GEOMTESTBLOCK_SHADER_ROOT"\\BlurVertical.ps";
     mBlurVertical->SetShaderStage(
-        shaderManager->LoadShaderStageFromFile(fileLoadProperties)
+        shaderManager->LoadShader(GEOMTESTBLOCK_SHADER_ROOT"\\BlurVertical.ps")
     );
 
     mComposite = shaderManager->CreateProgram("mComposite");
-    fileLoadProperties.mPath = GEOMTESTBLOCK_SHADER_ROOT"\\DiscoSpeaker.vs";
     mComposite->SetShaderStage(
-        shaderManager->LoadShaderStageFromFile(fileLoadProperties)
+        shaderManager->LoadShader(GEOMTESTBLOCK_SHADER_ROOT"\\DiscoSpeaker.vs")
     );
-    fileLoadProperties.mPath = GEOMTESTBLOCK_SHADER_ROOT"\\Composite.ps";
     mComposite->SetShaderStage(
-        shaderManager->LoadShaderStageFromFile(fileLoadProperties)
+        shaderManager->LoadShader(GEOMTESTBLOCK_SHADER_ROOT"\\Composite.ps")
     );
 
     bool updated = false; 

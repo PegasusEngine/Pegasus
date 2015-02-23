@@ -19,12 +19,19 @@
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
 #include "Pegasus/Shader/ShaderTracker.h"
 #include "Pegasus/Shader/Proxy/ProgramProxy.h"
+#include "Pegasus/Utils/Vector.h"
+#include "Pegasus/Shader/ShaderStage.h"
+#include "Pegasus/Shader/ProgramLinkage.h"
 
 namespace Pegasus {
     namespace Core {
         namespace CompilerEvents {
             class ICompilerEventListener;
         }
+    }
+
+    namespace AssetLib {
+        class IAssetProxy;
     }
 }
 
@@ -35,6 +42,7 @@ namespace Shader
 
 class IProgramProxy;
 class ShaderManager;
+
 
 //! Implementation of IShaderManagerProxy and wrapper proxy to expose to the editor
 class ShaderManagerProxy : public IShaderManagerProxy
@@ -61,19 +69,46 @@ public:
     //! \param event listener reference
     virtual void RegisterEventListener(Pegasus::Core::CompilerEvents::ICompilerEventListener * eventListener);
 
-    //! Updates all the programs, only those which changed
-    virtual void UpdateAllPrograms();
-
     //! number of shaders is the number of sources
     virtual int GetSourceCount() const { return GetShaderCount(); }
 
     //! returns the respective shader
     virtual Pegasus::Core::ISourceCodeProxy* GetSource(int id) { return GetShader(id); }
 
+    //! Loads a shader from an asset
+    //! \param the asset to use to load this proxy
+    //! \return the shader proxy to load
+    virtual IShaderProxy* OpenShader(AssetLib::IAssetProxy* asset);
+
+    //! Closes a shader.
+    //! \param the shader proxy to close
+    virtual void CloseShader(IShaderProxy* shader);
+
+    //! Loads a program from an asset proxy
+    //! \param the program proxy to use to load this program
+    //! \return the program proxy to use
+    virtual IProgramProxy* OpenProgram(AssetLib::IAssetProxy* asset);
+
+    //! Closes a program.
+    //! \param the program proxy to close
+    virtual void CloseProgram(IProgramProxy* program);
+
+    //! returns true if the asset passed is an actual shader
+    //! \param asset the asset to test if its a shader
+    //! \return  true if this asset is a shader, false otherwise
+    virtual bool IsShader(const AssetLib::IAssetProxy* asset) const; 
+
+    //! returns true if this asset is a program.
+    //! \param asset the asset to test if its a program
+    //! \return true if this is a program, false otherwise
+    virtual bool IsProgram(const AssetLib::IAssetProxy* asset) const;
+
 private:
 
     //! reference to internal program
     ShaderManager * mObject;
+    Utils::Vector<ShaderStageRef>    mOpenedShaders;
+    Utils::Vector<ProgramLinkageRef> mOpenedPrograms;
 };
 }
 }

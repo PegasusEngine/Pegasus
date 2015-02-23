@@ -308,7 +308,13 @@ void Lane::InitializeBlocks()
         int currentIndex = mFirstBlockIndex;
         do
         {
-            mBlockRecords[currentIndex].mBlock->Initialize();
+            BlockRecord& blockRecord =  mBlockRecords[currentIndex];
+            Block* block = blockRecord.mBlock;
+            block->Initialize();
+            if (block->HasScript())
+            {
+                block->InitializeScript(); 
+            }
             currentIndex = mBlockRecords[currentIndex].mNext;
         }
         while (currentIndex != mFirstBlockIndex);

@@ -12,6 +12,7 @@
 #include "Pegasus/Application/RenderCollection.h"
 #include "Pegasus/Timeline/Block.h"
 #include "Pegasus/Timeline/ScriptTracker.h"
+#include "Pegasus/Core/Shared/CompilerEvents.h"
 
 namespace Pegasus {
 namespace Timeline {
@@ -23,7 +24,7 @@ Block::Block(Alloc::IAllocator * allocator, Wnd::IWindowContext * appContext)
 ,   mBeat(0)
 ,   mDuration(1)
 ,   mLane(nullptr)
-,   mScriptHelper(nullptr)
+,   mTimelineScript(nullptr)
 ,   mVmState(nullptr)
 ,   mScriptVersion(-1)
 #if PEGASUS_ENABLE_PROXIES
@@ -77,12 +78,11 @@ void Block::Initialize()
 
 void Block::Shutdown()
 {
-    if (mScriptHelper != nullptr)
+    if (mTimelineScript != nullptr)
     {
-        mScriptHelper->CallGlobalScopeDestroy(mVmState);
-        mScriptHelper->Shutdown(); //if no script is open then this is a NOP
-        mAppContext->GetTimeline()->GetScriptTracker()->UnregisterScript(mScriptHelper);
-        PG_DELETE(mAllocator, mScriptHelper);
+        mTimelineScript->CallGlobalScopeDestroy(mVmState);
+        mAppContext->GetTimeline()->GetScriptTracker()->UnregisterScript(mTimelineScript);
+        mTimelineScript = nullptr;
 
         if (mVmState->GetUserContext() != nullptr)
         {
@@ -100,30 +100,54 @@ void Block::SetBeat(Beat beat)
     mBeat = beat;
 }
 
+bool Block::InitializeScript()
+{
+    bool didChangeRuntimeLayout = false;
+    
+    //TODO: remove this global scope destroy stuff
+    if (mTimelineScript->IsDirty())
+    {
+        mTimelineScript->CallGlobalScopeDestroy(mVmState);
+    }
+
+    mTimelineScript->CheckAndUpdateCompilationState();
+
+    if (mScriptVersion != mTimelineScript->GetSerialVersion())
+    {
+        mScriptVersion = mTimelineScript->GetSerialVersion();
+
+        if (mVmState->GetUserContext() != nullptr)
+        {
+            Application::RenderCollection* nodeContaier = static_cast<Application::RenderCollection*>(mVmState->GetUserContext());
+            nodeContaier->Clean();
+        }
+        mVmState->Reset();
+
+        //re-initialize everything!
+        mTimelineScript->CallGlobalScopeInit(mVmState);     
+
+        didChangeRuntimeLayout = didChangeRuntimeLayout || true;
+    }
+    return didChangeRuntimeLayout;
+}
+
 void Block::UpdateViaScript(float beat, Wnd::Window* window)
 {
-    if (mScriptHelper != nullptr)
+    if (mTimelineScript != nullptr)
     {
-        if (mScriptHelper->IsDirty())
+        if (InitializeScript())// attempt to initialize if script was modified
         {
-            mScriptHelper->CallGlobalScopeDestroy(mVmState);
+            TimelineScript* rawptr = &(*mTimelineScript);
+            //Throw an event to the UI
+            GRAPH_EVENT_DISPATCH(
+                rawptr,
+                Core::CompilerEvents::CompilationNotification,
+                //Event that notifies that the runtime has changed, potentially changing layout of nodes and such.
+                // This means that some views will require to be updated
+                Core::CompilerEvents::CompilationNotification::COMPILATION_RUNTIME_INITIALIZATION, 0, ""
+            );
         }
-        mScriptHelper->CheckAndUpdateCompilationState();
-        if (mScriptVersion != mScriptHelper->GetSerialVersion())
-        {
-            mScriptVersion = mScriptHelper->GetSerialVersion();
-
-            if (mVmState->GetUserContext() != nullptr)
-            {
-                Application::RenderCollection* nodeContaier = static_cast<Application::RenderCollection*>(mVmState->GetUserContext());
-                nodeContaier->Clean();
-            }
-            mVmState->Reset();
-
-            //re-initialize everything!
-            mScriptHelper->CallGlobalScopeInit(mVmState);     
-        }
-        mScriptHelper->CallUpdate(beat, mVmState);
+        mTimelineScript->CallUpdate(beat, mVmState);
     }
 }
 
@@ -131,20 +155,19 @@ void Block::UpdateViaScript(float beat, Wnd::Window* window)
 
 void Block::RenderViaScript(float beat, Wnd::Window* window)
 {
-    if (mScriptHelper != nullptr)
+    if (mTimelineScript != nullptr)
     {
-        mScriptHelper->CallRender(beat, mVmState);
+        mTimelineScript->CallRender(beat, mVmState);
     }
 }
 
 //----------------------------------------------------------------------------------------
 
-bool Block::OpenScript(const char* scriptFileName)
+void Block::AttachScript(TimelineScriptIn script)
 {
-    if (mScriptHelper == nullptr)
+    if (mTimelineScript == nullptr)
     {
-        mScriptHelper = PG_NEW(mAllocator, -1, "Script Helper", Pegasus::Alloc::PG_MEM_PERM) ScriptHelper(mAllocator, mAppContext);
-        mAppContext->GetTimeline()->GetScriptTracker()->RegisterScript(mScriptHelper);
+        mTimelineScript = script;
 
         PG_ASSERT(mVmState == nullptr);
         mVmState = PG_NEW(mAllocator, -1, "Vm State", Pegasus::Alloc::PG_MEM_PERM) BlockScript::BsVmState();
@@ -152,16 +175,10 @@ bool Block::OpenScript(const char* scriptFileName)
 
         Application::RenderCollection* userContext = PG_NEW(mAllocator, -1, "Vm State", Pegasus::Alloc::PG_MEM_PERM) Application::RenderCollection(mAllocator, mAppContext);
         mVmState->SetUserContext(userContext);
-
-#if PEGASUS_USE_GRAPH_EVENTS
-        //register event listener
-        mScriptHelper->SetEventListener(mAppContext->GetTimeline()->GetEventListener());
-        GRAPH_EVENT_INIT_USER_DATA(mScriptHelper->GetProxy(), "BlockScript", mScriptHelper->GetEventListener());
-#endif
-        mScriptHelper->InvalidateData();
     }
     else
     {
+        mTimelineScript = script;
         Application::RenderCollection* userCtx = static_cast<Application::RenderCollection*>( mVmState->GetUserContext() );
         if (userCtx != nullptr)
         {
@@ -169,15 +186,15 @@ bool Block::OpenScript(const char* scriptFileName)
         }
         mVmState->Reset();
     }
-    mScriptVersion = -1; //restart and invalidate script version
-    return mScriptHelper->OpenScript(scriptFileName);
+    
+    mScriptVersion = -1;
 }
 
 //----------------------------------------------------------------------------------------
 
 void Block::ShutdownScript()
 {
-    mScriptHelper->Shutdown();
+    mTimelineScript = nullptr;
 }
 
 //----------------------------------------------------------------------------------------

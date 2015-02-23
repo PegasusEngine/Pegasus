@@ -21,6 +21,14 @@ namespace Pegasus {
     namespace Timeline {
         class ILaneProxy;
     }
+
+    namespace AssetLib {
+        class IAssetProxy;
+    }
+
+    namespace Core {
+        class ISourceCodeProxy;
+    }
 }
 
 namespace Pegasus {
@@ -108,6 +116,20 @@ public:
     //! Get the current beat of the timeline
     //! \return Current beat, measured in ticks, can have fractional part
     virtual float GetCurrentBeat() const = 0;
+
+    //! loads a script from a file path
+    //! \return the script proxy dispatched
+    virtual Core::ISourceCodeProxy* OpenScript(const char* path) = 0;
+
+    //! creates a script from an asset
+    //! \return the source code proxy
+    virtual Core::ISourceCodeProxy* OpenScript(AssetLib::IAssetProxy* asset) = 0;
+
+    //! closes a script from editing
+    virtual void CloseScript(Core::ISourceCodeProxy* script) = 0;
+
+    //! \return true if its a blockscript, false otherwise
+    virtual bool IsTimelineScript(const AssetLib::IAssetProxy* asset) const = 0;
 };
 
 

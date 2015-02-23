@@ -98,6 +98,12 @@ public:
     //! gets the intermediate document
     QTextDocument* GetDocument() const { return mIntermediateDocument; }
 
+    //! an int attached to the user data. 0 by default
+    void SetDispatchType(int value) { mDispatchType = value; }
+
+    //! returns the dispatch type. 0 by default
+    int GetDispatchType() const { return mDispatchType; }
+
 private:
     bool mIsValid;
     QSet<int> mInvalidLinesSet;
@@ -105,6 +111,7 @@ private:
     QString mErrorMessage;
     QTextDocument* mIntermediateDocument;
     bool mIsProgram;
+    int  mDispatchType;
     
     union {
         Pegasus::Shader::IProgramProxy* mProgram;
@@ -153,10 +160,10 @@ signals:
 
     //! triggered when any compilation error is posted. This event can be triggered
     //! several times during the same compilation
-    void OnCompilationError(void* code, int row, QString message);
+    void OnCompilationError(CodeUserData* code, int row, QString message);
 
     //! triggered when compilation begins
-    void OnCompilationBegin(void* code);
+    void OnCompilationBegin(CodeUserData* code);
 
     //! triggered when compilation ends, posts the log string
     void OnCompilationEnd(QString log);
@@ -167,18 +174,21 @@ signals:
     //! triggered when a file has been saved successfully
     void OnSignalSaveSuccess();
 
+    //! triggered only when blockscript renews the initialization screen and adds new / removes old nodes
+    void OnSignalUpdateUIViews();
+
     //! triggered when a file has been not saved and there is an io error
     void OnSignalSavedFileError(int ioError, QString msg);
 
     //! request ui thread to bless user data with ui specific stuff
-    void OnBlessUserData(void* userData);
+    void OnBlessUserData(CodeUserData* userData);
     
     //! request ui thread to unbless user data with ui specific stuff
-    void OnUnblessUserData(void* userData);
+    void OnUnblessUserData(CodeUserData* userData);
 
 public slots:
     //! safe call of user data destruction once the ui thread removes any references
-    void SafeDestroyUserData(void* userData);
+    void SafeDestroyUserData(CodeUserData* userData);
     
 
 private:

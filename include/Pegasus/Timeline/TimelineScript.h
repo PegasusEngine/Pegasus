@@ -4,7 +4,7 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	ScriptHelper.cpp
+//! \file	TimelineScript.cpp
 //! \author	Kevin Boulanger
 //! \date	1st November 2014
 //! \brief	Script helper for scripting callbacks
@@ -17,9 +17,11 @@
 #include "Pegasus/Graph/Shared/GraphEventDefs.h"
 #include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Core/Io.h"
+#include "Pegasus/Core/Ref.h"
+#include "Pegasus/AssetLib/RuntimeAssetObject.h"
 
 #if PEGASUS_ENABLE_PROXIES
-#include "Pegasus/Timeline/Proxy/ScriptProxy.h"
+#include "Pegasus/Timeline/Proxy/TimelineScriptProxy.h"
 #endif
 
 #define MAX_SCRIPT_NAME 64
@@ -40,21 +42,19 @@ namespace Pegasus {
 namespace Timeline{
 
 //!script helper for timeline blocks
-class ScriptHelper : public BlockScript::IBlockScriptCompilerListener
+    class TimelineScript : public BlockScript::IBlockScriptCompilerListener, public AssetLib::RuntimeAssetObject
 {
+    template<class C> friend class Pegasus::Core::Ref;
+
     GRAPH_EVENT_DECLARE_DISPATCHER(Core::CompilerEvents::ICompilerEventListener);
 
 public:
+
     //! Constructor
-    ScriptHelper(Alloc::IAllocator* alloc, Wnd::IWindowContext* appContext);
+    TimelineScript(Alloc::IAllocator* alloc, const char* name, Io::FileBuffer* fb, Wnd::IWindowContext* appContext);
 
     //! Destructor
-    ~ScriptHelper();
-
-    //! opens a script file
-    //! \param scriptFile the path of the script to open
-    //! \return true if successful, false otherwise
-    bool OpenScript(const char* scriptFile);
+    ~TimelineScript();
     
     //! Shuts down a script. It keeps a copy of the last opened script, so use Compile to revive this script again.
     void Shutdown();
@@ -101,7 +101,7 @@ public:
 #if PEGASUS_ENABLE_PROXIES
     //! Gets the proxy 
     //! \return Proxy to this script
-    ScriptProxy* GetProxy() { return &mProxy; };
+    TimelineScriptProxy* GetProxy() { return &mProxy; };
 
     void SaveScriptToFile();
 #endif
@@ -124,6 +124,19 @@ public:
     bool IsDirty() const { return mIsDirty; }
 
 private:
+
+    // Nodes cannot be copied, only references to them
+    PG_DISABLE_COPY(TimelineScript)
+
+    //! Increment the reference counter, used by Ref<Node>
+    inline void AddRef() { mRefCount++; }
+
+    //! Decrease the reference counter, and delete the current object
+    //! if the counter reaches 0
+    void Release();
+
+    //! Reference counter
+    int mRefCount;
 
     //! internal allocator
     Alloc::IAllocator* mAllocator;
@@ -162,10 +175,22 @@ private:
     Wnd::IWindowContext* mAppContext;
 
 #if PEGASUS_ENABLE_PROXIES
-    ScriptProxy mProxy;
+    TimelineScriptProxy mProxy;
 #endif
 
 };
+
+//! Reference to a Node, typically used when declaring a variable of reference type
+typedef       Pegasus::Core::Ref<TimelineScript>   TimelineScriptRef;
+
+//! Const reference to a reference to a Node, typically used as input parameter of a function
+typedef const Pegasus::Core::Ref<TimelineScript> & TimelineScriptIn;
+
+//! Reference to a reference to a Node, typically used as output parameter of a function
+typedef       Pegasus::Core::Ref<TimelineScript> & TimelineScriptInOut;
+
+//! Reference to a Node, typically used as the return value of a function
+typedef       Pegasus::Core::Ref<TimelineScript>   TimelineScriptReturn;
 
 }
 }

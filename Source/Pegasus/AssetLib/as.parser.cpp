@@ -110,7 +110,7 @@
     // Pegasus hooks
     extern bool AS_HasNext(void* scanner);
 
-    #define AS_ERROR(str) PG_LOG('ERR_', "Asset Error: %s, around line %d", str, AS_BUILDER->GetCurrentLine())
+    #define AS_ERROR(str) AS_BUILDER->IncErrorCount();PG_LOG('ERR_', "Asset Error: %s, around line %d", str, AS_BUILDER->GetCurrentLine())
     #define AS_parseerror(errorstr) AS_ERROR(errorstr)
     #define AS_error(scanner, errorstr)  AS_ERROR(errorstr)
 
@@ -504,8 +504,8 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    98,    98,   109,   124,   127,   128,   129,   132,   147,
-     150,   162,   176,   180,   212,   217,   222,   227,   232
+       0,    98,    98,   113,   128,   131,   132,   133,   136,   151,
+     154,   166,   180,   184,   216,   221,   226,   231,   236
 };
 #endif
 
@@ -1429,18 +1429,22 @@ yyreduce:
 /* Line 1792 of yacc.c  */
 #line 99 "as.y"
     {
-                (yyval.root) = AS_BUILDER->BuildAsset( (yyvsp[(1) - (1)].objVal) );
+                (yyval.root) = AS_BUILDER->GetBuiltAsset();
                 if ((yyval.root) == nullptr)
                 {
                     AS_ERROR("Error creating asset node.");
                     YYERROR;
+                }
+                else
+                {
+                    (yyval.root)->SetRootObject( (yyvsp[(1) - (1)].objVal) );
                 }
             }
     break;
 
   case 3:
 /* Line 1792 of yacc.c  */
-#line 110 "as.y"
+#line 114 "as.y"
     {
                 if ((yyvsp[(1) - (3)].objVal) == nullptr)
                 {
@@ -1457,31 +1461,31 @@ yyreduce:
 
   case 4:
 /* Line 1792 of yacc.c  */
-#line 124 "as.y"
+#line 128 "as.y"
     { (yyval.objVal) = AS_BUILDER->BeginObject(); }
     break;
 
   case 5:
 /* Line 1792 of yacc.c  */
-#line 127 "as.y"
+#line 131 "as.y"
     { (yyval.objVal) = (yyvsp[(1) - (3)].objVal); }
     break;
 
   case 6:
 /* Line 1792 of yacc.c  */
-#line 128 "as.y"
+#line 132 "as.y"
     { (yyval.objVal) = (yyvsp[(1) - (1)].objVal); }
     break;
 
   case 7:
 /* Line 1792 of yacc.c  */
-#line 129 "as.y"
+#line 133 "as.y"
     { (yyval.objVal) = nullptr; }
     break;
 
   case 8:
 /* Line 1792 of yacc.c  */
-#line 133 "as.y"
+#line 137 "as.y"
     { 
                 if ((yyvsp[(1) - (3)].arrayVal) == nullptr)
                 {
@@ -1498,13 +1502,13 @@ yyreduce:
 
   case 9:
 /* Line 1792 of yacc.c  */
-#line 147 "as.y"
+#line 151 "as.y"
     { (yyval.arrayVal) = AS_BUILDER->BeginArray(); }
     break;
 
   case 10:
 /* Line 1792 of yacc.c  */
-#line 151 "as.y"
+#line 155 "as.y"
     {
                  if ((yyval.arrayVal)->GetType() != (yyvsp[(3) - (3)].variant).mType)
                  {
@@ -1520,7 +1524,7 @@ yyreduce:
 
   case 11:
 /* Line 1792 of yacc.c  */
-#line 163 "as.y"
+#line 167 "as.y"
     {
                 (yyval.arrayVal) = AS_BUILDER->GetArray();
                 if ((yyval.arrayVal)->GetType() == Array::AS_TYPE_NULL)
@@ -1538,13 +1542,13 @@ yyreduce:
 
   case 12:
 /* Line 1792 of yacc.c  */
-#line 176 "as.y"
+#line 180 "as.y"
     { (yyval.arrayVal) = nullptr; }
     break;
 
   case 13:
 /* Line 1792 of yacc.c  */
-#line 181 "as.y"
+#line 185 "as.y"
     { 
                 (yyval.objVal) = AS_BUILDER->GetObject(); 
                 if ((yyval.objVal) == nullptr)
@@ -1578,7 +1582,7 @@ yyreduce:
 
   case 14:
 /* Line 1792 of yacc.c  */
-#line 213 "as.y"
+#line 217 "as.y"
     { 
                 (yyval.variant).mType = Array::AS_TYPE_FLOAT;
                 (yyval.variant).v.f = (yyvsp[(1) - (1)].floatValue);
@@ -1587,7 +1591,7 @@ yyreduce:
 
   case 15:
 /* Line 1792 of yacc.c  */
-#line 218 "as.y"
+#line 222 "as.y"
     {   
                 (yyval.variant).mType = Array::AS_TYPE_INT;
                 (yyval.variant).v.i = (yyvsp[(1) - (1)].integerValue);
@@ -1596,7 +1600,7 @@ yyreduce:
 
   case 16:
 /* Line 1792 of yacc.c  */
-#line 223 "as.y"
+#line 227 "as.y"
     {
                 (yyval.variant).mType = Array::AS_TYPE_STRING;
                 (yyval.variant).v.s = (yyvsp[(1) - (1)].identifierText);
@@ -1605,7 +1609,7 @@ yyreduce:
 
   case 17:
 /* Line 1792 of yacc.c  */
-#line 228 "as.y"
+#line 232 "as.y"
     {
                 (yyval.variant).mType = Array::AS_TYPE_OBJECT;
                 (yyval.variant).v.o = (yyvsp[(1) - (1)].objVal);
@@ -1614,7 +1618,7 @@ yyreduce:
 
   case 18:
 /* Line 1792 of yacc.c  */
-#line 233 "as.y"
+#line 237 "as.y"
     {
                 (yyval.variant).mType = Array::AS_TYPE_ARRAY;
                 (yyval.variant).v.a = (yyvsp[(1) - (1)].arrayVal);
@@ -1623,7 +1627,7 @@ yyreduce:
 
 
 /* Line 1792 of yacc.c  */
-#line 1627 "as.parser.cpp"
+#line 1631 "as.parser.cpp"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1855,7 +1859,7 @@ yyreturn:
 
 
 /* Line 2055 of yacc.c  */
-#line 239 "as.y"
+#line 243 "as.y"
 
 
 

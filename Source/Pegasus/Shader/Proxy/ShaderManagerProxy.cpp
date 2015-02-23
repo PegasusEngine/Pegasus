@@ -14,9 +14,12 @@
 #include "Pegasus/Shader/Proxy/ShaderManagerProxy.h"
 #include "Pegasus/Shader/Proxy/ProgramProxy.h"
 #include "Pegasus/Shader/ShaderManager.h"
+#include "Pegasus/AssetLib/Shared/IAssetProxy.h"
+#include "Pegasus/AssetLib/Proxy/AssetProxy.h"
+#include "Pegasus/Memory/MemoryManager.h"
 
 Pegasus::Shader::ShaderManagerProxy::ShaderManagerProxy(Pegasus::Shader::ShaderManager * object)
-: mObject(object)
+: mObject(object), mOpenedShaders(Memory::GetGlobalAllocator()), mOpenedPrograms(Memory::GetGlobalAllocator())
 {
 }
 
@@ -57,15 +60,74 @@ void Pegasus::Shader::ShaderManagerProxy::RegisterEventListener(Pegasus::Core::C
 #endif
 }
 
-void Pegasus::Shader::ShaderManagerProxy::UpdateAllPrograms()
-{ 
-    const Pegasus::Shader::ShaderTracker * tracker = mObject->GetShaderTracker();
-    bool updated;
-    for (int i = 0; i < tracker->ProgramSize(); ++i)
+Pegasus::Shader::IShaderProxy* Pegasus::Shader::ShaderManagerProxy::OpenShader(AssetLib::IAssetProxy* asset)
+{
+    Pegasus::Shader::ShaderStageRef shader = mObject->CreateShader(static_cast<AssetLib::AssetProxy*>(asset)->GetObject());
+    for (int i = 0; i < mOpenedShaders.GetSize(); ++i)
     {
-        updated = false;
-        tracker->GetProgram(i)->GetUpdatedData(updated);
+        Pegasus::Shader::ShaderStageRef& shaderCandidate = mOpenedShaders[i];
+        if (&(*shaderCandidate) == &(*shader))
+        {
+            //found the shader, dont add it to the list, just return it
+            return shader->GetProxy();
+        }
     }
+    *(new (&mOpenedShaders.PushEmpty()) Pegasus::Shader::ShaderStageRef) = shader; //add a reference
+    return shader->GetProxy();
+}
+
+Pegasus::Shader::IProgramProxy* Pegasus::Shader::ShaderManagerProxy::OpenProgram(AssetLib::IAssetProxy* asset)
+{
+    Pegasus::Shader::ProgramLinkageRef program = mObject->CreateProgram(static_cast<AssetLib::AssetProxy*>(asset)->GetObject());
+    //try to find the program
+    for (int i = 0; i < mOpenedPrograms.GetSize(); ++i)
+    {
+        Pegasus::Shader::ProgramLinkageRef& programCandidate = mOpenedPrograms[i];
+        if (&(*program) == &(*programCandidate))
+        {
+            return program->GetProxy();
+        }
+    }
+    *(new (&mOpenedPrograms.PushEmpty()) Pegasus::Shader::ProgramLinkageRef) = program; //add a reference
+    return program->GetProxy();
+}
+
+void Pegasus::Shader::ShaderManagerProxy::CloseShader(Pegasus::Shader::IShaderProxy* shaderProxy)
+{
+    //try to find the shader
+    for (int i = 0; i < mOpenedShaders.GetSize(); ++i)
+    {
+        Pegasus::Shader::ShaderStageRef& shader = mOpenedShaders[i];
+        if (&(*shader) == static_cast<Pegasus::Shader::ShaderProxy*>(shaderProxy)->GetObject())
+        {
+            shader = nullptr; //remove reference
+            mOpenedShaders.Delete(i); //remove from list
+        }
+    }
+}
+
+void Pegasus::Shader::ShaderManagerProxy::CloseProgram(Pegasus::Shader::IProgramProxy* programProxy)
+{
+    //try to find the shader
+    for (int i = 0; i < mOpenedPrograms.GetSize(); ++i)
+    {
+        Pegasus::Shader::ProgramLinkageRef& program = mOpenedPrograms[i];
+        if (&(*program) == static_cast<ProgramProxy*>(programProxy)->GetObject())
+        {
+            program = nullptr; //remove reference
+            mOpenedPrograms.Delete(i); //remove from list
+        }
+    }
+}
+
+bool Pegasus::Shader::ShaderManagerProxy::IsShader(const AssetLib::IAssetProxy* asset) const 
+{
+    return mObject->DeriveShaderType(static_cast<const AssetLib::AssetProxy*>(asset)->GetObject()) != Pegasus::Shader::SHADER_STAGE_INVALID;
+}
+
+bool Pegasus::Shader::ShaderManagerProxy::IsProgram(const AssetLib::IAssetProxy* asset) const
+{
+    return mObject->IsProgram(static_cast<const AssetLib::AssetProxy*>(asset)->GetObject());
 }
 
 #else

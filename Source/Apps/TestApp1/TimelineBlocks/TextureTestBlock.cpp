@@ -54,14 +54,10 @@ void TextureTestBlock::Initialize()
     // Set up shaders
     Pegasus::Shader::ShaderManager * const shaderManager = GetShaderManager();
     mProgram = shaderManager->CreateProgram("TextureTest");
-    Pegasus::Shader::ShaderStageFileProperties fileLoadProperties;
-    fileLoadProperties.mLoader = GetIOManager();
 
-    fileLoadProperties.mPath = VERTEX_SHADER;
-    mProgram->SetShaderStage( shaderManager->LoadShaderStageFromFile(fileLoadProperties) );
+    mProgram->SetShaderStage( shaderManager->LoadShader(VERTEX_SHADER) );
 
-    fileLoadProperties.mPath = FRAGMENT_SHADER;
-    mProgram->SetShaderStage( shaderManager->LoadShaderStageFromFile(fileLoadProperties) );
+    mProgram->SetShaderStage( shaderManager->LoadShader(FRAGMENT_SHADER) );
 
     // Force a compilation of the shaders
     bool updated = false;

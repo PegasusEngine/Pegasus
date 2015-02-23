@@ -97,6 +97,8 @@ Application::Application(const ApplicationConfig& config)
     // register the entire render api
     Pegasus::Application::RegisterRenderApi(mBlockScriptManager->GetRuntimeLib());
 
+    RegisterAssetLib();
+
     // Cache config
     mConfig = config;
 }
@@ -105,10 +107,12 @@ Application::Application(const ApplicationConfig& config)
 
 Application::~Application()
 {
+
     Alloc::IAllocator* windowAlloc = Memory::GetWindowAllocator();
     Alloc::IAllocator* nodeAlloc = Memory::GetNodeAllocator();
     Alloc::IAllocator* nodeDataAlloc = Memory::GetNodeDataAllocator();
     Alloc::IAllocator* timelineAlloc = Memory::GetTimelineAllocator();
+    Alloc::IAllocator* coreAlloc  = Memory::GetCoreAllocator();
 
     // Sanity check
     PG_ASSERTSTR(!mInitialized, "Application still initialized in destructor!");
@@ -123,6 +127,8 @@ Application::~Application()
     PG_DELETE(nodeAlloc, mTextureManager);
     PG_DELETE(nodeAlloc, mShaderManager);
     PG_DELETE(nodeAlloc, mNodeManager);
+    PG_DELETE(timelineAlloc, mBlockScriptManager);
+    PG_DELETE(nodeAlloc, mAssetLib);
 
     // Tear down debugging facilities
 #if PEGASUS_ENABLE_ASSERT
@@ -148,7 +154,7 @@ void Application::Initialize()
     // Set up IO manager
     // This must be done here because of the GetAppName virtual
     char rootPath[Io::IOManager::MAX_FILEPATH_LENGTH];
-    sprintf_s(rootPath, Io::IOManager::MAX_FILEPATH_LENGTH - 1, "%s%s\\Imported\\", mConfig.mBasePath, GetAppName()); // Hardcode imported for now
+    sprintf_s(rootPath, Io::IOManager::MAX_FILEPATH_LENGTH - 1, "%s\\Imported\\", mConfig.mBasePath); // Hardcode imported for now
     mIoManager = PG_NEW(coreAlloc, -1, "IOManager", Pegasus::Alloc::PG_MEM_PERM) Io::IOManager(rootPath);
 
     //TODO: decide here if we use the pakIoManager or the standard file system IOManager
@@ -165,8 +171,40 @@ void Application::Initialize()
     RegisterTimelineBlocks();
     InitializeApp();
 
+#if 0 //USE THIS FOR LEAK DETECTION
+    while (true)
+    {
+        if (mAssetLib == nullptr) mAssetLib =  // Set up asset library
+            PG_NEW(Memory::GetNodeAllocator(), -1, "AssetLib", Alloc::PG_MEM_PERM) AssetLib::AssetLib(Memory::GetNodeAllocator(), nullptr);
+        mAssetLib->SetIoManager(mIoManager);
+        AssetLib::Asset* ass = nullptr;
+        if (mAssetLib->LoadAsset("Texture/test.pas", &ass) == Io::ERR_NONE)
+        {
+            int i = 0;
+        }
+
+        PG_DELETE(Memory::GetNodeAllocator(), mAssetLib);
+        mAssetLib = nullptr;
+    }
+#endif
+
     // Initialized
     mInitialized = true;
+}
+
+
+//----------------------------------------------------------------------------------------
+
+void Application::RegisterAssetLib()
+{
+    //Register all the types
+    mShaderManager->SetAssetLib(mAssetLib);
+    /*
+    //todo: boiler plate to make sure assets match their respective managers
+    mTextureManager->SetAssetLib(mAssetLib);
+    mMeshManager->SetAssetLib(mAssetLib);
+    mTimelineManager->SetAssetLib(mAssetLib);
+    */
 }
 
 //----------------------------------------------------------------------------------------

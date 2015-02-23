@@ -49,14 +49,9 @@ void FractalCubeBlock::Initialize()
     // Set up shaders
     Pegasus::Shader::ShaderManager * const shaderManager = GetShaderManager();
     mProgram = shaderManager->CreateProgram("FractalCube");
-    Pegasus::Shader::ShaderStageFileProperties fileLoadProperties;
-    fileLoadProperties.mLoader = GetIOManager();
 
-    fileLoadProperties.mPath = VERTEX_SHADER;
-    mProgram->SetShaderStage( shaderManager->LoadShaderStageFromFile(fileLoadProperties) );
-
-    fileLoadProperties.mPath = FRAGMENT_SHADER;
-    mProgram->SetShaderStage( shaderManager->LoadShaderStageFromFile(fileLoadProperties) );
+    mProgram->SetShaderStage( shaderManager->LoadShader(VERTEX_SHADER) );
+    mProgram->SetShaderStage( shaderManager->LoadShader(FRAGMENT_SHADER) );
 
     // Force a compilation of the shaders
     bool updated = false;

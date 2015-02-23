@@ -11,7 +11,7 @@
 //! \brief  BlockScript master class. Main api to control / run / halt /disect a blockscript
 
 #include "Pegasus/Timeline/ScriptTracker.h"
-#include "Pegasus/Timeline/ScriptHelper.h"
+#include "Pegasus/Timeline/TimelineScript.h"
 #include "Pegasus/Allocator/IAllocator.h"
 
 using namespace Pegasus;
@@ -30,19 +30,19 @@ ScriptTracker::~ScriptTracker() {}
 //! gets a script
 //! \param the id of the script to get
 //! \return the script pointer
-ScriptHelper* ScriptTracker::GetScriptById(int id)
+TimelineScript* ScriptTracker::GetScriptById(int id)
 {
     return mData[id];
 }
 
 //! Registers a script
-void ScriptTracker::RegisterScript(ScriptHelper* script)
+void ScriptTracker::RegisterScript(TimelineScript* script)
 {
     mData.PushEmpty() = script;
 }
 
 //! Removes script from tracker
-void ScriptTracker::UnregisterScript(ScriptHelper* script)
+void ScriptTracker::UnregisterScript(TimelineScript* script)
 {
     for (int i = 0; i < mData.GetSize(); ++i)
     {

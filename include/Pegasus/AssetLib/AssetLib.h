@@ -33,8 +33,8 @@ namespace Pegasus
 {
 namespace AssetLib
 {
-
 class Asset;
+class RuntimeAssetObject;
 
 //! Asset Library class
 class AssetLib
@@ -56,8 +56,22 @@ public:
     //! Saves an asset to disk, using its registered path
     Io::IoError SaveAsset(Asset* asset);
 
+    //! Destroys the asset passed, do not reuse the asset pointer after calling this function
+    void    DestroyAsset(Asset* asset);
+
     //! Sets an alternative IO Manager to handle IO
     void SetIoManager(Io::IOManager* ioMgr) { mIoMgr = ioMgr; }
+
+    //! This function must be called after parsing an asset and associating a runtime object to it
+    //! \param asset the asset that has been loaded
+    //! \param runtimeObject the runtime object that has been successfully loaded
+    void BindAssetToRuntimeObject(Asset* asset, RuntimeAssetObject* runtimeObject);
+
+    //! Creates a blank asset. Depending on the extension is either structured or raw.
+    //! \param the path to build the blank asset
+    //! \param the asset proxy pointer to fill in 
+    //! \return IO error in case there was an issue creating the file representing this asset
+    virtual Io::IoError CreateBlankAsset(const char* path, Asset** asset);
 
 #if PEGASUS_ENABLE_PROXIES
     IAssetLibProxy* GetProxy() { return &mProxy; }

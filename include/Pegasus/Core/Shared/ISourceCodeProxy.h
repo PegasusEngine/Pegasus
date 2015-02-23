@@ -74,6 +74,9 @@ public:
     //! \return the policy for the editor to use
     virtual CompilationPolicy GetCompilationPolicy() const = 0;
 
+    //! Internally compiles this source code.
+    virtual void Compile() = 0;
+
     //! returns a 64 bit guid for a particular source code file.
     //! \return the guid must correspond to a single source code filestage instance
     virtual long long GetGuid() const = 0;

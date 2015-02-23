@@ -134,6 +134,9 @@ public:
     //! \param appDesc the output description structure
     virtual void GetEngineDesc(Pegasus::PegasusDesc& engineDesc) const = 0;
 
+    //! returns the root folder for asset loading
+    virtual const char* GetAssetsRoot() const = 0;
+
 };
 
 //----------------------------------------------------------------------------------------

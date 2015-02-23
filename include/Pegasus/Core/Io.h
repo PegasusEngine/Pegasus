@@ -73,9 +73,6 @@ public:
     int GetFileSize() const { return mFileSize; }
 
 private:
-    // no copies allowed
-    PG_DISABLE_COPY(FileBuffer);
-
 
     Alloc::IAllocator* mAllocator; //!< Allocator used to create the buffer
     char* mBuffer; //!< Contained buffer

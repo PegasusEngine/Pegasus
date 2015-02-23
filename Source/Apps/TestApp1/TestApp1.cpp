@@ -22,6 +22,8 @@
 #include "Pegasus/TimelineBlock/Camera/CameraLineBlock.h"
 
 #include "Pegasus/Timeline/Lane.h"
+
+#include "Pegasus/Timeline/TimelineScript.h"
 #include "Pegasus/Sound/Sound.h"
 
 
@@ -89,6 +91,7 @@ void TestApp1::RegisterTimelineBlocks()
 void TestApp1::InitializeApp()
 {
     Pegasus::Timeline::Timeline * const timeline = GetTimeline();
+    Pegasus::Timeline::TimelineScriptRef testBs = timeline->LoadScript("BlockScripts/test.bs");
 
     // Create the content of the timeline
     const unsigned int TICKS_PER_BEAT = 128;
@@ -117,7 +120,7 @@ void TestApp1::InitializeApp()
     psyBeadBlock->SetColor(255, 128, 128);
 #endif
     timeline->GetLane(1)->InsertBlock(psyBeadBlock, 0 * TICKS_PER_BEAT, 8 * TICKS_PER_BEAT);
-    psyBeadBlock->OpenScript("BlockScripts/test.bs");
+    psyBeadBlock->AttachScript(testBs);
 
     Pegasus::Timeline::Block * geometryTestBlock = timeline->CreateBlock("GeometryTestBlock");
 #if PEGASUS_ENABLE_PROXIES
@@ -130,7 +133,7 @@ void TestApp1::InitializeApp()
     psyBeadBlock2->SetColor(255, 128, 192);
 #endif
     timeline->GetLane(1)->InsertBlock(psyBeadBlock2, 16 * TICKS_PER_BEAT, 16 * TICKS_PER_BEAT);
-    psyBeadBlock2->OpenScript("BlockScripts/test.bs");
+    psyBeadBlock2->AttachScript(testBs);
 
     Pegasus::Timeline::Block * fractalCube2Block = timeline->CreateBlock("FractalCube2Block");
 #if PEGASUS_ENABLE_PROXIES
@@ -151,7 +154,7 @@ void TestApp1::InitializeApp()
     timeline->GetLane(2)->InsertBlock(fractalCubeBlock, 42 * TICKS_PER_BEAT, 6 * TICKS_PER_BEAT);
 
     // Set the music file to play
-    Pegasus::Sound::LoadMusic("..\\..\\..\\..\\Data\\TestApp1\\Imported\\Music\\Test.mp3");
+    Pegasus::Sound::LoadMusic("Imported\\Music\\Test.mp3");
 }
 
 //----------------------------------------------------------------------------------------

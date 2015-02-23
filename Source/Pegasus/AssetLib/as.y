@@ -52,7 +52,7 @@
     // Pegasus hooks
     extern bool AS_HasNext(void* scanner);
 
-    #define AS_ERROR(str) PG_LOG('ERR_', "Asset Error: %s, around line %d", str, AS_BUILDER->GetCurrentLine())
+    #define AS_ERROR(str) AS_BUILDER->IncErrorCount();PG_LOG('ERR_', "Asset Error: %s, around line %d", str, AS_BUILDER->GetCurrentLine())
     #define AS_parseerror(errorstr) AS_ERROR(errorstr)
     #define AS_error(scanner, errorstr)  AS_ERROR(errorstr)
 
@@ -97,11 +97,15 @@
 
 assetroot : object 
             {
-                $$ = AS_BUILDER->BuildAsset( $1 );
+                $$ = AS_BUILDER->GetBuiltAsset();
                 if ($$ == nullptr)
                 {
                     AS_ERROR("Error creating asset node.");
                     YYERROR;
+                }
+                else
+                {
+                    $$->SetRootObject( $1 );
                 }
             }
           ;

@@ -15,10 +15,20 @@
 #if PEGASUS_ENABLE_PROXIES
 
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
+#include "Pegasus/Timeline/TimelineScript.h"
+#include "Pegasus/Utils/Vector.h"
 
 namespace Pegasus {
     namespace Timeline {
         class Timeline;
+    }
+
+    namespace AssetLib {
+        class IAssetProxy;
+    }
+
+    namespace Core {
+        class ISourceCodeProxy;
     }
 }
 
@@ -128,12 +138,31 @@ public:
     //! \param event listener reference
     virtual void RegisterEventListener(Pegasus::Core::CompilerEvents::ICompilerEventListener * eventListener);
 
+    //! loads a script from a file path
+    //! \return the script proxy dispatched
+    virtual Core::ISourceCodeProxy* OpenScript(const char* path);
+
+    //! creates a script from an asset
+    //! \return the source code proxy
+    virtual Core::ISourceCodeProxy* OpenScript(AssetLib::IAssetProxy* asset);
+
+    //! closes a script from editing
+    virtual void CloseScript(Core::ISourceCodeProxy* script);
+
+    //! \return true if its a blockscript, false otherwise
+    virtual bool IsTimelineScript(const AssetLib::IAssetProxy* asset) const;
+
     //------------------------------------------------------------------------------------
     
 private:
 
+    int FindOpenedScript(TimelineScriptIn script);
+
     //! Proxied timeline object
     Timeline * const mTimeline;
+    
+    //list of opened scripts
+    Utils::Vector<TimelineScriptRef> mOpenedScripts;
 };
 
 

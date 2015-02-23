@@ -14,14 +14,18 @@ namespace Pegasus {
             class ICompilerEventListener;
         }
     }
+
+    namespace Graph {
+        class NodeManager;
+    }
+
+    namespace AssetLib {
+        class AssetLib;
+    }
 }
 
 namespace Pegasus
 {
-namespace Graph
-{
-    class NodeManager;
-}
 
 namespace Shader
 {
@@ -36,10 +40,7 @@ public:
     virtual ~ShaderManager();
 
     //! Load a shader stage from a file.
-    ProgramLinkageRef CreateProgram(const char * name = 0);
-
-    //! Load a shader stage from a file.
-    //! \param properties.mPath File containing shader stage. valid extensions are:
+    //! \param filename
     //!             .ps - pixel shader
     //!             .vs - vertex shader
     //!             .tcs -tesselation control  shader
@@ -47,11 +48,31 @@ public:
     //!             .gs - geometry shader
     //!             .cs - compute shader
     //! \return null on error, stage on success 
-    ShaderStageReturn LoadShaderStageFromFile(const Pegasus::Shader::ShaderStageFileProperties& properties);
+    ShaderStageReturn LoadShader(const char* filename);
 
-    //! Creates a new stage structure
-    //! \param properties constructor properties for shader stage
-    ShaderStageReturn CreateShaderStage(const Pegasus::Shader::ShaderStageProperties& properties);   
+    //! Loads a program from a file asset
+    ProgramLinkageRef LoadProgram(const char * filename);
+
+    //! \return true if the asset passed is a program, false otherwise
+    bool IsProgram(const AssetLib::Asset* asset) const;
+
+    //! \return the shader type of this asset
+    ShaderType DeriveShaderType(const AssetLib::Asset* asset) const;
+
+    //! Requests creation of a Shader from an asset. This is the core function that populates a node from an asset
+    //! \param asset the asset to be used as a database to create a node
+    //! \return node pointer to return.
+    ShaderStageReturn CreateShader(AssetLib::Asset* asset);
+
+    //! Requests creation of a Program from an asset. This is the core function that populates a node from an asset
+    //! \param asset the asset to be used as a database to create a node
+    //! \return node pointer to return.
+    ProgramLinkageReturn CreateProgram(AssetLib::Asset* asset);
+
+    //! Requests creation of a Program
+    //! \param name of this program
+    //! \return node pointer to return.
+    ProgramLinkageReturn CreateProgram(const char* name);
 
 #if PEGASUS_ENABLE_PROXIES
 
@@ -71,6 +92,15 @@ public:
 #if PEGASUS_USE_GRAPH_EVENTS
     void RegisterEventListener(Pegasus::Core::CompilerEvents::ICompilerEventListener * eventListener) { mEventListener = eventListener; }
 #endif
+
+    //! Sets the asset factory of this manager.
+    //! \param assetFactory the asset factory to set
+    void SetAssetLib(AssetLib::AssetLib* assetLib)  { mAssetLib = assetLib; }
+
+    //! Gets the type of this shader
+    //! \param the extension
+    //! \return the shader type
+    ShaderType DeriveShaderType(const char* extension) const;
 
 private:
     //! Internal function. registers the node types.
@@ -95,6 +125,8 @@ private:
 #if PEGASUS_USE_GRAPH_EVENTS
     Pegasus::Core::CompilerEvents::ICompilerEventListener * mEventListener;
 #endif
+
+    AssetLib::AssetLib* mAssetLib;
 };
 
 }//namespace Shader

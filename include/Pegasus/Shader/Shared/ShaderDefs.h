@@ -58,24 +58,6 @@ struct ShaderStageProperties
     }
 };
 
-//! Shader stage file loading configuration
-struct ShaderStageFileProperties
-{
-    const char * mPath; //! path for file to load, null terminated string
-    Pegasus::Io::IOManager * mLoader; //! file loader
-    Pegasus::Shader::IEventListener * mEventListener; //!event listener, required for loading events
-    Pegasus::Shader::IUserData      * mUserData; //!user data to be injected into shader stage
-    
-    ShaderStageFileProperties()
-    :
-    mPath(nullptr),
-    mLoader(nullptr),
-    mEventListener(nullptr),
-    mUserData(nullptr)
-    {
-    }
-};
-
 }
 }
 

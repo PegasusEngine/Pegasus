@@ -4,7 +4,7 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	ScriptProxy.h
+//! \file	TimelineScriptProxy.h
 //! \author	Kleber Garcia
 //! \date	5th November 2014
 //! \brief	Proxy class for interactions with editor
@@ -29,13 +29,13 @@ namespace Pegasus
 namespace Timeline
 {
 
-class ScriptHelper;
+class TimelineScript;
 
-class ScriptProxy : public Core::ISourceCodeProxy
+class TimelineScriptProxy : public Core::ISourceCodeProxy
 {
 public:
-    ScriptProxy(ScriptHelper* helper);
-    ~ScriptProxy();
+    TimelineScriptProxy(TimelineScript* helper);
+    ~TimelineScriptProxy();
 
     //! Gets the name of the source code file
     //! \return the name given to the source code (the filename) as null terminated string
@@ -70,8 +70,17 @@ public:
     //! \return the guid must correspond to a single source code filestage instance
     virtual long long GetGuid() const;
 
+    //! Forces compilation on this object
+    virtual void Compile();
+
+    //! \returns the internal object
+    TimelineScript* GetObject() { return mTimelineScript; }
+
+    //! \returns the internal const object
+    const TimelineScript* GetObject() const { return mTimelineScript; }
+
 private:
-    ScriptHelper* mScriptHelper;
+    TimelineScript* mTimelineScript;
 
 };
 

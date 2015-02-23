@@ -16,7 +16,9 @@
 #include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
 #include "Pegasus/Shader/Proxy/ShaderProxy.h"
+#include "Pegasus/AssetLib/RuntimeAssetObject.h"
 #include "Pegasus/Core/Io.h"
+#include "Pegasus/Utils/Vector.h"
 
 
 namespace Pegasus
@@ -26,10 +28,11 @@ namespace Shader
 
 // forward declarations
 class IShaderFactory;
+class ProgramLinkage;
 class ShaderTracker;
 
 //! Shader Stage class, holds information about a shader stage
-class ShaderStage : public Graph::GeneratorNode
+class ShaderStage : public Graph::GeneratorNode, public AssetLib::RuntimeAssetObject
 {
     friend class ShaderManager;
     GRAPH_EVENT_DECLARE_DISPATCHER(Pegasus::Core::CompilerEvents::ICompilerEventListener)
@@ -62,14 +65,6 @@ public:
     //! \param  output size of string 
     void GetSource (const char ** outSrc, int& outSize) const;
 
-    //! Open a file and load its source internally
-    //! \note - must set the IO manager before doing this call!
-    //! \param  type the type of shader stage
-    //! \param  path the path of the file to open
-    //! \param  loader loader controller
-    //! \return  true if succeeds loading the file, false if loading fails
-    bool SetSourceFromFile(ShaderType type, const char * path);
-
     //! Return the stage type
     //! \return the shader type
     ShaderType GetStageType() const { return mType; }
@@ -78,11 +73,6 @@ public:
     //! compilation and linkage
     //! \param factory factory with GPU implementation to be set.
     void SetFactory(IShaderFactory * factory) { mFactory = factory; }
-
-    //! Sets the io manager of this particular shader (for file IO operations)
-    //! NOTE - must be set before doing any IO file loading operatoin.
-    //! \param loader the actual loader to be used
-    void SetIoManager(Pegasus::Io::IOManager * loader) { mLoader = loader;}
 
     //! Invalidates internal data, next update will cause a recompilation.
     void InvalidateData();
@@ -93,6 +83,16 @@ public:
     virtual void ReleaseDataAndPropagate();
 
     static Graph::NodeReturn CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
+
+    //! Registers a parent owner
+    void RegisterParent(ProgramLinkage* programLinkage);
+
+    //! Removes the parent passed
+    void UnregisterParent(ProgramLinkage* programLinkage);
+
+    //! Internally regenerates the data required for compilation. Propagates and links changes upwards if it has
+    //! parents
+    void Compile();
 
 
 #if PEGASUS_ENABLE_PROXIES
@@ -123,11 +123,12 @@ protected:
 
 private:
     PG_DISABLE_COPY(ShaderStage)
+    Utils::Vector<ProgramLinkage*> mParentReferences; //! reference to a parent program
     Io::FileBuffer     mFileBuffer; //! buffer structure containing shader source
     Alloc::IAllocator* mAllocator; //! Allocator to use when creating this object
     IShaderFactory   * mFactory; //! reference to GPU shader factory
     ShaderType         mType; //! type of shader stage
-    Pegasus::Io::IOManager * mLoader; //! reference to a loader
+    bool               mIsInDestructor;
 
 //! editor metadata
 #if PEGASUS_ENABLE_PROXIES

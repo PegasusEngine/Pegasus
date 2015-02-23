@@ -30,6 +30,12 @@ Pegasus::Graph::OperatorNode(nodeAllocator, nodeDataAllocator), mStageFlags(0), 
 
 Pegasus::Shader::ProgramLinkage::~ProgramLinkage()
 {
+
+    for (unsigned i = 0; i < GetNumInputs(); ++i)
+    {
+        Pegasus::Shader::ShaderStageRef stage = FindShaderStageInput(i);
+        stage->UnregisterParent(this);
+    }
     if (GetData() != nullptr)
     {
         mFactory->DestroyProgramGPUData(&(*GetData()));
@@ -74,6 +80,11 @@ Pegasus::Graph::NodeData* Pegasus::Shader::ProgramLinkage::AllocateData() const
     return PG_NEW(GetNodeDataAllocator(), -1, "ProgramData", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Graph::NodeData(GetNodeDataAllocator());
 }
 
+void Pegasus::Shader::ProgramLinkage::InvalidateData()
+{
+    Pegasus::Graph::OperatorNode::InvalidateData();
+}
+
 void Pegasus::Shader::ProgramLinkage::GenerateData()
 {
     PG_ASSERT(GetData() != nullptr);
@@ -102,6 +113,8 @@ void Pegasus::Shader::ProgramLinkage::SetShaderStage(Pegasus::Shader::ShaderStag
         PG_ASSERT(shaderStage->GetStageType() >= 0 && shaderStage->GetStageType() < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT));
         OperatorNode::AddInput(shaderStage);
         mStageFlags |= flag;
+
+        shaderStage->RegisterParent(this);
     }
 }
 
@@ -112,6 +125,7 @@ Pegasus::Shader::ShaderStageRef Pegasus::Shader::ProgramLinkage::RemoveShaderSta
     ref = FindShaderStage(type);
     if (ref != nullptr)
     {
+        ref->UnregisterParent(this);
         RemoveInput(ref);
     }
 

@@ -4,12 +4,12 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	ScriptHelper.cpp
+//! \file	TimelineScript.cpp
 //! \author	Kleber Garcia
 //! \date	1st November 2014
 //! \brief	Script helper for scripting callbacks
 
-#include "Pegasus/Timeline/ScriptHelper.h"
+#include "Pegasus/Timeline/TimelineScript.h"
 #include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/Window/IWindowContext.h"
 #include "Pegasus/Core/Shared/CompilerEvents.h"
@@ -44,18 +44,18 @@ static int Pegasus_PrintFloat(float f)
     return 0;
 }
 
-ScriptHelper::ScriptHelper(IAllocator* allocator, Wnd::IWindowContext* appContext)
+TimelineScript::TimelineScript(IAllocator* allocator, const char* name, FileBuffer* fileBuffer, Wnd::IWindowContext* appContext)
     :
     mSerialVersion(0),
     mAllocator(allocator),
     mScript(nullptr),
-    mIsDirty(false),
-    mIoStatus(Io::ERR_FILE_NOT_FOUND), //no script opened
+    mIsDirty(true),
     mUpdateBindPoint(BlockScript::FUN_INVALID_BIND_POINT),
     mRenderBindPoint(BlockScript::FUN_INVALID_BIND_POINT),
     mDestroyBindPoint(BlockScript::FUN_INVALID_BIND_POINT),
     mScriptActive(false),
-    mAppContext(appContext)
+    mAppContext(appContext),
+    mRefCount(0)
 #if PEGASUS_ENABLE_PROXIES
     ,mProxy(this)
 #endif
@@ -80,64 +80,20 @@ ScriptHelper::ScriptHelper(IAllocator* allocator, Wnd::IWindowContext* appContex
         Pegasus::BlockScript::SystemCallbacks::gPrintFloatCallback = Pegasus_PrintFloat;
     }
 
+    mScriptName[0] = '\0';
+    PG_ASSERT(Utils::Strlen(name) < MAX_SCRIPT_NAME);
+    Utils::Strcat(mScriptName, name);
     mScript = appContext->GetBlockScriptManager()->CreateBlockScript();
     mScript->SetCompilerEventListener(this);
+    mFileBuffer.OwnBuffer(
+        mAllocator,
+        PG_NEW_ARRAY(mAllocator, -1, "blockscript src", Pegasus::Alloc::PG_MEM_PERM, char, fileBuffer->GetFileSize()),
+        fileBuffer->GetFileSize()
+    );
+    Utils::Memcpy(mFileBuffer.GetBuffer(), fileBuffer->GetBuffer(), fileBuffer->GetFileSize());
 }
 
-bool ScriptHelper::OpenScript(const char* scriptFile)
-{
-    //store the script name
-    PG_ASSERTSTR(Utils::Strlen(scriptFile) < MAX_SCRIPT_NAME + 1, "Script name should be less than %d characters!", MAX_SCRIPT_NAME);
-    mScriptName[0] = '\0';
-    Utils::Strcat(mScriptName, scriptFile);
-
-    InvalidateData();
-
-    PG_ASSERTSTR(mScriptActive == false, "Script must be shutdown before you can reopen!");
-    if (mScriptActive == false)
-    {
-        mIoStatus = Io::ERR_FILE_NOT_FOUND;
-
-        mFileBuffer.DestroyBuffer();
-
-        Io::IOManager* ioManager = mAppContext->GetIOManager();
-        mIoStatus = ioManager->OpenFileToBuffer(
-            scriptFile,
-            mFileBuffer,
-            true,
-            mAllocator
-        );
-
-        if (mIoStatus != Io::ERR_NONE)
-        {
-            PG_LOG('ERR_', "could not open block script file %s", scriptFile);
-
-            GRAPH_EVENT_DISPATCH(
-                this,
-                CompilerEvents::FileOperationEvent, 
-                // Event specific arguments:
-                CompilerEvents::FileOperationEvent::IO_ERROR, 
-                mIoStatus,
-                GetScriptName(), 
-                "Io error"
-            );
-        }
-        else
-        {
-            GRAPH_EVENT_DISPATCH(
-                this,
-                CompilerEvents::SourceLoadedEvent, 
-                // Event specific arguments:
-                mFileBuffer.GetBuffer(), 
-                mFileBuffer.GetFileSize()
-            );
-            return true;
-        }
-    }
-    return false;
-}
-
-void ScriptHelper::Shutdown()
+void TimelineScript::Shutdown()
 {
     mScript->Reset();
     mUpdateBindPoint = BlockScript::FUN_INVALID_BIND_POINT;
@@ -146,7 +102,7 @@ void ScriptHelper::Shutdown()
 
 }
 
-void ScriptHelper::CallGlobalScopeInit(BsVmState* state)
+void TimelineScript::CallGlobalScopeInit(BsVmState* state)
 {
     if (mScriptActive)
     {
@@ -154,7 +110,7 @@ void ScriptHelper::CallGlobalScopeInit(BsVmState* state)
     }
 }
 
-void ScriptHelper::CallGlobalScopeDestroy(BsVmState* state)
+void TimelineScript::CallGlobalScopeDestroy(BsVmState* state)
 {
     if (mDestroyBindPoint != BlockScript::FUN_INVALID_BIND_POINT)
     {
@@ -167,48 +123,45 @@ void ScriptHelper::CallGlobalScopeDestroy(BsVmState* state)
     }
 }
 
-bool ScriptHelper::CompileScript()
+bool TimelineScript::CompileScript()
 {
     if (mScriptActive == false)
     {
-        if (mIoStatus == Io::ERR_NONE)
+        mScriptActive = mScript->Compile(&mFileBuffer);
+        const char* types[] = { "float" }; //the only type of this functions is the beat
+
+        if (mScriptActive)
         {
-            mScriptActive = mScript->Compile(&mFileBuffer);
-            const char* types[] = { "float" }; //the only type of this functions is the beat
+            mUpdateBindPoint = mScript->GetFunctionBindPoint(
+                "Timeline_Update",
+                types,
+                1
+            );
 
-            if (mScriptActive)
-            {
-                mUpdateBindPoint = mScript->GetFunctionBindPoint(
-                    "Timeline_Update",
-                    types,
-                    1
-                );
-
-                mRenderBindPoint = mScript->GetFunctionBindPoint(
-                    "Timeline_Render",
-                    types,
-                    1
-                );
+            mRenderBindPoint = mScript->GetFunctionBindPoint(
+                "Timeline_Render",
+                types,
+                1
+            );
     
-                mDestroyBindPoint = mScript->GetFunctionBindPoint(
-                    "Timeline_Destroy",
-                    nullptr,
-                    0
-                );
-            
-                ++mSerialVersion;
-            }
-            else
-            {
-                mScript->Reset(); //cleanup, ready for next compilation attempt
-            }
+            mDestroyBindPoint = mScript->GetFunctionBindPoint(
+                "Timeline_Destroy",
+                nullptr,
+                0
+            );
+        
+            ++mSerialVersion;
+        }
+        else
+        {
+            mScript->Reset(); //cleanup, ready for next compilation attempt
         }
     }
     mIsDirty = false;
     return mScriptActive;
 }
 
-void ScriptHelper::CheckAndUpdateCompilationState()
+void TimelineScript::CheckAndUpdateCompilationState()
 {
     if (mIsDirty)
     {
@@ -217,7 +170,7 @@ void ScriptHelper::CheckAndUpdateCompilationState()
     }
 }
 
-void ScriptHelper::CallUpdate(float beat, BsVmState* state)
+void TimelineScript::CallUpdate(float beat, BsVmState* state)
 {
 
     if (mScriptActive)
@@ -234,13 +187,13 @@ void ScriptHelper::CallUpdate(float beat, BsVmState* state)
     }
 }
 
-void ScriptHelper::GetSource(const char** outSrc, int& outSize) const
+void TimelineScript::GetSource(const char** outSrc, int& outSize) const
 {
     *outSrc = mFileBuffer.GetBuffer();
     outSize = mFileBuffer.GetFileSize();
 }
 
-void ScriptHelper::SetSource(const char* source, int sourceSize)
+void TimelineScript::SetSource(const char* source, int sourceSize)
 {
     InvalidateData();
     if (sourceSize > mFileBuffer.GetFileSize())
@@ -256,7 +209,7 @@ void ScriptHelper::SetSource(const char* source, int sourceSize)
     Pegasus::Utils::Memcpy(mFileBuffer.GetBuffer(), source, sourceSize);
 }
 
-void ScriptHelper::CallRender(float beat, BsVmState* state)
+void TimelineScript::CallRender(float beat, BsVmState* state)
 {
     if (mScriptActive && mRenderBindPoint != BlockScript::FUN_INVALID_BIND_POINT)
     {
@@ -269,13 +222,25 @@ void ScriptHelper::CallRender(float beat, BsVmState* state)
     }
 }
 
-ScriptHelper::~ScriptHelper()
+void TimelineScript::Release()
 {
+    PG_ASSERTSTR(mRefCount > 0, "Invalid reference counter (%d), it should have a positive value", mRefCount);
+    --mRefCount;
+
+    if (mRefCount <= 0)
+    {
+        PG_DELETE(mAllocator, this);
+    }
+}
+
+TimelineScript::~TimelineScript()
+{
+    mAppContext->GetTimeline()->GetScriptTracker()->UnregisterScript(this);
     mAppContext->GetBlockScriptManager()->DestroyBlockScript(mScript);
     GRAPH_EVENT_DESTROY_USER_DATA(&mProxy, "BlockScript", GetEventListener());
 }
 
-void ScriptHelper::OnCompilationBegin()
+void TimelineScript::OnCompilationBegin()
 {
     PG_LOG('TMLN', "Compilation started for blockscript: %s", GetScriptName());    
 
@@ -289,7 +254,7 @@ void ScriptHelper::OnCompilationBegin()
     );
 }
 
-void ScriptHelper::OnCompilationError(int line, const char* errorMessage, const char* token)
+void TimelineScript::OnCompilationError(int line, const char* errorMessage, const char* token)
 {
     PG_LOG('ERR_', "Compilation error, line %d, %s. Around token %s", line, errorMessage, token);
 
@@ -303,7 +268,7 @@ void ScriptHelper::OnCompilationError(int line, const char* errorMessage, const 
     );
 }
 
-void ScriptHelper::OnCompilationEnd(bool success)
+void TimelineScript::OnCompilationEnd(bool success)
 {
     if (success)
     {
@@ -326,8 +291,9 @@ void ScriptHelper::OnCompilationEnd(bool success)
 
 
 #if PEGASUS_ENABLE_PROXIES
-void ScriptHelper::SaveScriptToFile()
+void TimelineScript::SaveScriptToFile()
 {
+/*
     Io::IOManager* ioManager = mAppContext->GetIOManager();
     Pegasus::Io::IoError err = ioManager->SaveFileToBuffer(mScriptName, mFileBuffer);
     if (err == Pegasus::Io::ERR_NONE)
@@ -354,5 +320,6 @@ void ScriptHelper::SaveScriptToFile()
             "Error saving file :/"
         );
     }
+*/
 }
 #endif

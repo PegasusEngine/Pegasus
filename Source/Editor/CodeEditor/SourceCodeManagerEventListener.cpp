@@ -15,7 +15,7 @@
 #include <string.h>
 
 CodeUserData::CodeUserData(Pegasus::Core::ISourceCodeProxy * code)
-: mIsValid(true), mIntermediateDocument(nullptr)
+: mIsValid(true), mIntermediateDocument(nullptr), mDispatchType(0)
 {
     mData.mSourceCode = code;
     mIsProgram = false;
@@ -112,10 +112,9 @@ void SourceCodeManagerEventListener::OnDestroyUserData(Pegasus::Core::IBasicSour
     }
 }
 
-void SourceCodeManagerEventListener::SafeDestroyUserData(void* userData)
+void SourceCodeManagerEventListener::SafeDestroyUserData(CodeUserData* codeUserData)
 {
-    ED_ASSERT(userData != nullptr);
-    CodeUserData* codeUserData = static_cast<CodeUserData*>(userData);
+    ED_ASSERT(codeUserData != nullptr);
     delete codeUserData;
 }
 
@@ -131,6 +130,10 @@ void SourceCodeManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * us
         if (e.GetType() == Pegasus::Core::CompilerEvents::CompilationNotification::COMPILATION_BEGIN)
         {
             emit( OnCompilationBegin(codeUserData) ) ;
+        }
+        else if (e.GetType() == Pegasus::Core::CompilerEvents::CompilationNotification::COMPILATION_RUNTIME_INITIALIZATION)
+        {
+            emit( OnSignalUpdateUIViews() );
         }
         else
         {        

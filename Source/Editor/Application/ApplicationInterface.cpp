@@ -20,6 +20,7 @@
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
 #include "Pegasus/Window/Shared/IWindowProxy.h"
+#include "Pegasus/AssetLib/Shared/IAssetProxy.h"
 
 
 ApplicationInterface::ApplicationInterface(Application * application, QObject * parent)
@@ -54,59 +55,50 @@ ApplicationInterface::ApplicationInterface(Application * application, QObject * 
 
     // Connect the timeline widget messages through queued connections
     TimelineDockWidget * timelineDockWidget = Editor::GetInstance().GetTimelineDockWidget();
-    if (timelineDockWidget != nullptr)
-    {
-        connect(timelineDockWidget, SIGNAL(PlayModeToggled(bool)),
-                this, SLOT(TogglePlayMode(bool)),
-                Qt::QueuedConnection);
+    ED_ASSERTSTR(timelineDockWidget != nullptr, "Unable to get the timeline dock widget");
 
-        connect(this, SIGNAL(ViewportRedrawnInPlayMode(float)),
-                application, SLOT(UpdateUIAndRequestFrameInPlayMode(float)),
-                Qt::QueuedConnection);
+    connect(timelineDockWidget, SIGNAL(PlayModeToggled(bool)),
+            this, SLOT(TogglePlayMode(bool)),
+            Qt::QueuedConnection);
 
-        connect(application, SIGNAL(FrameRequestedInPlayMode()),
-                this, SLOT(RequestFrameInPlayMode()),
-                Qt::QueuedConnection);
+    connect(this, SIGNAL(ViewportRedrawnInPlayMode(float)),
+            application, SLOT(UpdateUIAndRequestFrameInPlayMode(float)),
+            Qt::QueuedConnection);
 
-        connect(timelineDockWidget, SIGNAL(BeatUpdated(float)),
-                this, SLOT(RequestSetCurrentBeatAfterBeatUpdated(float)));
-        connect(this, SIGNAL(EnqueuedBeatUpdated()),
-                this, SLOT(SetCurrentBeat()),
-                Qt::QueuedConnection);
+    connect(application, SIGNAL(FrameRequestedInPlayMode()),
+            this, SLOT(RequestFrameInPlayMode()),
+            Qt::QueuedConnection);
 
-        connect(timelineDockWidget, SIGNAL(BlockMoved()),
-                this, SLOT(RequestRedrawAllViewportsAfterBlockMoved()));
-        connect(this, SIGNAL(EnqueuedBlockMoved()),
-                this, SLOT(RedrawAllViewportsForBlockMoved()),
-                Qt::QueuedConnection);
-    }
-    else
-    {
-        ED_FAILSTR("Unable to get the timeline dock widget");
-    }
+    connect(timelineDockWidget, SIGNAL(BeatUpdated(float)),
+            this, SLOT(RequestSetCurrentBeatAfterBeatUpdated(float)));
+    connect(this, SIGNAL(EnqueuedBeatUpdated()),
+            this, SLOT(SetCurrentBeat()),
+            Qt::QueuedConnection);
 
-    // Connect the asset library widget and the shader editor widget through queued connections
+    connect(timelineDockWidget, SIGNAL(BlockMoved()),
+            this, SLOT(RequestRedrawAllViewportsAfterBlockMoved()));
+    connect(this, SIGNAL(EnqueuedBlockMoved()),
+            this, SLOT(RedrawAllViewportsForBlockMoved()),
+            Qt::QueuedConnection);
+
+    // Connect the asset library widget 
     AssetLibraryWidget * assetLibraryWidget = Editor::GetInstance().GetAssetLibraryWidget();
-    if (assetLibraryWidget != nullptr)
-    {
-        CodeEditorWidget * codeEditorWidget = assetLibraryWidget->GetCodeEditorWidget();
-        if (codeEditorWidget  != nullptr)
-        {
-            connect(codeEditorWidget , SIGNAL(RequestCodeCompilation(int)),
-                    this, SLOT(ReceiveCompilationRequest(int)),
-                    Qt::QueuedConnection);
-            connect(this, SIGNAL(CompilationEnd()),
-                assetLibraryWidget, SLOT(OnCompilationRedrawEnd()), Qt::QueuedConnection);
-        }
-        else
-        {
-            ED_FAILSTR("Unable to get the code editor widget");
-        }
-    }
-    else
-    {
-        ED_FAILSTR("Unable to get the asset library dock widget");
-    }
+    ED_ASSERTSTR(assetLibraryWidget != nullptr, "Unable to get the asset library dock widget");
+    connect(assetLibraryWidget, SIGNAL(DispatchAssetCreation(QString)),
+            this, SLOT(ReceiveOpenAssetRequest(QString)), Qt::QueuedConnection);
+    connect(assetLibraryWidget, SIGNAL(RequestNewAsset(QString, int)),
+            this, SLOT(ReceiveNewAssetRequest(QString, int)), Qt::QueuedConnection);
+
+    CodeEditorWidget * codeEditorWidget = assetLibraryWidget->GetCodeEditorWidget();
+    ED_ASSERTSTR(codeEditorWidget != nullptr, "Unable to get the code editor widget");
+    connect(codeEditorWidget , SIGNAL(RequestCodeCompilation(CodeUserData*)),
+            this, SLOT(ReceiveCompilationRequest(CodeUserData*)),
+            Qt::QueuedConnection);
+    connect(codeEditorWidget , SIGNAL(RequestCloseCode(CodeUserData*)),
+            this, SLOT(ReceiveCloseSourceCodeRequest(CodeUserData*)),
+            Qt::QueuedConnection);
+    connect(this, SIGNAL(CompilationEnd()),
+        assetLibraryWidget, SLOT(OnCompilationRedrawEnd()), Qt::QueuedConnection);
 
     // Connect the texture editor messages through queued connections
     TextureEditorDockWidget * textureEditorDockWidget = Editor::GetInstance().GetTextureEditorDockWidget();
@@ -282,7 +274,7 @@ void ApplicationInterface::RedrawAllViewportsForBlockMoved()
 
 //----------------------------------------------------------------------------------------
 
-void ApplicationInterface::ReceiveCompilationRequest(int id)
+void ApplicationInterface::ReceiveCompilationRequest(CodeUserData* userData)
 {
     AssetLibraryWidget * assetLibraryWidget = Editor::GetInstance().GetAssetLibraryWidget();
     if (assetLibraryWidget != nullptr)
@@ -290,10 +282,7 @@ void ApplicationInterface::ReceiveCompilationRequest(int id)
         CodeEditorWidget * codeEditorWidget = assetLibraryWidget->GetCodeEditorWidget();
         if (codeEditorWidget != nullptr)
         {
-            codeEditorWidget->FlushTextEditorToCode(id);
-
-            //refresh viewport
-            mApplication->GetShaderManagerProxy()->UpdateAllPrograms();
+            codeEditorWidget->FlushTextEditorToCodeAndCompile(userData);
             RedrawAllViewports();
             emit CompilationEnd();
         }
@@ -346,4 +335,28 @@ void ApplicationInterface::RequestFrameInPlayMode()
 
     // We are still in play mode, inform the linked objects that will request a refresh of the viewports
     emit ViewportRedrawnInPlayMode(timeline->GetCurrentBeat());
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::ReceiveOpenAssetRequest(const QString& path)
+{
+    AssetLibraryWidget * assetLibraryWidget = Editor::GetInstance().GetAssetLibraryWidget();
+    assetLibraryWidget->OnRenderThreadOpenAsset(path);
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::ReceiveCloseSourceCodeRequest(CodeUserData* userData)
+{
+    AssetLibraryWidget * assetLibraryWidget = Editor::GetInstance().GetAssetLibraryWidget();
+    assetLibraryWidget->OnRenderThreadCloseSourceCode(userData);
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::ReceiveNewAssetRequest(const QString& path, int type)
+{
+    AssetLibraryWidget * assetLibraryWidget = Editor::GetInstance().GetAssetLibraryWidget();
+    assetLibraryWidget->OnRenderThreadNewAsset(path, type);
 }

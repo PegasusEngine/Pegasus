@@ -114,33 +114,39 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)..\..\Bin\VS11\$(PlatformName)\Dev\</OutDir>
+    <OutDir>$(SolutionDir)..\..\Bin\VS11\$(PlatformName)\Dev\Applications\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)-Debug</TargetName>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
+    <CustomBuildBeforeTargets>
+    </CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">
-    <OutDir>$(SolutionDir)..\..\Bin\VS11\$(PlatformName)\Dev\</OutDir>
+    <OutDir>$(SolutionDir)..\..\Bin\VS11\$(PlatformName)\Dev\Applications\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)-Opt</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)..\..\Bin\VS11\$(PlatformName)\Rel\</OutDir>
+    <OutDir>$(SolutionDir)..\..\Bin\VS11\$(PlatformName)\Rel\Applications\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)-Debug</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Final|Win32'">
-    <OutDir>$(SolutionDir)..\..\Bin\VS11\$(PlatformName)\Rel\</OutDir>
+    <OutDir>$(SolutionDir)..\..\Bin\VS11\$(PlatformName)\Rel\Applications\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)-Final</TargetName>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Profile|Win32'">
-    <OutDir>$(SolutionDir)..\..\Bin\VS11\$(PlatformName)\Rel\</OutDir>
+    <OutDir>$(SolutionDir)..\..\Bin\VS11\$(PlatformName)\Rel\Applications\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)-Profile</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Small|Win32'">
-    <OutDir>$(SolutionDir)..\..\Bin\VS11\$(PlatformName)\Rel\</OutDir>
+    <OutDir>$(SolutionDir)..\..\Bin\VS11\$(PlatformName)\Rel\Applications\$(ProjectName)\</OutDir>
     <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)-Small</TargetName>
   </PropertyGroup>
@@ -167,6 +173,14 @@
       <AdditionalDependencies>Pegasus.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
     </Link>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+      <Message />
+    </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>call $(SolutionDir)..\..\Lib\Scripts\DeployApp.bat Dev $(ProjectName)  $(SolutionDir) $(SolutionDir)..\..\Bin\VS11\$(PlatformName)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">
     <ClCompile>
@@ -193,6 +207,9 @@
       <AdditionalDependencies>Pegasus.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
     </Link>
+    <PostBuildEvent>
+      <Command>call $(SolutionDir)..\..\Lib\Scripts\DeployApp.bat Dev $(ProjectName)  $(SolutionDir) $(SolutionDir)..\..\Bin\VS11\$(PlatformName)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Debug|Win32'">
     <ClCompile>
@@ -217,6 +234,9 @@
       <AdditionalDependencies>Pegasus.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
     </Link>
+    <PostBuildEvent>
+      <Command>call $(SolutionDir)..\..\Lib\Scripts\DeployApp.bat Rel $(ProjectName)  $(SolutionDir) $(SolutionDir)..\..\Bin\VS11\$(PlatformName)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Final|Win32'">
     <ClCompile>
@@ -245,6 +265,14 @@
       <AdditionalDependencies>Pegasus.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
     </Link>
+    <CustomBuildStep>
+      <Command>
+      </Command>
+      <Message />
+    </CustomBuildStep>
+    <PostBuildEvent>
+      <Command>call $(SolutionDir)..\..\Lib\Scripts\DeployApp.bat Rel $(ProjectName)  $(SolutionDir) $(SolutionDir)..\..\Bin\VS11\$(PlatformName)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Profile|Win32'">
     <ClCompile>
@@ -273,6 +301,9 @@
       <AdditionalDependencies>Pegasus.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
     </Link>
+    <PostBuildEvent>
+      <Command>call $(SolutionDir)..\..\Lib\Scripts\DeployApp.bat Rel $(ProjectName)  $(SolutionDir) $(SolutionDir)..\..\Bin\VS11\$(PlatformName)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Small|Win32'">
     <ClCompile>
@@ -301,6 +332,9 @@
       <AdditionalDependencies>Pegasus.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
     </Link>
+    <PostBuildEvent>
+      <Command>call $(SolutionDir)..\..\Lib\Scripts\DeployApp.bat Rel $(ProjectName)  $(SolutionDir) $(SolutionDir)..\..\Bin\VS11\$(PlatformName)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

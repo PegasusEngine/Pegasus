@@ -14,12 +14,23 @@
 
 #define MAX_ASSET_PATH_STRING 512
 
+#include "Pegasus/AssetLib/Proxy/AssetProxy.h"
+#include "Pegasus/Core/Io.h"
+#include "Pegasus/Core/Assertion.h"
+#include "Pegasus/Memory/BlockAllocator.h"
+#include "Pegasus/Utils/Vector.h"
+
 //Fwd declarations
 namespace Pegasus
 {
     namespace Utils {
         class ByteStream;
     }
+
+    namespace Alloc {   
+        class IAllocator;
+    }
+
 }
 
 namespace Pegasus
@@ -28,22 +39,44 @@ namespace AssetLib
 {
 
 class Object;
+class Array;
+class RuntimeAssetObject;
 
 //! Asset representation
 class Asset
 {
 public:
+
+    enum AssetFormat
+    {
+        FMT_RAW,
+        FMT_STRUCTURED
+    };
     
-    //! Constructor
+    //! Constructor for structured asset
     //! \param obj the root object used for this asset.
-    explicit Asset(Object* obj);
+    explicit Asset(Alloc::IAllocator* allocator, AssetFormat fmt);
 
     //! Destructor
     ~Asset();
 
+    //! Sets the root object
+    void SetRootObject(Object* obj);
+
+    //! Sets the file buffer if this is a raw asset
+    void SetFileBuffer(const Io::FileBuffer& fb);
+
     //! Gets the root object
     //! \return the root object
-    Object* Root() { return mRoot; }
+    Object* Root() { PG_ASSERT(mFormat == FMT_STRUCTURED); return mRoot; }
+
+    //! Gets the root object
+    //! \return the root object
+    const Object* Root() const { PG_ASSERT(mFormat == FMT_STRUCTURED); return mRoot; }
+
+    //! Gets the raw buffer of this object
+    //! \return the raw buffer of this asset
+    Io::FileBuffer* Raw() { PG_ASSERT(mFormat == FMT_RAW); return &mRawAsset; }
 
     //! Sets the path of this assets file
     //! \param the full path of this asset
@@ -56,9 +89,51 @@ public:
     //! dumps this asset (writes it) to a byte stream
     void DumpToStream(Utils::ByteStream& bs);
 
+    //! Gets the format of this asset
+    AssetFormat GetFormat() const { return mFormat; }
+
+    //! Creates a new object whose lifetime is this assets object
+    //! \return the object
+    Object* NewObject();
+
+    //! Creates a new array whose lifetime is this assets object
+    //! \return the array
+    Array* NewArray();
+
+    //! Copies a string passed in, whose lifetime is this assets object
+    const char* CopyString(const char* string);
+
+    //! Resets this asset internally (destroys all internal memory and makes it an empty asset)
+    void Clear();
+
+    //! Sets the runtime data
+    void SetRuntimeData(RuntimeAssetObject * obj) { mRuntimeData = obj; }
+
+    //! Gets the runtime data
+    RuntimeAssetObject* GetRuntimeData() const { return mRuntimeData; }
+
+#if PEGASUS_ENABLE_PROXIES
+    IAssetProxy* GetProxy() { return &mProxy; }
+    const IAssetProxy* GetProxy() const { return &mProxy; }
+#endif
+
 private:
+    Alloc::IAllocator* mAllocator;
+    RuntimeAssetObject*    mRuntimeData;
+    Memory::BlockAllocator mAstAllocator;
+    Memory::BlockAllocator mStringAllocator;
+
+    Utils::Vector<Array*>  mChildArrays;
+    Utils::Vector<Object*> mChildObjects;
+
     Object* mRoot;
+    Io::FileBuffer mRawAsset;
     char mPathString[MAX_ASSET_PATH_STRING];
+    AssetFormat mFormat;
+
+#if PEGASUS_ENABLE_PROXIES
+    AssetProxy mProxy;
+#endif
 };
 
 }

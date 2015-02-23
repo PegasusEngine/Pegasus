@@ -135,6 +135,8 @@ private:
     //! Internal handler to shutdown the app
     void ShutdownAppInternal();
 
+    //! Creates and initializes asset factories and type ids
+    void RegisterAssetLib();
 
     bool mInitialized;                                    //!< Initialized flag
     ApplicationConfig                mConfig;             //!< Cached config object

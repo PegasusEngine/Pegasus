@@ -26,7 +26,7 @@ namespace Pegasus
     
     namespace Timeline
     {
-        class ScriptHelper;
+        class TimelineScript;
     }
 }
    
@@ -50,20 +50,20 @@ public:
     //! gets a script
     //! \param the id of the script to get
     //! \return the script pointer
-    ScriptHelper* GetScriptById(int id);
+    TimelineScript* GetScriptById(int id);
 
     //! Gets the script count
     //! \return the count
     int GetScriptCount() const { return mData.GetSize(); }
 
     //! Registers a script
-    void RegisterScript(ScriptHelper* script);
+    void RegisterScript(TimelineScript* script);
 
     //! Removes script from tracker
-    void UnregisterScript(ScriptHelper* script);
+    void UnregisterScript(TimelineScript* script);
     
 private:
-    Utils::Vector<ScriptHelper*> mData;
+    Utils::Vector<TimelineScript*> mData;
     
 };
 

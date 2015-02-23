@@ -72,14 +72,12 @@ Editor::Editor(QApplication * parentApplication)
 
     // Create the objects used for the main window user interface
     CreateActions();
-    CreateMenu();
     CreateToolBars();
     CreateStatusBar();
 
-    //! \todo Finish handling the initialization of the Pegasus engine.
-    //!       Remove the dock widgets initialization from here and move it
-    //!       to the callback function called once the engine has initialized.
+    //! Finish handling the initialization of the Pegasus engine.
     CreateDockWidgets();
+    CreateMenu();
 
     // Create the settings object, read the setting values from the settings file and apply them
 	if (sSettings == nullptr)
@@ -130,7 +128,7 @@ Editor::Editor(QApplication * parentApplication)
             mAssetLibraryWidget, SLOT(UpdateUIForAppFinished()));
    
     connect(sSettings, SIGNAL(OnCodeEditorStyleChanged()),
-            mAssetLibraryWidget, SLOT(UpdateEditorStyle())); 
+            mCodeEditorWidget, SLOT(OnSettingsChanged())); 
 
     connect(mApplicationManager, SIGNAL(ApplicationLoaded()),
             mTextureEditorDockWidget, SLOT(UpdateUIForAppLoaded()));
@@ -223,12 +221,6 @@ ViewportWidget * Editor::GetViewportWidget(ViewportType viewportType) const
 
 void Editor::CreateActions()
 {
-    mActionFileNewScene = new QAction(tr("&New Scene"), this);
-	mActionFileNewScene->setIcon(QIcon(":/Toolbar/File/NewScene24.png"));
-	mActionFileNewScene->setShortcut(tr("Ctrl+N"));
-	mActionFileNewScene->setStatusTip(tr("Create a new empty scene"));
-    connect(mActionFileNewScene, SIGNAL(triggered()), this, SLOT(NewScene()));
-
 	mActionFileOpenApp = new QAction(tr("&Open App..."), this);
 	mActionFileOpenApp->setIcon(QIcon(":/Toolbar/File/OpenApp24.png"));
 	mActionFileOpenApp->setShortcut(tr("Ctrl+O"));
@@ -341,7 +333,6 @@ void Editor::CreateActions()
 void Editor::CreateMenu()
 {
     QMenu * fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(mActionFileNewScene);
     fileMenu->addAction(mActionFileOpenApp);
     fileMenu->addAction(mActionFileReloadApp);
     fileMenu->addAction(mActionFileCloseApp);
@@ -357,10 +348,7 @@ void Editor::CreateMenu()
     QMenu * viewMenu = menuBar()->addMenu(tr("&View"));
     viewMenu->addAction(mActionViewShowFullscreenViewport);
 
-    QMenu * createMenu = menuBar()->addMenu(tr("&Create"));
-    QMenu * createPrimitiveMenu = createMenu->addMenu(tr("&Primitive"));
-    createPrimitiveMenu->addAction(mActionCreatePrimitiveBox);
-    createPrimitiveMenu->addAction(mActionCreatePrimitiveSphere);
+    menuBar()->addMenu(mAssetLibraryWidget->CreateNewAssetMenu(tr("&Create"), this));
 
     QMenu * windowMenu = menuBar()->addMenu(tr("&Window"));
 	//mToolbarMenu = windowMenu->addMenu(tr("&Toolbars"));
@@ -380,6 +368,7 @@ void Editor::CreateMenu()
     helpMenu->addSeparator();
     helpMenu->addAction(mActionHelpAboutQt);
     helpMenu->addAction(mActionHelpAbout);
+
 }
 
 //----------------------------------------------------------------------------------------
@@ -390,7 +379,6 @@ void Editor::CreateToolBars()
     fileToolBar->setObjectName("FileToolBar");
     fileToolBar->setIconSize(QSize(16, 16));
 	fileToolBar->setAllowedAreas(Qt::TopToolBarArea);
-	fileToolBar->addAction(mActionFileNewScene);
 	fileToolBar->addAction(mActionFileOpenApp);
 	fileToolBar->addAction(mActionFileReloadApp);
     fileToolBar->addAction(mActionFileCloseApp);
@@ -509,13 +497,6 @@ void Editor::closeEvent(QCloseEvent * event)
     }
     delete sSettings;
     sSettings = nullptr;
-}
-
-//----------------------------------------------------------------------------------------
-
-void Editor::NewScene()
-{
-    //! \todo Create a new scene
 }
 
 //----------------------------------------------------------------------------------------

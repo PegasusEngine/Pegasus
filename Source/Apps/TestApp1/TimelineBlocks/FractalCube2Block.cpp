@@ -58,14 +58,8 @@ void FractalCube2Block::Initialize()
     // Set up shaders
     Pegasus::Shader::ShaderManager * const shaderManager = GetShaderManager();
     mProgram = shaderManager->CreateProgram("FractalCube2");
-    Pegasus::Shader::ShaderStageFileProperties fileLoadProperties;
-    fileLoadProperties.mLoader = GetIOManager();
-
-    fileLoadProperties.mPath = VERTEX_SHADER;
-    mProgram->SetShaderStage( shaderManager->LoadShaderStageFromFile(fileLoadProperties) );
-
-    fileLoadProperties.mPath = FRAGMENT_SHADER;
-    mProgram->SetShaderStage( shaderManager->LoadShaderStageFromFile(fileLoadProperties) );
+    mProgram->SetShaderStage( shaderManager->LoadShader(VERTEX_SHADER) );
+    mProgram->SetShaderStage( shaderManager->LoadShader(FRAGMENT_SHADER) );
 
     // Set up shader uniforms
     Pegasus::Render::CreateUniformBuffer(sizeof(mState), mStateBuffer);

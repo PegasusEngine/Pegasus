@@ -18,6 +18,10 @@
 //fwd declarations
 namespace Pegasus
 {
+    namespace Io {
+        class FileBuffer;
+    }
+
     namespace Alloc {
         class IAllocator;
     }
@@ -35,45 +39,74 @@ namespace Pegasus
 namespace AssetLib
 {
 
+//! Asset compiler helper class
 class AssetBuilder
 {
 public:
 
+    //! Constructor 
+    //! \param allcator to use
     explicit AssetBuilder(Alloc::IAllocator* allocator);
+
+    //! Destructor
     ~AssetBuilder();
 
+    //! Resets the builder state. Does not deallocate memory. Use this to reparse
     void Reset();
 
+    //! Begins construction of an array
+    //! \return the array
     Array* BeginArray();
 
+    //! Gets the current array state
+    //! \return array in current stack
     Array* GetArray();
 
+    //! Pops the array that was created / modified
     void   EndArray();
 
+    //! Pushes a new Object, created on the block allocator
+    //! \return the object that has been created
     Object* BeginObject();
     
+    //! Gets the current object in the stack
+    //! \return the object created
     Object* GetObject();
     
+    //! ends object construction
     void    EndObject();
+     
+    //! Begins compilation of the main asset
+    void BeginCompilation(Asset* asset);
 
-    Asset* BuildAsset(Object* obj);
-
+    //! Copies a string into the block allocator string, so we dont have to worry about destruction
+    //! \return the string copied
     const char* CopyString(const char* string);
 
+    //! Increments the current line being processed in the asset script file (json)
     void IncLine() { ++mCurrentLine; }
 
+    //! Gets the current line processed
+    //! \return the line processed
     int GetCurrentLine() const { return mCurrentLine; }
 
+    //! Gets the asset that was built througout compilation
+    //! \return the structured asset
     Asset* GetBuiltAsset() { return mFinalAsset; }
+
+    //! Increments the error count of this compilation process
+    void IncErrorCount() { ++mErrorCount; }
+
+    //! Returns the error count of this compilation process
+    int GetErrorCount() const { return mErrorCount; }
 
 private:
     Alloc::IAllocator* mAllocator;
-    Memory::BlockAllocator mAstAllocator;
-    Memory::BlockAllocator mStringAllocator;
     Utils::Vector<Array*>  mArrStack;
     Utils::Vector<Object*> mObjStack;
     Asset*  mFinalAsset;
     int     mCurrentLine;
+    int     mErrorCount;
 };
 
 }

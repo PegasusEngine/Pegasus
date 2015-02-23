@@ -68,6 +68,15 @@ public:
     //!         case is the address of the shader stage object, which should be unique
     virtual long long GetGuid() const { return reinterpret_cast<long long>(mObject); }
 
+    //! \return the object belonging to this proxy
+    ShaderStage* GetObject() { return mObject; }
+
+    //! \return the object belonging to this proxy
+    const ShaderStage* GetObject() const { return mObject; }
+
+    //! Forces compilation on the internal object
+    virtual void Compile();
+
 private:
 
     //! internal implementation

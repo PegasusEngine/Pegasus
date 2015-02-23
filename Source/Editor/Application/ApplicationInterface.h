@@ -16,6 +16,7 @@
 #include "Viewport/ViewportType.h"
 
 class Application;
+class CodeUserData;
 
 
 //! Interface object used to interface with the Pegasus related messages,
@@ -101,9 +102,8 @@ private slots:
     void RedrawAllViewportsForBlockMoved();
 
     //! Called when the current beat has been updated
-    //! \param id ID of the source code
-    void ReceiveCompilationRequest(int id);
-
+    //! \param code user data
+    void ReceiveCompilationRequest(CodeUserData* codeUserData);
 
     //! Enable or disable the play mode of the demo timeline
     //! \param enabled True if the play mode has just been enabled, false if it has just been disabled
@@ -111,6 +111,16 @@ private slots:
 
     //! Request the rendering of a new frame while in play mode
     void RequestFrameInPlayMode();
+
+    //! Request received when an asset is opened, so we can build its runtime data on the
+    //! render thread
+    void ReceiveOpenAssetRequest(const QString& path);
+
+    //! slot received when somebody request closing user data from an editor
+    void ReceiveCloseSourceCodeRequest(CodeUserData* userData);
+    
+    //! slot received when somebody requests a new asset
+    void ReceiveNewAssetRequest(const QString& path, int type);
 
     //------------------------------------------------------------------------------------
 

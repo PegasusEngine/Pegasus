@@ -12,11 +12,15 @@
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Timeline/Lane.h"
-#include "Pegasus/Timeline/ScriptHelper.h"
+#include "Pegasus/Timeline/TimelineScript.h"
 #include "Pegasus/Core/Time.h"
+#include "Pegasus/Core/Io.h"
 #include "Pegasus/Math/Scalar.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/Memcpy.h"
+#include "Pegasus/AssetLib/AssetLib.h"
+#include "Pegasus/AssetLib/Asset.h"
+#include "Pegasus/Window/IWindowContext.h"
 
 #include <string.h>
 
@@ -521,6 +525,63 @@ unsigned int Timeline::GetRegisteredBlockIndex(const char * className) const
     // Block not found
     PG_ASSERT(index == mNumRegisteredBlocks);
     return mNumRegisteredBlocks;
+}
+
+bool Timeline::IsTimelineScript(const AssetLib::Asset* asset) const
+{
+    const char* path = asset->GetPath();
+    const char* extension = Utils::Strrchr(path, '.');
+    return asset->GetFormat() == AssetLib::Asset::FMT_RAW && extension != nullptr && !Utils::Strcmp(".bs", extension);
+}
+
+TimelineScriptReturn Timeline::LoadScript(const char* path)
+{
+    AssetLib::Asset* asset = nullptr;
+    if (Io::ERR_NONE == mAppContext->GetAssetLib()->LoadAsset(path, &asset))
+    {
+        if (IsTimelineScript(asset))
+        {
+            return CreateScript(asset);
+        }
+        else
+        {
+            mAppContext->GetAssetLib()->DestroyAsset(asset);
+        }
+    }
+
+    PG_LOG('ERR_', "Error loading timeline script asset %s", path);
+    return nullptr;
+}
+
+TimelineScriptReturn Timeline::CreateScript(AssetLib::Asset* asset)
+{
+    if (asset->GetRuntimeData() == nullptr)
+    {
+        Io::FileBuffer* fb = asset->Raw();
+        const char* path = asset->GetPath();
+        int pathlen = Utils::Strlen(path);
+        while (pathlen >= 0 && *(path + pathlen) != '/' && *(path + pathlen) != '\\') --pathlen;
+        path += pathlen + 1;
+        TimelineScriptRef scriptRef = PG_NEW(mAllocator, -1, "Timeline Script", Alloc::PG_MEM_TEMP) TimelineScript(mAllocator, path, fb, mAppContext);
+
+#if PEGASUS_USE_GRAPH_EVENTS
+        //register event listener
+        scriptRef->SetEventListener(GetEventListener());
+        GRAPH_EVENT_INIT_USER_DATA(scriptRef->GetProxy(), "BlockScript", scriptRef->GetEventListener());
+#endif
+
+        scriptRef->CompileScript();
+        mAppContext->GetAssetLib()->BindAssetToRuntimeObject(asset, &(*scriptRef));
+        
+        //TODO remove tracker on release?
+        mScriptTracker.RegisterScript(&(*scriptRef));
+
+        return scriptRef;
+    } 
+    else 
+    {
+        return static_cast<TimelineScript*>(asset->GetRuntimeData());
+    }
 }
 
 

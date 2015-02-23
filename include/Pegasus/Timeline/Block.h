@@ -15,7 +15,7 @@
 #include "Pegasus/Timeline/Shared/BlockDefs.h"
 #include "Pegasus/Timeline/Shared/TimelineDefs.h"
 #include "Pegasus/Timeline/Proxy/BlockProxy.h"
-#include "Pegasus/Timeline/ScriptHelper.h"
+#include "Pegasus/Timeline/TimelineScript.h"
 #include "Pegasus/Window/IWindowContext.h"
 
 namespace Pegasus {
@@ -65,16 +65,22 @@ public:
     inline Lane * GetLane() const { return mLane; }
 
     //! Attempts to open and compile a script. True if success, false otherwise.
-    //! \param scriptFileName - the file name to open. 
-    //! \return true if successful, false otherwise
-    bool OpenScript(const char* scriptFileName);
+    //! \param script reference to attach
+    void AttachScript(TimelineScriptIn script);
 
     //! Attempts to shutdown a script if it has been opened
     void ShutdownScript();
 
     //! Returns the script of this block, null if none is attached.
     //! \return the script object, null if not attached
-    ScriptHelper* GetScript() { return mScriptHelper; }
+    TimelineScriptReturn GetScript() { return mTimelineScript; }
+
+    //! Attempts to initialize a script
+    //! \return true if there has been a change in the node layout. False otherwise
+    bool InitializeScript();
+
+    //! \return true if a script is present, false otherwise
+    bool HasScript() const { return mTimelineScript != nullptr; }
 
 
 #if PEGASUS_ENABLE_PROXIES
@@ -218,7 +224,7 @@ private:
     Duration mDuration;
 
     //! script helper object
-    ScriptHelper* mScriptHelper;
+    TimelineScriptRef mTimelineScript;
 
     //! virtual machine state
     BlockScript::BsVmState* mVmState;

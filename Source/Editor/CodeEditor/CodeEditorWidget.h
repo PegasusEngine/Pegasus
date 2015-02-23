@@ -28,6 +28,7 @@ class QAction;
 class QTab;
 class CodeTextEditorTreeWidget;
 class CodeTextEditorWidget;
+class CodeUserData;
 
 //! Graphics Widget meant for code text editing
 class CodeEditorWidget : public QDockWidget
@@ -38,12 +39,6 @@ public:
     explicit CodeEditorWidget(QWidget * parent);
     virtual ~CodeEditorWidget();
 
-    //! opens a CodeUserData in the text editor
-    //! \param CodeUserData the code to open
-    void RequestOpen(CodeUserData * code);
-
-    //! called whenever settings have been changed
-    void OnSettingsChanged();
 
     //! checks if there is a compilation request pending (so we dont resend more)
     bool AsyncHasCompilationRequestPending();
@@ -53,16 +48,16 @@ public:
     
     //! Clears the compilation request and flushes the internal text of a code tab
     //! into the internal code source container
-    //! \param id of the code editor to flush
-    void FlushTextEditorToCode(int id);
+    //! \param the user data to compile
+    void FlushTextEditorToCodeAndCompile(CodeUserData* userData);
 
     //! Called when a code compilation status has been changed
     //! \param code that has been updated
     void CodeUIChanged(CodeUserData * code);
 
     //! Requests a code to compile
-    //! \param the id of the editor (tab id). If the id is -1, then all programs are queried for compilaton
-    void CompileCode(int id);
+    //! \param the code user data to compile
+    void CompileCode(CodeUserData* code);
     
     //! finds the index of a particular Code
     int  FindIndex(CodeUserData * target);
@@ -70,22 +65,37 @@ public:
     //! finds the index of a particular text edit
     int  FindIndex(CodeTextEditorWidget * target);
 signals:
-    void RequestCodeCompilation(int id);
 
+    //! called when the editor request a compilation
+    void RequestCodeCompilation(CodeUserData* codeUserData);
+
+    //! called when the editor needs the asset library to freeze the ui
     void RequestDisableAssetLibraryUi();
 
-    void RequestSafeDeleteUserData(void* userData);
+    //! called when the editor feels like deleting the user data from the render thread
+    void RequestSafeDeleteUserData(CodeUserData* userData);
+
+    //! called when the editor feels like closing code
+    void RequestCloseCode(CodeUserData* userData);
 
 public slots:
+
+    //! opens a CodeUserData in the text editor
+    //! \param CodeUserData the code to open
+    void RequestOpen(CodeUserData * code);
+
     //! slot to be called when a code wants to be closed.
     //! \param index code to close
     void RequestClose(int index);
 
     //! bless user data with any UI specific data required
-    void BlessUserData(void* codeUserData);
+    void BlessUserData(CodeUserData* codeUserData);
 
     //! unbless user data with any UI specific data that was blessed
-    void UnblessUserData(void* codeUserData);
+    void UnblessUserData(CodeUserData* codeUserData);
+
+    //! called whenever settings have been changed
+    void OnSettingsChanged();
 
 private slots:
     //! slot called whenever a tab changes its text.
@@ -100,7 +110,7 @@ private slots:
     //! \param the code reference to set the compilation error
     //! \param the line number that such code failed at
     //! \param the error message string of the failed compilation
-    void SignalCompilationError(void* code, int line, QString errorString);
+    void SignalCompilationError(CodeUserData* code, int line, QString errorString);
 
     //! signal triggered when a linking event has occured
     //! \param the program that triggered this event
@@ -110,7 +120,7 @@ private slots:
 
     //! signals the begining of a compilation request. Used to set UI states and clear stuff 
     //! \param the code pointer
-    void SignalCompilationBegin(void* code);
+    void SignalCompilationBegin(CodeUserData* code);
 
     //! signals the end of a compilation request. Used to display any compilation error in the status bar
     void SignalCompilationEnd(QString log);

@@ -21,6 +21,10 @@ namespace Pegasus {
             class ICompilerEventListener;
         }
     }
+
+    namespace AssetLib {
+        class IAssetProxy;
+    }
 }
 
 namespace Pegasus
@@ -55,9 +59,33 @@ public:
     //! \return shader proxy
     virtual IShaderProxy* GetShader(int id) = 0; 
 
-    //! Updates all the programs, only those which changed
-    virtual void UpdateAllPrograms() = 0;
+    //! Opens a shader from an asset building its runtime data
+    //! \param the asset to use to load this proxy
+    //! \return the shader proxy to load
+    virtual IShaderProxy* OpenShader(AssetLib::IAssetProxy* asset) = 0;
 
+    //! Closes a shader.
+    //! \param the shader proxy to close
+    virtual void CloseShader(IShaderProxy* shader) = 0;
+
+    //! Loads a program from an asset proxy
+    //! \param the program proxy to use to load this program
+    //! \return the program proxy to use
+    virtual IProgramProxy* OpenProgram(AssetLib::IAssetProxy* asset) = 0;
+
+    //! Closes a program.
+    //! \param the program proxy to close
+    virtual void CloseProgram(IProgramProxy* program) = 0;
+
+    //! returns true if the asset passed is an actual shader
+    //! \param asset the asset to test if its a shader
+    //! \return  true if this asset is a shader, false otherwise
+    virtual bool IsShader(const AssetLib::IAssetProxy* asset) const = 0; 
+
+    //! returns true if this asset is a program.
+    //! \param asset the asset to test if its a program
+    //! \return true if this is a program, false otherwise
+    virtual bool IsProgram(const AssetLib::IAssetProxy* asset) const = 0;
 };
 
 }

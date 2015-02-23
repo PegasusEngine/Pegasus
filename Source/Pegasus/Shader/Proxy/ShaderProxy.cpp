@@ -61,6 +61,11 @@ Pegasus::Graph::IGraphUserData * Pegasus::Shader::ShaderProxy::GetUserData() con
 #endif
 }
 
+void Pegasus::Shader::ShaderProxy::Compile()
+{
+    mObject->Compile();
+}
+
 #else
 PEGASUS_AVOID_EMPTY_FILE_WARNING;
 #endif

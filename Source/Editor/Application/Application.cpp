@@ -33,10 +33,6 @@
 #endif  // PEGASUS_PLATFORM_WINDOWS
 
 
-// Since we know where the editor launches from, hard-code the asset root
-static const char* ASSET_ROOT = "..\\..\\..\\Data\\";
-
-
 Application::Application(QObject *parent)
 :   QThread(parent),
     mApplicationInterface(nullptr),
@@ -92,7 +88,10 @@ void Application::run()
     }
 
 #if PEGASUS_PLATFORM_WINDOWS
-
+    int lbrac = mFileName.lastIndexOf('/');
+    int rbrac = mFileName.lastIndexOf('\\');
+    int lastIndex = lbrac > rbrac ? lbrac : rbrac;    
+    QString assetRoot = mFileName.mid(0, lastIndex);
     // Load the DLL
     HMODULE dllModule = LoadLibrary(mFileName.utf16());
     if (dllModule == NULL)
@@ -129,7 +128,8 @@ void Application::run()
     appConfig.mModuleHandle = (Pegasus::Os::ModuleHandle) GetModuleHandle(NULL); // Use the handle of the Editor EXE
     appConfig.mMaxWindowTypes = NUM_VIEWPORT_TYPES;
     appConfig.mMaxNumWindows = NUM_VIEWPORT_TYPES;
-    appConfig.mBasePath = ASSET_ROOT;
+    QByteArray byteArr = assetRoot.toLocal8Bit();
+    appConfig.mBasePath = byteArr.data();
     // Attach the debugging features
     // (queued connections as the connections are between threads)
     ApplicationManager * applicationManager = qobject_cast<ApplicationManager *>(parent());

@@ -14,6 +14,7 @@
 #include "Pegasus/Graph/OperatorNode.h"
 #include "Pegasus/Shader/ShaderStage.h"
 #include "Pegasus/Shader/Proxy/ProgramProxy.h"
+#include "Pegasus/AssetLib/RuntimeAssetObject.h"
 
 namespace Pegasus {
     namespace Core {
@@ -36,7 +37,7 @@ class ProgramProxy;
 
 
 //! Program linkage class. Represents a set of linked shader stages
-class ProgramLinkage : public Pegasus::Graph::OperatorNode
+class ProgramLinkage : public Pegasus::Graph::OperatorNode, public Pegasus::AssetLib::RuntimeAssetObject
 {
     friend class ShaderManager;
 #if PEGASUS_ENABLE_PROXIES
@@ -100,6 +101,9 @@ public:
     //! Typically used when keeping the graph in memory but not the associated data,
     //! to save memory and to be able to restore the data later
     virtual void ReleaseDataAndPropagate();
+
+    //! Invalidates internally the data holding the program, to force relinking
+    virtual void InvalidateData();
 
 #if PEGASUS_ENABLE_PROXIES
     //! returns the name of this program.

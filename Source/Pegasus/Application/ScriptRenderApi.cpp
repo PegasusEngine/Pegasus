@@ -690,12 +690,7 @@ void Node_LoadShaderStage(FunCallbackContext& context)
 
     const char* path = stream.NextBsStringArgument();
 
-    Shader::ShaderStageFileProperties fileProps;
-    fileProps.mPath = path;
-    fileProps.mLoader = container->GetAppContext()->GetIOManager();
-    fileProps.mUserData = nullptr;
-
-    Shader::ShaderStageRef shaderStage = container->GetAppContext()->GetShaderManager()->LoadShaderStageFromFile(fileProps);
+    Shader::ShaderStageRef shaderStage = container->GetAppContext()->GetShaderManager()->LoadShader(path);
     if (shaderStage != nullptr)
     {
         //force shader compilation
