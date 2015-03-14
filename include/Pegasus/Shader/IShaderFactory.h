@@ -26,6 +26,7 @@ namespace Graph {
 namespace Shader
 {
 
+class ShaderManager;
 class ShaderStage;
 class ProgramLinkage;
 
@@ -38,7 +39,12 @@ public:
 
     //! callback to be called at application constructor. Sets the right allocators for the shader GPU data.
     //! \param allocator the allocator to set
+    //! \param the shader manager to pass
     virtual void Initialize(Pegasus::Alloc::IAllocator * allocator) = 0;
+
+    //! Register a shader manager to handle include operations
+    //! \param the shader manager to register
+    virtual void RegisterShaderManager(ShaderManager* shaderManager) = 0;
     
     //! Generates GPU data for a shader node. The node data passed must belong to the shader node being passed.
     //! function is called internally in GenerateData of ShaderStage

@@ -40,11 +40,6 @@ void TimelineScriptProxy::SetSource(const char * source, int sourceSize)
     mTimelineScript->SetSource(source, sourceSize);
 }
 
-void TimelineScriptProxy::SaveSourceToFile()
-{
-    mTimelineScript->SaveScriptToFile();
-}
-
 void TimelineScriptProxy::SetUserData(Pegasus::Graph::IGraphUserData * userData)
 {
     mTimelineScript->SetGraphEventUserData(userData);

@@ -359,14 +359,7 @@ void CodeEditorWidget::SignalSaveCurrentCode()
         CodeUserData * code = mOpenedCodes[idx];
         if (code != nullptr)
         {
-            //ensure that no compilation is happening while saving this file
-            mCompilationRequestMutex->lock();
-            ED_ASSERT(!code->IsProgram());
-            if (code->GetSourceCode() != nullptr)
-            {
-                code->GetSourceCode()->SaveSourceToFile();
-            }
-            mCompilationRequestMutex->unlock();
+            emit(RequestSaveCode(code));
         }
     }
 }

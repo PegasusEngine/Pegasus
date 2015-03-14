@@ -85,6 +85,9 @@ Application::Application(const ApplicationConfig& config)
     mTextureManager = PG_NEW(nodeAlloc, -1, "TextureManager", Alloc::PG_MEM_PERM) Texture::TextureManager(mNodeManager, textureFactory);
     mMeshManager    = PG_NEW(nodeAlloc, -1, "MeshManager", Alloc::PG_MEM_PERM) Mesh::MeshManager(mNodeManager, meshFactory);
 
+    //register shader manager into factory, so factory can handle includes
+    shaderFactory->RegisterShaderManager(mShaderManager);
+
     // Set up blockscript. Use the same timeline allocator
     mBlockScriptManager = PG_NEW(timelineAlloc, -1, "BlockScript Manager", Alloc::PG_MEM_PERM) BlockScript::BlockScriptManager(timelineAlloc);
 

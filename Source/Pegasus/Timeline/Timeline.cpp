@@ -584,6 +584,24 @@ TimelineScriptReturn Timeline::CreateScript(AssetLib::Asset* asset)
     }
 }
 
+void Timeline::FlushScriptToAsset(TimelineScriptIn script)
+{
+    AssetLib::Asset* ass = script->GetOwnerAsset();
+    PG_ASSERT(ass != nullptr);
+    Io::FileBuffer* fb = ass->Raw();
+    const char* src = nullptr;
+    int srcLen = 0;
+    script->GetSource(&src, srcLen);
+    if (srcLen > fb->GetBufferSize())
+    {
+        Pegasus::Alloc::IAllocator* alloc = fb->GetAllocator();
+        fb->DestroyBuffer();
+        fb->OwnBuffer(fb->GetAllocator(), PG_NEW_ARRAY(fb->GetAllocator(), -1, "", Alloc::PG_MEM_TEMP, char, srcLen), srcLen);
+    }
+    fb->SetFileSize(srcLen);
+    Utils::Memcpy(fb->GetBuffer(), src, srcLen);
+}
+
 
 }   // namespace Timeline
 }   // namespace Pegasus

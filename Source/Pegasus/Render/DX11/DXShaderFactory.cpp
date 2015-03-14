@@ -21,6 +21,7 @@
 #include "Pegasus/Graph/NodeData.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Shader/ShaderStage.h"
+#include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/Memcpy.h"
 #include "../Source/Pegasus/Render/DX11/DXGpuDataDefs.h"
@@ -35,7 +36,7 @@ static int gNextProgramGuid = 1;
 class DXShaderFactory : public Pegasus::Shader::IShaderFactory
 {
 public:
-    DXShaderFactory(){}
+    DXShaderFactory() : mShaderManager(nullptr), mAllocator(nullptr) {}
     virtual ~DXShaderFactory(){}
 
     virtual void Initialize(Pegasus::Alloc::IAllocator * allocator); 
@@ -48,12 +49,69 @@ public:
 
     virtual void DestroyProgramGPUData (Pegasus::Graph::NodeData * nodeData);
 
+    virtual void RegisterShaderManager(Pegasus::Shader::ShaderManager* shaderManager) { mShaderManager = shaderManager; }
+
 private:
     Pegasus::Render::DXShaderGPUData* GetOrCreateShaderGpuData(Pegasus::Graph::NodeData* nodeData);
     Pegasus::Render::DXProgramGPUData* GetOrCreateProgramGpuData(Pegasus::Graph::NodeData* nodeData);
     void PopulateReflectionData(Pegasus::Render::DXProgramGPUData* programData, const CComPtr<ID3D11ShaderReflection>& reflectionInfo, Pegasus::Shader::ShaderType shaderType);
     Pegasus::Alloc::IAllocator * mAllocator;
+    Pegasus::Shader::ShaderManager* mShaderManager;
 };
+
+// !internal class that handles inclusion of files
+class DXShaderIncludeHandler : public ID3DInclude
+{
+public:
+    DXShaderIncludeHandler(Pegasus::Shader::ShaderManager* mgr, Pegasus::Shader::ShaderStage* currShader) : mShaderManager(mgr), mCurrentShader(currShader) {}
+    virtual ~DXShaderIncludeHandler() {}
+
+    STDMETHOD(Open)(
+      D3D_INCLUDE_TYPE IncludeType,
+      LPCSTR pFileName,
+      LPCVOID pParentData,
+      LPCVOID *ppData,
+      UINT *pBytes
+    );
+
+    STDMETHOD(Close)(
+      LPCVOID ppData
+    );
+
+private:
+    Pegasus::Shader::ShaderManager* mShaderManager;
+    Pegasus::Shader::ShaderStage* mCurrentShader;
+};
+
+HRESULT DXShaderIncludeHandler::Open(
+  D3D_INCLUDE_TYPE IncludeType,
+  LPCSTR pFileName,
+  LPCVOID pParentData,
+  LPCVOID *ppData,
+  UINT *pBytes
+)
+{
+    Pegasus::Shader::ShaderSourceRef srcRef = mShaderManager->LoadHeader(pFileName);
+    if (srcRef != nullptr)
+    {
+        const char* src = nullptr;
+        int srcsz = 0;
+        srcRef->GetSource(&src, srcsz);
+        mCurrentShader->Include(srcRef);
+        *ppData = src;
+        *pBytes = srcsz;
+        return S_OK;
+    }
+
+    return E_FAIL;
+}
+
+HRESULT DXShaderIncludeHandler::Close(
+  LPCVOID ppData
+)
+{
+    return S_OK;
+}
 
 //! initializes the factory
 void DXShaderFactory::Initialize(Pegasus::Alloc::IAllocator * allocator)
@@ -206,12 +264,14 @@ void DXShaderFactory::GenerateShaderGPUData(Pegasus::Shader::ShaderStage * shade
         shaderGPUData->mBlob = nullptr; //clear any previous blob reference
         CComPtr<ID3DBlob> errBlob;
 
+        DXShaderIncludeHandler includeHandler(mShaderManager, shaderNode);
+
         HRESULT result = D3DCompile(
             (LPCVOID)shaderSource,
             (SIZE_T)shaderSourceSize,
             "", //no name
             NULL, //no defines yet
-            NULL, //no handler for includes
+            &includeHandler, //no handler for includes
             "main", //entry function
             sTargets[shaderNode->GetStageType()],
             D3DCOMPILE_IEEE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL0 | D3DCOMPILE_WARNINGS_ARE_ERRORS | D3DCOMPILE_ENABLE_STRICTNESS,

@@ -67,9 +67,6 @@ public:
     //! \param source size to copy 
     virtual void SetSource(const char * source, int sourceSize) = 0;
 
-    //! Saves the current source code file source to a file
-    virtual void SaveSourceToFile() = 0;
-
     //! Returns the compilation policy that this script has.
     //! \return the policy for the editor to use
     virtual CompilationPolicy GetCompilationPolicy() const = 0;

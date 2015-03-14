@@ -10,13 +10,11 @@
 //! \brief  Pegasus Shader Stage	
 #ifndef PEGASUS_SHADER_STAGE_H
 #define PEGASUS_SHADER_STAGE_H
+
 #include "Pegasus/Core/Ref.h"
-#include "Pegasus/Core/Shared/CompilerEvents.h"
-#include "Pegasus/Graph/GeneratorNode.h"
+#include "Pegasus/Shader/ShaderSource.h"
 #include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
-#include "Pegasus/Shader/Proxy/ShaderProxy.h"
-#include "Pegasus/AssetLib/RuntimeAssetObject.h"
 #include "Pegasus/Core/Io.h"
 #include "Pegasus/Utils/Vector.h"
 
@@ -32,10 +30,9 @@ class ProgramLinkage;
 class ShaderTracker;
 
 //! Shader Stage class, holds information about a shader stage
-class ShaderStage : public Graph::GeneratorNode, public AssetLib::RuntimeAssetObject
+class ShaderStage : public ShaderSource 
 {
     friend class ShaderManager;
-    GRAPH_EVENT_DECLARE_DISPATCHER(Pegasus::Core::CompilerEvents::ICompilerEventListener)
 
 public:
     //! Default constructor
@@ -55,15 +52,10 @@ public:
     //! \param  buffSize precomputed string length
     void SetSource(ShaderType type, const char * src, int srcSize);
 
-    //! Set the shader source, keeping the current shader type
+    //! Set the shader source
     //! \param  src the actual src string
     //! \param  buffSize precomputed string length
-    void SetSource(const char * src, int srcSize);
-
-    //! Gets the shader source
-    //! \param  output string constant pointer
-    //! \param  output size of string 
-    void GetSource (const char ** outSrc, int& outSize) const;
+    virtual void SetSource(const char * src, int srcSize);
 
     //! Return the stage type
     //! \return the shader type
@@ -92,27 +84,14 @@ public:
 
     //! Internally regenerates the data required for compilation. Propagates and links changes upwards if it has
     //! parents
-    void Compile();
+    virtual void Compile();
 
+    //! Clears the children includes including this shader
+    void ClearChildrenIncludes();
 
-#if PEGASUS_ENABLE_PROXIES
-    //! Sets the full path, divides the stirng into the file name and the root full path
-    //! to be used only by the editor
-    //! \param fullpath file path of the shader to be set
-    void SetFullFilePath(const char * fullPath);
+    //! \param the shader source in
+    void Include(ShaderSourceIn shaderSrc);
 
-    //! \return the path containing this shader
-    const char * GetFilePath() const { return mPath; }
-
-    //! \return the file name of this shader
-    const char * GetFileName() const { return mName; }
-
-    //! save the source to a file using the file loader
-    void SaveSourceToFile();
-
-    //! returns the proxy of this particular shader    
-    IShaderProxy * GetProxy() { return &mProxy; }
-#endif
 
 protected:
     //! callback which allocates shader data
@@ -124,28 +103,12 @@ protected:
 private:
     PG_DISABLE_COPY(ShaderStage)
     Utils::Vector<ProgramLinkage*> mParentReferences; //! reference to a parent program
-    Io::FileBuffer     mFileBuffer; //! buffer structure containing shader source
+    Utils::Vector<ShaderSourceRef> mIncludeReferences; //! reference to a #include piece of source
     Alloc::IAllocator* mAllocator; //! Allocator to use when creating this object
     IShaderFactory   * mFactory; //! reference to GPU shader factory
     ShaderType         mType; //! type of shader stage
-    bool               mIsInDestructor;
+    bool               mIsInDestructor; //hack state variable to avoid destruction on a callback
 
-//! editor metadata
-#if PEGASUS_ENABLE_PROXIES
-    //! sets internal reference to shader tracker
-    //! this is needed so when the shader is deleted, it can remove itself from the tracker
-    //! \param tracker the shader tracker to reference.
-    void SetShaderTracker(ShaderTracker * tracker) {mShaderTracker = tracker;}
-
-    //! Filename metadata
-    static const int METADATA_NAME_LENGTH = 256;
-    char mName[METADATA_NAME_LENGTH];
-    char mPath[METADATA_NAME_LENGTH];
-    char mFullPath[METADATA_NAME_LENGTH * 2];
-    ShaderTracker * mShaderTracker; //! reference to tracker
-    ShaderProxy mProxy;
-
-#endif
 
 };
 

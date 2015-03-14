@@ -21,14 +21,14 @@ namespace Pegasus
 namespace Shader
 {
 
-class ShaderStage;
+class ShaderSource;
 class IUserData;
 
 //! Shader proxy implementation
 class ShaderProxy : public IShaderProxy
 {
 public:
-    explicit ShaderProxy(ShaderStage * object);
+    explicit ShaderProxy(ShaderSource * object);
     virtual ~ShaderProxy(){}
 
     //! \return gets the shader type
@@ -48,9 +48,6 @@ public:
     //! \param source size to copy 
     virtual void SetSource(const char * source, int sourceSize);
     
-    //! Saves the current shader source to a file
-    virtual void SaveSourceToFile();
-
     //! Sets the user data for this particular shader
     //! \param userData. the user data to retrieve
     virtual void SetUserData(Pegasus::Graph::IGraphUserData * userData);
@@ -69,10 +66,10 @@ public:
     virtual long long GetGuid() const { return reinterpret_cast<long long>(mObject); }
 
     //! \return the object belonging to this proxy
-    ShaderStage* GetObject() { return mObject; }
+    ShaderSource* GetObject() { return mObject; }
 
     //! \return the object belonging to this proxy
-    const ShaderStage* GetObject() const { return mObject; }
+    const ShaderSource* GetObject() const { return mObject; }
 
     //! Forces compilation on the internal object
     virtual void Compile();
@@ -80,7 +77,7 @@ public:
 private:
 
     //! internal implementation
-    ShaderStage * mObject;
+    ShaderSource * mObject;
 };
 
 }

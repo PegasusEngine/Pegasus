@@ -33,6 +33,7 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Proxy\ShaderManagerProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Proxy\ShaderProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderManager.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderSource.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderStage.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderTracker.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\IProgramProxy.h" />
@@ -45,6 +46,7 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\Proxy\ShaderManagerProxy.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\Proxy\ShaderProxy.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderManager.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderSource.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderStage.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderTracker.cpp" />
   </ItemGroup>

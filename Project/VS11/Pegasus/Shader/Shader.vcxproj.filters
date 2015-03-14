@@ -53,6 +53,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Proxy\ShaderProxy.h">
       <Filter>Include\Proxy</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderSource.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderManager.cpp">
@@ -75,6 +78,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\Proxy\ShaderProxy.cpp">
       <Filter>Source\Proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderSource.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

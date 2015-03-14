@@ -12,7 +12,7 @@
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/Shader/ShaderTracker.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
-#include "Pegasus/Shader/ShaderStage.h"
+#include "Pegasus/Shader/ShaderSource.h"
 #include "Pegasus/Allocator/IAllocator.h"
 
 using namespace Pegasus;
@@ -21,7 +21,7 @@ using namespace Pegasus::Shader;
 
 ShaderTracker::ShaderTracker(Alloc::IAllocator* alloc)
 :
-    mShaderStages(alloc), mProgramLinkages(alloc)
+    mShaderSources(alloc), mProgramLinkages(alloc)
 {
 }
 
@@ -30,9 +30,9 @@ void ShaderTracker::InsertProgram(ProgramLinkage * program)
     mProgramLinkages.PushEmpty() = program;
 }
 
-void ShaderTracker::InsertShader (ShaderStage * shader)
+void ShaderTracker::InsertShader (ShaderSource * shader)
 {
-    mShaderStages.PushEmpty() = shader;
+    mShaderSources.PushEmpty() = shader;
 }    
 
 void ShaderTracker::DeleteProgram(ProgramLinkage * program)
@@ -47,22 +47,22 @@ void ShaderTracker::DeleteProgram(ProgramLinkage * program)
     }
 }
 
-void ShaderTracker::DeleteShader (ShaderStage * shader)
+void ShaderTracker::DeleteShader (ShaderSource * shader)
 {
-    for (int i = 0; i < mShaderStages.GetSize(); ++i)
+    for (int i = 0; i < mShaderSources.GetSize(); ++i)
     {
-        if (mShaderStages[i] == shader)
+        if (mShaderSources[i] == shader)
         {
-            mShaderStages.Delete(i);
+            mShaderSources.Delete(i);
             return;
         }
     }
 }
 
-ShaderStage* ShaderTracker::DeleteShader (int id)
+ShaderSource* ShaderTracker::DeleteShader (int id)
 {
-    ShaderStage* stage = mShaderStages[id];
-    mShaderStages.Delete(id);
+    ShaderSource* stage = mShaderSources[id];
+    mShaderSources.Delete(id);
     return stage;
 }
 
@@ -73,11 +73,11 @@ ProgramLinkage* ShaderTracker::DeleteProgram(int id)
     return prog;
 }
 
-int ShaderTracker::FindShaderIndex(ShaderStage* shader) const
+int ShaderTracker::FindShaderIndex(ShaderSource* shader) const
 {
-    for (int i = 0; i < mShaderStages.GetSize(); ++i)
+    for (int i = 0; i < mShaderSources.GetSize(); ++i)
     {
-        if (mShaderStages[i] == shader)
+        if (mShaderSources[i] == shader)
         {
             return i;
         }
@@ -106,11 +106,11 @@ ProgramLinkage*  ShaderTracker::GetProgram(int id) const
     return nullptr;
 }
 
-ShaderStage*  ShaderTracker::GetShaderStage(int id) const
+ShaderSource*  ShaderTracker::GetShaderSource(int id) const
 {
     if (id >= 0 && id < ShaderSize())
     {
-        return mShaderStages[id];
+        return mShaderSources[id];
     }
     return nullptr;
 }

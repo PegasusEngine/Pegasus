@@ -72,6 +72,10 @@ public:
     //! \return Filesize.
     int GetFileSize() const { return mFileSize; }
 
+    //! Returns allocator
+    //! \return allocator
+    Alloc::IAllocator* GetAllocator() const { return mAllocator; }
+
 private:
 
     Alloc::IAllocator* mAllocator; //!< Allocator used to create the buffer

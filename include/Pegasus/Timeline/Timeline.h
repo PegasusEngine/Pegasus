@@ -248,6 +248,10 @@ public:
     //! \return the script tracker
     ScriptTracker* GetScriptTracker() { return &mScriptTracker; }
 
+    //! Flushes script to asset internally.
+    //! \return IO error
+    void FlushScriptToAsset(TimelineScriptIn script);
+
 
 #if PEGASUS_ENABLE_PROXIES
 

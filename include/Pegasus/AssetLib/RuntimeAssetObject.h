@@ -34,6 +34,9 @@ public:
     //! Destructor
     virtual ~RuntimeAssetObject(){ OnAssetRuntimeDestroyed(); }
 
+    //! Returns the parent asset of this object
+    //! \return the parent
+    Asset* GetOwnerAsset() const { return mAsset; }
 
 private:
     //! Connects an asset to this serializable runtime object
@@ -42,10 +45,6 @@ private:
 
     //! Call this when an asset has been destroyed
     void OnAssetRuntimeDestroyed();
-
-    //! Returns the parent asset of this object
-    //! \return the parent
-    Asset* GetParent() const { return mAsset; }
 
     //! the asset connected
     Asset* mAsset;

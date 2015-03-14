@@ -102,8 +102,6 @@ public:
     //! Gets the proxy 
     //! \return Proxy to this script
     TimelineScriptProxy* GetProxy() { return &mProxy; };
-
-    void SaveScriptToFile();
 #endif
 
     int GetSerialVersion() const { return mSerialVersion; }

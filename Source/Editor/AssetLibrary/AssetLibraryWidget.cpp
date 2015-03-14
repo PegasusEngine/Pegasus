@@ -104,6 +104,9 @@ AssetLibraryWidget::AssetLibraryWidget(QWidget * parent, CodeEditorWidget * edit
     connect(mCodeEditorWidget, SIGNAL(RequestDisableAssetLibraryUi()),
         this, SLOT(OnCompilationRedrawBegin()), Qt::DirectConnection);
 
+    connect(mCodeEditorWidget, SIGNAL(RequestSaveCode(CodeUserData*)),
+            this, SLOT(OnSaveCode(CodeUserData*)));
+
     connect(mSourceCodeManagerEventListener, SIGNAL(OnSignalSaveSuccess()),
         mCodeEditorWidget, SLOT(SignalSavedFileSuccess()), Qt::QueuedConnection);
 
@@ -223,6 +226,54 @@ void AssetLibraryWidget::SaveAsFile(const QString& filter, int type)
         }
     }
 }
+
+//----------------------------------------------------------------------------------------
+
+void AssetLibraryWidget::OnSaveCode(CodeUserData* code)
+{
+    Application* app = Editor::GetInstance().GetApplicationManager().GetApplication();
+    if (app != nullptr)
+    {
+        Pegasus::App::IApplicationProxy* appProxy = app->GetApplicationProxy();
+        ED_ASSERTSTR(appProxy != nullptr, "App proxy can't be null");
+        Pegasus::AssetLib::IAssetLibProxy* assetLib = appProxy->GetAssetLibProxy();
+        Pegasus::Core::ISourceCodeProxy* codeProxy = code->GetSourceCode();   
+        //factories:
+        int dispatchType = code->GetDispatchType();
+        switch(dispatchType)
+        {
+        case SHADER:
+            {
+                Pegasus::Shader::IShaderManagerProxy*  shaderManagerProxy  = appProxy->GetShaderManagerProxy();
+                Pegasus::AssetLib::IAssetProxy* ass = shaderManagerProxy->GetShaderAsset(static_cast<Pegasus::Shader::IShaderProxy*>(codeProxy));
+                ED_ASSERTSTR(ass != nullptr, "Saving asset: cannot be an invalid value!");
+
+                //TODO: race condition perhaps? if so we need to push this to render thread, then render thread back to ui thread. urgh ugly!
+                shaderManagerProxy->FlushShaderToAsset(static_cast<Pegasus::Shader::IShaderProxy*>(codeProxy));
+                Pegasus::Io::IoError err = assetLib->SaveAsset(ass);
+                mCodeEditorWidget->PostStatusBarMessage(err == Pegasus::Io::ERR_NONE ? tr("Saved file successfully.") : tr("IO Error saving file."));
+                break;
+            }
+        case BLOCKSCRIPT:
+            {
+                Pegasus::Timeline::ITimelineProxy*  timelineManager  = appProxy->GetTimelineProxy();
+                Pegasus::AssetLib::IAssetProxy* ass = timelineManager->GetScriptAsset(codeProxy);
+                ED_ASSERTSTR(ass != nullptr, "Saving asset: cannot be an invalid value!");
+
+                //TODO: race condition perhaps? if so we need to push this to render thread, then render thread back to ui thread. urgh ugly!
+                timelineManager->FlushScriptToAsset(codeProxy);
+                Pegasus::Io::IoError err = assetLib->SaveAsset(ass);
+                mCodeEditorWidget->PostStatusBarMessage(err == Pegasus::Io::ERR_NONE ? tr("Saved file successfully.") : tr("IO Error saving file."));
+                break;
+                break;
+            }
+        default:
+            ED_FAILSTR("Invalid dispatch type for asset dispatched!");
+        }
+    }
+}
+
+//----------------------------------------------------------------------------------------
 
 void AssetLibraryWidget::OnNewMesh(bool enabled)
 {

@@ -78,6 +78,9 @@ signals:
     //! called when the editor feels like closing code
     void RequestCloseCode(CodeUserData* userData);
 
+    //! Call that request save on the code user data passed
+    void RequestSaveCode(CodeUserData* userData);
+
 public slots:
 
     //! opens a CodeUserData in the text editor
@@ -96,6 +99,9 @@ public slots:
 
     //! called whenever settings have been changed
     void OnSettingsChanged();
+
+    //! Sets the status bar message
+    void PostStatusBarMessage(const QString& string);
 
 private slots:
     //! slot called whenever a tab changes its text.
@@ -169,10 +175,6 @@ private:
     void SetupUi();
 
     void UpdateInstantCompilationButton(CodeUserData* code);
-
-
-    //! Sets the status bar message
-    void PostStatusBarMessage(const QString& string);
 
     //! ui component pool
     struct Ui

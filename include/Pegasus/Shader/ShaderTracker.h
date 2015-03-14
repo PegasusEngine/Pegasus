@@ -26,7 +26,7 @@ namespace Shader
 {
 
 class ProgramLinkage;
-class ShaderStage;
+class ShaderSource;
 
 //! shader tracker class. Contains and tracks of all the shaders and programs in the application
 //! \note warning: this container's insertion and deletion operations cost O(n)
@@ -42,7 +42,7 @@ public:
 
     //! Inserts a shader to the container
     //! \param reference to a shader
-    void InsertShader (ShaderStage * shader);    
+    void InsertShader (ShaderSource * shader);    
 
     //! Deletes a program within the container
     //! \param program reference to a program to remove from container
@@ -50,13 +50,13 @@ public:
     
     //! Deletes a shader from the container
     //! \param shader reference to a shader to remove from container
-    void DeleteShader (ShaderStage * shader);
+    void DeleteShader (ShaderSource * shader);
 
     //! Deletes a shader from the container
     //! \param id the id of the shader to remove
     //! \return returns the deleted shader,
     //!         otherwise returns null if it cant find it
-    ShaderStage* DeleteShader (int id);
+    ShaderSource* DeleteShader (int id);
     
     //! Deletes a program within the container
     //! \param id the id of the program to delete
@@ -67,7 +67,7 @@ public:
     //! Finds the index of a shader
     //! \param shader target shader to find
     //! \return -1 if not found, otherwise the index
-    int FindShaderIndex(ShaderStage* shader) const;
+    int FindShaderIndex(ShaderSource* shader) const;
     
     //! Finds the index of a program
     //! \param program target program to find
@@ -80,10 +80,10 @@ public:
 
     //! \param id index position of shader to retrieve
     //! \return the shader specified in the index, null otherwise
-    ShaderStage*     GetShaderStage(int id) const;
+    ShaderSource*     GetShaderSource(int id) const;
 
     //! \return returns the number of shaders
-    int ShaderSize() const { return mShaderStages.GetSize(); }
+    int ShaderSize() const { return mShaderSources.GetSize(); }
 
     //! \return returns the number of programs
     int ProgramSize() const { return mProgramLinkages.GetSize(); }
@@ -93,7 +93,7 @@ private:
     Utils::Vector<ProgramLinkage*> mProgramLinkages;
 
     //! pool of shader linkage references
-    Utils::Vector<ShaderStage*> mShaderStages;
+    Utils::Vector<ShaderSource*> mShaderSources;
 };
 
 }

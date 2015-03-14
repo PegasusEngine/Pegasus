@@ -246,8 +246,27 @@ bool TimelineProxy::IsTimelineScript(const AssetLib::IAssetProxy* asset) const
     return mTimeline->IsTimelineScript(static_cast<const AssetLib::AssetProxy*>(asset)->GetObject());
 }
 
+void TimelineProxy::FlushScriptToAsset(Core::ISourceCodeProxy* code)
+{
+    TimelineScriptIn timelineScript = static_cast<TimelineScriptProxy*>(code)->GetObject();
+    mTimeline->FlushScriptToAsset(timelineScript);
+}
+
+
+AssetLib::IAssetProxy* TimelineProxy::GetScriptAsset(Core::ISourceCodeProxy* code) const
+{
+    TimelineScript* timelineScript = static_cast<TimelineScriptProxy*>(code)->GetObject();
+    if (timelineScript->GetOwnerAsset() != nullptr)
+    {
+        return timelineScript->GetOwnerAsset()->GetProxy();
+    }
+    return nullptr;
+}
+
 
 }   // namespace Timeline
 }   // namespace Pegasus
+
+
 
 #endif  // PEGASUS_ENABLE_PROXIES

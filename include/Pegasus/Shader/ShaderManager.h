@@ -2,6 +2,8 @@
 #define PEGASUS_SHADERMANAGER_H
 
 #include "Pegasus/Shader/ProgramLinkage.h"
+#include "Pegasus/Shader/ShaderSource.h"
+#include "Pegasus/Shader/ShaderStage.h"
 #include "Pegasus/Shader/Proxy/ShaderManagerProxy.h"
 
 #if PEGASUS_ENABLE_PROXIES
@@ -50,6 +52,12 @@ public:
     //! \return null on error, stage on success 
     ShaderStageReturn LoadShader(const char* filename);
 
+    //! Load a shader stage from a file.
+    //! \param filename
+    //!             .h - loads a shader header
+    //! \return null on error, stage on success 
+    ShaderSourceReturn LoadHeader(const char* filename);
+
     //! Loads a program from a file asset
     ProgramLinkageRef LoadProgram(const char * filename);
 
@@ -63,6 +71,11 @@ public:
     //! \param asset the asset to be used as a database to create a node
     //! \return node pointer to return.
     ShaderStageReturn CreateShader(AssetLib::Asset* asset);
+
+    //! Requests creation of a Shader from an asset. This is the core function that populates a node from an asset
+    //! \param asset the asset to be used as a database to create a node
+    //! \return node pointer to return.
+    ShaderSourceReturn CreateHeader(AssetLib::Asset* asset);
 
     //! Requests creation of a Program from an asset. This is the core function that populates a node from an asset
     //! \param asset the asset to be used as a database to create a node
@@ -101,6 +114,10 @@ public:
     //! \param the extension
     //! \return the shader type
     ShaderType DeriveShaderType(const char* extension) const;
+
+    //! Saves a shader stage to an asset that is held internally by the shader.
+    //! \param shaderStage the shader stage to record to
+    void FlushShaderToAsset(Pegasus::Shader::ShaderSourceIn shaderStage);
 
 private:
     //! Internal function. registers the node types.

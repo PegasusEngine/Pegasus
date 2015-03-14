@@ -289,37 +289,3 @@ void TimelineScript::OnCompilationEnd(bool success)
 
 }
 
-
-#if PEGASUS_ENABLE_PROXIES
-void TimelineScript::SaveScriptToFile()
-{
-/*
-    Io::IOManager* ioManager = mAppContext->GetIOManager();
-    Pegasus::Io::IoError err = ioManager->SaveFileToBuffer(mScriptName, mFileBuffer);
-    if (err == Pegasus::Io::ERR_NONE)
-    {
-        GRAPH_EVENT_DISPATCH(
-            this,
-            CompilerEvents::FileOperationEvent, 
-            // Event specific arguments:
-            CompilerEvents::FileOperationEvent::IO_FILE_SAVE_SUCCESS,
-            err,
-            mScriptName,
-            ""
-        );
-    }
-    else
-    {
-        GRAPH_EVENT_DISPATCH (
-            this,
-            CompilerEvents::FileOperationEvent, 
-            // Event specific arguments:
-            CompilerEvents::FileOperationEvent::IO_FILE_SAVE_ERROR,
-            err,
-            mScriptName,
-            "Error saving file :/"
-        );
-    }
-*/
-}
-#endif

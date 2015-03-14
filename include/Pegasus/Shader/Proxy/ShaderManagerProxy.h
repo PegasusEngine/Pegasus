@@ -20,7 +20,7 @@
 #include "Pegasus/Shader/ShaderTracker.h"
 #include "Pegasus/Shader/Proxy/ProgramProxy.h"
 #include "Pegasus/Utils/Vector.h"
-#include "Pegasus/Shader/ShaderStage.h"
+#include "Pegasus/Shader/ShaderSource.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 
 namespace Pegasus {
@@ -103,11 +103,22 @@ public:
     //! \return true if this is a program, false otherwise
     virtual bool IsProgram(const AssetLib::IAssetProxy* asset) const;
 
+    //! Returns the asset of this shader. If it does not have it then returns null
+    //! \return asset proxy attached to this shader. If it does not exist then returns null
+    virtual AssetLib::IAssetProxy* GetShaderAsset(IShaderProxy* shader);
+
+    //! Returns the asset of this program. If it does not have it then returns null
+    //! \return asset proxy attached to this program. If it does not exist then returns null
+    virtual AssetLib::IAssetProxy* GetProgramAsset(IProgramProxy* program);
+
+    //! Flushes a shader to its containing asset.
+    virtual void FlushShaderToAsset(IShaderProxy* shader);
+
 private:
 
     //! reference to internal program
     ShaderManager * mObject;
-    Utils::Vector<ShaderStageRef>    mOpenedShaders;
+    Utils::Vector<ShaderSourceRef>    mOpenedShaders;
     Utils::Vector<ProgramLinkageRef> mOpenedPrograms;
 };
 }

@@ -51,9 +51,6 @@ public:
     //! \param source size to copy 
     virtual void SetSource(const char * source, int sourceSize);
 
-    //! Saves the current source code file source to a file
-    virtual void SaveSourceToFile();
-
     //! Sets the user data for this particular source code file
     //! \param userData. the user data to retrieve
     virtual void SetUserData(Pegasus::Graph::IGraphUserData * userData);

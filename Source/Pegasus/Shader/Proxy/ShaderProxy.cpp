@@ -12,10 +12,10 @@
 #if PEGASUS_ENABLE_PROXIES
 
 #include "Pegasus/Shader/Proxy/ShaderProxy.h"
-#include "Pegasus/Shader/ShaderStage.h"
+#include "Pegasus/Shader/ShaderSource.h"
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
 
-Pegasus::Shader::ShaderProxy::ShaderProxy(Pegasus::Shader::ShaderStage * object)
+Pegasus::Shader::ShaderProxy::ShaderProxy(Pegasus::Shader::ShaderSource * object)
 : mObject(object)
 {
 }
@@ -38,11 +38,6 @@ void Pegasus::Shader::ShaderProxy::GetSource(const char ** outSrc, int& outSize)
 void Pegasus::Shader::ShaderProxy::SetSource(const char * src, int size)
 {
     mObject->SetSource(src, size);
-}
-
-void Pegasus::Shader::ShaderProxy::SaveSourceToFile()
-{
-    mObject->SaveSourceToFile();
 }
 
 void Pegasus::Shader::ShaderProxy::SetUserData(Pegasus::Graph::IGraphUserData * userData)

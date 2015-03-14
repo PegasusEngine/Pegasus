@@ -43,32 +43,24 @@ static struct PegasusExtensionMappings
 } // namespace PegasusShaderPrivate
 
 Pegasus::Shader::ShaderStage::ShaderStage(Pegasus::Alloc::IAllocator * allocator, Pegasus::Alloc::IAllocator * nodeDataAllocator)
-    : Pegasus::Graph::GeneratorNode(allocator, nodeDataAllocator), 
-      mAllocator(allocator),
+    : 
+      Pegasus::Shader::ShaderSource(allocator, nodeDataAllocator),
       mType(Pegasus::Shader::SHADER_STAGE_INVALID),
       mFactory(nullptr),
       mParentReferences(allocator),
+      mIncludeReferences(allocator),
       mIsInDestructor(false)
-#if PEGASUS_ENABLE_PROXIES
-      , mShaderTracker(nullptr)
-      , mProxy(this)
-#endif
 {
-    GRAPH_EVENT_INIT_DISPATCHER
 }
 
 Pegasus::Shader::ShaderStage::~ShaderStage()
 {
+    ClearChildrenIncludes();
+
     if (GetData() != nullptr)
     {
         mFactory->DestroyShaderGPUData(&(*GetData()));
     }
-#if PEGASUS_ENABLE_PROXIES
-    if (mShaderTracker != nullptr)
-    {
-        mShaderTracker->DeleteShader(this);
-    }
-#endif
 
     mIsInDestructor = true;
     int parentSizes = mParentReferences.GetSize();
@@ -78,10 +70,6 @@ Pegasus::Shader::ShaderStage::~ShaderStage()
         PG_ASSERT( &(*reference->FindShaderStage(mType)) == this);
         reference->RemoveShaderStage(mType);
     }
-
-#if PEGASUS_ENABLE_PROXIES
-    GRAPH_EVENT_DESTROY_USER_DATA(&mProxy, "ShaderStage", GetEventListener());
-#endif
 
 }
 
@@ -146,33 +134,13 @@ void Pegasus::Shader::ShaderStage::SetSource(Pegasus::Shader::ShaderType type, c
 {
 
     InvalidateData();
-
-    //reallocate buffer size if more space requested on recompilation
-    if (srcSize > mFileBuffer.GetFileSize())
-    {
-        mFileBuffer.DestroyBuffer();
-        mFileBuffer.OwnBuffer (
-            mAllocator,
-            PG_NEW_ARRAY(mAllocator, -1, "shader src", Pegasus::Alloc::PG_MEM_PERM, char, srcSize),
-            srcSize
-        );
-    }
-    mFileBuffer.SetFileSize(srcSize);
-    PG_ASSERTSTR(mFileBuffer.GetBufferSize() >= srcSize, "Not enough size to hold the string buffer!");
-    Pegasus::Utils::Memcpy(mFileBuffer.GetBuffer(),src,srcSize);
+    Pegasus::Shader::ShaderSource::SetSource(src, srcSize);
     mType = type;
 }
 
 void Pegasus::Shader::ShaderStage::SetSource(const char * src, int srcSize)
 {
-    PG_ASSERT(mType != Pegasus::Shader::SHADER_STAGE_INVALID);
     SetSource(mType, src, srcSize);
-}
-
-void Pegasus::Shader::ShaderStage::GetSource ( const char ** outSrc, int& outSize) const
-{
-    *outSrc = mFileBuffer.GetBuffer(); 
-    outSize = mFileBuffer.GetFileSize();
 }
 
 void Pegasus::Shader::ShaderStage::InvalidateData()
@@ -189,8 +157,21 @@ Pegasus::Graph::NodeData * Pegasus::Shader::ShaderStage::AllocateData() const
     return PG_NEW(GetNodeDataAllocator(), -1, "Shader Node Data", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Graph::NodeData(GetNodeDataAllocator());
 }
 
+void Pegasus::Shader::ShaderStage::ClearChildrenIncludes()
+{
+    for (int i = 0; i < mIncludeReferences.GetSize(); ++i)
+    {   
+        Pegasus::Shader::ShaderSourceRef& src = mIncludeReferences[i];
+        src->UnregisterParent(this);
+        src = nullptr; //potential destruction of source
+    }
+    mIncludeReferences.Clear();
+}
+
 void Pegasus::Shader::ShaderStage::GenerateData()
 {
+    ClearChildrenIncludes();
+
     PG_ASSERT(GetData() != nullptr);
 
 #if PEGASUS_ENABLE_DETAILED_LOG
@@ -213,73 +194,12 @@ void Pegasus::Shader::ShaderStage::GenerateData()
     mFactory->GenerateShaderGPUData(&(*this), &(*GetData()));
 } 
 
-
-//! editor metadata
-#if PEGASUS_ENABLE_PROXIES
-void Pegasus::Shader::ShaderStage::SetFullFilePath(const char * name)
+void Pegasus::Shader::ShaderStage::Include(Pegasus::Shader::ShaderSourceIn inc)
 {
-    int len = 0;
-    if (name)
-    {
-        mFullPath[0] = '\0';
-        PG_ASSERT(Pegasus::Utils::Strlen(name) < METADATA_NAME_LENGTH * 2); //does it all fit?
-        Pegasus::Utils::Strcat(mFullPath, name);
-        int fullLen = Pegasus::Utils::Strlen(name);
-        const char * nameString1 = Pegasus::Utils::Strrchr(name, '/');
-        const char * nameString2 = Pegasus::Utils::Strrchr(name, '\\');
-        const char * nameString = nameString1 > nameString2 ? nameString1 : nameString2;
-        if (nameString != nullptr)
-        {
-            fullLen = fullLen - (nameString - name + 1);
-            Pegasus::Utils::Memcpy(mName, nameString + 1, fullLen);
-            mName[fullLen] = '\0';
-            fullLen = nameString - name + 1;
-            Pegasus::Utils::Memcpy(mPath, name, fullLen);
-            mPath[fullLen] = '\0';
-        }
-        else
-        {
-            len = fullLen < Pegasus::Shader::ShaderStage::METADATA_NAME_LENGTH - 1 ? fullLen : Pegasus::Shader::ShaderStage::METADATA_NAME_LENGTH - 1;
-            Pegasus::Utils::Memcpy(mName, name, len);
-            mName[len] = '\0';
-            mPath[0] = '\0';
-        }
-    }
-} 
-
-void Pegasus::Shader::ShaderStage::SaveSourceToFile()
-{
-/*
-    Pegasus::Io::IoError err = mLoader->SaveFileToBuffer(mFullPath, mFileBuffer);
-    if (err == Pegasus::Io::ERR_NONE)
-    {
-        GRAPH_EVENT_DISPATCH(
-            this,
-            CompilerEvents::FileOperationEvent, 
-            // Event specific arguments:
-            CompilerEvents::FileOperationEvent::IO_FILE_SAVE_SUCCESS,
-            err,
-            mFullPath,
-            ""
-        );
-    }
-    else
-    {
-        GRAPH_EVENT_DISPATCH (
-            this,
-            CompilerEvents::FileOperationEvent, 
-            // Event specific arguments:
-            CompilerEvents::FileOperationEvent::IO_FILE_SAVE_ERROR,
-            err,
-            mFullPath,
-            "Error saving file :/"
-        );
-    }
-*/
-
+    *(new (&mIncludeReferences.PushEmpty()) Pegasus::Shader::ShaderSourceRef) = inc;
+    inc->RegisterParent(this);
 }
 
-#endif
 
 
 Pegasus::Graph::NodeReturn Pegasus::Shader::ShaderStage::CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)

@@ -47,6 +47,11 @@ public:
     //! Returns the asset attempting to load
     virtual Io::IoError LoadAsset(const char* path, IAssetProxy** assetProxy);
 
+    //! Saves an asset to disk
+    //! \param asset the asset to save
+    //! \return the error code
+    virtual Io::IoError SaveAsset(IAssetProxy* asset);
+
     //! Creates a blank asset. Depending on the extension is either structured or raw.
     //! \param the path to build the blank asset
     //! \param the asset proxy pointer to fill in 

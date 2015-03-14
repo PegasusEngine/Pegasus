@@ -52,6 +52,11 @@ Io::IoError AssetLibProxy::CreateBlankAsset(const char* path, IAssetProxy** asse
     return err;
 }
 
+Io::IoError AssetLibProxy::SaveAsset(IAssetProxy* asset)
+{
+    return mAssetLib->SaveAsset(static_cast<AssetProxy*>(asset)->GetObject());
+}
+
 
 #else
 

@@ -77,6 +77,7 @@ void Pegasus::Shader::ShaderManager::RegisterAllNodes()
 
     REGISTER_SHADER_NODE(ProgramLinkage);
     REGISTER_SHADER_NODE(ShaderStage);
+    REGISTER_SHADER_NODE(ShaderSource);
 }
 
 Pegasus::Shader::ShaderType Pegasus::Shader::ShaderManager::DeriveShaderType(const AssetLib::Asset* asset) const
@@ -302,6 +303,99 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::LoadShader(co
     return nullptr;
 }
 
+Pegasus::Shader::ShaderSourceReturn Pegasus::Shader::ShaderManager::LoadHeader(const char* filename)
+{    
+    AssetLib::Asset* asset = nullptr;
+    Io::IoError err = mAssetLib->LoadAsset(filename, &asset);
+    if (err == Io::ERR_NONE && asset != nullptr)
+    {
+        if (asset->GetFormat() != Pegasus::AssetLib::Asset::FMT_RAW)
+        {
+            PG_LOG('ERR_', "Invalid shader extension");
+            mAssetLib->DestroyAsset(asset);
+            return nullptr;
+        }
+    
+        //has this asset been already built?
+        if (asset->GetRuntimeData() != nullptr)
+        {
+            //TODO: dangerous cast! we could be including a texture file!
+            Pegasus::Shader::ShaderSourceRef shaderSource = static_cast<Pegasus::Shader::ShaderSource*>(asset->GetRuntimeData());
+            return shaderSource;
+        }
+    
+        Pegasus::Shader::ShaderSourceRef stage = mNodeManager->CreateNode("ShaderSource");
+    
+        Io::FileBuffer* fb = asset->Raw();
+        stage->SetSource(fb->GetBuffer(), fb->GetFileSize());
+    
+    #if PEGASUS_USE_GRAPH_EVENTS
+        stage->SetEventListener(mEventListener);
+    #endif
+
+    #if PEGASUS_ENABLE_PROXIES
+        //TODO: kill this
+        stage->SetFullFilePath(asset->GetPath());
+    #endif
+    
+    
+    #if PEGASUS_ENABLE_PROXIES
+        GRAPH_EVENT_INIT_USER_DATA(stage->GetProxy(), "ShaderStage", mEventListener);
+    #endif
+
+        mAssetLib->BindAssetToRuntimeObject(asset, &(*stage));
+
+        return stage;
+    }
+    else
+    {
+        PG_LOG('ERR_', "Error loading shader %s", filename);
+    }
+    
+    return nullptr;
+}
+
+Pegasus::Shader::ShaderSourceReturn Pegasus::Shader::ShaderManager::CreateHeader(AssetLib::Asset* asset)
+{    
+    if (asset->GetFormat() != Pegasus::AssetLib::Asset::FMT_RAW)
+    {
+        PG_LOG('ERR_', "Invalid shader extension");
+        mAssetLib->DestroyAsset(asset);
+        return nullptr;
+    }
+    
+    //has this asset been already built?
+    if (asset->GetRuntimeData() != nullptr)
+    {
+        //TODO: dangerous cast! we could be including a texture file!
+        Pegasus::Shader::ShaderSourceRef shaderSource = static_cast<Pegasus::Shader::ShaderSource*>(asset->GetRuntimeData());
+        return shaderSource;
+    }
+    
+    Pegasus::Shader::ShaderSourceRef stage = mNodeManager->CreateNode("ShaderSource");
+    
+    Io::FileBuffer* fb = asset->Raw();
+    stage->SetSource(fb->GetBuffer(), fb->GetFileSize());
+    
+    #if PEGASUS_USE_GRAPH_EVENTS
+        stage->SetEventListener(mEventListener);
+    #endif
+
+    #if PEGASUS_ENABLE_PROXIES
+        //TODO: kill this
+        stage->SetFullFilePath(asset->GetPath());
+    #endif
+    
+    
+    #if PEGASUS_ENABLE_PROXIES
+        GRAPH_EVENT_INIT_USER_DATA(stage->GetProxy(), "ShaderStage", mEventListener);
+    #endif
+
+    mAssetLib->BindAssetToRuntimeObject(asset, &(*stage));
+
+    return stage;
+}
+
 Pegasus::Shader::ShaderType Pegasus::Shader::ShaderManager::DeriveShaderType(const char* extension) const
 {
     for (int i = 0; i < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT); ++i)
@@ -314,3 +408,21 @@ Pegasus::Shader::ShaderType Pegasus::Shader::ShaderManager::DeriveShaderType(con
 
     return Pegasus::Shader::SHADER_STAGE_INVALID;
 }
+
+void Pegasus::Shader::ShaderManager::FlushShaderToAsset(Pegasus::Shader::ShaderSourceIn shaderStage)
+{
+    AssetLib::Asset* asset = shaderStage->GetOwnerAsset();
+    const char* src = nullptr;
+    int srcLen = 0;
+    shaderStage->GetSource(&src, srcLen);
+    Io::FileBuffer* fb = asset->Raw();
+    if (srcLen > fb->GetBufferSize())
+    {
+        Pegasus::Alloc::IAllocator* alloc = fb->GetAllocator();
+        fb->DestroyBuffer();
+        fb->OwnBuffer(alloc, PG_NEW_ARRAY(alloc, -1, "", Alloc::PG_MEM_TEMP, char, srcLen), srcLen);
+    }
+    fb->SetFileSize(srcLen);
+    Utils::Memcpy(fb->GetBuffer(), src, srcLen);
+}
+

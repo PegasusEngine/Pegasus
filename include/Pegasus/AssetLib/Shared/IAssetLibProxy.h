@@ -44,6 +44,11 @@ public:
     //! \return IO error in case there was an issue creating the file representing this asset
     virtual Io::IoError CreateBlankAsset(const char* path, IAssetProxy** assetProxy) = 0;
 
+    //! Saves an asset to disk
+    //! \param asset the asset to save
+    //! \return the error code
+    virtual Io::IoError SaveAsset(IAssetProxy* asset) = 0;
+
 };
 
 }

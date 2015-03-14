@@ -106,6 +106,7 @@ public slots:
     void OnNewCS(bool enabled);
     void OnNewTexture(bool enabled);
     void OnNewTimelineScript(bool enabled);
+    void OnSaveCode(CodeUserData* code);
 
 
     //slots on file system changes
