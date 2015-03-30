@@ -56,6 +56,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Shared\ISourceCodeManagerProxy.h">
       <Filter>Include\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\SourceCode.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Assertion.cpp">
@@ -69,6 +72,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Platform\Time_Win32.cpp">
       <Filter>Source\Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Core\SourceCode.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

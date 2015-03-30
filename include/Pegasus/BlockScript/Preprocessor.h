@@ -25,6 +25,8 @@ namespace Alloc
 namespace BlockScript
 {
 
+class IFileIncluder;
+
 //! Internal compiler preprocessor directive controller / parser
 class Preprocessor
 {
@@ -44,9 +46,11 @@ public:
     struct Definition
     {
         const char* mName;
+        int         mBufferSize;
         const char* mValue;
+        bool        mIsInclude;
     public:
-        Definition() : mName(nullptr), mValue(nullptr) {}
+        Definition() : mName(nullptr), mValue(nullptr), mIsInclude(false), mBufferSize(0) {}
     };
 
     //! Constructor
@@ -118,7 +122,18 @@ public:
     //!  returns the String argument pushed
     const char* GetStringArg() const { return Top().mStringArg; }
 
+    //! sets the file includer handler
+    void SetFileIncluder(IFileIncluder* fileIncluder) { mFileIncluder = fileIncluder; }
+
+    //! gets the file includer handler
+    IFileIncluder* GetFileIncluder() const { return mFileIncluder; }
     
+    //! \return true if there is a buffer pending, false otherwise
+    bool HasIncludeBuffer() const { return mHasInclude; }
+
+    //! gets the include buffer
+    Definition* GetIncludeDefinition() { return mNextIncludeDefinition; }
+
 private:
 
     //! internal state structure of a preprocessor frame
@@ -138,8 +153,17 @@ private:
     //! vector holding macro definitions
     Utils::Vector<Definition> mDefinitions;
 
+    //! vector holding macro include buffers
+    Utils::Vector<Definition> mIncludeDefs;
+
     //! vector holding states
     Utils::Vector<State> mStateStack;
+
+    //! includer callback
+    IFileIncluder* mFileIncluder;
+
+    bool mHasInclude;
+    Definition* mNextIncludeDefinition;
 };
 
 }

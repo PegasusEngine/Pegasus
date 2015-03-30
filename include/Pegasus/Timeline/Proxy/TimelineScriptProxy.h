@@ -29,12 +29,12 @@ namespace Pegasus
 namespace Timeline
 {
 
-class TimelineScript;
+class TimelineSource;
 
 class TimelineScriptProxy : public Core::ISourceCodeProxy
 {
 public:
-    TimelineScriptProxy(TimelineScript* helper);
+    TimelineScriptProxy(TimelineSource* helper);
     ~TimelineScriptProxy();
 
     //! Gets the name of the source code file
@@ -71,13 +71,13 @@ public:
     virtual void Compile();
 
     //! \returns the internal object
-    TimelineScript* GetObject() { return mTimelineScript; }
+    TimelineSource* GetObject() { return mTimelineSource; }
 
     //! \returns the internal const object
-    const TimelineScript* GetObject() const { return mTimelineScript; }
+    const TimelineSource* GetObject() const { return mTimelineSource; }
 
 private:
-    TimelineScript* mTimelineScript;
+    TimelineSource* mTimelineSource;
 
 };
 

@@ -77,6 +77,7 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\FunTable.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\IBlockScriptCompilerListener.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\IddStrPool.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\IFileIncluder.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\IVisitor.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\Preprocessor.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\PrettyPrint.h" />

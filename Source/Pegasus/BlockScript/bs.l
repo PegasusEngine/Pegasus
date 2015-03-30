@@ -33,6 +33,7 @@
     #include "Pegasus/BlockScript/BlockScriptAst.h"
     #include "Pegasus/BlockScript/Preprocessor.h"
     #include "Pegasus/BlockScript/bs.parser.hpp"
+    #include "Pegasus/BlockScript/IFileIncluder.h"
     #include "Pegasus/Utils/String.h"
     #include "Pegasus/Utils/Memcpy.h"
     #include "Pegasus/BlockScript/CompilerState.h"
@@ -143,7 +144,6 @@
              const char* copiedString = yyextra->mBuilder->AllocStrImm(yyextra->mStringAccumulator);
              pp.PushCode(copiedString);
              yyextra->mStringAccumulatorPos = 0;
-             yyextra->mBuilder->IncrementLine(); 
              const char* msg = nullptr;
              if (!pp.FlushCommand(&msg))
              {
@@ -365,6 +365,14 @@
                     }
                     else
                     {
+                        if (pp.HasIncludeBuffer())
+                        {
+                            const char* buffer = nullptr;
+                            int bufferSize = 0;
+                            yyextra->PushDefineStack(YY_CURRENT_BUFFER, pp.GetIncludeDefinition());
+                            yypush_buffer_state(yy_create_buffer(NULL, YY_BUF_SIZE, yyscanner), yyscanner);
+                        }
+
                         if (pp.IsIfActive())
                         {
                             BEGIN(yyextra->PopLexerState()); 
@@ -507,19 +515,27 @@ int BS_readInput(struct yyguts_t* yyg, char * buffer, yy_size_t& result, int max
         const Pegasus::BlockScript::Preprocessor::Definition* def = bufferEl->mDef;
         if (def->mValue != nullptr)
         {
-            if (bufferEl->mConsumed)
+            if (bufferEl->mBufferPosition >= def->mBufferSize)
             {
                 result = 0;
             }
             else
             {
-                bufferEl->mConsumed = true;
-                int totalBytes = Pegasus::Utils::Strlen(def->mValue) + 1;        
-                PG_ASSERT(totalBytes < maxToRead);
-			    buffer[0] = '\0';
-                Pegasus::Utils::Strcat(buffer, def->mValue == nullptr ? "" : def->mValue);
-                result = static_cast<yy_size_t>(totalBytes);
+				int bytesLeft = def->mBufferSize - bufferEl->mBufferPosition;
+                int bytesRead = maxToRead > bytesLeft ? bytesLeft : maxToRead;
+                Pegasus::Utils::Memcpy(buffer, def->mValue + bufferEl->mBufferPosition, bytesRead);
+                bufferEl->mBufferPosition += bytesRead;
+                result = static_cast<yy_size_t>(bytesRead);
+
+                if (def->mIsInclude && bufferEl->mBufferPosition >= def->mBufferSize)
+                {
+                    yyextra->GetPreprocessor().GetFileIncluder()->Close(def->mValue);
+                }
             }
+        }
+        else
+        {
+            result = 0;
         }
     }
     else

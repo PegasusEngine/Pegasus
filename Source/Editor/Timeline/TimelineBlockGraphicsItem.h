@@ -107,6 +107,9 @@ signals:
     //! Emitted when the block has been moved by the user
     void BlockMoved();
 
+    //! Emitted when the user does a double click to this block
+    void DoubleClicked(Pegasus::Timeline::IBlockProxy * block);
+
     //------------------------------------------------------------------------------------
     
 protected:
@@ -115,6 +118,7 @@ protected:
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
 
     //------------------------------------------------------------------------------------
 

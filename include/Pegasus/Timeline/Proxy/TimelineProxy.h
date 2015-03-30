@@ -15,7 +15,7 @@
 #if PEGASUS_ENABLE_PROXIES
 
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
-#include "Pegasus/Timeline/TimelineScript.h"
+#include "Pegasus/Timeline/TimelineSource.h"
 #include "Pegasus/Utils/Vector.h"
 
 namespace Pegasus {
@@ -162,13 +162,13 @@ public:
     
 private:
 
-    int FindOpenedScript(TimelineScriptIn script);
+    int FindOpenedScript(TimelineSourceIn script);
 
     //! Proxied timeline object
     Timeline * const mTimeline;
     
     //list of opened scripts
-    Utils::Vector<TimelineScriptRef> mOpenedScripts;
+    Utils::Vector<TimelineSourceRef> mOpenedScripts;
 };
 
 

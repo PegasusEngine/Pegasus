@@ -56,7 +56,7 @@ namespace BlockScript
 class BlockScriptBuilder
 {
 public:
-    explicit BlockScriptBuilder() : mEventListener(nullptr), mCurrentFrame(nullptr), mErrorCount(0), mInFunBody(false), mCurrentLineNumber(1), mReturnTypeContext(nullptr), mScanner(nullptr) {}
+    explicit BlockScriptBuilder() : mEventListener(nullptr), mCurrentFrame(nullptr), mErrorCount(0), mInFunBody(false), mCurrentLineNumber(0), mReturnTypeContext(nullptr), mScanner(nullptr) {}
 	
     struct CompilationResult
     {

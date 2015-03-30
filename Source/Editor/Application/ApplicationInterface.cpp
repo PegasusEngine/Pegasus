@@ -14,10 +14,12 @@
 #include "Application/Application.h"
 #include "AssetLibrary/AssetLibraryWidget.h"
 #include "CodeEditor/CodeEditorWidget.h"
+#include "CodeEditor/SourceCodeManagerEventListener.h"
 
 #include "Pegasus/Preprocessor.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
+#include "Pegasus/Timeline/Shared/IBlockProxy.h"
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
 #include "Pegasus/Window/Shared/IWindowProxy.h"
 #include "Pegasus/AssetLib/Shared/IAssetProxy.h"
@@ -77,6 +79,8 @@ ApplicationInterface::ApplicationInterface(Application * application, QObject * 
 
     connect(timelineDockWidget, SIGNAL(BlockMoved()),
             this, SLOT(RequestRedrawAllViewportsAfterBlockMoved()));
+    connect(timelineDockWidget, SIGNAL(BlockDoubleClicked(Pegasus::Timeline::IBlockProxy*)),
+            this, SLOT(PerformBlockDoubleClickedAction(Pegasus::Timeline::IBlockProxy*)), Qt::DirectConnection);
     connect(this, SIGNAL(EnqueuedBlockMoved()),
             this, SLOT(RedrawAllViewportsForBlockMoved()),
             Qt::QueuedConnection);
@@ -359,4 +363,24 @@ void ApplicationInterface::ReceiveNewAssetRequest(const QString& path, int type)
 {
     AssetLibraryWidget * assetLibraryWidget = Editor::GetInstance().GetAssetLibraryWidget();
     assetLibraryWidget->OnRenderThreadNewAsset(path, type);
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::PerformBlockDoubleClickedAction(Pegasus::Timeline::IBlockProxy* blockProxy)
+{
+    Pegasus::Core::ISourceCodeProxy* sourceCode = blockProxy->GetScript();
+    if (sourceCode != nullptr)
+    {
+        ED_ASSERT(sourceCode->GetUserData() != nullptr);
+        if (sourceCode->GetUserData() != nullptr)
+        {
+            CodeUserData* codeUserData = static_cast<CodeUserData*>(sourceCode->GetUserData());
+            CodeEditorWidget * codeEditorWidget = Editor::GetInstance().GetCodeEditorWidget();
+            codeUserData->SetDispatchType(AssetLibraryWidget::BLOCKSCRIPT);
+            codeEditorWidget->show();
+            codeEditorWidget->activateWindow();
+            codeEditorWidget->RequestOpen(codeUserData);
+        }
+    }
 }

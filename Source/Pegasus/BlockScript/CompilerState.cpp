@@ -10,6 +10,7 @@
 //! \brief  Blockscript Internal Compiler state.
 
 #include "Pegasus/BlockScript/CompilerState.h"
+#include "Pegasus/Utils/String.h"
 
 using namespace Pegasus;
 using namespace Pegasus::BlockScript;
@@ -30,11 +31,10 @@ int CompilerState::PopLexerState()
     return mLexerStack.Pop();
 }
 
-
 void  CompilerState::PushDefineStack(void* bufferId, const BlockScript::Preprocessor::Definition* def)
 {
     CompilerState::DefineBufferEl& el = mDefineBufferStack.PushEmpty(); 
-    el.mConsumed = false;
+    el.mBufferPosition = 0;
     el.mLexerBufferId = bufferId;
     el.mDef = def;
 }

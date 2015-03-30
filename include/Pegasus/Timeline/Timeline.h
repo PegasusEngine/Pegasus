@@ -237,12 +237,22 @@ public:
     //! Loads a script from a file
     //! \param the file of the script name
     //! \return the timeline script reference
-    TimelineScriptRef LoadScript(const char* scriptName);
+    TimelineScriptReturn LoadScript(const char* scriptName);
+
+    //! Loads a header from a file
+    //! \param the file of the script name
+    //! \return the timeline script reference
+    TimelineSourceReturn LoadHeader(const char* path);
 
     //! Creates a script from an asset
     //! \param the asset to use to create this script
     //! \return the timeline script reference
-    TimelineScriptRef CreateScript(AssetLib::Asset* asset);
+    TimelineScriptReturn CreateScript(AssetLib::Asset* asset);
+
+    //! Creates a script from an asset
+    //! \param the asset to use to create this script
+    //! \return the timeline script reference
+    TimelineSourceReturn CreateHeader(AssetLib::Asset* asset);
 
     //! Gets the script tracker registered
     //! \return the script tracker
@@ -250,7 +260,7 @@ public:
 
     //! Flushes script to asset internally.
     //! \return IO error
-    void FlushScriptToAsset(TimelineScriptIn script);
+    void FlushScriptToAsset(TimelineSourceIn script);
 
 
 #if PEGASUS_ENABLE_PROXIES

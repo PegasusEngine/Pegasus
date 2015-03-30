@@ -16,38 +16,38 @@ PEGASUS_AVOID_EMPTY_FILE_WARNING
 #include "Pegasus/Graph/Shared/GraphEventDefs.h"
 #include "Pegasus/Core/Io.h"
 
-#include "Pegasus/Timeline/TimelineScript.h"
+#include "Pegasus/Timeline/TimelineSource.h"
 
 using namespace Pegasus;
 using namespace Pegasus::Timeline;
 
-TimelineScriptProxy::TimelineScriptProxy(TimelineScript* helper) : mTimelineScript(helper) {}
+TimelineScriptProxy::TimelineScriptProxy(TimelineSource* helper) : mTimelineSource(helper) {}
 
 TimelineScriptProxy::~TimelineScriptProxy() {}
 
 const char * TimelineScriptProxy::GetName() const
 {
-    return mTimelineScript->GetScriptName();
+    return mTimelineSource->GetScriptName();
 }
 
 void TimelineScriptProxy::GetSource(const char ** outSrc, int& outSize) const
 {
-    mTimelineScript->GetSource(outSrc, outSize);
+    mTimelineSource->GetSource(outSrc, outSize);
 }
 
 void TimelineScriptProxy::SetSource(const char * source, int sourceSize)
 {
-    mTimelineScript->SetSource(source, sourceSize);
+    mTimelineSource->SetSource(source, sourceSize);
 }
 
 void TimelineScriptProxy::SetUserData(Pegasus::Graph::IGraphUserData * userData)
 {
-    mTimelineScript->SetGraphEventUserData(userData);
+    mTimelineSource->SetGraphEventUserData(userData);
 }
 
 Graph::IGraphUserData * TimelineScriptProxy::GetUserData() const
 {
-    return mTimelineScript->GetGraphEventUserData();
+    return mTimelineSource->GetGraphEventUserData();
 }
 
 long long TimelineScriptProxy::GetGuid() const
@@ -57,6 +57,6 @@ long long TimelineScriptProxy::GetGuid() const
 
 void TimelineScriptProxy::Compile()
 { 
-    mTimelineScript->CheckAndUpdateCompilationState();
+    mTimelineSource->Compile();
 }
 #endif

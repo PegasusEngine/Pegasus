@@ -40,6 +40,16 @@ class AssetLibraryWidget : public QDockWidget
     Q_OBJECT
 
 public:
+    
+    //dispatch types
+    enum DispatchTypes {
+        SHADER,
+        PROGRAM,
+        TEXTURE,
+        MESH,
+        BLOCKSCRIPT
+    };
+
     AssetLibraryWidget(QWidget * parent, CodeEditorWidget * editorWidget);
     virtual ~AssetLibraryWidget();
 

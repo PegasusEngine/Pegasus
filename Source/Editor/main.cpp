@@ -16,6 +16,7 @@
 //include all proxy types to declare meta types
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
+#include "Pegasus/Timeline/Shared/IBlockProxy.h"
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 #include "CodeEditor/SourceCodeManagerEventListener.h"
 
@@ -33,11 +34,13 @@
 
 Q_DECLARE_METATYPE(Pegasus::Core::ISourceCodeProxy*);
 Q_DECLARE_METATYPE(CodeUserData*);
+Q_DECLARE_METATYPE(Pegasus::Timeline::IBlockProxy*);
 
 void RegisterMetaTypes()
 {
     qRegisterMetaType<Pegasus::Core::ISourceCodeProxy*>();
     qRegisterMetaType<CodeUserData*>();
+    qRegisterMetaType<Pegasus::Timeline::IBlockProxy*>();
 }
 //----------------------------------------------------------------------------------------
 

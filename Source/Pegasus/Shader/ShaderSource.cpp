@@ -11,7 +11,6 @@
 
 #include "Pegasus/Shader/ShaderTracker.h"
 #include "Pegasus/Shader/ShaderSource.h"
-#include "Pegasus/Utils/Memcpy.h"
 #include "Pegasus/Utils/String.h"
 
 using namespace Pegasus;
@@ -19,7 +18,8 @@ using namespace Pegasus::Shader;
 
 ShaderSource::ShaderSource (Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 : Pegasus::Graph::GeneratorNode(nodeAllocator, nodeDataAllocator),
-  mAllocator(nodeAllocator), mParents(nodeAllocator), mLockParentArray(false)
+  Core::SourceCode(nodeDataAllocator),
+  mAllocator(nodeAllocator)
 #if PEGASUS_ENABLE_PROXIES
     , mShaderTracker(nullptr)
     , mProxy(this)
@@ -30,7 +30,6 @@ ShaderSource::ShaderSource (Alloc::IAllocator* nodeAllocator, Alloc::IAllocator*
 
 ShaderSource::~ShaderSource()
 {
-    ClearParents();
 #if PEGASUS_ENABLE_PROXIES
     if (mShaderTracker != nullptr)
     {
@@ -38,14 +37,6 @@ ShaderSource::~ShaderSource()
     }
     GRAPH_EVENT_DESTROY_USER_DATA(&mProxy, "ShaderSource", GetEventListener());
 #endif
-}
-
-void ShaderSource::ClearParents()
-{
-    if (!mLockParentArray)
-    {
-        mParents.Clear();
-    }
 }
 
 Pegasus::Graph::NodeReturn Pegasus::Shader::ShaderSource::CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
@@ -87,68 +78,6 @@ void ShaderSource::SetFullFilePath(const char * name)
 } 
 #endif
 
-
-void ShaderSource::SetSource(const char * src, int srcSize)
-{
-    //reallocate buffer size if more space requested on recompilation
-    if (srcSize > mFileBuffer.GetFileSize())
-    {
-        mFileBuffer.DestroyBuffer();
-        mFileBuffer.OwnBuffer (
-            mAllocator,
-            PG_NEW_ARRAY(mAllocator, -1, "shader src", Pegasus::Alloc::PG_MEM_PERM, char, srcSize),
-            srcSize
-        );
-    }
-    mFileBuffer.SetFileSize(srcSize);
-    PG_ASSERTSTR(mFileBuffer.GetBufferSize() >= srcSize, "Not enough size to hold the string buffer!");
-    Pegasus::Utils::Memcpy(mFileBuffer.GetBuffer(),src,srcSize);
-}
-
-void ShaderSource::GetSource (const char ** outSrc, int& outSize) const
-{
-    *outSrc = mFileBuffer.GetBuffer(); 
-    outSize = mFileBuffer.GetFileSize();
-}
-
-void ShaderSource::Compile()
-{
-    //copy this vector to a temp vector to avoid pop / push issues
-
-    mLockParentArray = true;
-    for (int i = 0; i < mParents.GetSize(); ++i)
-    {
-        mParents[i]->InvalidateData();
-        mParents[i]->Compile();
-    }
-    mLockParentArray = false;
-}
-
-void ShaderSource::RegisterParent(ShaderSource* parent)
-{
-    if (!mLockParentArray)
-    {
-        mParents.PushEmpty() = parent;
-    }
-}
-
-void ShaderSource::UnregisterParent(ShaderSource* parent)
-{
-    if (!mLockParentArray)
-    {
-        for (int i = 0; i < mParents.GetSize(); ++i)
-        {
-            if (mParents[i] == parent)
-            {
-                mParents.Delete(i);
-                return;
-            }
-        }
-        PG_FAILSTR("Trying to unregister a source file that has no parent?");
-    }
-
-}
-
 void ShaderSource::GenerateData()
 {
 }
@@ -156,4 +85,9 @@ void ShaderSource::GenerateData()
 Pegasus::Graph::NodeData * ShaderSource::AllocateData() const
 {
     return nullptr;
+}
+
+void ShaderSource::InvalidateData()
+{
+    GeneratorNode::InvalidateData();
 }

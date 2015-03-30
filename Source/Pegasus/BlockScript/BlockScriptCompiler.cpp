@@ -12,15 +12,16 @@
 #include "Pegasus/BlockScript/BlockScriptCompiler.h"
 #include "Pegasus/BlockScript/BlockScriptAst.h"
 #include "Pegasus/BlockScript/IBlockScriptCompilerListener.h"
+#include "Pegasus/BlockScript/IFileIncluder.h"
 #include "Pegasus/Core/Io.h"
 
 using namespace Pegasus;
 using namespace Pegasus::BlockScript;
 
-extern void Bison_BlockScriptParse(const Io::FileBuffer* fileBuffer, BlockScript::BlockScriptBuilder* builder);
+extern void Bison_BlockScriptParse(const Io::FileBuffer* fileBuffer, BlockScript::BlockScriptBuilder* builder, BlockScript::IFileIncluder* fileIncluder);
 
 BlockScriptCompiler::BlockScriptCompiler(Alloc::IAllocator* allocator)
-: mAllocator(allocator), mAst(nullptr)
+: mAllocator(allocator), mAst(nullptr), mFileIncluder(nullptr)
 {
     mBuilder.Initialize(mAllocator);
 }
@@ -32,7 +33,7 @@ BlockScriptCompiler::~BlockScriptCompiler()
 bool BlockScriptCompiler::Compile(const Io::FileBuffer* fb)
 {
     mBuilder.BeginBuild(); 
-    Bison_BlockScriptParse(fb, &mBuilder);
+    Bison_BlockScriptParse(fb, &mBuilder, mFileIncluder);
     BlockScriptBuilder::CompilationResult cr;
 	mBuilder.EndBuild(cr);
     mAst = cr.mAst;

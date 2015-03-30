@@ -172,5 +172,8 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\Preprocessor.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\IFileIncluder.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -39,6 +39,7 @@
     #include "Pegasus/BlockScript/StackFrameInfo.h"
     #include "Pegasus/BlockScript/SymbolTable.h"
     #include "Pegasus/BlockScript/TypeDesc.h"
+    #include "Pegasus/BlockScript/IFileIncluder.h"
     #include "Pegasus/BlockScript/bs.parser.hpp"
     #include "Pegasus/BlockScript/bs.lexer.hpp"
     #include "Pegasus/Memory/MemoryManager.h"
@@ -422,11 +423,12 @@ arg_dec : IDENTIFIER K_COL type_desc { BS_BUILD($$, BuildArgDec($1, $3)); }
 extern void BS_restart(FILE* f);
 
 
-void Bison_BlockScriptParse(const FileBuffer* fileBuffer, BlockScriptBuilder* builder) 
+void Bison_BlockScriptParse(const FileBuffer* fileBuffer, BlockScriptBuilder* builder, IFileIncluder* fileIncluder) 
 {          
     CompilerState compilerState(builder->GetAllocator());
     compilerState.mBuilder = builder;
     compilerState.mFileBuffer = fileBuffer;
+    compilerState.GetPreprocessor().SetFileIncluder(fileIncluder);
 
     yyscan_t scanner;
     BS_lex_init_extra(&compilerState, &scanner);

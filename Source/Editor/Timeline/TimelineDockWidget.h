@@ -15,6 +15,12 @@
 #include <QDockWidget>
 #include "ui_TimelineDockWidget.h"
 
+namespace Pegasus {
+    namespace Timeline {
+        class IBlockProxy;
+    }
+}
+
 
 //! Dock widget containing the timeline graphics view
 class TimelineDockWidget : public QDockWidget
@@ -59,6 +65,9 @@ signals:
 
     //! Emitted when a block has been moved by the user
     void BlockMoved();
+
+    //! Emitted when a block has been double clicked by the user
+    void BlockDoubleClicked(Pegasus::Timeline::IBlockProxy* blockProxy);
 
     //! Emitted when the play mode button has been enabled or disabled
     //! \param enabled True if the play mode button has just been enabled

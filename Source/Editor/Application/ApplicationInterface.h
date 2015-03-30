@@ -18,6 +18,13 @@
 class Application;
 class CodeUserData;
 
+namespace Pegasus {
+    namespace Timeline {
+        class IBlockProxy;
+    }
+}
+
+
 
 //! Interface object used to interface with the Pegasus related messages,
 //! created in the application thread
@@ -121,6 +128,9 @@ private slots:
     
     //! slot received when somebody requests a new asset
     void ReceiveNewAssetRequest(const QString& path, int type);
+
+    //! slot received when the user double clicks a block in the timeline
+    void PerformBlockDoubleClickedAction(Pegasus::Timeline::IBlockProxy* blockProxy);
 
     //------------------------------------------------------------------------------------
 

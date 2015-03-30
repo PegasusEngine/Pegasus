@@ -12,6 +12,7 @@
 #ifndef SCRIPT_HELPER_H
 #define SCRIPT_HELPER_H
 
+#include "Pegasus/Timeline/TimelineSource.h"
 #include "Pegasus/BlockScript/BlockScript.h"
 #include "Pegasus/BlockScript/IBlockScriptCompilerListener.h"
 #include "Pegasus/Graph/Shared/GraphEventDefs.h"
@@ -42,11 +43,9 @@ namespace Pegasus {
 namespace Timeline{
 
 //!script helper for timeline blocks
-    class TimelineScript : public BlockScript::IBlockScriptCompilerListener, public AssetLib::RuntimeAssetObject
+class TimelineScript : public TimelineSource, public BlockScript::IBlockScriptCompilerListener
 {
     template<class C> friend class Pegasus::Core::Ref;
-
-    GRAPH_EVENT_DECLARE_DISPATCHER(Core::CompilerEvents::ICompilerEventListener);
 
 public:
 
@@ -54,14 +53,10 @@ public:
     TimelineScript(Alloc::IAllocator* alloc, const char* name, Io::FileBuffer* fb, Wnd::IWindowContext* appContext);
 
     //! Destructor
-    ~TimelineScript();
+    virtual ~TimelineScript();
     
     //! Shuts down a script. It keeps a copy of the last opened script, so use Compile to revive this script again.
     void Shutdown();
-
-    //! Attempts compilation of the opened file.
-    //! \return true if successful, false otherwise
-    bool CompileScript();
 
     //! Calls the script once, to call anything executing in the global scope
     void CallGlobalScopeInit(BlockScript::BsVmState* state);
@@ -76,7 +71,7 @@ public:
 
     //! Call before update, this will reveal if the internal asset has changed. If so, the script gets recompiled, and
     //! the serial version is incremented.
-    void CheckAndUpdateCompilationState();
+    virtual void Compile();
 
     //! Calls render on the script. If scripts does not implement Render, then this is a NOP
     void CallRender(float beat, BlockScript::BsVmState* state);
@@ -84,25 +79,7 @@ public:
     //! Returns true of the script is active. False if it is not
     bool IsScriptActive() const { return mScriptActive; }
 
-    const char* GetScriptName() const { return mScriptName; }
-
-    //! Gets the source of the source code file
-    //! \param outSrc output param to be filled with a string pointer containing the src
-    //! \param outSize output param to an int, to be filled with the size of outSize
-    void GetSource(const char ** outSrc, int& outSize) const;
-
-    //! Sets the source and marks source code file as dirty
-    //! \param source string. Doesn't need to be null terminated
-    //! \param source size to copy 
-    void SetSource(const char * source, int sourceSize);
-
-    void InvalidateData() { mIsDirty = true; }
-
-#if PEGASUS_ENABLE_PROXIES
-    //! Gets the proxy 
-    //! \return Proxy to this script
-    TimelineScriptProxy* GetProxy() { return &mProxy; };
-#endif
+    virtual void InvalidateData() { mIsDirty = true; }
 
     int GetSerialVersion() const { return mSerialVersion; }
 
@@ -121,23 +98,22 @@ public:
     //! \return true if the script has a compilation pending, false otherwise
     bool IsDirty() const { return mIsDirty; }
 
+    //! Adds a reference to a header
+    void AddHeader(TimelineSourceIn header);
+
+    //! Clears all references to headers
+    void ClearHeaderList();
+
+    virtual void LockHeaders(bool shouldLock) { mLockHeaders = shouldLock; }
+
 private:
 
     // Nodes cannot be copied, only references to them
     PG_DISABLE_COPY(TimelineScript)
 
-    //! Increment the reference counter, used by Ref<Node>
-    inline void AddRef() { mRefCount++; }
-
-    //! Decrease the reference counter, and delete the current object
-    //! if the counter reaches 0
-    void Release();
-
-    //! Reference counter
-    int mRefCount;
-
-    //! internal allocator
-    Alloc::IAllocator* mAllocator;
+    //! Attempts compilation of the opened file.
+    //! \return true if successful, false otherwise
+    bool CompileInternal();
 
     //! internal script structure
     BlockScript::BlockScript* mScript;
@@ -154,17 +130,14 @@ private:
     //! render callback for script destruction
     BlockScript::FunBindPoint mDestroyBindPoint; 
 
-    //! File data
-    Io::FileBuffer mFileBuffer;
-
     //! state of current script
     bool mScriptActive;
 
     //! triggers lazy compilation if tagged as dirty
     bool mIsDirty;
 
-    //! copy of the script name
-    char mScriptName[MAX_SCRIPT_NAME];
+    //! if true, headers are not modified. This is used when blockscript is compiled from a header
+    bool mLockHeaders;
 
     //! Serial version
     int mSerialVersion;
@@ -172,10 +145,8 @@ private:
     //! IWindowContext reference to access application data
     Wnd::IWindowContext* mAppContext;
 
-#if PEGASUS_ENABLE_PROXIES
-    TimelineScriptProxy mProxy;
-#endif
-
+    //! list of headers
+    Utils::Vector<TimelineSourceRef> mHeaders;
 };
 
 //! Reference to a Node, typically used when declaring a variable of reference type

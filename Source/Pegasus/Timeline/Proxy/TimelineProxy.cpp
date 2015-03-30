@@ -17,7 +17,7 @@ PEGASUS_AVOID_EMPTY_FILE_WARNING
 #include "Pegasus/Timeline/Proxy/TimelineProxy.h"
 #include "Pegasus/Timeline/Proxy/LaneProxy.h"
 #include "Pegasus/Core/Shared/CompilerEvents.h"
-#include "Pegasus/Timeline/TimelineScript.h"
+#include "Pegasus/Timeline/TimelineSource.h"
 #include "Pegasus/Timeline/Proxy/TimelineScriptProxy.h"
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Timeline/Lane.h"
@@ -25,6 +25,7 @@ PEGASUS_AVOID_EMPTY_FILE_WARNING
 #include "Pegasus/AssetLib/Asset.h"
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 #include "Pegasus/Memory/MemoryManager.h"
+#include "Pegasus/Utils/String.h"
 
 using namespace Pegasus;
 
@@ -183,12 +184,12 @@ void TimelineProxy::RegisterEventListener(Pegasus::Core::CompilerEvents::ICompil
 
 Core::ISourceCodeProxy* TimelineProxy::OpenScript(const char* path)
 {
-    TimelineScriptRef script = mTimeline->LoadScript(path);
+    TimelineSourceRef script = mTimeline->LoadScript(path);
     if (script != nullptr)
     {
         if (FindOpenedScript(script) == -1)
         {
-            *(new (&mOpenedScripts.PushEmpty()) TimelineScriptRef)  = script;
+            *(new (&mOpenedScripts.PushEmpty()) TimelineSourceRef)  = script;
         }
         return script->GetProxy();
     }
@@ -201,13 +202,17 @@ Core::ISourceCodeProxy* TimelineProxy::OpenScript(const char* path)
 Core::ISourceCodeProxy* TimelineProxy::OpenScript(AssetLib::IAssetProxy* asset)
 {
     AssetLib::AssetProxy* assetProxy = static_cast<AssetLib::AssetProxy*>(asset);
-    TimelineScriptRef script = mTimeline->CreateScript(assetProxy->GetObject());
+    const char* ext = Utils::Strrchr(asset->GetPath(), '.');
+
+    TimelineSourceRef script = Utils::Strcmp(ext, ".bsh") ? 
+            mTimeline->CreateScript(assetProxy->GetObject()) :
+            mTimeline->CreateHeader(assetProxy->GetObject()) ;
 
     if (script != nullptr)
     {
         if (FindOpenedScript(script) == -1)
         {
-            *(new (&mOpenedScripts.PushEmpty()) TimelineScriptRef) = script;
+            *(new (&mOpenedScripts.PushEmpty()) TimelineSourceRef) = script;
         }
         return script->GetProxy();
     }
@@ -219,7 +224,7 @@ Core::ISourceCodeProxy* TimelineProxy::OpenScript(AssetLib::IAssetProxy* asset)
 
 void TimelineProxy::CloseScript(Core::ISourceCodeProxy* script)
 {
-    TimelineScriptRef timelineScript = static_cast<TimelineScriptProxy*>(script)->GetObject();
+    TimelineSourceRef timelineScript = static_cast<TimelineScriptProxy*>(script)->GetObject();
     int index = FindOpenedScript(timelineScript);
     if (index != -1)
     {
@@ -228,7 +233,7 @@ void TimelineProxy::CloseScript(Core::ISourceCodeProxy* script)
     }
 }
 
-int TimelineProxy::FindOpenedScript(TimelineScriptIn script)
+int TimelineProxy::FindOpenedScript(TimelineSourceIn script)
 {
     for (int i = 0; i < mOpenedScripts.GetSize(); ++i)
     {
@@ -248,14 +253,14 @@ bool TimelineProxy::IsTimelineScript(const AssetLib::IAssetProxy* asset) const
 
 void TimelineProxy::FlushScriptToAsset(Core::ISourceCodeProxy* code)
 {
-    TimelineScriptIn timelineScript = static_cast<TimelineScriptProxy*>(code)->GetObject();
+    TimelineSourceIn timelineScript = static_cast<TimelineScriptProxy*>(code)->GetObject();
     mTimeline->FlushScriptToAsset(timelineScript);
 }
 
 
 AssetLib::IAssetProxy* TimelineProxy::GetScriptAsset(Core::ISourceCodeProxy* code) const
 {
-    TimelineScript* timelineScript = static_cast<TimelineScriptProxy*>(code)->GetObject();
+    TimelineSource* timelineScript = static_cast<TimelineScriptProxy*>(code)->GetObject();
     if (timelineScript->GetOwnerAsset() != nullptr)
     {
         return timelineScript->GetOwnerAsset()->GetProxy();

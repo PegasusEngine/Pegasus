@@ -10,6 +10,7 @@
 //! \brief  Blockscript Internal Compiler Preprocessor directive
 
 #include "Pegasus/BlockScript/Preprocessor.h"
+#include "Pegasus/BlockScript/IFileIncluder.h"
 #include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/Utils/String.h"
 
@@ -19,7 +20,11 @@ using namespace Pegasus::BlockScript;
 Preprocessor::Preprocessor(Alloc::IAllocator* allocator)
 :    
      mDefinitions(allocator),
-     mStateStack(allocator)
+     mIncludeDefs(allocator),
+     mStateStack(allocator),
+     mHasInclude(false),
+     mNextIncludeDefinition(nullptr),
+     mFileIncluder(nullptr)
 {
     NewState();
     Top().mIsChosePath = true;
@@ -134,15 +139,39 @@ bool Preprocessor::FlushCommand(const char** errString)
 {
     *errString = nullptr;
     bool result = false;
+
+    mHasInclude = false;
     
     switch (Top().mCommand)
     {
     case Preprocessor::PP_CMD_INCLUDE:
         {
-            //*errString = "error including file";
             if (IsIfActive())
             {
-                result = true; //nop
+                if (mFileIncluder == nullptr)
+                {
+                    *errString = "No file includer handler passed in the compilation process.";
+                    result = false; //nop
+                }
+                else
+                {
+                    mNextIncludeDefinition = &mIncludeDefs.PushEmpty();
+                    mNextIncludeDefinition->mName = nullptr;
+                    mNextIncludeDefinition->mValue = nullptr;
+                    mNextIncludeDefinition->mBufferSize = 0;                    
+                    mNextIncludeDefinition->mIsInclude = true;
+                    
+                    result = mFileIncluder->Open(Top().mCodeArg, &mNextIncludeDefinition->mValue, mNextIncludeDefinition->mBufferSize);
+                    if (result)
+                    {
+                        mHasInclude = true;
+                    }
+                    else
+                    {
+                        mFileIncluder->Close(mNextIncludeDefinition->mValue);
+                    }
+                }
+                
             }
             else
             {
@@ -167,6 +196,8 @@ bool Preprocessor::FlushCommand(const char** errString)
                 Preprocessor::Definition& newDef = mDefinitions.PushEmpty();
                 newDef.mName = Top().mStringArg;
                 newDef.mValue = Top().mCodeArg;
+                newDef.mIsInclude = false;
+                newDef.mBufferSize = newDef.mValue == nullptr ? 0 : Utils::Strlen(newDef.mValue) + 1;
                 result = true;
             }
             else

@@ -27,6 +27,7 @@ namespace Pegasus
     namespace BlockScript
     {
         class BlockScriptBuilder;
+        class IFileIncluder;
     }
 
     namespace Alloc
@@ -44,7 +45,7 @@ namespace BlockScript
     public:
         struct DefineBufferEl
         {
-            bool mConsumed;
+            int  mBufferPosition;
             void* mLexerBufferId;
             const BlockScript::Preprocessor::Definition* mDef;
         };

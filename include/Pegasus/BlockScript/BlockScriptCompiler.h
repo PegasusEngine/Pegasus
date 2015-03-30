@@ -37,6 +37,7 @@ namespace Pegasus {
         class BlockLib;
 		class IddStrPool;
         class IBlockScriptCompilerListener;
+        class IFileIncluder;
     
         namespace Ast
         {
@@ -96,6 +97,10 @@ public:
         int argumentListCount
     ) const;
 
+    void SetFileIncluder(IFileIncluder* includer) { mFileIncluder = includer; }
+
+    IFileIncluder* GetFileIncluder() const { return mFileIncluder; }
+
 protected:
     BlockScriptBuilder       mBuilder;
 
@@ -103,6 +108,7 @@ private:
     Alloc::IAllocator*       mAllocator;
     Ast::Program*            mAst;
     Assembly                 mAsm;
+    IFileIncluder*            mFileIncluder;
 
 };
 

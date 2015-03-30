@@ -110,7 +110,7 @@ bool Block::InitializeScript()
         mTimelineScript->CallGlobalScopeDestroy(mVmState);
     }
 
-    mTimelineScript->CheckAndUpdateCompilationState();
+    mTimelineScript->Compile();
 
     if (mScriptVersion != mTimelineScript->GetSerialVersion())
     {

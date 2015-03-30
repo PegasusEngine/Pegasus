@@ -171,11 +171,13 @@ bool TypeTable::ComputeSize(const TypeDesc* t, int& outSize) const
                 int totalSize = 0;
                 while (argList != nullptr)
                 {
-                    int computedSize = 0;
-                    const TypeDesc* typeDesc = argList->GetArgDec()->GetType();
+                    if (argList->GetArgDec() != nullptr)
+                    {
+                        const TypeDesc* typeDesc = argList->GetArgDec()->GetType();
 
-                    totalSize += typeDesc->GetByteSize();
-                    argList = argList->GetTail();
+                        totalSize += typeDesc->GetByteSize();
+                    }
+                    argList = argList->GetTail();                    
                 }
                 outSize = totalSize;
             }

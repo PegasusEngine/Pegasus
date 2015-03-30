@@ -97,6 +97,7 @@
     #include "Pegasus/BlockScript/StackFrameInfo.h"
     #include "Pegasus/BlockScript/SymbolTable.h"
     #include "Pegasus/BlockScript/TypeDesc.h"
+    #include "Pegasus/BlockScript/IFileIncluder.h"
     #include "Pegasus/BlockScript/bs.parser.hpp"
     #include "Pegasus/BlockScript/bs.lexer.hpp"
     #include "Pegasus/Memory/MemoryManager.h"
@@ -135,7 +136,7 @@
     //***************************************************//
 
 /* Line 371 of yacc.c  */
-#line 139 "bs.parser.cpp"
+#line 140 "bs.parser.cpp"
 
 # ifndef YY_NULL
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -223,7 +224,7 @@ extern int BS_debug;
 typedef union YYSTYPE
 {
 /* Line 387 of yacc.c  */
-#line 83 "bs.y"
+#line 84 "bs.y"
 
     int    token;
     int    integerValue;
@@ -238,7 +239,7 @@ typedef union YYSTYPE
 
 
 /* Line 387 of yacc.c  */
-#line 242 "bs.parser.cpp"
+#line 243 "bs.parser.cpp"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -265,7 +266,7 @@ int BS_parse ();
 /* Copy the second part of user declarations.  */
 
 /* Line 390 of yacc.c  */
-#line 269 "bs.parser.cpp"
+#line 270 "bs.parser.cpp"
 
 #ifdef short
 # undef short
@@ -588,14 +589,14 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   176,   176,   179,   188,   189,   192,   193,   194,   195,
-     196,   197,   214,   235,   238,   241,   244,   247,   261,   265,
-     268,   273,   276,   277,   280,   283,   292,   299,   300,   303,
-     304,   305,   312,   321,   322,   325,   328,   329,   330,   331,
-     332,   333,   334,   335,   336,   337,   338,   339,   340,   341,
-     342,   343,   344,   345,   346,   347,   348,   349,   350,   351,
-     352,   353,   356,   365,   366,   369,   386,   400,   409,   410,
-     413
+       0,   177,   177,   180,   189,   190,   193,   194,   195,   196,
+     197,   198,   215,   236,   239,   242,   245,   248,   262,   266,
+     269,   274,   277,   278,   281,   284,   293,   300,   301,   304,
+     305,   306,   313,   322,   323,   326,   329,   330,   331,   332,
+     333,   334,   335,   336,   337,   338,   339,   340,   341,   342,
+     343,   344,   345,   346,   347,   348,   349,   350,   351,   352,
+     353,   354,   357,   366,   367,   370,   387,   401,   410,   411,
+     414
 };
 #endif
 
@@ -1696,13 +1697,13 @@ yyreduce:
     {
         case 2:
 /* Line 1792 of yacc.c  */
-#line 176 "bs.y"
+#line 177 "bs.y"
     { BS_BUILD((yyval.vProgram), CreateProgram()); (yyval.vProgram)->SetStmtList((yyvsp[(1) - (1)].vStmtList)); }
     break;
 
   case 3:
 /* Line 1792 of yacc.c  */
-#line 179 "bs.y"
+#line 180 "bs.y"
     { 
                     (yyval.vStmtList) = (yyvsp[(1) - (2)].vStmtList);
                     BS_CHECKLIST((yyvsp[(1) - (2)].vStmtList));
@@ -1716,49 +1717,49 @@ yyreduce:
 
   case 4:
 /* Line 1792 of yacc.c  */
-#line 188 "bs.y"
+#line 189 "bs.y"
     { (yyval.vStmtList) = BS_GlobalBuilder->CreateStmtList(); (yyval.vStmtList)->SetStmt((yyvsp[(1) - (1)].vStmt)); }
     break;
 
   case 5:
 /* Line 1792 of yacc.c  */
-#line 189 "bs.y"
+#line 190 "bs.y"
     { (yyval.vStmtList) = BS_GlobalBuilder->CreateStmtList(); }
     break;
 
   case 6:
 /* Line 1792 of yacc.c  */
-#line 192 "bs.y"
+#line 193 "bs.y"
     { BS_BUILD((yyval.vStmt), BuildStmtExp((yyvsp[(1) - (2)].vExp))); }
     break;
 
   case 7:
 /* Line 1792 of yacc.c  */
-#line 193 "bs.y"
+#line 194 "bs.y"
     { BS_BUILD((yyval.vStmt), BuildStmtReturn((yyvsp[(2) - (3)].vExp))); }
     break;
 
   case 8:
 /* Line 1792 of yacc.c  */
-#line 194 "bs.y"
+#line 195 "bs.y"
     {BS_BUILD((yyval.vStmt), BindFunImplementation((yyvsp[(1) - (2)].vStmtFunDec), (yyvsp[(2) - (2)].vStmtList)));}
     break;
 
   case 9:
 /* Line 1792 of yacc.c  */
-#line 195 "bs.y"
+#line 196 "bs.y"
     { BS_BUILD((yyval.vStmt), BuildStmtWhile((yyvsp[(3) - (7)].vExp), (yyvsp[(6) - (7)].vStmtList)));}
     break;
 
   case 10:
 /* Line 1792 of yacc.c  */
-#line 196 "bs.y"
+#line 197 "bs.y"
     { BS_BUILD((yyval.vStmt), BuildStmtStructDef((yyvsp[(2) - (6)].identifierText), (yyvsp[(4) - (6)].vArgList))); }
     break;
 
   case 11:
 /* Line 1792 of yacc.c  */
-#line 198 "bs.y"
+#line 199 "bs.y"
     { 
             if (BS_GlobalBuilder->GetSymbolTable()->GetTypeByName((yyvsp[(2) - (6)].identifierText)) == nullptr)
             {
@@ -1779,7 +1780,7 @@ yyreduce:
 
   case 12:
 /* Line 1792 of yacc.c  */
-#line 215 "bs.y"
+#line 216 "bs.y"
     { 
                     if ((yyvsp[(8) - (8)].vStmtIfElse) != nullptr && (yyvsp[(7) - (8)].vStmtIfElse) != nullptr)
                     {
@@ -1802,31 +1803,31 @@ yyreduce:
 
   case 13:
 /* Line 1792 of yacc.c  */
-#line 235 "bs.y"
+#line 236 "bs.y"
     { BS_BUILD((yyval.vFrameInfo), StartNewFrame()); }
     break;
 
   case 14:
 /* Line 1792 of yacc.c  */
-#line 238 "bs.y"
+#line 239 "bs.y"
     { BS_BUILD((yyval.vFrameInfo), StartNewFrame()); }
     break;
 
   case 15:
 /* Line 1792 of yacc.c  */
-#line 241 "bs.y"
+#line 242 "bs.y"
     { (yyval.vTypeDesc) = (yyvsp[(1) - (1)].vTypeDesc); if ((yyval.vTypeDesc) == nullptr) { BS_parseerror("Syntax error. Invalid function type.");YYERROR; }; if (!BS_GlobalBuilder->StartNewFunction((yyval.vTypeDesc))) {BS_parseerror("cannot declare function within a function"); YYERROR;} }
     break;
 
   case 16:
 /* Line 1792 of yacc.c  */
-#line 244 "bs.y"
+#line 245 "bs.y"
     { BS_GlobalBuilder->StartNewFrame(); }
     break;
 
   case 17:
 /* Line 1792 of yacc.c  */
-#line 248 "bs.y"
+#line 249 "bs.y"
     {
                         (yyval.vStmtIfElse) = (yyvsp[(1) - (7)].vStmtIfElse);
                         BS_CHECKLIST((yyvsp[(1) - (7)].vStmtIfElse));
@@ -1844,7 +1845,7 @@ yyreduce:
 
   case 18:
 /* Line 1792 of yacc.c  */
-#line 262 "bs.y"
+#line 263 "bs.y"
     {
                         (yyval.vStmtIfElse) = BS_GlobalBuilder->BuildStmtIfElse((yyvsp[(3) - (6)].vExp), (yyvsp[(5) - (6)].vStmtList), nullptr, (yyvsp[(4) - (6)].vFrameInfo));
                    }
@@ -1852,13 +1853,13 @@ yyreduce:
 
   case 19:
 /* Line 1792 of yacc.c  */
-#line 265 "bs.y"
+#line 266 "bs.y"
     { (yyval.vStmtIfElse) = nullptr; }
     break;
 
   case 20:
 /* Line 1792 of yacc.c  */
-#line 268 "bs.y"
+#line 269 "bs.y"
     { //pop previous frame
                               BS_GlobalBuilder->PopFrame();  
                             }
@@ -1866,31 +1867,31 @@ yyreduce:
 
   case 21:
 /* Line 1792 of yacc.c  */
-#line 273 "bs.y"
+#line 274 "bs.y"
     {BS_BUILD((yyval.vStmtFunDec), BuildStmtFunDec((yyvsp[(4) - (5)].vArgList), (yyvsp[(1) - (5)].vTypeDesc), (yyvsp[(2) - (5)].identifierText)));}
     break;
 
   case 22:
 /* Line 1792 of yacc.c  */
-#line 276 "bs.y"
+#line 277 "bs.y"
     { BS_BUILD((yyval.vStmtIfElse), BuildStmtIfElse(nullptr, (yyvsp[(3) - (4)].vStmtList), nullptr, (yyvsp[(1) - (4)].vFrameInfo))); }
     break;
 
   case 23:
 /* Line 1792 of yacc.c  */
-#line 277 "bs.y"
+#line 278 "bs.y"
     { (yyval.vStmtIfElse) = nullptr; }
     break;
 
   case 24:
 /* Line 1792 of yacc.c  */
-#line 280 "bs.y"
+#line 281 "bs.y"
     { BS_GlobalBuilder->PopFrame(); BS_BUILD((yyval.vFrameInfo), StartNewFrame()); }
     break;
 
   case 25:
 /* Line 1792 of yacc.c  */
-#line 283 "bs.y"
+#line 284 "bs.y"
     {
                 Pegasus::BlockScript::EnumNode* enumNode = BS_GlobalBuilder->GetSymbolTable()->NewEnumNode(); 
                 enumNode->mIdd = (yyvsp[(3) - (3)].identifierText);
@@ -1904,7 +1905,7 @@ yyreduce:
 
   case 26:
 /* Line 1792 of yacc.c  */
-#line 292 "bs.y"
+#line 293 "bs.y"
     {
                 Pegasus::BlockScript::EnumNode* enumNode = BS_GlobalBuilder->GetSymbolTable()->NewEnumNode(); 
                 enumNode->mIdd = (yyvsp[(1) - (1)].identifierText);
@@ -1914,31 +1915,31 @@ yyreduce:
 
   case 27:
 /* Line 1792 of yacc.c  */
-#line 299 "bs.y"
+#line 300 "bs.y"
     { (yyval.vStmtList) = (yyvsp[(2) - (3)].vStmtList); }
     break;
 
   case 28:
 /* Line 1792 of yacc.c  */
-#line 300 "bs.y"
+#line 301 "bs.y"
     { (yyval.vStmtList) = nullptr; }
     break;
 
   case 29:
 /* Line 1792 of yacc.c  */
-#line 303 "bs.y"
+#line 304 "bs.y"
     { BS_BUILD((yyval.vExp), BuildImmInt((yyvsp[(1) - (1)].integerValue))); }
     break;
 
   case 30:
 /* Line 1792 of yacc.c  */
-#line 304 "bs.y"
+#line 305 "bs.y"
     { BS_BUILD((yyval.vExp), BuildImmFloat((yyvsp[(1) - (1)].floatValue))); }
     break;
 
   case 31:
 /* Line 1792 of yacc.c  */
-#line 306 "bs.y"
+#line 307 "bs.y"
     {
             //figure out size at compile time!
             BS_BUILD((yyval.vExp), BuildImmInt((yyvsp[(3) - (4)].vTypeDesc)->GetByteSize()));
@@ -1947,7 +1948,7 @@ yyreduce:
 
   case 32:
 /* Line 1792 of yacc.c  */
-#line 312 "bs.y"
+#line 313 "bs.y"
     {
                 (yyval.vExpList) = (yyvsp[(1) - (3)].vExpList);
                 BS_CHECKLIST((yyvsp[(1) - (3)].vExpList));
@@ -1961,181 +1962,181 @@ yyreduce:
 
   case 33:
 /* Line 1792 of yacc.c  */
-#line 321 "bs.y"
+#line 322 "bs.y"
     { (yyval.vExpList) = BS_GlobalBuilder->CreateExpList(); (yyval.vExpList)->SetExp((yyvsp[(1) - (1)].vExp)); }
     break;
 
   case 34:
 /* Line 1792 of yacc.c  */
-#line 322 "bs.y"
+#line 323 "bs.y"
     { (yyval.vExpList) = BS_GlobalBuilder->CreateExpList(); }
     break;
 
   case 35:
 /* Line 1792 of yacc.c  */
-#line 325 "bs.y"
+#line 326 "bs.y"
     { BS_BUILD((yyval.vExp), BuildIdd((yyvsp[(1) - (1)].identifierText))); }
     break;
 
   case 36:
 /* Line 1792 of yacc.c  */
-#line 328 "bs.y"
+#line 329 "bs.y"
     { (yyval.vExp) = (yyvsp[(1) - (1)].vExp); }
     break;
 
   case 37:
 /* Line 1792 of yacc.c  */
-#line 329 "bs.y"
+#line 330 "bs.y"
     { BS_BUILD((yyval.vExp), BuildFunCall((yyvsp[(3) - (4)].vExpList), (yyvsp[(1) - (4)].identifierText))); }
     break;
 
   case 38:
 /* Line 1792 of yacc.c  */
-#line 330 "bs.y"
+#line 331 "bs.y"
     { BS_BUILD((yyval.vExp), BuildFunCall((yyvsp[(3) - (4)].vExpList), (yyvsp[(1) - (4)].identifierText))); }
     break;
 
   case 39:
 /* Line 1792 of yacc.c  */
-#line 331 "bs.y"
+#line 332 "bs.y"
     { BS_BUILD((yyval.vExp), BuildStaticArrayDec((yyvsp[(3) - (4)].vTypeDesc))); }
     break;
 
   case 40:
 /* Line 1792 of yacc.c  */
-#line 332 "bs.y"
+#line 333 "bs.y"
     { BS_BUILD((yyval.vExp), BuildStrImm((yyvsp[(1) - (1)].identifierText))); }
     break;
 
   case 41:
 /* Line 1792 of yacc.c  */
-#line 333 "bs.y"
+#line 334 "bs.y"
     { (yyval.vExp) = (yyvsp[(1) - (1)].vExp); }
     break;
 
   case 42:
 /* Line 1792 of yacc.c  */
-#line 334 "bs.y"
+#line 335 "bs.y"
     { BS_BUILD((yyval.vExp), BuildMethodCall((yyvsp[(1) - (6)].vExp), (yyvsp[(3) - (6)].identifierText), (yyvsp[(5) - (6)].vExpList))); }
     break;
 
   case 43:
 /* Line 1792 of yacc.c  */
-#line 335 "bs.y"
+#line 336 "bs.y"
     { BS_BUILD((yyval.vExp), BuildMethodCall((yyvsp[(1) - (6)].vExp), (yyvsp[(3) - (6)].identifierText), (yyvsp[(5) - (6)].vExpList))); }
     break;
 
   case 44:
 /* Line 1792 of yacc.c  */
-#line 336 "bs.y"
+#line 337 "bs.y"
     { BS_BUILD((yyval.vExp), BuildBinop((yyvsp[(1) - (3)].vExp), (yyvsp[(2) - (3)].token), (yyvsp[(3) - (3)].vExp))); }
     break;
 
   case 45:
 /* Line 1792 of yacc.c  */
-#line 337 "bs.y"
+#line 338 "bs.y"
     { BS_BUILD((yyval.vExp), BuildBinop((yyvsp[(1) - (3)].vExp), (yyvsp[(2) - (3)].token), (yyvsp[(3) - (3)].vExp))); }
     break;
 
   case 46:
 /* Line 1792 of yacc.c  */
-#line 338 "bs.y"
+#line 339 "bs.y"
     { BS_BUILD((yyval.vExp), BuildBinop((yyvsp[(1) - (3)].vExp), (yyvsp[(2) - (3)].token), (yyvsp[(3) - (3)].vExp))); }
     break;
 
   case 47:
 /* Line 1792 of yacc.c  */
-#line 339 "bs.y"
+#line 340 "bs.y"
     { BS_BUILD((yyval.vExp), BuildBinop((yyvsp[(1) - (3)].vExp), (yyvsp[(2) - (3)].token), (yyvsp[(3) - (3)].vExp))); }
     break;
 
   case 48:
 /* Line 1792 of yacc.c  */
-#line 340 "bs.y"
+#line 341 "bs.y"
     { BS_BUILD((yyval.vExp), BuildBinop((yyvsp[(1) - (3)].vExp), (yyvsp[(2) - (3)].token), (yyvsp[(3) - (3)].vExp))); }
     break;
 
   case 49:
 /* Line 1792 of yacc.c  */
-#line 341 "bs.y"
+#line 342 "bs.y"
     { BS_BUILD((yyval.vExp), BuildBinop((yyvsp[(1) - (3)].vExp), (yyvsp[(2) - (3)].token), (yyvsp[(3) - (3)].vExp))); }
     break;
 
   case 50:
 /* Line 1792 of yacc.c  */
-#line 342 "bs.y"
+#line 343 "bs.y"
     { BS_BUILD((yyval.vExp), BuildBinop((yyvsp[(1) - (3)].vExp), (yyvsp[(2) - (3)].token), (yyvsp[(3) - (3)].vExp))); }
     break;
 
   case 51:
 /* Line 1792 of yacc.c  */
-#line 343 "bs.y"
+#line 344 "bs.y"
     { BS_BUILD((yyval.vExp), BuildBinop((yyvsp[(1) - (3)].vExp), (yyvsp[(2) - (3)].token), (yyvsp[(3) - (3)].vExp))); }
     break;
 
   case 52:
 /* Line 1792 of yacc.c  */
-#line 344 "bs.y"
+#line 345 "bs.y"
     { BS_BUILD((yyval.vExp), BuildBinop((yyvsp[(1) - (3)].vExp), (yyvsp[(2) - (3)].token), (yyvsp[(3) - (3)].vExp))); }
     break;
 
   case 53:
 /* Line 1792 of yacc.c  */
-#line 345 "bs.y"
+#line 346 "bs.y"
     { BS_BUILD((yyval.vExp), BuildBinop((yyvsp[(1) - (3)].vExp), (yyvsp[(2) - (3)].token), (yyvsp[(3) - (3)].vExp))); }
     break;
 
   case 54:
 /* Line 1792 of yacc.c  */
-#line 346 "bs.y"
+#line 347 "bs.y"
     { BS_BUILD((yyval.vExp), BuildBinop((yyvsp[(1) - (3)].vExp), (yyvsp[(2) - (3)].token), (yyvsp[(3) - (3)].vExp))); }
     break;
 
   case 55:
 /* Line 1792 of yacc.c  */
-#line 347 "bs.y"
+#line 348 "bs.y"
     { BS_BUILD((yyval.vExp), BuildBinop((yyvsp[(1) - (3)].vExp), (yyvsp[(2) - (3)].token), (yyvsp[(3) - (3)].vExp))); }
     break;
 
   case 56:
 /* Line 1792 of yacc.c  */
-#line 348 "bs.y"
+#line 349 "bs.y"
     { BS_BUILD((yyval.vExp), BuildBinop((yyvsp[(1) - (3)].vExp), (yyvsp[(2) - (3)].token), (yyvsp[(3) - (3)].vExp))); }
     break;
 
   case 57:
 /* Line 1792 of yacc.c  */
-#line 349 "bs.y"
+#line 350 "bs.y"
     { BS_BUILD((yyval.vExp), BuildBinop((yyvsp[(1) - (3)].vExp), (yyvsp[(2) - (3)].token), (yyvsp[(3) - (3)].vExp))); }
     break;
 
   case 58:
 /* Line 1792 of yacc.c  */
-#line 350 "bs.y"
+#line 351 "bs.y"
     { BS_BUILD((yyval.vExp), BuildBinop((yyvsp[(1) - (4)].vExp), O_ACCESS, (yyvsp[(3) - (4)].vExp))); }
     break;
 
   case 59:
 /* Line 1792 of yacc.c  */
-#line 351 "bs.y"
+#line 352 "bs.y"
     { BS_BUILD((yyval.vExp), BuildUnop((yyvsp[(1) - (2)].token), (yyvsp[(2) - (2)].vExp))); }
     break;
 
   case 60:
 /* Line 1792 of yacc.c  */
-#line 352 "bs.y"
+#line 353 "bs.y"
     { BS_BUILD((yyval.vExp), BuildExplicitCast((yyvsp[(4) - (4)].vExp), (yyvsp[(2) - (4)].vTypeDesc))); }
     break;
 
   case 61:
 /* Line 1792 of yacc.c  */
-#line 353 "bs.y"
+#line 354 "bs.y"
     { (yyval.vExp) = (yyvsp[(2) - (3)].vExp); }
     break;
 
   case 62:
 /* Line 1792 of yacc.c  */
-#line 356 "bs.y"
+#line 357 "bs.y"
     {
                 (yyval.vArgList) = (yyvsp[(1) - (3)].vArgList);
                 BS_CHECKLIST((yyvsp[(1) - (3)].vArgList));
@@ -2149,19 +2150,19 @@ yyreduce:
 
   case 63:
 /* Line 1792 of yacc.c  */
-#line 365 "bs.y"
+#line 366 "bs.y"
     { (yyval.vArgList) = BS_GlobalBuilder->CreateArgList(); (yyval.vArgList)->SetArgDec((yyvsp[(1) - (1)].vArgDec)); }
     break;
 
   case 64:
 /* Line 1792 of yacc.c  */
-#line 366 "bs.y"
+#line 367 "bs.y"
     { (yyval.vArgList) = BS_GlobalBuilder->CreateArgList(); }
     break;
 
   case 65:
 /* Line 1792 of yacc.c  */
-#line 369 "bs.y"
+#line 370 "bs.y"
     { 
                 const Pegasus::BlockScript::TypeDesc* resultType = BS_GlobalBuilder->GetSymbolTable()->CreateArrayType(
                     (yyvsp[(1) - (4)].vTypeDesc)->GetName(), //name
@@ -2183,7 +2184,7 @@ yyreduce:
 
   case 66:
 /* Line 1792 of yacc.c  */
-#line 386 "bs.y"
+#line 387 "bs.y"
     {                
                 const TypeDesc* typeDesc = BS_GlobalBuilder->GetTypeByName((yyvsp[(1) - (1)].identifierText));
                 if (typeDesc != nullptr)
@@ -2200,7 +2201,7 @@ yyreduce:
 
   case 67:
 /* Line 1792 of yacc.c  */
-#line 400 "bs.y"
+#line 401 "bs.y"
     {
                 (yyval.vArgList) = (yyvsp[(1) - (3)].vArgList);
                 BS_CHECKLIST((yyvsp[(1) - (3)].vArgList));
@@ -2214,25 +2215,25 @@ yyreduce:
 
   case 68:
 /* Line 1792 of yacc.c  */
-#line 409 "bs.y"
+#line 410 "bs.y"
     { (yyval.vArgList) = BS_GlobalBuilder->CreateArgList(); (yyval.vArgList)->SetArgDec((yyvsp[(1) - (2)].vArgDec)); }
     break;
 
   case 69:
 /* Line 1792 of yacc.c  */
-#line 410 "bs.y"
+#line 411 "bs.y"
     { (yyval.vArgList) = BS_GlobalBuilder->CreateArgList(); }
     break;
 
   case 70:
 /* Line 1792 of yacc.c  */
-#line 413 "bs.y"
+#line 414 "bs.y"
     { BS_BUILD((yyval.vArgDec), BuildArgDec((yyvsp[(1) - (3)].identifierText), (yyvsp[(3) - (3)].vTypeDesc))); }
     break;
 
 
 /* Line 1792 of yacc.c  */
-#line 2236 "bs.parser.cpp"
+#line 2237 "bs.parser.cpp"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2464,7 +2465,7 @@ yyreturn:
 
 
 /* Line 2055 of yacc.c  */
-#line 416 "bs.y"
+#line 417 "bs.y"
          
 
 //***************************************************//
@@ -2474,11 +2475,12 @@ yyreturn:
 extern void BS_restart(FILE* f);
 
 
-void Bison_BlockScriptParse(const FileBuffer* fileBuffer, BlockScriptBuilder* builder) 
+void Bison_BlockScriptParse(const FileBuffer* fileBuffer, BlockScriptBuilder* builder, IFileIncluder* fileIncluder) 
 {          
     CompilerState compilerState(builder->GetAllocator());
     compilerState.mBuilder = builder;
     compilerState.mFileBuffer = fileBuffer;
+    compilerState.GetPreprocessor().SetFileIncluder(fileIncluder);
 
     yyscan_t scanner;
     BS_lex_init_extra(&compilerState, &scanner);

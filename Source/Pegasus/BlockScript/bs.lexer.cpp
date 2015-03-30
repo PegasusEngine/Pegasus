@@ -573,6 +573,7 @@ static yyconst flex_int16_t yy_chk[299] =
     #include "Pegasus/BlockScript/BlockScriptAst.h"
     #include "Pegasus/BlockScript/Preprocessor.h"
     #include "Pegasus/BlockScript/bs.parser.hpp"
+    #include "Pegasus/BlockScript/IFileIncluder.h"
     #include "Pegasus/Utils/String.h"
     #include "Pegasus/Utils/Memcpy.h"
     #include "Pegasus/BlockScript/CompilerState.h"
@@ -602,7 +603,7 @@ static yyconst flex_int16_t yy_chk[299] =
 
 
 
-#line 606 "bs.lexer.cpp"
+#line 607 "bs.lexer.cpp"
 
 #define INITIAL 0
 #define IN_LINE_COMMENT 1
@@ -842,9 +843,9 @@ YY_DECL
 	register int yy_act;
     struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
 
-#line 68 "bs.l"
+#line 69 "bs.l"
 
-#line 848 "bs.lexer.cpp"
+#line 849 "bs.lexer.cpp"
 
     yylval = yylval_param;
 
@@ -932,12 +933,12 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 71 "bs.l"
+#line 72 "bs.l"
 { yyextra->mBuilder->IncrementLine(); BEGIN(yyextra->PopLexerState()); }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 72 "bs.l"
+#line 73 "bs.l"
 ;
 	YY_BREAK
 
@@ -945,18 +946,18 @@ YY_RULE_SETUP
 
 case 3:
 YY_RULE_SETUP
-#line 76 "bs.l"
+#line 77 "bs.l"
 { BEGIN(yyextra->PopLexerState()); }
 	YY_BREAK
 case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
-#line 77 "bs.l"
+#line 78 "bs.l"
 { yyextra->mBuilder->IncrementLine(); }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 78 "bs.l"
+#line 79 "bs.l"
 ;
 	YY_BREAK
 
@@ -964,7 +965,7 @@ YY_RULE_SETUP
 
 case 6:
 YY_RULE_SETUP
-#line 83 "bs.l"
+#line 84 "bs.l"
 {
         BEGIN(yyextra->PopLexerState()); 
         PG_ASSERT(yyextra->mStringAccumulatorPos < 512);
@@ -991,7 +992,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 106 "bs.l"
+#line 107 "bs.l"
 {
         if (yyextra->mStringAccumulatorPos >= 511)
         {
@@ -1009,7 +1010,7 @@ YY_RULE_SETUP
 
 case 8:
 YY_RULE_SETUP
-#line 121 "bs.l"
+#line 122 "bs.l"
 {
         BEGIN(PREPROCESSOR);
    }
@@ -1017,14 +1018,14 @@ YY_RULE_SETUP
 case 9:
 /* rule 9 can match eol */
 YY_RULE_SETUP
-#line 124 "bs.l"
+#line 125 "bs.l"
 { 
         yyextra->mBuilder->IncrementLine(); 
    }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 127 "bs.l"
+#line 128 "bs.l"
 ;
 	YY_BREAK
 
@@ -1033,7 +1034,7 @@ YY_RULE_SETUP
 case 11:
 /* rule 11 can match eol */
 YY_RULE_SETUP
-#line 132 "bs.l"
+#line 133 "bs.l"
 {
         yyextra->mBuilder->IncrementLine(); 
         if (yyextra->mStringAccumulatorPos >= 511)
@@ -1048,7 +1049,6 @@ YY_RULE_SETUP
              const char* copiedString = yyextra->mBuilder->AllocStrImm(yyextra->mStringAccumulator);
              pp.PushCode(copiedString);
              yyextra->mStringAccumulatorPos = 0;
-             yyextra->mBuilder->IncrementLine(); 
              const char* msg = nullptr;
              if (!pp.FlushCommand(&msg))
              {
@@ -1314,6 +1314,14 @@ YY_RULE_SETUP
                     }
                     else
                     {
+                        if (pp.HasIncludeBuffer())
+                        {
+                            const char* buffer = nullptr;
+                            int bufferSize = 0;
+                            yyextra->PushDefineStack(YY_CURRENT_BUFFER, pp.GetIncludeDefinition());
+                            BS_push_buffer_state(BS__create_buffer(NULL,YY_BUF_SIZE,yyscanner),yyscanner);
+                        }
+
                         if (pp.IsIfActive())
                         {
                             BEGIN(yyextra->PopLexerState()); 
@@ -1328,12 +1336,12 @@ YY_RULE_SETUP
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 379 "bs.l"
+#line 387 "bs.l"
 ;
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 380 "bs.l"
+#line 388 "bs.l"
 {
                     Pegasus::BlockScript::Preprocessor& pp = yyextra->GetPreprocessor();
                     if (
@@ -1365,7 +1373,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 408 "bs.l"
+#line 416 "bs.l"
 { BS_ErrorDispatcher( yyextra->mBuilder, "Invalid token for preprocessor."); yyterminate(); }
 	YY_BREAK
 
@@ -1373,98 +1381,98 @@ YY_RULE_SETUP
 
 case 26:
 YY_RULE_SETUP
-#line 413 "bs.l"
+#line 421 "bs.l"
 { yyextra->PushLexerState(YYSTATE); BEGIN(PREPROCESSOR);}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 414 "bs.l"
+#line 422 "bs.l"
 { yyextra->PushLexerState(YYSTATE);BEGIN(IN_LINE_COMMENT);}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 415 "bs.l"
+#line 423 "bs.l"
 { yyextra->PushLexerState(YYSTATE);BEGIN(MULTI_COMMENT);  }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 416 "bs.l"
+#line 424 "bs.l"
 { yyextra->mStringAccumulatorPos = 0; yyextra->PushLexerState(YYSTATE);BEGIN(STRING_BLOCK); }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 417 "bs.l"
+#line 425 "bs.l"
 ;
 	YY_BREAK
 case 31:
 /* rule 31 can match eol */
 YY_RULE_SETUP
-#line 418 "bs.l"
+#line 426 "bs.l"
 { yyextra->mBuilder->IncrementLine();       }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 419 "bs.l"
+#line 427 "bs.l"
 { return K_IF;     }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 420 "bs.l"
+#line 428 "bs.l"
 { return K_ELSE_IF;}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 421 "bs.l"
+#line 429 "bs.l"
 { return K_ELSE;   }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 422 "bs.l"
+#line 430 "bs.l"
 { return K_RETURN; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 423 "bs.l"
+#line 431 "bs.l"
 { return K_STRUCT; }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 424 "bs.l"
+#line 432 "bs.l"
 { return K_ENUM;   }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 425 "bs.l"
+#line 433 "bs.l"
 { return K_WHILE;  }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 426 "bs.l"
+#line 434 "bs.l"
 { return K_STATIC_ARRAY; }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 427 "bs.l"
+#line 435 "bs.l"
 { return K_SIZE_OF;      }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 428 "bs.l"
+#line 436 "bs.l"
 { BS_FLOAT(I_FLOAT);     }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 429 "bs.l"
+#line 437 "bs.l"
 { BS_INT(I_INT);         }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 430 "bs.l"
+#line 438 "bs.l"
 { BS_TOKEN(K_SEMICOLON); }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 431 "bs.l"
+#line 439 "bs.l"
 { 
                     bool isTypeString = false;
                     int strLen = Pegasus::Utils::Strlen(yytext) + 1;
@@ -1494,122 +1502,122 @@ YY_RULE_SETUP
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 457 "bs.l"
+#line 465 "bs.l"
 { BS_TOKEN(O_PLUS);  }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 458 "bs.l"
+#line 466 "bs.l"
 { BS_TOKEN(O_MINUS); }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 459 "bs.l"
+#line 467 "bs.l"
 { BS_TOKEN(O_MUL);   }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 460 "bs.l"
+#line 468 "bs.l"
 { BS_TOKEN(O_DIV);   }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 461 "bs.l"
+#line 469 "bs.l"
 { BS_TOKEN(O_MOD);   }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 462 "bs.l"
+#line 470 "bs.l"
 { BS_TOKEN(O_EQ);    }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 463 "bs.l"
+#line 471 "bs.l"
 { BS_TOKEN(O_GT);    }
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 464 "bs.l"
+#line 472 "bs.l"
 { BS_TOKEN(O_LT);    }
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 465 "bs.l"
+#line 473 "bs.l"
 { BS_TOKEN(O_GTE);   }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 466 "bs.l"
+#line 474 "bs.l"
 { BS_TOKEN(O_LTE);   }
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 467 "bs.l"
+#line 475 "bs.l"
 { BS_TOKEN(O_LAND); }
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 468 "bs.l"
+#line 476 "bs.l"
 { BS_TOKEN(O_LOR);  }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 469 "bs.l"
+#line 477 "bs.l"
 { BS_TOKEN(O_SET);  }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 470 "bs.l"
+#line 478 "bs.l"
 { BS_TOKEN(O_METHOD_CALL); }
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 471 "bs.l"
+#line 479 "bs.l"
 { BS_TOKEN(O_DOT); }
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 472 "bs.l"
+#line 480 "bs.l"
 { return K_L_PAREN; }
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 473 "bs.l"
+#line 481 "bs.l"
 { return K_R_PAREN; }
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 474 "bs.l"
+#line 482 "bs.l"
 { return K_L_BRAC;  }
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 475 "bs.l"
+#line 483 "bs.l"
 { return K_R_BRAC;  }
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 476 "bs.l"
+#line 484 "bs.l"
 { return K_L_LACE;  }
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 477 "bs.l"
+#line 485 "bs.l"
 { return K_R_LACE;  }
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 478 "bs.l"
+#line 486 "bs.l"
 { return K_COMMA;   }
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 479 "bs.l"
+#line 487 "bs.l"
 { return K_COL;     }
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 480 "bs.l"
+#line 488 "bs.l"
 ;
 	YY_BREAK
 
@@ -1620,7 +1628,7 @@ case YY_STATE_EOF(STRING_BLOCK):
 case YY_STATE_EOF(PREPROCESSOR):
 case YY_STATE_EOF(PREPROCESSOR_DEFINE_CAPTURE):
 case YY_STATE_EOF(PREPROCESSOR_IGNORE_CODE):
-#line 483 "bs.l"
+#line 491 "bs.l"
 {
                     if (yyextra->GetDefineStackCount() > 0)
                     {
@@ -1635,10 +1643,10 @@ case YY_STATE_EOF(PREPROCESSOR_IGNORE_CODE):
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 494 "bs.l"
+#line 502 "bs.l"
 ECHO;
 	YY_BREAK
-#line 1642 "bs.lexer.cpp"
+#line 1650 "bs.lexer.cpp"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2800,7 +2808,7 @@ void BS_free (void * ptr , yyscan_t yyscanner)
 
 #define YYTABLES_NAME "yytables"
 
-#line 493 "bs.l"
+#line 501 "bs.l"
 
 
 
@@ -2818,19 +2826,27 @@ int BS_readInput(struct yyguts_t* yyg, char * buffer, yy_size_t& result, int max
         const Pegasus::BlockScript::Preprocessor::Definition* def = bufferEl->mDef;
         if (def->mValue != nullptr)
         {
-            if (bufferEl->mConsumed)
+            if (bufferEl->mBufferPosition >= def->mBufferSize)
             {
                 result = 0;
             }
             else
             {
-                bufferEl->mConsumed = true;
-                int totalBytes = Pegasus::Utils::Strlen(def->mValue) + 1;        
-                PG_ASSERT(totalBytes < maxToRead);
-			    buffer[0] = '\0';
-                Pegasus::Utils::Strcat(buffer, def->mValue == nullptr ? "" : def->mValue);
-                result = static_cast<yy_size_t>(totalBytes);
+				int bytesLeft = def->mBufferSize - bufferEl->mBufferPosition;
+                int bytesRead = maxToRead > bytesLeft ? bytesLeft : maxToRead;
+                Pegasus::Utils::Memcpy(buffer, def->mValue + bufferEl->mBufferPosition, bytesRead);
+                bufferEl->mBufferPosition += bytesRead;
+                result = static_cast<yy_size_t>(bytesRead);
+
+                if (def->mIsInclude && bufferEl->mBufferPosition >= def->mBufferSize)
+                {
+                    yyextra->GetPreprocessor().GetFileIncluder()->Close(def->mValue);
+                }
             }
+        }
+        else
+        {
+            result = 0;
         }
     }
     else

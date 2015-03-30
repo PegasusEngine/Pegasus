@@ -12,12 +12,9 @@
 #ifndef PEGASUS_SHADER_SOURCE_H
 #define PEGASUS_SHADER_SOURCE_H
 
+#include "Pegasus/Core/SourceCode.h"
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
 #include "Pegasus/Shader/Proxy/ShaderProxy.h"
-#include "Pegasus/Core/Io.h"
-#include "Pegasus/Utils/Vector.h"
-#include "Pegasus/AssetLib/RuntimeAssetObject.h"
-#include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Graph/GeneratorNode.h"
 
 //fwd declarations
@@ -36,10 +33,8 @@ namespace Pegasus
 namespace Shader
 {
 
-class ShaderSource : public Graph::GeneratorNode,  public AssetLib::RuntimeAssetObject
+class ShaderSource : public Graph::GeneratorNode,  public Core::SourceCode 
 {
-    GRAPH_EVENT_DECLARE_DISPATCHER(Pegasus::Core::CompilerEvents::ICompilerEventListener)
-
 public:
     //! constructor
     ShaderSource (Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
@@ -47,34 +42,13 @@ public:
     //! destructor
     virtual ~ShaderSource();
 
-    //! Set the shader source, keeping the current shader type
-    //! \param  src the actual src string
-    //! \param  buffSize precomputed string length
-    virtual void SetSource(const char * src, int srcSize);
-
-    //! Gets the shader source
-    //! \param  output string constant pointer
-    //! \param  output size of string 
-    virtual void GetSource (const char ** outSrc, int& outSize) const;
-
-    //! propagates compilation to all the parents who are including this shader source
-    virtual void Compile();
-
-    //! Register a source parent to this shader
-    void RegisterParent(ShaderSource* parent);
-
-    //! Unregister a source parent to this shader
-    void UnregisterParent(ShaderSource* parent);
-
     //! Return the stage type
     //! \return the shader type
     virtual ShaderType GetStageType() const { return SHADER_STAGE_INVALID; }
 
     static Graph::NodeReturn CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
-    //! Unregisters this source from all its parents
-    void ClearParents();
-
+    virtual void InvalidateData();
 
 #if PEGASUS_ENABLE_PROXIES
     //! sets internal reference to shader tracker
@@ -121,10 +95,6 @@ private:
     ShaderProxy mProxy;
 
 #endif
-
-    Io::FileBuffer     mFileBuffer; //! buffer structure containing shader source
-    Utils::Vector<ShaderSource*> mParents; //references to parents
-    bool mLockParentArray;
 };
 
 typedef Pegasus::Core::Ref<ShaderSource> ShaderSourceRef;

@@ -10,12 +10,11 @@
 //! \brief	Script helper for scripting callbacks
 
 #include "Pegasus/Timeline/TimelineScript.h"
-#include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/Window/IWindowContext.h"
-#include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Core/Assertion.h"
 #include "Pegasus/BlockScript/BlockScriptManager.h"
 #include "Pegasus/BlockScript/BlockScript.h"
+#include "Pegasus/BlockScript/IFileIncluder.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Core/Log.h"
 
@@ -25,6 +24,42 @@ using namespace Pegasus::Io;
 using namespace Pegasus::BlockScript;
 using namespace Pegasus::Alloc;
 using namespace Pegasus::Core;
+
+//Helper class to do importing of scripts
+class ScriptIncluder : public IFileIncluder
+{
+public:
+    ScriptIncluder(TimelineScript* timelineScript, Pegasus::Timeline::Timeline* timeline)
+    : mTimelineScript(timelineScript), mTimeline(timeline) {}
+
+    virtual ~ScriptIncluder(){}
+
+    virtual bool Open (const char* filePath, const char** outBuffer, int& outBufferSize);
+
+    virtual void Close(const char* buffer);
+
+private:
+    TimelineScript* mTimelineScript;
+    Pegasus::Timeline::Timeline* mTimeline;
+};
+
+bool ScriptIncluder::Open(const char* filePath, const char** outBuffer, int& outBufferSize)
+{
+    TimelineSourceRef t = mTimeline->LoadHeader(filePath);
+    if (t != nullptr)
+    {
+        mTimelineScript->AddHeader(t);
+        t->RegisterParent(mTimelineScript);
+        t->GetSource(outBuffer, outBufferSize);
+        return true;
+    }
+    return false;
+}
+
+void ScriptIncluder::Close(const char* buffer)
+{
+    //do nothing
+}
 
 static int Pegasus_PrintString(const char * str)
 {
@@ -46,8 +81,8 @@ static int Pegasus_PrintFloat(float f)
 
 TimelineScript::TimelineScript(IAllocator* allocator, const char* name, FileBuffer* fileBuffer, Wnd::IWindowContext* appContext)
     :
+    TimelineSource(allocator, name, fileBuffer),
     mSerialVersion(0),
-    mAllocator(allocator),
     mScript(nullptr),
     mIsDirty(true),
     mUpdateBindPoint(BlockScript::FUN_INVALID_BIND_POINT),
@@ -55,12 +90,8 @@ TimelineScript::TimelineScript(IAllocator* allocator, const char* name, FileBuff
     mDestroyBindPoint(BlockScript::FUN_INVALID_BIND_POINT),
     mScriptActive(false),
     mAppContext(appContext),
-    mRefCount(0)
-#if PEGASUS_ENABLE_PROXIES
-    ,mProxy(this)
-#endif
+    mHeaders(allocator)
 {
-    GRAPH_EVENT_INIT_DISPATCHER
 
     PG_ASSERT(allocator != nullptr);
 
@@ -79,18 +110,8 @@ TimelineScript::TimelineScript(IAllocator* allocator, const char* name, FileBuff
     {
         Pegasus::BlockScript::SystemCallbacks::gPrintFloatCallback = Pegasus_PrintFloat;
     }
-
-    mScriptName[0] = '\0';
-    PG_ASSERT(Utils::Strlen(name) < MAX_SCRIPT_NAME);
-    Utils::Strcat(mScriptName, name);
     mScript = appContext->GetBlockScriptManager()->CreateBlockScript();
     mScript->SetCompilerEventListener(this);
-    mFileBuffer.OwnBuffer(
-        mAllocator,
-        PG_NEW_ARRAY(mAllocator, -1, "blockscript src", Pegasus::Alloc::PG_MEM_PERM, char, fileBuffer->GetFileSize()),
-        fileBuffer->GetFileSize()
-    );
-    Utils::Memcpy(mFileBuffer.GetBuffer(), fileBuffer->GetBuffer(), fileBuffer->GetFileSize());
 }
 
 void TimelineScript::Shutdown()
@@ -100,6 +121,22 @@ void TimelineScript::Shutdown()
     mRenderBindPoint = BlockScript::FUN_INVALID_BIND_POINT;
     mScriptActive = false;
 
+}
+
+void TimelineScript::AddHeader(TimelineSourceIn header)
+{
+    *(new(&mHeaders.PushEmpty()) TimelineSourceRef) = header;
+}
+
+void TimelineScript::ClearHeaderList()
+{
+    for (int i = 0; i < mHeaders.GetSize(); ++i)
+    {
+        mHeaders[i]->UnregisterParent(this);
+        mHeaders[i] = nullptr;
+    }
+
+    mHeaders.Clear();
 }
 
 void TimelineScript::CallGlobalScopeInit(BsVmState* state)
@@ -123,11 +160,15 @@ void TimelineScript::CallGlobalScopeDestroy(BsVmState* state)
     }
 }
 
-bool TimelineScript::CompileScript()
+bool TimelineScript::CompileInternal()
 {
     if (mScriptActive == false)
     {
+        ClearHeaderList();
+        ScriptIncluder includer(this, mAppContext->GetTimeline());
+        mScript->SetFileIncluder(&includer);
         mScriptActive = mScript->Compile(&mFileBuffer);
+        mScript->SetFileIncluder(nullptr);
         const char* types[] = { "float" }; //the only type of this functions is the beat
 
         if (mScriptActive)
@@ -161,12 +202,12 @@ bool TimelineScript::CompileScript()
     return mScriptActive;
 }
 
-void TimelineScript::CheckAndUpdateCompilationState()
+void TimelineScript::Compile()
 {
     if (mIsDirty)
     {
         Shutdown();
-        CompileScript();
+        CompileInternal();
     }
 }
 
@@ -187,28 +228,6 @@ void TimelineScript::CallUpdate(float beat, BsVmState* state)
     }
 }
 
-void TimelineScript::GetSource(const char** outSrc, int& outSize) const
-{
-    *outSrc = mFileBuffer.GetBuffer();
-    outSize = mFileBuffer.GetFileSize();
-}
-
-void TimelineScript::SetSource(const char* source, int sourceSize)
-{
-    InvalidateData();
-    if (sourceSize > mFileBuffer.GetFileSize())
-    {
-        mFileBuffer.DestroyBuffer();
-        mFileBuffer.OwnBuffer(
-            mAllocator, 
-            PG_NEW_ARRAY(mAllocator, -1, "blockscript src", Pegasus::Alloc::PG_MEM_PERM, char, sourceSize),
-            sourceSize
-        );
-    }
-    mFileBuffer.SetFileSize(sourceSize);
-    Pegasus::Utils::Memcpy(mFileBuffer.GetBuffer(), source, sourceSize);
-}
-
 void TimelineScript::CallRender(float beat, BsVmState* state)
 {
     if (mScriptActive && mRenderBindPoint != BlockScript::FUN_INVALID_BIND_POINT)
@@ -222,22 +241,11 @@ void TimelineScript::CallRender(float beat, BsVmState* state)
     }
 }
 
-void TimelineScript::Release()
-{
-    PG_ASSERTSTR(mRefCount > 0, "Invalid reference counter (%d), it should have a positive value", mRefCount);
-    --mRefCount;
-
-    if (mRefCount <= 0)
-    {
-        PG_DELETE(mAllocator, this);
-    }
-}
-
 TimelineScript::~TimelineScript()
 {
+    ClearHeaderList();
     mAppContext->GetTimeline()->GetScriptTracker()->UnregisterScript(this);
     mAppContext->GetBlockScriptManager()->DestroyBlockScript(mScript);
-    GRAPH_EVENT_DESTROY_USER_DATA(&mProxy, "BlockScript", GetEventListener());
 }
 
 void TimelineScript::OnCompilationBegin()

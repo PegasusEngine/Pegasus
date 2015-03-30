@@ -7,7 +7,7 @@ struct PsyBeadsState
 	time : float;
 	padding : float2;
 };
-
+#define TEST_SZ 1251213
 
 psyBeadsProgram = CreateProgramLinkage("PSyBeadsRayMarcher");
 psyBeadsProgram->SetShaderStage(LoadShader("shaders/hlsl/Psybeads.vs"));
@@ -25,6 +25,7 @@ dd = quadGenerator;
 int Timeline_Update(beat : float)
 {
 	echo(dd.Degree);
+	echo(TEST_SZ);
 }
 
 int Timeline_Render(beat : float)

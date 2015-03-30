@@ -452,7 +452,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
             
             tid2 = nullptr;
             int offset = 0;
-            while (argList != nullptr)
+            while (argList != nullptr && argList->GetArgDec() != nullptr)
             {
                 if (!Pegasus::Utils::Strcmp(argList->GetArgDec()->GetVar(), accessOffset->GetName()))
                 {
@@ -717,7 +717,7 @@ Exp*   BlockScriptBuilder::BuildIdd   (const char * name)
                 idd->SetOffset(found->mOffset);
                 idd->SetFrameOffset(frameOffset);
                 idd->SetTypeDesc(found->mType);
-                idd->SetIsGlobal(currentFrame == 0);
+                idd->SetIsGlobal(currentFrame->GetParentStackFrame() == nullptr);
                 break;
             }
             currentFrame = info->GetParentStackFrame();
@@ -1061,7 +1061,7 @@ StmtStructDef* BlockScriptBuilder::BuildStmtStructDef(const char* name, ArgList*
 
     int count = 0;
     ArgList* argList = definitions;
-    while (argList != nullptr)
+    while (argList != nullptr && argList->GetArgDec() != nullptr)
     {
         if (count >= MAX_CHILD_MEMBERS)
         {

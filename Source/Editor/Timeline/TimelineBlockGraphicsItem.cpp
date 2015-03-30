@@ -416,6 +416,15 @@ void TimelineBlockGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *even
 
 //----------------------------------------------------------------------------------------
 
+void TimelineBlockGraphicsItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+{
+    update();
+    QGraphicsItem::mouseDoubleClickEvent(event);
+    emit(DoubleClicked(mBlockProxy));
+}
+
+//----------------------------------------------------------------------------------------
+
 void TimelineBlockGraphicsItem::SetXFromBeat()
 {
     Pegasus::Timeline::ILaneProxy * laneProxy = mBlockProxy->GetLane();

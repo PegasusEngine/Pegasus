@@ -42,6 +42,7 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Shared\TimelineDefs.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Timeline.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\TimelineScript.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\TimelineSource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\Block.cpp" />
@@ -53,6 +54,7 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\ScriptTracker.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\Timeline.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\TimelineScript.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\TimelineSource.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CD84B0AD-380B-41C9-B351-618F99B06DD9}</ProjectGuid>

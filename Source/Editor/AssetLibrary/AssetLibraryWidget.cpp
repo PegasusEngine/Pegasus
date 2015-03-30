@@ -38,13 +38,6 @@
 #include <qmessagebox.h>
 
 
-//dispatch types for source code
-static const int SHADER = 1;
-static const int PROGRAM = 2;
-static const int TEXTURE = 3;
-static const int MESH = 4;
-static const int BLOCKSCRIPT = 5;
-
 
 AssetLibraryWidget::AssetLibraryWidget(QWidget * parent, CodeEditorWidget * editorWidget)
 : QDockWidget(parent), mCodeEditorWidget(editorWidget)
@@ -239,7 +232,7 @@ void AssetLibraryWidget::OnSaveCode(CodeUserData* code)
         Pegasus::AssetLib::IAssetLibProxy* assetLib = appProxy->GetAssetLibProxy();
         Pegasus::Core::ISourceCodeProxy* codeProxy = code->GetSourceCode();   
         //factories:
-        int dispatchType = code->GetDispatchType();
+        DispatchTypes dispatchType = static_cast<AssetLibraryWidget::DispatchTypes>(code->GetDispatchType());
         switch(dispatchType)
         {
         case SHADER:
@@ -462,7 +455,7 @@ void AssetLibraryWidget::OnRenderThreadNewAsset(const QString path, int assetTyp
 
 void AssetLibraryWidget::OnRenderThreadCloseSourceCode(CodeUserData* userData)
 {
-    switch(userData->GetDispatchType())
+    switch(static_cast<DispatchTypes>(userData->GetDispatchType()))
     {
     case SHADER:
         {
@@ -511,7 +504,7 @@ void AssetLibraryWidget::DispatchTextEditorThroughProgramView(const QModelIndex&
         mCodeEditorWidget->activateWindow();
         Pegasus::Core::ISourceCodeProxy * code = static_cast<Pegasus::Core::ISourceCodeProxy*>(mProgramTreeModel->TranslateShaderIndex(index));
         CodeUserData* userData = static_cast<CodeUserData*>(code->GetUserData());
-        userData->SetDispatchType(PROGRAM);
+        userData->SetDispatchType(SHADER);
         mCodeEditorWidget->RequestOpen(userData);
     }
 }

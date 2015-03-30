@@ -17,6 +17,7 @@
 
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 #include "Pegasus/Timeline/Shared/ILaneProxy.h"
+#include "Pegasus/Timeline/Shared/IBlockProxy.h"
 
 #include <QListWidgetItem>
 
@@ -53,6 +54,8 @@ TimelineDockWidget::TimelineDockWidget(QWidget *parent)
             this, SLOT(SetCurrentBeat(float)));
     connect(ui.graphicsView, SIGNAL(BlockMoved()),
             this, SIGNAL(BlockMoved()));
+    connect(ui.graphicsView, SIGNAL(BlockDoubleClicked(Pegasus::Timeline::IBlockProxy*)),
+            this, SIGNAL(BlockDoubleClicked(Pegasus::Timeline::IBlockProxy*)));
 }
 
 //----------------------------------------------------------------------------------------

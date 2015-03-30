@@ -618,6 +618,10 @@ void TimelineGraphicsView::RefreshLaneFromTimelineLane(unsigned int laneIndex, c
                 // Connect the block moved signal to a request to re-render the viewport
                 connect(item, SIGNAL(BlockMoved()),
                         this, SIGNAL(BlockMoved()));
+
+                // Connect the block moved signal to request a double click action 
+                connect(item, SIGNAL(DoubleClicked(Pegasus::Timeline::IBlockProxy*)),
+                        this, SIGNAL(BlockDoubleClicked(Pegasus::Timeline::IBlockProxy*)));
             }
             else
             {

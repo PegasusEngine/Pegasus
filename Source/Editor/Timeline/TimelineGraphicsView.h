@@ -79,6 +79,9 @@ signals:
     //! Emitted when a block has been moved by the user
     void BlockMoved();
 
+    //! Emitted when the user double clicks a block
+    void BlockDoubleClicked(Pegasus::Timeline::IBlockProxy* blockProxy);
+
     //------------------------------------------------------------------------------------
 
 public slots:

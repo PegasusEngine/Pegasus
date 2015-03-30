@@ -132,8 +132,6 @@ void Pegasus::Shader::ShaderStage::UnregisterParent(Pegasus::Shader::ProgramLink
 
 void Pegasus::Shader::ShaderStage::SetSource(Pegasus::Shader::ShaderType type, const char * src, int srcSize)
 {
-
-    InvalidateData();
     Pegasus::Shader::ShaderSource::SetSource(src, srcSize);
     mType = type;
 }
