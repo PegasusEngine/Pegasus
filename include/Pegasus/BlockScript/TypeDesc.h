@@ -122,7 +122,7 @@ public:
 
     //! Sets the child of this type
     //! \param child the child to set
-    void  SetChild(const TypeDesc* child) { mChild = child; }
+    void  SetChild(TypeDesc* child) { mChild = child; }
 
     //! Comparison function
     //! \param other the other pointer
@@ -132,6 +132,10 @@ public:
     //! Gets the child of this type
     //! \return the typedesc of the child
     const TypeDesc* GetChild() const { return mChild; }
+
+    //! Gets the child of this type
+    //! \return the typedesc of the child
+    TypeDesc* GetChild() { return mChild; }
 
     //! \return Returns a structure definition if this type is a structure.
     const Ast::StmtStructDef* GetStructDef() const { return mStructDef; }
@@ -183,6 +187,8 @@ public:
     //! returns the callback used by the runtime to access a property from an object reference
     GetObjectPropertyRuntimePtrCallback GetPropertyCallback() const { return mPropertyCallback; }
 
+    //! Computes the size of a type
+    bool ComputeSize();
 private:
     //no copy constructor / destructor of object
     TypeDesc(TypeDesc&);
@@ -194,7 +200,7 @@ private:
     char       mName[sMaxTypeName];
     Modifier   mModifier;
     AluEngine  mAluEngine;
-    const TypeDesc*  mChild;
+    TypeDesc*  mChild;
     Ast::StmtStructDef* mStructDef;
     EnumNode*           mEnumNode;
     PropertyNode*       mPropertyNode;

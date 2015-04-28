@@ -57,7 +57,7 @@ public:
     TypeDesc* CreateType(
         TypeDesc::Modifier modifier,
         const char * name,
-        const TypeDesc* child = nullptr,
+        TypeDesc* child = nullptr,
         int modifierProperty = 0,
         TypeDesc::AluEngine engine = TypeDesc::E_NONE,
         Ast::StmtStructDef* structDef = nullptr,
@@ -89,8 +89,6 @@ public:
     PropertyNode* NewPropertyNode();
 
 private:
-    //! Computes the size of a type
-    bool ComputeSize(const TypeDesc* type, int& outSize) const;
     Container<TypeDesc> mTypeDescPool;
     Container<EnumNode> mEnumNodePool;
     Container<PropertyNode> mPropertyNodePool;

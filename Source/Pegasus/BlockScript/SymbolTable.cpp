@@ -81,7 +81,7 @@ TypeDesc* SymbolTable::GetTypeForPatching(const char* typeName)
 TypeDesc* SymbolTable::InternalCreateType(
     TypeDesc::Modifier modifier,
     const char * name,
-    const TypeDesc* child,
+    TypeDesc* child,
     int modifierProperty,
     TypeDesc::AluEngine engine,
     BlockScript::Ast::StmtStructDef* structDef,
@@ -164,7 +164,7 @@ TypeDesc* SymbolTable::CreateStarType()
     );
 }
 
-TypeDesc* SymbolTable::CreateArrayType(const char* name, const TypeDesc* childType, int count)
+TypeDesc* SymbolTable::CreateArrayType(const char* name, TypeDesc* childType, int count)
 {
     return InternalCreateType(
         TypeDesc::M_ARRAY,

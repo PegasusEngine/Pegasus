@@ -1,0 +1,4 @@
+value of v.z is: 
+
+101.000000
+Q.z == v.z

@@ -122,6 +122,9 @@ void ExpressionEngine<int>::Visit(Ast::Binop* n)
     case O_EQ: 
         mResult = r1 == r2;
         break;
+    case O_NEQ: 
+        mResult = r1 != r2;
+        break;
     case O_GT: 
         mResult = r1 > r2;
         break;
@@ -129,10 +132,10 @@ void ExpressionEngine<int>::Visit(Ast::Binop* n)
         mResult = r1 < r2;
         break;
     case O_GTE: 
-        mResult = r1 <= r2;
+        mResult = r1 >= r2;
         break;
     case O_LTE: 
-        mResult = r1 >= r2;
+        mResult = r1 <= r2;
         break;
     case O_LAND: 
         mResult = r1 && r2;
@@ -176,6 +179,9 @@ void ExpressionEngine<float>::Visit(Ast::Binop* n)
     case O_EQ: 
         mResult = r1 == r2;
         break;
+    case O_NEQ: 
+        mResult = r1 != r2;
+        break;
     case O_GT: 
         mResult = r1 > r2;
         break;
@@ -183,10 +189,10 @@ void ExpressionEngine<float>::Visit(Ast::Binop* n)
         mResult = r1 < r2;
         break;
     case O_GTE: 
-        mResult = r1 <= r2;
+        mResult = r1 >= r2;
         break;
     case O_LTE: 
-        mResult = r1 >= r2;
+        mResult = r1 <= r2;
         break;
     case O_LAND: 
         mResult = r1 && r2;

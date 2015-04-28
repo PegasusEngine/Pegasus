@@ -315,6 +315,8 @@ void Canonizer::HandleArrayAccessOperator(Binop* n)
         Binop* lhsBinop = static_cast<Binop*>(lhs);
         PG_ASSERT(lhsBinop->GetRhs()->GetTypeDesc()->GetAluEngine() == TypeDesc::E_INT);
 
+        rhs->Access(this);
+        rhs = mRebuiltExpression;
         Binop* offsetExp = CANON_NEW Binop(imm,O_MUL,rhs);
         offsetExp->SetTypeDesc(rhs->GetTypeDesc());
         
@@ -328,7 +330,10 @@ void Canonizer::HandleArrayAccessOperator(Binop* n)
     else
     {
         PG_ASSERT(lhs->GetExpType() == Idd::sType);
+        rhs->Access(this);
+        rhs = mRebuiltExpression;
         Exp* offsetExp = CANON_NEW Binop(imm, O_MUL, rhs);
+
         offsetExp->SetTypeDesc(rhs->GetTypeDesc());
         Binop* finalReference = CANON_NEW Binop(lhs, O_ACCESS, offsetExp);
         finalReference->SetTypeDesc(arrayType);
@@ -496,7 +501,7 @@ void Canonizer::HandleSetOperator(Binop* n)
                 srcIdd->SetOffset(resultTemp->GetOffset() + i * child->GetByteSize());
                 srcIdd->SetFrameOffset(resultTemp->GetFrameOffset());
                 srcIdd->SetIsGlobal(resultTemp->IsGlobal());
-                srcIdd->SetTypeDesc(resultTemp->GetTypeDesc());
+                srcIdd->SetTypeDesc(resultTemp->GetTypeDesc()->GetChild());
 
                 PushCanon( CANON_NEW LoadAddr(Canon::R_C, destBinop));
                 PushCanon( CANON_NEW CopyToAddr(Canon::R_C, srcIdd, srcIdd->GetTypeDesc()->GetByteSize()));

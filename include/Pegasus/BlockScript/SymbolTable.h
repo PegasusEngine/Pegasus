@@ -127,7 +127,7 @@ public:
     //! \param name the name of this array. Irrelevant though, since the arrays are found using the array parsing identifiers notation
     //! \param childType the child type of the array (meaning the basic type)
     //! \param count the number of elements this static array has
-    TypeDesc* CreateArrayType(const char* name, const TypeDesc* childType, int count);
+    TypeDesc* CreateArrayType(const char* name, TypeDesc* childType, int count);
 
     //! Returns a function description based on an AST function call. The FunDesc
     //! \param functionCall - AST node with function call.
@@ -157,7 +157,7 @@ private:
     TypeDesc* InternalCreateType(
         TypeDesc::Modifier modifier,
         const char * name,
-        const TypeDesc* child = nullptr,
+        TypeDesc* child = nullptr,
         int modifierProperty = 0,
         TypeDesc::AluEngine engine = TypeDesc::E_NONE,
         Ast::StmtStructDef* structDef = nullptr,

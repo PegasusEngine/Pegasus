@@ -1,0 +1,33 @@
+v = float3(0,0,0);
+v.x = 2.0;
+v.z = 99.0 + v.x;
+echo("value of v.z is: ");
+echo(v.z);
+
+float2 num()
+{
+    if (v.z > 10.0)
+    {
+        return float2(v.x, v.z);
+    }
+    else
+    {
+        return float2(0.0, 0.0);
+    }
+}
+
+if (v.x != 2.0)
+{
+}
+elif (98.7 < v.z && v.y == 0.0)
+{
+    q = num();
+    if (q.y == v.z)
+    {
+        echo("Q.z == v.z");
+    }
+    else
+    {
+        echo("This logic script has failed");
+    }
+}

@@ -341,7 +341,7 @@ extern int BS_lex \
 #undef YY_DECL
 #endif
 
-#line 501 "bs.l"
+#line 502 "bs.l"
 
 
 #line 348 "bs.lexer.hpp"

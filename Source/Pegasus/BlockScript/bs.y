@@ -79,7 +79,7 @@
 %}
 
 // expect 108 reduce/shift warnings due to grammar ambiguity
-%expect 115
+%expect 116
 
 %union {
     int    token;
@@ -87,7 +87,7 @@
     float  floatValue;
     char*  identifierText;
     Pegasus::BlockScript::StackFrameInfo*      vFrameInfo;
-    const  Pegasus::BlockScript::TypeDesc*     vTypeDesc;
+    Pegasus::BlockScript::TypeDesc*            vTypeDesc;
     Pegasus::BlockScript::EnumNode*            vEnumNode;
     #define BS_PROCESS(N) Pegasus::BlockScript::Ast::N* v##N;
     #include "Pegasus/BlockScript/Ast.inl"
@@ -123,6 +123,7 @@
 %token <token> O_DIV  
 %token <token> O_MOD
 %token <token> O_EQ
+%token <token> O_NEQ
 %token <token> O_GT
 %token <token> O_LT
 %token <token> O_GTE
@@ -156,9 +157,9 @@
 %type <vTypeDesc> type_desc
 %type <vEnumNode> enum_list
 
-%left O_SET
-%left O_EQ
 %left O_LAND O_LOR
+%left O_SET
+%left O_EQ O_NEQ
 %left O_GT O_LT O_GTE O_LTE
 %left O_MOD
 %left O_PLUS O_MINUS
@@ -341,6 +342,7 @@ exp     : ident  { $$ = $1; }
         | exp O_DIV exp    { BS_BUILD($$, BuildBinop($1, $2, $3)); }
         | exp O_MOD exp    { BS_BUILD($$, BuildBinop($1, $2, $3)); }
         | exp O_EQ   exp     { BS_BUILD($$, BuildBinop($1, $2, $3)); }
+        | exp O_NEQ   exp     { BS_BUILD($$, BuildBinop($1, $2, $3)); }
         | exp O_LAND exp     { BS_BUILD($$, BuildBinop($1, $2, $3)); }
         | exp O_LOR  exp     { BS_BUILD($$, BuildBinop($1, $2, $3)); }
         | exp O_LT   exp     { BS_BUILD($$, BuildBinop($1, $2, $3)); }
@@ -368,11 +370,33 @@ arg_list : arg_list K_COMMA arg_dec {
          ;
 
 type_desc : type_desc K_L_LACE I_INT K_R_LACE { 
-                const Pegasus::BlockScript::TypeDesc* resultType = BS_GlobalBuilder->GetSymbolTable()->CreateArrayType(
-                    $1->GetName(), //name
-                    $1,  // child type
-                    $3   //array count
-                );        
+				Pegasus::BlockScript::TypeDesc* resultType = nullptr;
+				if ($1->GetModifier() != Pegasus::BlockScript::TypeDesc::M_ARRAY)
+				{
+					$1->ComputeSize();
+					resultType = BS_GlobalBuilder->GetSymbolTable()->CreateArrayType(
+					    $1->GetName(), //name
+					    $1,  // child type
+					    $3   //array count
+					);
+				}        
+				else
+				{
+					Pegasus::BlockScript::TypeDesc* target = $1;
+					while (target->GetChild()->GetModifier() == Pegasus::BlockScript::TypeDesc::M_ARRAY)
+					{
+						target = target->GetChild();
+					}
+					Pegasus::BlockScript::TypeDesc* tmp = target->GetChild();
+					resultType = BS_GlobalBuilder->GetSymbolTable()->CreateArrayType(
+						$1->GetName(),
+						tmp,
+						$3
+					);
+					target->SetChild(resultType);
+                    resultType = $1;
+					$1->ComputeSize();
+				}
                 
                 if (resultType != nullptr)
                 {
@@ -385,9 +409,10 @@ type_desc : type_desc K_L_LACE I_INT K_R_LACE {
                 }
               }
             | TYPE_IDENTIFIER {                
-                const TypeDesc* typeDesc = BS_GlobalBuilder->GetTypeByName($1);
+                TypeDesc* typeDesc = BS_GlobalBuilder->GetTypeByName($1);
                 if (typeDesc != nullptr)
                 {
+					typeDesc->ComputeSize();
                     $$ = typeDesc;
                 }
                 else

@@ -1,0 +1,67 @@
+struct S 
+{
+    i : int;
+    j : int;
+    k : int;
+    p : float4;
+};
+
+mm = static_array<S[10][10][2]>;
+
+i = 0;
+while (i < 10)
+{
+    j = 0; 
+    while(j < 10)
+    {
+        k = 0;
+        while (k < 2)
+        {
+            echo(i);
+            echo(j);
+            echo(k);
+            echo("--");
+            mm[i][j][k].i = i;
+            mm[i][j][k].j = j;
+            mm[i][j][k].k = k;
+            mm[i][j][k].p.xyz = float3(i,j,k);
+            mm[i][j][k].p.w = -1;
+            k = k + 1;
+        }
+        j = j + 1;
+    }  
+    i = i + 1;
+}
+int printStruct(ss : S)
+{
+    echo("--");
+    echo(ss.i);
+    echo(ss.j);
+    echo(ss.k);
+    echo("(");
+    echo(ss.p.x);
+    echo(", ");
+    echo(ss.p.y);
+    echo(", ");
+    echo(ss.p.z);
+    echo(", ");
+    echo(ss.p.w);
+    echo(")");
+}
+
+i = 0;
+while (i < 10)
+{   
+    j = 0;
+    while(j < 10)
+    {
+        k = 0;
+        while (k < 2)
+        {
+            printStruct(mm[i][j][k]);
+            k = k + 1;
+        }
+        j = j + 1;
+    }
+    i = i + 1;
+}

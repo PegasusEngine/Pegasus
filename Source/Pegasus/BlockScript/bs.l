@@ -468,6 +468,7 @@ sizeof          { return K_SIZE_OF;      }
 \/              { BS_TOKEN(O_DIV);   }
 %               { BS_TOKEN(O_MOD);   }
 ==              { BS_TOKEN(O_EQ);    }
+!=              { BS_TOKEN(O_NEQ);    }
 >               { BS_TOKEN(O_GT);    }
 \<              { BS_TOKEN(O_LT);    }
 >=              { BS_TOKEN(O_GTE);   }

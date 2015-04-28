@@ -1,0 +1,46 @@
+#define FIB_LEN 20
+
+int CalcFib(i : int, len : int);
+
+ans = static_array<int[FIB_LEN]>;
+i = 0;
+
+CalcFib(0, FIB_LEN);
+
+while (i < FIB_LEN)
+{
+    echo(ans[i]);
+    i = i + 1;
+}
+
+int CalcFib(i : int, len : int)
+{
+    if (i == 0 || i == 1)
+    {
+        ans[i] = 1;
+        CalcFib(i + 1, len);
+    } 
+    elif (i < len)
+    {
+        ans[i] = ans[i - 1] + ans[i - 2];
+        CalcFib(i + 1, len);
+    }
+    return 0;
+}
+
+echo("Another way is doing fibonacci in place:");
+
+a = 1;
+b = 1;
+c = 0;
+i = 2;
+echo(a);echo(b);
+while (i < FIB_LEN)
+{
+    c = a + b;
+    echo(c);
+    a = b;
+    b = c;
+    i = i + 1;
+}
+

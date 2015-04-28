@@ -1,0 +1,58 @@
+#define MAX_NODE_POOL 50
+struct Node
+{
+    value : float4;
+    next : int;
+};
+
+struct LL
+{
+    nodePool : Node[MAX_NODE_POOL];
+    begin : int;
+};
+
+ll = static_array<float4[10]>;
+ll[0] = float4(0.1,2.0,4.0,8.0);
+ll[1] = float4(0.6,9.2,28.0,1.0);
+ll[2] = float4(0.99,90.0,28.2,4.2);
+ll[3] = float4(9.02,21.2,21.0,22.0);
+ll[4] = float4(0.0,0.0,0.0,0.0);
+ll[5] = float4(3.3,9.1,24.2,12.4);
+ll[6] = float4(5.02,28.2,21.15,1.11);
+ll[7] = float4(12.12,11.1,22.0,253.2);
+ll[8] = float4(9.2,2123.2,2552.1,22.2);
+ll[9] = float4(0.1,0.3,1.0,3.4);
+i = 0;
+alloc = 0;
+list = LL();
+list.begin = 0;
+while (i < 10)
+{
+    list.nodePool[alloc].value = ll[i];
+    alloc = alloc + 1;
+    list.nodePool[alloc - 1].next = alloc; 
+    if (alloc == 10)
+    {
+        list.nodePool[alloc - 1].next = -1;
+    }
+    i = i + 1;
+}
+
+i = 0;
+n = list.nodePool[list.begin];
+done = 0;
+
+float4 GetVal(n : Node)
+{
+    return n.value;
+}
+
+while( done != 1 )
+{
+    done = n.next == -1;
+    echo(GetVal(n).x);
+    n = list.nodePool[n.next];
+    i = i + 1;
+
+}
+

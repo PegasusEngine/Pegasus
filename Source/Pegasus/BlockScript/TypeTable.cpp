@@ -40,7 +40,7 @@ void TypeTable::Shutdown()
 TypeDesc* TypeTable::CreateType(
     TypeDesc::Modifier modifier,
     const char * name,
-    const TypeDesc* child,
+    TypeDesc* child,
     int modifierProperty,
     TypeDesc::AluEngine engine,
     Pegasus::BlockScript::Ast::StmtStructDef* structDef,
@@ -51,21 +51,24 @@ TypeDesc* TypeTable::CreateType(
 {
     PG_ASSERT(modifier != TypeDesc::M_INVALID);
     int s = mTypeDescPool.Size();
-    for (int i = 0; i < s; ++i)
+    if (modifier != TypeDesc::M_ARRAY)
     {
-        TypeDesc* t = &mTypeDescPool[i];
-        PG_ASSERT(t->GetModifier() != TypeDesc::M_INVALID);
-        if (
-            !Utils::Strcmp(name, t->GetName())
-           )
+        for (int i = 0; i < s; ++i)
         {
+            TypeDesc* t = &mTypeDescPool[i];
+            PG_ASSERT(t->GetModifier() != TypeDesc::M_INVALID);
             if (
-                    modifier == t->GetModifier() &&
-                    child == t->GetChild() &&
-                    modifierProperty == t->GetModifierProperty()
+                !Utils::Strcmp(name, t->GetName())
                )
             {
-                return t;
+                if (
+                        modifier == t->GetModifier() &&
+                        child == t->GetChild() &&
+                        modifierProperty == t->GetModifierProperty()
+                   )
+                {
+                    return t;
+                }
             }
         }
     }
@@ -84,9 +87,8 @@ TypeDesc* TypeTable::CreateType(
     newDesc.SetPropertyCallback(getPropCallback);
 
     int newSize = 0;
-    bool success = ComputeSize(&newDesc, newSize);
+    bool success = newDesc.ComputeSize();
     PG_ASSERTSTR(success, "Fail computing size for type!");
-    newDesc.SetByteSize(newSize);
 
 
     return &newDesc;
@@ -143,52 +145,6 @@ bool TypeTable::FindEnumByName(const char* name, const EnumNode** outEnumNode, c
     return false;
 }
 
-bool TypeTable::ComputeSize(const TypeDesc* t, int& outSize) const
-{
-    if (t != nullptr)
-    {
-        switch (t->GetModifier())
-        {
-        case TypeDesc::M_STAR:
-        case TypeDesc::M_SCALAR:
-        case TypeDesc::M_ENUM:
-        case TypeDesc::M_REFERECE:
-            outSize = 4; //4 bytes for scalars, enums, object refs and imms
-            return true;
-        case TypeDesc::M_VECTOR:
-            outSize = 4 * t->GetModifierProperty();
-            return true;
-        case TypeDesc::M_ARRAY:
-            {
-                outSize = t->GetModifierProperty() * t->GetChild()->GetByteSize(); //4 bytes for reference.
-            return true;
-            }
-        case TypeDesc::M_STRUCT:
-            {
-                const Ast::StmtStructDef* structDef = t->GetStructDef();
-                PG_ASSERT(structDef != nullptr);
-                Ast::ArgList* argList = structDef->GetArgList();
-                int totalSize = 0;
-                while (argList != nullptr)
-                {
-                    if (argList->GetArgDec() != nullptr)
-                    {
-                        const TypeDesc* typeDesc = argList->GetArgDec()->GetType();
-
-                        totalSize += typeDesc->GetByteSize();
-                    }
-                    argList = argList->GetTail();                    
-                }
-                outSize = totalSize;
-            }
-            return true;
-        default:
-            PG_FAILSTR("Unhandled modifier while computing file size :(");
-            return false;
-        }
-    }
-    return false;
-}
 
 EnumNode* TypeTable::NewEnumNode()
 {

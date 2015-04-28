@@ -130,3 +130,48 @@ bool TypeDesc::CmpStructProperty(const TypeDesc* other) const
 
     
 }
+
+bool TypeDesc::ComputeSize()
+{
+    switch (GetModifier())
+    {
+    case TypeDesc::M_STAR:
+    case TypeDesc::M_SCALAR:
+    case TypeDesc::M_ENUM:
+    case TypeDesc::M_REFERECE:
+        mByteSize = 4; //4 bytes for scalars, enums, object refs and imms
+        return true;
+    case TypeDesc::M_VECTOR:
+        mByteSize = 4 * GetModifierProperty();
+        return true;
+    case TypeDesc::M_ARRAY:
+        {
+            if (GetChild() != nullptr) GetChild()->ComputeSize();
+            mByteSize = GetModifierProperty() * GetChild()->GetByteSize(); //4 bytes for reference.
+            return true;
+        }
+    case TypeDesc::M_STRUCT:
+        {
+            const Ast::StmtStructDef* structDef = GetStructDef();
+            PG_ASSERT(structDef != nullptr);
+            Ast::ArgList* argList = structDef->GetArgList();
+            int totalSize = 0;
+            while (argList != nullptr)
+            {
+                if (argList->GetArgDec() != nullptr)
+                {
+                    const TypeDesc* typeDesc = argList->GetArgDec()->GetType();
+
+                    totalSize += typeDesc->GetByteSize();
+                }
+                argList = argList->GetTail();                    
+            }
+            mByteSize = totalSize;
+        }
+        return true;
+    default:
+        PG_FAILSTR("Unhandled modifier while computing file size :(");
+        return false;
+    }
+    return false;
+}

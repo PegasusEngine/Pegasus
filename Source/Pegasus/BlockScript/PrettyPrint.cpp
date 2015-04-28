@@ -366,6 +366,8 @@ void PrettyPrint::Visit(Binop* n)
         break;
     case O_EQ: mStr(" == ");
         break;
+    case O_NEQ: mStr(" != ");
+        break;
     case O_LAND: mStr(" && ");
         break;
     case O_LOR: mStr(" || ");

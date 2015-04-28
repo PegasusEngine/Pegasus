@@ -208,6 +208,11 @@ const TypeDesc* BlockScriptBuilder::GetTypeByName(const char* name) const
     return mSymbolTable.GetTypeByName(name);
 }
 
+TypeDesc* BlockScriptBuilder::GetTypeByName(const char* name)
+{
+    return mSymbolTable.GetTypeForPatching(name);
+}
+
 int BlockScriptBuilder::RegisterStackMember(const char* name, const TypeDesc* type)
 {
     PG_ASSERT(type != nullptr);
@@ -228,6 +233,7 @@ bool BlockScriptBuilder::IsBinopValid(const TypeDesc* type, int op)
         case O_DIV:
         case O_MOD:
         case O_EQ:
+        case O_NEQ:
         case O_LT:
         case O_GT:
         case O_LTE:
@@ -246,6 +252,7 @@ bool BlockScriptBuilder::IsBinopValid(const TypeDesc* type, int op)
         case O_MUL:
         case O_DIV:
         case O_EQ:
+        case O_NEQ:
         case O_LT:
         case O_GT:
         case O_LTE:
@@ -477,8 +484,10 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
         }
         else if (tid1->GetModifier() == TypeDesc::M_VECTOR)
         {
-            if (lhs->GetExpType() == Binop::sType &&
-                static_cast<Binop*>(lhs)->GetOp() == O_DOT)
+            if (lhs->GetExpType() == Binop::sType
+                && (static_cast<Binop*>(lhs)->GetOp() == O_DOT &&
+                    static_cast<Binop*>(lhs)->GetLhs()->GetTypeDesc()->GetModifier() == TypeDesc::M_VECTOR)
+                )
             {
                 BS_ErrorDispatcher(this, "Nested swizzle access not allowed.");
                 return nullptr;

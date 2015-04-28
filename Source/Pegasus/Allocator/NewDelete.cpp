@@ -16,7 +16,7 @@ static inline void ForceCrash()
 {
     volatile char* crashMe = nullptr;
 
-    crashMe = 0;
+    *crashMe = 0;
 }
 
 //----------------------------------------------------------------------------------------

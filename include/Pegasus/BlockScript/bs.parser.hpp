@@ -75,21 +75,22 @@ extern int BS_debug;
      O_DIV = 284,
      O_MOD = 285,
      O_EQ = 286,
-     O_GT = 287,
-     O_LT = 288,
-     O_GTE = 289,
-     O_LTE = 290,
-     O_LAND = 291,
-     O_LOR = 292,
-     O_SET = 293,
-     O_DOT = 294,
-     O_ACCESS = 295,
-     O_METHOD_CALL = 296,
-     O_IMPLICIT_CAST = 297,
-     O_EXPLICIT_CAST = 298,
-     ACCESS_PREC = 299,
-     CAST = 300,
-     NEG = 301
+     O_NEQ = 287,
+     O_GT = 288,
+     O_LT = 289,
+     O_GTE = 290,
+     O_LTE = 291,
+     O_LAND = 292,
+     O_LOR = 293,
+     O_SET = 294,
+     O_DOT = 295,
+     O_ACCESS = 296,
+     O_METHOD_CALL = 297,
+     O_IMPLICIT_CAST = 298,
+     O_EXPLICIT_CAST = 299,
+     ACCESS_PREC = 300,
+     CAST = 301,
+     NEG = 302
    };
 #endif
 
@@ -105,7 +106,7 @@ typedef union YYSTYPE
     float  floatValue;
     char*  identifierText;
     Pegasus::BlockScript::StackFrameInfo*      vFrameInfo;
-    const  Pegasus::BlockScript::TypeDesc*     vTypeDesc;
+    Pegasus::BlockScript::TypeDesc*            vTypeDesc;
     Pegasus::BlockScript::EnumNode*            vEnumNode;
     #define BS_PROCESS(N) Pegasus::BlockScript::Ast::N* v##N;
     #include "Pegasus/BlockScript/Ast.inl"
@@ -113,7 +114,7 @@ typedef union YYSTYPE
 
 
 /* Line 2058 of yacc.c  */
-#line 117 "bs.parser.hpp"
+#line 118 "bs.parser.hpp"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

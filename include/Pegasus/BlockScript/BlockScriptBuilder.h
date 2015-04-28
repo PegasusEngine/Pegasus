@@ -132,6 +132,8 @@ public:
 
     const TypeDesc* GetTypeByName(const char* name) const;
 
+    TypeDesc* GetTypeByName(const char* name);
+
     FunDesc* FindFunctionDescription(Ast::FunCall* fcSignature);
 
     FunDesc* RegisterFunctionDeclaration(Ast::StmtFunDec* funDec);

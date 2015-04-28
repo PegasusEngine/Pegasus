@@ -1,0 +1,30 @@
+
+1.000000
+hello world
+
+2.000000
+hello world
+
+3.000000
+hello world
+
+4.000000
+hello world
+
+5.000000
+hello world
+
+6.000000
+hello world
+
+7.000000
+hello world
+
+8.000000
+hello world
+
+9.000000
+hello world
+
+10.000000
+hello world
