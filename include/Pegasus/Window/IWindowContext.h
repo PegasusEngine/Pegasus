@@ -17,6 +17,7 @@
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Texture/TextureManager.h"
 #include "Pegasus/Mesh/MeshManager.h"
+#include "Pegasus/Camera/CameraManager.h"
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/BlockScript/BlockScriptManager.h"
 #include "Pegasus/AssetLib/AssetLib.h"
@@ -52,6 +53,10 @@ public:
     //! Gets the texture manager for use by this window
     //! \return The texture manager.
     virtual Mesh::MeshManager* GetMeshManager() const = 0;
+
+    //! Gets the camera manager for use by this window
+    //! \return The camera manager.
+    virtual Camera::CameraManager* GetCameraManager() const = 0;
 
     //! Gets the timeline for use by this window
     //! \return The timeline.

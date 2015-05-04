@@ -66,14 +66,14 @@ public:
 
 private:
     
-    //! internal implementaton of insert
+    //! internal implementation of insert
     //! \param i first index
     //! \param j second index
     //! \param element the element to insert
     void Insert(int i, int j, const char * element);
 
     
-    //! internal implementaton of Get
+    //! internal implementation of Get
     //! \param i first index
     //! \param j second index
     //! \param element the element to fill with data
@@ -84,7 +84,7 @@ private:
     //! \param size in bytes to allocate
     void * Allocate(int size);
 
-    //! Free convinience function
+    //! Free convenience function
     //! \param ptr the pointer to free
     void   Free(void * ptr);
 

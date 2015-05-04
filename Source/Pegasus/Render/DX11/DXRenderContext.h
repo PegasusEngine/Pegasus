@@ -29,7 +29,7 @@ namespace Pegasus
 namespace Render
 {
 
-//! convinience function to get the d3d11 device and contexts
+//! Convenience function to get the d3d11 device and contexts
 void GetDeviceAndContext(ID3D11Device ** device, ID3D11DeviceContext ** contextPointer);
 
 class DXDevice;

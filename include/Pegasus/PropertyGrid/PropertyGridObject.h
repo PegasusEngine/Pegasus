@@ -4,13 +4,13 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	PropertyGrid.h
+//! \file	PropertyGridObject.h
 //! \author	Kevin Boulanger
-//! \date	24th April 2014
-//! \brief	Property grid, defining a set of editable properties
+//! \date	10th February 2015
+//! \brief	Property grid object, parent of every class that defines a set of editable properties
 
-#ifndef PEGASUS_PROPERTYGRID_PROPERTYGRID_H
-#define PEGASUS_PROPERTYGRID_PROPERTYGRID_H
+#ifndef PEGASUS_PROPERTYGRID_PROPERTYGRIDOBJECT_H
+#define PEGASUS_PROPERTYGRID_PROPERTYGRIDOBJECT_H
 
 #include "Pegasus/PropertyGrid/PropertyGridClassInfo.h"
 #include "Pegasus/PropertyGrid/PropertyGridManager.h"
@@ -18,6 +18,7 @@
 namespace Pegasus {
 namespace PropertyGrid {
 
+//! \todo IMPLEMENT MOST OF THIS CLASS. This is a quick prototype for early testing
 
 //class PropertyRecord : public Utils::DependsOnStatic<PropertyGridManager, PropertyGridManager::GetInstance>
 //{
@@ -60,7 +61,7 @@ namespace PropertyGrid {
 //! Macro to start declaring a set of properties
 //! \param *** className Name of the class the properties belong to
 //! \note To be used inside a class declaration, before calling \a DECLARE_PROPERTY()
-#define BEGIN_DECLARE_PROPERTIES(/*className*/)                                                  \
+#define BEGIN_DECLARE_PROPERTIES2(/*className*/)                                                  \
     public:                                                                         \
         virtual void InitProperties();                                              \
     private:                                                                        \
@@ -71,7 +72,7 @@ namespace PropertyGrid {
 //! \param type Type of the property, use Math:: in front of types from the math library
 //! \param name Name of the property, starting with an uppercase letter
 //! \warning To be used after \a BEGIN_DECLARE_PROPERTIES() and before END_DECLARE_PROPERTIES()
-#define DECLARE_PROPERTY(type, name)                                                \
+#define DECLARE_PROPERTY2(type, name)                                                \
     public:                                                                         \
         inline PropertyGrid::PropertyDefinition<type>::ReturnType Get##name() const { return mProperty##name; }         \
         inline void Set##name(PropertyGrid::PropertyDefinition<type>::ParamType value) { PropertyGrid::PropertyDefinition<type>::SetProperty(value, mProperty##name); GetPropertyGrid().Invalidate(); }     \
@@ -81,13 +82,13 @@ namespace PropertyGrid {
 
 //! Macro to stop declaring a set of properties
 //! \note To be used inside a class declaration, after calling \a DECLARE_PROPERTY()
-#define END_DECLARE_PROPERTIES()
+#define END_DECLARE_PROPERTIES2()
 
 
 //! Macro to start declaring a set of properties in the implementation file
 //! \param className Class name of the property grid owner
 //! \note To be used inside a .cpp file, before calling \a IMPLEMENT_PROPERTY()
-#define BEGIN_IMPLEMENT_PROPERTIES(className)                                       \
+#define BEGIN_IMPLEMENT_PROPERTIES2(className)                                       \
     const char * className::sClassName = #className;                                \
     void className::InitProperties()                                                \
     {                                                                               \
@@ -98,31 +99,27 @@ namespace PropertyGrid {
 //! \param name Name of the property, starting with an uppercase letter
 //! \param defaultValue Default value of the property, use Math::Type(values) with math types
 //! \warning To be used after \a BEGIN_IMPLEMENT_PROPERTIES() and before END_IMPLEMENT_PROPERTIES()
-#define IMPLEMENT_PROPERTY(type, name, defaultValue)                                \
+#define IMPLEMENT_PROPERTY2(type, name, defaultValue)                                \
     Pegasus::PropertyGrid::PropertyDefinition<type>::SetProperty(defaultValue,mProperty##name);                                                 \
 //    GetPropertyGrid().RegisterProperty<type>(#name, &mProperty##name, sClassName);  \
 
 
 //! Macro to stop declaring a set of properties in the implementation file
 //! \note To be used inside a .cpp file, after calling \a IMPLEMENT_PROPERTY()
-#define END_IMPLEMENT_PROPERTIES()                                                  \
+#define END_IMPLEMENT_PROPERTIES2()                                                  \
     }                                                                               \
 
 //----------------------------------------------------------------------------------------
 
-//! Property grid, defining a set of editable properties.
+//! Property grid object, parent of every class that defines a set of editable properties.
 //! When properties are declared, their association accessors are created (SetName() and GetName()).
 //! The property grid object stores the property definitions and gives access to string-based accessors.
-//! \warning For a class to support properties, it needs to store an instance of this class,
-//!          accessible through a GetPropertyGrid() accessor, returning a reference.
-//!          It also needs to define an empty virtual void InitProperties() function.
-//! \note Typically used inside \a Graph::Node, but can be used within any other class
-class PropertyGrid
+class PropertyGridObject : public Utils::DependsOnStatic<PropertyGridManager, PropertyGridManager::GetInstance>
 {
 public:
 
     //! Constructor
-    PropertyGrid();
+    PropertyGridObject();
 
     //! \todo IMPORTANT Implement copy constructor and assignment operator.
     //!       When a Camera is copied for example, the property grid is copied, but not the members.
@@ -134,26 +131,26 @@ public:
     //! \param varPtr Pointer to the property variable
     //! \param className Class name of the property grid owner
     //! \note Called by \a IMPLEMENT_PROPERTY()
-    template <typename T>
-    void RegisterProperty(const char * name, T * varPtr, const char * className);
+    //template <typename T>
+    //void RegisterProperty(const char * name, T * varPtr, const char * className);
 
     //! Invalidate the property grid, to be called after a member is updated,
     //! to tell the property grid owner to regenerate its data
-    inline void Invalidate() { mDirty = true; }
+    //inline void Invalidate() { mDirty = true; }
 
     //! Test if the property grid is dirty, meaning that at least one member has changed
     //! \return True if the dirty flag is set
-    inline bool IsDirty() const { return mDirty; }
+    //inline bool IsDirty() const { return mDirty; }
 
     //! Validate the property grid, to be called by the property grid owner
     //! to tell its data has been regenerated with the current member data
-    inline void Validate() { mDirty = false; }
+    //inline void Validate() { mDirty = false; }
 
     //------------------------------------------------------------------------------------
 
     // Accessors for the proxy interface
 
-#if PEGASUS_ENABLE_PROXIES
+//#if PEGASUS_ENABLE_PROXIES
 
     ////! Get the number of registered properties using \a RegisterProperty()
     ////! \return Number of successfully registered properties
@@ -179,18 +176,18 @@ public:
     //! \param valuePtr Non-nullptr pointer to the value
     //! \note The value is copied, not its pointer
     //! \note No property is set if the parameters are invalid
-    void SetProperty(const char * name, void * valuePtr);
+    //void SetProperty(const char * name, void * valuePtr);
 
     //! Get the value of a property by name
     //! \param name Name of the property, non-empty string
     //! \return Pointer to the value, nullptr in case of error
-    const void * GetProperty(const char * name) const;
+    //const void * GetProperty(const char * name) const;
 
-#endif  // PEGASUS_ENABLE_PROXIES
+//#endif  // PEGASUS_ENABLE_PROXIES
 
     //------------------------------------------------------------------------------------
     
-private:
+//private:
 
     //! Record for one property, containing information such as the name
     //struct PropertyRecord
@@ -213,7 +210,7 @@ private:
 
     //! Set to true after a member is updated,
     //! to tell the property grid owner to regenerate its data
-    bool mDirty;
+    //bool mDirty;
 
     //! \todo Store list of PropertyRecord, filled by RegisterProperty()
 };
@@ -233,4 +230,4 @@ private:
 }   // namespace PropertyGrid
 }   // namespace Pegasus
 
-#endif  // PEGASUS_PROPERTYGRID_PROPERTYGRID_H
+#endif  // PEGASUS_PROPERTYGRID_PROPERTYGRIDOBJECT_H

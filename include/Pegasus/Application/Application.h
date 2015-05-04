@@ -51,6 +51,10 @@ namespace Pegasus {
     namespace AssetLib {
         class AssetLib;
     }
+
+    namespace Camera {
+        class CameraManager;
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -124,6 +128,7 @@ public:
     virtual Timeline::Timeline*              GetTimeline()           const { return mTimeline;           }
     virtual BlockScript::BlockScriptManager* GetBlockScriptManager() const { return mBlockScriptManager; }
     virtual AssetLib::AssetLib*              GetAssetLib()           const { return mAssetLib;           }
+    virtual Camera::CameraManager*           GetCameraManager()      const { return mCameraManager;      }
 
 private:
     // No copies allowed
@@ -150,6 +155,7 @@ private:
     Timeline::Timeline*              mTimeline;           //!< Timeline object
     BlockScript::BlockScriptManager* mBlockScriptManager; //!< BlockScriptManager manager.
     AssetLib::AssetLib*              mAssetLib;           //!< AssetLib manager
+    Camera::CameraManager*           mCameraManager;      //!< Camera manager
 };
 
 }   // namespace App

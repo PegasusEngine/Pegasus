@@ -12,7 +12,10 @@
 #ifndef PEGASUS_UTILS_VECTOR_H
 #define PEGASUS_UTILS_VECTOR_H
 
+#include "Pegasus/Allocator/Alloc.h"
 #include "Pegasus/Core/Assertion.h"
+#include "Pegasus/Utils/TypeTraits.h"
+
 
 namespace Pegasus
 {
@@ -80,7 +83,7 @@ private:
     Alloc::IAllocator* mAlloc;
 };
 
-//! The vector convinience template class
+//! The vector convenience template class
 template<class T>
 class Vector
 {
@@ -89,7 +92,11 @@ public:
     explicit Vector(Alloc::IAllocator* alloc) : mBase(alloc, sizeof(T)) {}
 
     //! Destructor
-    ~Vector(){}
+    ~Vector()
+    {
+        // Call Clear() to force the destructors to be called for complex types
+        Clear();
+    }
 
     //! Gets the size
     int GetSize() const { return mBase.GetSize(); }
@@ -112,12 +119,27 @@ public:
     T& PushEmpty()
     {
         T* v = static_cast<T*>(mBase.PushEmpty());
+        if (TypeTraits<T>::IsPOD)
+        {
+            // If the type T is plain old data, just call the standard initialization
+            new (v) T;
+        }
+        else
+        {
+#pragma warning(push)    
+#pragma warning(disable:4345)   // Behavior change: an object of POD type constructed with an initializer of the form () will be default-initialized
+                                // This is a VStudio 2005 to 2012 obsolete warning
+            // If the type T is complex and has a default constructor, call it
+            new (v) T();
+#pragma warning(pop)
+        }
         return *v;
     }
 
     T Pop()
     {
-        T val = (*this)[GetSize() - 1];
+        // Use a reference to avoid creating a local copy, which then gets copied again when returned.
+        T& val = (*this)[GetSize() - 1];
         Delete(GetSize() - 1);
         return val;
     }
@@ -125,11 +147,25 @@ public:
     //! deletes element at specified index
     void Delete(int i)
     {
+        if (!TypeTraits<T>::IsPOD)
+        {
+            // Call the destructor only for complex types
+            ((*this)[i]).~T();
+        }
         mBase.Delete(i);
     }
 
     void Clear()
     {
+        if (!TypeTraits<T>::IsPOD)
+        {
+            // Call the destructor of each element for complex types
+            const int size = GetSize();
+            for (int i = 0; i < size; ++i)
+            {
+                ((*this)[i]).~T();
+            }
+        }
         mBase.Clear();
     }
 

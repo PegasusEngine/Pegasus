@@ -61,7 +61,7 @@ public:
     //! \param i the stream index
     int GetStreamStride(int i) const { return mVertexStreams[i].GetStride(); };
 
-    //! Convinience function that returns the total byte size of a stream
+    //! Convenience function that returns the total byte size of a stream
     //! \param i the identifier for the stream to get the size from
     //! \return the byte size
     int GetStreamByteSize(int i) const { return mVertexStreams[i].GetByteSize(); }

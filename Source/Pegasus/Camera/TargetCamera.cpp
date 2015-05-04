@@ -4,55 +4,53 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	Camera.cpp
+//! \file	TargetCamera.cpp
 //! \author	Kevin Boulanger
-//! \date	01st September 2014
-//! \brief	Camera object, storing the settings of one camera in the scene
+//! \date	11th November 2014
+//! \brief	Camera object using target and up vectors to define its orientation
 
-#include "Pegasus/Camera/Camera.h"
+#include "Pegasus/Camera/TargetCamera.h"
 
 namespace Pegasus {
 namespace Camera {
 
 
-BEGIN_IMPLEMENT_PROPERTIES(Camera)
-    IMPLEMENT_PROPERTY(Math::Vec3, Position, Math::Vec3(0.0f, 0.0f, 0.0f))
+BEGIN_IMPLEMENT_PROPERTIES(TargetCamera)
+    IMPLEMENT_PROPERTY(Math::Vec3, Target, Math::Vec3(0.0f, 0.0f, -1.0f))
+    IMPLEMENT_PROPERTY(Math::Vec3, Up, Math::Vec3(0.0f, 1.0f, 0.0f))
 END_IMPLEMENT_PROPERTIES()
 
 //----------------------------------------------------------------------------------------
 
-Camera::Camera()
-:   mPropertyGrid()
+TargetCamera::TargetCamera()
+:   Camera()
 {
 }
 
 //----------------------------------------------------------------------------------------
 
-Camera::Camera(const Camera & camera)
-:   mPropertyGrid(camera.mPropertyGrid)
+TargetCamera::TargetCamera(const TargetCamera & camera)
+:   Camera(camera)
 {
-    //! \todo IMPORTANT Implement the copy constructor for the property grid.
-    //!       When a Camera is copied for example, the property grid is copied, but not the members.
-    //!       They should be.
+    //! \todo Make sure the property grid of the parent and this class are properly copied
 }
 
 //----------------------------------------------------------------------------------------
 
-Camera & Camera::operator=(const Camera & camera)
+TargetCamera & TargetCamera::operator=(const TargetCamera & camera)
 {
     if (&camera != this)
     {
-        //! \todo IMPORTANT Implement the assignment operator for the property grid.
-        //!       When a Camera is copied for example, the property grid is copied, but not the members.
-        //!       They should be.
-        mPropertyGrid = camera.mPropertyGrid;
+        Camera::operator=(camera);
+
+        //! \todo Make sure the property grid of the parent and this class are properly copied
     }
     return *this;
 }
 
 //----------------------------------------------------------------------------------------
 
-Camera::~Camera()
+TargetCamera::~TargetCamera()
 {
 }
 

@@ -34,7 +34,7 @@ class MeshInputLayout
 {
 public:
 
-    //! Convinience mask used for the editor layout
+    //! Convenience mask used for the editor layout
     
     static const int USE_POSITION = 0x1;
     static const int USE_NORMAL = 0x2;

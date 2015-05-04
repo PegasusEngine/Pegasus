@@ -203,7 +203,7 @@ static int ProcessErrorLog(Pegasus::Shader::ShaderStage * shaderNode, const char
     return errorCount;
 }
 
-//! convinience function to delete a shader gpu data
+//! Convenience function to delete a shader gpu data
 static void DetachUnionShaders(Pegasus::Render::DXShaderGPUData* shaderGPUData)
 {
     if (shaderGPUData->mDeviceChild != nullptr)

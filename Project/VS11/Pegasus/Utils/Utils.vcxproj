@@ -36,10 +36,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Utils\ByteStream.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Utils\DependsOnStatic.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Utils\Memcpy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Utils\Memset.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Utils\String.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Utils\TesselationTable.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Utils\TypeTraits.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Utils\TypeTraitsDebug.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Utils\Vector.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

@@ -14,6 +14,7 @@
 #include "Pegasus/Application/ScriptRenderApi.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Application/AppWindowManager.h"
+#include "Pegasus/Camera/CameraManager.h"
 #include "Pegasus/Core/Time.h"
 #include "Pegasus/Graph/NodeManager.h"
 #include "Pegasus/Memory/MemoryManager.h"
@@ -80,10 +81,9 @@ Application::Application(const ApplicationConfig& config)
     meshFactory->Initialize(nodeDataAlloc);
     textureFactory->Initialize(nodeDataAlloc);
 
-
     mShaderManager = PG_NEW(nodeAlloc, -1, "ShaderManager", Alloc::PG_MEM_PERM) Shader::ShaderManager(mNodeManager, shaderFactory);
     mTextureManager = PG_NEW(nodeAlloc, -1, "TextureManager", Alloc::PG_MEM_PERM) Texture::TextureManager(mNodeManager, textureFactory);
-    mMeshManager    = PG_NEW(nodeAlloc, -1, "MeshManager", Alloc::PG_MEM_PERM) Mesh::MeshManager(mNodeManager, meshFactory);
+    mMeshManager = PG_NEW(nodeAlloc, -1, "MeshManager", Alloc::PG_MEM_PERM) Mesh::MeshManager(mNodeManager, meshFactory);
 
     //register shader manager into factory, so factory can handle includes
     shaderFactory->RegisterShaderManager(mShaderManager);
@@ -97,10 +97,13 @@ Application::Application(const ApplicationConfig& config)
     // Set up asset library
     mAssetLib = PG_NEW(nodeAlloc, -1, "AssetLib", Alloc::PG_MEM_PERM) AssetLib::AssetLib(nodeAlloc, nullptr);
 
-    // register the entire render api
+    // Register the entire render api
     Pegasus::Application::RegisterRenderApi(mBlockScriptManager->GetRuntimeLib());
 
     RegisterAssetLib();
+
+	// Create the owner of all global cameras
+    mCameraManager = PG_NEW(timelineAlloc, -1, "CameraManager", Alloc::PG_MEM_PERM) Camera::CameraManager(timelineAlloc);
 
     // Cache config
     mConfig = config;

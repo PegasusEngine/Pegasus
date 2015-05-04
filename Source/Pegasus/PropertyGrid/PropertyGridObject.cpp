@@ -4,26 +4,27 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	PropertyGrid.cpp
+//! \file	PropertyGridObject.cpp
 //! \author	Kevin Boulanger
-//! \date	24th April 2014
-//! \brief	Property grid, defining a set of editable properties
+//! \date	10th February 2015
+//! \brief	Property grid object, parent of every class that defines a set of editable properties
 
-#include "Pegasus/PropertyGrid/PropertyGrid.h"
+#include "Pegasus/PropertyGrid/PropertyGridObject.h"
 
 namespace Pegasus {
 namespace PropertyGrid {
 
+//! \todo IMPLEMENT MOST OF THIS CLASS. This is a quick prototype for early testing
 
-PropertyGrid::PropertyGrid()
-:   mDirty(true)
+PropertyGridObject::PropertyGridObject()
+//:   mDirty(true)
 {
     //! \todo Implement
 }
 
 //----------------------------------------------------------------------------------------
 
-#if PEGASUS_ENABLE_PROXIES
+//#if PEGASUS_ENABLE_PROXIES
 
 //unsigned int PropertyGrid::GetNumProperties() const
 //{
@@ -57,20 +58,20 @@ PropertyGrid::PropertyGrid()
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGrid::SetProperty(const char * name, void * valuePtr)
-{
-    //! \todo Implement
-}
+//void PropertyGrid::SetProperty(const char * name, void * valuePtr)
+//{
+//    //! \todo Implement
+//}
 
 //----------------------------------------------------------------------------------------
 
-const void * PropertyGrid::GetProperty(const char * name) const
-{
-    //! \todo Implement
-    /***/return nullptr;
-}
-
-#endif  // PEGASUS_ENABLE_PROXIES
+//const void * PropertyGrid::GetProperty(const char * name) const
+//{
+//    //! \todo Implement
+//    /***/return nullptr;
+//}
+//
+//#endif  // PEGASUS_ENABLE_PROXIES
     
 //----------------------------------------------------------------------------------------
 

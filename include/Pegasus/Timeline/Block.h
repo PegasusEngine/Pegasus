@@ -171,6 +171,10 @@ protected:
     //! \return Global mesh manager
     inline Mesh::MeshManager * GetMeshManager() const { return mAppContext->GetMeshManager(); }
 
+    //! Get the camera manager
+    //! \return Global camera manager
+    inline Camera::CameraManager * GetCameraManager() const { return mAppContext->GetCameraManager(); }
+
     //! Get the timeline
     //! \return Global timeline
     inline Timeline * GetTimeline() const { return mAppContext->GetTimeline(); }

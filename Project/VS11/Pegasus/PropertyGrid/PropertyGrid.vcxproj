@@ -27,10 +27,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\Property.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\PropertyGrid.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\PropertyGridClassInfo.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\PropertyGridManager.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\PropertyGridObject.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\PropertyGridStaticAllocator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\PropertyGrid\PropertyGrid.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\PropertyGrid\PropertyGridClassInfo.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\PropertyGrid\PropertyGridManager.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\PropertyGrid\PropertyGridObject.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\PropertyGrid\PropertyGridStaticAllocator.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3C97026D-B001-4B3A-944C-05C500905F07}</ProjectGuid>

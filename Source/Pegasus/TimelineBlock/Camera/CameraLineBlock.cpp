@@ -44,6 +44,7 @@ void CameraLineBlock::Update(float beat, Wnd::Window * window)
 {
     //! \todo Implement
     /******/
+    Camera::Camera * camera = GetCameraManager()->GetCamera(Camera::CameraManager::CAMERATYPE_MAIN);
 }
 
 //----------------------------------------------------------------------------------------
