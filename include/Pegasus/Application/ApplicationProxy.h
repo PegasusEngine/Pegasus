@@ -16,6 +16,7 @@
 
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Application/Application.h"
+#include "Pegasus/PropertyGrid/PropertyGridManager.h"
 #include "Pegasus/Timeline/Proxy/TimelineProxy.h"
 
 #if PEGASUS_USE_GRAPH_EVENTS
@@ -43,6 +44,7 @@ public:
 #endif
     virtual Wnd::IWindowProxy* AttachWindow(const AppWindowConfig& config);
     virtual void DetachWindow(Wnd::IWindowProxy* wnd);
+    virtual PropertyGrid::IPropertyGridManagerProxy * GetPropertyGridManagerProxy() { return PropertyGrid::PropertyGridManager::GetInstance().GetProxy(); }
     virtual Timeline::ITimelineProxy * GetTimelineProxy() { return mApplication->GetTimeline()->GetProxy(); }
     virtual Shader::IShaderManagerProxy * GetShaderManagerProxy() { return mApplication->GetShaderManager()->GetProxy(); }
     virtual Texture::ITextureManagerProxy * GetTextureManagerProxy() { return mApplication->GetTextureManager()->GetProxy(); }

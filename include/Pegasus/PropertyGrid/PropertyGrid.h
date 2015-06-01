@@ -74,7 +74,7 @@ namespace PropertyGrid {
 #define DECLARE_PROPERTY(type, name)                                                \
     public:                                                                         \
         inline PropertyGrid::PropertyDefinition<type>::ReturnType Get##name() const { return mProperty##name; }         \
-        inline void Set##name(PropertyGrid::PropertyDefinition<type>::ParamType value) { PropertyGrid::PropertyDefinition<type>::SetProperty(value, mProperty##name); GetPropertyGrid().Invalidate(); }     \
+        inline void Set##name(PropertyGrid::PropertyDefinition<type>::ParamType value) { PropertyGrid::PropertyDefinition<type>::CopyProperty(mProperty##name, value); GetPropertyGrid().Invalidate(); }     \
     private:                                                                        \
         PropertyGrid::PropertyDefinition<type>::VarType mProperty##name;            \
 
@@ -99,7 +99,7 @@ namespace PropertyGrid {
 //! \param defaultValue Default value of the property, use Math::Type(values) with math types
 //! \warning To be used after \a BEGIN_IMPLEMENT_PROPERTIES() and before END_IMPLEMENT_PROPERTIES()
 #define IMPLEMENT_PROPERTY(type, name, defaultValue)                                \
-    Pegasus::PropertyGrid::PropertyDefinition<type>::SetProperty(defaultValue,mProperty##name);                                                 \
+    Pegasus::PropertyGrid::PropertyDefinition<type>::CopyProperty(mProperty##name, defaultValue);                                                 \
 //    GetPropertyGrid().RegisterProperty<type>(#name, &mProperty##name, sClassName);  \
 
 

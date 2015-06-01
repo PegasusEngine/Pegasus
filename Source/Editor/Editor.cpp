@@ -43,7 +43,8 @@ Editor::Editor(QApplication * parentApplication)
     mAssetLibraryWidget(nullptr),
     mCodeEditorWidget(nullptr),
     mConsoleDockWidget(nullptr),
-    mTextureEditorDockWidget(nullptr)
+    mTextureEditorDockWidget(nullptr),
+    mPropertyGridClassesDockWidget(nullptr)
 {
     sInstance = this;
 
@@ -134,6 +135,11 @@ Editor::Editor(QApplication * parentApplication)
             mTextureEditorDockWidget, SLOT(UpdateUIForAppLoaded()));
     connect(mApplicationManager, SIGNAL(ApplicationFinished()),
             mTextureEditorDockWidget, SLOT(UpdateUIForAppClosed()));
+
+    connect(mApplicationManager, SIGNAL(ApplicationLoaded()),
+            mPropertyGridClassesDockWidget, SLOT(UpdateUIForAppLoaded()));
+    connect(mApplicationManager, SIGNAL(ApplicationFinished()),
+            mPropertyGridClassesDockWidget, SLOT(UpdateUIForAppClosed()));
 
     sSettings->NotifySettingsChanged();
 
@@ -314,6 +320,12 @@ void Editor::CreateActions()
 	mActionWindowTextureEditor->setStatusTip(tr("Open the texture editor window"));
 	connect(mActionWindowTextureEditor, SIGNAL(triggered()), this, SLOT(OpenTextureEditorWindow()));
 
+
+    mActionWindowDebugPropertyGridClasses = new QAction(tr("&Property Grid Classes"), this);
+	mActionWindowTextureEditor->setStatusTip(tr("Open the list of classes with their lists of properties"));
+	connect(mActionWindowDebugPropertyGridClasses, SIGNAL(triggered()), this, SLOT(OpenPropertyGridClassesWindow()));
+
+
     mActionHelpIndex = new QAction(tr("&Index..."), this);
 	mActionHelpIndex->setShortcut(tr("F1"));
 	mActionHelpIndex->setStatusTip(tr("Open the help for Pegasus Editor"));
@@ -362,6 +374,9 @@ void Editor::CreateMenu()
     windowMenu->addAction(mActionWindowCodeEditor);
     windowMenu->addAction(mActionWindowAssetLibrary);
     windowMenu->addAction(mActionWindowTextureEditor);
+
+    QMenu * debugMenu = windowMenu->addMenu(tr("&Debug"));
+    debugMenu->addAction(mActionWindowDebugPropertyGridClasses);
 
     QMenu * helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(mActionHelpIndex);
@@ -451,6 +466,10 @@ void Editor::CreateDockWidgets()
     mTextureEditorDockWidget = new TextureEditorDockWidget(this);
     //mTextureEditorDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
     addDockWidget(Qt::RightDockWidgetArea, mTextureEditorDockWidget);
+
+    mPropertyGridClassesDockWidget = new PropertyGridClassesDockWidget(this);
+    //mPropertyGridClassesDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
+    addDockWidget(Qt::RightDockWidgetArea, mPropertyGridClassesDockWidget);
 
     // Create and place the view actions for the dock widgets to the dock menu
     // (in alphabetical order)
@@ -649,6 +668,13 @@ void Editor::OpenTextureEditorWindow()
     mTextureEditorDockWidget->show();
 }
 
+//----------------------------------------------------------------------------------------
+
+void Editor::OpenPropertyGridClassesWindow()
+{
+    mPropertyGridClassesDockWidget->show();
+}
+    
 //----------------------------------------------------------------------------------------
 
 void Editor::HelpIndex()

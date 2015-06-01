@@ -18,88 +18,103 @@ namespace PropertyGrid {
 
 PropertyGridClassInfo::PropertyGridClassInfo()
 :   mClassName("")
-,   mPropertyRecords(&PropertyGridStaticAllocator::GetInstance())
+,   mParentClassName("")
+,   mParentClassInfo(nullptr)
+,   mClassPropertyRecords(&PropertyGridStaticAllocator::GetInstance())
+,   mNumProperties(0)
+#if PEGASUS_ENABLE_PROXIES
+,   mProxy(this)
+#endif
 {
 }
 
 //----------------------------------------------------------------------------------------
 
-PropertyType PropertyGridClassInfo::GetPropertyType(unsigned int index) const
+const PropertyGridClassInfo::PropertyRecord & PropertyGridClassInfo::GetClassProperty(unsigned int index) const
 {
     //! \todo Test for the validity of the index
 
-    return mPropertyRecords[index].type;
+    return mClassPropertyRecords[index];
 }
 
 //----------------------------------------------------------------------------------------
 
-unsigned int PropertyGridClassInfo::GetPropertySize(unsigned int index) const
+const PropertyGridClassInfo::PropertyRecord & PropertyGridClassInfo::GetProperty(unsigned int index) const
 {
     //! \todo Test for the validity of the index
 
-    return mPropertyRecords[index].size;
+    if (mParentClassInfo != nullptr)
+    {
+        if (index < mParentClassInfo->GetNumProperties())
+        {
+            // If a parent class is defined and the index is among the properties of the parent class,
+            // call the parent class info to get the record
+            return mParentClassInfo->GetProperty(index);
+        }
+        else
+        {
+            // If a parent class is defined and the index is among the properties of the current class,
+            // offset the index and access the local info
+            return mClassPropertyRecords[index - mParentClassInfo->GetNumProperties()];
+        }
+    }
+    else
+    {
+        // If no parent class is defined, simply return the property record of the current class
+        return mClassPropertyRecords[index];
+    }
 }
 
 //----------------------------------------------------------------------------------------
 
-const char * PropertyGridClassInfo::GetPropertyName(unsigned int index) const
+void PropertyGridClassInfo::SetClassName(const char * className, const char * parentClassName)
 {
-    //! \todo Test for the validity of the index
-
-    return mPropertyRecords[index].name;
-}
-
-//----------------------------------------------------------------------------------------
-
-//const char * PropertyGridClassInfo::GetPropertyClassName(unsigned int index) const
-//{
-//    //! \todo Test for the validity of the index
-//    //! \todo Implement the proper behavior, if this function is useful
-//
-//    //return mPropertyRecords[index].className;
-//    return "";
-//}
-
-//----------------------------------------------------------------------------------------
-
-void PropertyGridClassInfo::SetClassName(const char * className)
-{
-    // Copy the pointer, not the string itself. The caller is the owner of the string.
+    // Copy the pointers, not the string themselves. The caller is the owner of the strings.
     // Do not test for validity, as this is called at registration time,
     // before main() is even called
     mClassName = className;
+    mParentClassName = parentClassName;
+}
+
+//----------------------------------------------------------------------------------------
+
+void PropertyGridClassInfo::SetParentClassInfo(PropertyGridClassInfo * parentClassInfo)
+{
+    //! \todo Check that mParentClassInfo was nullptr before that call
+
+    mParentClassInfo = parentClassInfo;
+
+    if (parentClassInfo != nullptr)
+    {
+        // Add the total number of properties of the parent with the number of this class
+        // (assumes this function is called only once ever)
+        mNumProperties += parentClassInfo->GetNumProperties();
+    }
 }
 
 //----------------------------------------------------------------------------------------
     
-void PropertyGridClassInfo::RegisterProperty(PropertyType type, int size, const char * name/*,
-                        //! \todo **** Check if we need those variables
-                                             void * varPtr, const char * className*/)
+void PropertyGridClassInfo::DeclareProperty(PropertyType type, int size, const char * name, void * defaultValuePtr)
 {
+    //! \todo Make size an unsigned int
+
     if (   (type < NUM_PROPERTY_TYPES)
         && (size > 0)
         && (name != nullptr)
-        && (name[0] != '\0')
-    //! \todo **** Check if we need those variables
-        //&& (varPtr != nullptr)
-        //&& (className != nullptr)
-        /*&& (className[0] != '\0')*/ )
+        && (name[0] != '\0') )
     {
-        PropertyRecord & record = mPropertyRecords.PushEmpty();
+        PropertyRecord & record = mClassPropertyRecords.PushEmpty();
         record.type = type;
         record.size = size;
-        record.name = name;                 // Copy the pointer, not the string, since the input pointer is considered as constant
-    //! \todo **** Check if we need those variables
-        //record.varPtr = varPtr;
-        //record.className = className;       // Copy the pointer, not the string, since the input pointer is considered as constant
+        record.name = name;     // Copy the pointer, not the string, since the input pointer is considered as constant
+        record.defaultValuePtr = defaultValuePtr;
+
+        ++mNumProperties;
     }
     else
     {
         if (   (name != nullptr)
-            && (name[0] != '\0')
-    //! \todo **** Check if we need those variables
-            /*&& (className != nullptr)
-            && (className[0] != '\0')*/ )
+            && (name[0] != '\0') )
         {
             // CANNOT work since it is happening before main()
             //***PG_FAILSTR("Invalid property declaration for \"%s\" in class \"%s\"", name, className)

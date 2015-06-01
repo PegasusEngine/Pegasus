@@ -27,5 +27,7 @@
         <file>Toolbar/Edit/switchoff.png</file>
         <file>Toolbar/Edit/switchon.png</file>
         <file>CodeEditor/compile.png</file>
+        <file>PropertyGridClasses/Class16.png</file>
+        <file>PropertyGridClasses/Property16.png</file>
     </qresource>
 </RCC>

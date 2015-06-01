@@ -65,6 +65,12 @@
     <Filter Include="Source\CodeEditor">
       <UniqueIdentifier>{d13f51e8-45e0-4947-a4e3-2ac8b9867ad1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Debug">
+      <UniqueIdentifier>{e801b5fa-570e-4278-b4cf-df153fec01b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Debug\PropertyGridClasses">
+      <UniqueIdentifier>{58fe93e0-f0f7-4806-8485-3e88faacc51b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Source\Editor\Editor.cpp">
@@ -355,6 +361,15 @@
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_SettingsCodeEditorPage.cpp">
       <Filter>Generated\Dev-Debug</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Debug\PropertyGridClasses\PropertyGridClassesDockWidget.cpp">
+      <Filter>Source\Debug\PropertyGridClasses</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_PropertyGridClassesDockWidget.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_PropertyGridClassesDockWidget.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -464,6 +479,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Settings\SettingsCodeEditorPage.h">
       <Filter>Source\Settings</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Debug\PropertyGridClasses\PropertyGridClassesDockWidget.h">
+      <Filter>Source\Debug\PropertyGridClasses</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

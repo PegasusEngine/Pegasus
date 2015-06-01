@@ -26,6 +26,9 @@ namespace Pegasus {
     namespace App {
         class IApplicationProxy;
     }
+    namespace PropertyGrid {
+        class IPropertyGridManagerProxy;
+    }
     namespace Timeline {
         class ITimelineProxy;
     }
@@ -84,6 +87,10 @@ public:
     //! Get the application proxy object
     //! \return Pointer to the application proxy object created when running the application DLL
     inline Pegasus::App::IApplicationProxy * GetApplicationProxy() const { return mApplication; }
+
+    //! Get the property grid manager proxy object
+    //! \return Pointer to the property grid manager proxy object
+    Pegasus::PropertyGrid::IPropertyGridManagerProxy * GetPropertyGridManagerProxy() const;
 
     //! Get the window used to render one of the viewports of the application
     //! \param viewportType Type of the viewport widget to get (VIEWPORTTYPE_xxx constant)

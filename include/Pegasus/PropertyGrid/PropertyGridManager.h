@@ -14,6 +14,7 @@
 
 #include "Pegasus/PropertyGrid/PropertyGridStaticAllocator.h"
 #include "Pegasus/PropertyGrid/PropertyGridClassInfo.h"
+#include "Pegasus/PropertyGrid/Proxy/PropertyGridManagerProxy.h"
 #include "Pegasus/Utils/DependsOnStatic.h"
 #include "Pegasus/Utils/Vector.h"
 
@@ -39,18 +40,20 @@ public:
     //! Register a class, and tell to the manager that all following property declarations
     //! are for that class
     //! \param className Name of the class containing the properties
+    //! \param parentClassName Name of the parent of the class, empty string if the class is a base class
     //! \note Called only by the \a BEGIN_DECLARE_PROPERTIES() macro
     //! \warning \a EndDeclareProperties() has to be called once the properties are done declaring
     //!          for the current class
-    void BeginDeclareProperties(const char * className);
+    void BeginDeclareProperties(const char * className, const char * parentClassName);
 
     //! Declare a new property for the current class
     //! \param type Type of the property, PROPERTYTYPE_xxx constant
     //! \param size Size in bytes of the property (> 0)
     //! \param name Name of the property, starting with an uppercase letter (non-empty)
+    //! \param defaultValuePtr Pointer to the default value of the property
     //! \note Called only by the \a DECLARE_PROPERTY() macro
     //! \warning \a BeginDeclareProperties() has to be called before this function
-    void DeclareProperty(PropertyType type, int size, const char * name);
+    void DeclareProperty(PropertyType type, int size, const char * name, void * defaultValuePtr);
 
     //! Finish registering a class properties
     //! \param className Name of the class containing the properties
@@ -68,6 +71,16 @@ public:
     //! \return Information about the registered class
     const PropertyGridClassInfo & GetClassInfo(unsigned int index) const;
 
+#if PEGASUS_ENABLE_PROXIES
+
+    //! Get the proxy associated with the property grid manager
+    //! \return Proxy associated with the property grid manager
+    //@{
+    inline PropertyGridManagerProxy * GetProxy() { return &mProxy; }
+    inline const PropertyGridManagerProxy * GetProxy() const { return &mProxy; }
+    //@}
+
+#endif  // PEGASUS_ENABLE_PROXIES
 
     //------------------------------------------------------------------------------------
     
@@ -85,6 +98,14 @@ private:
     //! Class information currently being edited
     //! \note Set by \a BeginDeclareProperties(), unset by \a EndDeclareProperties()
     PropertyGridClassInfo * mCurrentClassInfo;
+
+
+#if PEGASUS_ENABLE_PROXIES
+
+    //! Proxy associated with the property grid manager
+    PropertyGridManagerProxy mProxy;
+
+#endif  // PEGASUS_ENABLE_PROXIES
 };
 
 

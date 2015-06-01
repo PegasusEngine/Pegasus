@@ -20,6 +20,7 @@
 #include "AssetLibrary/AssetLibraryWidget.h"
 #include "CodeEditor/CodeEditorWidget.h"
 #include "Texture/TextureEditorDockWidget.h"
+#include "Debug/PropertyGridClasses/PropertyGridClassesDockWidget.h"
 #include "Viewport/ViewportDockWidget.h"
 #include "Viewport/ViewportWidget.h"
 #include "Viewport/ViewportType.h"
@@ -126,6 +127,10 @@ public:
     //! \return Pointer to the texture editor dock widget
     inline TextureEditorDockWidget * GetTextureEditorDockWidget() const { return mTextureEditorDockWidget; }
 
+    //! Get the property grid classes dock widget
+    //! \return Pointer to the property grid classes dock widget
+    inline PropertyGridClassesDockWidget * GetPropertyGridClassesDockWidget() const { return mPropertyGridClassesDockWidget; }
+
     //----------------------------------------------------------------------------------------
 
 private:
@@ -200,6 +205,11 @@ private slots:
     //@}
 
     //@{
+    //! Slots for the actions of the Window/Debug menu
+    void OpenPropertyGridClassesWindow();
+    //@}
+
+    //@{
     //! Slots for the actions of the help menu
     void HelpIndex();
     void About();
@@ -267,6 +277,11 @@ private:
     //@}
 
     //@{
+    //! Actions triggered when an item of the Window/Debug menu is selected
+	QAction * mActionWindowDebugPropertyGridClasses;
+    //@}
+
+    //@{
     //! Actions triggered when an item of the help menu is selected
     QAction * mActionHelpIndex;
     QAction * mActionHelpAboutQt;
@@ -311,14 +326,15 @@ private:
 
     //@{
     //! Dock widgets
-    ViewportDockWidget      * mMainViewportDockWidget;
-    ViewportDockWidget      * mSecondaryViewportDockWidget;
-    TimelineDockWidget      * mTimelineDockWidget;
-    HistoryDockWidget       * mHistoryDockWidget;
-    AssetLibraryWidget      * mAssetLibraryWidget;
-    CodeEditorWidget        * mCodeEditorWidget;
-    ConsoleDockWidget       * mConsoleDockWidget;
-    TextureEditorDockWidget * mTextureEditorDockWidget;
+    ViewportDockWidget            * mMainViewportDockWidget;
+    ViewportDockWidget            * mSecondaryViewportDockWidget;
+    TimelineDockWidget            * mTimelineDockWidget;
+    HistoryDockWidget             * mHistoryDockWidget;
+    AssetLibraryWidget            * mAssetLibraryWidget;
+    CodeEditorWidget              * mCodeEditorWidget;
+    ConsoleDockWidget             * mConsoleDockWidget;
+    TextureEditorDockWidget       * mTextureEditorDockWidget;
+    PropertyGridClassesDockWidget * mPropertyGridClassesDockWidget;
     //@}
 
 	//! Menu containing the checkable actions for the tool bars

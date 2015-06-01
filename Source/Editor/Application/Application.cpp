@@ -234,6 +234,21 @@ void Application::run()
 
 //----------------------------------------------------------------------------------------
 
+Pegasus::PropertyGrid::IPropertyGridManagerProxy * Application::GetPropertyGridManagerProxy() const
+{
+    if (mApplication != nullptr)
+    {
+        return mApplication->GetPropertyGridManagerProxy();
+    }
+    else
+    {
+        ED_FAILSTR("Invalid Pegasus application object when getting the property grid manager proxy");
+        return nullptr;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 Pegasus::Wnd::IWindowProxy * Application::GetWindowProxy(ViewportType viewportType) const
 {
     if (viewportType < NUM_VIEWPORT_TYPES)

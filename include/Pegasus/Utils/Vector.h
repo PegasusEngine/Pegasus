@@ -99,17 +99,17 @@ public:
     }
 
     //! Gets the size
-    int GetSize() const { return mBase.GetSize(); }
+    inline int GetSize() const { return mBase.GetSize(); }
 
     //! [] operator, just like an array
-    T& operator[](int index) 
+    inline T& operator[](int index) 
     {
         T* t = reinterpret_cast<T*>(mBase.GetElement(index));
         return *t;
     }
 
     //! [] operator, just like an array
-    const T& operator[](int index) const
+    inline const T& operator[](int index) const
     {
         const T* t = reinterpret_cast<const T*>(mBase.GetElement(index));
         return *t;

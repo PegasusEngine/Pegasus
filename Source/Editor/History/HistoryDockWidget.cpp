@@ -13,10 +13,9 @@
 
 #include <QUndoView>
 #include <QUndoStack>
-#include <QHBoxLayout>
 
 
-HistoryDockWidget::HistoryDockWidget(QUndoStack * undoStack, QWidget *parent)
+HistoryDockWidget::HistoryDockWidget(QUndoStack * undoStack, QWidget * parent)
 :   QDockWidget(parent)
 {
     ED_ASSERTSTR(undoStack != nullptr, "Invalid undo stack given to the history dock widget");

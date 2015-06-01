@@ -22,6 +22,10 @@ namespace Pegasus {
         struct AppWindowConfig;
     }
 
+    namespace PropertyGrid {
+        class IPropertyGridManagerProxy;
+    }
+
     namespace Timeline {
         class ITimelineProxy;
     }
@@ -92,6 +96,10 @@ public:
     //! Destroys a window attached to this application instance
     //! \param wnd Window to destroy.
     virtual void DetachWindow(Wnd::IWindowProxy* wnd) = 0;
+
+    //! Get the property grid manager proxy
+    //! \return Property grid manager proxy
+    virtual PropertyGrid::IPropertyGridManagerProxy * GetPropertyGridManagerProxy() = 0;
 
     //! Gets the timeline proxy
     //! \return Timeline proxy
