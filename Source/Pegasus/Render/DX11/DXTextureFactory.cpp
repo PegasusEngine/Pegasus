@@ -31,9 +31,13 @@ public:
 
     virtual void DestroyNodeGPUData(Pegasus::Texture::TextureData * nodeData);
 
-    void InternalCreateRenderTarget(const Pegasus::Render::RenderTargetConfig& config, Pegasus::Render::RenderTarget& renderTarget);
+    void InternalCreateRenderTarget(const Pegasus::Render::RenderTargetConfig* config, const Pegasus::Render::CubeMap* cubeMap, Pegasus::Render::CubeFace face, Pegasus::Render::RenderTarget& renderTarget);
 
     void InternalDestroyRenderTarget(Pegasus::Render::RenderTarget& renderTarget);
+
+    void InternalCreateCubeMap(const Pegasus::Render::CubeMapConfig& config, Pegasus::Render::CubeMap& cubeMap);
+
+    void InternalDestroyCubeMap(Pegasus::Render::CubeMap& cubeMap);
 
 private:
 
@@ -191,13 +195,20 @@ void DXTextureFactory::DestroyNodeGPUData(Pegasus::Texture::TextureData * nodeDa
     if (nodeGpuData != nullptr)
     {
         Pegasus::Render::DXTextureGPUData* texGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXTextureGPUData, nodeGpuData);
+        texGpuData->mTexture = nullptr;
+        texGpuData->mSrv = nullptr;
         PG_DELETE(mAllocator, texGpuData);
         nodeData->SetNodeGPUData(nullptr);
     }
    
 }
 
-void DXTextureFactory::InternalCreateRenderTarget(const Pegasus::Render::RenderTargetConfig& config, Pegasus::Render::RenderTarget& renderTarget)
+void DXTextureFactory::InternalCreateRenderTarget(
+    const Pegasus::Render::RenderTargetConfig* config, 
+    const Pegasus::Render::CubeMap* cubeMap,
+    Pegasus::Render::CubeFace face,
+    Pegasus::Render::RenderTarget& renderTarget
+)
 {
     ID3D11DeviceContext * context;
     ID3D11Device * device;
@@ -211,36 +222,67 @@ void DXTextureFactory::InternalCreateRenderTarget(const Pegasus::Render::RenderT
     ) Pegasus::Render::DXRenderTargetGPUData;
 
     D3D11_TEXTURE2D_DESC& texDesc = renderTargetGpuData->mTextureView.mDesc;
-    texDesc.Width = static_cast<unsigned int>(config.mWidth);
-    texDesc.Height = static_cast<unsigned int>(config.mHeight);
-    texDesc.MipLevels = 1;
-    texDesc.ArraySize = 1;
-    texDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    texDesc.SampleDesc.Count = 1;
-    texDesc.SampleDesc.Quality = 0;
-    texDesc.Usage = D3D11_USAGE_DEFAULT;
-    texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-    texDesc.CPUAccessFlags = 0;
-    texDesc.MiscFlags = 0;
+    if (config != nullptr)
+    {
+        texDesc.Width = static_cast<unsigned int>(config->mWidth);
+        texDesc.Height = static_cast<unsigned int>(config->mHeight);
+        texDesc.MipLevels = 1;
+        texDesc.ArraySize = 1;
+        texDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        texDesc.SampleDesc.Count = 1;
+        texDesc.SampleDesc.Quality = 0;
+        texDesc.Usage = D3D11_USAGE_DEFAULT;
+        texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+        texDesc.CPUAccessFlags = 0;
+        texDesc.MiscFlags = 0;
 
-    VALID_DECLARE(device->CreateTexture2D(&texDesc, nullptr, &renderTargetGpuData->mTextureView.mTexture));
-
-    D3D11_SHADER_RESOURCE_VIEW_DESC& srvDesc = renderTargetGpuData->mTextureView.mSrvDesc;
-    srvDesc.Format = texDesc.Format;
-    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-    srvDesc.Texture2D.MostDetailedMip = 0;
-    srvDesc.Texture2D.MipLevels = texDesc.MipLevels;
+        VALID_DECLARE(device->CreateTexture2D(&texDesc, nullptr, &renderTargetGpuData->mTextureView.mTexture));
+        D3D11_SHADER_RESOURCE_VIEW_DESC& srvDesc = renderTargetGpuData->mTextureView.mSrvDesc;
+        srvDesc.Format = texDesc.Format;
+        srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Texture2D.MostDetailedMip = 0;
+        srvDesc.Texture2D.MipLevels = texDesc.MipLevels;
     
-    VALID(device->CreateShaderResourceView(renderTargetGpuData->mTextureView.mTexture, &srvDesc, &renderTargetGpuData->mTextureView.mSrv));
+        VALID(device->CreateShaderResourceView(renderTargetGpuData->mTextureView.mTexture, &srvDesc, &renderTargetGpuData->mTextureView.mSrv));
+
+    }
+    else
+    {
+        PG_ASSERT(cubeMap != nullptr);
+        const Pegasus::Render::DXTextureGPUData* texGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXTextureGPUData, cubeMap->mInternalData);
+        renderTargetGpuData->mTextureView.mDesc = texGpuData->mDesc;
+        renderTargetGpuData->mTextureView.mTexture = texGpuData->mTexture;
+        renderTargetGpuData->mTextureView.mSrvDesc = texGpuData->mSrvDesc;
+        renderTargetGpuData->mTextureView.mSrv = texGpuData->mSrv;
+    }
 
     D3D11_RENDER_TARGET_VIEW_DESC& rtDesc = renderTargetGpuData->mDesc;
-    rtDesc.Format = texDesc.Format;
-    rtDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-    rtDesc.Texture2D.MipSlice = 0;
+    rtDesc.Format = renderTargetGpuData->mTextureView.mDesc.Format;
+    if (cubeMap != nullptr)
+    {
+        static const D3D11_TEXTURECUBE_FACE gFaceTranslation[] = {
+            D3D11_TEXTURECUBE_FACE_POSITIVE_X,
+            D3D11_TEXTURECUBE_FACE_NEGATIVE_X,
+            D3D11_TEXTURECUBE_FACE_POSITIVE_Y,
+            D3D11_TEXTURECUBE_FACE_NEGATIVE_Y,
+            D3D11_TEXTURECUBE_FACE_POSITIVE_Z,
+            D3D11_TEXTURECUBE_FACE_NEGATIVE_Z
+        };
 
-    VALID(device->CreateRenderTargetView(renderTargetGpuData->mTextureView.mTexture, &rtDesc, &renderTargetGpuData->mRenderTarget));
+        rtDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
+        rtDesc.Texture2DArray.MipSlice = 0;
+        rtDesc.Texture2DArray.FirstArraySlice = gFaceTranslation[face];
+        rtDesc.Texture2DArray.ArraySize = 1; 
+    }
+    else
+    {
+        rtDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+        rtDesc.Texture2D.MipSlice = 0;
+    }
 
-    renderTarget.mConfig = config;
+    VALID_DECLARE(device->CreateRenderTargetView(renderTargetGpuData->mTextureView.mTexture, &rtDesc, &renderTargetGpuData->mRenderTarget));
+
+    renderTarget.mConfig = *config;
     renderTarget.mInternalData = static_cast<void*>(renderTargetGpuData);
 }
 
@@ -253,6 +295,54 @@ void DXTextureFactory::InternalDestroyRenderTarget(Pegasus::Render::RenderTarget
     renderTargetGpuData->mTextureView.mTexture = nullptr;
     PG_DELETE(mAllocator, renderTargetGpuData);
     renderTarget.mInternalData = nullptr;
+}
+
+void DXTextureFactory::InternalCreateCubeMap(const Pegasus::Render::CubeMapConfig& config, Pegasus::Render::CubeMap& cubeMap)
+{
+    ID3D11DeviceContext * context;
+    ID3D11Device * device;
+    Pegasus::Render::GetDeviceAndContext(&device, &context);
+
+    Pegasus::Render::DXTextureGPUData* texGpuData  = PG_NEW (
+        mAllocator,
+        -1,
+        "DX Texture Cube",
+        Pegasus::Alloc::PG_MEM_PERM
+    ) Pegasus::Render::DXTextureGPUData;
+
+    D3D11_TEXTURE2D_DESC& texDesc = texGpuData->mDesc;
+    texDesc.Width = static_cast<unsigned int>(config.mWidth);
+    texDesc.Height = static_cast<unsigned int>(config.mHeight);
+    texDesc.MipLevels = 1;
+    texDesc.ArraySize = 6;
+    texDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    texDesc.SampleDesc.Count = 1;
+    texDesc.SampleDesc.Quality = 0;
+    texDesc.Usage = D3D11_USAGE_DEFAULT;
+    texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+    texDesc.CPUAccessFlags = 0;
+    texDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+
+    VALID_DECLARE(device->CreateTexture2D(&texDesc, nullptr, &texGpuData->mTexture));
+
+    D3D11_SHADER_RESOURCE_VIEW_DESC& srvDesc = texGpuData->mSrvDesc;
+    srvDesc.Format = texDesc.Format;
+    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
+    srvDesc.TextureCube.MostDetailedMip = 0;
+    srvDesc.TextureCube.MipLevels = texDesc.MipLevels;
+    
+    VALID(device->CreateShaderResourceView(texGpuData->mTexture, &srvDesc, &texGpuData->mSrv));
+    
+    cubeMap.mConfig = config;
+    cubeMap.mInternalData = texGpuData;   
+}
+
+void DXTextureFactory::InternalDestroyCubeMap(Pegasus::Render::CubeMap& cubeMap)
+{
+    Pegasus::Render::DXTextureGPUData* texGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXTextureGPUData, cubeMap.mInternalData);
+    texGpuData->mTexture = nullptr;
+    texGpuData->mSrv = nullptr;
+    PG_DELETE(mAllocator, texGpuData);
 }
 
 namespace Pegasus
@@ -275,15 +365,30 @@ Texture::ITextureFactory * GetRenderTextureFactory()
 ///////////////////////////////////////////////////////////////////////////////
 void Pegasus::Render::CreateRenderTarget(Pegasus::Render::RenderTargetConfig& config, Pegasus::Render::RenderTarget& renderTarget)
 {
-    Pegasus::Render::gTextureFactory.InternalCreateRenderTarget(config, renderTarget);    
+    Pegasus::Render::gTextureFactory.InternalCreateRenderTarget(&config, nullptr, Pegasus::Render::X /*unused*/, renderTarget);    
+}
+
+void Pegasus::Render::CreateRenderTargetFromCubeMap(CubeFace targetFace, CubeMap& cubeMap, RenderTarget& target)
+{
+    Pegasus::Render::gTextureFactory.InternalCreateRenderTarget(nullptr, &cubeMap, targetFace,  target);
+}
+
+void Pegasus::Render::CreateCubeMap(Pegasus::Render::CubeMapConfig& config, Pegasus::Render::CubeMap& cubeMap)
+{
+    Pegasus::Render::gTextureFactory.InternalCreateCubeMap(config, cubeMap);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/////////////   DELETE BUFFER IMPLEMENTATION            ///////////////////////
+/////////////   DELETE RENDER TARGET IMPLEMENTATION            ///////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 void Pegasus::Render::DeleteRenderTarget(Pegasus::Render::RenderTarget& renderTarget)
 {
     Pegasus::Render::gTextureFactory.InternalDestroyRenderTarget(renderTarget);
+}
+
+void Pegasus::Render::DeleteCubeMap(Pegasus::Render::CubeMap& cubeMap)
+{
+    Pegasus::Render::gTextureFactory.InternalDestroyCubeMap(cubeMap);
 }
 
 #else

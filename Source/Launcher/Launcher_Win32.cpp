@@ -319,6 +319,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     // Load the assets required to render the timeline blocks
     application->Load();
 
+
     // Run message pump until application exits
     while(!appDone)
     {
@@ -339,6 +340,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         }
     }
     retVal = curMsg.wParam;
+    
+    application->Unload();
 
     // Tear down windows
     appWindow->Shutdown();

@@ -97,6 +97,9 @@ public:
 
     //! Flushes a shader to its containing asset.
     virtual void FlushShaderToAsset(IShaderProxy* shader) = 0;
+
+    //! Flushes a program to its containing asset.
+    virtual void FlushProgramToAsset(IProgramProxy* program) = 0;
 };
 
 }

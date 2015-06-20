@@ -125,7 +125,7 @@ void TimelineScript::Shutdown()
 
 void TimelineScript::AddHeader(TimelineSourceIn header)
 {
-    *(new(&mHeaders.PushEmpty()) TimelineSourceRef) = header;
+    mHeaders.PushEmpty() = header;
 }
 
 void TimelineScript::ClearHeaderList()

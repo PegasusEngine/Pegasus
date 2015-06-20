@@ -95,7 +95,7 @@
 [ \t]            ;
 [0-9]+\.[0-9]+   { AS_FLOAT(I_FLOAT); }
 [0-9]+           { AS_INT(I_INT); }
-[_a-zA-Z0-9]+    { const char* txt = yyextra->mBuilder->CopyString(yytext); 
+[_a-zA-Z0-9\.\\\\\/]+    { const char* txt = yyextra->mBuilder->CopyString(yytext); 
                    if (txt == nullptr)
                    {
                         PG_LOG('ERR_', "String too long, exceeding the limit. Line %d", yyextra->mBuilder->GetCurrentLine());

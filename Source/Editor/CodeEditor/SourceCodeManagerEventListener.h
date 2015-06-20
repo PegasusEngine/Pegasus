@@ -18,8 +18,6 @@
 #ifndef EDITOR_CODEMANAGEREVENTLISTENER_H
 #define EDITOR_CODEMANAGEREVENTLISTENER_H
 
-class AssetLibraryWidget;
-
 class QTextDocument;
 
 class QSemaphore;
@@ -98,20 +96,20 @@ public:
     //! gets the intermediate document
     QTextDocument* GetDocument() const { return mIntermediateDocument; }
 
-    //! an int attached to the user data. 0 by default
-    void SetDispatchType(int value) { mDispatchType = value; }
+    //! Sets identifier of the type of source code opened
+    void SetName(const QString name) { mUserDataName = name; }
 
-    //! returns the dispatch type. 0 by default
-    int GetDispatchType() const { return mDispatchType; }
+    //! Gets the identifier of the type of source code opened
+    const QString& GetName() const { return mUserDataName; }
 
 private:
     bool mIsValid;
     QSet<int> mInvalidLinesSet;
     QMap<int, QString> mMessagesMap;
     QString mErrorMessage;
+    QString mUserDataName;
     QTextDocument* mIntermediateDocument;
     bool mIsProgram;
-    int  mDispatchType;
     
     union {
         Pegasus::Shader::IProgramProxy* mProgram;
@@ -130,7 +128,7 @@ class SourceCodeManagerEventListener : public QObject, public Pegasus::Core::Com
     Q_OBJECT;
 
 public:
-    explicit SourceCodeManagerEventListener(AssetLibraryWidget * widget);
+    SourceCodeManagerEventListener();
     virtual ~SourceCodeManagerEventListener();
     
     //! called in the constructor of a node requiring user data injection
@@ -144,9 +142,6 @@ public:
 
     //! Dispatch event callback on a linker event
     virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::LinkingEvent& e);
-
-    //! Dispatch event callback on a file operation event
-    virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::FileOperationEvent& e);
 
     //! Dispatch event callback on a loading event
     virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::SourceLoadedEvent& e);
@@ -189,10 +184,6 @@ signals:
 public slots:
     //! safe call of user data destruction once the ui thread removes any references
     void SafeDestroyUserData(CodeUserData* userData);
-    
-
-private:
-    AssetLibraryWidget * mLibraryWidget;
 
 };
 

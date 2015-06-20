@@ -128,7 +128,7 @@ namespace Application
     
     RenderCollection::CollectionHandle RenderCollection::AddProgram(Shader::ProgramLinkage* program)
     {
-        *(new(&mImpl->mPrograms.PushEmpty()) Shader::ProgramLinkageRef) = program;
+        mImpl->mPrograms.PushEmpty() = program;
         return mImpl->mPrograms.GetSize() - 1;
     }
 
@@ -144,7 +144,7 @@ namespace Application
 
     RenderCollection::CollectionHandle RenderCollection::AddShader(Shader::ShaderStage* shader)
     {
-        *(new (&mImpl->mShaders.PushEmpty()) Shader::ShaderStageRef) = shader;
+        mImpl->mShaders.PushEmpty() = shader;
         return mImpl->mShaders.GetSize() - 1;
     }
 
@@ -160,7 +160,7 @@ namespace Application
 
     RenderCollection::CollectionHandle RenderCollection::AddTexture(Texture::Texture* texture)
     {
-        *(new (&mImpl->mTextures.PushEmpty()) Texture::TextureRef) = texture;
+        mImpl->mTextures.PushEmpty() = texture;
         return mImpl->mTextures.GetSize() - 1;
     }
 
@@ -176,7 +176,7 @@ namespace Application
 
     RenderCollection::CollectionHandle RenderCollection::AddTextureGenerator(Texture::TextureGenerator* texGen)
     {
-        *(new (&mImpl->mTextureGenerators.PushEmpty()) Texture::TextureGeneratorRef) = texGen;
+        mImpl->mTextureGenerators.PushEmpty() = texGen;
         return mImpl->mTextureGenerators.GetSize() - 1;
     }
 
@@ -192,7 +192,7 @@ namespace Application
 
     RenderCollection::CollectionHandle RenderCollection::AddTextureOperator(Texture::TextureOperator* texOp)
     {
-        *(new (&mImpl->mTextureOperators.PushEmpty()) Texture::TextureOperatorRef) = texOp;
+        mImpl->mTextureOperators.PushEmpty() = texOp;
         return mImpl->mTextureOperators.GetSize() - 1 ;
     }
 
@@ -208,7 +208,7 @@ namespace Application
 
     RenderCollection::CollectionHandle RenderCollection::AddMesh(Mesh::Mesh* mesh)
     {
-        *(new (&mImpl->mMeshes.PushEmpty()) Mesh::MeshRef) = mesh;
+        mImpl->mMeshes.PushEmpty() = mesh;
         return mImpl->mMeshes.GetSize() - 1;
     }
 
@@ -224,7 +224,7 @@ namespace Application
 
     RenderCollection::CollectionHandle RenderCollection::AddMeshGenerator(Mesh::MeshGenerator* mesh)
     {
-        *(new (&mImpl->mMeshGenerators.PushEmpty()) Mesh::MeshGeneratorRef) = mesh;
+        mImpl->mMeshGenerators.PushEmpty() = mesh;
         return mImpl->mMeshGenerators.GetSize() - 1; 
     }
 

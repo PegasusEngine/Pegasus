@@ -72,6 +72,9 @@ public:
     //! Destructor
     ~CodeTextEditorTreeWidget();
 
+    //! \return true if any child has focus, false otherwise
+    bool HasAnyChildFocus() const;
+
     //! Displays a source code in the current text view
     //! \param source code the source code node
     //! \param finalEditor an auxiliary editor, if all the subeditors are used, it will fall into this leaf editor

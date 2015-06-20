@@ -15,6 +15,8 @@
 #include <QDockWidget>
 #include "CodeEditor/CodeTextEditorTreeWidget.h"
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
+#include "MessageControllers/AssetIOMessageController.h"
+#include "MessageControllers/SourceIOMessageController.h"
 
 
 class CodeUserData;
@@ -26,6 +28,7 @@ class QSignalMapper;
 class QMutex;
 class QAction;
 class QTab;
+class QFocusEvent;
 class CodeTextEditorTreeWidget;
 class CodeTextEditorWidget;
 class CodeUserData;
@@ -39,18 +42,12 @@ public:
     explicit CodeEditorWidget(QWidget * parent);
     virtual ~CodeEditorWidget();
 
-
     //! checks if there is a compilation request pending (so we dont resend more)
     bool AsyncHasCompilationRequestPending();
     
     //! Sets a pending compilation request has been sent and is on its way to be cleard
     void AsyncSetCompilationRequestPending();
     
-    //! Clears the compilation request and flushes the internal text of a code tab
-    //! into the internal code source container
-    //! \param the user data to compile
-    void FlushTextEditorToCodeAndCompile(CodeUserData* userData);
-
     //! Called when a code compilation status has been changed
     //! \param code that has been updated
     void CodeUIChanged(CodeUserData * code);
@@ -64,28 +61,29 @@ public:
 
     //! finds the index of a particular text edit
     int  FindIndex(CodeTextEditorWidget * target);
+
+    //! true if any child has focus, false otherwise
+    bool HasAnyChildFocus() const;
+
 signals:
 
-    //! called when the editor request a compilation
-    void RequestCodeCompilation(CodeUserData* codeUserData);
-
     //! called when the editor needs the asset library to freeze the ui
-    void RequestDisableAssetLibraryUi();
+    void RequestCompilationBegin();
 
     //! called when the editor feels like deleting the user data from the render thread
     void RequestSafeDeleteUserData(CodeUserData* userData);
 
-    //! called when the editor feels like closing code
-    void RequestCloseCode(CodeUserData* userData);
+    //! Sends a message to the asset IO controller
+    void SendAssetIoMessage(AssetIOMessageController::Message msg);
 
-    //! Call that request save on the code user data passed
-    void RequestSaveCode(CodeUserData* userData);
+    //! Sends a message to the source IO controller
+    void SendSourceIoMessage(SourceIOMessageController::Message msg);
 
 public slots:
 
     //! opens a CodeUserData in the text editor
     //! \param CodeUserData the code to open
-    void RequestOpen(CodeUserData * code);
+    void RequestOpen(Pegasus::Core::ISourceCodeProxy* code);
 
     //! slot to be called when a code wants to be closed.
     //! \param index code to close
@@ -102,6 +100,13 @@ public slots:
 
     //! Sets the status bar message
     void PostStatusBarMessage(const QString& string);
+
+    //! signal triggered when the user clicks on the save button
+    void SignalSaveCurrentCode();
+
+    //! Triggered when compilation has been received and finished from the UI thread.
+    void CompilationRequestReceived();
+
 
 private slots:
     //! slot called whenever a tab changes its text.
@@ -136,9 +141,6 @@ private slots:
 
     //! signal triggered when pin icon is pressed in the toolbar
     void SignalInstantCompilationActionTriggered(); 
-
-    //! signal triggered when the user clicks on the save button
-    void SignalSaveCurrentCode();
 
     //! signal triggered when a file save has ended successfuly
     void SignalSavedFileSuccess();

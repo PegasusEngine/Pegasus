@@ -102,6 +102,9 @@ public:
     // Tell all the blocks of the lane to initialize their content (calling their Initialize() function)
     void InitializeBlocks();
 
+    // Tell all the blocks of the lane to uninitialize their content
+    void UninitializeBlocks();
+
     //! Update the content of the lane for the given window (done once per frame if active)
     //! \param beat Current beat, measured in ticks, can have fractional part
     //! \param window Window in which the lane is being rendered

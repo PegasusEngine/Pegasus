@@ -248,6 +248,16 @@ void Application::Load()
 
 //----------------------------------------------------------------------------------------
 
+void Application::Unload()
+{
+    PG_ASSERTSTR(mTimeline != nullptr, "Invalid timeline for the application");
+
+    // Tell all the blocks of the timeline to shutdown their content
+    mTimeline->ShutdownBlocks();
+}
+
+//----------------------------------------------------------------------------------------
+
 IWindowRegistry* Application::GetWindowRegistry()
 {
     return mWindowManager;

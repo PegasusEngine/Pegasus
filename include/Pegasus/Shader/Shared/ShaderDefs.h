@@ -31,7 +31,8 @@ namespace Shader
 //! Shader Stage Type, mapping to the OpenGL 4.X shader pipeline
 enum ShaderType
 {
-    VERTEX, // vertex shader stage
+    SHADER_STAGES_BEGIN = 0,
+    VERTEX = SHADER_STAGES_BEGIN, // vertex shader stage
     FRAGMENT, // pixel shader stage
     TESSELATION_CONTROL, // tesselation control stage
     TESSELATION_EVALUATION, // tesselation evaluation stage
@@ -40,6 +41,26 @@ enum ShaderType
     SHADER_STAGES_COUNT, // count, use this to iterate through stages
     SHADER_STAGE_INVALID, // invalid flag, meaning shader is not set
     SHADER_STAGE_MAX // maximum count for stage enumeration
+};
+
+const char* const gShaderExtensions[SHADER_STAGES_COUNT] = 
+{
+    "vs",
+    "ps",
+    "tcs",
+    "tes",
+    "gs",
+    "cs"
+};
+
+const char* const gShaderTypeNames[SHADER_STAGES_COUNT] = 
+{
+    "Vertex",
+    "Pixel",
+    "Tesselation control",
+    "Tesselation evaluation",
+    "Geometry",
+    "Compute"
 };
 
 //! Shader stage configuration structure

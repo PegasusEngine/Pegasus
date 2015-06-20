@@ -77,7 +77,7 @@ Pegasus::Shader::IShaderProxy* Pegasus::Shader::ShaderManagerProxy::OpenShader(A
             return shader->GetProxy();
         }
     }
-    *(new (&mOpenedShaders.PushEmpty()) Pegasus::Shader::ShaderSourceRef) = shader; //add a reference
+    mOpenedShaders.PushEmpty() = shader; //add a reference
     return shader->GetProxy();
 }
 
@@ -93,7 +93,7 @@ Pegasus::Shader::IProgramProxy* Pegasus::Shader::ShaderManagerProxy::OpenProgram
             return program->GetProxy();
         }
     }
-    *(new (&mOpenedPrograms.PushEmpty()) Pegasus::Shader::ProgramLinkageRef) = program; //add a reference
+    mOpenedPrograms.PushEmpty() = program; //add a reference
     return program->GetProxy();
 }
 
@@ -165,6 +165,12 @@ void Pegasus::Shader::ShaderManagerProxy::FlushShaderToAsset(Pegasus::Shader::IS
 {
     Pegasus::Shader::ShaderSourceRef obj = static_cast<Pegasus::Shader::ShaderProxy*>(shader)->GetObject();
     mObject->FlushShaderToAsset(obj);
+}
+
+void Pegasus::Shader::ShaderManagerProxy::FlushProgramToAsset(Pegasus::Shader::IProgramProxy* program)
+{
+    Pegasus::Shader::ProgramLinkageRef obj = static_cast<Pegasus::Shader::ProgramProxy*>(program)->GetObject();
+    mObject->FlushProgramToAsset(obj);
 }
 
 #else

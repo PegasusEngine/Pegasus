@@ -198,6 +198,9 @@ public:
     // Tell all the blocks of the timeline to initialize their content (calling their Initialize() function)
     void InitializeBlocks();
 
+    // Tell all the blocks of the timeline to uninitialize their content
+    void ShutdownBlocks();
+
 
     //! Set the play mode of the timeline
     //! \param playMode New play mode of the timeline (PLAYMODE_xxx constant)

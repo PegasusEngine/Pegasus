@@ -153,10 +153,10 @@ void Application::run()
 
     // Initialize the application
     mApplication = CreatePegasusAppFunc(appConfig);
-    
-    // Initialize all application event listeners
-    mApplication->GetShaderManagerProxy()->RegisterEventListener( Editor::GetInstance().GetAssetLibraryWidget()->GetSourceCodeManagerEventListener() );
-    mApplication->GetTimelineProxy()->RegisterEventListener( Editor::GetInstance().GetAssetLibraryWidget()->GetSourceCodeManagerEventListener() );
+
+    // Create the application interface object, owned by the application thread.
+    // Not a child of this QThread, since we want it to be in the application thread.
+    mApplicationInterface = new ApplicationInterface(this);
 
     // Run the initialization process of the application
     mApplication->Initialize();
@@ -188,20 +188,12 @@ void Application::run()
     // Signal the success of the loading
     emit(LoadingSucceeded());
 
-    // Create the application interface object, owned by the application thread.
-    // Not a child of this QThread, since we want it to be in the application thread.
-    mApplicationInterface = new ApplicationInterface(this, nullptr);
-
     // Run the application loop. Does not use Application->Run() since we want to control
     // the sequencing of the message loop from the editor, and to allow assertion dialog boxes to work correctly.
     // Uses QThread::exec() rather than QEventLoop::exec() to allow timers to work.
     this->exec();
 
-
-
-    // Kill the interface with the application
-    delete mApplicationInterface;
-    mApplicationInterface = nullptr;
+    mApplication->Unload();
 
     // Tear down windows
     for (unsigned int w = 0; w < NUM_VIEWPORT_TYPES; ++w)
@@ -218,6 +210,10 @@ void Application::run()
     mApplication->Shutdown();
     DestroyPegasusAppFunc(mApplication);
 
+    // Kill the interface with the application
+    delete mApplicationInterface;
+    mApplicationInterface = nullptr;
+    
 #if PEGASUS_PLATFORM_WINDOWS
 
     // Release the application library

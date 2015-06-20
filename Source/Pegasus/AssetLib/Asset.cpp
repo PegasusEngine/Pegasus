@@ -198,6 +198,7 @@ Asset::Asset(Alloc::IAllocator* allocator, Asset::AssetFormat fmt)
   mFormat(fmt),
   mChildArrays(allocator),
   mChildObjects(allocator),
+  mRoot(nullptr),
   mRuntimeData(nullptr)
 {
     mPathString[0] = '\0';
@@ -256,7 +257,6 @@ const char* Asset::CopyString(const char* string)
 void Asset::Clear()
 {
     PG_ASSERT(mFormat == Asset::FMT_STRUCTURED);
-    Object * obj = AS_NEW Object(mAllocator);
     for (int i = 0; i < mChildObjects.GetSize(); ++i)
     {
         mChildObjects[i]->~Object();

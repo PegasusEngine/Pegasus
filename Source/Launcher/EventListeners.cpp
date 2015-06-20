@@ -40,11 +40,6 @@ namespace Launcher
         Assert(e.GetEventType() == CompilerEvents::LinkingEvent::LINKING_SUCCESS, e.GetLog());
     }
 
-    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, CompilerEvents::FileOperationEvent& e)
-    {
-        Assert(false, "Pegasus Shader IO Error.");
-    }
-
     void LauncherTextureListener::OnEvent(Graph::IGraphUserData * u, Texture::TextureNotificationEvent& e)
     {
         Assert(false, e.GetMessage());

@@ -16,9 +16,13 @@
 //include all proxy types to declare meta types
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
+#include "Pegasus/Shader/Shared/ShaderDefs.h"
+#include "Pegasus/Shader/Shared/IProgramProxy.h"
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 #include "CodeEditor/SourceCodeManagerEventListener.h"
+#include "MessageControllers/AssetIOMessageController.h"
+#include "MessageControllers/SourceIOMessageController.h"
 
 //! Name of the organization creating the software
 #define EDITOR_ORGANIZATION_NAME				"Pegasus"
@@ -33,15 +37,24 @@
 //------------------- Public meta type declarations --------------------------------------
 
 Q_DECLARE_METATYPE(Pegasus::Core::ISourceCodeProxy*);
+Q_DECLARE_METATYPE(Pegasus::Shader::IProgramProxy*);
 Q_DECLARE_METATYPE(CodeUserData*);
 Q_DECLARE_METATYPE(Pegasus::Timeline::IBlockProxy*);
+Q_DECLARE_METATYPE(AssetIOMessageController::Message);
+Q_DECLARE_METATYPE(SourceIOMessageController::Message);
+Q_DECLARE_METATYPE(ProgramIOMessageController::Message);
 
 void RegisterMetaTypes()
 {
     qRegisterMetaType<Pegasus::Core::ISourceCodeProxy*>();
+    qRegisterMetaType<Pegasus::Shader::IProgramProxy*>();
     qRegisterMetaType<CodeUserData*>();
     qRegisterMetaType<Pegasus::Timeline::IBlockProxy*>();
+    qRegisterMetaType<AssetIOMessageController::Message>();
+    qRegisterMetaType<SourceIOMessageController::Message>();
+    qRegisterMetaType<ProgramIOMessageController::Message>();
 }
+
 //----------------------------------------------------------------------------------------
 
 int main(int argc, char *argv[])

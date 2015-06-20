@@ -103,6 +103,9 @@ public:
     //! Load the assets required to render the timeline blocks
     void Load();
 
+    //! Unload the assets used by the timeline blocks
+    void Unload();
+
 
     //! Gets the window registry for this app, to register window types
     //! \return Window registry interface.

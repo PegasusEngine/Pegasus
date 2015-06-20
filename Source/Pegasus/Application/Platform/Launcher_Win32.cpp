@@ -257,6 +257,8 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     }
     retVal = curMsg.wParam;
 
+    application->Unload();
+
     // Tear down windows
     appWindow->Shutdown();
     application->DetachWindow(appWindow);

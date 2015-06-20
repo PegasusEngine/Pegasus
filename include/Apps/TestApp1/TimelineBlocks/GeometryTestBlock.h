@@ -83,6 +83,8 @@ private:
     // screen program uniforms
     Pegasus::Render::Uniform mSpeakerUniformBlock;
     Pegasus::Render::Buffer  mSpeakerStateBuffer;
+    Pegasus::Render::CubeMap mCubeMap;
+    Pegasus::Render::RenderTarget mCubeMapTarget;
     PEGASUS_ALIGN_BEGIN(16)
     struct SpeakerUniformState
     {

@@ -114,6 +114,9 @@ public:
     //! Flushes a shader to its containing asset.
     virtual void FlushShaderToAsset(IShaderProxy* shader);
 
+    //! Flushes a program to its containing asset.
+    virtual void FlushProgramToAsset(IProgramProxy* program);
+
 private:
 
     //! reference to internal program

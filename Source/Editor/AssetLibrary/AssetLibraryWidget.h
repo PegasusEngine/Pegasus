@@ -15,24 +15,28 @@
 #include <QDockWidget>
 #include <QAction>
 #include "ui_AssetLibraryWidget.h"
+#include "MessageControllers/AssetIOMessageController.h"
 
-namespace Pegasus
-{
-    namespace Core {
+namespace Pegasus {
+    namespace Core 
+    {
         class ISourceCodeProxy;
     }
+
+    namespace Shader 
+    {
+        class IProgramProxy;
+    }
 }
-class CodeUserData;
+
 class QWidget;
 class QItemSelectionModel;
 class QSemaphore;
 class QFileSystemModel;
 class QMenu;
 class QFileSystemWatcher;
-class CodeEditorWidget;
 class ProgramTreeModel;
 class SourceCodeListModel;
-class SourceCodeManagerEventListener;
 
 //! Graphics Widget meant for shader navigation & management
 class AssetLibraryWidget : public QDockWidget
@@ -41,26 +45,8 @@ class AssetLibraryWidget : public QDockWidget
 
 public:
     
-    //dispatch types
-    enum DispatchTypes {
-        SHADER,
-        PROGRAM,
-        TEXTURE,
-        MESH,
-        BLOCKSCRIPT
-    };
-
-    AssetLibraryWidget(QWidget * parent, CodeEditorWidget * editorWidget);
+    AssetLibraryWidget(QWidget * parent);
     virtual ~AssetLibraryWidget();
-
-    //! Opens an asset in the render thread (to be called by the application proxy)
-    void OnRenderThreadOpenAsset (const QString& path);
-
-    //! Closes a source code runtime object from the render thread (to be called by the application interface)
-    void OnRenderThreadCloseSourceCode(CodeUserData* userData);
-
-    //! from the render thread, creates a new asset from a new file
-    void OnRenderThreadNewAsset(const QString path, int assetType);
 
     //! Creates the menu that contains list of assets. Does binding internally
     QMenu* CreateNewAssetMenu(const QString& name, QWidget* parent);
@@ -87,23 +73,14 @@ public slots:
      //! slot triggered when something has been selected through blockscript tree view
     void DispatchTextEditorThroughBlockScriptView(const QModelIndex& index);
 
-    //! gets the shader editor widget
-    CodeEditorWidget * GetCodeEditorWidget() { return mCodeEditorWidget; }
-
-    //! gets the shader manager event listener
-    SourceCodeManagerEventListener * GetSourceCodeManagerEventListener() { return mSourceCodeManagerEventListener;}
-    
-    //! grays out shader / program views. Prevents any asset view thread race condition while adding new program / shader assets
+    //! grays/ungrays out shader / program views. Prevents any asset view thread race condition while adding new program / shader assets
     void SetEnabledProgramShaderViews(bool enabled);
 
-    //! triggered when the ui thread is about to request a redraw on the app thread.(disables all ui shader views)
-    void OnCompilationRedrawBegin();
+    //! ungrays out shader / program views. Prevents any asset view thread race condition while adding new program / shader assets
+    void EnableProgramShaderViews();
 
-    //! triggered when the main thread has finished a redraw for compilation
-    void OnCompilationRedrawEnd();
-
-    //! triggered when somebody requests to open a ISourceCodeProxy, on the UI thread
-    void ReceiveOpenCodeSignal(Pegasus::Core::ISourceCodeProxy* code);
+    //! grays out shader / program views. Prevents any asset view thread race condition while adding new program / shader assets
+    void DisableProgramShaderViews();
 
     //! functions that trigger a new asset
     void OnNewMesh(bool enabled);
@@ -116,7 +93,6 @@ public slots:
     void OnNewCS(bool enabled);
     void OnNewTexture(bool enabled);
     void OnNewTimelineScript(bool enabled);
-    void OnSaveCode(CodeUserData* code);
 
 
     //slots on file system changes
@@ -124,18 +100,14 @@ private slots:
     void OnFileChanged(const QString& path);
 
 signals:
+    //! sends a message to the IO controller, which will then send more messages to other UI specific elements
+    void SendAssetIoMessage(AssetIOMessageController::Message msg);
 
-    //! sends event to request opening an asset
-    void DispatchAssetCreation(const QString& path);
+    //! sends a message to the UI to open a source code with the default editor
+    void RequestOpenCode(Pegasus::Core::ISourceCodeProxy* code);
 
-    //! internal signal, sent it to switch to UI thread
-    void RequestOpenCode(Pegasus::Core::ISourceCodeProxy* shaderProxy);
-
-    //! signals from the render thread to the ui thread to update ui layout
-    void RequestUpdateUIItemsLayout();
-
-    //! signals from the ui thread to the render thread to create a new asset
-    void RequestNewAsset(QString path, int assetType);
+    //! sends a message to the UI to open a source code with the default editor
+    void RequestOpenProgram(Pegasus::Shader::IProgramProxy* program);
 
 private:
 
@@ -146,10 +118,7 @@ private:
 
     //! Saves a new asset from scratch. Triggers the event chain from ui -> render -> ui
     //! \param the filter to use
-    void SaveAsFile(const QString& filter, int assetType);
-
-    //! updates all the blockscript user data (fills in for blockscripts lacking of user data).
-    void UpdateBlockScriptUserData();
+    void SaveAsFile(const QString& filter, AssetIOMessageController::Message::MessageType newAssetType);
 
     //! ui components
     Ui::AssetLibraryWidget ui;
@@ -177,12 +146,6 @@ private:
 
     //! reference to the shader list selection model (used to determine what shader is selected)
     QItemSelectionModel * mBlockScriptListSelectionModel;
-    
-    //! reference to the shader text editor widget
-    CodeEditorWidget * mCodeEditorWidget;
-
-    //! shader manager event listener
-    SourceCodeManagerEventListener * mSourceCodeManagerEventListener;
 
     //! file system watcher to detect any changes outside pegasus on asset files
     QFileSystemWatcher* mFileSystemWatcher;

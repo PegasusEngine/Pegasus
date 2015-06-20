@@ -33,7 +33,6 @@ public:
     //! Destructor
     virtual ~ApplicationManager();
 
-
     //! Open a new application
     //! \param fileName Path and name of the library file to open
     //! \todo Add error management

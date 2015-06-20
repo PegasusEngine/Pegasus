@@ -16,8 +16,6 @@
 #include "AssetLibrary/AssetLibraryWidget.h"
 #include "AssetLibrary/ProgramTreeModel.h"
 #include "AssetLibrary/SourceCodeListModel.h"
-#include "CodeEditor/CodeEditorWidget.h"
-#include "CodeEditor/SourceCodeManagerEventListener.h"
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
@@ -39,8 +37,10 @@
 
 
 
-AssetLibraryWidget::AssetLibraryWidget(QWidget * parent, CodeEditorWidget * editorWidget)
-: QDockWidget(parent), mCodeEditorWidget(editorWidget)
+AssetLibraryWidget::AssetLibraryWidget(
+        QWidget * parent
+)
+: QDockWidget(parent)
 {
 
     mProgramTreeModel = new ProgramTreeModel(this);
@@ -51,8 +51,6 @@ AssetLibraryWidget::AssetLibraryWidget(QWidget * parent, CodeEditorWidget * edit
 
     mBlockScriptListModel = new SourceCodeListModel(this);
     mBlockScriptListSelectionModel = new QItemSelectionModel(mBlockScriptListModel);
-
-    mSourceCodeManagerEventListener = new SourceCodeManagerEventListener(this);
 
     mAssetTreeFileSystemModel = new QFileSystemModel(this);
     mAssetTreeSelectionModel = new QItemSelectionModel(mAssetTreeFileSystemModel);
@@ -75,48 +73,6 @@ AssetLibraryWidget::AssetLibraryWidget(QWidget * parent, CodeEditorWidget * edit
             this, SLOT(DispatchTextEditorThroughBlockScriptView(QModelIndex)));
 
 
-    //Queued connections, from events than come directly from the app
-    connect(mSourceCodeManagerEventListener, SIGNAL(OnCompilationError(CodeUserData*,int,QString)),
-        mCodeEditorWidget, SLOT(SignalCompilationError(CodeUserData*,int,QString)), Qt::QueuedConnection);
-
-    connect(mSourceCodeManagerEventListener, SIGNAL(OnLinkingEvent(QString,int)),
-        mCodeEditorWidget, SLOT(SignalLinkingEvent(QString,int)), Qt::QueuedConnection);
-
-    connect(mSourceCodeManagerEventListener, SIGNAL(OnCompilationBegin(CodeUserData*)),
-        mCodeEditorWidget, SLOT(SignalCompilationBegin(CodeUserData*)), Qt::QueuedConnection);
-
-    connect(mSourceCodeManagerEventListener, SIGNAL(OnCompilationEnd(QString)),
-        mCodeEditorWidget, SLOT(SignalCompilationEnd(QString)), Qt::QueuedConnection);
-
-    connect(mSourceCodeManagerEventListener, SIGNAL(OnBlessUserData(CodeUserData*)),
-        mCodeEditorWidget, SLOT(BlessUserData(CodeUserData*)), Qt::QueuedConnection);
-
-    connect(mSourceCodeManagerEventListener, SIGNAL(OnUnblessUserData(CodeUserData*)),
-        mCodeEditorWidget, SLOT(UnblessUserData(CodeUserData*)), Qt::QueuedConnection);
-
-    connect(mCodeEditorWidget, SIGNAL(RequestDisableAssetLibraryUi()),
-        this, SLOT(OnCompilationRedrawBegin()), Qt::DirectConnection);
-
-    connect(mCodeEditorWidget, SIGNAL(RequestSaveCode(CodeUserData*)),
-            this, SLOT(OnSaveCode(CodeUserData*)));
-
-    connect(mSourceCodeManagerEventListener, SIGNAL(OnSignalSaveSuccess()),
-        mCodeEditorWidget, SLOT(SignalSavedFileSuccess()), Qt::QueuedConnection);
-
-    connect(mSourceCodeManagerEventListener, SIGNAL(OnSignalSavedFileError(int, QString)),
-        mCodeEditorWidget, SLOT(SignalSavedFileIoError(int,QString)), Qt::QueuedConnection);
-
-    connect(mSourceCodeManagerEventListener, SIGNAL(OnSignalUpdateUIViews()),
-        this, SLOT(OnCompilationRedrawEnd()), Qt::QueuedConnection);
-    
-    connect(mCodeEditorWidget, SIGNAL(RequestSafeDeleteUserData(CodeUserData*)),
-        mSourceCodeManagerEventListener, SLOT(SafeDestroyUserData(CodeUserData*)), Qt::QueuedConnection);
-
-    connect(this, SIGNAL(RequestOpenCode(Pegasus::Core::ISourceCodeProxy*)),
-            this, SLOT(ReceiveOpenCodeSignal(Pegasus::Core::ISourceCodeProxy*)), Qt::QueuedConnection);
-
-    connect(this, SIGNAL(RequestUpdateUIItemsLayout()),
-            this, SLOT(UpdateUIItemsLayout()), Qt::QueuedConnection);
 
     connect(mFileSystemWatcher, SIGNAL(fileChanged(QString)),
             this, SLOT(OnFileChanged(QString)));
@@ -194,9 +150,6 @@ QString AssetLibraryWidget::AskFilePath(const QString& filter)
     if (selectedFile.size() == 0 || selectedFile.startsWith(rootPath))
     {
         QString relativePath = selectedFile.right(selectedFile.size() - rootPath.size() - 1);
-
-        emit(DispatchAssetCreation(relativePath));
-
         return relativePath;
     }
     else
@@ -208,60 +161,17 @@ QString AssetLibraryWidget::AskFilePath(const QString& filter)
 
 //----------------------------------------------------------------------------------------
 
-void AssetLibraryWidget::SaveAsFile(const QString& filter, int type)
+void AssetLibraryWidget::SaveAsFile(const QString& filter, AssetIOMessageController::Message::MessageType newAssetMessageType)
 {
     if (Editor::GetInstance().GetApplicationManager().IsApplicationOpened()) 
     {
         QString selectedFile = AskFilePath(filter);
         if (selectedFile.size() != 0)
         {
-            emit(RequestNewAsset(selectedFile, type));
-        }
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
-void AssetLibraryWidget::OnSaveCode(CodeUserData* code)
-{
-    Application* app = Editor::GetInstance().GetApplicationManager().GetApplication();
-    if (app != nullptr)
-    {
-        Pegasus::App::IApplicationProxy* appProxy = app->GetApplicationProxy();
-        ED_ASSERTSTR(appProxy != nullptr, "App proxy can't be null");
-        Pegasus::AssetLib::IAssetLibProxy* assetLib = appProxy->GetAssetLibProxy();
-        Pegasus::Core::ISourceCodeProxy* codeProxy = code->GetSourceCode();   
-        //factories:
-        DispatchTypes dispatchType = static_cast<AssetLibraryWidget::DispatchTypes>(code->GetDispatchType());
-        switch(dispatchType)
-        {
-        case SHADER:
-            {
-                Pegasus::Shader::IShaderManagerProxy*  shaderManagerProxy  = appProxy->GetShaderManagerProxy();
-                Pegasus::AssetLib::IAssetProxy* ass = shaderManagerProxy->GetShaderAsset(static_cast<Pegasus::Shader::IShaderProxy*>(codeProxy));
-                ED_ASSERTSTR(ass != nullptr, "Saving asset: cannot be an invalid value!");
-
-                //TODO: race condition perhaps? if so we need to push this to render thread, then render thread back to ui thread. urgh ugly!
-                shaderManagerProxy->FlushShaderToAsset(static_cast<Pegasus::Shader::IShaderProxy*>(codeProxy));
-                Pegasus::Io::IoError err = assetLib->SaveAsset(ass);
-                mCodeEditorWidget->PostStatusBarMessage(err == Pegasus::Io::ERR_NONE ? tr("Saved file successfully.") : tr("IO Error saving file."));
-                break;
-            }
-        case BLOCKSCRIPT:
-            {
-                Pegasus::Timeline::ITimelineProxy*  timelineManager  = appProxy->GetTimelineProxy();
-                Pegasus::AssetLib::IAssetProxy* ass = timelineManager->GetScriptAsset(codeProxy);
-                ED_ASSERTSTR(ass != nullptr, "Saving asset: cannot be an invalid value!");
-
-                //TODO: race condition perhaps? if so we need to push this to render thread, then render thread back to ui thread. urgh ugly!
-                timelineManager->FlushScriptToAsset(codeProxy);
-                Pegasus::Io::IoError err = assetLib->SaveAsset(ass);
-                mCodeEditorWidget->PostStatusBarMessage(err == Pegasus::Io::ERR_NONE ? tr("Saved file successfully.") : tr("IO Error saving file."));
-                break;
-                break;
-            }
-        default:
-            ED_FAILSTR("Invalid dispatch type for asset dispatched!");
+            AssetIOMessageController::Message msg;
+            msg.SetMessageType(newAssetMessageType);
+            msg.SetString(selectedFile);
+            emit(SendAssetIoMessage(msg));
         }
     }
 }
@@ -270,43 +180,50 @@ void AssetLibraryWidget::OnSaveCode(CodeUserData* code)
 
 void AssetLibraryWidget::OnNewMesh(bool enabled)
 {
-    SaveAsFile(tr("Mesh (*.pas)"), MESH);
+    
+    SaveAsFile(tr("Mesh (*.pas)"), AssetIOMessageController::Message::NEW_MESH);
 }
 
 void AssetLibraryWidget::OnNewProgram(bool enabled)
 {
-    SaveAsFile(tr("Program (*.pas)"), PROGRAM);
+    SaveAsFile(tr("Program (*.pas)"), AssetIOMessageController::Message::NEW_PROGRAM);
 }
 
 
 void AssetLibraryWidget::OnNewVS(bool enabled)
 {
-    SaveAsFile(tr("Vertex Shader (*.vs)"), SHADER);
+    const Pegasus::Shader::ShaderType st = Pegasus::Shader::VERTEX;
+    SaveAsFile(tr("%1 Shader (*.%2)").arg(Pegasus::Shader::gShaderTypeNames[st], Pegasus::Shader::gShaderExtensions[st]), AssetIOMessageController::Message::NEW_SHADER );
 }
 
 void AssetLibraryWidget::OnNewPS(bool enabled)
 {
-    SaveAsFile(tr("Pixel Shader (*.ps)"), SHADER);
+    const Pegasus::Shader::ShaderType st = Pegasus::Shader::FRAGMENT;
+    SaveAsFile(tr("%1 Shader (*.%2)").arg(Pegasus::Shader::gShaderTypeNames[st], Pegasus::Shader::gShaderExtensions[st]), AssetIOMessageController::Message::NEW_SHADER );
 }
 
 void AssetLibraryWidget::OnNewTCS(bool enabled)
 {
-    SaveAsFile(tr("Tesselation Control Shader (*.tcs)"), SHADER);
+    const Pegasus::Shader::ShaderType st = Pegasus::Shader::TESSELATION_CONTROL;
+    SaveAsFile(tr("%1 Shader (*.%2)").arg(Pegasus::Shader::gShaderTypeNames[st], Pegasus::Shader::gShaderExtensions[st]), AssetIOMessageController::Message::NEW_SHADER);
 }
 
 void AssetLibraryWidget::OnNewTES(bool enabled)
 {
-    SaveAsFile(tr("Tesselation Evaluation Shader (*.tes)"), SHADER);
+    const Pegasus::Shader::ShaderType st = Pegasus::Shader::TESSELATION_EVALUATION;
+    SaveAsFile(tr("%1 Shader (*.%2)").arg(Pegasus::Shader::gShaderTypeNames[st], Pegasus::Shader::gShaderExtensions[st]), AssetIOMessageController::Message::NEW_SHADER);
 }
 
 void AssetLibraryWidget::OnNewGS(bool enabled)
 {
-    SaveAsFile(tr("Geometry Shader (*.gs)"), SHADER);
+    const Pegasus::Shader::ShaderType st = Pegasus::Shader::GEOMETRY;
+    SaveAsFile(tr("%1 Shader (*.%2)").arg(Pegasus::Shader::gShaderTypeNames[st], Pegasus::Shader::gShaderExtensions[st]), AssetIOMessageController::Message::NEW_SHADER);
 }
 
 void AssetLibraryWidget::OnNewCS(bool enabled)
 {
-    SaveAsFile(tr("Compute Shader (*.cs)"), SHADER);
+    const Pegasus::Shader::ShaderType st = Pegasus::Shader::COMPUTE;
+    SaveAsFile(tr("%1 Shader (*.%2)").arg(Pegasus::Shader::gShaderTypeNames[st], Pegasus::Shader::gShaderExtensions[st]), AssetIOMessageController::Message::NEW_SHADER);
 }
 
 void AssetLibraryWidget::OnNewTexture(bool enabled)
@@ -316,19 +233,15 @@ void AssetLibraryWidget::OnNewTexture(bool enabled)
 
 void AssetLibraryWidget::OnNewTimelineScript(bool enabled)
 {
-    //SaveAsFile(tr("Timeline Block Script (*.bs)"), BLOCKSCRIPT);
+    SaveAsFile(tr("Timeline Block Script (*.bs)"), AssetIOMessageController::Message::NEW_TIMELINESCRIPT);
 }
 
 //----------------------------------------------------------------------------------------
 
 void AssetLibraryWidget::DispatchTextEditorThroughShaderView(const QModelIndex& index)
 {
-    mCodeEditorWidget->show();
-    mCodeEditorWidget->activateWindow();
     Pegasus::Core::ISourceCodeProxy * code = mShaderListModel->Translate(index);
-    CodeUserData* userData = static_cast<CodeUserData*>(code->GetUserData());
-    userData->SetDispatchType(SHADER);
-    mCodeEditorWidget->RequestOpen(userData);
+    emit(RequestOpenCode(code));
 }
 
 //----------------------------------------------------------------------------------------
@@ -342,140 +255,10 @@ void AssetLibraryWidget::DispatchAsset(const QModelIndex& assetIdx)
         QString path = fileInfo.filePath();
         QString relativePath = path.right(path.size() - rootPath.size() - 1);
 
-        emit(DispatchAssetCreation(relativePath));
-
-    }
-}
-
-
-//----------------------------------------------------------------------------------------
-
-void AssetLibraryWidget::OnRenderThreadOpenAsset(const QString& path)
-{
-    QByteArray ba = path.toLocal8Bit();
-    const char* asciiPath = ba.constData();
-
-    ED_ASSERT(asciiPath != nullptr);
-    Application* app = Editor::GetInstance().GetApplicationManager().GetApplication();
-    if (app != nullptr)
-    {
-        Pegasus::App::IApplicationProxy* appProxy = app->GetApplicationProxy();
-        ED_ASSERTSTR(appProxy != nullptr, "App proxy can't be null");
-        Pegasus::AssetLib::IAssetLibProxy* assetLib = appProxy->GetAssetLibProxy();
-        
-        Pegasus::AssetLib::IAssetProxy* asset = nullptr;
-        if (Pegasus::Io::ERR_NONE == assetLib->LoadAsset(asciiPath, &asset))
-        {
-
-            ED_ASSERT(asset != nullptr);
-            //factories:
-            Pegasus::Shader::IShaderManagerProxy*  shaderManagerProxy  = appProxy->GetShaderManagerProxy();
-            Pegasus::Timeline::ITimelineProxy* timelineProxy = appProxy->GetTimelineProxy();
-            //Pegasus::Shader::ITextureManagerProxy* textureManagerProxy = appProxy->GetTextureManagerProxy();
-            //Pegasus::Shader::IMeshManagerProxy*    meshManagerProxy    = appProxy->GetMeshManagerProxy();
-
-            //select which asset factory to use
-            if (shaderManagerProxy->IsShader(asset))
-            {
-                Pegasus::Shader::IShaderProxy* openedShader = shaderManagerProxy->OpenShader(asset);
-                if (openedShader != nullptr)
-                {
-                    static_cast<CodeUserData*>(openedShader->GetUserData())->SetDispatchType(SHADER);
-                    emit(RequestOpenCode(openedShader));
-                }
-            } 
-            else if (shaderManagerProxy->IsProgram(asset))
-            {
-                //todo: implement a program editor widget?
-            }
-            else if (timelineProxy->IsTimelineScript(asset))
-            {
-                Pegasus::Core::ISourceCodeProxy* openedTimelineScript = timelineProxy->OpenScript(asset);
-                if (openedTimelineScript != nullptr)
-                {
-                    static_cast<CodeUserData*>(openedTimelineScript->GetUserData())->SetDispatchType(BLOCKSCRIPT);
-                    emit (RequestOpenCode(openedTimelineScript));
-                }
-            }
-        }
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
-void AssetLibraryWidget::OnRenderThreadNewAsset(const QString path, int assetType)
-{
-    QByteArray ba = path.toLocal8Bit();
-    const char* asciiPath = ba.constData();
-
-    ED_ASSERT(asciiPath != nullptr);
-    Application* app = Editor::GetInstance().GetApplicationManager().GetApplication();
-    if (app != nullptr)
-    {
-        Pegasus::App::IApplicationProxy* appProxy = app->GetApplicationProxy();
-        ED_ASSERTSTR(appProxy != nullptr, "App proxy can't be null");
-        Pegasus::AssetLib::IAssetLibProxy* assetLib = appProxy->GetAssetLibProxy();
-        Pegasus::AssetLib::IAssetProxy* asset = nullptr;
-        Pegasus::Io::IoError errCode = assetLib->CreateBlankAsset(asciiPath, &asset);
-        if (errCode == Pegasus::Io::ERR_NONE)
-        {
-            //we have a file in disk guaranteed
-            switch(assetType)
-            {
-            case PROGRAM:
-            break;
-            case SHADER:
-            {
-                Pegasus::Shader::IShaderManagerProxy* shaderMgr = appProxy->GetShaderManagerProxy();
-                Pegasus::Shader::IShaderProxy* shader = shaderMgr->OpenShader(asset);
-                if (shader != nullptr)
-                {
-                    static_cast<CodeUserData*>(shader->GetUserData())->SetDispatchType(SHADER);
-                    emit(RequestOpenCode(shader));
-                }
-            }
-            break;
-            case BLOCKSCRIPT:
-            {
-                Pegasus::Timeline::ITimelineProxy* timelineMgr = appProxy->GetTimelineProxy();
-                Pegasus::Core::ISourceCodeProxy* code = timelineMgr->OpenScript(asset);
-                if (code != nullptr)
-                {
-                    static_cast<CodeUserData*>(code->GetUserData())->SetDispatchType(BLOCKSCRIPT);
-                    emit(RequestOpenCode(code));
-                }
-            }
-            break;
-            }
-        }
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
-void AssetLibraryWidget::OnRenderThreadCloseSourceCode(CodeUserData* userData)
-{
-    switch(static_cast<DispatchTypes>(userData->GetDispatchType()))
-    {
-    case SHADER:
-        {
-            userData->SetDispatchType(0);
-            Pegasus::Shader::IShaderManagerProxy* shaderMgrProxy = Editor::GetInstance().GetApplicationManager().GetApplication()->GetApplicationProxy()->GetShaderManagerProxy();
-            shaderMgrProxy->CloseShader(static_cast<Pegasus::Shader::IShaderProxy*>(userData->GetSourceCode()));
-            emit(RequestUpdateUIItemsLayout());
-        }
-        break;
-    case BLOCKSCRIPT:
-        {
-            userData->SetDispatchType(0);
-            Pegasus::Timeline::ITimelineProxy* timelineProxy = Editor::GetInstance().GetApplicationManager().GetApplication()->GetApplicationProxy()->GetTimelineProxy();
-            timelineProxy->CloseScript(userData->GetSourceCode());
-            emit(RequestUpdateUIItemsLayout());
-        }
-        break;
-    default:
-        ED_FAILSTR("Invalid source code to close!!");
-        break;
+        AssetIOMessageController::Message msg;
+        msg.SetMessageType(AssetIOMessageController::Message::OPEN_ASSET);
+        msg.SetString(relativePath);
+        emit(SendAssetIoMessage(msg));
     }
 }
 
@@ -483,12 +266,8 @@ void AssetLibraryWidget::OnRenderThreadCloseSourceCode(CodeUserData* userData)
 
 void AssetLibraryWidget::DispatchTextEditorThroughBlockScriptView(const QModelIndex& index)
 {
-    mCodeEditorWidget->show();
-    mCodeEditorWidget->activateWindow();
     Pegasus::Core::ISourceCodeProxy * code = mBlockScriptListModel->Translate(index);
-    CodeUserData* userData = static_cast<CodeUserData*>(code->GetUserData());
-    userData->SetDispatchType(BLOCKSCRIPT);
-    mCodeEditorWidget->RequestOpen(userData);
+    emit(RequestOpenCode(code));
 }
 
 //----------------------------------------------------------------------------------------
@@ -500,12 +279,8 @@ void AssetLibraryWidget::DispatchTextEditorThroughProgramView(const QModelIndex&
     }
     else if (mProgramTreeModel->IsShaderIndex(index))
     {
-        mCodeEditorWidget->show();
-        mCodeEditorWidget->activateWindow();
         Pegasus::Core::ISourceCodeProxy * code = static_cast<Pegasus::Core::ISourceCodeProxy*>(mProgramTreeModel->TranslateShaderIndex(index));
-        CodeUserData* userData = static_cast<CodeUserData*>(code->GetUserData());
-        userData->SetDispatchType(SHADER);
-        mCodeEditorWidget->RequestOpen(userData);
+        emit(RequestOpenCode(code));
     }
 }
 
@@ -516,22 +291,25 @@ void AssetLibraryWidget::SetEnabledProgramShaderViews(bool enabled)
     ui.ProgramTreeView->setEnabled(enabled);
     ui.ShaderTreeView->setEnabled(enabled);
 }
-void AssetLibraryWidget::OnCompilationRedrawBegin()
-{
-    SetEnabledProgramShaderViews(false);
-}
 
-void AssetLibraryWidget::OnCompilationRedrawEnd()
+//----------------------------------------------------------------------------------------
+
+void AssetLibraryWidget::EnableProgramShaderViews()
 {
     SetEnabledProgramShaderViews(true);
-    UpdateUIItemsLayout();
+}
+
+//----------------------------------------------------------------------------------------
+
+void AssetLibraryWidget::DisableProgramShaderViews()
+{
+    SetEnabledProgramShaderViews(false);
 }
 
 //----------------------------------------------------------------------------------------
 
 AssetLibraryWidget::~AssetLibraryWidget()
 {
-    delete mSourceCodeManagerEventListener;
     delete mProgramTreeModel;
     delete mShaderListModel;
 }
@@ -599,19 +377,9 @@ void AssetLibraryWidget::UpdateUIForAppFinished()
     ui.BlockScriptTreeView->doItemsLayout();
 }
 
+//----------------------------------------------------------------------------------------
+
 void AssetLibraryWidget::OnFileChanged(const QString& path)
 {
 
-}
-
-//----------------------------------------------------------------------------------------
-
-void AssetLibraryWidget::ReceiveOpenCodeSignal(Pegasus::Core::ISourceCodeProxy* sourceCode)
-{
-    ED_ASSERT(sourceCode->GetUserData() != nullptr);
-    mCodeEditorWidget->show();
-    mCodeEditorWidget->activateWindow();
-    CodeUserData* userData = static_cast<CodeUserData*>(sourceCode->GetUserData());
-    mCodeEditorWidget->RequestOpen(userData);
-    UpdateUIItemsLayout();
 }

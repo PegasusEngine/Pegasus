@@ -71,6 +71,12 @@
     <Filter Include="Source\Debug\PropertyGridClasses">
       <UniqueIdentifier>{58fe93e0-f0f7-4806-8485-3e88faacc51b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\ProgramEditor">
+      <UniqueIdentifier>{b16f0b79-eb55-48f1-b651-49e9c379688f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\MessageControllers">
+      <UniqueIdentifier>{7fefd0b4-4c4c-478c-b1ba-7b51df9bdef8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Source\Editor\Editor.cpp">
@@ -370,6 +376,42 @@
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_PropertyGridClassesDockWidget.cpp">
       <Filter>Generated\Dev-Debug</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\ProgramEditor\ProgramEditorWidget.cpp">
+      <Filter>Source\ProgramEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ProgramEditorWidget.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ProgramEditorWidget.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\MessageControllers\AssetIOMessageController.cpp">
+      <Filter>Source\MessageControllers</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_AssetIOMessageController.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_AssetIOMessageController.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\MessageControllers\SourceIOMessageController.cpp">
+      <Filter>Source\MessageControllers</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_SourceIOMessageController.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_SourceIOMessageController.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\MessageControllers\ProgramIOMessageController.cpp">
+      <Filter>Source\MessageControllers</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ProgramIOMessageController.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ProgramIOMessageController.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -482,6 +524,18 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Debug\PropertyGridClasses\PropertyGridClassesDockWidget.h">
       <Filter>Source\Debug\PropertyGridClasses</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\ProgramEditor\ProgramEditorWidget.h">
+      <Filter>Source\ProgramEditor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\MessageControllers\AssetIOMessageController.h">
+      <Filter>Source\MessageControllers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\MessageControllers\SourceIOMessageController.h">
+      <Filter>Source\MessageControllers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\MessageControllers\ProgramIOMessageController.h">
+      <Filter>Source\MessageControllers</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

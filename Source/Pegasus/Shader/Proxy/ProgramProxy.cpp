@@ -39,6 +39,26 @@ Pegasus::Shader::IShaderProxy * Pegasus::Shader::ProgramProxy::GetShader(unsigne
     }
 }
 
+void Pegasus::Shader::ProgramProxy::RemoveShader(unsigned i)
+{
+    Pegasus::Shader::ShaderStageRef stage = mObject->FindShaderStageInput(i);
+    if (stage != nullptr)
+    {
+        mObject->RemoveShaderStage(stage->GetStageType());
+    }
+}
+
+void Pegasus::Shader::ProgramProxy::SetShader(Pegasus::Shader::IShaderProxy* shader)
+{
+    Pegasus::Shader::ShaderProxy* shaderProxy = static_cast<Pegasus::Shader::ShaderProxy*>(shader);
+    if (shaderProxy->GetObject()->GetStageType() != Pegasus::Shader::SHADER_STAGE_INVALID)
+    {
+        Pegasus::Shader::ShaderStageRef shaderRef = static_cast<Pegasus::Shader::ShaderStage*>(shaderProxy->GetObject());
+        mObject->SetShaderStage(shaderRef);
+    }
+    
+}
+
 const char * Pegasus::Shader::ProgramProxy::GetName() const
 {
     return mObject->GetName();

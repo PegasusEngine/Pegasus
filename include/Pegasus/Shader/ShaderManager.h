@@ -119,6 +119,10 @@ public:
     //! \param shaderStage the shader stage to record to
     void FlushShaderToAsset(Pegasus::Shader::ShaderSourceIn shaderStage);
 
+    //! Saves a program stage to an asset that is held internally by the program.
+    //! \param program to flush into the serializable asset object
+    void FlushProgramToAsset(Pegasus::Shader::ProgramLinkageInOut program);
+
 private:
     //! Internal function. registers the node types.
     void RegisterAllNodes();

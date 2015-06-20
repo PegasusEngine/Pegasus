@@ -133,6 +133,9 @@ public:
     virtual void Load() = 0;
     //! \todo Set update mode
 
+    //! Unload the assets from render timeline block 
+    virtual void Unload() = 0;
+    //! \todo Set update mode
 
     //! Get the timeline proxy object
     //! \return Timeline proxy object

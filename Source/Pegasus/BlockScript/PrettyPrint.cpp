@@ -16,7 +16,9 @@
 #include "Pegasus/BlockScript/TypeDesc.h"
 #include "Pegasus/BlockScript/Canonizer.h"
 #include "Pegasus/Core/Assertion.h"
+#include "Pegasus/Utils/Vector.h"
 
+using namespace Pegasus::Utils;
 using namespace Pegasus::BlockScript;
 using namespace Pegasus::BlockScript::Ast;
 

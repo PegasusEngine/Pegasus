@@ -136,59 +136,12 @@ namespace CompilerEvents
         const char * mLog;
     };
 
-    //! fired when file loading operation occurs
-    class FileOperationEvent
-    {
-    public:
-        enum Type
-        {
-            WRONG_EXTENSION, //wrong extension
-            IO_ERROR, //an IO error, more details in the GetIoError() function
-            IO_FILE_SAVE_SUCCESS, //success signal when a file has been saved
-            IO_FILE_SAVE_ERROR, //success signal when a file has been saved
-        };
-
-        //! constructor
-        FileOperationEvent(
-            Type t, 
-            Pegasus::Io::IoError ioError, 
-            const char * filepath, 
-            const char * message)
-            :
-        mMessage(message), mFilePath(filepath), mType(t), mIoError(ioError)
-        {
-        }
-
-        //! destructor
-        virtual ~FileOperationEvent(){}
-
-        //! gets the event type
-        Type GetType() const { return mType; }
-
-        //! gets the message string 
-        const char * GetMessage() const { return mMessage; }
-
-        //! which file?
-        const char * GetFilePath() const { return mFilePath; }
-
-        //! gets the type of io error
-        Pegasus::Io::IoError GetIoError() const { return mIoError; }
-
-    private:
-        Type mType;
-        Pegasus::Io::IoError mIoError;
-        const char * mMessage;
-        const char * mFilePath;
-        
-    };
-
     GRAPH_EVENT_BEGIN_REGISTRY (ICompilerEventListener)
         GRAPH_EVENT_REGISTER_PROXY(IBasicSourceProxy)
         GRAPH_EVENT_REGISTER (SourceLoadedEvent)
         GRAPH_EVENT_REGISTER (CompilationEvent)
         GRAPH_EVENT_REGISTER (CompilationNotification)
         GRAPH_EVENT_REGISTER (LinkingEvent)
-        GRAPH_EVENT_REGISTER (FileOperationEvent)
     GRAPH_EVENT_END_REGISTRY
 
 } //namespace CompilationEvents

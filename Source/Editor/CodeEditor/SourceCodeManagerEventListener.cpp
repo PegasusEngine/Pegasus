@@ -10,12 +10,11 @@
 //! \brief  Pegasus Source Code Manager Event Listener	
 #include "CodeEditor/SourceCodeManagerEventListener.h"
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
-#include "AssetLibrary/AssetLibraryWidget.h"
 #include <QTextDocument>
 #include <string.h>
 
 CodeUserData::CodeUserData(Pegasus::Core::ISourceCodeProxy * code)
-: mIsValid(true), mIntermediateDocument(nullptr), mDispatchType(0)
+: mIsValid(true), mIntermediateDocument(nullptr)
 {
     mData.mSourceCode = code;
     mIsProgram = false;
@@ -28,8 +27,8 @@ CodeUserData::CodeUserData(Pegasus::Shader::IProgramProxy * program)
     mIsProgram = true;
 }
 
-SourceCodeManagerEventListener::SourceCodeManagerEventListener (AssetLibraryWidget * widget)
-    : QObject(widget), mLibraryWidget(widget)
+SourceCodeManagerEventListener::SourceCodeManagerEventListener ()
+    : QObject(nullptr)
 {
 }
 
@@ -70,18 +69,6 @@ void SourceCodeManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * us
     }
 }
 
-void SourceCodeManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::FileOperationEvent& e)
-{
-    if (e.GetType() == Pegasus::Core::CompilerEvents::FileOperationEvent::IO_FILE_SAVE_SUCCESS)
-    {
-        emit(OnSignalSaveSuccess());
-    }
-    else if (e.GetType() == Pegasus::Core::CompilerEvents::FileOperationEvent::IO_FILE_SAVE_ERROR)
-    {
-        emit(OnSignalSavedFileError(e.GetIoError(), QString(e.GetMessage())));
-    }
-}
-
 void SourceCodeManagerEventListener::OnInitUserData(Pegasus::Core::IBasicSourceProxy* proxy, const char* name)
 {
     QString strName = name;
@@ -89,11 +76,13 @@ void SourceCodeManagerEventListener::OnInitUserData(Pegasus::Core::IBasicSourceP
     {
         Pegasus::Shader::IProgramProxy* programProxy = static_cast<Pegasus::Shader::IProgramProxy*>(proxy);
         CodeUserData* newUserData = new CodeUserData(programProxy);
+        newUserData->SetName(strName);
         programProxy->SetUserData(newUserData);
     }
     else
     {
         CodeUserData* newUserData = new CodeUserData(static_cast<Pegasus::Core::ISourceCodeProxy*>(proxy));
+        newUserData->SetName(strName);
         proxy->SetUserData(newUserData);
         emit(OnBlessUserData(newUserData));
     }

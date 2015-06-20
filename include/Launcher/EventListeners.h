@@ -57,7 +57,6 @@ public:
     virtual void OnEvent(Graph::IGraphUserData * u, Core::CompilerEvents::CompilationEvent& e);
     virtual void OnEvent(Graph::IGraphUserData * u, Core::CompilerEvents::CompilationNotification& e);
     virtual void OnEvent(Graph::IGraphUserData * u, Core::CompilerEvents::LinkingEvent& e);
-    virtual void OnEvent(Graph::IGraphUserData * u, Core::CompilerEvents::FileOperationEvent& e);
 };
 
 

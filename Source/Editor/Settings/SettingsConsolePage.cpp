@@ -14,7 +14,7 @@
 #include "Console/ConsoleChannelColorTable/ConsoleChannelColorTableView.h"
 #include "Editor.h"
 
-#include <QGroupBox>
+    #include <QGroupBox>
 #include <QLabel>
 #include <QPushButton>
 #include <QGridLayout>

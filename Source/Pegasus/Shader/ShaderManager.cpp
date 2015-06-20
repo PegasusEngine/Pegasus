@@ -23,27 +23,6 @@
 
 using namespace Pegasus;
 
-namespace PegasusShaderPrivate {
-
-
-//lookup struct array with extension / GL type / pegasus Shader stage mappings
-static struct PegasusExtensionMappings
-{
-    Pegasus::Shader::ShaderType mType;
-    const char * mExtension;
-} gPegasusShaderStageExtensionMappings[Pegasus::Shader::SHADER_STAGES_COUNT] =
-{
-    { Pegasus::Shader::VERTEX,                 ".vs"  },
-    { Pegasus::Shader::FRAGMENT,               ".ps"  },
-    { Pegasus::Shader::TESSELATION_CONTROL,    ".tcs" },
-    { Pegasus::Shader::TESSELATION_EVALUATION, ".tes" },
-    { Pegasus::Shader::GEOMETRY,               ".gs"  },
-    { Pegasus::Shader::COMPUTE,                ".cs"  }
-}
-;
-
-} // namespace PegasusShaderPrivate
-
 #define REGISTER_SHADER_NODE(className) mNodeManager->RegisterNode(#className, className::CreateNode);
 
 Pegasus::Shader::ShaderManager::ShaderManager(Pegasus::Graph::NodeManager * nodeManager, Pegasus::Shader::IShaderFactory * factory)
@@ -176,6 +155,8 @@ bool Pegasus::Shader::ShaderManager::IsProgram(const AssetLib::Asset* asset) con
     }
 
     const AssetLib::Object* root = asset->Root();
+    if (!root) return false;
+
     int typeId = root->FindString("type");
 
     if (typeId == -1)
@@ -194,23 +175,17 @@ bool Pegasus::Shader::ShaderManager::IsProgram(const AssetLib::Asset* asset) con
 
 Pegasus::Shader::ProgramLinkageReturn Pegasus::Shader::ShaderManager::CreateProgram(AssetLib::Asset* asset)
 {
-    Pegasus::Shader::ProgramLinkageRef program = mNodeManager->CreateNode("ProgramLinkage");
-#if PEGASUS_USE_GRAPH_EVENTS 
-    program->SetEventListener(mEventListener);
-#endif
-    program->SetFactory(mFactory);
-    
-    if (!IsProgram(asset))
-    {
-        PG_LOG('ERR_', "Cannot build a program with an asset %s'", asset->GetPath());
-        return nullptr;
-    }
-
     if (asset->GetRuntimeData() != nullptr)
     {
         Pegasus::Shader::ProgramLinkageRef programRef = static_cast<Pegasus::Shader::ProgramLinkage*>(asset->GetRuntimeData());
         return programRef;
     }
+
+    Pegasus::Shader::ProgramLinkageRef program = mNodeManager->CreateNode("ProgramLinkage");
+#if PEGASUS_USE_GRAPH_EVENTS 
+    program->SetEventListener(mEventListener);
+#endif
+    program->SetFactory(mFactory);
 
     AssetLib::Object* root = asset->Root();
     int nameId = root->FindString("name");
@@ -241,12 +216,13 @@ Pegasus::Shader::ProgramLinkageReturn Pegasus::Shader::ShaderManager::CreateProg
                 }
             }
         }
-        else
+        else if (shaderArr->GetSize() != 0) //forgivable error if empty list
         {
             PG_LOG('ERR_', "Invalid list of shaders");
             return nullptr;
         }
     }
+    mAssetLib->BindAssetToRuntimeObject(asset, &(*program));
 
 #if PEGASUS_ENABLE_PROXIES
     GRAPH_EVENT_INIT_USER_DATA(program->GetProxy(), "ProgramLinkage", mEventListener);
@@ -261,6 +237,12 @@ Pegasus::Shader::ProgramLinkageReturn Pegasus::Shader::ShaderManager::LoadProgra
     Io::IoError err = mAssetLib->LoadAsset(filename, &asset);
     if (err == Io::ERR_NONE && asset != nullptr)
     {
+        if (!IsProgram(asset))
+        {
+            PG_LOG('ERR_', "Cannot build a program with an asset %s'", asset->GetPath());
+            return nullptr;
+        }
+
         Pegasus::Shader::ProgramLinkageRef program = CreateProgram(asset);
         if (program != nullptr)
         {
@@ -398,11 +380,16 @@ Pegasus::Shader::ShaderSourceReturn Pegasus::Shader::ShaderManager::CreateHeader
 
 Pegasus::Shader::ShaderType Pegasus::Shader::ShaderManager::DeriveShaderType(const char* extension) const
 {
-    for (int i = 0; i < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT); ++i)
+    int extSz = Utils::Strlen(extension) - 1;
+    const char* extSanitized = extension + 1;
+    if (extSz > 0)
     {
-        if (!Pegasus::Utils::Stricmp(extension, PegasusShaderPrivate::gPegasusShaderStageExtensionMappings[i].mExtension))
+        for (int i = 0; i < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT); ++i)
         {
-            return PegasusShaderPrivate::gPegasusShaderStageExtensionMappings[i].mType;
+            if (!Pegasus::Utils::Stricmp(extSanitized, Pegasus::Shader::gShaderExtensions[i]))
+            {
+                return static_cast<Pegasus::Shader::ShaderType>(i);
+            }
         }
     }
 
@@ -426,3 +413,41 @@ void Pegasus::Shader::ShaderManager::FlushShaderToAsset(Pegasus::Shader::ShaderS
     Utils::Memcpy(fb->GetBuffer(), src, srcLen);
 }
 
+void Pegasus::Shader::ShaderManager::FlushProgramToAsset(Pegasus::Shader::ProgramLinkageInOut program)
+{
+    AssetLib::Asset* asset = program->GetOwnerAsset();
+    PG_ASSERTSTR(asset != nullptr, "Can't flush this program because there is no asset bound to it");
+    
+    asset->Clear(); //brand  new asset
+    AssetLib::Object* root = asset->NewObject();
+    root->AddString("type", "program");
+    asset->SetRootObject(root);
+
+    AssetLib::Array* shaderArr = asset->NewArray();
+
+#if PEGASUS_ENABLE_PROXIES
+    root->AddString("name", program->GetName());
+#endif
+
+    root->AddArray("shaders", shaderArr);
+    shaderArr->CommitType(AssetLib::Array::AS_TYPE_STRING);
+
+    for (unsigned i = 0; i < program->GetNumInputs(); ++i)
+    {
+        ShaderStageRef shader = program->FindShaderStageInput(i);
+        AssetLib::Asset* shaderAsset = shader->GetOwnerAsset();
+        if (shaderAsset != nullptr)
+        {
+            AssetLib::Array::Element el;
+            el.s = shaderAsset->GetPath();
+            shaderArr->PushElement(el);
+        }
+        else
+        {
+            //TODO: make this a message?
+            PG_FAILSTR("Cannot save a program that has a shader in memory without an asset bound");
+        }
+    }
+
+    mAssetLib->BindAssetToRuntimeObject(asset, &(*program));
+}

@@ -86,6 +86,18 @@ void CodeTextEditorTreeWidget::ForceUpdateAllStyles()
     }
 }
 
+bool CodeTextEditorTreeWidget::HasAnyChildFocus() const
+{
+    for (int i = 0; i < mChildrenCount; ++i)
+    {
+        if (mChildren[i].mIsLeaf && mChildren[i].mLeafChild->IsFocus()) return true;
+
+        else if (!mChildren[i].mIsLeaf && mChildren[i].mTreeChild->HasAnyChildFocus()) return true;
+    }
+
+    return false;
+}
+
 void CodeTextEditorTreeWidget::InternalSplit(int childIndex, Qt::Orientation orientation)
 {
     if (orientation == mOrientation)

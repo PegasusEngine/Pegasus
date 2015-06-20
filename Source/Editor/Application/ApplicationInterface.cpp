@@ -25,8 +25,8 @@
 #include "Pegasus/AssetLib/Shared/IAssetProxy.h"
 
 
-ApplicationInterface::ApplicationInterface(Application * application, QObject * parent)
-:   QObject(parent)
+ApplicationInterface::ApplicationInterface(Application * application)
+:   QObject(nullptr)
 ,   mApplication(application)
 ,   mSetCurrentBeatEnqueued(false)
 ,   mSetCurrentBeatEnqueuedBeat(0.0f)
@@ -85,24 +85,10 @@ ApplicationInterface::ApplicationInterface(Application * application, QObject * 
             this, SLOT(RedrawAllViewportsForBlockMoved()),
             Qt::QueuedConnection);
 
-    // Connect the asset library widget 
+    // Get widgets
     AssetLibraryWidget * assetLibraryWidget = Editor::GetInstance().GetAssetLibraryWidget();
-    ED_ASSERTSTR(assetLibraryWidget != nullptr, "Unable to get the asset library dock widget");
-    connect(assetLibraryWidget, SIGNAL(DispatchAssetCreation(QString)),
-            this, SLOT(ReceiveOpenAssetRequest(QString)), Qt::QueuedConnection);
-    connect(assetLibraryWidget, SIGNAL(RequestNewAsset(QString, int)),
-            this, SLOT(ReceiveNewAssetRequest(QString, int)), Qt::QueuedConnection);
-
-    CodeEditorWidget * codeEditorWidget = assetLibraryWidget->GetCodeEditorWidget();
-    ED_ASSERTSTR(codeEditorWidget != nullptr, "Unable to get the code editor widget");
-    connect(codeEditorWidget , SIGNAL(RequestCodeCompilation(CodeUserData*)),
-            this, SLOT(ReceiveCompilationRequest(CodeUserData*)),
-            Qt::QueuedConnection);
-    connect(codeEditorWidget , SIGNAL(RequestCloseCode(CodeUserData*)),
-            this, SLOT(ReceiveCloseSourceCodeRequest(CodeUserData*)),
-            Qt::QueuedConnection);
-    connect(this, SIGNAL(CompilationEnd()),
-        assetLibraryWidget, SLOT(OnCompilationRedrawEnd()), Qt::QueuedConnection);
+    CodeEditorWidget   * codeEditorWidget = Editor::GetInstance().GetCodeEditorWidget();
+    ProgramEditorWidget* programEditor = Editor::GetInstance().GetProgramEditorWidget();
 
     // Connect the texture editor messages through queued connections
     TextureEditorDockWidget * textureEditorDockWidget = Editor::GetInstance().GetTextureEditorDockWidget();
@@ -112,12 +98,106 @@ ApplicationInterface::ApplicationInterface(Application * application, QObject * 
                 this, SLOT(RedrawTextureEditorPreview()),
                 Qt::QueuedConnection);
     }
+
+    mAssetIoMessageController = new AssetIOMessageController(mApplication->GetApplicationProxy());
+    mSourceIoMessageController = new SourceIOMessageController(mApplication->GetApplicationProxy());
+    mProgramIoMessageController = new ProgramIOMessageController(mApplication->GetApplicationProxy());
+    mSourceCodeEventListener = new SourceCodeManagerEventListener();
+    
+
+    //<------  Asset IO Controller -------->//
+    //From ui to render
+    connect(assetLibraryWidget, SIGNAL(SendAssetIoMessage(AssetIOMessageController::Message)),
+            this, SLOT(ForwardAssetIoMessage(AssetIOMessageController::Message)), Qt::QueuedConnection);
+
+    connect(codeEditorWidget, SIGNAL(SendAssetIoMessage(AssetIOMessageController::Message)),
+            this, SLOT(ForwardAssetIoMessage(AssetIOMessageController::Message)), Qt::QueuedConnection);
+
+    connect(programEditor, SIGNAL(SendAssetIoMessage(AssetIOMessageController::Message)),
+            this, SLOT(ForwardAssetIoMessage(AssetIOMessageController::Message)), Qt::QueuedConnection);
+
+    //From render to ui
+    connect(mAssetIoMessageController, SIGNAL(SignalUpdateNodeViews()),
+            assetLibraryWidget, SLOT(UpdateUIItemsLayout()), Qt::QueuedConnection); 
+
+    connect(mAssetIoMessageController, SIGNAL(SignalOpenProgram(Pegasus::Shader::IProgramProxy*)),
+            programEditor, SLOT(RequestOpenProgram(Pegasus::Shader::IProgramProxy*)), Qt::QueuedConnection); 
+
+    connect(mAssetIoMessageController, SIGNAL(SignalOpenCode(Pegasus::Core::ISourceCodeProxy*)),
+            codeEditorWidget,   SLOT(RequestOpen(Pegasus::Core::ISourceCodeProxy*)), Qt::QueuedConnection); 
+
+    //<------  Source IO Controller -------->//
+    //From ui to render
+    connect(codeEditorWidget, SIGNAL(SendSourceIoMessage(SourceIOMessageController::Message)),
+            this, SLOT(ForwardSourceIoMessage(SourceIOMessageController::Message)), Qt::QueuedConnection);
+
+    //from render to ui
+    connect(mSourceIoMessageController, SIGNAL(SignalRedrawViewports()),
+            this, SLOT(RedrawAllViewports()), Qt::DirectConnection);
+
+    connect(mSourceIoMessageController, SIGNAL(SignalCompilationRequestEnded()),
+            assetLibraryWidget, SLOT(UpdateUIItemsLayout()), Qt::QueuedConnection);
+
+    connect(mSourceIoMessageController, SIGNAL(SignalCompilationRequestEnded()),
+            assetLibraryWidget, SLOT(EnableProgramShaderViews()), Qt::QueuedConnection);
+
+    connect(mSourceIoMessageController, SIGNAL(SignalCompilationRequestEnded()),
+            codeEditorWidget, SLOT(CompilationRequestReceived()), Qt::QueuedConnection);
+
+    //from ui to ui
+    connect(codeEditorWidget, SIGNAL(RequestCompilationBegin()),
+            assetLibraryWidget, SLOT(DisableProgramShaderViews()));
+
+    //<------  Program IO Controller -------->//
+    connect(programEditor, SIGNAL(SendProgramIoMessage(ProgramIOMessageController::Message)),
+            this, SLOT(ForwardProgramIoMessage(ProgramIOMessageController::Message)));
+    connect(mProgramIoMessageController, SIGNAL(SignalUpdateProgramView()),
+            programEditor, SLOT(SyncUiToProgram()));
+    connect(mProgramIoMessageController, SIGNAL(SignalUpdateProgramView()),
+            assetLibraryWidget, SLOT(UpdateUIItemsLayout()));
+
+    //<-------- Connect event listeners to app ------------>
+    Pegasus::App::IApplicationProxy* appProxy = application->GetApplicationProxy();
+    appProxy->GetShaderManagerProxy()->RegisterEventListener( mSourceCodeEventListener );
+    appProxy->GetTimelineProxy()->RegisterEventListener( mSourceCodeEventListener );
+
+    //<-------- Connect event listener to widgets --------->
+    connect(mSourceCodeEventListener, SIGNAL(OnCompilationError(CodeUserData*,int,QString)),
+        codeEditorWidget, SLOT(SignalCompilationError(CodeUserData*,int,QString)), Qt::QueuedConnection);
+
+    connect(mSourceCodeEventListener, SIGNAL(OnLinkingEvent(QString,int)),
+        codeEditorWidget, SLOT(SignalLinkingEvent(QString,int)), Qt::QueuedConnection);
+
+    connect(mSourceCodeEventListener, SIGNAL(OnCompilationBegin(CodeUserData*)),
+        codeEditorWidget, SLOT(SignalCompilationBegin(CodeUserData*)), Qt::QueuedConnection);
+
+    connect(mSourceCodeEventListener, SIGNAL(OnCompilationEnd(QString)),
+        codeEditorWidget, SLOT(SignalCompilationEnd(QString)), Qt::QueuedConnection);
+
+    connect(mSourceCodeEventListener, SIGNAL(OnBlessUserData(CodeUserData*)),
+        codeEditorWidget, SLOT(BlessUserData(CodeUserData*)), Qt::QueuedConnection);
+
+    connect(mSourceCodeEventListener, SIGNAL(OnUnblessUserData(CodeUserData*)),
+        codeEditorWidget, SLOT(UnblessUserData(CodeUserData*)), Qt::QueuedConnection);
+
+    connect(mSourceCodeEventListener, SIGNAL(OnSignalSaveSuccess()),
+        codeEditorWidget, SLOT(SignalSavedFileSuccess()), Qt::QueuedConnection);
+
+    connect(mSourceCodeEventListener, SIGNAL(OnSignalSavedFileError(int, QString)),
+        codeEditorWidget, SLOT(SignalSavedFileIoError(int,QString)), Qt::QueuedConnection);
+    
+    connect(codeEditorWidget, SIGNAL(RequestSafeDeleteUserData(CodeUserData*)),
+        mSourceCodeEventListener, SLOT(SafeDestroyUserData(CodeUserData*)), Qt::QueuedConnection);
 }
 
 //----------------------------------------------------------------------------------------
 
 ApplicationInterface::~ApplicationInterface()
 {
+    delete mSourceIoMessageController;
+    delete mAssetIoMessageController;
+    delete mProgramIoMessageController;
+    delete mSourceCodeEventListener;
 }
 
 //----------------------------------------------------------------------------------------
@@ -278,31 +358,6 @@ void ApplicationInterface::RedrawAllViewportsForBlockMoved()
 
 //----------------------------------------------------------------------------------------
 
-void ApplicationInterface::ReceiveCompilationRequest(CodeUserData* userData)
-{
-    AssetLibraryWidget * assetLibraryWidget = Editor::GetInstance().GetAssetLibraryWidget();
-    if (assetLibraryWidget != nullptr)
-    {
-        CodeEditorWidget * codeEditorWidget = assetLibraryWidget->GetCodeEditorWidget();
-        if (codeEditorWidget != nullptr)
-        {
-            codeEditorWidget->FlushTextEditorToCodeAndCompile(userData);
-            RedrawAllViewports();
-            emit CompilationEnd();
-        }
-        else
-        {
-            ED_FAILSTR("Unable to get the code editor widget");
-        }
-    }
-    else
-    {
-        ED_FAILSTR("Unable to get the asset library dock widget");
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
 void ApplicationInterface::TogglePlayMode(bool enabled)
 {
     Pegasus::Timeline::ITimelineProxy * timeline = mApplication->GetTimelineProxy();
@@ -341,31 +396,9 @@ void ApplicationInterface::RequestFrameInPlayMode()
     emit ViewportRedrawnInPlayMode(timeline->GetCurrentBeat());
 }
 
-//----------------------------------------------------------------------------------------
-
-void ApplicationInterface::ReceiveOpenAssetRequest(const QString& path)
-{
-    AssetLibraryWidget * assetLibraryWidget = Editor::GetInstance().GetAssetLibraryWidget();
-    assetLibraryWidget->OnRenderThreadOpenAsset(path);
-}
 
 //----------------------------------------------------------------------------------------
 
-void ApplicationInterface::ReceiveCloseSourceCodeRequest(CodeUserData* userData)
-{
-    AssetLibraryWidget * assetLibraryWidget = Editor::GetInstance().GetAssetLibraryWidget();
-    assetLibraryWidget->OnRenderThreadCloseSourceCode(userData);
-}
-
-//----------------------------------------------------------------------------------------
-
-void ApplicationInterface::ReceiveNewAssetRequest(const QString& path, int type)
-{
-    AssetLibraryWidget * assetLibraryWidget = Editor::GetInstance().GetAssetLibraryWidget();
-    assetLibraryWidget->OnRenderThreadNewAsset(path, type);
-}
-
-//----------------------------------------------------------------------------------------
 
 void ApplicationInterface::PerformBlockDoubleClickedAction(Pegasus::Timeline::IBlockProxy* blockProxy)
 {
@@ -375,12 +408,31 @@ void ApplicationInterface::PerformBlockDoubleClickedAction(Pegasus::Timeline::IB
         ED_ASSERT(sourceCode->GetUserData() != nullptr);
         if (sourceCode->GetUserData() != nullptr)
         {
-            CodeUserData* codeUserData = static_cast<CodeUserData*>(sourceCode->GetUserData());
             CodeEditorWidget * codeEditorWidget = Editor::GetInstance().GetCodeEditorWidget();
-            codeUserData->SetDispatchType(AssetLibraryWidget::BLOCKSCRIPT);
             codeEditorWidget->show();
             codeEditorWidget->activateWindow();
-            codeEditorWidget->RequestOpen(codeUserData);
+            codeEditorWidget->RequestOpen(sourceCode);
         }
     }
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::ForwardAssetIoMessage(AssetIOMessageController::Message msg)
+{
+    mAssetIoMessageController->OnRenderThreadProcessMessage(msg);
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::ForwardSourceIoMessage(SourceIOMessageController::Message msg)
+{
+    mSourceIoMessageController->OnRenderThreadProcessMessage(msg);
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::ForwardProgramIoMessage(ProgramIOMessageController::Message msg)
+{
+    mProgramIoMessageController->OnRenderThreadProcessMessage(msg);
 }

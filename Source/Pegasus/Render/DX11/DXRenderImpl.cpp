@@ -794,6 +794,14 @@ bool Pegasus::Render::SetUniformTextureRenderTarget(Pegasus::Render::Uniform& u,
 }
 
 // ---------------------------------------------------------------------------
+
+bool Pegasus::Render::SetUniformCubeMap(Pegasus::Render::Uniform& u, const CubeMap& cubeMap)
+{
+    //todo: implement
+    return false;
+}
+
+// ---------------------------------------------------------------------------
 void Pegasus::Render::CleanInternalState()
 {
     gDXState.mTargetsCount = 0;

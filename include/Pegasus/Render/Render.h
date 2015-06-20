@@ -81,6 +81,13 @@ namespace Render
         {
         }
     };
+
+    //! Structure handle with the respective cube map configuration
+    struct CubeMapConfig
+    {
+        int mWidth;
+        int mHeight;
+    };
    
     //! Structure handle representing a render target and its data
     //! In openGL the internal data will hold the necesary opaque handles (views/framebuffer/rt)
@@ -96,6 +103,19 @@ namespace Render
         }
     };
 
+    //! Structure handle representing a cube map
+    struct CubeMap
+    {
+        CubeMapConfig mConfig;
+        void* mInternalData;
+    public:
+        CubeMap ()
+            : mInternalData(nullptr)
+        {
+        }
+    };
+
+    //! Structure handle representing an actual depth stencil target
     struct DepthStencilTarget
     {
         void* mInternalData;
@@ -104,6 +124,12 @@ namespace Render
             : mInternalData(nullptr)
         {
         }
+    };
+
+    //! Enumeration representing the cube map face to set in a render target
+    enum CubeFace
+    {
+        X, NX, Y, NY, Z, NZ
     };
 
 
@@ -313,6 +339,17 @@ namespace Render
     //! \param output render target to fill / create
     void CreateRenderTarget(RenderTargetConfig& config, RenderTarget& renderTarget);
 
+    //! Creates a render target from a cube map
+    //! \param CubeFace the face of the cube map to set this target to
+    //! \param the cube map to use for this target
+    //! \param the render target to be set
+    void CreateRenderTargetFromCubeMap(CubeFace targetFace, CubeMap& cubeMap, RenderTarget& renderTarget); 
+
+    //! Creates a cube map from a description
+    //! \param config the cube map configuration
+    //! \param the cube map to create
+    void CreateCubeMap(CubeMapConfig& config, CubeMap& cubeMap);
+
     //! Creates a rasterizer state given a configuration.
     //! \param config the configuration structure
     //! \param output rasterizer state created
@@ -330,6 +367,10 @@ namespace Render
     //! Deletes a rasterizer state
     //! \param blending state to delete
     void DeleteBlendingState(BlendingState& blendingState);
+
+    //! Deletes a cube map
+    //! \param cubeMap the cube map to delete
+    void DeleteCubeMap(CubeMap& cubeMap);
 
     //! Memcpys a buffer to the gpu destination.
     //! \param dstBuffer the GPU destination buffer to copy to
@@ -364,6 +405,12 @@ namespace Render
     //! \param renderTarget render target to set as a texture view
     //! \return boolean, true on success, false on error
     bool SetUniformTextureRenderTarget(Uniform& u, const RenderTarget& renderTarget);
+
+    //! Sets a cube map as a view
+    //! \param u uniform parameter to set the value
+    //! \param cubeMap cube map to set 
+    //! \return boolean, true on success, false on error
+    bool SetUniformCubeMap(Uniform& u, const CubeMap& cubeMap);
 
     //! function that internally cleans any dispatched programs / shaders / meshes
     //! from the global state.

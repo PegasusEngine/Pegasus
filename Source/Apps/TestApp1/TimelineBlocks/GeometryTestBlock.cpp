@@ -152,6 +152,12 @@ void GeometryTestBlock::Initialize()
     c.mHeight /= 4;
     Pegasus::Render::CreateRenderTarget(c, mTempTarget2);
     Pegasus::Render::CreateRenderTarget(c, mTempTarget3);
+
+    Pegasus::Render::CubeMapConfig cubeDesc;
+    cubeDesc.mWidth = 256;
+    cubeDesc.mHeight = 256;
+    
+    Pegasus::Render::CreateCubeMap(cubeDesc, mCubeMap);
 }
 
 //----------------------------------------------------------------------------------------
@@ -166,6 +172,7 @@ void GeometryTestBlock::Shutdown()
     Pegasus::Render::DeleteRenderTarget(mCubeFaceRenderTarget);
     Pegasus::Render::DeleteRasterizerState(mCurrentBlockRasterState);
     Pegasus::Render::DeleteRasterizerState(mDefaultRasterState);
+    Pegasus::Render::DeleteCubeMap(mCubeMap);
 }
 
 //----------------------------------------------------------------------------------------

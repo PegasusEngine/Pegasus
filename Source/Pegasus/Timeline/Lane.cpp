@@ -323,6 +323,24 @@ void Lane::InitializeBlocks()
 
 //----------------------------------------------------------------------------------------
 
+void Lane::UninitializeBlocks()
+{
+    if (mNumBlocks > 0)
+    {
+        // Call Initialize() for each block
+        int currentIndex = mFirstBlockIndex;
+        do
+        {
+            BlockRecord& blockRecord =  mBlockRecords[currentIndex];
+            Block* block = blockRecord.mBlock;
+            block->Shutdown();
+            currentIndex = mBlockRecords[currentIndex].mNext;
+        }
+        while (currentIndex != mFirstBlockIndex);
+    }
+}
+
+//----------------------------------------------------------------------------------------
 void Lane::Update(float beat, Wnd::Window * window)
 {
     //! \todo The current approach is extremely brute force and inefficient.

@@ -344,6 +344,20 @@ void Timeline::InitializeBlocks()
 }
 
 //----------------------------------------------------------------------------------------
+
+void Timeline::ShutdownBlocks()
+{
+    for (unsigned int l = 0; l < mNumLanes; ++l)
+    {
+        Lane * lane = GetLane(l);
+        if (lane != nullptr)
+        {
+            lane->UninitializeBlocks();
+        }
+    }
+}
+
+//----------------------------------------------------------------------------------------
     
 void Timeline::Update(unsigned int musicPosition)
 {

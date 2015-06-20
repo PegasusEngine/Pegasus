@@ -105,6 +105,13 @@ void ApplicationProxy::Load()
 
 //----------------------------------------------------------------------------------------
 
+void ApplicationProxy::Unload()
+{
+    mApplication->Unload();
+}
+
+//----------------------------------------------------------------------------------------
+
 Timeline::ITimelineProxy* ApplicationProxy::GetTimeline() const
 {
     return mApplication->GetTimeline()->GetProxy();

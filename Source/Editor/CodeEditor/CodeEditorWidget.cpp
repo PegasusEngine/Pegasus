@@ -38,6 +38,7 @@ static const char * UNDOCKABLE_DESC = "Undockable: Allow to hover over window w/
 static const char * INSTANT_COMPILATION_DESC_ON = "Turn instant compilation ON\nInstant Compilation Mode: code gets compiled at every key stroke, in an efficient manner. ";
 static const char * INSTANT_COMPILATION_DESC_OFF = "Turn instant compilation OFF\nInstant Compilation Mode: code gets compiled at every key stroke, in an efficient manner. ";
 
+
 CodeEditorWidget::CodeEditorWidget (QWidget * parent)
 : 
     QDockWidget(parent),
@@ -112,8 +113,6 @@ void CodeEditorWidget::SetupUi()
     connect(mInstantCompilationAction, SIGNAL(triggered(bool)),
             this, SLOT(SignalInstantCompilationActionTriggered()));
     
-
-    mSaveAction->setShortcut(tr("Ctrl+S"));
     connect(mSaveAction, SIGNAL(triggered(bool)),
             this, SLOT(SignalSaveCurrentCode()));
 
@@ -203,23 +202,6 @@ void CodeEditorWidget::AsyncSetCompilationRequestPending()
     mCompilationRequestMutex->unlock();
 }
 
-void CodeEditorWidget::FlushTextEditorToCodeAndCompile(CodeUserData* userData)
-{
-    mCompilationRequestMutex->lock();
-    if (userData != nullptr) //is there a ui element for this code?
-    {
-        CodeTextEditorWidget * editor = mUi.mTreeEditor->FindCodeInEditors(userData);
-        if (editor != nullptr)
-        {
-            editor->FlushTextToCode();
-            ED_ASSERT(!userData->IsProgram());
-            userData->GetSourceCode()->Compile();
-        }
-    }
-    mCompilationRequestPending = false;
-    mCompilationRequestMutex->unlock();
-}
-
 void CodeEditorWidget::SignalCompileCurrentCode()
 {
     int idx = mUi.mTabWidget->currentIndex();
@@ -295,6 +277,13 @@ void CodeEditorWidget::SignalCompilationBegin(CodeUserData* target)
     }
 }
 
+void CodeEditorWidget::CompilationRequestReceived()
+{
+    mCompilationRequestMutex->lock();
+    mCompilationRequestPending = false;
+    mCompilationRequestMutex->unlock();
+}
+
 void CodeEditorWidget::SignalCompilationEnd(QString log)
 {
     //update the status bar with whichever compilation error.
@@ -359,7 +348,10 @@ void CodeEditorWidget::SignalSaveCurrentCode()
         CodeUserData * code = mOpenedCodes[idx];
         if (code != nullptr)
         {
-            emit(RequestSaveCode(code));
+            AssetIOMessageController::Message msg;
+            msg.SetMessageType(AssetIOMessageController::Message::SAVE_CODE);
+            msg.GetAssetNode().mCode = code->GetSourceCode();
+            emit(SendAssetIoMessage(msg));
         }
     }
 }
@@ -463,7 +455,12 @@ void CodeEditorWidget::RequestClose(int index)
     --mOpenCodeCount;
     mUi.mTabWidget->removeTab(index);
 
-    emit(RequestCloseCode(codeToClose));
+    //send a message to the render thread to close this code safely
+    AssetIOMessageController::Message msg;
+    msg.SetMessageType(AssetIOMessageController::Message::CLOSE_CODE);
+    msg.GetAssetNode().mCode = codeToClose->GetSourceCode();
+    emit(SendAssetIoMessage(msg));
+
 }
 
 void CodeEditorWidget::OnTextChanged(QWidget * sender)
@@ -499,19 +496,17 @@ void CodeEditorWidget::OnTextWindowSelected(QWidget * sender)
 
 void CodeEditorWidget::CompileCode(CodeUserData* code)
 {
-    // The following snippet is meant to optimize this set of functions:
-    //if (!AsyncHasCompilationRequestPending()) 
-    //{
-    //    AsyncSetCompilationRequestPending();
-    //    emit(RequestCodeCompilation(id));
-    //}
     mCompilationRequestMutex->lock(); 
     if (!mCompilationRequestPending)
     {
         mCompilationRequestPending = true;            
         mCompilationRequestMutex->unlock();
-        emit(RequestDisableAssetLibraryUi());
-        emit(RequestCodeCompilation(code));
+        emit(RequestCompilationBegin());
+        SourceIOMessageController::Message msg;
+        msg.SetMessageType(SourceIOMessageController::Message::SET_SOURCE_AND_COMPILE_SOURCE);
+        msg.SetSourceText(code->GetDocument()->toPlainText());
+        msg.SetSource(code->GetSourceCode());
+        emit (SendSourceIoMessage(msg));
     }
     else
     {
@@ -544,10 +539,12 @@ void CodeEditorWidget::UpdateInstantCompilationButton(CodeUserData* code)
 
 }
 
-void CodeEditorWidget::RequestOpen(CodeUserData* code)
+void CodeEditorWidget::RequestOpen(Pegasus::Core::ISourceCodeProxy* codeProxy)
 {
-    Pegasus::Core::ISourceCodeProxy * codeProxy = code->GetSourceCode();
-    if (codeProxy == nullptr || code->GetDocument() == nullptr)
+    show();
+    activateWindow();
+    CodeUserData* codeUserData = static_cast<CodeUserData*>(codeProxy->GetUserData());
+    if (codeProxy == nullptr || codeUserData->GetDocument() == nullptr)
     {
         return;
     }
@@ -563,10 +560,10 @@ void CodeEditorWidget::RequestOpen(CodeUserData* code)
     }
 
     QString srcQString(qchar, srcSize);
-    code->GetDocument()->setPlainText(srcQString);
+    codeUserData->GetDocument()->setPlainText(srcQString);
     delete[] qchar;            
 
-    int currentTabIndex = FindIndex(code);
+    int currentTabIndex = FindIndex(codeUserData);
     if (currentTabIndex == -1)
     {
         if (mOpenCodeCount >= MAX_OPENED_CODES)
@@ -581,7 +578,7 @@ void CodeEditorWidget::RequestOpen(CodeUserData* code)
 
             //  pattern must be appending to the end
             ED_ASSERT(currentTabIndex == mOpenCodeCount);
-            mOpenedCodes[currentTabIndex] = code;
+            mOpenedCodes[currentTabIndex] = codeUserData;
             ++mOpenCodeCount;
 
             //is this opened already in the pool?
@@ -593,6 +590,11 @@ void CodeEditorWidget::RequestOpen(CodeUserData* code)
     {
         SignalViewCode(currentTabIndex);
     }
+}
+
+bool CodeEditorWidget::HasAnyChildFocus() const
+{
+    return mUi.mTreeEditor->HasAnyChildFocus();
 }
 
 void CodeEditorWidget::UpdateUIForAppFinished()

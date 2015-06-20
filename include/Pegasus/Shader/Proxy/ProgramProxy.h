@@ -45,6 +45,14 @@ public:
     //! \return null if shader is not found, otherwise a pointer to its proxy
     virtual IShaderProxy * GetShader(unsigned i);
 
+    //! Sets the shader stage
+    //! \param the shader to set
+    virtual void SetShader(IShaderProxy* shader);
+
+    //! Removes a shader from the shader list of this program
+    //! \param the position (index) of such shader
+    virtual void RemoveShader(unsigned i);
+
     //! \return Gets the name of this shader program
     virtual const char * GetName() const;
 

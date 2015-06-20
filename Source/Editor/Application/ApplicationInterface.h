@@ -14,9 +14,14 @@
 #define EDITOR_APPLICATIONINTERFACE_H
 
 #include "Viewport/ViewportType.h"
+#include "ProgramEditor/ProgramEditorWidget.h"
+#include "MessageControllers/AssetIOMessageController.h"
+#include "MessageControllers/SourceIOMessageController.h"
+#include "MessageControllers/ProgramIOMessageController.h"
 
 class Application;
 class CodeUserData;
+class SourceCodeManagerEventListener;
 
 namespace Pegasus {
     namespace Timeline {
@@ -36,8 +41,7 @@ public:
 
     //! Constructor
     //! \param application Editor application object (!= nullptr)
-    //! \param parent Parent Qt object
-    ApplicationInterface(Application * application, QObject * parent = 0);
+    ApplicationInterface(Application * application);
 
     //! Destructor, closes the running application
     virtual ~ApplicationInterface();
@@ -61,9 +65,6 @@ signals:
 
     //! Signal emitted when \a RequestRedrawAllViewportsAfterBlockMoved() has been called at least once
     void EnqueuedBlockMoved();
-
-    //! Signal emitted when a compilation redraw has finished.
-    void CompilationEnd();
 
     //------------------------------------------------------------------------------------
     
@@ -108,29 +109,24 @@ private slots:
     //! Called when a timeline block has been moved, to force a redraw of all viewports
     void RedrawAllViewportsForBlockMoved();
 
-    //! Called when the current beat has been updated
-    //! \param code user data
-    void ReceiveCompilationRequest(CodeUserData* codeUserData);
-
     //! Enable or disable the play mode of the demo timeline
     //! \param enabled True if the play mode has just been enabled, false if it has just been disabled
     void TogglePlayMode(bool enabled);
 
     //! Request the rendering of a new frame while in play mode
     void RequestFrameInPlayMode();
-
-    //! Request received when an asset is opened, so we can build its runtime data on the
-    //! render thread
-    void ReceiveOpenAssetRequest(const QString& path);
-
-    //! slot received when somebody request closing user data from an editor
-    void ReceiveCloseSourceCodeRequest(CodeUserData* userData);
     
-    //! slot received when somebody requests a new asset
-    void ReceiveNewAssetRequest(const QString& path, int type);
-
     //! slot received when the user double clicks a block in the timeline
     void PerformBlockDoubleClickedAction(Pegasus::Timeline::IBlockProxy* blockProxy);
+
+    //! forwards a to the asset io controller so its executed in the render thread
+    void ForwardAssetIoMessage(AssetIOMessageController::Message msg);
+
+    //! forwards a to the shader io controller so its executed in the render thread
+    void ForwardSourceIoMessage(SourceIOMessageController::Message msg);
+
+    //! forwards a to the program io controller so its executed in the render thread
+    void ForwardProgramIoMessage(ProgramIOMessageController::Message msg);
 
     //------------------------------------------------------------------------------------
 
@@ -151,6 +147,13 @@ private:
 
     //! True while a redraw all viewports call has been enqueued (to avoid duplicated calls, reset by the Pegasus thread)
     bool mRedrawAllViewportsForBlockMovedEnqueued;
+
+    //! Controllers, used to process messages from the application to the render thread, and messages back to the UI
+    AssetIOMessageController* mAssetIoMessageController;
+    SourceIOMessageController* mSourceIoMessageController;
+    ProgramIOMessageController*     mProgramIoMessageController;
+    SourceCodeManagerEventListener* mSourceCodeEventListener;
+    
 };
 
 

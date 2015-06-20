@@ -89,25 +89,6 @@ Editor::Editor(QApplication * parentApplication)
     // Write the log console header
     ED_LOG("Pegasus Editor settings loaded");
 
-    // Test messages
-    /****/
-    //! \todo Remove completely, this is kept for now to debug job000035
-	//for (int i = 0; i < 100; i++)
- //   {
- //       if ((i / 10) & 1)
- //       {
- //           if (i == 12) mConsoleDockWidget->AddMessage('CRIT', QString("Hello, world %1!").arg(i));
- //           else if (i == 13) mConsoleDockWidget->AddMessage('ERR_', QString("Hello, world %1!").arg(i));
- //           else if (i == 14) mConsoleDockWidget->AddMessage('ASRT', QString("Hello, world %1!").arg(i));
- //           else if (i == 15) mConsoleDockWidget->AddMessage('WNDW', QString("Hello, world %1!").arg(i));
- //           else mConsoleDockWidget->AddMessage('WARN', QString("Hello, world %1!").arg(i));
- //       }
- //       else
- //       {
- //           mConsoleDockWidget->AddMessage(QString("Hello, world %1!").arg(i));
- //       }
- //   }
-
     // Create the application manager
     mApplicationManager = new ApplicationManager(this, this);
 
@@ -122,11 +103,16 @@ Editor::Editor(QApplication * parentApplication)
             mTimelineDockWidget, SLOT(UpdateUIForAppClosed()));
 
     connect(mApplicationManager, SIGNAL(ApplicationFinished()),
-            mCodeEditorWidget, SLOT(UpdateUIForAppFinished()));
+            mCodeEditorWidget,  SLOT(UpdateUIForAppFinished()));
+    connect(mApplicationManager, SIGNAL(ApplicationFinished()),
+            mProgramEditorWidget, SLOT(UpdateUIForAppFinished()));
     connect(mApplicationManager, SIGNAL(ApplicationLoaded()),
             mAssetLibraryWidget, SLOT(UpdateUIForAppLoaded()));
     connect(mApplicationManager, SIGNAL(ApplicationFinished()),
             mAssetLibraryWidget, SLOT(UpdateUIForAppFinished()));
+
+    connect(mAssetLibraryWidget, SIGNAL(RequestOpenCode(Pegasus::Core::ISourceCodeProxy*)),
+            mCodeEditorWidget, SLOT(RequestOpen(Pegasus::Core::ISourceCodeProxy*)));
    
     connect(sSettings, SIGNAL(OnCodeEditorStyleChanged()),
             mCodeEditorWidget, SLOT(OnSettingsChanged())); 
@@ -185,6 +171,21 @@ void Editor::CloseSplashScreen()
 
 //----------------------------------------------------------------------------------------
 
+
+void Editor::SaveCurrentAsset()
+{
+    if (mCodeEditorWidget->HasAnyChildFocus())
+    {
+        mCodeEditorWidget->SignalSaveCurrentCode();
+    }
+    else if (mProgramEditorWidget->hasFocus())
+    {
+        mProgramEditorWidget->SignalSaveCurrentProgram();
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 void Editor::PushUndoCommand(QUndoCommand * command)
 {
     if (command != nullptr)
@@ -227,6 +228,11 @@ ViewportWidget * Editor::GetViewportWidget(ViewportType viewportType) const
 
 void Editor::CreateActions()
 {
+    mSaveCurrentAsset = new QAction(tr("Save Current Asset"),this);
+    mSaveCurrentAsset->setShortcut(tr("Ctrl+S"));
+    connect(mSaveCurrentAsset, SIGNAL(triggered()),
+            this, SLOT(SaveCurrentAsset()));
+
 	mActionFileOpenApp = new QAction(tr("&Open App..."), this);
 	mActionFileOpenApp->setIcon(QIcon(":/Toolbar/File/OpenApp24.png"));
 	mActionFileOpenApp->setShortcut(tr("Ctrl+O"));
@@ -287,7 +293,6 @@ void Editor::CreateActions()
 	mActionCreatePrimitiveSphere->setStatusTip(tr("Create a sphere object"));
 	connect(mActionCreatePrimitiveSphere, SIGNAL(triggered()), this, SLOT(CreateSphere()));
 
-
     mActionWindowMainViewport = new QAction(tr("&Main Viewport"), this);
 	mActionWindowMainViewport->setStatusTip(tr("Open the main viewport window"));
 	connect(mActionWindowMainViewport, SIGNAL(triggered()), this, SLOT(OpenMainViewportWindow()));
@@ -324,6 +329,9 @@ void Editor::CreateActions()
     mActionWindowDebugPropertyGridClasses = new QAction(tr("&Property Grid Classes"), this);
 	mActionWindowTextureEditor->setStatusTip(tr("Open the list of classes with their lists of properties"));
 	connect(mActionWindowDebugPropertyGridClasses, SIGNAL(triggered()), this, SLOT(OpenPropertyGridClassesWindow()));
+    mActionProgramEditor = new QAction(tr("&Program Editor"), this);
+    mActionProgramEditor->setStatusTip(tr("Open the program editor window"));
+    connect(mActionProgramEditor, SIGNAL(triggered()), this, SLOT(OpenProgramEditorWindow()));
 
 
     mActionHelpIndex = new QAction(tr("&Index..."), this);
@@ -348,6 +356,7 @@ void Editor::CreateMenu()
     fileMenu->addAction(mActionFileOpenApp);
     fileMenu->addAction(mActionFileReloadApp);
     fileMenu->addAction(mActionFileCloseApp);
+    fileMenu->addAction(mSaveCurrentAsset);
     fileMenu->addSeparator();
     fileMenu->addAction(mActionFileQuit);
 
@@ -363,9 +372,7 @@ void Editor::CreateMenu()
     menuBar()->addMenu(mAssetLibraryWidget->CreateNewAssetMenu(tr("&Create"), this));
 
     QMenu * windowMenu = menuBar()->addMenu(tr("&Window"));
-	//mToolbarMenu = windowMenu->addMenu(tr("&Toolbars"));
-	//mDockMenu = windowMenu->addMenu(tr("&Windows"));
-    //! \todo Temporary. Use the toolbar and dock menus with checkboxes
+
     windowMenu->addAction(mActionWindowMainViewport);
     windowMenu->addAction(mActionWindowSecondaryViewport);
     windowMenu->addAction(mActionWindowTimeline);
@@ -374,6 +381,7 @@ void Editor::CreateMenu()
     windowMenu->addAction(mActionWindowCodeEditor);
     windowMenu->addAction(mActionWindowAssetLibrary);
     windowMenu->addAction(mActionWindowTextureEditor);
+    windowMenu->addAction(mActionProgramEditor);
 
     QMenu * debugMenu = windowMenu->addMenu(tr("&Debug"));
     debugMenu->addAction(mActionWindowDebugPropertyGridClasses);
@@ -411,11 +419,6 @@ void Editor::CreateToolBars()
 	viewToolBar->setAllowedAreas(Qt::TopToolBarArea);
 	viewToolBar->addAction(mActionViewShowFullscreenViewport);
 
-	// Create and place the view actions for the toolbars to the toolbar menu
-	// (in alphabetical order)
-	//toolbarMenu->addAction(_editToolBar->toggleViewAction());
-	//toolbarMenu->addAction(_fileToolBar->toggleViewAction());
-	//toolbarMenu->addAction(_viewToolBar->toggleViewAction());
 }
 
 //----------------------------------------------------------------------------------------
@@ -435,45 +438,41 @@ void Editor::CreateDockWidgets()
     //! \todo Use the correct icons for the docks, and add them to the menu and toolbar
 
     mMainViewportDockWidget = new ViewportDockWidget(VIEWPORTTYPE_MAIN, this);
-    //mMainViewportDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
     addDockWidget(Qt::TopDockWidgetArea, mMainViewportDockWidget);
 
     mSecondaryViewportDockWidget = new ViewportDockWidget(VIEWPORTTYPE_SECONDARY, this);
-    //mSecondaryViewportDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
     addDockWidget(Qt::TopDockWidgetArea, mSecondaryViewportDockWidget);
 
     mTimelineDockWidget = new TimelineDockWidget(this);
-    //mTimelineDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
     addDockWidget(Qt::BottomDockWidgetArea, mTimelineDockWidget);
 
     mHistoryDockWidget = new HistoryDockWidget(mUndoStack, this);
-    //mHistoryDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
     addDockWidget(Qt::RightDockWidgetArea, mHistoryDockWidget);
 
     mConsoleDockWidget = new ConsoleDockWidget(this);
-    //mConsoleDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
     addDockWidget(Qt::BottomDockWidgetArea, mConsoleDockWidget);
 
     mCodeEditorWidget = new CodeEditorWidget(this);
     addDockWidget(Qt::BottomDockWidgetArea, mCodeEditorWidget);
+    mCodeEditorWidget->hide();
     mCodeEditorWidget->setFloating(true);
 
-    mAssetLibraryWidget = new AssetLibraryWidget(this, mCodeEditorWidget);
-    // ** do not add the Code library as default, instead hide it **
+    mProgramEditorWidget = new ProgramEditorWidget(this); 
+    mProgramEditorWidget->hide();
+    addDockWidget(Qt::BottomDockWidgetArea, mProgramEditorWidget);    
+    mProgramEditorWidget->setFloating(true);
+
+    mAssetLibraryWidget = new AssetLibraryWidget(this);
     addDockWidget(Qt::RightDockWidgetArea, mAssetLibraryWidget);        
+    mAssetLibraryWidget->hide();
     mAssetLibraryWidget->setFloating(true);
 
     mTextureEditorDockWidget = new TextureEditorDockWidget(this);
-    //mTextureEditorDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
     addDockWidget(Qt::RightDockWidgetArea, mTextureEditorDockWidget);
 
     mPropertyGridClassesDockWidget = new PropertyGridClassesDockWidget(this);
     //mPropertyGridClassesDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
     addDockWidget(Qt::RightDockWidgetArea, mPropertyGridClassesDockWidget);
-
-    // Create and place the view actions for the dock widgets to the dock menu
-    // (in alphabetical order)
-    //! \todo To implement from N3D editor
 }
 
 //----------------------------------------------------------------------------------------
@@ -675,6 +674,13 @@ void Editor::OpenPropertyGridClassesWindow()
     mPropertyGridClassesDockWidget->show();
 }
     
+//----------------------------------------------------------------------------------------
+
+void Editor::OpenProgramEditorWindow()
+{
+    mProgramEditorWidget->show();
+}
+
 //----------------------------------------------------------------------------------------
 
 void Editor::HelpIndex()

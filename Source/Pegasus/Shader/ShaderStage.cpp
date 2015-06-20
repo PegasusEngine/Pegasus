@@ -194,7 +194,7 @@ void Pegasus::Shader::ShaderStage::GenerateData()
 
 void Pegasus::Shader::ShaderStage::Include(Pegasus::Shader::ShaderSourceIn inc)
 {
-    *(new (&mIncludeReferences.PushEmpty()) Pegasus::Shader::ShaderSourceRef) = inc;
+    mIncludeReferences.PushEmpty() = inc;
     inc->RegisterParent(this);
 }
 
