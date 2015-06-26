@@ -20,7 +20,7 @@
 #include "TimelineBlocks/GeometryTestBlock.h"
 
 #include "Pegasus/TimelineBlock/Camera/CameraLineBlock.h"
-
+#include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Timeline/Lane.h"
 
 #include "Pegasus/Timeline/TimelineScript.h"

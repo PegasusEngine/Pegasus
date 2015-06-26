@@ -16,6 +16,9 @@
 
 // Forward declarations
 namespace Pegasus {
+    namespace Core {
+        class IApplicationContext;
+    }
     namespace App {
         class Application;
     }
@@ -24,7 +27,6 @@ namespace Pegasus {
         class Context;
     }
     namespace Wnd {
-        class IWindowContext;
         class IWindowImpl;
         class WindowMessageHandler;
         class WindowProxy;
@@ -115,7 +117,7 @@ protected:
 
     //! Gets the window context for this window
     //! \return Window context.
-    inline IWindowContext* GetWindowContext() { return mWindowContext; }
+    inline Core::IApplicationContext* GetWindowContext() { return mWindowContext; }
 
 
 private:
@@ -133,7 +135,7 @@ private:
     Alloc::IAllocator* mRenderAllocator; //!< Allocator to use when creating this window's render resources
     IWindowImpl* mPrivateImpl; //!< Private implementation, platform-specific
     WindowMessageHandler* mMessageHandler; //!< Message handler object
-    IWindowContext* mWindowContext; //!< Context for this window to operate in
+    Core::IApplicationContext* mWindowContext; //!< Context for this window to operate in
     Render::IDevice * mDevice;
     Render::Context* mRenderContext; //!< Rendering context
     bool mContextCreated; //!< Window created flag

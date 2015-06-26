@@ -32,9 +32,6 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Window\WindowProxy.h">
       <Filter>Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Window\IWindowContext.h">
-      <Filter>Include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\Source\Pegasus\Window\IWindowImpl.h">
       <Filter>Source</Filter>
     </ClInclude>

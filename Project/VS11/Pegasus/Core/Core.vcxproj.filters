@@ -59,6 +59,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\SourceCode.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\IApplicationContext.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Assertion.cpp">

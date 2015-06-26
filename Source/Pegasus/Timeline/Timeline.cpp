@@ -20,7 +20,7 @@
 #include "Pegasus/Utils/Memcpy.h"
 #include "Pegasus/AssetLib/AssetLib.h"
 #include "Pegasus/AssetLib/Asset.h"
-#include "Pegasus/Window/IWindowContext.h"
+#include "Pegasus/Core/IApplicationContext.h"
 
 #include <string.h>
 
@@ -32,7 +32,7 @@ const float Timeline::INVALID_BEAT = -1.0f;
 
 //----------------------------------------------------------------------------------------
 
-Timeline::Timeline(Alloc::IAllocator * allocator, Wnd::IWindowContext * appContext)
+Timeline::Timeline(Alloc::IAllocator * allocator, Core::IApplicationContext* appContext)
 :   mAllocator(allocator)
 ,   mAppContext(appContext)
 ,   mNumRegisteredBlocks(0)

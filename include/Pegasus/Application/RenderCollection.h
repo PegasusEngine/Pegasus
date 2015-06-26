@@ -11,14 +11,15 @@
 //!         rendering graphs
 #ifndef RENDER_COLLECTION_H
 #define RENDER_COLLECTION_H
+#include "Pegasus/Utils/Vector.h"
 
 namespace Pegasus
 {
 
 
 //! All forward declarations used in the render collection
-namespace Wnd {
-    class IWindowContext;
+namespace Core {
+    class IApplicationContext;
 }
 namespace Alloc {
     class IAllocator;
@@ -47,10 +48,46 @@ namespace Render {
 
 namespace Application {    
     class RenderCollectionImpl;
+    class RenderCollection;
 }
 
 namespace Application
 {
+
+    //! Implementation of a render collection factory
+    class RenderCollectionFactory
+    {
+    public:
+        //! Constructor
+        //!\param alloc the allocator to use
+        RenderCollectionFactory(Core::IApplicationContext* context, Alloc::IAllocator* alloc);
+
+        //! Destructor
+        ~RenderCollectionFactory();
+
+        //! Registers a classes number of properties
+        void RegisterPropertyCount(const char* name, int numOfProperties);
+
+        //! Creates a render collection
+        RenderCollection* CreateRenderCollection();
+
+        //! Deletes a render collection
+        void DeleteRenderCollection(RenderCollection* collection);
+    
+    private:
+
+        struct PropEntries
+        {
+            const char* mName;
+            int mPropertyCount;
+        };
+
+        Utils::Vector<PropEntries> mPropLayoutEntries;
+        
+        Alloc::IAllocator* mAlloc;
+    
+        Core::IApplicationContext* mContext;
+    };
 
     //! container of all the node types. Used by timeline blocks.
     class RenderCollection {
@@ -61,7 +98,7 @@ namespace Application
         //! Constructor
         //!\param alloc the allocator to use internally
         //!\param context pointer to the application context
-        RenderCollection(Alloc::IAllocator* alloc, Wnd::IWindowContext* context);
+        RenderCollection(Alloc::IAllocator* alloc, Core::IApplicationContext* context);
 
         //! Destructor
         ~RenderCollection();
@@ -203,7 +240,7 @@ namespace Application
         int GetBlendingStateCount() const;
 
         //! \return the application context pointer
-        Wnd::IWindowContext* GetAppContext() { return mContext; }
+        Core::IApplicationContext* GetAppContext() { return mContext; }
 
         //! Cleans / Deletes all references to the shaders/nodes/meshes/rendertargets/blendingstates/rasterstates being used
         void Clean();
@@ -213,7 +250,7 @@ namespace Application
         Alloc::IAllocator* mAlloc;
 
         //! internal context
-        Wnd::IWindowContext* mContext;
+        Core::IApplicationContext* mContext;
 
         //! internal implementation
         RenderCollectionImpl* mImpl;

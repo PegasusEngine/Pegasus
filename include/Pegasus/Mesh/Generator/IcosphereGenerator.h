@@ -25,10 +25,11 @@ class IcosphereGenerator : public MeshGenerator
 public:
     DECLARE_MESH_GENERATOR_NODE(IcosphereGenerator)
 
-    BEGIN_DECLARE_PROPERTIES()
-        DECLARE_PROPERTY(int,   Degree)
-        DECLARE_PROPERTY(float, Radius)
-    END_DECLARE_PROPERTIES()
+    //! Property declarations
+    BEGIN_DECLARE_PROPERTIES2(IcosphereGenerator, MeshGenerator)
+        DECLARE_PROPERTY2(int,   Degree, 3)
+        DECLARE_PROPERTY2(float, Radius, 1)
+    END_DECLARE_PROPERTIES2()
 
     //! Icosphere generator constructor
     //!\param nodeAllocator the allocator for the node properties (if any)

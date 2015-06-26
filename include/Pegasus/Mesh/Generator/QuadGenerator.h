@@ -13,6 +13,7 @@
 #define PEGASUS_MESH_GENERATOR_MESHGENERATOR_H
 
 #include "Pegasus/Mesh/MeshGenerator.h"
+#include "Pegasus/Math/Vector.h"
 
 namespace Pegasus
 {
@@ -24,6 +25,11 @@ class QuadGenerator : public MeshGenerator
 {
 public:
     DECLARE_MESH_GENERATOR_NODE(QuadGenerator)
+
+    //! Property declarations
+    BEGIN_DECLARE_PROPERTIES2(QuadGenerator, MeshGenerator)
+        DECLARE_PROPERTY2(Math::Vec2, QuadExtends, Math::Vec2(1.0f,1.0f))
+    END_DECLARE_PROPERTIES2()
 
     //!Quad generator constructor
     //!\param nodeAllocator the allocator for the node properties (if any)

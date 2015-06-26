@@ -14,10 +14,18 @@
 
 #if PEGASUS_ENABLE_PROXIES
 
+#include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Application/Application.h"
 #include "Pegasus/PropertyGrid/PropertyGridManager.h"
 #include "Pegasus/Timeline/Proxy/TimelineProxy.h"
+#include "Pegasus/Timeline/Timeline.h"
+#include "Pegasus/Shader/ShaderManager.h"
+#include "Pegasus/Mesh/MeshManager.h"
+#include "Pegasus/Texture/TextureManager.h"
+#include "Pegasus/AssetLib/AssetLib.h"
+#include "Pegasus/BlockScript/BlockScriptManager.h"
+
 
 #if PEGASUS_USE_GRAPH_EVENTS
 #include "Pegasus/Mesh/Shared/MeshEvent.h"

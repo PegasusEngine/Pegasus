@@ -4,7 +4,7 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   IWindowContext.h
+//! \file   IApplicationContext.h
 //! \author David Worsham
 //! \date   01st Nov 2013
 //! \brief  Context interface for windows, for access to external parameters
@@ -12,26 +12,46 @@
 #ifndef PEGASUS_WND_IWINDOWCONTEXT_H
 #define PEGASUS_WND_IWINDOWCONTEXT_H
 
-#include "Pegasus/Core/Io.h"
-#include "Pegasus/Graph/NodeManager.h"
-#include "Pegasus/Shader/ShaderManager.h"
-#include "Pegasus/Texture/TextureManager.h"
-#include "Pegasus/Mesh/MeshManager.h"
-#include "Pegasus/Camera/CameraManager.h"
-#include "Pegasus/Timeline/Timeline.h"
-#include "Pegasus/BlockScript/BlockScriptManager.h"
-#include "Pegasus/AssetLib/AssetLib.h"
+//forward declarations to avoid direct package dependencies
+namespace Pegasus {
+    namespace Io {
+        class IOManager;
+    }
+    namespace Graph {
+        class NodeManager;
+    }
+    namespace Shader {
+        class ShaderManager;
+    }
+    namespace Texture {
+        class TextureManager;
+    }
+    namespace Mesh {
+        class MeshManager;
+    }
+    namespace Camera {
+        class CameraManager;
+    }
+    namespace Timeline {
+        class Timeline;
+    }
+    namespace BlockScript {
+        class BlockScriptManager;
+    }
+    namespace AssetLib {
+        class AssetLib;
+    }
+}
 
 namespace Pegasus {
-namespace Wnd {
-
+namespace Core {
 
 //! Context interface for windows
-class IWindowContext
+class IApplicationContext 
 {
 public:
     //! Destructor
-    virtual ~IWindowContext() {};
+    virtual ~IApplicationContext() {};
 
 
     //! Gets the IO manager for use by this window

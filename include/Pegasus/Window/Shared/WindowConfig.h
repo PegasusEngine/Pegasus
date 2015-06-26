@@ -19,8 +19,8 @@ namespace Pegasus {
     namespace App {
         class Application;
     }
-    namespace Wnd {
-        class IWindowContext;
+    namespace Core {
+        class IApplicationContext;
     }
 }
 
@@ -46,7 +46,7 @@ public:
     Alloc::IAllocator* mAllocator; //!< Allocator to use when creating this window
     Alloc::IAllocator* mRenderAllocator; //!< Allocator to use when creating this window's render resources
     Render::IDevice * mDevice; //!< Pointer to device
-    IWindowContext* mWindowContext; //!< Context for this window
+    Core::IApplicationContext* mWindowContext; //!< Context for this window
     int mWidth; //!< Initial width of the window in pixels (> 0)
     int mHeight; //!< Initial height of the window in pixels (> 0)
     bool mCreateVisible; //!< Whether to create the window as initially visible or not

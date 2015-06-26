@@ -34,8 +34,8 @@ namespace Pegasus {
         class IAllocator;
     }
 
-    namespace Wnd {
-        class IWindowContext;
+    namespace Core {
+        class IApplicationContext;
     }
 }
 
@@ -50,7 +50,7 @@ class TimelineScript : public TimelineSource, public BlockScript::IBlockScriptCo
 public:
 
     //! Constructor
-    TimelineScript(Alloc::IAllocator* alloc, const char* name, Io::FileBuffer* fb, Wnd::IWindowContext* appContext);
+    TimelineScript(Alloc::IAllocator* alloc, const char* name, Io::FileBuffer* fb, Core::IApplicationContext* appContext);
 
     //! Destructor
     virtual ~TimelineScript();
@@ -143,7 +143,7 @@ private:
     int mSerialVersion;
 
     //! IWindowContext reference to access application data
-    Wnd::IWindowContext* mAppContext;
+    Core::IApplicationContext* mAppContext;
 
     //! list of headers
     Utils::Vector<TimelineSourceRef> mHeaders;

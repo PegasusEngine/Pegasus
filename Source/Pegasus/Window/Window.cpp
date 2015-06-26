@@ -11,9 +11,10 @@
 
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/Render/RenderContext.h"
-#include "Pegasus/Window/IWindowContext.h"
+#include "Pegasus/Core/IApplicationContext.h"
 #include "../Source/Pegasus/Window/IWindowImpl.h"
 #include "Pegasus/Sound/Sound.h"
+#include "Pegasus/Timeline/Timeline.h"
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/Window/WindowProxy.h"

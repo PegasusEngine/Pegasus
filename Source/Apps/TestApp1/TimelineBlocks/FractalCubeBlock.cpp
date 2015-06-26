@@ -11,6 +11,8 @@
 
 #include "TimelineBlocks/FractalCubeBlock.h"
 #include "Pegasus/Render/Render.h"
+#include "Pegasus/Shader/ShaderManager.h"
+#include "Pegasus/Mesh/MeshManager.h"
 
 #if PEGASUS_GAPI_GL
 
@@ -26,7 +28,7 @@ static const char * FRAGMENT_SHADER = "Shaders\\hlsl\\CubeFractal.ps";
 
 //----------------------------------------------------------------------------------------
 
-FractalCubeBlock::FractalCubeBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Wnd::IWindowContext * appContext)
+FractalCubeBlock::FractalCubeBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Core::IApplicationContext* appContext)
 :   Pegasus::Timeline::Block(allocator, appContext)
 {
 }

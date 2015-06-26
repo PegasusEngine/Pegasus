@@ -20,6 +20,7 @@
 #include "Pegasus/Window/Shared/IWindowProxy.h"
 #include "Pegasus/Texture/Shared/ITextureManagerProxy.h"
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
+#include "Pegasus/Mesh/Shared/IMeshManagerProxy.h"
 
 
 #if PEGASUS_PLATFORM_WINDOWS

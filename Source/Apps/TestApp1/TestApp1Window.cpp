@@ -10,9 +10,11 @@
 //! \brief  Specialized window for TestApp1.
 
 #define GLEW_STATIC 1
+#include "Pegasus/Core/IApplicationContext.h"
 #include "TestApp1Window.h"
 #include "Pegasus/Render/RenderContext.h"
 #include "Pegasus/Render/Render.h"
+#include "Pegasus/Timeline/Timeline.h"
 
 TestApp1Window::TestApp1Window(const Pegasus::Wnd::WindowConfig& config)
     : Pegasus::Wnd::Window(config), mAllocator(config.mAllocator)

@@ -31,6 +31,10 @@
 #include "Pegasus/Sound/Sound.h"
 #include "Pegasus/AssetLib/AssetLib.h"
 #include "Pegasus/AssetLib/Asset.h"
+#include "Pegasus/PropertyGrid/PropertyGridManager.h"
+#include "Pegasus/BlockScript/BlockScriptManager.h"
+#include "Pegasus/Mesh/MeshManager.h"
+
 #include <stdio.h>
 
 namespace Pegasus {
@@ -59,8 +63,12 @@ Application::Application(const ApplicationConfig& config)
     Core::AssertionManager::GetInstance()->RegisterHandler(config.mAssertHandler);
 #endif
 
+    //setup hierarchy of class metadata gathered at compile time
+    PropertyGrid::PropertyGridManager::GetInstance().ResolveInternalClassHierarchy();
+
     // Set up the time system
     Core::InitializePegasusTime();
+
 
     // Set up window manager
     windowManagerConfig.mAllocator = windowAlloc;
@@ -98,7 +106,7 @@ Application::Application(const ApplicationConfig& config)
     mAssetLib = PG_NEW(nodeAlloc, -1, "AssetLib", Alloc::PG_MEM_PERM) AssetLib::AssetLib(nodeAlloc, nullptr);
 
     // Register the entire render api
-    Pegasus::Application::RegisterRenderApi(mBlockScriptManager->GetRuntimeLib());
+    Pegasus::Application::RegisterRenderApi(mBlockScriptManager->GetRuntimeLib(), &PropertyGrid::PropertyGridManager::GetInstance());
 
     RegisterAssetLib();
 
@@ -176,23 +184,6 @@ void Application::Initialize()
     // Custom initialization, done in the user application
     RegisterTimelineBlocks();
     InitializeApp();
-
-#if 0 //USE THIS FOR LEAK DETECTION
-    while (true)
-    {
-        if (mAssetLib == nullptr) mAssetLib =  // Set up asset library
-            PG_NEW(Memory::GetNodeAllocator(), -1, "AssetLib", Alloc::PG_MEM_PERM) AssetLib::AssetLib(Memory::GetNodeAllocator(), nullptr);
-        mAssetLib->SetIoManager(mIoManager);
-        AssetLib::Asset* ass = nullptr;
-        if (mAssetLib->LoadAsset("Texture/test.pas", &ass) == Io::ERR_NONE)
-        {
-            int i = 0;
-        }
-
-        PG_DELETE(Memory::GetNodeAllocator(), mAssetLib);
-        mAssetLib = nullptr;
-    }
-#endif
 
     // Initialized
     mInitialized = true;

@@ -19,7 +19,7 @@
 #include "Pegasus/Mesh/Mesh.h"
 #include "Pegasus/Mesh/MeshGenerator.h"
 #include "Pegasus/Allocator/IAllocator.h"
-#include "Pegasus/Window/IWindowContext.h"
+#include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/Application/RenderCollection.h"
 #include "Pegasus/Render/Render.h"
 
@@ -30,6 +30,22 @@ namespace Pegasus
 
 namespace Application
 {
+    
+    RenderCollectionFactory::RenderCollectionFactory(Core::IApplicationContext* context, Alloc::IAllocator* alloc)
+        :mAlloc(alloc), mPropLayoutEntries(alloc), mContext(context)
+    {
+    }
+
+    RenderCollectionFactory::~RenderCollectionFactory()
+    {
+    }
+
+    void RenderCollectionFactory::RegisterPropertyCount(const char* name, int numOfProperties)
+    {
+        RenderCollectionFactory::PropEntries& entry = mPropLayoutEntries.PushEmpty();
+        entry.mName = name;
+        entry.mPropertyCount = numOfProperties;
+    }
 
     class RenderCollectionImpl
     {
@@ -114,7 +130,7 @@ namespace Application
         Render::CleanInternalState();
     }
 
-    RenderCollection::RenderCollection(Alloc::IAllocator* alloc, Wnd::IWindowContext* context)
+    RenderCollection::RenderCollection(Alloc::IAllocator* alloc, Core::IApplicationContext* context)
     : mAlloc(alloc),
       mContext(context)
     {

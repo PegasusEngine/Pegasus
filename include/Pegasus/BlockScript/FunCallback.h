@@ -207,7 +207,7 @@ struct ClassTypeDesc
     const char* classTypeName;
     FunctionDeclarationDesc methodDescriptors[MAX_OBJECT_METHOD_DESCRIPTORS];
     int methodsCount;
-    ObjectPropertyDesc propertyDescriptors[MAX_OBJ_PROPERTY_LIST];
+    const ObjectPropertyDesc* propertyDescriptors;
     int propertyCount;
     GetObjectPropertyRuntimePtrCallback getPropertyCallback;
 };

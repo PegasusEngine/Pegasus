@@ -24,7 +24,7 @@
 #define DECLARE_TIMELINE_BLOCK(className, editorString)                                             \
     public:                                                                                         \
         static Pegasus::Timeline::Block * CreateBlock(Pegasus::Alloc::IAllocator * allocator,       \
-                                                      Pegasus::Wnd::IWindowContext * appContext)    \
+                                                 Pegasus::Core::IApplicationContext* appContext)    \
         {   return PG_NEW(allocator, -1, #className, Pegasus::Alloc::PG_MEM_PERM)                   \
                             className(allocator, appContext);    }                                  \
         virtual const char * GetEditorString() const { return editorString; }                       \
@@ -35,7 +35,7 @@
 #define DECLARE_TIMELINE_BLOCK(className, editorString)                                             \
     public:                                                                                         \
         static Pegasus::Timeline::Block * CreateBlock(Pegasus::Alloc::IAllocator * allocator,       \
-                                                      Pegasus::Wnd::IWindowContext * appContext)    \
+                                                 Pegasus::Core::IApplicationContext* appContext)    \
         {   return PG_NEW(allocator, -1, #className, Pegasus::Alloc::PG_MEM_PERM)                   \
                             className(allocator, appContext);    }                                  \
 

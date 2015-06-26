@@ -9,13 +9,15 @@
 //! \date	31st August 2014
 //! \brief	Timeline block moving the camera along a straight line
 
+#include "Pegasus/Camera/Camera.h"
+#include "Pegasus/Camera/CameraManager.h"
 #include "Pegasus/TimelineBlock/Camera/CameraLineBlock.h"
 
 namespace Pegasus {
 namespace TimelineBlock {
 
 
-CameraLineBlock::CameraLineBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Wnd::IWindowContext * appContext)
+CameraLineBlock::CameraLineBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Core::IApplicationContext* appContext)
 :   Timeline::Block(allocator, appContext)
 {
 }    

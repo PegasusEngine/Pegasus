@@ -16,7 +16,7 @@
 #include "Pegasus/Timeline/Shared/TimelineDefs.h"
 #include "Pegasus/Timeline/Proxy/BlockProxy.h"
 #include "Pegasus/Timeline/TimelineScript.h"
-#include "Pegasus/Window/IWindowContext.h"
+#include "Pegasus/Core/IApplicationContext.h"
 
 namespace Pegasus {
     namespace Timeline {
@@ -46,7 +46,7 @@ public:
     //! Constructor
     //! \param allocator Allocator used for all timeline allocations
     //! \param appContext Application context, providing access to the global managers
-    Block(Alloc::IAllocator * allocator, Wnd::IWindowContext * appContext);
+    Block(Alloc::IAllocator * allocator, Core::IApplicationContext* appContext);
 
     //! Destructor
     virtual ~Block();
@@ -211,7 +211,7 @@ private:
     Alloc::IAllocator * mAllocator;
 
     //! Application context, providing access to the global managers
-    Wnd::IWindowContext * mAppContext;
+    Core::IApplicationContext* mAppContext;
 
 #if PEGASUS_ENABLE_PROXIES
 

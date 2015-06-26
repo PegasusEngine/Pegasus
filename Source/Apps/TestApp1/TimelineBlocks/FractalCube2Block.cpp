@@ -11,6 +11,9 @@
 
 #include "TimelineBlocks/FractalCube2Block.h"
 
+#include "Pegasus/Shader/ShaderManager.h"
+#include "Pegasus/Mesh/MeshManager.h"
+
 #if PEGASUS_GAPI_GL
 
 static const char * VERTEX_SHADER = "Shaders\\glsl\\Cubefractal2.vs";
@@ -25,7 +28,7 @@ static const char * FRAGMENT_SHADER = "Shaders\\hlsl\\CubeFractal2.ps";
 
 //----------------------------------------------------------------------------------------
 
-FractalCube2Block::FractalCube2Block(Pegasus::Alloc::IAllocator * allocator, Pegasus::Wnd::IWindowContext * appContext)
+FractalCube2Block::FractalCube2Block(Pegasus::Alloc::IAllocator * allocator, Pegasus::Core::IApplicationContext* appContext)
 :   Pegasus::Timeline::Block(allocator, appContext)
 {
 }

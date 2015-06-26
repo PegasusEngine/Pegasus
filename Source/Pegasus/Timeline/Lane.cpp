@@ -9,6 +9,7 @@
 //! \date	07th November 2013
 //! \brief	Timeline lane management, manages a set of blocks on one lane of the timeline
 
+#include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Timeline/Lane.h"
 #include "Pegasus/Timeline/Block.h"
 #include "Pegasus/Math/Scalar.h"

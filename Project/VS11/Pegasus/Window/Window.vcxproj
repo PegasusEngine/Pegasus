@@ -285,7 +285,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Window\IWindowContext.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Window\Shared\IWindowProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Window\Shared\WindowConfig.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Window\Window.h" />

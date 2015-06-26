@@ -13,6 +13,7 @@
 #define TESTAPP1_H
 
 #include "Pegasus/Pegasus.h"
+#include "Pegasus/Timeline/Block.h"
 
 
 //! \todo TEMPORARY, property grid testing

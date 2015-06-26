@@ -18,6 +18,7 @@
 #include "Pegasus/Mesh/MeshConfiguration.h"
 #include "Pegasus/Mesh/MeshData.h"
 #include "Pegasus/Mesh/MeshDeclaration.h"
+#include "Pegasus/PropertyGrid/PropertyGridObject.h"
 
 namespace Pegasus {
 namespace Mesh {
@@ -26,10 +27,14 @@ namespace Mesh {
 //! Base mesh generator node class
 //! \warning IMPORTANT! When deriving from this class, update MeshManager::RegisterAllMeshNodes()
 //!                     so the generator node can be instantiated
-class MeshGenerator : public Graph::GeneratorNode
+class MeshGenerator : public Graph::GeneratorNode, public Pegasus::PropertyGrid::PropertyGridObject
 {
 
     GRAPH_EVENT_DECLARE_DISPATCHER(IMeshEventListener);
+
+    BEGIN_DECLARE_PROPERTIES_BASE(MeshGenerator)
+    END_DECLARE_PROPERTIES2()
+
 public:
 
     //! Default constructor, uses the default mesh configuration

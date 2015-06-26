@@ -20,6 +20,8 @@
 namespace Pegasus {
 
     namespace Core {
+        class IApplicationContext;
+
         namespace CompilerEvents {
             class ICompilerEventListener;
         }
@@ -32,7 +34,6 @@ namespace Pegasus {
 
     namespace Wnd {
         class Window;
-        class IWindowContext;
     }
     
     namespace AssetLib {
@@ -84,7 +85,7 @@ public:
     //! Constructor
     //! \param allocator Allocator used for all timeline allocations
     //! \param appContext Application context, providing access to the global managers
-    Timeline(Alloc::IAllocator * allocator, Wnd::IWindowContext * appContext);
+    Timeline(Alloc::IAllocator * allocator, Core::IApplicationContext* appContext);
 
     //! Destructor
     virtual ~Timeline();
@@ -97,7 +98,7 @@ public:
     //! \param allocator Allocator used for block internal data
     //! \param appContext Application context, providing access to the global managers
     typedef Block * (* CreateBlockFunc)(Alloc::IAllocator * allocator,
-                                        Wnd::IWindowContext * appContext);
+                                        Core::IApplicationContext* appContext);
 
 #if PEGASUS_ENABLE_PROXIES
 
@@ -295,7 +296,7 @@ private:
     Alloc::IAllocator * mAllocator;
 
     //! Application context, providing access to the global managers
-    Wnd::IWindowContext * mAppContext;
+    Core::IApplicationContext* mAppContext;
 
     //! Structure describing one registered block class
     struct BlockEntry

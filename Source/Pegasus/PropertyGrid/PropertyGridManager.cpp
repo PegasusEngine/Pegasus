@@ -51,26 +51,38 @@ void PropertyGridManager::BeginDeclareProperties(const char * className, const c
     //!       of the class list (no duplicates), and check that the connections between classes are correct
     //!       (inheritance)
 
-    // Find the class info for the parent class if defined
-    PropertyGridClassInfo * parentClassInfo = nullptr;
-    if (parentClassName[0] != '\0')
-    {
-        //! \todo Make ci an unsigned int (after upgrading Vector)
-        for (int ci = 0; ci < mClassInfos.GetSize(); ++ci)
-        {
-            if (Utils::Strcmp(mClassInfos[ci].GetClassName(), parentClassName) == 0)
-            {
-                parentClassInfo = &mClassInfos[ci];
-                break;
-            }
-        }
-
-        //! \todo Throw an error, saying that the name of the parent class is not found
-    }
-
     mCurrentClassInfo = &mClassInfos.PushEmpty();
     mCurrentClassInfo->SetClassName(className, parentClassName);
-    mCurrentClassInfo->SetParentClassInfo(parentClassInfo);
+    mCurrentClassInfo->SetParentClassInfo(nullptr); //info is connected later, first gather all the plane class info
+}
+
+//----------------------------------------------------------------------------------------
+
+void PropertyGridManager::ResolveInternalClassHierarchy()
+{
+    for (int ci = 0; ci < mClassInfos.GetSize(); ++ci)
+    {
+        PropertyGridClassInfo * classInfo = &mClassInfos[ci];
+
+        // Find the class info for the parent class if defined and link it
+        if (classInfo->GetParentClassName()[0] != '\0')
+        {
+            //! \todo Make ci an unsigned int (after upgrading Vector)
+            PropertyGridClassInfo* parentInfo = nullptr;
+            for (int pi = 0; pi < mClassInfos.GetSize(); ++pi)
+            {
+                if (Utils::Strcmp(mClassInfos[pi].GetClassName(), classInfo->GetParentClassName()) == 0)
+                {
+                    parentInfo = &mClassInfos[pi];
+                    break;
+                }
+            }
+
+            PG_ASSERTSTR(parentInfo != nullptr, "Parent class not found");
+            classInfo->SetParentClassInfo(parentInfo);
+        }
+        
+    }
 }
 
 //----------------------------------------------------------------------------------------

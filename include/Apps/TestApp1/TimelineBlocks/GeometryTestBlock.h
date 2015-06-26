@@ -9,11 +9,13 @@
 //! \date	16th June 2014
 //! \brief	Geometry test
 
+#include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/Render/Render.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Mesh/Mesh.h"
 #include "Pegasus/Timeline/Block.h"
 #include "Pegasus/Math/Matrix.h"
+
 
 // timeline block for GeometryTestBlock
 
@@ -27,7 +29,7 @@ class GeometryTestBlock : public Pegasus::Timeline::Block
 public:
     
     //Constructor
-    GeometryTestBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Wnd::IWindowContext * appContext);
+    GeometryTestBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Core::IApplicationContext * appContext);
 
     //Destructor
     virtual ~GeometryTestBlock();

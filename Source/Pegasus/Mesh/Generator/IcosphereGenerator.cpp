@@ -39,10 +39,11 @@ namespace Pegasus
 namespace Mesh
 {
 
-BEGIN_IMPLEMENT_PROPERTIES(IcosphereGenerator)
-    IMPLEMENT_PROPERTY(int,   Degree, 1)
-    IMPLEMENT_PROPERTY(float, Radius, 1.0f)
-END_IMPLEMENT_PROPERTIES()
+//! Property implementations 
+BEGIN_IMPLEMENT_PROPERTIES2(IcosphereGenerator)
+    IMPLEMENT_PROPERTY2(IcosphereGenerator, Degree)
+    IMPLEMENT_PROPERTY2(IcosphereGenerator, Radius)
+END_IMPLEMENT_PROPERTIES2(IcosphereGenerator)
 
 IcosphereGenerator::IcosphereGenerator(Pegasus::Alloc::IAllocator * nodeAllocator,
                                        Pegasus::Alloc::IAllocator * nodeDataAllocator)
@@ -50,6 +51,10 @@ IcosphereGenerator::IcosphereGenerator(Pegasus::Alloc::IAllocator * nodeAllocato
   mIdxCache(nodeAllocator, sizeof(unsigned short))
 {
     
+    //INIT properties
+    INIT_PROPERTY2(Degree)
+    INIT_PROPERTY2(Radius)
+
     mConfiguration.SetIsIndexed(true);
     mConfiguration.SetMeshPrimitiveType(MeshConfiguration::TRIANGLE);
 

@@ -9,6 +9,7 @@
 //! \date	09th November 2013
 //! \brief	Timeline block, describing the instance of an effect on the timeline
 
+#include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Application/RenderCollection.h"
 #include "Pegasus/Timeline/Block.h"
 #include "Pegasus/Timeline/ScriptTracker.h"
@@ -18,7 +19,7 @@ namespace Pegasus {
 namespace Timeline {
 
 
-Block::Block(Alloc::IAllocator * allocator, Wnd::IWindowContext * appContext)
+Block::Block(Alloc::IAllocator * allocator, Core::IApplicationContext * appContext)
 :   mAllocator(allocator)
 ,   mAppContext(appContext)
 ,   mBeat(0)

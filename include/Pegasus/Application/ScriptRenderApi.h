@@ -15,11 +15,13 @@
 
 //! forward declarations
 namespace Pegasus {
+
+    namespace PropertyGrid {
+        class PropertyGridManager;
+    }
+
     namespace BlockScript {
         class BlockLib;
-    }
-    namespace Wnd {
-        class IWindowContext;
     }
 }
 
@@ -29,7 +31,7 @@ namespace Application
 {
     //! registers the entire render API into blockscript's intrinsic library
     //! \param appContext - the context of the application
-    void RegisterRenderApi(BlockScript::BlockLib* blockLib);
+    void RegisterRenderApi(BlockScript::BlockLib* blockLib, PropertyGrid::PropertyGridManager* propGridMgr);
 
 }
 }

@@ -71,17 +71,11 @@ void PropertyGridClassesDockWidget::UpdateUIForAppLoaded()
         const Pegasus::PropertyGrid::IPropertyGridClassInfoProxy * classInfoProxy = managerProxy->GetClassInfo(c);
         const char * className = classInfoProxy->GetClassName();
 
-        // Find the parent item if defined
-        QTreeWidgetItem * parentClassItem = nullptr;
         const Pegasus::PropertyGrid::IPropertyGridClassInfoProxy * parentClassInfoProxy = classInfoProxy->GetParentClassInfo();
-        if (parentClassInfoProxy != nullptr)
-        {
-            parentClassItem = classMap[parentClassInfoProxy];
-            ED_ASSERTSTR(parentClassItem != nullptr, "Trying to display a property grid class (\"%s\") with a parent but the parent was not declared yet", className);
-        }
+
 
         // Create the item for the current class
-        QTreeWidgetItem * classItem = new QTreeWidgetItem(parentClassItem, QStringList(QString(className)));
+        QTreeWidgetItem * classItem = new QTreeWidgetItem(QStringList(QString(className)));
         classItem->setIcon(0, QIcon(":/PropertyGridClasses/Class16.png"));
         items.append(classItem);
         classMap.insert(classInfoProxy, classItem);
@@ -206,7 +200,18 @@ void PropertyGridClassesDockWidget::UpdateUIForAppLoaded()
             items.append(propertyItem);
         }
     }
+    
+    for (unsigned int c = 0; c < numClasses; ++c)
+    {
+        QTreeWidgetItem * item = classMap[managerProxy->GetClassInfo(c)];
+               
+        if (managerProxy->GetClassInfo(c)->GetParentClassInfo() != nullptr)
+        {
+            QTreeWidgetItem * parentClassItem = classMap[managerProxy->GetClassInfo(c)->GetParentClassInfo()];
+            parentClassItem->addChild(item);
+        }
 
+    }
     mTreeWidget->insertTopLevelItems(0, items);
     mTreeWidget->resizeColumnToContents(0);
 }

@@ -28,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Assertion.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\IApplicationContext.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Io.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Log.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Shared\AssertReturnCode.h" />

@@ -13,6 +13,7 @@
 #define PEGASUS_CUBE_GENERATOR_H
 
 #include "Pegasus/Mesh/MeshGenerator.h"
+#include "Pegasus/Math/Vector.h"
 
 namespace Pegasus
 {
@@ -25,6 +26,11 @@ class BoxGenerator : public MeshGenerator
 {
 public:
     DECLARE_MESH_GENERATOR_NODE(BoxGenerator)
+
+    //! Property declarations
+    BEGIN_DECLARE_PROPERTIES2(BoxGenerator, MeshGenerator)
+        DECLARE_PROPERTY2(Math::Vec3, CubeExtends, Math::Vec3(1.0f,1.0f,1.0f))
+    END_DECLARE_PROPERTIES2()
 
     //! Cube generator constructor
     //!\param nodeAllocator the allocator for the node properties (if any)

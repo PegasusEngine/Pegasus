@@ -14,6 +14,8 @@
 namespace Pegasus {
 namespace Mesh {
 
+BEGIN_IMPLEMENT_PROPERTIES2(MeshGenerator)
+END_IMPLEMENT_PROPERTIES2(MeshGenerator)
 
 MeshGenerator::MeshGenerator(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :   Graph::GeneratorNode(nodeAllocator, nodeDataAllocator),

@@ -15,7 +15,7 @@
 
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Application/IWindowRegistry.h"
-#include "Pegasus/Window/IWindowContext.h"
+#include "Pegasus/Core/IApplicationContext.h"
 
 // Forward declarations
 namespace Pegasus {
@@ -69,7 +69,7 @@ namespace App {
 //! \note   2. attach a window to it
 //! \note   3. call Run to enter the application loop.
 //! \todo Multi-application support
-class Application : public Wnd::IWindowContext
+class Application : public Core::IApplicationContext
 {
 public:
     //! Constructor

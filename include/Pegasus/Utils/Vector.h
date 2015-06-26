@@ -15,6 +15,7 @@
 #include "Pegasus/Allocator/Alloc.h"
 #include "Pegasus/Core/Assertion.h"
 #include "Pegasus/Utils/TypeTraits.h"
+#include "Pegasus/Memory/MemoryManager.h"
 
 
 namespace Pegasus
@@ -66,6 +67,12 @@ public:
     //! Deletes all data
     void Clear();
 
+    //! \return gets the raw data pointer of this vector
+    void* Data() { return mData; }
+
+    //! \return gets the raw data pointer of this vector
+    const void* Data() const { return mData; }
+
 private:
     //! master data pointer
     void* mData;
@@ -90,6 +97,8 @@ class Vector
 public:
     //! Constructor
     explicit Vector(Alloc::IAllocator* alloc) : mBase(alloc, sizeof(T)) {}
+
+    Vector() : mBase(Memory::GetGlobalAllocator(), sizeof(T)) {}
 
     //! Destructor
     ~Vector()
@@ -167,6 +176,16 @@ public:
             }
         }
         mBase.Clear();
+    }
+
+    T* Data()
+    {
+        return static_cast<T*>(mBase.Data());
+    }
+
+    const T* Data() const
+    {
+        return static_cast<const T*>(mBase.Data());
     }
 
 private:

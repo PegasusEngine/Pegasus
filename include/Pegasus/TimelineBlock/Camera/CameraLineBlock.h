@@ -28,7 +28,7 @@ public:
     //! Constructor
     //! \param allocator Allocator used for all timeline allocations
     //! \param appContext Application context, providing access to the global managers
-    CameraLineBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Wnd::IWindowContext * appContext);
+    CameraLineBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Core::IApplicationContext* appContext);
 
     //! Destructor
     virtual ~CameraLineBlock();

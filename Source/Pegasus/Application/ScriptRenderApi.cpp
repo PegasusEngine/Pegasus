@@ -11,7 +11,7 @@
 //!         of rendering nodes.
 #include "Pegasus/Application/RenderCollection.h"
 #include "Pegasus/Application/ScriptRenderApi.h"
-#include "Pegasus/Window/IWindowContext.h"
+#include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/BlockScript/BlockScriptManager.h"
 #include "Pegasus/BlockScript/BlockScript.h"
 #include "Pegasus/BlockScript/BlockScriptAst.h"
@@ -20,11 +20,17 @@
 #include "Pegasus/BlockScript/SymbolTable.h"
 #include "Pegasus/BlockScript/IddStrPool.h"
 #include "Pegasus/Utils/String.h"
+#include "Pegasus/Utils/Vector.h"
 #include "Pegasus/Render/Render.h"
 #include "Pegasus/Allocator/IAllocator.h"
-#include "Pegasus/Window/IWindowContext.h"
+#include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/Math/Vector.h"
 #include "Pegasus/Math/Color.h"
+#include "Pegasus/PropertyGrid/PropertyGridManager.h"
+#include "Pegasus/PropertyGrid/PropertyGridClassInfo.h"
+#include "Pegasus/Shader/ShaderManager.h"
+#include "Pegasus/Mesh/MeshManager.h"
+#include "Pegasus/Texture/TextureManager.h"
 
 using namespace Pegasus;
 using namespace Pegasus::Timeline;
@@ -34,9 +40,7 @@ using namespace Pegasus::BlockScript::Ast;
 using namespace Pegasus::Math;
 
 //global type, used for dynamic type checking
-const TypeDesc* gRenderTargetType = nullptr;
-
-static void RegisterTypes        (BlockLib* lib);
+static void RegisterTypes        (BlockLib* lib, PropertyGrid::PropertyGridManager* propGridMgr);
 static void RegisterFunctions    (BlockLib* lib);
 
 
@@ -101,46 +105,33 @@ void* GetTextureOperatorPropertyCallback (BsVmState* state, int objectHandle, co
 void* GetTextureGeneratorPropertyCallback(BsVmState* state, int objectHandle, const PropertyNode* propertyDesc);
 
 /////  Declaration of all Texture node properties  /////
-enum TextureProperties
+struct CoreClassProperties
 {
-    TEX_PROP_CLAMP ,
-    TEX_PROP_COLOR ,
-    TEX_PROP_COLOR0,
-    TEX_PROP_COLOR1,
-    TEX_PROP_POINT0,
-    TEX_PROP_POINT1,
-    TEX_PROP_NUMPIXELS,
-    TEX_PROP_SEED,
-    TEX_PROP_BACKGROUNDCOL,
-    MAX_TEX_PROP
-        
+    CoreClassProperties()
+    : mName(nullptr) {} 
+
+    const char* mName;
+    Utils::Vector<Pegasus::BlockScript::ObjectPropertyDesc> mPropertiesDescs;
+#if PEGASUS_ENABLE_ASSERT
+    Utils::Vector<const PropertyGrid::PropertyGridClassInfo::PropertyRecord*> mSanityCheckProperties;
+#endif
 };
 
-//global texture property pool
-const ObjectPropertyDesc TPP[] = {
-    {"int",    "Clamp",  TEX_PROP_CLAMP  },
-    {"float4", "Color",  TEX_PROP_COLOR  },
-    {"float4", "Color0", TEX_PROP_COLOR0 },
-    {"float4", "Color1", TEX_PROP_COLOR1 },
-    {"float3", "Point0", TEX_PROP_POINT0 },
-    {"float3", "Point1", TEX_PROP_POINT1 },
-    {"int",    "NumPixels",       TEX_PROP_NUMPIXELS },
-    {"int",    "Seed",            TEX_PROP_SEED },
-    {"float4", "BackgroundColor", TEX_PROP_BACKGROUNDCOL }
-};
-
-/////  Declaration of all Mesh properties /////
-enum MeshProperties
+const char* gPropertyBlockscriptTypeNames[PropertyGrid::NUM_PROPERTY_TYPES] =
 {
-    MESH_PROP_DEGREE,
-    MESH_PROP_RADIUS,
-    MAX_MESH_PROP
-};
+    "int", //PROPERTYTYPE_BOOL = 0,
+    "int", //PROPERTYTYPE_INT,
+    "int", //PROPERTYTYPE_UINT,
 
-//global mesh property pool
-const ObjectPropertyDesc MPP[] = {
-    {"float", "Degree", MESH_PROP_DEGREE },
-    {"float", "Radius", MESH_PROP_RADIUS }
+    "float",//PROPERTYTYPE_FLOAT,
+    "float2",//PROPERTYTYPE_VEC2,
+    "float3",//PROPERTYTYPE_VEC3,
+    "float4",//PROPERTYTYPE_VEC4,
+
+    "float3",//PROPERTYTYPE_COLOR8RGB,
+    "float4",//PROPERTYTYPE_COLOR8RGBA,
+
+    "string"//PROPERTYTYPE_STRING64,
 };
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -148,9 +139,9 @@ const ObjectPropertyDesc MPP[] = {
 //! the blockscript runtime lib
 ///////////////////////////////////////////////////////////////////////////////////
 
-void Pegasus::Application::RegisterRenderApi(BlockScript::BlockLib* rtLib)
+void Pegasus::Application::RegisterRenderApi(BlockScript::BlockLib* rtLib, PropertyGrid::PropertyGridManager* propGridMgr)
 {
-    RegisterTypes(rtLib);
+    RegisterTypes(rtLib, propGridMgr);
     RegisterFunctions(rtLib);
 }
 
@@ -252,32 +243,87 @@ static void RegisterRenderStructs(BlockLib* lib)
     uniformType->SetByteSize(sizeof(Render::Uniform));
 }
 
-static void RegisterNodes(BlockLib* lib)
+void LinearizeProperties(Utils::Vector<CoreClassProperties>& outCoreClasses, PropertyGrid::PropertyGridManager* propGridMgr)
 {
-    const ClassTypeDesc nodeDefs[] = {
+    for (unsigned classIt = 0; classIt < propGridMgr->GetNumRegisteredClasses(); ++classIt)
+    {
+        const PropertyGrid::PropertyGridClassInfo* classInfo = &propGridMgr->GetClassInfo(classIt);
+
+        //find the base info if present
+        const PropertyGrid::PropertyGridClassInfo* baseInfo = classInfo->GetParentClassInfo();
+        while (baseInfo != nullptr && baseInfo->GetParentClassInfo() != nullptr)
+        {
+            baseInfo = baseInfo->GetParentClassInfo();
+        }
+
+        const char* targetBaseClassName = nullptr;
+        if (baseInfo == nullptr) //means this is the base class
+        {
+            targetBaseClassName = classInfo->GetClassName();
+        }   
+        else
+        {
+            targetBaseClassName = baseInfo->GetClassName();
+        }
+        
+        CoreClassProperties* targetBaseClassProps = nullptr;
+        //find the base class property pool
+        for (int baseClassPoolIt = 0; baseClassPoolIt < outCoreClasses.GetSize(); ++baseClassPoolIt)
+        {
+            if (!Utils::Strcmp(outCoreClasses[baseClassPoolIt].mName, targetBaseClassName))
+            {
+                targetBaseClassProps = &outCoreClasses[baseClassPoolIt];
+            }
+        }
+
+        if (targetBaseClassProps == nullptr)
+        {
+            targetBaseClassProps = &(outCoreClasses.PushEmpty());
+            targetBaseClassProps->mName = targetBaseClassName;
+        }
+
+        //now we have a target pool to dump all the properties cached of such parent class
+        for (unsigned propIt = 0; propIt < classInfo->GetNumClassProperties(); ++propIt)
+        {
+            int uniqueId = targetBaseClassProps->mPropertiesDescs.GetSize();
+            Pegasus::BlockScript::ObjectPropertyDesc& objPropDesc = targetBaseClassProps->mPropertiesDescs.PushEmpty(); 
+            const PropertyGrid::PropertyGridClassInfo::PropertyRecord& record = classInfo->GetClassProperty(propIt);
+#if PEGASUS_ENABLE_ASSERT
+            targetBaseClassProps->mSanityCheckProperties.PushEmpty() = &record;
+#endif
+            objPropDesc.propertyTypeName = gPropertyBlockscriptTypeNames[record.type]; //TODO: add here the translation
+            objPropDesc.propertyName = record.name;
+            objPropDesc.propertyUniqueId = uniqueId;
+        }
+    }
+}
+
+static void RegisterNodes(BlockLib* lib, PropertyGrid::PropertyGridManager* propGridMgr)
+{
+    ClassTypeDesc nodeDefs[] = {
         {
             "Buffer",
-            {}, 0, {}, 0, nullptr 
+            {}, 0, nullptr, 0, nullptr 
         },
         {
             "RenderTarget",
-            {}, 0, {}, 0, nullptr
+            {}, 0, nullptr, 0, nullptr
         },
         {
             "DepthStencilTarget",
-            {}, 0, {}, 0, nullptr
+            {}, 0, nullptr, 0, nullptr
         },
         {
             "BlendingState",
-            {}, 0, {}, 0, nullptr
+            {}, 0, nullptr, 0, nullptr
         },
         {
             "RasterizerState",
-            {}, 0, {}, 0, nullptr
+            {}, 0, nullptr, 0, nullptr
         },
         {
             "ShaderStage",
-            {}, 0, {}, 0, nullptr
+            {}, 0, nullptr, 0, nullptr
         },
         {
             "ProgramLinkage",
@@ -285,12 +331,12 @@ static void RegisterNodes(BlockLib* lib)
                 { "SetShaderStage", "int", {"ProgramLinkage", "ShaderStage", nullptr}, {"this", "stage", nullptr}, Program_SetShaderStage }
             },
             1,
-            {}, 0, nullptr
+            nullptr, 0, nullptr
         },
         {
             "MeshGenerator",
             {},0,
-            {MPP[MESH_PROP_RADIUS], MPP[MESH_PROP_DEGREE]}, 2, 
+            nullptr, 0, 
             GetMeshGeneratorPropertyCallback
         },
         {
@@ -299,15 +345,12 @@ static void RegisterNodes(BlockLib* lib)
                 { "SetGeneratorInput", "int", {"Mesh", "MeshGenerator", nullptr}, {"this", "meshGenerator", nullptr}, MeshGenerator_SetGeneratorInput }
             },
             1,
-            {}, 0, nullptr
+            nullptr, 0, nullptr
         },
         {
             "TextureGenerator",
             {}, 0,
-            {
-                TPP[TEX_PROP_COLOR0], TPP[TEX_PROP_COLOR1], TPP[TEX_PROP_POINT0], TPP[TEX_PROP_POINT1],
-                TPP[TEX_PROP_COLOR], TPP[TEX_PROP_NUMPIXELS], TPP[TEX_PROP_SEED], TPP[TEX_PROP_BACKGROUNDCOL]
-            }, 8,
+            nullptr, 0,
             GetTextureGeneratorPropertyCallback
         },
         {
@@ -317,7 +360,7 @@ static void RegisterNodes(BlockLib* lib)
                 { "AddOperatorInput",  "int", { "TextureOperator", "TextureOperator", nullptr },  { "this", "texOperator", nullptr },  TextureOperator_AddOperatorInput  }
             },
             2,
-            {}, 0, GetTextureOperatorPropertyCallback
+            nullptr, 0, GetTextureOperatorPropertyCallback
         },
         {
             "Texture",
@@ -326,18 +369,72 @@ static void RegisterNodes(BlockLib* lib)
                 { "SetOperatorInput",  "int", { "Texture", "TextureOperator", nullptr },  { "this", "texOperator", nullptr }, Texture_SetOperatorInput }
             },
             2,
-            {}, 0, nullptr
+            nullptr, 0, nullptr
         }
     };
+
+    //gather the properties and accumulate them on the base classes
+    Utils::Vector<CoreClassProperties> coreClasses; 
+    LinearizeProperties(coreClasses, propGridMgr);
+
+    //patch the node Defs with the appropiate property lists gathered
+    for (int i = 0; i < sizeof(nodeDefs)/sizeof(nodeDefs[0]); ++i)
+    {
+        ClassTypeDesc& desc = nodeDefs[i];
+        
+        for (int d = 0; d < coreClasses.GetSize(); ++d)
+        {
+            CoreClassProperties& coreClassProp = coreClasses[d];
+            if (!Utils::Strcmp(desc.classTypeName, coreClassProp.mName))
+            {
+                desc.propertyDescriptors = coreClassProp.mPropertiesDescs.Data();
+                desc.propertyCount = coreClassProp.mPropertiesDescs.GetSize();
+                break;
+            }
+        }
+    }
+
+    //Register the node Defs into blockscript
     lib->CreateClassTypes(nodeDefs, sizeof(nodeDefs)/sizeof(nodeDefs[0]));
-    gRenderTargetType = lib->GetSymbolTable()->GetTypeByName("RenderTarget");
+
+    //now that types are recovered, lets do a sanity check on property grid sizes vs block script discovered size association
+    //if we have properties that could stomp on memory we will check them right here.
+#if PEGASUS_ENABLE_ASSERT
+    for (int i = 0; i < coreClasses.GetSize(); ++i)
+    {
+        CoreClassProperties& coreClassProp = coreClasses[i];
+        const TypeDesc* blockScriptType = lib->GetSymbolTable()->GetTypeByName(coreClassProp.mName);
+        if (blockScriptType == nullptr) continue; //means is a class we are not interested in but uses the property grid
+        PG_ASSERTSTR(blockScriptType->GetModifier() == TypeDesc::M_REFERECE, "Type registered on blockscript is not a c++ class");
+        
+        for (int p = 0; p < coreClassProp.mSanityCheckProperties.GetSize(); ++p)
+        {
+            const PropertyGrid::PropertyGridClassInfo::PropertyRecord* record = coreClassProp.mSanityCheckProperties[p];
+            //linearly walk over the node property link list, find the property and check sizes
+            const PropertyNode* propNode = blockScriptType->GetPropertyNode();
+            while (propNode != nullptr && Utils::Strcmp(propNode->mName, record->name))
+            {
+                propNode = propNode->mNext;
+            }
+
+            PG_ASSERTSTR(propNode != nullptr, "Property node was not registered!");
+            PG_ASSERTSTR(
+                record->size <= propNode->mType->GetByteSize() , 
+                "FATAL! record byte size won't fit inside blockscripts properties storage tables, causing memory stomps. Class: %s, property: %s",
+                coreClassProp.mName,
+                record->name
+            );
+        }
+        
+    }
+#endif
 }
 
-static void RegisterTypes(BlockLib* lib)
+static void RegisterTypes(BlockLib* lib, PropertyGrid::PropertyGridManager* propGridMgr)
 {
     RegisterRenderEnums(lib);
     RegisterRenderStructs(lib);
-    RegisterNodes(lib);
+    RegisterNodes(lib, propGridMgr);
 }
 
 static void RegisterFunctions(BlockLib* lib)
@@ -722,7 +819,7 @@ void Node_CreateMesh(FunCallbackContext& context)
     FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
     RenderCollection* collection = GetContainer(state);
-    Wnd::IWindowContext* appCtx = collection->GetAppContext();
+    Core::IApplicationContext* appCtx = collection->GetAppContext();
     Mesh::MeshManager* meshManager = appCtx->GetMeshManager();
     Mesh::MeshRef newMesh = meshManager->CreateMeshNode();
     RenderCollection::CollectionHandle handle = collection->AddMesh(newMesh);
@@ -734,7 +831,7 @@ void Node_CreateMeshGenerator(FunCallbackContext& context)
     FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
     RenderCollection* collection = GetContainer(state);
-    Wnd::IWindowContext* appCtx = collection->GetAppContext();
+    Core::IApplicationContext* appCtx = collection->GetAppContext();
     Mesh::MeshManager* meshManager = appCtx->GetMeshManager();
 
     //get the input
@@ -989,7 +1086,7 @@ void Render_SetRenderTargets(FunCallbackContext& context)
     //check the type here of the unknown pointer passed as the second parameter
     const TypeDesc* unknownType = context.GetArgExps()->GetTail()->GetExp()->GetTypeDesc();
     if (unknownType->GetModifier() != TypeDesc::M_ARRAY || 
-        unknownType->GetChild() != gRenderTargetType) //quick check, we should use Equals 
+        Utils::Strcmp(unknownType->GetChild()->GetName(), "RenderTarget")) //quick check, we should use Equals 
                                                       //but its slower. This type is guaranteed 
                                                       //to be a singleton so its quicker to compare ptrs.
     {
@@ -1149,13 +1246,8 @@ void* GetMeshOperatorPropertyCallback    (BsVmState* state, int objectHandle, co
     return nullptr;
 }
 
-float gDegreeGlobal = 0.99f;
 void* GetMeshGeneratorPropertyCallback   (BsVmState* state, int objectHandle, const PropertyNode* propertyDesc)
 {
-    if (!Utils::Strcmp(propertyDesc->mName, "Degree"))
-    {
-        return &gDegreeGlobal;
-    }
     return nullptr;
 }
 

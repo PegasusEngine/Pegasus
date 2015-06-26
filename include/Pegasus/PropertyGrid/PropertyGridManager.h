@@ -71,6 +71,10 @@ public:
     //! \return Information about the registered class
     const PropertyGridClassInfo & GetClassInfo(unsigned int index) const;
 
+    //! Must get called at the initialization of main() once. This will ensure all the metadata of class
+    //! dependencies are linked properly. Otherwise, no parent-child relationship will exist
+    void ResolveInternalClassHierarchy();
+
 #if PEGASUS_ENABLE_PROXIES
 
     //! Get the proxy associated with the property grid manager

@@ -8,9 +8,9 @@
 //! \author	Kleber Garcia
 //! \date	1st November 2014
 //! \brief	Script helper for scripting callbacks
-
+#include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Timeline/TimelineScript.h"
-#include "Pegasus/Window/IWindowContext.h"
+#include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/Core/Assertion.h"
 #include "Pegasus/BlockScript/BlockScriptManager.h"
 #include "Pegasus/BlockScript/BlockScript.h"
@@ -79,7 +79,7 @@ static int Pegasus_PrintFloat(float f)
     return 0;
 }
 
-TimelineScript::TimelineScript(IAllocator* allocator, const char* name, FileBuffer* fileBuffer, Wnd::IWindowContext* appContext)
+TimelineScript::TimelineScript(IAllocator* allocator, const char* name, FileBuffer* fileBuffer, Core::IApplicationContext* appContext)
     :
     TimelineSource(allocator, name, fileBuffer),
     mSerialVersion(0),

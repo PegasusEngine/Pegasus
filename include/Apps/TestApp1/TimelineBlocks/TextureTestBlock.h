@@ -12,6 +12,7 @@
 #ifndef TESTAPP1_TEXTURETEST_BLOCK_H
 #define TESTAPP1_TEXTURETEST_BLOCK_H
 
+#include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/Render/Render.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Mesh/Mesh.h"
@@ -28,7 +29,7 @@ public:
     //! Constructor
     //! \param allocator Allocator used for all timeline allocations
     //! \param appContext Application context, providing access to the global managers
-    TextureTestBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Wnd::IWindowContext * appContext);
+    TextureTestBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Core::IApplicationContext* appContext);
 
     //! Destructor
     virtual ~TextureTestBlock();

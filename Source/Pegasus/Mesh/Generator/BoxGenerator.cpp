@@ -17,11 +17,17 @@ namespace Pegasus
 namespace Mesh
 {
 
+//! Property implementations
+BEGIN_IMPLEMENT_PROPERTIES2(BoxGenerator)
+    IMPLEMENT_PROPERTY2(BoxGenerator, CubeExtends)
+END_IMPLEMENT_PROPERTIES2(BoxGenerator)
 
 BoxGenerator::BoxGenerator(Pegasus::Alloc::IAllocator* nodeAllocator, 
               Pegasus::Alloc::IAllocator* nodeDataAllocator) 
 : MeshGenerator(nodeAllocator, nodeDataAllocator)
 {
+    //INIT properties
+    INIT_PROPERTY2(CubeExtends)
 
     mConfiguration.SetIsIndexed(true);
 

@@ -11,9 +11,11 @@
 
 #include "Apps/TestApp1/TimelineBlocks/GeometryTestBlock.h"
 #include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
+#include "Pegasus/Mesh/MeshManager.h"
 
 #include "Pegasus/Math/Quaternion.h"
 #include "Pegasus/Mesh/Generator/IcosphereGenerator.h"
+#include "Pegasus/Shader/ShaderManager.h"
 
 #if PEGASUS_GAPI_GL
 
@@ -26,7 +28,7 @@
 #endif
 
 
-GeometryTestBlock::GeometryTestBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Wnd::IWindowContext * appContext)
+GeometryTestBlock::GeometryTestBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Core::IApplicationContext* appContext)
     : Pegasus::Timeline::Block(allocator, appContext)
 
 {

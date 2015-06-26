@@ -15,7 +15,10 @@
 #include "Pegasus/Texture/Generator/GradientGenerator.h"
 #include "Pegasus/Texture/Generator/PixelsGenerator.h"
 #include "Pegasus/Texture/Operator/AddOperator.h"
+#include "Pegasus/Texture/TextureManager.h"
 #include "Pegasus/Math/Scalar.h"
+#include "Pegasus/Shader/ShaderManager.h"
+#include "Pegasus/Mesh/MeshManager.h"
 
 #if PEGASUS_GAPI_GL
 
@@ -31,7 +34,7 @@ static const char * FRAGMENT_SHADER = "Shaders\\hlsl\\TextureTest.ps";
 
 //----------------------------------------------------------------------------------------
     
-TextureTestBlock::TextureTestBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Wnd::IWindowContext * appContext)
+TextureTestBlock::TextureTestBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Core::IApplicationContext* appContext)
 :   Pegasus::Timeline::Block(allocator, appContext)
 {
 }
