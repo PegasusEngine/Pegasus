@@ -166,6 +166,12 @@ void Pegasus::AssetLib::AssetLib::BindAssetToRuntimeObject(Asset* asset, Runtime
     runtimeObject->Connect(asset, 0, this);
 }
 
+void Pegasus::AssetLib::AssetLib::UnbindAssetToRuntimeObject(RuntimeAssetObject* runtimeObject)
+{
+    runtimeObject->GetOwnerAsset()->SetRuntimeData(nullptr);
+    runtimeObject->Connect(nullptr, 0, this);
+}
+
 Io::IoError Pegasus::AssetLib::AssetLib::SaveAsset(Asset* asset)
 {
     if (asset->GetFormat() == Asset::FMT_STRUCTURED)

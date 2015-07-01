@@ -110,6 +110,10 @@ public:
     //! \param assetFactory the asset factory to set
     void SetAssetLib(AssetLib::AssetLib* assetLib)  { mAssetLib = assetLib; }
 
+    //! Gets the asset factory of this manager.
+    //! \return assetFactory the asset factory to get
+    AssetLib::AssetLib* GetAssetLib() const  { return mAssetLib; }
+
     //! Gets the type of this shader
     //! \param the extension
     //! \return the shader type

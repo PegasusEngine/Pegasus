@@ -9,6 +9,8 @@
 //! \date   December 4th, 2014
 //! \brief  BlockScript registration of Parr callbacks, so scripts can call, use and abuse
 //!         of rendering nodes.
+
+#include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/Application/RenderCollection.h"
 #include "Pegasus/Application/ScriptRenderApi.h"
 #include "Pegasus/Core/IApplicationContext.h"
@@ -40,7 +42,7 @@ using namespace Pegasus::BlockScript::Ast;
 using namespace Pegasus::Math;
 
 //global type, used for dynamic type checking
-static void RegisterTypes        (BlockLib* lib, PropertyGrid::PropertyGridManager* propGridMgr);
+static void RegisterTypes        (BlockLib* lib, Core::IApplicationContext* context);
 static void RegisterFunctions    (BlockLib* lib);
 
 
@@ -139,9 +141,9 @@ const char* gPropertyBlockscriptTypeNames[PropertyGrid::NUM_PROPERTY_TYPES] =
 //! the blockscript runtime lib
 ///////////////////////////////////////////////////////////////////////////////////
 
-void Pegasus::Application::RegisterRenderApi(BlockScript::BlockLib* rtLib, PropertyGrid::PropertyGridManager* propGridMgr)
+void Pegasus::Application::RegisterRenderApi(BlockScript::BlockLib* rtLib, Core::IApplicationContext* context)
 {
-    RegisterTypes(rtLib, propGridMgr);
+    RegisterTypes(rtLib, context);
     RegisterFunctions(rtLib);
 }
 
@@ -291,15 +293,18 @@ void LinearizeProperties(Utils::Vector<CoreClassProperties>& outCoreClasses, Pro
 #if PEGASUS_ENABLE_ASSERT
             targetBaseClassProps->mSanityCheckProperties.PushEmpty() = &record;
 #endif
-            objPropDesc.propertyTypeName = gPropertyBlockscriptTypeNames[record.type]; //TODO: add here the translation
+            objPropDesc.propertyTypeName = gPropertyBlockscriptTypeNames[record.type];
             objPropDesc.propertyName = record.name;
             objPropDesc.propertyUniqueId = uniqueId;
         }
     }
 }
 
-static void RegisterNodes(BlockLib* lib, PropertyGrid::PropertyGridManager* propGridMgr)
+static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
 {
+    PropertyGrid::PropertyGridManager* propGridMgr = context->GetPropertyGridManager();
+    Application::RenderCollectionFactory* renderCollectionFactory = context->GetRenderCollectionFactory();
+
     ClassTypeDesc nodeDefs[] = {
         {
             "Buffer",
@@ -389,6 +394,7 @@ static void RegisterNodes(BlockLib* lib, PropertyGrid::PropertyGridManager* prop
             {
                 desc.propertyDescriptors = coreClassProp.mPropertiesDescs.Data();
                 desc.propertyCount = coreClassProp.mPropertiesDescs.GetSize();
+                renderCollectionFactory->RegisterPropertyCount(desc.classTypeName, desc.propertyCount);
                 break;
             }
         }
@@ -430,11 +436,11 @@ static void RegisterNodes(BlockLib* lib, PropertyGrid::PropertyGridManager* prop
 #endif
 }
 
-static void RegisterTypes(BlockLib* lib, PropertyGrid::PropertyGridManager* propGridMgr)
+static void RegisterTypes(BlockLib* lib, Core::IApplicationContext* context)
 {
     RegisterRenderEnums(lib);
     RegisterRenderStructs(lib);
-    RegisterNodes(lib, propGridMgr);
+    RegisterNodes(lib, context);
 }
 
 static void RegisterFunctions(BlockLib* lib)

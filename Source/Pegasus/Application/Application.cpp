@@ -11,6 +11,7 @@
 //!         Manages access to the Pegasus runtime.
 
 #include "Pegasus/Application/Application.h"
+#include "Pegasus/Application/RenderCollection.h"
 #include "Pegasus/Application/ScriptRenderApi.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Application/AppWindowManager.h"
@@ -65,6 +66,7 @@ Application::Application(const ApplicationConfig& config)
 
     //setup hierarchy of class metadata gathered at compile time
     PropertyGrid::PropertyGridManager::GetInstance().ResolveInternalClassHierarchy();
+    mPropertyGridManager = &PropertyGrid::PropertyGridManager::GetInstance();
 
     // Set up the time system
     Core::InitializePegasusTime();
@@ -92,6 +94,7 @@ Application::Application(const ApplicationConfig& config)
     mShaderManager = PG_NEW(nodeAlloc, -1, "ShaderManager", Alloc::PG_MEM_PERM) Shader::ShaderManager(mNodeManager, shaderFactory);
     mTextureManager = PG_NEW(nodeAlloc, -1, "TextureManager", Alloc::PG_MEM_PERM) Texture::TextureManager(mNodeManager, textureFactory);
     mMeshManager = PG_NEW(nodeAlloc, -1, "MeshManager", Alloc::PG_MEM_PERM) Mesh::MeshManager(mNodeManager, meshFactory);
+    mRenderCollectionFactory = PG_NEW(nodeAlloc, -1, "RenderCollectionFactory", Alloc::PG_MEM_PERM) Pegasus::Application::RenderCollectionFactory(this, nodeAlloc);
 
     //register shader manager into factory, so factory can handle includes
     shaderFactory->RegisterShaderManager(mShaderManager);
@@ -106,7 +109,7 @@ Application::Application(const ApplicationConfig& config)
     mAssetLib = PG_NEW(nodeAlloc, -1, "AssetLib", Alloc::PG_MEM_PERM) AssetLib::AssetLib(nodeAlloc, nullptr);
 
     // Register the entire render api
-    Pegasus::Application::RegisterRenderApi(mBlockScriptManager->GetRuntimeLib(), &PropertyGrid::PropertyGridManager::GetInstance());
+    Pegasus::Application::RegisterRenderApi(mBlockScriptManager->GetRuntimeLib(), this);
 
     RegisterAssetLib();
 
@@ -141,6 +144,7 @@ Application::~Application()
     PG_DELETE(nodeAlloc, mTextureManager);
     PG_DELETE(nodeAlloc, mShaderManager);
     PG_DELETE(nodeAlloc, mNodeManager);
+    PG_DELETE(nodeAlloc, mRenderCollectionFactory);
     PG_DELETE(timelineAlloc, mBlockScriptManager);
     PG_DELETE(nodeAlloc, mAssetLib);
 

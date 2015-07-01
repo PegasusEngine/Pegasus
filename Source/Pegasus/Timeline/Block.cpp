@@ -88,7 +88,7 @@ void Block::Shutdown()
         if (mVmState->GetUserContext() != nullptr)
         {
             Application::RenderCollection* userCtx = static_cast<Application::RenderCollection*>( mVmState->GetUserContext() );
-            PG_DELETE(mAllocator, userCtx);
+            mAppContext->GetRenderCollectionFactory()->DeleteRenderCollection(userCtx);
         }
         PG_DELETE(mAllocator, mVmState);
     }
@@ -174,7 +174,7 @@ void Block::AttachScript(TimelineScriptIn script)
         mVmState = PG_NEW(mAllocator, -1, "Vm State", Pegasus::Alloc::PG_MEM_PERM) BlockScript::BsVmState();
         mVmState->Initialize(mAllocator);
 
-        Application::RenderCollection* userContext = PG_NEW(mAllocator, -1, "Vm State", Pegasus::Alloc::PG_MEM_PERM) Application::RenderCollection(mAllocator, mAppContext);
+        Application::RenderCollection* userContext = mAppContext->GetRenderCollectionFactory()->CreateRenderCollection();
         mVmState->SetUserContext(userContext);
     }
     else
@@ -188,7 +188,7 @@ void Block::AttachScript(TimelineScriptIn script)
         mVmState->Reset();
     }
     
-    mScriptVersion = -1;
+    mScriptVersion = -1;  
 }
 
 //----------------------------------------------------------------------------------------

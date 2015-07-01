@@ -28,6 +28,7 @@
 #include <QTabBar>
 #include <QToolBar>
 #include <QDir>
+#include <QStatusBar>
 #include "AssetLibrary/AssetLibraryWidget.h"
 
 const char* gShaderStageNames[Pegasus::Shader::SHADER_STAGES_COUNT] = {
@@ -129,6 +130,9 @@ void ProgramEditorWidget::SetupUi()
                 mRemoveShaderMapper, SLOT(map()));
     }
 
+    mStatusBar = new QStatusBar(mMainWidget);
+    mainLayout->addWidget(mStatusBar);
+
     connect(mAddShaderMapper, SIGNAL(mapped(int)),
             this, SLOT(OnAddShader(int)));
 
@@ -171,8 +175,18 @@ void ProgramEditorWidget::OnRemoveShader(int id)
     emit SendProgramIoMessage(msg);
 }
 
+void ProgramEditorWidget::PostStatusBarMessage(const QString& msg)
+{
+    if (msg == "" || mStatusBarMessage == "")
+    {
+        mStatusBarMessage = msg;
+        mStatusBar->showMessage(msg);
+    }
+}
+
 void ProgramEditorWidget::SignalSaveCurrentProgram()
 {
+    PostStatusBarMessage(tr("")); //clear the message bar
     AssetIOMessageController::Message msg;
     msg.SetMessageType(AssetIOMessageController::Message::SAVE_PROGRAM);
     msg.GetAssetNode().mProgram = mCurrentProgram;

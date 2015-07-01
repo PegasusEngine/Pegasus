@@ -16,8 +16,8 @@
 //! forward declarations
 namespace Pegasus {
 
-    namespace PropertyGrid {
-        class PropertyGridManager;
+    namespace Core {
+        class IApplicationContext;
     }
 
     namespace BlockScript {
@@ -31,7 +31,7 @@ namespace Application
 {
     //! registers the entire render API into blockscript's intrinsic library
     //! \param appContext - the context of the application
-    void RegisterRenderApi(BlockScript::BlockLib* blockLib, PropertyGrid::PropertyGridManager* propGridMgr);
+    void RegisterRenderApi(BlockScript::BlockLib* blockLib, Core::IApplicationContext* appContext);
 
 }
 }

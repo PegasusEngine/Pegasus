@@ -22,6 +22,7 @@
 #include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/Application/RenderCollection.h"
 #include "Pegasus/Render/Render.h"
+#include "Pegasus/Utils/String.h"
 
 using namespace Pegasus::Utils;
 
@@ -30,6 +31,58 @@ namespace Pegasus
 
 namespace Application
 {
+
+    struct PropertyInfo
+    {
+        void* mCachedPointer;
+        int   mSize;
+        PropertyInfo() : mSize(0), mCachedPointer(nullptr) {}
+    };
+
+    template<class T>
+    struct ObjectPropertyCache
+    {
+        Core::Ref<T> mObject;
+        PropertyInfo* mCachedInfos;
+        Alloc::IAllocator* mAllocator;
+        int mCachedInfoCount;
+
+        ObjectPropertyCache()
+        : mCachedInfos(nullptr), mCachedInfoCount(0), mAllocator(nullptr) {}
+
+        void Initialize(const char* nodeName, const RenderCollectionFactory* factory,  T* node, Alloc::IAllocator* allocator)
+        {
+            mAllocator = allocator;
+            mObject = node;
+
+            //find the processed description of this node.
+            const RenderCollectionFactory::PropEntries* entryLayout = factory->FindNodeLayoutEntry(nodeName);
+            
+            if (entryLayout != nullptr && entryLayout->mPropertyCount > 0)
+            {
+                mCachedInfos = PG_NEW_ARRAY(allocator, -1, "NodePropCache", Pegasus::Alloc::PG_MEM_TEMP, PropertyInfo, entryLayout->mPropertyCount);
+                mCachedInfoCount = entryLayout->mPropertyCount;
+            }
+        }
+
+        void Reset()
+        {
+            mObject = nullptr;
+            if (mCachedInfoCount > 0)
+            {
+                PG_DELETE_ARRAY(mAllocator, mCachedInfos);
+                mCachedInfos = nullptr;
+                mCachedInfoCount = 0;
+            }
+        }
+
+        ~ObjectPropertyCache()
+        {
+            Reset();
+        }
+    
+    };
+
     
     RenderCollectionFactory::RenderCollectionFactory(Core::IApplicationContext* context, Alloc::IAllocator* alloc)
         :mAlloc(alloc), mPropLayoutEntries(alloc), mContext(context)
@@ -47,6 +100,29 @@ namespace Application
         entry.mPropertyCount = numOfProperties;
     }
 
+    RenderCollection* RenderCollectionFactory::CreateRenderCollection()
+    {
+        return PG_NEW(mAlloc, -1, "RenderCollection", Pegasus::Alloc::PG_MEM_TEMP) RenderCollection(mAlloc, this, mContext);
+    }
+
+    void RenderCollectionFactory::DeleteRenderCollection(RenderCollection* toDelete)
+    {
+        PG_DELETE(mAlloc, toDelete);
+    }
+
+    const RenderCollectionFactory::PropEntries* RenderCollectionFactory::FindNodeLayoutEntry(const char* nodeTypeName) const
+    {
+        for (int i = 0; i < mPropLayoutEntries.GetSize(); ++i)
+        {
+            const RenderCollectionFactory::PropEntries& entry = mPropLayoutEntries[i];
+            if (!Utils::Strcmp(nodeTypeName, entry.mName))
+            {
+                return &entry;
+            }
+        }
+        return nullptr;
+    }
+
     class RenderCollectionImpl
     {
     public:
@@ -56,11 +132,11 @@ namespace Application
     
         Vector<Shader::ProgramLinkageRef>    mPrograms;
         Vector<Shader::ShaderStageRef>       mShaders;
-        Vector<Texture::TextureRef>          mTextures;
-        Vector<Texture::TextureGeneratorRef> mTextureGenerators;
-        Vector<Texture::TextureOperatorRef>  mTextureOperators;
-        Vector<Mesh::MeshRef>                mMeshes;
-        Vector<Mesh::MeshGeneratorRef>       mMeshGenerators;
+        Vector< ObjectPropertyCache<Texture::Texture> >          mTextures;
+        Vector< ObjectPropertyCache<Texture::TextureGenerator> > mTextureGenerators;
+        Vector< ObjectPropertyCache<Texture::TextureOperator> >  mTextureOperators;
+        Vector< ObjectPropertyCache<Mesh::Mesh> >                mMeshes;
+        Vector< ObjectPropertyCache<Mesh::MeshGenerator> >       mMeshGenerators;
         Vector<Render::Buffer>               mBuffers;
         Vector<Render::RasterizerState>      mRasterizerStates;
         Vector<Render::BlendingState>        mBlendingStates;
@@ -85,14 +161,6 @@ namespace Application
 
     void RenderCollectionImpl::Clean()
     {
-        for (int i = 0; i < mPrograms.GetSize(); ++i)         { mPrograms[i] = nullptr; }
-        for (int i = 0; i < mShaders.GetSize(); ++i)          { mShaders[i] = nullptr; }
-        for (int i = 0; i < mTextures.GetSize(); ++i)         { mTextures[i] = nullptr; }
-        for (int i = 0; i < mTextureGenerators.GetSize(); ++i){ mTextureGenerators[i] = nullptr; }
-        for (int i = 0; i < mTextureOperators.GetSize(); ++i) { mTextureOperators[i] = nullptr; }
-        for (int i = 0; i < mMeshes.GetSize(); ++i)           { mMeshes[i] = nullptr; }
-        for (int i = 0; i < mMeshGenerators.GetSize(); ++i)   { mMeshGenerators[i] = nullptr; }
-        
         //cleanup of buffers using render API
         for (int i = 0; i < mBuffers.GetSize(); ++i) 
         {
@@ -130,9 +198,10 @@ namespace Application
         Render::CleanInternalState();
     }
 
-    RenderCollection::RenderCollection(Alloc::IAllocator* alloc, Core::IApplicationContext* context)
+    RenderCollection::RenderCollection(Alloc::IAllocator* alloc, RenderCollectionFactory* factory, Core::IApplicationContext* context)
     : mAlloc(alloc),
-      mContext(context)
+      mContext(context),
+      mFactory(factory)
     {
         mImpl = PG_NEW(alloc, -1, "RenderCollectionImpl", Alloc::PG_MEM_TEMP) RenderCollectionImpl(alloc);
     }
@@ -176,13 +245,13 @@ namespace Application
 
     RenderCollection::CollectionHandle RenderCollection::AddTexture(Texture::Texture* texture)
     {
-        mImpl->mTextures.PushEmpty() = texture;
+        mImpl->mTextures.PushEmpty().Initialize("Texture", mFactory, texture, mAlloc) ;
         return mImpl->mTextures.GetSize() - 1;
     }
 
     Texture::Texture* RenderCollection::GetTexture(RenderCollection::CollectionHandle id)
     {
-        return &(*mImpl->mTextures[id]);
+        return &(*mImpl->mTextures[id].mObject);
     }
 
     int RenderCollection::GetTextureCount() const
@@ -192,13 +261,13 @@ namespace Application
 
     RenderCollection::CollectionHandle RenderCollection::AddTextureGenerator(Texture::TextureGenerator* texGen)
     {
-        mImpl->mTextureGenerators.PushEmpty() = texGen;
+        mImpl->mTextureGenerators.PushEmpty().Initialize("TextureGenerator", mFactory, texGen, mAlloc);
         return mImpl->mTextureGenerators.GetSize() - 1;
     }
 
     Texture::TextureGenerator* RenderCollection::GetTextureGenerator(RenderCollection::CollectionHandle id)
     {
-        return &(*mImpl->mTextureGenerators[id]);
+        return &(*mImpl->mTextureGenerators[id].mObject);
     }
 
     int RenderCollection::GetTextureGeneratorCount() const
@@ -208,13 +277,13 @@ namespace Application
 
     RenderCollection::CollectionHandle RenderCollection::AddTextureOperator(Texture::TextureOperator* texOp)
     {
-        mImpl->mTextureOperators.PushEmpty() = texOp;
+        mImpl->mTextureOperators.PushEmpty().Initialize("TextureOperator", mFactory, texOp, mAlloc);
         return mImpl->mTextureOperators.GetSize() - 1 ;
     }
 
     Texture::TextureOperator* RenderCollection::GetTextureOperator(RenderCollection::CollectionHandle id)
     {
-        return &(*mImpl->mTextureOperators[id]);
+        return &(*mImpl->mTextureOperators[id].mObject);
     }
 
     int RenderCollection::GetTextureOperatorCount() const
@@ -224,13 +293,13 @@ namespace Application
 
     RenderCollection::CollectionHandle RenderCollection::AddMesh(Mesh::Mesh* mesh)
     {
-        mImpl->mMeshes.PushEmpty() = mesh;
+        mImpl->mMeshes.PushEmpty().Initialize("Mesh", mFactory, mesh, mAlloc);
         return mImpl->mMeshes.GetSize() - 1;
     }
 
     Mesh::Mesh* RenderCollection::GetMesh(RenderCollection::CollectionHandle id)
     {
-        return &(*mImpl->mMeshes[id]);
+        return &(*mImpl->mMeshes[id].mObject);
     }
 
     int RenderCollection::GetMeshCount() const
@@ -240,13 +309,13 @@ namespace Application
 
     RenderCollection::CollectionHandle RenderCollection::AddMeshGenerator(Mesh::MeshGenerator* mesh)
     {
-        mImpl->mMeshGenerators.PushEmpty() = mesh;
+        mImpl->mMeshGenerators.PushEmpty().Initialize("MeshGenerator", mFactory, mesh, mAlloc);
         return mImpl->mMeshGenerators.GetSize() - 1; 
     }
 
     Mesh::MeshGenerator* RenderCollection::GetMeshGenerator(RenderCollection::CollectionHandle id)
     {
-        return &(*mImpl->mMeshGenerators[id]);
+        return &(*mImpl->mMeshGenerators[id].mObject);
     }
 
     int RenderCollection::GetMeshGeneratorCount()

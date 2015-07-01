@@ -130,6 +130,15 @@ signals:
     //! Signal triggered when the UI needs to update the active node views
     void SignalUpdateNodeViews();
 
+    //! Signal triggered when an error has occured.
+    void SignalOnErrorMessagePopup(const QString& message);
+
+    //! Signal triggered when a message is sent to the code editor.
+    void SignalPostCodeMessage(const QString& message);
+
+    //! Signal triggered when a message is sent to the program editor.
+    void SignalPostProgramMessage(const QString& message);
+
 
 private:
     //! Called when a shader is requested for opening from the render thread

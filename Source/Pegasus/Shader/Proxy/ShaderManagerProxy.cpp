@@ -18,6 +18,7 @@
 #include "Pegasus/AssetLib/Proxy/AssetProxy.h"
 #include "Pegasus/Memory/MemoryManager.h"
 #include "Pegasus/AssetLib/Asset.h"
+#include "Pegasus/AssetLib/AssetLib.h"
 #include "Pegasus/Utils/String.h"
 
 Pegasus::Shader::ShaderManagerProxy::ShaderManagerProxy(Pegasus::Shader::ShaderManager * object)
@@ -81,20 +82,32 @@ Pegasus::Shader::IShaderProxy* Pegasus::Shader::ShaderManagerProxy::OpenShader(A
     return shader->GetProxy();
 }
 
-Pegasus::Shader::IProgramProxy* Pegasus::Shader::ShaderManagerProxy::OpenProgram(AssetLib::IAssetProxy* asset)
+void Pegasus::Shader::ShaderManagerProxy::InternalOpenProgram(Pegasus::Shader::ProgramLinkageRef program)
 {
-    Pegasus::Shader::ProgramLinkageRef program = mObject->CreateProgram(static_cast<AssetLib::AssetProxy*>(asset)->GetObject());
-    //try to find the program
     for (int i = 0; i < mOpenedPrograms.GetSize(); ++i)
     {
         Pegasus::Shader::ProgramLinkageRef& programCandidate = mOpenedPrograms[i];
         if (&(*program) == &(*programCandidate))
         {
-            return program->GetProxy();
+            return;
         }
     }
     mOpenedPrograms.PushEmpty() = program; //add a reference
+}
+
+Pegasus::Shader::IProgramProxy* Pegasus::Shader::ShaderManagerProxy::OpenProgram(AssetLib::IAssetProxy* asset)
+{
+    Pegasus::Shader::ProgramLinkageRef program = mObject->CreateProgram(static_cast<AssetLib::AssetProxy*>(asset)->GetObject());
+    InternalOpenProgram(program);
     return program->GetProxy();
+}
+
+Pegasus::Shader::IProgramProxy* Pegasus::Shader::ShaderManagerProxy::CreateNewProgram(const char* programName)
+{
+    Pegasus::Shader::ProgramLinkageRef program = mObject->CreateProgram(programName);
+    InternalOpenProgram(program);
+    return program->GetProxy();
+    
 }
 
 void Pegasus::Shader::ShaderManagerProxy::CloseShader(Pegasus::Shader::IShaderProxy* shaderProxy)
@@ -171,6 +184,26 @@ void Pegasus::Shader::ShaderManagerProxy::FlushProgramToAsset(Pegasus::Shader::I
 {
     Pegasus::Shader::ProgramLinkageRef obj = static_cast<Pegasus::Shader::ProgramProxy*>(program)->GetObject();
     mObject->FlushProgramToAsset(obj);
+}
+
+void Pegasus::Shader::ShaderManagerProxy::BindProgramToAsset(Pegasus::Shader::IProgramProxy* programProxy, Pegasus::AssetLib::IAssetProxy* assetProxy)
+{
+    Pegasus::AssetLib::Asset* asset = nullptr;
+    if (assetProxy != nullptr)
+    {
+        asset = static_cast<Pegasus::AssetLib::AssetProxy*>(assetProxy)->GetObject();
+    }
+    Pegasus::Shader::ProgramLinkage* program = static_cast<Pegasus::Shader::ProgramProxy*>(programProxy)->GetObject();
+    
+    if (program->GetOwnerAsset() != nullptr)
+    {
+        mObject->GetAssetLib()->UnbindAssetToRuntimeObject(program);
+    }
+
+    if (asset != nullptr)
+    {
+        mObject->GetAssetLib()->BindAssetToRuntimeObject(asset, program);
+    }
 }
 
 #else

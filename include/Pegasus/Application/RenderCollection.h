@@ -55,9 +55,15 @@ namespace Application
 {
 
     //! Implementation of a render collection factory
-    class RenderCollectionFactory
+    class RenderCollectionFactory 
     {
     public:
+        struct PropEntries
+        {
+            const char* mName;
+            int mPropertyCount;
+        };
+
         //! Constructor
         //!\param alloc the allocator to use
         RenderCollectionFactory(Core::IApplicationContext* context, Alloc::IAllocator* alloc);
@@ -73,14 +79,13 @@ namespace Application
 
         //! Deletes a render collection
         void DeleteRenderCollection(RenderCollection* collection);
+
+        //! Finds the layout definition for this node, cached from property grid meta type system
+        //! \return pointer to entry describing the node's property layout
+        const PropEntries* FindNodeLayoutEntry(const char* nodeTypeName) const;
     
     private:
 
-        struct PropEntries
-        {
-            const char* mName;
-            int mPropertyCount;
-        };
 
         Utils::Vector<PropEntries> mPropLayoutEntries;
         
@@ -91,18 +96,17 @@ namespace Application
 
     //! container of all the node types. Used by timeline blocks.
     class RenderCollection {
+
+        friend RenderCollectionFactory;
+
     public:
         typedef int CollectionHandle;
         static const CollectionHandle INVALID_HANDLE = -1;
 
-        //! Constructor
-        //!\param alloc the allocator to use internally
-        //!\param context pointer to the application context
-        RenderCollection(Alloc::IAllocator* alloc, Core::IApplicationContext* context);
-
         //! Destructor
         ~RenderCollection();
         
+
         //! Adds a reference to a program
         //!\param the program pointer
         //!\return gets the handle of this program
@@ -246,6 +250,12 @@ namespace Application
         void Clean();
 
     private:
+
+        //! Constructor
+        //!\param alloc the allocator to use internally
+        //!\param context pointer to the application context
+        RenderCollection(Alloc::IAllocator* alloc, RenderCollectionFactory* factory, Core::IApplicationContext* context);
+
         //! internal memory allocator
         Alloc::IAllocator* mAlloc;
 
@@ -254,6 +264,9 @@ namespace Application
 
         //! internal implementation
         RenderCollectionImpl* mImpl;
+
+        //! factory pointer
+        RenderCollectionFactory* mFactory;
     };
 }
 

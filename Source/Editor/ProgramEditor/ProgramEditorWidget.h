@@ -27,6 +27,7 @@ class QSignalMapper;
 class QToolBar;
 class QTabBar;
 class QFocusEvent;
+class QStatusBar;
 
 namespace Pegasus
 {
@@ -65,6 +66,9 @@ public slots:
     //! Synchronizes the current program to the UI
     void SyncUiToProgram();
 
+    //! Posts a message to the status bar
+    void PostStatusBarMessage(const QString& message);
+
 
 signals:
     //! Sends a job to the render thread. This is connected in the application interface
@@ -102,6 +106,8 @@ private:
     QTabBar*       mTabBar;
     QWidget*       mMainWidget;
     QAction*       mSaveAction;
+    QStatusBar*    mStatusBar;
+    QString        mStatusBarMessage;
 
 protected slots:
     //! Triggered when a shader has been added / modified

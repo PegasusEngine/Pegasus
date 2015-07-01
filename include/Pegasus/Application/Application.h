@@ -123,15 +123,17 @@ public:
 
 
     // IWindowContext interface
-    virtual Io::IOManager*                   GetIOManager()          const { return mIoManager;          }
-    virtual Graph::NodeManager*              GetNodeManager()        const { return mNodeManager;        }
-    virtual Texture::TextureManager*         GetTextureManager()     const { return mTextureManager;     }
-    virtual Mesh::MeshManager*               GetMeshManager()        const { return mMeshManager;        }
-    virtual Shader::ShaderManager*           GetShaderManager()      const { return mShaderManager;      }
-    virtual Timeline::Timeline*              GetTimeline()           const { return mTimeline;           }
-    virtual BlockScript::BlockScriptManager* GetBlockScriptManager() const { return mBlockScriptManager; }
-    virtual AssetLib::AssetLib*              GetAssetLib()           const { return mAssetLib;           }
-    virtual Camera::CameraManager*           GetCameraManager()      const { return mCameraManager;      }
+    virtual Io::IOManager*                                  GetIOManager()               const { return mIoManager;               }
+    virtual Graph::NodeManager*                             GetNodeManager()             const { return mNodeManager;             }
+    virtual Texture::TextureManager*                        GetTextureManager()          const { return mTextureManager;          }
+    virtual Mesh::MeshManager*                              GetMeshManager()             const { return mMeshManager;             }
+    virtual Shader::ShaderManager*                          GetShaderManager()           const { return mShaderManager;           }
+    virtual Timeline::Timeline*                             GetTimeline()                const { return mTimeline;                }
+    virtual BlockScript::BlockScriptManager*                GetBlockScriptManager()      const { return mBlockScriptManager;      }
+    virtual AssetLib::AssetLib*                             GetAssetLib()                const { return mAssetLib;                }
+    virtual Camera::CameraManager*                          GetCameraManager()           const { return mCameraManager;           }
+    virtual Pegasus::Application::RenderCollectionFactory*  GetRenderCollectionFactory() const { return mRenderCollectionFactory; }
+    virtual PropertyGrid::PropertyGridManager*              GetPropertyGridManager()     const { return mPropertyGridManager;     }
 
 private:
     // No copies allowed
@@ -146,19 +148,21 @@ private:
     //! Creates and initializes asset factories and type ids
     void RegisterAssetLib();
 
-    bool mInitialized;                                    //!< Initialized flag
-    ApplicationConfig                mConfig;             //!< Cached config object
-    Render::IDevice*                 mDevice;             //!< Render device
-    AppWindowManager*                mWindowManager;      //!< Window manager
-    Io::IOManager*                   mIoManager;          //!< IO manager
-    Graph::NodeManager*              mNodeManager;        //!< Graph node manager
-    Shader::ShaderManager*           mShaderManager;      //!< Shader node manager
-    Texture::TextureManager*         mTextureManager;     //!< Texture node manager
-    Mesh::MeshManager*               mMeshManager;        //!< Mesh node manager
-    Timeline::Timeline*              mTimeline;           //!< Timeline object
-    BlockScript::BlockScriptManager* mBlockScriptManager; //!< BlockScriptManager manager.
-    AssetLib::AssetLib*              mAssetLib;           //!< AssetLib manager
-    Camera::CameraManager*           mCameraManager;      //!< Camera manager
+    bool mInitialized;                                                       //!< Initialized flag
+    ApplicationConfig                               mConfig;                 //!< Cached config object
+    Render::IDevice*                                mDevice;                 //!< Render device
+    AppWindowManager*                               mWindowManager;          //!< Window manager
+    Io::IOManager*                                  mIoManager;              //!< IO manager
+    Graph::NodeManager*                             mNodeManager;            //!< Graph node manager
+    Shader::ShaderManager*                          mShaderManager;          //!< Shader node manager
+    Texture::TextureManager*                        mTextureManager;         //!< Texture node manager
+    Mesh::MeshManager*                              mMeshManager;            //!< Mesh node manager
+    Timeline::Timeline*                             mTimeline;               //!< Timeline object
+    BlockScript::BlockScriptManager*                mBlockScriptManager;     //!< BlockScriptManager manager.
+    AssetLib::AssetLib*                             mAssetLib;               //!< AssetLib manager
+    Camera::CameraManager*                          mCameraManager;          //!< Camera manager
+    PropertyGrid::PropertyGridManager*              mPropertyGridManager;    //!< Property grid manager
+    Pegasus::Application::RenderCollectionFactory*  mRenderCollectionFactory;//!< Render collection factory
 };
 
 }   // namespace App

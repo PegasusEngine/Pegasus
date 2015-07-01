@@ -89,6 +89,11 @@ public:
     //! \return the program proxy to use
     virtual IProgramProxy* OpenProgram(AssetLib::IAssetProxy* asset);
 
+    //! creates a blank new program using a respective path as its file to be saved as
+    //! \param the path of the program to use.
+    //! \param the actual program name to use.
+    virtual IProgramProxy* CreateNewProgram(const char* programName);
+
     //! Closes a program.
     //! \param the program proxy to close
     virtual void CloseProgram(IProgramProxy* program);
@@ -117,7 +122,17 @@ public:
     //! Flushes a program to its containing asset.
     virtual void FlushProgramToAsset(IProgramProxy* program);
 
+    //! Binds a program node to an node.
+    //! \note  This means the runtime program passed now has a new owner.
+    //! unbinds anything if program has anything else binded. If asset is null, then we just unbind program
+    //! from anything in the hdd
+    //! \param program the program to bind to an asset
+    //! \param the asset to bind to.
+    virtual void BindProgramToAsset(IProgramProxy* program, AssetLib::IAssetProxy* asset);
+
 private:
+    //! keeps program alive into an internal pointer (opened)
+    void InternalOpenProgram(ProgramLinkageRef program);
 
     //! reference to internal program
     ShaderManager * mObject;

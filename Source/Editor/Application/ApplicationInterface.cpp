@@ -123,8 +123,14 @@ ApplicationInterface::ApplicationInterface(Application * application)
     connect(mAssetIoMessageController, SIGNAL(SignalOpenProgram(Pegasus::Shader::IProgramProxy*)),
             programEditor, SLOT(RequestOpenProgram(Pegasus::Shader::IProgramProxy*)), Qt::QueuedConnection); 
 
+    connect(mAssetIoMessageController, SIGNAL(SignalPostProgramMessage(const QString&)),
+            programEditor, SLOT(PostStatusBarMessage(const QString&)));
+
     connect(mAssetIoMessageController, SIGNAL(SignalOpenCode(Pegasus::Core::ISourceCodeProxy*)),
             codeEditorWidget,   SLOT(RequestOpen(Pegasus::Core::ISourceCodeProxy*)), Qt::QueuedConnection); 
+    
+    connect(mAssetIoMessageController, SIGNAL(SignalPostCodeMessage(const QString&)),
+            codeEditorWidget,   SLOT(PostStatusBarMessage(const QString&)));
 
     //<------  Source IO Controller -------->//
     //From ui to render

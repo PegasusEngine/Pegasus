@@ -41,6 +41,12 @@ namespace Pegasus {
     namespace AssetLib {
         class AssetLib;
     }
+    namespace Application {
+        class RenderCollectionFactory;
+    } 
+    namespace PropertyGrid {
+        class PropertyGridManager;
+    }
 }
 
 namespace Pegasus {
@@ -89,6 +95,14 @@ public:
     //! Gets the asset library
     //! \return AssetLibrary
     virtual AssetLib::AssetLib* GetAssetLib() const = 0;
+
+    //! Gets the factory for render collections (bundle of targets and resources)
+    //! \return Render Collection factory
+    virtual Application::RenderCollectionFactory* GetRenderCollectionFactory() const = 0;
+
+    //! Gets the property grid manager for this application
+    //! \return property grid manager for this application
+    virtual PropertyGrid::PropertyGridManager* GetPropertyGridManager() const = 0;
 };
 
 
