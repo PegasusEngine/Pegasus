@@ -75,10 +75,11 @@ public:
     //! returns the respective shader
     virtual Pegasus::Core::ISourceCodeProxy* GetSource(int id) { return GetShader(id); }
 
-    //! Loads a shader from an asset
+    //! Loads a shader from an asset. Keeps a reference to it to prevent deletion.
     //! \param the asset to use to load this proxy
+    //! \param sets parameter to true if the shader was already open. False otherwise
     //! \return the shader proxy to load
-    virtual IShaderProxy* OpenShader(AssetLib::IAssetProxy* asset);
+    virtual IShaderProxy* OpenShader(AssetLib::IAssetProxy* asset, bool* wasAlreadyOpen = nullptr);
 
     //! Closes a shader.
     //! \param the shader proxy to close

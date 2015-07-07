@@ -502,6 +502,86 @@ void SetRotationZT(Mat44InOut mat, PFloat32 angle);
 //void WriteMatToDebugOutputs(PFloat32 ** mat, PUInt32 nRows, PUInt32 nColumns);
 
 
+//@{
+//! Add a matrix to one another one
+//! \param m1 first param
+//! \param m2 second param
+//! \return result param
+inline Mat22Return operator + (Mat22In m1, Mat22In m2) { return Mat22(m1.m11+m2.m11, m1.m12+m2.m12,
+                                                                      m1.m21+m2.m21, m1.m22+m2.m22);  }
+inline Mat33Return operator + (Mat33In m1, Mat33In m2) { return Mat33(m1.m11+m2.m11, m1.m12+m2.m12, m1.m13+m2.m13,
+                                                                      m1.m21+m2.m21, m1.m22+m2.m22, m1.m23+m2.m23,
+                                                                      m1.m31+m2.m31, m1.m32+m2.m32, m1.m33+m2.m33);  }
+inline Mat44Return operator + (Mat44In m1, Mat44In m2) { return Mat44(m1.m11+m2.m11, m1.m12+m2.m12, m1.m13+m2.m13, m1.m14+m2.m14 ,
+                                                                      m1.m21+m2.m21, m1.m22+m2.m22, m1.m23+m2.m23, m1.m24+m2.m24 ,
+                                                                      m1.m31+m2.m31, m1.m32+m2.m32, m1.m33+m2.m33, m1.m34+m2.m34 ,
+                                                                      m1.m41+m2.m41, m1.m42+m2.m42, m1.m43+m2.m43, m1.m44+m2.m44 );  }
+//@}
+
+//@{
+//! Subtract a matrix to one another one
+//! \param m1 first param
+//! \param m2 second param
+//! \return result param
+inline Mat22Return operator - (Mat22In m1, Mat22In m2) { return Mat22(m1.m11-m2.m11, m1.m12-m2.m12,
+                                                                      m1.m21-m2.m21, m1.m22-m2.m22);  }
+inline Mat33Return operator - (Mat33In m1, Mat33In m2) { return Mat33(m1.m11-m2.m11, m1.m12-m2.m12, m1.m13-m2.m13,
+                                                                      m1.m21-m2.m21, m1.m22-m2.m22, m1.m23-m2.m23,
+                                                                      m1.m31-m2.m31, m1.m32-m2.m32, m1.m33-m2.m33);  }
+inline Mat44Return operator - (Mat44In m1, Mat44In m2) { return Mat44(m1.m11-m2.m11, m1.m12-m2.m12, m1.m13-m2.m13, m1.m14-m2.m14 ,
+                                                                      m1.m21-m2.m21, m1.m22-m2.m22, m1.m23-m2.m23, m1.m24-m2.m24 ,
+                                                                      m1.m31-m2.m31, m1.m32-m2.m32, m1.m33-m2.m33, m1.m34-m2.m34 ,
+                                                                      m1.m41-m2.m41, m1.m42-m2.m42, m1.m43-m2.m43, m1.m44-m2.m44 );  }
+//@}
+
+//@{
+//! Multiply a matrix to one another one
+//! \param m1 first param
+//! \param m2 second param
+//! \return result param
+inline Mat22Return operator * (Mat22In m1, Mat22In m2) { return Mat22(m1.m11*m2.m11, m1.m12*m2.m12,
+                                                                      m1.m21*m2.m21, m1.m22*m2.m22);  }
+inline Mat33Return operator * (Mat33In m1, Mat33In m2) { return Mat33(m1.m11*m2.m11, m1.m12*m2.m12, m1.m13*m2.m13,
+                                                                      m1.m21*m2.m21, m1.m22*m2.m22, m1.m23*m2.m23,
+                                                                      m1.m31*m2.m31, m1.m32*m2.m32, m1.m33*m2.m33);  }
+inline Mat44Return operator * (Mat44In m1, Mat44In m2) { return Mat44(m1.m11*m2.m11, m1.m12*m2.m12, m1.m13*m2.m13, m1.m14*m2.m14 ,
+                                                                      m1.m21*m2.m21, m1.m22*m2.m22, m1.m23*m2.m23, m1.m24*m2.m24 ,
+                                                                      m1.m31*m2.m31, m1.m32*m2.m32, m1.m33*m2.m33, m1.m34*m2.m34 ,
+                                                                      m1.m41*m2.m41, m1.m42*m2.m42, m1.m43*m2.m43, m1.m44*m2.m44 );  }
+//@}
+
+//@{
+//! Divide a matrix to one another one
+//! \param m1 first param
+//! \param m2 second param
+//! \return result param
+inline Mat22Return operator / (Mat22In m1, Mat22In m2) { return Mat22(m1.m11/m2.m11, m1.m12/m2.m12,
+                                                                      m1.m21/m2.m21, m1.m22/m2.m22);  }
+inline Mat33Return operator / (Mat33In m1, Mat33In m2) { return Mat33(m1.m11/m2.m11, m1.m12/m2.m12, m1.m13/m2.m13,
+                                                                      m1.m21/m2.m21, m1.m22/m2.m22, m1.m23/m2.m23,
+                                                                      m1.m31/m2.m31, m1.m32/m2.m32, m1.m33/m2.m33);  }
+inline Mat44Return operator / (Mat44In m1, Mat44In m2) { return Mat44(m1.m11/m2.m11, m1.m12/m2.m12, m1.m13/m2.m13, m1.m14/m2.m14 ,
+                                                                      m1.m21/m2.m21, m1.m22/m2.m22, m1.m23/m2.m23, m1.m24/m2.m24 ,
+                                                                      m1.m31/m2.m31, m1.m32/m2.m32, m1.m33/m2.m33, m1.m34/m2.m34 ,
+                                                                      m1.m41/m2.m41, m1.m42/m2.m42, m1.m43/m2.m43, m1.m44/m2.m44 );  }
+//@}
+
+//@{
+//! Unary negate a matrix
+//! \param m1 first param
+//! \param m2 second param
+//! \return result param
+inline Mat22Return operator - (Mat22In m1) { return Mat22(-m1.m11, -m1.m12,
+                                                          -m1.m21, -m1.m22);  }
+inline Mat33Return operator - (Mat33In m1) { return Mat33(-m1.m11, -m1.m12, -m1.m13,
+                                                          -m1.m21, -m1.m22, -m1.m23,
+                                                          -m1.m31, -m1.m32, -m1.m33);  }
+inline Mat44Return operator - (Mat44In m1) { return Mat44(-m1.m11, -m1.m12, -m1.m13, -m1.m14 ,
+                                                          -m1.m21, -m1.m22, -m1.m23, -m1.m24 ,
+                                                          -m1.m31, -m1.m32, -m1.m33, -m1.m34 ,
+                                                          -m1.m41, -m1.m42, -m1.m43, -m1.m44 );  }
+//@}
+
 }   // namespace Math
 }   // namespace Pegasus
 

@@ -50,6 +50,7 @@ void ProgramIOMessageController::OnRenderThreadRemoveShader(Pegasus::Shader::IPr
         {
             program->RemoveShader(i);
             emit SignalUpdateProgramView();
+            emit SignalRedrawViewports();
             break;
         }
     }
@@ -66,13 +67,18 @@ void ProgramIOMessageController::OnRenderThreadModifyShader(Pegasus::Shader::IPr
     {
         if (shaderManagerProxy->IsShader(asset))
         {
-            Pegasus::Shader::IShaderProxy* openedShader = shaderManagerProxy->OpenShader(asset);
+            bool wasShaderOpen = false;
+            Pegasus::Shader::IShaderProxy* openedShader = shaderManagerProxy->OpenShader(asset, &wasShaderOpen);
             if (openedShader != nullptr)
             {
                 program->SetShader(openedShader);                            
-                shaderManagerProxy->CloseShader(openedShader); //no need to keep this shader open
-                                                               //autoref should take care of it in the program
+                
+                if (!wasShaderOpen) //only close if this shader was never open to avoid destroying memory
+                {
+                    shaderManagerProxy->CloseShader(openedShader); //no need to keep this shader open
+                }
                 emit SignalUpdateProgramView();
+                emit SignalRedrawViewports();
             }
         }
         else

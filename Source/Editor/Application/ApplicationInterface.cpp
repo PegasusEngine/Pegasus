@@ -155,6 +155,8 @@ ApplicationInterface::ApplicationInterface(Application * application)
             assetLibraryWidget, SLOT(DisableProgramShaderViews()));
 
     //<------  Program IO Controller -------->//
+    connect(mProgramIoMessageController, SIGNAL(SignalRedrawViewports()),
+            this, SLOT(RedrawAllViewports()), Qt::DirectConnection);
     connect(programEditor, SIGNAL(SendProgramIoMessage(ProgramIOMessageController::Message)),
             this, SLOT(ForwardProgramIoMessage(ProgramIOMessageController::Message)));
     connect(mProgramIoMessageController, SIGNAL(SignalUpdateProgramView()),

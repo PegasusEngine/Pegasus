@@ -59,10 +59,11 @@ public:
     //! \return shader proxy
     virtual IShaderProxy* GetShader(int id) = 0; 
 
-    //! Opens a shader from an asset building its runtime data
+    //! Loads a shader from an asset. Keeps a reference to it to prevent deletion.
     //! \param the asset to use to load this proxy
+    //! \param sets parameter to true if the shader was already open. False otherwise
     //! \return the shader proxy to load
-    virtual IShaderProxy* OpenShader(AssetLib::IAssetProxy* asset) = 0;
+    virtual IShaderProxy* OpenShader(AssetLib::IAssetProxy* asset, bool* wasAlreadyOpen = nullptr) = 0;
 
     //! Closes a shader.
     //! \param the shader proxy to close

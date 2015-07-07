@@ -118,6 +118,15 @@ void SaveExpression(void* location, Ast::Exp* exp, BsVmState& state)
     {
         switch(expType->GetAluEngine())
         {
+        case TypeDesc::E_MATRIX4x4:
+            *reinterpret_cast<Math::Mat44*>(location) = gMat44ExpEngine.Eval(exp, state);
+            break;
+        case TypeDesc::E_MATRIX3x3:
+            *reinterpret_cast<Math::Mat33*>(location) = gMat33ExpEngine.Eval(exp, state);
+            break;
+        case TypeDesc::E_MATRIX2x2:
+            *reinterpret_cast<Math::Mat22*>(location) = gMat22ExpEngine.Eval(exp, state);
+            break;
         case TypeDesc::E_FLOAT4:
             *reinterpret_cast<Math::Vec4*>(location) = gFloat4ExpEngine.Eval(exp, state);
             break;

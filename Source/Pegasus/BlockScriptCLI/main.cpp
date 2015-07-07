@@ -18,11 +18,28 @@
 #include "Pegasus/Core/Assertion.h"
 #include "Pegasus/BlockScript/Container.h"
 #include "Pegasus/BlockScript/BlockScriptManager.h"
+#include "Pegasus/BlockScript/IBlockScriptCompilerListener.h"
 #include <stdio.h>
 
 using namespace Pegasus::Io;
 using namespace Pegasus::Memory;
 using namespace Pegasus::Core;
+
+class CompilerEventListener : public Pegasus::BlockScript::IBlockScriptCompilerListener
+{
+public:
+    virtual void OnCompilationBegin()
+    {}
+    
+    virtual void OnCompilationError(int line, const char* errorMessage, const char* token)
+    {
+        printf("%d: '%s'\n", line ,errorMessage);
+    }
+    
+    virtual void OnCompilationEnd(bool success)
+    {}
+} gCompilerEventListener;
+
 
 void LogHandler(LogChannel channel, const char * msg)
 {
@@ -131,8 +148,8 @@ void printHelp()
     printf("usage: BlockScriptCLI.exe <bs_script> [<options>]\n");
     printf("Available options:\n");
     printf("-h print this help menu.\n");
-    printf("-a print abstract syntax tree (ast).\n");
-    printf("-t print the assembly.\n");
+    printf("-a print assembly.\n");
+    printf("-t print the abstract syntax tree.\n");
     printf("-n Do not attempt to run the program.\n");
 }
 
@@ -175,6 +192,7 @@ int main(int argc, char* argv[])
 		    if (err == ERR_NONE)
             {
                 Pegasus::BlockScript::BlockScript* bs = bsManager.CreateBlockScript();
+                bs->SetCompilerEventListener(&gCompilerEventListener);
                 bool res = bs->Compile(&fb);
 	
                 if (!res)

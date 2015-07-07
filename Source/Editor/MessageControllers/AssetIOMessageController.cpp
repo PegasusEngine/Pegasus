@@ -266,11 +266,10 @@ void AssetIOMessageController::OnRenderRequestNewProgram(const QString& path)
         int indexOfSlash = path.lastIndexOf('/');
         int indexOfBackSlash = path.lastIndexOf('\\');
 
-        int beginIndex = indexOfSlash > indexOfBackSlash ? indexOfSlash : indexOfBackSlash;
-        beginIndex = beginIndex < 0 ? 0 : beginIndex;
+        int beginIndex = (indexOfSlash > indexOfBackSlash ? indexOfSlash : indexOfBackSlash);
         int endIndex = indexOfDot <= path.length() - 1 ? indexOfDot : path.length() - 1;
         QString programName = tr("unnamed");
-        programName = path.mid(beginIndex, endIndex - beginIndex + 1);
+        programName = path.mid(beginIndex + 1, endIndex - beginIndex);
 
         Pegasus::Shader::IShaderManagerProxy* shaderMgr = mApp->GetShaderManagerProxy();
         QByteArray ba = programName.toLocal8Bit();

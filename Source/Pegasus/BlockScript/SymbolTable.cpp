@@ -82,7 +82,7 @@ TypeDesc* SymbolTable::InternalCreateType(
     TypeDesc::Modifier modifier,
     const char * name,
     TypeDesc* child,
-    int modifierProperty,
+    TypeDesc::ModifierProperty modifierProperty,
     TypeDesc::AluEngine engine,
     BlockScript::Ast::StmtStructDef* structDef,
     EnumNode* enumNode ,
@@ -100,29 +100,33 @@ TypeDesc* SymbolTable::CreateScalarType(const char* name, TypeDesc::AluEngine al
         TypeDesc::M_SCALAR,
         name,
         nullptr, //no child
-        0, //no modifier property
+        TypeDesc::ModifierProperty(), //no modifier property
         aluEngine
     );
 }
 
 TypeDesc* SymbolTable::CreateVectorType(const char* name, TypeDesc* childType, int vectorSize, TypeDesc::AluEngine aluEngine)
 {
+    TypeDesc::ModifierProperty modProp;
+    modProp.VectorSize = vectorSize;
     return InternalCreateType(
         TypeDesc::M_VECTOR,
         name,
         childType,
-        vectorSize, 
+        modProp, 
         aluEngine
     );
 }
 
 TypeDesc* SymbolTable::CreateObjectType(const char* name, PropertyNode* propertyList, GetObjectPropertyRuntimePtrCallback getPropertyCallback)
 {
+    TypeDesc::ModifierProperty modProp;
+    modProp.ArraySize = 0;
     return InternalCreateType(
         TypeDesc::M_REFERECE,
         name,
         nullptr, // no child
-        0, //no modifier
+        modProp, //no modifier
         TypeDesc::E_NONE, //no alu engine
         nullptr, //no struct def
         nullptr, //no enum definition
@@ -137,7 +141,7 @@ TypeDesc* SymbolTable::CreateEnumType(const char* name, EnumNode* enumNode)
         TypeDesc::M_ENUM,
         name,
         nullptr, //no children
-        0, //no modifier property
+        TypeDesc::ModifierProperty(), //no modifier property
         TypeDesc::E_NONE, //no alu engine
         nullptr, //no struct definition
         enumNode
@@ -150,7 +154,7 @@ TypeDesc* SymbolTable::CreateStructType(const char* name, Pegasus::BlockScript::
         TypeDesc::M_STRUCT,
         name,
         nullptr, //no children
-        0, //no modifier property
+        TypeDesc::ModifierProperty(), //no modifier property
         TypeDesc::E_NONE, //no alu engine
         def //no struct definition
     );
@@ -166,11 +170,13 @@ TypeDesc* SymbolTable::CreateStarType()
 
 TypeDesc* SymbolTable::CreateArrayType(const char* name, TypeDesc* childType, int count)
 {
+    TypeDesc::ModifierProperty modProp; 
+    modProp.ArraySize = count;
     return InternalCreateType(
         TypeDesc::M_ARRAY,
         name,
         childType,
-        count
+        modProp
     );
 }
 

@@ -92,6 +92,8 @@ signals:
     //! Signal triggered when the UI needs to update the active node views
     void SignalUpdateProgramView();
 
+    //! Signal triggered when a redraw of the viewport is requested
+    void SignalRedrawViewports();
 
 private:
 

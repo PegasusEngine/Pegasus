@@ -309,9 +309,8 @@ void Canonizer::HandleArrayAccessOperator(Binop* n)
     Imm* imm = CANON_NEW Imm(v);
     imm->SetTypeDesc(rhs->GetTypeDesc());
 
-    if (lhs->GetExpType() == Binop::sType)
+    if (lhs->GetExpType() == Binop::sType && static_cast<Binop*>(lhs)->GetOp() == O_ACCESS)
     {
-        PG_ASSERT(static_cast<Binop*>(lhs)->GetOp() == O_ACCESS);
         Binop* lhsBinop = static_cast<Binop*>(lhs);
         PG_ASSERT(lhsBinop->GetRhs()->GetTypeDesc()->GetAluEngine() == TypeDesc::E_INT);
 
@@ -329,7 +328,12 @@ void Canonizer::HandleArrayAccessOperator(Binop* n)
     }
     else
     {
-        PG_ASSERT(lhs->GetExpType() == Idd::sType);
+        if (lhs->GetExpType() == Binop::sType)
+        {
+            Idd* t = AllocateTemporal(lhs->GetTypeDesc());
+            PushCanon(CANON_NEW Move(t, lhs));
+            lhs = t;
+        }
         rhs->Access(this);
         rhs = mRebuiltExpression;
         Exp* offsetExp = CANON_NEW Binop(imm, O_MUL, rhs);
@@ -649,7 +653,7 @@ void Canonizer::HandleDotOperator(Binop* n)
     }
     else if (newLhs->GetExpType() == Binop::sType && (static_cast<Binop*>(newLhs)->GetOp() == O_ACCESS))
     {
-        PG_ASSERT(static_cast<Binop*>(newLhs)->GetLhs()->GetTypeDesc()->GetModifier() == TypeDesc::M_ARRAY);
+        PG_ASSERT(static_cast<Binop*>(newLhs)->GetLhs()->GetTypeDesc()->GetModifier() == TypeDesc::M_ARRAY || static_cast<Binop*>(newLhs)->GetLhs()->GetTypeDesc()->GetModifier() == TypeDesc::M_VECTOR);
         
         Binop* lhsBinop = static_cast<Binop*>(newLhs);
         

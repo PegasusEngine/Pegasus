@@ -305,7 +305,7 @@ void PrettyPrint::PrintType(const TypeDesc* type)
     else
     {
         PrintType(type->GetChild());
-        mStr("["); mInt(type->GetModifierProperty()); mStr("]");
+        mStr("["); mInt(type->GetModifierProperty().ArraySize); mStr("]");
     }
 }
 

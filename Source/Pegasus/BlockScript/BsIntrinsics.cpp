@@ -17,7 +17,9 @@
 #include "Pegasus/BlockScript/BlockLib.h"
 #include "Pegasus/BlockScript/BsVm.h"
 #include "Pegasus/Utils/String.h"
+#include "Pegasus/Utils/Memcpy.h"
 #include "Pegasus/Math/Vector.h"
+#include "Pegasus/Math/Matrix.h"
 #include "Pegasus/Core/Log.h"
 
 using namespace Pegasus;
@@ -27,6 +29,16 @@ using namespace Pegasus::BlockScript::Ast;
 //Intrinsic functions for vectors
 namespace Private_VectorConstructors
 {
+
+template<int sz>
+void ConstructMatrixN_by_N(FunCallbackContext& context)
+{
+    PG_ASSERTSTR(context.GetInputBufferSize() == sizeof(float)*sz, "Size of input buffer: %d", context.GetInputBufferSize());
+    PG_ASSERTSTR(context.GetOutputBufferSize() == sizeof(float)*sz, "Size of output buffer: %d", context.GetOutputBufferSize());
+    void* argin = context.GetRawInputBuffer();
+    void* argout = context.GetRawOutputBuffer();
+    Utils::Memcpy(argout, argin, context.GetInputBufferSize());
+}
 
 void ConstructFloat4_float_float_float_float(FunCallbackContext& context)
 {
@@ -252,6 +264,51 @@ void Echo_Float(FunCallbackContext& context)
 
 }
 
+namespace Private_Math
+{
+    template<class T>
+    void Lerp(FunCallbackContext& context)
+    {
+        FunParamStream stream(context);
+        T& a = stream.NextArgument<T>();
+        T& b = stream.NextArgument<T>();
+        float t = stream.NextArgument<float>();
+        stream.SubmitReturn<T>(Math::Lerp(a,b,t));
+    }
+
+    template<class V, class M, void MULF(V&, const M&, const V&)>
+    void Mul(FunCallbackContext& context)   
+    {
+        FunParamStream stream(context);
+        M& m = stream.NextArgument<M>();
+        V& t = stream.NextArgument<V>();
+        PG_ASSERT(sizeof(V) == context.GetOutputBufferSize());
+        V* r = static_cast<V*>(context.GetRawOutputBuffer());
+        MULF(*r, m, t);
+    }
+
+    template<class T>
+    void Dot(FunCallbackContext& context)
+    {
+        FunParamStream stream(context);
+        T& v1 = stream.NextArgument<T>();
+        T& v2 = stream.NextArgument<T>();
+        stream.SubmitReturn<float>(Math::Dot(v1,v2));
+    }
+
+    template<class T>
+    void Cross(FunCallbackContext& context)
+    {
+        FunParamStream stream(context); 
+        T& v1 = stream.NextArgument<T>();
+        T& v2 = stream.NextArgument<T>(); 
+        stream.SubmitReturn<T>(Math::Cross(v1, v2));
+    }
+}
+
+// Intrinsic functions for math
+
+
 static void RegisterIntrinsicTypes(BlockLib* lib)
 {
     SymbolTable* symbolTable = lib->GetSymbolTable();
@@ -267,19 +324,19 @@ static void RegisterIntrinsicTypes(BlockLib* lib)
 
     char fStr[25];
     fStr[0] = '\0';
-    char iStr[25];
-    iStr[0] = '\0';
+    char mStr[25];
+    mStr[0] = '\0';
+    
     Utils::Strcat(fStr, "float");
-    Utils::Strcat(iStr, "int");
     int fStrLen = Utils::Strlen(fStr);
-    int iStrLen = Utils::Strlen(iStr);
+    Utils::Strcat(mStr, "float");
+    int mStrLen = Utils::Strlen(mStr);
+    
     PG_ASSERT(BlockScript::Ast::gMaxAluDimensions < 10); //only 1 digit numbers
     for (int i = 2; i <= BlockScript::Ast::gMaxAluDimensions; ++i)
     {
         fStr[fStrLen] = i + '0';
-        iStr[iStrLen] = i + '0';
         fStr[fStrLen+1] = '\0';
-        iStr[iStrLen+1] = '\0';
         TypeDesc* t1 = symbolTable->CreateVectorType(
             fStr,
             floatT,
@@ -287,6 +344,17 @@ static void RegisterIntrinsicTypes(BlockLib* lib)
             static_cast<TypeDesc::AluEngine>(TypeDesc::E_FLOAT + i - 1)
         );
 
+        //float4x4
+        mStr[mStrLen] = i + '0';
+        mStr[mStrLen + 1] = 'x';
+        mStr[mStrLen + 2] = i + '0';
+        mStr[mStrLen + 3] = '\0';
+        symbolTable->CreateVectorType(
+            mStr,
+            t1,
+            i,
+            static_cast<TypeDesc::AluEngine>(TypeDesc::E_MATRIX2x2 + i - 2)
+        );
     }
 
     symbolTable->CreateObjectType("string",nullptr,nullptr);
@@ -320,9 +388,55 @@ void Pegasus::BlockScript::RegisterIntrinsics(BlockLib* lib)
         {"echo",   "int",     {"string", nullptr},                           {"input", nullptr},            Private_Utilities::Echo_String },
         {"echo",   "int",     {"int", nullptr},                              {"input", nullptr},            Private_Utilities::Echo_Int },
         {"echo",   "int",     {"float", nullptr},                            {"input", nullptr},            Private_Utilities::Echo_Float },
+        ///////////////////////////////////////////float4x4///////////////////////////////////////////////////////////////
+        { "float4x4", "float4x4", {"float4", "float4", "float4", "float4", nullptr}, {"col_x", "col_y", "col_z", "col_w", nullptr}, Private_VectorConstructors::ConstructMatrixN_by_N<16>},
+        { "float4x4", "float4x4", {"float", "float", "float", "float", 
+                               "float", "float", "float", "float", 
+                               "float", "float", "float", "float", 
+                               "float", "float", "float", "float", nullptr}, 
+                              {"m11", "m12", "m13", "m14",
+                               "m21", "m22", "m23", "m24",
+                               "m31", "m32", "m33", "m34",
+                               "m41", "m42", "m43", "m44",  nullptr}, Private_VectorConstructors::ConstructMatrixN_by_N<16> },
+        ///////////////////////////////////////////float3x3///////////////////////////////////////////////////////////////
+        { "float3x3", "float3x3", {"float3", "float3", "float3", nullptr}, {"col_x", "col_y", "col_z", nullptr}, Private_VectorConstructors::ConstructMatrixN_by_N<9> },
+        { "float3x3", "float3x3", {"float", "float", "float", 
+                               "float", "float", "float", 
+                               "float", "float", "float", nullptr}, 
+                              {"m11", "m12", "m13",
+                               "m21", "m22", "m23",
+                               "m41", "m42", "m43", nullptr}, Private_VectorConstructors::ConstructMatrixN_by_N<9> },
+        ///////////////////////////////////////////float2x2///////////////////////////////////////////////////////////////
+        { "float2x2", "float2x2", {"float2", "float2", nullptr}, {"x", "y", nullptr}, Private_VectorConstructors::ConstructMatrixN_by_N<4> },
+        { "float2x2", "float2x2", {"float", "float", 
+                               "float", "float", nullptr}, 
+                              {"m11", "m12",
+                               "m41", "m42", nullptr}, Private_VectorConstructors::ConstructMatrixN_by_N<4> },
     };
 
-     lib->CreateIntrinsicFunctions(funConstructors, sizeof(funConstructors) / sizeof(funConstructors[0])); 
+    lib->CreateIntrinsicFunctions(funConstructors, sizeof(funConstructors) / sizeof(funConstructors[0])); 
+
+    //Register Math intrinsics
+    const Pegasus::BlockScript::FunctionDeclarationDesc mathFuncs[] =
+    {
+        //*funName | retType | argsTypes                                   |  argNames                    | callback
+        ///////////////////////////////////////////DOT///////////////////////////////////////////////////////////////
+        { "dot", "float",  { "float4",  "float4", nullptr}, {"x", "y", nullptr}, Private_Math::Dot<Math::Vec4>},
+        { "dot", "float",  { "float3",  "float3", nullptr}, {"x", "y", nullptr}, Private_Math::Dot<Math::Vec3>},
+        { "dot", "float",  { "float2",  "float2", nullptr}, {"x", "y", nullptr}, Private_Math::Dot<Math::Vec2>},
+        ///////////////////////////////////////////LERP///////////////////////////////////////////////////////////////
+        { "lerp", "float",  { "float",  "float",  "float",  nullptr}, {"x", "y", "t", nullptr}, Private_Math::Lerp<float>},
+        { "lerp", "float4", { "float4", "float4", "float",  nullptr}, {"x", "y", "t", nullptr}, Private_Math::Lerp<Math::Vec4>},
+        { "lerp", "float3", { "float3", "float3", "float",  nullptr}, {"x", "y", "t", nullptr}, Private_Math::Lerp<Math::Vec3>},
+        { "lerp", "float2", { "float2", "float2", "float",  nullptr}, {"x", "y", "t", nullptr}, Private_Math::Lerp<Math::Vec2>},
+        ///////////////////////////////////////////MUL///////////////////////////////////////////////////////////////
+        { "mul", "float4", { "float4x4", "float4", nullptr}, {"x", "y", nullptr}, Private_Math::Mul<Math::Vec4, Math::Mat44, Math::Mult44_41>},
+        { "mul", "float3", { "float3x3", "float3", nullptr}, {"x", "y", nullptr}, Private_Math::Mul<Math::Vec3, Math::Mat33, Math::Mult33_31>},
+        { "mul", "float2", { "float2x2", "float2", nullptr}, {"x", "y", nullptr}, Private_Math::Mul<Math::Vec2, Math::Mat22, Math::Mult22_21>},
+        ///////////////////////////////////////////CROSS///////////////////////////////////////////////////////////////
+        { "cross", "float3", { "float3", "float3", nullptr}, {"x", "y", nullptr}, Private_Math::Cross<Math::Vec3>}
+    };
         
+    lib->CreateIntrinsicFunctions(mathFuncs, sizeof(mathFuncs) / sizeof(mathFuncs[0])); 
 }
 

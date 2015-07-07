@@ -63,7 +63,7 @@ void Pegasus::Shader::ShaderManagerProxy::RegisterEventListener(Pegasus::Core::C
 #endif
 }
 
-Pegasus::Shader::IShaderProxy* Pegasus::Shader::ShaderManagerProxy::OpenShader(AssetLib::IAssetProxy* asset)
+Pegasus::Shader::IShaderProxy* Pegasus::Shader::ShaderManagerProxy::OpenShader(AssetLib::IAssetProxy* asset, bool* outWasShaderOpen)
 {
     const char* ext = Utils::Strrchr(asset->GetPath(), '.');
     Pegasus::Shader::ShaderSourceRef shader = (ext != nullptr && !Utils::Strcmp(ext, ".h")) ?
@@ -75,10 +75,12 @@ Pegasus::Shader::IShaderProxy* Pegasus::Shader::ShaderManagerProxy::OpenShader(A
         if (&(*shaderCandidate) == &(*shader))
         {
             //found the shader, dont add it to the list, just return it
+            if (outWasShaderOpen != nullptr) *outWasShaderOpen = true;
             return shader->GetProxy();
         }
     }
     mOpenedShaders.PushEmpty() = shader; //add a reference
+    if (outWasShaderOpen != nullptr) *outWasShaderOpen = false;
     return shader->GetProxy();
 }
 

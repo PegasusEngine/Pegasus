@@ -41,7 +41,7 @@ TypeDesc* TypeTable::CreateType(
     TypeDesc::Modifier modifier,
     const char * name,
     TypeDesc* child,
-    int modifierProperty,
+    TypeDesc::ModifierProperty modifierProperty,
     TypeDesc::AluEngine engine,
     Pegasus::BlockScript::Ast::StmtStructDef* structDef,
     EnumNode* enumNode,
@@ -72,7 +72,6 @@ TypeDesc* TypeTable::CreateType(
             }
         }
     }
-
 
     int idx = mTypeDescPool.Size();
     TypeDesc& newDesc = mTypeDescPool.PushEmpty();

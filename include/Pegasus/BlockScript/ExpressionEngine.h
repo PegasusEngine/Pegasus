@@ -17,6 +17,7 @@
 #include "Pegasus/BlockScript/BlockScriptAst.h"
 #include "Pegasus/BlockScript/bs.parser.hpp"
 #include "Pegasus/Math/Vector.h"
+#include "Pegasus/Math/Matrix.h"
 #include "Pegasus/Core/Assertion.h"
 
 extern int* GetIddMem(Pegasus::BlockScript::Ast::Idd* idd, Pegasus::BlockScript::BsVmState& state);
@@ -50,6 +51,9 @@ private:
 
 typedef ExpressionEngine<int>   ExpressionEngine_Int;
 typedef ExpressionEngine<float> ExpressionEngine_Float;
+typedef ExpressionEngine<Pegasus::Math::Mat44> ExpressionEngine_Mat44;
+typedef ExpressionEngine<Pegasus::Math::Mat33> ExpressionEngine_Mat33;
+typedef ExpressionEngine<Pegasus::Math::Mat22> ExpressionEngine_Mat22;
 typedef ExpressionEngine<Pegasus::Math::Vec4> ExpressionEngine_Float4;
 typedef ExpressionEngine<Pegasus::Math::Vec3> ExpressionEngine_Float3;
 typedef ExpressionEngine<Pegasus::Math::Vec2> ExpressionEngine_Float2;
@@ -60,6 +64,9 @@ ExpressionEngine_Float  gFloatExpEngine;
 ExpressionEngine_Float2 gFloat2ExpEngine;
 ExpressionEngine_Float3 gFloat3ExpEngine;
 ExpressionEngine_Float4 gFloat4ExpEngine;
+ExpressionEngine_Mat22 gMat22ExpEngine;
+ExpressionEngine_Mat33 gMat33ExpEngine;
+ExpressionEngine_Mat44 gMat44ExpEngine;
 
 
 }

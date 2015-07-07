@@ -15,6 +15,7 @@
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Core/Assertion.h"
 #include "Pegasus/BlockScript/BlockScriptAst.h"
+#include "Pegasus/BlockScript/BlockScriptCanon.h"
 
 using namespace Pegasus;
 using namespace Pegasus::BlockScript;
@@ -25,7 +26,6 @@ TypeDesc::TypeDesc()
 mModifier(M_INVALID),
 mAluEngine(E_NONE),
 mChild(nullptr),
-mModifierProperty(0),
 mStructDef(nullptr),
 mEnumNode(nullptr),
 mPropertyNode(nullptr),
@@ -58,7 +58,7 @@ bool TypeDesc::Equals(const TypeDesc* other) const
                 mModifier == other->mModifier &&
                 mAluEngine == other->mAluEngine &&
                 ((mChild == nullptr && other->mChild == nullptr) || (mChild != nullptr && other->mChild != nullptr && mChild->Equals(other->mChild))) &&
-                mModifierProperty == other->mModifierProperty &&
+                mModifierProperty.ArraySize == other->mModifierProperty.ArraySize &&
                 mByteSize == other->mByteSize
             );
 }
@@ -139,15 +139,15 @@ bool TypeDesc::ComputeSize()
     case TypeDesc::M_SCALAR:
     case TypeDesc::M_ENUM:
     case TypeDesc::M_REFERECE:
-        mByteSize = 4; //4 bytes for scalars, enums, object refs and imms
+        mByteSize = CANON_REGISTER_BYTESIZE; //4 bytes for scalars, enums, object refs and imms
         return true;
     case TypeDesc::M_VECTOR:
-        mByteSize = 4 * GetModifierProperty();
+        mByteSize = GetChild()->GetByteSize() * GetModifierProperty().VectorSize;
         return true;
     case TypeDesc::M_ARRAY:
         {
             if (GetChild() != nullptr) GetChild()->ComputeSize();
-            mByteSize = GetModifierProperty() * GetChild()->GetByteSize(); //4 bytes for reference.
+            mByteSize = GetModifierProperty().ArraySize * GetChild()->GetByteSize(); //4 bytes for reference.
             return true;
         }
     case TypeDesc::M_STRUCT:

@@ -20,18 +20,6 @@
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Mesh/MeshManager.h"
 
-#if PEGASUS_GAPI_GL
-
-static const char * VERTEX_SHADER = "Shaders\\glsl\\TextureTest.vs";
-static const char * FRAGMENT_SHADER = "Shaders\\glsl\\TextureTest.ps";
-
-#elif PEGASUS_GAPI_DX
-
-static const char * VERTEX_SHADER = "Shaders\\hlsl\\TextureTest.vs";
-static const char * FRAGMENT_SHADER = "Shaders\\hlsl\\TextureTest.ps";
-
-#endif
-
 //----------------------------------------------------------------------------------------
     
 TextureTestBlock::TextureTestBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Core::IApplicationContext* appContext)
@@ -56,11 +44,7 @@ void TextureTestBlock::Initialize()
 
     // Set up shaders
     Pegasus::Shader::ShaderManager * const shaderManager = GetShaderManager();
-    mProgram = shaderManager->CreateProgram("TextureTest");
-
-    mProgram->SetShaderStage( shaderManager->LoadShader(VERTEX_SHADER) );
-
-    mProgram->SetShaderStage( shaderManager->LoadShader(FRAGMENT_SHADER) );
+    mProgram = shaderManager->LoadProgram("Programs/TextureTest.pas");
 
     // Force a compilation of the shaders
     bool updated = false;
@@ -96,15 +80,6 @@ void TextureTestBlock::Initialize()
     CreateTextureGradient2();
     CreateTextureAdd1();
     CreateTextureAdd2();
-
-    // Create the sampler object
-    //mTextureSampler = 0;
-    //glGenSamplers(1, &mTextureSampler);
-    //glBindSampler(0, mTextureSampler);
-    //glSamplerParameteri(mTextureSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    //glSamplerParameteri(mTextureSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    //glSamplerParameteri(mTextureSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    //glSamplerParameteri(mTextureSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
 //----------------------------------------------------------------------------------------

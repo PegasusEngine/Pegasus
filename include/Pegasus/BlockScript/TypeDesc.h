@@ -109,7 +109,29 @@ public:
         E_FLOAT,
         E_FLOAT2,
         E_FLOAT3,
-        E_FLOAT4
+        E_FLOAT4,
+        E_MATRIX2x2,
+        E_MATRIX3x3,
+        E_MATRIX4x4,
+        E_COUNT
+    };
+
+    union ModifierProperty
+    {
+        int ArraySize;
+        int VectorSize;
+        int ReferenceByteSize;
+        ModifierProperty() : ArraySize(0) {}
+
+        bool operator == (const ModifierProperty& other) const
+        {
+            return ArraySize == other.ArraySize;
+        }
+
+        bool operator == (const ModifierProperty& other)
+        {
+            return ArraySize == other.ArraySize;
+        }
     };
 
     //! sets the modifier type of this type
@@ -145,17 +167,12 @@ public:
     void SetStructDef(Ast::StmtStructDef* structDef) { mStructDef = structDef; }
 
     //! Sets a polymorphic property of modifiers:
-    //! M_SCALAR - unused
-    //! M_VECTOR - vector size
-    //! M_REFERENCE - unused
-    //! M_ARRAY - array size
-    //! M_TREE  - the underlying byte size
-    //! \param prop the property that has been used. 0 when unused
-    void SetModifierProperty(int prop) { mModifierProperty = prop; }
+    //! \param prop the property that has been used.
+    void SetModifierProperty(ModifierProperty& prop) { mModifierProperty = prop; }
 
     //! Gets the modifier property of this type
     //! \return the polymorphic property of this type
-    int  GetModifierProperty() const { return mModifierProperty; }
+    const ModifierProperty& GetModifierProperty() const { return mModifierProperty; }
 
     //! Sets the byte size of a type
     void SetByteSize(int byteSize) { mByteSize = byteSize; }
@@ -205,7 +222,7 @@ private:
     EnumNode*           mEnumNode;
     PropertyNode*       mPropertyNode;
     GetObjectPropertyRuntimePtrCallback mPropertyCallback;
-    int        mModifierProperty;
+    ModifierProperty    mModifierProperty;
     int        mByteSize;
 };
 

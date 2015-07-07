@@ -14,18 +14,6 @@
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Mesh/MeshManager.h"
 
-#if PEGASUS_GAPI_GL
-
-static const char * VERTEX_SHADER = "Shaders\\glsl\\Cubefractal.vs";
-static const char * FRAGMENT_SHADER = "Shaders\\glsl\\CubeFractal.ps";
-
-#elif PEGASUS_GAPI_DX
-
-static const char * VERTEX_SHADER = "Shaders\\hlsl\\Cubefractal.vs";
-static const char * FRAGMENT_SHADER = "Shaders\\hlsl\\CubeFractal.ps";
-
-#endif
-
 //----------------------------------------------------------------------------------------
 
 FractalCubeBlock::FractalCubeBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Core::IApplicationContext* appContext)
@@ -49,11 +37,7 @@ void FractalCubeBlock::Initialize()
     mQuad->SetGeneratorInput(quadGenerator);
 
     // Set up shaders
-    Pegasus::Shader::ShaderManager * const shaderManager = GetShaderManager();
-    mProgram = shaderManager->CreateProgram("FractalCube");
-
-    mProgram->SetShaderStage( shaderManager->LoadShader(VERTEX_SHADER) );
-    mProgram->SetShaderStage( shaderManager->LoadShader(FRAGMENT_SHADER) );
+    mProgram = GetShaderManager()->LoadProgram("Programs/FractalCube.pas");
 
     // Force a compilation of the shaders
     bool updated = false;

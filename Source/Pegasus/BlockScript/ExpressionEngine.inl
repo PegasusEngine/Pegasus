@@ -45,7 +45,7 @@ template<class IntrinsicType> void ExpressionEngine<IntrinsicType>::Visit(Ast::E
 template<class IntrinsicType> IntrinsicType* ExpressionEngine<IntrinsicType>::GetArrayReference(Ast::Exp* lhs, Ast::Exp* rhs)
 {
     PG_ASSERT(lhs->GetExpType() == Ast::Idd::sType);
-    PG_ASSERT(lhs->GetTypeDesc()->GetModifier() == TypeDesc::M_ARRAY);
+    PG_ASSERT(lhs->GetTypeDesc()->GetModifier() == TypeDesc::M_ARRAY || lhs->GetTypeDesc()->GetModifier() == TypeDesc::M_VECTOR);
 
     Ast::Idd* lhsIdd = static_cast<Ast::Idd*>(lhs);
     int rhsOffset = gIntExpEngine.Eval(rhs, *mState);

@@ -455,11 +455,14 @@ void CodeEditorWidget::RequestClose(int index)
     --mOpenCodeCount;
     mUi.mTabWidget->removeTab(index);
 
-    //send a message to the render thread to close this code safely
-    AssetIOMessageController::Message msg;
-    msg.SetMessageType(AssetIOMessageController::Message::CLOSE_CODE);
-    msg.GetAssetNode().mCode = codeToClose->GetSourceCode();
-    emit(SendAssetIoMessage(msg));
+    if (codeToClose->GetSourceCode() != nullptr) //if its null, means we closed it already internally
+    {
+        //send a message to the render thread to close this code safely
+        AssetIOMessageController::Message msg;
+        msg.SetMessageType(AssetIOMessageController::Message::CLOSE_CODE);
+        msg.GetAssetNode().mCode = codeToClose->GetSourceCode();
+        emit(SendAssetIoMessage(msg));
+    }
 
 }
 

@@ -264,7 +264,7 @@ bool BlockScriptBuilder::IsBinopValid(const TypeDesc* type, int op)
     }
     else
     {
-        PG_ASSERTSTR(type->GetAluEngine() >= TypeDesc::E_FLOAT && type->GetAluEngine() <= TypeDesc::E_FLOAT4, "unrecognized alu engine. Please add correct one!");
+        PG_ASSERTSTR(type->GetAluEngine() >= TypeDesc::E_FLOAT && type->GetAluEngine() < TypeDesc::E_COUNT, "unrecognized alu engine. Please add correct one!");
         switch(op)
         {
         case O_PLUS:
@@ -331,9 +331,9 @@ Exp* BlockScriptBuilder::BuildBinopArrayAccess (Ast::Exp* lhs, int op, Ast::Exp*
         return nullptr;
     }
 
-    if (tid1->GetModifier() != TypeDesc::M_ARRAY)
+    if (tid1->GetModifier() != TypeDesc::M_ARRAY && tid1->GetModifier() != TypeDesc::M_VECTOR)
     {
-        BS_ErrorDispatcher(this, "Access [] operator only allowed on array type.");
+        BS_ErrorDispatcher(this, "Access [] operator only allowed on array and vector types.");
         return nullptr;
     }
 
@@ -501,7 +501,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
                 return nullptr;
             }
 
-            int dimensionality = tid1->GetModifier() == TypeDesc::M_SCALAR ? 1 : tid1->GetModifierProperty();
+            int dimensionality = tid1->GetModifier() == TypeDesc::M_SCALAR ? 1 : tid1->GetModifierProperty().VectorSize;
 
             int maxChar = -1;
             for (int i = 0; i < swizzleLen; ++i)
@@ -532,6 +532,11 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
             }
 
             const TypeDesc* newType = mSymbolTable.GetTypeByName(newName);
+            if (newType == nullptr)
+            {
+                BS_ErrorDispatcher(this, "Complex swizzle not allowed for this type.");
+                return nullptr;
+            }
 
             Binop* newBinop = BS_NEW Binop(
                 lhs, op, rhs);

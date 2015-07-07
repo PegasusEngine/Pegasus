@@ -17,17 +17,6 @@
 #include "Pegasus/Mesh/Generator/IcosphereGenerator.h"
 #include "Pegasus/Shader/ShaderManager.h"
 
-#if PEGASUS_GAPI_GL
-
-#define GEOMTESTBLOCK_SHADER_ROOT "Shaders\\glsl"
-
-#elif PEGASUS_GAPI_DX
-
-#define GEOMTESTBLOCK_SHADER_ROOT "Shaders\\hlsl"
-
-#endif
-
-
 GeometryTestBlock::GeometryTestBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Core::IApplicationContext* appContext)
     : Pegasus::Timeline::Block(allocator, appContext)
 
@@ -60,41 +49,11 @@ void GeometryTestBlock::Initialize()
     
     // setup shaders
     Pegasus::Shader::ShaderManager * const shaderManager = GetShaderManager();
-    mBlockProgram = shaderManager->CreateProgram("CubeProgram");
-    
-    mBlockProgram->SetShaderStage(  
-        shaderManager->LoadShader(GEOMTESTBLOCK_SHADER_ROOT"\\Cube.vs")
-    );
-
-    mBlockProgram->SetShaderStage(  
-        shaderManager->LoadShader(GEOMTESTBLOCK_SHADER_ROOT"\\Cube.ps")
-    );
-
+    mBlockProgram = shaderManager->LoadProgram("Programs/CubeProgram.pas");
     mDiscoSpeaker = shaderManager->LoadProgram("Programs/discospeaker.pas");
-
-    mBlurHorizontal = shaderManager->CreateProgram("BlurHorizontal");
-    mBlurHorizontal->SetShaderStage(
-        shaderManager->LoadShader(GEOMTESTBLOCK_SHADER_ROOT"\\DiscoSpeaker.vs")
-    );
-    mBlurHorizontal->SetShaderStage(
-        shaderManager->LoadShader(GEOMTESTBLOCK_SHADER_ROOT"\\BlurHorizontal.ps")
-    );
-
-    mBlurVertical = shaderManager->CreateProgram("BlurVertical");
-    mBlurVertical->SetShaderStage(
-        shaderManager->LoadShader(GEOMTESTBLOCK_SHADER_ROOT"\\DiscoSpeaker.vs")
-    );
-    mBlurVertical->SetShaderStage(
-        shaderManager->LoadShader(GEOMTESTBLOCK_SHADER_ROOT"\\BlurVertical.ps")
-    );
-
-    mComposite = shaderManager->CreateProgram("mComposite");
-    mComposite->SetShaderStage(
-        shaderManager->LoadShader(GEOMTESTBLOCK_SHADER_ROOT"\\DiscoSpeaker.vs")
-    );
-    mComposite->SetShaderStage(
-        shaderManager->LoadShader(GEOMTESTBLOCK_SHADER_ROOT"\\Composite.ps")
-    );
+    mBlurHorizontal = shaderManager->LoadProgram("Programs/blurhorizontal.pas");
+    mBlurVertical = shaderManager->LoadProgram("Programs/blurvertical.pas");
+    mComposite = shaderManager->LoadProgram("Programs/composite.pas");
 
     bool updated = false; 
     mBlockProgram->GetUpdatedData(updated);

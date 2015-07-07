@@ -58,7 +58,7 @@ public:
         TypeDesc::Modifier modifier,
         const char * name,
         TypeDesc* child = nullptr,
-        int modifierProperty = 0,
+        TypeDesc::ModifierProperty modifierProperty = TypeDesc::ModifierProperty(),
         TypeDesc::AluEngine engine = TypeDesc::E_NONE,
         Ast::StmtStructDef* structDef = nullptr,
         EnumNode* enumNode = nullptr,
