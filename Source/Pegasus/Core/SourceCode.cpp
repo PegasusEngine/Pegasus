@@ -2,6 +2,9 @@
 #include "Pegasus/Core/Assertion.h"
 #include "Pegasus/Utils/Memcpy.h"
 #include "Pegasus/Allocator/Alloc.h"
+#include "Pegasus/AssetLib/AssetLib.h"
+#include "Pegasus/AssetLib/Asset.h"
+#include "Pegasus/Core/Log.h"
 
 using namespace Pegasus;
 using namespace Pegasus::Core;
@@ -91,4 +94,31 @@ void SourceCode::ClearParents()
     }
 }
 
+bool SourceCode::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset)
+{
+    if (asset->GetFormat() != Pegasus::AssetLib::Asset::FMT_RAW)
+    {
+        PG_LOG('ERR_', "Invalid shader extension");
+        return false;
+    }
 
+    Io::FileBuffer* fb = asset->Raw();
+    SetSource(fb->GetBuffer(), fb->GetFileSize());
+    return true;
+}
+
+void SourceCode::OnWriteAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset)
+{
+    const char* src = nullptr;
+    int srcLen = 0;
+    GetSource(&src, srcLen);
+    Io::FileBuffer* fb = asset->Raw();
+    if (srcLen > fb->GetBufferSize())
+    {
+        Pegasus::Alloc::IAllocator* alloc = fb->GetAllocator();
+        fb->DestroyBuffer();
+        fb->OwnBuffer(alloc, PG_NEW_ARRAY(alloc, -1, "", Alloc::PG_MEM_TEMP, char, srcLen), srcLen);
+    }
+    fb->SetFileSize(srcLen);
+    Utils::Memcpy(fb->GetBuffer(), src, srcLen);
+}

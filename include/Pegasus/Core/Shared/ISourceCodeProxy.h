@@ -13,6 +13,8 @@
 #ifndef PEGASUS_SOURCE_CODE_PROXY_H
 #define PEGASUS_SOURCE_CODE_PROXY_H
 
+#include "Pegasus/AssetLib/Shared/IRuntimeAssetObjectProxy.h"
+
 // forward declarations
 namespace Pegasus {
     namespace Graph {
@@ -25,7 +27,7 @@ namespace Pegasus
 namespace Core
 {
 
-class IBasicSourceProxy
+class IBasicSourceProxy : public AssetLib::IRuntimeAssetObjectProxyDecorator
 {
 public:
     //! Sets the user data for this particular source code file

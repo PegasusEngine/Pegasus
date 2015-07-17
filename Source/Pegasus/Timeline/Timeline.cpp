@@ -543,10 +543,7 @@ unsigned int Timeline::GetRegisteredBlockIndex(const char * className) const
 
 bool Timeline::IsTimelineScript(const AssetLib::Asset* asset) const
 {
-    const char* path = asset->GetPath();
-    const char* extension = Utils::Strrchr(path, '.');
-    return asset->GetFormat() == AssetLib::Asset::FMT_RAW && extension != nullptr && 
-        (!Utils::Strcmp(".bs", extension) || !Utils::Strcmp(".bsh", extension));
+    return TimelineSource::IsTimelineScript(asset);
 }
 
 TimelineScriptReturn Timeline::LoadScript(const char* path)
@@ -587,25 +584,37 @@ TimelineSourceReturn Timeline::LoadHeader(const char* path)
     return nullptr;
 }
 
+static const char* GetScriptName(const char* path)
+{
+    int pathlen = Utils::Strlen(path);
+    while (pathlen >= 0 && *(path + pathlen) != '/' && *(path + pathlen) != '\\') --pathlen;
+    return path + pathlen + 1;
+}
+
 TimelineSourceReturn Timeline::CreateHeader(AssetLib::Asset* asset)
 {
     if (asset->GetRuntimeData() == nullptr)
     {
-        Io::FileBuffer* fb = asset->Raw();
         const char* path = asset->GetPath();
         int pathlen = Utils::Strlen(path);
         while (pathlen >= 0 && *(path + pathlen) != '/' && *(path + pathlen) != '\\') --pathlen;
         path += pathlen + 1;
-        TimelineSourceRef scriptRef = PG_NEW(mAllocator, -1, "Timeline Script Header", Alloc::PG_MEM_TEMP) TimelineSource(mAllocator, path, fb);
+        TimelineSourceRef scriptRef = PG_NEW(mAllocator, -1, "Timeline Script Header", Alloc::PG_MEM_TEMP) TimelineSource(mAllocator, path);
+        
+        if (scriptRef->Read(asset))
+        {
 
-#if PEGASUS_USE_GRAPH_EVENTS
-        //register event listener
-        scriptRef->SetEventListener(GetEventListener());
-        GRAPH_EVENT_INIT_USER_DATA(scriptRef->GetProxy(), "BlockScript", scriptRef->GetEventListener());
-#endif
-        mAppContext->GetAssetLib()->BindAssetToRuntimeObject(asset, &(*scriptRef));
-
-        return scriptRef;
+    #if PEGASUS_USE_GRAPH_EVENTS
+            //register event listener
+            scriptRef->SetEventListener(GetEventListener());
+            GRAPH_EVENT_INIT_USER_DATA(scriptRef->GetProxy(), "BlockScript", scriptRef->GetEventListener());
+    #endif
+            return scriptRef;
+        }
+        else
+        {
+            return nullptr;
+        }
     } 
     else 
     {
@@ -617,51 +626,35 @@ TimelineScriptReturn Timeline::CreateScript(AssetLib::Asset* asset)
 {
     if (asset->GetRuntimeData() == nullptr)
     {
-        Io::FileBuffer* fb = asset->Raw();
-        const char* path = asset->GetPath();
-        int pathlen = Utils::Strlen(path);
-        while (pathlen >= 0 && *(path + pathlen) != '/' && *(path + pathlen) != '\\') --pathlen;
-        path += pathlen + 1;
-        TimelineScriptRef scriptRef = PG_NEW(mAllocator, -1, "Timeline Script", Alloc::PG_MEM_TEMP) TimelineScript(mAllocator, path, fb, mAppContext);
+        const char* name = GetScriptName(asset->GetPath());
+        TimelineScriptRef scriptRef = PG_NEW(mAllocator, -1, "Timeline Script", Alloc::PG_MEM_TEMP) TimelineScript(mAllocator, name, mAppContext);
 
-#if PEGASUS_USE_GRAPH_EVENTS
-        //register event listener
-        scriptRef->SetEventListener(GetEventListener());
-        GRAPH_EVENT_INIT_USER_DATA(scriptRef->GetProxy(), "BlockScript", scriptRef->GetEventListener());
-#endif
-
-        scriptRef->Compile();
-        mAppContext->GetAssetLib()->BindAssetToRuntimeObject(asset, &(*scriptRef));
-        
-        //TODO remove tracker on release?
-        mScriptTracker.RegisterScript(&(*scriptRef));
-
-        return scriptRef;
+        if (scriptRef->Read(asset))
+        {
+    
+    #if PEGASUS_USE_GRAPH_EVENTS
+            //register event listener
+            scriptRef->SetEventListener(GetEventListener());
+            GRAPH_EVENT_INIT_USER_DATA(scriptRef->GetProxy(), "BlockScript", scriptRef->GetEventListener());
+    #endif
+    
+            scriptRef->Compile();
+            
+            //TODO remove tracker on release?
+            mScriptTracker.RegisterScript(&(*scriptRef));
+    
+            return scriptRef;
+        }
+        else
+        {
+            return nullptr;
+        }
     } 
     else 
     {
         return static_cast<TimelineScript*>(asset->GetRuntimeData());
     }
 }
-
-void Timeline::FlushScriptToAsset(TimelineSourceIn script)
-{
-    AssetLib::Asset* ass = script->GetOwnerAsset();
-    PG_ASSERT(ass != nullptr);
-    Io::FileBuffer* fb = ass->Raw();
-    const char* src = nullptr;
-    int srcLen = 0;
-    script->GetSource(&src, srcLen);
-    if (srcLen > fb->GetBufferSize())
-    {
-        Pegasus::Alloc::IAllocator* alloc = fb->GetAllocator();
-        fb->DestroyBuffer();
-        fb->OwnBuffer(alloc, PG_NEW_ARRAY(alloc, -1, "", Alloc::PG_MEM_TEMP, char, srcLen), srcLen);
-    }
-    fb->SetFileSize(srcLen);
-    Utils::Memcpy(fb->GetBuffer(), src, srcLen);
-}
-
 
 }   // namespace Timeline
 }   // namespace Pegasus

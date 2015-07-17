@@ -149,56 +149,44 @@ void AssetIOMessageController::OnRenderRequestCloseProgram(Pegasus::Shader::IPro
     emit (SignalUpdateNodeViews());
 }
 
+Pegasus::Io::IoError AssetIOMessageController::InternalSaveObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
+{
+    Pegasus::Io::IoError err = Pegasus::Io::ERR_NONE;
+    Pegasus::AssetLib::IAssetProxy* ass = object->GetOwnerAsset();
+    ED_ASSERTSTR(ass != nullptr, "Saving asset: cannot be an invalid value!");
+    object->Write(ass);
+    return mApp->GetAssetLibProxy()->SaveAsset(ass);
+}
+
 void AssetIOMessageController::OnRenderRequestSaveCode(Pegasus::Core::ISourceCodeProxy* code)
 {
     if (mApp == nullptr) return;
-    CodeUserData* codeUserData = static_cast<CodeUserData*>(code->GetUserData());
-    Pegasus::Io::IoError err = Pegasus::Io::ERR_NONE;
-    if (codeUserData->GetName() == "ShaderStage")
-    {
-        Pegasus::Shader::IShaderManagerProxy*  shaderManagerProxy  = mApp->GetShaderManagerProxy();
-        Pegasus::AssetLib::IAssetProxy* ass = shaderManagerProxy->GetShaderAsset(static_cast<Pegasus::Shader::IShaderProxy*>(code));
-        ED_ASSERTSTR(ass != nullptr, "Saving asset: cannot be an invalid value!");
 
-        shaderManagerProxy->FlushShaderToAsset(static_cast<Pegasus::Shader::IShaderProxy*>(code));
-        err = mApp->GetAssetLibProxy()->SaveAsset(ass);
-    }
-    else if (codeUserData->GetName() == "BlockScript")
-    {
-        Pegasus::Timeline::ITimelineProxy*  timelineManager  = mApp->GetTimelineProxy();
-        Pegasus::AssetLib::IAssetProxy* ass = timelineManager->GetScriptAsset(code);
-        ED_ASSERTSTR(ass != nullptr, "Saving asset: cannot be an invalid value!");
-
-        timelineManager->FlushScriptToAsset(code);
-        err = mApp->GetAssetLibProxy()->SaveAsset(ass);
-    }
+    Pegasus::Io::IoError err = InternalSaveObject(code);
 
     if (err == Pegasus::Io::ERR_NONE)
     {
-        emit(SignalPostCodeMessage(tr("Saved file successfully.")));
+        emit(SignalPostCodeMessage(AssetIOMessageController::Message::IO_SAVE_SUCCESS));
     }
     else
     {
-        emit(SignalPostCodeMessage(tr("IO Error saving file.")));
+        emit(SignalPostCodeMessage(AssetIOMessageController::Message::IO_SAVE_ERROR));
     }
 }
 
 void AssetIOMessageController::OnRenderRequestSaveProgram(Pegasus::Shader::IProgramProxy* program)
 {
     if (mApp == nullptr) return;
-    Pegasus::AssetLib::IAssetLibProxy* assetLib = mApp->GetAssetLibProxy();
-    Pegasus::Shader::IShaderManagerProxy* shaderManagerProxy = mApp->GetShaderManagerProxy();
-    shaderManagerProxy->FlushProgramToAsset(program);
-    Pegasus::AssetLib::IAssetProxy* ass = shaderManagerProxy->GetProgramAsset(program);
-    ED_ASSERTSTR(ass != nullptr, "There must be an asset associated with this!");
-    Pegasus::Io::IoError err = assetLib->SaveAsset(ass);
+
+    Pegasus::Io::IoError err = InternalSaveObject(program);
+
     if (err == Pegasus::Io::ERR_NONE)
     {
-        emit(SignalPostProgramMessage(tr("Saved file successfully")));
+        emit(SignalPostProgramMessage(AssetIOMessageController::Message::IO_SAVE_SUCCESS));
     }
     else
     {
-        emit(SignalPostProgramMessage(tr("IO Error saving file.")));
+        emit(SignalPostProgramMessage(AssetIOMessageController::Message::IO_SAVE_ERROR));
     }
 }
 
@@ -222,7 +210,7 @@ void AssetIOMessageController::OnRenderRequestNewShader(const QString& path)
     }
     else
     {
-        emit(SignalPostCodeMessage(tr("IO Error creating new shader file.")));
+        emit(SignalPostCodeMessage(AssetIOMessageController::Message::IO_NEW_ERROR));
     }
 }
 
@@ -246,7 +234,7 @@ void AssetIOMessageController::OnRenderRequestNewTimelineScript(const QString& p
     }
     else
     {
-        emit(SignalPostCodeMessage(tr("IO Error creating new timeline file.")));
+        emit(SignalPostCodeMessage(AssetIOMessageController::Message::IO_NEW_ERROR));
     }
 }
 
@@ -271,15 +259,14 @@ void AssetIOMessageController::OnRenderRequestNewProgram(const QString& path)
         QString programName = tr("unnamed");
         programName = path.mid(beginIndex + 1, endIndex - beginIndex);
 
-        Pegasus::Shader::IShaderManagerProxy* shaderMgr = mApp->GetShaderManagerProxy();
         QByteArray ba = programName.toLocal8Bit();
-        Pegasus::Shader::IProgramProxy* program = shaderMgr->CreateNewProgram(ba.constData());
-        shaderMgr->BindProgramToAsset(program, asset);
-        shaderMgr->FlushProgramToAsset(program);
+        Pegasus::Shader::IProgramProxy* program = mApp->GetShaderManagerProxy()->CreateNewProgram(ba.constData());
+        program->Write(asset);
+        program->Bind(asset);
         errCode = assetLib->SaveAsset(asset);
         if (errCode != Pegasus::Io::ERR_NONE)
         {
-            emit(SignalPostProgramMessage(tr("IO Error creating program file")));
+            emit(SignalPostProgramMessage(AssetIOMessageController::Message::IO_NEW_ERROR));
         }
         else if (program != nullptr)
         {
@@ -288,6 +275,6 @@ void AssetIOMessageController::OnRenderRequestNewProgram(const QString& path)
     }
     else
     {
-        emit(SignalPostProgramMessage(tr("IO Error creating program file")));
+        emit(SignalPostProgramMessage(AssetIOMessageController::Message::IO_NEW_ERROR));
     }
 }

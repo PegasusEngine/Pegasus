@@ -32,6 +32,14 @@ class QFocusEvent;
 class CodeTextEditorTreeWidget;
 class CodeTextEditorWidget;
 class CodeUserData;
+class NodeFileTabBar;
+
+namespace Pegasus
+{
+    namespace AssetLib  {
+        class IRuntimeAssetObjectProxy;
+    }
+}
 
 //! Graphics Widget meant for code text editing
 class CodeEditorWidget : public QDockWidget
@@ -55,12 +63,6 @@ public:
     //! Requests a code to compile
     //! \param the code user data to compile
     void CompileCode(CodeUserData* code);
-    
-    //! finds the index of a particular Code
-    int  FindIndex(CodeUserData * target);
-
-    //! finds the index of a particular text edit
-    int  FindIndex(CodeTextEditorWidget * target);
 
     //! true if any child has focus, false otherwise
     bool HasAnyChildFocus() const;
@@ -79,6 +81,12 @@ signals:
     //! Sends a message to the source IO controller
     void SendSourceIoMessage(SourceIOMessageController::Message msg);
 
+    //! Called when an object has been registered as dirty
+    void RegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+
+    //! Called when an object has been unregistered as dirty
+    void UnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+
 public slots:
 
     //! opens a CodeUserData in the text editor
@@ -86,8 +94,8 @@ public slots:
     void RequestOpen(Pegasus::Core::ISourceCodeProxy* code);
 
     //! slot to be called when a code wants to be closed.
-    //! \param index code to close
-    void RequestClose(int index);
+    //! \param code asset object to close
+    void RequestClose(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
 
     //! bless user data with any UI specific data required
     void BlessUserData(CodeUserData* codeUserData);
@@ -101,8 +109,14 @@ public slots:
     //! Sets the status bar message
     void PostStatusBarMessage(const QString& string);
 
+    //! Receives an io message
+    void ReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage msg);
+
     //! signal triggered when the user clicks on the save button
     void SignalSaveCurrentCode();
+
+    //! signal triggered right before closing an asset and discarding its internal changes
+    void SignalDiscardCurrentObjectChanges();
 
     //! Triggered when compilation has been received and finished from the UI thread.
     void CompilationRequestReceived();
@@ -153,7 +167,7 @@ private slots:
 
     //! signal triggered when the user clicks on a tab in the tab bar.
     //! selects and visualizes a Code for opening
-    void SignalViewCode(int tabId);
+    void SignalViewCode(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
 
     //! signal to update the UI for the editor once the app is finished
     void UpdateUIForAppFinished();
@@ -183,19 +197,11 @@ private:
     {
         CodeTextEditorTreeWidget::SignalCombination mTextEditorSignals;
         QString       mStatusBarMessage;
-        QStatusBar * mStatusBar; 
+        QStatusBar  * mStatusBar; 
         QVBoxLayout * mMainLayout; //! the main layout of the text editor
-        QTabBar     * mTabWidget;
+        NodeFileTabBar           * mTabWidget;
         CodeTextEditorTreeWidget * mTreeEditor;
     } mUi;
-
-    //! maximum number of Code tabs to have open
-    static const int MAX_OPENED_CODES = 50;
-    CodeUserData * mOpenedCodes[MAX_OPENED_CODES];
-    int mOpenCodeCount;
-
-    //! poitns to the id of the previous tab index.
-    int mPreviousTabIndex;
 
     //! toolbar actions
     QIcon mPinIcon;

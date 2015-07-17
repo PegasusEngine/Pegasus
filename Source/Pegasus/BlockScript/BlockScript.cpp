@@ -21,7 +21,7 @@
 using namespace Pegasus;
 
 BlockScript::BlockScript::BlockScript(Alloc::IAllocator* allocator, BlockLib* runtimeLib)
-: BlockScript::BlockScriptCompiler(allocator), mRuntimeLib(runtimeLib)
+: BlockScript::BlockScriptCompiler(allocator), mRuntimeLib(runtimeLib), mLibs(allocator)
 {
 }
 
@@ -29,10 +29,19 @@ BlockScript::BlockScript::~BlockScript()
 {
 }
 
+void BlockScript::BlockScript::IncludeLib(BlockLib* lib)
+{
+    mLibs.PushEmpty() = lib;
+}
+
 bool BlockScript::BlockScript::Compile(const Io::FileBuffer* fb)
 {
     //prepare runtime library
     mBuilder.GetSymbolTable()->RegisterChild(mRuntimeLib->GetSymbolTable());
+    for (int i = 0; i < mLibs.GetSize(); ++i)
+    {
+        mBuilder.GetSymbolTable()->RegisterChild(mLibs[i]->GetSymbolTable());
+    }
 
     //compile
     return BlockScriptCompiler::Compile(fb);

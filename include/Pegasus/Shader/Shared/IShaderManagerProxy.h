@@ -79,14 +79,6 @@ public:
     //! \param the actual program name to use.
     virtual IProgramProxy* CreateNewProgram(const char* programName) = 0;
 
-    //! Returns the asset of this shader. If it does not have it then returns null
-    //! \return asset proxy attached to this shader. If it does not exist then returns null
-    virtual AssetLib::IAssetProxy* GetShaderAsset(IShaderProxy* shader) = 0;
-
-    //! Returns the asset of this program. If it does not have it then returns null
-    //! \return asset proxy attached to this program. If it does not exist then returns null
-    virtual AssetLib::IAssetProxy* GetProgramAsset(IProgramProxy* program) = 0;
-
     //! Closes a program.
     //! \param the program proxy to close
     virtual void CloseProgram(IProgramProxy* program) = 0;
@@ -100,20 +92,6 @@ public:
     //! \param asset the asset to test if its a program
     //! \return true if this is a program, false otherwise
     virtual bool IsProgram(const AssetLib::IAssetProxy* asset) const = 0;
-
-    //! Flushes a shader to its containing asset.
-    virtual void FlushShaderToAsset(IShaderProxy* shader) = 0;
-
-    //! Flushes a program to its containing asset.
-    virtual void FlushProgramToAsset(IProgramProxy* program) = 0;
-
-    //! Binds a program node to an node.
-    //! \note  This means the runtime program passed now has a new owner.
-    //! unbinds anything if program has anything else binded. If asset is null, then we just unbind program
-    //! from anything in the hdd
-    //! \param program the program to bind to an asset
-    //! \param the asset to bind to.
-    virtual void BindProgramToAsset(IProgramProxy* program, AssetLib::IAssetProxy* asset) = 0;
 };
 
 }

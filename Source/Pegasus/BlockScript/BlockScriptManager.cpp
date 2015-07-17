@@ -35,7 +35,7 @@ BlockScriptManager::~BlockScriptManager()
 void BlockScriptManager::Initialize(IAllocator* allocator)
 {
     mAllocator = allocator;
-    mInternalRuntimeLib = CreateBlockLib();
+    mInternalRuntimeLib = PG_NEW(mAllocator, -1, "Block Script Lib Module", Alloc::PG_MEM_PERM) BlockLib(mAllocator);
     RegisterIntrinsics(mInternalRuntimeLib);
 }
 
@@ -47,7 +47,9 @@ BlockScript* BlockScriptManager::CreateBlockScript()
 
 BlockLib*    BlockScriptManager::CreateBlockLib()
 {
-    return PG_NEW(mAllocator, -1, "Block Script Lib Module", Alloc::PG_MEM_PERM) BlockLib(mAllocator);
+    BlockLib* lib = PG_NEW(mAllocator, -1, "Block Script Lib Module", Alloc::PG_MEM_PERM) BlockLib(mAllocator);
+    lib->GetSymbolTable()->RegisterChild(mInternalRuntimeLib->GetSymbolTable());
+    return lib;
 }
 
 BlockLib*    BlockScriptManager::GetRuntimeLib()

@@ -61,6 +61,11 @@ void Pegasus::Shader::ShaderProxy::Compile()
     mObject->Compile();
 }
 
+Pegasus::AssetLib::IRuntimeAssetObjectProxy* Pegasus::Shader::ShaderProxy::GetDecoratedObject() const
+{
+    return mObject->GetRuntimeAssetObjectProxy();
+}
+
 #else
 PEGASUS_AVOID_EMPTY_FILE_WARNING;
 #endif

@@ -67,8 +67,13 @@ public:
     //! \return the file name of this shader
     const char * GetFileName() const { return mName; }
 
+    //! Returns the display name of this runtime object
+    //! \return string representing the display name of this object
+    virtual const char* GetDisplayName() const { return GetFileName(); }
+
     //! returns the proxy of this particular shader    
     IShaderProxy * GetProxy() { return &mProxy; }
+
 #endif
 
 

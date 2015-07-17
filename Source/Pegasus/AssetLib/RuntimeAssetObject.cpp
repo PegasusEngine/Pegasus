@@ -17,11 +17,10 @@
 using namespace Pegasus;
 using namespace Pegasus::AssetLib;
 
-void RuntimeAssetObject::Connect(Asset* asset, int typeId, Pegasus::AssetLib::AssetLib* lib)
+void RuntimeAssetObject::Bind(Asset* asset)
 {
     mAsset = asset;
-    mTypeId = typeId;
-    mAssetLib = lib;
+    mAsset->SetRuntimeData(this);
 }
 
 void RuntimeAssetObject::OnAssetRuntimeDestroyed()
@@ -29,7 +28,29 @@ void RuntimeAssetObject::OnAssetRuntimeDestroyed()
     //do something here with the library
     if (mAsset != nullptr)
     {
-        mAssetLib->DestroyAsset(mAsset);
+        mAsset->GetLib()->DestroyAsset(mAsset);
         mAsset = nullptr;
+    }
+}
+
+bool RuntimeAssetObject::Read(Asset* asset)
+{
+    AssetLib* lib = asset->GetLib();
+    Bind(asset);
+    return OnReadAsset(lib, asset);
+}
+
+void RuntimeAssetObject::Write(Asset* asset)
+{
+    asset = asset == nullptr ? GetOwnerAsset() : asset;
+    PG_ASSERT(asset != nullptr);
+    if (asset != nullptr)
+    {
+        if (asset->GetFormat() == Asset::FMT_STRUCTURED) 
+        {
+            asset->Clear();
+        }
+        AssetLib* lib = asset->GetLib();
+        OnWriteAsset(lib, asset);
     }
 }

@@ -1,5 +1,5 @@
 {
     type : program,
     name : BlurHorizontal,
-    shaders : [Shaders\hlsl\DiscoSpeaker.vs, Shaders\hlsl\BlurHorizontal.ps]
+    shaders : [Shaders\hlsl\BlurHorizontal.ps, Shaders\hlsl\DiscoSpeaker.vs]
 }

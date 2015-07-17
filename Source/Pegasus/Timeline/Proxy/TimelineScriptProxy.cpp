@@ -59,4 +59,9 @@ void TimelineScriptProxy::Compile()
 { 
     mTimelineSource->Compile();
 }
+
+AssetLib::IRuntimeAssetObjectProxy* TimelineScriptProxy::GetDecoratedObject() const
+{
+    return mTimelineSource->GetRuntimeAssetObjectProxy();
+}
 #endif

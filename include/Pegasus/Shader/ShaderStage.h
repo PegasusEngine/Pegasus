@@ -18,6 +18,13 @@
 #include "Pegasus/Core/Io.h"
 #include "Pegasus/Utils/Vector.h"
 
+namespace Pegasus
+{
+    namespace AssetLib {
+        class AssetLib;
+        class Asset;
+    }
+}
 
 namespace Pegasus
 {
@@ -92,6 +99,10 @@ public:
     //! \param the shader source in
     void Include(ShaderSourceIn shaderSrc);
 
+    //! derives a shader type from an asset
+    //! \param the asset
+    //! \return the shader type
+    static ShaderType DeriveShaderType(const Pegasus::AssetLib::Asset* asset);
 
 protected:
     //! callback which allocates shader data
@@ -99,6 +110,8 @@ protected:
 
     //! override that generates data. This will generate the shader GPU data using the factory
     virtual void GenerateData();
+
+    virtual bool OnReadAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset);
 
 private:
     PG_DISABLE_COPY(ShaderStage)

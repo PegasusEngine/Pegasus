@@ -17,6 +17,12 @@
 #include "Pegasus/Mesh/Generator/IcosphereGenerator.h"
 #include "Pegasus/Shader/ShaderManager.h"
 
+#include "Pegasus/Timeline/TimelineScript.h"
+#include "Pegasus/BlockScript/BlockScript.h"
+#include "Pegasus/BlockScript/BlockScriptManager.h"
+#include "Pegasus/BlockScript/BlockLib.h"
+#include "Pegasus/BlockScript/FunCallback.h"
+
 GeometryTestBlock::GeometryTestBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Core::IApplicationContext* appContext)
     : Pegasus::Timeline::Block(allocator, appContext)
 
@@ -31,11 +37,32 @@ GeometryTestBlock::~GeometryTestBlock()
 
 }
 
+void geomTestFun_callback(Pegasus::BlockScript::FunCallbackContext& context)
+{
+    Pegasus::BlockScript::FunParamStream stream(context);
+    stream.SubmitReturn<int>(20);
+}
+
 //----------------------------------------------------------------------------------------
 
 void GeometryTestBlock::Initialize()
 {
 
+    if (HasScript())
+    {
+        Pegasus::Timeline::TimelineScriptRef timelineScript = GetScript();
+        Pegasus::BlockScript::BlockScript* bs = timelineScript->GetBlockScript();
+        Pegasus::BlockScript::BlockLib* newLib = GetBlockScriptManager()->CreateBlockLib();
+        Pegasus::BlockScript::FunctionDeclarationDesc funDesc = {
+            "geomTestFun",
+            "int",
+            { nullptr },
+            { nullptr },
+            geomTestFun_callback
+        };
+        newLib->CreateIntrinsicFunctions(&funDesc, 1);
+        bs->IncludeLib(newLib);
+    }
     //setup raster states
     Pegasus::Render::RasterizerConfig rasterConfig;
     rasterConfig.mCullMode = Pegasus::Render::RasterizerConfig::CW_CM;
@@ -140,12 +167,14 @@ void GeometryTestBlock::Shutdown()
 
 void GeometryTestBlock::Update(float beat, Pegasus::Wnd::Window * window)
 {
+    UpdateViaScript(beat, window);
 }
 
 //----------------------------------------------------------------------------------------
 
 void GeometryTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
 {
+    RenderViaScript(beat, window);
     //figure out aspect ratio
     const unsigned int viewportWidth = window->GetWidth();
     const unsigned int viewportHeight = window->GetHeight();

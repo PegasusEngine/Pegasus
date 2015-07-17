@@ -22,6 +22,11 @@ namespace Pegasus {
             class ICompilerEventListener;
         }
     }
+
+    namespace AssetLib {
+        class AssetLib;
+        class Asset;
+    }
 }
 
 namespace Pegasus
@@ -34,6 +39,7 @@ namespace Shader
 class IShaderFactory;
 class IProgramProxy;
 class ProgramProxy;
+class ShaderManager;
 
 
 //! Program linkage class. Represents a set of linked shader stages
@@ -104,14 +110,20 @@ public:
 
     //! Invalidates internally the data holding the program, to force relinking
     virtual void InvalidateData();
+        
+    void SetManager(ShaderManager* manager) { mManager = manager; }
 
 #if PEGASUS_ENABLE_PROXIES
     //! returns the name of this program.
     //! \return name of program
-    const char * GetName() { return mName; }
+    const char * GetName() const { return mName; }
     
     //! sets the name of this shader to be used
     void SetName(const char * name);
+
+    //! Returns the display name of this runtime object
+    //! \return string representing the display name of this object
+    virtual const char* GetDisplayName() const { return GetName(); }
 
     //! returns the proxy accessor for this program. Only available in dev mode.
     IProgramProxy * GetProxy() { return &mProxy; }
@@ -119,6 +131,9 @@ public:
     //! Sets the shader tracker for shader / program book keeping
     void SetShaderTracker(ShaderTracker* shaderTracker) { mShaderTracker = shaderTracker; }
 #endif
+
+    //! \return true if this asset is a program, false otherwise
+    static bool IsProgram(const Pegasus::AssetLib::Asset* asset);
 
 protected:
     //! overrides, do not use
@@ -139,6 +154,10 @@ protected:
     //! \param index callback when input is removed
     virtual void OnRemoveInput(unsigned int index);
 
+    virtual bool OnReadAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset);
+
+    virtual void OnWriteAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset);
+
 private:    
 #if PEGASUS_ENABLE_PROXIES
     //! name meta data stuff
@@ -155,10 +174,14 @@ private:
     //! topology.
     unsigned char mStageFlags;
 
+    //! Manager, required to load shaders correctly
+    ShaderManager* mManager;
+
 #if PEGASUS_ENABLE_PROXIES
     ProgramProxy mProxy;    
     ShaderTracker* mShaderTracker;
 #endif
+
 };
 
 typedef       Pegasus::Core::Ref<ProgramLinkage>   ProgramLinkageRef;

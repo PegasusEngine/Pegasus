@@ -25,7 +25,7 @@
 #include <QCloseEvent>
 #include <QApplication>
 #include <QFileDialog>
-
+#include <QMessagebox>
 
 Editor * Editor::sInstance = nullptr;
 Settings * Editor::sSettings = nullptr;
@@ -111,9 +111,6 @@ Editor::Editor(QApplication * parentApplication)
     connect(mApplicationManager, SIGNAL(ApplicationFinished()),
             mAssetLibraryWidget, SLOT(UpdateUIForAppFinished()));
 
-    connect(mAssetLibraryWidget, SIGNAL(RequestOpenCode(Pegasus::Core::ISourceCodeProxy*)),
-            mCodeEditorWidget, SLOT(RequestOpen(Pegasus::Core::ISourceCodeProxy*)));
-   
     connect(sSettings, SIGNAL(OnCodeEditorStyleChanged()),
             mCodeEditorWidget, SLOT(OnSettingsChanged())); 
 
@@ -126,6 +123,16 @@ Editor::Editor(QApplication * parentApplication)
             mPropertyGridClassesDockWidget, SLOT(UpdateUIForAppLoaded()));
     connect(mApplicationManager, SIGNAL(ApplicationFinished()),
             mPropertyGridClassesDockWidget, SLOT(UpdateUIForAppClosed()));
+
+    connect(mProgramEditorWidget, SIGNAL(RegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
+            this, SLOT(OnRegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)));
+    connect(mCodeEditorWidget, SIGNAL(RegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
+            this, SLOT(OnRegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)));
+
+    connect(mProgramEditorWidget, SIGNAL(UnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
+            this, SLOT(OnUnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)));
+    connect(mCodeEditorWidget, SIGNAL(UnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
+            this, SLOT(OnUnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)));
 
     sSettings->NotifySettingsChanged();
 
@@ -350,6 +357,21 @@ void Editor::CreateActions()
 
 //----------------------------------------------------------------------------------------
 
+
+void Editor::OnRegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
+{
+    mDirtyAssets.insert(object);
+}
+
+//----------------------------------------------------------------------------------------
+
+void Editor::OnUnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
+{
+    mDirtyAssets.remove(object);
+}
+
+//----------------------------------------------------------------------------------------
+
 void Editor::CreateMenu()
 {
     QMenu * fileMenu = menuBar()->addMenu(tr("&File"));
@@ -568,9 +590,22 @@ void Editor::ReloadApp()
 
 void Editor::CloseApp()
 {
-    if (mApplicationManager->IsApplicationOpened())
+    bool performClosing = true;
+    if (mDirtyAssets.size() > 0)
     {
-        mApplicationManager->CloseApplication();
+        QMessageBox::StandardButton reply = QMessageBox::question(
+                                       this, "Unsaved changes in assets.",
+                                      "There are unsaved changes in opened assets. Are you sure you want to exit?",
+                                       QMessageBox::Yes|QMessageBox::No);
+        performClosing = reply == QMessageBox::Yes;
+    }
+
+    if (performClosing)
+    {
+        if (mApplicationManager->IsApplicationOpened())
+        {
+            mApplicationManager->CloseApplication();
+        }
     }
 }
 

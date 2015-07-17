@@ -12,6 +12,7 @@
 #define PEGASUS_IPROGRAMPROXY_H
 
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
+#include "Pegasus/AssetLib/Shared/IRuntimeAssetObjectProxy.h"
 
 namespace Pegasus
 {

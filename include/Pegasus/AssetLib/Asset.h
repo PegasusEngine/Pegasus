@@ -41,10 +41,13 @@ namespace AssetLib
 class Object;
 class Array;
 class RuntimeAssetObject;
+class AssetLib;
 
 //! Asset representation
 class Asset
 {
+    friend RuntimeAssetObject;
+
 public:
 
     enum AssetFormat
@@ -55,7 +58,7 @@ public:
     
     //! Constructor for structured asset
     //! \param obj the root object used for this asset.
-    explicit Asset(Alloc::IAllocator* allocator, AssetFormat fmt);
+    Asset(Alloc::IAllocator* allocator, Pegasus::AssetLib::AssetLib* lib, AssetFormat fmt);
 
     //! Destructor
     ~Asset();
@@ -100,14 +103,15 @@ public:
     //! \return the array
     Array* NewArray();
 
+    //! Returns the owner asset library
+    //! \return the asset library
+    Pegasus::AssetLib::AssetLib* GetLib() const { return mAssetLib; }
+
     //! Copies a string passed in, whose lifetime is this assets object
     const char* CopyString(const char* string);
 
     //! Resets this asset internally (destroys all internal memory and makes it an empty asset)
     void Clear();
-
-    //! Sets the runtime data
-    void SetRuntimeData(RuntimeAssetObject * obj) { mRuntimeData = obj; }
 
     //! Gets the runtime data
     RuntimeAssetObject* GetRuntimeData() const { return mRuntimeData; }
@@ -118,6 +122,9 @@ public:
 #endif
 
 private:
+    //! Sets the runtime data
+    void SetRuntimeData(RuntimeAssetObject * obj) { mRuntimeData = obj; }
+
     Alloc::IAllocator* mAllocator;
     RuntimeAssetObject*    mRuntimeData;
     Memory::BlockAllocator mAstAllocator;
@@ -130,6 +137,8 @@ private:
     Io::FileBuffer mRawAsset;
     char mPathString[MAX_ASSET_PATH_STRING];
     AssetFormat mFormat;
+
+    Pegasus::AssetLib::AssetLib* mAssetLib;
 
 #if PEGASUS_ENABLE_PROXIES
     AssetProxy mProxy;

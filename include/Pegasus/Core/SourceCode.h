@@ -20,6 +20,16 @@
 #include "Pegasus/Core/Io.h"
 #include "Pegasus/Utils/Vector.h"
 
+
+//fwd declarations
+namespace Pegasus
+{
+    namespace AssetLib {
+        class AssetLib;
+        class Asset;
+    }
+}
+
 namespace Pegasus
 {
 namespace Core
@@ -62,6 +72,10 @@ protected:
     Io::FileBuffer             mFileBuffer; //! buffer structure containing shader source
     Alloc::IAllocator* mAllocator;
     Utils::Vector<SourceCode*> mParents; //references to parents
+
+    virtual bool OnReadAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset);
+
+    virtual void OnWriteAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset);
 
 private:
     bool mLockParentArray;

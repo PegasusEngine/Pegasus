@@ -13,6 +13,7 @@
 #define EDITOR_ASSET_IO_CONTROLLER_H
 
 #include <QObject>
+#include "Pegasus/Core/Shared/IoErrors.h"
 
 //forward declarations
 namespace Pegasus
@@ -31,6 +32,7 @@ namespace Pegasus
     namespace AssetLib
     {
         class IAssetProxy;
+        class IRuntimeAssetObjectProxy;
     }
 
     namespace Core
@@ -56,13 +58,21 @@ public:
             OPEN_ASSET,
             CLOSE_CODE,
             SAVE_CODE,
-            CLOSE_PROGRAM,
             SAVE_PROGRAM,
+            CLOSE_PROGRAM,
             NEW_SHADER,
             NEW_TIMELINESCRIPT,
             NEW_PROGRAM,
             NEW_MESH,
             NEW_TEXTURE
+        };
+
+        enum IoResponseMessage
+        {
+            IO_SAVE_SUCCESS,
+            IO_SAVE_ERROR,
+            IO_NEW_SUCCESS,
+            IO_NEW_ERROR
         };
     
         //! Combo holder union of node / asset type
@@ -134,10 +144,10 @@ signals:
     void SignalOnErrorMessagePopup(const QString& message);
 
     //! Signal triggered when a message is sent to the code editor.
-    void SignalPostCodeMessage(const QString& message);
+    void SignalPostCodeMessage(AssetIOMessageController::Message::IoResponseMessage id);
 
     //! Signal triggered when a message is sent to the program editor.
-    void SignalPostProgramMessage(const QString& message);
+    void SignalPostProgramMessage(AssetIOMessageController::Message::IoResponseMessage id);
 
 
 private:
@@ -150,11 +160,11 @@ private:
     //! Called when a program is requested for opening from the render thread
     void OnRenderRequestCloseProgram(Pegasus::Shader::IProgramProxy* program);
 
-    //! Called when a shader is requested to be saved from the render thread
-    void OnRenderRequestSaveCode(Pegasus::Core::ISourceCodeProxy* code);
-
     //! Called when a program is requested to be saved from the render thread
-    void OnRenderRequestSaveProgram(Pegasus::Shader::IProgramProxy* program);
+    void OnRenderRequestSaveProgram(Pegasus::Shader::IProgramProxy* object);
+
+    //! Called when a shader is requested to be saved from the render thread
+    void OnRenderRequestSaveCode(Pegasus::Core::ISourceCodeProxy* object);
 
     //! Called when a new shader is requested from the render thread
     void OnRenderRequestNewShader(const QString& path);
@@ -164,6 +174,9 @@ private:
 
     //! Called when a program is requested from the render thread
     void OnRenderRequestNewProgram(const QString& path);
+
+    //! Called when an object  is requested to be saved from the render thread
+    Pegasus::Io::IoError InternalSaveObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
 
     Pegasus::App::IApplicationProxy* mApp;
     

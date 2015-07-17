@@ -16,6 +16,8 @@
 #include "Pegasus/Utils/Memcpy.h"
 #include "Pegasus/Shader/ShaderTracker.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
+#include "Pegasus/AssetLib/AssetLib.h"
+#include "Pegasus/AssetLib/Asset.h"
 
 using namespace Pegasus::Core;
 
@@ -198,9 +200,58 @@ void Pegasus::Shader::ShaderStage::Include(Pegasus::Shader::ShaderSourceIn inc)
     inc->RegisterParent(this);
 }
 
+static Pegasus::Shader::ShaderType DeriveShaderTypeFromExt(const char* extension)
+{
+    int extSz = Pegasus::Utils::Strlen(extension) - 1;
+    const char* extSanitized = extension + 1;
+    if (extSz > 0)
+    {
+        for (int i = 0; i < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT); ++i)
+        {
+            if (!Pegasus::Utils::Stricmp(extSanitized, Pegasus::Shader::gShaderExtensions[i]))
+            {
+                return static_cast<Pegasus::Shader::ShaderType>(i);
+            }
+        }
+    }
 
+    return Pegasus::Shader::SHADER_STAGE_INVALID;
+}
+
+Pegasus::Shader::ShaderType Pegasus::Shader::ShaderStage::DeriveShaderType(const Pegasus::AssetLib::Asset* asset)
+{
+    if (asset->GetFormat() != AssetLib::Asset::FMT_RAW)
+    {
+        return Pegasus::Shader::SHADER_STAGE_INVALID;
+    }
+
+    const char * extension = Pegasus::Utils::Strrchr(asset->GetPath(), '.');
+    Pegasus::Shader::ShaderType targetStage = Pegasus::Shader::SHADER_STAGE_INVALID;
+    if (extension != nullptr)
+    {
+        return DeriveShaderTypeFromExt(extension);
+    }
+
+    return Pegasus::Shader::SHADER_STAGE_INVALID;
+}
+
+bool Pegasus::Shader::ShaderStage::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset)
+{
+    Pegasus::Shader::ShaderType targetStage = DeriveShaderType(asset); 
+    if (targetStage == Pegasus::Shader::SHADER_STAGE_INVALID)
+    {
+        PG_LOG('ERR_', "Invalid shader extension");
+        return false;
+    }
+
+    mType = targetStage;
+
+    return Pegasus::Core::SourceCode::OnReadAsset(lib,asset);
+}
 
 Pegasus::Graph::NodeReturn Pegasus::Shader::ShaderStage::CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 {
     return PG_NEW(nodeAllocator, -1, "ShaderStage", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Shader::ShaderStage(nodeAllocator, nodeDataAllocator);
 }
+
+

@@ -241,7 +241,18 @@ void AssetLibraryWidget::OnNewTimelineScript(bool enabled)
 void AssetLibraryWidget::DispatchTextEditorThroughShaderView(const QModelIndex& index)
 {
     Pegasus::Core::ISourceCodeProxy * code = mShaderListModel->Translate(index);
-    emit(RequestOpenCode(code));
+    Pegasus::AssetLib::IAssetProxy* asset = code->GetOwnerAsset();
+    if (asset != nullptr)
+    {
+        AssetIOMessageController::Message msg;
+        msg.SetMessageType(AssetIOMessageController::Message::OPEN_ASSET);
+        msg.SetString(asset->GetPath());
+        emit(SendAssetIoMessage(msg));
+    }
+    else
+    {
+        //TODO: Cannot open node not represneted by asset
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -267,7 +278,18 @@ void AssetLibraryWidget::DispatchAsset(const QModelIndex& assetIdx)
 void AssetLibraryWidget::DispatchTextEditorThroughBlockScriptView(const QModelIndex& index)
 {
     Pegasus::Core::ISourceCodeProxy * code = mBlockScriptListModel->Translate(index);
-    emit(RequestOpenCode(code));
+    Pegasus::AssetLib::IAssetProxy* asset = code->GetOwnerAsset();
+    if (asset != nullptr)
+    {
+        AssetIOMessageController::Message msg;
+        msg.SetMessageType(AssetIOMessageController::Message::OPEN_ASSET);
+        msg.SetString(asset->GetPath());;
+        emit(SendAssetIoMessage(msg));
+    }
+    else
+    {
+        //TODO: Cannot open shader not represented by an asset
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -280,7 +302,18 @@ void AssetLibraryWidget::DispatchTextEditorThroughProgramView(const QModelIndex&
     else if (mProgramTreeModel->IsShaderIndex(index))
     {
         Pegasus::Core::ISourceCodeProxy * code = static_cast<Pegasus::Core::ISourceCodeProxy*>(mProgramTreeModel->TranslateShaderIndex(index));
-        emit(RequestOpenCode(code));
+        Pegasus::AssetLib::IAssetProxy* asset = code->GetOwnerAsset();
+        if (asset != nullptr)
+        {
+            AssetIOMessageController::Message msg;
+            msg.SetMessageType(AssetIOMessageController::Message::OPEN_ASSET);
+            msg.SetString(asset->GetPath());
+            emit(SendAssetIoMessage(msg));
+        }
+        else
+        {
+            //TODO: Cannot open shader not represented by an asset
+        }
     }
 }
 

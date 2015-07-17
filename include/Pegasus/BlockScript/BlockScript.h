@@ -14,6 +14,7 @@
 
 #include "Pegasus/BlockScript/BlockScriptCompiler.h"
 #include "Pegasus/BlockScript/BsVm.h"
+#include "Pegasus/Utils/Vector.h"
 
 namespace Pegasus
 {
@@ -69,6 +70,7 @@ private:
     // Virtual machine (state of this vm is pushed by the user through BsVmState class)
     BsVm      mVm;
     BlockLib* mRuntimeLib;
+    Utils::Vector<BlockLib*> mLibs;
 };
 
 } //namespace BlockScript

@@ -1,9 +1,13 @@
 #include "Pegasus/Shader/ProgramLinkage.h"
+#include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Shader/IShaderFactory.h"
 #include "Pegasus/Shader/ShaderTracker.h"
 #include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/Memcpy.h"
+#include "Pegasus/AssetLib/AssetLib.h"
+#include "Pegasus/AssetLib/Asset.h"
+#include "Pegasus/AssetLib/ASTree.h"
 
 
 //! private data structures
@@ -176,4 +180,99 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ProgramLinkage::FindShaderSt
     return nullptr;
 }
 
+bool Pegasus::Shader::ProgramLinkage::IsProgram(const Pegasus::AssetLib::Asset* asset)
+{
+    //parse asset
+    if (asset->GetFormat() != AssetLib::Asset::FMT_STRUCTURED)
+    {
+        return false;
+    }
+
+    const AssetLib::Object* root = asset->Root();
+    if (!root) return false;
+
+    int typeId = root->FindString("type");
+
+    if (typeId == -1)
+    {
+        return false;
+    }
+
+    const char* typeName = root->GetString(typeId);
+    if (Utils::Stricmp(typeName, "program"))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool Pegasus::Shader::ProgramLinkage::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset)
+{
+    AssetLib::Object* root = asset->Root();
+    int nameId = root->FindString("name");
+    int shaders = root->FindArray("shaders");
+
+#if PEGASUS_ENABLE_PROXIES
+    SetName(root->GetString(nameId));
+#endif
+
+    if (shaders != -1)
+    {
+        AssetLib::Array* shaderArr = root->GetArray(shaders);
+        if (shaderArr->GetType() == AssetLib::Array::AS_TYPE_STRING)
+        {
+            for (int i = 0; i < shaderArr->GetSize(); ++i)
+            {
+                const AssetLib::Array::Element& element = shaderArr->GetElement(i);
+                Pegasus::Shader::ShaderStageRef shaderStage = mManager->LoadShader(element.s);
+                if (shaderStage != nullptr)
+                {
+                    SetShaderStage(shaderStage);
+                }
+            }
+        }
+        else if (shaderArr->GetSize() != 0) //forgivable error if empty list
+        {
+            PG_LOG('ERR_', "Invalid list of shaders");
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void Pegasus::Shader::ProgramLinkage::OnWriteAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset)
+{
+    AssetLib::Object* root = asset->NewObject();
+    root->AddString("type", "program");
+    asset->SetRootObject(root);
+
+    AssetLib::Array* shaderArr = asset->NewArray();
+
+#if PEGASUS_ENABLE_PROXIES
+    root->AddString("name", GetName());
+#endif
+
+    root->AddArray("shaders", shaderArr);
+    shaderArr->CommitType(AssetLib::Array::AS_TYPE_STRING);
+
+    for (unsigned i = 0; i < GetNumInputs(); ++i)
+    {
+        ShaderStageRef shader = FindShaderStageInput(i);
+        AssetLib::Asset* shaderAsset = shader->GetOwnerAsset();
+        if (shaderAsset != nullptr)
+        {
+            AssetLib::Array::Element el;
+            el.s = shaderAsset->GetPath();
+            shaderArr->PushElement(el);
+        }
+        else
+        {
+            //TODO: make this a message?
+            PG_FAILSTR("Cannot save a program that has a shader in memory without an asset bound");
+        }
+    }
+
+}
 

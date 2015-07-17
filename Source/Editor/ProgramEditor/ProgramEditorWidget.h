@@ -28,12 +28,18 @@ class QToolBar;
 class QTabBar;
 class QFocusEvent;
 class QStatusBar;
+class NodeFileTabBar;
 
 namespace Pegasus
 {
     namespace Shader
     {
         class IProgramProxy;
+    }
+
+    namespace AssetLib
+    {
+        class IRuntimeAssetObjectProxy;
     }
 }
 
@@ -55,10 +61,13 @@ public slots:
 
     //! Closes a program.
     //! \param the tab index to request close
-    void RequestCloseProgram(int tabIndex);
+    void RequestCloseProgram(Pegasus::AssetLib::IRuntimeAssetObjectProxy*);
 
     //! Saves current program.
     void SignalSaveCurrentProgram();
+
+    //! signal triggered right before closing an asset and discarding its internal changes
+    void SignalDiscardCurrentObjectChanges();
 
     //! triggers when the application has been unloaded
     void UpdateUIForAppFinished();
@@ -69,6 +78,8 @@ public slots:
     //! Posts a message to the status bar
     void PostStatusBarMessage(const QString& message);
 
+    //! Receives an IO message response
+    void ReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage id);
 
 signals:
     //! Sends a job to the render thread. This is connected in the application interface
@@ -76,6 +87,12 @@ signals:
 
     //! Sends a render thread IO Message.
     void SendAssetIoMessage(AssetIOMessageController::Message msg);
+
+    //! Called when an object has been registered as dirty
+    void RegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+
+    //! Called when an object has been unregistered as dirty
+    void UnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
 
 private:
 
@@ -103,11 +120,11 @@ private:
 
     QSignalMapper* mAddShaderMapper;
     QSignalMapper* mRemoveShaderMapper;
-    QTabBar*       mTabBar;
     QWidget*       mMainWidget;
     QAction*       mSaveAction;
     QStatusBar*    mStatusBar;
     QString        mStatusBarMessage;
+    NodeFileTabBar* mTabBar;
 
 protected slots:
     //! Triggered when a shader has been added / modified
@@ -117,15 +134,12 @@ protected slots:
     void OnRemoveShader(int stageId);
 
     //! Triggered when a program has been viewd
-    void OnViewProgram(int programid);
+    void OnViewProgram(Pegasus::AssetLib::IRuntimeAssetObjectProxy*);
 
 private:
-
-    //! Static array holding all the programs opened.
-    Pegasus::Shader::IProgramProxy* mPrograms[MAX_PROGRAMS_OPEN];
-
     //! Pointer to the current program opened
     Pegasus::Shader::IProgramProxy* mCurrentProgram;
+
 };
 
 

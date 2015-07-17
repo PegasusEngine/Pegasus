@@ -79,9 +79,9 @@ static int Pegasus_PrintFloat(float f)
     return 0;
 }
 
-TimelineScript::TimelineScript(IAllocator* allocator, const char* name, FileBuffer* fileBuffer, Core::IApplicationContext* appContext)
+TimelineScript::TimelineScript(IAllocator* allocator, const char* name, Core::IApplicationContext* appContext)
     :
-    TimelineSource(allocator, name, fileBuffer),
+    TimelineSource(allocator, name),
     mSerialVersion(0),
     mScript(nullptr),
     mIsDirty(true),

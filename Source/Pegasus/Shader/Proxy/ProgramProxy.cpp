@@ -78,6 +78,11 @@ Pegasus::Graph::IGraphUserData * Pegasus::Shader::ProgramProxy::GetUserData() co
 #else
     return nullptr;
 #endif
+} 
+
+Pegasus::AssetLib::IRuntimeAssetObjectProxy* Pegasus::Shader::ProgramProxy::GetDecoratedObject() const
+{
+    return mObject->GetRuntimeAssetObjectProxy();
 }
 
 #else

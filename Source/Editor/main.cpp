@@ -18,6 +18,7 @@
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
+#include "Pegasus/AssetLib/Shared/IRuntimeAssetObjectProxy.h"
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 #include "CodeEditor/SourceCodeManagerEventListener.h"
@@ -38,9 +39,11 @@
 
 Q_DECLARE_METATYPE(Pegasus::Core::ISourceCodeProxy*);
 Q_DECLARE_METATYPE(Pegasus::Shader::IProgramProxy*);
+Q_DECLARE_METATYPE(Pegasus::AssetLib::IRuntimeAssetObjectProxy*);
 Q_DECLARE_METATYPE(CodeUserData*);
 Q_DECLARE_METATYPE(Pegasus::Timeline::IBlockProxy*);
 Q_DECLARE_METATYPE(AssetIOMessageController::Message);
+Q_DECLARE_METATYPE(AssetIOMessageController::Message::IoResponseMessage);
 Q_DECLARE_METATYPE(SourceIOMessageController::Message);
 Q_DECLARE_METATYPE(ProgramIOMessageController::Message);
 
@@ -48,9 +51,11 @@ void RegisterMetaTypes()
 {
     qRegisterMetaType<Pegasus::Core::ISourceCodeProxy*>();
     qRegisterMetaType<Pegasus::Shader::IProgramProxy*>();
+    qRegisterMetaType<Pegasus::AssetLib::IRuntimeAssetObjectProxy*>();
     qRegisterMetaType<CodeUserData*>();
     qRegisterMetaType<Pegasus::Timeline::IBlockProxy*>();
     qRegisterMetaType<AssetIOMessageController::Message>();
+    qRegisterMetaType<AssetIOMessageController::Message::IoResponseMessage>();
     qRegisterMetaType<SourceIOMessageController::Message>();
     qRegisterMetaType<ProgramIOMessageController::Message>();
 }

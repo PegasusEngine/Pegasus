@@ -9,11 +9,13 @@
 //! \date   February 8 2015
 //! \brief  Asset Class.
 
+#include "Pegasus/AssetLib/AssetLib.h"
 #include "Pegasus/AssetLib/Asset.h"
 #include "Pegasus/AssetLib/ASTree.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/ByteStream.h"
 #include "Pegasus/Allocator/Alloc.h"
+#
 
 #include <stdio.h>
 
@@ -189,17 +191,18 @@ namespace AssetPrivate
 }
 
 #define AS_NEW PG_NEW(&mAstAllocator, -1, "AssetLibrary::ASTree", Pegasus::Alloc::PG_MEM_TEMP)
-#define AST_PAGE_SIZE (10 * sizeof(AssetLib::Object))
+#define AST_PAGE_SIZE (10 * sizeof(Pegasus::AssetLib::Object))
 #define MAX_STRING_PAGE_SIZE 512
 
-Asset::Asset(Alloc::IAllocator* allocator, Asset::AssetFormat fmt)
+Asset::Asset(Alloc::IAllocator* allocator, Pegasus::AssetLib::AssetLib* lib, Asset::AssetFormat fmt)
 : 
   mAllocator(allocator),
   mFormat(fmt),
   mChildArrays(allocator),
   mChildObjects(allocator),
   mRoot(nullptr),
-  mRuntimeData(nullptr)
+  mRuntimeData(nullptr),
+  mAssetLib(lib)
 {
     mPathString[0] = '\0';
     mAstAllocator.Initialize(AST_PAGE_SIZE, allocator);
@@ -212,10 +215,7 @@ Asset::Asset(Alloc::IAllocator* allocator, Asset::AssetFormat fmt)
 
 Asset::~Asset()
 {
-    if (mFormat == Asset::FMT_STRUCTURED)
-    {
-        Clear();
-    }    
+    Clear();
 }
 
 Object* Asset::NewObject()
@@ -256,25 +256,31 @@ const char* Asset::CopyString(const char* string)
 
 void Asset::Clear()
 {
-    PG_ASSERT(mFormat == Asset::FMT_STRUCTURED);
-    for (int i = 0; i < mChildObjects.GetSize(); ++i)
+    if (mFormat == Asset::FMT_RAW)
     {
-        mChildObjects[i]->~Object();
+        mRawAsset.DestroyBuffer();
     }
-
-    mChildObjects.Clear();
-
-    for (int i = 0; i < mChildArrays.GetSize(); ++i)
+    else
     {
-        mChildArrays[i]->~Array();
+        for (int i = 0; i < mChildObjects.GetSize(); ++i)
+        {
+            mChildObjects[i]->~Object();
+        }
+
+        mChildObjects.Clear();
+
+        for (int i = 0; i < mChildArrays.GetSize(); ++i)
+        {
+            mChildArrays[i]->~Array();
+        }
+
+        mChildArrays.Clear();
+
+        mAstAllocator.FreeMemory();
+        mStringAllocator.FreeMemory();
+        
+        mRoot = nullptr;
     }
-
-    mChildArrays.Clear();
-
-    mAstAllocator.FreeMemory();
-    mStringAllocator.FreeMemory();
-    
-    mRoot = nullptr;
 }
 
 void Asset::SetRootObject(Object* obj)

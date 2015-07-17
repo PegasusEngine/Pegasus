@@ -79,6 +79,8 @@ public:
 private:
     TimelineSource* mTimelineSource;
 
+protected:
+    virtual AssetLib::IRuntimeAssetObjectProxy* GetDecoratedObject() const;
 };
 
 } //namespace Timeline

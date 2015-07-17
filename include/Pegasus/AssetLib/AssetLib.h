@@ -62,15 +62,6 @@ public:
     //! Sets an alternative IO Manager to handle IO
     void SetIoManager(Io::IOManager* ioMgr) { mIoMgr = ioMgr; }
 
-    //! This function must be called after parsing an asset and associating a runtime object to it
-    //! \param asset the asset that has been loaded
-    //! \param runtimeObject the runtime object that has been successfully loaded
-    void BindAssetToRuntimeObject(Asset* asset, RuntimeAssetObject* runtimeObject);
-
-    //! this function unbinds and disconnects an asset object from its owner runtime object
-    //! \param the runtime object to unbind
-    void UnbindAssetToRuntimeObject(RuntimeAssetObject* runtimeObject);
-
     //! Creates a blank asset. Depending on the extension is either structured or raw.
     //! \param the path to build the blank asset
     //! \param the asset proxy pointer to fill in 

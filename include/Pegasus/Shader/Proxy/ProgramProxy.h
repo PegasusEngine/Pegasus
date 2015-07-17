@@ -74,6 +74,9 @@ private:
 
     //! internal worker, obfuscated
     ProgramLinkage * mObject;
+
+protected:
+    virtual AssetLib::IRuntimeAssetObjectProxy* GetDecoratedObject() const;
 };
 
 }

@@ -59,32 +59,8 @@ void Pegasus::Shader::ShaderManager::RegisterAllNodes()
     REGISTER_SHADER_NODE(ShaderSource);
 }
 
-Pegasus::Shader::ShaderType Pegasus::Shader::ShaderManager::DeriveShaderType(const AssetLib::Asset* asset) const
-{
-    if (asset->GetFormat() != AssetLib::Asset::FMT_RAW)
-    {
-        return Pegasus::Shader::SHADER_STAGE_INVALID;
-    }
-
-    const char * extension = Pegasus::Utils::Strrchr(asset->GetPath(), '.');
-    Pegasus::Shader::ShaderType targetStage = Pegasus::Shader::SHADER_STAGE_INVALID;
-    if (extension != nullptr)
-    {
-        return DeriveShaderType(extension);
-    }
-
-    return Pegasus::Shader::SHADER_STAGE_INVALID;
-}
-
 Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::CreateShader(AssetLib::Asset* asset)
 {
-    Pegasus::Shader::ShaderType targetStage = DeriveShaderType(asset); 
-    if (targetStage == Pegasus::Shader::SHADER_STAGE_INVALID)
-    {
-        PG_LOG('ERR_', "Invalid shader extension");
-        return nullptr;
-    }
-
     //has this asset been already built?
     if (asset->GetRuntimeData() != nullptr)
     {
@@ -94,40 +70,31 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::CreateShader(
 
     Pegasus::Shader::ShaderStageRef stage = mNodeManager->CreateNode("ShaderStage");
 
-    if (targetStage >= 0 && targetStage < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT))
-    {
-        Io::FileBuffer* fb = asset->Raw();
-        stage->SetSource(targetStage, fb->GetBuffer(), fb->GetFileSize());
-#if PEGASUS_ENABLE_PROXIES
-        stage->SetShaderTracker(&mShaderTracker);
-        mShaderTracker.InsertShader(&(*stage));
-#endif
-    }
-
-
 #if PEGASUS_USE_GRAPH_EVENTS
     stage->SetEventListener(mEventListener);
 #endif
     stage->SetFactory(mFactory);
 
+    if (stage->Read(asset))
+    {
 #if PEGASUS_ENABLE_PROXIES
-    //TODO: kill this
-    stage->SetFullFilePath(asset->GetPath());
+        GRAPH_EVENT_INIT_USER_DATA(stage->GetProxy(), "ShaderStage", mEventListener);
+        stage->SetShaderTracker(&mShaderTracker);
+        stage->SetFullFilePath(asset->GetPath());
+        mShaderTracker.InsertShader(&(*stage));
 #endif
-    
-    
-#if PEGASUS_ENABLE_PROXIES
-    GRAPH_EVENT_INIT_USER_DATA(stage->GetProxy(), "ShaderStage", mEventListener);
-#endif
-
-    mAssetLib->BindAssetToRuntimeObject(asset, &(*stage));
-
-    return stage;
+        return stage;
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
 Pegasus::Shader::ProgramLinkageReturn Pegasus::Shader::ShaderManager::CreateProgram(const char* name)
 {
     Pegasus::Shader::ProgramLinkageRef program = mNodeManager->CreateNode("ProgramLinkage");
+    program->SetManager(this);
 #if PEGASUS_USE_GRAPH_EVENTS 
     program->SetEventListener(mEventListener);
 #endif
@@ -148,29 +115,7 @@ Pegasus::Shader::ProgramLinkageReturn Pegasus::Shader::ShaderManager::CreateProg
 
 bool Pegasus::Shader::ShaderManager::IsProgram(const AssetLib::Asset* asset) const
 {
-    //parse asset
-    if (asset->GetFormat() != AssetLib::Asset::FMT_STRUCTURED)
-    {
-        return false;
-    }
-
-    const AssetLib::Object* root = asset->Root();
-    if (!root) return false;
-
-    int typeId = root->FindString("type");
-
-    if (typeId == -1)
-    {
-        return false;
-    }
-
-    const char* typeName = root->GetString(typeId);
-    if (Utils::Stricmp(typeName, "program"))
-    {
-        return false;
-    }
-
-    return true;
+    return Pegasus::Shader::ProgramLinkage::IsProgram(asset);
 }
 
 Pegasus::Shader::ProgramLinkageReturn Pegasus::Shader::ShaderManager::CreateProgram(AssetLib::Asset* asset)
@@ -182,53 +127,28 @@ Pegasus::Shader::ProgramLinkageReturn Pegasus::Shader::ShaderManager::CreateProg
     }
 
     Pegasus::Shader::ProgramLinkageRef program = mNodeManager->CreateNode("ProgramLinkage");
+    program->SetManager(this);
 #if PEGASUS_USE_GRAPH_EVENTS 
     program->SetEventListener(mEventListener);
 #endif
     program->SetFactory(mFactory);
 
-    AssetLib::Object* root = asset->Root();
-    int nameId = root->FindString("name");
-    int shaders = root->FindArray("shaders");
-
-#if PEGASUS_ENABLE_PROXIES
-    //if proxies make sure to set metadata correctly
-    if (nameId != -1)
+    if (program->Read(asset))
     {
-        program->SetName(root->GetString(nameId));
-    }
-    program->SetShaderTracker(&mShaderTracker);
-    mShaderTracker.InsertProgram(&(*program));
-#endif
 
-    if (shaders != -1)
+    #if PEGASUS_ENABLE_PROXIES
+        //if proxies make sure to set metadata correctly
+        program->SetShaderTracker(&mShaderTracker);
+        mShaderTracker.InsertProgram(&(*program));
+        GRAPH_EVENT_INIT_USER_DATA(program->GetProxy(), "ProgramLinkage", mEventListener);
+    #endif
+    
+        return program; 
+    }
+    else
     {
-        AssetLib::Array* shaderArr = root->GetArray(shaders);
-        if (shaderArr->GetType() == AssetLib::Array::AS_TYPE_STRING)
-        {
-            for (int i = 0; i < shaderArr->GetSize(); ++i)
-            {
-                const AssetLib::Array::Element& element = shaderArr->GetElement(i);
-                Pegasus::Shader::ShaderStageRef shaderStage = LoadShader(element.s);
-                if (shaderStage != nullptr)
-                {
-                    program->SetShaderStage(shaderStage);
-                }
-            }
-        }
-        else if (shaderArr->GetSize() != 0) //forgivable error if empty list
-        {
-            PG_LOG('ERR_', "Invalid list of shaders");
-            return nullptr;
-        }
+        return nullptr;
     }
-    mAssetLib->BindAssetToRuntimeObject(asset, &(*program));
-
-#if PEGASUS_ENABLE_PROXIES
-    GRAPH_EVENT_INIT_USER_DATA(program->GetProxy(), "ProgramLinkage", mEventListener);
-#endif
-
-    return program; 
 }
 
 Pegasus::Shader::ProgramLinkageReturn Pegasus::Shader::ShaderManager::LoadProgram(const char* filename)
@@ -291,41 +211,11 @@ Pegasus::Shader::ShaderSourceReturn Pegasus::Shader::ShaderManager::LoadHeader(c
     Io::IoError err = mAssetLib->LoadAsset(filename, &asset);
     if (err == Io::ERR_NONE && asset != nullptr)
     {
-        if (asset->GetFormat() != Pegasus::AssetLib::Asset::FMT_RAW)
+        Pegasus::Shader::ShaderSourceRef stage = CreateHeader(asset);
+        if (stage == nullptr)
         {
-            PG_LOG('ERR_', "Invalid shader extension");
             mAssetLib->DestroyAsset(asset);
-            return nullptr;
         }
-    
-        //has this asset been already built?
-        if (asset->GetRuntimeData() != nullptr)
-        {
-            //TODO: dangerous cast! we could be including a texture file!
-            Pegasus::Shader::ShaderSourceRef shaderSource = static_cast<Pegasus::Shader::ShaderSource*>(asset->GetRuntimeData());
-            return shaderSource;
-        }
-    
-        Pegasus::Shader::ShaderSourceRef stage = mNodeManager->CreateNode("ShaderSource");
-    
-        Io::FileBuffer* fb = asset->Raw();
-        stage->SetSource(fb->GetBuffer(), fb->GetFileSize());
-    
-    #if PEGASUS_USE_GRAPH_EVENTS
-        stage->SetEventListener(mEventListener);
-    #endif
-
-    #if PEGASUS_ENABLE_PROXIES
-        //TODO: kill this
-        stage->SetFullFilePath(asset->GetPath());
-    #endif
-    
-    
-    #if PEGASUS_ENABLE_PROXIES
-        GRAPH_EVENT_INIT_USER_DATA(stage->GetProxy(), "ShaderStage", mEventListener);
-    #endif
-
-        mAssetLib->BindAssetToRuntimeObject(asset, &(*stage));
 
         return stage;
     }
@@ -339,13 +229,6 @@ Pegasus::Shader::ShaderSourceReturn Pegasus::Shader::ShaderManager::LoadHeader(c
 
 Pegasus::Shader::ShaderSourceReturn Pegasus::Shader::ShaderManager::CreateHeader(AssetLib::Asset* asset)
 {    
-    if (asset->GetFormat() != Pegasus::AssetLib::Asset::FMT_RAW)
-    {
-        PG_LOG('ERR_', "Invalid shader extension");
-        mAssetLib->DestroyAsset(asset);
-        return nullptr;
-    }
-    
     //has this asset been already built?
     if (asset->GetRuntimeData() != nullptr)
     {
@@ -356,98 +239,25 @@ Pegasus::Shader::ShaderSourceReturn Pegasus::Shader::ShaderManager::CreateHeader
     
     Pegasus::Shader::ShaderSourceRef stage = mNodeManager->CreateNode("ShaderSource");
     
-    Io::FileBuffer* fb = asset->Raw();
-    stage->SetSource(fb->GetBuffer(), fb->GetFileSize());
-    
-    #if PEGASUS_USE_GRAPH_EVENTS
-        stage->SetEventListener(mEventListener);
-    #endif
-
-    #if PEGASUS_ENABLE_PROXIES
-        //TODO: kill this
-        stage->SetFullFilePath(asset->GetPath());
-    #endif
-    
-    
-    #if PEGASUS_ENABLE_PROXIES
-        GRAPH_EVENT_INIT_USER_DATA(stage->GetProxy(), "ShaderStage", mEventListener);
-    #endif
-
-    mAssetLib->BindAssetToRuntimeObject(asset, &(*stage));
-
-    return stage;
-}
-
-Pegasus::Shader::ShaderType Pegasus::Shader::ShaderManager::DeriveShaderType(const char* extension) const
-{
-    int extSz = Utils::Strlen(extension) - 1;
-    const char* extSanitized = extension + 1;
-    if (extSz > 0)
+    if (stage->Read(asset))
     {
-        for (int i = 0; i < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT); ++i)
-        {
-            if (!Pegasus::Utils::Stricmp(extSanitized, Pegasus::Shader::gShaderExtensions[i]))
-            {
-                return static_cast<Pegasus::Shader::ShaderType>(i);
-            }
-        }
+        #if PEGASUS_USE_GRAPH_EVENTS
+            stage->SetEventListener(mEventListener);
+        #endif
+
+        #if PEGASUS_ENABLE_PROXIES
+            //TODO: kill this
+            stage->SetFullFilePath(asset->GetPath());
+        #endif
+        
+        #if PEGASUS_ENABLE_PROXIES
+            GRAPH_EVENT_INIT_USER_DATA(stage->GetProxy(), "ShaderStage", mEventListener);
+        #endif
+
+        return stage;
     }
-
-    return Pegasus::Shader::SHADER_STAGE_INVALID;
-}
-
-void Pegasus::Shader::ShaderManager::FlushShaderToAsset(Pegasus::Shader::ShaderSourceIn shaderStage)
-{
-    AssetLib::Asset* asset = shaderStage->GetOwnerAsset();
-    const char* src = nullptr;
-    int srcLen = 0;
-    shaderStage->GetSource(&src, srcLen);
-    Io::FileBuffer* fb = asset->Raw();
-    if (srcLen > fb->GetBufferSize())
+    else
     {
-        Pegasus::Alloc::IAllocator* alloc = fb->GetAllocator();
-        fb->DestroyBuffer();
-        fb->OwnBuffer(alloc, PG_NEW_ARRAY(alloc, -1, "", Alloc::PG_MEM_TEMP, char, srcLen), srcLen);
+        return nullptr;
     }
-    fb->SetFileSize(srcLen);
-    Utils::Memcpy(fb->GetBuffer(), src, srcLen);
-}
-
-void Pegasus::Shader::ShaderManager::FlushProgramToAsset(Pegasus::Shader::ProgramLinkageInOut program)
-{
-    AssetLib::Asset* asset = program->GetOwnerAsset();
-    PG_ASSERTSTR(asset != nullptr, "Can't flush this program because there is no asset bound to it");
-    
-    asset->Clear(); //brand  new asset
-    AssetLib::Object* root = asset->NewObject();
-    root->AddString("type", "program");
-    asset->SetRootObject(root);
-
-    AssetLib::Array* shaderArr = asset->NewArray();
-
-#if PEGASUS_ENABLE_PROXIES
-    root->AddString("name", program->GetName());
-#endif
-
-    root->AddArray("shaders", shaderArr);
-    shaderArr->CommitType(AssetLib::Array::AS_TYPE_STRING);
-
-    for (unsigned i = 0; i < program->GetNumInputs(); ++i)
-    {
-        ShaderStageRef shader = program->FindShaderStageInput(i);
-        AssetLib::Asset* shaderAsset = shader->GetOwnerAsset();
-        if (shaderAsset != nullptr)
-        {
-            AssetLib::Array::Element el;
-            el.s = shaderAsset->GetPath();
-            shaderArr->PushElement(el);
-        }
-        else
-        {
-            //TODO: make this a message?
-            PG_FAILSTR("Cannot save a program that has a shader in memory without an asset bound");
-        }
-    }
-
-    mAssetLib->BindAssetToRuntimeObject(asset, &(*program));
 }

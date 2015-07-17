@@ -78,6 +78,9 @@ private:
 
     //! internal implementation
     ShaderSource * mObject;
+
+protected:
+    virtual AssetLib::IRuntimeAssetObjectProxy* GetDecoratedObject() const;
 };
 
 }

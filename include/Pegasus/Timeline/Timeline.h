@@ -262,11 +262,6 @@ public:
     //! \return the script tracker
     ScriptTracker* GetScriptTracker() { return &mScriptTracker; }
 
-    //! Flushes script to asset internally.
-    //! \return IO error
-    void FlushScriptToAsset(TimelineSourceIn script);
-
-
 #if PEGASUS_ENABLE_PROXIES
 
     //! Get the proxy associated with the timeline

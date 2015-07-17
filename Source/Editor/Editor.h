@@ -25,6 +25,7 @@
 #include "Viewport/ViewportDockWidget.h"
 #include "Viewport/ViewportWidget.h"
 #include "Viewport/ViewportType.h"
+#include "Pegasus/AssetLib/Shared/IRuntimeAssetObjectProxy.h"
 
 #include <QtWidgets/QMainWindow>
 
@@ -228,6 +229,17 @@ private slots:
     //! Called when an application is closed
     void UpdateUIForAppClosed();
 
+    //!@{
+    //! Called when an object has been marked as dirty / non dirty
+    
+    //! Called when an object has been registered as dirty
+    void OnRegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+
+    //! Called when an object has been unregistered as dirty
+    void OnUnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+
+    //@}
+
     //------------------------------------------------------------------------------------
 
 public slots:
@@ -361,6 +373,9 @@ private:
 
     //! Global Qt application
     QApplication * mQtApplication;
+
+    //! List holding all the dirty assets, so we warn the user there are dirty assets
+    QSet<Pegasus::AssetLib::IRuntimeAssetObjectProxy*> mDirtyAssets;
 };
 
 

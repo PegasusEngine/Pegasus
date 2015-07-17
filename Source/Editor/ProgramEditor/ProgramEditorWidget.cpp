@@ -12,10 +12,12 @@
 #include "Editor.h"
 #include "Pegasus/AssetLib/Shared/IAssetLibProxy.h"
 #include "Pegasus/AssetLib/Shared/IAssetProxy.h"
+#include "Pegasus/AssetLib/Shared/IRuntimeAssetObjectProxy.h"
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "ProgramEditor/ProgramEditorWidget.h"
+#include "Widgets/NodeFileTabBar.h"
 #include "Application/ApplicationManager.h"
 #include "Application/Application.h"
 #include <qmessagebox.h>
@@ -80,17 +82,36 @@ void ProgramEditorWidget::SetupUi()
     QIcon addIcon(tr(":/TimelineToolbar/Add16.png"));
     QIcon delIcon(tr(":/TimelineToolbar/Remove16.png"));
 
-    mTabBar = new QTabBar(this);
-    mTabBar->setTabsClosable(true);
+    mTabBar = new NodeFileTabBar(this);
 
     connect(
-        mTabBar, SIGNAL(tabCloseRequested(int)),
-        this, SLOT(RequestCloseProgram(int))
+        mTabBar, SIGNAL(RuntimeObjectRemoved(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
+        this, SLOT(RequestCloseProgram(Pegasus::AssetLib::IRuntimeAssetObjectProxy*))
     );
 
     connect(
-        mTabBar, SIGNAL(currentChanged(int)),
-        this,   SLOT(OnViewProgram(int))
+        mTabBar, SIGNAL(DisplayRuntimeObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
+        this,   SLOT(OnViewProgram(Pegasus::AssetLib::IRuntimeAssetObjectProxy*))
+    );
+
+    connect(
+        mTabBar, SIGNAL(SaveCurrentRuntimeObject()),
+        this,   SLOT(SignalSaveCurrentProgram())
+    );
+
+    connect(
+        mTabBar, SIGNAL(DiscardCurrentObjectChanges()),
+        this,   SLOT(SignalDiscardCurrentObjectChanges())
+    );
+
+    connect(
+        mTabBar, SIGNAL(RegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
+        this,   SIGNAL(RegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*))
+    );
+
+    connect(
+        mTabBar, SIGNAL(UnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
+        this,   SIGNAL(UnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*))
     );
 
     mainLayout->addWidget(mTabBar);
@@ -153,6 +174,7 @@ void ProgramEditorWidget::OnAddShader(int id)
         QString filePath = qd.path();
         if (shaderAsset.startsWith(filePath))
         {
+            mTabBar->MarkCurrentAsDirty();
             ProgramIOMessageController::Message msg;
             msg.SetMessageType(ProgramIOMessageController::Message::MODIFY_SHADER);
             msg.SetShaderPath(shaderAsset.right(shaderAsset.size() - filePath.size() - 1));
@@ -168,6 +190,7 @@ void ProgramEditorWidget::OnAddShader(int id)
 
 void ProgramEditorWidget::OnRemoveShader(int id)
 {
+    mTabBar->MarkCurrentAsDirty();
     ProgramIOMessageController::Message msg;
     msg.SetMessageType(ProgramIOMessageController::Message::REMOVE_SHADER);
     msg.SetShaderType(static_cast<Pegasus::Shader::ShaderType>(id));
@@ -184,6 +207,30 @@ void ProgramEditorWidget::PostStatusBarMessage(const QString& msg)
     }
 }
 
+void ProgramEditorWidget::ReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage id)
+{
+    switch(id)
+    {
+    case AssetIOMessageController::Message::IO_SAVE_SUCCESS:
+        // This might create a race condition, if the user changes a tab wile the file is saving... to fix this we need
+        // to pass the object around... if this becomes a problem then we could fix it later...
+        mTabBar->ClearCurrentDirty();
+        PostStatusBarMessage(tr("Saved file successfully."));
+        break;
+    case AssetIOMessageController::Message::IO_SAVE_ERROR:
+        PostStatusBarMessage(tr("IO Error saving file."));
+        break;
+    case AssetIOMessageController::Message::IO_NEW_SUCCESS:
+        PostStatusBarMessage(tr(""));
+        break;
+    case AssetIOMessageController::Message::IO_NEW_ERROR:
+        PostStatusBarMessage(tr("IO Error creating new program file."));
+        break;
+    default:
+        ED_FAILSTR("Unkown IO Asset message id %d", id);
+    }
+}
+
 void ProgramEditorWidget::SignalSaveCurrentProgram()
 {
     PostStatusBarMessage(tr("")); //clear the message bar
@@ -193,27 +240,16 @@ void ProgramEditorWidget::SignalSaveCurrentProgram()
     emit SendAssetIoMessage(msg);
 }
 
+void ProgramEditorWidget::SignalDiscardCurrentObjectChanges()
+{
+    mCurrentProgram->ReloadFromAsset();
+}
+
 void ProgramEditorWidget::RequestOpenProgram(Pegasus::Shader::IProgramProxy* program)
 {
     show();
     activateWindow();
-    //find if the program is open.
-    for (int i = 0; i < mTabBar->count(); ++i)
-    {
-        if (program == mPrograms[i])
-        {
-            mTabBar->setCurrentIndex(i);
-            return;
-        }
-    }
-    
-    if (mTabBar->count() < MAX_PROGRAMS_OPEN - 1)
-    {
-        mPrograms[mTabBar->count()] = program;
-        int targetIndex = mTabBar->count();
-        mTabBar->addTab((program->GetName()));
-        mTabBar->setCurrentIndex(targetIndex);
-    }
+    mTabBar->Open(program);
 }
 
 void ProgramEditorWidget::SyncUiToProgram()
@@ -256,42 +292,32 @@ void ProgramEditorWidget::ClearUi()
     }
 }
 
-void ProgramEditorWidget::OnViewProgram(int programid)
+void ProgramEditorWidget::OnViewProgram(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
 {
-    if (programid == -1)
+    if (object != nullptr)
     {
-        ClearUi();
-        mCurrentProgram = nullptr;
-    }
-    else if (programid < MAX_PROGRAMS_OPEN)
-    {
-        mCurrentProgram = mPrograms[programid];
+        mCurrentProgram = static_cast<Pegasus::Shader::IProgramProxy*>(object);
         SyncUiToProgram();
         EnableUi(true);
+    }
+    else
+    {
+        mCurrentProgram = nullptr;
+        EnableUi(false);
+        ClearUi();
     }
 }
 
 
-void ProgramEditorWidget::RequestCloseProgram(int id)
+void ProgramEditorWidget::RequestCloseProgram(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
 {
-    ED_ASSERT(id >= 0 && id < mTabBar->count());
-    
+    Pegasus::Shader::IProgramProxy* program = static_cast<Pegasus::Shader::IProgramProxy*>(object);
     AssetIOMessageController::Message msg;
     msg.SetMessageType(AssetIOMessageController::Message::CLOSE_PROGRAM);
-    msg.GetAssetNode().mProgram = mPrograms[id];
+    msg.GetAssetNode().mProgram = program;
 
-    if (id < MAX_PROGRAMS_OPEN - 1)
-    {
-        for (int c = id; c < mTabBar->count() - 1; ++c)
-        {
-            mPrograms[c] = mPrograms[c + 1];
-        }
 
-        int currIdx = mTabBar->currentIndex();
-        mTabBar->removeTab(id);        
-    } 
-
-    if (mTabBar->count() == 0)
+    if (mTabBar->GetTabCount() == 0)
     {
         EnableUi(false);
     }
@@ -301,8 +327,8 @@ void ProgramEditorWidget::RequestCloseProgram(int id)
 
 void ProgramEditorWidget::UpdateUIForAppFinished()
 {
-    while (mTabBar->count() > 0)
+    while (mTabBar->GetTabCount() > 0)
     {
-        RequestCloseProgram(0);
+        mTabBar->Close(0);
     }
 }

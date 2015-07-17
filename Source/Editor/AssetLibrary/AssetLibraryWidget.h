@@ -103,12 +103,6 @@ signals:
     //! sends a message to the IO controller, which will then send more messages to other UI specific elements
     void SendAssetIoMessage(AssetIOMessageController::Message msg);
 
-    //! sends a message to the UI to open a source code with the default editor
-    void RequestOpenCode(Pegasus::Core::ISourceCodeProxy* code);
-
-    //! sends a message to the UI to open a source code with the default editor
-    void RequestOpenProgram(Pegasus::Shader::IProgramProxy* program);
-
 private:
 
     //! Asks through a popup the file name to use to save this asset

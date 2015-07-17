@@ -145,67 +145,12 @@ bool Pegasus::Shader::ShaderManagerProxy::IsShader(const AssetLib::IAssetProxy* 
     const char* ext = Pegasus::Utils::Strrchr(asset->GetPath(), '.');
     return
           (ext != nullptr && !Utils::Strcmp(ext, ".h"))
-         || mObject->DeriveShaderType(static_cast<const AssetLib::AssetProxy*>(asset)->GetObject()) != Pegasus::Shader::SHADER_STAGE_INVALID;
+         || Pegasus::Shader::ShaderStage::DeriveShaderType(static_cast<const AssetLib::AssetProxy*>(asset)->GetObject()) != Pegasus::Shader::SHADER_STAGE_INVALID;
 }
 
 bool Pegasus::Shader::ShaderManagerProxy::IsProgram(const AssetLib::IAssetProxy* asset) const
 {
     return mObject->IsProgram(static_cast<const AssetLib::AssetProxy*>(asset)->GetObject());
-}
-
-Pegasus::AssetLib::IAssetProxy* Pegasus::Shader::ShaderManagerProxy::GetShaderAsset(Pegasus::Shader::IShaderProxy* shader)
-{
-    Pegasus::Shader::ShaderSource* obj = static_cast<Pegasus::Shader::ShaderProxy*>(shader)->GetObject();
-    if (obj->GetOwnerAsset() != nullptr)
-    {
-        return obj->GetOwnerAsset()->GetProxy();
-    }
-
-    return nullptr;
-
-}
-
-Pegasus::AssetLib::IAssetProxy* Pegasus::Shader::ShaderManagerProxy::GetProgramAsset(Pegasus::Shader::IProgramProxy* program)
-{
-    Pegasus::Shader::ProgramLinkage* obj = static_cast<Pegasus::Shader::ProgramProxy*>(program)->GetObject();
-    if (obj->GetOwnerAsset() != nullptr)
-    {
-        return obj->GetOwnerAsset()->GetProxy();
-    }
-
-    return nullptr;
-}
-
-void Pegasus::Shader::ShaderManagerProxy::FlushShaderToAsset(Pegasus::Shader::IShaderProxy* shader)
-{
-    Pegasus::Shader::ShaderSourceRef obj = static_cast<Pegasus::Shader::ShaderProxy*>(shader)->GetObject();
-    mObject->FlushShaderToAsset(obj);
-}
-
-void Pegasus::Shader::ShaderManagerProxy::FlushProgramToAsset(Pegasus::Shader::IProgramProxy* program)
-{
-    Pegasus::Shader::ProgramLinkageRef obj = static_cast<Pegasus::Shader::ProgramProxy*>(program)->GetObject();
-    mObject->FlushProgramToAsset(obj);
-}
-
-void Pegasus::Shader::ShaderManagerProxy::BindProgramToAsset(Pegasus::Shader::IProgramProxy* programProxy, Pegasus::AssetLib::IAssetProxy* assetProxy)
-{
-    Pegasus::AssetLib::Asset* asset = nullptr;
-    if (assetProxy != nullptr)
-    {
-        asset = static_cast<Pegasus::AssetLib::AssetProxy*>(assetProxy)->GetObject();
-    }
-    Pegasus::Shader::ProgramLinkage* program = static_cast<Pegasus::Shader::ProgramProxy*>(programProxy)->GetObject();
-    
-    if (program->GetOwnerAsset() != nullptr)
-    {
-        mObject->GetAssetLib()->UnbindAssetToRuntimeObject(program);
-    }
-
-    if (asset != nullptr)
-    {
-        mObject->GetAssetLib()->BindAssetToRuntimeObject(asset, program);
-    }
 }
 
 #else

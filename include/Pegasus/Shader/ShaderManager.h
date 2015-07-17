@@ -64,9 +64,6 @@ public:
     //! \return true if the asset passed is a program, false otherwise
     bool IsProgram(const AssetLib::Asset* asset) const;
 
-    //! \return the shader type of this asset
-    ShaderType DeriveShaderType(const AssetLib::Asset* asset) const;
-
     //! Requests creation of a Shader from an asset. This is the core function that populates a node from an asset
     //! \param asset the asset to be used as a database to create a node
     //! \return node pointer to return.
@@ -113,19 +110,6 @@ public:
     //! Gets the asset factory of this manager.
     //! \return assetFactory the asset factory to get
     AssetLib::AssetLib* GetAssetLib() const  { return mAssetLib; }
-
-    //! Gets the type of this shader
-    //! \param the extension
-    //! \return the shader type
-    ShaderType DeriveShaderType(const char* extension) const;
-
-    //! Saves a shader stage to an asset that is held internally by the shader.
-    //! \param shaderStage the shader stage to record to
-    void FlushShaderToAsset(Pegasus::Shader::ShaderSourceIn shaderStage);
-
-    //! Saves a program stage to an asset that is held internally by the program.
-    //! \param program to flush into the serializable asset object
-    void FlushProgramToAsset(Pegasus::Shader::ProgramLinkageInOut program);
 
 private:
     //! Internal function. registers the node types.

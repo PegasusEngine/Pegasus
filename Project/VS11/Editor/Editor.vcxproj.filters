@@ -412,6 +412,15 @@
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ProgramIOMessageController.cpp">
       <Filter>Generated\Dev-Debug</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Widgets\NodeFileTabBar.cpp">
+      <Filter>Source\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_NodeFileTabBar.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_NodeFileTabBar.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -536,6 +545,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\MessageControllers\ProgramIOMessageController.h">
       <Filter>Source\MessageControllers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Widgets\NodeFileTabBar.h">
+      <Filter>Source\Widgets</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

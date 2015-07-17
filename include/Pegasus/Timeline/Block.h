@@ -29,6 +29,7 @@ namespace Pegasus {
 
     namespace BlockScript {
         class BlockScript;
+        class BlockScriptManager;
     }
 }
 
@@ -174,6 +175,10 @@ protected:
     //! Get the camera manager
     //! \return Global camera manager
     inline Camera::CameraManager * GetCameraManager() const { return mAppContext->GetCameraManager(); }
+
+    //! Get the bs manager 
+    //! \return Global bs manager
+    inline BlockScript::BlockScriptManager * GetBlockScriptManager() const { return mAppContext->GetBlockScriptManager(); }
 
     //! Get the timeline
     //! \return Global timeline

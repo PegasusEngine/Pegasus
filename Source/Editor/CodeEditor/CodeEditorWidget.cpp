@@ -18,6 +18,8 @@
 #include "CodeEditor/SourceCodeManagerEventListener.h"
 #include "CodeEditor/CodeTextEditorTreeWidget.h"
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
+#include "Pegasus/AssetLib/Shared/IRuntimeAssetObjectProxy.h"
+#include "Widgets/NodeFileTabBar.h"
 #include <QVBoxLayout>
 #include <QTabWidget>
 #include <QToolBar>
@@ -39,13 +41,27 @@ static const char * INSTANT_COMPILATION_DESC_ON = "Turn instant compilation ON\n
 static const char * INSTANT_COMPILATION_DESC_OFF = "Turn instant compilation OFF\nInstant Compilation Mode: code gets compiled at every key stroke, in an efficient manner. ";
 
 
+
+static inline QString SrcToQString(const char* src, int srcSize)
+{    
+    QChar * qchar = new QChar[srcSize];
+    for (int i = 0; i < srcSize; ++i)
+    {
+        qchar[i] = src[i];
+    }
+
+    QString srcQString(qchar, srcSize);
+    delete[] qchar;            
+    return srcQString;
+
+}
+
+
 CodeEditorWidget::CodeEditorWidget (QWidget * parent)
 : 
     QDockWidget(parent),
     mCompilationRequestPending(false), 
     mInternalBlockTextUpdated(false),
-    mOpenCodeCount(0),
-    mPreviousTabIndex(-1),
     mCloseViewAction(nullptr),
     mPinAction(nullptr),
     mSaveAction(nullptr),
@@ -120,12 +136,41 @@ void CodeEditorWidget::SetupUi()
     setWindowTitle(tr("Code Editor"));
     setObjectName("CodeEditor");
 
-    mUi.mTabWidget = new QTabBar(mainWidget);
-    mUi.mTabWidget->setTabsClosable(true);
+    mUi.mTabWidget = new NodeFileTabBar(mainWidget);
     
     connect(
-        mUi.mTabWidget, SIGNAL(tabCloseRequested(int)),
-        this, SLOT(RequestClose(int))
+        mUi.mTabWidget, SIGNAL(RuntimeObjectRemoved(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
+        this, SLOT(RequestClose(Pegasus::AssetLib::IRuntimeAssetObjectProxy*))
+    );
+
+    connect(
+        mUi.mTabWidget, SIGNAL(DisplayRuntimeObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
+        this,   SLOT(SignalViewCode(Pegasus::AssetLib::IRuntimeAssetObjectProxy*))
+    );
+
+    connect(
+        mUi.mTabWidget, SIGNAL(SaveCurrentRuntimeObject()),
+        this,   SLOT(SignalSaveCurrentCode())
+    );
+
+    connect(
+        mUi.mTabWidget, SIGNAL(SaveCurrentRuntimeObject()),
+        this,   SLOT(SignalSaveCurrentCode())
+    );
+
+    connect(
+        mUi.mTabWidget, SIGNAL(DiscardCurrentObjectChanges()),
+        this,   SLOT(SignalDiscardCurrentObjectChanges())
+    );
+
+    connect(
+        mUi.mTabWidget, SIGNAL(RegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
+        this,   SIGNAL(RegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*))
+    );
+
+    connect(
+        mUi.mTabWidget, SIGNAL(UnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
+        this,   SIGNAL(UnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*))
     );
  
     //setup the tree editor
@@ -171,10 +216,6 @@ void CodeEditorWidget::SetupUi()
         this, SLOT(SignalCompileCurrentCode())
     );
 
-    connect(
-        mUi.mTabWidget, SIGNAL(currentChanged(int)),
-        this,   SLOT(SignalViewCode(int))
-    );
     //setup the status bar
     mUi.mStatusBar = new QStatusBar(mainWidget);
     
@@ -204,10 +245,11 @@ void CodeEditorWidget::AsyncSetCompilationRequestPending()
 
 void CodeEditorWidget::SignalCompileCurrentCode()
 {
-    int idx = mUi.mTabWidget->currentIndex();
-    if (idx >= 0 && idx < mOpenCodeCount)
+    int idx = mUi.mTabWidget->GetCurrentIndex();
+    if (idx >= 0)
     {
-        CodeUserData * code = mOpenedCodes[idx];
+        Pegasus::Core::ISourceCodeProxy* sourceCode = mUi.mTabWidget->GetTabObject<Pegasus::Core::ISourceCodeProxy>(idx);
+        CodeUserData * code = static_cast<CodeUserData*>(sourceCode->GetUserData());
         if (code != nullptr)
         {
             //ensure that no compilation is happening while saving this file
@@ -248,10 +290,10 @@ void CodeEditorWidget::BlessUserData(CodeUserData* codeUserData)
 void CodeEditorWidget::UnblessUserData(CodeUserData* codeUserData)
 {
     ED_ASSERT(codeUserData != nullptr);
-    int index = FindIndex(codeUserData);
+    int index = mUi.mTabWidget->FindIndex(codeUserData->GetSourceCode());
     if (index != -1)
     {
-        RequestClose(index);
+        mUi.mTabWidget->Close(index);
     }
 
     delete codeUserData->GetDocument();
@@ -342,16 +384,44 @@ void CodeEditorWidget::SignalInstantCompilationActionTriggered()
 void CodeEditorWidget::SignalSaveCurrentCode()
 {
     PostStatusBarMessage("");
-    int idx = mUi.mTabWidget->currentIndex();
-    if (idx >= 0 && idx < mOpenCodeCount)
+    int idx = mUi.mTabWidget->GetCurrentIndex();
+    if (idx >= 0)
     {
-        CodeUserData * code = mOpenedCodes[idx];
+        Pegasus::Core::ISourceCodeProxy* sourceCode = mUi.mTabWidget->GetTabObject<Pegasus::Core::ISourceCodeProxy>(idx);
+
+        //dump ui document data to the internal node so we can save
+        CodeUserData* code = static_cast<CodeUserData*>(sourceCode->GetUserData());
+        QString& plainText = code->GetDocument()->toPlainText();
+        QByteArray ba = plainText.toLocal8Bit();
+        const char* asciiData = ba.constData();
+        sourceCode->SetSource(asciiData, plainText.size());
+
+        AssetIOMessageController::Message msg;
+        msg.SetMessageType(AssetIOMessageController::Message::SAVE_CODE);
+        msg.GetAssetNode().mCode = sourceCode;
+        emit(SendAssetIoMessage(msg));
+
+    }
+}
+
+void CodeEditorWidget::SignalDiscardCurrentObjectChanges()
+{
+    int idx = mUi.mTabWidget->GetCurrentIndex();
+    if (idx >= 0)
+    {
+        Pegasus::Core::ISourceCodeProxy* sourceCode = mUi.mTabWidget->GetTabObject<Pegasus::Core::ISourceCodeProxy>(idx);
+        sourceCode->ReloadFromAsset();
+        const char* src = nullptr;
+        int srcSize = 0;
+        sourceCode->GetSource(&src, srcSize);
+        QString qtxt = SrcToQString(src, srcSize);
+        CodeUserData* code = static_cast<CodeUserData*>(sourceCode->GetUserData());
         if (code != nullptr)
         {
-            AssetIOMessageController::Message msg;
-            msg.SetMessageType(AssetIOMessageController::Message::SAVE_CODE);
-            msg.GetAssetNode().mCode = code->GetSourceCode();
-            emit(SendAssetIoMessage(msg));
+            mInternalBlockTextUpdated = true;
+            code->GetDocument()->setPlainText(qtxt);
+            mInternalBlockTextUpdated = false;
+            CompileCode(code);
         }
     }
 }
@@ -361,25 +431,21 @@ void CodeEditorWidget::SignalSavedFileSuccess()
     PostStatusBarMessage(tr("File Saved."));
 }
 
-void CodeEditorWidget::SignalViewCode(int tabId)
+void CodeEditorWidget::SignalViewCode(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
 {
-    if (tabId != -1)
+    if (object != nullptr)
     {
-        ED_ASSERT(tabId >= 0 && tabId < mOpenCodeCount);
-
         CodeTextEditorWidget * editor = nullptr;
+        Pegasus::Core::ISourceCodeProxy* code = static_cast<Pegasus::Core::ISourceCodeProxy*>(object);
+        CodeUserData* userData = static_cast<CodeUserData*>(code->GetUserData());
+        
+        editor = mUi.mTreeEditor->FindCodeInEditors(userData);
 
-        if (mPreviousTabIndex >= 0 && mPreviousTabIndex < mOpenCodeCount)
-        {
-            editor = mUi.mTreeEditor->FindCodeInEditors(mOpenedCodes[mPreviousTabIndex]);
-        }
         mInternalBlockTextUpdated = true;
-        mUi.mTreeEditor->DisplayCode(mOpenedCodes[tabId], editor);
+        mUi.mTreeEditor->DisplayCode(userData, editor);
         mInternalBlockTextUpdated = false;
 
-        UpdateInstantCompilationButton(mOpenedCodes[tabId]);
-
-        mPreviousTabIndex = tabId;
+        UpdateInstantCompilationButton(userData);
     }
 }
 
@@ -396,31 +462,6 @@ void CodeEditorWidget::UpdateSyntaxForLine(CodeTextEditorWidget * editor, int li
     mInternalBlockTextUpdated = false;
 }
 
-int CodeEditorWidget::FindIndex(CodeUserData * target)
-{
-    for (int i = 0; i < mOpenCodeCount; ++i)
-    {
-        if (target == mOpenedCodes[i])
-        {
-            return i;
-        }
-    }
-    return -1;
-}
-
-int CodeEditorWidget::FindIndex(CodeTextEditorWidget * target)
-{
-    CodeUserData * code = target->GetCode();
-    if (code != nullptr)
-    {
-        return FindIndex(code);
-    }
-    else
-    {
-        return -1;
-    }
-}
-
 void CodeEditorWidget::PostStatusBarMessage(const QString& message)
 {
     // do not opaque the previous error
@@ -431,51 +472,65 @@ void CodeEditorWidget::PostStatusBarMessage(const QString& message)
     }
 }
 
+void CodeEditorWidget::ReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage id)
+{
+    switch(id)
+    {
+    case AssetIOMessageController::Message::IO_SAVE_SUCCESS:
+        // This might create a race condition, if the user changes a tab wile the file is saving... to fix this we need
+        // to pass the object around... if this becomes a problem then we could fix it later...
+        mUi.mTabWidget->ClearCurrentDirty();
+        PostStatusBarMessage(tr("Saved file successfully."));
+        break;
+    case AssetIOMessageController::Message::IO_SAVE_ERROR:
+        PostStatusBarMessage(tr("IO Error saving file."));
+        break;
+    case AssetIOMessageController::Message::IO_NEW_SUCCESS:
+        PostStatusBarMessage(tr(""));
+        break;
+    case AssetIOMessageController::Message::IO_NEW_ERROR:
+        PostStatusBarMessage(tr("IO Error creating new code file."));
+        break;
+    default:
+        ED_FAILSTR("Unkown IO Asset message id %d", id);
+    }
+}
+
 void CodeEditorWidget::OnSettingsChanged()
 {
     mUi.mTreeEditor->ForceUpdateAllStyles();
 }
 
-void CodeEditorWidget::RequestClose(int index)
+void CodeEditorWidget::RequestClose(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
 {
-    ED_ASSERT(index >= 0 && index < mOpenCodeCount);
-    //remove tab
-    CodeUserData* codeToClose = mOpenedCodes[index]; 
+    Pegasus::Core::ISourceCodeProxy* code = static_cast<Pegasus::Core::ISourceCodeProxy*>(object);
+    CodeUserData* codeToClose = static_cast<CodeUserData*>(code->GetUserData()); 
     mInternalBlockTextUpdated = true;
     mUi.mTreeEditor->HideCode(codeToClose);
     mInternalBlockTextUpdated = false;
 
-    //compress the opened code list
-    for (int i = index; i < mOpenCodeCount - 1; ++i)
-    {
-        ED_ASSERT(i < MAX_OPENED_CODES);
-        mOpenedCodes[i] = mOpenedCodes[i + 1];
-        
-    }
-    --mOpenCodeCount;
-    mUi.mTabWidget->removeTab(index);
-
-    if (codeToClose->GetSourceCode() != nullptr) //if its null, means we closed it already internally
-    {
-        //send a message to the render thread to close this code safely
-        AssetIOMessageController::Message msg;
-        msg.SetMessageType(AssetIOMessageController::Message::CLOSE_CODE);
-        msg.GetAssetNode().mCode = codeToClose->GetSourceCode();
-        emit(SendAssetIoMessage(msg));
-    }
-
+    //send a message to the render thread to close this code safely
+    AssetIOMessageController::Message msg;
+    msg.SetMessageType(AssetIOMessageController::Message::CLOSE_CODE);
+    msg.GetAssetNode().mCode = codeToClose->GetSourceCode();
+    emit(SendAssetIoMessage(msg));
 }
 
 void CodeEditorWidget::OnTextChanged(QWidget * sender)
 {
     //do not trigger a text update event if the syntax highlighter rehighlights
-    if (!mInstantCompilationFlag || mInternalBlockTextUpdated)
+    if (mInternalBlockTextUpdated)
         return;
 
-    CodeTextEditorWidget * textEditor = static_cast<CodeTextEditorWidget*>(sender);
-    if (textEditor->GetCode() != nullptr)
+    mUi.mTabWidget->MarkCurrentAsDirty();
+   
+    if (mInstantCompilationFlag)
     {
-        CompileCode(textEditor->GetCode());
+        CodeTextEditorWidget * textEditor = static_cast<CodeTextEditorWidget*>(sender);
+        if (textEditor->GetCode() != nullptr)
+        {
+            CompileCode(textEditor->GetCode());
+        }
     }
 }
 
@@ -488,10 +543,10 @@ void CodeEditorWidget::OnTextWindowSelected(QWidget * sender)
 
         if (code != nullptr)
         {
-            int i = FindIndex(code);
-            if (i >= 0 && i < mUi.mTabWidget->count() && i != mUi.mTabWidget->currentIndex())
+            int i = mUi.mTabWidget->FindIndex(code->GetSourceCode());
+            if (i >= 0 && i < mUi.mTabWidget->GetTabCount() && i != mUi.mTabWidget->GetCurrentIndex())
             {
-                mUi.mTabWidget->setCurrentIndex(i);
+                mUi.mTabWidget->SetCurrentIndex(i);
             }
         }
     }
@@ -555,44 +610,14 @@ void CodeEditorWidget::RequestOpen(Pegasus::Core::ISourceCodeProxy* codeProxy)
     //set the text of the current text editor
     const char * srcChar = nullptr;
     int srcSize = 0;
-    codeProxy->GetSource(&srcChar, srcSize);
-    QChar * qchar = new QChar[srcSize];
-    for (int i = 0; i < srcSize; ++i)
-    {
-        qchar[i] = srcChar[i];
-    }
+    codeUserData->GetSourceCode()->GetSource(&srcChar, srcSize);
+    QString qtxt = SrcToQString(srcChar, srcSize);
+    mInternalBlockTextUpdated = true;
+    codeUserData->GetDocument()->setPlainText(qtxt);
+    mInternalBlockTextUpdated = false;
 
-    QString srcQString(qchar, srcSize);
-    codeUserData->GetDocument()->setPlainText(srcQString);
-    delete[] qchar;            
-
-    int currentTabIndex = FindIndex(codeUserData);
-    if (currentTabIndex == -1)
-    {
-        if (mOpenCodeCount >= MAX_OPENED_CODES)
-        {
-            ED_LOG("Maximum number of opened codes reached!");
-        }
-        else
-        {
-            //try to find and focus the previous code selected.
-            //this will make the code selected appear in the screen.
-            currentTabIndex = mUi.mTabWidget->count();
-
-            //  pattern must be appending to the end
-            ED_ASSERT(currentTabIndex == mOpenCodeCount);
-            mOpenedCodes[currentTabIndex] = codeUserData;
-            ++mOpenCodeCount;
-
-            //is this opened already in the pool?
-            mUi.mTabWidget->addTab(QString(codeProxy->GetName()));
-        }
-    }
-    mUi.mTabWidget->setCurrentIndex(currentTabIndex); 
-    if (currentTabIndex == mUi.mTabWidget->currentIndex())
-    {
-        SignalViewCode(currentTabIndex);
-    }
+    mUi.mTabWidget->Open(codeUserData->GetSourceCode());
+    CompileCode(codeUserData);
 }
 
 bool CodeEditorWidget::HasAnyChildFocus() const
@@ -603,9 +628,9 @@ bool CodeEditorWidget::HasAnyChildFocus() const
 void CodeEditorWidget::UpdateUIForAppFinished()
 {
     //compress the opened code list
-    while (mOpenCodeCount > 0)
+    while (mUi.mTabWidget->GetTabCount())
     {
-        RequestClose(0);
+        mUi.mTabWidget->Close(0);
     }
     mCompilationRequestPending = false; //kill any compilation request
 }

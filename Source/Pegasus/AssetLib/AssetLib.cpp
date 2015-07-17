@@ -93,7 +93,7 @@ Io::IoError Pegasus::AssetLib::AssetLib::LoadAsset(const char* name, Pegasus::As
         // structured means its a json file. non structured means it does not get parsed and the file gets raw'd
         const char* extension = Utils::Strrchr(name, '.');
         bool isStructured = extension != nullptr && !Utils::Stricmp(PAS_EXTENSION, extension);
-        *assetOut = PG_NEW(mAllocator, -1, "Asset", Alloc::PG_MEM_TEMP) Asset(mAllocator, isStructured ? Asset::FMT_STRUCTURED : Asset::FMT_RAW);
+        *assetOut = PG_NEW(mAllocator, -1, "Asset", Alloc::PG_MEM_TEMP) Asset(mAllocator, this, isStructured ? Asset::FMT_STRUCTURED : Asset::FMT_RAW);
         (*assetOut)->SetPath(name);
         if (isStructured)
         {
@@ -144,7 +144,7 @@ Io::IoError Pegasus::AssetLib::AssetLib::CreateBlankAsset(const char* name, Asse
         // structured means its a json file. non structured means it does not get parsed and the file gets raw'd
         const char* extension = Utils::Strrchr(name, '.');
         bool isStructured = extension != nullptr && !Utils::Stricmp(PAS_EXTENSION, extension);
-        *assetOut = PG_NEW(mAllocator, -1, "Asset", Alloc::PG_MEM_TEMP) Asset(mAllocator, isStructured ? Asset::FMT_STRUCTURED : Asset::FMT_RAW);
+        *assetOut = PG_NEW(mAllocator, -1, "Asset", Alloc::PG_MEM_TEMP) Asset(mAllocator, this, isStructured ? Asset::FMT_STRUCTURED : Asset::FMT_RAW);
         (*assetOut)->SetPath(name);
         mAssets.PushEmpty() = *assetOut;
         if (!isStructured)
@@ -158,18 +158,6 @@ Io::IoError Pegasus::AssetLib::AssetLib::CreateBlankAsset(const char* name, Asse
         }
     }
     return err;
-}
-
-void Pegasus::AssetLib::AssetLib::BindAssetToRuntimeObject(Asset* asset, RuntimeAssetObject* runtimeObject)
-{
-    asset->SetRuntimeData(runtimeObject);
-    runtimeObject->Connect(asset, 0, this);
-}
-
-void Pegasus::AssetLib::AssetLib::UnbindAssetToRuntimeObject(RuntimeAssetObject* runtimeObject)
-{
-    runtimeObject->GetOwnerAsset()->SetRuntimeData(nullptr);
-    runtimeObject->Connect(nullptr, 0, this);
 }
 
 Io::IoError Pegasus::AssetLib::AssetLib::SaveAsset(Asset* asset)

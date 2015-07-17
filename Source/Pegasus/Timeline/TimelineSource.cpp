@@ -1,4 +1,5 @@
 #include "Pegasus/Timeline/TimelineSource.h"
+#include "Pegasus/AssetLib/Asset.h"
 #include "Pegasus/Core/Io.h"
 #include "Pegasus/Allocator/Alloc.h"
 #include "Pegasus/Utils/String.h"
@@ -6,7 +7,7 @@
 using namespace Pegasus;
 using namespace Pegasus::Timeline;
 
-TimelineSource::TimelineSource(Alloc::IAllocator* allocator, const char* name, Io::FileBuffer* fileBuffer)
+TimelineSource::TimelineSource(Alloc::IAllocator* allocator, const char* name)
 :    Core::SourceCode(allocator), mRefCount(0)
 #if PEGASUS_ENABLE_PROXIES
    ,mProxy(this)
@@ -17,8 +18,6 @@ TimelineSource::TimelineSource(Alloc::IAllocator* allocator, const char* name, I
     mScriptName[0] = '\0';
     PG_ASSERT(Utils::Strlen(name) < MAX_SCRIPT_NAME);
     Utils::Strcat(mScriptName, name);
-
-    SetSource(fileBuffer->GetBuffer(), fileBuffer->GetFileSize());
 }
 
 TimelineSource::~TimelineSource()
@@ -35,6 +34,14 @@ void TimelineSource::Release()
     {
         PG_DELETE(mAllocator, this);
     }
+}
+
+bool TimelineSource::IsTimelineScript(const Pegasus::AssetLib::Asset* asset)
+{
+    const char* path = asset->GetPath();
+    const char* extension = Utils::Strrchr(path, '.');
+    return asset->GetFormat() == AssetLib::Asset::FMT_RAW && extension != nullptr && 
+        (!Utils::Strcmp(".bs", extension) || !Utils::Strcmp(".bsh", extension));
 }
 
 void TimelineSource::Compile()

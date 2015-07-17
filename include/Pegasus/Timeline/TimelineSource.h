@@ -23,6 +23,10 @@ namespace Pegasus {
     namespace Io {
         class FileBuffer;
     }
+
+    namespace AssetLib {
+        class Asset;
+    }
 }
 
 namespace Pegasus
@@ -36,7 +40,7 @@ class TimelineSource : public Core::SourceCode
 
 public:
     //! constructor
-    TimelineSource(Alloc::IAllocator* allocator, const char* name, Io::FileBuffer* fileBuffer);
+    TimelineSource(Alloc::IAllocator* allocator, const char* name);
 
     //! destructor
     virtual ~TimelineSource();
@@ -44,15 +48,22 @@ public:
     //! Gets the script name
     const char* GetScriptName() const { return mScriptName; }
 
+    //! Call to set this script as dirty
     virtual void InvalidateData() {}
 
+    //! Force this script to compile
     virtual void Compile();
 
 #if PEGASUS_ENABLE_PROXIES
+    //! Gets the script name
+    virtual const char* GetDisplayName() const { return  GetScriptName(); }
+
     //! Gets the proxy 
     //! \return Proxy to this script
     TimelineScriptProxy* GetProxy() { return &mProxy; }
 #endif
+
+    static bool IsTimelineScript(const Pegasus::AssetLib::Asset* asset);
 
 private:
 

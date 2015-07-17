@@ -50,7 +50,7 @@ class TimelineScript : public TimelineSource, public BlockScript::IBlockScriptCo
 public:
 
     //! Constructor
-    TimelineScript(Alloc::IAllocator* alloc, const char* name, Io::FileBuffer* fb, Core::IApplicationContext* appContext);
+    TimelineScript(Alloc::IAllocator* alloc, const char* name, Core::IApplicationContext* appContext);
 
     //! Destructor
     virtual ~TimelineScript();
@@ -103,6 +103,8 @@ public:
 
     //! Clears all references to headers
     void ClearHeaderList();
+
+    BlockScript::BlockScript* GetBlockScript() const { return mScript; } 
 
     virtual void LockHeaders(bool shouldLock) { mLockHeaders = shouldLock; }
 

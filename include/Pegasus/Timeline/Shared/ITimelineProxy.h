@@ -130,12 +130,6 @@ public:
 
     //! \return true if its a blockscript, false otherwise
     virtual bool IsTimelineScript(const AssetLib::IAssetProxy* asset) const = 0;
-
-    //! flushes a code into its owner asset
-    virtual void FlushScriptToAsset(Core::ISourceCodeProxy* code) = 0;
-
-    //! returns the asset of this script. Null if it doesn't exist
-    virtual AssetLib::IAssetProxy* GetScriptAsset(Core::ISourceCodeProxy* code) const = 0;
 };
 
 
