@@ -3,6 +3,7 @@
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
+#include "Pegasus/Timeline/Shared/ITimelineManagerProxy.h"
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 #include "Pegasus/AssetLib/Shared/IAssetLibProxy.h"
 #include "CodeEditor/SourceCodeManagerEventListener.h"
@@ -34,6 +35,11 @@ void AssetIOMessageController::OnRenderThreadProcessMessage(const AssetIOMessage
         case AssetIOMessageController::Message::SAVE_CODE:
             {
                 OnRenderRequestSaveCode(msg.GetAssetNode().mCode);
+            }
+            break;
+        case AssetIOMessageController::Message::SAVE_TIMELINE:
+            {
+                OnRenderRequestSaveTimeline(msg.GetAssetNode().mTimeline);
             }
             break;
         case AssetIOMessageController::Message::CLOSE_PROGRAM:
@@ -80,7 +86,7 @@ void AssetIOMessageController::OnRenderRequestCloseCode(Pegasus::Core::ISourceCo
     }
     else if(userData->GetName() == "BlockScript")
     {
-        Pegasus::Timeline::ITimelineProxy* timelineProxy = mApp->GetTimelineProxy();
+        Pegasus::Timeline::ITimelineManagerProxy* timelineProxy = mApp->GetTimelineManagerProxy();
         timelineProxy->CloseScript(userData->GetSourceCode());
         emit(SignalUpdateNodeViews());
     }
@@ -100,7 +106,7 @@ void AssetIOMessageController::OnRenderRequestOpenAsset(const QString& path)
     {
         Pegasus::AssetLib::IAssetLibProxy*     assetLib = mApp->GetAssetLibProxy();
         Pegasus::Shader::IShaderManagerProxy*  shaderManagerProxy  = mApp->GetShaderManagerProxy();
-        Pegasus::Timeline::ITimelineProxy*     timelineProxy = mApp->GetTimelineProxy();
+        Pegasus::Timeline::ITimelineManagerProxy*     timelineProxy = mApp->GetTimelineManagerProxy();
         Pegasus::AssetLib::IAssetProxy*        asset = nullptr;
         Pegasus::Io::IoError errCode = assetLib->LoadAsset(asciiPath, &asset);
         if (Pegasus::Io::ERR_NONE == errCode)
@@ -190,6 +196,22 @@ void AssetIOMessageController::OnRenderRequestSaveProgram(Pegasus::Shader::IProg
     }
 }
 
+void AssetIOMessageController::OnRenderRequestSaveTimeline(Pegasus::Timeline::ITimelineProxy* timeline)
+{
+    if (mApp == nullptr) return;
+    
+    Pegasus::Io::IoError err = InternalSaveObject(timeline);
+
+    if (err == Pegasus::Io::ERR_NONE)
+    {
+        emit(SignalPostTimelineEditorMessage(AssetIOMessageController::Message::IO_SAVE_SUCCESS));
+    }
+    else
+    {
+        emit(SignalPostTimelineEditorMessage(AssetIOMessageController::Message::IO_SAVE_ERROR));
+    }
+}
+
 void AssetIOMessageController::OnRenderRequestNewShader(const QString& path)
 {
     QByteArray ba = path.toLocal8Bit();
@@ -225,7 +247,7 @@ void AssetIOMessageController::OnRenderRequestNewTimelineScript(const QString& p
     Pegasus::Io::IoError errCode = assetLib->CreateBlankAsset(asciiPath, &asset);
     if (errCode == Pegasus::Io::ERR_NONE)
     {
-        Pegasus::Timeline::ITimelineProxy* timelineMgr = mApp->GetTimelineProxy();
+        Pegasus::Timeline::ITimelineManagerProxy* timelineMgr = mApp->GetTimelineManagerProxy();
         Pegasus::Core::ISourceCodeProxy* code = timelineMgr->OpenScript(asset);
         if (code != nullptr)
         {

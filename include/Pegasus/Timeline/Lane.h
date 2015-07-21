@@ -26,6 +26,12 @@ namespace Pegasus {
     namespace Wnd {
         class Window;
     }
+
+    namespace AssetLib {
+        class AssetLib;
+        class Asset;
+        class Object;
+    }
 }
     
 namespace Pegasus {
@@ -35,6 +41,8 @@ namespace Timeline {
 //! Timeline lane management, manages a set of blocks on one lane of the timeline
 class Lane
 {
+    friend Timeline;
+
 public:
 
     //! Constructor
@@ -58,6 +66,13 @@ public:
     //! \return True if succeeded, false if the block is invalid, has a collision with an existing block,
     //!         or the number of blocks has already reached LANE_MAX_NUM_BLOCKS
     bool InsertBlock(Block * block, Beat beat, Duration duration);
+
+    //! Add a block to the lane with predefined position and length
+    //! \param block Allocated block, with position and size already defined
+    //! \note The internal linked list stays sorted after this operation
+    //! \return True if succeeded, false if the block is invalid, has a collision with an existing block,
+    //!         or the number of blocks has already reached LANE_MAX_NUM_BLOCKS
+    bool InsertBlock(Block * block);
 
     //! Remove a block from the lane
     //! \param block Existing block belonging to the lane
@@ -201,14 +216,6 @@ private:
     //!         INVALID_RECORD_INDEX if the tested block is the last one
     int FindNextBlockIndex(int blockIndex) const;
 
-
-    //! Add a block to the lane with predefined position and length
-    //! \param block Allocated block, with position and size already defined
-    //! \note The internal linked list stays sorted after this operation
-    //! \return True if succeeded, false if the block is invalid, has a collision with an existing block,
-    //!         or the number of blocks has already reached LANE_MAX_NUM_BLOCKS
-    bool InsertBlock(Block * block);
-
     //! Remove a block from the lane given a block record index in the linked list
     //! \param blockIndex Index of the block in the \a mBlockRecords array, < LANE_MAX_NUM_BLOCKS
     void RemoveBlock(int blockIndex);
@@ -228,6 +235,20 @@ private:
     //! \param newLane Lane to move the block into, different from the current lane, != nullptr
     //! \param beat New position of the block, measured in ticks
     void MoveBlockToLane(int blockIndex, Lane * newLane, Beat beat);
+
+    //! Callback that reads from an asset root and populates properties / creates objects based on such.
+    //! \param lib the asset library.
+    //! \param owner the asset containing the root object
+    //! \param root the root object of the structured asset
+    //! \return true if successful, false otherwise
+    bool OnReadObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* owner, AssetLib::Object* root);
+
+    //! Callback that reads from an asset root and populates properties / creates objects based on such.
+    //! \param lib the asset library.
+    //! \param owner the asset containing the root object
+    //! \param root the root object of the structured asset
+    //! \return true if successful, false otherwise
+    void OnWriteObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* owner, AssetLib::Object* root);
 
     //------------------------------------------------------------------------------------
 

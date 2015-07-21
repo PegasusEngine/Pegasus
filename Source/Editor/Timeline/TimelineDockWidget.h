@@ -13,6 +13,8 @@
 #define EDITOR_TIMELINEDOCKWIDGET_H
 
 #include <QDockWidget>
+#include "MessageControllers/AssetIOMessageController.h"
+
 #include "ui_TimelineDockWidget.h"
 
 namespace Pegasus {
@@ -72,8 +74,11 @@ signals:
     //! Emitted when the play mode button has been enabled or disabled
     //! \param enabled True if the play mode button has just been enabled
     void PlayModeToggled(bool enabled);
-
+    
     //------------------------------------------------------------------------------------
+
+    //! Sends a message to the asset IO controller
+    void SendAssetIoMessage(AssetIOMessageController::Message msg);
 
 public slots:
 
@@ -86,6 +91,12 @@ public slots:
     void UpdateUIForAppClosed();
 
     //------------------------------------------------------------------------------------
+
+    //! Emitted when the timeline is being saved
+    void SaveTimeline();
+
+    //! Receives an io message
+    void ReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage msg);
 
 private slots:
 

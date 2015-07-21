@@ -128,7 +128,7 @@ public:
     virtual Texture::TextureManager*                        GetTextureManager()          const { return mTextureManager;          }
     virtual Mesh::MeshManager*                              GetMeshManager()             const { return mMeshManager;             }
     virtual Shader::ShaderManager*                          GetShaderManager()           const { return mShaderManager;           }
-    virtual Timeline::Timeline*                             GetTimeline()                const { return mTimeline;                }
+    virtual Timeline::TimelineManager*                      GetTimelineManager()         const { return mTimelineManager;         }
     virtual BlockScript::BlockScriptManager*                GetBlockScriptManager()      const { return mBlockScriptManager;      }
     virtual AssetLib::AssetLib*                             GetAssetLib()                const { return mAssetLib;                }
     virtual Camera::CameraManager*                          GetCameraManager()           const { return mCameraManager;           }
@@ -157,7 +157,7 @@ private:
     Shader::ShaderManager*                          mShaderManager;          //!< Shader node manager
     Texture::TextureManager*                        mTextureManager;         //!< Texture node manager
     Mesh::MeshManager*                              mMeshManager;            //!< Mesh node manager
-    Timeline::Timeline*                             mTimeline;               //!< Timeline object
+    Timeline::TimelineManager*                      mTimelineManager;        //!< Timeline manager
     BlockScript::BlockScriptManager*                mBlockScriptManager;     //!< BlockScriptManager manager.
     AssetLib::AssetLib*                             mAssetLib;               //!< AssetLib manager
     Camera::CameraManager*                          mCameraManager;          //!< Camera manager

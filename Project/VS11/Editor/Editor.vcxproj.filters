@@ -513,9 +513,6 @@
     <CustomBuild Include="..\..\..\Source\Editor\AssetLibrary\AssetLibraryWidget.h">
       <Filter>Source\AssetLibrary</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\Source\Editor\AssetLibrary\AssetLibraryWidget.ui">
-      <Filter>Source\AssetLibrary</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\CodeEditor\CodeEditorWidget.h">
       <Filter>Source\CodeEditor</Filter>
     </CustomBuild>
@@ -548,6 +545,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Widgets\NodeFileTabBar.h">
       <Filter>Source\Widgets</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\AssetLibrary\AssetLibraryWidget.ui">
+      <Filter>Forms</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

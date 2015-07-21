@@ -12,6 +12,7 @@
 #include "Timeline/TimelineUndoCommands.h"
 #include "Timeline/TimelineBlockGraphicsItem.h"
 
+#include "Pegasus/Timeline/Shared/ITimelineManagerProxy.h"
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 #include "Pegasus/Timeline/Shared/ILaneProxy.h"
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"

@@ -39,9 +39,9 @@ namespace AssetPrivate
         int strlen = Utils::Strlen(str);
         bool containsWhites = false;
         for (int i = 0; i < strlen && !containsWhites; ++i) containsWhites = str[i] == ' ' || str[i] == '\t';
-        if (containsWhites) stream.Append(Q, 1);
+        if (containsWhites || str[0] == '\0') stream.Append(Q, 1);
         stream.Append(str, strlen);
-        if (containsWhites) stream.Append(Q, 1);
+        if (containsWhites || str[0] == '\0') stream.Append(Q, 1);
     }
 
     void DumpElementToStream(int i, Utils::ByteStream& stream)

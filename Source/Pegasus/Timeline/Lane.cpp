@@ -10,9 +10,15 @@
 //! \brief	Timeline lane management, manages a set of blocks on one lane of the timeline
 
 #include "Pegasus/Timeline/Timeline.h"
+#include "Pegasus/Timeline/TimelineManager.h"
 #include "Pegasus/Timeline/Lane.h"
 #include "Pegasus/Timeline/Block.h"
+#include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/Math/Scalar.h"
+#include "Pegasus/AssetLib/AssetLib.h"
+#include "Pegasus/AssetLib/Asset.h"
+#include "Pegasus/AssetLib/ASTree.h"
+#include "Pegasus/Utils/String.h"
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/Timeline/Proxy/BlockProxy.h"
@@ -69,24 +75,11 @@ Lane::~Lane()
 
 bool Lane::InsertBlock(Block * block, Beat beat, Duration duration)
 {
-#if PEGASUS_ENABLE_PROXIES
-    if (block != nullptr)
-    {
-        PG_LOG('TMLN', "Adding the block \"%s\" of duration %u to the lane \"%s\", at position %u",
-               block->GetEditorString(), duration, GetName(), beat);
-    }
-    else
-#endif
-    {
-        PG_LOG('TMLN', "Adding a block of length %u to a lane, at position %u", duration, beat);
-    }
-
     if (block != nullptr)
     {
         // Configure the block
         block->SetBeat(beat);
         block->SetDuration(duration);
-        block->SetLane(this);
 
         // Insert the pre-configured block
         return InsertBlock(block);
@@ -415,12 +408,9 @@ void Lane::SetName(const char * name)
     else
     {
         PG_LOG('TMLN', "Setting the name of the lane \"%s\" to \"%s\"", mName, name);
-#if PEGASUS_COMPILER_MSVC
-        strncpy_s(mName, MAX_NAME_LENGTH, name, MAX_NAME_LENGTH);
-#else
-        mName[MAX_NAME_LENGTH - 1] = '\0';
-        strncpy(mName, name, MAX_NAME_LENGTH - 1);
-#endif  // PEGASUS_COMPILER_MSVC
+        PG_ASSERT(Utils::Strlen(name) + 1 <= MAX_NAME_LENGTH);
+        mName[0] = '\0';
+        Utils::Strcat(mName, name);
     }
 
 }
@@ -688,6 +678,15 @@ bool Lane::InsertBlock(Block * block)
 {
     if (block != nullptr)
     {
+    #if PEGASUS_ENABLE_PROXIES
+        PG_LOG('TMLN', "Adding the block \"%s\" of duration %u to the lane \"%s\", at position %u",
+                   block->GetEditorString(), block->GetDuration(), GetName(), block->GetBeat());
+    #else
+        PG_LOG('TMLN', "Adding a block of length %u to a lane, at position %u", block->GetDuration(), block->GetBeat());
+    #endif
+
+        block->SetLane(this);
+
         if (mNumBlocks < LANE_MAX_NUM_BLOCKS)
         {
             // Find where to insert the block
@@ -966,6 +965,112 @@ bool Lane::FindBlockAndComputeRelativeBeat(float beat, Block * & block, float & 
     }
 
     return false;
+}
+
+//----------------------------------------------------------------------------------------
+
+bool Lane::OnReadObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* owner, AssetLib::Object* root)
+{
+    int typeId = root->FindString("type");
+    if (typeId == -1)
+    {
+        return false;
+    }
+    const char * name = root->GetString(typeId);
+
+    if (Utils::Strcmp(name, "Lane"))
+    {
+        return false;
+    }
+
+#if PEGASUS_ENABLE_PROXIES
+    int nameId = root->FindString("name");
+    if (nameId != -1)
+    {
+        SetName(root->GetString(nameId));
+    }
+#endif
+
+    int recordArrayId = root->FindArray("Blocks");
+    if (recordArrayId == -1)
+    {
+        return false;
+    }
+
+    AssetLib::Array* records = root->GetArray(recordArrayId);
+    if (records->GetSize() > 0)
+    {
+        if (records->GetType() == AssetLib::Array::AS_TYPE_OBJECT)
+        {
+            for (int i = 0; i < records->GetSize(); ++i)
+            {
+                const AssetLib::Array::Element& e = records->GetElement(i);
+                typeId = e.o->FindString("type");
+                if (typeId == -1)
+                {
+                    return false;
+                }
+                
+                Block* newBlock = GetTimeline()->GetApplicationContext()->GetTimelineManager()->CreateBlock(e.o->GetString(typeId));
+                if (newBlock == nullptr)
+                {
+                    return false;
+                } 
+
+                if (newBlock->OnReadObject(lib, owner, e.o))
+                {
+                    InsertBlock(newBlock);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+    
+    return true;
+    
+}
+
+//----------------------------------------------------------------------------------------
+
+void Lane::OnWriteObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* owner, AssetLib::Object* root)
+{
+    root->AddString("type", "Lane");
+
+#if PEGASUS_ENABLE_PROXIES
+    root->AddString("name",GetName());
+#endif
+
+    AssetLib::Array* records = owner->NewArray();
+    records->CommitType(AssetLib::Array::AS_TYPE_OBJECT);
+    root->AddArray("Blocks", records);
+
+
+    if (mFirstBlockIndex != INVALID_RECORD_INDEX)
+    {
+        
+        int currRecordIndex = mFirstBlockIndex;
+        do
+        {
+            BlockRecord& currRecord = mBlockRecords[currRecordIndex];
+            if (currRecord.mBlock == nullptr)
+            {
+                break;
+            }
+            AssetLib::Array::Element e;
+            e.o = owner->NewObject();
+            currRecord.mBlock->OnWriteObject(lib,owner,e.o);
+            currRecordIndex = currRecord.mNext;
+            records->PushElement(e);
+        }
+        while (currRecordIndex != mFirstBlockIndex);
+    }
 }
 
 

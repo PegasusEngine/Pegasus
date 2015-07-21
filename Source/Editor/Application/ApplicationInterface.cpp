@@ -15,9 +15,11 @@
 #include "AssetLibrary/AssetLibraryWidget.h"
 #include "CodeEditor/CodeEditorWidget.h"
 #include "CodeEditor/SourceCodeManagerEventListener.h"
+#include "Timeline/TimelineDockWidget.h"
 
 #include "Pegasus/Preprocessor.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
+#include "Pegasus/Timeline/Shared/ITimelineManagerProxy.h"
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
@@ -35,11 +37,6 @@ ApplicationInterface::ApplicationInterface(Application * application)
     //! \todo Seems not useful anymore. Test and remove if possible
 {
     ED_ASSERTSTR(application != nullptr, "Invalid application object given to the application interface");
-
-    // Set the timeline play mode to stopped by default
-    Pegasus::Timeline::ITimelineProxy * timeline = mApplication->GetTimelineProxy();
-    ED_ASSERT(timeline != nullptr);
-    timeline->SetPlayMode(Pegasus::Timeline::PLAYMODE_STOPPED);
 
     // Connect the viewport widget resized messages to the windows in the application worker thread.
     // A queued connection is used since we have to cross the thread boundaries
@@ -116,6 +113,9 @@ ApplicationInterface::ApplicationInterface(Application * application)
     connect(programEditor, SIGNAL(SendAssetIoMessage(AssetIOMessageController::Message)),
             this, SLOT(ForwardAssetIoMessage(AssetIOMessageController::Message)), Qt::QueuedConnection);
 
+    connect(timelineDockWidget, SIGNAL(SendAssetIoMessage(AssetIOMessageController::Message)),
+            this, SLOT(ForwardAssetIoMessage(AssetIOMessageController::Message)), Qt::QueuedConnection);
+
     //From render to ui
     connect(mAssetIoMessageController, SIGNAL(SignalUpdateNodeViews()),
             assetLibraryWidget, SLOT(UpdateUIItemsLayout()), Qt::QueuedConnection); 
@@ -131,6 +131,9 @@ ApplicationInterface::ApplicationInterface(Application * application)
     
     connect(mAssetIoMessageController, SIGNAL(SignalPostCodeMessage(AssetIOMessageController::Message::IoResponseMessage)),
             codeEditorWidget,   SLOT(ReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage)));
+
+    connect(mAssetIoMessageController, SIGNAL(SignalPostTimelineEditorMessage(AssetIOMessageController::Message::IoResponseMessage)),
+            timelineDockWidget, SLOT(ReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage)));
 
     //<------  Source IO Controller -------->//
     //From ui to render
@@ -167,7 +170,7 @@ ApplicationInterface::ApplicationInterface(Application * application)
     //<-------- Connect event listeners to app ------------>
     Pegasus::App::IApplicationProxy* appProxy = application->GetApplicationProxy();
     appProxy->GetShaderManagerProxy()->RegisterEventListener( mSourceCodeEventListener );
-    appProxy->GetTimelineProxy()->RegisterEventListener( mSourceCodeEventListener );
+    appProxy->GetTimelineManagerProxy()->RegisterEventListener( mSourceCodeEventListener );
 
     //<-------- Connect event listener to widgets --------->
     connect(mSourceCodeEventListener, SIGNAL(OnCompilationError(CodeUserData*,int,QString)),
@@ -274,7 +277,7 @@ void ApplicationInterface::RedrawAllViewports()
     // If no viewport has been redrawn, at least update the timeline so play mode does not get stuck
     if (!mainRedrawn && !secondaryRedrawn)
     {
-        Pegasus::Timeline::ITimelineProxy * timeline = mApplication->GetTimelineProxy();
+        Pegasus::Timeline::ITimelineManagerProxy * timeline = mApplication->GetTimelineProxy();
         if (timeline != nullptr)
         {
             //! \todo Handle music position
@@ -340,11 +343,11 @@ void ApplicationInterface::RequestRedrawAllViewportsAfterBlockMoved()
 
 void ApplicationInterface::SetCurrentBeat()
 {
-    Pegasus::Timeline::ITimelineProxy * timeline = mApplication->GetTimelineProxy();
+    Pegasus::Timeline::ITimelineManagerProxy * timeline = mApplication->GetTimelineProxy();
     ED_ASSERT(timeline != nullptr);
 
     // Set the timeline beat with the last enqueued beat rather than the first one
-    timeline->SetCurrentBeat(mSetCurrentBeatEnqueuedBeat);
+    timeline->GetCurrentTimeline()->SetCurrentBeat(mSetCurrentBeatEnqueuedBeat);
 
     // Since the enqueued beat has been taken into account, we can now reset the enqueued flag
     // to allow now requests to be enqueued
@@ -368,25 +371,25 @@ void ApplicationInterface::RedrawAllViewportsForBlockMoved()
 
 void ApplicationInterface::TogglePlayMode(bool enabled)
 {
-    Pegasus::Timeline::ITimelineProxy * timeline = mApplication->GetTimelineProxy();
+    Pegasus::Timeline::ITimelineManagerProxy * timeline = mApplication->GetTimelineProxy();
     ED_ASSERT(timeline != nullptr);
 
     if (enabled)
     {
         // When enabling the play mode, switch the timeline play mode to real-time
-        timeline->SetPlayMode(Pegasus::Timeline::PLAYMODE_REALTIME);
+        timeline->GetCurrentTimeline()->SetPlayMode(Pegasus::Timeline::PLAYMODE_REALTIME);
 
         // Request the rendering of the first frame
         RedrawAllViewports();
 
         // At this point, the play mode is still enabled, so inform the linked objects
         // that will request a refresh of the viewports
-        emit ViewportRedrawnInPlayMode(timeline->GetCurrentBeat());
+        emit ViewportRedrawnInPlayMode(timeline->GetCurrentTimeline()->GetCurrentBeat());
     }
     else
     {
         // When disabling the play mode, switch the timeline play mode to stopped
-        timeline->SetPlayMode(Pegasus::Timeline::PLAYMODE_STOPPED);
+        timeline->GetCurrentTimeline()->SetPlayMode(Pegasus::Timeline::PLAYMODE_STOPPED);
     }
 }
 
@@ -394,14 +397,14 @@ void ApplicationInterface::TogglePlayMode(bool enabled)
 
 void ApplicationInterface::RequestFrameInPlayMode()
 {
-    Pegasus::Timeline::ITimelineProxy * timeline = mApplication->GetTimelineProxy();
+    Pegasus::Timeline::ITimelineManagerProxy * timeline = mApplication->GetTimelineProxy();
     ED_ASSERT(timeline != nullptr);
 
     // Request the rendering of the viewport for the current beat
     RedrawAllViewports();
 
     // We are still in play mode, inform the linked objects that will request a refresh of the viewports
-    emit ViewportRedrawnInPlayMode(timeline->GetCurrentBeat());
+    emit ViewportRedrawnInPlayMode(timeline->GetCurrentTimeline()->GetCurrentBeat());
 }
 
 

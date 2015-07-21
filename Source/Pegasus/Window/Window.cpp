@@ -14,7 +14,7 @@
 #include "Pegasus/Core/IApplicationContext.h"
 #include "../Source/Pegasus/Window/IWindowImpl.h"
 #include "Pegasus/Sound/Sound.h"
-#include "Pegasus/Timeline/Timeline.h"
+#include "Pegasus/Timeline/TimelineManager.h"
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/Window/WindowProxy.h"
@@ -163,8 +163,9 @@ void Window::Refresh(bool updateTimeline)
 
         if (updateTimeline)
         {
-            const unsigned int musicPosition = Sound::GetMusicPosition();
-            mWindowContext->GetTimeline()->Update(musicPosition);
+            const unsigned int musicPosition = Sound::GetMusicPosition();            
+            mWindowContext->GetTimelineManager()->Update(musicPosition);
+
         }
         Render();
     }

@@ -29,6 +29,12 @@ namespace Pegasus
         class IShaderProxy;
     }
 
+    namespace Timeline
+    {
+        class ITimelineProxy;
+
+    }
+
     namespace AssetLib
     {
         class IAssetProxy;
@@ -60,6 +66,7 @@ public:
             SAVE_CODE,
             SAVE_PROGRAM,
             CLOSE_PROGRAM,
+            SAVE_TIMELINE,
             NEW_SHADER,
             NEW_TIMELINESCRIPT,
             NEW_PROGRAM,
@@ -82,6 +89,7 @@ public:
             Pegasus::Core::ISourceCodeProxy * mCode;
             Pegasus::Shader::IShaderProxy   * mShader;
             Pegasus::Shader::IProgramProxy  * mProgram;
+            Pegasus::Timeline::ITimelineProxy * mTimeline;
             Pegasus::AssetLib::IAssetProxy  * mAsset;
         };
     
@@ -149,6 +157,9 @@ signals:
     //! Signal triggered when a message is sent to the program editor.
     void SignalPostProgramMessage(AssetIOMessageController::Message::IoResponseMessage id);
 
+    //! Signal triggered when a message is sent to the timeline editor.
+    void SignalPostTimelineEditorMessage(AssetIOMessageController::Message::IoResponseMessage id);
+
 
 private:
     //! Called when a shader is requested for opening from the render thread
@@ -165,6 +176,9 @@ private:
 
     //! Called when a shader is requested to be saved from the render thread
     void OnRenderRequestSaveCode(Pegasus::Core::ISourceCodeProxy* object);
+
+    //! Called when a timeline is requested to be saved from the render thread
+    void OnRenderRequestSaveTimeline(Pegasus::Timeline::ITimelineProxy* object);
 
     //! Called when a new shader is requested from the render thread
     void OnRenderRequestNewShader(const QString& path);

@@ -7,7 +7,7 @@
 //! \file   IApplicationContext.h
 //! \author David Worsham
 //! \date   01st Nov 2013
-//! \brief  Context interface for windows, for access to external parameters
+//! \brief  Context interface for applications, for access to external parameters
 
 #ifndef PEGASUS_WND_IWINDOWCONTEXT_H
 #define PEGASUS_WND_IWINDOWCONTEXT_H
@@ -33,7 +33,7 @@ namespace Pegasus {
         class CameraManager;
     }
     namespace Timeline {
-        class Timeline;
+        class TimelineManager;
     }
     namespace BlockScript {
         class BlockScriptManager;
@@ -86,7 +86,7 @@ public:
 
     //! Gets the timeline for use by this window
     //! \return The timeline.
-    virtual Timeline::Timeline* GetTimeline() const = 0;
+    virtual Timeline::TimelineManager* GetTimelineManager() const = 0;
 
     //! Gets the blockscript manager to construct / create block script libraries / scripts
     //! \return the BlockScriptManager

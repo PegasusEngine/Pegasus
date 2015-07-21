@@ -15,9 +15,13 @@
 #include "Application/Application.h"
 #include "Application/ApplicationManager.h"
 
+#include "Pegasus/Timeline/Shared/ITimelineManagerProxy.h"
+#include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 #include "Pegasus/Timeline/Shared/ILaneProxy.h"
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"
+#include <QMessagebox>
+
 
 #include <QListWidgetItem>
 
@@ -40,6 +44,8 @@ TimelineDockWidget::TimelineDockWidget(QWidget *parent)
 	setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
 
     // Make connections between the UI elements and the child views
+    connect(ui.saveButton, SIGNAL(clicked()),
+            this, SLOT(SaveTimeline()));
     connect(ui.addButton, SIGNAL(clicked()),
             ui.graphicsView, SLOT(AddLane()));
     connect(ui.playButton, SIGNAL(toggled(bool)),
@@ -78,21 +84,21 @@ void TimelineDockWidget::SetBeatsPerMinute(double bpm)
     Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
     if (application != nullptr)
     {
-        Pegasus::Timeline::ITimelineProxy * const timeline = application->GetTimelineProxy();
+        Pegasus::Timeline::ITimelineManagerProxy * const timeline = application->GetTimelineProxy();
         if (timeline != nullptr)
         {
             mEnableUndo = false;
 
             // Apply the new tempo to the timeline
-            timeline->SetBeatsPerMinute(static_cast<float>(bpm));
+            timeline->GetCurrentTimeline()->SetBeatsPerMinute(static_cast<float>(bpm));
 
             // Update the tempo field
             ui.bpmSpin->setValue(bpm);
 
             // Update the timeline view from the new tempo
-            if (timeline->GetCurrentBeat() >= 0.0f)
+            if (timeline->GetCurrentTimeline()->GetCurrentBeat() >= 0.0f)
             {
-                UpdateUIFromBeat(timeline->GetCurrentBeat());
+                UpdateUIFromBeat(timeline->GetCurrentTimeline()->GetCurrentBeat());
             }
 
             mEnableUndo = true;
@@ -133,6 +139,45 @@ void TimelineDockWidget::UpdateUIFromBeat(float beat)
 
 //----------------------------------------------------------------------------------------
 
+void TimelineDockWidget::SaveTimeline()
+{
+    Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
+    if (application != nullptr)
+    {
+        Pegasus::Timeline::ITimelineManagerProxy * const timeline = application->GetTimelineProxy();
+        
+        if (timeline->GetCurrentTimeline() != nullptr)
+        {
+            AssetIOMessageController::Message msg;
+            msg.SetMessageType(AssetIOMessageController::Message::SAVE_TIMELINE);
+            msg.GetAssetNode().mTimeline = timeline->GetCurrentTimeline();
+            emit(SendAssetIoMessage(msg));
+        }
+    }
+    
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::ReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage msg)
+{
+    switch(msg)
+    {
+    case AssetIOMessageController::Message::IO_SAVE_ERROR:
+        {
+            QMessageBox::warning(
+                this, "Error saving timeline.",
+                "Timeline could not be saved. Make sure asset is not read only and exists on disc."
+            );
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 void TimelineDockWidget::UpdateUIForAppLoaded()
 {
     mEnableUndo = false;
@@ -148,8 +193,9 @@ void TimelineDockWidget::UpdateUIForAppLoaded()
     Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
     if (application != nullptr)
     {
-        Pegasus::Timeline::ITimelineProxy * const timeline = application->GetTimelineProxy();
-        ui.bpmSpin->setValue(static_cast<double>(timeline->GetBeatsPerMinute()));
+        Pegasus::Timeline::ITimelineManagerProxy * const timeline = application->GetTimelineProxy();
+        timeline->GetCurrentTimeline()->SetPlayMode(Pegasus::Timeline::PLAYMODE_STOPPED);
+        ui.bpmSpin->setValue(static_cast<double>(timeline->GetCurrentTimeline()->GetBeatsPerMinute()));
     }
     else
     {
@@ -205,10 +251,10 @@ void TimelineDockWidget::OnBeatsPerMinuteChanged(double bpm)
         Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
         if (application != nullptr)
         {
-            Pegasus::Timeline::ITimelineProxy * const timeline = application->GetTimelineProxy();
+            Pegasus::Timeline::ITimelineManagerProxy * const timeline = application->GetTimelineProxy();
 
             // Create the undo command
-            TimelineSetBPMUndoCommand * undoCommand = new TimelineSetBPMUndoCommand(static_cast<double>(timeline->GetBeatsPerMinute()),
+            TimelineSetBPMUndoCommand * undoCommand = new TimelineSetBPMUndoCommand(static_cast<double>(timeline->GetCurrentTimeline()->GetBeatsPerMinute()),
                                                                                     bpm);
         
             // Push the undo command, redo() is executed and the timeline updated
@@ -231,10 +277,10 @@ void TimelineDockWidget::OnSnapModeChanged(int mode)
     Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
     if (application != nullptr)
     {
-        Pegasus::Timeline::ITimelineProxy * const timeline = application->GetTimelineProxy();
+        Pegasus::Timeline::ITimelineManagerProxy * const timeline = application->GetTimelineProxy();
         if (timeline != nullptr)
         {
-            unsigned int numTicksPerBeat = timeline->GetNumTicksPerBeat();
+            unsigned int numTicksPerBeat = timeline->GetCurrentTimeline()->GetNumTicksPerBeat();
 
             switch (mode)
             {
@@ -287,7 +333,7 @@ void TimelineDockWidget::RefreshBlockNames()
     Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
     if (application != nullptr)
     {
-        Pegasus::Timeline::ITimelineProxy * const timeline = application->GetTimelineProxy();
+        Pegasus::Timeline::ITimelineManagerProxy * const timeline = application->GetTimelineProxy();
 
         // Get the list from the Pegasus timeline
         static char blockClassNames   [Pegasus::Timeline::MAX_NUM_REGISTERED_BLOCKS][Pegasus::Timeline::MAX_BLOCK_CLASS_NAME_LENGTH + 1];

@@ -27,7 +27,7 @@ namespace Pegasus {
     }
 
     namespace Timeline {
-        class ITimelineProxy;
+        class ITimelineManagerProxy;
     }
  
     namespace Wnd {
@@ -103,7 +103,7 @@ public:
 
     //! Gets the timeline proxy
     //! \return Timeline proxy
-    virtual Timeline::ITimelineProxy * GetTimelineProxy() = 0;
+    virtual Timeline::ITimelineManagerProxy * GetTimelineManagerProxy() = 0;
 
     //! Gets the shader manager, for shader and GPU program controls
     //! \return Shader manager
@@ -139,7 +139,7 @@ public:
 
     //! Get the timeline proxy object
     //! \return Timeline proxy object
-    virtual Timeline::ITimelineProxy* GetTimeline() const = 0;
+    virtual Timeline::ITimelineManagerProxy* GetTimelineManagerProxy() const = 0;
 
     //! Get the about struct for the application 
     //! \param appDesc the output description structure

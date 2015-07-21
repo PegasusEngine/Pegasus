@@ -18,8 +18,8 @@
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Application/Application.h"
 #include "Pegasus/PropertyGrid/PropertyGridManager.h"
-#include "Pegasus/Timeline/Proxy/TimelineProxy.h"
-#include "Pegasus/Timeline/Timeline.h"
+#include "Pegasus/Timeline/Proxy/TimelineManagerProxy.h"
+#include "Pegasus/Timeline/TimelineManager.h"
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Mesh/MeshManager.h"
 #include "Pegasus/Texture/TextureManager.h"
@@ -53,7 +53,7 @@ public:
     virtual Wnd::IWindowProxy* AttachWindow(const AppWindowConfig& config);
     virtual void DetachWindow(Wnd::IWindowProxy* wnd);
     virtual PropertyGrid::IPropertyGridManagerProxy * GetPropertyGridManagerProxy() { return PropertyGrid::PropertyGridManager::GetInstance().GetProxy(); }
-    virtual Timeline::ITimelineProxy * GetTimelineProxy() { return mApplication->GetTimeline()->GetProxy(); }
+    virtual Timeline::ITimelineManagerProxy * GetTimelineManagerProxy() { return mApplication->GetTimelineManager()->GetProxy(); }
     virtual Shader::IShaderManagerProxy * GetShaderManagerProxy() { return mApplication->GetShaderManager()->GetProxy(); }
     virtual Texture::ITextureManagerProxy * GetTextureManagerProxy() { return mApplication->GetTextureManager()->GetProxy(); }
     virtual Mesh::IMeshManagerProxy * GetMeshManagerProxy() { return mApplication->GetMeshManager()->GetProxy(); }
@@ -66,7 +66,7 @@ public:
     virtual void Unload();
 
     // Proxy accessors
-    virtual Timeline::ITimelineProxy* GetTimeline() const;
+    virtual Timeline::ITimelineManagerProxy* GetTimelineManagerProxy() const;
 
     //! Get the about struct for the application 
     //! \param engineDesc the output description structure

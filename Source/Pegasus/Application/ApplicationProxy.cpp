@@ -13,8 +13,8 @@
 #include "Pegasus/Application/ApplicationProxy.h"
 #include "Pegasus/Application/Application.h"
 #include "Pegasus/Memory/MemoryManager.h"
-#include "Pegasus/Timeline/Proxy/TimelineProxy.h"
-#include "Pegasus/Timeline/Timeline.h"
+#include "Pegasus/Timeline/Proxy/TimelineManagerProxy.h"
+#include "Pegasus/Timeline/TimelineManager.h"
 #include "Pegasus/Window/WindowProxy.h"
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/Shader/Proxy/ShaderManagerProxy.h"
@@ -112,9 +112,9 @@ void ApplicationProxy::Unload()
 
 //----------------------------------------------------------------------------------------
 
-Timeline::ITimelineProxy* ApplicationProxy::GetTimeline() const
+Timeline::ITimelineManagerProxy* ApplicationProxy::GetTimelineManagerProxy() const
 {
-    return mApplication->GetTimeline()->GetProxy();
+    return mApplication->GetTimelineManager()->GetProxy();
 }
 
 

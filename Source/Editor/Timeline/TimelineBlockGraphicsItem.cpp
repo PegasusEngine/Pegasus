@@ -15,6 +15,7 @@
 
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"
 #include "Pegasus/Timeline/Shared/ILaneProxy.h"
+#include "Pegasus/Timeline/Shared/ITimelineManagerProxy.h"
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 
 #include <QGraphicsScene>

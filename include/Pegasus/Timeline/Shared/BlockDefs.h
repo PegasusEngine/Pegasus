@@ -28,12 +28,14 @@
         {   return PG_NEW(allocator, -1, #className, Pegasus::Alloc::PG_MEM_PERM)                   \
                             className(allocator, appContext);    }                                  \
         virtual const char * GetEditorString() const { return editorString; }                       \
+        virtual const char * GetClassName()    const { return #className; }                          \
         static const char * GetStaticEditorString() { return editorString; }                        \
 
 #else
 
 #define DECLARE_TIMELINE_BLOCK(className, editorString)                                             \
     public:                                                                                         \
+        virtual const char * GetClassName()    const { return #className; }                          \
         static Pegasus::Timeline::Block * CreateBlock(Pegasus::Alloc::IAllocator * allocator,       \
                                                  Pegasus::Core::IApplicationContext* appContext)    \
         {   return PG_NEW(allocator, -1, #className, Pegasus::Alloc::PG_MEM_PERM)                   \

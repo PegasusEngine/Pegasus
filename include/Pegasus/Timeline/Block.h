@@ -17,8 +17,15 @@
 #include "Pegasus/Timeline/Proxy/BlockProxy.h"
 #include "Pegasus/Timeline/TimelineScript.h"
 #include "Pegasus/Core/IApplicationContext.h"
+#include "Pegasus/AssetLib/RuntimeAssetObject.h"
 
 namespace Pegasus {
+    namespace AssetLib {
+        class AssetLib;
+        class Asset;
+        class Object;
+    }
+
     namespace Timeline {
         class Lane;
     }
@@ -51,7 +58,6 @@ public:
 
     //! Destructor
     virtual ~Block();
-
 
     //! Get the position of the block in the lane
     //! \return Position of the block, measured in ticks
@@ -182,7 +188,21 @@ protected:
 
     //! Get the timeline
     //! \return Global timeline
-    inline Timeline * GetTimeline() const { return mAppContext->GetTimeline(); }
+    inline TimelineManager * GetTimelineManager() const { return mAppContext->GetTimelineManager(); }
+
+    //! Callback that reads from an asset root and populates properties / creates objects based on such.
+    //! \param lib the asset library.
+    //! \param owner the asset containing the root object
+    //! \param root the root object of the structured asset
+    //! \return true if successful, false otherwise
+    bool OnReadObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* owner, AssetLib::Object* root);
+
+    //! Callback that reads from an asset root and populates properties / creates objects based on such.
+    //! \param lib the asset library.
+    //! \param owner the asset containing the root object
+    //! \param root the root object of the structured asset
+    //! \return true if successful, false otherwise
+    void OnWriteObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* owner, AssetLib::Object* root);
 
     //------------------------------------------------------------------------------------
 

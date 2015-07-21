@@ -256,7 +256,7 @@ void Editor::CreateActions()
 
     mActionFileCloseApp = new QAction(tr("&Close App"), this);
 	//! \todo Use the correct icon
-    mActionFileCloseApp->setIcon(QIcon(":/Toolbar/File/SaveScene24.png"));
+    mActionFileCloseApp->setIcon(QIcon(":/TimelineToolbar/Remove16.png"));
 	mActionFileCloseApp->setShortcut(tr("Shift+F4"));
 	mActionFileCloseApp->setStatusTip(tr("Close the current app"));
 	connect(mActionFileCloseApp, SIGNAL(triggered()), this, SLOT(CloseApp()));

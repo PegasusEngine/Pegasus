@@ -17,13 +17,15 @@
 #include "TimelineBlocks/FractalCubeBlock.h"
 #include "TimelineBlocks/FractalCube2Block.h"
 #include "TimelineBlocks/TextureTestBlock.h"
+#include "Pegasus/AssetLib/AssetLib.h"
+#include "Pegasus/AssetLib/Asset.h"
 #include "TimelineBlocks/GeometryTestBlock.h"
 
 #include "Pegasus/TimelineBlock/Camera/CameraLineBlock.h"
+#include "Pegasus/Timeline/TimelineManager.h"
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Timeline/Lane.h"
 
-#include "Pegasus/Timeline/TimelineScript.h"
 #include "Pegasus/Sound/Sound.h"
 
 #include "Pegasus/PropertyGrid/Shared/IPropertyGridManagerProxy.h"
@@ -190,70 +192,8 @@ void TestApp1::RegisterTimelineBlocks()
     
 void TestApp1::InitializeApp()
 {
-    Pegasus::Timeline::Timeline * const timeline = GetTimeline();
-    Pegasus::Timeline::TimelineScriptRef testBs = timeline->LoadScript("BlockScripts/test.bs");
-
-    // Create the content of the timeline
-    const unsigned int TICKS_PER_BEAT = 128;
-    timeline->SetNumTicksPerBeat(TICKS_PER_BEAT);
-    timeline->SetBeatsPerMinute(138.0f);
-    timeline->CreateLane();
-    timeline->CreateLane();
-    timeline->CreateLane();
-    timeline->CreateLane();
-    timeline->CreateLane();
-#if PEGASUS_ENABLE_PROXIES
-    timeline->GetLane(0)->SetName("Camera");
-    timeline->GetLane(1)->SetName("Beads");
-    timeline->GetLane(2)->SetName("Fractal");
-    timeline->GetLane(3)->SetName("Blob");
-#endif
-
-    Pegasus::Timeline::Block * cameraLineBlock = timeline->CreateBlock("CameraLineBlock");
-#if PEGASUS_ENABLE_PROXIES
-    cameraLineBlock->SetColor(255, 255, 0);
-#endif
-    timeline->GetLane(0)->InsertBlock(cameraLineBlock, 0 * TICKS_PER_BEAT, 8 * TICKS_PER_BEAT);
-
-    Pegasus::Timeline::Block * psyBeadBlock = timeline->CreateBlock("Block");
-#if PEGASUS_ENABLE_PROXIES
-    psyBeadBlock->SetColor(255, 128, 128);
-#endif
-    timeline->GetLane(1)->InsertBlock(psyBeadBlock, 0 * TICKS_PER_BEAT, 8 * TICKS_PER_BEAT);
-    psyBeadBlock->AttachScript(testBs);
-
-    Pegasus::Timeline::Block * geometryTestBlock = timeline->CreateBlock("GeometryTestBlock");
-#if PEGASUS_ENABLE_PROXIES
-    geometryTestBlock->SetColor(19, 55, 28);
-#endif
-    timeline->GetLane(1)->InsertBlock(geometryTestBlock, 8 * TICKS_PER_BEAT, 8 * TICKS_PER_BEAT);
-
-    Pegasus::Timeline::Block * psyBeadBlock2 = timeline->CreateBlock("Block");
-#if PEGASUS_ENABLE_PROXIES
-    psyBeadBlock2->SetColor(255, 128, 192);
-#endif
-    timeline->GetLane(1)->InsertBlock(psyBeadBlock2, 16 * TICKS_PER_BEAT, 16 * TICKS_PER_BEAT);
-    psyBeadBlock2->AttachScript(testBs);
-
-    Pegasus::Timeline::Block * fractalCube2Block = timeline->CreateBlock("FractalCube2Block");
-#if PEGASUS_ENABLE_PROXIES
-    fractalCube2Block->SetColor(128, 255, 192);
-#endif
-    timeline->GetLane(2)->InsertBlock(fractalCube2Block, 16 * TICKS_PER_BEAT, 8 * TICKS_PER_BEAT);
-
-    mTextureTestBlock = timeline->CreateBlock("TextureTestBlock");
-#if PEGASUS_ENABLE_PROXIES
-    mTextureTestBlock->SetColor(192, 255, 128);
-#endif
-    timeline->GetLane(3)->InsertBlock(mTextureTestBlock, 24 * TICKS_PER_BEAT, 18 * TICKS_PER_BEAT);
-
-    Pegasus::Timeline::Block * fractalCubeBlock = timeline->CreateBlock("FractalCubeBlock");
-#if PEGASUS_ENABLE_PROXIES
-    fractalCubeBlock->SetColor(128, 255, 128);
-#endif
-    timeline->GetLane(2)->InsertBlock(fractalCubeBlock, 42 * TICKS_PER_BEAT, 6 * TICKS_PER_BEAT);
-
-    // Set the music file to play
+    Pegasus::Timeline::TimelineManager * const timelineManager = GetTimelineManager();
+    timelineManager->LoadTimeline("Timeline/mainTimeline.pas");
     Pegasus::Sound::LoadMusic("Imported\\Music\\Test.mp3");
 }
 

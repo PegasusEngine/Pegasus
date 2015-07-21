@@ -8,7 +8,7 @@
 //! \author	Kleber Garcia
 //! \date	1st November 2014
 //! \brief	Script helper for scripting callbacks
-#include "Pegasus/Timeline/Timeline.h"
+#include "Pegasus/Timeline/TimelineManager.h"
 #include "Pegasus/Timeline/TimelineScript.h"
 #include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/Core/Assertion.h"
@@ -29,8 +29,8 @@ using namespace Pegasus::Core;
 class ScriptIncluder : public IFileIncluder
 {
 public:
-    ScriptIncluder(TimelineScript* timelineScript, Pegasus::Timeline::Timeline* timeline)
-    : mTimelineScript(timelineScript), mTimeline(timeline) {}
+    ScriptIncluder(TimelineScript* timelineScript, Pegasus::Timeline::TimelineManager* timelineManager)
+    : mTimelineScript(timelineScript), mTimelineManager(timelineManager) {}
 
     virtual ~ScriptIncluder(){}
 
@@ -40,12 +40,12 @@ public:
 
 private:
     TimelineScript* mTimelineScript;
-    Pegasus::Timeline::Timeline* mTimeline;
+    Pegasus::Timeline::TimelineManager* mTimelineManager;
 };
 
 bool ScriptIncluder::Open(const char* filePath, const char** outBuffer, int& outBufferSize)
 {
-    TimelineSourceRef t = mTimeline->LoadHeader(filePath);
+    TimelineSourceRef t = mTimelineManager->LoadHeader(filePath);
     if (t != nullptr)
     {
         mTimelineScript->AddHeader(t);
@@ -165,7 +165,7 @@ bool TimelineScript::CompileInternal()
     if (mScriptActive == false)
     {
         ClearHeaderList();
-        ScriptIncluder includer(this, mAppContext->GetTimeline());
+        ScriptIncluder includer(this, mAppContext->GetTimelineManager());
         mScript->SetFileIncluder(&includer);
         mScriptActive = mScript->Compile(&mFileBuffer);
         mScript->SetFileIncluder(nullptr);
@@ -244,7 +244,7 @@ void TimelineScript::CallRender(float beat, BsVmState* state)
 TimelineScript::~TimelineScript()
 {
     ClearHeaderList();
-    mAppContext->GetTimeline()->GetScriptTracker()->UnregisterScript(this);
+    mAppContext->GetTimelineManager()->GetScriptTracker()->UnregisterScript(this);
     mAppContext->GetBlockScriptManager()->DestroyBlockScript(mScript);
 }
 

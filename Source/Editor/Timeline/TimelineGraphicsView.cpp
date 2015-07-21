@@ -20,6 +20,7 @@
 #include "Application/Application.h"
 #include "Application/ApplicationManager.h"
 
+#include "Pegasus/Timeline/Shared/ITimelineManagerProxy.h"
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 #include "Pegasus/Timeline/Shared/ILaneProxy.h"
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"
@@ -103,10 +104,10 @@ void TimelineGraphicsView::RefreshFromTimeline()
     {
         // Application running
 
-        Pegasus::Timeline::ITimelineProxy * const timeline = application->GetTimelineProxy();
+        Pegasus::Timeline::ITimelineManagerProxy * const timeline = application->GetTimelineProxy();
 
         // Handle the length of the timeline
-        const unsigned int numBeats = timeline->GetNumBeats();
+        const unsigned int numBeats = timeline->GetCurrentTimeline()->GetNumBeats();
         if (numBeats < mNumBeats)
         {
             // Remove the background items at the end of the timeline
@@ -121,7 +122,7 @@ void TimelineGraphicsView::RefreshFromTimeline()
         }
 
         // Handle the number of lanes of the timeline
-        const unsigned int numLanes = timeline->GetNumLanes();
+        const unsigned int numLanes = timeline->GetCurrentTimeline()->GetNumLanes();
         if (numLanes < mNumLanes)
         {
             // Remove the extra lanes from the end of the list
@@ -138,7 +139,7 @@ void TimelineGraphicsView::RefreshFromTimeline()
         // Refresh the content of every lane
         for (unsigned int l = 0; l < numLanes; ++l)
         {
-            RefreshLaneFromTimelineLane(l, timeline->GetLane(l));
+            RefreshLaneFromTimelineLane(l, timeline->GetCurrentTimeline()->GetLane(l));
         }
     }
 }

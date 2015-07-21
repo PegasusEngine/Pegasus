@@ -30,7 +30,7 @@ namespace Pegasus {
         class IPropertyGridManagerProxy;
     }
     namespace Timeline {
-        class ITimelineProxy;
+        class ITimelineManagerProxy;
     }
     namespace Wnd {
         class IWindowProxy;
@@ -100,7 +100,7 @@ public:
 
     //! Get the timeline proxy object
     //! \return Pointer to the timeline proxy object
-    Pegasus::Timeline::ITimelineProxy * GetTimelineProxy() const;
+    Pegasus::Timeline::ITimelineManagerProxy * GetTimelineProxy() const;
 
     //! Get the shader manager proxy object
     //! \return Pointer to the shader manager proxy object

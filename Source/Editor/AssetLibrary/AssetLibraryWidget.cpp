@@ -20,9 +20,9 @@
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
-#include "Pegasus/Timeline/Shared/ITimelineProxy.h"
+#include "Pegasus/Timeline/Shared/ITimelineManagerProxy.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
-#include "Pegasus/Timeline/Shared/ITimelineProxy.h"
+#include "Pegasus/Timeline/Shared/ITimelineManagerProxy.h"
 #include "Pegasus/AssetLib/Shared/IAssetLibProxy.h"
 #include "Pegasus/AssetLib/Shared/IAssetProxy.h"
 #include "Pegasus/Core/Shared/IoErrors.h"
@@ -372,7 +372,7 @@ void AssetLibraryWidget::UpdateUIForAppLoaded()
                 ui.ProgramTreeView->doItemsLayout();
             }
 
-            Pegasus::Timeline::ITimelineProxy* timelineProxy = appProxy->GetTimelineProxy();
+            Pegasus::Timeline::ITimelineManagerProxy* timelineProxy = appProxy->GetTimelineManagerProxy();
             if (timelineProxy != nullptr)
             {
                 mBlockScriptListModel->OnAppLoaded(timelineProxy);

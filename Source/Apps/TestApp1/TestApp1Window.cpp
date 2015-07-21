@@ -14,6 +14,7 @@
 #include "TestApp1Window.h"
 #include "Pegasus/Render/RenderContext.h"
 #include "Pegasus/Render/Render.h"
+#include "Pegasus/Timeline/TimelineManager.h"
 #include "Pegasus/Timeline/Timeline.h"
 
 TestApp1Window::TestApp1Window(const Pegasus::Wnd::WindowConfig& config)
@@ -75,7 +76,11 @@ void TestApp1Window::Render()
     Pegasus::Render::Clear(/*color*/true, /*depth*/ true, /*stencil*/false);
 
     // Render the content of the timeline
-    GetWindowContext()->GetTimeline()->Render(this);
+    Pegasus::Timeline::Timeline* timeline = GetWindowContext()->GetTimelineManager()->GetCurrentTimeline();
+    if (timeline != nullptr)
+    {
+        timeline->Render(this);
+    }
 
     // Flip the GPU
     GetRenderContext()->Swap();

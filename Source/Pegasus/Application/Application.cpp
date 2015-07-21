@@ -25,7 +25,7 @@
 #include "Pegasus/Render/MeshFactory.h"
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Texture/TextureManager.h"
-#include "Pegasus/Timeline/Timeline.h"
+#include "Pegasus/Timeline/TimelineManager.h"
 #include "Pegasus/TimelineBlock/TimelineBlockRegistration.h"
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/Render/RenderContext.h"
@@ -102,8 +102,8 @@ Application::Application(const ApplicationConfig& config)
     // Set up blockscript. Use the same timeline allocator
     mBlockScriptManager = PG_NEW(timelineAlloc, -1, "BlockScript Manager", Alloc::PG_MEM_PERM) BlockScript::BlockScriptManager(timelineAlloc);
 
-    // Set up timeline, block script manager has to be initialized first so timeline can push the graphics library within.
-    mTimeline = PG_NEW(timelineAlloc, -1, "Timeline", Alloc::PG_MEM_PERM) Timeline::Timeline(timelineAlloc, this);
+    // Set up timeline manager
+    mTimelineManager = PG_NEW(timelineAlloc, -1, "Timeline Manager", Alloc::PG_MEM_PERM) Timeline::TimelineManager(timelineAlloc, this);
 
     // Set up asset library
     mAssetLib = PG_NEW(nodeAlloc, -1, "AssetLib", Alloc::PG_MEM_PERM) AssetLib::AssetLib(nodeAlloc, nullptr);
@@ -137,7 +137,7 @@ Application::~Application()
     PG_DELETE(windowAlloc, mWindowManager);
 
     // Delete the timeline
-    PG_DELETE(timelineAlloc, mTimeline);
+    PG_DELETE(timelineAlloc, mTimelineManager);
 
     // Delete the texture and node managers
     PG_DELETE(nodeAlloc, mMeshManager);
@@ -183,7 +183,7 @@ void Application::Initialize()
     StartupAppInternal();
 
     // Register the Pegasus-side timeline blocks
-    TimelineBlock::RegisterBaseBlocks(GetTimeline());
+    TimelineBlock::RegisterBaseBlocks(GetTimelineManager());
 
     // Custom initialization, done in the user application
     RegisterTimelineBlocks();
@@ -235,20 +235,20 @@ void Application::Shutdown()
 
 void Application::Load()
 {
-    PG_ASSERTSTR(mTimeline != nullptr, "Invalid timeline for the application");
+    PG_ASSERTSTR(mTimelineManager != nullptr, "Invalid timeline for the application");
 
     // Tell all the blocks of the timeline to initialize their content
-    mTimeline->InitializeBlocks();
+    mTimelineManager->InitializeAllTimelines();
 }
 
 //----------------------------------------------------------------------------------------
 
 void Application::Unload()
 {
-    PG_ASSERTSTR(mTimeline != nullptr, "Invalid timeline for the application");
+    PG_ASSERTSTR(mTimelineManager != nullptr, "Invalid timeline for the application");
 
     // Tell all the blocks of the timeline to shutdown their content
-    mTimeline->ShutdownBlocks();
+    mTimelineManager->ShutdownAllTimelines();
 }
 
 //----------------------------------------------------------------------------------------

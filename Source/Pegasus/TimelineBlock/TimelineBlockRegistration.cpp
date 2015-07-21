@@ -10,7 +10,7 @@
 //! \brief	Global registration of the Pegasus-side timeline blocks
 
 #include "Pegasus/TimelineBlock/TimelineBlockRegistration.h"
-#include "Pegasus/Timeline/Timeline.h"
+#include "Pegasus/Timeline/TimelineManager.h"
 
 #include "Pegasus/TimelineBlock/Camera/CameraLineBlock.h"
 
@@ -21,9 +21,9 @@ namespace Pegasus {
 namespace TimelineBlock {
 
 
-void RegisterBaseBlocks(Timeline::Timeline * timeline)
+void RegisterBaseBlocks(Timeline::TimelineManager * timelineManager)
 {
-    PG_ASSERTSTR(timeline != nullptr, "Trying to register base timeline blocks with an undefined timeline");
+    PG_ASSERTSTR(timelineManager != nullptr, "Trying to register base timeline blocks with an undefined timeline");
 
     // Empty block
     REGISTER_BASE_TIMELINE_BLOCK(Block);

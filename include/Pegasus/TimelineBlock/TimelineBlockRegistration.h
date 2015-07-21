@@ -14,7 +14,7 @@
 
 namespace Pegasus {
     namespace Timeline {
-        class Timeline;
+        class TimelineManager;
     }
 }
 
@@ -25,7 +25,7 @@ namespace TimelineBlock {
 //! Register the Pegasus-side timeline blocks
 //! \warning Required at the initialization of the application, before the app-side blocks get registered
 //! \param timeline Timeline of the application
-void RegisterBaseBlocks(Timeline::Timeline * timeline);
+void RegisterBaseBlocks(Timeline::TimelineManager * timelineManager);
 
 
 }   // namespace TimelineBlock

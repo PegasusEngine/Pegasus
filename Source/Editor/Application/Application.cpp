@@ -18,7 +18,7 @@
 #include "Pegasus/Core/Shared/OsDefs.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
-#include "Pegasus/Timeline/Shared/ITimelineProxy.h"
+#include "Pegasus/Timeline/Shared/ITimelineManagerProxy.h"
 #include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Window/Shared/IWindowProxy.h"
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
@@ -260,11 +260,11 @@ Pegasus::Wnd::IWindowProxy * Application::GetWindowProxy(ViewportType viewportTy
 
 //----------------------------------------------------------------------------------------
 
-Pegasus::Timeline::ITimelineProxy * Application::GetTimelineProxy() const
+Pegasus::Timeline::ITimelineManagerProxy * Application::GetTimelineProxy() const
 {
     if (mApplication != nullptr)
     {
-        return mApplication->GetTimelineProxy();
+        return mApplication->GetTimelineManagerProxy();
     }
     else
     {

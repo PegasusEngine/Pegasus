@@ -38,7 +38,7 @@ public:
 
     //! Get the timeline the lane belongs to
     //! \return Timeline the lane belongs to (!= nullptr)
-    virtual ITimelineProxy * GetTimeline() const = 0;
+    virtual ITimelineProxy* GetTimeline() const = 0;
 
 
     //! Set the name of the lane

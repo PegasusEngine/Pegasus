@@ -45,6 +45,26 @@
        <number>6</number>
       </property>
       <item>
+       <widget class="QToolButton" name="saveButton">
+        <property name="toolTip">
+         <string>Save Timeline</string>
+        </property>
+        <property name="statusTip">
+         <string>Save the current timeline</string>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../Resources/Resources.qrc">
+          <normaloff>:/Toolbar/File/SaveScene24.png</normaloff>:/Toolbar/File/SaveScene24.png</iconset>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QToolButton" name="addButton">
         <property name="toolTip">
          <string>Add lane</string>
@@ -74,26 +94,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QToolButton" name="deleteButton">
-        <property name="toolTip">
-         <string>Delete lane</string>
-        </property>
-        <property name="statusTip">
-         <string>Delete the current lane from the timeline</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="../Resources/Resources.qrc">
-          <normaloff>:/TimelineToolbar/Delete16.png</normaloff>:/TimelineToolbar/Delete16.png</iconset>
-        </property>
-        <property name="autoRaise">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QToolButton" name="removeButton">
         <property name="toolTip">
          <string>Remove lane</string>
@@ -107,6 +107,26 @@
         <property name="icon">
          <iconset resource="../Resources/Resources.qrc">
           <normaloff>:/TimelineToolbar/Remove16.png</normaloff>:/TimelineToolbar/Remove16.png</iconset>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="deleteButton">
+        <property name="toolTip">
+         <string>Delete lane</string>
+        </property>
+        <property name="statusTip">
+         <string>Delete the current lane from the timeline</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../Resources/Resources.qrc">
+          <normaloff>:/TimelineToolbar/Delete16.png</normaloff>:/TimelineToolbar/Delete16.png</iconset>
         </property>
         <property name="autoRaise">
          <bool>true</bool>
@@ -453,7 +473,6 @@
  </customwidgets>
  <tabstops>
   <tabstop>addButton</tabstop>
-  <tabstop>deleteButton</tabstop>
   <tabstop>removeButton</tabstop>
   <tabstop>playButton</tabstop>
   <tabstop>bpmSpin</tabstop>
