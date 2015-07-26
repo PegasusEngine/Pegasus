@@ -57,9 +57,9 @@ static inline QString SrcToQString(const char* src, int srcSize)
 }
 
 
-CodeEditorWidget::CodeEditorWidget (QWidget * parent)
+CodeEditorWidget::CodeEditorWidget (QWidget * parent, Editor* editor)
 : 
-    QDockWidget(parent),
+    PegasusDockWidget(parent, editor),
     mCompilationRequestPending(false), 
     mInternalBlockTextUpdated(false),
     mCloseViewAction(nullptr),
@@ -73,7 +73,6 @@ CodeEditorWidget::CodeEditorWidget (QWidget * parent)
     mCompilationPolicy(Pegasus::Core::ISourceCodeProxy::POLICY_USER_DEFINED)
 {
     mCompilationRequestMutex = new QMutex();
-    SetupUi();
 }
 
 CodeEditorWidget::~CodeEditorWidget()
@@ -83,14 +82,11 @@ CodeEditorWidget::~CodeEditorWidget()
 
 void CodeEditorWidget::SetupUi()
 {
+    setFocusPolicy(Qt::NoFocus);
     QWidget * mainWidget = new QWidget(this);
     mUi.mMainLayout = new QVBoxLayout();
     mainWidget->setLayout(mUi.mMainLayout);
     setWidget(mainWidget);
-
-	setFeatures(  QDockWidget::DockWidgetClosable
-				| QDockWidget::DockWidgetMovable
-				| QDockWidget::DockWidgetFloatable);
 
     setAllowedAreas(Qt::NoDockWidgetArea);
 
@@ -136,11 +132,11 @@ void CodeEditorWidget::SetupUi()
     setWindowTitle(tr("Code Editor"));
     setObjectName("CodeEditor");
 
-    mUi.mTabWidget = new NodeFileTabBar(mainWidget);
+    mUi.mTabWidget = new NodeFileTabBar(this);
     
     connect(
-        mUi.mTabWidget, SIGNAL(RuntimeObjectRemoved(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
-        this, SLOT(RequestClose(Pegasus::AssetLib::IRuntimeAssetObjectProxy*))
+        mUi.mTabWidget, SIGNAL(RuntimeObjectRemoved(Pegasus::AssetLib::IRuntimeAssetObjectProxy*, QObject*)),
+        this, SLOT(RequestClose(Pegasus::AssetLib::IRuntimeAssetObjectProxy*, QObject*))
     );
 
     connect(
@@ -165,12 +161,12 @@ void CodeEditorWidget::SetupUi()
 
     connect(
         mUi.mTabWidget, SIGNAL(RegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
-        this,   SIGNAL(RegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*))
+        this,   SIGNAL(OnRegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*))
     );
 
     connect(
         mUi.mTabWidget, SIGNAL(UnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
-        this,   SIGNAL(UnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*))
+        this,   SIGNAL(OnUnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*))
     );
  
     //setup the tree editor
@@ -381,6 +377,11 @@ void CodeEditorWidget::SignalInstantCompilationActionTriggered()
     SetInstantCompilationState(!mInstantCompilationFlag);
 }
 
+void CodeEditorWidget::OnSaveFocusedObject()
+{
+    SignalSaveCurrentCode();
+}
+
 void CodeEditorWidget::SignalSaveCurrentCode()
 {
     PostStatusBarMessage("");
@@ -399,7 +400,7 @@ void CodeEditorWidget::SignalSaveCurrentCode()
         AssetIOMessageController::Message msg;
         msg.SetMessageType(AssetIOMessageController::Message::SAVE_CODE);
         msg.GetAssetNode().mCode = sourceCode;
-        emit(SendAssetIoMessage(msg));
+        SendAssetIoMessage(msg);
 
     }
 }
@@ -472,7 +473,7 @@ void CodeEditorWidget::PostStatusBarMessage(const QString& message)
     }
 }
 
-void CodeEditorWidget::ReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage id)
+void CodeEditorWidget::OnReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage id)
 {
     switch(id)
     {
@@ -501,7 +502,7 @@ void CodeEditorWidget::OnSettingsChanged()
     mUi.mTreeEditor->ForceUpdateAllStyles();
 }
 
-void CodeEditorWidget::RequestClose(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
+void CodeEditorWidget::RequestClose(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object, QObject* extraData)
 {
     Pegasus::Core::ISourceCodeProxy* code = static_cast<Pegasus::Core::ISourceCodeProxy*>(object);
     CodeUserData* codeToClose = static_cast<CodeUserData*>(code->GetUserData()); 
@@ -513,7 +514,7 @@ void CodeEditorWidget::RequestClose(Pegasus::AssetLib::IRuntimeAssetObjectProxy*
     AssetIOMessageController::Message msg;
     msg.SetMessageType(AssetIOMessageController::Message::CLOSE_CODE);
     msg.GetAssetNode().mCode = codeToClose->GetSourceCode();
-    emit(SendAssetIoMessage(msg));
+    SendAssetIoMessage(msg);
 }
 
 void CodeEditorWidget::OnTextChanged(QWidget * sender)
@@ -625,7 +626,7 @@ bool CodeEditorWidget::HasAnyChildFocus() const
     return mUi.mTreeEditor->HasAnyChildFocus();
 }
 
-void CodeEditorWidget::UpdateUIForAppFinished()
+void CodeEditorWidget::OnUIForAppClosed()
 {
     //compress the opened code list
     while (mUi.mTabWidget->GetTabCount())

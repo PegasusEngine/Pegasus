@@ -29,6 +29,8 @@ namespace Pegasus {
     }
 }
 
+class PegasusDockWidget;
+
 
 
 //! Interface object used to interface with the Pegasus related messages,
@@ -120,7 +122,7 @@ private slots:
     void PerformBlockDoubleClickedAction(Pegasus::Timeline::IBlockProxy* blockProxy);
 
     //! forwards a to the asset io controller so its executed in the render thread
-    void ForwardAssetIoMessage(AssetIOMessageController::Message msg);
+    void ForwardAssetIoMessage(PegasusDockWidget* sender, AssetIOMessageController::Message msg);
 
     //! forwards a to the shader io controller so its executed in the render thread
     void ForwardSourceIoMessage(SourceIOMessageController::Message msg);

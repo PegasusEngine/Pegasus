@@ -177,7 +177,7 @@ void PropertyGridClassesDockWidget::UpdateUIForAppLoaded()
                 case Pegasus::PropertyGrid::PROPERTYTYPE_COLOR8RGBA:
                     {
                         const unsigned char * value = reinterpret_cast<unsigned char *>(record.defaultValuePtr);
-                        propertyList.append(QString("(%1, %2, %3)").arg(value[0]).arg(value[1]).arg(value[2]).arg(value[3]));
+                        propertyList.append(QString("(%1, %2, %3, %4)").arg(value[0]).arg(value[1]).arg(value[2]).arg(value[3]));
                     }
                     break;
 

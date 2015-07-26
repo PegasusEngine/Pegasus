@@ -16,6 +16,7 @@
 #include "CodeEditor/CodeEditorWidget.h"
 #include "CodeEditor/SourceCodeManagerEventListener.h"
 #include "Timeline/TimelineDockWidget.h"
+#include "Widgets/PegasusDockWidget.h"
 
 #include "Pegasus/Preprocessor.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
@@ -101,20 +102,18 @@ ApplicationInterface::ApplicationInterface(Application * application)
     mProgramIoMessageController = new ProgramIOMessageController(mApplication->GetApplicationProxy());
     mSourceCodeEventListener = new SourceCodeManagerEventListener();
     
+    const QVector<PegasusDockWidget*>& widgets = Editor::GetInstance().GetWidgets();
+    for (int i = 0; i < widgets.size(); ++i)
+    {
+        PegasusDockWidget* widget = widgets[i];
 
-    //<------  Asset IO Controller -------->//
-    //From ui to render
-    connect(assetLibraryWidget, SIGNAL(SendAssetIoMessage(AssetIOMessageController::Message)),
-            this, SLOT(ForwardAssetIoMessage(AssetIOMessageController::Message)), Qt::QueuedConnection);
-
-    connect(codeEditorWidget, SIGNAL(SendAssetIoMessage(AssetIOMessageController::Message)),
-            this, SLOT(ForwardAssetIoMessage(AssetIOMessageController::Message)), Qt::QueuedConnection);
-
-    connect(programEditor, SIGNAL(SendAssetIoMessage(AssetIOMessageController::Message)),
-            this, SLOT(ForwardAssetIoMessage(AssetIOMessageController::Message)), Qt::QueuedConnection);
-
-    connect(timelineDockWidget, SIGNAL(SendAssetIoMessage(AssetIOMessageController::Message)),
-            this, SLOT(ForwardAssetIoMessage(AssetIOMessageController::Message)), Qt::QueuedConnection);
+        connect(widget, SIGNAL(OnSendAssetIoMessage(PegasusDockWidget*, AssetIOMessageController::Message)),
+                this, SLOT(ForwardAssetIoMessage(PegasusDockWidget*, AssetIOMessageController::Message)), Qt::QueuedConnection);
+    
+        connect(mAssetIoMessageController, SIGNAL(SignalPostMessage(PegasusDockWidget*, AssetIOMessageController::Message::IoResponseMessage)),
+                widget,   SLOT(ReceiveAssetIoMessage(PegasusDockWidget*, AssetIOMessageController::Message::IoResponseMessage)), Qt::QueuedConnection);
+        
+    }
 
     //From render to ui
     connect(mAssetIoMessageController, SIGNAL(SignalUpdateNodeViews()),
@@ -123,17 +122,8 @@ ApplicationInterface::ApplicationInterface(Application * application)
     connect(mAssetIoMessageController, SIGNAL(SignalOpenProgram(Pegasus::Shader::IProgramProxy*)),
             programEditor, SLOT(RequestOpenProgram(Pegasus::Shader::IProgramProxy*)), Qt::QueuedConnection); 
 
-    connect(mAssetIoMessageController, SIGNAL(SignalPostProgramMessage(AssetIOMessageController::Message::IoResponseMessage)),
-            programEditor, SLOT(ReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage)));
-
     connect(mAssetIoMessageController, SIGNAL(SignalOpenCode(Pegasus::Core::ISourceCodeProxy*)),
             codeEditorWidget,   SLOT(RequestOpen(Pegasus::Core::ISourceCodeProxy*)), Qt::QueuedConnection); 
-    
-    connect(mAssetIoMessageController, SIGNAL(SignalPostCodeMessage(AssetIOMessageController::Message::IoResponseMessage)),
-            codeEditorWidget,   SLOT(ReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage)));
-
-    connect(mAssetIoMessageController, SIGNAL(SignalPostTimelineEditorMessage(AssetIOMessageController::Message::IoResponseMessage)),
-            timelineDockWidget, SLOT(ReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage)));
 
     //<------  Source IO Controller -------->//
     //From ui to render
@@ -429,9 +419,9 @@ void ApplicationInterface::PerformBlockDoubleClickedAction(Pegasus::Timeline::IB
 
 //----------------------------------------------------------------------------------------
 
-void ApplicationInterface::ForwardAssetIoMessage(AssetIOMessageController::Message msg)
+void ApplicationInterface::ForwardAssetIoMessage(PegasusDockWidget* sender, AssetIOMessageController::Message msg)
 {
-    mAssetIoMessageController->OnRenderThreadProcessMessage(msg);
+    mAssetIoMessageController->OnRenderThreadProcessMessage(sender, msg);
 }
 
 //----------------------------------------------------------------------------------------

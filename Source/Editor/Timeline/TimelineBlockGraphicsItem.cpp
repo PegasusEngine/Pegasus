@@ -22,6 +22,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 #include <QStyleOption>
+#include <QUndoStack>
 
 
 //! Depth of the block when drawn. Positive since it needs to be rendered in front of the grid at least
@@ -34,11 +35,13 @@ unsigned int TimelineBlockGraphicsItem::sMouseClickID = 0;
 
 TimelineBlockGraphicsItem::TimelineBlockGraphicsItem(Pegasus::Timeline::IBlockProxy * blockProxy,
                                                      unsigned int lane,
-                                                     float horizontalScale)
+                                                     float horizontalScale,
+                                                     QUndoStack* undoStack)
 :   QGraphicsObject(),
     mBlockProxy(blockProxy),
     mName((blockProxy != nullptr) ? blockProxy->GetEditorString() : ""),
-    mEnableUndo(true)
+    mEnableUndo(true),
+    mUndoStack(undoStack)
 {
     ED_ASSERTSTR(blockProxy != nullptr, "A block proxy must be associated with the block item");
     ED_ASSERTSTR(!QString(blockProxy->GetEditorString()).isEmpty(), "The name of the block must be defined");
@@ -325,8 +328,7 @@ QVariant TimelineBlockGraphicsItem::itemChange(GraphicsItemChange change, const 
                                                                                   sMouseClickID);
                         }
         
-                        // Push the undo command, redo() is executed and the block updated
-                        Editor::GetInstance().PushUndoCommand(undoCommand);
+                        mUndoStack->push(undoCommand);
 
                         // If the new coordinates differ from the new mouse position,
                         // tell the item we overrode the position
@@ -360,8 +362,7 @@ QVariant TimelineBlockGraphicsItem::itemChange(GraphicsItemChange change, const 
                                                                                           sMouseClickID);
                                 }
         
-                                // Push the undo command, redo() is executed and the block updated
-                                Editor::GetInstance().PushUndoCommand(undoCommand);
+                                mUndoStack->push(undoCommand);
 
                                 // If the new coordinates differ from the new mouse position,
                                 // tell the item we overrode the position

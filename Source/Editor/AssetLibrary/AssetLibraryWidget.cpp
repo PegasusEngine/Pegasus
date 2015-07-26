@@ -35,14 +35,20 @@
 #include <qfilesystemwatcher.h>
 #include <qmessagebox.h>
 
+#include "Widgets/PegasusDockWidget.h"
+
 
 
 AssetLibraryWidget::AssetLibraryWidget(
-        QWidget * parent
+        QWidget * parent,
+        Editor* editor
 )
-: QDockWidget(parent)
+: PegasusDockWidget(parent, editor)
 {
+}
 
+void AssetLibraryWidget::SetupUi()
+{
     mProgramTreeModel = new ProgramTreeModel(this);
     mProgramSelectionModel = new QItemSelectionModel(mProgramTreeModel);
 
@@ -171,7 +177,7 @@ void AssetLibraryWidget::SaveAsFile(const QString& filter, AssetIOMessageControl
             AssetIOMessageController::Message msg;
             msg.SetMessageType(newAssetMessageType);
             msg.SetString(selectedFile);
-            emit(SendAssetIoMessage(msg));
+            SendAssetIoMessage(msg);
         }
     }
 }
@@ -247,7 +253,7 @@ void AssetLibraryWidget::DispatchTextEditorThroughShaderView(const QModelIndex& 
         AssetIOMessageController::Message msg;
         msg.SetMessageType(AssetIOMessageController::Message::OPEN_ASSET);
         msg.SetString(asset->GetPath());
-        emit(SendAssetIoMessage(msg));
+        SendAssetIoMessage(msg);
     }
     else
     {
@@ -269,7 +275,7 @@ void AssetLibraryWidget::DispatchAsset(const QModelIndex& assetIdx)
         AssetIOMessageController::Message msg;
         msg.SetMessageType(AssetIOMessageController::Message::OPEN_ASSET);
         msg.SetString(relativePath);
-        emit(SendAssetIoMessage(msg));
+        SendAssetIoMessage(msg);
     }
 }
 
@@ -284,7 +290,7 @@ void AssetLibraryWidget::DispatchTextEditorThroughBlockScriptView(const QModelIn
         AssetIOMessageController::Message msg;
         msg.SetMessageType(AssetIOMessageController::Message::OPEN_ASSET);
         msg.SetString(asset->GetPath());;
-        emit(SendAssetIoMessage(msg));
+        SendAssetIoMessage(msg);
     }
     else
     {
@@ -308,7 +314,7 @@ void AssetLibraryWidget::DispatchTextEditorThroughProgramView(const QModelIndex&
             AssetIOMessageController::Message msg;
             msg.SetMessageType(AssetIOMessageController::Message::OPEN_ASSET);
             msg.SetString(asset->GetPath());
-            emit(SendAssetIoMessage(msg));
+            SendAssetIoMessage(msg);
         }
         else
         {
@@ -350,43 +356,38 @@ AssetLibraryWidget::~AssetLibraryWidget()
 // SLOTS
 //----------------------------------------------------------------------------------------
 
-void AssetLibraryWidget::UpdateUIForAppLoaded()
+void AssetLibraryWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* appProxy)
 {
-    Application* app = Editor::GetInstance().GetApplicationManager().GetApplication();
-    ED_ASSERTSTR(app != nullptr, "App cannot be nulL!");
-    if (app != nullptr)
+    ED_ASSERTSTR(appProxy != nullptr, "App proxy can't be null");
+    if (appProxy != nullptr)
     {
-        Pegasus::App::IApplicationProxy* appProxy = app->GetApplicationProxy();
-        ED_ASSERTSTR(appProxy != nullptr, "App proxy can't be null");
-        if (appProxy != nullptr)
+        Pegasus::Shader::IShaderManagerProxy* shaderMgrProxy = appProxy->GetShaderManagerProxy();
+        ED_ASSERTSTR(shaderMgrProxy != nullptr, "Shader Manager not extracted from app");
+        
+        if (shaderMgrProxy != nullptr)
         {
-            Pegasus::Shader::IShaderManagerProxy* shaderMgrProxy = appProxy->GetShaderManagerProxy();
-            ED_ASSERTSTR(shaderMgrProxy != nullptr, "Shader Manager not extracted from app");
+            mShaderListModel->OnAppLoaded(shaderMgrProxy);
+            ui.ShaderTreeView->doItemsLayout();
             
-            if (shaderMgrProxy != nullptr)
-            {
-                mShaderListModel->OnAppLoaded(shaderMgrProxy);
-                ui.ShaderTreeView->doItemsLayout();
-                
-                mProgramTreeModel->OnAppLoaded();
-                ui.ProgramTreeView->doItemsLayout();
-            }
-
-            Pegasus::Timeline::ITimelineManagerProxy* timelineProxy = appProxy->GetTimelineManagerProxy();
-            if (timelineProxy != nullptr)
-            {
-                mBlockScriptListModel->OnAppLoaded(timelineProxy);
-                ui.BlockScriptTreeView->doItemsLayout();
-            }
-
-            // set the assets root folder
-            QString assetRoot = appProxy->GetAssetsRoot();
-            mAssetTreeFileSystemModel->setRootPath(assetRoot);
-            QModelIndex idx = mAssetTreeFileSystemModel->index(assetRoot);
-            ui.AssetTreeView->setRootIndex(idx);
-            ui.AssetTreeView->show();
+            mProgramTreeModel->OnAppLoaded();
+            ui.ProgramTreeView->doItemsLayout();
         }
+
+        Pegasus::Timeline::ITimelineManagerProxy* timelineProxy = appProxy->GetTimelineManagerProxy();
+        if (timelineProxy != nullptr)
+        {
+            mBlockScriptListModel->OnAppLoaded(timelineProxy);
+            ui.BlockScriptTreeView->doItemsLayout();
+        }
+
+        // set the assets root folder
+        QString assetRoot = appProxy->GetAssetsRoot();
+        mAssetTreeFileSystemModel->setRootPath(assetRoot);
+        QModelIndex idx = mAssetTreeFileSystemModel->index(assetRoot);
+        ui.AssetTreeView->setRootIndex(idx);
+        ui.AssetTreeView->show();
     }
+    
 }
 
 void AssetLibraryWidget::UpdateUIItemsLayout()
@@ -398,7 +399,7 @@ void AssetLibraryWidget::UpdateUIItemsLayout()
 
 //----------------------------------------------------------------------------------------
 
-void AssetLibraryWidget::UpdateUIForAppFinished()
+void AssetLibraryWidget::OnUIForAppClosed()
 {    
     mProgramTreeModel->OnAppDestroyed();
     ui.ProgramTreeView->doItemsLayout();

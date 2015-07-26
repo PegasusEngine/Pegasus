@@ -16,8 +16,14 @@
 #include <QAction>
 #include "ui_AssetLibraryWidget.h"
 #include "MessageControllers/AssetIOMessageController.h"
+#include "Widgets/PegasusDockWidget.h"
 
 namespace Pegasus {
+
+    namespace App 
+    {
+        class IApplicationProxy;
+    }
     namespace Core 
     {
         class ISourceCodeProxy;
@@ -27,6 +33,7 @@ namespace Pegasus {
     {
         class IProgramProxy;
     }
+
 }
 
 class QWidget;
@@ -37,29 +44,34 @@ class QMenu;
 class QFileSystemWatcher;
 class ProgramTreeModel;
 class SourceCodeListModel;
+class Editor;
 
 //! Graphics Widget meant for shader navigation & management
-class AssetLibraryWidget : public QDockWidget
+class AssetLibraryWidget : public PegasusDockWidget
 {
     Q_OBJECT
 
 public:
     
-    AssetLibraryWidget(QWidget * parent);
+    AssetLibraryWidget(QWidget * parent, Editor* editor);
     virtual ~AssetLibraryWidget();
 
     //! Creates the menu that contains list of assets. Does binding internally
     QMenu* CreateNewAssetMenu(const QString& name, QWidget* parent);
 
+    //! Callback fired when the UI needs to be set.
+    virtual void SetupUi();
+    
+    //! Returns the name this widget
+    virtual const char* GetName() const { return "AssetLibraryWidget"; }
+    
+    //! Returns the title of this widget
+    virtual const char* GetTitle() const { return "Asset Library"; }
+
 public slots:
-    //! slot triggered when app is loaded
-    void UpdateUIForAppLoaded();
 
     //! updates the ui items laytout
     void UpdateUIItemsLayout();
-
-    //! slot triggered when app is unloaded
-    void UpdateUIForAppFinished();
 
     //! slot, triggered when an asset is dispatched through the asset view
     void DispatchAsset(const QModelIndex& index);
@@ -99,11 +111,13 @@ public slots:
 private slots:
     void OnFileChanged(const QString& path);
 
-signals:
-    //! sends a message to the IO controller, which will then send more messages to other UI specific elements
-    void SendAssetIoMessage(AssetIOMessageController::Message msg);
-
 private:
+
+    //! Callback called when an app has been loaded
+    virtual void OnUIForAppLoaded(Pegasus::App::IApplicationProxy* application);
+
+    //! slot triggered when app is unloaded
+    virtual void OnUIForAppClosed();
 
     //! Asks through a popup the file name to use to save this asset
     //! \param the filter to use

@@ -54,9 +54,6 @@ Editor::Editor(QApplication * parentApplication)
     // Create the assertion manager
     mAssertionManager = new AssertionManager(this);
 
-    // Create the undo stack
-    mUndoStack = new QUndoStack(this);
-
     // Create the splash screen (it becomes visible once this class is initialized,
     // set by the application class)
     //! \todo Finish implementing the splash screen
@@ -76,9 +73,14 @@ Editor::Editor(QApplication * parentApplication)
     CreateToolBars();
     CreateStatusBar();
 
+
+    // Create the application manager
+    mApplicationManager = new ApplicationManager(this, this);
+
     //! Finish handling the initialization of the Pegasus engine.
     CreateDockWidgets();
-    CreateMenu();
+    
+    CreateMenu();    
 
     // Create the settings object, read the setting values from the settings file and apply them
 	if (sSettings == nullptr)
@@ -89,27 +91,10 @@ Editor::Editor(QApplication * parentApplication)
     // Write the log console header
     ED_LOG("Pegasus Editor settings loaded");
 
-    // Create the application manager
-    mApplicationManager = new ApplicationManager(this, this);
-
     connect(mApplicationManager, SIGNAL(ApplicationLoaded()),
             this, SLOT(UpdateUIForAppLoaded()));
     connect(mApplicationManager, SIGNAL(ApplicationFinished()),
             this, SLOT(UpdateUIForAppClosed()));
-
-    connect(mApplicationManager, SIGNAL(ApplicationLoaded()),
-            mTimelineDockWidget, SLOT(UpdateUIForAppLoaded()));
-    connect(mApplicationManager, SIGNAL(ApplicationFinished()),
-            mTimelineDockWidget, SLOT(UpdateUIForAppClosed()));
-
-    connect(mApplicationManager, SIGNAL(ApplicationFinished()),
-            mCodeEditorWidget,  SLOT(UpdateUIForAppFinished()));
-    connect(mApplicationManager, SIGNAL(ApplicationFinished()),
-            mProgramEditorWidget, SLOT(UpdateUIForAppFinished()));
-    connect(mApplicationManager, SIGNAL(ApplicationLoaded()),
-            mAssetLibraryWidget, SLOT(UpdateUIForAppLoaded()));
-    connect(mApplicationManager, SIGNAL(ApplicationFinished()),
-            mAssetLibraryWidget, SLOT(UpdateUIForAppFinished()));
 
     connect(sSettings, SIGNAL(OnCodeEditorStyleChanged()),
             mCodeEditorWidget, SLOT(OnSettingsChanged())); 
@@ -124,15 +109,8 @@ Editor::Editor(QApplication * parentApplication)
     connect(mApplicationManager, SIGNAL(ApplicationFinished()),
             mPropertyGridClassesDockWidget, SLOT(UpdateUIForAppClosed()));
 
-    connect(mProgramEditorWidget, SIGNAL(RegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
-            this, SLOT(OnRegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)));
-    connect(mCodeEditorWidget, SIGNAL(RegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
-            this, SLOT(OnRegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)));
-
-    connect(mProgramEditorWidget, SIGNAL(UnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
-            this, SLOT(OnUnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)));
-    connect(mCodeEditorWidget, SIGNAL(UnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
-            this, SLOT(OnUnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)));
+    connect(mActionEditUndo, SIGNAL(triggered()), mHistoryDockWidget, SLOT(TriggerUndo()));
+    connect(mActionEditRedo, SIGNAL(triggered()), mHistoryDockWidget, SLOT(TriggerRedo()));
 
     sSettings->NotifySettingsChanged();
 
@@ -153,6 +131,29 @@ Editor::~Editor()
         delete mLogManager;
     }
     sInstance = nullptr;
+}
+
+//----------------------------------------------------------------------------------------
+
+void Editor::RegisterWidget(PegasusDockWidget* widget, Qt::DockWidgetArea area)
+{
+    widget->Initialize();
+    mWidgets.push_back(widget);
+
+    addDockWidget(area, widget);
+
+    connect(mApplicationManager, SIGNAL(ApplicationLoaded()),
+            widget, SLOT(UpdateUIForAppLoaded()));
+    connect(mApplicationManager, SIGNAL(ApplicationFinished()),
+            widget, SLOT(UpdateUIForAppClosed()));
+    connect(widget, SIGNAL(OnFocus(PegasusDockWidget*)),
+            this, SLOT(OnDockFocus(PegasusDockWidget*)));
+    connect(widget, SIGNAL(OutFocus(PegasusDockWidget*)),
+            this, SLOT(OutDockFocus(PegasusDockWidget*)));
+    connect(widget, SIGNAL(OnRegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
+            this, SLOT(OnRegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)));
+    connect(widget, SIGNAL(OnUnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
+            this, SLOT(OnUnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)));
 }
 
 //----------------------------------------------------------------------------------------
@@ -181,27 +182,13 @@ void Editor::CloseSplashScreen()
 
 void Editor::SaveCurrentAsset()
 {
-    if (mCodeEditorWidget->HasAnyChildFocus())
+    for (int i = 0 ; i < mWidgets.size(); ++i)
     {
-        mCodeEditorWidget->SignalSaveCurrentCode();
-    }
-    else if (mProgramEditorWidget->hasFocus())
-    {
-        mProgramEditorWidget->SignalSaveCurrentProgram();
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
-void Editor::PushUndoCommand(QUndoCommand * command)
-{
-    if (command != nullptr)
-    {
-        mUndoStack->push(command);
-    }
-    else
-    {
-        ED_FAILSTR("Invalid command pushed to the undo manager");
+        if (mWidgets[i]->HasFocus())
+        {
+            mWidgets[i]->OnSaveFocusedObject();
+            break;
+        }
     }
 }
 
@@ -268,12 +255,12 @@ void Editor::CreateActions()
 	connect(mActionFileQuit, SIGNAL(triggered()), this, SLOT(Quit()));
 
 
-    mActionEditUndo = mUndoStack->createUndoAction(this, tr("&Undo"));
+    mActionEditUndo = new QAction(tr("&Undo"), this);
 	mActionEditUndo->setIcon(QIcon(":/Toolbar/Edit/Undo16.png"));
 	mActionEditUndo->setShortcut(tr("Ctrl+Z"));
 	mActionEditUndo->setStatusTip(tr("Undo the last command"));
 
-    mActionEditRedo = mUndoStack->createRedoAction(this, tr("&Redo"));
+    mActionEditRedo = new QAction(tr("&Redo"), this);
 	mActionEditRedo->setIcon(QIcon(":/Toolbar/Edit/Redo16.png"));
 	mActionEditRedo->setShortcut(tr("Ctrl+Y"));
 	mActionEditRedo->setStatusTip(tr("Redo the last command"));
@@ -456,6 +443,16 @@ void Editor::CreateDockWidgets()
     // Allow nesting of dock widgets within dock areas
     setDockNestingEnabled(true);
 
+    //Generic widget initialization
+    mTimelineDockWidget = new TimelineDockWidget(this, this);
+    RegisterWidget(mTimelineDockWidget, Qt::BottomDockWidgetArea);
+
+    mProgramEditorWidget = new ProgramEditorWidget(this,this); 
+    RegisterWidget(mProgramEditorWidget,Qt::BottomDockWidgetArea);
+    mProgramEditorWidget->hide();
+    mProgramEditorWidget->setFloating(true);
+
+
     // Create the dock widgets and assign their initial position
     //! \todo Use the correct icons for the docks, and add them to the menu and toolbar
 
@@ -465,27 +462,20 @@ void Editor::CreateDockWidgets()
     mSecondaryViewportDockWidget = new ViewportDockWidget(VIEWPORTTYPE_SECONDARY, this);
     addDockWidget(Qt::TopDockWidgetArea, mSecondaryViewportDockWidget);
 
-    mTimelineDockWidget = new TimelineDockWidget(this);
-    addDockWidget(Qt::BottomDockWidgetArea, mTimelineDockWidget);
-
-    mHistoryDockWidget = new HistoryDockWidget(mUndoStack, this);
+    mHistoryDockWidget = new HistoryDockWidget(this);
     addDockWidget(Qt::RightDockWidgetArea, mHistoryDockWidget);
 
     mConsoleDockWidget = new ConsoleDockWidget(this);
     addDockWidget(Qt::BottomDockWidgetArea, mConsoleDockWidget);
 
-    mCodeEditorWidget = new CodeEditorWidget(this);
-    addDockWidget(Qt::BottomDockWidgetArea, mCodeEditorWidget);
+    mCodeEditorWidget = new CodeEditorWidget(this, this);
+    RegisterWidget(mCodeEditorWidget, Qt::BottomDockWidgetArea);
     mCodeEditorWidget->hide();
     mCodeEditorWidget->setFloating(true);
 
-    mProgramEditorWidget = new ProgramEditorWidget(this); 
-    mProgramEditorWidget->hide();
-    addDockWidget(Qt::BottomDockWidgetArea, mProgramEditorWidget);    
-    mProgramEditorWidget->setFloating(true);
 
-    mAssetLibraryWidget = new AssetLibraryWidget(this);
-    addDockWidget(Qt::RightDockWidgetArea, mAssetLibraryWidget);        
+    mAssetLibraryWidget = new AssetLibraryWidget(this, this);
+    RegisterWidget(mAssetLibraryWidget, Qt::RightDockWidgetArea);
     mAssetLibraryWidget->hide();
     mAssetLibraryWidget->setFloating(true);
 
@@ -493,7 +483,6 @@ void Editor::CreateDockWidgets()
     addDockWidget(Qt::RightDockWidgetArea, mTextureEditorDockWidget);
 
     mPropertyGridClassesDockWidget = new PropertyGridClassesDockWidget(this);
-    //mPropertyGridClassesDockWidget->setWindowIcon(QIcon(QPixmap(":/res/qt.png")));
     addDockWidget(Qt::RightDockWidgetArea, mPropertyGridClassesDockWidget);
 }
 
@@ -765,3 +754,21 @@ void Editor::OpenPreferencesConsole()
     settingsDialog->SetCurrentPage(SettingsDialog::PAGE_CONSOLE);
 	settingsDialog->show();
 }
+
+//----------------------------------------------------------------------------------------
+
+void Editor::OnDockFocus(PegasusDockWidget* target)
+{
+    if (target->GetCurrentUndoStack() != nullptr)
+    {
+        mHistoryDockWidget->SetUndoStack(target->GetCurrentUndoStack());
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Editor::OutDockFocus(PegasusDockWidget* target)
+{
+
+}
+

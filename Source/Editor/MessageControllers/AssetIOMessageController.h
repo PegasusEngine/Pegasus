@@ -16,6 +16,8 @@
 #include "Pegasus/Core/Shared/IoErrors.h"
 
 //forward declarations
+class PegasusDockWidget;
+
 namespace Pegasus
 {
     namespace App
@@ -135,7 +137,7 @@ public:
     virtual ~AssetIOMessageController();
 
     //! Called by the render thread when we open a message
-    void OnRenderThreadProcessMessage(const Message& msg);
+    void OnRenderThreadProcessMessage(PegasusDockWidget* sender, const Message& msg);
 
 signals:
 
@@ -152,14 +154,7 @@ signals:
     void SignalOnErrorMessagePopup(const QString& message);
 
     //! Signal triggered when a message is sent to the code editor.
-    void SignalPostCodeMessage(AssetIOMessageController::Message::IoResponseMessage id);
-
-    //! Signal triggered when a message is sent to the program editor.
-    void SignalPostProgramMessage(AssetIOMessageController::Message::IoResponseMessage id);
-
-    //! Signal triggered when a message is sent to the timeline editor.
-    void SignalPostTimelineEditorMessage(AssetIOMessageController::Message::IoResponseMessage id);
-
+    void SignalPostMessage(PegasusDockWidget* sender, AssetIOMessageController::Message::IoResponseMessage id);
 
 private:
     //! Called when a shader is requested for opening from the render thread
@@ -171,26 +166,17 @@ private:
     //! Called when a program is requested for opening from the render thread
     void OnRenderRequestCloseProgram(Pegasus::Shader::IProgramProxy* program);
 
-    //! Called when a program is requested to be saved from the render thread
-    void OnRenderRequestSaveProgram(Pegasus::Shader::IProgramProxy* object);
-
-    //! Called when a shader is requested to be saved from the render thread
-    void OnRenderRequestSaveCode(Pegasus::Core::ISourceCodeProxy* object);
-
-    //! Called when a timeline is requested to be saved from the render thread
-    void OnRenderRequestSaveTimeline(Pegasus::Timeline::ITimelineProxy* object);
+    //! Called when an object  is requested to be saved from the render thread
+    void OnSaveObject(PegasusDockWidget* sender, Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
 
     //! Called when a new shader is requested from the render thread
-    void OnRenderRequestNewShader(const QString& path);
+    void OnRenderRequestNewShader(PegasusDockWidget* sender, const QString& path);
 
     //! Called when a new timeline script is requested from the render thread
-    void OnRenderRequestNewTimelineScript(const QString& path);
+    void OnRenderRequestNewTimelineScript(PegasusDockWidget* sender, const QString& path);
 
     //! Called when a program is requested from the render thread
-    void OnRenderRequestNewProgram(const QString& path);
-
-    //! Called when an object  is requested to be saved from the render thread
-    Pegasus::Io::IoError InternalSaveObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+    void OnRenderRequestNewProgram(PegasusDockWidget* sender, const QString& path);
 
     Pegasus::App::IApplicationProxy* mApp;
     

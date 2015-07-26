@@ -28,17 +28,27 @@ public:
     //! Constructor
     //! \param undoStack Undo stack attached to the undo view
     //! \param parent Parent widget
-    HistoryDockWidget(QUndoStack * undoStack, QWidget * parent);
+    HistoryDockWidget(QWidget * parent);
 
     //! Destructor
     virtual ~HistoryDockWidget();
 
-    //------------------------------------------------------------------------------------
-    
+    //! Sets the undo view
+    void SetUndoStack(QUndoStack* stack);
+
+public slots:
+
+    //! Triggers an undo action
+    void TriggerUndo();
+
+    //! Triggers a redo action
+    void TriggerRedo();
+
 private:
-  
-    //! History view widget
-    QUndoView * mUndoView;
+
+    //! The undo view
+    QUndoView* mUndoView;
+
 };
 
 

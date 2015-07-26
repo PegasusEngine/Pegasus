@@ -22,6 +22,8 @@ namespace Pegasus {
     }
 }
 
+class QUndoStack;
+
 
 //! Graphics item representing one timeline block.
 //! Contains the block rendering properties and the rendering code.
@@ -38,7 +40,8 @@ public:
     //!                        < 1.0f for a compressed block, > 1.0f for an expanded block
     TimelineBlockGraphicsItem(Pegasus::Timeline::IBlockProxy * blockProxy,
                               unsigned int lane,
-                              float horizontalScale);
+                              float horizontalScale,
+                              QUndoStack* undoStack);
 
     //! Destructor
     virtual ~TimelineBlockGraphicsItem();
@@ -149,6 +152,9 @@ private:
 
     //! Block proxy associated with the item
     Pegasus::Timeline::IBlockProxy * mBlockProxy;
+
+    //! Reference to its undo stack
+    QUndoStack* mUndoStack;
 
     //! Index of the timeline lane the block belongs to
     unsigned int mLane;

@@ -421,6 +421,18 @@
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_NodeFileTabBar.cpp">
       <Filter>Generated\Dev-Debug</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Widgets\PegasusDockWidget.cpp">
+      <Filter>Source\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_PegasusDockWidget.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_PegasusDockWidget.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\ProgramEditor\ProgramEditorUndoCommands.cpp">
+      <Filter>Source\ProgramEditor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -548,6 +560,12 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\AssetLibrary\AssetLibraryWidget.ui">
       <Filter>Forms</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Widgets\PegasusDockWidget.h">
+      <Filter>Source\Widgets</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\ProgramEditor\ProgramEditorUndoCommands.h">
+      <Filter>Source\ProgramEditor</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

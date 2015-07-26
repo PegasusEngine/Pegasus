@@ -15,12 +15,10 @@
 #include <QUndoStack>
 
 
-HistoryDockWidget::HistoryDockWidget(QUndoStack * undoStack, QWidget * parent)
+HistoryDockWidget::HistoryDockWidget(QWidget * parent)
 :   QDockWidget(parent)
 {
-    ED_ASSERTSTR(undoStack != nullptr, "Invalid undo stack given to the history dock widget");
-
-    // Set the dock widget parameters
+     // Set the dock widget parameters
     setWindowTitle(tr("History"));
     setObjectName("HistoryDockWidget");
     setFeatures(  QDockWidget::DockWidgetClosable
@@ -29,7 +27,7 @@ HistoryDockWidget::HistoryDockWidget(QUndoStack * undoStack, QWidget * parent)
 	setAllowedAreas(Qt::AllDockWidgetAreas);
 
     // Create the history view
-    mUndoView = new QUndoView(undoStack, this);
+    mUndoView = new QUndoView(this);
     mUndoView->setEmptyLabel(tr("<empty>"));
     mUndoView->setCleanIcon(QIcon(":/Toolbar/File/SaveScene24.png"));
 
@@ -41,4 +39,26 @@ HistoryDockWidget::HistoryDockWidget(QUndoStack * undoStack, QWidget * parent)
 
 HistoryDockWidget::~HistoryDockWidget()
 {
+}
+
+void HistoryDockWidget::SetUndoStack(QUndoStack* undoStack)
+{
+    mUndoView->setStack(undoStack);
+    mUndoView->doItemsLayout();
+}
+
+void HistoryDockWidget::TriggerUndo()
+{
+    if (mUndoView->stack() != nullptr)
+    {
+        mUndoView->stack()->undo();
+    }
+}
+
+void HistoryDockWidget::TriggerRedo()
+{
+    if (mUndoView->stack() != nullptr)
+    {
+        mUndoView->stack()->redo();
+    }
 }

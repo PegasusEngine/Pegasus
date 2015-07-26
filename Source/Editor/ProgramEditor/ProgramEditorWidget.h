@@ -12,10 +12,12 @@
 #ifndef EDITOR_PROGRAM_EDITOR_WIDGET_H
 #define EDITOR_PROGRAM_EDITOR_WIDGET_H
 
+#include "Widgets/PegasusDockWidget.h"
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
 #include "MessageControllers/AssetIOMessageController.h"
 #include "MessageControllers/ProgramIOMessageController.h"
+#include "Pegasus/Shader/Shared/ShaderDefs.h"
 
 #include <QDockWidget>
 
@@ -28,6 +30,7 @@ class QToolBar;
 class QTabBar;
 class QFocusEvent;
 class QStatusBar;
+class QUndoStack;
 class NodeFileTabBar;
 
 namespace Pegasus
@@ -43,16 +46,37 @@ namespace Pegasus
     }
 }
 
-class ProgramEditorWidget : public QDockWidget
+class ProgramEditorWidget : public PegasusDockWidget
 {
     Q_OBJECT;
 
+    friend class ProgramEditorModifyShaderCmd;
+
 public:
     //! Constructor
-    ProgramEditorWidget(QWidget * parent);
+    ProgramEditorWidget(QWidget * parent, Editor* editor);
 
     //! Destructor
     virtual ~ProgramEditorWidget();
+
+    //! Callback fired when the UI needs to be set.
+    virtual void SetupUi();
+
+    //! Returns the current undo stack in focus for this widget
+    //! \return implementation specific, must return the current active undo stack of this widget
+    virtual QUndoStack* GetCurrentUndoStack() const; 
+
+    //! Returns the name this widget
+    virtual const char* GetName() const { return "ProgramEditorWidget"; }
+
+    //! Returns the title of this widget
+    virtual const char* GetTitle() const { return "Program Editor"; }
+
+    //! Callback called when an app has been closed
+    virtual void OnUIForAppClosed();
+
+    //! Callback, implement here functionality that requires saving of current object
+    virtual void OnSaveFocusedObject();
 
 public slots:
     //! Opens a program by gathering its state and displaying it in the ui
@@ -61,16 +85,13 @@ public slots:
 
     //! Closes a program.
     //! \param the tab index to request close
-    void RequestCloseProgram(Pegasus::AssetLib::IRuntimeAssetObjectProxy*);
+    void RequestCloseProgram(Pegasus::AssetLib::IRuntimeAssetObjectProxy*, QObject* extraData);
 
     //! Saves current program.
     void SignalSaveCurrentProgram();
 
     //! signal triggered right before closing an asset and discarding its internal changes
     void SignalDiscardCurrentObjectChanges();
-
-    //! triggers when the application has been unloaded
-    void UpdateUIForAppFinished();
 
     //! Synchronizes the current program to the UI
     void SyncUiToProgram();
@@ -79,22 +100,22 @@ public slots:
     void PostStatusBarMessage(const QString& message);
 
     //! Receives an IO message response
-    void ReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage id);
+    virtual void OnReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage id);
 
 signals:
     //! Sends a job to the render thread. This is connected in the application interface
     void SendProgramIoMessage(ProgramIOMessageController::Message msg);
 
-    //! Sends a render thread IO Message.
-    void SendAssetIoMessage(AssetIOMessageController::Message msg);
-
-    //! Called when an object has been registered as dirty
-    void RegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
-
-    //! Called when an object has been unregistered as dirty
-    void UnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
-
 private:
+
+    //! Call to set the shader of the current program being edited
+    //! \param path asset of the shader to set, empty string means remove the current shader
+    //! \param shaderType the target shader type to modify
+    void SetShader(const QString& shaderFile, Pegasus::Shader::ShaderType shaderType);
+
+    //! Gets the current shader path stored for this type
+    //! \return the current path stored for this shader. If no shader pipeline set, then this is the empty string
+    QString GetCurrentShaderPath(Pegasus::Shader::ShaderType type);
 
     //! Ui struct describing a slot
     struct ShaderSlots
@@ -111,9 +132,6 @@ private:
     //! \param enable if true activates the UI, if false deactivates it. Use this to figure out
     //!        looks of UI when there is no program opened
     void EnableUi(bool enable);
-
-    //! To be called in constructor
-    void SetupUi();
 
     //! Clears the ui to a default state.
     void ClearUi();

@@ -20,28 +20,35 @@
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 #include "Pegasus/Timeline/Shared/ILaneProxy.h"
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"
+#include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include <QMessagebox>
 
 
 #include <QListWidgetItem>
+#include <QUndoStack>
 
 
-TimelineDockWidget::TimelineDockWidget(QWidget *parent)
-:   QDockWidget(parent),
+TimelineDockWidget::TimelineDockWidget(QWidget *parent, Editor* editor)
+    :   
+    PegasusDockWidget(parent, editor),
     mSnapNumTicks(1),
     mEnableUndo(true)
 {
+}
+
+void TimelineDockWidget::SetupUi()
+{
     // Set the initial UI state
     ui.setupUi(this);
+
+    mUndoStack = new QUndoStack(this);
+
     UpdateUIForAppClosed();
 
-    // Set the dock widget parameters
-    setWindowTitle(tr("Timeline"));
-    setObjectName("TimelineDockWidget");
-	setFeatures(  QDockWidget::DockWidgetClosable
-				| QDockWidget::DockWidgetMovable
-				| QDockWidget::DockWidgetFloatable);
 	setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
+
+    ui.graphicsView->SetUndoStack(GetCurrentUndoStack());
+    ui.graphicsView->installEventFilter(this);
 
     // Make connections between the UI elements and the child views
     connect(ui.saveButton, SIGNAL(clicked()),
@@ -72,6 +79,24 @@ TimelineDockWidget::~TimelineDockWidget()
 
 //----------------------------------------------------------------------------------------
 
+bool TimelineDockWidget::eventFilter(QObject* obj, QEvent* event)
+{
+    if (ui.graphicsView == obj)
+    {
+        if (event->type() == QEvent::FocusIn)
+        {
+            emit(OnFocus(this));
+        }
+        if (event->type() == QEvent::FocusOut)
+        {
+            emit(OutFocus(this));
+        }
+    }
+    return false;
+}
+
+//----------------------------------------------------------------------------------------
+
 void TimelineDockWidget::EnableAntialiasing(bool enable)
 {
     ui.graphicsView->EnableAntialiasing(enable);
@@ -81,7 +106,7 @@ void TimelineDockWidget::EnableAntialiasing(bool enable)
 
 void TimelineDockWidget::SetBeatsPerMinute(double bpm)
 {
-    Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
+    Application * const application = GetEditor()->GetApplicationManager().GetApplication();
     if (application != nullptr)
     {
         Pegasus::Timeline::ITimelineManagerProxy * const timeline = application->GetTimelineProxy();
@@ -139,9 +164,16 @@ void TimelineDockWidget::UpdateUIFromBeat(float beat)
 
 //----------------------------------------------------------------------------------------
 
+void TimelineDockWidget::OnSaveFocusedObject()
+{
+    SaveTimeline();
+}
+
+//----------------------------------------------------------------------------------------
+
 void TimelineDockWidget::SaveTimeline()
 {
-    Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
+    Application * const application = GetEditor()->GetApplicationManager().GetApplication();
     if (application != nullptr)
     {
         Pegasus::Timeline::ITimelineManagerProxy * const timeline = application->GetTimelineProxy();
@@ -151,7 +183,7 @@ void TimelineDockWidget::SaveTimeline()
             AssetIOMessageController::Message msg;
             msg.SetMessageType(AssetIOMessageController::Message::SAVE_TIMELINE);
             msg.GetAssetNode().mTimeline = timeline->GetCurrentTimeline();
-            emit(SendAssetIoMessage(msg));
+            SendAssetIoMessage(msg);
         }
     }
     
@@ -159,7 +191,7 @@ void TimelineDockWidget::SaveTimeline()
 
 //----------------------------------------------------------------------------------------
 
-void TimelineDockWidget::ReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage msg)
+void TimelineDockWidget::OnReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage msg)
 {
     switch(msg)
     {
@@ -178,7 +210,7 @@ void TimelineDockWidget::ReceiveAssetIoMessage(AssetIOMessageController::Message
 
 //----------------------------------------------------------------------------------------
 
-void TimelineDockWidget::UpdateUIForAppLoaded()
+void TimelineDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* application)
 {
     mEnableUndo = false;
 
@@ -190,10 +222,9 @@ void TimelineDockWidget::UpdateUIForAppLoaded()
     ui.playButton->setChecked(false);
     ui.graphicsView->OnPlayModeToggled(false);
 
-    Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
     if (application != nullptr)
     {
-        Pegasus::Timeline::ITimelineManagerProxy * const timeline = application->GetTimelineProxy();
+        Pegasus::Timeline::ITimelineManagerProxy * const timeline = application->GetTimelineManagerProxy();
         timeline->GetCurrentTimeline()->SetPlayMode(Pegasus::Timeline::PLAYMODE_STOPPED);
         ui.bpmSpin->setValue(static_cast<double>(timeline->GetCurrentTimeline()->GetBeatsPerMinute()));
     }
@@ -220,7 +251,7 @@ void TimelineDockWidget::UpdateUIForAppLoaded()
 
 //----------------------------------------------------------------------------------------
 
-void TimelineDockWidget::UpdateUIForAppClosed()
+void TimelineDockWidget::OnUIForAppClosed()
 {
     ui.addButton->setEnabled(false);
     ui.removeButton->setEnabled(false);
@@ -248,7 +279,7 @@ void TimelineDockWidget::OnBeatsPerMinuteChanged(double bpm)
 {
     if (mEnableUndo)
     {
-        Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
+        Application * const application = GetEditor()->GetApplicationManager().GetApplication();
         if (application != nullptr)
         {
             Pegasus::Timeline::ITimelineManagerProxy * const timeline = application->GetTimelineProxy();
@@ -256,9 +287,7 @@ void TimelineDockWidget::OnBeatsPerMinuteChanged(double bpm)
             // Create the undo command
             TimelineSetBPMUndoCommand * undoCommand = new TimelineSetBPMUndoCommand(static_cast<double>(timeline->GetCurrentTimeline()->GetBeatsPerMinute()),
                                                                                     bpm);
-        
-            // Push the undo command, redo() is executed and the timeline updated
-            Editor::GetInstance().PushUndoCommand(undoCommand);
+            mUndoStack->push(undoCommand);
         }
     }
 }
@@ -274,7 +303,7 @@ void TimelineDockWidget::OnSnapModeChanged(int mode)
         return;
     }
     
-    Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
+    Application * const application = GetEditor()->GetApplicationManager().GetApplication();
     if (application != nullptr)
     {
         Pegasus::Timeline::ITimelineManagerProxy * const timeline = application->GetTimelineProxy();
@@ -330,7 +359,7 @@ void TimelineDockWidget::SetTimeLabel(unsigned int minutes, unsigned int seconds
 
 void TimelineDockWidget::RefreshBlockNames()
 {
-    Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
+    Application * const application = GetEditor()->GetApplicationManager().GetApplication();
     if (application != nullptr)
     {
         Pegasus::Timeline::ITimelineManagerProxy * const timeline = application->GetTimelineProxy();

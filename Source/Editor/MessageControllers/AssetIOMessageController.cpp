@@ -18,7 +18,7 @@ AssetIOMessageController::~AssetIOMessageController()
 {
 }
 
-void AssetIOMessageController::OnRenderThreadProcessMessage(const AssetIOMessageController::Message& msg)
+void AssetIOMessageController::OnRenderThreadProcessMessage(PegasusDockWidget* sender, const AssetIOMessageController::Message& msg)
 {
     switch(msg.GetMessageType())
     {
@@ -32,14 +32,11 @@ void AssetIOMessageController::OnRenderThreadProcessMessage(const AssetIOMessage
                 OnRenderRequestCloseCode(msg.GetAssetNode().mCode);
             }
             break;
+        case AssetIOMessageController::Message::SAVE_PROGRAM:
+        case AssetIOMessageController::Message::SAVE_TIMELINE:
         case AssetIOMessageController::Message::SAVE_CODE:
             {
-                OnRenderRequestSaveCode(msg.GetAssetNode().mCode);
-            }
-            break;
-        case AssetIOMessageController::Message::SAVE_TIMELINE:
-            {
-                OnRenderRequestSaveTimeline(msg.GetAssetNode().mTimeline);
+                OnSaveObject(sender, msg.GetAssetNode().mCode);
             }
             break;
         case AssetIOMessageController::Message::CLOSE_PROGRAM:
@@ -47,24 +44,19 @@ void AssetIOMessageController::OnRenderThreadProcessMessage(const AssetIOMessage
                 OnRenderRequestCloseProgram(msg.GetAssetNode().mProgram);
             }
             break;
-        case AssetIOMessageController::Message::SAVE_PROGRAM:
-            {
-                OnRenderRequestSaveProgram(msg.GetAssetNode().mProgram);
-            }
-            break;
         case AssetIOMessageController::Message::NEW_SHADER:
             {
-                OnRenderRequestNewShader(msg.GetString());
+                OnRenderRequestNewShader(sender, msg.GetString());
             }
             break;
         case AssetIOMessageController::Message::NEW_TIMELINESCRIPT:
             {
-                OnRenderRequestNewTimelineScript(msg.GetString());
+                OnRenderRequestNewTimelineScript(sender, msg.GetString());
             }
             break;
         case AssetIOMessageController::Message::NEW_PROGRAM:
             {
-                OnRenderRequestNewProgram(msg.GetString());
+                OnRenderRequestNewProgram(sender, msg.GetString());
             }
             break;
         case AssetIOMessageController::Message::NEW_TEXTURE:
@@ -155,64 +147,24 @@ void AssetIOMessageController::OnRenderRequestCloseProgram(Pegasus::Shader::IPro
     emit (SignalUpdateNodeViews());
 }
 
-Pegasus::Io::IoError AssetIOMessageController::InternalSaveObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
+void AssetIOMessageController::OnSaveObject(PegasusDockWidget* sender, Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
 {
-    Pegasus::Io::IoError err = Pegasus::Io::ERR_NONE;
     Pegasus::AssetLib::IAssetProxy* ass = object->GetOwnerAsset();
     ED_ASSERTSTR(ass != nullptr, "Saving asset: cannot be an invalid value!");
     object->Write(ass);
-    return mApp->GetAssetLibProxy()->SaveAsset(ass);
-}
-
-void AssetIOMessageController::OnRenderRequestSaveCode(Pegasus::Core::ISourceCodeProxy* code)
-{
-    if (mApp == nullptr) return;
-
-    Pegasus::Io::IoError err = InternalSaveObject(code);
+    Pegasus::Io::IoError err = mApp->GetAssetLibProxy()->SaveAsset(ass);
 
     if (err == Pegasus::Io::ERR_NONE)
     {
-        emit(SignalPostCodeMessage(AssetIOMessageController::Message::IO_SAVE_SUCCESS));
+        emit(SignalPostMessage(sender, AssetIOMessageController::Message::IO_SAVE_SUCCESS));
     }
     else
     {
-        emit(SignalPostCodeMessage(AssetIOMessageController::Message::IO_SAVE_ERROR));
+        emit(SignalPostMessage(sender, AssetIOMessageController::Message::IO_SAVE_ERROR));
     }
 }
 
-void AssetIOMessageController::OnRenderRequestSaveProgram(Pegasus::Shader::IProgramProxy* program)
-{
-    if (mApp == nullptr) return;
-
-    Pegasus::Io::IoError err = InternalSaveObject(program);
-
-    if (err == Pegasus::Io::ERR_NONE)
-    {
-        emit(SignalPostProgramMessage(AssetIOMessageController::Message::IO_SAVE_SUCCESS));
-    }
-    else
-    {
-        emit(SignalPostProgramMessage(AssetIOMessageController::Message::IO_SAVE_ERROR));
-    }
-}
-
-void AssetIOMessageController::OnRenderRequestSaveTimeline(Pegasus::Timeline::ITimelineProxy* timeline)
-{
-    if (mApp == nullptr) return;
-    
-    Pegasus::Io::IoError err = InternalSaveObject(timeline);
-
-    if (err == Pegasus::Io::ERR_NONE)
-    {
-        emit(SignalPostTimelineEditorMessage(AssetIOMessageController::Message::IO_SAVE_SUCCESS));
-    }
-    else
-    {
-        emit(SignalPostTimelineEditorMessage(AssetIOMessageController::Message::IO_SAVE_ERROR));
-    }
-}
-
-void AssetIOMessageController::OnRenderRequestNewShader(const QString& path)
+void AssetIOMessageController::OnRenderRequestNewShader(PegasusDockWidget* sender, const QString& path)
 {
     QByteArray ba = path.toLocal8Bit();
     const char* asciiPath = ba.constData();
@@ -232,11 +184,11 @@ void AssetIOMessageController::OnRenderRequestNewShader(const QString& path)
     }
     else
     {
-        emit(SignalPostCodeMessage(AssetIOMessageController::Message::IO_NEW_ERROR));
+        emit(SignalPostMessage(sender, AssetIOMessageController::Message::IO_NEW_ERROR));
     }
 }
 
-void AssetIOMessageController::OnRenderRequestNewTimelineScript(const QString& path)
+void AssetIOMessageController::OnRenderRequestNewTimelineScript(PegasusDockWidget* sender, const QString& path)
 {
     QByteArray ba = path.toLocal8Bit();
     const char* asciiPath = ba.constData();
@@ -256,11 +208,11 @@ void AssetIOMessageController::OnRenderRequestNewTimelineScript(const QString& p
     }
     else
     {
-        emit(SignalPostCodeMessage(AssetIOMessageController::Message::IO_NEW_ERROR));
+        emit(SignalPostMessage(sender, AssetIOMessageController::Message::IO_NEW_ERROR));
     }
 }
 
-void AssetIOMessageController::OnRenderRequestNewProgram(const QString& path)
+void AssetIOMessageController::OnRenderRequestNewProgram(PegasusDockWidget* sender, const QString& path)
 {
     
     QByteArray ba = path.toLocal8Bit();
@@ -288,7 +240,7 @@ void AssetIOMessageController::OnRenderRequestNewProgram(const QString& path)
         errCode = assetLib->SaveAsset(asset);
         if (errCode != Pegasus::Io::ERR_NONE)
         {
-            emit(SignalPostProgramMessage(AssetIOMessageController::Message::IO_NEW_ERROR));
+            emit(SignalPostMessage(sender, AssetIOMessageController::Message::IO_NEW_ERROR));
         }
         else if (program != nullptr)
         {
@@ -297,6 +249,6 @@ void AssetIOMessageController::OnRenderRequestNewProgram(const QString& path)
     }
     else
     {
-        emit(SignalPostProgramMessage(AssetIOMessageController::Message::IO_NEW_ERROR));
+        emit(SignalPostMessage(sender, AssetIOMessageController::Message::IO_NEW_ERROR));
     }
 }

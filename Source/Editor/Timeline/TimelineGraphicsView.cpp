@@ -612,7 +612,8 @@ void TimelineGraphicsView::RefreshLaneFromTimelineLane(unsigned int laneIndex, c
             {
                 TimelineBlockGraphicsItem * item = new TimelineBlockGraphicsItem(blockProxy,
                                                                                  laneIndex,
-                                                                                 mHorizontalScale);
+                                                                                 mHorizontalScale,
+                                                                                 GetUndoStack());
                 scene()->addItem(item);
                 mBlockItems[laneIndex].insert(blockProxy, item);
 

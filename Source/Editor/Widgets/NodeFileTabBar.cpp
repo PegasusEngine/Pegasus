@@ -1,11 +1,12 @@
 #include "Widgets/NodeFileTabBar.h"
+#include "Widgets/PegasusDockWidget.h"
 #include "Pegasus/AssetLib/Shared/IRuntimeAssetObjectProxy.h"
 
 #include <QVBoxLayout>
 #include <QMessageBox>
 
-NodeFileTabBar::NodeFileTabBar(QWidget* parent)
-    : QWidget(parent)
+NodeFileTabBar::NodeFileTabBar(PegasusDockWidget* parent)
+    : QWidget(parent), mParent(parent)
 {
     SetupUi();
 }
@@ -14,7 +15,7 @@ NodeFileTabBar::~NodeFileTabBar()
 {
 }
 
-void NodeFileTabBar::Open(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
+void NodeFileTabBar::Open(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object, QObject* extraData)
 {
     for (int i = 0; i < mContainerList.count(); ++i)
     {
@@ -28,6 +29,7 @@ void NodeFileTabBar::Open(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
 
     NodeFileTabBar::FileTabContainer newEl;
     newEl.mObject = object;
+    newEl.mExtraData = extraData;
     mContainerList.push_back(newEl);
 
     mTabBar->addTab(object->GetDisplayName());
@@ -57,6 +59,10 @@ void NodeFileTabBar::SetupUi()
 
 void NodeFileTabBar::ReceiveTabIdChanged(int id)
 {
+    if (mParent != nullptr)
+    {
+        mParent->PerformFocus();
+    }
     if (id >= 0)
     {
         NodeFileTabBar::FileTabContainer& c = mContainerList[id];
@@ -107,7 +113,7 @@ void NodeFileTabBar::ReceiveTabClosedRequested(int tabId)
             emit(DiscardCurrentObjectChanges());
             mContainerList.remove(tabId);
             mTabBar->removeTab(tabId);
-            emit(RuntimeObjectRemoved(c.mObject));
+            emit(RuntimeObjectRemoved(c.mObject, c.mExtraData));
         }
     }
     else
@@ -115,31 +121,57 @@ void NodeFileTabBar::ReceiveTabClosedRequested(int tabId)
         emit(UnregisterDirtyObject(c.mObject));
         mContainerList.remove(tabId);
         mTabBar->removeTab(tabId);
-        emit(RuntimeObjectRemoved(c.mObject));
+        emit(RuntimeObjectRemoved(c.mObject, c.mExtraData));
     }
 }
 
 void NodeFileTabBar::MarkCurrentAsDirty()
 {
-    NodeFileTabBar::FileTabContainer& c = mContainerList[mTabBar->currentIndex()];
-    if (!c.mIsDirty)
+    if (!mContainerList.isEmpty())
     {
-        c.mIsDirty = true;
-        QString currName = c.mObject->GetDisplayName();
-        currName += "*";
-        mTabBar->setTabText(mTabBar->currentIndex(), currName);
-        emit(RegisterDirtyObject(c.mObject));
+        NodeFileTabBar::FileTabContainer& c = mContainerList[mTabBar->currentIndex()];
+        if (!c.mIsDirty)
+        {
+            c.mIsDirty = true;
+            QString currName = c.mObject->GetDisplayName();
+            currName += "*";
+            mTabBar->setTabText(mTabBar->currentIndex(), currName);
+            emit(RegisterDirtyObject(c.mObject));
+        }
     }
 }
 
 void NodeFileTabBar::ClearCurrentDirty()
 {
-    NodeFileTabBar::FileTabContainer& c = mContainerList[mTabBar->currentIndex()];
-    if (c.mIsDirty)
+    if (!mContainerList.isEmpty())
     {
-        c.mIsDirty = false;
-        QString currName = c.mObject->GetDisplayName();
-        mTabBar->setTabText(mTabBar->currentIndex(), currName);
-        emit(UnregisterDirtyObject(c.mObject));
+        NodeFileTabBar::FileTabContainer& c = mContainerList[mTabBar->currentIndex()];
+        if (c.mIsDirty)
+        {
+            c.mIsDirty = false;
+            QString currName = c.mObject->GetDisplayName();
+            mTabBar->setTabText(mTabBar->currentIndex(), currName);
+            emit(UnregisterDirtyObject(c.mObject));
+        }
     }
+}
+
+void NodeFileTabBar::SetExtraData(int index, QObject* object)
+{
+    if (!mContainerList.isEmpty())
+    {
+        NodeFileTabBar::FileTabContainer& c = mContainerList[mTabBar->currentIndex()];
+        c.mExtraData = object;
+    }
+}
+
+QObject* NodeFileTabBar::GetExtraData(int index) const
+{
+    if (!mContainerList.isEmpty())
+    {
+        const NodeFileTabBar::FileTabContainer& c = mContainerList[mTabBar->currentIndex()];
+        return c.mExtraData;
+    }
+
+    return nullptr;
 }

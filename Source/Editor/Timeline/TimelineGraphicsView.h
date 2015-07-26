@@ -29,6 +29,8 @@ namespace Pegasus {
     }
 }
 
+class QUndoStack;
+
 //! Minimum horizontal scale factor
 #define TIMELINE_GRAPHICS_VIEW_HORIZONTAL_SCALE_MIN     0.1f
 
@@ -57,6 +59,11 @@ public:
     //! Destructor
     virtual ~TimelineGraphicsView();
 
+    //! Sets the undo stack for this widget element
+    void SetUndoStack(QUndoStack* undoStack) { mUndoStack = undoStack; } 
+
+    //! Gets the undo stack for this widget element
+    QUndoStack* GetUndoStack() const { return mUndoStack; }
 
     //! Set the antialiasing mode of the timeline
     //! \param enable True to enable antialiasing
@@ -211,6 +218,9 @@ private:
 
     //! Cursor graphics items
     TimelineCursorGraphicsItem * mCursorItem;
+
+    //! Undo stack
+    QUndoStack * mUndoStack;
 };
 
 

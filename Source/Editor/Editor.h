@@ -80,10 +80,6 @@ public:
     //! \return Pointer to the editor settings object
     inline static Settings * GetSettings() { return sSettings; }
 
-    //! Add a command to the list of the undo manager
-    //! \param command Command to add to the list of the undo manager, != nullptr
-    void PushUndoCommand(QUndoCommand * command);
-
     //! Get the global Qt application
     //! \return Global Qt application
     inline QApplication * GetQtApplication() const { return mQtApplication; }
@@ -137,6 +133,9 @@ public:
     //! \return Pointer to the program editor dock widget
     inline ProgramEditorWidget * GetProgramEditorWidget() const { return mProgramEditorWidget; }
 
+    //! Gets the list of widgets for this editor
+    inline const QVector<PegasusDockWidget*>& GetWidgets() const { return mWidgets; }
+
     //----------------------------------------------------------------------------------------
 
 private:
@@ -159,6 +158,9 @@ private:
     //! closes the application using a pump event pattern (to allow for operating system window events to 
     //! be handled
     void InternalCloseAndPumpEvents();
+
+    //! Registers a pegasus dock widget, and registers all its common functions
+    void RegisterWidget( PegasusDockWidget* widget, Qt::DockWidgetArea area);
 
     //------------------------------------------------------------------------------------
 
@@ -252,6 +254,12 @@ public slots:
     //! Open the preferences dialog box at the console page
     void OpenPreferencesConsole();
 
+    //! Actions taken when a widget is on focus
+    void OnDockFocus(PegasusDockWidget* target);
+
+    //! Actions taken when a widget is not on focus
+    void OutDockFocus(PegasusDockWidget* target);
+
     //------------------------------------------------------------------------------------
 
 private:
@@ -344,9 +352,6 @@ private:
     //! Editor settings (preferences)
 	static Settings * sSettings;
 
-    //! Undo manager, used to register commands for Undo/Redo operations
-    QUndoStack * mUndoStack;
-
     //@{
     //! Dock widgets
     ViewportDockWidget      * mMainViewportDockWidget;
@@ -376,6 +381,9 @@ private:
 
     //! List holding all the dirty assets, so we warn the user there are dirty assets
     QSet<Pegasus::AssetLib::IRuntimeAssetObjectProxy*> mDirtyAssets;
+
+    //! Master list of widgets
+    QVector<PegasusDockWidget*> mWidgets;
 };
 
 

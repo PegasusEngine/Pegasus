@@ -25,6 +25,7 @@
 #include "CodeEditor/SourceCodeManagerEventListener.h"
 #include "MessageControllers/AssetIOMessageController.h"
 #include "MessageControllers/SourceIOMessageController.h"
+#include "Widgets/PegasusDockWidget.h"
 
 //! Name of the organization creating the software
 #define EDITOR_ORGANIZATION_NAME				"Pegasus"
@@ -38,6 +39,7 @@
 //----------------------------------------------------------------------------------------
 //------------------- Public meta type declarations --------------------------------------
 
+Q_DECLARE_METATYPE(PegasusDockWidget*);
 Q_DECLARE_METATYPE(Pegasus::Core::ISourceCodeProxy*);
 Q_DECLARE_METATYPE(Pegasus::Shader::IProgramProxy*);
 Q_DECLARE_METATYPE(Pegasus::Timeline::ITimelineProxy*);
@@ -51,6 +53,7 @@ Q_DECLARE_METATYPE(ProgramIOMessageController::Message);
 
 void RegisterMetaTypes()
 {
+    qRegisterMetaType<PegasusDockWidget*>();
     qRegisterMetaType<Pegasus::Core::ISourceCodeProxy*>();
     qRegisterMetaType<Pegasus::Shader::IProgramProxy*>();
     qRegisterMetaType<Pegasus::Timeline::ITimelineProxy*>();

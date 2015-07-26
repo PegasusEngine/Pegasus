@@ -14,6 +14,7 @@
 
 #include <QDockWidget>
 #include "MessageControllers/AssetIOMessageController.h"
+#include "Widgets/PegasusDockWidget.h"
 
 #include "ui_TimelineDockWidget.h"
 
@@ -23,15 +24,17 @@ namespace Pegasus {
     }
 }
 
+class QUndoStack;
+class Editor;
 
 //! Dock widget containing the timeline graphics view
-class TimelineDockWidget : public QDockWidget
+class TimelineDockWidget : public PegasusDockWidget 
 {
     Q_OBJECT
 
 public:
 
-    TimelineDockWidget(QWidget *parent = 0);
+    TimelineDockWidget(QWidget *parent, Editor* editor);
     virtual ~TimelineDockWidget();
 
 
@@ -58,6 +61,27 @@ public:
     inline unsigned int GetSnapNumTicks() const { return mSnapNumTicks; }
 
     //------------------------------------------------------------------------------------
+    //----------- Pegasus Dock Widget overrides -----------------------------------
+
+    //! Returns the current undo stack in focus for this widget
+    //! \return implementation specific, must return the current active undo stack of this widget
+    virtual QUndoStack* GetCurrentUndoStack() const { return mUndoStack; }
+
+    //! Returns the name this widget
+    virtual const char* GetName() const  { return "TimelineDockWidget"; }
+
+    //! Returns the title of this widget
+    virtual const char* GetTitle() const { return "Timeline"; }
+
+    //! Callback to construct ui
+    virtual void SetupUi();
+
+    //! Callback, implement here functionality that requires saving of current object
+    virtual void OnSaveFocusedObject();
+
+    //! Special pegasus forwarder function which asserts if this widget has focus
+    virtual bool HasFocus() const { return hasFocus() || ui.graphicsView->hasFocus(); }
+
 
 signals:
 
@@ -75,28 +99,12 @@ signals:
     //! \param enabled True if the play mode button has just been enabled
     void PlayModeToggled(bool enabled);
     
-    //------------------------------------------------------------------------------------
-
-    //! Sends a message to the asset IO controller
-    void SendAssetIoMessage(AssetIOMessageController::Message msg);
-
 public slots:
-
-    //! Called when an application is successfully loaded to unlock the controls of the timeline
-    //! and reset its state
-    void UpdateUIForAppLoaded();
-
-    //! Called when an application is closed to lock the controls of the timeline
-    //! and reset its state
-    void UpdateUIForAppClosed();
 
     //------------------------------------------------------------------------------------
 
     //! Emitted when the timeline is being saved
     void SaveTimeline();
-
-    //! Receives an io message
-    void ReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage msg);
 
 private slots:
 
@@ -128,6 +136,18 @@ private slots:
 
 private:
 
+    //! Event filter override
+    bool eventFilter(QObject* obj, QEvent* event);
+
+    //! Callback called when an app has been loaded
+    virtual void OnUIForAppLoaded(Pegasus::App::IApplicationProxy* application);
+
+    //! Callback called when an app has been closed
+    virtual void OnUIForAppClosed();
+
+    //! Receives an io message
+    virtual void OnReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage msg);
+
     // Update the content of the timeline block names list
     void RefreshBlockNames();
 
@@ -138,8 +158,12 @@ private:
     //! Current snapping mode (in number of ticks per snap)
     unsigned int mSnapNumTicks;
 
+    //! Undo stack pointer
+    QUndoStack* mUndoStack;
+
     //! True if undo commands can be sent
     bool mEnableUndo;
+
 };
 
 

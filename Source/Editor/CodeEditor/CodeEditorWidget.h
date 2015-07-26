@@ -17,8 +17,10 @@
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 #include "MessageControllers/AssetIOMessageController.h"
 #include "MessageControllers/SourceIOMessageController.h"
+#include "Widgets/PegasusDockWidget.h"
 
 
+class Editor;
 class CodeUserData;
 class QVBoxLayout;
 class QStatusBar;
@@ -33,6 +35,7 @@ class CodeTextEditorTreeWidget;
 class CodeTextEditorWidget;
 class CodeUserData;
 class NodeFileTabBar;
+class QUndoStack;
 
 namespace Pegasus
 {
@@ -42,12 +45,12 @@ namespace Pegasus
 }
 
 //! Graphics Widget meant for code text editing
-class CodeEditorWidget : public QDockWidget
+class CodeEditorWidget : public PegasusDockWidget
 {
     Q_OBJECT
 
 public:
-    explicit CodeEditorWidget(QWidget * parent);
+    explicit CodeEditorWidget(QWidget * parent, Editor* editor);
     virtual ~CodeEditorWidget();
 
     //! checks if there is a compilation request pending (so we dont resend more)
@@ -67,6 +70,22 @@ public:
     //! true if any child has focus, false otherwise
     bool HasAnyChildFocus() const;
 
+    //! Returns the name this widget
+    virtual const char* GetName() const { return "CodeEditor";}
+
+    //! Returns the title of this widget
+    virtual const char* GetTitle() const { return "Code Editor";}
+
+    //! Returns the current undo stack in focus for this widget
+    //! \return implementation specific, must return the current active undo stack of this widget
+    virtual QUndoStack* GetCurrentUndoStack() const { return nullptr; }
+
+    //! Special pegasus forwarder function which asserts if this widget has focus
+    virtual bool HasFocus() const { return HasAnyChildFocus(); }
+
+    //! Callback, implement here functionality that requires saving of current object
+    virtual void OnSaveFocusedObject();
+
 signals:
 
     //! called when the editor needs the asset library to freeze the ui
@@ -75,17 +94,8 @@ signals:
     //! called when the editor feels like deleting the user data from the render thread
     void RequestSafeDeleteUserData(CodeUserData* userData);
 
-    //! Sends a message to the asset IO controller
-    void SendAssetIoMessage(AssetIOMessageController::Message msg);
-
     //! Sends a message to the source IO controller
     void SendSourceIoMessage(SourceIOMessageController::Message msg);
-
-    //! Called when an object has been registered as dirty
-    void RegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
-
-    //! Called when an object has been unregistered as dirty
-    void UnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
 
 public slots:
 
@@ -95,7 +105,7 @@ public slots:
 
     //! slot to be called when a code wants to be closed.
     //! \param code asset object to close
-    void RequestClose(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+    void RequestClose(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object, QObject* extraData);
 
     //! bless user data with any UI specific data required
     void BlessUserData(CodeUserData* codeUserData);
@@ -108,9 +118,6 @@ public slots:
 
     //! Sets the status bar message
     void PostStatusBarMessage(const QString& string);
-
-    //! Receives an io message
-    void ReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage msg);
 
     //! signal triggered when the user clicks on the save button
     void SignalSaveCurrentCode();
@@ -169,9 +176,6 @@ private slots:
     //! selects and visualizes a Code for opening
     void SignalViewCode(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
 
-    //! signal to update the UI for the editor once the app is finished
-    void UpdateUIForAppFinished();
-
     //! function that disables or enables the instant compilation button.
     //! \param true to enable the button, false otherwise
     void EnableModeInstantCompilationButton(bool enableValue);
@@ -188,9 +192,16 @@ private:
     void SetInstantCompilationState(bool state);
 
     //! sets the ui. To be used internally
-    void SetupUi();
+    virtual void SetupUi();
 
     void UpdateInstantCompilationButton(CodeUserData* code);
+
+    //! signal to update the UI for the editor once the app is finished
+    virtual void OnUIForAppClosed();
+
+    // Receive an io message, to be implemented by the widget
+    //! \param msg the message
+    virtual void OnReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage msg);
 
     //! ui component pool
     struct Ui

@@ -26,6 +26,7 @@ namespace Pegasus
 }
 
 class QTabBar;
+class PegasusDockWidget;
 
 //! Advanced tab bar, for pegasus nodes
 class NodeFileTabBar : public QWidget
@@ -34,14 +35,15 @@ class NodeFileTabBar : public QWidget
 public:
 
     //! Constructor
-    NodeFileTabBar(QWidget* parent = 0);
+    NodeFileTabBar(PegasusDockWidget* parent = 0);
 
     //! Destructor
     virtual ~NodeFileTabBar();
 
     //! Opens an object into the tab bar
     //! \param object the object to insert into the tabbed bar
-    void Open(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+    //! \param extra data attached to this pegasus node object
+    void Open(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object, QObject* extraData = nullptr);
 
     //! Closes an object from the tab bar
     //! \param tab index.
@@ -55,6 +57,12 @@ public:
     //! \param the tab index
     template <class T>
     T* GetTabObject(int tabIndex) { return static_cast<T*>(mContainerList[tabIndex].mObject); }
+
+    //! Sets this object extra data
+    void SetExtraData(int index, QObject* obj);
+
+    //! Gets this objects extra data
+    QObject* GetExtraData(int index) const;
 
     //! Attempts to mark the current element in the tab editor as dirty
     void MarkCurrentAsDirty();
@@ -76,7 +84,7 @@ signals:
     void DisplayRuntimeObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
 
     //signal fired when a runtime object is removed
-    void RuntimeObjectRemoved(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+    void RuntimeObjectRemoved(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object, QObject* extraData);
 
     //! signal fired when a dirty element attempted to be closed is requested to be saved before being done.
     void SaveCurrentRuntimeObject();
@@ -104,12 +112,14 @@ private:
     {
         bool mIsDirty;
         Pegasus::AssetLib::IRuntimeAssetObjectProxy* mObject;
-        FileTabContainer() : mIsDirty(false), mObject(nullptr) {}
+        QObject* mExtraData;
+        FileTabContainer() : mIsDirty(false), mExtraData(nullptr), mObject(nullptr) {}
     };
 
     QVector<FileTabContainer> mContainerList;
     QTabBar* mTabBar;
     
+    PegasusDockWidget* mParent;
 
 };
 
