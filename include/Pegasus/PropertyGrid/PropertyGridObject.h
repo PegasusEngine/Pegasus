@@ -243,10 +243,12 @@ namespace PropertyGrid {
 
 //----------------------------------------------------------------------------------------
 
-//! Class used to read the content of a property,
-//! obtained through GetClassPropertyReader() or GetPropertyReader().
-//! This wrapper prevents bad casts to non-const pointers that would not invalidate the property grid properly
-class PropertyReader
+class PropertyGridObject;
+
+//! Class used to read and write the content of a property.
+//! This wrapper prevents bad casts to non-const pointers that would not invalidate the property grid properly,
+//! and it sets the dirty flag of the PropertyGridObject's property grid each time the value is set through Set<>()
+class PropertyAccessor
 {
 public:
 
@@ -255,32 +257,6 @@ public:
     template <typename T>
     inline typename PPG::PropertyDefinition<T>::ReturnType Get() const
         { return *static_cast<const T *>(mPtr); }
-
-private:
-
-    // Make PropertyGridObject a friend to access the private constructor
-    // (to prevent external users from modifying the internal pointer)
-    friend class PropertyGridObject;
-
-    //! Constructor
-    //! \param ptr Non-null pointer to the property to read
-    inline PropertyReader(void * ptr) : mPtr(ptr) { }
-
-    //! Const non-null pointer to the property to read
-    const void * mPtr;
-};
-
-//----------------------------------------------------------------------------------------
-
-class PropertyGridObject;
-
-//! Class used to write the content of a property,
-//! obtained through GetClassPropertyWriter() or GetPropertyWriter().
-//! This wrapper sets the dirty flag of the PropertyGridObject's property grid
-//! each time the value is set through Set<>()
-class PropertyWriter
-{
-public:
 
     //! Setter of the property
     //! \note Sets the dirty flag of the PropertyGridObject's property grid
@@ -292,24 +268,24 @@ public:
 private:
 
     // Make PropertyGridObject a friend to access the private constructor
-    // (to prevent external users from modifying the internal pointers)
+    // (to prevent external users from modifying the internal pointer)
     friend class PropertyGridObject;
 
     //! Constructor
     //! \param obj Non-null pointer to the property grid object owning the property
-    //! \param ptr Non-null pointer to the property to read
-    inline PropertyWriter(PropertyGridObject * obj, void * ptr) : mObj(obj), mPtr(ptr) { }
+    //! \param ptr Non-null pointer to the property
+    inline PropertyAccessor(PropertyGridObject * obj, void * ptr) : mObj(obj), mPtr(ptr) { }
 
     //! Invalidate the property grid of the attached PropertyGridObject
     //! \note Has to not be inline, because PropertyGridObject is not declared yet.
     //!       We cannot move this class' declaration after PropertyGridObject
-    //!       since the latter has functions returning PropertyWriter by value
+    //!       since the latter has functions returning PropertyAccessor by value
     inline void InvalidatePropertyGrid() const;
 
     //! Non-null pointer to the property grid object owning the property
     PropertyGridObject * mObj;
 
-    //! Writable non-null pointer to the property to write
+    //! Non-null pointer to the property
     void * mPtr;
 };
 
@@ -354,17 +330,10 @@ public:
     inline const PropertyGridClassInfo::PropertyRecord & GetClassPropertyRecord(unsigned int index) const
         { return GetClassInfo()->GetClassProperty(index); }
 
-    //! Get a reader to a property for the current class only
+    //! Get an accessor to a property for the current class only
     //! \param index Index of the property (0 <= index < GetNumClassProperties())
-    //! \return Reader for the property
-    //! \note Does not invalidate the property grid
-    PropertyReader GetClassPropertyReader(unsigned int index) const;
-
-    //! Get a writer to a property for the current class only
-    //! \param index Index of the property (0 <= index < GetNumClassProperties())
-    //! \return Writer for the property
-    //! \note Invalidates the property grid each time Set<>() of the writer is called
-    PropertyWriter GetClassPropertyWriter(unsigned int index);
+    //! \return Accessor for the property
+    PropertyAccessor GetClassPropertyAccessor(unsigned int index);
 
     //! Get the number of registered properties, including parent classes (but not derived classes)
     //! \return Number of successfully registered properties
@@ -377,17 +346,10 @@ public:
     const PropertyGridClassInfo::PropertyRecord & GetPropertyRecord(unsigned int index) const
         { return GetClassInfo()->GetProperty(index); }
 
-    //! Get a reader to a property, including parent classes (but not derived classes)
+    //! Get an accessor to a property, including parent classes (but not derived classes)
     //! \param index Index of the property (0 <= index < GetNumProperties())
-    //! \return Reader for the property
-    //! \note Does not invalidate the property grid
-    PropertyReader GetPropertyReader(unsigned int index) const;
-
-    //! Get a writer to a property, including parent classes (but not derived classes)
-    //! \param index Index of the property (0 <= index < GetNumProperties())
-    //! \return Writer for the property
-    //! \note Invalidates the property grid each time Set<>() of the writer is called
-    PropertyWriter GetPropertyWriter(unsigned int index);
+    //! \return Accessor for the property
+    PropertyAccessor GetPropertyAccessor(unsigned int index);
 
     //------------------------------------------------------------------------------------
     
@@ -458,7 +420,7 @@ private:
 
 // Implementation
 
-inline void PropertyWriter::InvalidatePropertyGrid() const
+inline void PropertyAccessor::InvalidatePropertyGrid() const
 {
     mObj->InvalidatePropertyGrid();
 }

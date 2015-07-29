@@ -32,61 +32,31 @@ PropertyGridObject::PropertyGridObject()
 
 //----------------------------------------------------------------------------------------
 
-PropertyReader PropertyGridObject::GetClassPropertyReader(unsigned int index) const
+PropertyAccessor PropertyGridObject::GetClassPropertyAccessor(unsigned int index)
 {
     if (index < GetNumClassProperties())
     {
-        return PropertyReader(mPropertyPointers[GetNumProperties() - GetNumClassProperties() + index]);
+        return PropertyAccessor(this, mPropertyPointers[GetNumProperties() - GetNumClassProperties() + index]);
     }
     else
     {
         PG_FAILSTR("Trying to access property %u but it has to be < %u", index, GetNumClassProperties());
-        return PropertyReader(nullptr);
+        return PropertyAccessor(this, nullptr);
     }
 }
 
 //----------------------------------------------------------------------------------------
 
-PropertyWriter PropertyGridObject::GetClassPropertyWriter(unsigned int index)
-{
-    if (index < GetNumClassProperties())
-    {
-        return PropertyWriter(this, mPropertyPointers[GetNumProperties() - GetNumClassProperties() + index]);
-    }
-    else
-    {
-        PG_FAILSTR("Trying to access class property %u but it has to be < %u", index, GetNumClassProperties());
-        return PropertyWriter(this, nullptr);
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
-PropertyReader PropertyGridObject::GetPropertyReader(unsigned int index) const
+PropertyAccessor PropertyGridObject::GetPropertyAccessor(unsigned int index)
 {
     if (index < GetNumProperties())
     {
-        return PropertyReader(mPropertyPointers[index]);
+        return PropertyAccessor(this, mPropertyPointers[index]);
     }
     else
     {
         PG_FAILSTR("Trying to access property %u but it has to be < %u", index, GetNumProperties());
-        return PropertyReader(nullptr);
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
-PropertyWriter PropertyGridObject::GetPropertyWriter(unsigned int index)
-{
-    if (index < GetNumProperties())
-    {
-        return PropertyWriter(this, mPropertyPointers[index]);
-    }
-    else
-    {
-        PG_FAILSTR("Trying to access property %u but it has to be < %u", index, GetNumProperties());
-        return PropertyWriter(this, nullptr);
+        return PropertyAccessor(this, nullptr);
     }
 }
 
