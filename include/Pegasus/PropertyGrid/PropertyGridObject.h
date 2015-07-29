@@ -252,6 +252,11 @@ class PropertyAccessor
 {
 public:
 
+    //! Default constructor
+    //! \note Defined only to create arrays of accessors. However the initial state is invalid,
+    //!       the accessors must be assigned to be valid
+    PropertyAccessor() : mObj(nullptr), mPtr(nullptr) { }
+
     //! Read-only accessor to the property
     //! \return Value or const reference to the property, depending on the type
     template <typename T>
@@ -283,9 +288,10 @@ private:
     inline void InvalidatePropertyGrid() const;
 
     //! Non-null pointer to the property grid object owning the property
+    //! (nullptr only if using the default constructor)
     PropertyGridObject * mObj;
 
-    //! Non-null pointer to the property
+    //! Pointer to the property, nullptr if using the default constructor or in case of error
     void * mPtr;
 };
 
