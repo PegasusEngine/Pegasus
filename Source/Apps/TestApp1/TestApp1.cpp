@@ -50,16 +50,18 @@ END_IMPLEMENT_PROPERTIES2(TestClass2)
 TestClass2::TestClass2()
 :   Pegasus::PropertyGrid::PropertyGridObject()
 {
-    INIT_PROPERTY2(ParentBool)
-    INIT_PROPERTY2(ParentInt)
-    INIT_PROPERTY2(ParentUInt)
-    INIT_PROPERTY2(ParentFloat)
-    INIT_PROPERTY2(ParentVec2)
-    INIT_PROPERTY2(ParentVec3)
-    INIT_PROPERTY2(ParentVec4)
-    INIT_PROPERTY2(ParentRGB)
-    INIT_PROPERTY2(ParentRGBA)
-    INIT_PROPERTY2(ParentStr64)
+    BEGIN_INIT_PROPERTIES(TestClass2)
+        INIT_PROPERTY2(ParentBool)
+        INIT_PROPERTY2(ParentInt)
+        INIT_PROPERTY2(ParentUInt)
+        INIT_PROPERTY2(ParentFloat)
+        INIT_PROPERTY2(ParentVec2)
+        INIT_PROPERTY2(ParentVec3)
+        INIT_PROPERTY2(ParentVec4)
+        INIT_PROPERTY2(ParentRGB)
+        INIT_PROPERTY2(ParentRGBA)
+        INIT_PROPERTY2(ParentStr64)
+    END_INIT_PROPERTIES()
 }
 
 TestClass2::~TestClass2()
@@ -82,16 +84,18 @@ END_IMPLEMENT_PROPERTIES2(TestClass3)
 TestClass3::TestClass3()
 :   TestClass2()
 {
-    INIT_PROPERTY2(DerivedBool)
-    INIT_PROPERTY2(DerivedInt)
-    INIT_PROPERTY2(DerivedUInt)
-    INIT_PROPERTY2(DerivedFloat)
-    INIT_PROPERTY2(DerivedVec2)
-    INIT_PROPERTY2(DerivedVec3)
-    INIT_PROPERTY2(DerivedVec4)
-    INIT_PROPERTY2(DerivedRGB)
-    INIT_PROPERTY2(DerivedRGBA)
-    INIT_PROPERTY2(DerivedStr64)
+    BEGIN_INIT_PROPERTIES(TestClass3)
+        INIT_PROPERTY2(DerivedBool)
+        INIT_PROPERTY2(DerivedInt)
+        INIT_PROPERTY2(DerivedUInt)
+        INIT_PROPERTY2(DerivedFloat)
+        INIT_PROPERTY2(DerivedVec2)
+        INIT_PROPERTY2(DerivedVec3)
+        INIT_PROPERTY2(DerivedVec4)
+        INIT_PROPERTY2(DerivedRGB)
+        INIT_PROPERTY2(DerivedRGBA)
+        INIT_PROPERTY2(DerivedStr64)
+    END_INIT_PROPERTIES()
 }
 
 TestClass3::~TestClass3()
@@ -163,6 +167,12 @@ TestApp1::TestApp1(const Pegasus::App::ApplicationConfig& config)
             PG_LOG('PROP', "    Size: %u", record.size);    
         }
     }
+
+    //! \todo TEMPORARY class info testing
+    TestClass2 class2;
+    const Pegasus::PropertyGrid::PropertyGridClassInfo * classInfo2 = class2.GetClassInfo();
+    TestClass3 class3;
+    const Pegasus::PropertyGrid::PropertyGridClassInfo * classInfo3 = class3.GetClassInfo();
 }
 
 //----------------------------------------------------------------------------------------

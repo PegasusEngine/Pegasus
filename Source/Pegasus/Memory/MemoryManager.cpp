@@ -22,8 +22,9 @@ static MallocFreeAllocator sCoreAllocator(1);
 static MallocFreeAllocator sRenderAllocator(2);
 static MallocFreeAllocator sNodeAllocator(3);
 static MallocFreeAllocator sNodeDataAllocator(4);
-static MallocFreeAllocator sTimelineAllocator(5);
-static MallocFreeAllocator sWindowAllocator(6);
+static MallocFreeAllocator sPropertyPointerAllocator(5);
+static MallocFreeAllocator sTimelineAllocator(6);
+static MallocFreeAllocator sWindowAllocator(7);
 
 //----------------------------------------------------------------------------------------
 
@@ -58,6 +59,13 @@ Alloc::IAllocator* GetNodeAllocator()
 Alloc::IAllocator* GetNodeDataAllocator()
 {
     return &sNodeDataAllocator;
+}
+
+//----------------------------------------------------------------------------------------
+
+Alloc::IAllocator* GetPropertyPointerAllocator()
+{
+    return &sPropertyPointerAllocator;
 }
 
 //----------------------------------------------------------------------------------------

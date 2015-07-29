@@ -27,7 +27,7 @@ namespace Mesh {
 //! Base mesh generator node class
 //! \warning IMPORTANT! When deriving from this class, update MeshManager::RegisterAllMeshNodes()
 //!                     so the generator node can be instantiated
-class MeshGenerator : public Graph::GeneratorNode, public Pegasus::PropertyGrid::PropertyGridObject
+class MeshGenerator : public Graph::GeneratorNode, public PropertyGrid::PropertyGridObject
 {
 
     GRAPH_EVENT_DECLARE_DISPATCHER(IMeshEventListener);

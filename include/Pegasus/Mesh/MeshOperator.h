@@ -27,7 +27,7 @@ namespace Mesh {
 //! Base mesh operator node class
 //! \warning IMPORTANT! When deriving from this class, update MeshManager::RegisterAllMeshNodes()
 //!                     so the operator node can be instantiated
-class MeshOperator : public Graph::OperatorNode, public Pegasus::PropertyGrid::PropertyGridObject
+class MeshOperator : public Graph::OperatorNode, public PropertyGrid::PropertyGridObject
 {
     GRAPH_EVENT_DECLARE_DISPATCHER(IMeshEventListener);
 

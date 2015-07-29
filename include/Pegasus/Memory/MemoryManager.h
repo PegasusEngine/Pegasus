@@ -38,6 +38,10 @@ Alloc::IAllocator* GetNodeAllocator();
 //! \return Node data allocator
 Alloc::IAllocator* GetNodeDataAllocator();
 
+//! Get the allocator for the pointers to properties inside property grid objects
+//! \return Node data allocator
+Alloc::IAllocator* GetPropertyPointerAllocator();
+
 //! Get the timeline allocator (for the timeline, lanes and blocks)
 //! \return Timeline allocator
 Alloc::IAllocator* GetTimelineAllocator();

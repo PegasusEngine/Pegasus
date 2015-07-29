@@ -14,102 +14,89 @@
 namespace Pegasus {
 namespace PropertyGrid {
 
-//! \todo IMPLEMENT MOST OF THIS CLASS. This is a quick prototype for early testing
+
+BEGIN_IMPLEMENT_PROPERTIES2(PropertyGridObject)
+    IMPLEMENT_PROPERTY2(PropertyGridObject, Name)
+END_IMPLEMENT_PROPERTIES2(PropertyGridObject)
+
+//----------------------------------------------------------------------------------------
 
 PropertyGridObject::PropertyGridObject()
-//:   mDirty(true)
+:   mPropertyPointers(Memory::GetPropertyPointerAllocator())
+,   mPropertyGridDirty(true)
 {
-    //! \todo Implement
+    BEGIN_INIT_PROPERTIES(PropertyGridObject)
+        INIT_PROPERTY2(Name)
+    END_INIT_PROPERTIES()
 }
 
 //----------------------------------------------------------------------------------------
 
-//#if PEGASUS_ENABLE_PROXIES
-
-//unsigned int PropertyGrid::GetNumProperties() const
-//{
-//    //! \todo Implement
-//    /***/return 0;
-//}
-//
-////----------------------------------------------------------------------------------------
-//
-//PropertyType PropertyGrid::GetPropertyType(unsigned int index) const
-//{
-//    //! \todo Implement
-//    /***/return PROPERTYTYPE_INVALID;
-//}
-//
-////----------------------------------------------------------------------------------------
-//
-//const char * PropertyGrid::GetPropertyName(unsigned int index) const
-//{
-//    //! \todo Implement
-//    /***/return "";
-//}
-//
-////----------------------------------------------------------------------------------------
-//
-//const char * PropertyGrid::GetPropertyClassName(unsigned int index) const
-//{
-//    //! \todo Implement
-//    /***/return "";
-//}
+PropertyReader PropertyGridObject::GetClassPropertyReader(unsigned int index) const
+{
+    if (index < GetNumClassProperties())
+    {
+        return PropertyReader(mPropertyPointers[GetNumProperties() - GetNumClassProperties() + index]);
+    }
+    else
+    {
+        PG_FAILSTR("Trying to access property %u but it has to be < %u", index, GetNumClassProperties());
+        return PropertyReader(nullptr);
+    }
+}
 
 //----------------------------------------------------------------------------------------
 
-//void PropertyGrid::SetProperty(const char * name, void * valuePtr)
-//{
-//    //! \todo Implement
-//}
+PropertyWriter PropertyGridObject::GetClassPropertyWriter(unsigned int index)
+{
+    if (index < GetNumClassProperties())
+    {
+        return PropertyWriter(this, mPropertyPointers[GetNumProperties() - GetNumClassProperties() + index]);
+    }
+    else
+    {
+        PG_FAILSTR("Trying to access class property %u but it has to be < %u", index, GetNumClassProperties());
+        return PropertyWriter(this, nullptr);
+    }
+}
 
 //----------------------------------------------------------------------------------------
 
-//const void * PropertyGrid::GetProperty(const char * name) const
-//{
-//    //! \todo Implement
-//    /***/return nullptr;
-//}
-//
-//#endif  // PEGASUS_ENABLE_PROXIES
-    
+PropertyReader PropertyGridObject::GetPropertyReader(unsigned int index) const
+{
+    if (index < GetNumProperties())
+    {
+        return PropertyReader(mPropertyPointers[index]);
+    }
+    else
+    {
+        PG_FAILSTR("Trying to access property %u but it has to be < %u", index, GetNumProperties());
+        return PropertyReader(nullptr);
+    }
+}
+
 //----------------------------------------------------------------------------------------
 
-//void PropertyGrid::RegisterProperty(PropertyType type, int size, const char * name, void * varPtr, const char * className)
-//{
-//    if (   (type < NUM_PROPERTY_TYPES)
-//        && (size > 0)
-//        && (name != nullptr)
-//        && (name[0] != '\0')
-//        && (varPtr != nullptr)
-//        && (className != nullptr)
-//        && (className[0] != '\0') )
-//    {
-//        PropertyRecord record;
-//        record.type = type;
-//        record.size = size;
-//        record.name = name;                 // Copy the pointer, not the string, since the input pointer is considered as constant
-//        record.varPtr = varPtr;
-//        record.className = className;       // Copy the pointer, not the string, since the input pointer is considered as constant
-//
-//        //! \todo Store the record
-//        /****/
-//    }
-//    else
-//    {
-//        if (   (name != nullptr)
-//            && (name[0] != '\0')
-//            && (className != nullptr)
-//            && (className[0] != '\0') )
-//        {
-//            PG_FAILSTR("Invalid property declaration for \"%s\" in class \"%s\"", name, className)
-//        }
-//        else
-//        {
-//            PG_FAILSTR("Invalid property declaration");
-//        }
-//    }
-//}
+PropertyWriter PropertyGridObject::GetPropertyWriter(unsigned int index)
+{
+    if (index < GetNumProperties())
+    {
+        return PropertyWriter(this, mPropertyPointers[index]);
+    }
+    else
+    {
+        PG_FAILSTR("Trying to access property %u but it has to be < %u", index, GetNumProperties());
+        return PropertyWriter(this, nullptr);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void PropertyGridObject::AppendPropertyPointer(void * ptr)
+{
+    PG_ASSERTSTR(ptr != nullptr, "Invalid property pointer added to the PropertyGridObject internal list");
+    mPropertyPointers.PushEmpty() = ptr;
+}
 
 
 }   // namespace PropertyGrid

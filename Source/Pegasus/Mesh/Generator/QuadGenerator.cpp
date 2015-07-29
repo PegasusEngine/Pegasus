@@ -27,7 +27,9 @@ QuadGenerator::QuadGenerator(Pegasus::Alloc::IAllocator* nodeAllocator,
 :   MeshGenerator(nodeAllocator, nodeDataAllocator)
 {
     //INIT properties
-    INIT_PROPERTY2(QuadExtends)
+    BEGIN_INIT_PROPERTIES(QuadGenerator)
+        INIT_PROPERTY2(QuadExtends)
+    END_INIT_PROPERTIES()
 
     //setting up the basic format of node data
 

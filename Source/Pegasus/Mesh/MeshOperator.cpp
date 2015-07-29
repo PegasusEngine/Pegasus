@@ -21,6 +21,9 @@ MeshOperator::MeshOperator(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* 
 :   Graph::OperatorNode(nodeAllocator, nodeDataAllocator),
     mConfiguration()
 {
+    BEGIN_INIT_PROPERTIES(MeshOperator)
+    END_INIT_PROPERTIES()
+
     //initialize event user data
     GRAPH_EVENT_INIT_DISPATCHER
 }

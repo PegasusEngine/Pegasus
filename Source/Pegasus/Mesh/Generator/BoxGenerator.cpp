@@ -27,7 +27,9 @@ BoxGenerator::BoxGenerator(Pegasus::Alloc::IAllocator* nodeAllocator,
 : MeshGenerator(nodeAllocator, nodeDataAllocator)
 {
     //INIT properties
-    INIT_PROPERTY2(CubeExtends)
+    BEGIN_INIT_PROPERTIES(BoxGenerator)
+        INIT_PROPERTY2(CubeExtends)
+    END_INIT_PROPERTIES()
 
     mConfiguration.SetIsIndexed(true);
 

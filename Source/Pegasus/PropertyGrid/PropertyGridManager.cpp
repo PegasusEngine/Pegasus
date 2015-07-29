@@ -53,13 +53,18 @@ void PropertyGridManager::BeginDeclareProperties(const char * className, const c
 
     mCurrentClassInfo = &mClassInfos.PushEmpty();
     mCurrentClassInfo->SetClassName(className, parentClassName);
-    mCurrentClassInfo->SetParentClassInfo(nullptr); //info is connected later, first gather all the plane class info
+
+    // The parent information is connected later, as it is possible the parent class has not been defined yet.
+    // The link will be executed at runtime using \a ResolveInternalClassHierarchy()
+    mCurrentClassInfo->SetParentClassInfo(nullptr);
 }
 
 //----------------------------------------------------------------------------------------
 
 void PropertyGridManager::ResolveInternalClassHierarchy()
 {
+    // Resolve the links between the classes (to know who is the parent class of each class)
+    //! \todo Make ci an unsigned int (after upgrading Vector)
     for (int ci = 0; ci < mClassInfos.GetSize(); ++ci)
     {
         PropertyGridClassInfo * classInfo = &mClassInfos[ci];
@@ -67,8 +72,8 @@ void PropertyGridManager::ResolveInternalClassHierarchy()
         // Find the class info for the parent class if defined and link it
         if (classInfo->GetParentClassName()[0] != '\0')
         {
-            //! \todo Make ci an unsigned int (after upgrading Vector)
             PropertyGridClassInfo* parentInfo = nullptr;
+            //! \todo Make pi an unsigned int (after upgrading Vector)
             for (int pi = 0; pi < mClassInfos.GetSize(); ++pi)
             {
                 if (Utils::Strcmp(mClassInfos[pi].GetClassName(), classInfo->GetParentClassName()) == 0)
@@ -81,7 +86,14 @@ void PropertyGridManager::ResolveInternalClassHierarchy()
             PG_ASSERTSTR(parentInfo != nullptr, "Parent class not found");
             classInfo->SetParentClassInfo(parentInfo);
         }
-        
+    }
+
+    // Resolve the number of properties in each class (since the classes are not declared in a specific order,
+    // the parent's number of properties is not known yet at declaration time)
+    //! \todo Make ci an unsigned int (after upgrading Vector)
+    for (int ci = 0; ci < mClassInfos.GetSize(); ++ci)
+    {
+        mClassInfos[ci].UpdateNumPropertiesFromParents();
     }
 }
 
@@ -111,6 +123,31 @@ const PropertyGridClassInfo & PropertyGridManager::GetClassInfo(unsigned int ind
     //! \todo Test for the validity of index
 
     return mClassInfos[index];
+}
+
+//----------------------------------------------------------------------------------------
+
+const PropertyGridClassInfo * PropertyGridManager::GetClassInfo(const char * className) const
+{
+    if (className == nullptr)
+    {
+        PG_FAILSTR("Invalid class name when retrieving a class info");
+        return nullptr;
+    }
+
+    //! \todo Make ci an unsigned int (after upgrading Vector)
+    for (int ci = 0; ci < mClassInfos.GetSize(); ++ci)
+    {
+        if (Utils::Strcmp(mClassInfos[ci].GetClassName(), className) == 0)
+        {
+            // Class found
+            return &mClassInfos[ci];
+        }
+    }
+
+    // Class not found
+    PG_FAILSTR("Class not found (%s) when retrieving a class info", className);
+    return nullptr;
 }
 
 

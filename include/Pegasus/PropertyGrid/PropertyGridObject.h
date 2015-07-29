@@ -15,6 +15,8 @@
 #include "Pegasus/PropertyGrid/Property.h"
 #include "Pegasus/PropertyGrid/PropertyGridClassInfo.h"
 #include "Pegasus/PropertyGrid/PropertyGridManager.h"
+#include "Pegasus/Memory/MemoryManager.h"
+#include "Pegasus/Utils/Vector.h"
 
 namespace Pegasus {
 namespace PropertyGrid {
@@ -41,31 +43,35 @@ namespace PropertyGrid {
 //         IMPLEMENT_PROPERTY(ClassName, NumLoops)
 //         IMPLEMENT_PROPERTY(ClassName, Position)
 //             etc.
-//     END_IMPLEMENT_PROPERTIES()
+//     END_IMPLEMENT_PROPERTIES(ClassName)
 
 // In the implementation file, in the constructor of the class:
-//     INIT_PROPERTY(NumLoops)
-//     INIT_PROPERTY(Position)
+//     BEGIN_INIT_PROPERTIES(ClassName)
+//         INIT_PROPERTY(NumLoops)
+//         INIT_PROPERTY(Position)
 //             etc.
+//     END_INIT_PROPERTIES()
 
 
+//! Shortcut for the property grid namespace, to make the following macros more readable
+#define PPG Pegasus::PropertyGrid
+
+    
 //! Macro to start declaring a set of properties (when the class is a base class)
 //! \param className Name of the class the properties belong to
 //! \note To be used inside a class declaration, before calling \a DECLARE_PROPERTY()
 #define BEGIN_DECLARE_PROPERTIES_BASE(className)                                                                    \
-    DECLARE_PROPERTIES_BEGIN_DECLARATION_HELPER(className, "")                                                      \
-    //private:                                                                                                        \
-    //    static const char * sClassName;                                                                             \
+    DECLARE_PROPERTIES_BEGIN_DECLARATION_HELPER(className, "PropertyGridObject")                                    \
+    DECLARE_PROPERTIES_CLASS_INFO(className)                                                                        \
 
 
 //! Macro to start declaring a set of properties (when the class is a derived class)
 //! \param className Name of the class the properties belong to
 //! \param parentClassName Name of the parent of the class the properties belong to
 //! \note To be used inside a class declaration, before calling \a DECLARE_PROPERTY()
-#define BEGIN_DECLARE_PROPERTIES2(className, parentClassName)                                                   \
+#define BEGIN_DECLARE_PROPERTIES2(className, parentClassName)                                                       \
     DECLARE_PROPERTIES_BEGIN_DECLARATION_HELPER(className, #parentClassName)                                        \
-    //private:                                                                                                        \
-    //    static const char * sClassName;                                                                             \
+    DECLARE_PROPERTIES_CLASS_INFO(className)                                                                        \
 
     
 //! Macro to declare a property
@@ -90,14 +96,14 @@ namespace PropertyGrid {
 //! \note To be used inside a .cpp file, before calling \a IMPLEMENT_PROPERTY()
 #define BEGIN_IMPLEMENT_PROPERTIES2(className)                                                                      \
     className::BeginPropertyDeclarationHelper className::sBeginPropertyDeclarationHelper;                           \
+    const PPG::PropertyGridClassInfo * const className::sClassInfo                                                  \
+        = PPG::PropertyGridManager::GetInstance().GetClassInfo(#className);                                         \
 
-    //const char * className::sClassName = #className;                                \
-    //void className::InitProperties()                                                \
-    //{                                                                               \
 
 //! Macro to declare a property in the implementation file, after the namespace declaration
 //! \param className Name of the class the properties belong to
 //! \param name Name of the property, starting with an uppercase letter
+//! \warning To be used after \a BEGIN_IMPLEMENT_PROPERTIES() and before END_IMPLEMENT_PROPERTIES()
 #define IMPLEMENT_PROPERTY2(className, name)                                                                        \
     className::PropertyDeclarationHelper##name className::sPropertyDeclarationHelper##name;                         \
 
@@ -109,18 +115,30 @@ namespace PropertyGrid {
     className::EndPropertyDeclarationHelper className::sEndPropertyDeclarationHelper;                               \
 
 
+//! Macro to start initializing a set of properties in the implementation file
+//! \param className Name of the class the properties belong to
+//! \note To be used inside a class' constructor, before calling \a INIT_PROPERTY()
+#define BEGIN_INIT_PROPERTIES(className)                                                                            \
+    // TODO
+
+
 //! Macro to initialize a property in the implementation file, in the constructor of the class
 //! \param name Name of the property, starting with an uppercase letter
 #define INIT_PROPERTY2(name)                                                                                        \
     Set##name##ToDefault();                                                                                         \
+    AppendPropertyPointer(static_cast<void *>(&mProperty##name));                                                   \
+
+
+//! Macro to start initializing a set of properties in the implementation file
+//! \param className Name of the class the properties belong to
+//! \note To be used inside a class' constructor, before calling \a INIT_PROPERTY()
+#define END_INIT_PROPERTIES()                                                                                       \
+    PG_ASSERTSTR(GetNumPropertyPointers() == GetStaticClassInfo()->GetNumProperties(),                              \
+                 "Invalid declaration of properties for class %s with parent %s: GetNumPropertyPointers()==%u != GetNumProperties()==%u", GetStaticClassInfo()->GetClassName(), GetStaticClassInfo()->GetParentClassName(), GetNumPropertyPointers(), GetStaticClassInfo()->GetNumProperties());    \
 
 //----------------------------------------------------------------------------------------
 
 // Private macros
-
-
-//! Shortcut for the property grid namespace, to make the following macros more readable
-#define PPG Pegasus::PropertyGrid
 
 
 //! Declare a private helper class, whose constructor allows starting declaring properties
@@ -143,6 +161,18 @@ namespace PropertyGrid {
         static BeginPropertyDeclarationHelper sBeginPropertyDeclarationHelper;                                      \
 
 
+//! Declare the GetClassInfo() and GetStaticClassInfo() functions for the current class
+//! and their corresponding static member. The first function returns the class info corresponding
+//! to the factory class, the second function returns the class info depending on the class of the current pointer
+//! \param className Name of the current class
+#define DECLARE_PROPERTIES_CLASS_INFO(className)                                                                    \
+    public:                                                                                                         \
+        virtual const PPG::PropertyGridClassInfo * GetClassInfo() const { return className::sClassInfo; }           \
+        static const PPG::PropertyGridClassInfo * GetStaticClassInfo() { return className::sClassInfo; }            \
+    private:                                                                                                        \
+        static const PPG::PropertyGridClassInfo * const sClassInfo;                                                 \
+
+
 //! Declare the property itself and the corresponding getter (Get<PropertyName>()) and setter (Set<PropertyName>(value))
 //! \param type Type of the property, use Math:: in front of types from the math library
 //! \param name Name of the property, starting with an uppercase letter
@@ -153,7 +183,7 @@ namespace PropertyGrid {
             { return mProperty##name; }                                                                             \
         inline void Set##name(PPG::PropertyDefinition<type>::ParamType value)                                       \
             { PPG::PropertyDefinition<type>::CopyProperty(mProperty##name, value);                                  \
-              /*GetPropertyGrid().Invalidate();*/ }                                                                 \
+              InvalidatePropertyGrid(); }                                                                           \
     private:                                                                                                        \
         PPG::PropertyDefinition<type>::VarType mProperty##name;                                                     \
 
@@ -213,11 +243,95 @@ namespace PropertyGrid {
 
 //----------------------------------------------------------------------------------------
 
+//! Class used to read the content of a property,
+//! obtained through GetClassPropertyReader() or GetPropertyReader().
+//! This wrapper prevents bad casts to non-const pointers that would not invalidate the property grid properly
+class PropertyReader
+{
+public:
+
+    //! Read-only accessor to the property
+    //! \return Value or const reference to the property, depending on the type
+    template <typename T>
+    inline typename PPG::PropertyDefinition<T>::ReturnType Get() const
+        { return *static_cast<const T *>(mPtr); }
+
+private:
+
+    // Make PropertyGridObject a friend to access the private constructor
+    // (to prevent external users from modifying the internal pointer)
+    friend class PropertyGridObject;
+
+    //! Constructor
+    //! \param ptr Non-null pointer to the property to read
+    inline PropertyReader(void * ptr) : mPtr(ptr) { }
+
+    //! Const non-null pointer to the property to read
+    const void * mPtr;
+};
+
+//----------------------------------------------------------------------------------------
+
+class PropertyGridObject;
+
+//! Class used to write the content of a property,
+//! obtained through GetClassPropertyWriter() or GetPropertyWriter().
+//! This wrapper sets the dirty flag of the PropertyGridObject's property grid
+//! each time the value is set through Set<>()
+class PropertyWriter
+{
+public:
+
+    //! Setter of the property
+    //! \note Sets the dirty flag of the PropertyGridObject's property grid
+    //! \param value New value of the property
+    template <typename T>
+    inline void Set(typename PPG::PropertyDefinition<T>::ParamType value) const
+        { *static_cast<T *>(mPtr) = value; InvalidatePropertyGrid(); }
+
+private:
+
+    // Make PropertyGridObject a friend to access the private constructor
+    // (to prevent external users from modifying the internal pointers)
+    friend class PropertyGridObject;
+
+    //! Constructor
+    //! \param obj Non-null pointer to the property grid object owning the property
+    //! \param ptr Non-null pointer to the property to read
+    inline PropertyWriter(PropertyGridObject * obj, void * ptr) : mObj(obj), mPtr(ptr) { }
+
+    //! Invalidate the property grid of the attached PropertyGridObject
+    //! \note Has to not be inline, because PropertyGridObject is not declared yet.
+    //!       We cannot move this class' declaration after PropertyGridObject
+    //!       since the latter has functions returning PropertyWriter by value
+    inline void InvalidatePropertyGrid() const;
+
+    //! Non-null pointer to the property grid object owning the property
+    PropertyGridObject * mObj;
+
+    //! Writable non-null pointer to the property to write
+    void * mPtr;
+};
+
+//----------------------------------------------------------------------------------------
+
 //! Property grid object, parent of every class that defines a set of editable properties.
 //! When properties are declared, their association accessors are created (SetName() and GetName()).
 //! The property grid object stores the property definitions and gives access to string-based accessors.
 class PropertyGridObject
 {
+    // Declare the base property object class, however the BEGIN_DECLARE_PROPERTIES(_BASE) macros
+    // cannot be used since there is no parent defined
+    DECLARE_PROPERTIES_BEGIN_DECLARATION_HELPER(PropertyGridObject, "")
+    DECLARE_PROPERTIES_CLASS_INFO(PropertyGridObject)
+
+        //! \todo Make that property for editor/data only and not for REL
+        DECLARE_PROPERTY2(String64, Name, "");
+
+    END_DECLARE_PROPERTIES2()
+
+    //------------------------------------------------------------------------------------
+
 public:
 
     //! Constructor
@@ -229,51 +343,74 @@ public:
     //!       When a Camera is copied for example, the property grid is copied, but not the members.
     //!       They should be.
 
-    //! Register a property
-    //! \param T Type of the property, use Math:: in front of types from the math library
-    //! \param name Name of the property, starting with an uppercase letter
-    //! \param varPtr Pointer to the property variable
-    //! \param className Class name of the property grid owner
-    //! \note Called by \a IMPLEMENT_PROPERTY()
-    //template <typename T>
-    //void RegisterProperty(const char * name, T * varPtr, const char * className);
+    //! Get the number of registered properties for the current class only
+    //! \return Number of successfully registered properties for the current class only
+    inline unsigned int GetNumClassProperties() const
+        { return GetClassInfo()->GetNumClassProperties(); }
 
-    //! Invalidate the property grid, to be called after a member is updated,
-    //! to tell the property grid owner to regenerate its data
-    //inline void Invalidate() { mDirty = true; }
+    //! Get the record of a property for the current class only
+    //! \param index Index of the property (0 <= index < GetNumClassProperties())
+    //! \return Record of the property (information about the property)
+    inline const PropertyGridClassInfo::PropertyRecord & GetClassPropertyRecord(unsigned int index) const
+        { return GetClassInfo()->GetClassProperty(index); }
+
+    //! Get a reader to a property for the current class only
+    //! \param index Index of the property (0 <= index < GetNumClassProperties())
+    //! \return Reader for the property
+    //! \note Does not invalidate the property grid
+    PropertyReader GetClassPropertyReader(unsigned int index) const;
+
+    //! Get a writer to a property for the current class only
+    //! \param index Index of the property (0 <= index < GetNumClassProperties())
+    //! \return Writer for the property
+    //! \note Invalidates the property grid each time Set<>() of the writer is called
+    PropertyWriter GetClassPropertyWriter(unsigned int index);
+
+    //! Get the number of registered properties, including parent classes (but not derived classes)
+    //! \return Number of successfully registered properties
+    inline unsigned int GetNumProperties() const
+        { return GetClassInfo()->GetNumProperties(); }
+
+    //! Get the record of a property, including parent classes (but not derived classes)
+    //! \param index Index of the property (0 <= index < GetNumProperties())
+    //! \return Record of the property (information about the property)
+    const PropertyGridClassInfo::PropertyRecord & GetPropertyRecord(unsigned int index) const
+        { return GetClassInfo()->GetProperty(index); }
+
+    //! Get a reader to a property, including parent classes (but not derived classes)
+    //! \param index Index of the property (0 <= index < GetNumProperties())
+    //! \return Reader for the property
+    //! \note Does not invalidate the property grid
+    PropertyReader GetPropertyReader(unsigned int index) const;
+
+    //! Get a writer to a property, including parent classes (but not derived classes)
+    //! \param index Index of the property (0 <= index < GetNumProperties())
+    //! \return Writer for the property
+    //! \note Invalidates the property grid each time Set<>() of the writer is called
+    PropertyWriter GetPropertyWriter(unsigned int index);
+
+    //------------------------------------------------------------------------------------
+    
+    //! Invalidate the property grid (sets the dirty flag)
+    //! \note Called automatically by setters, but can be used to force the dirty flag manually
+    inline void InvalidatePropertyGrid() { mPropertyGridDirty = true; }
 
     //! Test if the property grid is dirty, meaning that at least one member has changed
     //! \return True if the dirty flag is set
-    //inline bool IsDirty() const { return mDirty; }
+    inline bool IsPropertyGridDirty() const { return mPropertyGridDirty; }
 
     //! Validate the property grid, to be called by the property grid owner
     //! to tell its data has been regenerated with the current member data
-    //inline void Validate() { mDirty = false; }
+    //! \warning Make sure data of the owner has been regenerated before setting that flag
+    //! \warning Make sure that function is called regularly, nothing else will reset the flag otherwise
+    inline void ValidatePropertyGrid() { mPropertyGridDirty = false; }
 
     //------------------------------------------------------------------------------------
 
     // Accessors for the proxy interface
+    //! \todo Is it necessary?
 
 //#if PEGASUS_ENABLE_PROXIES
-
-    ////! Get the number of registered properties using \a RegisterProperty()
-    ////! \return Number of successfully registered properties
-    //unsigned int GetNumProperties() const;
-
-    ////! Get the type of a property
-    ////! \param index Index of the property (0 <= index < GetNumProperties())
-    ////! \return Type of the property, PROPERTYTYPE_xxx constant, PROPERTYTYPE_INVALID in case of error
-    //PropertyType GetPropertyType(unsigned int index) const;
-
-    ////! Get the name of a property
-    ////! \param index Index of the property (0 <= index < GetNumProperties())
-    ////! \return Name of the property, empty string in case of error
-    //const char * GetPropertyName(unsigned int index) const;
-
-    ////! Get the name of the class owning the property
-    ////! \param index Index of the property (0 <= index < GetNumProperties())
-    ////! \return Name of the class owning the property, empty string in case of error
-    //const char * GetPropertyClassName(unsigned int index) const;
 
     //! Set the value of a property by name
     //! \param name Name of the property, non-empty string
@@ -291,44 +428,40 @@ public:
 
     //------------------------------------------------------------------------------------
     
-//private:
+protected:
 
-    //! Record for one property, containing information such as the name
-    //struct PropertyRecord
-    //{
-    //    PropertyType type;          //!< Type of the property, PROPERTYTYPE_xxx constant
-    //    int size;                   //!< Size in bytes of the property (> 0)
-    //    const char * name;          //!< Name of the property, starting with an uppercase letter (non-empty)
-    //    void * varPtr;              //!< Pointer to the variable (!= nullptr)
-    //    const char * className;     //!< Name of the class owning the property (non-empty)
-    //};
+    //! Add a property pointer to the object property pointer array
+    //! \param ptr Pointer to the property to add
+    //! \warning To be used only by the INIT_PROPERTY() macro
+    void AppendPropertyPointer(void * ptr);
 
-    //! Register a property
-    //! \param type Type of the property, PROPERTYTYPE_xxx constant
-    //! \param name Name of the property, starting with an uppercase letter
-    //! \param varPtr Pointer to the property variable
-    //! \param className Class name of the property grid owner
-    //! \note Called by \a IMPLEMENT_PROPERTY() through the templated \a RegisterProperty() function
-    //void RegisterProperty(PropertyType type, int size, const char * name,
-    //                      void * varPtr, const char * className);
+    //! Get the number of property pointers that have been added to the array
+    //! \return Number of property pointers that have been added to the array
+    //! \note This should match GetNumProperties(), otherwise that means that the number
+    //!       of declaration/implementation/initialization macros does not match
+    inline unsigned int GetNumPropertyPointers() const { return mPropertyPointers.GetSize(); }
 
-    //! Set to true after a member is updated,
-    //! to tell the property grid owner to regenerate its data
-    //bool mDirty;
+    //------------------------------------------------------------------------------------
+    
+private:
 
-    //! \todo Store list of PropertyRecord, filled by RegisterProperty()
+    //! List of pointers to the members, from the base class down to the class
+    //! the object is instantiated as
+    Utils::Vector<void *> mPropertyPointers;
+
+    //! Set to true after a property is updated,
+    //! to tell the property grid object owner to regenerate its data
+    bool mPropertyGridDirty;
 };
-
 
 //----------------------------------------------------------------------------------------
 
 // Implementation
 
-//template <typename T>
-//void PropertyGrid::RegisterProperty(const char * name, T * varPtr, const char * className)
-//{
-//    RegisterProperty(PropertyDefinition<T>::PROPERTY_TYPE, sizeof(T), name, varPtr, className);
-//}
+inline void PropertyWriter::InvalidatePropertyGrid() const
+{
+    mObj->InvalidatePropertyGrid();
+}
 
 
 }   // namespace PropertyGrid

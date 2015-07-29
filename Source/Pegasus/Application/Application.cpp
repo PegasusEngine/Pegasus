@@ -64,7 +64,7 @@ Application::Application(const ApplicationConfig& config)
     Core::AssertionManager::GetInstance()->RegisterHandler(config.mAssertHandler);
 #endif
 
-    //setup hierarchy of class metadata gathered at compile time
+    // Set up the hierarchy of property grid class metadata gathered at compile time
     PropertyGrid::PropertyGridManager::GetInstance().ResolveInternalClassHierarchy();
     mPropertyGridManager = &PropertyGrid::PropertyGridManager::GetInstance();
 

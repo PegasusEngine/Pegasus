@@ -66,10 +66,18 @@ public:
     //! \return Number of successfully registered classes
     inline unsigned int GetNumRegisteredClasses() const { return mClassInfos.GetSize(); }
 
-    //! Get one of the registered classes
+    //! Get one of the registered classes by index
     //! \param index Index of the class to get info from (< GetNumRegisteredClasses())
     //! \return Information about the registered class
     const PropertyGridClassInfo & GetClassInfo(unsigned int index) const;
+
+    //! Get one of the registered classes by name
+    //! \param className Name of the class to get info from (non-empty string)
+    //! \return Information about the registered class, nullptr if not found
+    //! \note An assertion is thrown if the class is not found
+    //! \note That function is slower than the index-based one,
+    //!       as it has to perform a search
+    const PropertyGridClassInfo * GetClassInfo(const char * className) const;
 
     //! Must get called at the initialization of main() once. This will ensure all the metadata of class
     //! dependencies are linked properly. Otherwise, no parent-child relationship will exist

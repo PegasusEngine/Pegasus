@@ -116,6 +116,10 @@ private:
     //! \note Called by \a IMPLEMENT_PROPERTY() through the templated \a RegisterProperty() function
     void DeclareProperty(PropertyType type, int size, const char * name, void * defaultValuePtr);
 
+    //! Compute the number of properties (mNumProperties), including parent classes (but not derived classes)
+    //! \note The classes are not declared in a specific order,
+    //!       the parent's number of properties is not known yet at declaration time
+    void UpdateNumPropertiesFromParents();
 
     //! Name of the class owning the property (non-empty when valid)
     //! \warning Not copied, the owner must be external

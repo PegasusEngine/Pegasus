@@ -83,13 +83,6 @@ void PropertyGridClassInfo::SetParentClassInfo(PropertyGridClassInfo * parentCla
     //! \todo Check that mParentClassInfo was nullptr before that call
 
     mParentClassInfo = parentClassInfo;
-
-    if (parentClassInfo != nullptr)
-    {
-        // Add the total number of properties of the parent with the number of this class
-        // (assumes this function is called only once ever)
-        mNumProperties += parentClassInfo->GetNumProperties();
-    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -108,8 +101,6 @@ void PropertyGridClassInfo::DeclareProperty(PropertyType type, int size, const c
         record.size = size;
         record.name = name;     // Copy the pointer, not the string, since the input pointer is considered as constant
         record.defaultValuePtr = defaultValuePtr;
-
-        ++mNumProperties;
     }
     else
     {
@@ -125,6 +116,21 @@ void PropertyGridClassInfo::DeclareProperty(PropertyType type, int size, const c
             //***PG_FAILSTR("Invalid property declaration");
         }
     }
+}
+
+//----------------------------------------------------------------------------------------
+
+void PropertyGridClassInfo::UpdateNumPropertiesFromParents()
+{
+    PG_ASSERT(mNumProperties == 0);
+
+    const PropertyGridClassInfo * classInfo = this;
+    do
+    {
+        mNumProperties += classInfo->GetNumClassProperties();
+        classInfo = classInfo->mParentClassInfo;
+    }
+    while (classInfo != nullptr);
 }
 
 

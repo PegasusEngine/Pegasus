@@ -52,8 +52,10 @@ IcosphereGenerator::IcosphereGenerator(Pegasus::Alloc::IAllocator * nodeAllocato
 {
     
     //INIT properties
-    INIT_PROPERTY2(Degree)
-    INIT_PROPERTY2(Radius)
+    BEGIN_INIT_PROPERTIES(IcosphereGenerator)
+        INIT_PROPERTY2(Degree)
+        INIT_PROPERTY2(Radius)
+    END_INIT_PROPERTIES()
 
     mConfiguration.SetIsIndexed(true);
     mConfiguration.SetMeshPrimitiveType(MeshConfiguration::TRIANGLE);
