@@ -319,5 +319,10 @@
 // Enable to stream the music file from disk rather than preloading it
 #define PEGASUS_SOUND_STREAM_MUSIC          0
 
+// Enable editor reflection. If this is enabled, it means pegasus will gather library data
+// from the runtime libraries registered in blockscript. This info will be exposed to the editor so
+// the user has easy documentation access to the available blockscript functions
+#define PEGASUS_ENABLE_BS_REFLECTION_INFO PEGASUS_ENABLE_PROXIES
+
 
 #endif  // PEGASUS_PREPROCESSOR_H

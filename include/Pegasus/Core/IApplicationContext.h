@@ -47,6 +47,13 @@ namespace Pegasus {
     namespace PropertyGrid {
         class PropertyGridManager;
     }
+
+#if PEGASUS_ENABLE_BS_REFLECTION_INFO
+    namespace App {
+        class AppBsReflectionInfo;
+    }
+#endif
+
 }
 
 namespace Pegasus {
@@ -103,6 +110,12 @@ public:
     //! Gets the property grid manager for this application
     //! \return property grid manager for this application
     virtual PropertyGrid::PropertyGridManager* GetPropertyGridManager() const = 0;
+
+#if PEGASUS_ENABLE_BS_REFLECTION_INFO
+    //! Returns the reflection information from blockscript.
+    virtual App::AppBsReflectionInfo* GetBsReflectionInfo() const = 0;
+#endif
+
 };
 
 

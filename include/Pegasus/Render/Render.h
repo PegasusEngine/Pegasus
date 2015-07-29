@@ -231,7 +231,6 @@ namespace Render
         BlendOperator mBlendingOperator;
         Multiplicator mSource;
         Multiplicator mDest;
-        void * mInternalData;
     };
 
     //! Structure representing a blending state

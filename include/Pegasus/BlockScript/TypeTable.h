@@ -82,11 +82,18 @@ public:
     //! \return true if found it, false otherwise
     bool FindEnumByName(const char* name, const EnumNode** outEnumNode, const TypeDesc** outEnumType) const;
 
-    //! returns a new enum node
+    //! \returns a new enum node
     EnumNode* NewEnumNode();
 
-    //! returns a new property node
+    //! \returns a new property node
     PropertyNode* NewPropertyNode();
+
+    //! \returns the number of types available
+    int GetTypeCount() const { return mTypeDescPool.Size(); }
+
+    //! \param the index. index goes from 0 to GetTypeCount()
+    //! \returns the type description structure
+    const TypeDesc* GetTypeByIndex(int index) const { return &mTypeDescPool[index]; }
 
 private:
     Container<TypeDesc> mTypeDescPool;

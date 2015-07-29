@@ -134,6 +134,10 @@ public:
     virtual Camera::CameraManager*                          GetCameraManager()           const { return mCameraManager;           }
     virtual Pegasus::Application::RenderCollectionFactory*  GetRenderCollectionFactory() const { return mRenderCollectionFactory; }
     virtual PropertyGrid::PropertyGridManager*              GetPropertyGridManager()     const { return mPropertyGridManager;     }
+#if PEGASUS_ENABLE_BS_REFLECTION_INFO
+    //! Returns the reflection information from blockscript.
+    virtual App::AppBsReflectionInfo*                       GetBsReflectionInfo() const { return mBsReflectionInfo; }
+#endif
 
 private:
     // No copies allowed
@@ -163,6 +167,9 @@ private:
     Camera::CameraManager*                          mCameraManager;          //!< Camera manager
     PropertyGrid::PropertyGridManager*              mPropertyGridManager;    //!< Property grid manager
     Pegasus::Application::RenderCollectionFactory*  mRenderCollectionFactory;//!< Render collection factory
+#if PEGASUS_ENABLE_BS_REFLECTION_INFO
+    App::AppBsReflectionInfo*                       mBsReflectionInfo; //!< Reflection and library info of blockscript libraries registered
+#endif
 };
 
 }   // namespace App

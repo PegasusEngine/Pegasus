@@ -53,6 +53,11 @@ public:
     //! \return the function description to extract
     FunDesc* GetDesc(int id) { return &mContainer[id]; }
 
+    //! Returns enumeration of the current function.
+    //! \param i the index
+    //! \return the function description to extract
+    const FunDesc* GetDesc(int id) const { return &mContainer[id]; }
+
     //! Inserts a new function declaration. Function declaration must be only inserted once.
     //! if there is an existing function declared, false is returned, otherwise always true.
     //! \return id if function insertion was successful, -1 if there is an existing declaration.

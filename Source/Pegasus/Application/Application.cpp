@@ -15,6 +15,7 @@
 #include "Pegasus/Application/ScriptRenderApi.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Application/AppWindowManager.h"
+#include "Pegasus/Application/AppBsReflectionInfo.h"
 #include "Pegasus/Camera/CameraManager.h"
 #include "Pegasus/Core/Time.h"
 #include "Pegasus/Graph/NodeManager.h"
@@ -95,6 +96,9 @@ Application::Application(const ApplicationConfig& config)
     mTextureManager = PG_NEW(nodeAlloc, -1, "TextureManager", Alloc::PG_MEM_PERM) Texture::TextureManager(mNodeManager, textureFactory);
     mMeshManager = PG_NEW(nodeAlloc, -1, "MeshManager", Alloc::PG_MEM_PERM) Mesh::MeshManager(mNodeManager, meshFactory);
     mRenderCollectionFactory = PG_NEW(nodeAlloc, -1, "RenderCollectionFactory", Alloc::PG_MEM_PERM) Pegasus::Application::RenderCollectionFactory(this, nodeAlloc);
+#if PEGASUS_ENABLE_BS_REFLECTION_INFO
+    mBsReflectionInfo = PG_NEW(nodeAlloc, -1, "Bs Reflection Info", Alloc::PG_MEM_PERM) App::AppBsReflectionInfo(nodeAlloc);
+#endif
 
     //register shader manager into factory, so factory can handle includes
     shaderFactory->RegisterShaderManager(mShaderManager);
@@ -110,6 +114,10 @@ Application::Application(const ApplicationConfig& config)
 
     // Register the entire render api
     Pegasus::Application::RegisterRenderApi(mBlockScriptManager->GetRuntimeLib(), this);
+
+#if PEGASUS_ENABLE_BS_REFLECTION_INFO
+    mBsReflectionInfo->RegisterLib(mBlockScriptManager->GetRuntimeLib());
+#endif
 
     RegisterAssetLib();
 
@@ -147,6 +155,9 @@ Application::~Application()
     PG_DELETE(nodeAlloc, mRenderCollectionFactory);
     PG_DELETE(timelineAlloc, mBlockScriptManager);
     PG_DELETE(nodeAlloc, mAssetLib);
+#if PEGASUS_ENABLE_BS_REFLECTION_INFO
+    PG_DELETE(nodeAlloc, mBsReflectionInfo);
+#endif
 
     // Tear down debugging facilities
 #if PEGASUS_ENABLE_ASSERT

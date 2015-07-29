@@ -19,8 +19,8 @@ using namespace Pegasus;
 using namespace Pegasus::BlockScript;
 
  //! Constructor in case you did not notice
-BlockLib::BlockLib(Alloc::IAllocator* allocator)
-    : BlockScriptCompiler(allocator), mAllocator(allocator)
+BlockLib::BlockLib(Alloc::IAllocator* allocator, const char* name)
+    : BlockScriptCompiler(allocator), mAllocator(allocator), mName(name)
 {
 }
 
@@ -165,6 +165,11 @@ void BlockLib::CreateClassTypes(const ClassTypeDesc* descriptionList, int count)
 }
 
 SymbolTable* BlockLib::GetSymbolTable()
+{
+    return mBuilder.GetSymbolTable();
+}
+
+const SymbolTable* BlockLib::GetSymbolTable() const
 {
     return mBuilder.GetSymbolTable();
 }

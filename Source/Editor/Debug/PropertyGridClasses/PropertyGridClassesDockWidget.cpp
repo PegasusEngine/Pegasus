@@ -15,22 +15,20 @@
 #include "Pegasus/PropertyGrid/Shared/IPropertyGridManagerProxy.h"
 #include "Pegasus/PropertyGrid/Shared/IPropertyGridClassInfoProxy.h"
 
+#include "Pegasus/Application/Shared/IApplicationProxy.h"
+
 #include <QTreeWidget>
 #include <QMap>
 #include <QList>
 
 
-PropertyGridClassesDockWidget::PropertyGridClassesDockWidget(QWidget * parent)
-:   QDockWidget(parent)
+PropertyGridClassesDockWidget::PropertyGridClassesDockWidget(QWidget * parent, Editor* editor)
+:   PegasusDockWidget(parent, editor)
 {
-    // Set the dock widget parameters
-    setWindowTitle(tr("Property Grid Classes"));
-    setObjectName("PropertyGridClassesDockWidget");
-    setFeatures(  QDockWidget::DockWidgetClosable
-				| QDockWidget::DockWidgetMovable
-				| QDockWidget::DockWidgetFloatable);
-	setAllowedAreas(Qt::AllDockWidgetAreas);
+}
 
+void PropertyGridClassesDockWidget::SetupUi()
+{
     // Create the tree widget showing the hierarchy of classes
     mTreeWidget = new QTreeWidget(this);
     mTreeWidget->setColumnCount(4);
@@ -54,12 +52,12 @@ PropertyGridClassesDockWidget::~PropertyGridClassesDockWidget()
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridClassesDockWidget::UpdateUIForAppLoaded()
+void PropertyGridClassesDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* app)
 {
     ED_LOG("Generating the list of classes using a property grid");
 
     Pegasus::PropertyGrid::IPropertyGridManagerProxy * managerProxy =
-        Editor::GetInstance().GetApplicationManager().GetApplication()->GetPropertyGridManagerProxy();
+        app->GetPropertyGridManagerProxy();
 
     QMap<const Pegasus::PropertyGrid::IPropertyGridClassInfoProxy *, QTreeWidgetItem *> classMap;
     QList<QTreeWidgetItem *> items;
@@ -218,7 +216,7 @@ void PropertyGridClassesDockWidget::UpdateUIForAppLoaded()
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridClassesDockWidget::UpdateUIForAppClosed()
+void PropertyGridClassesDockWidget::OnUIForAppClosed()
 {
     mTreeWidget->clear();
 }

@@ -140,6 +140,8 @@ public:
 
     SymbolTable* GetSymbolTable() { return &mSymbolTable; }
 
+    const SymbolTable* GetSymbolTable() const { return &mSymbolTable; }
+
     const char* AllocStrImm(const char* strToCpy);    
 
     //! creates an intrinsic function that can be called from blockscript

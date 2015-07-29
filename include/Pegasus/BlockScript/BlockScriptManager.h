@@ -52,8 +52,9 @@ public:
     BlockScript* CreateBlockScript();
 
     //! creates a new block script module
+    //! \param the library name. Pointer is cached, so an imm is encouraged.
     //! \return the blockscript library module
-    BlockLib*    CreateBlockLib();
+    BlockLib*    CreateBlockLib(const char* name);
 
     //! gets internal runtime library if we desire to add / modify / remove intrinsic functions
     BlockLib*    GetRuntimeLib();

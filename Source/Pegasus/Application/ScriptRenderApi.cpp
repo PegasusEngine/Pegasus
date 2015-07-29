@@ -66,7 +66,7 @@ void Texture_SetGeneratorInput(FunCallbackContext& context);
 
 /////Node Manager Methods////////////////////////////////////
 void Node_CreateProgramLinkage(FunCallbackContext& context);
-void Node_LoadShaderStage(FunCallbackContext& context);
+void Node_LoadProgram(FunCallbackContext& context);
 void Node_CreateTexture(FunCallbackContext& context);
 void Node_CreateTextureGenerator(FunCallbackContext& context);
 void Node_CreateTextureOperator(FunCallbackContext& context);
@@ -210,9 +210,8 @@ static void RegisterRenderStructs(BlockLib* lib)
     const StructDeclarationDesc structDefs[] = {
        {  
             "Uniform",  // the size of this struct will be patched bellow, since pegasus api still
-                        // does not support registration of static array members
-            {"int"   , nullptr},
-            {"unused", nullptr}
+            { nullptr },// does not support registration of static array members
+            { nullptr }
         }, 
         {
             "RenderTargetConfig",
@@ -231,8 +230,8 @@ static void RegisterRenderStructs(BlockLib* lib)
         },
         {
             "BlendingConfig",
-            {"BlendOperator"   , "Multiplicator", "Multiplicator", "void_ptr"     , nullptr },
-            {"BlendingOperator", "Source"       , "Dest"         , "_internalData", nullptr }
+            {"BlendOperator"   , "Multiplicator", "Multiplicator", nullptr },
+            {"BlendingOperator", "Source"       , "Dest"         , nullptr }
         }
     };
 
@@ -455,11 +454,11 @@ static void RegisterFunctions(BlockLib* lib)
             Node_CreateProgramLinkage
         },
         {
-            "LoadShader",
-            "ShaderStage",
+            "LoadProgram",
+            "ProgramLinkage",
             { "string", nullptr },
             { "path", nullptr },
-            Node_LoadShaderStage
+            Node_LoadProgram
         },
         {
             "CreateTexture",
@@ -785,7 +784,7 @@ void Node_CreateProgramLinkage(FunCallbackContext& context)
     stream.SubmitReturn( container->AddProgram(&(*prog)) );
 }
 
-void Node_LoadShaderStage(FunCallbackContext& context)
+void Node_LoadProgram(FunCallbackContext& context)
 {
     FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
@@ -793,14 +792,14 @@ void Node_LoadShaderStage(FunCallbackContext& context)
 
     const char* path = stream.NextBsStringArgument();
 
-    Shader::ShaderStageRef shaderStage = container->GetAppContext()->GetShaderManager()->LoadShader(path);
-    if (shaderStage != nullptr)
+    Shader::ProgramLinkageRef program = container->GetAppContext()->GetShaderManager()->LoadProgram(path);
+    if (program != nullptr)
     {
         //force shader compilation
         bool unused = false;
-        shaderStage->GetUpdatedData(unused);
+        program->GetUpdatedData(unused);
 
-        stream.SubmitReturn( container->AddShader(&(*shaderStage)) );
+        stream.SubmitReturn( container->AddProgram(&(*program)) );
     }
     else
     {

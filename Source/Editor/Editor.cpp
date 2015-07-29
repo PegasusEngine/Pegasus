@@ -104,11 +104,6 @@ Editor::Editor(QApplication * parentApplication)
     connect(mApplicationManager, SIGNAL(ApplicationFinished()),
             mTextureEditorDockWidget, SLOT(UpdateUIForAppClosed()));
 
-    connect(mApplicationManager, SIGNAL(ApplicationLoaded()),
-            mPropertyGridClassesDockWidget, SLOT(UpdateUIForAppLoaded()));
-    connect(mApplicationManager, SIGNAL(ApplicationFinished()),
-            mPropertyGridClassesDockWidget, SLOT(UpdateUIForAppClosed()));
-
     connect(mActionEditUndo, SIGNAL(triggered()), mHistoryDockWidget, SLOT(TriggerUndo()));
     connect(mActionEditRedo, SIGNAL(triggered()), mHistoryDockWidget, SLOT(TriggerRedo()));
 
@@ -319,14 +314,17 @@ void Editor::CreateActions()
 	mActionWindowTextureEditor->setStatusTip(tr("Open the texture editor window"));
 	connect(mActionWindowTextureEditor, SIGNAL(triggered()), this, SLOT(OpenTextureEditorWindow()));
 
-
-    mActionWindowDebugPropertyGridClasses = new QAction(tr("&Property Grid Classes"), this);
-	mActionWindowTextureEditor->setStatusTip(tr("Open the list of classes with their lists of properties"));
-	connect(mActionWindowDebugPropertyGridClasses, SIGNAL(triggered()), this, SLOT(OpenPropertyGridClassesWindow()));
     mActionProgramEditor = new QAction(tr("&Program Editor"), this);
     mActionProgramEditor->setStatusTip(tr("Open the program editor window"));
     connect(mActionProgramEditor, SIGNAL(triggered()), this, SLOT(OpenProgramEditorWindow()));
 
+    mActionWindowDebugPropertyGridClasses = new QAction(tr("&Property Grid Classes"), this);
+	mActionWindowTextureEditor->setStatusTip(tr("Open the list of classes with their lists of properties"));
+	connect(mActionWindowDebugPropertyGridClasses, SIGNAL(triggered()), this, SLOT(OpenPropertyGridClassesWindow()));
+
+    mActionWindowDebugBsLibWidget = new QAction(tr("BlockScript &Libraries View"), this);
+	mActionWindowDebugBsLibWidget->setStatusTip(tr("Open tree view of blockscript libraries in the runtime"));
+	connect(mActionWindowDebugBsLibWidget, SIGNAL(triggered()), this, SLOT(OpenBsLibWidget()));
 
     mActionHelpIndex = new QAction(tr("&Index..."), this);
 	mActionHelpIndex->setShortcut(tr("F1"));
@@ -394,6 +392,7 @@ void Editor::CreateMenu()
 
     QMenu * debugMenu = windowMenu->addMenu(tr("&Debug"));
     debugMenu->addAction(mActionWindowDebugPropertyGridClasses);
+    debugMenu->addAction(mActionWindowDebugBsLibWidget);
 
     QMenu * helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(mActionHelpIndex);
@@ -482,8 +481,13 @@ void Editor::CreateDockWidgets()
     mTextureEditorDockWidget = new TextureEditorDockWidget(this);
     addDockWidget(Qt::RightDockWidgetArea, mTextureEditorDockWidget);
 
-    mPropertyGridClassesDockWidget = new PropertyGridClassesDockWidget(this);
-    addDockWidget(Qt::RightDockWidgetArea, mPropertyGridClassesDockWidget);
+    mPropertyGridClassesDockWidget = new PropertyGridClassesDockWidget(this, this);
+    RegisterWidget(mPropertyGridClassesDockWidget, Qt::RightDockWidgetArea);
+
+    mBsLibWidget = new BlockScriptLibraryDockWidget(this, this);
+    RegisterWidget(mBsLibWidget, Qt::RightDockWidgetArea);
+    mBsLibWidget->hide();
+    mBsLibWidget->setFloating(true);
 }
 
 //----------------------------------------------------------------------------------------
@@ -696,6 +700,13 @@ void Editor::OpenTextureEditorWindow()
 void Editor::OpenPropertyGridClassesWindow()
 {
     mPropertyGridClassesDockWidget->show();
+}
+
+//----------------------------------------------------------------------------------------
+
+void Editor::OpenBsLibWidget()
+{
+    mBsLibWidget->show();
 }
     
 //----------------------------------------------------------------------------------------

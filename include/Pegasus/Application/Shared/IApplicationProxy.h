@@ -20,6 +20,9 @@ namespace Pegasus {
     namespace App {
         struct ApplicationConfig;
         struct AppWindowConfig;
+#if PEGASUS_ENABLE_BS_REFLECTION_INFO
+        class IAppBsReflectionInfo;
+#endif
     }
 
     namespace PropertyGrid {
@@ -120,6 +123,11 @@ public:
     //! Gets the asset lib proxy, to control assets
     //! \return asset library proxy
     virtual AssetLib::IAssetLibProxy* GetAssetLibProxy() = 0;
+
+#if PEGASUS_ENABLE_BS_REFLECTION_INFO
+    //! Returns the reflection information from blockscript.
+    virtual App::IAppBsReflectionInfo* GetBsReflectionInfo() const = 0;
+#endif
 
 
     //! Initializes this application

@@ -147,6 +147,12 @@ public:
     //! \return the root global stack frame
     StackFrameInfo* GetRootGlobalFrame();
 
+    //! \return the function table
+    const FunTable* GetFunTable() const { return &mFunTable; }
+
+    //! \return the type table
+    const TypeTable* GetTypeTable() const { return &mTypeTable; }
+
 private:
     //! Creates a new type if it does not exist. If the type exists already, it will find it and return it
     //! \param modifier  the modifier to be using

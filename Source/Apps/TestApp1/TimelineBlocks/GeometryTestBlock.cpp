@@ -52,7 +52,7 @@ void GeometryTestBlock::Initialize()
     {
         Pegasus::Timeline::TimelineScriptRef timelineScript = GetScript();
         Pegasus::BlockScript::BlockScript* bs = timelineScript->GetBlockScript();
-        Pegasus::BlockScript::BlockLib* newLib = GetBlockScriptManager()->CreateBlockLib();
+        Pegasus::BlockScript::BlockLib* newLib = GetBlockScriptManager()->CreateBlockLib("GeometryTestBlock-commons");
         Pegasus::BlockScript::FunctionDeclarationDesc funDesc = {
             "geomTestFun",
             "int",

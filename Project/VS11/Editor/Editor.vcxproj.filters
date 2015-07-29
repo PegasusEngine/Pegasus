@@ -77,6 +77,9 @@
     <Filter Include="Source\MessageControllers">
       <UniqueIdentifier>{7fefd0b4-4c4c-478c-b1ba-7b51df9bdef8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Debug\BlockScriptLibraries">
+      <UniqueIdentifier>{7cfe192d-cec0-414d-8515-69cfe580b938}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Source\Editor\Editor.cpp">
@@ -433,6 +436,15 @@
     <ClCompile Include="..\..\..\Source\Editor\ProgramEditor\ProgramEditorUndoCommands.cpp">
       <Filter>Source\ProgramEditor</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Debug\BlockScriptLibraries\BlockScriptLibraryDockWidget.cpp">
+      <Filter>Source\Debug\BlockScriptLibraries</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_BlockScriptLibraryDockWidget.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_BlockScriptLibraryDockWidget.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -566,6 +578,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\ProgramEditor\ProgramEditorUndoCommands.h">
       <Filter>Source\ProgramEditor</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Debug\BlockScriptLibraries\BlockScriptLibraryDockWidget.h">
+      <Filter>Source\Debug\BlockScriptLibraries</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

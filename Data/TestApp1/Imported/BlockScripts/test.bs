@@ -9,10 +9,7 @@ struct PsyBeadsState
 };
 #define TEST_SZ 1251213
 
-psyBeadsProgram = CreateProgramLinkage("PSyBeadsRayMarcher");
-psyBeadsProgram->SetShaderStage(LoadShader("shaders/hlsl/Psybeads.vs"));
-psyBeadsProgram->SetShaderStage(LoadShader("shaders/hlsl/Psybeads.ps"));
-
+psyBeadsProgram = LoadProgram("Programs/PSyBeadsRayMarcher.pas");
 beadsState = PsyBeadsState(); 
 beadsStateUniform = GetUniformLocation(psyBeadsProgram, "uniformState");
 beadsStateBuffer = CreateUniformBuffer(sizeof(PsyBeadsState));
@@ -24,7 +21,6 @@ dd = quadGenerator;
 
 int Timeline_Update(beat : float)
 {
-	echo(dd.Degree);
 	echo(TEST_SZ);
 }
 

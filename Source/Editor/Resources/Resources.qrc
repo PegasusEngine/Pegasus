@@ -29,5 +29,12 @@
         <file>CodeEditor/compile.png</file>
         <file>PropertyGridClasses/Class16.png</file>
         <file>PropertyGridClasses/Property16.png</file>
+        <file>MiscViews/slickfoldericon.png</file>
+        <file>MiscViews/TypeIcon.png</file>
+        <file>MiscViews/FunctionIcon.png</file>
+        <file>MiscViews/LibraryIcon.png</file>
+        <file>MiscViews/NameIcon.png</file>
+        <file>MiscViews/ReturnIcon.png</file>
+        <file>MiscViews/EnumIcon.png</file>
     </qresource>
 </RCC>

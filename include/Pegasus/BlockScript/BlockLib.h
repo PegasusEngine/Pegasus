@@ -33,13 +33,18 @@ class BlockLib : public BlockScriptCompiler
 {
 public:
     //! Constructor in case you did not notice
-    BlockLib(Alloc::IAllocator* allocator);
+    //! \param allocator
+    //! \param library name, pointer is cached. Make sure is a string imm value
+    BlockLib(Alloc::IAllocator* allocator, const char* libraryName);
 
     //!  Destructor
     virtual ~BlockLib();
 
     //! \return SymbolTable - export element of a block library
     SymbolTable* GetSymbolTable();
+
+    //! \return SymbolTable - export element of a block library
+    const SymbolTable* GetSymbolTable() const;
 
     //! \return builder - returns the builder of this library (collection of parsing states)
     BlockScriptBuilder* GetBuilder() { return &mBuilder; }
@@ -67,6 +72,9 @@ public:
     //! \param the count of parameters
     void CreateClassTypes(const ClassTypeDesc* descriptionList, int count);
 
+    //! Returns this libraries name
+    const char* GetName() const { return mName; }
+
 private:
     //! Creates a set of intrinsic functions (c++ callback) into blockscript. Sets wether these are methods or not
     //! \param the description list
@@ -75,6 +83,7 @@ private:
     //! \note this function will internally assert on failure
     void InternalCreateIntrinsicFunctions (const FunctionDeclarationDesc* descriptionList, int count, bool isMethod);
     Alloc::IAllocator* mAllocator;
+    const char* mName;
 };
 
 }

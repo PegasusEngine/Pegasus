@@ -17,6 +17,7 @@
 #include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Application/Application.h"
+#include "Pegasus/Application/AppBsReflectionInfo.h"
 #include "Pegasus/PropertyGrid/PropertyGridManager.h"
 #include "Pegasus/Timeline/Proxy/TimelineManagerProxy.h"
 #include "Pegasus/Timeline/TimelineManager.h"
@@ -25,6 +26,7 @@
 #include "Pegasus/Texture/TextureManager.h"
 #include "Pegasus/AssetLib/AssetLib.h"
 #include "Pegasus/BlockScript/BlockScriptManager.h"
+
 
 
 #if PEGASUS_USE_GRAPH_EVENTS
@@ -59,6 +61,11 @@ public:
     virtual Mesh::IMeshManagerProxy * GetMeshManagerProxy() { return mApplication->GetMeshManager()->GetProxy(); }
     virtual AssetLib::IAssetLibProxy* GetAssetLibProxy() { return mApplication->GetAssetLib()->GetProxy(); }
 
+#if PEGASUS_ENABLE_BS_REFLECTION_INFO
+    //! Returns the reflection information from blockscript.
+    virtual App::IAppBsReflectionInfo* GetBsReflectionInfo() const { return mApplication->GetBsReflectionInfo(); }
+#endif
+
     // Stateflow API
     virtual void Initialize();
     virtual void Shutdown();
@@ -78,9 +85,6 @@ public:
 private:
     //! The proxied application object
     Application* mApplication;
-
-    //! \todo Make those proxies owned by the managers themselves (look at Timeline)
-    Shader::IShaderManagerProxy * mShaderManagerProxy;
 };
 
 
