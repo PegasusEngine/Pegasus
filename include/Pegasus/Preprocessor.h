@@ -277,52 +277,55 @@
 // Use those rather than the ones above to help future maintenance.
 
 // Include the entry point when the engine is compiled as an executable
-#define PEGASUS_INCLUDE_LAUNCHER            (!PEGASUS_DEV)
+#define PEGASUS_INCLUDE_LAUNCHER                        (!PEGASUS_DEV)
 
 // Enable logging in the console output
-#define PEGASUS_ENABLE_LOG                  (PEGASUS_DEBUG || PEGASUS_OPT)
+#define PEGASUS_ENABLE_LOG                              (PEGASUS_DEBUG || PEGASUS_OPT)
 
 // Enable the detailed logging
 // (performance issue, can flood the log window, but useful in the early stages of development)
-#define PEGASUS_ENABLE_DETAILED_LOG         (PEGASUS_ENABLE_LOG && PEGASUS_DEBUG)
+#define PEGASUS_ENABLE_DETAILED_LOG                     (PEGASUS_ENABLE_LOG && PEGASUS_DEBUG)
 
 // Enable the assertion tests
-#define PEGASUS_ENABLE_ASSERT               (PEGASUS_DEBUG || PEGASUS_OPT)
+#define PEGASUS_ENABLE_ASSERT                           (PEGASUS_DEBUG || PEGASUS_OPT)
 
 // Enable the detailed assertion tests
 // (performance issue, but useful in the early stages of development)
 // (used only when PEGASUS_ENABLE_ASSERT is defined)
-#define PEGASUS_ENABLE_DETAILED_ASSERT      (PEGASUS_ENABLE_ASSERT && PEGASUS_DEBUG)
+#define PEGASUS_ENABLE_DETAILED_ASSERT                  (PEGASUS_ENABLE_ASSERT && PEGASUS_DEBUG)
 
 // Use GLEW (GL Extension Wrangler) as embedded source code rather than a dynamic library
-#define PEGASUS_EMBED_GLEW                  (PEGASUS_REL)
+#define PEGASUS_EMBED_GLEW                              (PEGASUS_REL)
 
 // Flag for the use of proxy objects
-#define PEGASUS_ENABLE_PROXIES              (PEGASUS_DEV)
+#define PEGASUS_ENABLE_PROXIES                          (PEGASUS_DEV)
 
 // Enable the extra window types, typically used by the editor
-#define PEGASUS_ENABLE_EDITOR_WINDOW_TYPES  (PEGASUS_DEV && PEGASUS_ENABLE_PROXIES)
+#define PEGASUS_ENABLE_EDITOR_WINDOW_TYPES              (PEGASUS_DEV && PEGASUS_ENABLE_PROXIES)
     
 // Enable native application file opening, closing (or c runtime implementation)
 // See the implementation of the functions living in the Pegasus::Io namespace for more details
-#define PEGASUS_USE_NATIVE_IO_CALLS         1
+#define PEGASUS_USE_NATIVE_IO_CALLS                     1
 
 //Enable node events only if dev mode. In rel mode the boiler plate code gets removed
 //Events are used to communicate information to an editor app.
-#define PEGASUS_USE_GRAPH_EVENTS            PEGASUS_DEV
+#define PEGASUS_USE_GRAPH_EVENTS                        (PEGASUS_DEV)
 
-#define PEGASUS_SHADER_USE_SHADER_EVENTS    PEGASUS_DEV
+#define PEGASUS_SHADER_USE_SHADER_EVENTS                (PEGASUS_DEV)
 
 // Enable GPU data RunTime Type Information, for safe casting (asserts thrown if wrong type being casted)
-#define PEGASUS_GRAPH_GPUDATA_RTTI          PEGASUS_DEBUG 
+#define PEGASUS_GRAPH_GPUDATA_RTTI                      (PEGASUS_DEBUG)
 
 // Enable to stream the music file from disk rather than preloading it
-#define PEGASUS_SOUND_STREAM_MUSIC          0
+#define PEGASUS_SOUND_STREAM_MUSIC                      0
 
-// Enable editor reflection. If this is enabled, it means pegasus will gather library data
-// from the runtime libraries registered in blockscript. This info will be exposed to the editor so
-// the user has easy documentation access to the available blockscript functions
-#define PEGASUS_ENABLE_BS_REFLECTION_INFO PEGASUS_ENABLE_PROXIES
+// Enable editor reflection. If this is enabled, Pegasus will gather library data
+// from the runtime libraries registered in BlockScript. This info will be exposed to the editor
+// so the user has easy documentation access to the available BlockScript functions
+#define PEGASUS_ENABLE_BS_REFLECTION_INFO               (PEGASUS_ENABLE_PROXIES)
+
+//! Enable size checks in the property grid accessors
+#define PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR       (PEGASUS_DEBUG)
 
 
 #endif  // PEGASUS_PREPROCESSOR_H

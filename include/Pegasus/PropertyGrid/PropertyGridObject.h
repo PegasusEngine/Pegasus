@@ -126,7 +126,7 @@ namespace PropertyGrid {
 //! \param name Name of the property, starting with an uppercase letter
 #define INIT_PROPERTY2(name)                                                                                        \
     Set##name##ToDefault();                                                                                         \
-    AppendPropertyPointer(static_cast<void *>(&mProperty##name));                                                   \
+    APPEND_PROPERTY_POINTER(mProperty##name);                                                   \
 
 
 //! Macro to start initializing a set of properties in the implementation file
@@ -241,6 +241,15 @@ namespace PropertyGrid {
         };                                                                                                          \
         static EndPropertyDeclarationHelper sEndPropertyDeclarationHelper;                                          \
 
+
+//! Add a property pointer to the object property pointer array
+//! \param p Property for which the pointer is desired
+#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
+#define APPEND_PROPERTY_POINTER(p) AppendPropertyPointer(static_cast<void *>(&p), sizeof(p))
+#else
+#define APPEND_PROPERTY_POINTER(p) AppendPropertyPointer(static_cast<void *>(&p))
+#endif
+
 //----------------------------------------------------------------------------------------
 
 class PropertyGridObject;
@@ -255,20 +264,50 @@ public:
     //! Default constructor
     //! \note Defined only to create arrays of accessors. However the initial state is invalid,
     //!       the accessors must be assigned to be valid
-    PropertyAccessor() : mObj(nullptr), mPtr(nullptr) { }
+    PropertyAccessor()
+        :   mObj(nullptr)
+        ,   mPtr(nullptr)
+#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
+        ,   mSize(0)
+#endif
+    { }
 
     //! Read-only accessor to the property
     //! \return Value or const reference to the property, depending on the type
     template <typename T>
     inline typename PPG::PropertyDefinition<T>::ReturnType Get() const
-        { return *static_cast<const T *>(mPtr); }
+        {
+#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
+            PG_ASSERTSTR(sizeof(T) == mSize, "Wrong template type when getting the value of a property.");
+#endif
+            return *static_cast<const T *>(mPtr);
+        }
 
     //! Setter of the property
     //! \note Sets the dirty flag of the PropertyGridObject's property grid
     //! \param value New value of the property
     template <typename T>
     inline void Set(typename PPG::PropertyDefinition<T>::ParamType value) const
-        { *static_cast<T *>(mPtr) = value; InvalidatePropertyGrid(); }
+        {
+#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
+            PG_ASSERTSTR(sizeof(T) == mSize, "Wrong template type when setting the value of a property.");
+#endif
+            *static_cast<T *>(mPtr) = value;
+            InvalidatePropertyGrid();
+        }
+
+    //! Read the property into a buffer
+    //! \param outputBuffer Buffer that is filled with the property data (!= nullptr)
+    //! \param outputBufferSize Size of the output buffer in bytes (> 0)
+    //! \warning The output buffer size must match the registered size of this accessor
+    void Read(void * outputBuffer, unsigned int outputBufferSize) const;
+
+    //! Write the property using the content of a buffer
+    //! \param inputBuffer Input buffer with content to copy to the property (!= nullptr)
+    //! \param inputBufferSize Size in bytes of the input buffer (> 0)
+    void Write(const void * inputBuffer, unsigned int inputBufferSize) const;
+
+    //------------------------------------------------------------------------------------
 
 private:
 
@@ -277,9 +316,23 @@ private:
     friend class PropertyGridObject;
 
     //! Constructor
-    //! \param obj Non-null pointer to the property grid object owning the property
-    //! \param ptr Non-null pointer to the property
-    inline PropertyAccessor(PropertyGridObject * obj, void * ptr) : mObj(obj), mPtr(ptr) { }
+    //! \param obj Pointer to the property grid object owning the property (!= nullptr)
+    //! \param ptr Pointer to the property (!= nullptr)
+    //! \param size Size of the object pointed by the pointer in bytes (> 0)
+    //!             (used for size checking in the accessors when PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR == 1)
+    inline PropertyAccessor(
+          PropertyGridObject * obj
+        , void * ptr
+#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
+        , unsigned int size
+#endif
+                           )
+        :   mObj(obj)
+        ,   mPtr(ptr)
+#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
+        ,   mSize(size)
+#endif
+        { }
 
     //! Invalidate the property grid of the attached PropertyGridObject
     //! \note Has to not be inline, because PropertyGridObject is not declared yet.
@@ -293,6 +346,12 @@ private:
 
     //! Pointer to the property, nullptr if using the default constructor or in case of error
     void * mPtr;
+
+#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
+    //! Size of the object pointed by the pointer in bytes (> 0)
+    //! (used for size checking in the accessors when PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR == 1)
+    unsigned int mSize;
+#endif
 };
 
 //----------------------------------------------------------------------------------------
@@ -400,8 +459,13 @@ protected:
 
     //! Add a property pointer to the object property pointer array
     //! \param ptr Pointer to the property to add
+    //! \param propertySize Size of the property pointed by the pointer in bytes (> 0)
     //! \warning To be used only by the INIT_PROPERTY() macro
-    void AppendPropertyPointer(void * ptr);
+    void AppendPropertyPointer(  void * ptr
+#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
+                               , unsigned int propertySize
+#endif
+                              );
 
     //! Get the number of property pointers that have been added to the array
     //! \return Number of property pointers that have been added to the array
@@ -416,6 +480,11 @@ private:
     //! List of pointers to the members, from the base class down to the class
     //! the object is instantiated as
     Utils::Vector<void *> mPropertyPointers;
+
+#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
+    //! Size of the properties in bytes (> 0), used for sanity checks in PropertyAccessor
+    Utils::Vector<unsigned int> mPropertySizes;
+#endif
 
     //! Set to true after a property is updated,
     //! to tell the property grid object owner to regenerate its data
