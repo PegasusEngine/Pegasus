@@ -22,6 +22,7 @@
 #include "Pegasus/BlockScript/BlockScriptManager.h"
 #include "Pegasus/BlockScript/BlockLib.h"
 #include "Pegasus/BlockScript/FunCallback.h"
+#include "Pegasus/Window/Window.h"
 
 GeometryTestBlock::GeometryTestBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Core::IApplicationContext* appContext)
     : Pegasus::Timeline::Block(allocator, appContext)

@@ -20,6 +20,7 @@
 #include "Pegasus/Utils/Memcpy.h"
 #include "Pegasus/Math/Vector.h"
 #include "Pegasus/Math/Matrix.h"
+#include "Pegasus/Math/Quaternion.h"
 #include "Pegasus/Core/Log.h"
 
 using namespace Pegasus;
@@ -304,6 +305,30 @@ namespace Private_Math
         T& v2 = stream.NextArgument<T>(); 
         stream.SubmitReturn<T>(Math::Cross(v1, v2));
     }
+
+    void Sin(FunCallbackContext& context)
+    {
+        FunParamStream stream(context); 
+        float v1 = stream.NextArgument<float>();
+        stream.SubmitReturn<float>(Math::Sin(v1));
+    }
+
+    void Cos(FunCallbackContext& context)
+    {
+        FunParamStream stream(context); 
+        float v1 = stream.NextArgument<float>();
+        stream.SubmitReturn<float>(Math::Cos(v1));
+    }
+
+    void Mat44_Rotation(FunCallbackContext& context)
+    {
+        FunParamStream stream(context); 
+        Math::Vec3 axis = stream.NextArgument<Math::Vec3>();
+        float amount = stream.NextArgument<float>();
+        PG_ASSERT(context.GetOutputBufferSize() == sizeof(Math::Mat44));
+        Math::Mat44& res = *static_cast<Math::Mat44*>(context.GetRawOutputBuffer());
+        Math::SetRotation(res, axis, amount );
+    }
 }
 
 // Intrinsic functions for math
@@ -434,7 +459,11 @@ void Pegasus::BlockScript::RegisterIntrinsics(BlockLib* lib)
         { "mul", "float3", { "float3x3", "float3", nullptr}, {"x", "y", nullptr}, Private_Math::Mul<Math::Vec3, Math::Mat33, Math::Mult33_31>},
         { "mul", "float2", { "float2x2", "float2", nullptr}, {"x", "y", nullptr}, Private_Math::Mul<Math::Vec2, Math::Mat22, Math::Mult22_21>},
         ///////////////////////////////////////////CROSS///////////////////////////////////////////////////////////////
-        { "cross", "float3", { "float3", "float3", nullptr}, {"x", "y", nullptr}, Private_Math::Cross<Math::Vec3>}
+        { "cross", "float3", { "float3", "float3", nullptr}, {"x", "y", nullptr}, Private_Math::Cross<Math::Vec3>},
+        ///////////////////////////////////////////TRIG///////////////////////////////////////////////////////////////
+        { "sin", "float", { "float", nullptr}, {"v", nullptr}, Private_Math::Sin},
+        { "cos", "float", { "float", nullptr}, {"v", nullptr}, Private_Math::Cos},
+        { "GetRotation", "float4x4", { "float3", "float", nullptr}, {"axis", "amount", nullptr}, Private_Math::Mat44_Rotation}
     };
         
     lib->CreateIntrinsicFunctions(mathFuncs, sizeof(mathFuncs) / sizeof(mathFuncs[0])); 

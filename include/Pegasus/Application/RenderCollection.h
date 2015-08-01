@@ -12,6 +12,8 @@
 #ifndef RENDER_COLLECTION_H
 #define RENDER_COLLECTION_H
 #include "Pegasus/Utils/Vector.h"
+#include "Pegasus/BlockScript/FunCallback.h"
+#include "Pegasus/PropertyGrid/PropertyGridObject.h"
 
 namespace Pegasus
 {
@@ -24,6 +26,11 @@ namespace Core {
 namespace Alloc {
     class IAllocator;
 }
+
+namespace Wnd {
+    class Window;
+}
+
 namespace Shader {
     class ProgramLinkage;
     class ShaderStage;
@@ -61,7 +68,7 @@ namespace Application
         struct PropEntries
         {
             const char* mName;
-            int mPropertyCount;
+            Utils::Vector<const char*> mProperties;
         };
 
         //! Constructor
@@ -72,7 +79,7 @@ namespace Application
         ~RenderCollectionFactory();
 
         //! Registers a classes number of properties
-        void RegisterPropertyCount(const char* name, int numOfProperties);
+        void RegisterProperties(const BlockScript::ClassTypeDesc& classDesc);
 
         //! Creates a render collection
         RenderCollection* CreateRenderCollection();
@@ -100,6 +107,7 @@ namespace Application
         friend RenderCollectionFactory;
 
     public:
+
         typedef int CollectionHandle;
         static const CollectionHandle INVALID_HANDLE = -1;
 
@@ -194,6 +202,10 @@ namespace Application
         //! \return the mesh generator reference
         Mesh::MeshGenerator* GetMeshGenerator(CollectionHandle id);
 
+        //! \param objectHandle the handle of the object containing the property
+        //! \param propertyId the cached id of the property
+        const PropertyGrid::PropertyAccessor* GetMeshGeneratorAccessor(CollectionHandle objectHandle, int propertyId);
+
         //! the total count of mesh generators    
         int GetMeshGeneratorCount();
 
@@ -249,6 +261,14 @@ namespace Application
         //! Cleans / Deletes all references to the shaders/nodes/meshes/rendertargets/blendingstates/rasterstates being used
         void Clean();
 
+        //! Set the window for this set of draw calls
+        //! \param Window the window
+        void SetWindow(Wnd::Window* wnd) { mCurrentWindow = wnd; }
+
+        //! Get the current window
+        //! \return the current window
+        Wnd::Window* GetWindow() const { return mCurrentWindow; }
+
     private:
 
         //! Constructor
@@ -267,6 +287,9 @@ namespace Application
 
         //! factory pointer
         RenderCollectionFactory* mFactory;
+
+        //! The current window
+        Wnd::Window* mCurrentWindow;
     };
 }
 

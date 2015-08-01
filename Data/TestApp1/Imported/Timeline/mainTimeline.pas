@@ -31,10 +31,11 @@
                         color : 8421631
                     }
                 }, {
-                    type : GeometryTestBlock,
+                    type : Block,
                     properties : {
                         Beat : 1024,
-                        Duration : 1024
+                        Duration : 1024,
+                        script : BlockScripts/geometrytestblock.bs
                     },
                     editor-props : {
                         color : 1849107

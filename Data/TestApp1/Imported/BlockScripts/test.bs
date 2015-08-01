@@ -19,8 +19,14 @@ quadGenerator = CreateMeshGenerator("QuadGenerator");
 quad->SetGeneratorInput(quadGenerator);
 dd = quadGenerator;
 
+int echoF(ab: float2)
+{
+	echo(ab.x);
+	echo(ab.y);
+}
 int Timeline_Update(beat : float)
 {
+	quadGenerator.QuadExtends = float2(1.0,1.0);
 	echo(TEST_SZ);
 }
 

@@ -46,7 +46,7 @@ TypeDesc* TypeTable::CreateType(
     Pegasus::BlockScript::Ast::StmtStructDef* structDef,
     EnumNode* enumNode,
     PropertyNode* propertyNode,
-    GetObjectPropertyRuntimePtrCallback getPropCallback
+    ObjectPropertyAccessorCallback getPropCallback
 )
 {
     PG_ASSERT(modifier != TypeDesc::M_INVALID);

@@ -37,11 +37,21 @@ namespace Ast
     class StmtStructDef;
 }
 
+//! Runtime property callback context (parameters)
+struct PropertyCallbackContext
+{
+    BsVmState* state; //<! the virtual machine state
+    int objectHandle;  //<! the handle of the object instance whose property is being called
+    const PropertyNode* propertyDesc; //!< descriptor structure, with the id registered along with sizes etc
+    void* destBuffer; //!< if isRead = true, this will contain the destination buffer. isRead = false this will be nullptr
+    const void* srcBuffer; //!< if isRead = true, this will be null. If isRead = false this will contain the source to copy from
+    bool isRead; //! if true, means this callback requests a read to the property. False otherwise
+};
+
 //! callback definition to get node properties
-//! \param BsVmState the virtual machine state
-//! \param int the handle of the object
-//! \param propertyDesc the description of the property to acquire
-typedef void*     (*GetObjectPropertyRuntimePtrCallback)(BsVmState* state, int, const PropertyNode* propertyDesc);
+//! \param context - the context of this function
+//! \return the return value. True if successful, False otherwise
+typedef bool  (*ObjectPropertyAccessorCallback)(const PropertyCallbackContext& context);
 
 //! an enumeration description for enumeration types
 struct EnumNode
@@ -199,10 +209,10 @@ public:
     const PropertyNode* GetPropertyNode() const { return mPropertyNode; }
     
     //! sets the callback used by the runtime to access a property from an object reference
-    void SetPropertyCallback(GetObjectPropertyRuntimePtrCallback callback) { mPropertyCallback = callback; }
+    void SetPropertyCallback(ObjectPropertyAccessorCallback callback) { mPropertyCallback = callback; }
 
     //! returns the callback used by the runtime to access a property from an object reference
-    GetObjectPropertyRuntimePtrCallback GetPropertyCallback() const { return mPropertyCallback; }
+    ObjectPropertyAccessorCallback GetPropertyCallback() const { return mPropertyCallback; }
 
     //! Computes the size of a type
     bool ComputeSize();
@@ -221,7 +231,7 @@ private:
     Ast::StmtStructDef* mStructDef;
     EnumNode*           mEnumNode;
     PropertyNode*       mPropertyNode;
-    GetObjectPropertyRuntimePtrCallback mPropertyCallback;
+    ObjectPropertyAccessorCallback mPropertyCallback;
     ModifierProperty    mModifierProperty;
     int        mByteSize;
 };

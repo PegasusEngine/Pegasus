@@ -12,7 +12,8 @@
 #ifndef TESTAPP1_H
 #define TESTAPP1_H
 
-#include "Pegasus/Pegasus.h"
+#include "Pegasus/Application/Shared/ApplicationConfig.h"
+#include "Pegasus/Application/Application.h"
 #include "Pegasus/Timeline/Block.h"
 
 

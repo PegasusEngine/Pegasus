@@ -1,0 +1,219 @@
+////---------------------------------------------------------------------
+// geometry test block
+// by Kleber Garcia
+////---------------------------------------------------------------------
+#define MAX_SPHERES 10
+
+//TODO have to do some syntax to initialize a static array
+gDegreeArray = static_array<int[MAX_SPHERES]>;
+gDegreeArray[0] = 3;
+gDegreeArray[1] = 2;
+gDegreeArray[2] = 1;
+gDegreeArray[3] = 1;
+i = 4; while(i < MAX_SPHERES)
+{
+	gDegreeArray[i] = 1;
+	i = i + 1;
+}
+
+struct StateStruct
+{
+	transform : float4x4;
+};
+
+struct SpeakerStateStruct
+{
+	time : float;
+	pad : float3;
+};
+
+////---------------------------------------------------------------------
+
+///// LOAD PROGRAMS /////
+blockProgram = LoadProgram("Programs/CubeProgram.pas");
+discoSpeakerProgram = LoadProgram("Programs/discospeaker.pas");
+blurHorizontalProgram = LoadProgram("Programs/blurhorizontal.pas");
+blurVerticalProgram = LoadProgram("Programs/blurvertical.pas");
+compositeProgram = LoadProgram("Programs/composite.pas");
+/////////////////////////
+
+////---------------------------------------------------------------------
+
+//// SETUP UNIFORMS /////
+cubeTex = GetUniformLocation(blockProgram, "cubeTex");
+uniformState = GetUniformLocation(blockProgram, "uniformState");
+uniformStateBuffer = CreateUniformBuffer(sizeof(StateStruct));
+speakerUniformState = GetUniformLocation(discoSpeakerProgram, "uniformState");
+speakerUniformStateBuffer = CreateUniformBuffer(sizeof(SpeakerStateStruct));
+compositeInput1 = GetUniformLocation(compositeProgram, "inputTexture1");
+compositeInput2 = GetUniformLocation(compositeProgram, "inputTexture2");
+horizontalInput = GetUniformLocation(compositeProgram, "inputTexture");
+verticalInput = GetUniformLocation(compositeProgram,   "inputTexture");
+/////////////////////////
+
+////---------------------------------------------------------------------
+
+//// SETUP MESHES ////
+cubeMesh = CreateMesh();
+cubeMesh->SetGeneratorInput(CreateMeshGenerator("BoxGenerator"));
+
+quad = CreateMesh();
+quad->SetGeneratorInput(CreateMeshGenerator("QuadGenerator"));
+
+sphereMeshes = static_array<Mesh[MAX_SPHERES]>;
+
+//TODO: Create a c style for loop for convenience
+i = 0; while (i < MAX_SPHERES)
+{
+	sphereMeshes[i] = CreateMesh();
+	icosph = CreateMeshGenerator("IcosphereGenerator");
+	icosph.Degree = gDegreeArray[i];
+	icosph.Radius = 0.45;
+	sphereMeshes[i]->SetGeneratorInput(icosph);
+	i = i + 1;
+}
+
+
+//// SETUP RENDER TARGETS ////
+cubeFaceTarget = CreateRenderTarget( RenderTargetConfig(512, 512) );
+
+tmpConfig = RenderTargetConfig(1280, 720);
+tempTarget1 = CreateRenderTarget( tmpConfig );
+
+tmpConfig.Height = tmpConfig.Height / 4;
+tmpConfig.Width = tmpConfig.Width / 4;
+tempTarget2 = CreateRenderTarget( tmpConfig );
+tempTarget3 = CreateRenderTarget( tmpConfig );
+
+//////////////////////
+
+////---------------------------------------------------------------------
+
+//// SETUP RASTER STATES ////
+
+currentBlockRasterState = CreateRasterizerState(RasterizerConfig(CW_CM,GREATER_DF));
+defaultRasterState = CreateRasterizerState(RasterizerConfig(NONE_CM,GREATER_DF));
+
+/////////////////////////////
+
+////---------------------------------------------------------------------
+gState = StateStruct();
+gSpeakerState = SpeakerStateStruct();
+
+int Timeline_Update(beat : float)
+{
+ //TODO: add function for identity
+	gState.transform = float4x4(
+	1.0, 0.0, 0.0, 0.0,
+	0.0, 1.0, 0.0, 0.0,
+	0.0, 0.0, 1.0, 0.0,
+	0.0, 0.0, 0.0, 1.0
+	);
+
+	gSpeakerState.time = beat;
+}
+
+int Timeline_Render(beat : float)
+{
+	wha = GetWidthHeightAspect();
+    viewportWidth = (int)wha.x ;
+    viewportHeight = (int)wha.y;
+    aspect = wha.z;
+
+
+    ///////////////////////////////////////////////
+    //******** PASS 1: texture of box ***********//
+    ///////////////////////////////////////////////
+    // rendering to the face of the disco a normal map and a detail map
+    SetViewport(cubeFaceTarget);
+    SetRenderTarget(cubeFaceTarget); //use the fractal surface, no depth
+    Clear(1,0,0); //clear the surface
+    SetProgram(discoSpeakerProgram); // dispatch the shader
+    SetMesh(quad); // screen space
+    SetBuffer(speakerUniformStateBuffer, gSpeakerState);
+    SetUniformBuffer(speakerUniformState, speakerUniformStateBuffer);
+
+    Draw();
+
+    ///////////////////////////////////////////////
+    //******** PASS 2: scene          ***********//
+    ///////////////////////////////////////////////
+    SetViewport(tempTarget1);
+    SetRenderTarget(tempTarget1);
+    Clear(1, 0, 0); //clear the surface
+    SetProgram(blockProgram);
+
+    rotAxis = float3(0.3, 0.4, 0.01);
+    gState.transform = GetRotation(rotAxis, (float)beat * 0.92);
+
+    // do aspect ratio correctness on y axis
+	//TODO: write +=, *= etc operators
+    gState.transform[1][0] = aspect * gState.transform[1][0];
+    gState.transform[1][1] = aspect * gState.transform[1][1];
+    gState.transform[1][2] = aspect * gState.transform[1][2];
+
+
+    SetBuffer(uniformStateBuffer, gState);
+    SetUniformBuffer(uniformState, uniformStateBuffer);
+    SetUniformTextureRenderTarget(cubeTex, cubeFaceTarget);
+
+    SetRasterizerState(currentBlockRasterState);
+	SetMesh(cubeMesh);
+    Draw();
+
+    i = 0; while (i < MAX_SPHERES)
+    {
+        SetMesh(sphereMeshes[i]);
+
+        fi = 2.0 * ((float)i / (float)MAX_SPHERES) - 1.0;
+        
+        maxDepth = 4;
+        j = 0; while(j < maxDepth)
+        {
+            fj = 2.0 * ((float)j / (float)maxDepth) - 1.0; 
+            ox = 2.7*cos(beat * 0.6 + 4.7*fj * fi);
+            oy = sin(beat * 0.6 - 6.0*fj + 3.0*fi);
+            gState.transform[0][3] = 6.0 * fi + ox;
+            gState.transform[1][3] = 6.0 * fj + oy;
+            gState.transform[2][3] = 0.5;
+            gState.transform[3][3] = 1.0;
+            SetBuffer(uniformStateBuffer, gState);
+			Draw();
+			j = j + 1;
+        }
+		i = i + 1;
+    }
+
+    ///////////////////////////////////////////////
+    //******** PASS 3: horizontal blur***********//
+    ///////////////////////////////////////////////
+    SetViewport(tempTarget2);
+	SetRenderTarget(tempTarget2);
+    SetProgram(blurHorizontalProgram);
+    SetMesh(quad);
+    SetUniformTextureRenderTarget(horizontalInput, tempTarget1);
+    Draw();
+    
+    ///////////////////////////////////////////////
+    //******** PASS 4: vertical   blur***********//
+    ///////////////////////////////////////////////
+    SetRenderTarget(tempTarget3);
+    SetProgram(blurVerticalProgram);
+    SetMesh(quad);
+    SetUniformTextureRenderTarget(verticalInput, tempTarget2);
+    Draw();
+
+    ///////////////////////////////////////////////
+    //******** PASS 5: final compositing ********//
+    ///////////////////////////////////////////////
+    SetViewport(Viewport(0,0,viewportWidth, viewportHeight));
+    SetDefaultRenderTarget();
+    SetProgram(compositeProgram);
+    SetMesh(quad);
+    SetUniformTextureRenderTarget(compositeInput1, tempTarget1); //original scene
+    SetUniformTextureRenderTarget(compositeInput2, tempTarget3); //bloomed scene
+    Draw();
+
+    SetRasterizerState(defaultRasterState);
+
+}

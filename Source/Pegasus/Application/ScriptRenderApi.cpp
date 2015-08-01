@@ -33,6 +33,7 @@
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Mesh/MeshManager.h"
 #include "Pegasus/Texture/TextureManager.h"
+#include "Pegasus/Window/Window.h"
 
 using namespace Pegasus;
 using namespace Pegasus::Timeline;
@@ -49,6 +50,9 @@ static void RegisterFunctions    (BlockLib* lib);
 ///////////////////////////////////////////////////////////////////////////////////
 //! Forward declaration of API function wrappers
 ///////////////////////////////////////////////////////////////////////////////////
+
+////Utility methods//////////////////////////////////////////
+void Util_GetWidthHeightAspect(FunCallbackContext& context);
 
 ////Program Methods//////////////////////////////////////////
 void Program_SetShaderStage(FunCallbackContext& context);
@@ -101,10 +105,10 @@ void Render_CreateRasterizerState(FunCallbackContext& context);
 void Render_CreateBlendingState(FunCallbackContext& context);
 
 // property callback functions
-void* GetMeshOperatorPropertyCallback    (BsVmState* state, int objectHandle, const PropertyNode* propertyDesc);
-void* GetMeshGeneratorPropertyCallback   (BsVmState* state, int objectHandle, const PropertyNode* propertyDesc);
-void* GetTextureOperatorPropertyCallback (BsVmState* state, int objectHandle, const PropertyNode* propertyDesc);
-void* GetTextureGeneratorPropertyCallback(BsVmState* state, int objectHandle, const PropertyNode* propertyDesc);
+bool MeshOperatorPropertyCallback    (const Pegasus::BlockScript::PropertyCallbackContext& callback);
+bool MeshGeneratorPropertyCallback   (const Pegasus::BlockScript::PropertyCallbackContext& callback);
+bool TextureOperatorPropertyCallback (const Pegasus::BlockScript::PropertyCallbackContext& callback);
+bool TextureGeneratorPropertyCallback(const Pegasus::BlockScript::PropertyCallbackContext& callback);
 
 /////  Declaration of all Texture node properties  /////
 struct CoreClassProperties
@@ -244,57 +248,77 @@ static void RegisterRenderStructs(BlockLib* lib)
     uniformType->SetByteSize(sizeof(Render::Uniform));
 }
 
-void LinearizeProperties(Utils::Vector<CoreClassProperties>& outCoreClasses, PropertyGrid::PropertyGridManager* propGridMgr)
+const PropertyGrid::PropertyGridClassInfo* GetNodeDefRegisteredClass(
+    const PropertyGrid::PropertyGridClassInfo* candidate, 
+    const ClassTypeDesc* registeredClasses, 
+    int registeredClassesTypes)
+{
+    
+    const PropertyGrid::PropertyGridClassInfo* curr = candidate; 
+    do
+    {
+        for (int i = 0; i < registeredClassesTypes; ++i)
+        {
+            if (!Utils::Strcmp(curr->GetClassName(), registeredClasses[i].classTypeName))
+            {
+                return curr;
+            }
+        }
+        curr = curr->GetParentClassInfo();
+    } while (curr != nullptr);
+
+    return nullptr;
+}
+
+void LinearizeProperties(
+    Utils::Vector<CoreClassProperties>& outCoreClasses, 
+    PropertyGrid::PropertyGridManager* propGridMgr,
+    const ClassTypeDesc* nodeDefs,
+    int nodeDefsSizes
+)
 {
     for (unsigned classIt = 0; classIt < propGridMgr->GetNumRegisteredClasses(); ++classIt)
     {
         const PropertyGrid::PropertyGridClassInfo* classInfo = &propGridMgr->GetClassInfo(classIt);
 
-        //find the base info if present
-        const PropertyGrid::PropertyGridClassInfo* baseInfo = classInfo->GetParentClassInfo();
-        while (baseInfo != nullptr && baseInfo->GetParentClassInfo() != nullptr)
-        {
-            baseInfo = baseInfo->GetParentClassInfo();
-        }
+        const PropertyGrid::PropertyGridClassInfo* targetClassInfo = 
+        GetNodeDefRegisteredClass(classInfo, nodeDefs, nodeDefsSizes); //Get the class that is 'basic', meaning the one
+                                                                       //that blockscript has registered, so we can dump there all
+                                                                       //the properties and all its children properties
 
-        const char* targetBaseClassName = nullptr;
-        if (baseInfo == nullptr) //means this is the base class
+        if (targetClassInfo != nullptr) // means this class has nothing in its inheritance chain registered in blockscript
         {
-            targetBaseClassName = classInfo->GetClassName();
-        }   
-        else
-        {
-            targetBaseClassName = baseInfo->GetClassName();
-        }
-        
-        CoreClassProperties* targetBaseClassProps = nullptr;
-        //find the base class property pool
-        for (int baseClassPoolIt = 0; baseClassPoolIt < outCoreClasses.GetSize(); ++baseClassPoolIt)
-        {
-            if (!Utils::Strcmp(outCoreClasses[baseClassPoolIt].mName, targetBaseClassName))
+            const char* targetBaseClassName = targetClassInfo->GetClassName();
+            
+            CoreClassProperties* targetBaseClassProps = nullptr;
+            //find the base class property pool
+            for (int baseClassPoolIt = 0; baseClassPoolIt < outCoreClasses.GetSize(); ++baseClassPoolIt)
             {
-                targetBaseClassProps = &outCoreClasses[baseClassPoolIt];
+                if (!Utils::Strcmp(outCoreClasses[baseClassPoolIt].mName, targetBaseClassName))
+                {
+                    targetBaseClassProps = &outCoreClasses[baseClassPoolIt];
+                }
             }
-        }
-
-        if (targetBaseClassProps == nullptr)
-        {
-            targetBaseClassProps = &(outCoreClasses.PushEmpty());
-            targetBaseClassProps->mName = targetBaseClassName;
-        }
-
-        //now we have a target pool to dump all the properties cached of such parent class
-        for (unsigned propIt = 0; propIt < classInfo->GetNumClassProperties(); ++propIt)
-        {
-            int uniqueId = targetBaseClassProps->mPropertiesDescs.GetSize();
-            Pegasus::BlockScript::ObjectPropertyDesc& objPropDesc = targetBaseClassProps->mPropertiesDescs.PushEmpty(); 
-            const PropertyGrid::PropertyGridClassInfo::PropertyRecord& record = classInfo->GetClassProperty(propIt);
-#if PEGASUS_ENABLE_ASSERT
-            targetBaseClassProps->mSanityCheckProperties.PushEmpty() = &record;
-#endif
-            objPropDesc.propertyTypeName = gPropertyBlockscriptTypeNames[record.type];
-            objPropDesc.propertyName = record.name;
-            objPropDesc.propertyUniqueId = uniqueId;
+    
+            if (targetBaseClassProps == nullptr)
+            {
+                targetBaseClassProps = &(outCoreClasses.PushEmpty());
+                targetBaseClassProps->mName = targetBaseClassName;
+            }
+    
+            //now we have a target pool to dump all the properties cached of such parent class
+            for (unsigned propIt = 0; propIt < classInfo->GetNumClassProperties(); ++propIt)
+            {
+                int uniqueId = targetBaseClassProps->mPropertiesDescs.GetSize();
+                Pegasus::BlockScript::ObjectPropertyDesc& objPropDesc = targetBaseClassProps->mPropertiesDescs.PushEmpty(); 
+                const PropertyGrid::PropertyGridClassInfo::PropertyRecord& record = classInfo->GetClassProperty(propIt);
+    #if PEGASUS_ENABLE_ASSERT
+                targetBaseClassProps->mSanityCheckProperties.PushEmpty() = &record;
+    #endif
+                objPropDesc.propertyTypeName = gPropertyBlockscriptTypeNames[record.type];
+                objPropDesc.propertyName = record.name;
+                objPropDesc.propertyUniqueId = uniqueId;
+            }
         }
     }
 }
@@ -341,7 +365,7 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
             "MeshGenerator",
             {},0,
             nullptr, 0, 
-            GetMeshGeneratorPropertyCallback
+            MeshGeneratorPropertyCallback
         },
         {
             "Mesh",
@@ -355,7 +379,7 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
             "TextureGenerator",
             {}, 0,
             nullptr, 0,
-            GetTextureGeneratorPropertyCallback
+            TextureGeneratorPropertyCallback
         },
         {
             "TextureOperator",
@@ -364,7 +388,7 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
                 { "AddOperatorInput",  "int", { "TextureOperator", "TextureOperator", nullptr },  { "this", "texOperator", nullptr },  TextureOperator_AddOperatorInput  }
             },
             2,
-            nullptr, 0, GetTextureOperatorPropertyCallback
+            nullptr, 0, TextureOperatorPropertyCallback
         },
         {
             "Texture",
@@ -377,12 +401,14 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
         }
     };
 
+    const int nodeDefsSize = sizeof(nodeDefs)/sizeof(nodeDefs[0]);
+
     //gather the properties and accumulate them on the base classes
     Utils::Vector<CoreClassProperties> coreClasses; 
-    LinearizeProperties(coreClasses, propGridMgr);
+    LinearizeProperties(coreClasses, propGridMgr, nodeDefs, nodeDefsSize);
 
     //patch the node Defs with the appropiate property lists gathered
-    for (int i = 0; i < sizeof(nodeDefs)/sizeof(nodeDefs[0]); ++i)
+    for (int i = 0; i < nodeDefsSize; ++i)
     {
         ClassTypeDesc& desc = nodeDefs[i];
         
@@ -393,7 +419,7 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
             {
                 desc.propertyDescriptors = coreClassProp.mPropertiesDescs.Data();
                 desc.propertyCount = coreClassProp.mPropertiesDescs.GetSize();
-                renderCollectionFactory->RegisterPropertyCount(desc.classTypeName, desc.propertyCount);
+                renderCollectionFactory->RegisterProperties(desc);
                 break;
             }
         }
@@ -445,6 +471,14 @@ static void RegisterTypes(BlockLib* lib, Core::IApplicationContext* context)
 static void RegisterFunctions(BlockLib* lib)
 {
     const FunctionDeclarationDesc funDeclarations[] = {
+        //Misc utils
+        {
+            "GetWidthHeightAspect",
+            "float3",
+            { nullptr },
+            { nullptr },
+            Util_GetWidthHeightAspect
+        },
         // Node constructors
         {
             "CreateProgramLinkage",
@@ -661,15 +695,15 @@ static void RegisterFunctions(BlockLib* lib)
         {
             "CreateRasterizerState",
             "RasterizerState",
-            { nullptr },
-            { nullptr },
+            { "RasterizerConfig", nullptr },
+            { "config", nullptr },
             Render_CreateRasterizerState
         },
         {
             "CreateBlendingState",
             "BlendingState",
-            { nullptr },
-            { nullptr },
+            { "BlendingConfig", nullptr },
+            { "config", nullptr },
             Render_CreateBlendingState
         }
     };
@@ -689,6 +723,18 @@ static Application::RenderCollection* GetContainer(BsVmState* state)
     Application::RenderCollection* container = static_cast<Application::RenderCollection*>(state->GetUserContext());
     PG_ASSERT(container != nullptr);
     return container;
+}
+
+////Utility methods//////////////////////////////////////////
+void Util_GetWidthHeightAspect(FunCallbackContext& context)
+{
+    Application::RenderCollection* container = GetContainer(context.GetVmState());
+    Wnd::Window* w = container->GetWindow();
+    PG_ASSERT(context.GetOutputBufferSize() == sizeof(float) * 3);
+    float* widthheightaspect = static_cast<float*>(context.GetRawOutputBuffer());
+    widthheightaspect[0] = static_cast<float>(w->GetWidth());
+    widthheightaspect[1] = static_cast<float>(w->GetHeight());
+    widthheightaspect[2] = w->GetRatio();
 }
 
 /////////////////////////////////////////////////////////////
@@ -1246,22 +1292,38 @@ void Render_CreateBlendingState(FunCallbackContext& context)
     stream.SubmitReturn( collection->AddBlendingState(blendState) );
 }
 
-void* GetMeshOperatorPropertyCallback    (BsVmState* state, int objectHandle, const PropertyNode* propertyDesc)
+bool MeshOperatorPropertyCallback    (const Pegasus::BlockScript::PropertyCallbackContext& context)
 {
-    return nullptr;
+    return false;
 }
 
-void* GetMeshGeneratorPropertyCallback   (BsVmState* state, int objectHandle, const PropertyNode* propertyDesc)
+bool MeshGeneratorPropertyCallback   (const Pegasus::BlockScript::PropertyCallbackContext& context)
 {
-    return nullptr;
+    RenderCollection* collection = GetContainer(context.state);
+    const PropertyGrid::PropertyAccessor* accessor = collection->GetMeshGeneratorAccessor(context.objectHandle, context.propertyDesc->mGuid);
+    if (accessor != nullptr)
+    {
+        if (context.isRead)
+        {
+            accessor->Read(context.destBuffer, context.propertyDesc->mType->GetByteSize());
+        }
+        else
+        {
+            accessor->Write(context.srcBuffer, context.propertyDesc->mType->GetByteSize());
+        }
+        return true;
+    }
+    return false;
 }
 
-void* GetTextureOperatorPropertyCallback (BsVmState* state, int objectHandle, const PropertyNode* propertyDesc)
+bool TextureOperatorPropertyCallback (const Pegasus::BlockScript::PropertyCallbackContext& context)
 {
-    return nullptr;
+    //TODO: implement this
+    return false;
 }
 
-void* GetTextureGeneratorPropertyCallback(BsVmState* state, int objectHandle, const PropertyNode* propertyDesc)
+bool TextureGeneratorPropertyCallback(const Pegasus::BlockScript::PropertyCallbackContext& context)
 {
-    return nullptr;
+    //TODO: implement this
+    return false;
 }

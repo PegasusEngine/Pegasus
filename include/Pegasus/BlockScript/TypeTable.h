@@ -63,7 +63,7 @@ public:
         Ast::StmtStructDef* structDef = nullptr,
         EnumNode* enumNode = nullptr,
         PropertyNode* propertyNode = nullptr,
-        GetObjectPropertyRuntimePtrCallback getPropCallback = nullptr
+        ObjectPropertyAccessorCallback getPropCallback = nullptr
     );
 
     //! Gets a type description structure

@@ -87,11 +87,11 @@ TypeDesc* SymbolTable::InternalCreateType(
     BlockScript::Ast::StmtStructDef* structDef,
     EnumNode* enumNode ,
     PropertyNode* propertyNode,
-    GetObjectPropertyRuntimePtrCallback getPropertyCallback
+    ObjectPropertyAccessorCallback propertyCallback
     
 )
 {
-    return mTypeTable.CreateType(modifier, name, child, modifierProperty, engine, structDef, enumNode, propertyNode, getPropertyCallback);
+    return mTypeTable.CreateType(modifier, name, child, modifierProperty, engine, structDef, enumNode, propertyNode, propertyCallback);
 }
 
 TypeDesc* SymbolTable::CreateScalarType(const char* name, TypeDesc::AluEngine aluEngine)
@@ -118,7 +118,7 @@ TypeDesc* SymbolTable::CreateVectorType(const char* name, TypeDesc* childType, i
     );
 }
 
-TypeDesc* SymbolTable::CreateObjectType(const char* name, PropertyNode* propertyList, GetObjectPropertyRuntimePtrCallback getPropertyCallback)
+TypeDesc* SymbolTable::CreateObjectType(const char* name, PropertyNode* propertyList, ObjectPropertyAccessorCallback propertyCallback)
 {
     TypeDesc::ModifierProperty modProp;
     modProp.ArraySize = 0;
@@ -131,7 +131,7 @@ TypeDesc* SymbolTable::CreateObjectType(const char* name, PropertyNode* property
         nullptr, //no struct def
         nullptr, //no enum definition
         propertyList, 
-        getPropertyCallback
+        propertyCallback
     );
 }
 

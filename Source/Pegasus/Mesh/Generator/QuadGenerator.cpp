@@ -77,8 +77,8 @@ void QuadGenerator::GenerateData()
     //copying them to the position array
     for (int i = 0; i < 6; ++i)
     {
-        stream[i].position.x = quadcoords[i*2];
-        stream[i].position.y = quadcoords[i*2 + 1];
+        stream[i].position.x = quadcoords[i*2] * GetQuadExtends().x;
+        stream[i].position.y = quadcoords[i*2 + 1]* GetQuadExtends().y;
         stream[i].position.z = stream[0].position.w = 0;
         stream[i].uv.s = stream[i].position.x * 0.5f + 0.5f;
         stream[i].uv.t = stream[i].position.y * 0.5f + 0.5f;

@@ -19,6 +19,7 @@
 #include "Pegasus/Math/Scalar.h"
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Mesh/MeshManager.h"
+#include "Pegasus/Window/Window.h"
 
 //----------------------------------------------------------------------------------------
     

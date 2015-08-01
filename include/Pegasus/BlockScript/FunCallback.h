@@ -209,7 +209,7 @@ struct ClassTypeDesc
     int methodsCount;
     const ObjectPropertyDesc* propertyDescriptors;
     int propertyCount;
-    GetObjectPropertyRuntimePtrCallback getPropertyCallback;
+    ObjectPropertyAccessorCallback getPropertyCallback;
 };
 
 //! Gets a function bind point to be used to call.

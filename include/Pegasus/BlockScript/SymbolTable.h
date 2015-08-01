@@ -107,7 +107,7 @@ public:
     //! Returns and creates an object type. Objects are passed around by handles of 4 bytes.
     //! \param the blockscript name of the type
     //! \return type descriptor structure
-    TypeDesc* CreateObjectType(const char* name, PropertyNode* propertyList, GetObjectPropertyRuntimePtrCallback getPropertyCallback);
+    TypeDesc* CreateObjectType(const char* name, PropertyNode* propertyList,ObjectPropertyAccessorCallback propertyCallback);
 
     //! Returns and creates an enumeration type
     //! \param the name of the enumeration type for blockscript
@@ -169,7 +169,7 @@ private:
         Ast::StmtStructDef* structDef = nullptr,
         EnumNode* enumNode = nullptr,
         PropertyNode* propertyNode = nullptr,
-        GetObjectPropertyRuntimePtrCallback getPropertyCallback = nullptr
+        ObjectPropertyAccessorCallback propertyCallback = nullptr
     );
 
     //! function table

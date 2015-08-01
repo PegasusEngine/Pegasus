@@ -12,7 +12,7 @@
 #ifndef TESTAPP1WINDOW_H
 #define TESTAPP1WINDOW_H
 
-#include "Pegasus/Pegasus.h"
+#include "Pegasus/Window/Window.h"
 #include "Pegasus/Render/Render.h"
 
 //! This is a specialized window for the TestApp1 application main window

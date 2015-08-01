@@ -13,6 +13,7 @@
 #include "Pegasus/Render/Render.h"
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Mesh/MeshManager.h"
+#include "Pegasus/Window/Window.h"
 
 //----------------------------------------------------------------------------------------
 

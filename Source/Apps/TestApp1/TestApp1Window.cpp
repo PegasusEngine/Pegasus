@@ -16,6 +16,8 @@
 #include "Pegasus/Render/Render.h"
 #include "Pegasus/Timeline/TimelineManager.h"
 #include "Pegasus/Timeline/Timeline.h"
+#include "Pegasus/Window/Shared/WindowConfig.h"
+#include "Pegasus/Allocator/IAllocator.h"
 
 TestApp1Window::TestApp1Window(const Pegasus::Wnd::WindowConfig& config)
     : Pegasus::Wnd::Window(config), mAllocator(config.mAllocator)

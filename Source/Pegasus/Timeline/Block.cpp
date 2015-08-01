@@ -152,6 +152,8 @@ void Block::UpdateViaScript(float beat, Wnd::Window* window)
                 Core::CompilerEvents::CompilationNotification::COMPILATION_RUNTIME_INITIALIZATION, 0, ""
             );
         }
+        Application::RenderCollection* nodeContainer = static_cast<Application::RenderCollection*>(mVmState->GetUserContext());
+        nodeContainer->SetWindow(window);
         mTimelineScript->CallUpdate(beat, mVmState);
     }
 }

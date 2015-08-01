@@ -15,18 +15,6 @@
 // Compilation macro definitions, assertion and log management
 #include "Pegasus/PegasusInternal.h"
 
-// Memory framework
-#include "Pegasus/Memory/MemoryManager.h"
-
-// Render context
-#include "Pegasus/Render/RenderContext.h"
-
-// Window base class
-#include "Pegasus/Window/Window.h"
-
-// Application base class
-#include "Pegasus/Application/Application.h"
-
 // Versioning
 #include "Pegasus/Version.h"
 

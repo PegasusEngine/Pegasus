@@ -224,58 +224,38 @@ void MoveCommand(Ast::Idd* idd, Ast::Exp* exp, BsVmState& state)
     }
 }
 
-void GetObjectPropertyPtrs(BsVmState& state, Ast::Exp* loc, Ast::Exp* obj, const PropertyNode* prop, void** locPtr, void** propertyPtr, int* byteSize)
+void ReadOrWriteObjPropCmd(Ast::Exp* object, const PropertyNode* propertyNode, Ast::Exp* location, BsVmState& state, bool isRead)
 {
-    //get the target memory pointer
-    int targetOffset = GetMemoryOffset(loc, state);
-    *locPtr = state.Ram() + targetOffset;
+    void* locationPointer = state.Ram() + GetMemoryOffset(location, state);
+    void* objectHandlePointer = state.Ram() + GetMemoryOffset(object, state);
+    int objectHandle = *reinterpret_cast<int*>(objectHandlePointer);
+    PropertyCallbackContext ctx;
+    ctx.state = &state;
+    ctx.objectHandle = objectHandle;
+    ctx.propertyDesc = propertyNode;
+    ctx.destBuffer = isRead ? locationPointer : nullptr;
+    ctx.srcBuffer  = isRead ? nullptr : locationPointer ;
+    ctx.isRead = isRead;
 
-    //get the object handle
-    int objHandleOffset = GetMemoryOffset(obj, state);
-    int objHandle = *reinterpret_cast<int*>(state.Ram() + objHandleOffset);
-    GetObjectPropertyRuntimePtrCallback cb = obj->GetTypeDesc()->GetPropertyCallback();
+    ObjectPropertyAccessorCallback cb = object->GetTypeDesc()->GetPropertyCallback();
     PG_ASSERTSTR(cb != nullptr, "The property callback cannot be null for this type %s.");
-    *propertyPtr = cb(&state, objHandle, prop);
-
-    //get the byte size
-    *byteSize = prop->mType->GetByteSize();
-
+    bool res = cb(ctx);
+    if (!res)
+    {
+        PG_LOG('ERR_', "[BLOCKSCRIPT VIRUAL MACHINE ERROR]: No property %s exists for such object.", propertyNode->mName);
+    }
 }
 
 void ReadObjPropCmd(Canon::ReadObjProp* cmd, BsVmState& state)
 {
-    const PropertyNode* propertyNode = cmd->GetProp();
-    void* locPtr = nullptr;
-    void* propertyPtr = nullptr;
-    int byteSize = 0;
-    GetObjectPropertyPtrs(state, cmd->GetLoc(), cmd->GetObj(), cmd->GetProp(), &locPtr, &propertyPtr, &byteSize);
-    if (propertyPtr == nullptr)
-    {
-        PG_LOG('ERR_', "[BLOCKSCRIPT VIRUAL MACHINE ERROR]: No property %s exists for such object.", propertyNode->mName);
-        Utils::Memset8(locPtr, 0, byteSize);
-    }
-    else
-    {
-        Utils::Memcpy(locPtr, propertyPtr, byteSize);
-    }
+    ReadOrWriteObjPropCmd(cmd->GetObj(), cmd->GetProp(), cmd->GetLoc(), state, true);
 }
 
 void WriteObjPropCmd(Canon::WriteObjProp* cmd, BsVmState& state)
 {
-    const PropertyNode* propertyNode = cmd->GetProp();
-    void* locPtr = nullptr;
-    void* propertyPtr = nullptr;
-    int byteSize = 0;
-    GetObjectPropertyPtrs(state, cmd->GetLoc(), cmd->GetObj(), cmd->GetProp(), &locPtr, &propertyPtr, &byteSize);
-    if (propertyPtr == nullptr)
-    {
-        PG_LOG('ERR_', "[BLOCKSCRIPT VIRUAL MACHINE ERROR]: No property %s exists for such object.", propertyNode->mName);
-    }
-    else
-    {
-        Utils::Memcpy(propertyPtr, locPtr, byteSize);
-    }
+    ReadOrWriteObjPropCmd(cmd->GetObj(), cmd->GetProp(), cmd->GetLoc(), state, false);
 }
+
 void SavCommand(Canon::Register r, Ast::Idd* location, BsVmState& state)
 {
     int* target = GetIddMem(location, state);
