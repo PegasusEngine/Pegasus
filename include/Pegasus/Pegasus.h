@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   Pegasus.h
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   12th June 2013
 //! \brief  Main include file of the Pegasus engine, to be included by any app
 

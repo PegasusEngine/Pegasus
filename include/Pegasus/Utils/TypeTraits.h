@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   TypeTraits.h
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   18th February 2015
 //! \brief  Primitives to analyze types and their properties
 

@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   Vector.h
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   31st August 2013
 //! \brief  Vector types and operations
 

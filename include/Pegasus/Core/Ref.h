@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   Ref.h
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   17th October 2013
 //! \brief  Pointer to a reference counted object
 

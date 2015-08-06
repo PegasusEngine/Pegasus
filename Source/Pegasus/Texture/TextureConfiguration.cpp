@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TextureConfiguration.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	02nd November 2013
 //! \brief	Texture configuration used by all texture nodes, which must be compatible
 //!         between nodes to link them

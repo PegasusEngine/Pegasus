@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	SettingsAppearancePage.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	10th July 2013
 //! \brief	Page to configure the appearance settings of the editor
 

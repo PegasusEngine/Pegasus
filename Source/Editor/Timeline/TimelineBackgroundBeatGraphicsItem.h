@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TimelineBackgroundBeatGraphicsItem.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	21st July 2013
 //! \brief	Graphics item representing one beat of the background in the timeline
 

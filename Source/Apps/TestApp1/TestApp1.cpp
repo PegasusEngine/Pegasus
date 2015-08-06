@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   TestApp1.cpp
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   07th July 2013
 //! \brief  Test application 1
 //! \todo Have the app wizard include appexport and set up this file correctly

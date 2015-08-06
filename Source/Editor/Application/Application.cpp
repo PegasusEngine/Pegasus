@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   Application.cpp
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   02nd July 2013
 //! \brief  Worker thread to contain an application to run
 

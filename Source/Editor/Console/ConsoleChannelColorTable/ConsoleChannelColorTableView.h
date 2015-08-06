@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	ConsoleChannelColorTableView.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	06th August 2013
 //! \brief	Table view to show the colors associated with the log channels
 

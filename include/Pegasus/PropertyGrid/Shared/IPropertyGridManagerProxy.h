@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	IPropertyGridManagerProxy.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	25th May 2015
 //! \brief	Proxy interface, used by the editor to interact with the property grid manager
 

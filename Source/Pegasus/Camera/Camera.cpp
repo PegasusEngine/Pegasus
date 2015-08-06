@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	Camera.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	01st September 2014
 //! \brief	Camera object, storing the settings of one camera in the scene
 

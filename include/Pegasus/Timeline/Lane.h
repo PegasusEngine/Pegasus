@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	Lane.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	07th November 2013
 //! \brief	Timeline lane management, manages a set of blocks on one lane of the timeline
 

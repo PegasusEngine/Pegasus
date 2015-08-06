@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	OutputNode.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	01st November 2013
 //! \brief	Base output node class, for the root of the graphs
 

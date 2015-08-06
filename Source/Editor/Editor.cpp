@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	Editor.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	02nd June 2013
 //! \brief	Main window of Pegasus Editor
 

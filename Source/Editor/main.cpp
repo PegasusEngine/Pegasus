@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	Main.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	02nd June 2013
 //! \brief	Entry point of Pegasus Editor
 

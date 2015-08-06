@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TimelineLaneHeaderGraphicsItem.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	29th September 2013
 //! \brief	Graphics item representing the header block on the left of a lane in the timeline
 

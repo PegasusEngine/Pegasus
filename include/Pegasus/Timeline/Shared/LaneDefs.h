@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	LaneDefs.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	05th January 2014
 //! \brief	Type definitions for the timeline lanes
 

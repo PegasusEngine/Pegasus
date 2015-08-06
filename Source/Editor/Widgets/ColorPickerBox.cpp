@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	ColorPickerBox.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	04th August 2013
 //! \brief	Picker box to choose a color (shows the standard color picker when clicking)
 

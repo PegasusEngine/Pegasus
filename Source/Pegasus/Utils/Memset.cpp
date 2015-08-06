@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	Memset.cpp
-//! \author Kleber Garcia/Kevin Boulanger
+//! \author Kleber Garcia/Karolyn Boulanger
 //! \date	5th May 2014
 //! \brief	Memset implementation (all its flavors)
 

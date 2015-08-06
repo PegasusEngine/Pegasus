@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	NodeManager.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	03rd November 2013
 //! \brief	Global node manager, including the factory features
 

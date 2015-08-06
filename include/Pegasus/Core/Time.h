@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	Time.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	19th December 2013
 //! \brief	Time handling, particularly for the timeline
 

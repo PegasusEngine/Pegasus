@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TextureData.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	01st November 2013
 //! \brief	Texture node data, used by all texture nodes, including generators and operators
 

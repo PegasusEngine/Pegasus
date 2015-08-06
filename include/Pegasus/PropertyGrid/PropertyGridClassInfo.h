@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	PropertyGridClassInfo.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	28th January 2015
 //! \brief	Information about a class containing a property grid
 

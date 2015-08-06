@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	ConstantColorGenerator.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	01st November 2013
 //! \brief	Texture generator that fills the image with a constant color
 

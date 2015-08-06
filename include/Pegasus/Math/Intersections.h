@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   Intersections.h
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   31st August 2013
 //! \brief  Functions to test intersections between geometric primitives
 

@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   TypeTraitsDebug.h
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   26th February 2015
 //! \brief  Logging function to display the traits of a type
 

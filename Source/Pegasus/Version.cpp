@@ -18,7 +18,7 @@
 
 // Pegasus Developers namelist
 const char * const gCredits [] = {
-    "Kevin Boulanger",
+    "Karolyn Boulanger",
     "Kleber Garcia",
     "David Worsham",
     nullptr

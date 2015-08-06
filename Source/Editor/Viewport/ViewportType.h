@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	ViewportType.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	28th November 2013
 //! \brief	Declaration of the viewport type enumerant
 

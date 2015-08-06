@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	Memset.h
-//! \author Kleber Garcia/Kevin Boulanger
+//! \author Kleber Garcia/Karolyn Boulanger
 //! \date	5th May 2014
 //! \brief	Memset (all its flavors)
 

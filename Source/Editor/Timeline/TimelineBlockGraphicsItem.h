@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TimelineBlockGraphicsItem.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	11th June 2013
 //! \brief	Graphics item representing one block in the timeline
 

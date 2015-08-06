@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	FractalCubeBlock.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	11th January 2014
 //! \brief	Timeline block for the FractalCube effect (grayscale fractal with no shadow)
 

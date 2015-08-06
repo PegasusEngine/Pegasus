@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TimelineBackgroundBeatLineGraphicsItem.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	23rd July 2013
 //! \brief	Graphics item representing a vertical line for a beat of the background in the timeline
 

@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	GraphEditorGraphicsView.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	06th June 2014
 //! \brief	Generic graphics view for a graph editor (texture, mesh, etc.)
 

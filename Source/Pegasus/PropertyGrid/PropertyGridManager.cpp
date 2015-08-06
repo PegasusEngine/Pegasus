@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	PropertyGridManager.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	28th January 2015
 //! \brief	Manager for all classes using a property grid, with all the member information
 

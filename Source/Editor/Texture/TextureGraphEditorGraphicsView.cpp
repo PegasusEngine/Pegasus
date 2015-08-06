@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TextureGraphEditorGraphicsView.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	06th June 2014
 //! \brief	Specialization of the graph editor for textures
 

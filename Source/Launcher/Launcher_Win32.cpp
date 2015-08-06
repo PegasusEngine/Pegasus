@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   Launcher_Win32.cpp
-//! \author Kevin Boulanger, David Worsham
+//! \author Karolyn Boulanger, David Worsham
 //! \date   02nd June 2013
 //! \brief  Entry point of Pegasus Launcher, allowing the execution of application in dev mode
 //!         (Win32 and Win64 version)

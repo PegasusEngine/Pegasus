@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   PegasusInternal.h
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   07th October 2013
 //! \brief  Global include file for the Pegasus engine, included by any file from the Pegasus library
 

@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TimelineUndoCommands.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	20th January 2014
 //! \brief	List of timeline commands that can be undone
 

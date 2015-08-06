@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	BlockProxy.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	09th November 2013
 //! \brief	Proxy object, used by the editor to interact with the timeline blocks
 

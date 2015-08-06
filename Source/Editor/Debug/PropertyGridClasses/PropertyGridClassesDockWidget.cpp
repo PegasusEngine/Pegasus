@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	PropertyGridClassesDockWidget.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	26th May 2015
 //! \brief	Dock widget containing the list of classes that have a property grid
 

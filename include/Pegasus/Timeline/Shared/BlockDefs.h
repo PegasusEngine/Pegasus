@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	BlockDefs.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	12th January 2014
 //! \brief	Shared definitions for the timeline blocks
 

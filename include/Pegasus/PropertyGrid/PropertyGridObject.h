@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	PropertyGridObject.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	10th February 2015
 //! \brief	Property grid object, parent of every class that defines a set of editable properties
 

@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	GeneratorNode.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	19th October 2013
 //! \brief	Base generator node class, for all data generators with no input node
 

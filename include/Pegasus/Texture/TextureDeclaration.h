@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TextureDeclaration.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	01st November 2013
 //! \brief	General texture header to be included by every texture node header
 

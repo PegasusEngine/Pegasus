@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	AddOperator.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	01st November 2013
 //! \brief	Texture operator that adds an arbitrary number of textures together
 

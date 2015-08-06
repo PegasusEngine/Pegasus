@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TextureManagerProxy.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	09th June 2014
 //! \brief	Proxy object, used by the editor to interact with the textures
 

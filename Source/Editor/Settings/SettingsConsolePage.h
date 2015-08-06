@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	SettingsConsolePage.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	28th September 2013
 //! \brief	Page to configure the console settings of the editor
 

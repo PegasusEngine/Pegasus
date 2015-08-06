@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TextureManager.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	03rd November 2013
 //! \brief	Global texture node manager, including the factory features
 

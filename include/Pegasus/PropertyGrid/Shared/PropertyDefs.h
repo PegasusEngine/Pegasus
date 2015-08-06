@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	PropertyDefs.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	25th May 2015
 //! \brief	Shared definitions for the property grid
 

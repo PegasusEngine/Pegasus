@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TimelineSizes.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	21st July 2013
 //! \brief	Size in pixels of the elements composing the timeline
 

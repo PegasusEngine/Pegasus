@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	Sound.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	18th August 2014
 //! \brief	Sound system entry point
 

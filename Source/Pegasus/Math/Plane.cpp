@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   Plane.cpp
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   31st August 2013
 //! \brief  Plane type and operations
 

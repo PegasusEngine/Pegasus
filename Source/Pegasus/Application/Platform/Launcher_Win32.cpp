@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   Launcher_Win32.cpp
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   08th July 2013
 //! \brief  Engine entry point, defined only in release mode (Windows implementation)
 

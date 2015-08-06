@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	HistoryDockWidget.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	20th January 2014
 //! \brief	Dock widget containing the history view (for undo/redo)
 

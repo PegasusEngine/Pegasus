@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   Color.h
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   31st August 2013
 //! \brief  Color types and operations
 

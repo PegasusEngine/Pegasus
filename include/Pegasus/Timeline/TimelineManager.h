@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TimelineManager.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	07th November 2013
 //! \brief	Timeline management
 

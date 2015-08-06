@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TextureConfigurationProxy.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	11th June 2014
 //! \brief	Proxy object, used by the editor to interact with a texture configuration
 

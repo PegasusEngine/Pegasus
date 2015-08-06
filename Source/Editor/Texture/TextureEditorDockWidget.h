@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TextureEditorDockWidget.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	05th June 2014
 //! \brief	Dock widget for the texture editor
 

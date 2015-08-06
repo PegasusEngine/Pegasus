@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   Singleton.h
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   24th June 2013
 //! \brief  Singleton base classes (manual and automatic creation)
 

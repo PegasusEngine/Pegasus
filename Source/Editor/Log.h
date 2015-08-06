@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	Log.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	22th August 2013
 //! \brief	Log manager, for debug output
 

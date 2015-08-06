@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	Settings.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	10th July 2013
 //! \brief	Settings for the entire editor
 

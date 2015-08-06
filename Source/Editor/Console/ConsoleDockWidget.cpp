@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	ConsoleDockWidget.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	05th July 2013
 //! \brief	Dock widget containing the console with log messages
 

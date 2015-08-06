@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	PixelsGenerator.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	17th June 2013
 //! \brief	Texture generator that renders randomly located pixels
 

@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	PropertyGrid.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	24th April 2014
 //! \brief	Property grid, defining a set of editable properties
 

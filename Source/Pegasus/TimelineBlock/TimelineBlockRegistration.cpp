@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TimelineBlockRegistration.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	31st August 2014
 //! \brief	Global registration of the Pegasus-side timeline blocks
 

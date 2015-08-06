@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   GLExtensions.h
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   11th June 2013
 //! \brief  Management of GL and WGL extensions, available throughout the engine
 //!         to check if features are available before using them

@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	CameraManager.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	04th September 2014
 //! \brief	Camera manager, storing the global cameras
 

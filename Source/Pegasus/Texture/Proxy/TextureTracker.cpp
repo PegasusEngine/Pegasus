@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TextureTracker.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	09th June 2014
 //! \brief	Container class tracking all currently allocated textures
 

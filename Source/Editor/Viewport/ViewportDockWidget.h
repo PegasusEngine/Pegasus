@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	ViewportDockWidget.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	02nd June 2013
 //! \brief	Dock widget containing the application viewports
 

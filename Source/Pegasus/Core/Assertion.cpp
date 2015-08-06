@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   Assertion.cpp
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   24th June 2013
 //! \brief  Assertion test macros and manager
 

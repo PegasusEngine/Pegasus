@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	Property.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	05th February 2015
 //! \brief	Definition of a property (and its specifications)
 

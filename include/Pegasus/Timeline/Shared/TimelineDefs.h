@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TimelineDefs.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	25th December 2013
 //! \brief	Type definitions for the timeline
 

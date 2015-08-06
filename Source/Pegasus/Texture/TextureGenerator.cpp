@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TextureGenerator.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	01st November 2013
 //! \brief	Base texture generator node class
 

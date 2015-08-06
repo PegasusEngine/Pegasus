@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TimelineDockWidget.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	02nd June 2013
 //! \brief	Dock widget containing the timeline graphics view
 

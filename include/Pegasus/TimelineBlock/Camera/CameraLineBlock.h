@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	CameraLineBlock.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	31st August 2014
 //! \brief	Timeline block moving the camera along a straight line
 

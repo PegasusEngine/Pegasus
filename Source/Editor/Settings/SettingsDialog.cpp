@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	SettingsDialog.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	10th July 2013
 //! \brief	Preferences dialog box
 

@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	ViewportWidget.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	02nd June 2013
 //! \brief	Widget containing one application viewport
 

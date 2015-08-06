@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TextureTestBlock.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	08th May 2014
 //! \brief	Timeline block for the TextureTest effect (texture viewer)
 

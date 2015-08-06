@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	Texture.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	01st November 2013
 //! \brief	Texture output node
 

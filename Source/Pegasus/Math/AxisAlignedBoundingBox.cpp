@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   AxisAlignedBoundingBox.cpp
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   31st August 2013
 //! \brief  Axis-aligned bounding box type and operations
 

@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	OperatorNode.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	20th October 2013
 //! \brief	Base operator node class, for all operators with at least one input
 

@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TimelineScript.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	1st November 2014
 //! \brief	Script helper for scripting callbacks
 

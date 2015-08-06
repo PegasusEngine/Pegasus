@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	ApplicationManager.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	02nd July 2013
 //! \brief	Manager for the opened applications in the editor
 

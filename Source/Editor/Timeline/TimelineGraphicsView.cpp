@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TimelineGraphicsView.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	10th June 2013
 //! \brief	Graphics view containing the graphics timeline representation
 

@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	PropertyGridStaticAllocator.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	05th February 2015
 //! \brief	Allocator for the static objects used by property grids, such as the manager
 

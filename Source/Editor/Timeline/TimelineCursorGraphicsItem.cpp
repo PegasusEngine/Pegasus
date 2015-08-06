@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TimelineCursorGraphicsItem.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	27th September 2013
 //! \brief	Graphics item representing the currently selected time as a vertical bar on top of the timeline
 

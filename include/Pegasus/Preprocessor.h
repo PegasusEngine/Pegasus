@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   Preprocessor.h
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   12th June 2013
 //! \brief  Preprocessor file for the entire Pegasus engine.
 //!         This file is included everywhere, using the Visual Studio project option

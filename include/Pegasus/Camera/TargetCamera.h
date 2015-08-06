@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	TargetCamera.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	11th November 2014
 //! \brief	Camera object using target and up vectors to define its orientation
 

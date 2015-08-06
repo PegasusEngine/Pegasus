@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   Matrix.h
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   31st August 2013
 //! \brief  Matrix types and operations (with other matrices and vectors)
 

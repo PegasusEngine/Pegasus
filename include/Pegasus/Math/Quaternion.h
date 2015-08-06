@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   Quaternion.h
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   31st August 2013
 //! \brief  Quaternion types and operations
 

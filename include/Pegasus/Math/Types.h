@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   Types.h
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   1st September 2013
 //! \brief  Base types for the math library
 

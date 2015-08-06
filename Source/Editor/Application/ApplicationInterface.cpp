@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   ApplicationInterface.cpp
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   20th October 2013
 //! \brief  Interface object used to interface with the Pegasus related messages,
 //!         created in the application thread

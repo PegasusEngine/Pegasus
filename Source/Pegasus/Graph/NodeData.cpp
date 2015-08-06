@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	NodeData.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	17th October 2013
 //! \brief	Base node data class for all graph-based systems (textures, meshes, etc.)
 

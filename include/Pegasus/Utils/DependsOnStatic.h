@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	DependsOnStatic.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	23rd January 2015
 //! \brief	Base class to declare the dependency to a static class
 

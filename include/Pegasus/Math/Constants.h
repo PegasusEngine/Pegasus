@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   Constants.h
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   10th September 2013
 //! \brief  Math constants
 

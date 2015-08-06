@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	GradientGenerator.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	11th May 2014
 //! \brief	Texture generator that renders a gradient
 

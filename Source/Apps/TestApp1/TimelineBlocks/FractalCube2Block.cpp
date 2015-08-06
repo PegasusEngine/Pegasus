@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	FractalCube2Block.cpp
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	11th January 2014
 //! \brief	Timeline block for the FractalCube2 effect (colored fractal with shadows)
 

@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file   TestApp1.h
-//! \author Kevin Boulanger
+//! \author Karolyn Boulanger
 //! \date   07th July 2013
 //! \brief  Test application 1
 

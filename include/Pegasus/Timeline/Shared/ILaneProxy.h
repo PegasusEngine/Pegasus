@@ -5,7 +5,7 @@
 /****************************************************************************************/
 
 //! \file	ILaneProxy.h
-//! \author	Kevin Boulanger
+//! \author	Karolyn Boulanger
 //! \date	07th November 2013
 //! \brief	Proxy interface, used by the editor to interact with the timeline lanes
 
