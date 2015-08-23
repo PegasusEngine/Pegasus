@@ -5,13 +5,18 @@
 #include "Pegasus/AssetLib/AssetLib.h"
 #include "Pegasus/AssetLib/Asset.h"
 #include "Pegasus/Core/Log.h"
+#include "Pegasus/Utils/String.h"
 
 using namespace Pegasus;
 using namespace Pegasus::Core;
 
-SourceCode::SourceCode(Alloc::IAllocator* allocator)
-: mAllocator(allocator), mParents(allocator), mLockParentArray(false)
+SourceCode::SourceCode(Alloc::IAllocator* allocator, Alloc::IAllocator* nodeDataAllocator)
+    : Graph::GeneratorNode(allocator, nodeDataAllocator), AssetLib::RuntimeAssetObject(this), mAllocator(allocator), mParents(allocator), mLockParentArray(false)
 {
+#if PEGASUS_ENABLE_PROXIES
+    mName[0] = '\0';
+    mPath[0] = '\0';
+#endif
 }
 
 SourceCode::~SourceCode()
@@ -44,6 +49,40 @@ void SourceCode::GetSource (const char ** outSrc, int& outSize) const
     *outSrc = mFileBuffer.GetBuffer(); 
     outSize = mFileBuffer.GetFileSize();
 }
+
+//! editor metadata
+#if PEGASUS_ENABLE_PROXIES
+void SourceCode::SetFullFilePath(const char * name)
+{
+    int len = 0;
+    if (name)
+    {
+        mFullPath[0] = '\0';
+        PG_ASSERT(Pegasus::Utils::Strlen(name) < METADATA_NAME_LENGTH * 2); //does it all fit?
+        Pegasus::Utils::Strcat(mFullPath, name);
+        int fullLen = Pegasus::Utils::Strlen(name);
+        const char * nameString1 = Pegasus::Utils::Strrchr(name, '/');
+        const char * nameString2 = Pegasus::Utils::Strrchr(name, '\\');
+        const char * nameString = nameString1 > nameString2 ? nameString1 : nameString2;
+        if (nameString != nullptr)
+        {
+            fullLen = fullLen - (nameString - name + 1);
+            Pegasus::Utils::Memcpy(mName, nameString + 1, fullLen);
+            mName[fullLen] = '\0';
+            fullLen = nameString - name + 1;
+            Pegasus::Utils::Memcpy(mPath, name, fullLen);
+            mPath[fullLen] = '\0';
+        }
+        else
+        {
+            len = fullLen < SourceCode::METADATA_NAME_LENGTH - 1 ? fullLen : SourceCode::METADATA_NAME_LENGTH - 1;
+            Pegasus::Utils::Memcpy(mName, name, len);
+            mName[len] = '\0';
+            mPath[0] = '\0';
+        }
+    }
+} 
+#endif
 
 
 void SourceCode::Compile()
@@ -101,6 +140,10 @@ bool SourceCode::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib
         PG_LOG('ERR_', "Invalid shader extension");
         return false;
     }
+
+#if PEGASUS_ENABLE_PROXIES
+    SetFullFilePath(asset->GetPath());
+#endif
 
     Io::FileBuffer* fb = asset->Raw();
     SetSource(fb->GetBuffer(), fb->GetFileSize());

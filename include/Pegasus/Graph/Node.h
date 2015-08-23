@@ -15,13 +15,15 @@
 #include "Pegasus/Graph/NodeData.h"
 #include "Pegasus/PropertyGrid/PropertyGrid.h"
 #include "Pegasus/Core/Ref.h"
+#include "Pegasus/Core/Ref.h"
+#include "Pegasus/Core/RefCounted.h"
 
 namespace Pegasus {
 namespace Graph {
 
 
 //! Base node class for all graph-based systems (textures, meshes, shaders, etc.)
-class Node
+class Node : public Core::RefCounted
 {
     template<class C> friend class Pegasus::Core::Ref;
 
@@ -211,11 +213,6 @@ protected:
     virtual void OnRemoveInput(unsigned int index);
 
 
-    //! Get the current reference counter
-    //! \return Number of Ref<Node> objects pointing to the current object (>= 0)
-    inline int GetRefCount() const { return mRefCount; }
-
-
     //! Get the property grid
     //! \return Reference to the property grid
     inline const PropertyGrid::PropertyGrid & GetPropertyGrid() const { return mPropertyGrid; }
@@ -245,24 +242,11 @@ private:
     // Nodes cannot be copied, only references to them
     PG_DISABLE_COPY(Node)
 
-
-    //! Increment the reference counter, used by Ref<Node>
-    inline void AddRef() { mRefCount++; }
-
-    //! Decrease the reference counter, and delete the current object
-    //! if the counter reaches 0
-    void Release();
-
-
     //! Allocator used for node internal data (except the attached NodeData)
     Alloc::IAllocator* mNodeAllocator;
 
     //! Allocator used for NodeData
     Alloc::IAllocator* mNodeDataAllocator;
-
-    //! Reference counter
-    //! \todo Use atomic integer
-    int mRefCount;
 
     //! Pointers to the input nodes (only the first mNumInputs nodes are valid)
     Pegasus::Core::Ref<Node> mInputs[MAX_NUM_INPUTS];

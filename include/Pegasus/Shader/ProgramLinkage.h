@@ -126,14 +126,12 @@ public:
     virtual const char* GetDisplayName() const { return GetName(); }
 
     //! returns the proxy accessor for this program. Only available in dev mode.
-    IProgramProxy * GetProxy() { return &mProxy; }
+    virtual AssetLib::IRuntimeAssetObjectProxy * GetProxy() { return &mProxy; }
+    virtual const AssetLib::IRuntimeAssetObjectProxy * GetProxy() const { return &mProxy; }
 
     //! Sets the shader tracker for shader / program book keeping
     void SetShaderTracker(ShaderTracker* shaderTracker) { mShaderTracker = shaderTracker; }
 #endif
-
-    //! \return true if this asset is a program, false otherwise
-    static bool IsProgram(const Pegasus::AssetLib::Asset* asset);
 
 protected:
     //! overrides, do not use

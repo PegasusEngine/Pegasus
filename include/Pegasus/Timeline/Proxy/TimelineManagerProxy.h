@@ -84,19 +84,6 @@ public:
     //! \param event listener reference
     virtual void RegisterEventListener(Pegasus::Core::CompilerEvents::ICompilerEventListener * eventListener);
 
-    //! loads a script from a file path
-    //! \return the script proxy dispatched
-    virtual Core::ISourceCodeProxy* OpenScript(const char* path);
-
-    //! creates a script from an asset
-    //! \return the source code proxy
-    virtual Core::ISourceCodeProxy* OpenScript(AssetLib::IAssetProxy* asset);
-
-    //! closes a script from editing
-    virtual void CloseScript(Core::ISourceCodeProxy* script);
-
-    //! \return true if its a blockscript, false otherwise
-    virtual bool IsTimelineScript(const AssetLib::IAssetProxy* asset) const;
     
 private:
 
@@ -104,9 +91,6 @@ private:
 
     //! Proxied timeline object
     TimelineManager * const mTimelineManager;
-    
-    //list of opened scripts
-    Utils::Vector<TimelineSourceRef> mOpenedScripts;
 };
 
 

@@ -26,10 +26,21 @@
     <ClInclude Include="..\..\..\Include\Pegasus\PegasusInternal.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Include\Pegasus\PegasusAssetTypes.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Source\Pegasus\Version.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Pegasus\PegasusAssetTypes.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Include\Pegasus\PegasusAssetTypes.inl">
+      <Filter>Include</Filter>
+    </None>
   </ItemGroup>
 </Project>

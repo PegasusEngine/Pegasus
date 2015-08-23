@@ -50,7 +50,7 @@ class TimelineScript : public TimelineSource, public BlockScript::IBlockScriptCo
 public:
 
     //! Constructor
-    TimelineScript(Alloc::IAllocator* alloc, const char* name, Core::IApplicationContext* appContext);
+    TimelineScript(Alloc::IAllocator* alloc, Core::IApplicationContext* appContext);
 
     //! Destructor
     virtual ~TimelineScript();

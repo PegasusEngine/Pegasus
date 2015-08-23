@@ -86,6 +86,14 @@ public:
     //! Callback, implement here functionality that requires saving of current object
     virtual void OnSaveFocusedObject();
 
+    //! Implement this function with functionality on how to process for edit.
+    //! Only objects of type retured in GetTargetAssetTypes will be the ones opened.
+    virtual void OnOpenObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+
+    //! Switch that holds every pegasus asset type that this dock widget can open for edit.
+    //! Asset types that get this type association, will be the ones passed through OnOpenRequest function 
+    virtual const Pegasus::PegasusAssetTypeDesc*const* GetTargetAssetTypes() const;
+
 signals:
 
     //! called when the editor needs the asset library to freeze the ui
@@ -98,10 +106,6 @@ signals:
     void SendSourceIoMessage(SourceIOMessageController::Message msg);
 
 public slots:
-
-    //! opens a CodeUserData in the text editor
-    //! \param CodeUserData the code to open
-    void RequestOpen(Pegasus::Core::ISourceCodeProxy* code);
 
     //! slot to be called when a code wants to be closed.
     //! \param code asset object to close

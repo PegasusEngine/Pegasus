@@ -202,7 +202,8 @@ Asset::Asset(Alloc::IAllocator* allocator, Pegasus::AssetLib::AssetLib* lib, Ass
   mChildObjects(allocator),
   mRoot(nullptr),
   mRuntimeData(nullptr),
-  mAssetLib(lib)
+  mAssetLib(lib),
+  mTypeDesc(nullptr)
 {
     mPathString[0] = '\0';
     mAstAllocator.Initialize(AST_PAGE_SIZE, allocator);
@@ -216,6 +217,10 @@ Asset::Asset(Alloc::IAllocator* allocator, Pegasus::AssetLib::AssetLib* lib, Ass
 Asset::~Asset()
 {
     Clear();
+    if (GetRuntimeData() != nullptr)
+    {
+        GetRuntimeData()->mAsset = nullptr;
+    }
 }
 
 Object* Asset::NewObject()

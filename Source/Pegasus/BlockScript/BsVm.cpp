@@ -215,7 +215,14 @@ void MoveCommand(Ast::Idd* idd, Ast::Exp* exp, BsVmState& state)
     }
     else if (exp->GetExpType() == Ast::Imm::sType)
     {
-        *dest = static_cast<Ast::Imm*>(exp)->GetVariant().i[0];
+        if (byteSize <= sizeof(int))
+        {
+            *dest = static_cast<Ast::Imm*>(exp)->GetVariant().i[0];
+        }
+        else
+        {
+            Pegasus::Utils::Memcpy(dest, &static_cast<Ast::Imm*>(exp)->GetVariant(), byteSize);
+        }
     }
     else
     {

@@ -69,7 +69,6 @@ void Texture_SetOperatorInput(FunCallbackContext& context);
 void Texture_SetGeneratorInput(FunCallbackContext& context);
 
 /////Node Manager Methods////////////////////////////////////
-void Node_CreateProgramLinkage(FunCallbackContext& context);
 void Node_LoadProgram(FunCallbackContext& context);
 void Node_CreateTexture(FunCallbackContext& context);
 void Node_CreateTextureGenerator(FunCallbackContext& context);
@@ -479,14 +478,6 @@ static void RegisterFunctions(BlockLib* lib)
             { nullptr },
             Util_GetWidthHeightAspect
         },
-        // Node constructors
-        {
-            "CreateProgramLinkage",
-            "ProgramLinkage",
-            {"string",nullptr},
-            {"name"  ,nullptr},
-            Node_CreateProgramLinkage
-        },
         {
             "LoadProgram",
             "ProgramLinkage",
@@ -819,16 +810,6 @@ void Texture_SetGeneratorInput(FunCallbackContext& context)
 /////////////////////////////////////////////////////////////
 //!> Node Manager functions
 /////////////////////////////////////////////////////////////
-void Node_CreateProgramLinkage(FunCallbackContext& context)
-{
-    FunParamStream stream(context);
-    BsVmState* state = context.GetVmState();
-    Application::RenderCollection* container = GetContainer(state);
-
-    const char* name = stream.NextBsStringArgument();
-    Shader::ProgramLinkageRef prog = container->GetAppContext()->GetShaderManager()->CreateProgram(name);
-    stream.SubmitReturn( container->AddProgram(&(*prog)) );
-}
 
 void Node_LoadProgram(FunCallbackContext& context)
 {

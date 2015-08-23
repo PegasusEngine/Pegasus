@@ -1,6 +1,7 @@
 #ifndef PEGASUS_SHADERMANAGER_H
 #define PEGASUS_SHADERMANAGER_H
 
+#include "Pegasus/AssetLib/AssetRuntimeFactory.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Shader/ShaderSource.h"
 #include "Pegasus/Shader/ShaderStage.h"
@@ -35,54 +36,41 @@ namespace Shader
 class IShaderFactory;
 
 //! ShaderManager, manages and keeps up with shader data
-class ShaderManager
+class ShaderManager : public AssetLib::AssetRuntimeFactory
 {
 public:
+    //! Constructor
+    //! \param nodeManager - the node manager
+    //! \param the shader factory
     ShaderManager(Graph::NodeManager * nodeManager, IShaderFactory * factory);
+
+    //! Destructor
     virtual ~ShaderManager();
 
     //! Load a shader stage from a file.
-    //! \param filename
-    //!             .ps - pixel shader
-    //!             .vs - vertex shader
-    //!             .tcs -tesselation control  shader
-    //!             .tes -tesselation evaluation shader
-    //!             .gs - geometry shader
-    //!             .cs - compute shader
     //! \return null on error, stage on success 
     ShaderStageReturn LoadShader(const char* filename);
 
-    //! Load a shader stage from a file.
+    //! Load a shader header file, from a file.
     //! \param filename
-    //!             .h - loads a shader header
-    //! \return null on error, stage on success 
+    //! \return null on error, source on success 
     ShaderSourceReturn LoadHeader(const char* filename);
 
     //! Loads a program from a file asset
+    //! \param program on success, otherwise null
     ProgramLinkageRef LoadProgram(const char * filename);
 
-    //! \return true if the asset passed is a program, false otherwise
-    bool IsProgram(const AssetLib::Asset* asset) const;
+    //! Creates a new shader node.
+    //! \return new shader node.
+    ShaderStageReturn CreateShader();
 
-    //! Requests creation of a Shader from an asset. This is the core function that populates a node from an asset
-    //! \param asset the asset to be used as a database to create a node
-    //! \return node pointer to return.
-    ShaderStageReturn CreateShader(AssetLib::Asset* asset);
+    //! Creates a new shader header file.
+    //! \return new header file.
+    ShaderSourceReturn CreateHeader();
 
-    //! Requests creation of a Shader from an asset. This is the core function that populates a node from an asset
-    //! \param asset the asset to be used as a database to create a node
-    //! \return node pointer to return.
-    ShaderSourceReturn CreateHeader(AssetLib::Asset* asset);
-
-    //! Requests creation of a Program from an asset. This is the core function that populates a node from an asset
-    //! \param asset the asset to be used as a database to create a node
-    //! \return node pointer to return.
-    ProgramLinkageReturn CreateProgram(AssetLib::Asset* asset);
-
-    //! Requests creation of a Program
-    //! \param name of this program
-    //! \return node pointer to return.
-    ProgramLinkageReturn CreateProgram(const char* name);
+    //! Creates a new program.
+    //! \return new program.
+    ProgramLinkageReturn CreateProgram();
 
 #if PEGASUS_ENABLE_PROXIES
 
@@ -103,13 +91,17 @@ public:
     void RegisterEventListener(Pegasus::Core::CompilerEvents::ICompilerEventListener * eventListener) { mEventListener = eventListener; }
 #endif
 
-    //! Sets the asset factory of this manager.
-    //! \param assetFactory the asset factory to set
-    void SetAssetLib(AssetLib::AssetLib* assetLib)  { mAssetLib = assetLib; }
+protected:
+    
+    //! Creates a runtime object from an asset. This function must add a reference to the 
+    //! runtime object returned, (if its ref counted)
+    //! \param the asset type requested.
+    //! \return the runtime asset created. return null if unsuccessfull.
+    virtual AssetLib::RuntimeAssetObjectRef CreateRuntimeObject(const PegasusAssetTypeDesc* desc);
 
-    //! Gets the asset factory of this manager.
-    //! \return assetFactory the asset factory to get
-    AssetLib::AssetLib* GetAssetLib() const  { return mAssetLib; }
+    //! Returns a null terminated list of asset descriptions this runtime factory will accept.
+    //! \return a null terminated list of asset descriptions
+    virtual const PegasusAssetTypeDesc*const* GetAssetTypes() const;
 
 private:
     //! Internal function. registers the node types.
@@ -134,8 +126,6 @@ private:
 #if PEGASUS_USE_GRAPH_EVENTS
     Pegasus::Core::CompilerEvents::ICompilerEventListener * mEventListener;
 #endif
-
-    AssetLib::AssetLib* mAssetLib;
 };
 
 }//namespace Shader

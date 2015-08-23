@@ -59,32 +59,23 @@ void ProgramIOMessageController::OnRenderThreadRemoveShader(Pegasus::Shader::IPr
 void ProgramIOMessageController::OnRenderThreadModifyShader(Pegasus::Shader::IProgramProxy* program, const QString& path)
 {
     Pegasus::AssetLib::IAssetLibProxy* assetLib = mApp->GetAssetLibProxy();
-    Pegasus::Shader::IShaderManagerProxy* shaderManagerProxy = mApp->GetShaderManagerProxy();
-    Pegasus::AssetLib::IAssetProxy* asset = nullptr;
     QByteArray ba = path.toLocal8Bit();
     const char* asciiPath = ba.constData();
-    if (Pegasus::Io::ERR_NONE == assetLib->LoadAsset(asciiPath, &asset))
+    bool isNew = false;
+    Pegasus::AssetLib::IRuntimeAssetObjectProxy* object = assetLib->LoadObject(asciiPath, &isNew);
+
+    if ( object != nullptr )
     {
-        if (shaderManagerProxy->IsShader(asset))
+        Pegasus::Shader::IShaderProxy* openedShader = static_cast<Pegasus::Shader::IShaderProxy*>(object);
+        program->SetShader(openedShader);                            
+        
+        if (isNew) //only close if this shader was never open to avoid destroying memory
         {
-            bool wasShaderOpen = false;
-            Pegasus::Shader::IShaderProxy* openedShader = shaderManagerProxy->OpenShader(asset, &wasShaderOpen);
-            if (openedShader != nullptr)
-            {
-                program->SetShader(openedShader);                            
-                
-                if (!wasShaderOpen) //only close if this shader was never open to avoid destroying memory
-                {
-                    shaderManagerProxy->CloseShader(openedShader); //no need to keep this shader open
-                }
-                emit SignalUpdateProgramView();
-                emit SignalRedrawViewports();
-            }
+            assetLib->CloseObject(object); //no need to keep this shader open
         }
-        else
-        { 
-            //todo: error
-        }
+        emit SignalUpdateProgramView();
+        emit SignalRedrawViewports();
+
     }
     else
     {

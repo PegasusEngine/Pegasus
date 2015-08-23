@@ -11,7 +11,7 @@
 
 #ifndef PEGASUS_CORE_REF_H
 #define PEGASUS_CORE_REF_H
-
+#include "Pegasus/Core/Assertion.h"
 namespace Pegasus {
 namespace Core {
 

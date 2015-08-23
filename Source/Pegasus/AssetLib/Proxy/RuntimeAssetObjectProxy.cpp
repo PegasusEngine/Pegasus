@@ -6,6 +6,7 @@
 #include "Pegasus/AssetLib/Asset.h"
 #include "Pegasus/AssetLib/AssetLib.h"
 #include "Pegasus/Utils/String.h"
+#include "Pegasus/Core/Log.h"
 
 
 using namespace Pegasus;
@@ -49,13 +50,16 @@ bool RuntimeAssetObjectProxy::ReloadFromAsset()
     PG_ASSERTSTR(Utils::Strlen(oldPath) + 1 <= MAX_TEMP_PATH, "Temporary path buffer is not big enough! you must increaseit! this will cause a stomp.");
     
     Utils::Strcat(mTemporaryPath, oldPath);
-    
-    lib->DestroyAsset(asset);    
+    bool wasStructured = asset->GetFormat() == Asset::FMT_STRUCTURED;
+    const Pegasus::PegasusAssetTypeDesc* oldType = asset->GetTypeDesc();
+    lib->UnloadAsset(asset);    
     asset = nullptr;
-    if (lib->LoadAsset(mTemporaryPath, &asset) != Pegasus::Io::ERR_NONE)
+    if (lib->LoadAsset(mTemporaryPath, wasStructured, &asset) != Pegasus::Io::ERR_NONE)
     {
+        PG_LOG('ERR_', "Trying to reload an asset (%s) but failed.", mTemporaryPath);
         return false;
     }
+    asset->SetTypeDesc(oldType);
     bool retValue = mObject->Read(asset);
     if (asset != mObject->GetOwnerAsset())
     {
@@ -68,10 +72,6 @@ bool RuntimeAssetObjectProxy::ReloadFromAsset()
     }
 }
 
-void RuntimeAssetObjectProxy::Bind(IAssetProxy* asset)
-{
-    mObject->Bind(static_cast<AssetProxy*>(asset)->GetObject());
-}
 
 #else
 PEGASUS_AVOID_EMPTY_FILE_WARNING

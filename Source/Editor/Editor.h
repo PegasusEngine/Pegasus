@@ -29,6 +29,7 @@
 #include "Pegasus/AssetLib/Shared/IRuntimeAssetObjectProxy.h"
 
 #include <QtWidgets/QMainWindow>
+#include <QMap>
 
 class ApplicationManager;
 class LogManager;
@@ -266,6 +267,9 @@ public slots:
     //! Actions taken when a widget is not on focus
     void OutDockFocus(PegasusDockWidget* target);
 
+    //! Action taken when the asset controller requests opening of assets
+    void OnOpenObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+
     //------------------------------------------------------------------------------------
 
 private:
@@ -392,6 +396,9 @@ private:
 
     //! Master list of widgets
     QVector<PegasusDockWidget*> mWidgets;
+
+    //! Mapping that maps an asset type to a widget that can process and open it.
+    QMap<int, PegasusDockWidget*> mTypeGuidWidgetMapping;
 };
 
 

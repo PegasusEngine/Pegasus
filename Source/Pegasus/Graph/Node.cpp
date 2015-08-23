@@ -18,9 +18,10 @@ namespace Graph {
 
 
 Node::Node(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
-:   mNodeAllocator(nodeAllocator),
+:   
+    Core::RefCounted(nodeAllocator),
+    mNodeAllocator(nodeAllocator),
     mNodeDataAllocator(nodeDataAllocator),
-    mRefCount(0),
     mNumInputs(0),
     mPropertyGrid()
 {
@@ -45,9 +46,6 @@ Node::Node(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocato
 
 Node::~Node()
 {
-    //! \todo Use the actual integer part of the atomic int in the assert message
-    PG_ASSERTSTR(mRefCount == 0, "Trying to destroy a Node that still has owners (mRefCount == %d)", mRefCount);
-
     // Release all inputs
     if (mNumInputs > 0)
     {
@@ -334,23 +332,6 @@ void Node::OnRemoveInput(unsigned int index)
 {
     // Empty default behavior
 }
-
-//----------------------------------------------------------------------------------------
-
-void Node::Release()
-{
-    PG_ASSERTSTR(mRefCount > 0, "Invalid reference counter (%d), it should have a positive value", mRefCount);
-    --mRefCount;
-
-    if (mRefCount <= 0)
-    {
-        //! \todo The destructor is called explicitly here because PG_DELETE does not do it.
-        //!       This should be replaced by implicit destructors
-        this->~Node();
-        PG_DELETE(mNodeAllocator, this);
-    }
-}
-
 
 }   // namespace Graph
 }   // namespace Pegasus

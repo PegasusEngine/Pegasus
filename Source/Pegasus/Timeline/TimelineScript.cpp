@@ -79,9 +79,9 @@ static int Pegasus_PrintFloat(float f)
     return 0;
 }
 
-TimelineScript::TimelineScript(IAllocator* allocator, const char* name, Core::IApplicationContext* appContext)
+TimelineScript::TimelineScript(IAllocator* allocator, Core::IApplicationContext* appContext)
     :
-    TimelineSource(allocator, name),
+    TimelineSource(allocator),
     mSerialVersion(0),
     mScript(nullptr),
     mIsDirty(true),
@@ -155,7 +155,9 @@ void TimelineScript::CallGlobalScopeDestroy(BsVmState* state)
        bool res = mScript->ExecuteFunction(state, mDestroyBindPoint, nullptr, 0, &output, sizeof(output));
        if (!res)
        {
-           PG_LOG('ERR_', "Error executing Timeline_Destroy function of script %s.", GetScriptName());
+    #if PEGASUS_ENABLE_PROXIES
+           PG_LOG('ERR_', "Error executing Timeline_Destroy function of script %s.", GetDisplayName());
+    #endif
        }
     }
 }
@@ -222,7 +224,9 @@ void TimelineScript::CallUpdate(float beat, BsVmState* state)
             bool res = mScript->ExecuteFunction(state, mUpdateBindPoint, &beat, sizeof(beat), &output, sizeof(output));
             if (!res)
             {
-                PG_LOG('ERR_', "Error executing Update function of script %s.", GetScriptName());
+#if PEGASUS_ENABLE_PROXIES
+                PG_LOG('ERR_', "Error executing Update function of script %s.", GetDisplayName());
+#endif
             }
         }
     }
@@ -236,7 +240,9 @@ void TimelineScript::CallRender(float beat, BsVmState* state)
         bool res = mScript->ExecuteFunction(state, mRenderBindPoint, &beat, sizeof(beat), &output, sizeof(output));
         if (!res)
         {
-            PG_LOG('ERR_', "Error executing Render function of script %s.", GetScriptName());
+#if PEGASUS_ENABLE_PROXIES
+            PG_LOG('ERR_', "Error executing Render function of script %s.", GetDisplayName());
+#endif
         }
     }
 }
@@ -250,7 +256,9 @@ TimelineScript::~TimelineScript()
 
 void TimelineScript::OnCompilationBegin()
 {
-    PG_LOG('TMLN', "Compilation started for blockscript: %s", GetScriptName());    
+#if PEGASUS_ENABLE_PROXIES
+    PG_LOG('TMLN', "Compilation started for blockscript: %s", GetDisplayName());    
+#endif
 
     GRAPH_EVENT_DISPATCH(
         this,
@@ -280,11 +288,15 @@ void TimelineScript::OnCompilationEnd(bool success)
 {
     if (success)
     {
-        PG_LOG('TMLN', "Compilation succeeded for script %s", GetScriptName());
+#if PEGASUS_ENABLE_PROXIES
+        PG_LOG('TMLN', "Compilation succeeded for script %s", GetDisplayName());
+#endif
     }
     else
     {
-        PG_LOG('ERR_', "Compilation failed for script %s", GetScriptName());
+#if PEGASUS_ENABLE_PROXIES
+        PG_LOG('ERR_', "Compilation failed for script %s", GetDisplayName());
+#endif
     }
 
     GRAPH_EVENT_DISPATCH (

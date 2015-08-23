@@ -31,7 +31,7 @@ Pegasus::Shader::IShaderProxy * Pegasus::Shader::ProgramProxy::GetShader(unsigne
     {
         Pegasus::Shader::ShaderStageRef shaderInput = mObject->GetInput(i);
         Pegasus::Shader::ShaderStage * shaderInputUnsafe = &(*shaderInput);
-        return shaderInputUnsafe->GetProxy();
+        return static_cast<Pegasus::Shader::IShaderProxy *>(shaderInputUnsafe->GetProxy());
     }
     else
     {

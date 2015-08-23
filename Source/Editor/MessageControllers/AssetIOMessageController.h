@@ -20,21 +20,11 @@ class PegasusDockWidget;
 
 namespace Pegasus
 {
+    struct PegasusAssetTypeDesc;
+
     namespace App
     {
         class IApplicationProxy;
-    }
-
-    namespace Shader
-    {
-        class IProgramProxy;
-        class IShaderProxy;
-    }
-
-    namespace Timeline
-    {
-        class ITimelineProxy;
-
     }
 
     namespace AssetLib
@@ -64,16 +54,9 @@ public:
         {
             INVALID = -1,
             OPEN_ASSET,
-            CLOSE_CODE,
-            SAVE_CODE,
-            SAVE_PROGRAM,
-            CLOSE_PROGRAM,
-            SAVE_TIMELINE,
-            NEW_SHADER,
-            NEW_TIMELINESCRIPT,
-            NEW_PROGRAM,
-            NEW_MESH,
-            NEW_TEXTURE
+            CLOSE_ASSET,
+            SAVE_ASSET,
+            NEW_ASSET,
         };
 
         enum IoResponseMessage
@@ -84,26 +67,17 @@ public:
             IO_NEW_ERROR
         };
     
-        //! Combo holder union of node / asset type
-        union AssetNode
-        {
-            void                            * mPtr;
-            Pegasus::Core::ISourceCodeProxy * mCode;
-            Pegasus::Shader::IShaderProxy   * mShader;
-            Pegasus::Shader::IProgramProxy  * mProgram;
-            Pegasus::Timeline::ITimelineProxy * mTimeline;
-            Pegasus::AssetLib::IAssetProxy  * mAsset;
-        };
-    
         //!Constructor
-        Message() : mMessageType(INVALID)
+        Message() : mMessageType(INVALID),
+                    mObject(nullptr),
+                    mTypeDesc(nullptr)
         {
-            mNode.mPtr = nullptr;
         }
     
-        explicit Message(MessageType t) : mMessageType(t)
+        explicit Message(MessageType t) : mMessageType(t),
+                                          mObject(nullptr),
+                                          mTypeDesc(nullptr)
         {
-            mNode.mPtr = nullptr;
         }
     
         //! Destructor
@@ -113,19 +87,23 @@ public:
     
         //Getters
         MessageType GetMessageType() const { return mMessageType; }
-        QString GetString() const { return mString; }
-        const AssetNode& GetAssetNode() const { return mNode; }
-        AssetNode& GetAssetNode() { return mNode; }
+        QString GetString() const { return mString; }        
+        Pegasus::AssetLib::IRuntimeAssetObjectProxy* GetObject() const { return mObject; }
+        const Pegasus::PegasusAssetTypeDesc* GetTypeDesc() const { return mTypeDesc; }
+    
     
         //Setters
         void SetMessageType(MessageType t) { mMessageType = t; }
         void SetString(const QString& s) { mString = s; }
-        void SetAssetNode(const AssetNode& node) { mNode = node; }
+        void SetObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* obj) { mObject = obj; }
+        void SetTypeDesc(const Pegasus::PegasusAssetTypeDesc* desc) { mTypeDesc = desc; }
     
     
     private:
+    
+        Pegasus::AssetLib::IRuntimeAssetObjectProxy  * mObject;
+        const Pegasus::PegasusAssetTypeDesc* mTypeDesc;
         MessageType mMessageType;
-        AssetNode mNode;
         QString mString;
     
     };
@@ -141,12 +119,9 @@ public:
 
 signals:
 
-    //!Signal triggered when a code is requested for open
-    void SignalOpenCode(Pegasus::Core::ISourceCodeProxy* code);
+    //! Signal triggered when an object is requested for opening. Calls the UI to open on a proper editor.
+    void SignalOpenObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
     
-    //!Signal triggered when a program is requested for open
-    void SignalOpenProgram(Pegasus::Shader::IProgramProxy* program);
-
     //! Signal triggered when the UI needs to update the active node views
     void SignalUpdateNodeViews();
 
@@ -157,26 +132,24 @@ signals:
     void SignalPostMessage(PegasusDockWidget* sender, AssetIOMessageController::Message::IoResponseMessage id);
 
 private:
-    //! Called when a shader is requested for opening from the render thread
-    void OnRenderRequestOpenAsset(const QString& path);
+    
+    //! Opens a serialized object stored in the asset path passed.
+    //! \param path the file path containing the asset
+    void OnRenderRequestOpenObject(const QString& path);
 
-    //! Called when a shader is requested for opening from the render thread
-    void OnRenderRequestCloseCode(Pegasus::Core::ISourceCodeProxy* code);
+    //! Closes (decreases ref count) on serialized object
+    //! \param object to close
+    void OnRenderRequestCloseObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
 
-    //! Called when a program is requested for opening from the render thread
-    void OnRenderRequestCloseProgram(Pegasus::Shader::IProgramProxy* program);
-
-    //! Called when an object  is requested to be saved from the render thread
+    //! Saves object to disk.
+    //! \param sender dock widget - for message responses
+    //! \param object - the object to save
     void OnSaveObject(PegasusDockWidget* sender, Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
 
-    //! Called when a new shader is requested from the render thread
-    void OnRenderRequestNewShader(PegasusDockWidget* sender, const QString& path);
-
-    //! Called when a new timeline script is requested from the render thread
-    void OnRenderRequestNewTimelineScript(PegasusDockWidget* sender, const QString& path);
-
-    //! Called when a program is requested from the render thread
-    void OnRenderRequestNewProgram(PegasusDockWidget* sender, const QString& path);
+    //! Requests a new object internally
+    //! \param path - the path to use to create the object
+    //! \param desc - the description of the object used
+    void OnRenderRequestNewObject(PegasusDockWidget* sender, const QString& path, const Pegasus::PegasusAssetTypeDesc* desc);
 
     Pegasus::App::IApplicationProxy* mApp;
     

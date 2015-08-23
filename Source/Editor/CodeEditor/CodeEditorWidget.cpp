@@ -17,6 +17,7 @@
 #include "CodeEditor/CodeTextEditorWidget.h"
 #include "CodeEditor/SourceCodeManagerEventListener.h"
 #include "CodeEditor/CodeTextEditorTreeWidget.h"
+#include "Pegasus/PegasusAssetTypes.h"
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 #include "Pegasus/AssetLib/Shared/IRuntimeAssetObjectProxy.h"
 #include "Widgets/NodeFileTabBar.h"
@@ -398,8 +399,8 @@ void CodeEditorWidget::SignalSaveCurrentCode()
         sourceCode->SetSource(asciiData, plainText.size());
 
         AssetIOMessageController::Message msg;
-        msg.SetMessageType(AssetIOMessageController::Message::SAVE_CODE);
-        msg.GetAssetNode().mCode = sourceCode;
+        msg.SetMessageType(AssetIOMessageController::Message::SAVE_ASSET);
+        msg.SetObject(sourceCode);
         SendAssetIoMessage(msg);
 
     }
@@ -502,6 +503,7 @@ void CodeEditorWidget::OnSettingsChanged()
     mUi.mTreeEditor->ForceUpdateAllStyles();
 }
 
+
 void CodeEditorWidget::RequestClose(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object, QObject* extraData)
 {
     Pegasus::Core::ISourceCodeProxy* code = static_cast<Pegasus::Core::ISourceCodeProxy*>(object);
@@ -512,8 +514,8 @@ void CodeEditorWidget::RequestClose(Pegasus::AssetLib::IRuntimeAssetObjectProxy*
 
     //send a message to the render thread to close this code safely
     AssetIOMessageController::Message msg;
-    msg.SetMessageType(AssetIOMessageController::Message::CLOSE_CODE);
-    msg.GetAssetNode().mCode = codeToClose->GetSourceCode();
+    msg.SetMessageType(AssetIOMessageController::Message::CLOSE_ASSET);
+    msg.SetObject(codeToClose->GetSourceCode());
     SendAssetIoMessage(msg);
 }
 
@@ -598,10 +600,12 @@ void CodeEditorWidget::UpdateInstantCompilationButton(CodeUserData* code)
 
 }
 
-void CodeEditorWidget::RequestOpen(Pegasus::Core::ISourceCodeProxy* codeProxy)
+void CodeEditorWidget::OnOpenObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
 {
     show();
     activateWindow();
+    Pegasus::Core::ISourceCodeProxy* codeProxy = static_cast<Pegasus::Core::ISourceCodeProxy*>(object);
+    //TODO: bigass assert here
     CodeUserData* codeUserData = static_cast<CodeUserData*>(codeProxy->GetUserData());
     if (codeProxy == nullptr || codeUserData->GetDocument() == nullptr)
     {
@@ -634,4 +638,22 @@ void CodeEditorWidget::OnUIForAppClosed()
         mUi.mTabWidget->Close(0);
     }
     mCompilationRequestPending = false; //kill any compilation request
+}
+
+const Pegasus::PegasusAssetTypeDesc*const* CodeEditorWidget::GetTargetAssetTypes() const
+{
+    static const Pegasus::PegasusAssetTypeDesc* gTypes[] = {
+             &Pegasus::ASSET_TYPE_H_SHADER    
+            ,&Pegasus::ASSET_TYPE_VS_SHADER   
+            ,&Pegasus::ASSET_TYPE_PS_SHADER   
+            ,&Pegasus::ASSET_TYPE_GS_SHADER   
+            ,&Pegasus::ASSET_TYPE_TCS_SHADER  
+            ,&Pegasus::ASSET_TYPE_TES_SHADER  
+            ,&Pegasus::ASSET_TYPE_CS_SHADER   
+            ,&Pegasus::ASSET_TYPE_BLOCKSCRIPT  
+            ,&Pegasus::ASSET_TYPE_H_BLOCKSCRIPT
+            ,nullptr
+    };
+    
+    return gTypes;
 }

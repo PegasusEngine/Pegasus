@@ -15,6 +15,7 @@
 #include "Pegasus/Timeline/Shared/TimelineDefs.h"
 #include "Pegasus/Timeline/Proxy/TimelineProxy.h"
 #include "Pegasus/AssetLib/RuntimeAssetObject.h"
+#include "Pegasus/Core/RefCounted.h"
 
 namespace Pegasus {
 
@@ -44,7 +45,7 @@ namespace Timeline {
 //----------------------------------------------------------------------------------------
 
 //! Timeline management, manages a set of blocks stored in lanes to sequence demo rendering
-class Timeline : public AssetLib::RuntimeAssetObject
+class Timeline : public Core::RefCounted, public AssetLib::RuntimeAssetObject
 {
 public:
 
@@ -234,6 +235,11 @@ private:
     //! True if the start time has been modified to synchronize the beat of the timeline with the music
     bool mSyncedToMusic;
 };
+
+typedef Pegasus::Core::Ref<Timeline> TimelineRef;
+typedef Pegasus::Core::Ref<Timeline> & TimelineIn;
+typedef Pegasus::Core::Ref<Timeline> & TimelineInOut;
+typedef Pegasus::Core::Ref<Timeline> TimelineReturn;
 
 
 }   // namespace Timeline

@@ -12,6 +12,7 @@
 #include "Editor.h"
 #include "Log.h"
 #include "Assertion.h"
+#include "Pegasus/PegasusAssetTypes.h"
 #include "Application/ApplicationManager.h"
 #include "AssetLibrary/AssetLibraryWidget.h"
 #include "AssetLibrary/ProgramTreeModel.h"
@@ -26,6 +27,7 @@
 #include "Pegasus/AssetLib/Shared/IAssetLibProxy.h"
 #include "Pegasus/AssetLib/Shared/IAssetProxy.h"
 #include "Pegasus/Core/Shared/IoErrors.h"
+#include <QSignalMapper>
 #include <QMenu>
 #include <QGroupBox>
 #include <QItemSelectionModel>
@@ -36,6 +38,16 @@
 #include <qmessagebox.h>
 
 #include "Widgets/PegasusDockWidget.h"
+
+//global list of all the types
+static const Pegasus::PegasusAssetTypeDesc* gTypes[] = {
+#define REGISTER_ASSET_TYPE(r,g,n,e,is) &Pegasus:: ## r, 
+#include "Pegasus/PegasusAssetTypes.inl"
+#undef REGISTER_ASSET_TYPE
+};
+
+static const int gTypesCount = sizeof(gTypes)/sizeof(gTypes[0]);
+
 
 
 
@@ -105,44 +117,23 @@ void AssetLibraryWidget::SetupUi()
 QMenu* AssetLibraryWidget::CreateNewAssetMenu(const QString& name, QWidget* parent)
 {
     QMenu* assetLibMenuBar = new QMenu(name, this);    
-    QAction* a = nullptr;
-    assetLibMenuBar->addAction(a = new QAction("New &Mesh", this));
-    connect(a, SIGNAL(triggered(bool)),
-            this, SLOT(OnNewMesh(bool)));
+    
+    QSignalMapper* newButtonMapper = new QSignalMapper(this);
+    for (int i = 0; i < gTypesCount; ++i)
+    {
+        const Pegasus::PegasusAssetTypeDesc* type = gTypes[i];
+        QAction* a = new QAction(tr("New %1").arg(type->mTypeName), this);
+        assetLibMenuBar->addAction(a);
+        newButtonMapper->setMapping(a, i);
+        
+        connect(a, SIGNAL(triggered()),
+             newButtonMapper , SLOT(map()));
+    }
+    
+    connect(newButtonMapper, SIGNAL(mapped(int)),
+            this, SLOT(OnNewObject(int)));
 
-    assetLibMenuBar->addAction(a = new QAction("New &Program", this));
-    connect(a, SIGNAL(triggered(bool)),
-            this, SLOT(OnNewProgram(bool)));
-
-    QMenu* shaderCreationMenu = new QMenu("New &Shader", assetLibMenuBar);
-    shaderCreationMenu->addAction(a = new QAction("&Vertex Shader", this));
-    connect(a, SIGNAL(triggered(bool)),
-            this, SLOT(OnNewVS(bool)));
-    shaderCreationMenu->addAction(a = new QAction("&Pixel Shader", this));
-    connect(a, SIGNAL(triggered(bool)),
-            this, SLOT(OnNewPS(bool)));
-    shaderCreationMenu->addAction(a = new QAction("&Tesselation Control Shader", this));
-    connect(a, SIGNAL(triggered(bool)),
-            this, SLOT(OnNewTCS(bool)));
-    shaderCreationMenu->addAction(a = new QAction("Tesselation &Evaluation Shader", this));
-    connect(a, SIGNAL(triggered(bool)),
-            this, SLOT(OnNewTES(bool)));
-    shaderCreationMenu->addAction(a = new QAction("&Geometry Shader", this));
-    connect(a, SIGNAL(triggered(bool)),
-            this, SLOT(OnNewGS(bool)));
-    shaderCreationMenu->addAction(a = new QAction("&Compute Shader", this));
-    connect(a, SIGNAL(triggered(bool)),
-            this, SLOT(OnNewCS(bool)));
-    assetLibMenuBar->addMenu(shaderCreationMenu);
-
-    assetLibMenuBar->addAction(a = new QAction("New &Texture", this));
-    connect(a, SIGNAL(triggered(bool)),
-            this, SLOT(OnNewTexture(bool)));
-
-    assetLibMenuBar->addAction(a = new QAction("New Timeline Sc&ript", this));
-    connect(a, SIGNAL(triggered(bool)),
-            this, SLOT(OnNewTimelineScript(bool)));
-
+    mNewButtonMappers.push_back(newButtonMapper);
     return assetLibMenuBar;
 
 }
@@ -167,7 +158,7 @@ QString AssetLibraryWidget::AskFilePath(const QString& filter)
 
 //----------------------------------------------------------------------------------------
 
-void AssetLibraryWidget::SaveAsFile(const QString& filter, AssetIOMessageController::Message::MessageType newAssetMessageType)
+void AssetLibraryWidget::SaveAsFile(const QString& filter, const Pegasus::PegasusAssetTypeDesc* desc)
 {
     if (Editor::GetInstance().GetApplicationManager().IsApplicationOpened()) 
     {
@@ -175,8 +166,9 @@ void AssetLibraryWidget::SaveAsFile(const QString& filter, AssetIOMessageControl
         if (selectedFile.size() != 0)
         {
             AssetIOMessageController::Message msg;
-            msg.SetMessageType(newAssetMessageType);
+            msg.SetMessageType(AssetIOMessageController::Message::NEW_ASSET);
             msg.SetString(selectedFile);
+            msg.SetTypeDesc(desc);
             SendAssetIoMessage(msg);
         }
     }
@@ -184,62 +176,12 @@ void AssetLibraryWidget::SaveAsFile(const QString& filter, AssetIOMessageControl
 
 //----------------------------------------------------------------------------------------
 
-void AssetLibraryWidget::OnNewMesh(bool enabled)
+void AssetLibraryWidget::OnNewObject(int index)
 {
+    ED_ASSERT(index < gTypesCount);
+    const Pegasus::PegasusAssetTypeDesc* desc = gTypes[index];
     
-    SaveAsFile(tr("Mesh (*.pas)"), AssetIOMessageController::Message::NEW_MESH);
-}
-
-void AssetLibraryWidget::OnNewProgram(bool enabled)
-{
-    SaveAsFile(tr("Program (*.pas)"), AssetIOMessageController::Message::NEW_PROGRAM);
-}
-
-
-void AssetLibraryWidget::OnNewVS(bool enabled)
-{
-    const Pegasus::Shader::ShaderType st = Pegasus::Shader::VERTEX;
-    SaveAsFile(tr("%1 Shader (*.%2)").arg(Pegasus::Shader::gShaderTypeNames[st], Pegasus::Shader::gShaderExtensions[st]), AssetIOMessageController::Message::NEW_SHADER );
-}
-
-void AssetLibraryWidget::OnNewPS(bool enabled)
-{
-    const Pegasus::Shader::ShaderType st = Pegasus::Shader::FRAGMENT;
-    SaveAsFile(tr("%1 Shader (*.%2)").arg(Pegasus::Shader::gShaderTypeNames[st], Pegasus::Shader::gShaderExtensions[st]), AssetIOMessageController::Message::NEW_SHADER );
-}
-
-void AssetLibraryWidget::OnNewTCS(bool enabled)
-{
-    const Pegasus::Shader::ShaderType st = Pegasus::Shader::TESSELATION_CONTROL;
-    SaveAsFile(tr("%1 Shader (*.%2)").arg(Pegasus::Shader::gShaderTypeNames[st], Pegasus::Shader::gShaderExtensions[st]), AssetIOMessageController::Message::NEW_SHADER);
-}
-
-void AssetLibraryWidget::OnNewTES(bool enabled)
-{
-    const Pegasus::Shader::ShaderType st = Pegasus::Shader::TESSELATION_EVALUATION;
-    SaveAsFile(tr("%1 Shader (*.%2)").arg(Pegasus::Shader::gShaderTypeNames[st], Pegasus::Shader::gShaderExtensions[st]), AssetIOMessageController::Message::NEW_SHADER);
-}
-
-void AssetLibraryWidget::OnNewGS(bool enabled)
-{
-    const Pegasus::Shader::ShaderType st = Pegasus::Shader::GEOMETRY;
-    SaveAsFile(tr("%1 Shader (*.%2)").arg(Pegasus::Shader::gShaderTypeNames[st], Pegasus::Shader::gShaderExtensions[st]), AssetIOMessageController::Message::NEW_SHADER);
-}
-
-void AssetLibraryWidget::OnNewCS(bool enabled)
-{
-    const Pegasus::Shader::ShaderType st = Pegasus::Shader::COMPUTE;
-    SaveAsFile(tr("%1 Shader (*.%2)").arg(Pegasus::Shader::gShaderTypeNames[st], Pegasus::Shader::gShaderExtensions[st]), AssetIOMessageController::Message::NEW_SHADER);
-}
-
-void AssetLibraryWidget::OnNewTexture(bool enabled)
-{
-    //SaveAsFile(tr("Texture (*.pas)"), TEXTURE);
-}
-
-void AssetLibraryWidget::OnNewTimelineScript(bool enabled)
-{
-    SaveAsFile(tr("Timeline Block Script (*.bs)"), AssetIOMessageController::Message::NEW_TIMELINESCRIPT);
+    SaveAsFile(tr("%1 (*.%2)").arg(desc->mTypeName).arg(desc->mExtension), desc);
 }
 
 //----------------------------------------------------------------------------------------
@@ -349,6 +291,12 @@ void AssetLibraryWidget::DisableProgramShaderViews()
 
 AssetLibraryWidget::~AssetLibraryWidget()
 {
+    //delete all mappers
+    for (QSignalMapper* mapper : mNewButtonMappers)
+    {
+        delete(mapper);
+    }
+
     delete mProgramTreeModel;
     delete mShaderListModel;
 }

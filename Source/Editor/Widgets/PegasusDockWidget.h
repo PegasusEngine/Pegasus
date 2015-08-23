@@ -17,6 +17,7 @@
 
 // fwd declarations
 namespace Pegasus {
+    struct PegasusAssetTypeDesc;
     namespace App {
         class IApplicationProxy;
     }
@@ -76,6 +77,14 @@ public:
     //! Callback, implement here functionality that requires saving of current object
     virtual void OnSaveFocusedObject() {}
 
+    //! Switch that holds every pegasus asset type that this dock widget can open for edit.
+    //! Asset types that get this type association, will be the ones passed through OnOpenRequest function 
+    virtual const Pegasus::PegasusAssetTypeDesc*const* GetTargetAssetTypes() const { return nullptr; }
+
+    //! Implement this function with functionality on how to process for edit.
+    //! Only objects of type retured in GetTargetAssetTypes will be the ones opened.
+    virtual void OnOpenObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object) { }
+
     //! Refocus this widget
     void PerformFocus();
 
@@ -106,6 +115,9 @@ public slots:
 
     //! Receives an io message
     void ReceiveAssetIoMessage(PegasusDockWidget* sender, AssetIOMessageController::Message::IoResponseMessage msg) { if (this == sender) { OnReceiveAssetIoMessage(msg); } }
+
+    //! Received when an object has be requested to be opened.
+    void ReceiveOpenRequest(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object) { OnOpenObject(object); }
 
 protected:
     // Receive an io message, to be implemented by the widget

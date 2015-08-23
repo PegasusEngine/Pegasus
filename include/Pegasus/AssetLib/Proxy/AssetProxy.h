@@ -38,6 +38,9 @@ namespace AssetLib
         //! \return the path of this asset
         virtual const char* GetPath() const; 
 
+        //! Gets the type description of this asset
+        virtual const PegasusAssetTypeDesc* GetTypeDesc() const;
+
         //! Sets the object of this proxy
         //! \param the asset object to save
         void SetObject(Asset* object) { mObject = object; }

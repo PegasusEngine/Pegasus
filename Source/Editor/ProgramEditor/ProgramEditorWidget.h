@@ -78,10 +78,15 @@ public:
     //! Callback, implement here functionality that requires saving of current object
     virtual void OnSaveFocusedObject();
 
+    //! Implement this function with functionality on how to process for edit.
+    //! Only objects of type retured in GetTargetAssetTypes will be the ones opened.
+    virtual void OnOpenObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+
+    //! Switch that holds every pegasus asset type that this dock widget can open for edit.
+    //! Asset types that get this type association, will be the ones passed through OnOpenRequest function 
+    virtual const Pegasus::PegasusAssetTypeDesc*const* GetTargetAssetTypes() const ; 
+
 public slots:
-    //! Opens a program by gathering its state and displaying it in the ui
-    //! \param program the program to request open
-    void RequestOpenProgram(Pegasus::Shader::IProgramProxy* program);
 
     //! Closes a program.
     //! \param the tab index to request close

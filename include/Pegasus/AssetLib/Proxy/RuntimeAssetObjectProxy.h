@@ -51,10 +51,6 @@ public:
     //! \return true if successful, false otherwise
     virtual bool ReloadFromAsset();
 
-    //! Use this to bind a new object to an asset
-    //! \param the asset to bind to
-    virtual void Bind(IAssetProxy* asset);
-
 private:
     RuntimeAssetObject* mObject;
 };

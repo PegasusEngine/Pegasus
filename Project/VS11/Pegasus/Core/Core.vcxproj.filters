@@ -62,6 +62,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\IApplicationContext.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\RefCounted.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Core\Assertion.cpp">
@@ -77,6 +80,9 @@
       <Filter>Source\Platform</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Core\SourceCode.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Core\RefCounted.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>

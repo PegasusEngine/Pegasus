@@ -13,6 +13,7 @@
 #include "Pegasus/AssetLib/RuntimeAssetObject.h"
 #include "Pegasus/AssetLib/AssetLib.h"
 #include "Pegasus/AssetLib/Asset.h"
+#include "Pegasus/AssetLib/ASTree.h"
 
 using namespace Pegasus;
 using namespace Pegasus::AssetLib;
@@ -28,7 +29,7 @@ void RuntimeAssetObject::OnAssetRuntimeDestroyed()
     //do something here with the library
     if (mAsset != nullptr)
     {
-        mAsset->GetLib()->DestroyAsset(mAsset);
+        mAsset->GetLib()->UnloadAsset(mAsset);
         mAsset = nullptr;
     }
 }
@@ -49,6 +50,12 @@ void RuntimeAssetObject::Write(Asset* asset)
         if (asset->GetFormat() == Asset::FMT_STRUCTURED) 
         {
             asset->Clear();
+            Object* obj = asset->NewObject();
+            asset->SetRootObject(obj);
+            
+            obj->AddInt("__type_guid__", asset->GetTypeDesc()->mTypeGuid);
+            obj->AddString("typename", asset->GetTypeDesc()->mTypeName);            
+                        
         }
         AssetLib* lib = asset->GetLib();
         OnWriteAsset(lib, asset);

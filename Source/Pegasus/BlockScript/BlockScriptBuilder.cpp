@@ -699,6 +699,45 @@ Exp*   BlockScriptBuilder::BuildImmFloat   (float f)
     return imm;
 }
 
+Exp*   BlockScriptBuilder::BuildImmFloat2   (float a, float b)
+{
+    Ast::Variant v;
+    v.f[0] = a;
+    v.f[1] = b;
+    Imm* imm = BS_NEW Imm(v);
+    const TypeDesc* typeDesc = GetTypeByName("float2");
+    PG_ASSERT(typeDesc != nullptr);
+    imm->SetTypeDesc(typeDesc);
+    return imm;
+}
+
+Exp*   BlockScriptBuilder::BuildImmFloat3   (float a, float b, float c)
+{
+    Ast::Variant v;
+    v.f[0] = a;
+    v.f[1] = b;
+    v.f[2] = c;
+    Imm* imm = BS_NEW Imm(v);
+    const TypeDesc* typeDesc = GetTypeByName("float3");
+    PG_ASSERT(typeDesc != nullptr);
+    imm->SetTypeDesc(typeDesc);
+    return imm;
+}
+
+Exp*   BlockScriptBuilder::BuildImmFloat4   (float a, float b, float c, float d)
+{
+    Ast::Variant v;
+    v.f[0] = a;
+    v.f[1] = b;
+    v.f[2] = c;
+    v.f[4] = d;
+    Imm* imm = BS_NEW Imm(v);
+    const TypeDesc* typeDesc = GetTypeByName("float4");
+    PG_ASSERT(typeDesc != nullptr);
+    imm->SetTypeDesc(typeDesc);
+    return imm;
+}
+
 Exp*   BlockScriptBuilder::BuildIdd   (const char * name)
 {
     //see if this id is actually an enumeration

@@ -79,7 +79,7 @@
 %}
 
 // expect 108 reduce/shift warnings due to grammar ambiguity
-%expect 116
+%expect 130
 
 %union {
     int    token;
@@ -117,6 +117,7 @@
 %token <token> K_ENUM
 %token <token> K_STATIC_ARRAY
 %token <token> K_SIZE_OF
+%token <token> K_EXTERN
 %token <token> O_PLUS 
 %token <token> O_MINUS
 %token <token> O_MUL
@@ -141,7 +142,7 @@
 %type <vFrameInfo> struct_keyword 
 %type <vProgram> program
 %type <vExp>  exp 
-%type <vExp>  numeric
+%type <vExp>  immediate 
 %type <vExp>  ident
 %type <vExpList> exp_list
 %type <vStmtList> stmt_list
@@ -192,6 +193,14 @@ stmt_list : stmt_list stmt {
           ;
 
 stmt    : exp K_SEMICOLON { BS_BUILD($$, BuildStmtExp($1)); }
+        | K_EXTERN ident O_SET exp K_SEMICOLON  { 
+            Exp * exp = nullptr;
+            BS_BUILD(exp, BuildBinop($2, $3, $4)); 
+            if (exp != nullptr)
+            {
+                BS_BUILD($$, BuildStmtExp(exp));
+            }
+        }
         | K_RETURN exp K_SEMICOLON { BS_BUILD($$, BuildStmtReturn($2)); }
         | fun_declaration fun_stmt_list  {BS_BUILD($$, BindFunImplementation($1, $2));}
         | while_keyword K_L_PAREN exp K_R_PAREN K_L_BRAC stmt_list K_R_BRAC { BS_BUILD($$, BuildStmtWhile($3, $6));}
@@ -302,9 +311,12 @@ fun_stmt_list : K_L_BRAC stmt_list K_R_BRAC { $$ = $2; }
               | K_SEMICOLON { $$ = nullptr; }
               ;
 
-numeric : I_INT   { BS_BUILD($$, BuildImmInt($1)); }
-        | I_FLOAT { BS_BUILD($$, BuildImmFloat($1)); }
-        | K_SIZE_OF K_L_PAREN type_desc K_R_PAREN 
+immediate : I_INT   { BS_BUILD($$, BuildImmInt($1)); }
+          | I_FLOAT { BS_BUILD($$, BuildImmFloat($1)); }
+          |  K_L_BRAC I_FLOAT K_COMMA I_FLOAT K_COMMA I_FLOAT K_COMMA I_FLOAT K_R_BRAC { BS_BUILD($$, BuildImmFloat4($2,$4,$6,$8)); }
+          |  K_L_BRAC I_FLOAT K_COMMA I_FLOAT K_COMMA I_FLOAT K_R_BRAC { BS_BUILD($$, BuildImmFloat3($2,$4,$6)); }
+          |  K_L_BRAC I_FLOAT K_COMMA I_FLOAT K_R_BRAC { BS_BUILD($$, BuildImmFloat2($2,$4)); }
+          |  K_SIZE_OF K_L_PAREN type_desc K_R_PAREN 
           {
             //figure out size at compile time!
             BS_BUILD($$, BuildImmInt($3->GetByteSize()));
@@ -332,7 +344,7 @@ exp     : ident  { $$ = $1; }
         | TYPE_IDENTIFIER K_L_PAREN exp_list K_R_PAREN { BS_BUILD($$, BuildFunCall($3, $1)); }
         | K_STATIC_ARRAY O_LT type_desc  O_GT { BS_BUILD($$, BuildStaticArrayDec($3)); }
         | I_STRING { BS_BUILD($$, BuildStrImm($1)); }
-        | numeric { $$ = $1; }
+        | immediate { $$ = $1; }
         | exp O_METHOD_CALL IDENTIFIER K_L_PAREN exp_list K_R_PAREN { BS_BUILD($$, BuildMethodCall($1, $3, $5)); }
         | exp O_METHOD_CALL TYPE_IDENTIFIER K_L_PAREN exp_list K_R_PAREN { BS_BUILD($$, BuildMethodCall($1, $3, $5)); }
         | exp O_SET exp    { BS_BUILD($$, BuildBinop($1, $2, $3)); }

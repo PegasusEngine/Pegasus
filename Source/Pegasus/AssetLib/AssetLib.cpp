@@ -8,12 +8,15 @@
 //! \author Kleber Garcia
 //! \date   February 8 2015
 //! \brief  AssetLib Class.
+#include "Pegasus/Core/Assertion.h"
 #include "Pegasus/AssetLib/AssetLib.h"
 #include "Pegasus/AssetLib/AssetBuilder.h"
 #include "Pegasus/AssetLib/Asset.h"
 #include "Pegasus/AssetLib/RuntimeAssetObject.h"
+#include "Pegasus/AssetLib/AssetRuntimeFactory.h"
 #include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/Core/Io.h"
+#include "Pegasus/Core/Log.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/ByteStream.h"
 #include "Pegasus/Allocator/Alloc.h"
@@ -27,11 +30,12 @@ Pegasus::AssetLib::AssetLib::AssetLib(Alloc::IAllocator* allocator, Io::IOManage
 : mBuilder(allocator),
   mIoMgr(mgr),
   mAllocator(allocator),
-  mAssets(allocator)
-{
+  mAssets(allocator),
+  mFactories(allocator)
 #if PEGASUS_ENABLE_PROXIES
-    mProxy.SetObject(this);
+  ,mProxy(this)
 #endif
+{
 }
 
 char toLow(char c)
@@ -70,13 +74,18 @@ Pegasus::AssetLib::AssetLib::~AssetLib()
 
 extern void Bison_AssetScriptParse(const Io::FileBuffer* fileBuffer, AssetBuilder* builder);
 
-Io::IoError Pegasus::AssetLib::AssetLib::LoadAsset(const char* name, Pegasus::AssetLib::Asset** assetOut)
+Io::IoError Pegasus::AssetLib::AssetLib::LoadAsset(const char* path, bool isStructured, Pegasus::AssetLib::Asset** assetOut)
 {
     //try to find it first
     for (int i = 0; i < mAssets.GetSize(); ++i)
     {
-        if (PathsAreEqual(mAssets[i]->GetPath(), name))
+        if (PathsAreEqual(mAssets[i]->GetPath(), path))
         {
+            if (isStructured != (mAssets[i]->GetFormat() == Pegasus::AssetLib::Asset::FMT_STRUCTURED))
+            {
+                *assetOut = nullptr;
+                return Io::ERR_READING_FILE;
+            }
             *assetOut = mAssets[i];
             return Io::ERR_NONE;
         }
@@ -86,15 +95,12 @@ Io::IoError Pegasus::AssetLib::AssetLib::LoadAsset(const char* name, Pegasus::As
     *assetOut = nullptr;
     mBuilder.Reset();
     Io::FileBuffer fileBuffer;
-    Io::IoError err = mIoMgr->OpenFileToBuffer(name, fileBuffer, true, mAllocator); //open the raw file first
+    Io::IoError err = mIoMgr->OpenFileToBuffer(path, fileBuffer, true, mAllocator); //open the raw file first
 
     if (err == Io::ERR_NONE)
     {
-        // structured means its a json file. non structured means it does not get parsed and the file gets raw'd
-        const char* extension = Utils::Strrchr(name, '.');
-        bool isStructured = extension != nullptr && !Utils::Stricmp(PAS_EXTENSION, extension);
         *assetOut = PG_NEW(mAllocator, -1, "Asset", Alloc::PG_MEM_TEMP) Asset(mAllocator, this, isStructured ? Asset::FMT_STRUCTURED : Asset::FMT_RAW);
-        (*assetOut)->SetPath(name);
+        (*assetOut)->SetPath(path);
         if (isStructured)
         {
             mBuilder.BeginCompilation(*assetOut);
@@ -120,44 +126,55 @@ Io::IoError Pegasus::AssetLib::AssetLib::LoadAsset(const char* name, Pegasus::As
     return err;
 }
 
-Io::IoError Pegasus::AssetLib::AssetLib::CreateBlankAsset(const char* name, Asset** assetOut)
+void Pegasus::AssetLib::AssetLib::UnloadAsset(Asset* asset)
 {
+    //find this asset
+    for (int i = 0; i < mAssets.GetSize(); ++i)
+    {
+        if (mAssets[i] == asset)
+        {
+            if (asset->GetRuntimeData() != nullptr)
+            {
+                asset->GetRuntimeData()->mAsset = nullptr;
+            }
+            PG_DELETE(mAllocator, mAssets[i]);
+            mAssets.Delete(i);
+            return;
+        }
+    }
+    PG_FAILSTR("Asset not found!, do not call this function if this asset is not associated with this library");
+}
+
+Asset* Pegasus::AssetLib::AssetLib::CreateAsset(const char* path, bool isStructured)
+{
+    Asset* asset = nullptr;
     //try to find it first
     for (int i = 0; i < mAssets.GetSize(); ++i)
     {
-        if (PathsAreEqual(mAssets[i]->GetPath(), name))
+        if (PathsAreEqual(mAssets[i]->GetPath(), path))
         {
-            return Io::ERR_WRITING_FILE;  //Cant allow to override this asset
+            PG_LOG('ERR_', "Attempting to create an asset that already exists on cache!");
+            return nullptr;  //Cant allow to override this asset
         }
     }
 
-    //not found? lets build it from a file..
-    *assetOut = nullptr;
-    char* value = "";
-    Io::FileBuffer fileBuffer;
-    fileBuffer.OwnBuffer(nullptr, value, 2);
-    Io::IoError err = mIoMgr->SaveFileToBuffer(name, fileBuffer);
-    fileBuffer.ForgetBuffer();
+    // structured means its a json file. non structured means it does not get parsed and the file gets raw'd
+    asset = PG_NEW(mAllocator, -1, "Asset", Alloc::PG_MEM_TEMP) Asset(mAllocator, this, isStructured ? Asset::FMT_STRUCTURED : Asset::FMT_RAW);
+    asset->SetPath(path);
+    mAssets.PushEmpty() = asset;
 
-    if (err == Io::ERR_NONE)
+    if (!isStructured)
     {
-        // structured means its a json file. non structured means it does not get parsed and the file gets raw'd
-        const char* extension = Utils::Strrchr(name, '.');
-        bool isStructured = extension != nullptr && !Utils::Stricmp(PAS_EXTENSION, extension);
-        *assetOut = PG_NEW(mAllocator, -1, "Asset", Alloc::PG_MEM_TEMP) Asset(mAllocator, this, isStructured ? Asset::FMT_STRUCTURED : Asset::FMT_RAW);
-        (*assetOut)->SetPath(name);
-        mAssets.PushEmpty() = *assetOut;
-        if (!isStructured)
-        {
-            //alocate a little fake buffer
-            char* buff = PG_NEW_ARRAY(mAllocator, -1, "Raw Asset", Alloc::PG_MEM_TEMP, char, 2);
-            buff[0] = '\0';
-            fileBuffer.OwnBuffer(mAllocator, buff, 2);
-            (*assetOut)->SetFileBuffer(fileBuffer);
-            fileBuffer.ForgetBuffer();
-        }
+        //alocate a little fake buffer
+        Io::FileBuffer fileBuffer;
+        char* buff = PG_NEW_ARRAY(mAllocator, -1, "Raw Asset", Alloc::PG_MEM_TEMP, char, 1);
+        buff[0] = '\0';
+        fileBuffer.OwnBuffer(mAllocator, buff, 1);
+        asset->SetFileBuffer(fileBuffer);
+        fileBuffer.ForgetBuffer();
     }
-    return err;
+
+    return asset;
 }
 
 Io::IoError Pegasus::AssetLib::AssetLib::SaveAsset(Asset* asset)
@@ -178,22 +195,162 @@ Io::IoError Pegasus::AssetLib::AssetLib::SaveAsset(Asset* asset)
     }
 }
 
-
-void Pegasus::AssetLib::AssetLib::DestroyAsset(Asset* asset)
+void Pegasus::AssetLib::AssetLib::RegisterObjectFactory(AssetRuntimeFactory* factory)
 {
-    //find this asset
-    for (int i = 0; i < mAssets.GetSize(); ++i)
+#if PEGASUS_DEBUG
+    //check if there is a duplicate factory, assert if so.
+    for (int i = 0; i < mFactories.GetSize(); ++i)
     {
-        if (mAssets[i] == asset)
+        PG_ASSERTSTR(mFactories[i] != factory, "factory must not be inserted twice!");
+    }
+#endif
+
+    factory->SetAssetLib(this);
+
+    mFactories.PushEmpty() = factory;
+}
+
+
+RuntimeAssetObjectRef Pegasus::AssetLib::AssetLib::LoadObject(const char* path)
+{
+    
+    Pegasus::AssetLib::Asset* asset = nullptr;
+
+    bool isStructured = true; //assume is structured.
+
+    const char* extension = Utils::Strrchr(path, '.');
+    if (extension == nullptr || extension[0] == '\0')
+    {
+        PG_LOG('ERR_', "Extension is required for any asset loaded through the asset system.");
+        return nullptr;
+    }
+
+    ++extension; //skip the . character
+
+    //find out if its structured or not.
+    const Pegasus::PegasusAssetTypeDesc* const* desc = Pegasus::GetAllAssetTypesDescs();
+    while (*desc != nullptr)
+    {
+        if (!Utils::Stricmp(extension,(*desc)->mExtension))
         {
-            if (asset->GetRuntimeData() != nullptr)
+            isStructured = (*desc)->mIsStructured;
+            break;
+        }
+        ++desc;
+    }
+    
+    if (Io::ERR_NONE == LoadAsset(path, isStructured, &asset))
+    {
+        PG_ASSERT(asset != nullptr);
+        //Has this object been created already? if so return it.
+        if (asset->GetRuntimeData() != nullptr)
+        {
+            return asset->GetRuntimeData();
+        }
+        const Pegasus::PegasusAssetTypeDesc* foundDesc = nullptr;    
+        Pegasus::AssetLib::AssetRuntimeFactory* factory = FindFactory(asset, extension, &foundDesc);
+        if (factory == nullptr)
+        {
+            PG_LOG('ERR_', "Unable to identify factory for asset %s", path);
+            UnloadAsset(asset);
+        }
+        else
+        {
+            RuntimeAssetObjectRef obj = factory->CreateRuntimeObject(foundDesc);
+            asset->SetTypeDesc(foundDesc);
+            if (obj->Read(asset)) //Read binds this asset together.
             {
-                asset->GetRuntimeData()->mAsset = nullptr;
+                return obj;
             }
-            PG_DELETE(mAllocator, mAssets[i]);
-            mAssets.Delete(i);
-            return;
+            else
+            {
+                UnloadAsset(asset);
+                PG_LOG('ERR_', "Error parsing asset %s correctly.", path);
+            }
         }
     }
-    PG_FAILSTR("Asset not found!, do not call this function if this asset is not associated with this library");
+    else
+    {
+        PG_LOG('ERR_', "Unable to load asset %s correctly.", path);
+    }
+
+    return nullptr;
+}
+
+RuntimeAssetObjectRef Pegasus::AssetLib::AssetLib::CreateObject(const char* path, const PegasusAssetTypeDesc* desc)
+{
+    Asset* asset = CreateAsset(path, desc->mIsStructured);
+    if (asset != nullptr)
+    {
+        AssetRuntimeFactory* factory = nullptr;
+        const PegasusAssetTypeDesc* supportedType = nullptr;
+        //find an available factory
+        for (int i = 0; i < mFactories.GetSize(); ++i)
+        {
+            AssetRuntimeFactory* candidate = mFactories[i];
+            const PegasusAssetTypeDesc* const* supportedTypeList = candidate->GetAssetTypes();
+            while (supportedTypeList != nullptr && *supportedTypeList != nullptr)
+            {
+                if (
+                    (*supportedTypeList)->mTypeGuid == desc->mTypeGuid
+                )
+                {
+                    supportedType = *supportedTypeList;
+                    break;
+                }
+                ++supportedTypeList;
+            }
+        }
+
+        if (supportedType != nullptr)
+        {
+
+            if (factory == nullptr)
+            {
+                PG_LOG('ERR_', "Unable to create object. No factory found for %s.", path);
+                UnloadAsset(asset);
+            }
+            else
+            {
+                RuntimeAssetObjectRef obj = factory->CreateRuntimeObject(desc);
+                asset->SetTypeDesc(desc);
+                obj->Bind(asset);
+                return obj;
+            }
+        }
+        else
+        {
+            PG_LOG('ERR_', "No factory supports the type requested to create %s.", path);
+        }
+    }
+    
+    return nullptr;
+}
+
+Io::IoError Pegasus::AssetLib::AssetLib::SaveObject(RuntimeAssetObjectRef object)
+{
+    Asset* asset = object->GetOwnerAsset();
+    if (asset == nullptr)
+    {
+        PG_LOG('ERR_', "Object has no asset attached to it.");
+        return Io::ERR_WRITING_FILE;
+    }
+
+    object->Write(asset);
+
+    return SaveAsset(asset);
+
+}
+
+Pegasus::AssetLib::AssetRuntimeFactory* Pegasus::AssetLib::AssetLib::FindFactory(Asset* asset, const char* ext, const PegasusAssetTypeDesc** outDesc) const
+{
+    for (int i = 0; i < mFactories.GetSize(); ++i)
+    {
+        if (mFactories[i]->IsCompatible(asset,ext,outDesc))
+        {
+            return mFactories[i];
+        }
+    }
+    *outDesc = nullptr;
+    return nullptr;
 }

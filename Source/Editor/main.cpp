@@ -14,6 +14,7 @@
 
 
 //include all proxy types to declare meta types
+#include "Pegasus/PegasusAssetTypes.h"
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
@@ -44,6 +45,7 @@ Q_DECLARE_METATYPE(Pegasus::Core::ISourceCodeProxy*);
 Q_DECLARE_METATYPE(Pegasus::Shader::IProgramProxy*);
 Q_DECLARE_METATYPE(Pegasus::Timeline::ITimelineProxy*);
 Q_DECLARE_METATYPE(Pegasus::AssetLib::IRuntimeAssetObjectProxy*);
+Q_DECLARE_METATYPE(Pegasus::PegasusAssetTypeDesc*);
 Q_DECLARE_METATYPE(CodeUserData*);
 Q_DECLARE_METATYPE(Pegasus::Timeline::IBlockProxy*);
 Q_DECLARE_METATYPE(AssetIOMessageController::Message);
@@ -58,6 +60,7 @@ void RegisterMetaTypes()
     qRegisterMetaType<Pegasus::Shader::IProgramProxy*>();
     qRegisterMetaType<Pegasus::Timeline::ITimelineProxy*>();
     qRegisterMetaType<Pegasus::AssetLib::IRuntimeAssetObjectProxy*>();
+    qRegisterMetaType<Pegasus::PegasusAssetTypeDesc*>();
     qRegisterMetaType<CodeUserData*>();
     qRegisterMetaType<Pegasus::Timeline::IBlockProxy*>();
     qRegisterMetaType<AssetIOMessageController::Message>();

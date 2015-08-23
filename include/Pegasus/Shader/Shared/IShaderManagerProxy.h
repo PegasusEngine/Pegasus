@@ -59,39 +59,6 @@ public:
     //! \return shader proxy
     virtual IShaderProxy* GetShader(int id) = 0; 
 
-    //! Loads a shader from an asset. Keeps a reference to it to prevent deletion.
-    //! \param the asset to use to load this proxy
-    //! \param sets parameter to true if the shader was already open. False otherwise
-    //! \return the shader proxy to load
-    virtual IShaderProxy* OpenShader(AssetLib::IAssetProxy* asset, bool* wasAlreadyOpen = nullptr) = 0;
-
-    //! Closes a shader.
-    //! \param the shader proxy to close
-    virtual void CloseShader(IShaderProxy* shader) = 0;
-
-    //! Loads a program from an asset proxy
-    //! \param the program proxy to use to load this program
-    //! \return the program proxy to use
-    virtual IProgramProxy* OpenProgram(AssetLib::IAssetProxy* asset) = 0;
-
-    //! creates a blank new program using a respective path as its file to be saved as
-    //! \param the path of the program to use.
-    //! \param the actual program name to use.
-    virtual IProgramProxy* CreateNewProgram(const char* programName) = 0;
-
-    //! Closes a program.
-    //! \param the program proxy to close
-    virtual void CloseProgram(IProgramProxy* program) = 0;
-
-    //! returns true if the asset passed is an actual shader
-    //! \param asset the asset to test if its a shader
-    //! \return  true if this asset is a shader, false otherwise
-    virtual bool IsShader(const AssetLib::IAssetProxy* asset) const = 0; 
-
-    //! returns true if this asset is a program.
-    //! \param asset the asset to test if its a program
-    //! \return true if this is a program, false otherwise
-    virtual bool IsProgram(const AssetLib::IAssetProxy* asset) const = 0;
 };
 
 }

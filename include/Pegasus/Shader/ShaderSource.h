@@ -19,6 +19,11 @@
 
 //fwd declarations
 namespace Pegasus {
+
+    namespace AssetLib {
+        class IRuntimeAssetObjectProxy;
+    }
+
     namespace Alloc {
         class IAllocator;
     }
@@ -33,7 +38,7 @@ namespace Pegasus
 namespace Shader
 {
 
-class ShaderSource : public Graph::GeneratorNode,  public Core::SourceCode 
+class ShaderSource : public Core::SourceCode 
 {
 public:
     //! constructor
@@ -56,24 +61,8 @@ public:
     //! \param tracker the shader tracker to reference.
     void SetShaderTracker(ShaderTracker * tracker) {mShaderTracker = tracker;}
 
-    //! Sets the full path, divides the stirng into the file name and the root full path
-    //! to be used only by the editor
-    //! \param fullpath file path of the shader to be set
-    void SetFullFilePath(const char * fullPath);
-
-    //! \return the path containing this shader
-    const char * GetFilePath() const { return mPath; }
-
-    //! \return the file name of this shader
-    const char * GetFileName() const { return mName; }
-
-    //! Returns the display name of this runtime object
-    //! \return string representing the display name of this object
-    virtual const char* GetDisplayName() const { return GetFileName(); }
-
-    //! returns the proxy of this particular shader    
-    IShaderProxy * GetProxy() { return &mProxy; }
-
+    virtual AssetLib::IRuntimeAssetObjectProxy * GetProxy() { return &mProxy; }
+    virtual const AssetLib::IRuntimeAssetObjectProxy * GetProxy() const { return &mProxy; }
 #endif
 
 
@@ -91,11 +80,6 @@ private:
 //! editor metadata
 #if PEGASUS_ENABLE_PROXIES
 
-    //! Filename metadata
-    static const int METADATA_NAME_LENGTH = 256;
-    char mName[METADATA_NAME_LENGTH];
-    char mPath[METADATA_NAME_LENGTH];
-    char mFullPath[METADATA_NAME_LENGTH * 2];
     ShaderTracker * mShaderTracker; //! reference to tracker
     ShaderProxy mProxy;
 

@@ -19,7 +19,6 @@
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
 #include "Pegasus/Shader/ShaderTracker.h"
 #include "Pegasus/Shader/Proxy/ProgramProxy.h"
-#include "Pegasus/Utils/Vector.h"
 #include "Pegasus/Shader/ShaderSource.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 
@@ -75,48 +74,10 @@ public:
     //! returns the respective shader
     virtual Pegasus::Core::ISourceCodeProxy* GetSource(int id) { return GetShader(id); }
 
-    //! Loads a shader from an asset. Keeps a reference to it to prevent deletion.
-    //! \param the asset to use to load this proxy
-    //! \param sets parameter to true if the shader was already open. False otherwise
-    //! \return the shader proxy to load
-    virtual IShaderProxy* OpenShader(AssetLib::IAssetProxy* asset, bool* wasAlreadyOpen = nullptr);
-
-    //! Closes a shader.
-    //! \param the shader proxy to close
-    virtual void CloseShader(IShaderProxy* shader);
-
-    //! Loads a program from an asset proxy
-    //! \param the program proxy to use to load this program
-    //! \return the program proxy to use
-    virtual IProgramProxy* OpenProgram(AssetLib::IAssetProxy* asset);
-
-    //! creates a blank new program using a respective path as its file to be saved as
-    //! \param the path of the program to use.
-    //! \param the actual program name to use.
-    virtual IProgramProxy* CreateNewProgram(const char* programName);
-
-    //! Closes a program.
-    //! \param the program proxy to close
-    virtual void CloseProgram(IProgramProxy* program);
-
-    //! returns true if the asset passed is an actual shader
-    //! \param asset the asset to test if its a shader
-    //! \return  true if this asset is a shader, false otherwise
-    virtual bool IsShader(const AssetLib::IAssetProxy* asset) const; 
-
-    //! returns true if this asset is a program.
-    //! \param asset the asset to test if its a program
-    //! \return true if this is a program, false otherwise
-    virtual bool IsProgram(const AssetLib::IAssetProxy* asset) const;
-
 private:
-    //! keeps program alive into an internal pointer (opened)
-    void InternalOpenProgram(ProgramLinkageRef program);
 
     //! reference to internal program
     ShaderManager * mObject;
-    Utils::Vector<ShaderSourceRef>    mOpenedShaders;
-    Utils::Vector<ProgramLinkageRef> mOpenedPrograms;
 };
 }
 }

@@ -91,8 +91,11 @@ public:
     Ast::Exp* BuildExplicitCast  (Ast::Exp* exp, const TypeDesc* type);
     Ast::Exp* BuildFunCall(Ast::ExpList* args, const char * name, bool isMethod = false);
     Ast::Exp* BuildMethodCall(Ast::Exp* caller, const char * name, Ast::ExpList* args);
-    Ast::Exp*   BuildImmFloat   (float v);
-    Ast::Exp*   BuildImmInt     (int   v);
+    Ast::Exp*   BuildImmFloat    (float v);
+    Ast::Exp*   BuildImmInt      (int   v);
+    Ast::Exp*   BuildImmFloat2   (float a, float b);
+    Ast::Exp*   BuildImmFloat3   (float a, float b, float c);
+    Ast::Exp*   BuildImmFloat4   (float a, float b, float c, float d);
     Ast::Exp*   BuildIdd   (const char * name);
     Ast::StmtExp* BuildStmtExp(Ast::Exp* exp);
     Ast::StmtReturn* BuildStmtReturn(Ast::Exp* exp);

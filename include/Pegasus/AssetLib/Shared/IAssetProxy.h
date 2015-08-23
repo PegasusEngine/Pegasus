@@ -14,6 +14,8 @@
 
 namespace Pegasus 
 {
+struct PegasusAssetTypeDesc;
+
 namespace AssetLib
 {
 
@@ -30,6 +32,9 @@ namespace AssetLib
         
         //! Gets the path of this asset
         virtual const char* GetPath() const = 0; 
+
+        //! Gets the type description of this asset
+        virtual const PegasusAssetTypeDesc* GetTypeDesc() const = 0;
     };
 }
 }

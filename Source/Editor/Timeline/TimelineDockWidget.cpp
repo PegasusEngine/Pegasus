@@ -181,8 +181,8 @@ void TimelineDockWidget::SaveTimeline()
         if (timeline->GetCurrentTimeline() != nullptr)
         {
             AssetIOMessageController::Message msg;
-            msg.SetMessageType(AssetIOMessageController::Message::SAVE_TIMELINE);
-            msg.GetAssetNode().mTimeline = timeline->GetCurrentTimeline();
+            msg.SetMessageType(AssetIOMessageController::Message::SAVE_ASSET);
+            msg.SetObject(timeline->GetCurrentTimeline());
             SendAssetIoMessage(msg);
         }
     }

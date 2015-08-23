@@ -23,6 +23,8 @@
 //Fwd declarations
 namespace Pegasus
 {
+    struct PegasusAssetTypeDesc;
+
     namespace Utils {
         class ByteStream;
     }
@@ -42,11 +44,14 @@ class Object;
 class Array;
 class RuntimeAssetObject;
 class AssetLib;
+class RuntimeAssetObjectProxy;
 
 //! Asset representation
 class Asset
 {
+    friend RuntimeAssetObjectProxy;
     friend RuntimeAssetObject;
+    friend AssetLib;
 
 public:
 
@@ -116,6 +121,10 @@ public:
     //! Gets the runtime data
     RuntimeAssetObject* GetRuntimeData() const { return mRuntimeData; }
 
+    //! Gets the type description of this asset
+    //! \return the type description. Null if this is a raw json or binary file.
+    const PegasusAssetTypeDesc* GetTypeDesc() const { return mTypeDesc; }
+
 #if PEGASUS_ENABLE_PROXIES
     IAssetProxy* GetProxy() { return &mProxy; }
     const IAssetProxy* GetProxy() const { return &mProxy; }
@@ -124,6 +133,10 @@ public:
 private:
     //! Sets the runtime data
     void SetRuntimeData(RuntimeAssetObject * obj) { mRuntimeData = obj; }
+
+    //! Sets the type desc
+    //! \param desc the type desc
+    void SetTypeDesc(const PegasusAssetTypeDesc* desc) { mTypeDesc = desc; }
 
     Alloc::IAllocator* mAllocator;
     RuntimeAssetObject*    mRuntimeData;
@@ -139,6 +152,8 @@ private:
     AssetFormat mFormat;
 
     Pegasus::AssetLib::AssetLib* mAssetLib;
+
+    const Pegasus::PegasusAssetTypeDesc* mTypeDesc;
 
 #if PEGASUS_ENABLE_PROXIES
     AssetProxy mProxy;

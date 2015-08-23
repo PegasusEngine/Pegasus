@@ -15,8 +15,10 @@
 #include "Pegasus/Timeline/Shared/TimelineDefs.h"
 #include "Pegasus/Timeline/Proxy/TimelineManagerProxy.h"
 #include "Pegasus/Utils/Vector.h"
+#include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Timeline/TimelineScript.h"
 #include "Pegasus/Timeline/ScriptTracker.h"
+#include "Pegasus/AssetLib/AssetRuntimeFactory.h"
 
 namespace Pegasus {
 
@@ -31,7 +33,6 @@ namespace Pegasus {
     namespace Timeline {
         class Block;
         class Lane;
-        class Timeline;
     }
 
     namespace Wnd {
@@ -80,7 +81,7 @@ namespace Timeline {
 //----------------------------------------------------------------------------------------
 
 //! Timeline management, manages a set of blocks stored in lanes to sequence demo rendering
-class TimelineManager
+class TimelineManager : public AssetLib::AssetRuntimeFactory
 {
 public:
 
@@ -163,10 +164,6 @@ public:
     //! \param musicPosition Currently heard position of the music (in milliseconds), 0 if unknown
     void Update(unsigned int musicPosition = 0);
 
-    //! Test wether this asset is a script or not
-    //! \return true if its a blockscript false otherwise
-    bool IsTimelineScript(const AssetLib::Asset* asset) const;
-
     //! Loads a script from a file
     //! \param the file of the script name
     //! \return the timeline script reference
@@ -179,36 +176,31 @@ public:
 
     //! Loads a timeline from a file
     //! \return the timeline allocated. 
-    Timeline* LoadTimeline(const char* filename);
+    TimelineReturn LoadTimeline(const char* filename);
 
-    //! Creates a script from an asset
-    //! \param the asset to use to create this script
+    //! Creates a script file.
     //! \return the timeline script reference
-    TimelineScriptReturn CreateScript(AssetLib::Asset* asset);
+    TimelineScriptReturn CreateScript();
 
-    //! Creates a script from an asset
-    //! \param the asset to use to create this script
+    //! Creates a new script header file.
     //! \return the timeline script reference
-    TimelineSourceReturn CreateHeader(AssetLib::Asset* asset);
+    TimelineSourceReturn CreateHeader();
 
     //! Returns the current timeline in the playback state.
     //! \return the timeline in the current playback.
-    Pegasus::Timeline::Timeline* GetCurrentTimeline() const { return mCurrentTimeline; }
+    Pegasus::Timeline::TimelineRef GetCurrentTimeline() const { return mCurrentTimeline; }
 
     //! Gets the script tracker registered
     //! \return the script tracker
     ScriptTracker* GetScriptTracker() { return &mScriptTracker; }
 
     //! Creates a new timeline
-    Timeline* CreateTimeline();
+    //! \return the timeline created
+    TimelineRef CreateTimeline();
 
     //! Destroys a timeline
     //! \param timeline to destroy
     void DestroyTimeline(Timeline* timeline);
-
-    //! Retrns true if this asset is of type Timeline, false otherwise
-    //! \true if is a block, false otherwise
-    bool IsTimeline(AssetLib::Asset* asset);
 
 #if PEGASUS_ENABLE_PROXIES
 
@@ -220,6 +212,17 @@ public:
     //@}
 
 #endif  // PEGASUS_ENABLE_PROXIES
+
+    //! Creates a runtime object from an asset. This function must add a reference to the 
+    //! runtime object returned, (if its ref counted)
+    //! \param the asset type requested.
+    //! \return the runtime asset created. return null if unsuccessfull.
+    virtual AssetLib::RuntimeAssetObjectRef CreateRuntimeObject(const PegasusAssetTypeDesc* desc);
+
+    //! Returns a null terminated list of asset descriptions this runtime factory will accept.
+    //! \return a null terminated list of asset descriptions
+    virtual const PegasusAssetTypeDesc*const* GetAssetTypes() const;
+
 
     //------------------------------------------------------------------------------------
 
@@ -260,7 +263,7 @@ private:
     unsigned int mNumRegisteredBlocks;
 
     //! TODO: temporary timeline singleton
-    Timeline* mCurrentTimeline;
+    TimelineRef mCurrentTimeline;
 
 #if PEGASUS_ENABLE_PROXIES
 

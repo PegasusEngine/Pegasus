@@ -94,7 +94,7 @@ Core::ISourceCodeProxy* BlockProxy::GetScript() const
     TimelineScript* helper = mBlock->GetScript();
     if (helper != nullptr)
     {
-        return helper->GetProxy();
+        return static_cast<Core::ISourceCodeProxy*>(helper->GetProxy());
     }
 
     return nullptr;

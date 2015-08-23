@@ -31,6 +31,11 @@ const char* AssetProxy::GetPath() const
     return mObject->GetPath();
 }
 
+const PegasusAssetTypeDesc* AssetProxy::GetTypeDesc() const
+{
+    return mObject->GetTypeDesc();
+}
+
 #else
 PEGASUS_AVOID_EMPTY_FILE_WARNING;
 #endif

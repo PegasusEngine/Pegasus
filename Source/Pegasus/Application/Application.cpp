@@ -92,9 +92,21 @@ Application::Application(const ApplicationConfig& config)
     meshFactory->Initialize(nodeDataAlloc);
     textureFactory->Initialize(nodeDataAlloc);
 
+    
+    // Set up asset library
+    mAssetLib = PG_NEW(nodeAlloc, -1, "AssetLib", Alloc::PG_MEM_PERM) AssetLib::AssetLib(nodeAlloc, nullptr);
+
     mShaderManager = PG_NEW(nodeAlloc, -1, "ShaderManager", Alloc::PG_MEM_PERM) Shader::ShaderManager(mNodeManager, shaderFactory);
     mTextureManager = PG_NEW(nodeAlloc, -1, "TextureManager", Alloc::PG_MEM_PERM) Texture::TextureManager(mNodeManager, textureFactory);
     mMeshManager = PG_NEW(nodeAlloc, -1, "MeshManager", Alloc::PG_MEM_PERM) Mesh::MeshManager(mNodeManager, meshFactory);
+    mBlockScriptManager = PG_NEW(timelineAlloc, -1, "BlockScript Manager", Alloc::PG_MEM_PERM) BlockScript::BlockScriptManager(timelineAlloc);
+    mTimelineManager = PG_NEW(timelineAlloc, -1, "Timeline Manager", Alloc::PG_MEM_PERM) Timeline::TimelineManager(timelineAlloc, this);
+
+    mAssetLib->RegisterObjectFactory(mShaderManager);
+    mAssetLib->RegisterObjectFactory(mTimelineManager);
+    //mAssetLib->RegisterObjectFactory(mTextureManager);
+    //mAssetLib->RegisterObjectFactory(mMeshManager);
+
     mRenderCollectionFactory = PG_NEW(nodeAlloc, -1, "RenderCollectionFactory", Alloc::PG_MEM_PERM) Pegasus::Application::RenderCollectionFactory(this, nodeAlloc);
 #if PEGASUS_ENABLE_BS_REFLECTION_INFO
     mBsReflectionInfo = PG_NEW(nodeAlloc, -1, "Bs Reflection Info", Alloc::PG_MEM_PERM) App::AppBsReflectionInfo(nodeAlloc);
@@ -103,14 +115,7 @@ Application::Application(const ApplicationConfig& config)
     //register shader manager into factory, so factory can handle includes
     shaderFactory->RegisterShaderManager(mShaderManager);
 
-    // Set up blockscript. Use the same timeline allocator
-    mBlockScriptManager = PG_NEW(timelineAlloc, -1, "BlockScript Manager", Alloc::PG_MEM_PERM) BlockScript::BlockScriptManager(timelineAlloc);
 
-    // Set up timeline manager
-    mTimelineManager = PG_NEW(timelineAlloc, -1, "Timeline Manager", Alloc::PG_MEM_PERM) Timeline::TimelineManager(timelineAlloc, this);
-
-    // Set up asset library
-    mAssetLib = PG_NEW(nodeAlloc, -1, "AssetLib", Alloc::PG_MEM_PERM) AssetLib::AssetLib(nodeAlloc, nullptr);
 
     // Register the entire render api
     Pegasus::Application::RegisterRenderApi(mBlockScriptManager->GetRuntimeLib(), this);
@@ -118,9 +123,7 @@ Application::Application(const ApplicationConfig& config)
 #if PEGASUS_ENABLE_BS_REFLECTION_INFO
     mBsReflectionInfo->RegisterLib(mBlockScriptManager->GetRuntimeLib());
 #endif
-
-    RegisterAssetLib();
-
+    
 	// Create the owner of all global cameras
     mCameraManager = PG_NEW(timelineAlloc, -1, "CameraManager", Alloc::PG_MEM_PERM) Camera::CameraManager(timelineAlloc);
 
@@ -147,14 +150,14 @@ Application::~Application()
     // Delete the timeline
     PG_DELETE(timelineAlloc, mTimelineManager);
 
-    // Delete the texture and node managers
+    // Delete the texture and node managers    
+    PG_DELETE(nodeAlloc, mAssetLib);
     PG_DELETE(nodeAlloc, mMeshManager);
     PG_DELETE(nodeAlloc, mTextureManager);
     PG_DELETE(nodeAlloc, mShaderManager);
     PG_DELETE(nodeAlloc, mNodeManager);
     PG_DELETE(nodeAlloc, mRenderCollectionFactory);
     PG_DELETE(timelineAlloc, mBlockScriptManager);
-    PG_DELETE(nodeAlloc, mAssetLib);
 #if PEGASUS_ENABLE_BS_REFLECTION_INFO
     PG_DELETE(nodeAlloc, mBsReflectionInfo);
 #endif
@@ -202,21 +205,6 @@ void Application::Initialize()
 
     // Initialized
     mInitialized = true;
-}
-
-
-//----------------------------------------------------------------------------------------
-
-void Application::RegisterAssetLib()
-{
-    //Register all the types
-    mShaderManager->SetAssetLib(mAssetLib);
-    /*
-    //todo: boiler plate to make sure assets match their respective managers
-    mTextureManager->SetAssetLib(mAssetLib);
-    mMeshManager->SetAssetLib(mAssetLib);
-    mTimelineManager->SetAssetLib(mAssetLib);
-    */
 }
 
 //----------------------------------------------------------------------------------------

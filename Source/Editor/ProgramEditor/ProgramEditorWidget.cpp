@@ -17,6 +17,7 @@
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
+#include "Pegasus/PegasusAssetTypes.h"
 #include "ProgramEditor/ProgramEditorWidget.h"
 #include "ProgramEditor/ProgramEditorUndoCommands.h"
 #include "Widgets/NodeFileTabBar.h"
@@ -293,8 +294,8 @@ void ProgramEditorWidget::SignalSaveCurrentProgram()
     {
         PostStatusBarMessage(tr("")); //clear the message bar
         AssetIOMessageController::Message msg;
-        msg.SetMessageType(AssetIOMessageController::Message::SAVE_PROGRAM);
-        msg.GetAssetNode().mProgram = mCurrentProgram;
+        msg.SetMessageType(AssetIOMessageController::Message::SAVE_ASSET);
+        msg.SetObject(mCurrentProgram);
         SendAssetIoMessage(msg);
     }
 }
@@ -304,12 +305,12 @@ void ProgramEditorWidget::SignalDiscardCurrentObjectChanges()
     mCurrentProgram->ReloadFromAsset();
 }
 
-void ProgramEditorWidget::RequestOpenProgram(Pegasus::Shader::IProgramProxy* program)
+void ProgramEditorWidget::OnOpenObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
 {
     show();
     activateWindow();
     QUndoStack* programUndoStack = new QUndoStack(this);
-    mTabBar->Open(program, programUndoStack);
+    mTabBar->Open(object, programUndoStack);
 }
 
 void ProgramEditorWidget::SyncUiToProgram()
@@ -376,8 +377,8 @@ void ProgramEditorWidget::RequestCloseProgram(Pegasus::AssetLib::IRuntimeAssetOb
 
     Pegasus::Shader::IProgramProxy* program = static_cast<Pegasus::Shader::IProgramProxy*>(object);
     AssetIOMessageController::Message msg;
-    msg.SetMessageType(AssetIOMessageController::Message::CLOSE_PROGRAM);
-    msg.GetAssetNode().mProgram = program;
+    msg.SetMessageType(AssetIOMessageController::Message::CLOSE_ASSET);
+    msg.SetObject(program);
 
 
     if (mTabBar->GetTabCount() == 0)
@@ -404,4 +405,14 @@ void ProgramEditorWidget::OnUIForAppClosed()
     {
         mTabBar->Close(0);
     }
+}
+
+const Pegasus::PegasusAssetTypeDesc*const* ProgramEditorWidget::GetTargetAssetTypes() const
+{
+    static const Pegasus::PegasusAssetTypeDesc* gTypes[] = {
+             &Pegasus::ASSET_TYPE_PROGRAM  
+            ,nullptr
+    };
+    
+    return gTypes;
 }

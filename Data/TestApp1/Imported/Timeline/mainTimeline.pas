@@ -1,9 +1,10 @@
 {
+	__type_guid__ : 1414086995,
+	typename : Timeline,
     num-beats : 128,
     ticks-per-beat : 128,
     beats-per-minute-bin : 1124728832,
     beats-per-minute-float : 138.000000,
-    type : Timeline,
     lanes : [{
             type : Lane,
             name : Camera,

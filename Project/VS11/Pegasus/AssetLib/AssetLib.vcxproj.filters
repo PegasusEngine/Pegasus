@@ -62,6 +62,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Proxy\RuntimeAssetObjectProxy.h">
       <Filter>Include\Proxy</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\AssetRuntimeFactory.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\Proxy\AssetLibProxy.cpp">
@@ -93,6 +96,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\Proxy\RuntimeAssetObjectProxy.cpp">
       <Filter>Source\Proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\AssetRuntimeFactory.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

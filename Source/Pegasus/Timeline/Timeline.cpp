@@ -31,7 +31,10 @@ const float Timeline::INVALID_BEAT = -1.0f;
 //----------------------------------------------------------------------------------------
 
 Timeline::Timeline(Alloc::IAllocator * allocator, Core::IApplicationContext* appContext)
-:   mAllocator(allocator)
+:   
+    Core::RefCounted(allocator)
+,   AssetLib::RuntimeAssetObject(this)
+,   mAllocator(allocator)
 ,   mAppContext(appContext)
 ,   mNumTicksPerBeat(128)
 ,   mNumTicksPerBeatFloat(128.0f)
@@ -377,12 +380,6 @@ bool Timeline::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* as
         return false;
     }
 
-    int typeId = root->FindString("type");
-    if (typeId == -1 || Utils::Strcmp("Timeline", root->GetString(typeId))) 
-    {
-        return false;
-    }
-
     int beatsId = root->FindInt("num-beats");
     int tpbId = root->FindInt("ticks-per-beat");
     int pbmId = root->FindInt("beats-per-minute-bin");
@@ -425,9 +422,8 @@ bool Timeline::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* as
 
 void Timeline::OnWriteAsset(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* asset)
 {
-    AssetLib::Object* root = asset->NewObject();
-    asset->SetRootObject(root);
-    root->AddString("type", "Timeline");
+    AssetLib::Object* root = asset->Root();
+    
     root->AddInt("num-beats", mNumBeats);
     
     root->AddInt("ticks-per-beat", mNumTicksPerBeat);

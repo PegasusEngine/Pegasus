@@ -36,17 +36,12 @@ namespace Timeline
 
 class TimelineSource : public Core::SourceCode
 {
-    template<class C> friend class Pegasus::Core::Ref;
-
 public:
     //! constructor
-    TimelineSource(Alloc::IAllocator* allocator, const char* name);
+    explicit TimelineSource(Alloc::IAllocator* allocator);
 
     //! destructor
     virtual ~TimelineSource();
-
-    //! Gets the script name
-    const char* GetScriptName() const { return mScriptName; }
 
     //! Call to set this script as dirty
     virtual void InvalidateData() {}
@@ -55,34 +50,29 @@ public:
     virtual void Compile();
 
 #if PEGASUS_ENABLE_PROXIES
-    //! Gets the script name
-    virtual const char* GetDisplayName() const { return  GetScriptName(); }
-
     //! Gets the proxy 
     //! \return Proxy to this script
-    TimelineScriptProxy* GetProxy() { return &mProxy; }
+    virtual AssetLib::IRuntimeAssetObjectProxy* GetProxy() { return &mProxy; }
+    virtual const AssetLib::IRuntimeAssetObjectProxy* GetProxy() const { return &mProxy; }
+
 #endif
+    
+    //! Allocate the data associated with the node
+    //! \warning To be redefined by each class defining a new class for its data
+    //! \warning Do not update mData internally, just return the pointer to the data
+    //! \note Called by CreateData()
+    //! \return Pointer to the data being allocated
+    virtual Graph::NodeData * AllocateData() const { return nullptr; }
 
-    static bool IsTimelineScript(const Pegasus::AssetLib::Asset* asset);
-
+    //! Generate the content of the data associated with the node
+    //! \warning To be redefined by each derived class, to implement its behavior
+    //! \note Called by \a GetUpdatedData()
+    virtual void GenerateData() {}
 private:
-
-    //! Increment the reference counter, used by Ref<Node>
-    inline void AddRef() { mRefCount++; }
-
-    //! Decrease the reference counter, and delete the current object
-    //! if the counter reaches 0
-    void Release();
-
-    //! Reference counter
-    int mRefCount;
 
 #if PEGASUS_ENABLE_PROXIES
     TimelineScriptProxy mProxy;
 #endif
-
-    //! copy of the script name
-    char mScriptName[MAX_SCRIPT_NAME];
 };
 
 //! Reference to a Node, typically used when declaring a variable of reference type

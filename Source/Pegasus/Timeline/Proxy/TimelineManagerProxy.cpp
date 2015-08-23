@@ -34,7 +34,7 @@ namespace Timeline {
 
 
 TimelineManagerProxy::TimelineManagerProxy(TimelineManager * timelineManager)
-    :   mTimelineManager(timelineManager), mOpenedScripts(Pegasus::Memory::GetGlobalAllocator())
+    :   mTimelineManager(timelineManager)
 {
     PG_ASSERTSTR(timelineManager != nullptr, "Trying to create a timeline proxy from an invalid timeline object");
 }
@@ -78,83 +78,13 @@ int TimelineManagerProxy::GetSourceCount() const
 
 Core::ISourceCodeProxy* TimelineManagerProxy::GetSource(int id)
 {
-    return mTimelineManager->GetScriptTracker()->GetScriptById(id)->GetProxy();
+    return static_cast<Core::ISourceCodeProxy*>(mTimelineManager->GetScriptTracker()->GetScriptById(id)->GetProxy());
 }
 
 void TimelineManagerProxy::RegisterEventListener(Pegasus::Core::CompilerEvents::ICompilerEventListener * eventListener)
 {
     mTimelineManager->RegisterEventListener(eventListener);
 }
-
-Core::ISourceCodeProxy* TimelineManagerProxy::OpenScript(const char* path)
-{
-    TimelineSourceRef script = mTimelineManager->LoadScript(path);
-    if (script != nullptr)
-    {
-        if (FindOpenedScript(script) == -1)
-        {
-            *(new (&mOpenedScripts.PushEmpty()) TimelineSourceRef)  = script;
-        }
-        return script->GetProxy();
-    }
-    else
-    {
-        return nullptr;
-    }
-}
-
-Core::ISourceCodeProxy* TimelineManagerProxy::OpenScript(AssetLib::IAssetProxy* asset)
-{
-    AssetLib::AssetProxy* assetProxy = static_cast<AssetLib::AssetProxy*>(asset);
-    const char* ext = Utils::Strrchr(asset->GetPath(), '.');
-
-    TimelineSourceRef script = Utils::Strcmp(ext, ".bsh") ? 
-            mTimelineManager->CreateScript(assetProxy->GetObject()) :
-            mTimelineManager->CreateHeader(assetProxy->GetObject()) ;
-
-    if (script != nullptr)
-    {
-        if (FindOpenedScript(script) == -1)
-        {
-            *(new (&mOpenedScripts.PushEmpty()) TimelineSourceRef) = script;
-        }
-        return script->GetProxy();
-    }
-    else
-    {
-        return nullptr;
-    }
-}
-
-void TimelineManagerProxy::CloseScript(Core::ISourceCodeProxy* script)
-{
-    TimelineSourceRef timelineScript = static_cast<TimelineScriptProxy*>(script)->GetObject();
-    int index = FindOpenedScript(timelineScript);
-    if (index != -1)
-    {
-        mOpenedScripts[index] = nullptr; //decrease the reference to the current script, a potential destructor call
-        mOpenedScripts.Delete(index);
-    }
-}
-
-int TimelineManagerProxy::FindOpenedScript(TimelineSourceIn script)
-{
-    for (int i = 0; i < mOpenedScripts.GetSize(); ++i)
-    {
-        if (&(*script) == &(*mOpenedScripts[i]))
-        {
-            return i;
-        }
-    }
-    
-    return -1;
-}
-
-bool TimelineManagerProxy::IsTimelineScript(const AssetLib::IAssetProxy* asset) const
-{
-    return mTimelineManager->IsTimelineScript(static_cast<const AssetLib::AssetProxy*>(asset)->GetObject());
-}
-
 
 }   // namespace Timeline
 }   // namespace Pegasus

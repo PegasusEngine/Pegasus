@@ -14,24 +14,18 @@
 
 #include <QDockWidget>
 #include <QAction>
+#include <qvector.h>
 #include "ui_AssetLibraryWidget.h"
 #include "MessageControllers/AssetIOMessageController.h"
 #include "Widgets/PegasusDockWidget.h"
 
 namespace Pegasus {
 
+    struct PegasusAssetTypeDesc;
+
     namespace App 
     {
         class IApplicationProxy;
-    }
-    namespace Core 
-    {
-        class ISourceCodeProxy;
-    }
-
-    namespace Shader 
-    {
-        class IProgramProxy;
     }
 
 }
@@ -42,6 +36,7 @@ class QSemaphore;
 class QFileSystemModel;
 class QMenu;
 class QFileSystemWatcher;
+class QSignalMapper;
 class ProgramTreeModel;
 class SourceCodeListModel;
 class Editor;
@@ -95,16 +90,7 @@ public slots:
     void DisableProgramShaderViews();
 
     //! functions that trigger a new asset
-    void OnNewMesh(bool enabled);
-    void OnNewProgram(bool enabled);
-    void OnNewVS(bool enabled);
-    void OnNewPS(bool enabled);
-    void OnNewTCS(bool enabled);
-    void OnNewTES(bool enabled);
-    void OnNewGS(bool enabled);
-    void OnNewCS(bool enabled);
-    void OnNewTexture(bool enabled);
-    void OnNewTimelineScript(bool enabled);
+    void OnNewObject(int index);
 
 
     //slots on file system changes
@@ -126,7 +112,7 @@ private:
 
     //! Saves a new asset from scratch. Triggers the event chain from ui -> render -> ui
     //! \param the filter to use
-    void SaveAsFile(const QString& filter, AssetIOMessageController::Message::MessageType newAssetType);
+    void SaveAsFile(const QString& filter, const Pegasus::PegasusAssetTypeDesc* desc);
 
     //! ui components
     Ui::AssetLibraryWidget ui;
@@ -158,6 +144,8 @@ private:
     //! file system watcher to detect any changes outside pegasus on asset files
     QFileSystemWatcher* mFileSystemWatcher;
 
+    //! Mappers for all new menus
+    QVector<QSignalMapper*> mNewButtonMappers;
 
 };
 

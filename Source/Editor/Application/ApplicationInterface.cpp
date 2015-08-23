@@ -96,13 +96,16 @@ ApplicationInterface::ApplicationInterface(Application * application)
                 this, SLOT(RedrawTextureEditorPreview()),
                 Qt::QueuedConnection);
     }
-
     mAssetIoMessageController = new AssetIOMessageController(mApplication->GetApplicationProxy());
     mSourceIoMessageController = new SourceIOMessageController(mApplication->GetApplicationProxy());
     mProgramIoMessageController = new ProgramIOMessageController(mApplication->GetApplicationProxy());
     mSourceCodeEventListener = new SourceCodeManagerEventListener();
+
+    Editor& editor = Editor::GetInstance();
+    connect(mAssetIoMessageController, SIGNAL(SignalOpenObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
+            &editor, SLOT(OnOpenObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)), Qt::QueuedConnection); 
     
-    const QVector<PegasusDockWidget*>& widgets = Editor::GetInstance().GetWidgets();
+    const QVector<PegasusDockWidget*>& widgets = editor.GetWidgets();
     for (int i = 0; i < widgets.size(); ++i)
     {
         PegasusDockWidget* widget = widgets[i];
@@ -118,12 +121,6 @@ ApplicationInterface::ApplicationInterface(Application * application)
     //From render to ui
     connect(mAssetIoMessageController, SIGNAL(SignalUpdateNodeViews()),
             assetLibraryWidget, SLOT(UpdateUIItemsLayout()), Qt::QueuedConnection); 
-
-    connect(mAssetIoMessageController, SIGNAL(SignalOpenProgram(Pegasus::Shader::IProgramProxy*)),
-            programEditor, SLOT(RequestOpenProgram(Pegasus::Shader::IProgramProxy*)), Qt::QueuedConnection); 
-
-    connect(mAssetIoMessageController, SIGNAL(SignalOpenCode(Pegasus::Core::ISourceCodeProxy*)),
-            codeEditorWidget,   SLOT(RequestOpen(Pegasus::Core::ISourceCodeProxy*)), Qt::QueuedConnection); 
 
     //<------  Source IO Controller -------->//
     //From ui to render
@@ -412,7 +409,7 @@ void ApplicationInterface::PerformBlockDoubleClickedAction(Pegasus::Timeline::IB
             CodeEditorWidget * codeEditorWidget = Editor::GetInstance().GetCodeEditorWidget();
             codeEditorWidget->show();
             codeEditorWidget->activateWindow();
-            codeEditorWidget->RequestOpen(sourceCode);
+            codeEditorWidget->OnOpenObject(sourceCode);
         }
     }
 }

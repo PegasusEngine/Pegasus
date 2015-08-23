@@ -44,9 +44,6 @@ public:
     //! \return true if successful, false otherwise
     virtual bool ReloadFromAsset() = 0;
 
-    //! Use this to bind a new object to an asset
-    //! \param the asset to bind to
-    virtual void Bind(IAssetProxy* asset) = 0;
 
 };
 
@@ -74,10 +71,6 @@ public:
     //! Reloads changes from the internal asset contained
     //! \return true if successful, false otherwise
     virtual bool ReloadFromAsset() { return GetDecoratedObject()->ReloadFromAsset(); }
-
-    //! Use this to bind a new object to an asset
-    //! \param the asset to bind to
-    virtual void Bind(IAssetProxy* asset) { GetDecoratedObject()->Bind(asset); }
 
 protected:
     virtual IRuntimeAssetObjectProxy* GetDecoratedObject() const = 0;

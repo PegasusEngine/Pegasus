@@ -9,6 +9,7 @@
 //! \date	07th November 2013
 //! \brief	Timeline management
 
+#include "Pegasus/PegasusAssetTypes.h"
 #include "Pegasus/Timeline/TimelineManager.h"
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Core/Shared/CompilerEvents.h"
@@ -22,7 +23,7 @@
 #include "Pegasus/Utils/Memcpy.h"
 #include "Pegasus/AssetLib/AssetLib.h"
 #include "Pegasus/AssetLib/Asset.h"
-#include "Pegasus/AssetLib/ASTree.h"
+#include "Pegasus/AssetLib/RuntimeAssetObject.h"
 #include "Pegasus/Core/IApplicationContext.h"
 
 
@@ -54,10 +55,7 @@ TimelineManager::TimelineManager(Alloc::IAllocator * allocator, Core::IApplicati
 
 TimelineManager::~TimelineManager()
 {
-    if (mCurrentTimeline != nullptr)
-    {
-        PG_DELETE(mAllocator, mCurrentTimeline);
-    }
+    mCurrentTimeline = nullptr;
 }
 
 //----------------------------------------------------------------------------------------
@@ -169,17 +167,6 @@ unsigned int TimelineManager::GetRegisteredBlockNames(char classNames   [MAX_NUM
 #endif  // PEGASUS_ENABLE_PROXIES
 
 //----------------------------------------------------------------------------------------
-bool TimelineManager::IsTimeline(AssetLib::Asset* asset)
-{
-    int typeId = asset->Root()->FindString("type");
-    if (typeId == -1)
-    {
-        return false;
-    }
-    return !Utils::Strcmp("Timeline", asset->Root()->GetString(typeId));
-}
-
-//----------------------------------------------------------------------------------------
 Block * TimelineManager::CreateBlock(const char * className)
 {
     const unsigned int registeredBlockIndex = GetRegisteredBlockIndex(className);
@@ -270,166 +257,103 @@ void TimelineManager::ShutdownAllTimelines()
     }
 }
 
-Timeline* TimelineManager::CreateTimeline()
+TimelineScriptReturn TimelineManager::LoadScript(const char* path)
+{
+    AssetLib::RuntimeAssetObjectRef obj = GetAssetLib()->LoadObject(path);
+    if (obj != nullptr && obj->GetOwnerAsset()->GetTypeDesc()->mTypeGuid == ASSET_TYPE_BLOCKSCRIPT.mTypeGuid)
+    {
+        return obj;
+    }
+    return nullptr;
+}
+
+TimelineSourceReturn TimelineManager::LoadHeader(const char* path)
+{
+    AssetLib::RuntimeAssetObjectRef obj = GetAssetLib()->LoadObject(path);
+    if (obj != nullptr && obj->GetOwnerAsset()->GetTypeDesc()->mTypeGuid == ASSET_TYPE_H_BLOCKSCRIPT.mTypeGuid)
+    {
+        return obj;
+    }
+    return nullptr;
+}
+
+TimelineReturn TimelineManager::LoadTimeline(const char* path)
+{
+    AssetLib::RuntimeAssetObjectRef obj = GetAssetLib()->LoadObject(path);
+    if (obj != nullptr && obj->GetOwnerAsset()->GetTypeDesc()->mTypeGuid == ASSET_TYPE_TIMELINE.mTypeGuid)
+    {
+        return obj;
+    }
+    return nullptr;
+}
+
+TimelineScriptReturn TimelineManager::CreateScript()
+{
+    TimelineScriptRef scriptRef = PG_NEW(mAllocator, -1, "Timeline Script", Alloc::PG_MEM_TEMP)
+             TimelineScript(mAllocator, mAppContext);
+
+#if PEGASUS_USE_GRAPH_EVENTS
+    //register event listener
+    scriptRef->SetEventListener(GetEventListener());
+    GRAPH_EVENT_INIT_USER_DATA(static_cast<Pegasus::Core::IBasicSourceProxy*>(scriptRef->GetProxy()), "BlockScript", scriptRef->GetEventListener());
+#endif
+
+    scriptRef->Compile();
+    
+    //TODO remove tracker on release?
+    mScriptTracker.RegisterScript(&(*scriptRef));
+
+    return scriptRef;
+}
+
+TimelineSourceReturn TimelineManager::CreateHeader()
+{
+    TimelineSourceRef scriptRef = PG_NEW(mAllocator, -1, "Timeline Script Header", Alloc::PG_MEM_TEMP)
+                 TimelineSource(mAllocator);
+    
+#if PEGASUS_USE_GRAPH_EVENTS
+    //register event listener
+    scriptRef->SetEventListener(GetEventListener());
+    GRAPH_EVENT_INIT_USER_DATA(static_cast<Pegasus::Core::IBasicSourceProxy*>(scriptRef->GetProxy()), "BlockScript", scriptRef->GetEventListener());
+#endif
+    return scriptRef;
+}
+
+TimelineRef TimelineManager::CreateTimeline()
 {
     PG_ASSERTSTR(mCurrentTimeline == nullptr, "Currently pegasus only supports one timeline. Dont go crazy yet.");
     mCurrentTimeline = PG_NEW(mAllocator, -1, "Timeline", Alloc::PG_MEM_PERM) Timeline(mAllocator, mAppContext);
     return mCurrentTimeline;
 }
 
-bool TimelineManager::IsTimelineScript(const AssetLib::Asset* asset) const
+AssetLib::RuntimeAssetObjectRef TimelineManager::CreateRuntimeObject(const PegasusAssetTypeDesc* desc)
 {
-    return TimelineSource::IsTimelineScript(asset);
-}
-
-TimelineScriptReturn TimelineManager::LoadScript(const char* path)
-{
-    AssetLib::Asset* asset = nullptr;
-    if (Io::ERR_NONE == mAppContext->GetAssetLib()->LoadAsset(path, &asset))
+    if (desc->mTypeGuid == ASSET_TYPE_TIMELINE.mTypeGuid)
     {
-        if (IsTimelineScript(asset))
-        {
-            return CreateScript(asset);
-        }
-        else
-        {
-            mAppContext->GetAssetLib()->DestroyAsset(asset);
-        }
+        return CreateTimeline();
     }
-
-    PG_LOG('ERR_', "Error loading timeline script asset %s", path);
+    else if (desc->mTypeGuid == ASSET_TYPE_BLOCKSCRIPT.mTypeGuid)
+    {
+        return CreateScript();
+    }
+    else if (desc->mTypeGuid == ASSET_TYPE_H_BLOCKSCRIPT.mTypeGuid)
+    {
+        return CreateHeader();
+    }
+    
     return nullptr;
 }
 
-TimelineSourceReturn TimelineManager::LoadHeader(const char* path)
+const PegasusAssetTypeDesc*const* TimelineManager::GetAssetTypes() const
 {
-    AssetLib::Asset* asset = nullptr;
-    if (Io::ERR_NONE == mAppContext->GetAssetLib()->LoadAsset(path, &asset))
-    {
-        if (IsTimelineScript(asset))
-        {
-            return CreateHeader(asset);
-        }
-        else
-        {
-            mAppContext->GetAssetLib()->DestroyAsset(asset);
-        }
-    }
+    static const PegasusAssetTypeDesc* gDescs[] = {
+          &ASSET_TYPE_TIMELINE
+        , &ASSET_TYPE_BLOCKSCRIPT
+        , &ASSET_TYPE_H_BLOCKSCRIPT
+        , nullptr
+    };
 
-    PG_LOG('ERR_', "Error loading header for blockscript asset %s", path);
-    return nullptr;
-}
-
-static const char* GetScriptName(const char* path)
-{
-    int pathlen = Utils::Strlen(path);
-    while (pathlen >= 0 && *(path + pathlen) != '/' && *(path + pathlen) != '\\') --pathlen;
-    return path + pathlen + 1;
-}
-
-TimelineSourceReturn TimelineManager::CreateHeader(AssetLib::Asset* asset)
-{
-    if (asset->GetRuntimeData() == nullptr)
-    {
-        const char* path = asset->GetPath();
-        int pathlen = Utils::Strlen(path);
-        while (pathlen >= 0 && *(path + pathlen) != '/' && *(path + pathlen) != '\\') --pathlen;
-        path += pathlen + 1;
-        TimelineSourceRef scriptRef = PG_NEW(mAllocator, -1, "Timeline Script Header", Alloc::PG_MEM_TEMP) TimelineSource(mAllocator, path);
-        
-        if (scriptRef->Read(asset))
-        {
-
-    #if PEGASUS_USE_GRAPH_EVENTS
-            //register event listener
-            scriptRef->SetEventListener(GetEventListener());
-            GRAPH_EVENT_INIT_USER_DATA(scriptRef->GetProxy(), "BlockScript", scriptRef->GetEventListener());
-    #endif
-            return scriptRef;
-        }
-        else
-        {
-            return nullptr;
-        }
-    } 
-    else 
-    {
-        return static_cast<TimelineSource*>(asset->GetRuntimeData());
-    }
-}
-
-TimelineScriptReturn TimelineManager::CreateScript(AssetLib::Asset* asset)
-{
-    if (asset->GetRuntimeData() == nullptr)
-    {
-        const char* name = GetScriptName(asset->GetPath());
-        TimelineScriptRef scriptRef = PG_NEW(mAllocator, -1, "Timeline Script", Alloc::PG_MEM_TEMP) TimelineScript(mAllocator, name, mAppContext);
-
-        if (scriptRef->Read(asset))
-        {
-    
-    #if PEGASUS_USE_GRAPH_EVENTS
-            //register event listener
-            scriptRef->SetEventListener(GetEventListener());
-            GRAPH_EVENT_INIT_USER_DATA(scriptRef->GetProxy(), "BlockScript", scriptRef->GetEventListener());
-    #endif
-    
-            scriptRef->Compile();
-            
-            //TODO remove tracker on release?
-            mScriptTracker.RegisterScript(&(*scriptRef));
-    
-            return scriptRef;
-        }
-        else
-        {
-            return nullptr;
-        }
-    } 
-    else 
-    {
-        return static_cast<TimelineScript*>(asset->GetRuntimeData());
-    }
-}
-
-Timeline* TimelineManager::LoadTimeline(const char* path)
-{
-    Pegasus::AssetLib::AssetLib* lib = mAppContext->GetAssetLib();
-    Pegasus::AssetLib::Asset* asset = nullptr;
-    if (lib->LoadAsset(path, &asset) == Pegasus::Io::ERR_NONE)
-    {
-        if (asset->GetFormat() == AssetLib::Asset::FMT_STRUCTURED && IsTimeline(asset))
-        {
-            if (asset->GetRuntimeData() != nullptr)
-            {
-                return static_cast<Timeline*>(asset->GetRuntimeData());
-            }
-            else
-            {
-                Timeline* t = CreateTimeline();
-                if (t->Read(asset))
-                {
-                    return t;
-                }
-                else
-                {
-                    lib->DestroyAsset(asset);
-                    PG_DELETE(mAllocator, mCurrentTimeline);
-                    mCurrentTimeline = nullptr;
-                    return nullptr;
-                }
-            }
-        }
-        else
-        {
-            lib->DestroyAsset(asset);
-            return nullptr;
-        }
-    }
-    else
-    {
-        return nullptr;
-    }
+    return gDescs;
 }
 
 }   // namespace Timeline

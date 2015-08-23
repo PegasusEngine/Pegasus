@@ -23,12 +23,16 @@ unsigned char ToStageFlag(Pegasus::Shader::ShaderType type)
 Pegasus::Shader::ProgramLinkage::ProgramLinkage(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :
 Pegasus::Graph::OperatorNode(nodeAllocator, nodeDataAllocator), mStageFlags(0), mFactory(nullptr)
+    ,AssetLib::RuntimeAssetObject(this)
 #if PEGASUS_ENABLE_PROXIES
     //initializing proxy
     ,mProxy(this)
     ,mShaderTracker(nullptr)
 #endif
 {
+#if PEGASUS_ENABLE_PROXIES
+    mName[0] = '\0';
+#endif
     GRAPH_EVENT_INIT_DISPATCHER
 }
 
@@ -180,33 +184,6 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ProgramLinkage::FindShaderSt
     return nullptr;
 }
 
-bool Pegasus::Shader::ProgramLinkage::IsProgram(const Pegasus::AssetLib::Asset* asset)
-{
-    //parse asset
-    if (asset->GetFormat() != AssetLib::Asset::FMT_STRUCTURED)
-    {
-        return false;
-    }
-
-    const AssetLib::Object* root = asset->Root();
-    if (!root) return false;
-
-    int typeId = root->FindString("type");
-
-    if (typeId == -1)
-    {
-        return false;
-    }
-
-    const char* typeName = root->GetString(typeId);
-    if (Utils::Stricmp(typeName, "program"))
-    {
-        return false;
-    }
-
-    return true;
-}
-
 bool Pegasus::Shader::ProgramLinkage::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset)
 {
     AssetLib::Object* root = asset->Root();
@@ -244,9 +221,7 @@ bool Pegasus::Shader::ProgramLinkage::OnReadAsset(Pegasus::AssetLib::AssetLib* l
 
 void Pegasus::Shader::ProgramLinkage::OnWriteAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset)
 {
-    AssetLib::Object* root = asset->NewObject();
-    root->AddString("type", "program");
-    asset->SetRootObject(root);
+    AssetLib::Object* root = asset->Root();    
 
     AssetLib::Array* shaderArr = asset->NewArray();
 

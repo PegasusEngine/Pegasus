@@ -12,8 +12,10 @@
 #include "Editor.h"
 #include "Log.h"
 #include "Assertion.h"
+#include "Pegasus/PegasusAssetTypes.h"
 #include "Application/ApplicationManager.h"
 #include "Settings/SettingsDialog.h"
+#include "Pegasus/AssetLib/Shared/IAssetProxy.h"
 
 #include <QUndoStack>
 #include <QSplashScreen>
@@ -149,6 +151,23 @@ void Editor::RegisterWidget(PegasusDockWidget* widget, Qt::DockWidgetArea area)
             this, SLOT(OnRegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)));
     connect(widget, SIGNAL(OnUnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
             this, SLOT(OnUnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)));
+
+    const Pegasus::PegasusAssetTypeDesc*const* types = widget->GetTargetAssetTypes();
+    
+    while (types != nullptr && *types != nullptr)
+    {
+        int guid = (*types)->mTypeGuid;
+        QMap<int,PegasusDockWidget*>::iterator it = mTypeGuidWidgetMapping.find(guid);
+        if (it != mTypeGuidWidgetMapping.end())
+        {
+            ED_ASSERTSTR(false, "Two widgets can process the same asset type. There must be only one widget per type. We can do multiple types per widgets though.");
+        }   
+        else
+        {
+            mTypeGuidWidgetMapping.insert(guid, widget);
+        }
+        ++types;
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -773,6 +792,23 @@ void Editor::OnDockFocus(PegasusDockWidget* target)
     if (target->GetCurrentUndoStack() != nullptr)
     {
         mHistoryDockWidget->SetUndoStack(target->GetCurrentUndoStack());
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Editor::OnOpenObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
+{
+    ED_ASSERT(object->GetOwnerAsset()->GetTypeDesc() != nullptr);
+    int typeGuid = object->GetOwnerAsset()->GetTypeDesc()->mTypeGuid;
+    QMap<int,PegasusDockWidget*>::iterator it = mTypeGuidWidgetMapping.find(typeGuid);
+    if (it != mTypeGuidWidgetMapping.end())
+    {
+        (*it)->ReceiveOpenRequest(object);
+    }
+    else
+    {
+        ED_LOG("No editor found for asset: %s", object->GetOwnerAsset()->GetPath());
     }
 }
 
