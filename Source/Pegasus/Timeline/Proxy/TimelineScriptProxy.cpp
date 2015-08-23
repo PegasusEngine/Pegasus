@@ -27,7 +27,7 @@ TimelineScriptProxy::~TimelineScriptProxy() {}
 
 const char * TimelineScriptProxy::GetName() const
 {
-    return mTimelineSource->GetName();
+    return mTimelineSource->GetDisplayName();
 }
 
 void TimelineScriptProxy::GetSource(const char ** outSrc, int& outSize) const
