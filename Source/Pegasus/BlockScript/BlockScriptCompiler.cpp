@@ -13,6 +13,7 @@
 #include "Pegasus/BlockScript/BlockScriptAst.h"
 #include "Pegasus/BlockScript/IBlockScriptCompilerListener.h"
 #include "Pegasus/BlockScript/IFileIncluder.h"
+#include "Pegasus/Utils/String.h"
 #include "Pegasus/Core/Io.h"
 
 using namespace Pegasus;
@@ -61,6 +62,34 @@ BlockScript::FunBindPoint BlockScriptCompiler::GetFunctionBindPoint(
         argumentListCount
     );
 }
+
+GlobalBindPoint BlockScriptCompiler::GetGlobalBindPoint(const char* globalName) const
+{
+    if (mAsm.mGlobalsMap != nullptr)
+    {
+        for (int i = 0; i < mAsm.mGlobalsMap->Size(); ++i)
+        {
+            const Ast::Idd* var = (*mAsm.mGlobalsMap)[i].mVar;
+            if (!Utils::Strcmp(globalName, var->GetName()))
+            {
+                return i;
+            }
+        }
+    }
+    
+    return GLOBAL_INVALID_BIND_POINT;
+}
+
+const TypeDesc* BlockScriptCompiler::GetTypeDesc(GlobalBindPoint bindPoint) const
+{
+    PG_ASSERT(mAsm.mGlobalsMap != nullptr);
+    if (mAsm.mGlobalsMap != nullptr && bindPoint >= 0 && bindPoint < mAsm.mGlobalsMap->Size())
+    {
+        return (*mAsm.mGlobalsMap)[bindPoint].mVar->GetTypeDesc();
+    }
+    return nullptr;
+}
+
 
 void BlockScriptCompiler::SetCompilerEventListener(Pegasus::BlockScript::IBlockScriptCompilerListener* listener)
 {

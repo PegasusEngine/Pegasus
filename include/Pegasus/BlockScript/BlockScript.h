@@ -66,6 +66,35 @@ public:
         int   outputBufferSize
     );
 
+    //! Read the global value stored in a handle.
+    //! \param vmState - the virtual machine state containing all memory.
+    //! \param bindPoint - the bind point of the global
+    //! \param destBuffer - the buffer where the global values will be copied into
+    //! \param destBufferRead - output value, the bytes read.
+    //! \param destBufferSize - the size of the buffer passed in destBuffer. Function will assert and NOP
+    //!                         if the size of the global underneath is bigger than the dest buffer. Use
+    //!                         GetGlobalTypeDesc to get the proper type description and size of this global.
+    void ReadGlobalValue(
+        BsVmState*   vmState,
+        GlobalBindPoint bindPoint,
+        void* destBuffer,
+        int&  destBufferRead,
+        int   destBufferSize
+    );
+
+    //! Write to a global value through its handle.
+    //! \param vmState - the virtual machine state containing all memory.
+    //! \param bindPoint - the bind point of the global
+    //! \param srcBuffer - contents to write into the global in the script.
+    //! \param srcBufferSize - The size of the srcBuffer passed
+    void WriteGlobalValue (
+        BsVmState*   vmState,
+        GlobalBindPoint bindPoint,
+        const void* srcBuffer,
+        int srcBufferSize
+    );
+
+
 private:
     // Virtual machine (state of this vm is pushed by the user through BsVmState class)
     BsVm      mVm;

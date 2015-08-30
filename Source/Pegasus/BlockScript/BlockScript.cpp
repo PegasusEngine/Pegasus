@@ -15,6 +15,7 @@
 #include "Pegasus/Core/Io.h"
 #include "Pegasus/BlockScript/SymbolTable.h"
 #include "Pegasus/BlockScript/BlockLib.h"
+#include "Pegasus/Utils/Memcpy.h"
 
 #include <stdio.h>
 
@@ -72,5 +73,39 @@ bool BlockScript::BlockScript::ExecuteFunction(
         inputBufferSize,
         outputBuffer,
         outputBufferSize
+    );
+}
+
+void BlockScript::BlockScript::ReadGlobalValue(
+    BsVmState*   vmState,
+    GlobalBindPoint bindPoint,
+    void* destBuffer,
+    int&  destBufferRead,
+    int   destBufferSize
+)
+{
+    destBufferRead = Pegasus::BlockScript::ReadGlobalValue(
+        bindPoint,
+        GetAsm(),
+        *vmState,
+        destBuffer,
+        destBufferSize
+    );
+}
+
+void BlockScript::BlockScript::WriteGlobalValue (
+    BsVmState*   vmState,
+    GlobalBindPoint bindPoint,
+    const void* srcBuffer,
+    int srcBufferSize
+)
+{
+
+    Pegasus::BlockScript::WriteGlobalValue(
+        bindPoint,
+        GetAsm(),
+        *vmState,
+        srcBuffer,
+        srcBufferSize
     );
 }

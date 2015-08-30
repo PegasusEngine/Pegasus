@@ -195,7 +195,7 @@ stmt_list : stmt_list stmt {
 stmt    : exp K_SEMICOLON { BS_BUILD($$, BuildStmtExp($1)); }
         | K_EXTERN ident O_SET exp K_SEMICOLON  { 
             Exp * exp = nullptr;
-            BS_BUILD(exp, BuildBinop($2, $3, $4)); 
+            BS_BUILD(exp, BuildSetBinop($2, $4, true /*isExtern*/)); 
             if (exp != nullptr)
             {
                 BS_BUILD($$, BuildStmtExp(exp));

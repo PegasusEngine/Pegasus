@@ -11,15 +11,17 @@
 
 #ifndef EDITOR_CODETEXTEDITORWIDGET_H
 #define EDITOR_CODETEXTEDITORWIDGET_H
-#include <QTextEdit>
+#include <QPlainTextEdit>
 
 class CodeUserData;
 class QEvent;
 class QSyntaxHighlighter;
+class QPaintEvent;
 
 //! text editor widget class. Represents the text editor widget
-class CodeTextEditorWidget : public QTextEdit
+class CodeTextEditorWidget : public QPlainTextEdit
 {
+    friend class LineNumberArea;
     Q_OBJECT;
 public:
     //! constructor
@@ -65,7 +67,27 @@ protected:
     //! focus out event callbacks
     virtual void focusOutEvent(QFocusEvent * e);
 
+    //! resize event callback
+    virtual void resizeEvent(QResizeEvent *event);
+
+private slots:
+    //! updates the width of the line number area
+    void updateLineNumberAreaWidth(int newBlockCount);
+
+    //! highlights the current line of the cursor
+    void highlightCurrentLine();
+    
+    //! updates the line number area
+    void updateLineNumberArea(const QRect &, int);
+
 private:
+
+    //! Line number paint event
+    void lineNumberAreaPaintEvent(QPaintEvent *event);
+
+    //! gets the width of the line number area
+    int lineNumberAreaWidth();
+
     //! variable that tells if this widget is in focus
     bool mIsFocus;
 
@@ -75,6 +97,8 @@ private:
     QTextDocument* mNullDocument;
 
     QSyntaxHighlighter * mSyntaxHighlighter;
+
+    QWidget* mLineNumberArea;
 };
 
 

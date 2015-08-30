@@ -1763,7 +1763,7 @@ yyreduce:
 #line 196 "bs.y"
     { 
             Exp * exp = nullptr;
-            BS_BUILD(exp, BuildBinop((yyvsp[(2) - (5)].vExp), (yyvsp[(3) - (5)].token), (yyvsp[(4) - (5)].vExp))); 
+            BS_BUILD(exp, BuildSetBinop((yyvsp[(2) - (5)].vExp), (yyvsp[(4) - (5)].vExp), true /*isExtern*/)); 
             if (exp != nullptr)
             {
                 BS_BUILD((yyval.vStmt), BuildStmtExp(exp));

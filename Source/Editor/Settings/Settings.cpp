@@ -26,7 +26,10 @@ const QColor Settings::sDefaultSyntaxHighlightColors[Settings::SYNTAX_COUNT] =
     QColor(0, 255, 0, 255),  //C Comment
     QColor(255, 255, 255, 255),  //regular text
     QColor(130, 255, 50, 255),  //keyword
-    QColor(230, 54, 0, 255) //imm number value
+    QColor(230, 54, 0, 255), //imm number value
+    QColor(0,0,0,255),   // line number background 
+    QColor(0,255,0,255), // line number color     
+    QColor(10,10,25,255) //current line background color
 };
 
 const char * Settings::sCodeEditorSyntaxStyleNames[Settings::SYNTAX_COUNT] =
@@ -36,7 +39,10 @@ const char * Settings::sCodeEditorSyntaxStyleNames[Settings::SYNTAX_COUNT] =
     "c comment",
     "regular text",
     "keyword",
-    "magic number"
+    "magic number",
+    "line number background",
+    "line number color",
+    "current line background color"
 };
 
 // Suffix added to the style name when a dark style is supported

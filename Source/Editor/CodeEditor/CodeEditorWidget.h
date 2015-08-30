@@ -36,6 +36,7 @@ class CodeTextEditorWidget;
 class CodeUserData;
 class NodeFileTabBar;
 class QUndoStack;
+class QLineEdit;
 
 namespace Pegasus
 {
@@ -184,6 +185,12 @@ private slots:
     //! \param true to enable the button, false otherwise
     void EnableModeInstantCompilationButton(bool enableValue);
 
+    //! Enables search mode.
+    void FocusSearch();
+
+    //! Closes search mode.
+    void CloseSearch();
+
 private:
 
     //! request a syntax highlight update for a particular line
@@ -213,6 +220,8 @@ private:
         CodeTextEditorTreeWidget::SignalCombination mTextEditorSignals;
         QString       mStatusBarMessage;
         QStatusBar  * mStatusBar; 
+        QWidget     * mFindTextWidget;
+        QLineEdit   * mSearchWindowLineEdit;
         QVBoxLayout * mMainLayout; //! the main layout of the text editor
         NodeFileTabBar           * mTabWidget;
         CodeTextEditorTreeWidget * mTreeEditor;
@@ -231,6 +240,7 @@ private:
     QAction * mVerticalAction;
     QAction * mInstantCompilationAction;
     QAction * mCompileAction;
+    QAction * mSearchAction;
 
     //! compilation barrier. Throttles compilation if a signal has been sent
     bool mCompilationRequestPending;

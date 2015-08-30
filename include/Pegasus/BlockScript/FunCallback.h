@@ -7,7 +7,7 @@
 //! \file   FunCallback.h
 //! \author Kleber Garcia
 //! \date   October 28th 2014
-//! \brief  Runtime utilities to register c++ callback functions into blockscript
+//! \brief  Runtime utilities to register c++ callback functions and globals into blockscript
 
 #ifndef BLOCKSCRIPT_FUNCALLBACK_H
 #define BLOCKSCRIPT_FUNCALLBACK_H
@@ -154,10 +154,15 @@ private:
 //block script callback for c++
 typedef void (*FunCallback)(FunCallbackContext& context);
 
-// The function bind point
+//! Function bind point (handle)
 typedef int FunBindPoint;
 
+//! Global bind point (handle) 
+typedef int GlobalBindPoint;
+
 const FunBindPoint FUN_INVALID_BIND_POINT = -1;
+
+const GlobalBindPoint GLOBAL_INVALID_BIND_POINT = -1;
 
 #define MAX_FUN_ARG_LIST 20
 
@@ -213,11 +218,11 @@ struct ClassTypeDesc
 };
 
 //! Gets a function bind point to be used to call.
-//! builder - the ast builder, containing necessary meta-data
-//! assembly - the assembly code, containing the mapping with function bind points
-//! funName - the string name of the function
-//! argTypes - the argument definitions of the function 
-//! argumentListCount - the count of the arguments of this function
+//! \param builder - the ast builder, containing necessary meta-data
+//! \param assembly - the assembly code, containing the mapping with function bind points
+//! \param funName - the string name of the function
+//! \param argTypes - the argument definitions of the function 
+//! \param argumentListCount - the count of the arguments of this function
 //! \return FUN_INVALID_BIND_POINT if the function does not exist, otherwise a valid bind point.
 FunBindPoint GetFunctionBindPoint(
     const BlockScriptBuilder* builder, 
@@ -229,16 +234,16 @@ FunBindPoint GetFunctionBindPoint(
 
 
 //! Executes a function from a specific bind point.
-//! bindPoint - the function bind point. If an invalid bind point is passed, we return false.
-//! builder - the ast builder, containing necessary meta-data
-//! assembly - the assembly instruction set.
-//! bsVmState - the vm state.
-//! vm - the vm that will run the function.
-//! inputBuffer - the input buffer. Pack all function arguments on this structure. For heap arguments, such as strings,
-//!               register them manually on the vm state and then get an identifier int. Pass this int then in the buffer.
-//! inputBufferSize - the size of the input argument buffer. If this size does not match the input buffer size of the function then this function returns false.
-//! outputBuffer - the output buffer to be used. 
-//! outputBufferSize - the size of the return buffer. If this size does not match the return value size, then this function returns false.
+//! \param bindPoint - the function bind point. If an invalid bind point is passed, we return false.
+//! \param builder - the ast builder, containing necessary meta-data
+//! \param assembly - the assembly instruction set.
+//! \param bsVmState - the vm state.
+//! \param vm - the vm that will run the function.
+//! \param inputBuffer - the input buffer. Pack all function arguments on this structure. For heap arguments, such as strings,
+//!                      register them manually on the vm state and then get an identifier int. Pass this int then in the buffer.
+//! \param inputBufferSize - the size of the input argument buffer. If this size does not match the input buffer size of the function then this function returns false.
+//! \param outputBuffer - the output buffer to be used. 
+//! \param outputBufferSize - the size of the return buffer. If this size does not match the return value size, then this function returns false.
 bool ExecuteFunction(
     FunBindPoint bindPoint,
     BlockScriptBuilder* builder, 
@@ -251,9 +256,33 @@ bool ExecuteFunction(
     int   outputBufferSize
 );
 
+//! Reads a global value from the VM state.
+//! \param bindPoint the bind point of the global value to read from
+//! \param assembly the assembly instruction set with global metadata
+//! \param state the VM state to read from
+//! \param destBuffer the destination buffer
+//! \param destBufferSize the size of the destination buffer
+int ReadGlobalValue(
+    GlobalBindPoint bindPoint,
+    const Assembly& assembly,
+    BsVmState& state,
+    void* destBuffer,
+    int   destBufferSize
+);
 
-
-
+//! Write a global to the VM state.
+//! \param bindPoint the bind point of the global value to write to
+//! \param assembly the assembly instruction set with global metadata
+//! \param state the VM state to read from
+//! \param srcBuffer the source of the buffer
+//! \param srcBufferSize the size of the source buffer to read from
+void WriteGlobalValue(
+    GlobalBindPoint bindPoint,
+    const Assembly& assembly,
+    BsVmState& state,
+    const void* srcBuffer,
+    int srcBufferSize
+);
 
 }
 }

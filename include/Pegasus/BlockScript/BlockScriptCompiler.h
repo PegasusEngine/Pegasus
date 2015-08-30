@@ -87,9 +87,9 @@ public:
     void SetCompilerEventListener(IBlockScriptCompilerListener* eventListener);
 
     //! Gets a function bind point to be used to call.
-    //! funName - the string name of the function
-    //! argTypes - the argument definitions of the function 
-    //! argumentListCount - the count of the arguments of this function
+    //! \param funName - the string name of the function
+    //! \param argTypes - the argument definitions of the function 
+    //! \param argumentListCount - the count of the arguments of this function
     //! \return FUN_INVALID_BIND_POINT if the function does not exist, otherwise a valid bind point.
     FunBindPoint GetFunctionBindPoint(
         const char* funName,
@@ -97,8 +97,21 @@ public:
         int argumentListCount
     ) const;
 
+    //! Gets the bind point of a global. Globals must be marked as "extern" in code in order to be exposed to the API
+    //! \param globalName. the name of the global to find.
+    GlobalBindPoint GetGlobalBindPoint(const char* globalName) const;
+
+    //! Get the type description of a global variable marked as extend
+    //! \param the bind point of the global
+    //! \return the type description
+    const TypeDesc* GetTypeDesc(GlobalBindPoint bindPoint) const;
+
+    //! Sets a file includer interface for compilation.
+    //! \param includer - the includer used for #include directives
     void SetFileIncluder(IFileIncluder* includer) { mFileIncluder = includer; }
 
+    //! Gets the file includer set.
+    //! \return the includer to get.
     IFileIncluder* GetFileIncluder() const { return mFileIncluder; }
 
 protected:

@@ -114,7 +114,7 @@ FunBindPoint Pegasus::BlockScript::GetFunctionBindPoint(
 }
 
 //ideally we want to keep these hidden.. but this is an exception... as we will reuse some state code
-extern void PushFrameCommand(const StackFrameInfo* info, BsVmState& state);
+extern void PushFrameCommand(const StackFrameInfo* info, BsVmState& state, const Container<GlobalMapEntry>* globalsInitData);
 extern void PopFrameCommand(BsVmState& state);
 
 bool Pegasus::BlockScript::ExecuteFunction(
@@ -156,7 +156,7 @@ bool Pegasus::BlockScript::ExecuteFunction(
             }
             
             //first push the new stack
-            PushFrameCommand(funDec->GetFrame(), state);
+            PushFrameCommand(funDec->GetFrame(), state, nullptr);
 
             //save ip
             int savedIp = state.GetReg(Canon::R_IP);
@@ -207,4 +207,45 @@ bool Pegasus::BlockScript::ExecuteFunction(
     {
         return false;
     }
+}
+
+int Pegasus::BlockScript::ReadGlobalValue(
+    GlobalBindPoint bindPoint,
+    const Assembly& assembly,
+    BsVmState& state,
+    void* destBuffer,
+    int   destBufferSize
+)
+{
+    PG_ASSERT(bindPoint != GLOBAL_INVALID_BIND_POINT);
+    const Ast::Idd* var = (*assembly.mGlobalsMap)[bindPoint].mVar;
+    int offset = state.GetReg(Canon::R_G) + var->GetOffset();
+    void* memory = state.Ram() + offset;
+    int typeSize = var->GetTypeDesc()->GetByteSize();
+
+    PG_ASSERT(typeSize <= destBufferSize);
+    
+    Utils::Memcpy(destBuffer, memory, typeSize);
+
+    return typeSize;
+}
+
+void Pegasus::BlockScript::WriteGlobalValue(
+    GlobalBindPoint bindPoint,
+    const Assembly& assembly,
+    BsVmState& state,
+    const void* srcBuffer,
+    int srcBufferSize
+)
+{
+    PG_ASSERT(bindPoint != GLOBAL_INVALID_BIND_POINT);
+
+    const Ast::Idd* var = (*assembly.mGlobalsMap)[bindPoint].mVar;
+    int offset = state.GetReg(Canon::R_G) + var->GetOffset();
+    void* memory = state.Ram() + offset;
+    int typeSize = var->GetTypeDesc()->GetByteSize();
+
+    PG_ASSERT(srcBufferSize <= typeSize);
+
+    Utils::Memcpy(memory, srcBuffer, srcBufferSize);
 }

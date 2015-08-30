@@ -112,7 +112,7 @@ public:
 
     static const int sType;
 
-    explicit Idd (const char * name) : mOffset(-1), mFrameOffset(-1), mIsGlobal(false) { mName = name; }
+    explicit Idd (const char * name) : mOffset(-1), mFrameOffset(-1), mIsGlobal(false), mIsExtern(false) { mName = name; }
 
     virtual ~Idd(){}
 
@@ -130,6 +130,10 @@ public:
 
     void SetIsGlobal(bool isGlobal) { mIsGlobal = isGlobal; }
 
+    bool IsExtern() const { return mIsExtern; }
+
+    void SetIsExtern(bool isExtern) { mIsExtern = isExtern; }
+
     VISITOR_ACCESS
 
     EXP_RTTI_DECL
@@ -140,6 +144,7 @@ private:
     int  mOffset;
     int  mFrameOffset;
     bool mIsGlobal;
+    bool mIsExtern;
 };
 
 class Unop : public Exp

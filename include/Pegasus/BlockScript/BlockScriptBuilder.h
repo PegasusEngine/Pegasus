@@ -86,7 +86,8 @@ public:
     Ast::StmtList* CreateStmtList();
 
     //! Node builders
-    Ast::Exp* BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs);
+    Ast::Exp* BuildBinop    (Ast::Exp* lhs, int op, Ast::Exp* rhs);
+    Ast::Exp* BuildSetBinop (Ast::Exp* lhs, Ast::Exp* rhs, bool isExtern = false);
     Ast::Exp* BuildUnop  (int op, Ast::Exp* exp);
     Ast::Exp* BuildExplicitCast  (Ast::Exp* exp, const TypeDesc* type);
     Ast::Exp* BuildFunCall(Ast::ExpList* args, const char * name, bool isMethod = false);
@@ -146,6 +147,8 @@ public:
     const SymbolTable* GetSymbolTable() const { return &mSymbolTable; }
 
     const char* AllocStrImm(const char* strToCpy);    
+
+    void RegisterExternGlobal(Ast::Idd* var, Ast::Imm* defaultVal);
 
     //! creates an intrinsic function that can be called from blockscript
     //! \param the function name
@@ -212,6 +215,8 @@ private:
     Canonizer mCanonizer;
 
     IBlockScriptCompilerListener* mEventListener;
+
+    Container<GlobalMapEntry> mGlobalsMap;
 
     bool mInFunBody;
 };

@@ -36,5 +36,6 @@
         <file>MiscViews/NameIcon.png</file>
         <file>MiscViews/ReturnIcon.png</file>
         <file>MiscViews/EnumIcon.png</file>
+        <file>CodeEditor/search.png</file>
     </qresource>
 </RCC>

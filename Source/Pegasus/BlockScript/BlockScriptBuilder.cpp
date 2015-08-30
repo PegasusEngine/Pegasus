@@ -53,6 +53,7 @@ void BlockScriptBuilder::Initialize(Pegasus::Alloc::IAllocator* allocator)
     mCanonizer.Initialize(allocator);
     mStrPool.Initialize(allocator);
     mSymbolTable.Initialize(allocator);
+    mGlobalsMap.Initialize(allocator);
     Reset();
 }
 
@@ -101,6 +102,7 @@ void BlockScriptBuilder::EndBuild(BlockScriptBuilder::CompilationResult& result)
         );
 
         mActiveResult.mAsm = mCanonizer.GetAssembly();
+        mActiveResult.mAsm.mGlobalsMap = &mGlobalsMap;
     }
     else
     {
@@ -136,6 +138,7 @@ void BlockScriptBuilder::Reset()
     mCurrentFrame->SetCreatorCategory(StackFrameInfo::GLOBAL);
 
     mCanonizer.Reset();
+    mGlobalsMap.Reset();
 
     mStrPool.Clear();
 }
@@ -355,6 +358,122 @@ Exp* BlockScriptBuilder::BuildBinopArrayAccess (Ast::Exp* lhs, int op, Ast::Exp*
     return newBinop;
 }
 
+Exp* BlockScriptBuilder::BuildSetBinop(Exp* lhs, Exp* rhs, bool isExtern)
+{
+    const TypeDesc* tid1 = lhs->GetTypeDesc();
+    const TypeDesc* tid2 = rhs != nullptr ? rhs->GetTypeDesc() : nullptr;
+
+    Binop* output = nullptr;
+
+    if (tid2 == nullptr)
+    {
+        BS_ErrorDispatcher(this, "Undefined type on = operator.");
+        return nullptr;
+    }
+    else
+    {
+        if (lhs->GetExpType() == Idd::sType)
+        {
+            Idd* idd = static_cast<Idd*>(lhs);
+            bool isDeclaration = false;
+            if (idd->GetOffset() == -1)
+            {
+                PG_ASSERT(tid1 == nullptr);
+                //register into stack
+                idd->SetTypeDesc(tid2);
+				tid1 = tid2;
+                //TODO: simplify this
+                int offset = mCurrentFrame->Allocate(idd->GetName(), tid2);
+                idd->SetOffset(offset);
+                idd->SetFrameOffset(0);
+                isDeclaration = true;
+            }
+            else
+            {
+                rhs = AttemptTypePromotion(rhs, tid1);
+                tid2 = rhs->GetTypeDesc();
+                PG_ASSERT(tid2 != nullptr);
+            }
+
+            if (isExtern)
+            { 
+                if (!idd->IsGlobal())
+                {
+                    BS_ErrorDispatcher(this, "Can only use extern keyword on global variables.");
+                    return nullptr;
+                }
+
+                if (!isDeclaration)
+                {
+                    BS_ErrorDispatcher(this, "cannot use extern keyword on an identifier already declared.");
+                    return nullptr;
+                }
+
+                idd->SetIsExtern(isExtern);
+
+                Imm* imm = nullptr;
+                if (rhs->GetExpType() != Imm::sType)
+                {
+                    BS_ErrorDispatcher(this, "Right hand side of extern declaration must be an immediate value, evaluated at compile time.");
+                    return nullptr;
+                }
+
+                imm = static_cast<Imm*>(rhs);
+
+                RegisterExternGlobal(idd, imm);
+            }
+
+            output = BS_NEW Binop(lhs, O_SET, rhs);
+
+            if (!tid1->Equals(tid2))
+            {
+                BS_ErrorDispatcher(this, "Incompatible types not allowed on operation.");
+                return nullptr;
+            }
+            else
+            {
+                output->SetTypeDesc(tid1);
+            }
+
+        }
+        else if (lhs->GetExpType() == Binop::sType && (static_cast<Binop*>(lhs)->GetOp() == O_DOT || static_cast<Binop*>(lhs)->GetOp() == O_ACCESS))
+        {
+            if (isExtern)
+            {
+                BS_ErrorDispatcher(this, "cannot use extern keyword on an identifier already declared.");
+                return nullptr;
+            }
+
+            if (tid1 == nullptr || tid2 == nullptr)
+            {
+                BS_ErrorDispatcher(this, "undefined member on = operator.");
+                return nullptr;
+            }
+    
+            rhs = AttemptTypePromotion(rhs, tid1);
+            tid2 = rhs->GetTypeDesc();
+
+            if (!tid1->Equals(tid2))
+            {
+                BS_ErrorDispatcher(this, "incompatible types on = operator.");
+                return nullptr;
+            }
+
+            output = BS_NEW Binop(lhs, O_SET, rhs);
+            output->SetTypeDesc(tid1);
+
+            return output;
+
+        }
+        else
+        {
+            BS_ErrorDispatcher(this, "lhs can only be an accessor operation.");
+            return nullptr;
+        }
+    }
+    return output;
+}
+
 Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
 {
     PG_ASSERT(lhs != nullptr);
@@ -367,75 +486,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
 
     if(op == O_SET)
     {
-        if (tid2 == nullptr)
-        {
-            BS_ErrorDispatcher(this, "Undefined type on = operator.");
-            return nullptr;
-        }
-        else
-        {
-            if (lhs->GetExpType() == Idd::sType)
-            {
-                Idd* idd = static_cast<Idd*>(lhs);
-                if (idd->GetOffset() == -1)
-                {
-                    PG_ASSERT(tid1 == nullptr);
-                    //register into stack
-                    idd->SetTypeDesc(tid2);
-					tid1 = tid2;
-                    //TODO: simplify this
-                    int offset = mCurrentFrame->Allocate(idd->GetName(), tid2);
-                    idd->SetOffset(offset);
-                    idd->SetFrameOffset(0);
-                }
-                else
-                {
-                    rhs = AttemptTypePromotion(rhs, tid1);
-                    tid2 = rhs->GetTypeDesc();
-                    PG_ASSERT(tid2 != nullptr);
-                }
-
-                output = BS_NEW Binop(lhs, op, rhs);
-
-                if (!tid1->Equals(tid2))
-                {
-                    BS_ErrorDispatcher(this, "Incompatible types not allowed on operation.");
-                    return nullptr;
-                }
-                else
-                {
-                    output->SetTypeDesc(tid1);
-                }
-            }
-            else if (lhs->GetExpType() == Binop::sType && (static_cast<Binop*>(lhs)->GetOp() == O_DOT || static_cast<Binop*>(lhs)->GetOp() == O_ACCESS))
-            {
-                if (tid1 == nullptr || tid2 == nullptr)
-                {
-                    BS_ErrorDispatcher(this, "undefined member on = operator.");
-                    return nullptr;
-                }
-    
-                rhs = AttemptTypePromotion(rhs, tid1);
-                tid2 = rhs->GetTypeDesc();
-
-                if (!tid1->Equals(tid2))
-                {
-                    BS_ErrorDispatcher(this, "incompatible types on = operator.");
-                    return nullptr;
-                }
-
-                output = BS_NEW Binop(lhs, op, rhs);
-                output->SetTypeDesc(tid1);
-
-                return output;
-
-            }
-            else
-            {
-                BS_ErrorDispatcher(this, "lhs can only be an accessor operation.");
-                return nullptr;
-            }
-        }
+        return BuildSetBinop(lhs, rhs);
     }
     else if (op == O_DOT)
     {
@@ -658,6 +709,13 @@ const char* BlockScriptBuilder::AllocStrImm(const char* strToCopy)
     }    
 }
 
+void BlockScriptBuilder::RegisterExternGlobal(Ast::Idd* var, Ast::Imm* defaultVal)
+{
+    GlobalMapEntry& entry = mGlobalsMap.PushEmpty();
+    entry.mVar = var;
+    entry.mDefaultVal = defaultVal;
+}
+
 Exp*  BlockScriptBuilder::BuildStrImm(const char* strToCopy)
 {
 
@@ -764,8 +822,7 @@ Exp*   BlockScriptBuilder::BuildIdd   (const char * name)
         int frameOffset = 0;
         while (currentFrame != nullptr)
         {
-            StackFrameInfo* info = currentFrame;
-            StackFrameInfo::Entry* found = info->FindDeclaration(name);
+            StackFrameInfo::Entry* found = currentFrame->FindDeclaration(name);
             if (found != nullptr) {
                 idd->SetOffset(found->mOffset);
                 idd->SetFrameOffset(frameOffset);
@@ -773,8 +830,14 @@ Exp*   BlockScriptBuilder::BuildIdd   (const char * name)
                 idd->SetIsGlobal(currentFrame->GetParentStackFrame() == nullptr);
                 break;
             }
-            currentFrame = info->GetParentStackFrame();
+            currentFrame = currentFrame->GetParentStackFrame();
             frameOffset++;
+        }
+
+        //is this an undeclared idd/not found? see if its a global
+        if (idd->GetOffset() == -1)
+        {
+            idd->SetIsGlobal(mCurrentFrame->GetParentStackFrame() == nullptr);
         }
 
         return idd;

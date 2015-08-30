@@ -287,8 +287,19 @@ void PopFrameCommand(BsVmState& state)
     state.DecStackLevels();
 }
 
+void ApplyExternDefaults(BsVmState& state, const Container<GlobalMapEntry>* globalsInitData)
+{
+    for (int i = 0; i < globalsInitData->Size(); ++i)
+    {
+        const GlobalMapEntry& entry = (*globalsInitData)[i];
+        const void * immValue = &entry.mDefaultVal->GetVariant();
+        int size = entry.mDefaultVal->GetTypeDesc()->GetByteSize();
+        void * dest = state.Ram() + state.GetReg(R_G) + entry.mVar->GetOffset();
+        Utils::Memcpy(dest, immValue, size);
+    }
+}
 
-void PushFrameCommand(const StackFrameInfo* info, BsVmState& state)
+void PushFrameCommand(const StackFrameInfo* info, BsVmState& state, const Container<GlobalMapEntry>* globalsInitData = nullptr)
 {
     if (state.GetStackLevels() >= 0)
     {
@@ -302,9 +313,11 @@ void PushFrameCommand(const StackFrameInfo* info, BsVmState& state)
     }
     else
     {
+        PG_ASSERTSTR(globalsInitData != nullptr, "This argument is required for the first stack frame passed");
         state.Grow(info->GetTotalFrameSize());  
         state.SetReg(R_ESP, info->GetTotalFrameSize());
         state.SetReg(R_G, state.GetReg(R_SBP));
+        ApplyExternDefaults(state, globalsInitData);
     }
 
     state.IncStackLevels();
@@ -487,13 +500,13 @@ BsVmState::~BsVmState()
     }
 }
 
-void BsVm::Run(const Assembly& assembly, BsVmState& state)
+void BsVm::Run(const Assembly& assembly, BsVmState& state) const
 {
     state.Reset();
     while (StepExecution(assembly, state));
 }
 
-bool BsVm::StepExecution(const Assembly& assembly, BsVmState& state)
+bool BsVm::StepExecution(const Assembly& assembly, BsVmState& state) const
 {
     bool active = true;
     const Container<Canon::Block>& blockList = *assembly.mBlocks;
@@ -590,7 +603,7 @@ bool BsVm::StepExecution(const Assembly& assembly, BsVmState& state)
     case Canon::T_PUSHFRAME:
     {
         Canon::PushFrame* pushFrame = static_cast<Canon::PushFrame*>(n);
-        PushFrameCommand(pushFrame->GetInfo(), state);
+        PushFrameCommand(pushFrame->GetInfo(), state, assembly.mGlobalsMap);
         ++state.mR[R_IP];
     }
     break;

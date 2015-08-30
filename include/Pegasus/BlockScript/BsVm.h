@@ -114,9 +114,6 @@ private:
     //! heap random access lookup.
     //! every heap object reference has an id passed around.
     Container<HeapElement> mHeapContainer;
-
-    
-
 };
 
 //actual virtual machine modifying the state
@@ -130,12 +127,12 @@ public:
     ~BsVm(){}
 
     //! Runs this assembly and modifies the virtual machine state of such
-    void Run(const Assembly& assembly, BsVmState& state);
+    void Run(const Assembly& assembly, BsVmState& state) const;
 
     //! steps execution (one instruction).
     //! \param the actual state
     //! \return true if execution continues, false if exit requested
-    bool StepExecution(const Assembly& assembly, BsVmState& state);
+    bool StepExecution(const Assembly& assembly, BsVmState& state) const;
 };
 
 }

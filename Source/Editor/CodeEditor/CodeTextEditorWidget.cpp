@@ -270,14 +270,130 @@ protected:
     
 };
 
+class LineNumberArea : public QWidget
+{
+public:
+    LineNumberArea(CodeTextEditorWidget *editor) : QWidget(editor) 
+    {
+        codeEditor = editor;
+    }
+
+    virtual QSize sizeHint() const 
+    {
+        return QSize(codeEditor->lineNumberAreaWidth(), 0);
+    }
+
+protected:
+    virtual void paintEvent(QPaintEvent *event)
+    {
+        codeEditor->lineNumberAreaPaintEvent(event);
+    }
+
+private:
+    CodeTextEditorWidget *codeEditor;
+};
+
+
 CodeTextEditorWidget::CodeTextEditorWidget(QWidget * parent)
-: QTextEdit(parent), mCode(nullptr), mIsFocus(false)
+: QPlainTextEdit(parent), mCode(nullptr), mIsFocus(false)
 {
     mSyntaxHighlighter = new CodeSyntaxHighlighter(nullptr);
     mNullDocument = new QTextDocument(this);
+    mNullDocument->setDocumentLayout(new QPlainTextDocumentLayout(mNullDocument));
+    mLineNumberArea = new LineNumberArea(this);
+    connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
+    connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
+    connect(this, SIGNAL(cursorPositionChanged()), this, SLOT(highlightCurrentLine()));
+
     setDocument(mNullDocument);
+    updateLineNumberAreaWidth(0);
 }
 
+int CodeTextEditorWidget::lineNumberAreaWidth()
+{
+    int digits = 1;
+    int max = qMax(1, blockCount());
+    while (max >= 10) {
+        max /= 10;
+        ++digits;
+    }
+
+    int space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
+
+    return space;
+}
+
+void CodeTextEditorWidget::updateLineNumberAreaWidth(int newBlockCount)
+{
+    setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
+}
+
+void CodeTextEditorWidget::updateLineNumberArea(const QRect &rect, int dy)
+{
+    if (dy)
+        mLineNumberArea->scroll(0, dy);
+    else
+        mLineNumberArea->update(0, rect.y(), mLineNumberArea->width(), rect.height());
+
+    if (rect.contains(viewport()->rect()))
+        updateLineNumberAreaWidth(0);
+}
+
+void CodeTextEditorWidget::resizeEvent(QResizeEvent *e)
+{
+    QPlainTextEdit::resizeEvent(e);
+
+    QRect cr = contentsRect();
+    mLineNumberArea->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
+}
+
+void CodeTextEditorWidget::highlightCurrentLine()
+{
+    QList<QTextEdit::ExtraSelection> extraSelections;
+
+    if (!isReadOnly() && Editor::GetInstance().GetSettings() != nullptr) {
+        QTextEdit::ExtraSelection selection;
+
+        QColor lineColor = Editor::GetInstance().GetSettings()->GetCodeSyntaxColor(Settings::SYNTAX_SELECTED_LINE_BG_COL);
+
+        selection.format.setBackground(lineColor);
+        selection.format.setProperty(QTextFormat::FullWidthSelection, true);
+        selection.cursor = textCursor();
+        selection.cursor.clearSelection();
+        extraSelections.append(selection);
+    }
+
+    setExtraSelections(extraSelections);
+}
+
+void CodeTextEditorWidget::lineNumberAreaPaintEvent(QPaintEvent *event)
+{
+    QPainter painter(mLineNumberArea);
+    if (Editor::GetInstance().GetSettings() != nullptr)
+    {
+        //TODO: make these color settings
+        QColor bgTextCol = Editor::GetInstance().GetSettings()->GetCodeSyntaxColor(Settings::SYNTAX_LINE_NUMBER_BG);
+        QColor textCol = Editor::GetInstance().GetSettings()->GetCodeSyntaxColor(Settings::SYNTAX_LINE_NUMBER_COL);
+        painter.fillRect(event->rect(), bgTextCol);
+        QTextBlock block = firstVisibleBlock();
+        int blockNumber = block.blockNumber();
+        int top = (int) blockBoundingGeometry(block).translated(contentOffset()).top();
+        int bottom = top + (int) blockBoundingRect(block).height();
+        while (block.isValid() && top <= event->rect().bottom()) {
+            if (block.isVisible() && bottom >= event->rect().top()) {
+                QString number = QString::number(blockNumber + 1);
+                painter.setPen(textCol);
+                painter.drawText(0, top, mLineNumberArea->width(), fontMetrics().height(),
+                                 Qt::AlignRight, number);
+            }
+
+            block = block.next();
+            top = bottom;
+            bottom = top + (int) blockBoundingRect(block).height();
+            ++blockNumber;
+        }
+    }
+}
 
 CodeTextEditorWidget::~CodeTextEditorWidget()
 {
@@ -308,6 +424,8 @@ void CodeTextEditorWidget::Initialize(CodeUserData * code)
         mSyntaxHighlighter->setDocument(code->GetDocument());
         static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetSyntaxLanguage(gapi);
         static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetCodeUserData(code); 
+        
+    
     }
     else
     {
@@ -315,7 +433,7 @@ void CodeTextEditorWidget::Initialize(CodeUserData * code)
         setDocument(mNullDocument);
    
         static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetCodeUserData(nullptr);
-        setText(tr(""));
+        setPlainText(tr(""));
     }
     UpdateAllDocumentSyntax();
 }
@@ -377,20 +495,20 @@ bool CodeTextEditorWidget::event(QEvent * e)
             }
         }
     }
-    return QTextEdit::event(e);
+    return QPlainTextEdit::event(e);
 }
 
 void CodeTextEditorWidget::focusInEvent(QFocusEvent * e)
 {
     mIsFocus = true;
-    QTextEdit::focusInEvent(e);
+    QPlainTextEdit::focusInEvent(e);
     emit(SignalSelected());
 }
 
 void CodeTextEditorWidget::focusOutEvent(QFocusEvent * e)
 {
     mIsFocus = false;
-    QTextEdit::focusOutEvent(e);
+    QPlainTextEdit::focusOutEvent(e);
 }
 
 void CodeTextEditorWidget::FlushTextToCode()

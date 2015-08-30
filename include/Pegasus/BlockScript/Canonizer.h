@@ -44,11 +44,20 @@ struct FunMapEntry
     int mAssemblyBlock;
 };
 
+// extern globals map entry that contains function idd, and default value.
+struct GlobalMapEntry
+{
+    const Ast::Idd* mVar;
+    const Ast::Imm* mDefaultVal;
+};
+
 // structure that represents the assembly construction of blockscript
 struct Assembly
 {
-    Container<Canon::Block>* mBlocks;
-    Container<FunMapEntry>*  mFunBlockMap;
+    Container<Canon::Block>*    mBlocks;
+    Container<FunMapEntry>*     mFunBlockMap;
+    Container<GlobalMapEntry>*  mGlobalsMap;
+    Assembly() : mBlocks(nullptr), mFunBlockMap(nullptr), mGlobalsMap(nullptr) {}
 };
 
 // Canonizer class
@@ -91,7 +100,13 @@ public:
 
     //! Gets the assembly generated from the canonizer step.
     //! \return the assembly generated from the assembly step.
-    Assembly GetAssembly() { Assembly a = { &mBlocks, &mFunBlockMap }; return a; }
+    Assembly GetAssembly() 
+    { 
+        Assembly a;
+        a.mBlocks = &mBlocks;
+        a.mFunBlockMap = &mFunBlockMap;
+        return a;
+    } 
 
 private:
     // visitor functions

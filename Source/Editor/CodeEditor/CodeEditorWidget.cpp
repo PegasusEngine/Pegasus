@@ -35,6 +35,8 @@
 #include <QSet>
 #include <QAction>
 #include <QStatusBar>
+#include <QCheckBox>
+#include <QLineEdit>
 
 static const char * DOCKABLE_DESC = "Dockable: Allow to be docked when hovering over main window.";
 static const char * UNDOCKABLE_DESC = "Undockable: Allow to hover over window w/o docking.";
@@ -98,6 +100,8 @@ void CodeEditorWidget::SetupUi()
     QIcon verticalIcon(tr(":/CodeEditor/vertical.png"));
     QIcon horizontalIcon(tr(":/CodeEditor/horizontal.png"));
     QIcon compileIcon(tr(":/CodeEditor/compile.png"));
+    QIcon searchIcon(tr(":/CodeEditor/search.png"));
+    QIcon closeIcon(tr(":/TimelineToolbar/Remove16.png"));
 
     mSaveAction = toolBar->addAction(saveIcon, tr("save this source to its file"));
 
@@ -106,6 +110,9 @@ void CodeEditorWidget::SetupUi()
     mHorizontalAction = toolBar->addAction(horizontalIcon, tr("split views horizontally"));
     mCompileAction    = toolBar->addAction(compileIcon, tr("compile current code (Ctrl + F7)"));
     mCompileAction->setShortcut(tr("Ctrl+F7"));
+
+    mSearchAction     = toolBar->addAction(searchIcon, tr("search text in current window."));
+    mSearchAction->setShortcut(tr("Ctrl+f"));
 
     toolBar->addSeparator();
 
@@ -128,6 +135,9 @@ void CodeEditorWidget::SetupUi()
     
     connect(mSaveAction, SIGNAL(triggered(bool)),
             this, SLOT(SignalSaveCurrentCode()));
+
+    connect(mSearchAction, SIGNAL(triggered(bool)),
+            this, SLOT(FocusSearch()));
 
     resize(550, 700);
     setWindowTitle(tr("Code Editor"));
@@ -213,12 +223,40 @@ void CodeEditorWidget::SetupUi()
         this, SLOT(SignalCompileCurrentCode())
     );
 
+
+    mUi.mFindTextWidget = new QWidget(this);
+    QLabel* findTextLabel = new QLabel(tr("Find:"),mUi.mFindTextWidget);
+    QLineEdit* lineEdit = new QLineEdit(mUi.mFindTextWidget);
+    mUi.mSearchWindowLineEdit = lineEdit;
+    QHBoxLayout* findBoxLayout = new QHBoxLayout(mUi.mFindTextWidget);
+    QToolButton* findNext = new QToolButton(mUi.mFindTextWidget);
+    findNext->setText(tr("Next"));
+    QToolButton* findPrev = new QToolButton(mUi.mFindTextWidget);
+    findPrev->setText(tr("Prev"));
+    QToolButton* closeSearch = new QToolButton(mUi.mFindTextWidget);
+    closeSearch->setIcon(closeIcon);
+    connect(closeSearch, SIGNAL(clicked()),
+            this, SLOT(CloseSearch()));
+    QCheckBox* caseSense = new QCheckBox(mUi.mFindTextWidget); 
+    caseSense->setText(tr("Case Sensitive"));
+
+    mUi.mFindTextWidget->setLayout(findBoxLayout);
+    findBoxLayout->addWidget(findTextLabel);
+    findBoxLayout->addWidget(lineEdit);
+    findBoxLayout->addWidget(findNext);
+    findBoxLayout->addWidget(findPrev);
+    findBoxLayout->addWidget(caseSense);
+    findBoxLayout->addWidget(closeSearch);
+    mUi.mFindTextWidget->hide();
+
+
     //setup the status bar
     mUi.mStatusBar = new QStatusBar(mainWidget);
     
     mUi.mMainLayout->addWidget(toolBar);
     mUi.mMainLayout->addWidget(mUi.mTabWidget);
     mUi.mMainLayout->addWidget(mUi.mTreeEditor);    
+    mUi.mMainLayout->addWidget(mUi.mFindTextWidget);
     mUi.mMainLayout->addWidget(mUi.mStatusBar);
 
 }
@@ -255,6 +293,17 @@ void CodeEditorWidget::SignalCompileCurrentCode()
     }
 }
 
+void CodeEditorWidget::FocusSearch()
+{
+    mUi.mFindTextWidget->show();
+    mUi.mSearchWindowLineEdit->setFocus();
+}
+
+void CodeEditorWidget::CloseSearch()
+{
+    mUi.mFindTextWidget->hide();
+}
+
 void CodeEditorWidget::SignalCompilationError(CodeUserData* userData, int line, QString errorString)
 {
     if (userData != nullptr)
@@ -281,7 +330,9 @@ void CodeEditorWidget::SignalLinkingEvent(QString message, int eventType)
 void CodeEditorWidget::BlessUserData(CodeUserData* codeUserData)
 {
     ED_ASSERT(codeUserData != nullptr);
-    codeUserData->SetDocument(new QTextDocument());
+    QTextDocument* textDocument = new QTextDocument();
+    textDocument->setDocumentLayout(new QPlainTextDocumentLayout(textDocument));
+    codeUserData->SetDocument(textDocument);
 }
 
 void CodeEditorWidget::UnblessUserData(CodeUserData* codeUserData)

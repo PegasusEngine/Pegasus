@@ -347,6 +347,12 @@ void Canonizer::HandleArrayAccessOperator(Binop* n)
 
 void Canonizer::HandleSetOperator(Binop* n)
 {
+    //Skip extern expressions. They are set separately at initialization. Only Imms are allowed to initialize externs
+    if (n->GetOp() == O_SET && n->GetLhs()->GetExpType() == Idd::sType && static_cast<Idd*>(n->GetLhs())->IsExtern())
+    {
+        return;
+    }
+
     bool lhsIsNonContinuousSwizzle = 
         (
             n->GetLhs()->GetExpType() == Binop::sType &&
