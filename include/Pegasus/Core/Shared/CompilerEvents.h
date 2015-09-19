@@ -77,8 +77,7 @@ namespace CompilerEvents
         {
             COMPILATION_ERROR,
             COMPILATION_WARNING,
-            COMPILATION_BEGIN,
-            COMPILATION_RUNTIME_INITIALIZATION
+            COMPILATION_BEGIN
         };
 
         //! constructor

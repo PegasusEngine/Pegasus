@@ -19,6 +19,32 @@
 namespace Pegasus {
 namespace App {
 
+//! System specific components.
+enum ComponentType
+{
+    COMPONENT_WORLD                    ,//! World component. Renders the world / main timeline.
+    COMPONENT_GRID                     ,//! Renders an xyz grid reticle.                       
+    COMPONENT_SELECTION                ,//! Renders a box around a selection on the screen.     
+    COMPONENT_TRANSLATION_SELECTION    ,//! Renders the icon / UI controller for translation    
+    COMPONENT_ROTATION_SELECTION       ,//! Renders the icon / UI controller for rotation.      
+    COMPONENT_SCALE_SELECTION          ,//! Renders the icon / UI controller for selection.     
+    COMPONENT_DEBUG_TEXT               ,//! Text rendering
+    COMPONENT_UNUSED_SLOT              ,//! Reserved for user stuff 
+    COMPONENT_COUNT = COMPONENT_UNUSED_SLOT
+};
+
+//! System specific components flags.
+typedef int ComponentTypeFlags;
+const ComponentTypeFlags  COMPONENT_FLAG_WORLD                = 1 << COMPONENT_WORLD;//! World component. Renders the world / main timeline.
+const ComponentTypeFlags  COMPONENT_FLAG_GRID                 = 1 << COMPONENT_GRID;//! Renders an xyz grid reticle.                       
+const ComponentTypeFlags  COMPONENT_FLAG_SELECTION            = 1 << COMPONENT_SELECTION;//! Renders a box around a selection on the screen.     
+const ComponentTypeFlags  COMPONENT_FLAG_TRANSLATION_SELECTION= 1 << COMPONENT_TRANSLATION_SELECTION;//! Renders the icon / UI controller for translation    
+const ComponentTypeFlags  COMPONENT_FLAG_ROTATION_SELECTION   = 1 << COMPONENT_ROTATION_SELECTION;//! Renders the icon / UI controller for rotation.      
+const ComponentTypeFlags  COMPONENT_FLAG_SCALE_SELECTION      = 1 << COMPONENT_SCALE_SELECTION;//! Renders the icon / UI controller for selection.     
+const ComponentTypeFlags  COMPONENT_FLAG_DEBUG_TEXT           = 1 << COMPONENT_DEBUG_TEXT;
+const ComponentTypeFlags  COMPONENT_FLAG_UNUSED_SLOT          = 1 << COMPONENT_UNUSED_SLOT; 
+const ComponentTypeFlags  COMPONENT_FLAG_ALL                  = 0x7fffffff;
+
 //! Shared configuration structure for a Pegasus app
 struct ApplicationConfig
 {
@@ -61,6 +87,9 @@ public:
     //! \warning Assuming that mParentWindowHandle == 0 results in a non-child window will become a problem
     //!          if an operating system considers 0 as a valid handle. mIsChild is used to define if a parent window is actually defined
     Os::WindowHandle mParentWindowHandle;
+    
+    //! Flags containing the components that this window will render.
+    ComponentTypeFlags mComponentFlags;
 
     const char* mWindowType; //!< Type string for the window
     int mWidth; //!< Initial width of the window in pixels (> 0)

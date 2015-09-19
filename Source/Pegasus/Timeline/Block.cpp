@@ -37,6 +37,7 @@ Block::Block(Alloc::IAllocator * allocator, Core::IApplicationContext * appConte
 ,   mColorRed(128)
 ,   mColorGreen(128)
 ,   mColorBlue(128)
+,   mBlockScriptObserver(this)
 #endif  // PEGASUS_ENABLE_PROXIES
 {
     PG_ASSERTSTR(allocator != nullptr, "Invalid allocator given to a timeline Block object");
@@ -47,7 +48,12 @@ Block::Block(Alloc::IAllocator * allocator, Core::IApplicationContext * appConte
 
 Block::~Block()
 {
-
+#if PEGASUS_ENABLE_PROXIES
+    if (mTimelineScript != nullptr)
+    {
+        mTimelineScript->UnregisterObserver(&mBlockScriptObserver);
+    }
+#endif
 }
 
 //----------------------------------------------------------------------------------------
@@ -105,18 +111,8 @@ void Block::SetBeat(Beat beat)
     mBeat = beat;
 }
 
-bool Block::InitializeScript()
+void Block::InitializeScript()
 {
-    bool didChangeRuntimeLayout = false;
-    
-    //TODO: remove this global scope destroy stuff
-    if (mTimelineScript->IsDirty())
-    {
-        mTimelineScript->CallGlobalScopeDestroy(mVmState);
-    }
-
-    mTimelineScript->Compile();
-
     if (mScriptVersion != mTimelineScript->GetSerialVersion())
     {
         mScriptVersion = mTimelineScript->GetSerialVersion();
@@ -130,28 +126,22 @@ bool Block::InitializeScript()
 
         //re-initialize everything!
         mTimelineScript->CallGlobalScopeInit(mVmState);     
-
-        didChangeRuntimeLayout = didChangeRuntimeLayout || true;
     }
-    return didChangeRuntimeLayout;
+}
+
+void Block::UninitializeScript()
+{
+    //TODO: remove this global scope destroy stuff
+    if (mTimelineScript != nullptr && mTimelineScript->IsDirty())
+    {
+        mTimelineScript->CallGlobalScopeDestroy(mVmState);
+    }
 }
 
 void Block::UpdateViaScript(float beat, Wnd::Window* window)
 {
     if (mTimelineScript != nullptr)
     {
-        if (InitializeScript())// attempt to initialize if script was modified
-        {
-            TimelineScript* rawptr = &(*mTimelineScript);
-            //Throw an event to the UI
-            GRAPH_EVENT_DISPATCH(
-                rawptr,
-                Core::CompilerEvents::CompilationNotification,
-                //Event that notifies that the runtime has changed, potentially changing layout of nodes and such.
-                // This means that some views will require to be updated
-                Core::CompilerEvents::CompilationNotification::COMPILATION_RUNTIME_INITIALIZATION, 0, ""
-            );
-        }
         Application::RenderCollection* nodeContainer = static_cast<Application::RenderCollection*>(mVmState->GetUserContext());
         nodeContainer->SetWindow(window);
         mTimelineScript->CallUpdate(beat, mVmState);
@@ -170,8 +160,11 @@ void Block::RenderViaScript(float beat, Wnd::Window* window)
 
 //----------------------------------------------------------------------------------------
 
-void Block::AttachScript(TimelineScriptIn script)
+void Block::AttachScript(TimelineScriptInOut script)
 {
+    //! Remove compile out of this equation? is this the right place to compile?
+    script->Compile();
+
     if (mTimelineScript == nullptr)
     {
         mTimelineScript = script;
@@ -185,6 +178,9 @@ void Block::AttachScript(TimelineScriptIn script)
     }
     else
     {
+#if PEGASUS_ENABLE_PROXIES
+        mTimelineScript->UnregisterObserver(&mBlockScriptObserver);
+#endif
         mTimelineScript = script;
         Application::RenderCollection* userCtx = static_cast<Application::RenderCollection*>( mVmState->GetUserContext() );
         if (userCtx != nullptr)
@@ -192,9 +188,12 @@ void Block::AttachScript(TimelineScriptIn script)
             userCtx->Clean();
         }
         mVmState->Reset();
-    }
-    
+    }       
+#if PEGASUS_ENABLE_PROXIES
+    script->RegisterObserver(&mBlockScriptObserver);
+#endif
     mScriptVersion = -1;  
+    InitializeScript();
 }
 
 //----------------------------------------------------------------------------------------
@@ -304,6 +303,19 @@ void Block::OnWriteObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* own
     editorProps->AddInt("color", static_cast<int>(col));
 #endif
 }
+
+#if PEGASUS_ENABLE_PROXIES
+void Block::BlockScriptObserver::OnCompilationBegin()
+{
+    //try to initialize the script. Compile wont call this observer stuff again since it is not dirty.
+    mBlock->UninitializeScript();
+}
+void Block::BlockScriptObserver::OnCompilationEnd()
+{
+    //try to initialize the script. Compile wont call this observer stuff again since it is not dirty.
+    mBlock->InitializeScript();
+}
+#endif
 
 }   // namespace Timeline
 }   // namespace Pegasus

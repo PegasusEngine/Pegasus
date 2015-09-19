@@ -172,6 +172,7 @@ void Application::run()
         {
             Pegasus::App::AppWindowConfig windowConfig;
 
+            windowConfig.mComponentFlags = Pegasus::App::COMPONENT_FLAG_WORLD | Pegasus::App::COMPONENT_FLAG_DEBUG_TEXT;
             windowConfig.mWindowType = GetWindowTypeFromViewportType(viewportType);
             windowConfig.mIsChild = true;
             windowConfig.mParentWindowHandle = viewportWidget->GetWindowHandle();

@@ -30,7 +30,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Application\AppBsReflectionInfo.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Application\Application.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Application\ApplicationProxy.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Application\AppWindowComponentFactory.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Application\AppWindowManager.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Application\Components\WorldComponent.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Application\IWindowRegistry.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Application\RenderCollection.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Application\ScriptRenderApi.h" />
@@ -42,6 +44,8 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Application\AppBsReflectionInfo.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Application\Application.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Application\ApplicationProxy.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Application\AppWindowComponentFactory.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Application\Components\WorldComponent.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Application\Platform\Launcher_Win32.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Application\AppWindowManager.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Application\RenderCollection.cpp" />

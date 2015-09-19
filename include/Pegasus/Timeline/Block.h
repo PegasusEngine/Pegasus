@@ -73,7 +73,7 @@ public:
 
     //! Attempts to open and compile a script. True if success, false otherwise.
     //! \param script reference to attach
-    void AttachScript(TimelineScriptIn script);
+    void AttachScript(TimelineScriptInOut script);
 
     //! Attempts to shutdown a script if it has been opened
     void ShutdownScript();
@@ -83,8 +83,10 @@ public:
     TimelineScriptReturn GetScript() { return mTimelineScript; }
 
     //! Attempts to initialize a script
-    //! \return true if there has been a change in the node layout. False otherwise
-    bool InitializeScript();
+    void InitializeScript();
+
+    //! Uninitializes a script
+    void UninitializeScript();
 
     //! \return true if a script is present, false otherwise
     bool HasScript() const { return mTimelineScript != nullptr; }
@@ -274,6 +276,17 @@ private:
 
     //! Blue component of the color for the editor (0-255)
     unsigned char mColorBlue;
+
+    class BlockScriptObserver : public ITimelineObserver
+    {
+    public:
+        BlockScriptObserver(Block * block) : mBlock(block) {}
+        virtual ~BlockScriptObserver(){}
+        virtual void OnCompilationBegin(); 
+        virtual void OnCompilationEnd(); 
+    private:
+        Block* mBlock;
+    } mBlockScriptObserver;
 
 #endif  // PEGASUS_ENABLE_PROXIES
 };

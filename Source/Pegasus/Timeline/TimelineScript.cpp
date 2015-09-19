@@ -91,6 +91,9 @@ TimelineScript::TimelineScript(IAllocator* allocator, Core::IApplicationContext*
     mScriptActive(false),
     mAppContext(appContext),
     mHeaders(allocator)
+#if PEGASUS_ENABLE_PROXIES
+    ,mCompilationObservers(allocator)
+#endif
 {
 
     PG_ASSERT(allocator != nullptr);
@@ -206,11 +209,27 @@ bool TimelineScript::CompileInternal()
 
 void TimelineScript::Compile()
 {
+#if PEGASUS_ENABLE_PROXIES
+    //Once compilation is done, go ahead and call all observers
+    for (int i = 0; i < mCompilationObservers.GetSize(); ++i)
+    {
+        mCompilationObservers[i]->OnCompilationBegin();
+    }
+#endif
+
     if (mIsDirty)
     {
         Shutdown();
         CompileInternal();
     }
+
+#if PEGASUS_ENABLE_PROXIES
+    //Once compilation is done, go ahead and call all observers
+    for (int i = 0; i < mCompilationObservers.GetSize(); ++i)
+    {
+        mCompilationObservers[i]->OnCompilationEnd();
+    }
+#endif
 }
 
 void TimelineScript::CallUpdate(float beat, BsVmState* state)
@@ -308,4 +327,25 @@ void TimelineScript::OnCompilationEnd(bool success)
     );
 
 }
+
+#if PEGASUS_ENABLE_PROXIES
+void TimelineScript::RegisterObserver(ITimelineObserver* observer)
+{
+    mCompilationObservers.PushEmpty() = observer; 
+}
+
+void TimelineScript::UnregisterObserver(ITimelineObserver* observer)
+{
+    for (int i = 0; i < mCompilationObservers.GetSize(); ++i)
+    {
+        if (observer == mCompilationObservers[i])
+        {
+            mCompilationObservers.Delete(i);
+            return;
+        }
+    }
+
+    PG_FAILSTR("Failed to delete observer from registration list.");
+}
+#endif
 

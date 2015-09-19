@@ -305,8 +305,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     application->GetTextureManagerProxy()->RegisterEventListener(&textureListener);
     application->GetMeshManagerProxy()->RegisterEventListener(&meshListener);
 
+    // Load the assets required to render the timeline blocks
+    application->Load();
 
     // Set up window config
+    windowConfig.mComponentFlags = Pegasus::App::COMPONENT_FLAG_WORLD | Pegasus::App::COMPONENT_FLAG_DEBUG_TEXT;
     windowConfig.mWindowType = application->GetMainWindowType();
     windowConfig.mIsChild = false;
     windowConfig.mParentWindowHandle = 0;
@@ -316,9 +319,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     // Set up windows
     appWindow = application->AttachWindow(windowConfig);
     appWindow->Initialize();
-
-    // Load the assets required to render the timeline blocks
-    application->Load();
 
 
     // Run message pump until application exits
@@ -333,7 +333,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         }
         else
         {
-            appWindow->Refresh(true);
+        
+            //Sim update / cpu based update.
+            application->Update();
+
+            //Render redraw / repaint
+            appWindow->Draw();
 
             // Dispatch it
             TranslateMessage(&curMsg);

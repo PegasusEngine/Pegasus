@@ -21,6 +21,7 @@
 namespace Pegasus {
     namespace App {
         class AppWindowManager;
+        class AppWindowComponentFactory;
     }
 
     namespace Wnd {
@@ -106,6 +107,9 @@ public:
     //! Unload the assets used by the timeline blocks
     void Unload();
 
+    //! Updates the simulation / calls update on every block of this timeline.
+    void Update();
+
 
     //! Gets the window registry for this app, to register window types
     //! \return Window registry interface.
@@ -149,9 +153,9 @@ private:
     //! Internal handler to shutdown the app
     void ShutdownAppInternal();
     
-    bool mInitialized;                                                       //!< Initialized flag
     ApplicationConfig                               mConfig;                 //!< Cached config object
     Render::IDevice*                                mDevice;                 //!< Render device
+    AppWindowComponentFactory*                      mComponentFactory;       //!< Component factory of windows.
     AppWindowManager*                               mWindowManager;          //!< Window manager
     Io::IOManager*                                  mIoManager;              //!< IO manager
     Graph::NodeManager*                             mNodeManager;            //!< Graph node manager

@@ -16,6 +16,7 @@
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Application/AppWindowManager.h"
 #include "Pegasus/Application/AppBsReflectionInfo.h"
+#include "Pegasus/Application/AppWindowComponentFactory.h"
 #include "Pegasus/Camera/CameraManager.h"
 #include "Pegasus/Core/Time.h"
 #include "Pegasus/Graph/NodeManager.h"
@@ -30,12 +31,12 @@
 #include "Pegasus/TimelineBlock/TimelineBlockRegistration.h"
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/Render/RenderContext.h"
-#include "Pegasus/Sound/Sound.h"
 #include "Pegasus/AssetLib/AssetLib.h"
 #include "Pegasus/AssetLib/Asset.h"
 #include "Pegasus/PropertyGrid/PropertyGridManager.h"
 #include "Pegasus/BlockScript/BlockScriptManager.h"
 #include "Pegasus/Mesh/MeshManager.h"
+#include "Pegasus/Render/RenderContext.h"
 
 #include <stdio.h>
 
@@ -45,7 +46,6 @@ namespace App {
 //----------------------------------------------------------------------------------------
 
 Application::Application(const ApplicationConfig& config)
-    : mInitialized(false)
 {
     Alloc::IAllocator* coreAlloc = Memory::GetCoreAllocator();
     Alloc::IAllocator* windowAlloc = Memory::GetWindowAllocator();
@@ -64,6 +64,8 @@ Application::Application(const ApplicationConfig& config)
     Core::AssertionManager::CreateInstance(coreAlloc);
     Core::AssertionManager::GetInstance()->RegisterHandler(config.mAssertHandler);
 #endif
+
+    mComponentFactory = PG_NEW(coreAlloc, -1, "ComponentFactory", Alloc::PG_MEM_PERM) AppWindowComponentFactory(coreAlloc);
 
     // Set up the hierarchy of property grid class metadata gathered at compile time
     PropertyGrid::PropertyGridManager::GetInstance().ResolveInternalClassHierarchy();
@@ -115,8 +117,6 @@ Application::Application(const ApplicationConfig& config)
     //register shader manager into factory, so factory can handle includes
     shaderFactory->RegisterShaderManager(mShaderManager);
 
-
-
     // Register the entire render api
     Pegasus::Application::RegisterRenderApi(mBlockScriptManager->GetRuntimeLib(), this);
 
@@ -129,6 +129,23 @@ Application::Application(const ApplicationConfig& config)
 
     // Cache config
     mConfig = config;
+
+    Wnd::Window* startupWindow = nullptr;
+
+    // Set up IO manager
+    // This must be done here because of the GetAppName virtual
+    char rootPath[Io::IOManager::MAX_FILEPATH_LENGTH];
+    sprintf_s(rootPath, Io::IOManager::MAX_FILEPATH_LENGTH - 1, "%s\\Imported\\", mConfig.mBasePath); // Hardcode imported for now
+    mIoManager = PG_NEW(coreAlloc, -1, "IOManager", Pegasus::Alloc::PG_MEM_PERM) Io::IOManager(rootPath);
+    
+    mAssetLib->SetIoManager(mIoManager); //TODO: decide here if we use the pakIoManager or the standard file system IOManager
+
+    // Start up the app, which creates and destroys the dummy window
+    StartupAppInternal();
+
+    // Register the Pegasus-side timeline blocks
+    TimelineBlock::RegisterBaseBlocks(GetTimelineManager());
+
 }
 
 //----------------------------------------------------------------------------------------
@@ -141,9 +158,6 @@ Application::~Application()
     Alloc::IAllocator* nodeDataAlloc = Memory::GetNodeDataAllocator();
     Alloc::IAllocator* timelineAlloc = Memory::GetTimelineAllocator();
     Alloc::IAllocator* coreAlloc  = Memory::GetCoreAllocator();
-
-    // Sanity check
-    PG_ASSERTSTR(!mInitialized, "Application still initialized in destructor!");
 
     PG_DELETE(windowAlloc, mWindowManager);
 
@@ -162,6 +176,8 @@ Application::~Application()
     PG_DELETE(nodeAlloc, mBsReflectionInfo);
 #endif
 
+    PG_DELETE(coreAlloc, mComponentFactory);
+
     // Tear down debugging facilities
 #if PEGASUS_ENABLE_ASSERT
     Core::AssertionManager::GetInstance()->UnregisterHandler();
@@ -177,34 +193,8 @@ Application::~Application()
 
 void Application::Initialize()
 {
-    Alloc::IAllocator* coreAlloc = Memory::GetCoreAllocator();
-    Wnd::Window* startupWindow = nullptr;
-
-    // Sanity check
-    PG_ASSERTSTR(!mInitialized, "Application already initialized!");
-
-    // Set up IO manager
-    // This must be done here because of the GetAppName virtual
-    char rootPath[Io::IOManager::MAX_FILEPATH_LENGTH];
-    sprintf_s(rootPath, Io::IOManager::MAX_FILEPATH_LENGTH - 1, "%s\\Imported\\", mConfig.mBasePath); // Hardcode imported for now
-    mIoManager = PG_NEW(coreAlloc, -1, "IOManager", Pegasus::Alloc::PG_MEM_PERM) Io::IOManager(rootPath);
-
-    //TODO: decide here if we use the pakIoManager or the standard file system IOManager
-    mAssetLib->SetIoManager(mIoManager);
-
-
-    // Start up the app, which creates and destroys the dummy window
-    StartupAppInternal();
-
-    // Register the Pegasus-side timeline blocks
-    TimelineBlock::RegisterBaseBlocks(GetTimelineManager());
-
     // Custom initialization, done in the user application
     RegisterTimelineBlocks();
-    InitializeApp();
-
-    // Initialized
-    mInitialized = true;
 }
 
 //----------------------------------------------------------------------------------------
@@ -214,9 +204,6 @@ void Application::Shutdown()
 {
     Alloc::IAllocator* coreAlloc = Memory::GetCoreAllocator();
 
-    // Sanity check
-    PG_ASSERTSTR(mInitialized, "Application not initialized yet!");
-
     // Custom shutdown, done in the user application
     ShutdownApp();
 
@@ -225,29 +212,52 @@ void Application::Shutdown()
 
     // Tear down IO manager
     PG_DELETE(coreAlloc, mIoManager);
-
-    // No longer initialized
-    mInitialized = false;
 }
 
 //----------------------------------------------------------------------------------------
 
 void Application::Load()
 {
-    PG_ASSERTSTR(mTimelineManager != nullptr, "Invalid timeline for the application");
+    
+    
+    Render::ContextConfig config;
+    config.mAllocator = Memory::GetCoreAllocator();
+    config.mDevice = mDevice;
+    Render::Context context(config);
+    context.Bind();
+    
+    //! Call custom initialize here
+    InitializeApp();
 
-    // Tell all the blocks of the timeline to initialize their content
-    mTimelineManager->InitializeAllTimelines();
+    // Initialize all the components for all the windows.
+    mComponentFactory->LoadAllComponents(this);
+
+    context.Unbind();
+    
+}
+
+//----------------------------------------------------------------------------------------
+
+void Application::Update()
+{
+    //! update all components, globally for all the windows.
+    mComponentFactory->UpdateAllComponents(this);
 }
 
 //----------------------------------------------------------------------------------------
 
 void Application::Unload()
 {
-    PG_ASSERTSTR(mTimelineManager != nullptr, "Invalid timeline for the application");
+    Render::ContextConfig config;
+    config.mAllocator = Memory::GetCoreAllocator();
+    config.mDevice = mDevice;
+    Render::Context context(config);
+    context.Bind();
 
-    // Tell all the blocks of the timeline to shutdown their content
-    mTimelineManager->ShutdownAllTimelines();
+    // Initialize all the components for all the windows.
+    mComponentFactory->UnloadAllComponents(this);
+    
+    context.Unbind();
 }
 
 //----------------------------------------------------------------------------------------
@@ -282,6 +292,7 @@ Wnd::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig)
 
     if (newWnd != nullptr)
     {
+        mComponentFactory->AttachComponentsToWindow(newWnd, appWindowConfig.mComponentFlags);
         PG_LOG('APPL', "Window created");
     }
     else
@@ -313,16 +324,12 @@ void Application::StartupAppInternal()
 
     mDevice = Pegasus::Render::IDevice::CreatePlatformDevice(deviceConfig, renderAlloc);
     PG_LOG('APPL', "Startup finished");
-
-    Sound::Initialize();
 }
 
 //----------------------------------------------------------------------------------------
 
 void Application::ShutdownAppInternal()
 {
-    Sound::Release();
-
     PG_DELETE(Memory::GetRenderAllocator(), mDevice);    
     mDevice = nullptr;
     PG_LOG('APPL', "Device Destroyed");

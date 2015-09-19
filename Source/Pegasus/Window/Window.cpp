@@ -87,7 +87,7 @@ void WindowMessageHandler::OnRepaint()
 {
     if (mParent->mContextCreated)
     {
-        mParent->Refresh(true);
+        mParent->Draw();
     }
 }
 
@@ -105,6 +105,7 @@ void WindowMessageHandler::OnResize(unsigned int width, unsigned int height)
 
 Window::Window(const WindowConfig& config)
 :   mAllocator(config.mAllocator),
+    mComponents(config.mAllocator),
     mRenderAllocator(config.mRenderAllocator),
     mDevice(config.mDevice),
     mWindowContext(config.mWindowContext),
@@ -148,26 +149,57 @@ Os::WindowHandle Window::GetHandle() const
 
 //----------------------------------------------------------------------------------------
 
-void Window::Refresh(bool updateTimeline)
+void Window::AttachComponent(IWindowComponent* component)
+{
+    Window::StateComponentPair& scp = mComponents.PushEmpty();
+    ComponentContext ctx = { mWindowContext, this };
+    scp.mState = component->CreateState(ctx);
+    scp.mComponent = component;
+}
+
+//----------------------------------------------------------------------------------------
+
+void Window::RemoveComponents()
+{
+    for (int i = 0; i < mComponents.GetSize(); ++i)
+    {
+        Window::StateComponentPair& scp = mComponents[i];
+        ComponentContext ctx = { mWindowContext, this };
+        scp.mComponent->DestroyState(ctx, scp.mState);
+    }
+
+    mComponents.Clear();
+}
+
+//----------------------------------------------------------------------------------------
+
+void Window::Draw()
 {
     if (mRenderContext != nullptr)
     {
+        //Use this context on this thread.
         mRenderContext->Bind();
+        
+        ComponentContext ctx = { mWindowContext, this };
 
-        //! \todo Update the sound system once per frame, not per window. Same thing for the timeline above.
-        if (!Sound::IsPlayingMusic())
+        //call Update for all components.
+        for (int i = 0; i < mComponents.GetSize(); ++i)
         {
-            Sound::PlayMusic();
+            Window::StateComponentPair& scp = mComponents[i];
+            scp.mComponent->WindowUpdate(ctx, scp.mState);
         }
-        Sound::Update();
 
-        if (updateTimeline)
+        //call Render for all components.
+        for (int i = 0; i < mComponents.GetSize(); ++i)
         {
-            const unsigned int musicPosition = Sound::GetMusicPosition();            
-            mWindowContext->GetTimelineManager()->Update(musicPosition);
-
+            Window::StateComponentPair& scp = mComponents[i];
+            scp.mComponent->Render(ctx, scp.mState);
         }
+
         Render();
+
+        //Double buffer / end frame update.
+        mRenderContext->Swap();
     }
     else
     {

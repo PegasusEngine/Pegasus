@@ -141,6 +141,9 @@ public:
     virtual void Load() = 0;
     //! \todo Set update mode
 
+    //! Update function: application's sim & sound tick.
+    virtual void Update() = 0;
+
     //! Unload the assets from render timeline block 
     virtual void Unload() = 0;
     //! \todo Set update mode

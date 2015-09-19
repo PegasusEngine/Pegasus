@@ -291,7 +291,7 @@ void DXShaderFactory::GenerateShaderGPUData(Pegasus::Shader::ShaderStage * shade
             ProcessErrorLog(shaderNode, logBuffer);
 #if PEGASUS_ENABLE_LOG
 #if PEGASUS_ENABLE_PROXIES
-            PG_LOG('ERR_', "(%s)Shader Compilation Failure: %s", shaderNode->GetFileName(), logBuffer);
+            PG_LOG('ERR_', "(%s)Shader Compilation Failure: %s", shaderNode->GetName(), logBuffer);
 #else
             PG_LOG('ERR_', "Shader Compilation Failure: %s", logBuffer);
 #endif

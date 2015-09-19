@@ -120,10 +120,6 @@ void SourceCodeManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * us
         {
             emit( OnCompilationBegin(codeUserData) ) ;
         }
-        else if (e.GetType() == Pegasus::Core::CompilerEvents::CompilationNotification::COMPILATION_RUNTIME_INITIALIZATION)
-        {
-            emit( OnSignalUpdateUIViews() );
-        }
         else
         {        
             emit(

@@ -12,7 +12,9 @@
 #ifndef PEGASUS_WND_WINDOW_H
 #define PEGASUS_WND_WINDOW_H
 
+#include "Pegasus/Utils/Vector.h"
 #include "Pegasus/Window/Shared/WindowConfig.h"
+#include "Pegasus/Window/IWindowComponent.h"
 
 // Forward declarations
 namespace Pegasus {
@@ -62,7 +64,6 @@ public:
     //! \return Render context.
     inline Render::Context* GetRenderContext() const { return mRenderContext; };
 
-
     //! Gets the dimensions of this window
     //! \param width Width outParam.
     //! \param Height outParam.
@@ -80,7 +81,6 @@ public:
     //! \return Aspect ratio window (== width / height), 1.0f if height is undefined
     inline float GetRatio() const { return mRatio; }
 
-
     //! Initialize this window
     virtual void Initialize() = 0;
 
@@ -88,13 +88,11 @@ public:
     virtual void Shutdown() = 0;
 
     //! Render the content of the window
-    //! \warning Do not use directly, call \a Refresh() instead to guarantee the render context is bound
+    //! \warning Do not use directly, call \a Draw() instead to guarantee the render context is bound
     virtual void Render() = 0;
 
     //! Bind the render context and render the window
-    //! \param updateTimeline True to update the timeline, so animation happens
-    void Refresh(bool updateTimeline);
-
+    void Draw();
 
     //! Resize this window
     //! \param New width in pixels.
@@ -112,6 +110,13 @@ public:
 
 #endif  // PEGASUS_ENABLE_PROXIES
 
+    //! Attaches a window component to this window. Internally creates the state.
+    //! \param component - the component to add to this window.
+    void AttachComponent(IWindowComponent* component);
+
+    //! Removes all windows components. Destroys internal states created.
+    //! \param component - the component to add to this window.
+    void RemoveComponents();
 
 protected:
 
@@ -143,6 +148,13 @@ private:
     unsigned int mHeight; //!< Current height
     float mRatio; //!< Aspect ratio (== width / height), 1.0f if height is undefined
     bool mIsChild; //!< Current state, wether is child window or not
+    
+    struct StateComponentPair {
+        IWindowComponent::IState* mState;
+        IWindowComponent* mComponent;
+    };
+    
+    Utils::Vector<StateComponentPair> mComponents;
 
     friend class WindowMessageHandler;
 };

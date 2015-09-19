@@ -210,7 +210,7 @@ void ApplicationInterface::ResizeViewport(ViewportType viewportType, int width, 
 
 //----------------------------------------------------------------------------------------
 
-bool ApplicationInterface::RedrawMainViewport(bool updateTimeline)
+void ApplicationInterface::RedrawMainViewport()
 {
     if (Editor::GetInstance().GetMainViewportDockWidget()->isVisible())
     {
@@ -221,17 +221,14 @@ bool ApplicationInterface::RedrawMainViewport(bool updateTimeline)
         //! \todo Seems not useful anymore. Test and remove if possible
         //if (!mAssertionBeingHandled)
         {
-            mainViewportWindow->Refresh(updateTimeline);
-            return true;
+            mainViewportWindow->Draw();
         }
     }
-
-    return false;
 }
 
 //----------------------------------------------------------------------------------------
 
-bool ApplicationInterface::RedrawSecondaryViewport(bool updateTimeline)
+void ApplicationInterface::RedrawSecondaryViewport()
 {
     if (Editor::GetInstance().GetSecondaryViewportDockWidget()->isVisible())
     {
@@ -242,35 +239,26 @@ bool ApplicationInterface::RedrawSecondaryViewport(bool updateTimeline)
         //! \todo Seems not useful anymore. Test and remove if possible
         //if (!mAssertionBeingHandled)
         {
-            secondaryViewportWindow->Refresh(updateTimeline);
-            return true;
+            secondaryViewportWindow->Draw();
         }
     }
-
-    return false;
 }
 
 //----------------------------------------------------------------------------------------
 
 void ApplicationInterface::RedrawAllViewports()
 {
-    // Redraw the main viewport, updating the timeline
-    const bool mainRedrawn = RedrawMainViewport(true);
+    // Sim & Sound - update application.
+    mApplication->GetApplicationProxy()->Update();
 
+    //TODO: more generic.
+
+    // Redraw the main viewport, updating the timeline
+    RedrawMainViewport();
+    
     // If the main viewport has been redrawn, skip the timeline update for the secondary window.
     // Otherwise, update the timeline.
-    const bool secondaryRedrawn = RedrawSecondaryViewport(!mainRedrawn);
-
-    // If no viewport has been redrawn, at least update the timeline so play mode does not get stuck
-    if (!mainRedrawn && !secondaryRedrawn)
-    {
-        Pegasus::Timeline::ITimelineManagerProxy * timeline = mApplication->GetTimelineProxy();
-        if (timeline != nullptr)
-        {
-            //! \todo Handle music position
-            timeline->Update();
-        }
-    }
+    RedrawSecondaryViewport();
 }
 
 //----------------------------------------------------------------------------------------
@@ -286,7 +274,7 @@ bool ApplicationInterface::RedrawTextureEditorPreview()
         //! \todo Seems not useful anymore. Test and remove if possible
         //if (!mAssertionBeingHandled)
         {
-            textureEditorPreviewWindow->Refresh(false);
+            textureEditorPreviewWindow->Draw();
             return true;
         }
     }

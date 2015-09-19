@@ -38,6 +38,9 @@
     <ClInclude Include="..\..\..\..\Source\Pegasus\Window\IWindowMessageHandler.h">
       <Filter>Source</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Window\IWindowComponent.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Window\Platform\Window_Win32.cpp">

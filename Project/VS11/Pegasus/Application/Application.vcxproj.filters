@@ -15,6 +15,12 @@
     <Filter Include="Source\Platform">
       <UniqueIdentifier>{f428ba24-9ff7-43c4-94a1-4f903695cb7b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Include\Components">
+      <UniqueIdentifier>{3a32b13f-4681-4e6b-a017-75217a54e88e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Components">
+      <UniqueIdentifier>{ce999dea-36a5-4349-93ee-0d248caae481}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Application\Application.h">
@@ -47,6 +53,12 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Application\AppBsReflectionInfo.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Application\AppWindowComponentFactory.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Application\Components\WorldComponent.h">
+      <Filter>Include\Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Application\Application.cpp">
@@ -69,6 +81,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Application\AppBsReflectionInfo.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Application\AppWindowComponentFactory.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Application\Components\WorldComponent.cpp">
+      <Filter>Source\Components</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

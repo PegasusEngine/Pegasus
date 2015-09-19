@@ -169,9 +169,6 @@ signals:
     //! triggered when a file has been saved successfully
     void OnSignalSaveSuccess();
 
-    //! triggered only when blockscript renews the initialization screen and adds new / removes old nodes
-    void OnSignalUpdateUIViews();
-
     //! triggered when a file has been not saved and there is an io error
     void OnSignalSavedFileError(int ioError, QString msg);
 

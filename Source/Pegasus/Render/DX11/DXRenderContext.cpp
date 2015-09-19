@@ -46,7 +46,6 @@ void DXRenderContext::BindRenderContext(DXRenderContext* context)
     RenderPrivate::gBindedContext = context;
 }
 
-
 DXRenderContext::DXRenderContext()
  :
   mDevice(nullptr),
@@ -57,19 +56,23 @@ DXRenderContext::DXRenderContext()
   mFrameBufferHeight(0),
   mFrameBufferWidth(0)
 {
+
 }
 
 DXRenderContext::~DXRenderContext()
 {
-    mSwapChain->Release();
-    if (mFrameBuffer)
+    if (mSwapChain != nullptr)
+    {
+        mSwapChain->Release();
+    }
+    if (mFrameBuffer != nullptr)
     {
         mFrameBuffer->Release();
     }
 }
 
 void DXRenderContext::Present()
-{
+{   
     mSwapChain->Present(0,0);
 }
 
@@ -78,67 +81,74 @@ bool DXRenderContext::Initialize(const ContextConfig& config)
     mDevice = static_cast<DXDevice*>(config.mDevice);
     mCachedD3DContext = mDevice->GetD3DImmContext();
    
-    IDXGIDevice2* dXGIDevice = NULL;
-    VALID_DECLARE(mDevice->GetD3D()->QueryInterface(__uuidof(IDXGIDevice2), (void**)&dXGIDevice));
-  
-    IDXGIAdapter*  dXGIAdapter = NULL;
-    VALID(dXGIDevice->GetAdapter(&dXGIAdapter));
-       
-    IDXGIFactory2* dXGIFactory = NULL;
-    VALID(dXGIAdapter->GetParent(__uuidof(IDXGIFactory2), (void**)&dXGIFactory));
-
-    DXGI_SWAP_CHAIN_DESC1 swapChainDesc;
-    ZeroMemory(&swapChainDesc, sizeof(swapChainDesc));
-
-    // Set to a single back buffer.
-    swapChainDesc.BufferCount = 1;
-
-    // Set the width and height of the back buffer.
-    swapChainDesc.Width = config.mWidth;
-    swapChainDesc.Height = config.mHeight;
-
-    mFrameBufferWidth = config.mWidth;
-    mFrameBufferHeight = config.mHeight;
-
-    // Set regular 32-bit surface for the back buffer.
-    swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    swapChainDesc.Stereo = FALSE;
-
-    // Turn multisampling off.
-    swapChainDesc.SampleDesc.Count = 1;
-    swapChainDesc.SampleDesc.Quality = 0;
-    swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swapChainDesc.BufferCount = 1;
-    swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
-    swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-    
-    // Discard the back buffer contents after presenting.
-    swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-
-    // Don't set the advanced flags.
-    swapChainDesc.Flags = 0;
-
-    VALID(dXGIFactory->CreateSwapChainForHwnd(
-        mDevice->GetD3D(),
-        (HWND)config.mOwnerWindowHandle,
-        &swapChainDesc,
-        NULL, //no fullscreen desc
-        NULL,
-        &mSwapChain
-    ));
-
-    //bypass Com pointers by releasing these resources manually
-    dXGIDevice->Release();
-    dXGIAdapter->Release();
-    dXGIFactory->Release();
-
-    if (mSwapChain != NULL)
+    if (config.mOwnerWindowHandle != NULL)
     {
-        InitializeFrame();
-    }
+        IDXGIDevice2* dXGIDevice = NULL;
+        VALID_DECLARE(mDevice->GetD3D()->QueryInterface(__uuidof(IDXGIDevice2), (void**)&dXGIDevice));
+  
+        IDXGIAdapter*  dXGIAdapter = NULL;
+        VALID(dXGIDevice->GetAdapter(&dXGIAdapter));
+           
+        IDXGIFactory2* dXGIFactory = NULL;
+        VALID(dXGIAdapter->GetParent(__uuidof(IDXGIFactory2), (void**)&dXGIFactory));
 
-    return mSwapChain != nullptr;
-    return true;
+        DXGI_SWAP_CHAIN_DESC1 swapChainDesc;
+        ZeroMemory(&swapChainDesc, sizeof(swapChainDesc));
+
+        // Set to a single back buffer.
+        swapChainDesc.BufferCount = 1;
+
+        // Set the width and height of the back buffer.
+        swapChainDesc.Width = config.mWidth;
+        swapChainDesc.Height = config.mHeight;
+
+        mFrameBufferWidth = config.mWidth;
+        mFrameBufferHeight = config.mHeight;
+
+        // Set regular 32-bit surface for the back buffer.
+        swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        swapChainDesc.Stereo = FALSE;
+
+        // Turn multisampling off.
+        swapChainDesc.SampleDesc.Count = 1;
+        swapChainDesc.SampleDesc.Quality = 0;
+        swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+        swapChainDesc.BufferCount = 1;
+        swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
+        swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
+        
+        // Discard the back buffer contents after presenting.
+        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+
+        // Don't set the advanced flags.
+        swapChainDesc.Flags = 0;
+
+        VALID(dXGIFactory->CreateSwapChainForHwnd(
+            mDevice->GetD3D(),
+            (HWND)config.mOwnerWindowHandle,
+            &swapChainDesc,
+            NULL, //no fullscreen desc
+            NULL,
+            &mSwapChain
+        ));
+
+        //bypass Com pointers by releasing these resources manually
+        dXGIDevice->Release();
+        dXGIAdapter->Release();
+        dXGIFactory->Release();
+
+        if (mSwapChain != NULL)
+        {
+            InitializeFrame();
+        }
+
+        return mSwapChain != nullptr;
+    }
+    else
+    {
+        //This is a swap chain-less context. Use it for headless render.
+        return true;
+    }
 }
 
 void DXRenderContext::InitializeFrame()

@@ -105,6 +105,13 @@ void ApplicationProxy::Load()
 
 //----------------------------------------------------------------------------------------
 
+void ApplicationProxy::Update()
+{
+    mApplication->Update();
+}
+
+//----------------------------------------------------------------------------------------
+
 void ApplicationProxy::Unload()
 {
     mApplication->Unload();

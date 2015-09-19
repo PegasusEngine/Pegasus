@@ -81,11 +81,11 @@ private slots:
     //! Request the redraw of the content of the main viewport
     //! \param updateTimeline True to update the timeline, so animation happens
     //! \return True if drawing happened (when the dock widget is open)
-    bool RedrawMainViewport(bool updateTimeline = true);
+    void RedrawMainViewport();
 
     //! Request the redraw of the content of the secondary viewport
     //! \return True if drawing happened (when the dock widget is open)
-    bool RedrawSecondaryViewport(bool updateTimeline = true);
+    void RedrawSecondaryViewport();
 
     //! Request the redraw of the content of the main and secondary viewports
     //! \note Nothing happens if the dock widgets are closed

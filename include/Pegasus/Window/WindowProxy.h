@@ -41,7 +41,7 @@ public:
     // Stateflow API
     virtual void Initialize();
     virtual void Shutdown();
-    virtual void Refresh(bool updateTimeline);
+    virtual void Draw();
 
     // Resize API
     virtual void Resize(unsigned int width, unsigned int height);

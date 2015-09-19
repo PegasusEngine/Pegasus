@@ -37,10 +37,26 @@ namespace Pegasus {
     namespace Core {
         class IApplicationContext;
     }
+
 }
 
 namespace Pegasus {
 namespace Timeline{
+
+//Since only in dev mode blockscripts are mutable, we will need observers to check on
+//states of compilation
+#if PEGASUS_ENABLE_PROXIES
+class ITimelineObserver
+{
+public:
+    ITimelineObserver() {}
+    virtual ~ITimelineObserver() {}
+    
+    virtual void OnCompilationBegin() = 0; 
+
+    virtual void OnCompilationEnd() = 0; 
+};
+#endif
 
 //!script helper for timeline blocks
 class TimelineScript : public TimelineSource, public BlockScript::IBlockScriptCompilerListener
@@ -108,6 +124,14 @@ public:
 
     virtual void LockHeaders(bool shouldLock) { mLockHeaders = shouldLock; }
 
+#if PEGASUS_ENABLE_PROXIES
+    //! Registers an observer for compilation events
+    void RegisterObserver(ITimelineObserver* observer);
+
+    //! Deletes an observer for compilation events
+    void UnregisterObserver(ITimelineObserver* observer);
+#endif
+
 private:
 
     // Nodes cannot be copied, only references to them
@@ -149,6 +173,10 @@ private:
 
     //! list of headers
     Utils::Vector<TimelineSourceRef> mHeaders;
+
+#if PEGASUS_ENABLE_PROXIES
+    Utils::Vector<ITimelineObserver*> mCompilationObservers;
+#endif
 };
 
 //! Reference to a Node, typically used when declaring a variable of reference type
