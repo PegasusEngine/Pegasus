@@ -16,7 +16,6 @@
 #include "Pegasus/Application/Application.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
-#include "Pegasus/Application/IWindowRegistry.h"
 #include "Pegasus/Window/Shared/IWindowProxy.h"
 #include "Pegasus/Texture/Shared/ITextureManagerProxy.h"
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
@@ -282,8 +281,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     
     // Set up the app config
     appConfig.mModuleHandle = (Pegasus::Os::ModuleHandle) hInstance;
-    appConfig.mMaxWindowTypes = Pegasus::App::NUM_WND_TYPES;
-    appConfig.mMaxNumWindows = 1;
     appConfig.mBasePath = ASSET_ROOT;
     // Attach the debugging features
 #if PEGASUS_ENABLE_LOG
@@ -295,7 +292,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     // Initialize the application
     application = CreatePegasusAppFunc(appConfig);
-    application->Initialize();
 
     Pegasus::Launcher::LauncherShaderListener  shaderListener(appConfig.mLoghandler, appConfig.mAssertHandler);
     Pegasus::Launcher::LauncherTextureListener textureListener(appConfig.mLoghandler, appConfig.mAssertHandler);
@@ -310,7 +306,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     // Set up window config
     windowConfig.mComponentFlags = Pegasus::App::COMPONENT_FLAG_WORLD | Pegasus::App::COMPONENT_FLAG_DEBUG_TEXT;
-    windowConfig.mWindowType = application->GetMainWindowType();
     windowConfig.mIsChild = false;
     windowConfig.mParentWindowHandle = 0;
     windowConfig.mWidth = 960;
@@ -318,8 +313,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     // Set up windows
     appWindow = application->AttachWindow(windowConfig);
-    appWindow->Initialize();
-
 
     // Run message pump until application exits
     while(!appDone)
@@ -346,15 +339,13 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         }
     }
     retVal = curMsg.wParam;
-    
-    application->Unload();
 
     // Tear down windows
-    appWindow->Shutdown();
     application->DetachWindow(appWindow);
 
+    application->Unload();
+
     // Destroy the application
-    application->Shutdown();
     DestroyPegasusAppFunc(application);
 
     // Release the application library

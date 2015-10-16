@@ -329,6 +329,40 @@ namespace Private_Math
         Math::Mat44& res = *static_cast<Math::Mat44*>(context.GetRawOutputBuffer());
         Math::SetRotation(res, axis, amount );
     }
+    
+    void Mat44_Proj1(FunCallbackContext& context)
+    {
+        FunParamStream stream(context);
+        PG_ASSERT(context.GetOutputBufferSize() == sizeof(Math::Mat44));
+        Math::Mat44& res = *static_cast<Math::Mat44*>(context.GetRawOutputBuffer());
+        float l = stream.NextArgument<float>();
+        float r = stream.NextArgument<float>();
+        float t = stream.NextArgument<float>();
+        float b = stream.NextArgument<float>();
+        float n = stream.NextArgument<float>();
+        float f = stream.NextArgument<float>();
+        Math::SetProjection(
+            res,
+            l,r,t,b,n,f
+        );
+    }
+
+    void Mat44_Proj2(FunCallbackContext& context)
+    {
+        FunParamStream stream(context);
+        PG_ASSERT(context.GetOutputBufferSize() == sizeof(Math::Mat44));
+        Math::Mat44& res = *static_cast<Math::Mat44*>(context.GetRawOutputBuffer());
+        float fov = stream.NextArgument<float>();
+        float aspect = stream.NextArgument<float>();
+        float n = stream.NextArgument<float>();
+        float f = stream.NextArgument<float>();
+        Math::SetProjection(
+            res,
+            fov,aspect,n,f
+        );
+        
+    }
+
 }
 
 // Intrinsic functions for math
@@ -455,15 +489,18 @@ void Pegasus::BlockScript::RegisterIntrinsics(BlockLib* lib)
         { "lerp", "float3", { "float3", "float3", "float",  nullptr}, {"x", "y", "t", nullptr}, Private_Math::Lerp<Math::Vec3>},
         { "lerp", "float2", { "float2", "float2", "float",  nullptr}, {"x", "y", "t", nullptr}, Private_Math::Lerp<Math::Vec2>},
         ///////////////////////////////////////////MUL///////////////////////////////////////////////////////////////
-        { "mul", "float4", { "float4x4", "float4", nullptr}, {"x", "y", nullptr}, Private_Math::Mul<Math::Vec4, Math::Mat44, Math::Mult44_41>},
-        { "mul", "float3", { "float3x3", "float3", nullptr}, {"x", "y", nullptr}, Private_Math::Mul<Math::Vec3, Math::Mat33, Math::Mult33_31>},
-        { "mul", "float2", { "float2x2", "float2", nullptr}, {"x", "y", nullptr}, Private_Math::Mul<Math::Vec2, Math::Mat22, Math::Mult22_21>},
+        { "mul", "float4x4", { "float4x4", "float4x4", nullptr}, {"x", "y", nullptr}, Private_Math::Mul<Math::Mat44, Math::Mat44, Math::Mult44_44>},
+        { "mul", "float4", { "float4x4", "float4", nullptr}, {"x", "y", nullptr},   Private_Math::Mul<Math::Vec4, Math::Mat44, Math::Mult44_41>},
+        { "mul", "float3", { "float3x3", "float3", nullptr}, {"x", "y", nullptr},   Private_Math::Mul<Math::Vec3, Math::Mat33, Math::Mult33_31>},
+        { "mul", "float2", { "float2x2", "float2", nullptr}, {"x", "y", nullptr},   Private_Math::Mul<Math::Vec2, Math::Mat22, Math::Mult22_21>},
         ///////////////////////////////////////////CROSS///////////////////////////////////////////////////////////////
         { "cross", "float3", { "float3", "float3", nullptr}, {"x", "y", nullptr}, Private_Math::Cross<Math::Vec3>},
         ///////////////////////////////////////////TRIG///////////////////////////////////////////////////////////////
         { "sin", "float", { "float", nullptr}, {"v", nullptr}, Private_Math::Sin},
         { "cos", "float", { "float", nullptr}, {"v", nullptr}, Private_Math::Cos},
-        { "GetRotation", "float4x4", { "float3", "float", nullptr}, {"axis", "amount", nullptr}, Private_Math::Mat44_Rotation}
+        { "GetRotation",   "float4x4", { "float3", "float", nullptr}, {"axis", "amount", nullptr}, Private_Math::Mat44_Rotation},
+        { "GetProjection", "float4x4", { "float", "float", "float", "float", "float", "float", nullptr}, { "l", "r", "t", "b", "n", "f", nullptr}, Private_Math::Mat44_Proj1},
+        { "GetProjection", "float4x4", { "float", "float", "float", "float", nullptr }, { "fov", "aspect", "n", "f", nullptr },  Private_Math::Mat44_Proj2},
     };
         
     lib->CreateIntrinsicFunctions(mathFuncs, sizeof(mathFuncs) / sizeof(mathFuncs[0])); 

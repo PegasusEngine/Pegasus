@@ -96,6 +96,13 @@ public:
     //! \return gets the program proxy from the specified model index
     Pegasus::Shader::IProgramProxy * TranslateProgramIndex(const QModelIndex& idx);
 
+    //! Sets a specific shader manager.
+    //! ShaderManager - shader manager to set.
+    void SetShaderManager(Pegasus::Shader::IShaderManagerProxy* shaderManager) { mShaderManager = shaderManager; }
+
+    //! Invalidates the shader manager.
+    void ClearShaderManager() { mShaderManager = nullptr; }
+
 private:
     //! major test to determine if a tree view can be generated
     bool IsValidTree() const { return mShaderManager != nullptr; }

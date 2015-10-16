@@ -157,7 +157,9 @@ AssetLib::RuntimeAssetObjectRef Pegasus::Shader::ShaderManager::CreateRuntimeObj
 {
     if (IsShader(desc))
     {
-        return CreateShader();
+        Pegasus::Shader::ShaderStageRef shaderStage = CreateShader();
+        shaderStage->SetStageType(Pegasus::Shader::ShaderStage::DeriveShaderTypeFromExt(desc->mExtension));
+        return shaderStage;
     }
     else if (desc->mTypeGuid == ASSET_TYPE_PROGRAM.mTypeGuid)
     {

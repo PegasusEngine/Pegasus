@@ -16,7 +16,6 @@
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Application/AppWindowManager.h"
 #include "Pegasus/Application/AppBsReflectionInfo.h"
-#include "Pegasus/Application/AppWindowComponentFactory.h"
 #include "Pegasus/Camera/CameraManager.h"
 #include "Pegasus/Core/Time.h"
 #include "Pegasus/Graph/NodeManager.h"
@@ -53,8 +52,6 @@ Application::Application(const ApplicationConfig& config)
     Alloc::IAllocator* nodeDataAlloc = Memory::GetNodeDataAllocator();
     Alloc::IAllocator* timelineAlloc = Memory::GetTimelineAllocator();
 
-    AppWindowManagerConfig windowManagerConfig;
-
     // Set up debugging facilities
 #if PEGASUS_ENABLE_LOG
     Core::LogManager::CreateInstance(coreAlloc);
@@ -65,8 +62,6 @@ Application::Application(const ApplicationConfig& config)
     Core::AssertionManager::GetInstance()->RegisterHandler(config.mAssertHandler);
 #endif
 
-    mComponentFactory = PG_NEW(coreAlloc, -1, "ComponentFactory", Alloc::PG_MEM_PERM) AppWindowComponentFactory(coreAlloc);
-
     // Set up the hierarchy of property grid class metadata gathered at compile time
     PropertyGrid::PropertyGridManager::GetInstance().ResolveInternalClassHierarchy();
     mPropertyGridManager = &PropertyGrid::PropertyGridManager::GetInstance();
@@ -76,12 +71,8 @@ Application::Application(const ApplicationConfig& config)
 
 
     // Set up window manager
-    windowManagerConfig.mAllocator = windowAlloc;
-    windowManagerConfig.mMaxWindowTypes = config.mMaxWindowTypes;
-    windowManagerConfig.mMaxNumWindows = config.mMaxNumWindows;
-    mWindowManager = PG_NEW(windowAlloc, -1, "AppWindowManager", Alloc::PG_MEM_PERM) AppWindowManager(windowManagerConfig);
-
-
+    mWindowManager = PG_NEW(windowAlloc, -1, "AppWindowManager", Alloc::PG_MEM_PERM) AppWindowManager(windowAlloc);
+    
     // Set up node managers
     mNodeManager = PG_NEW(nodeAlloc, -1, "NodeManager", Alloc::PG_MEM_PERM) Graph::NodeManager(nodeAlloc, nodeDataAlloc);
 
@@ -140,8 +131,12 @@ Application::Application(const ApplicationConfig& config)
     
     mAssetLib->SetIoManager(mIoManager); //TODO: decide here if we use the pakIoManager or the standard file system IOManager
 
-    // Start up the app, which creates and destroys the dummy window
-    StartupAppInternal();
+    Alloc::IAllocator* renderAlloc = Memory::GetRenderAllocator();
+    Pegasus::Render::DeviceConfig deviceConfig;
+    deviceConfig.mModuleHandle = mConfig.mModuleHandle;
+
+    mDevice = Pegasus::Render::IDevice::CreatePlatformDevice(deviceConfig, renderAlloc);
+    PG_LOG('APPL', "Startup finished");
 
     // Register the Pegasus-side timeline blocks
     TimelineBlock::RegisterBaseBlocks(GetTimelineManager());
@@ -152,12 +147,12 @@ Application::Application(const ApplicationConfig& config)
 
 Application::~Application()
 {
-
     Alloc::IAllocator* windowAlloc = Memory::GetWindowAllocator();
     Alloc::IAllocator* nodeAlloc = Memory::GetNodeAllocator();
     Alloc::IAllocator* nodeDataAlloc = Memory::GetNodeDataAllocator();
     Alloc::IAllocator* timelineAlloc = Memory::GetTimelineAllocator();
     Alloc::IAllocator* coreAlloc  = Memory::GetCoreAllocator();
+    Alloc::IAllocator* renderAlloc = Memory::GetRenderAllocator();
 
     PG_DELETE(windowAlloc, mWindowManager);
 
@@ -175,8 +170,12 @@ Application::~Application()
 #if PEGASUS_ENABLE_BS_REFLECTION_INFO
     PG_DELETE(nodeAlloc, mBsReflectionInfo);
 #endif
-
-    PG_DELETE(coreAlloc, mComponentFactory);
+    PG_DELETE(coreAlloc, mIoManager);
+    
+    //Kill device
+    PG_DELETE(renderAlloc, mDevice);    
+    mDevice = nullptr;
+    PG_LOG('APPL', "Device Destroyed");
 
     // Tear down debugging facilities
 #if PEGASUS_ENABLE_ASSERT
@@ -191,35 +190,8 @@ Application::~Application()
 
 //----------------------------------------------------------------------------------------
 
-void Application::Initialize()
-{
-    // Custom initialization, done in the user application
-    RegisterTimelineBlocks();
-}
-
-//----------------------------------------------------------------------------------------
-
-//! Shutdown this application.
-void Application::Shutdown()
-{
-    Alloc::IAllocator* coreAlloc = Memory::GetCoreAllocator();
-
-    // Custom shutdown, done in the user application
-    ShutdownApp();
-
-    // Shuts down GLextensions, etc
-    ShutdownAppInternal();
-
-    // Tear down IO manager
-    PG_DELETE(coreAlloc, mIoManager);
-}
-
-//----------------------------------------------------------------------------------------
-
 void Application::Load()
 {
-    
-    
     Render::ContextConfig config;
     config.mAllocator = Memory::GetCoreAllocator();
     config.mDevice = mDevice;
@@ -230,7 +202,7 @@ void Application::Load()
     InitializeApp();
 
     // Initialize all the components for all the windows.
-    mComponentFactory->LoadAllComponents(this);
+    mWindowManager->LoadAllComponents(this);
 
     context.Unbind();
     
@@ -241,7 +213,7 @@ void Application::Load()
 void Application::Update()
 {
     //! update all components, globally for all the windows.
-    mComponentFactory->UpdateAllComponents(this);
+    mWindowManager->UpdateAllComponents(this);
 }
 
 //----------------------------------------------------------------------------------------
@@ -255,16 +227,12 @@ void Application::Unload()
     context.Bind();
 
     // Initialize all the components for all the windows.
-    mComponentFactory->UnloadAllComponents(this);
+    mWindowManager->UnloadAllComponents(this);
     
     context.Unbind();
-}
 
-//----------------------------------------------------------------------------------------
-
-IWindowRegistry* Application::GetWindowRegistry()
-{
-    return mWindowManager;
+    // Custom shutdown, done in the user application
+    ShutdownApp();
 }
 
 //----------------------------------------------------------------------------------------
@@ -277,6 +245,7 @@ Wnd::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig)
     Wnd::Window* newWnd = nullptr;
     Wnd::WindowConfig config;
 
+    //TODO: simplify this config struct. Too much stuff copied around.
     // Create window
     config.mAllocator = windowAlloc;
     config.mRenderAllocator = renderAlloc;
@@ -288,11 +257,10 @@ Wnd::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig)
     config.mHeight = appWindowConfig.mHeight;
     config.mCreateVisible = true;
     
-    newWnd = mWindowManager->CreateNewWindow(appWindowConfig.mWindowType, config);
+    newWnd = mWindowManager->CreateNewWindow(config, appWindowConfig.mComponentFlags);
 
     if (newWnd != nullptr)
     {
-        mComponentFactory->AttachComponentsToWindow(newWnd, appWindowConfig.mComponentFlags);
         PG_LOG('APPL', "Window created");
     }
     else
@@ -310,29 +278,6 @@ void Application::DetachWindow(Wnd::Window* wnd)
     mWindowManager->DestroyWindow(wnd);
 
     PG_LOG('APPL', "Window destroyed");
-}
-
-//----------------------------------------------------------------------------------------
-
-//! Starts up the application.
-//! \note Creates the dummy startup window used to initialize the OGL extensions.
-void Application::StartupAppInternal()
-{
-    Alloc::IAllocator* renderAlloc = Memory::GetRenderAllocator();
-    Pegasus::Render::DeviceConfig deviceConfig;
-    deviceConfig.mModuleHandle = mConfig.mModuleHandle;
-
-    mDevice = Pegasus::Render::IDevice::CreatePlatformDevice(deviceConfig, renderAlloc);
-    PG_LOG('APPL', "Startup finished");
-}
-
-//----------------------------------------------------------------------------------------
-
-void Application::ShutdownAppInternal()
-{
-    PG_DELETE(Memory::GetRenderAllocator(), mDevice);    
-    mDevice = nullptr;
-    PG_LOG('APPL', "Device Destroyed");
 }
 
 

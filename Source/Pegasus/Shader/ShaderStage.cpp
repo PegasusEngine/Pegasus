@@ -176,7 +176,7 @@ void Pegasus::Shader::ShaderStage::GenerateData()
 
 #if PEGASUS_ENABLE_DETAILED_LOG
 #if PEGASUS_ENABLE_PROXIES
-    PG_LOG('SHDR', "Generating the GPU data of shader stage \"%s\"", GetFileName());
+    PG_LOG('SHDR', "Generating the GPU data of shader stage \"%s\"", GetName());
 #else
     PG_LOG('SHDR', "Generating the GPU data of a shader stage");
 #endif
@@ -200,15 +200,18 @@ void Pegasus::Shader::ShaderStage::Include(Pegasus::Shader::ShaderSourceIn inc)
     inc->RegisterParent(this);
 }
 
-static Pegasus::Shader::ShaderType DeriveShaderTypeFromExt(const char* extension)
+Pegasus::Shader::ShaderType Pegasus::Shader::ShaderStage::DeriveShaderTypeFromExt(const char* extension)
 {
+    if (*extension == '.')
+    {        
+        extension = extension + 1;
+    }
     int extSz = Pegasus::Utils::Strlen(extension) - 1;
-    const char* extSanitized = extension + 1;
     if (extSz > 0)
     {
         for (int i = 0; i < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT); ++i)
         {
-            if (!Pegasus::Utils::Stricmp(extSanitized, Pegasus::Shader::gShaderExtensions[i]))
+            if (!Pegasus::Utils::Stricmp(extension, Pegasus::Shader::gShaderExtensions[i]))
             {
                 return static_cast<Pegasus::Shader::ShaderType>(i);
             }

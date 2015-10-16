@@ -53,6 +53,11 @@ public:
     //! Destructor
     virtual ~ShaderStage();
 
+    //! Returns the shader type from the extension
+    //! \param extension - the extension to use
+    //! \return the type to return.
+    static ShaderType DeriveShaderTypeFromExt(const char* extension);
+
     //! Set the shader source
     //! \param  type the type of the source
     //! \param  src the actual src string
@@ -67,6 +72,10 @@ public:
     //! Return the stage type
     //! \return the shader type
     ShaderType GetStageType() const { return mType; }
+
+    //! Sets this shader type.
+    //! \param the type to set
+    void SetStageType(ShaderType type) { mType = type; }
 
     //! Sets the factory, which contains the render library implementation of shader
     //! compilation and linkage

@@ -257,6 +257,7 @@ RuntimeAssetObjectRef Pegasus::AssetLib::AssetLib::LoadObject(const char* path)
         else
         {
             RuntimeAssetObjectRef obj = factory->CreateRuntimeObject(foundDesc);
+            PG_ASSERTSTR(obj != nullptr, "FATAL: factory returned invalid asset runtime object.");
             asset->SetTypeDesc(foundDesc);
             if (obj->Read(asset)) //Read binds this asset together.
             {
@@ -285,7 +286,7 @@ RuntimeAssetObjectRef Pegasus::AssetLib::AssetLib::CreateObject(const char* path
         AssetRuntimeFactory* factory = nullptr;
         const PegasusAssetTypeDesc* supportedType = nullptr;
         //find an available factory
-        for (int i = 0; i < mFactories.GetSize(); ++i)
+        for (int i = 0; factory == nullptr &&  i < mFactories.GetSize(); ++i)
         {
             AssetRuntimeFactory* candidate = mFactories[i];
             const PegasusAssetTypeDesc* const* supportedTypeList = candidate->GetAssetTypes();
@@ -296,31 +297,24 @@ RuntimeAssetObjectRef Pegasus::AssetLib::AssetLib::CreateObject(const char* path
                 )
                 {
                     supportedType = *supportedTypeList;
+                    factory = candidate;
                     break;
                 }
                 ++supportedTypeList;
             }
         }
 
-        if (supportedType != nullptr)
+        if (factory == nullptr)
         {
-
-            if (factory == nullptr)
-            {
-                PG_LOG('ERR_', "Unable to create object. No factory found for %s.", path);
-                UnloadAsset(asset);
-            }
-            else
-            {
-                RuntimeAssetObjectRef obj = factory->CreateRuntimeObject(desc);
-                asset->SetTypeDesc(desc);
-                obj->Bind(asset);
-                return obj;
-            }
+            PG_LOG('ERR_', "Unable to create object. No factory found for %s.", path);
+            UnloadAsset(asset);
         }
         else
         {
-            PG_LOG('ERR_', "No factory supports the type requested to create %s.", path);
+            RuntimeAssetObjectRef obj = factory->CreateRuntimeObject(desc);
+            asset->SetTypeDesc(desc);
+            obj->Bind(asset);
+            return obj;
         }
     }
     

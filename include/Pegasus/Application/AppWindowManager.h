@@ -13,14 +13,23 @@
 #define PEGASUS_APP_APPWINDOWMANAGER_H
 
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
-#include "Pegasus/Application/IWindowRegistry.h"
+#include "Pegasus/Utils/Vector.h"
 
 // Forward declarations
 namespace Pegasus {
     namespace App {
-        struct TypeTable;
-        struct WindowTable;
+        class AppWindowComponentFactory;
     }
+
+    namespace Core {
+        class IApplicationContext;
+    }
+
+    namespace Wnd {
+        class Window;
+        struct WindowConfig;
+    }
+
 }
 
 //----------------------------------------------------------------------------------------
@@ -28,70 +37,51 @@ namespace Pegasus {
 namespace Pegasus {
 namespace App {
 
-//! Config object for the window manager class
-struct AppWindowManagerConfig
-{
-public:
-    //! Constructor
-    AppWindowManagerConfig() : mAllocator(nullptr), mMaxWindowTypes(2), mMaxNumWindows(1) {}
-
-    //! Destructor
-    ~AppWindowManagerConfig() {};
-
-
-    Alloc::IAllocator* mAllocator; //!< Allocator used to create this object
-    unsigned int mMaxWindowTypes; //!< Maximum number of window types this manager can contain
-    unsigned int mMaxNumWindows; //!< Maximum number of windows this manager can contain
-};
-
-
 //! Window manager for a Pegasus app
 //! This class manages a set of window for a Pegasus app
 //! It allows the registration and creation of windows of multiple,
 //! user defined types to make it simple to extend the runtime.
-class AppWindowManager : public IWindowRegistry
+class AppWindowManager
 {
 public:
     //! Constructor
     //! \param config Config to create this manager with.
-    AppWindowManager(const AppWindowManagerConfig& config);
+    AppWindowManager(Alloc::IAllocator* allocator);
 
     //! Destructor
     //! \warning Unregister your classes and destroy your windows before you call this!
     ~AppWindowManager();
 
-
-    // IWindowRegistry API
-    virtual void RegisterWindowClass(const char* className, const WindowRegistration& classReg);
-    virtual void UnregisterWindowClass(const char* className);
-    virtual const char* GetMainWindowType() const;
-#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
-    virtual const char* GetSecondaryWindowType() const;
-    virtual const char* GetTextureEditorPreviewWindowType() const;
-#endif
-
     //! Creates a window and adds it to this manager.
     //! \param className Class of window to create.
     //! \param config Config to use for the window.
     //! \return Created window.
-    Wnd::Window* CreateNewWindow(const char* className, const Wnd::WindowConfig& config);
+    Wnd::Window* CreateNewWindow(const Wnd::WindowConfig& config, ComponentTypeFlags componentFlags);
 
     //! Destroys a window and removes it from this manager.
     //! \param window The window to destroy.
     void DestroyWindow(Wnd::Window* window);
 
+    //! Loads all the components in the component pool.
+    //! \param context - the application context
+    void LoadAllComponents(Core::IApplicationContext* context);
 
-    static const unsigned int APPWINDOW_DESC_LENGTH = 128; //! Max length of an app window description
-    static const unsigned int APPWINDOW_CLASS_LENGTH = 64; //! Max length of an app window type
+    //! Update all the components in the component pool.
+    //! \param context - the application context
+    void UpdateAllComponents(Core::IApplicationContext* context);
+
+    //! Unload all the components
+    //! \param context - the application context
+    void UnloadAllComponents(Core::IApplicationContext* context);
 
 private:
     // No copies allowed
     PG_DISABLE_COPY(AppWindowManager);
-
-
+    int mWorldWindowsCount;
     Alloc::IAllocator* mAllocator; //!< Allocator to use when creating this object
-    TypeTable* mTypeTable; //!< Window type table
-    WindowTable* mWindowTable; //!< Window table
+    Utils::Vector<Wnd::Window*> mContainer;
+
+    AppWindowComponentFactory*                      mComponentFactory;       //!< Component factory of windows.
 };
 
 

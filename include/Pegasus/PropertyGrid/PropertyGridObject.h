@@ -216,7 +216,7 @@ namespace PropertyGrid {
                     PPG::PropertyDefinition<type>::CopyProperty(mDefaultValue, defaultValue);                       \
                     PPG::PropertyGridManager::GetInstance().DeclareProperty(                                        \
                         PPG::PropertyDefinition<type>::PROPERTY_TYPE,                                               \
-                        sizeof(type), #name, &mDefaultValue);                                                       \
+                        sizeof(type), #name, PPG::PropertyDefinition<type>::GetName(), &mDefaultValue);                                                       \
                 }                                                                                                   \
                 inline PPG::PropertyDefinition<type>::ReturnType GetDefaultValue() const                            \
                     { return mDefaultValue; }                                                                       \

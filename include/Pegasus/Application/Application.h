@@ -14,7 +14,6 @@
 #define PEGASUS_APP_APPLICATION_H
 
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
-#include "Pegasus/Application/IWindowRegistry.h"
 #include "Pegasus/Core/IApplicationContext.h"
 
 // Forward declarations
@@ -85,22 +84,6 @@ public:
     //! \return Application name.
     virtual const char* GetAppName() const = 0;
 
-    //! Register the custom timeline blocks in the user application
-    virtual void RegisterTimelineBlocks() = 0;
-
-    //! Custom initialization, done in the user application before the timeline triggers the loading of blocks and their assets
-    virtual void InitializeApp() = 0;
-
-    //! Custom shutdown, done in the user application
-    virtual void ShutdownApp() = 0;
-
-
-    //! Initializes this app
-    void Initialize();
-
-    //! Shut this app down
-    void Shutdown();
-
     //! Load the assets required to render the timeline blocks
     void Load();
 
@@ -109,11 +92,6 @@ public:
 
     //! Updates the simulation / calls update on every block of this timeline.
     void Update();
-
-
-    //! Gets the window registry for this app, to register window types
-    //! \return Window registry interface.
-    IWindowRegistry* GetWindowRegistry();
 
     //! Attaches a new window to this app
     //! \param appWindowConfig Config structure for the window.
@@ -143,19 +121,21 @@ public:
     virtual App::AppBsReflectionInfo*                       GetBsReflectionInfo() const { return mBsReflectionInfo; }
 #endif
 
+protected:
+    
+    //! Custom initialization, done in the user application before the timeline triggers the loading of blocks and their assets
+    virtual void InitializeApp() = 0;
+
+    //! Custom shutdown, done in the user application
+    virtual void ShutdownApp() = 0;
+
+
 private:
     // No copies allowed
     PG_DISABLE_COPY(Application);
-
-    //! Internal helper to start up the app
-    void StartupAppInternal();
-
-    //! Internal handler to shutdown the app
-    void ShutdownAppInternal();
     
     ApplicationConfig                               mConfig;                 //!< Cached config object
     Render::IDevice*                                mDevice;                 //!< Render device
-    AppWindowComponentFactory*                      mComponentFactory;       //!< Component factory of windows.
     AppWindowManager*                               mWindowManager;          //!< Window manager
     Io::IOManager*                                  mIoManager;              //!< IO manager
     Graph::NodeManager*                             mNodeManager;            //!< Graph node manager

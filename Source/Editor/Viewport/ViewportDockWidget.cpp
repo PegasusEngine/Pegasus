@@ -17,26 +17,15 @@
 #include <QVBoxLayout>
 
 
-ViewportDockWidget::ViewportDockWidget(ViewportType viewportType, QWidget * parent)
-:   QDockWidget(parent)
+ViewportDockWidget::ViewportDockWidget(Editor* editor, QWidget * parent, const char* title, const char* objName)
+    :   PegasusDockWidget(parent, editor), mTitle(title), mObjName(objName)
 {
-    // Set the dock widget parameters
-    switch (viewportType)
-    {
-        case VIEWPORTTYPE_MAIN:
-            setWindowTitle(tr("Viewport 1"));
-	        setObjectName("MainViewportDockWidget");
-            break;
+}
 
-        case VIEWPORTTYPE_SECONDARY:
-            setWindowTitle(tr("Viewport 2"));
-	        setObjectName("SecondaryViewportDockWidget");
-            break;
+//----------------------------------------------------------------------------------------
 
-        default:
-            setWindowTitle(tr("<Untitled Viewport>"));
-	        setObjectName("ViewportDockWidget");
-    }
+void ViewportDockWidget::SetupUi()
+{
 	setFeatures(  QDockWidget::DockWidgetClosable
 				| QDockWidget::DockWidgetMovable
 				| QDockWidget::DockWidgetFloatable);
@@ -55,11 +44,25 @@ ViewportDockWidget::ViewportDockWidget(ViewportType viewportType, QWidget * pare
     QMenuBar * menuBar = CreateMenu(mainWidget);
 
     // Create the viewport widget that will contain the renderer
-    mViewportWidget = new ViewportWidget(viewportType, mainWidget);
+    mViewportWidget = new ViewportWidget(mainWidget, Pegasus::App::COMPONENT_FLAG_DEBUG_TEXT | Pegasus::App::COMPONENT_FLAG_WORLD);
 
     // Set the elements of the layout
     verticalLayout->setMenuBar(menuBar);
     verticalLayout->addWidget(mViewportWidget);
+}
+
+//----------------------------------------------------------------------------------------
+
+void ViewportDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* application)
+{
+    mViewportWidget->OnAppLoaded();
+}
+
+//----------------------------------------------------------------------------------------
+
+void ViewportDockWidget::OnUIForAppClosed()
+{
+    mViewportWidget->OnAppUnloaded();
 }
 
 //----------------------------------------------------------------------------------------
@@ -95,3 +98,5 @@ QMenuBar * ViewportDockWidget::CreateMenu(QWidget * mainWidget)
 
     return menuBar;
 }
+
+

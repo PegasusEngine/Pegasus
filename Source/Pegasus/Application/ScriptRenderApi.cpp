@@ -473,7 +473,7 @@ static void RegisterFunctions(BlockLib* lib)
         //Misc utils
         {
             "GetWidthHeightAspect",
-            "float3",
+            "float4",
             { nullptr },
             { nullptr },
             Util_GetWidthHeightAspect
@@ -721,11 +721,12 @@ void Util_GetWidthHeightAspect(FunCallbackContext& context)
 {
     Application::RenderCollection* container = GetContainer(context.GetVmState());
     Wnd::Window* w = container->GetWindow();
-    PG_ASSERT(context.GetOutputBufferSize() == sizeof(float) * 3);
+    PG_ASSERT(context.GetOutputBufferSize() == sizeof(float) * 4);
     float* widthheightaspect = static_cast<float*>(context.GetRawOutputBuffer());
     widthheightaspect[0] = static_cast<float>(w->GetWidth());
     widthheightaspect[1] = static_cast<float>(w->GetHeight());
     widthheightaspect[2] = w->GetRatio();
+    widthheightaspect[3] = w->GetRatioInv();
 }
 
 /////////////////////////////////////////////////////////////

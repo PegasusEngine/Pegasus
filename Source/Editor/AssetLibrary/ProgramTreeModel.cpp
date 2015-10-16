@@ -131,23 +131,26 @@ QModelIndex ProgramTreeModel::parent (const QModelIndex &child) const
 
 QVariant ProgramTreeModel::data(const QModelIndex &index, int role) const
 {
-    if (index.column() == 0)
+    if (IsValidTree())
     {
-        switch(role)
+        if (index.column() == 0)
         {
-        case Qt::DisplayRole:
+            switch(role)
             {
-                return GetStringDataFromIndex(index);
+            case Qt::DisplayRole:
+                {
+                    return GetStringDataFromIndex(index);
+                }
             }
         }
-    }
-    else if (index.column() == 1)
-    {
-        switch(role)
+        else if (index.column() == 1)
         {
-        case Qt::DecorationRole:
+            switch(role)
             {
-               return GetIconFromIndex(index);
+            case Qt::DecorationRole:
+                {
+                   return GetIconFromIndex(index);
+                }
             }
         }
     }

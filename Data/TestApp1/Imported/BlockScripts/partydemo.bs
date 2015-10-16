@@ -1,0 +1,72 @@
+
+struct MeshState{
+	uWorld : float4x4;
+	uProj : float4x4;
+};
+
+struct PixelState {
+	uCameraPos_beat : float4;
+	uCenterPos_unused: float4;
+	uLightPosition : float4;
+};
+
+gMarbleState = MeshState();
+gPixelState = PixelState();
+
+// PROGRAMS //
+marbleProgram = LoadProgram("PartyDemo/programSphere.pas");
+marbleStateUniform = GetUniformLocation(marbleProgram , "uniformState");
+marblePixelUniform = GetUniformLocation(marbleProgram, "pixelUniformState");
+
+marbleStateBuffer = CreateUniformBuffer(sizeof(MeshState));
+marblePixelBuffer = CreateUniformBuffer(sizeof(PixelState));
+//////////////
+
+// MESH //
+sphereMesh = CreateMesh();
+icosphere = CreateMeshGenerator("IcosphereGenerator");
+sphereMesh->SetGeneratorInput(icosphere);
+icosphere.Degree = 5;
+
+//////////////
+
+
+
+
+int Timeline_Update(beat : float)
+{
+	wha = GetWidthHeightAspect();
+	aspect = wha.w;
+	//SETUP CAMERA
+	gMarbleState.uProj = GetProjection(1.2,aspect,0.01,500.0);
+	sphereCenter = float3(-0.0,0.0,-2.7);
+	//SETUP SPHERE WORLD
+	worldMat = float4x4 (
+		1.0, 0.0, 0.0, sphereCenter.x,
+		0.0, 1.0, 0.0, sphereCenter.y,
+		0.0, 0.0, 1.0, sphereCenter.z,
+		0.0, 0.0, 0.0, 1.0 
+	);
+	gMarbleState.uWorld = worldMat;
+	
+	gPixelState.uCameraPos_beat = float4(float3(0.0,0.0,0.0),beat);
+	gPixelState.uCenterPos_unused = float4(sphereCenter, 1.0);
+	speed = 0.5;
+	gPixelState.uLightPosition = float4(1.0*sin(beat*speed*3.14),1.0*sin(1.0-beat),1.0*cos(beat*speed*3.14),0.0);
+}
+
+
+int Timeline_Render(beat : float)
+{
+	/// RENDER MARBLE
+	Clear(1,0,0);
+	SetClearColorValue(float4(0,0,0,1));
+	SetProgram(marbleProgram);
+	SetMesh(sphereMesh);
+	SetBuffer(marbleStateBuffer, gMarbleState);
+	SetBuffer(marblePixelBuffer, gPixelState);
+	SetUniformBuffer(marbleStateUniform, marbleStateBuffer);
+	SetUniformBuffer(marblePixelUniform, marblePixelBuffer);
+	Draw();
+	
+}

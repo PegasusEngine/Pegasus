@@ -12,12 +12,20 @@
 #ifndef EDITOR_VIEWPORTWIDGET_H
 #define EDITOR_VIEWPORTWIDGET_H
 
-#include "Viewport/ViewportType.h"
+#include "MessageControllers/WindowIOMessageController.h"
+#include "Pegasus/Application/Shared/ApplicationConfig.h"
 
 #include <QWidget>
 
 class QResizeEvent;
 
+namespace Pegasus
+{
+    namespace Wnd
+    {
+        class IWindowProxy;
+    }
+}
 
 //! Widget containing one application viewport
 class ViewportWidget : public QWidget
@@ -27,9 +35,8 @@ class ViewportWidget : public QWidget
 public:
 
     //! Constructor
-    //! \param viewportType Type of the viewport (VIEWPORTTYPE_xxx constant)
     //! \param parent Parent of the widget
-    ViewportWidget(ViewportType viewportType, QWidget * parent);
+    explicit ViewportWidget(QWidget * parent, Pegasus::App::ComponentTypeFlags componentFlags);
 
     //! Destructor
     virtual ~ViewportWidget();
@@ -47,15 +54,30 @@ public:
     //! \return Current height of the viewport in pixels
     inline int GetHeight() const { return size().height(); }
 
+    //! Returns the internal pegasus window that this viewport is interacting with.
+    //! \return mWindowProxy
+    inline Pegasus::Wnd::IWindowProxy* GetWindowProxy() const { return mWindowProxy; }
+
+    //! Callback when app is loaded.
+    void OnAppLoaded();
+
+    //! Callback when app is unloaded
+    void OnAppUnloaded();
+
+    //! Call only on the render thread!!
+    void DrawPegasusWindow();
+
+    //! Attaches a window proxy to this viewport
+    //! \param window - the window to attach
+    //! \note - this function has to be called from the render thread only.
+    inline void AttachWindowProxy(Pegasus::Wnd::IWindowProxy* window) { mWindowProxy = window; }
+
     //------------------------------------------------------------------------------------
 
 signals:
 
-    //! Signal emitted when the viewport is resized, used to update the application-side viewport
-    //! \param viewportType Type of the viewport (VIEWPORTTYPE_xxx constant)
-    //! \param width New width of the viewport, in pixels
-    //! \param height New height of the viewport, in pixels
-    void ViewportResized(ViewportType viewportType, int width, int height);
+    //! Sends a message to the window controller
+    void OnSendWindowIoMessage(WindowIOMessageController::Message msg);
 
     //------------------------------------------------------------------------------------
 
@@ -69,11 +91,14 @@ protected:
     
 private:
 
-    //! Type of the viewport (VIEWPORTTYPE_xxx constant)
-    ViewportType mViewportType;
+    //! The window proxy this window contains.
+    Pegasus::Wnd::IWindowProxy* mWindowProxy;
 
     //! Native window ID, stored so it is accessible from other threads
     unsigned int mWindowHandle;
+
+    //! The components that this viewport uses
+    Pegasus::App::ComponentTypeFlags mComponentFlags;
 };
 
 

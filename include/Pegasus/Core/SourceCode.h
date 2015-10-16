@@ -70,20 +70,9 @@ public:
     virtual void InvalidateData() = 0;
 
 #if PEGASUS_ENABLE_PROXIES
-    //! Sets the full path, divides the stirng into the file name and the root full path
-    //! to be used only by the editor
-    //! \param fullpath file path of the shader to be set
-    void SetFullFilePath(const char * fullPath);
-
-    //! \return the path containing this shader
-    const char * GetFilePath() const { return mPath; }
-
-    //! \return the file name of this shader
-    const char * GetFileName() const { return mName; }
-
     //! Returns the display name of this runtime object
     //! \return string representing the display name of this object
-    virtual const char* GetDisplayName() const { return GetFileName(); }
+    virtual const char* GetDisplayName() const; 
 
 #endif
 
@@ -99,13 +88,6 @@ protected:
 
 private:
 
-#if PEGASUS_ENABLE_PROXIES
-    //! Filename metadata
-    static const int METADATA_NAME_LENGTH = 256;
-    char mName[METADATA_NAME_LENGTH];
-    char mPath[METADATA_NAME_LENGTH];
-    char mFullPath[METADATA_NAME_LENGTH * 2];
-#endif
 
     bool mLockParentArray;
 };

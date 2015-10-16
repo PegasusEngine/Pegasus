@@ -87,16 +87,17 @@ void PropertyGridClassInfo::SetParentClassInfo(PropertyGridClassInfo * parentCla
 
 //----------------------------------------------------------------------------------------
     
-void PropertyGridClassInfo::DeclareProperty(PropertyType type, int size, const char * name, void * defaultValuePtr)
+void PropertyGridClassInfo::DeclareProperty(PropertyType type, int size, const char * name, const char* typeName, void * defaultValuePtr)
 {
-    //! \todo Make size an unsigned int
-
     if (   (type < NUM_PROPERTY_TYPES)
         && (size > 0)
+        && (typeName != nullptr)
+        && (typeName[0] != '\0')
         && (name != nullptr)
         && (name[0] != '\0') )
     {
         PropertyRecord & record = mClassPropertyRecords.PushEmpty();
+        record.typeName = typeName;
         record.type = type;
         record.size = size;
         record.name = name;     // Copy the pointer, not the string, since the input pointer is considered as constant

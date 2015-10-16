@@ -26,6 +26,7 @@
 #include "Pegasus/Timeline/Shared/ITimelineManagerProxy.h"
 #include "Pegasus/AssetLib/Shared/IAssetLibProxy.h"
 #include "Pegasus/AssetLib/Shared/IAssetProxy.h"
+
 #include "Pegasus/Core/Shared/IoErrors.h"
 #include <QSignalMapper>
 #include <QMenu>
@@ -269,8 +270,31 @@ void AssetLibraryWidget::DispatchTextEditorThroughProgramView(const QModelIndex&
 
 void AssetLibraryWidget::SetEnabledProgramShaderViews(bool enabled)
 {
+    if (enabled)
+    {
+        
+        Application* app = GetEditor()->GetApplicationManager().GetApplication();
+        if (app != nullptr)
+        {
+            mProgramTreeModel->SetShaderManager(app->GetApplicationProxy()->GetShaderManagerProxy());
+            mShaderListModel->OnAppLoaded(app->GetApplicationProxy()->GetShaderManagerProxy());
+            mBlockScriptListModel->OnAppLoaded(app->GetApplicationProxy()->GetTimelineManagerProxy());
+        }
+    }
+    else
+    {
+        mProgramTreeModel->ClearShaderManager();
+        mShaderListModel->OnAppDestroyed();
+        mBlockScriptListModel->OnAppDestroyed();
+    }
     ui.ProgramTreeView->setEnabled(enabled);
     ui.ShaderTreeView->setEnabled(enabled);
+    ui.BlockScriptTreeView->setEnabled(enabled);
+
+    if (enabled)
+    {
+        UpdateUIItemsLayout();
+    }
 }
 
 //----------------------------------------------------------------------------------------

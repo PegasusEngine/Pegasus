@@ -19,7 +19,22 @@
 
 //! \todo TEMPORARY, property grid testing
 #include "Pegasus/PropertyGrid/PropertyGridObject.h"
+#include "Pegasus/PropertyGrid/PropertyGridEnumType.h"
 using namespace Pegasus::Math;
+
+namespace SomeStrangeNamespace {
+BEGIN_DECLARE_ENUM(TestEnum)
+    DECLARE_ENUM(TestEnum,OPTION1)
+    DECLARE_ENUM(TestEnum,OPTION2)
+    DECLARE_ENUM(TestEnum,OPTION3)
+    DECLARE_ENUM(TestEnum,OPTION4)
+END_DECLARE_ENUM()
+
+}
+
+REGISTER_ENUM_METATYPE(SomeStrangeNamespace::TestEnum)
+
+
 
 class TestClass2 : public Pegasus::PropertyGrid::PropertyGridObject
 {
@@ -77,9 +92,6 @@ public:
 
     //! Application interface
     virtual const char* GetAppName() const { return "TestApp1"; }
-
-    //! Register the custom timeline blocks
-    virtual void RegisterTimelineBlocks();
 
     //! Custom initialization, done before the timeline triggers the loading of blocks and their assets
     virtual void InitializeApp();

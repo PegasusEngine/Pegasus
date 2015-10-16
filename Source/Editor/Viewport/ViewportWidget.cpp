@@ -14,19 +14,9 @@
 #include <QResizeEvent>
 
 
-ViewportWidget::ViewportWidget(ViewportType viewportType, QWidget * parent)
-:   QWidget(parent)
+ViewportWidget::ViewportWidget(QWidget * parent, Pegasus::App::ComponentTypeFlags componentFlags)
+:   QWidget(parent), mWindowProxy(nullptr), mComponentFlags(componentFlags)
 {
-    if (viewportType >= NUM_VIEWPORT_TYPES)
-    {
-        ED_FAILSTR("Invalid viewport type (%d), it should be < %d. Switching to MAIN type", viewportType, NUM_VIEWPORT_TYPES);
-        mViewportType = VIEWPORTTYPE_MAIN;
-    }
-    else
-    {
-        mViewportType = viewportType;
-    }
-
     // Set the size policy of the widget
     QSizePolicy newSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     newSizePolicy.setHorizontalStretch(0);
@@ -59,7 +49,36 @@ ViewportWidget::~ViewportWidget()
 
 void ViewportWidget::resizeEvent(QResizeEvent * event)
 {
-    QWidget::resizeEvent(event);
+    WindowIOMessageController::Message msg;
+    msg.SetMessageType(WindowIOMessageController::Message::WINDOW_RESIZED);
+    msg.SetViewportWidget(this);
+    msg.SetWidth(event->size().width());
+    msg.SetHeight(event->size().height());
+    emit(OnSendWindowIoMessage(msg));
+}
 
-    emit(ViewportResized(mViewportType, event->size().width(), event->size().height()));
+//----------------------------------------------------------------------------------------
+
+void ViewportWidget::DrawPegasusWindow()
+{
+}
+
+//----------------------------------------------------------------------------------------
+
+void ViewportWidget::OnAppLoaded()
+{
+    WindowIOMessageController::Message msg;
+    msg.SetMessageType(WindowIOMessageController::Message::INITIALIZE_WINDOW);
+    msg.SetViewportWidget(this);
+    msg.SetComponentFlags(mComponentFlags);
+    msg.SetWidth(width());
+    msg.SetHeight(height());
+    emit(OnSendWindowIoMessage(msg));
+}
+
+//----------------------------------------------------------------------------------------
+
+void ViewportWidget::OnAppUnloaded()
+{
+    mWindowProxy = nullptr; //let the application interface clean the window.
 }

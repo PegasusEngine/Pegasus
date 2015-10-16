@@ -436,6 +436,38 @@ void SetRotationZ(Mat33InOut mat, PFloat32 angle);
 //! \param angle Rotation angle (in radians)
 void SetRotationZT(Mat33InOut mat, PFloat32 angle);
 
+//! Set a 4x4 representing a frustum projection
+//! \param mat the output
+//! \param left units, in camera units
+//! \param right units, in camera units
+//! \param top units, in camera units
+//! \param bottom units, in camera units
+//! \param near units, in camera units
+//! \param far units, in camera units
+void SetProjection(
+    Mat44InOut& mat,
+    const PFloat32& l,
+    const PFloat32& r,
+    const PFloat32& t,
+    const PFloat32& b,
+    const PFloat32& n,
+    const PFloat32& f
+);
+
+//! Set a 4x4 representing a frustum projection
+//! \param mat the output
+//! \param field of view, in radians.
+//! \param aspect, aspect ratio, y units / x units
+//! \param n, near plane distance in camera units
+//! \param f, far plane distance in camera units
+void SetProjection(
+    Mat44InOut& mat,
+    const PFloat32& fov,
+    const PFloat32& aspect, // y / x
+    const PFloat32& n,
+    const PFloat32& f
+);
+
 //----------------------------------------------------------------------------------------
 
 // 4x4 versions of transformation matrices

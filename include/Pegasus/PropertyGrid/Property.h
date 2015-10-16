@@ -24,7 +24,6 @@ namespace PropertyGrid {
 //! Static string types for property grid
 typedef char String64[64];
 
-
 //! Template class to contain constants and types for each property type
 //! \param T Property type
 template <typename T>
@@ -32,6 +31,21 @@ class PropertyDefinition
 {
     // Empty on purpose, to throw a compilation error if the type is undefined
 };
+
+#define REGISTER_ENUM_METATYPE(enumTypeName)\
+    namespace Pegasus { namespace PropertyGrid {\
+        template <>\
+        struct PropertyDefinition<enumTypeName>\
+        {\
+            static const ::Pegasus::PropertyGrid::PropertyType PROPERTY_TYPE = ::Pegasus::PropertyGrid::PROPERTYTYPE_CUSTOM_ENUM;\
+            typedef enumTypeName   VarType;\
+            typedef enumTypeName   ParamType;\
+            typedef enumTypeName & OutParamType;\
+            typedef enumTypeName   ReturnType;\
+            static void CopyProperty(OutParamType paramOut, ParamType paramIn) { paramOut = paramIn; }\
+            static const char* GetName() { return enumTypeName##::GetTypeName(); }\
+        };\
+    }}
 
 
 //@{
@@ -51,6 +65,7 @@ struct PropertyDefinition<bool>
     typedef bool & OutParamType;
     typedef bool   ReturnType;
     static void CopyProperty(OutParamType paramOut, ParamType paramIn) { paramOut = paramIn; }
+    static const char* GetName() { return "bool"; }
 };
 
 template <>
@@ -62,6 +77,7 @@ struct PropertyDefinition<unsigned int>
     typedef unsigned int & OutParamType;
     typedef unsigned int   ReturnType;
     static void CopyProperty(OutParamType paramOut, ParamType paramIn) { paramOut = paramIn; }
+    static const char* GetName() { return "uint"; }
 };
 
 template <>
@@ -73,6 +89,7 @@ struct PropertyDefinition<int>
     typedef int & OutParamType;
     typedef int   ReturnType;
     static void CopyProperty(OutParamType paramOut, ParamType paramIn) { paramOut = paramIn; }
+    static const char* GetName() { return "int"; }
 };
 
 template <>
@@ -84,6 +101,7 @@ struct PropertyDefinition<float>
     typedef float & OutParamType;
     typedef float   ReturnType;
     static void CopyProperty(OutParamType paramOut, ParamType paramIn) { paramOut = paramIn; }
+    static const char* GetName() { return "float"; }
 };
 
 template <>
@@ -95,6 +113,7 @@ struct PropertyDefinition<Math::Vec2>
     typedef Math::Vec2InOut  OutParamType;
     typedef Math::Vec2Return ReturnType;
     static void CopyProperty(OutParamType paramOut, ParamType paramIn) { paramOut = paramIn; }
+    static const char* GetName() { return "float2"; }
 };
 
 template <>
@@ -106,6 +125,7 @@ struct PropertyDefinition<Math::Vec3>
     typedef Math::Vec3InOut  OutParamType;
     typedef Math::Vec3Return ReturnType;
     static void CopyProperty(OutParamType paramOut, ParamType paramIn) { paramOut = paramIn; }
+    static const char* GetName() { return "float3"; }
 };
 
 template <>
@@ -117,6 +137,7 @@ struct PropertyDefinition<Math::Vec4>
     typedef Math::Vec4InOut  OutParamType;
     typedef Math::Vec4Return ReturnType;
     static void CopyProperty(OutParamType paramOut, ParamType paramIn) { paramOut = paramIn; }
+    static const char* GetName() { return "float4"; }
 };
 
 template <>
@@ -128,6 +149,7 @@ struct PropertyDefinition<Math::Color8RGB>
     typedef Math::Color8RGBInOut  OutParamType;
     typedef Math::Color8RGBReturn ReturnType;
     static void CopyProperty(OutParamType paramOut, ParamType paramIn) { paramOut = paramIn; }
+    static const char* GetName() { return "float3"; }
 };
 
 template <>
@@ -139,6 +161,7 @@ struct PropertyDefinition<Math::Color8RGBA>
     typedef Math::Color8RGBAInOut  OutParamType;
     typedef Math::Color8RGBAReturn ReturnType;
     static void CopyProperty(OutParamType paramOut, ParamType paramIn) { paramOut = paramIn; }
+    static const char* GetName() { return "float4"; }
 };
 
 template <>
@@ -150,6 +173,7 @@ struct PropertyDefinition<String64>
     typedef       char * OutParamType;
     typedef const char * ReturnType;
     static void CopyProperty(OutParamType paramOut, ParamType paramIn) { Pegasus::Utils::Memcpy(paramOut, paramIn, sizeof(VarType)); }
+    static const char* GetName() { return "string64"; }
 };
 //@}
 

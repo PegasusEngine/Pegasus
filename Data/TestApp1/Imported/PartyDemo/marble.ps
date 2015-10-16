@@ -1,0 +1,79 @@
+//
+// Cube.ps, by Kleber Garcia 2014
+// 
+cbuffer pixelUniformState
+{
+	float4 uCameraPos_beat;
+	float4 uCenterPos_unused;
+	float4 lightPosition;
+};
+
+#define PI 3.14159265359
+#define TWO_PI (2.0*PI)
+
+void main(
+	in float4 p : POSITION0,
+	in float3 normal : NORMAL0,
+	in float2 t : TEXTURE0,
+	out float4 color : SV_Target
+)
+{
+	
+	float beat = uCameraPos_beat.w;
+	float3 centerPos  = uCenterPos_unused.xyz;
+	float3 viewVector = normalize(uCameraPos_beat.xyz - p.xyz);
+	float3 tweak = float3(sin(256*t.x),cos(256*t.y),0.0);
+	normal = normalize(normal);
+	float3 amb = float3(0.0,0.1,0.2);
+	float3 surfaceLight = 0.4*(saturate(dot(normal.xyz,normalize(lightPosition.xyz))).xxx + amb);
+	float3 innerLight = float3(0,0,0);
+	float beatMul = uCameraPos_beat.w;
+	// INNER LIGHT BITCHES
+	float3 p0 = p.xyz;
+	#define RAYS 50
+	#define BEGIN 0
+	#define STEPS 9
+	#define END RAYS
+	float radius = length(centerPos - p0.xyz);
+	
+	//two intersections of sphere using quadratic equation
+
+	float3 relativeStartPos = p0.xyz - centerPos;
+	float C = dot(pow(relativeStartPos,2.0),float3(1.0,1.0,1.0)) - radius*radius;
+	float B = dot(2*relativeStartPos*viewVector,float3(1.0,1.0,1.0));
+	float B_2 = B * B;
+	float A = 3.0;
+	float TWO_A = A * 2.0;
+	float B2_M_4AC = B_2 - 4.0*A*C;
+	float t0 = (-B + sqrt(B2_M_4AC)) / (TWO_A);
+	float t1 = (-B - sqrt(B2_M_4AC)) / (TWO_A);
+	
+	float3 p1 = relativeStartPos + t0*viewVector;
+	float3 p2 = relativeStartPos + t1*viewVector;
+	float dist = t0 - t1;	
+	float stepLight = dist / float(STEPS);
+
+	float fresnel = pow(saturate(dot(-viewVector,normal)),2);
+
+	for (int i = END - 1; i >= BEGIN; --i)
+	{
+		float3 intersection = p0 + stepLight * viewVector * float(i);
+		float3 posInSphere = (centerPos - intersection);
+		float radInSlice = pow(length(posInSphere),3);
+		//tweak the normal depending on current radius		
+		float3 posInSphereNorm = normalize(posInSphere);
+		
+		float phi = asin(posInSphereNorm.y) / TWO_PI ; //(elevation)
+		float theta = acos(posInSphereNorm.x / cos(phi))/TWO_PI; //curve
+		//phi += 0.04*sin(1*radInSlice);
+		float3 colInSphere = abs(sin(50.0*theta.xxx+beat)*cos(50.0*phi.xxx+beat));
+		float isInsideSphere = length(posInSphere) <= radius ? 1.0 : 0.0;
+		innerLight = 0.8*innerLight + fresnel*0.17*isInsideSphere*pow(colInSphere, 2.0);
+	
+	}
+
+	float3 finalLight = pow(surfaceLight,1.0) + innerLight;
+	
+	color = float4(finalLight*pow(abs(normal*0.5 + 0.5),1.0),1.0);// float4(normal * 0.5 + 0.5,1);
+
+}

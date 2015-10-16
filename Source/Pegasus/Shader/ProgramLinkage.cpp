@@ -30,9 +30,6 @@ Pegasus::Graph::OperatorNode(nodeAllocator, nodeDataAllocator), mStageFlags(0), 
     ,mShaderTracker(nullptr)
 #endif
 {
-#if PEGASUS_ENABLE_PROXIES
-    mName[0] = '\0';
-#endif
     GRAPH_EVENT_INIT_DISPATCHER
 }
 
@@ -152,20 +149,6 @@ void Pegasus::Shader::ProgramLinkage::AddInput(Pegasus::Graph::NodeIn node)
     PG_FAILSTR("Add input call not allowed for shader linkage! The topology must not be messed up with.");
 }
 
-#if PEGASUS_ENABLE_PROXIES
-void Pegasus::Shader::ProgramLinkage::SetName(const char * name)
-{
-    int len = 0;
-    if (name)
-    {
-        int namelen = Pegasus::Utils::Strlen(name); 
-        len = namelen < Pegasus::Shader::ProgramLinkage::METADATA_NAME_LENGTH - 1 ? namelen : Pegasus::Shader::ProgramLinkage::METADATA_NAME_LENGTH - 1;
-        Pegasus::Utils::Memcpy(mName, name, len);
-    }
-    mName[len] = '\0';
-}
-#endif
-
 Pegasus::Graph::NodeReturn Pegasus::Shader::ProgramLinkage::CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 {
     return PG_NEW(nodeAllocator, -1, "ProgramLinkage", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Shader::ProgramLinkage(nodeAllocator, nodeDataAllocator);
@@ -184,15 +167,25 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ProgramLinkage::FindShaderSt
     return nullptr;
 }
 
+#if PEGASUS_ENABLE_PROXIES
+const char* Pegasus::Shader::ProgramLinkage::GetName() const
+{
+    if (GetOwnerAsset() != nullptr)
+    {
+        return GetOwnerAsset()->GetName();
+    }
+    else
+    {
+        return "";
+    }
+}
+#endif
+
 bool Pegasus::Shader::ProgramLinkage::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset)
 {
     AssetLib::Object* root = asset->Root();
     int nameId = root->FindString("name");
     int shaders = root->FindArray("shaders");
-
-#if PEGASUS_ENABLE_PROXIES
-    SetName(root->GetString(nameId));
-#endif
 
     if (shaders != -1)
     {
@@ -225,11 +218,10 @@ void Pegasus::Shader::ProgramLinkage::OnWriteAsset(Pegasus::AssetLib::AssetLib* 
 
     AssetLib::Array* shaderArr = asset->NewArray();
 
+    root->AddArray("shaders", shaderArr);
 #if PEGASUS_ENABLE_PROXIES
     root->AddString("name", GetName());
 #endif
-
-    root->AddArray("shaders", shaderArr);
     shaderArr->CommitType(AssetLib::Array::AS_TYPE_STRING);
 
     for (unsigned i = 0; i < GetNumInputs(); ++i)

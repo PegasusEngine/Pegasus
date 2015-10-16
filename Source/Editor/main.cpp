@@ -26,6 +26,7 @@
 #include "CodeEditor/SourceCodeManagerEventListener.h"
 #include "MessageControllers/AssetIOMessageController.h"
 #include "MessageControllers/SourceIOMessageController.h"
+#include "MessageControllers/WindowIOMessageController.h"
 #include "Widgets/PegasusDockWidget.h"
 
 //! Name of the organization creating the software
@@ -52,6 +53,7 @@ Q_DECLARE_METATYPE(AssetIOMessageController::Message);
 Q_DECLARE_METATYPE(AssetIOMessageController::Message::IoResponseMessage);
 Q_DECLARE_METATYPE(SourceIOMessageController::Message);
 Q_DECLARE_METATYPE(ProgramIOMessageController::Message);
+Q_DECLARE_METATYPE(WindowIOMessageController::Message);
 
 void RegisterMetaTypes()
 {
@@ -67,6 +69,7 @@ void RegisterMetaTypes()
     qRegisterMetaType<AssetIOMessageController::Message::IoResponseMessage>();
     qRegisterMetaType<SourceIOMessageController::Message>();
     qRegisterMetaType<ProgramIOMessageController::Message>();
+    qRegisterMetaType<WindowIOMessageController::Message>();
 }
 
 //----------------------------------------------------------------------------------------

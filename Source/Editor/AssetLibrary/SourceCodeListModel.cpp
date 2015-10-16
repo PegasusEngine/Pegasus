@@ -52,31 +52,34 @@ int SourceCodeListModel::rowCount (const QModelIndex& parent) const
 
 QVariant SourceCodeListModel::data(const QModelIndex &index, int role) const
 {
-    int id = index.row();
-    if (id >= 0 && id < mSourceCodeManager->GetSourceCount())
+    if (mSourceCodeManager != nullptr)
     {
-        Pegasus::Core::ISourceCodeProxy * proxy = mSourceCodeManager->GetSource(id);
-        switch (role)
+        int id = index.row();
+        if (id >= 0 && id < mSourceCodeManager->GetSourceCount())
         {
-        case Qt::DisplayRole:
-            return proxy->GetName();
-            break;
-        case Qt::DecorationRole:
+            Pegasus::Core::ISourceCodeProxy * proxy = mSourceCodeManager->GetSource(id);
+            switch (role)
             {
-                CodeUserData * userData = static_cast<CodeUserData*>(proxy->GetUserData());
+            case Qt::DisplayRole:
+                return proxy->GetName();
+                break;
+            case Qt::DecorationRole:
+                {
+                    CodeUserData * userData = static_cast<CodeUserData*>(proxy->GetUserData());
 
-                if (userData!=nullptr)
-                {
-                    ED_ASSERT(!userData->IsProgram());
-                    return userData->IsValid() ? mWorkingIcon : mWarningIcon;
+                    if (userData!=nullptr)
+                    {
+                        ED_ASSERT(!userData->IsProgram());
+                        return userData->IsValid() ? mWorkingIcon : mWarningIcon;
+                    }
+                    else
+                    {
+                        return mWorkingIcon;
+                    }
+                    
                 }
-                else
-                {
-                    return mWorkingIcon;
-                }
-                
+                break;
             }
-            break;
         }
     }
     return QVariant();

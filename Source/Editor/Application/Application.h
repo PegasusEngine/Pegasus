@@ -12,8 +12,6 @@
 #ifndef EDITOR_APPLICATION_H
 #define EDITOR_APPLICATION_H
 
-#include "Viewport/ViewportType.h"
-
 #include <QThread>
 
 #include "Pegasus/Core/Shared/LogChannel.h"
@@ -91,12 +89,6 @@ public:
     //! Get the property grid manager proxy object
     //! \return Pointer to the property grid manager proxy object
     Pegasus::PropertyGrid::IPropertyGridManagerProxy * GetPropertyGridManagerProxy() const;
-
-    //! Get the window used to render one of the viewports of the application
-    //! \param viewportType Type of the viewport widget to get (VIEWPORTTYPE_xxx constant)
-    //! \return Pointer to the window used to render the viewport of the application
-    //!         (nullptr in case of error)
-    Pegasus::Wnd::IWindowProxy * GetWindowProxy(ViewportType viewportType) const;
 
     //! Get the timeline proxy object
     //! \return Pointer to the timeline proxy object
@@ -196,11 +188,6 @@ private slots:
 
 private:
 
-    //! Convert a viewport type to a window type string
-    //! \param viewportType Type of the viewport (VIEWPORTTYPE_xxx constant)
-    //! \return String of the window type, nullptr in case of error
-    const char * GetWindowTypeFromViewportType(ViewportType viewportType) const;
-
     //! Handler for log messages coming from the application itself
     //! \warning This is a static function, so it cannot emit any signal.
     //!          We have to call a member function, \a EmitLogFromApplication,
@@ -237,9 +224,6 @@ private:
 
     //! Application proxy object created when running the application DLL
     Pegasus::App::IApplicationProxy * mApplication;
-
-    //! Windows used to render the viewports of the application
-    Pegasus::Wnd::IWindowProxy * mAppWindow[NUM_VIEWPORT_TYPES];
 
     //! Return code of the assertion handler. AssertionManager::ASSERTION_INVALID by default.
     //! The value is not the default only when leaving an assertion dialog box.

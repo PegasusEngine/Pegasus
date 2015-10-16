@@ -39,8 +39,6 @@ public:
     virtual ~WindowProxy();
 
     // Stateflow API
-    virtual void Initialize();
-    virtual void Shutdown();
     virtual void Draw();
 
     // Resize API

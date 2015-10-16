@@ -128,9 +128,13 @@ public:
 #if PEGASUS_ENABLE_PROXIES
     IAssetProxy* GetProxy() { return &mProxy; }
     const IAssetProxy* GetProxy() const { return &mProxy; }
+
+    //! \return the file name of this asset.
+    const char * GetName() const { return mName; }
 #endif
 
 private:
+
     //! Sets the runtime data
     void SetRuntimeData(RuntimeAssetObject * obj) { mRuntimeData = obj; }
 
@@ -156,6 +160,8 @@ private:
     const Pegasus::PegasusAssetTypeDesc* mTypeDesc;
 
 #if PEGASUS_ENABLE_PROXIES
+    //! Filename metadata. Name of this asset.
+    char mName[MAX_ASSET_PATH_STRING];
     AssetProxy mProxy;
 #endif
 };

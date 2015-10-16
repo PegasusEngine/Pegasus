@@ -38,9 +38,6 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Application\AppWindowManager.h">
       <Filter>Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Application\IWindowRegistry.h">
-      <Filter>Include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Application\ScriptRenderApi.h">
       <Filter>Include</Filter>
     </ClInclude>

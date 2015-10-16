@@ -12,8 +12,6 @@
 #ifndef EDITOR_TEXTUREEDITORDOCKWIDGET_H
 #define EDITOR_TEXTUREEDITORDOCKWIDGET_H
 
-#include "Viewport/ViewportType.h"
-
 #include <QDockWidget>
 #include "ui_TextureEditorDockWidget.h"
 

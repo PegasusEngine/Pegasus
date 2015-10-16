@@ -62,7 +62,7 @@ TextureEditorDockWidget::TextureEditorDockWidget(QWidget *parent)
     ui.mainHorizontalLayout->insertWidget(0, leftToolBar);
 
     // Create the viewport widget that will contain the previewer
-    mViewportWidget = new ViewportWidget(VIEWPORTTYPE_TEXTURE_EDITOR_PREVIEW, ui.mainWidget);
+    mViewportWidget = new ViewportWidget(ui.mainWidget, Pegasus::App::COMPONENT_FLAG_GRID);
     mViewportWidget->setMinimumSize(512, 512);
     mViewportWidget->setMaximumSize(512, 512);
     ui.propertiesVerticalLayout->insertWidget(0, mViewportWidget);
@@ -83,6 +83,7 @@ TextureEditorDockWidget::~TextureEditorDockWidget()
 
 void TextureEditorDockWidget::UpdateUIForAppLoaded()
 {
+    mViewportWidget->OnAppLoaded();
     //! \todo Temporary code to load the list of textures and create a tab for each
     Pegasus::Texture::ITextureManagerProxy * textureManagerProxy =
                         Editor::GetInstance().GetApplicationManager().GetApplication()->GetTextureManagerProxy();
@@ -102,7 +103,7 @@ void TextureEditorDockWidget::UpdateUIForAppLoaded()
 
 void TextureEditorDockWidget::UpdateUIForAppClosed()
 {
-
+    mViewportWidget->OnAppUnloaded();
 }
 
 //----------------------------------------------------------------------------------------

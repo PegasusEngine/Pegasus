@@ -25,7 +25,6 @@
 #include "ProgramEditor/ProgramEditorWidget.h"
 #include "Viewport/ViewportDockWidget.h"
 #include "Viewport/ViewportWidget.h"
-#include "Viewport/ViewportType.h"
 #include "Pegasus/AssetLib/Shared/IRuntimeAssetObjectProxy.h"
 
 #include <QtWidgets/QMainWindow>
@@ -34,6 +33,7 @@
 class ApplicationManager;
 class LogManager;
 class AssertionManager;
+class ViewportWidget;
 
 class QSplashScreen;
 class QUndoCommand;
@@ -90,11 +90,6 @@ public:
 
 public:
 
-    //! Get one of the viewport widgets
-    //! \param viewportType Type of the viewport widget to get
-    //! \return Pointer to the viewport widget, nullptr in case of error
-    ViewportWidget * GetViewportWidget(ViewportType viewportType) const;
-
     //! Get the main viewport dock widget
     //! \return Pointer to the main viewport dock widget
     inline ViewportDockWidget * GetMainViewportDockWidget() const { return mMainViewportDockWidget; }
@@ -141,6 +136,9 @@ public:
 
     //! Gets the list of widgets for this editor
     inline const QVector<PegasusDockWidget*>& GetWidgets() const { return mWidgets; }
+
+    //! Gets the list of viewport widgets for this editor
+    inline const QVector<ViewportWidget*>& GetViewportWidgets() const { return mViewportWidgets; }
 
     //----------------------------------------------------------------------------------------
 
@@ -396,6 +394,9 @@ private:
 
     //! Master list of widgets
     QVector<PegasusDockWidget*> mWidgets;
+
+    //! List of viewport widgets
+    QVector<ViewportWidget*> mViewportWidgets;
 
     //! Mapping that maps an asset type to a widget that can process and open it.
     QMap<int, PegasusDockWidget*> mTypeGuidWidgetMapping;

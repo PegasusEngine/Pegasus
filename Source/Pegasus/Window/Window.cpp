@@ -113,7 +113,8 @@ Window::Window(const WindowConfig& config)
     mContextCreated(false),
     mWidth(config.mWidth),
     mHeight(config.mHeight),
-    mRatio(config.mHeight > 0 ? static_cast<float>(config.mWidth) / static_cast<float>(config.mHeight) : 1.0f),
+    mRatio(config.mHeight > 0 ? static_cast<float>(config.mWidth) / static_cast<float>(config.mHeight)   : 1.0f),
+    mRatioInv(config.mWidth > 0 ? static_cast<float>(config.mHeight) / static_cast<float>(config.mWidth) : 1.0f),
     mIsChild(config.mIsChild)
 {
     // Create platform stuff
@@ -196,8 +197,6 @@ void Window::Draw()
             scp.mComponent->Render(ctx, scp.mState);
         }
 
-        Render();
-
         //Double buffer / end frame update.
         mRenderContext->Swap();
     }
@@ -212,9 +211,10 @@ void Window::Draw()
 void Window::Resize(unsigned int width, unsigned int height)
 {
     mPrivateImpl->Resize(width, height);
-    mWidth = width;
-    mHeight = height;
-    mRatio = (height > 0 ? static_cast<float>(width) / static_cast<float>(height) : 1.0f);
+    mWidth    = width;
+    mHeight   = height;
+    mRatio    = (height > 0 ? static_cast<float>(width) / static_cast<float>(height) : 1.0f);
+    mRatioInv = (width > 0 ? static_cast<float>(height) / static_cast<float>(width) : 1.0f);
 }
 
 //----------------------------------------------------------------------------------------

@@ -1,12 +1,6 @@
-//
-// Cube vs by Kleber Garcia 2014
-//
-
-
 cbuffer uniformState
 {
-    // place here all the uniforms to be used. Be sure to manually pad to a multiple of 16 bytes.
-	float4x4 uTransform;
+	float4x4 uWorld;
 	float4x4 uProj;
 };
 
@@ -17,6 +11,7 @@ struct VS_OUT
 	float2 t : TEXTURE0;
 
 };
+
 VS_OUT  main(
 	in float4 p0 : POSITION0,
 	in float2 t0 : TEXCOORD0,
@@ -25,13 +20,10 @@ VS_OUT  main(
 )
 {
 	VS_OUT vo;
-    vo.p = mul(p0, uTransform);
-	
+	vo.p =  mul(p0, uWorld);
+	vo.normal = n0;//mul(float4(n0,0.0),uWorld).xyz;
+	vo.t = t0;
 	pos = mul(vo.p,uProj);
-    vo.t = t0.xy;
-	
-	//dx11 the y axis is inverted
-	vo.normal = n0;
 	return vo;
 
 }

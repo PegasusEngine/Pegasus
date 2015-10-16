@@ -11,7 +11,6 @@
 //! \todo Have the app wizard include appexport and set up this file correctly
 
 #include "TestApp1.h"
-#include "TestApp1Window.h"
 #include "Pegasus/AppExport.h" // Needs including, for exported functions.  Only include this once!
 
 #include "TimelineBlocks/FractalCubeBlock.h"
@@ -32,6 +31,15 @@
 #include "Pegasus/PropertyGrid/Shared/IPropertyGridClassInfoProxy.h"
 
 
+namespace SomeStrangeNamespace {
+BEGIN_IMPLEMENT_ENUM(TestEnum)
+    IMPLEMENT_ENUM(TestEnum,OPTION1)
+    IMPLEMENT_ENUM(TestEnum,OPTION2)
+    IMPLEMENT_ENUM(TestEnum,OPTION3)
+    IMPLEMENT_ENUM(TestEnum,OPTION4)
+END_IMPLEMENT_ENUM()
+}
+
 //! \todo TEMPORARY, property grid testing
 
 BEGIN_IMPLEMENT_PROPERTIES2(TestClass2)
@@ -46,6 +54,7 @@ BEGIN_IMPLEMENT_PROPERTIES2(TestClass2)
     IMPLEMENT_PROPERTY2(TestClass2, ParentRGBA)
     IMPLEMENT_PROPERTY2(TestClass2, ParentStr64)
 END_IMPLEMENT_PROPERTIES2(TestClass2)
+
 
 TestClass2::TestClass2()
 :   Pegasus::PropertyGrid::PropertyGridObject()
@@ -104,42 +113,13 @@ TestClass3::~TestClass3()
 
 //----------------------------------------------------------------------------------------
 
-// Variables
-static const char* MAIN_WND_TYPE = "TestApp1Window";
-#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
-static const char* SECONDARY_WND_TYPE = "TestApp1SecondaryWindow";
-static const char* TEXTURE_EDITOR_PREVIEW_WND_TYPE = "TestApp1TextureEditorPreviewWindow";
-#endif
-
-//----------------------------------------------------------------------------------------
-
 TestApp1::TestApp1(const Pegasus::App::ApplicationConfig& config)
 :   Pegasus::App::Application(config)
 {
-    Pegasus::App::WindowRegistration reg;
-
-    // Register the main window
-    reg.mTypeTag = Pegasus::App::WINDOW_TYPE_MAIN;
-    reg.mDescription = "TestApp1 Viewport";
-    reg.mCreateFunc = TestApp1Window::Create;
-    GetWindowRegistry()->RegisterWindowClass(MAIN_WND_TYPE, reg);
-
-#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
-    // Register the editor windows
-    //! \todo That is weird to have to register those windows here.
-    //! \todo Is it normal to have to use a different type tag?
-    reg.mTypeTag = Pegasus::App::WINDOW_TYPE_SECONDARY;
-    reg.mDescription = "TestApp1 Secondary Viewport";
-    reg.mCreateFunc = TestApp1Window::Create;
-    GetWindowRegistry()->RegisterWindowClass(SECONDARY_WND_TYPE, reg);
-
-    reg.mTypeTag = Pegasus::App::WINDOW_TYPE_TEXTUREEDITORPREVIEW;
-    reg.mDescription = "TestApp1 Texture Editor Preview";
-    reg.mCreateFunc = TestApp1Window::Create;
-    GetWindowRegistry()->RegisterWindowClass(TEXTURE_EDITOR_PREVIEW_WND_TYPE, reg);
-#endif  // PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
-
-    //! \todo TEMPORARY, property grid testing
+    SomeStrangeNamespace::TestEnum t1 = SomeStrangeNamespace::OPTION1;
+    SomeStrangeNamespace::TestEnum t2 = SomeStrangeNamespace::OPTION4;
+    PG_ASSERT(t1 < t2);
+       
 
     Pegasus::PropertyGrid::PropertyGridManager & mgr = Pegasus::PropertyGrid::PropertyGridManager::GetInstance();
     const unsigned int numClasses = mgr.GetNumRegisteredClasses();
@@ -179,29 +159,19 @@ TestApp1::TestApp1(const Pegasus::App::ApplicationConfig& config)
 
 TestApp1::~TestApp1()
 {
-    // Unregister the main window
-    GetWindowRegistry()->UnregisterWindowClass(MAIN_WND_TYPE);
-#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
-    GetWindowRegistry()->UnregisterWindowClass(SECONDARY_WND_TYPE);
-    GetWindowRegistry()->UnregisterWindowClass(TEXTURE_EDITOR_PREVIEW_WND_TYPE);
-#endif
-
-}
-
-//----------------------------------------------------------------------------------------
-
-void TestApp1::RegisterTimelineBlocks()
-{
-    REGISTER_TIMELINE_BLOCK(FractalCubeBlock);
-    REGISTER_TIMELINE_BLOCK(FractalCube2Block);
-    REGISTER_TIMELINE_BLOCK(TextureTestBlock);
-    REGISTER_TIMELINE_BLOCK(GeometryTestBlock);
 }
 
 //----------------------------------------------------------------------------------------
     
 void TestApp1::InitializeApp()
 {
+    // initialize timeline blocks. required to load the timeline.
+    REGISTER_TIMELINE_BLOCK(FractalCubeBlock);
+    REGISTER_TIMELINE_BLOCK(FractalCube2Block);
+    REGISTER_TIMELINE_BLOCK(TextureTestBlock);
+    REGISTER_TIMELINE_BLOCK(GeometryTestBlock);
+
+    // load the timeline. For now gets unloaded at destruction of timeline manager.
     Pegasus::Timeline::TimelineManager * const timelineManager = GetTimelineManager();
     timelineManager->LoadTimeline("Timeline/mainTimeline.pas");
     Pegasus::Sound::LoadMusic("Imported\\Music\\Test.mp3");

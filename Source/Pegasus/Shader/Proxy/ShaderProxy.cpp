@@ -27,7 +27,7 @@ Pegasus::Shader::ShaderType Pegasus::Shader::ShaderProxy::GetStageType() const
 
 const char * Pegasus::Shader::ShaderProxy::GetName() const
 {
-    return mObject->GetFileName();
+    return mObject->GetDisplayName();
 }
 
 void Pegasus::Shader::ShaderProxy::GetSource(const char ** outSrc, int& outSize) const

@@ -18,7 +18,9 @@ namespace PropertyGrid {
 
 PropertyGridManager::PropertyGridManager()
 :   mClassInfos(&PropertyGridStaticAllocator::GetInstance()),
-    mCurrentClassInfo(nullptr)
+    mEnumInfos(&PropertyGridStaticAllocator::GetInstance()),
+    mCurrentClassInfo(nullptr),
+    mCurrentEnumInfo(nullptr)
 #if PEGASUS_ENABLE_PROXIES
 ,   mProxy()
 #endif
@@ -99,12 +101,11 @@ void PropertyGridManager::ResolveInternalClassHierarchy()
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridManager::DeclareProperty(PropertyType type, int size, const char * name, void * defaultValuePtr)
+void PropertyGridManager::DeclareProperty(PropertyType type, int size, const char * name, const char* typeName, void * defaultValuePtr)
 {
     //! \todo Test if the current class info is defined
     //! \todo Test if name is non-null?
-
-    mCurrentClassInfo->DeclareProperty(type, size, name, defaultValuePtr);
+    mCurrentClassInfo->DeclareProperty(type, size, name, typeName, defaultValuePtr);
 }
 
 //----------------------------------------------------------------------------------------
@@ -147,6 +148,43 @@ const PropertyGridClassInfo * PropertyGridManager::GetClassInfo(const char * cla
 
     // Class not found
     PG_FAILSTR("Class not found (%s) when retrieving a class info", className);
+    return nullptr;
+}
+
+//----------------------------------------------------------------------------------------
+
+void PropertyGridManager::BeginDeclareEnum(const char* enumName)
+{
+    mCurrentEnumInfo = &mEnumInfos.PushEmpty();
+    mCurrentEnumInfo->SetName(enumName);
+}
+
+//----------------------------------------------------------------------------------------
+
+void PropertyGridManager::RegisterEnum(const BaseEnumType* enumValue)
+{
+    PG_ASSERT(mCurrentEnumInfo != nullptr);
+    mCurrentEnumInfo->GetEnumerations().PushEmpty() = enumValue;
+}
+
+//----------------------------------------------------------------------------------------
+
+void PropertyGridManager::EndDeclareEnum()
+{
+}
+
+//----------------------------------------------------------------------------------------
+
+const EnumTypeInfo* PropertyGridManager::GetEnumInfo(const char* typeName) const
+{
+    for (int i = 0; i < mEnumInfos.GetSize(); ++i)
+    {
+        if (!Utils::Strcmp(typeName, mEnumInfos[i].GetName()))
+        {
+            return &mEnumInfos[i];
+        }
+    }
+
     return nullptr;
 }
 

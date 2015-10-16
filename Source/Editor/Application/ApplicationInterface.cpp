@@ -39,19 +39,6 @@ ApplicationInterface::ApplicationInterface(Application * application)
 {
     ED_ASSERTSTR(application != nullptr, "Invalid application object given to the application interface");
 
-    // Connect the viewport widget resized messages to the windows in the application worker thread.
-    // A queued connection is used since we have to cross the thread boundaries
-    //! \todo Add support for other window types
-    for (unsigned int vt = 0; vt < /*NUM_VIEWPORT_TYPES*/3; ++vt)
-    {
-        ViewportWidget * viewportWidget = Editor::GetInstance().GetViewportWidget(ViewportType(VIEWPORTTYPE_FIRST + vt));
-        if (viewportWidget != nullptr)
-        {
-            connect(viewportWidget, SIGNAL(ViewportResized(ViewportType, int, int)),
-                    this, SLOT(ResizeViewport(ViewportType, int, int)),
-                    Qt::QueuedConnection);
-        }
-    }
 
     // Connect the timeline widget messages through queued connections
     TimelineDockWidget * timelineDockWidget = Editor::GetInstance().GetTimelineDockWidget();
@@ -88,17 +75,10 @@ ApplicationInterface::ApplicationInterface(Application * application)
     CodeEditorWidget   * codeEditorWidget = Editor::GetInstance().GetCodeEditorWidget();
     ProgramEditorWidget* programEditor = Editor::GetInstance().GetProgramEditorWidget();
 
-    // Connect the texture editor messages through queued connections
-    TextureEditorDockWidget * textureEditorDockWidget = Editor::GetInstance().GetTextureEditorDockWidget();
-    if (textureEditorDockWidget != nullptr)
-    {
-        connect(textureEditorDockWidget, SIGNAL(GraphChanged()),
-                this, SLOT(RedrawTextureEditorPreview()),
-                Qt::QueuedConnection);
-    }
     mAssetIoMessageController = new AssetIOMessageController(mApplication->GetApplicationProxy());
     mSourceIoMessageController = new SourceIOMessageController(mApplication->GetApplicationProxy());
     mProgramIoMessageController = new ProgramIOMessageController(mApplication->GetApplicationProxy());
+    mWindowIoMessageController  = new WindowIOMessageController(mApplication->GetApplicationProxy());
     mSourceCodeEventListener = new SourceCodeManagerEventListener();
 
     Editor& editor = Editor::GetInstance();
@@ -116,6 +96,14 @@ ApplicationInterface::ApplicationInterface(Application * application)
         connect(mAssetIoMessageController, SIGNAL(SignalPostMessage(PegasusDockWidget*, AssetIOMessageController::Message::IoResponseMessage)),
                 widget,   SLOT(ReceiveAssetIoMessage(PegasusDockWidget*, AssetIOMessageController::Message::IoResponseMessage)), Qt::QueuedConnection);
         
+    }
+
+    const QVector<ViewportWidget*>& viewportWidgets = editor.GetViewportWidgets();
+    for (int i = 0; i < viewportWidgets.size(); ++i)
+    {
+        ViewportWidget* viewportWidget = viewportWidgets[i];
+        connect (viewportWidget, SIGNAL(OnSendWindowIoMessage(WindowIOMessageController::Message)),
+                 this, SLOT(ForwardWindowIoMessage(WindowIOMessageController::Message)), Qt::QueuedConnection);
     }
 
     //From render to ui
@@ -190,22 +178,20 @@ ApplicationInterface::ApplicationInterface(Application * application)
 
 //----------------------------------------------------------------------------------------
 
+void ApplicationInterface::DestroyAllWindows()
+{
+    mWindowIoMessageController->DestroyWindows();
+}
+
+//----------------------------------------------------------------------------------------
+
 ApplicationInterface::~ApplicationInterface()
 {
     delete mSourceIoMessageController;
     delete mAssetIoMessageController;
     delete mProgramIoMessageController;
+    delete mWindowIoMessageController;
     delete mSourceCodeEventListener;
-}
-
-//----------------------------------------------------------------------------------------
-
-void ApplicationInterface::ResizeViewport(ViewportType viewportType, int width, int height)
-{
-    Pegasus::Wnd::IWindowProxy * viewportWindow = mApplication->GetWindowProxy(viewportType);
-    ED_ASSERT(viewportWindow != nullptr);
-
-    viewportWindow->Resize(width, height);
 }
 
 //----------------------------------------------------------------------------------------
@@ -214,14 +200,10 @@ void ApplicationInterface::RedrawMainViewport()
 {
     if (Editor::GetInstance().GetMainViewportDockWidget()->isVisible())
     {
-        Pegasus::Wnd::IWindowProxy * mainViewportWindow = mApplication->GetWindowProxy(VIEWPORTTYPE_MAIN);
-        ED_ASSERT(mainViewportWindow != nullptr);
-
-        // Let the redrawing happen only when no assertion dialog is present
-        //! \todo Seems not useful anymore. Test and remove if possible
-        //if (!mAssertionBeingHandled)
+        Pegasus::Wnd::IWindowProxy* w = Editor::GetInstance().GetMainViewportDockWidget()->GetViewportWidget()->GetWindowProxy();
+        if (w != nullptr)
         {
-            mainViewportWindow->Draw();
+            w->Draw();
         }
     }
 }
@@ -232,14 +214,10 @@ void ApplicationInterface::RedrawSecondaryViewport()
 {
     if (Editor::GetInstance().GetSecondaryViewportDockWidget()->isVisible())
     {
-        Pegasus::Wnd::IWindowProxy * secondaryViewportWindow = mApplication->GetWindowProxy(VIEWPORTTYPE_SECONDARY);
-        ED_ASSERT(secondaryViewportWindow != nullptr);
-
-        // Let the redrawing happen only when no assertion dialog is present
-        //! \todo Seems not useful anymore. Test and remove if possible
-        //if (!mAssertionBeingHandled)
+        Pegasus::Wnd::IWindowProxy* w = Editor::GetInstance().GetSecondaryViewportDockWidget()->GetViewportWidget()->GetWindowProxy();
+        if (w != nullptr)
         {
-            secondaryViewportWindow->Draw();
+            w->Draw();
         }
     }
 }
@@ -259,27 +237,6 @@ void ApplicationInterface::RedrawAllViewports()
     // If the main viewport has been redrawn, skip the timeline update for the secondary window.
     // Otherwise, update the timeline.
     RedrawSecondaryViewport();
-}
-
-//----------------------------------------------------------------------------------------
-
-bool ApplicationInterface::RedrawTextureEditorPreview()
-{
-    if (Editor::GetInstance().GetTextureEditorDockWidget()->isVisible())
-    {
-        Pegasus::Wnd::IWindowProxy * textureEditorPreviewWindow = mApplication->GetWindowProxy(VIEWPORTTYPE_TEXTURE_EDITOR_PREVIEW);
-        ED_ASSERT(textureEditorPreviewWindow != nullptr);
-
-        // Let the redrawing happen only when no assertion dialog is present
-        //! \todo Seems not useful anymore. Test and remove if possible
-        //if (!mAssertionBeingHandled)
-        {
-            textureEditorPreviewWindow->Draw();
-            return true;
-        }
-    }
-
-    return false;
 }
 
 //----------------------------------------------------------------------------------------
@@ -421,4 +378,11 @@ void ApplicationInterface::ForwardSourceIoMessage(SourceIOMessageController::Mes
 void ApplicationInterface::ForwardProgramIoMessage(ProgramIOMessageController::Message msg)
 {
     mProgramIoMessageController->OnRenderThreadProcessMessage(msg);
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::ForwardWindowIoMessage(WindowIOMessageController::Message msg)
+{
+    mWindowIoMessageController->OnRenderThreadProcessMessage(msg);
 }

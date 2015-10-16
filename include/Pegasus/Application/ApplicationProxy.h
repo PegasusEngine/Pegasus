@@ -46,12 +46,6 @@ public:
     ApplicationProxy(const ApplicationConfig& config);
     virtual ~ApplicationProxy();
 
-    // Window API
-    virtual const char* GetMainWindowType() const;
-#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
-    virtual const char* GetSecondaryWindowType() const;
-    virtual const char* GetTextureEditorPreviewWindowType() const;
-#endif
     virtual Wnd::IWindowProxy* AttachWindow(const AppWindowConfig& config);
     virtual void DetachWindow(Wnd::IWindowProxy* wnd);
     virtual PropertyGrid::IPropertyGridManagerProxy * GetPropertyGridManagerProxy() { return PropertyGrid::PropertyGridManager::GetInstance().GetProxy(); }
@@ -67,8 +61,6 @@ public:
 #endif
 
     // Stateflow API
-    virtual void Initialize();
-    virtual void Shutdown();
     virtual void Load();
     virtual void Update();
     virtual void Unload();

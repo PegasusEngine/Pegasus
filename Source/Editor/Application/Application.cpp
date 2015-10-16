@@ -14,7 +14,6 @@
 #include "Application/ApplicationManager.h"
 
 #include "Viewport/ViewportWidget.h"
-#include "Pegasus/Preprocessor.h"
 #include "Pegasus/Core/Shared/OsDefs.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
@@ -43,11 +42,6 @@ Application::Application(QObject *parent)
 {
     // Make the application thread priority lower than the UI, so the UI is way more reactive
     setPriority(QThread::LowPriority);
-
-    for (unsigned int w = 0; w < NUM_VIEWPORT_TYPES; ++w)
-    {
-        mAppWindow[w] = nullptr;
-    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -76,14 +70,6 @@ void Application::run()
     if (mFileName.isEmpty())
     {
         emit(LoadingError(ERROR_INVALID_FILE_NAME));
-        return;
-    }
-
-    ViewportWidget * mainViewportWidget = Editor::GetInstance().GetViewportWidget(VIEWPORTTYPE_MAIN);
-    if (mainViewportWidget == nullptr)
-    {
-        ED_FAILSTR("Invalid main viewport to be used for an application.");
-        emit(LoadingError(ERROR_INVALID_VIEWPORT));
         return;
     }
 
@@ -126,8 +112,6 @@ void Application::run()
 
     // Set up app config
     appConfig.mModuleHandle = (Pegasus::Os::ModuleHandle) GetModuleHandle(NULL); // Use the handle of the Editor EXE
-    appConfig.mMaxWindowTypes = NUM_VIEWPORT_TYPES;
-    appConfig.mMaxNumWindows = NUM_VIEWPORT_TYPES;
     QByteArray byteArr = assetRoot.toLocal8Bit();
     appConfig.mBasePath = byteArr.data();
     // Attach the debugging features
@@ -158,31 +142,6 @@ void Application::run()
     // Not a child of this QThread, since we want it to be in the application thread.
     mApplicationInterface = new ApplicationInterface(this);
 
-    // Run the initialization process of the application
-    mApplication->Initialize();
-
-    // Set up windows
-    //! \todo Add support for other viewport types
-    //! \todo Restore support for the second viewport (buffer sharing)
-    for (unsigned int vt = 0; vt < /*NUM_VIEWPORT_TYPES*/3; ++vt)
-    {
-        const ViewportType viewportType = ViewportType(VIEWPORTTYPE_FIRST + vt);
-        ViewportWidget * viewportWidget = Editor::GetInstance().GetViewportWidget(viewportType);
-        if (viewportWidget != nullptr)
-        {
-            Pegasus::App::AppWindowConfig windowConfig;
-
-            windowConfig.mComponentFlags = Pegasus::App::COMPONENT_FLAG_WORLD | Pegasus::App::COMPONENT_FLAG_DEBUG_TEXT;
-            windowConfig.mWindowType = GetWindowTypeFromViewportType(viewportType);
-            windowConfig.mIsChild = true;
-            windowConfig.mParentWindowHandle = viewportWidget->GetWindowHandle();
-            windowConfig.mWidth = viewportWidget->GetWidth();
-            windowConfig.mHeight = viewportWidget->GetHeight();
-            mAppWindow[vt] = mApplication->AttachWindow(windowConfig);
-            mAppWindow[vt]->Initialize();
-        }
-    }
-
     // Load the assets required to render the timeline blocks
     mApplication->Load();
 
@@ -195,25 +154,16 @@ void Application::run()
     this->exec();
 
     mApplication->Unload();
-
-    // Tear down windows
-    for (unsigned int w = 0; w < NUM_VIEWPORT_TYPES; ++w)
-    {
-        if (mAppWindow[w] != nullptr)
-        {
-            mAppWindow[w]->Shutdown();
-            mApplication->DetachWindow(mAppWindow[w]);
-            mAppWindow[w] = nullptr;
-        }
-    }
+    mApplicationInterface->DestroyAllWindows();
 
     // Destroy the application
-    mApplication->Shutdown();
     DestroyPegasusAppFunc(mApplication);
 
     // Kill the interface with the application
     delete mApplicationInterface;
     mApplicationInterface = nullptr;
+
+
     
 #if PEGASUS_PLATFORM_WINDOWS
 
@@ -240,21 +190,6 @@ Pegasus::PropertyGrid::IPropertyGridManagerProxy * Application::GetPropertyGridM
     else
     {
         ED_FAILSTR("Invalid Pegasus application object when getting the property grid manager proxy");
-        return nullptr;
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
-Pegasus::Wnd::IWindowProxy * Application::GetWindowProxy(ViewportType viewportType) const
-{
-    if (viewportType < NUM_VIEWPORT_TYPES)
-    {
-        return mAppWindow[viewportType];
-    }
-    else
-    {
-        ED_FAILSTR("Invalid viewport widget type (%d), it should be < %d", viewportType, NUM_VIEWPORT_TYPES);
         return nullptr;
     }
 }
@@ -406,32 +341,6 @@ void Application::UpdateUIAndRequestFrameInPlayMode(float beat)
     if (Editor::GetInstance().GetTimelineDockWidget()->IsPlaying())
     {
         emit FrameRequestedInPlayMode();
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
-const char * Application::GetWindowTypeFromViewportType(ViewportType viewportType) const
-{
-    switch (viewportType)
-    {
-        case VIEWPORTTYPE_MAIN:
-            return mApplication->GetMainWindowType();
-
-        case VIEWPORTTYPE_SECONDARY:
-            return mApplication->GetSecondaryWindowType();
-
-        case VIEWPORTTYPE_TEXTURE_EDITOR_PREVIEW:
-            return mApplication->GetTextureEditorPreviewWindowType();
-
-        case VIEWPORTTYPE_MESH_EDITOR_PREVIEW:
-            //! \todo Add support for mesh editor
-            ED_FAILSTR("The mesh editor viewport type is not handled yet");
-            return nullptr;
-
-        default:
-            ED_FAILSTR("Invalid viewport widget type (%d), it should be < %d", viewportType, NUM_VIEWPORT_TYPES);
-            return nullptr;
     }
 }
 

@@ -28,7 +28,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TestApp1.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TestApp1Window.cpp" />
     <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TimelineBlocks\FractalCube2Block.cpp" />
     <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TimelineBlocks\FractalCubeBlock.cpp" />
     <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TimelineBlocks\GeometryTestBlock.cpp" />
@@ -36,7 +35,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TestApp1.h" />
-    <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TestApp1Window.h" />
     <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TimelineBlocks\FractalCube2Block.h" />
     <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TimelineBlocks\FractalCubeBlock.h" />
     <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TimelineBlocks\GeometryTestBlock.h" />

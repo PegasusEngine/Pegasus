@@ -81,15 +81,9 @@ public:
     //! \return Aspect ratio window (== width / height), 1.0f if height is undefined
     inline float GetRatio() const { return mRatio; }
 
-    //! Initialize this window
-    virtual void Initialize() = 0;
-
-    //! Shutdown this window
-    virtual void Shutdown() = 0;
-
-    //! Render the content of the window
-    //! \warning Do not use directly, call \a Draw() instead to guarantee the render context is bound
-    virtual void Render() = 0;
+    //! Get the inverted aspect ratio of this window
+    //! \return Aspect ratio window (== height / width), 1.0f if width is undefined
+    inline float GetRatioInv() const { return mRatioInv; }
 
     //! Bind the render context and render the window
     void Draw();
@@ -147,6 +141,7 @@ private:
     unsigned int mWidth; //!< Current width
     unsigned int mHeight; //!< Current height
     float mRatio; //!< Aspect ratio (== width / height), 1.0f if height is undefined
+    float mRatioInv; //!< Aspect ratio (== height / width), 1.0f if width is undefined
     bool mIsChild; //!< Current state, wether is child window or not
     
     struct StateComponentPair {
@@ -160,10 +155,6 @@ private:
 };
 
 //----------------------------------------------------------------------------------------
-
-//! Factory method for windows
-typedef Window* (*WindowFactoryFunc)(const WindowConfig& config, Alloc::IAllocator* alloc);
-
 
 }   // namespace Wnd
 }   // namespace Pegasus

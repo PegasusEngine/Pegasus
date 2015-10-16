@@ -48,13 +48,13 @@ public:
 
     //! Stores element into the target buffer
     void* GetElement(int index) {
-        PG_ASSERT(index < mDataSize);
+        PG_ASSERT(index >= 0 && index < mDataSize);
         return static_cast<void*>(static_cast<char*>(mData) + index * mElementByteSize); 
     }
 
     //! Gets element into the target buffer
     const void* GetElement(int index) const {
-        PG_ASSERT(index < mDataSize);
+        PG_ASSERT(index >= 0 && index < mDataSize);
         return static_cast<void*>(static_cast<char*>(mData) + index * mElementByteSize); 
     }
 

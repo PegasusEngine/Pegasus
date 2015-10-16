@@ -45,6 +45,8 @@ public:
     virtual bool ReloadFromAsset() = 0;
 
 
+
+
 };
 
 //! Use the decorator to avoid reimplementation of RuntimeAssetObjectProxy on proxy objects

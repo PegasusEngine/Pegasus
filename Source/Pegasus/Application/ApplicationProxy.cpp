@@ -44,31 +44,6 @@ ApplicationProxy::~ApplicationProxy()
 
 //----------------------------------------------------------------------------------------
 
-const char* ApplicationProxy::GetMainWindowType() const
-{
-    return mApplication->GetWindowRegistry()->GetMainWindowType();
-}
-
-//----------------------------------------------------------------------------------------
-
-#if PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
-    
-const char* ApplicationProxy::GetSecondaryWindowType() const
-{
-    return mApplication->GetWindowRegistry()->GetSecondaryWindowType();
-}
-
-//----------------------------------------------------------------------------------------
-
-const char* ApplicationProxy::GetTextureEditorPreviewWindowType() const
-{
-    return mApplication->GetWindowRegistry()->GetTextureEditorPreviewWindowType();
-}
-
-#endif  // PEGASUS_ENABLE_EDITOR_WINDOW_TYPES
-
-//----------------------------------------------------------------------------------------
-
 Wnd::IWindowProxy* ApplicationProxy::AttachWindow(const AppWindowConfig& config)
 {
     Wnd::Window* wnd = mApplication->AttachWindow(config);
@@ -80,20 +55,6 @@ Wnd::IWindowProxy* ApplicationProxy::AttachWindow(const AppWindowConfig& config)
 void ApplicationProxy::DetachWindow(Wnd::IWindowProxy* wnd)
 {
     mApplication->DetachWindow(wnd->Unwrap()); // Unwrap and destroy proxied window
-}
-
-//----------------------------------------------------------------------------------------
-
-void ApplicationProxy::Initialize()
-{
-    mApplication->Initialize();
-}
-
-//----------------------------------------------------------------------------------------
-
-void ApplicationProxy::Shutdown()
-{
-    mApplication->Shutdown();
 }
 
 //----------------------------------------------------------------------------------------

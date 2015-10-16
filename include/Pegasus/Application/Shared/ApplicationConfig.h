@@ -12,6 +12,7 @@
 #ifndef PEGASUS_SHARED_APPCONFIG_H
 #define PEGASUS_SHARED_APPCONFIG_H
 
+#include "Pegasus/Preprocessor.h"
 #include "Pegasus/Core/Shared/LogChannel.h"
 #include "Pegasus/Core/Shared/AssertReturnCode.h"
 #include "Pegasus/Core/Shared/OsDefs.h"
@@ -50,21 +51,19 @@ struct ApplicationConfig
 {
 public:
     Os::ModuleHandle mModuleHandle; //!< Handle to the module containing this application
-    unsigned int mMaxWindowTypes; //!< Maximum number of window types this app can contain
-    unsigned int mMaxNumWindows; //!< Maximum number of windows this app can contain
     const char* mBasePath; //!< The base path to load all assets from
 
     // Debug API
-#if PEGASUS_ENABLE_LOG
+
     Core::LogHandlerFunc mLoghandler; //!< Log handler for this application
-#endif
+
 #if PEGASUS_ENABLE_ASSERT
     Core::AssertionHandlerFunc mAssertHandler; //!< Assert handler for this application
 #endif
 
     //! Default constructor
     inline ApplicationConfig()
-        : mModuleHandle(0), mMaxWindowTypes(2), mMaxNumWindows(1), mBasePath(nullptr)
+        : mModuleHandle(0), mBasePath(nullptr)
 #if PEGASUS_ENABLE_LOG
           ,mLoghandler(nullptr)
 #endif
@@ -91,15 +90,13 @@ public:
     //! Flags containing the components that this window will render.
     ComponentTypeFlags mComponentFlags;
 
-    const char* mWindowType; //!< Type string for the window
     int mWidth; //!< Initial width of the window in pixels (> 0)
     int mHeight; //!< Initial height of the window in pixels (> 0)
 
     //! Default constructor
     inline AppWindowConfig()
         :   mIsChild(false),
-            mParentWindowHandle(0),
-            mWindowType(nullptr),
+            mParentWindowHandle(0),            
             mWidth(960),
             mHeight(540)
         {}

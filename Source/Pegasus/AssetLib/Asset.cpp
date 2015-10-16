@@ -15,7 +15,7 @@
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/ByteStream.h"
 #include "Pegasus/Allocator/Alloc.h"
-#
+#include "Pegasus/Utils/Memcpy.h"
 
 #include <stdio.h>
 
@@ -306,6 +306,23 @@ void Asset::SetPath(const char* path)
     PG_ASSERT(sz <= MAX_ASSET_PATH_STRING);
     mPathString[0] = '\0';
     Utils::Strcat(mPathString, path);
+#if PEGASUS_ENABLE_PROXIES
+    int fullLen = Pegasus::Utils::Strlen(mPathString);
+    const char * nameString1 = Pegasus::Utils::Strrchr(mPathString, '/');
+    const char * nameString2 = Pegasus::Utils::Strrchr(mPathString, '\\');
+    const char * nameString = nameString1 > nameString2 ? nameString1 : nameString2;
+    if (nameString != nullptr)
+    {
+        fullLen = fullLen - (nameString - mPathString + 1);
+        Pegasus::Utils::Memcpy(mName, nameString + 1, fullLen);
+        mName[fullLen] = '\0';
+    }
+    else
+    {
+        Pegasus::Utils::Memcpy(mName, path, fullLen);
+        mName[fullLen] = '\0';
+    }
+#endif
 }
 
 void Asset::DumpToStream(Utils::ByteStream& stream)

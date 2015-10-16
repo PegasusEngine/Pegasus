@@ -13,8 +13,6 @@
 #include "Editor.h"
 #include "Log.h"
 #include "Viewport/ViewportDockWidget.h"
-#include "Viewport/ViewportWidget.h"
-#include "Viewport/ViewportType.h"
 
 #include <QMessageBox>
 
@@ -30,8 +28,7 @@ ApplicationManager::ApplicationManager(Editor * editor, QObject *parent)
     ED_ASSERT(editor != nullptr);
 
     // Register the custom types used in the editor signals
-    qRegisterMetaType<Application::Error>("Application::Error");
-    qRegisterMetaType<ViewportType>("ViewportType");
+    qRegisterMetaType<Application::Error>("Application::Error");    
 }
 
 //----------------------------------------------------------------------------------------

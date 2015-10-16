@@ -32,15 +32,6 @@ public:
     //! Destructor
     virtual ~IWindowProxy() {};
 
-
-    //! Inits this window
-    //! Used for window-specific initialization
-    virtual void Initialize() = 0;
-
-    //! Shuts down and destroys this window
-    //! Used for window-specific shutdown
-    virtual void Shutdown() = 0;
-
     //! Bind the render context and render the window
     virtual void Draw() = 0;
 
@@ -48,7 +39,6 @@ public:
     //! \param width New width in pixels of the window
     //! \param height New height in pixels of the window
     virtual void Resize(unsigned int width, unsigned int height) = 0;
-
 
     //! Gets the underlying window object from this proxy
     //! Internal use only.

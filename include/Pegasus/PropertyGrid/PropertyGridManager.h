@@ -17,10 +17,12 @@
 #include "Pegasus/PropertyGrid/Proxy/PropertyGridManagerProxy.h"
 #include "Pegasus/Utils/DependsOnStatic.h"
 #include "Pegasus/Utils/Vector.h"
+#include "Pegasus/PropertyGrid/PropertyGridEnumType.h"
 
 namespace Pegasus {
 namespace PropertyGrid {
 
+class BaseEnumType;
 
 //! Manager for all classes using a property grid, with all the member information.
 //! This manager is a static singleton, and contains all the information
@@ -35,7 +37,6 @@ public:
     //! Get the unique instance of the property grid manager
     //! \return Reference to the unique instance of the property grid manager
     static PropertyGridManager & GetInstance();
-
 
     //! Register a class, and tell to the manager that all following property declarations
     //! are for that class
@@ -53,7 +54,7 @@ public:
     //! \param defaultValuePtr Pointer to the default value of the property
     //! \note Called only by the \a DECLARE_PROPERTY() macro
     //! \warning \a BeginDeclareProperties() has to be called before this function
-    void DeclareProperty(PropertyType type, int size, const char * name, void * defaultValuePtr);
+    void DeclareProperty(PropertyType type, int size, const char * name, const char* typeName, void * defaultValuePtr);
 
     //! Finish registering a class properties
     //! \param className Name of the class containing the properties
@@ -83,6 +84,31 @@ public:
     //! dependencies are linked properly. Otherwise, no parent-child relationship will exist
     void ResolveInternalClassHierarchy();
 
+    //! Called when an enumeration is started for registration.
+    //! \param enumName, the enumeration name to hold the record values.
+    void BeginDeclareEnum(const char* enumName);
+
+    //! Called when an enumeration is registered.
+    //! \param enumValue the enumeration value stored.
+    void RegisterEnum(const BaseEnumType* enumValue);
+
+    //! Ends enumeration registration
+    void EndDeclareEnum();
+    
+    //! Gets a pointer to the enumeration info.
+    //! \param name of the enumeration type
+    //! \return name of the enumeration type info.
+    const EnumTypeInfo* GetEnumInfo(const char* enumName) const;
+
+    //! Gets a pointer to the enumeration info.
+    //! \param index of the enumeration type
+    //! \return name of the enumeration type info.
+    const EnumTypeInfo* GetEnumInfo(int index) const { return &mEnumInfos[index]; }
+
+    //! Gets the enumeration records
+    //! \return the enumeration type records
+    unsigned int GetNumRegisteredEnumInfos() const { return mEnumInfos.GetSize(); }
+
 #if PEGASUS_ENABLE_PROXIES
 
     //! Get the proxy associated with the property grid manager
@@ -107,9 +133,15 @@ private:
     //! List of information structures about registered classes
     Utils::Vector<PropertyGridClassInfo> mClassInfos;
 
+    //! List of information structures of enumerations
+    Utils::Vector<EnumTypeInfo> mEnumInfos;
+
     //! Class information currently being edited
     //! \note Set by \a BeginDeclareProperties(), unset by \a EndDeclareProperties()
     PropertyGridClassInfo * mCurrentClassInfo;
+    
+    //! Current enum info to fill in when registering enums
+    EnumTypeInfo* mCurrentEnumInfo;
 
 
 #if PEGASUS_ENABLE_PROXIES

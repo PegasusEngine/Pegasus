@@ -56,6 +56,10 @@ void Pegasus::Shader::ProgramProxy::SetShader(Pegasus::Shader::IShaderProxy* sha
         Pegasus::Shader::ShaderStageRef shaderRef = static_cast<Pegasus::Shader::ShaderStage*>(shaderProxy->GetObject());
         mObject->SetShaderStage(shaderRef);
     }
+    else
+    {
+        PG_LOG('ERR_', "Shader does not have a correct state %s.", shader->GetName());
+    }
     
 }
 

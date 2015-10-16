@@ -116,11 +116,8 @@ public:
 #if PEGASUS_ENABLE_PROXIES
     //! returns the name of this program.
     //! \return name of program
-    const char * GetName() const { return mName; }
+    const char * GetName() const;
     
-    //! sets the name of this shader to be used
-    void SetName(const char * name);
-
     //! Returns the display name of this runtime object
     //! \return string representing the display name of this object
     virtual const char* GetDisplayName() const { return GetName(); }
@@ -157,12 +154,6 @@ protected:
     virtual void OnWriteAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset);
 
 private:    
-#if PEGASUS_ENABLE_PROXIES
-    //! name meta data stuff
-    static const int METADATA_NAME_LENGTH = 256;
-    char mName[METADATA_NAME_LENGTH];
-#endif
-
     PG_DISABLE_COPY(ProgramLinkage);    
     //! pointer to shader factory
     IShaderFactory * mFactory;

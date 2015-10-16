@@ -208,32 +208,6 @@ void Editor::SaveCurrentAsset()
 
 //----------------------------------------------------------------------------------------
 
-ViewportWidget * Editor::GetViewportWidget(ViewportType viewportType) const
-{
-    switch (viewportType)
-    {
-        case VIEWPORTTYPE_MAIN:
-            return mMainViewportDockWidget->GetViewportWidget();
-
-        case VIEWPORTTYPE_SECONDARY:
-            return mSecondaryViewportDockWidget->GetViewportWidget();
-
-        case VIEWPORTTYPE_TEXTURE_EDITOR_PREVIEW:
-            return mTextureEditorDockWidget->GetViewportWidget();
-
-        case VIEWPORTTYPE_MESH_EDITOR_PREVIEW:
-            //! \todo Add support for mesh editor
-            ED_FAILSTR("The mesh editor preview viewport is not implemented yet");
-            return nullptr;
-
-        default:
-            ED_FAILSTR("Invalid viewport widget type (%d), it should be < %d", viewportType, NUM_VIEWPORT_TYPES);
-            return nullptr;
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
 void Editor::CreateActions()
 {
     mSaveCurrentAsset = new QAction(tr("Save Current Asset"),this);
@@ -474,11 +448,13 @@ void Editor::CreateDockWidgets()
     // Create the dock widgets and assign their initial position
     //! \todo Use the correct icons for the docks, and add them to the menu and toolbar
 
-    mMainViewportDockWidget = new ViewportDockWidget(VIEWPORTTYPE_MAIN, this);
-    addDockWidget(Qt::TopDockWidgetArea, mMainViewportDockWidget);
+    mMainViewportDockWidget = new ViewportDockWidget(this,this,"Viewport 1", "MainViewportDockWidget");
+    RegisterWidget(mMainViewportDockWidget,Qt::TopDockWidgetArea);
+    mViewportWidgets.push_back(mMainViewportDockWidget->GetViewportWidget());
 
-    mSecondaryViewportDockWidget = new ViewportDockWidget(VIEWPORTTYPE_SECONDARY, this);
-    addDockWidget(Qt::TopDockWidgetArea, mSecondaryViewportDockWidget);
+    mSecondaryViewportDockWidget = new ViewportDockWidget(this,this,"Viewport 2", "SecondaryViewportDockWidget");
+    RegisterWidget(mSecondaryViewportDockWidget,Qt::TopDockWidgetArea);
+    mViewportWidgets.push_back(mSecondaryViewportDockWidget->GetViewportWidget());
 
     mHistoryDockWidget = new HistoryDockWidget(this);
     addDockWidget(Qt::RightDockWidgetArea, mHistoryDockWidget);
@@ -499,6 +475,7 @@ void Editor::CreateDockWidgets()
 
     mTextureEditorDockWidget = new TextureEditorDockWidget(this);
     addDockWidget(Qt::RightDockWidgetArea, mTextureEditorDockWidget);
+    mViewportWidgets.push_back(mTextureEditorDockWidget->GetViewportWidget());
 
     mPropertyGridClassesDockWidget = new PropertyGridClassesDockWidget(this, this);
     RegisterWidget(mPropertyGridClassesDockWidget, Qt::RightDockWidgetArea);

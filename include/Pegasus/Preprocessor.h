@@ -300,9 +300,6 @@
 // Flag for the use of proxy objects
 #define PEGASUS_ENABLE_PROXIES                          (PEGASUS_DEV)
 
-// Enable the extra window types, typically used by the editor
-#define PEGASUS_ENABLE_EDITOR_WINDOW_TYPES              (PEGASUS_DEV && PEGASUS_ENABLE_PROXIES)
-    
 // Enable native application file opening, closing (or c runtime implementation)
 // See the implementation of the functions living in the Pegasus::Io namespace for more details
 #define PEGASUS_USE_NATIVE_IO_CALLS                     1

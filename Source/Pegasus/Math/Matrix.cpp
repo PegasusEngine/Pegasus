@@ -609,6 +609,43 @@ void SetRotationZT(Mat44InOut mat, PFloat32 angle)
 
 //----------------------------------------------------------------------------------------
 
+void SetProjection(
+    Mat44InOut& mat,
+    const PFloat32& l,
+    const PFloat32& r,
+    const PFloat32& t,
+    const PFloat32& b,
+    const PFloat32& n,
+    const PFloat32& f
+    )
+{
+    const PFloat32 two_n = 2.0f*n;
+    const PFloat32 r_m_l = r - l;
+    const PFloat32 t_m_b = t - b;
+    const PFloat32 f_m_n = f - n;
+    mat.m11 =  (two_n)/(r_m_l); mat.m12 = 0.0f;              mat.m13 = (r+l)/(r_m_l);  mat.m14=0.0f; 
+    mat.m21 =  0.0f;            mat.m22 = (two_n)/(t_m_b);   mat.m23 = (t+b)/(t_m_b);  mat.m24=0.0f;
+    mat.m31 =  0.0f;            mat.m32 = 0.0f;              mat.m33 = -(f+n)/(f_m_n); mat.m34=-(two_n*f)/(f_m_n);
+    mat.m41 =  0.0f;            mat.m42 = 0.0f;              mat.m43 = -1.0f;          mat.m44=0.0f;
+}
+
+//----------------------------------------------------------------------------------------
+
+void SetProjection(
+    Mat44InOut& mat,
+    const PFloat32& fov,
+    const PFloat32& aspect, // y / x
+    const PFloat32& n,
+    const PFloat32& f
+    )
+{
+    const PFloat32 r = n*Tan(0.5f*fov);
+    const PFloat32 t = aspect * r;
+    SetProjection(mat,-r,r,t,-t,n,f);
+}
+
+//----------------------------------------------------------------------------------------
+
 //! \todo Implement conversion to string for the debug output
 //void WriteMatToDebugOutputs(Mat22In mat)
 //{

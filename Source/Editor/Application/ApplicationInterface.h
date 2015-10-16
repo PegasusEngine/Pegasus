@@ -13,11 +13,11 @@
 #ifndef EDITOR_APPLICATIONINTERFACE_H
 #define EDITOR_APPLICATIONINTERFACE_H
 
-#include "Viewport/ViewportType.h"
 #include "ProgramEditor/ProgramEditorWidget.h"
 #include "MessageControllers/AssetIOMessageController.h"
 #include "MessageControllers/SourceIOMessageController.h"
 #include "MessageControllers/ProgramIOMessageController.h"
+#include "MessageControllers/WindowIOMessageController.h"
 
 class Application;
 class CodeUserData;
@@ -56,6 +56,9 @@ public:
 
     //------------------------------------------------------------------------------------
 
+    //! Garbage collect all windows and kill them.
+    void DestroyAllWindows();
+
 signals:
 
     //! Emitted when a viewport rendering completes while being in play mode
@@ -72,12 +75,6 @@ signals:
     
 private slots:
 
-    //! Called when the viewport needs to be resized
-    //! \param viewportType Type of the viewport (VIEWPORTTYPE_xxx constant)
-    //! \param width New width of the viewport, in pixels
-    //! \param height New height of the viewport, in pixels
-    void ResizeViewport(ViewportType viewportType, int width, int height);
-
     //! Request the redraw of the content of the main viewport
     //! \param updateTimeline True to update the timeline, so animation happens
     //! \return True if drawing happened (when the dock widget is open)
@@ -90,12 +87,6 @@ private slots:
     //! Request the redraw of the content of the main and secondary viewports
     //! \note Nothing happens if the dock widgets are closed
     void RedrawAllViewports();
-
-    //! Request the redraw of the texture editor preview
-    //! \note Nothing happens if the dock widget is closed
-    //! \return True if drawing happened (when the dock widget is open)
-    bool RedrawTextureEditorPreview();
-
 
     //! Request a set current beat call in the application thread after the current beat has been updated on the timeline
     //! \param beat Current beat, can have fractional part
@@ -130,6 +121,9 @@ private slots:
     //! forwards a to the program io controller so its executed in the render thread
     void ForwardProgramIoMessage(ProgramIOMessageController::Message msg);
 
+    //! forwards a to the window io controller so its executed in the render thread
+    void ForwardWindowIoMessage(WindowIOMessageController::Message msg);
+
     //------------------------------------------------------------------------------------
 
 private:
@@ -151,9 +145,10 @@ private:
     bool mRedrawAllViewportsForBlockMovedEnqueued;
 
     //! Controllers, used to process messages from the application to the render thread, and messages back to the UI
-    AssetIOMessageController* mAssetIoMessageController;
-    SourceIOMessageController* mSourceIoMessageController;
+    AssetIOMessageController*       mAssetIoMessageController;
+    SourceIOMessageController*      mSourceIoMessageController;
     ProgramIOMessageController*     mProgramIoMessageController;
+    WindowIOMessageController*      mWindowIoMessageController;
     SourceCodeManagerEventListener* mSourceCodeEventListener;
     
 };

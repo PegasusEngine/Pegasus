@@ -12,6 +12,7 @@
 #if PEGASUS_INCLUDE_LAUNCHER
 #if PEGASUS_PLATFORM_WINDOWS
 #include "Pegasus/Application/Application.h"
+#include "Pegasus/Window/Window.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -208,8 +209,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     // Set up the app config
     appConfig.mModuleHandle = (Pegasus::Os::ModuleHandle) hInstance;
-    appConfig.mMaxWindowTypes = 1;
-    appConfig.mMaxNumWindows = 1;
     appConfig.mBasePath = ASSET_ROOT;
 #if PEGASUS_ENABLE_LOG
     appConfig.mLoghandler = LogHandler; // Attach the debugging features
@@ -220,14 +219,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     // Initialize the application
     application = CreateApplication(appConfig);
-    application->Initialize();
 
     // Load the assets required to render the timeline blocks
     application->Load();
 
     // Set up window config
     windowConfig.mComponentFlags = Pegasus::App::COMPONENT_FLAG_WORLD | Pegasus::App::COMPONENT_FLAG_DEBUG_TEXT;
-    windowConfig.mWindowType = application->GetWindowRegistry()->GetMainWindowType();
     windowConfig.mIsChild = false;
     windowConfig.mParentWindowHandle = 0;
     windowConfig.mWidth = 960;
@@ -235,7 +232,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     // Set up windows
     appWindow = application->AttachWindow(windowConfig);
-    appWindow->Initialize();
 
     // Run message pump until application exits
     while(!appDone)
@@ -262,14 +258,12 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     }
     retVal = curMsg.wParam;
 
-    application->Unload();
-
     // Tear down windows
-    appWindow->Shutdown();
     application->DetachWindow(appWindow);
 
+    application->Unload();
+
     // Destroy the application
-    application->Shutdown();
     DestroyApplication(application);
 
     return retVal;
