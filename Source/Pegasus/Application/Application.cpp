@@ -35,6 +35,7 @@
 #include "Pegasus/PropertyGrid/PropertyGridManager.h"
 #include "Pegasus/BlockScript/BlockScriptManager.h"
 #include "Pegasus/Mesh/MeshManager.h"
+#include "Pegasus/Render/Render.h"
 #include "Pegasus/Render/RenderContext.h"
 
 #include <stdio.h>
@@ -61,6 +62,9 @@ Application::Application(const ApplicationConfig& config)
     Core::AssertionManager::CreateInstance(coreAlloc);
     Core::AssertionManager::GetInstance()->RegisterHandler(config.mAssertHandler);
 #endif
+
+    //Initialize internal state of render library.
+    Pegasus::Render::CleanInternalState();
 
     // Set up the hierarchy of property grid class metadata gathered at compile time
     PropertyGrid::PropertyGridManager::GetInstance().ResolveInternalClassHierarchy();
@@ -192,6 +196,9 @@ Application::~Application()
 
 void Application::Load()
 {
+    //Load must be called / should be able to be called, before attaching any window.
+    //Therefore, any timeline item doing a load time render pass to anything but the default render target
+    // (since hte default render target belongs to the window) should be allowed,by creating a temporary context.
     Render::ContextConfig config;
     config.mAllocator = Memory::GetCoreAllocator();
     config.mDevice = mDevice;

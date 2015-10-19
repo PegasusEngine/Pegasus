@@ -85,6 +85,7 @@ Pegasus::Render::DXMeshGPUData* DXMeshFactory::GetOrAllocateGPUData(Pegasus::Mes
             Pegasus::Alloc::PG_MEM_PERM
         ) Pegasus::Render::DXMeshGPUData;
 
+        
         meshGpuData->mInputElementsCount = 0;
         meshGpuData->mInputLayoutTableCount = 0;
         meshGpuData->mInputLayoutTableCapacity = Pegasus::Render::DXMeshGPUData::INPUT_LAYOUT_TABLE_INCREMENT;
@@ -96,6 +97,8 @@ Pegasus::Render::DXMeshGPUData* DXMeshFactory::GetOrAllocateGPUData(Pegasus::Mes
             Pegasus::Render::DXMeshGPUData::InputLayoutEntry,
             meshGpuData->mInputLayoutTableCapacity
         );
+
+        meshGpuData->mTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
         meshGpuData->mIsIndexed = false;
         meshGpuData->mVertexCount = 0;
         meshGpuData->mIndexCount = 0;
@@ -126,6 +129,26 @@ void DXMeshFactory::GenerateMeshGPUData(Pegasus::Mesh::MeshData * nodeData)
     const Pegasus::Mesh::MeshInputLayout*   meshInputLayout = configuration.GetInputLayout();
     Pegasus::Render::DXMeshGPUData*   meshGpuData = GetOrAllocateGPUData(nodeData);
     meshGpuData->mIsIndexed = configuration.GetIsIndexed();
+    switch(configuration.GetMeshPrimitiveType())
+    {    
+    case Pegasus::Mesh::MeshConfiguration::TRIANGLE:
+        meshGpuData->mTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+        break;
+    case Pegasus::Mesh::MeshConfiguration::TRIANGLE_STRIP:    
+        meshGpuData->mTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;
+        break;
+    case Pegasus::Mesh::MeshConfiguration::LINE:
+        meshGpuData->mTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+        break;
+    case Pegasus::Mesh::MeshConfiguration::LINE_STRIP:
+        meshGpuData->mTopology = D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;
+        break;
+    case Pegasus::Mesh::MeshConfiguration::POINT:
+        meshGpuData->mTopology = D3D_PRIMITIVE_TOPOLOGY_POINTLIST;
+        break;
+    default:
+        PG_FAILSTR("Unsupported primitive topology. Defaulting to trianglelist.");    
+    }
 
     int vertexCount = nodeData->GetVertexCount();
     meshGpuData->mVertexCount = vertexCount;

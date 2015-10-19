@@ -12,6 +12,8 @@
 #ifndef PEGASUS_WND_ICOMPONENT
 #define PEGASUS_WND_ICOMPONENT
 
+#include "Pegasus/PropertyGrid/PropertyGridObject.h"
+
 //fwd declarations
 namespace Pegasus {
     namespace Core {
@@ -19,6 +21,7 @@ namespace Pegasus {
     }
 
     namespace Wnd {
+        class WindowComponentState;
         class Window;
     }
 }
@@ -46,17 +49,11 @@ public:
     //Destructor
     virtual ~IWindowComponent(){}
 
-    //! Struct representing the state of this context.
-    //! Every component that requires state per window needs to implement / create a state for itself.
-    struct IState
-    {
-    };
-
     //! Creation of a component state related to a window.
-    virtual IState* CreateState(const ComponentContext& context) = 0;
+    virtual WindowComponentState* CreateState(const ComponentContext& context) = 0;
 
     //! Destruction of a component state related to a window.
-    virtual void DestroyState(const ComponentContext& context, IState* state) = 0;
+    virtual void DestroyState(const ComponentContext& context, WindowComponentState* state) = 0;
 
     //! Load / create any rendering specific elements. Do not draw anything on the screen.
     //! \param appContext - the application context
@@ -69,10 +66,10 @@ public:
     //! Update on the window. Called once per window. Use this to update the internal state.
     //! \param context - context containing current window and app context
     //! \param state - state related to the window that is being updated.
-    virtual void WindowUpdate(const ComponentContext& context, IState* state) = 0;
+    virtual void WindowUpdate(const ComponentContext& context, WindowComponentState* state) = 0;
 
     //! Called once for every window. 
-    virtual void Render(const ComponentContext& context, IState* state) = 0;
+    virtual void Render(const ComponentContext& context, WindowComponentState* state) = 0;
 
     //! Shutdown the component. Destroy anything that was created in Load()
     //! \param appContext - the application context

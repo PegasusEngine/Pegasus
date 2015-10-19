@@ -14,6 +14,7 @@
 
 #include "Pegasus/PropertyGrid/Shared/IPropertyGridManagerProxy.h"
 #include "Pegasus/PropertyGrid/Shared/IPropertyGridClassInfoProxy.h"
+#include "Pegasus/PropertyGrid/Shared/IPropertyGridEnumTypeInfo.h"
 
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 
@@ -87,32 +88,8 @@ void PropertyGridClassesDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationP
             // Create the content of the property item
             QStringList propertyList;
             propertyList.append(record.name);
-            switch (record.type)
-            {
-                case Pegasus::PropertyGrid::PROPERTYTYPE_BOOL:
-                    propertyList.append("bool");        break;
-                case Pegasus::PropertyGrid::PROPERTYTYPE_INT:
-                    propertyList.append("int");         break;
-                case Pegasus::PropertyGrid::PROPERTYTYPE_UINT:
-                    propertyList.append("uint");        break;
-                case Pegasus::PropertyGrid::PROPERTYTYPE_FLOAT:
-                    propertyList.append("float");       break;
-                case Pegasus::PropertyGrid::PROPERTYTYPE_VEC2:
-                    propertyList.append("vec2");        break;
-                case Pegasus::PropertyGrid::PROPERTYTYPE_VEC3:
-                    propertyList.append("vec3");        break;
-                case Pegasus::PropertyGrid::PROPERTYTYPE_VEC4:
-                    propertyList.append("vec4");        break;
-                case Pegasus::PropertyGrid::PROPERTYTYPE_COLOR8RGB:
-                    propertyList.append("color8RGB");   break;
-                case Pegasus::PropertyGrid::PROPERTYTYPE_COLOR8RGBA:
-                    propertyList.append("color8RGBA");  break;
-                case Pegasus::PropertyGrid::PROPERTYTYPE_STRING64:
-                    propertyList.append("string64");    break;
-                default:
-                    ED_FAILSTR("Invalid type for a property (%u), it must be < %u", record.type, Pegasus::PropertyGrid::NUM_PROPERTY_TYPES);
-                    propertyList.append("unknown");     break;
-            }
+            propertyList.append(record.typeName);
+
             propertyList.append(QString("%1").arg(record.size));
             switch (record.type)
             {
@@ -183,6 +160,24 @@ void PropertyGridClassesDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationP
                     {
                         const char * value = reinterpret_cast<char *>(record.defaultValuePtr);
                         propertyList.append(QString("\"%1\"").arg(value));
+                    }
+                    break;
+                case Pegasus::PropertyGrid::PROPERTYTYPE_CUSTOM_ENUM:
+                    {
+                        const Pegasus::PropertyGrid::BaseEnumType* value = reinterpret_cast< const Pegasus::PropertyGrid::BaseEnumType *>(record.defaultValuePtr);
+                        const Pegasus::PropertyGrid::IEnumTypeInfoProxy* enumInfo = managerProxy->GetEnumInfo(record.typeName);
+                        if (enumInfo == nullptr)
+                        {
+                            propertyList.append(QString("???"));
+                        }
+                        else
+                        {
+                            int sz = 0;
+                            const Pegasus::PropertyGrid::BaseEnumType** outList = enumInfo->GetEnumerations(sz);
+                            const Pegasus::PropertyGrid::BaseEnumType* targetEnum = nullptr;
+                            for (int i = 0; i < sz; ++i) if (outList[i]->GetValue() == value->GetValue()) {  targetEnum = outList[i]; break; }
+                            propertyList.append(QString("\"%1\"").arg(targetEnum ==  nullptr ? "????" : targetEnum->GetName()));
+                        }
                     }
                     break;
 

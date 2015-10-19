@@ -17,9 +17,30 @@
 #include "Pegasus/Sound/Sound.h"
 #include "Pegasus/Window/Window.h"
 
+
 using namespace Pegasus;
 using namespace Pegasus::App;
 using namespace Pegasus::Wnd;
+
+namespace Pegasus {
+    namespace App {
+        BEGIN_IMPLEMENT_ENUM(WorldModeType)
+            IMPLEMENT_ENUM(WorldModeType, FILL_LIGHT)
+            IMPLEMENT_ENUM(WorldModeType, WIREFRAME)
+        END_IMPLEMENT_ENUM()
+    }
+}
+
+BEGIN_IMPLEMENT_PROPERTIES2(WorldComponentState)
+    IMPLEMENT_PROPERTY2(WorldComponentState, Mode)
+END_IMPLEMENT_PROPERTIES2(WorldComponentState)
+
+WorldComponentState::WorldComponentState()
+{
+    BEGIN_INIT_PROPERTIES(WorldComponentState)
+        INIT_PROPERTY2(Mode)
+    END_INIT_PROPERTIES();
+}
 
 WorldComponent::WorldComponent(Alloc::IAllocator* allocator)
 : mAlloc(allocator)
@@ -32,12 +53,12 @@ WorldComponent::~WorldComponent()
     Sound::Release();
 }
 
-IWindowComponent::IState* WorldComponent::CreateState(const ComponentContext& context)
+WindowComponentState* WorldComponent::CreateState(const ComponentContext& context)
 {
     return PG_NEW(mAlloc, -1, "WorldComponent", Pegasus::Alloc::PG_MEM_PERM) WorldComponentState; //no state per window.
 }
 
-void WorldComponent::DestroyState(const ComponentContext& context, IState* state)
+void WorldComponent::DestroyState(const ComponentContext& context, WindowComponentState* state)
 {
     PG_DELETE(mAlloc, state);
 }
@@ -66,12 +87,12 @@ void WorldComponent::Update(Core::IApplicationContext* appContext)
     appContext->GetTimelineManager()->Update(musicPosition);
 }
 
-void WorldComponent::WindowUpdate(const ComponentContext& context, IState* state)
+void WorldComponent::WindowUpdate(const ComponentContext& context, Wnd::WindowComponentState* state)
 {
     /* no update per window per timeline */
 }
 
-void WorldComponent::Render(const ComponentContext& context, IState* state)
+void WorldComponent::Render(const ComponentContext& context, Wnd::WindowComponentState* state)
 {
     // Set up rendering
     unsigned int viewportWidth = 0;

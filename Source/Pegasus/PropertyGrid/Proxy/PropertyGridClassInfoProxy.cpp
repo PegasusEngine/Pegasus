@@ -71,6 +71,7 @@ IPropertyGridClassInfoProxy::PropertyRecord PropertyGridClassInfoProxy::GetClass
     dstRecord.type = srcRecord.type;
     dstRecord.size = srcRecord.size;
     dstRecord.name = srcRecord.name;
+    dstRecord.typeName = srcRecord.typeName;
     dstRecord.defaultValuePtr = srcRecord.defaultValuePtr;
 
     return dstRecord;

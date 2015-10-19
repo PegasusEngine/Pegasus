@@ -13,6 +13,7 @@
 #define WORLD_COMPONENT_H
 
 #include "Pegasus/Window/IWindowComponent.h"
+#include "Pegasus/Window/WindowComponentState.h"
 #include "Pegasus/Render/Render.h"
 
 //!Forward declarations
@@ -26,25 +27,38 @@ namespace Pegasus {
     }
 }
 
+namespace Pegasus {
+    namespace App {
+        BEGIN_DECLARE_ENUM(WorldModeType)
+            DECLARE_ENUM(WorldModeType, FILL_LIGHT)
+            DECLARE_ENUM(WorldModeType, WIREFRAME)
+        END_DECLARE_ENUM()
+    }
+}
+
+REGISTER_ENUM_METATYPE(Pegasus::App::WorldModeType)
+
 
 namespace Pegasus {
 namespace App {
+
+
+//State of the world component
+class WorldComponentState : public Wnd::WindowComponentState
+{
+    BEGIN_DECLARE_PROPERTIES2(WorldComponentState, WindowComponentState)
+        DECLARE_PROPERTY2(WorldModeType, Mode, FILL_LIGHT)
+    END_DECLARE_PROPERTIES2()
+
+public:
+    WorldComponentState();
+    virtual ~WorldComponentState() {}
+};
 
 class WorldComponent : public Wnd::IWindowComponent
 {
 
 public:
-
-    struct WorldComponentState : public Wnd::IWindowComponent::IState
-    {
-        bool mIsWireframeMode;
-        bool mEnabled;
-
-        WorldComponentState() : 
-            mIsWireframeMode(false),
-            mEnabled(true)
-        {}
-    };
 
     //! Constructor
     explicit WorldComponent(Alloc::IAllocator* allocator);
@@ -53,10 +67,10 @@ public:
     virtual ~WorldComponent();
 
     //! Creation of a component state related to a window.
-    virtual Wnd::IWindowComponent::IState* CreateState(const Wnd::ComponentContext& context);
+    virtual Wnd::WindowComponentState* CreateState(const Wnd::ComponentContext& context);
 
     //! Destruction of a component state related to a window.
-    virtual void DestroyState(const Wnd::ComponentContext& context, IState* state);
+    virtual void DestroyState(const Wnd::ComponentContext& context, Wnd::WindowComponentState* state);
 
     //! Load / create any rendering specific elements. Do not draw anything on the screen.
     virtual void Load(Core::IApplicationContext* appContext);
@@ -68,10 +82,10 @@ public:
     //! Update on the window. Called once per window. Use this to update the internal state.
     //! \param context - context containing current window and app context
     //! \param state - state related to the window that is being updated.
-    virtual void WindowUpdate(const Wnd::ComponentContext& context, Wnd::IWindowComponent::IState* state);
+    virtual void WindowUpdate(const Wnd::ComponentContext& context, Wnd::WindowComponentState* state);
 
     //! Called once for every window. 
-    virtual void Render(const Wnd::ComponentContext& context, Wnd::IWindowComponent::IState* state);
+    virtual void Render(const Wnd::ComponentContext& context, Wnd::WindowComponentState* state);
 
     //! Shutdown the component. Destroy anything that was created in Load()
     virtual void Unload(Core::IApplicationContext* appContext);

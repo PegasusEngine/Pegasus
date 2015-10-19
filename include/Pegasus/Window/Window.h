@@ -32,6 +32,7 @@ namespace Pegasus {
         class IWindowImpl;
         class WindowMessageHandler;
         class WindowProxy;
+        class WindowComponentState;
     }
 }
 
@@ -145,7 +146,7 @@ private:
     bool mIsChild; //!< Current state, wether is child window or not
     
     struct StateComponentPair {
-        IWindowComponent::IState* mState;
+        WindowComponentState* mState;
         IWindowComponent* mComponent;
     };
     

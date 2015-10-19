@@ -41,6 +41,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Window\IWindowComponent.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Window\WindowComponentState.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Window\Platform\Window_Win32.cpp">
@@ -50,6 +53,9 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Window\WindowProxy.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Window\WindowComponentState.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>

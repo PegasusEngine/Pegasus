@@ -44,6 +44,7 @@ public:
         PropertyType type;          //!< Type of the property, PROPERTYTYPE_xxx constant
         int size;                   //!< Size in bytes of the property (> 0)
         const char * name;          //!< Name of the property, starting with an uppercase letter (non-empty)
+        const char * typeName;      //!< Name of the property type.
         void * defaultValuePtr;     //!< Pointer to the default value of the property
     };
 

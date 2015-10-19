@@ -17,6 +17,7 @@
 namespace Pegasus {
     namespace PropertyGrid {
         class IPropertyGridClassInfoProxy;
+        class IEnumTypeInfoProxy;
     }
 }
 
@@ -41,6 +42,21 @@ public:
     //! \param index Index of the class to get info from (< GetNumRegisteredClasses())
     //! \return Information about the registered class
     virtual const IPropertyGridClassInfoProxy * GetClassInfo(unsigned int index) const = 0;
+
+    //! Gets the enumeration records
+    //! \return the enumeration type records
+    virtual unsigned int GetNumRegisteredEnumInfos() const = 0;
+
+    //! Gets a pointer to the enumeration info.
+    //! \param index of the enumeration type
+    //! \return name of the enumeration type info.
+    virtual const IEnumTypeInfoProxy* GetEnumInfo(unsigned int index) const = 0;
+
+    //! Gets a pointer to the enumeration info.
+    //! \param name of the enumeration type
+    //! \return name of the enumeration type info.
+    virtual const IEnumTypeInfoProxy* GetEnumInfo(const char* enumName) const = 0;
+    
 };
 
 

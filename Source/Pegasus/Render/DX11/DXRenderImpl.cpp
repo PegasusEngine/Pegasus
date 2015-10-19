@@ -31,13 +31,24 @@ struct DXState
     Pegasus::Render::DXProgramGPUData * mDispatchedShader;
 
     //TODO: implement versioning of mesh
-    int dispatchedMeshVersion;
+    int mDispatchedMeshVersion;
     Pegasus::Render::DXMeshGPUData    * mDispatchedMeshGpuData;
     Pegasus::Math::ColorRGBA            mClearColorValue;
-    int mTargetsCount;
+    Pegasus::Render::PrimitiveMode      mPrimitiveMode;
+    int mTargetsCount;    
     ID3D11RenderTargetView* mDispatchedTargets[Pegasus::Render::Constants::MAX_RENDER_TARGETS];
-} gDXState = { 0, nullptr, 0, nullptr, Pegasus::Math::ColorRGBA(0.0, 0.0, 0.0, 0.0) };
 
+} gDXState;// = { 0, nullptr, 0, nullptr, Pegasus::Math::ColorRGBA(0.0, 0.0, 0.0, 0.0), Pegasus::Render::PM_AUTOMATIC };
+
+        
+       
+const D3D_PRIMITIVE_TOPOLOGY gPrimitiveModeTranslation[] = {
+     D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST
+    ,D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP
+    ,D3D_PRIMITIVE_TOPOLOGY_LINELIST
+    ,D3D_PRIMITIVE_TOPOLOGY_LINESTRIP
+    ,D3D_PRIMITIVE_TOPOLOGY_POINTLIST
+};
 // ---------------------------------------------------------------------------
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -395,10 +406,23 @@ void Pegasus::Render::SetBlendingState(const Pegasus::Render::BlendingState& ble
     context->OMSetBlendState(d3dState, NULL, 0xffffffff);
 }
 
-// ---------------------------------------------------------------------------
 
+
+///////////////////////////////////////////////////////////////////////////////
+/////////////   SETDEPTHCLEARVALUE IMPLEMENTATION      ///////////////////////
+///////////////////////////////////////////////////////////////////////////////
 void Pegasus::Render::SetDepthClearValue(float d)
 {
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+/////////////   SETPRIMITIVEMODE IMPLEMENTATION      ///////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+void Pegasus::Render::SetPrimitiveMode(Pegasus::Render::PrimitiveMode mode)
+{
+    gDXState.mPrimitiveMode = mode;
 }
 
 // ---------------------------------------------------------------------------
@@ -413,13 +437,25 @@ void Pegasus::Render::Draw()
     ID3D11Device * device;
     Pegasus::Render::GetDeviceAndContext(&device, &context);
 
-    context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    
+    
     if (gDXState.mDispatchedMeshGpuData == nullptr)
     {
         PG_LOG('ERR_', "A mesh must be set properly before calling draw!.");
         return;
     }
     Pegasus::Render::DXMeshGPUData* mesh = gDXState.mDispatchedMeshGpuData;
+
+    if (gDXState.mPrimitiveMode == PRIMITIVE_AUTOMATIC)
+    {        
+        context->IASetPrimitiveTopology(mesh->mTopology);
+    }
+    else
+    {
+        PG_ASSERT(gDXState.mPrimitiveMode >= 0 && gDXState.mPrimitiveMode < Pegasus::Render::PRIMITIVE_COUNT);
+        context->IASetPrimitiveTopology(gPrimitiveModeTranslation[gDXState.mPrimitiveMode]);
+    }
+
     if (mesh->mIsIndexed)
     {
         context->DrawIndexed(
@@ -807,7 +843,11 @@ void Pegasus::Render::CleanInternalState()
     gDXState.mTargetsCount = 0;
     gDXState.mDispatchedMeshGpuData = nullptr;
     gDXState.mDispatchedShader = nullptr;
-
+    gDXState.mDispatchedProgramVersion = 0;
+    gDXState.mDispatchedMeshVersion = 0;
+    gDXState.mDispatchedMeshGpuData = nullptr;
+    gDXState.mClearColorValue = Pegasus::Math::ColorRGBA(0.0f,0.0f,0.0f,0.0f);
+    gDXState.mPrimitiveMode = Pegasus::Render::PRIMITIVE_AUTOMATIC;
 }
 
 #else

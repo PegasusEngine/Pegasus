@@ -35,8 +35,10 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\PropertyGridObject.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\PropertyGridStaticAllocator.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\Proxy\PropertyGridClassInfoProxy.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\Proxy\PropertyGridEnumTypeInfo.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\Proxy\PropertyGridManagerProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\Shared\IPropertyGridClassInfoProxy.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\Shared\IPropertyGridEnumTypeInfo.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\Shared\IPropertyGridManagerProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\Shared\PropertyDefs.h" />
   </ItemGroup>
@@ -48,6 +50,7 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\PropertyGrid\PropertyGridObject.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\PropertyGrid\PropertyGridStaticAllocator.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\PropertyGrid\Proxy\PropertyGridClassInfoProxy.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\PropertyGrid\Proxy\PropertyGridEnumTypeInfo.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\PropertyGrid\Proxy\PropertyGridManagerProxy.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

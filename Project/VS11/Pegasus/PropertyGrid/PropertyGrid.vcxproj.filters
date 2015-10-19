@@ -56,6 +56,12 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\PropertyGridEnumType.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\Shared\IPropertyGridEnumTypeInfo.h">
+      <Filter>Include\Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\Proxy\PropertyGridEnumTypeInfo.h">
+      <Filter>Include\Proxy</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\PropertyGrid\PropertyGrid.cpp">
@@ -81,6 +87,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\PropertyGrid\PropertyGridEnumType.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\PropertyGrid\Proxy\PropertyGridEnumTypeInfo.cpp">
+      <Filter>Source\Proxy</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

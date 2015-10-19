@@ -132,6 +132,17 @@ namespace Render
         X, NX, Y, NY, Z, NZ
     };
 
+    // primitive mode
+    enum PrimitiveMode
+    {        
+        PRIMITIVE_TRIANGLE_LIST,
+        PRIMITIVE_TRIANGLE_STRIP,
+        PRIMITIVE_LINE_LIST,
+        PRIMITIVE_LINE_STRIP,
+        PRIMITIVE_POINTS,
+        PRIMITIVE_AUTOMATIC,
+        PRIMITIVE_COUNT
+    };
 
     //! Container specifying rectangle viewport in pixel coordinates
     //! Represents a rectangle
@@ -315,6 +326,9 @@ namespace Render
     //! \param the depth scalar value to clear to
     //! \note the value must be from 0 to 1
     void SetDepthClearValue(float d);
+
+    //! Sets the primitive mode to render to.
+    void SetPrimitiveMode(PrimitiveMode mode);
 
     //! Draws geometry.
     //! \note Requires: -Shader to be dispatched

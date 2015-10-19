@@ -106,6 +106,8 @@ struct DXMeshGPUData
     D3D11_BUFFER_DESC mVertexBufferDesc[MESH_MAX_STREAMS];
     CComPtr<ID3D11Buffer> mVertexBuffer[MESH_MAX_STREAMS];
 
+    //draw info
+    D3D_PRIMITIVE_TOPOLOGY mTopology;
     bool mIsIndexed;
     D3D11_BUFFER_DESC mIndexBufferDesc;
     CComPtr<ID3D11Buffer> mIndexBuffer;
@@ -121,6 +123,7 @@ struct DXMeshGPUData
 
     int mIndexCount;
     int mVertexCount;
+    
 };
 
 

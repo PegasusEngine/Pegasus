@@ -40,6 +40,97 @@ enum PropertyType
     PROPERTYTYPE_INVALID = NUM_PROPERTY_TYPES
 };
 
+class BaseEnumType
+{
+public:
+    //! Enumeration value name.
+    BaseEnumType(const char* valueName) :
+        mName(valueName), mValue(-1)
+    {
+    }
+
+    BaseEnumType() : mName("Invalid"), mValue(-1)
+    {
+    }
+
+            //! Enumeration value name.
+    BaseEnumType(const char* valueName, int value) :
+        mName(valueName), mValue(value)
+    {
+        
+    }
+
+    ~BaseEnumType()
+    {
+    }
+
+    //! Gets the name of this enumeration value.
+    //! \return value
+    inline const char* GetName() const
+    {
+        return mName;
+    }
+    
+    //! Gets the value of this enumeration
+    //! \return the value of this enum.
+    inline int GetValue() const
+    {
+        return mValue;
+    }
+
+    //! Gets the value of this enumeration
+    //! \return the value of this enum.
+    inline operator int()
+    {
+        return GetValue();
+    }
+
+    //! Operator overloading so enums behave like ints.
+    //@{             
+    inline int operator+(int val) const
+    {
+        return GetValue() + val;
+    }
+
+    inline bool operator==(int value) const
+    {
+        return GetValue() == value;
+    }
+
+    inline bool operator != (int value) const
+    {
+        return !(*this == value);
+    }
+
+    inline bool operator > (int value) const
+    {
+        return GetValue() > value;
+    }
+
+    inline bool operator >= (int value) const
+    {
+        return GetValue() >= value;
+    }
+
+    inline bool operator < (int value) const
+    {
+        return GetValue() < value;
+    }
+
+    inline bool operator <= (int value) const
+    {
+        return GetValue() <= value;
+    }
+    //@}
+
+
+protected:
+    //! Semantical name of this enumeration.
+    const char* mName;
+
+    //! Value of this enumeration
+    int  mValue;
+};
 
 }   // namespace Pegasus
 }   // namespace PropertyGrid

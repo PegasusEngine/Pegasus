@@ -93,6 +93,7 @@ void Render_SetRenderTarget2(FunCallbackContext& context);
 void Render_SetRenderTargets(FunCallbackContext& context);
 void Render_SetRenderTargets2(FunCallbackContext& context);
 void Render_SetDefaultRenderTarget(FunCallbackContext& context);
+void Render_SetPrimitiveMode(FunCallbackContext& context);
 void Render_Clear(FunCallbackContext& context);
 void Render_SetClearColorValue(FunCallbackContext& context);
 void Render_SetRasterizerState(FunCallbackContext& context);
@@ -192,6 +193,18 @@ static void RegisterRenderEnums(BlockLib* lib)
                 { "ONE_M",BlendingConfig::ONE_M },
             },
             BlendingConfig::COUNT_M
+        },
+        {
+            "PrimitiveMode",
+            {
+                { "PRIMITIVE_TRIANGLE_LIST", Pegasus::Render::PRIMITIVE_TRIANGLE_LIST },
+                { "PRIMITIVE_TRIANGLE_STRIP",Pegasus::Render::PRIMITIVE_TRIANGLE_STRIP},
+                { "PRIMITIVE_LINE_LIST",     Pegasus::Render::PRIMITIVE_LINE_LIST     },
+                { "PRIMITIVE_LINE_STRIP",    Pegasus::Render::PRIMITIVE_LINE_STRIP    },  
+                { "PRIMITIVE_POINTS",        Pegasus::Render::PRIMITIVE_POINTS        },
+                { "PRIMITIVE_AUTOMATIC",     Pegasus::Render::PRIMITIVE_AUTOMATIC     }
+            },
+            Pegasus::Render::PRIMITIVE_COUNT //this includes automatic
         }
     };
     
@@ -633,6 +646,13 @@ static void RegisterFunctions(BlockLib* lib)
             { nullptr },
             { nullptr },
             Render_SetDefaultRenderTarget
+        },
+        {
+            "SetPrimitiveMode",
+            "int",
+            { "PrimitiveMode", nullptr },
+            { "Mode",          nullptr },
+            Render_SetPrimitiveMode
         },
         {
             "Clear",
@@ -1171,6 +1191,13 @@ void Render_SetRenderTargets2(FunCallbackContext& context)
 void Render_SetDefaultRenderTarget(FunCallbackContext& context)
 {
     Pegasus::Render::DispatchDefaultRenderTarget();
+}
+
+void Render_SetPrimitiveMode(FunCallbackContext& context)
+{
+    PG_ASSERT(context.GetInputBufferSize() == sizeof(Pegasus::Render::PrimitiveMode));
+    FunParamStream stream(context);
+    Render::SetPrimitiveMode(stream.NextArgument<Pegasus::Render::PrimitiveMode>());
 }
 
 void Render_Clear(FunCallbackContext& context)
