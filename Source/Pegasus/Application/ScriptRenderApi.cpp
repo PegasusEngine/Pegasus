@@ -119,7 +119,7 @@ struct CoreClassProperties
     const char* mName;
     Utils::Vector<Pegasus::BlockScript::ObjectPropertyDesc> mPropertiesDescs;
 #if PEGASUS_ENABLE_ASSERT
-    Utils::Vector<const PropertyGrid::PropertyGridClassInfo::PropertyRecord*> mSanityCheckProperties;
+    Utils::Vector<const PropertyGrid::PropertyRecord*> mSanityCheckProperties;
 #endif
 };
 
@@ -323,7 +323,7 @@ void LinearizeProperties(
             {
                 int uniqueId = targetBaseClassProps->mPropertiesDescs.GetSize();
                 Pegasus::BlockScript::ObjectPropertyDesc& objPropDesc = targetBaseClassProps->mPropertiesDescs.PushEmpty(); 
-                const PropertyGrid::PropertyGridClassInfo::PropertyRecord& record = classInfo->GetClassProperty(propIt);
+                const PropertyGrid::PropertyRecord& record = classInfo->GetClassProperty(propIt);
     #if PEGASUS_ENABLE_ASSERT
                 targetBaseClassProps->mSanityCheckProperties.PushEmpty() = &record;
     #endif
@@ -452,7 +452,7 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
         
         for (int p = 0; p < coreClassProp.mSanityCheckProperties.GetSize(); ++p)
         {
-            const PropertyGrid::PropertyGridClassInfo::PropertyRecord* record = coreClassProp.mSanityCheckProperties[p];
+            const PropertyGrid::PropertyRecord* record = coreClassProp.mSanityCheckProperties[p];
             //linearly walk over the node property link list, find the property and check sizes
             const PropertyNode* propNode = blockScriptType->GetPropertyNode();
             while (propNode != nullptr && Utils::Strcmp(propNode->mName, record->name))

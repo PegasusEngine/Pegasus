@@ -15,6 +15,7 @@
 #include "Pegasus/PropertyGrid/Property.h"
 #include "Pegasus/PropertyGrid/PropertyGridClassInfo.h"
 #include "Pegasus/PropertyGrid/PropertyGridManager.h"
+#include "Pegasus/PropertyGrid/Proxy/PropertyGridObjectProxy.h"
 #include "Pegasus/Memory/MemoryManager.h"
 #include "Pegasus/Utils/Vector.h"
 
@@ -392,7 +393,7 @@ public:
     //! Get the record of a property for the current class only
     //! \param index Index of the property (0 <= index < GetNumClassProperties())
     //! \return Record of the property (information about the property)
-    inline const PropertyGridClassInfo::PropertyRecord & GetClassPropertyRecord(unsigned int index) const
+    inline const PropertyRecord & GetClassPropertyRecord(unsigned int index) const
         { return GetClassInfo()->GetClassProperty(index); }
 
     //! Get an accessor to a property for the current class only
@@ -408,7 +409,7 @@ public:
     //! Get the record of a property, including parent classes (but not derived classes)
     //! \param index Index of the property (0 <= index < GetNumProperties())
     //! \return Record of the property (information about the property)
-    const PropertyGridClassInfo::PropertyRecord & GetPropertyRecord(unsigned int index) const
+    const PropertyRecord & GetPropertyRecord(unsigned int index) const
         { return GetClassInfo()->GetProperty(index); }
 
     //! Get an accessor to a property, including parent classes (but not derived classes)
@@ -434,24 +435,16 @@ public:
 
     //------------------------------------------------------------------------------------
 
-    // Accessors for the proxy interface
-    //! \todo Is it necessary?
+#if PEGASUS_ENABLE_PROXIES
 
-//#if PEGASUS_ENABLE_PROXIES
+    //! Get the proxy associated with the property grid object
+    //! \return Proxy associated with the property grid object
+    //@{
+    inline PropertyGridObjectProxy * GetProxy() { return &mProxy; }
+    inline const PropertyGridObjectProxy * GetProxy() const { return &mProxy; }
+    //@}
 
-    //! Set the value of a property by name
-    //! \param name Name of the property, non-empty string
-    //! \param valuePtr Non-nullptr pointer to the value
-    //! \note The value is copied, not its pointer
-    //! \note No property is set if the parameters are invalid
-    //void SetProperty(const char * name, void * valuePtr);
-
-    //! Get the value of a property by name
-    //! \param name Name of the property, non-empty string
-    //! \return Pointer to the value, nullptr in case of error
-    //const void * GetProperty(const char * name) const;
-
-//#endif  // PEGASUS_ENABLE_PROXIES
+#endif  // PEGASUS_ENABLE_PROXIES
 
     //------------------------------------------------------------------------------------
     
@@ -489,6 +482,13 @@ private:
     //! Set to true after a property is updated,
     //! to tell the property grid object owner to regenerate its data
     bool mPropertyGridDirty;
+
+#if PEGASUS_ENABLE_PROXIES
+
+    //! Proxy associated with the property grid object
+    PropertyGridObjectProxy mProxy;
+
+#endif  // PEGASUS_ENABLE_PROXIES
 };
 
 //----------------------------------------------------------------------------------------

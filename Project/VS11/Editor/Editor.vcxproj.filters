@@ -80,6 +80,20 @@
     <Filter Include="Source\Debug\BlockScriptLibraries">
       <UniqueIdentifier>{7cfe192d-cec0-414d-8515-69cfe580b938}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\PropertyGrid">
+      <UniqueIdentifier>{ae762b29-1073-46f9-a828-982f1cb6be7b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PropertyGrid\qtpropertybrowser">
+      <UniqueIdentifier>{b9475459-f3e5-4cb8-a742-ede0ccfcb0e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\PropertyGrid\qtpropertybrowser\images">
+      <UniqueIdentifier>{e54f0e6a-72f8-4b4c-88e6-a5564633024a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+      <ParseFiles>true</ParseFiles>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Source\Editor\Editor.cpp">
@@ -454,6 +468,102 @@
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_WindowIOMessageController.cpp">
       <Filter>Generated\Dev-Debug</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtbuttonpropertybrowser.cpp">
+      <Filter>Source\PropertyGrid\qtpropertybrowser</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_qtbuttonpropertybrowser.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_qtbuttonpropertybrowser.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_qteditorfactory.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_qteditorfactory.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtgroupboxpropertybrowser.cpp">
+      <Filter>Source\PropertyGrid\qtpropertybrowser</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_qtgroupboxpropertybrowser.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_qtgroupboxpropertybrowser.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtpropertybrowser.cpp">
+      <Filter>Source\PropertyGrid\qtpropertybrowser</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_qtpropertybrowser.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_qtpropertybrowser.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtpropertybrowserutils.cpp">
+      <Filter>Source\PropertyGrid\qtpropertybrowser</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_qtpropertybrowserutils_p.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_qtpropertybrowserutils_p.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_qtpropertymanager.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_qtpropertymanager.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_qttreepropertybrowser.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_qttreepropertybrowser.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtvariantproperty.cpp">
+      <Filter>Source\PropertyGrid\qtpropertybrowser</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_qtvariantproperty.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_qtvariantproperty.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qttreepropertybrowser.cpp">
+      <Filter>Source\PropertyGrid\qtpropertybrowser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtpropertymanager.cpp">
+      <Filter>Source\PropertyGrid\qtpropertybrowser</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qteditorfactory.cpp">
+      <Filter>Source\PropertyGrid\qtpropertybrowser</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_qtpropertybrowser.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\PropertyGridWidget.cpp">
+      <Filter>Source\PropertyGrid</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_PropertyGridWidget.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_PropertyGridWidget.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\PropertyGridPropertyManagers.cpp">
+      <Filter>Source\PropertyGrid</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\PropertyGridEditorFactories.cpp">
+      <Filter>Source\PropertyGrid</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_PropertyGridPropertyManagers.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_PropertyGridPropertyManagers.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -591,6 +701,60 @@
     <CustomBuild Include="..\..\..\Source\Editor\MessageControllers\WindowIOMessageController.h">
       <Filter>Source\MessageControllers</Filter>
     </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtbuttonpropertybrowser.h">
+      <Filter>Source\PropertyGrid\qtpropertybrowser</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GeneratedFiles\Dev-Opt\qteditorfactory.moc">
+      <Filter>Generated\Dev-Opt</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GeneratedFiles\Dev-Debug\qteditorfactory.moc">
+      <Filter>Generated\Dev-Debug</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qteditorfactory.h">
+      <Filter>Source\PropertyGrid\qtpropertybrowser</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtgroupboxpropertybrowser.h">
+      <Filter>Source\PropertyGrid\qtpropertybrowser</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtpropertybrowser.h">
+      <Filter>Source\PropertyGrid\qtpropertybrowser</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtpropertybrowserutils_p.h">
+      <Filter>Source\PropertyGrid\qtpropertybrowser</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GeneratedFiles\Dev-Opt\qtpropertymanager.moc">
+      <Filter>Generated\Dev-Opt</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GeneratedFiles\Dev-Debug\qtpropertymanager.moc">
+      <Filter>Generated\Dev-Debug</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtpropertymanager.h">
+      <Filter>Source\PropertyGrid\qtpropertybrowser</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GeneratedFiles\Dev-Opt\qttreepropertybrowser.moc">
+      <Filter>Generated\Dev-Opt</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GeneratedFiles\Dev-Debug\qttreepropertybrowser.moc">
+      <Filter>Generated\Dev-Debug</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qttreepropertybrowser.h">
+      <Filter>Source\PropertyGrid\qtpropertybrowser</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtvariantproperty.h">
+      <Filter>Source\PropertyGrid\qtpropertybrowser</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtpropertybrowser.qrc">
+      <Filter>Source\PropertyGrid\qtpropertybrowser</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\PropertyGridWidget.h">
+      <Filter>Source\PropertyGrid</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\PropertyGridPropertyManagers.h">
+      <Filter>Source\PropertyGrid</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\PropertyGridEditorFactories.h">
+      <Filter>Source\PropertyGrid</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Editor.rc" />
@@ -620,5 +784,61 @@
     <ClInclude Include="..\..\..\Source\Editor\AssetLibrary\SourceCodeListModel.h">
       <Filter>Source\AssetLibrary</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-arrow.png">
+      <Filter>Source\PropertyGrid\qtpropertybrowser\images</Filter>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-busy.png">
+      <Filter>Source\PropertyGrid\qtpropertybrowser\images</Filter>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-closedhand.png">
+      <Filter>Source\PropertyGrid\qtpropertybrowser\images</Filter>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-cross.png">
+      <Filter>Source\PropertyGrid\qtpropertybrowser\images</Filter>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-forbidden.png">
+      <Filter>Source\PropertyGrid\qtpropertybrowser\images</Filter>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-hand.png">
+      <Filter>Source\PropertyGrid\qtpropertybrowser\images</Filter>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-hsplit.png">
+      <Filter>Source\PropertyGrid\qtpropertybrowser\images</Filter>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-ibeam.png">
+      <Filter>Source\PropertyGrid\qtpropertybrowser\images</Filter>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-openhand.png">
+      <Filter>Source\PropertyGrid\qtpropertybrowser\images</Filter>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-sizeall.png">
+      <Filter>Source\PropertyGrid\qtpropertybrowser\images</Filter>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-sizeb.png">
+      <Filter>Source\PropertyGrid\qtpropertybrowser\images</Filter>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-sizef.png">
+      <Filter>Source\PropertyGrid\qtpropertybrowser\images</Filter>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-sizeh.png">
+      <Filter>Source\PropertyGrid\qtpropertybrowser\images</Filter>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-sizev.png">
+      <Filter>Source\PropertyGrid\qtpropertybrowser\images</Filter>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-uparrow.png">
+      <Filter>Source\PropertyGrid\qtpropertybrowser\images</Filter>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-vsplit.png">
+      <Filter>Source\PropertyGrid\qtpropertybrowser\images</Filter>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-wait.png">
+      <Filter>Source\PropertyGrid\qtpropertybrowser\images</Filter>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-whatsthis.png">
+      <Filter>Source\PropertyGrid\qtpropertybrowser\images</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -4,7 +4,7 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	PropertyGridManagerProxy.cpp
+//! \file	PropertyGridClassInfoProxy.cpp
 //! \author	Karolyn Boulanger
 //! \date	25th May 2015
 //! \brief	Proxy object, used by the editor to interact with a property grid class info
@@ -63,18 +63,9 @@ unsigned int PropertyGridClassInfoProxy::GetNumClassProperties() const
 
 //----------------------------------------------------------------------------------------
 
-IPropertyGridClassInfoProxy::PropertyRecord PropertyGridClassInfoProxy::GetClassProperty(unsigned int index) const
+const PropertyRecord & PropertyGridClassInfoProxy::GetClassProperty(unsigned int index) const
 {
-    const PropertyGridClassInfo::PropertyRecord & srcRecord = mClassInfo->GetClassProperty(index);
-
-    IPropertyGridClassInfoProxy::PropertyRecord dstRecord;
-    dstRecord.type = srcRecord.type;
-    dstRecord.size = srcRecord.size;
-    dstRecord.name = srcRecord.name;
-    dstRecord.typeName = srcRecord.typeName;
-    dstRecord.defaultValuePtr = srcRecord.defaultValuePtr;
-
-    return dstRecord;
+    return mClassInfo->GetClassProperty(index);
 }
 
 //----------------------------------------------------------------------------------------
@@ -86,17 +77,9 @@ unsigned int PropertyGridClassInfoProxy::GetNumProperties() const
 
 //----------------------------------------------------------------------------------------
 
-IPropertyGridClassInfoProxy::PropertyRecord PropertyGridClassInfoProxy::GetProperty(unsigned int index) const
+const PropertyRecord & PropertyGridClassInfoProxy::GetProperty(unsigned int index) const
 {
-    const PropertyGridClassInfo::PropertyRecord & srcRecord = mClassInfo->GetProperty(index);
-
-    IPropertyGridClassInfoProxy::PropertyRecord dstRecord;
-    dstRecord.type = srcRecord.type;
-    dstRecord.size = srcRecord.size;
-    dstRecord.name = srcRecord.name;
-    dstRecord.defaultValuePtr = srcRecord.defaultValuePtr;
-
-    return dstRecord;
+    return mClassInfo->GetProperty(index);
 }
 
 

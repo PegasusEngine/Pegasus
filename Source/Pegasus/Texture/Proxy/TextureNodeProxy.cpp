@@ -19,7 +19,13 @@ PEGASUS_AVOID_EMPTY_FILE_WARNING
 #include "Pegasus/Texture/TextureOperator.h"
 #include "Pegasus/Texture/Texture.h"
 
-namespace Pegasus {
+/**************/
+// TEMPORARY! JUST FOR TESTING PROPERTY GRID
+//! \todo Remove once the temporary code in GetPropertyGridObjectProxy() is removed
+#include "Apps\TestApp1\TestApp1.h"
+/************/
+  
+ namespace Pegasus {
 namespace Texture {
 
 
@@ -128,6 +134,22 @@ ITextureNodeProxy * TextureNodeProxy::GetInputNode(unsigned int index)
         PG_FAILSTR("Invalid input index (%d) to access a node, it must be < %d", index, mTexture->GetNumInputs());
         return nullptr;
     }
+}
+
+//----------------------------------------------------------------------------------------
+
+PropertyGrid::IPropertyGridObjectProxy * TextureNodeProxy::GetPropertyGridObjectProxy() const
+{
+    /**************/
+    // TEMPORARY! JUST FOR TESTING PROPERTY GRID
+    //! \todo Needs to be replaced by the actual proxy of a texture, once the graph nodes have a property grid gen2
+    static TestClass3 * sClass3 = nullptr;
+    if (sClass3 == nullptr)
+    {
+        sClass3 = PG_NEW(Memory::GetGlobalAllocator(), -1, "TEST", Pegasus::Alloc::PG_MEM_PERM) TestClass3;
+    }
+    return sClass3->GetProxy();
+    /**************/
 }
 
 

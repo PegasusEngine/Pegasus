@@ -47,7 +47,7 @@ public:
 
     //! Get the type of node
     //! \return Type of the proxied node (ITextureNodeProxy::NODETYPE_xxx constant)
-    virtual ITextureNodeProxy::NodeType GetNodeType() const { return mNodeType; }
+    virtual ITextureNodeProxy::NodeType GetNodeType() const override { return mNodeType; }
 
 
     //! Get the texture generator node associated with the proxy
@@ -68,22 +68,27 @@ public:
 
     //! Get the name of the texture
     //! \return Name of the texture
-    virtual const char * GetName() const;
+    virtual const char * GetName() const override;
 
     //! Get the configuration of the texture
     //! \return Configuration proxy of the texture
-    virtual const ITextureConfigurationProxy * GetConfiguration() const;
+    virtual const ITextureConfigurationProxy * GetConfiguration() const override;
 
 
     //! Get the number of input nodes connected to the current node
     //! \return Number of input nodes (from 0 to Node::MAX_NUM_INPUTS - 1)
-    virtual unsigned int GetNumInputs() const;
+    virtual unsigned int GetNumInputs() const override;
 
     //! Get one of the input nodes
     //! \param index Index of the input node (< GetNumInputs())
     //! \return Node proxy, nullptr in case of error
-    virtual ITextureNodeProxy * GetInputNode(unsigned int index);
+    virtual ITextureNodeProxy * GetInputNode(unsigned int index) override;
 
+
+    //! Get the proxy of the texture's property grid
+    //! \return Proxy of the texture's property grid
+    virtual PropertyGrid::IPropertyGridObjectProxy * GetPropertyGridObjectProxy() const override;
+ 
     //------------------------------------------------------------------------------------
     
 private:

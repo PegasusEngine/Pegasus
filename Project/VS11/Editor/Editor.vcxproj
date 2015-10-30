@@ -143,6 +143,17 @@
     <ClCompile Include="..\..\..\Source\Editor\MessageControllers\WindowIOMessageController.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\ProgramEditor\ProgramEditorUndoCommands.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\ProgramEditor\ProgramEditorWidget.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\PropertyGridEditorFactories.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\PropertyGridPropertyManagers.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\PropertyGridWidget.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtbuttonpropertybrowser.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qteditorfactory.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtgroupboxpropertybrowser.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtpropertybrowser.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtpropertybrowserutils.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtpropertymanager.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qttreepropertybrowser.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtvariantproperty.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Settings\Settings.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Settings\SettingsAppearancePage.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Settings\SettingsCodeEditorPage.cpp" />
@@ -231,6 +242,44 @@
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_ProgramIOMessageController.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_PropertyGridPropertyManagers.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_PropertyGridWidget.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_qtbuttonpropertybrowser.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_qteditorfactory.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_qtgroupboxpropertybrowser.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_qtpropertybrowser.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_qtpropertybrowserutils_p.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_qtpropertymanager.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_qttreepropertybrowser.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_qtvariantproperty.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_Settings.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
@@ -346,6 +395,44 @@
     <ClCompile Include="GeneratedFiles\Dev-Opt\moc_ProgramIOMessageController.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_PropertyGridPropertyManagers.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_PropertyGridWidget.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_qtbuttonpropertybrowser.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_qteditorfactory.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_qtgroupboxpropertybrowser.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_qtpropertybrowser.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_qtpropertybrowserutils_p.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_qtpropertymanager.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_qttreepropertybrowser.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_qtvariantproperty.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="GeneratedFiles\Dev-Opt\moc_Settings.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -390,6 +477,12 @@
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Dev-Opt\moc_WindowIOMessageController.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_qtpropertybrowser.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
+      </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\qrc_Resources.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
@@ -587,6 +680,120 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">Moc%27ing WindowIOMessageController.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_DEBUG "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtbuttonpropertybrowser.h">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">Moc%27ing qtbuttonpropertybrowser.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_OPT "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">Moc%27ing qtbuttonpropertybrowser.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_DEBUG "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qteditorfactory.h">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">Moc%27ing qteditorfactory.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_OPT "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">Moc%27ing qteditorfactory.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_DEBUG "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtgroupboxpropertybrowser.h">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">Moc%27ing qtgroupboxpropertybrowser.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_OPT "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">Moc%27ing qtgroupboxpropertybrowser.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_DEBUG "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtpropertybrowser.h">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">Moc%27ing qtpropertybrowser.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_OPT "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">Moc%27ing qtpropertybrowser.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_DEBUG "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtpropertybrowserutils_p.h">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">Moc%27ing qtpropertybrowserutils_p.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_OPT "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">Moc%27ing qtpropertybrowserutils_p.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_DEBUG "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtpropertymanager.h">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">Moc%27ing qtpropertymanager.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_OPT "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">Moc%27ing qtpropertymanager.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_DEBUG "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qttreepropertybrowser.h">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">Moc%27ing qttreepropertybrowser.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_OPT "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">Moc%27ing qttreepropertybrowser.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_DEBUG "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtvariantproperty.h">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">Moc%27ing qtvariantproperty.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_OPT "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">Moc%27ing qtvariantproperty.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_DEBUG "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\PropertyGridWidget.h">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">Moc%27ing PropertyGridWidget.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_OPT "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">Moc%27ing PropertyGridWidget.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_DEBUG "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\PropertyGridPropertyManagers.h">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">Moc%27ing PropertyGridPropertyManagers.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_OPT "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">Moc%27ing PropertyGridPropertyManagers.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_DEBUG "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\PropertyGridEditorFactories.h">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">
+      </Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">
+      </Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">
+      </Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
+      </Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
+      </Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
+      </Command>
     </CustomBuild>
     <ClInclude Include="GeneratedFiles\ui_AssetLibraryWidget.h" />
     <ClInclude Include="GeneratedFiles\ui_TextureEditorDockWidget.h" />
@@ -882,6 +1089,145 @@
       <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">Uic%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">.\GeneratedFiles\ui_%(Filename).h;%(Outputs)</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">"$(QTDIR)\bin\uic.exe" -o ".\GeneratedFiles\ui_%(Filename).h" "%(FullPath)"</Command>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-arrow.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-busy.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-closedhand.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-cross.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-forbidden.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-hand.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-hsplit.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-ibeam.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-openhand.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-sizeall.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-sizeb.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-sizef.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-sizeh.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-sizev.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-uparrow.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-vsplit.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-wait.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-whatsthis.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="GeneratedFiles\Dev-Opt\qteditorfactory.moc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">$(QTDIR)\bin\moc.exe;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qteditorfactory.cpp</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">Moc%27ing qteditorfactory.cpp...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">.\GeneratedFiles\$(ConfigurationName)\%(Filename).moc</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">"$(QTDIR)\bin\moc.exe"  "..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qteditorfactory.cpp" -o ".\GeneratedFiles\$(ConfigurationName)\%(Filename).moc"  -DUNICODE -DWIN32 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_OPT "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="GeneratedFiles\Dev-Debug\qteditorfactory.moc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">$(QTDIR)\bin\moc.exe;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qteditorfactory.cpp</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">Moc%27ing qteditorfactory.cpp...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\%(Filename).moc</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qteditorfactory.cpp" -o ".\GeneratedFiles\$(ConfigurationName)\%(Filename).moc"  -DUNICODE -DWIN32 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_DEBUG "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="GeneratedFiles\Dev-Opt\qtpropertymanager.moc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">$(QTDIR)\bin\moc.exe;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtpropertymanager.cpp</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">Moc%27ing qtpropertymanager.cpp...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">.\GeneratedFiles\$(ConfigurationName)\%(Filename).moc</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">"$(QTDIR)\bin\moc.exe"  "..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtpropertymanager.cpp" -o ".\GeneratedFiles\$(ConfigurationName)\%(Filename).moc"  -DUNICODE -DWIN32 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_OPT "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="GeneratedFiles\Dev-Debug\qtpropertymanager.moc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">$(QTDIR)\bin\moc.exe;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtpropertymanager.cpp</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">Moc%27ing qtpropertymanager.cpp...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\%(Filename).moc</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtpropertymanager.cpp" -o ".\GeneratedFiles\$(ConfigurationName)\%(Filename).moc"  -DUNICODE -DWIN32 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_DEBUG "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="GeneratedFiles\Dev-Opt\qttreepropertybrowser.moc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">$(QTDIR)\bin\moc.exe;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qttreepropertybrowser.cpp</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">Moc%27ing qttreepropertybrowser.cpp...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">.\GeneratedFiles\$(ConfigurationName)\%(Filename).moc</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">"$(QTDIR)\bin\moc.exe"  "..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qttreepropertybrowser.cpp" -o ".\GeneratedFiles\$(ConfigurationName)\%(Filename).moc"  -DUNICODE -DWIN32 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_OPT "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="GeneratedFiles\Dev-Debug\qttreepropertybrowser.moc">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qttreepropertybrowser.cpp" -o ".\GeneratedFiles\$(ConfigurationName)\%(Filename).moc"  -DUNICODE -DWIN32 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_DEBUG "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">Moc%27ing qttreepropertybrowser.cpp...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\%(Filename).moc</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">$(QTDIR)\bin\moc.exe;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qttreepropertybrowser.cpp</AdditionalInputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\qtpropertybrowser.qrc">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">%(FullPath);..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-arrow.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-busy.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-closedhand.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-cross.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-forbidden.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-hand.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-hsplit.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-ibeam.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-openhand.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-sizeall.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-sizeb.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-sizef.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-sizeh.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-sizev.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-uparrow.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-vsplit.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-wait.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-whatsthis.png;%(AdditionalInputs)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">Rcc%27ing %(Identity)...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">.\GeneratedFiles\qrc_%(Filename).cpp;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">"$(QTDIR)\bin\rcc.exe" -name "%(Filename)" -no-compress "%(FullPath)" -o .\GeneratedFiles\qrc_%(Filename).cpp</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">%(FullPath);..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-arrow.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-busy.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-closedhand.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-cross.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-forbidden.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-hand.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-hsplit.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-ibeam.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-openhand.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-sizeall.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-sizeb.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-sizef.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-sizeh.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-sizev.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-uparrow.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-vsplit.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-wait.png;..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-whatsthis.png;%(AdditionalInputs)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">Rcc%27ing %(Identity)...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">.\GeneratedFiles\qrc_%(Filename).cpp;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">"$(QTDIR)\bin\rcc.exe" -name "%(Filename)" -no-compress "%(FullPath)" -o .\GeneratedFiles\qrc_%(Filename).cpp</Command>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

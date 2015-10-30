@@ -57,6 +57,9 @@ PropertyGridObject::PropertyGridObject()
 #if PEGASUS_ENABLE_PROPGRID_SAFE_ACCESSOR
 ,   mPropertySizes(Memory::GetPropertyPointerAllocator())
 #endif
+#if PEGASUS_ENABLE_PROXIES
+,   mProxy(this)
+#endif
 {
     BEGIN_INIT_PROPERTIES(PropertyGridObject)
         INIT_PROPERTY2(Name)

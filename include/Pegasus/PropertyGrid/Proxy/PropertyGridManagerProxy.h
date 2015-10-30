@@ -34,26 +34,26 @@ public:
     
     //! Get the number of registered classes that contain a property grid
     //! \return Number of registered classes
-    virtual unsigned int GetNumRegisteredClasses() const;
+    virtual unsigned int GetNumRegisteredClasses() const override;
 
     //! Get the proxy of one of the registered classes
     //! \param index Index of the class to get info from (< GetNumRegisteredClasses())
     //! \return Information about the registered class
-    virtual const IPropertyGridClassInfoProxy * GetClassInfo(unsigned int index) const;
+    virtual const IPropertyGridClassInfoProxy * GetClassInfo(unsigned int index) const override;
 
     //! Gets the enumeration records
-    //! \return the enumeration type records
-    virtual unsigned int GetNumRegisteredEnumInfos() const;
+    //! \return Enumeration type records
+    virtual unsigned int GetNumRegisteredEnumInfos() const override;
 
-    //! Gets a pointer to the enumeration info.
-    //! \param index of the enumeration type
-    //! \return name of the enumeration type info.
-    virtual const IEnumTypeInfoProxy* GetEnumInfo(unsigned int index) const;
+    //! Gets a pointer to the enumeration info
+    //! \param index Index of the enumeration type
+    //! \return Name of the enumeration type info
+    virtual const IEnumTypeInfoProxy* GetEnumInfo(unsigned int index) const override;
 
-    //! Gets a pointer to the enumeration info.
-    //! \param name of the enumeration type
-    //! \return name of the enumeration type info.
-    virtual const IEnumTypeInfoProxy* GetEnumInfo(const char* enumName) const;
+    //! Gets a pointer to the enumeration info
+    //! \param enumName Name of the enumeration type
+    //! \return Name of the enumeration type info
+    virtual const IEnumTypeInfoProxy* GetEnumInfo(const char* enumName) const override;
 };
 
 

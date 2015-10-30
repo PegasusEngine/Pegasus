@@ -46,18 +46,6 @@ public:
 
     //----------------------------------------------------------------------------------------
     
-    //! Record for one property, containing information such as the name
-    struct PropertyRecord
-    {
-        PropertyType type;          //!< Type of the property, PROPERTYTYPE_xxx constant
-        const char*  typeName;      //!< The type name of this property. Properties can have alieases.
-        int size;                   //!< Size in bytes of the property (> 0)
-        const char * name;          //!< Name of the property, starting with an uppercase letter (non-empty)
-                                    //!< (has to be a pointer to a global constant, does not store the string)
-        void * defaultValuePtr;     //!< Pointer to the default value of the property
-    };
-
-
     //! Get the number of registered properties for the current class only
     //! \return Number of successfully registered properties for the current class only
     inline unsigned int GetNumClassProperties() const { return mClassPropertyRecords.GetSize(); }
@@ -113,7 +101,7 @@ private:
     //! \param type Type of the property, PROPERTYTYPE_xxx constant
     //! \param size Size in bytes of the property (> 0)
     //! \param name Name of the property, starting with an uppercase letter (non-empty)
-    //! \param typeName name of the type of this property
+    //! \param typeName Name of the type of this property
     //! \param defaultValuePtr Pointer to the default value of the property
     //! \note Called by \a IMPLEMENT_PROPERTY() through the templated \a RegisterProperty() function
     void DeclareProperty(PropertyType type, int size, const char * name, const char* typeName, void * defaultValuePtr);

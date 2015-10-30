@@ -83,7 +83,7 @@ void PropertyGridClassesDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationP
         const unsigned int numClassProperties = classInfoProxy->GetNumClassProperties();
         for (unsigned int cp = 0; cp < numClassProperties; ++cp)
         {
-            const Pegasus::PropertyGrid::IPropertyGridClassInfoProxy::PropertyRecord record = classInfoProxy->GetClassProperty(cp);
+            const Pegasus::PropertyGrid::PropertyRecord & record = classInfoProxy->GetClassProperty(cp);
             
             // Create the content of the property item
             QStringList propertyList;

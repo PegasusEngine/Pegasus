@@ -132,6 +132,18 @@ protected:
     int  mValue;
 };
 
+//! Structure holding the description of a property
+struct PropertyRecord
+{
+    PropertyType type;          //!< Type of the property, PROPERTYTYPE_xxx constant
+    int size;                   //!< Size in bytes of the property (> 0)
+    const char * name;          //!< Name of the property, starting with an uppercase letter (non-empty)
+                                //!< (has to be a pointer to a global constant, does not store the string)
+	const char * typeName;		//!< Name of the type of the property
+    void * defaultValuePtr;     //!< Pointer to the default value of the property
+};
+
+
 }   // namespace Pegasus
 }   // namespace PropertyGrid
 

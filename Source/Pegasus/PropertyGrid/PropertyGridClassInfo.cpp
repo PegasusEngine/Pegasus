@@ -30,7 +30,7 @@ PropertyGridClassInfo::PropertyGridClassInfo()
 
 //----------------------------------------------------------------------------------------
 
-const PropertyGridClassInfo::PropertyRecord & PropertyGridClassInfo::GetClassProperty(unsigned int index) const
+const PropertyRecord & PropertyGridClassInfo::GetClassProperty(unsigned int index) const
 {
     //! \todo Test for the validity of the index
 
@@ -39,7 +39,7 @@ const PropertyGridClassInfo::PropertyRecord & PropertyGridClassInfo::GetClassPro
 
 //----------------------------------------------------------------------------------------
 
-const PropertyGridClassInfo::PropertyRecord & PropertyGridClassInfo::GetProperty(unsigned int index) const
+const PropertyRecord & PropertyGridClassInfo::GetProperty(unsigned int index) const
 {
     //! \todo Test for the validity of the index
 
@@ -91,16 +91,16 @@ void PropertyGridClassInfo::DeclareProperty(PropertyType type, int size, const c
 {
     if (   (type < NUM_PROPERTY_TYPES)
         && (size > 0)
-        && (typeName != nullptr)
-        && (typeName[0] != '\0')
         && (name != nullptr)
-        && (name[0] != '\0') )
+        && (name[0] != '\0')
+        && (typeName != nullptr)
+        && (typeName[0] != '\0') )
     {
         PropertyRecord & record = mClassPropertyRecords.PushEmpty();
-        record.typeName = typeName;
         record.type = type;
         record.size = size;
-        record.name = name;     // Copy the pointer, not the string, since the input pointer is considered as constant
+        record.name = name;     		// Copy the pointer, not the string, since the input pointer is considered as constant
+        record.typeName = typeName;
         record.defaultValuePtr = defaultValuePtr;
     }
     else

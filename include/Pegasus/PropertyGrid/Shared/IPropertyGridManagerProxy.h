@@ -31,7 +31,7 @@ class IPropertyGridManagerProxy
 public:
 
     //! Destructor
-    virtual ~IPropertyGridManagerProxy() {};
+    virtual ~IPropertyGridManagerProxy() { }
 
     
     //! Get the number of registered classes that contain a property grid
@@ -43,18 +43,18 @@ public:
     //! \return Information about the registered class
     virtual const IPropertyGridClassInfoProxy * GetClassInfo(unsigned int index) const = 0;
 
-    //! Gets the enumeration records
-    //! \return the enumeration type records
+    //! Get the enumeration records
+    //! \return Enumeration type records
     virtual unsigned int GetNumRegisteredEnumInfos() const = 0;
 
-    //! Gets a pointer to the enumeration info.
-    //! \param index of the enumeration type
-    //! \return name of the enumeration type info.
+    //! Get a pointer to the enumeration info
+    //! \param index Index of the enumeration type
+    //! \return Name of the enumeration type info
     virtual const IEnumTypeInfoProxy* GetEnumInfo(unsigned int index) const = 0;
 
-    //! Gets a pointer to the enumeration info.
-    //! \param name of the enumeration type
-    //! \return name of the enumeration type info.
+    //! Get a pointer to the enumeration info
+    //! \param enumName Name of the enumeration type
+    //! \return Name of the enumeration type info
     virtual const IEnumTypeInfoProxy* GetEnumInfo(const char* enumName) const = 0;
     
 };

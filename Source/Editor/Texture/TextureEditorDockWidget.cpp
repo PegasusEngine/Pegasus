@@ -71,39 +71,16 @@ TextureEditorDockWidget::TextureEditorDockWidget(QWidget *parent)
     //! \todo Temporary. Needs to emit the signal when the graph actually changes
     connect(ui.refreshButton, SIGNAL(clicked()),
             this, SIGNAL(GraphChanged()));
+
+    // Connect the message that signals that the tab selection has changed
+    connect(ui.mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow *)),
+            this, SLOT(TabSelected(QMdiSubWindow *)));
 }
 
 //----------------------------------------------------------------------------------------
 
 TextureEditorDockWidget::~TextureEditorDockWidget()
 {
-}
-
-//----------------------------------------------------------------------------------------
-
-void TextureEditorDockWidget::UpdateUIForAppLoaded()
-{
-    mViewportWidget->OnAppLoaded();
-    //! \todo Temporary code to load the list of textures and create a tab for each
-    Pegasus::Texture::ITextureManagerProxy * textureManagerProxy =
-                        Editor::GetInstance().GetApplicationManager().GetApplication()->GetTextureManagerProxy();
-    const unsigned int numTextures = textureManagerProxy->GetNumTextures();
-    for (unsigned int t = 0; t < numTextures; ++t)
-    {
-        Pegasus::Texture::ITextureNodeProxy * textureProxy = textureManagerProxy->GetTexture(t);
-        ED_ASSERTSTR(textureProxy->GetNodeType() == Pegasus::Texture::ITextureNodeProxy::NODETYPE_OUTPUT, "Invalid node type for a texture node proxy");
-        OpenTabForTexture(textureProxy);
-    }
-
-    //! \todo Temporary, use proper Qt signals to make it happen
-    //UpdateTextureProperties();
-}
-
-//----------------------------------------------------------------------------------------
-
-void TextureEditorDockWidget::UpdateUIForAppClosed()
-{
-    mViewportWidget->OnAppUnloaded();
 }
 
 //----------------------------------------------------------------------------------------
@@ -132,10 +109,56 @@ void TextureEditorDockWidget::OpenTabForTexture(Pegasus::Texture::ITextureNodePr
     subWindow->setWindowTitle(textureName);
 
     // Show the new tab
-    subWindow->show();
+    //subWindow->show();
 
     //! \todo **** Temporary, to test UpdateTextureProperties
     UpdateTextureProperties(subWindow);
+}
+
+//----------------------------------------------------------------------------------------
+
+void TextureEditorDockWidget::UpdateUIForAppLoaded()
+{
+    mViewportWidget->OnAppLoaded();
+
+    //! \todo Temporary code to load the list of textures and create a tab for each
+    Pegasus::Texture::ITextureManagerProxy * textureManagerProxy =
+                        Editor::GetInstance().GetApplicationManager().GetApplication()->GetTextureManagerProxy();
+    const unsigned int numTextures = textureManagerProxy->GetNumTextures();
+    for (unsigned int t = 0; t < numTextures; ++t)
+    {
+        Pegasus::Texture::ITextureNodeProxy * textureProxy = textureManagerProxy->GetTexture(t);
+        ED_ASSERTSTR(textureProxy->GetNodeType() == Pegasus::Texture::ITextureNodeProxy::NODETYPE_OUTPUT, "Invalid node type for a texture node proxy");
+        OpenTabForTexture(textureProxy);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TextureEditorDockWidget::UpdateUIForAppClosed()
+{
+    mViewportWidget->OnAppUnloaded();
+
+    //! \todo Handle the reset of the content. Or should the tab just be deleted?
+}
+
+//----------------------------------------------------------------------------------------
+
+void TextureEditorDockWidget::TabSelected(QMdiSubWindow * subWindow)
+{
+    //! \todo Implement the update of the tab when it is selected
+
+    if (subWindow != nullptr)
+    {
+        //const TextureGraphEditorGraphicsView * graphicsView = static_cast<TextureGraphEditorGraphicsView *>(subWindow->widget());
+        //ED_ASSERTSTR(graphicsView != nullptr, "Trying to update the texture properties with an invalid current graphics view");
+        //const Pegasus::Texture::ITextureNodeProxy * textureProxy = graphicsView->GetTextureProxy();
+        //ED_ASSERTSTR(textureProxy != nullptr, "Trying to update the texture properties with an invalid current texture");
+    }
+    else
+    {
+        /*****/
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -154,4 +177,7 @@ void TextureEditorDockWidget::UpdateTextureProperties(QMdiSubWindow * subWindow)
                                                             .arg(textureConfigurationProxy->GetHeight())
                                                             .arg(textureConfigurationProxy->GetDepth()));
     ui.layersValueLabel->setText(QString("%1").arg(textureConfigurationProxy->GetNumLayers()));
+
+    // Set the property grid widget to the property grid proxy of the texture
+    ui.propertyGridWidget->SetCurrentProxy(textureProxy->GetPropertyGridObjectProxy());
 }

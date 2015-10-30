@@ -4,7 +4,7 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	PropertyGridManagerProxy.h
+//! \file	PropertyGridClassInfoProxy.h
 //! \author	Karolyn Boulanger
 //! \date	25th May 2015
 //! \brief	Proxy object, used by the editor to interact with a property grid class info
@@ -45,30 +45,30 @@ public:
 
     //! Get the name of the class associated with the class info
     //! \return Name of the class associated with the class info (non-empty)
-    virtual const char * GetClassName() const;
+    virtual const char * GetClassName() const override;
 
     //! Get the proxy of the parent class if defined
     //! \return Proxy of the parent class if defined, nullptr if the class is a base class
-    virtual const IPropertyGridClassInfoProxy * GetParentClassInfo() const;
+    virtual const IPropertyGridClassInfoProxy * GetParentClassInfo() const override;
 
 
     //! Get the number of registered properties, for the current class only
     //! \return Number of registered properties, for the current class only
-    virtual unsigned int GetNumClassProperties() const;
+    virtual unsigned int GetNumClassProperties() const override;
 
     //! Get the property record for one of the registered properties, for the current class only
     //! \param index Index of the property (0 <= index < GetNumClassProperties())
     //! \return Record for the property
-    virtual IPropertyGridClassInfoProxy::PropertyRecord GetClassProperty(unsigned int index) const;
+    virtual const PropertyRecord & GetClassProperty(unsigned int index) const override;
 
     //! Get the number of registered properties, including parent classes (but not derived classes)
     //! \return Number of registered properties, including parent classes (but not derived classes)
-    virtual unsigned int GetNumProperties() const;
+    virtual unsigned int GetNumProperties() const override;
 
     //! Get the property record for one of the registered properties, including parent classes (but not derived classes)
     //! \param index Index of the property (0 <= index < GetNumProperties())
     //! \return Record for the property
-    virtual IPropertyGridClassInfoProxy::PropertyRecord GetProperty(unsigned int index) const;
+    virtual const PropertyRecord & GetProperty(unsigned int index) const override;
 
     //------------------------------------------------------------------------------------
 

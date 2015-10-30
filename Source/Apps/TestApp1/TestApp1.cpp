@@ -132,19 +132,21 @@ TestApp1::TestApp1(const Pegasus::App::ApplicationConfig& config)
         const unsigned int numClassProperties = classInfo.GetNumClassProperties();
         for (unsigned int cp = 0; cp < numClassProperties; ++cp)
         {
-            const Pegasus::PropertyGrid::PropertyGridClassInfo::PropertyRecord & record = classInfo.GetClassProperty(cp);
+            const Pegasus::PropertyGrid::PropertyRecord & record = classInfo.GetClassProperty(cp);
             PG_LOG('PROP', "  Name: %s", record.name);
             PG_LOG('PROP', "    Type: %u", record.type);
             PG_LOG('PROP', "    Size: %u", record.size);    
+            PG_LOG('PROP', "    Type name: %s", record.typeName);
         }
         PG_LOG('PROP', "Properties:");
         const unsigned int numProperties = classInfo.GetNumProperties();
         for (unsigned int p = 0; p < numProperties; ++p)
         {
-            const Pegasus::PropertyGrid::PropertyGridClassInfo::PropertyRecord & record = classInfo.GetProperty(p);
+            const Pegasus::PropertyGrid::PropertyRecord & record = classInfo.GetProperty(p);
             PG_LOG('PROP', "  Name: %s", record.name);
             PG_LOG('PROP', "    Type: %u", record.type);
             PG_LOG('PROP', "    Size: %u", record.size);    
+            PG_LOG('PROP', "    Type name: %s", record.typeName);
         }
     }
 

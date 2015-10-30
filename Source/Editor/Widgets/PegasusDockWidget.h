@@ -96,10 +96,10 @@ signals:
     //! Fired when this widget is out of focus
     void OutFocus(PegasusDockWidget* owner);
 
-    //! Fired by the user, when we want to register dirtyness on an object
+    //! Fired by the user, when we want to register dirtiness on an object
     void OnRegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
 
-    //! Fired by the user, when we want to unregister dirtyness on an object
+    //! Fired by the user, when we want to unregister dirtiness on an object
     void OnUnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
 
     //! Sends a message to the asset IO controller
@@ -110,17 +110,17 @@ public slots:
     //! Receives when an application has loaded
     void UpdateUIForAppLoaded();
 
-    //! Receives when an application has been cloased
+    //! Receives when an application has been closed
     void UpdateUIForAppClosed();
 
-    //! Receives an io message
+    //! Receives an IO message
     void ReceiveAssetIoMessage(PegasusDockWidget* sender, AssetIOMessageController::Message::IoResponseMessage msg) { if (this == sender) { OnReceiveAssetIoMessage(msg); } }
 
     //! Received when an object has be requested to be opened.
     void ReceiveOpenRequest(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object) { OnOpenObject(object); }
 
 protected:
-    // Receive an io message, to be implemented by the widget
+    // Receive an IO message, to be implemented by the widget
     //! \param msg the message
     virtual void OnReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage msg) {}
 

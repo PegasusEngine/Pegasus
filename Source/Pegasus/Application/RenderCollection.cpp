@@ -70,7 +70,7 @@ namespace Application
             //walk the node's properties and cache them.
             for (unsigned int i = 0; i < node->GetNumProperties(); ++i)
             {
-                const PropertyGrid::PropertyGridClassInfo::PropertyRecord& record = node->GetPropertyRecord(i);
+                const PropertyGrid::PropertyRecord& record = node->GetPropertyRecord(i);
                 for (int propId = 0; propId < entryLayout->mProperties.GetSize(); ++propId)
                 {
                     if (!Utils::Strcmp(record.name, entryLayout->mProperties[propId]))

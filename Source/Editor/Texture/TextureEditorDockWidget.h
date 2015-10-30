@@ -54,15 +54,23 @@ signals:
 
 public slots:
 
+    //! Called to open a new tab for a given texture
+    //! \param textureProxy Proxy of the texture to attach to the tab
+    void OpenTabForTexture(Pegasus::Texture::ITextureNodeProxy * textureProxy);
+
+    //------------------------------------------------------------------------------------
+    
+private slots:
+        
     //! Called when an application is successfully loaded
     void UpdateUIForAppLoaded();
 
     //! Called when an application is closed
     void UpdateUIForAppClosed();
 
-    //! Called to open a new tab for a given texture
-    //! \param textureProxy Proxy of the texture to attach to the tab
-    void OpenTabForTexture(Pegasus::Texture::ITextureNodeProxy * textureProxy);
+    //! Called when a different tab is selected (or when the tab is created)
+    //! \param subWindow Subwindow corresponding to the selected tab
+    void TabSelected(QMdiSubWindow * subWindow);
 
     //------------------------------------------------------------------------------------
     

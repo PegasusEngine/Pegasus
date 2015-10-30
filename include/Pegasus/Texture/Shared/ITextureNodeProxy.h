@@ -15,6 +15,12 @@
 #if PEGASUS_ENABLE_PROXIES
 
 namespace Pegasus {
+    namespace PropertyGrid {
+        class IPropertyGridObjectProxy;
+    }
+}
+
+namespace Pegasus {
 namespace Texture {
 
 class ITextureConfigurationProxy;
@@ -62,6 +68,11 @@ public:
     //! \param index Index of the input node (< GetNumInputs())
     //! \return Node proxy, nullptr in case of error
     virtual ITextureNodeProxy * GetInputNode(unsigned int index) = 0;
+
+
+    //! Get the proxy of the texture's property grid
+    //! \return Proxy of the texture's property grid
+    virtual PropertyGrid::IPropertyGridObjectProxy * GetPropertyGridObjectProxy() const = 0;
 };
 
 
