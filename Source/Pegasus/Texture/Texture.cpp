@@ -21,6 +21,11 @@ namespace Pegasus {
 namespace Texture {
 
 
+BEGIN_IMPLEMENT_PROPERTIES(Texture)
+END_IMPLEMENT_PROPERTIES(Texture)
+
+//----------------------------------------------------------------------------------------
+
 Texture::Texture(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :   Graph::OutputNode(nodeAllocator, nodeDataAllocator)
 ,   mConfiguration()
@@ -29,6 +34,8 @@ Texture::Texture(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAl
 ,   mTracker(nullptr)
 #endif  // PEGASUS_ENABLE_PROXIES
 {
+    BEGIN_INIT_PROPERTIES(Texture)
+    END_INIT_PROPERTIES()
 }
 
 //----------------------------------------------------------------------------------------
@@ -42,6 +49,8 @@ Texture::Texture(const TextureConfiguration & configuration,
 ,   mTracker(nullptr)
 #endif  // PEGASUS_ENABLE_PROXIES
 {
+    BEGIN_INIT_PROPERTIES(Texture)
+    END_INIT_PROPERTIES()
 }
 
 //----------------------------------------------------------------------------------------

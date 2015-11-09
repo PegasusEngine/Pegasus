@@ -16,11 +16,19 @@ namespace Pegasus {
 namespace Mesh {
 
 
+BEGIN_IMPLEMENT_PROPERTIES(Mesh)
+END_IMPLEMENT_PROPERTIES(Mesh)
+
+//----------------------------------------------------------------------------------------
+
 Mesh::Mesh(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :   Graph::OutputNode(nodeAllocator, nodeDataAllocator),
     mConfiguration()
 {
     //! \todo Add proxy and tracker (see Texture.cpp)
+
+    BEGIN_INIT_PROPERTIES(Mesh)
+    END_INIT_PROPERTIES()
 }
 
 //----------------------------------------------------------------------------------------

@@ -24,6 +24,9 @@ namespace Graph {
 //!       or one of its inputs
 class OutputNode : public Node
 {
+    BEGIN_DECLARE_PROPERTIES(OutputNode, Node)
+    END_DECLARE_PROPERTIES()
+
 public:
 
     //! Default constructor

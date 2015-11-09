@@ -70,7 +70,7 @@ namespace PropertyGrid {
 //! \param className Name of the class the properties belong to
 //! \param parentClassName Name of the parent of the class the properties belong to
 //! \note To be used inside a class declaration, before calling \a DECLARE_PROPERTY()
-#define BEGIN_DECLARE_PROPERTIES2(className, parentClassName)                                                       \
+#define BEGIN_DECLARE_PROPERTIES(className, parentClassName)                                                       \
     DECLARE_PROPERTIES_BEGIN_DECLARATION_HELPER(className, #parentClassName)                                        \
     DECLARE_PROPERTIES_CLASS_INFO(className)                                                                        \
 
@@ -80,7 +80,7 @@ namespace PropertyGrid {
 //! \param name Name of the property, starting with an uppercase letter
 //! \param defaultValue Default value of the property, set when an object with the property is 
 //! \warning To be used after \a BEGIN_DECLARE_PROPERTIES() and before END_DECLARE_PROPERTIES()
-#define DECLARE_PROPERTY2(type, name, defaultValue)                                                                 \
+#define DECLARE_PROPERTY(type, name, defaultValue)                                                                 \
     DECLARE_PROPERTY_MEMBER_AND_ACCESSORS(type, name)                                                               \
     DECLARE_PROPERTY_DEFAULT_VALUE_ACCESSORS(type, name)                                                            \
     DECLARE_PROPERTY_DECLARATION_HELPER(type, name, defaultValue)                                                   \
@@ -88,14 +88,14 @@ namespace PropertyGrid {
 
 //! Macro to stop declaring a set of properties
 //! \note To be used inside a class declaration, after calling \a DECLARE_PROPERTY()
-#define END_DECLARE_PROPERTIES2()                                                                                   \
+#define END_DECLARE_PROPERTIES()                                                                                   \
     DECLARE_PROPERTIES_END_DECLARATION_HELPER()                                                                     \
 
 
 //! Macro to start declaring a set of properties in the implementation file
 //! \param className Class name of the property grid owner
 //! \note To be used inside a .cpp file, before calling \a IMPLEMENT_PROPERTY()
-#define BEGIN_IMPLEMENT_PROPERTIES2(className)                                                                      \
+#define BEGIN_IMPLEMENT_PROPERTIES(className)                                                                      \
     className::BeginPropertyDeclarationHelper className::sBeginPropertyDeclarationHelper;                           \
     const PPG::PropertyGridClassInfo * const className::sClassInfo                                                  \
         = PPG::PropertyGridManager::GetInstance().GetClassInfo(#className);                                         \
@@ -105,14 +105,14 @@ namespace PropertyGrid {
 //! \param className Name of the class the properties belong to
 //! \param name Name of the property, starting with an uppercase letter
 //! \warning To be used after \a BEGIN_IMPLEMENT_PROPERTIES() and before END_IMPLEMENT_PROPERTIES()
-#define IMPLEMENT_PROPERTY2(className, name)                                                                        \
+#define IMPLEMENT_PROPERTY(className, name)                                                                        \
     className::PropertyDeclarationHelper##name className::sPropertyDeclarationHelper##name;                         \
 
 
 //! Macro to stop declaring a set of properties in the implementation file
 //! \param className Name of the class the properties belong to
 //! \note To be used inside a .cpp file, after calling \a IMPLEMENT_PROPERTY()
-#define END_IMPLEMENT_PROPERTIES2(className)                                                                        \
+#define END_IMPLEMENT_PROPERTIES(className)                                                                        \
     className::EndPropertyDeclarationHelper className::sEndPropertyDeclarationHelper;                               \
 
 
@@ -125,7 +125,7 @@ namespace PropertyGrid {
 
 //! Macro to initialize a property in the implementation file, in the constructor of the class
 //! \param name Name of the property, starting with an uppercase letter
-#define INIT_PROPERTY2(name)                                                                                        \
+#define INIT_PROPERTY(name)                                                                                        \
     Set##name##ToDefault();                                                                                         \
     APPEND_PROPERTY_POINTER(mProperty##name);                                                   \
 
@@ -217,7 +217,7 @@ namespace PropertyGrid {
                     PPG::PropertyDefinition<type>::CopyProperty(mDefaultValue, defaultValue);                       \
                     PPG::PropertyGridManager::GetInstance().DeclareProperty(                                        \
                         PPG::PropertyDefinition<type>::PROPERTY_TYPE,                                               \
-                        sizeof(type), #name, PPG::PropertyDefinition<type>::GetName(), &mDefaultValue);                                                       \
+                        sizeof(type), #name, PPG::PropertyDefinition<type>::GetTypeName(), &mDefaultValue);         \
                 }                                                                                                   \
                 inline PPG::PropertyDefinition<type>::ReturnType GetDefaultValue() const                            \
                     { return mDefaultValue; }                                                                       \
@@ -368,9 +368,9 @@ class PropertyGridObject
     DECLARE_PROPERTIES_CLASS_INFO(PropertyGridObject)
 
         //! \todo Make that property for editor/data only and not for REL
-        DECLARE_PROPERTY2(String64, Name, "");
+        DECLARE_PROPERTY(String64, Name, "");
 
-    END_DECLARE_PROPERTIES2()
+    END_DECLARE_PROPERTIES()
 
     //------------------------------------------------------------------------------------
 

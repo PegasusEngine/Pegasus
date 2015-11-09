@@ -28,8 +28,10 @@ namespace Texture {
 //!                     so the generator node can be instantiated
 class TextureGenerator : public Graph::GeneratorNode
 {
-
-    //Generating code to allow texture handle macros
+    BEGIN_DECLARE_PROPERTIES(TextureGenerator, GeneratorNode)
+    END_DECLARE_PROPERTIES()
+        
+    // Generating code to allow texture handle macros
     GRAPH_EVENT_DECLARE_DISPATCHER(ITextureEventListener);
 
 public:

@@ -45,9 +45,9 @@ void PropertyAccessor::Write(const void * inputBuffer, unsigned int inputBufferS
 
 //----------------------------------------------------------------------------------------
 
-BEGIN_IMPLEMENT_PROPERTIES2(PropertyGridObject)
-    IMPLEMENT_PROPERTY2(PropertyGridObject, Name)
-END_IMPLEMENT_PROPERTIES2(PropertyGridObject)
+BEGIN_IMPLEMENT_PROPERTIES(PropertyGridObject)
+    IMPLEMENT_PROPERTY(PropertyGridObject, Name)
+END_IMPLEMENT_PROPERTIES(PropertyGridObject)
 
 //----------------------------------------------------------------------------------------
 
@@ -62,7 +62,7 @@ PropertyGridObject::PropertyGridObject()
 #endif
 {
     BEGIN_INIT_PROPERTIES(PropertyGridObject)
-        INIT_PROPERTY2(Name)
+        INIT_PROPERTY(Name)
     END_INIT_PROPERTIES()
 }
 

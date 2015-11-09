@@ -15,9 +15,17 @@ namespace Pegasus {
 namespace Graph {
 
 
+BEGIN_IMPLEMENT_PROPERTIES(GeneratorNode)
+END_IMPLEMENT_PROPERTIES(GeneratorNode)
+
+//----------------------------------------------------------------------------------------
+
 GeneratorNode::GeneratorNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :   Node(nodeAllocator, nodeDataAllocator)
 {
+    BEGIN_INIT_PROPERTIES(GeneratorNode)
+    END_INIT_PROPERTIES()
+
 #if PEGASUS_ENABLE_PROXIES
     mNodeType = NODETYPE_GENERATOR;
 #endif  // PEGASUS_ENABLE_PROXIES
@@ -27,14 +35,14 @@ GeneratorNode::GeneratorNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator
 
 bool GeneratorNode::Update()
 {
-    if (IsDataAllocated() && GetPropertyGrid().IsDirty())
+    if (IsDataAllocated() && IsPropertyGridDirty())
     {
         // If the property grid has members that are updated, invalidate the data
         GetData()->Invalidate();
     }
 
     // Validate the property grid to track any subsequent changes
-    GetPropertyGrid().Validate();
+    ValidatePropertyGrid();
 
     // Since the node is a generator, there is no input node to check.
     // We directly return the state of the node data.

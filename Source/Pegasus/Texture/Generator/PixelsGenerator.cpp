@@ -19,11 +19,11 @@ namespace Texture {
 
 
 BEGIN_IMPLEMENT_PROPERTIES(PixelsGenerator)
-    IMPLEMENT_PROPERTY(unsigned int, NumPixels, 8192)
-    IMPLEMENT_PROPERTY(unsigned int, Seed, 123456789)
-    IMPLEMENT_PROPERTY(Math::Color8RGBA, BackgroundColor, Math::Color8RGBA(0, 0, 0, 255))
-    IMPLEMENT_PROPERTY(Math::Color8RGBA, Color0, Math::Color8RGBA(255, 255, 255, 255))
-END_IMPLEMENT_PROPERTIES()
+    IMPLEMENT_PROPERTY(PixelsGenerator, NumPixels)
+    IMPLEMENT_PROPERTY(PixelsGenerator, Seed)
+    IMPLEMENT_PROPERTY(PixelsGenerator, BackgroundColor)
+    IMPLEMENT_PROPERTY(PixelsGenerator, Color0)
+END_IMPLEMENT_PROPERTIES(PixelsGenerator)
 
 //----------------------------------------------------------------------------------------
 
@@ -52,6 +52,18 @@ static inline unsigned int ChooseRandomPixel(unsigned int width,
 }
 
 }   // namespace Internal
+
+//----------------------------------------------------------------------------------------
+
+void PixelsGenerator::InitProperties()
+{
+    BEGIN_INIT_PROPERTIES(PixelsGenerator)
+        INIT_PROPERTY(NumPixels)
+        INIT_PROPERTY(Seed)
+        INIT_PROPERTY(BackgroundColor)
+        INIT_PROPERTY(Color0)
+    END_INIT_PROPERTIES()
+}
 
 //----------------------------------------------------------------------------------------
 

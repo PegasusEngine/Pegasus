@@ -18,8 +18,17 @@ namespace Texture {
 
 
 BEGIN_IMPLEMENT_PROPERTIES(AddOperator)
-    IMPLEMENT_PROPERTY(bool, Clamp, true)
-END_IMPLEMENT_PROPERTIES()
+    IMPLEMENT_PROPERTY(AddOperator, Clamp)
+END_IMPLEMENT_PROPERTIES(AddOperator)
+
+//----------------------------------------------------------------------------------------
+
+void AddOperator::InitProperties()
+{
+    BEGIN_INIT_PROPERTIES(AddOperator)
+        INIT_PROPERTY(Clamp)
+    END_INIT_PROPERTIES()
+}
 
 //----------------------------------------------------------------------------------------
 

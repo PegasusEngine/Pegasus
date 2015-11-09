@@ -15,6 +15,7 @@
 
 using namespace Pegasus::Math;
 
+
 //TODO make part of the default MeshGenerator
 struct Vertex
 {
@@ -34,16 +35,18 @@ static Vec2 GenUvs(const Vec3& p)
     
 }
 
-namespace Pegasus
-{
-namespace Mesh
-{
+//----------------------------------------------------------------------------------------
+
+namespace Pegasus {
+namespace Mesh {
 
 //! Property implementations 
-BEGIN_IMPLEMENT_PROPERTIES2(IcosphereGenerator)
-    IMPLEMENT_PROPERTY2(IcosphereGenerator, Degree)
-    IMPLEMENT_PROPERTY2(IcosphereGenerator, Radius)
-END_IMPLEMENT_PROPERTIES2(IcosphereGenerator)
+BEGIN_IMPLEMENT_PROPERTIES(IcosphereGenerator)
+    IMPLEMENT_PROPERTY(IcosphereGenerator, Degree)
+    IMPLEMENT_PROPERTY(IcosphereGenerator, Radius)
+END_IMPLEMENT_PROPERTIES(IcosphereGenerator)
+
+//----------------------------------------------------------------------------------------
 
 IcosphereGenerator::IcosphereGenerator(Pegasus::Alloc::IAllocator * nodeAllocator,
                                        Pegasus::Alloc::IAllocator * nodeDataAllocator)
@@ -53,8 +56,8 @@ IcosphereGenerator::IcosphereGenerator(Pegasus::Alloc::IAllocator * nodeAllocato
     
     //INIT properties
     BEGIN_INIT_PROPERTIES(IcosphereGenerator)
-        INIT_PROPERTY2(Degree)
-        INIT_PROPERTY2(Radius)
+        INIT_PROPERTY(Degree)
+        INIT_PROPERTY(Radius)
     END_INIT_PROPERTIES()
 
     mConfiguration.SetIsIndexed(true);
@@ -64,9 +67,13 @@ IcosphereGenerator::IcosphereGenerator(Pegasus::Alloc::IAllocator * nodeAllocato
 
 }
 
+//----------------------------------------------------------------------------------------
+
 IcosphereGenerator::~IcosphereGenerator()
 {
 }
+
+//----------------------------------------------------------------------------------------
 
 unsigned short IcosphereGenerator::GenChild(MeshData * meshData, unsigned short p1, unsigned short p2)
 {
@@ -101,6 +108,8 @@ unsigned short IcosphereGenerator::GenChild(MeshData * meshData, unsigned short 
 
 }
 
+//----------------------------------------------------------------------------------------
+
 void IcosphereGenerator::Tesselate(MeshData * meshData, int level, unsigned short a, unsigned short b, unsigned short c)
 {
     PG_ASSERT(level >= 1);
@@ -132,6 +141,8 @@ void IcosphereGenerator::Tesselate(MeshData * meshData, int level, unsigned shor
         Tesselate(meshData, level - 1, c1, c2, c3);
     }
 }
+
+//----------------------------------------------------------------------------------------
 
 void IcosphereGenerator::GenerateData()
 {

@@ -18,8 +18,17 @@ namespace Texture {
 
 
 BEGIN_IMPLEMENT_PROPERTIES(ConstantColorGenerator)
-    IMPLEMENT_PROPERTY(Math::Color8RGBA, Color, Math::Color8RGBA(0, 0, 0, 255))
-END_IMPLEMENT_PROPERTIES()
+    IMPLEMENT_PROPERTY(ConstantColorGenerator, Color)
+END_IMPLEMENT_PROPERTIES(ConstantColorGenerator)
+
+//----------------------------------------------------------------------------------------
+
+void ConstantColorGenerator::InitProperties()
+{
+    BEGIN_INIT_PROPERTIES(ConstantColorGenerator)
+        INIT_PROPERTY(Color)
+    END_INIT_PROPERTIES()
+}
 
 //----------------------------------------------------------------------------------------
 

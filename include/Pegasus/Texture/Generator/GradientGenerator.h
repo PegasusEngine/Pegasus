@@ -23,12 +23,14 @@ class GradientGenerator : public TextureGenerator
 {
     DECLARE_TEXTURE_GENERATOR_NODE(GradientGenerator)
 
-    BEGIN_DECLARE_PROPERTIES()
-        DECLARE_PROPERTY(Math::Color8RGBA, Color0)
-        DECLARE_PROPERTY(Math::Color8RGBA, Color1)
-        DECLARE_PROPERTY(Math::Vec3, Point0)
-        DECLARE_PROPERTY(Math::Vec3, Point1)
+    BEGIN_DECLARE_PROPERTIES(GradientGenerator, TextureGenerator)
+        DECLARE_PROPERTY(Math::Color8RGBA, Color0, Math::Color8RGBA(0, 0, 0, 255))
+        DECLARE_PROPERTY(Math::Color8RGBA, Color1, Math::Color8RGBA(255, 255, 255, 255))
+        DECLARE_PROPERTY(Math::Vec3, Point0, Math::Vec3(0.0f, 0.0f, 0.0f))
+        DECLARE_PROPERTY(Math::Vec3, Point1, Math::Vec3(1.0f, 0.0f, 0.0f))
     END_DECLARE_PROPERTIES()
+
+    //------------------------------------------------------------------------------------
 
 public:
 

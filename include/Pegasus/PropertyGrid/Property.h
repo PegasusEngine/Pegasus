@@ -43,7 +43,7 @@ class PropertyDefinition
             typedef enumTypeName & OutParamType;\
             typedef enumTypeName   ReturnType;\
             static void CopyProperty(OutParamType paramOut, ParamType paramIn) { paramOut = paramIn; }\
-            static const char* GetName() { return enumTypeName##::GetTypeName(); }\
+            static const char* GetTypeName() { return enumTypeName##::GetTypeName(); }\
         };\
     }}
 
@@ -65,7 +65,7 @@ struct PropertyDefinition<bool>
     typedef bool & OutParamType;
     typedef bool   ReturnType;
     static void CopyProperty(OutParamType paramOut, ParamType paramIn) { paramOut = paramIn; }
-    static const char* GetName() { return "bool"; }
+    static const char* GetTypeName() { return "bool"; }
 };
 
 template <>
@@ -77,7 +77,7 @@ struct PropertyDefinition<unsigned int>
     typedef unsigned int & OutParamType;
     typedef unsigned int   ReturnType;
     static void CopyProperty(OutParamType paramOut, ParamType paramIn) { paramOut = paramIn; }
-    static const char* GetName() { return "uint"; }
+    static const char* GetTypeName() { return "uint"; }
 };
 
 template <>
@@ -89,7 +89,7 @@ struct PropertyDefinition<int>
     typedef int & OutParamType;
     typedef int   ReturnType;
     static void CopyProperty(OutParamType paramOut, ParamType paramIn) { paramOut = paramIn; }
-    static const char* GetName() { return "int"; }
+    static const char* GetTypeName() { return "int"; }
 };
 
 template <>
@@ -101,7 +101,7 @@ struct PropertyDefinition<float>
     typedef float & OutParamType;
     typedef float   ReturnType;
     static void CopyProperty(OutParamType paramOut, ParamType paramIn) { paramOut = paramIn; }
-    static const char* GetName() { return "float"; }
+    static const char* GetTypeName() { return "float"; }
 };
 
 template <>
@@ -113,7 +113,7 @@ struct PropertyDefinition<Math::Vec2>
     typedef Math::Vec2InOut  OutParamType;
     typedef Math::Vec2Return ReturnType;
     static void CopyProperty(OutParamType paramOut, ParamType paramIn) { paramOut = paramIn; }
-    static const char* GetName() { return "float2"; }
+    static const char* GetTypeName() { return "float2"; }
 };
 
 template <>
@@ -125,7 +125,7 @@ struct PropertyDefinition<Math::Vec3>
     typedef Math::Vec3InOut  OutParamType;
     typedef Math::Vec3Return ReturnType;
     static void CopyProperty(OutParamType paramOut, ParamType paramIn) { paramOut = paramIn; }
-    static const char* GetName() { return "float3"; }
+    static const char* GetTypeName() { return "float3"; }
 };
 
 template <>
@@ -137,7 +137,7 @@ struct PropertyDefinition<Math::Vec4>
     typedef Math::Vec4InOut  OutParamType;
     typedef Math::Vec4Return ReturnType;
     static void CopyProperty(OutParamType paramOut, ParamType paramIn) { paramOut = paramIn; }
-    static const char* GetName() { return "float4"; }
+    static const char* GetTypeName() { return "float4"; }
 };
 
 template <>
@@ -149,7 +149,7 @@ struct PropertyDefinition<Math::Color8RGB>
     typedef Math::Color8RGBInOut  OutParamType;
     typedef Math::Color8RGBReturn ReturnType;
     static void CopyProperty(OutParamType paramOut, ParamType paramIn) { paramOut = paramIn; }
-    static const char* GetName() { return "float3"; }
+    static const char* GetTypeName() { return "ubyte3"; }
 };
 
 template <>
@@ -161,7 +161,7 @@ struct PropertyDefinition<Math::Color8RGBA>
     typedef Math::Color8RGBAInOut  OutParamType;
     typedef Math::Color8RGBAReturn ReturnType;
     static void CopyProperty(OutParamType paramOut, ParamType paramIn) { paramOut = paramIn; }
-    static const char* GetName() { return "float4"; }
+    static const char* GetTypeName() { return "ubyte4"; }
 };
 
 template <>
@@ -173,7 +173,7 @@ struct PropertyDefinition<String64>
     typedef       char * OutParamType;
     typedef const char * ReturnType;
     static void CopyProperty(OutParamType paramOut, ParamType paramIn) { Pegasus::Utils::Memcpy(paramOut, paramIn, sizeof(VarType)); }
-    static const char* GetName() { return "string64"; }
+    static const char* GetTypeName() { return "string64"; }
 };
 //@}
 

@@ -14,8 +14,11 @@
 namespace Pegasus {
 namespace Mesh {
 
-BEGIN_IMPLEMENT_PROPERTIES2(MeshOperator)
-END_IMPLEMENT_PROPERTIES2(MeshOperator)
+
+BEGIN_IMPLEMENT_PROPERTIES(MeshOperator)
+END_IMPLEMENT_PROPERTIES(MeshOperator)
+
+//----------------------------------------------------------------------------------------
 
 MeshOperator::MeshOperator(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :   Graph::OperatorNode(nodeAllocator, nodeDataAllocator),

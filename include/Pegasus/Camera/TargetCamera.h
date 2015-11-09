@@ -21,13 +21,13 @@ namespace Camera {
 //! Camera object using target and up vectors to define its orientation
 class TargetCamera : public Camera
 {
-    BEGIN_DECLARE_PROPERTIES()
+    BEGIN_DECLARE_PROPERTIES(TargetCamera, Camera)
 
         //! Position of the camera target in world space, cannot be equal to Position
-        DECLARE_PROPERTY(Math::Vec3, Target)
+        DECLARE_PROPERTY(Math::Vec3, Target, Math::Vec3(0.0f, 0.0f, -1.0f))
 
         //! Up vector (normalized), cannot be orthogonal to the direction vector
-        DECLARE_PROPERTY(Math::Vec3, Up)
+        DECLARE_PROPERTY(Math::Vec3, Up, Math::Vec3(0.0f, 1.0f, 0.0f))
 
     END_DECLARE_PROPERTIES()
 

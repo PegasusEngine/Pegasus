@@ -15,9 +15,17 @@ namespace Pegasus {
 namespace Graph {
 
 
+BEGIN_IMPLEMENT_PROPERTIES(OperatorNode)
+END_IMPLEMENT_PROPERTIES(OperatorNode)
+
+//----------------------------------------------------------------------------------------
+
 OperatorNode::OperatorNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :   Node(nodeAllocator, nodeDataAllocator)
 {
+    BEGIN_INIT_PROPERTIES(OperatorNode)
+    END_INIT_PROPERTIES()
+
 #if PEGASUS_ENABLE_PROXIES
     mNodeType = NODETYPE_OPERATOR;
 #endif  // PEGASUS_ENABLE_PROXIES
@@ -46,14 +54,14 @@ bool OperatorNode::Update()
         dirtyFlagSet |= GetInput(i)->Update();
     }
 
-    if (IsDataAllocated() && GetPropertyGrid().IsDirty())
+    if (IsDataAllocated() && IsPropertyGridDirty())
     {
         // If the property grid has members that are updated, invalidate the data
         dirtyFlagSet = true;
     }
 
     // Validate the property grid to track any subsequent changes
-    GetPropertyGrid().Validate();
+    ValidatePropertyGrid();
 
     if (dirtyFlagSet)
     {

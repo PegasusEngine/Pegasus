@@ -16,20 +16,21 @@ namespace Camera {
 
 
 BEGIN_IMPLEMENT_PROPERTIES(Camera)
-    IMPLEMENT_PROPERTY(Math::Vec3, Position, Math::Vec3(0.0f, 0.0f, 0.0f))
-END_IMPLEMENT_PROPERTIES()
+    IMPLEMENT_PROPERTY(Camera, Position)
+END_IMPLEMENT_PROPERTIES(Camera)
 
 //----------------------------------------------------------------------------------------
 
 Camera::Camera()
-:   mPropertyGrid()
 {
+    BEGIN_INIT_PROPERTIES(Camera)
+        INIT_PROPERTY(Position)
+    END_INIT_PROPERTIES()
 }
 
 //----------------------------------------------------------------------------------------
 
 Camera::Camera(const Camera & camera)
-:   mPropertyGrid(camera.mPropertyGrid)
 {
     //! \todo IMPORTANT Implement the copy constructor for the property grid.
     //!       When a Camera is copied for example, the property grid is copied, but not the members.
@@ -42,10 +43,7 @@ Camera & Camera::operator=(const Camera & camera)
 {
     if (&camera != this)
     {
-        //! \todo IMPORTANT Implement the assignment operator for the property grid.
-        //!       When a Camera is copied for example, the property grid is copied, but not the members.
-        //!       They should be.
-        mPropertyGrid = camera.mPropertyGrid;
+        /****IMPLEMENT**/
     }
     return *this;
 }

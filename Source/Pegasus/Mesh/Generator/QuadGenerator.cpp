@@ -12,23 +12,23 @@
 #include "Pegasus/Mesh/Generator/QuadGenerator.h"
 #include "Pegasus/Math/Vector.h"
 
-namespace Pegasus
-{
-namespace Mesh
-{
+namespace Pegasus {
+namespace Mesh {
+
 
 //! Property implementations 
-BEGIN_IMPLEMENT_PROPERTIES2(QuadGenerator)
-    IMPLEMENT_PROPERTY2(QuadGenerator, QuadExtends)
-END_IMPLEMENT_PROPERTIES2(QuadGenerator)
+BEGIN_IMPLEMENT_PROPERTIES(QuadGenerator)
+    IMPLEMENT_PROPERTY(QuadGenerator, QuadExtends)
+END_IMPLEMENT_PROPERTIES(QuadGenerator)
+
+//----------------------------------------------------------------------------------------
 
 QuadGenerator::QuadGenerator(Pegasus::Alloc::IAllocator* nodeAllocator, 
                   Pegasus::Alloc::IAllocator* nodeDataAllocator) 
 :   MeshGenerator(nodeAllocator, nodeDataAllocator)
 {
-    //INIT properties
     BEGIN_INIT_PROPERTIES(QuadGenerator)
-        INIT_PROPERTY2(QuadExtends)
+        INIT_PROPERTY(QuadExtends)
     END_INIT_PROPERTIES()
 
     //setting up the basic format of node data

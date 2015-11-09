@@ -16,15 +16,19 @@ namespace Camera {
 
 
 BEGIN_IMPLEMENT_PROPERTIES(TargetCamera)
-    IMPLEMENT_PROPERTY(Math::Vec3, Target, Math::Vec3(0.0f, 0.0f, -1.0f))
-    IMPLEMENT_PROPERTY(Math::Vec3, Up, Math::Vec3(0.0f, 1.0f, 0.0f))
-END_IMPLEMENT_PROPERTIES()
+    IMPLEMENT_PROPERTY(TargetCamera, Target)
+    IMPLEMENT_PROPERTY(TargetCamera, Up)
+END_IMPLEMENT_PROPERTIES(TargetCamera)
 
 //----------------------------------------------------------------------------------------
 
 TargetCamera::TargetCamera()
 :   Camera()
 {
+    BEGIN_INIT_PROPERTIES(TargetCamera)
+        INIT_PROPERTY(Target)
+        INIT_PROPERTY(Up)
+    END_INIT_PROPERTIES()
 }
 
 //----------------------------------------------------------------------------------------

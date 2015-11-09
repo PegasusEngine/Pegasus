@@ -21,6 +21,9 @@ namespace Graph {
 //! Base operator node class, for all operators with at least one input
 class OperatorNode : public Node
 {
+    BEGIN_DECLARE_PROPERTIES(OperatorNode, Node)
+    END_DECLARE_PROPERTIES()
+
 public:
 
     //! Default constructor

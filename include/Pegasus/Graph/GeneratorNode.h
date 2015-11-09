@@ -21,6 +21,9 @@ namespace Graph {
 //! Base generator node class, for all data generators with no input node
 class GeneratorNode : public Node
 {
+    BEGIN_DECLARE_PROPERTIES(GeneratorNode, Node)
+    END_DECLARE_PROPERTIES()
+
 public:
 
     //! Default constructor

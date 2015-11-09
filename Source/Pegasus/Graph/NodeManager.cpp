@@ -82,9 +82,7 @@ NodeReturn NodeManager::CreateNode(const char * className)
     {
         NodeEntry & entry = mRegisteredNodes[registeredNodeIndex];
         PG_ASSERT(entry.createNodeFunc != nullptr);
-        NodeRef newNode = entry.createNodeFunc(mNodeAllocator, mNodeDataAllocator);
-        newNode->InitProperties();
-        return newNode;
+        return entry.createNodeFunc(mNodeAllocator, mNodeDataAllocator);
     }
     else
     {

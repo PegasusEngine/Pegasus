@@ -20,9 +20,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\PropertyGrid.h">
-      <Filter>Include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\PropertyGridManager.h">
       <Filter>Include</Filter>
     </ClInclude>
@@ -70,9 +67,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\PropertyGrid\PropertyGrid.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\PropertyGrid\PropertyGridManager.cpp">
       <Filter>Source</Filter>
     </ClCompile>

@@ -17,27 +17,24 @@ namespace Pegasus {
 namespace Graph {
 
 
+BEGIN_IMPLEMENT_PROPERTIES(Node)
+END_IMPLEMENT_PROPERTIES(Node)
+
+//----------------------------------------------------------------------------------------
+
 Node::Node(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
-:   
-    Core::RefCounted(nodeAllocator),
-    mNodeAllocator(nodeAllocator),
-    mNodeDataAllocator(nodeDataAllocator),
-    mNumInputs(0),
-    mPropertyGrid()
+:   Core::RefCounted(nodeAllocator)
+,   mNodeAllocator(nodeAllocator)
+,   mNodeDataAllocator(nodeDataAllocator)
+,   mNumInputs(0)
 {
+    BEGIN_INIT_PROPERTIES(Node)
+    END_INIT_PROPERTIES()
+
     PG_ASSERTSTR(nodeAllocator != nullptr, "Invalid node allocator given to a Node");
     PG_ASSERTSTR(nodeDataAllocator != nullptr, "Invalid node data allocator given to a Node");
 
 #if PEGASUS_ENABLE_PROXIES
-    mName[0] = '\0';
-
-    // Create the DOT description of the node (name between quotes)
-    //! \todo Handle DOT
-    mDOTDescription[0] = '\0';
-    //strncpy(mDOTDescription, "\"", MAX_DOT_DESCRIPTION_LENGTH);
-    //strlcat(mDOTDescription, mName, MAX_DOT_DESCRIPTION_LENGTH);
-    //strlcat(mDOTDescription, "\"", MAX_DOT_DESCRIPTION_LENGTH);
-
     mNodeType = NODETYPE_UNKNOWN;
 #endif  // PEGASUS_ENABLE_PROXIES
 }
@@ -54,12 +51,6 @@ Node::~Node()
 
     // Destroy the node data if present
     ReleaseData();
-}
-
-//----------------------------------------------------------------------------------------
-
-void Node::InitProperties()
-{
 }
 
 //----------------------------------------------------------------------------------------
@@ -109,16 +100,7 @@ NodeDataReturn Node::GetUpdatedData(bool & updated)
     }
 
     // If the data is not allocated, it has to be recomputed, but that has to be done by derived nodes
-#if PEGASUS_ENABLE_PROXIES
-    if (IsNameDefined())
-    {
-        PG_FAILSTR("Trying to recompute the data of the node \"%s\" but it should be done in a derived class.", GetName());
-    }
-    else
-#endif  // PEGASUS_ENABLE_PROXIES
-    {
-        PG_FAILSTR("Trying to recompute the data of a node but it should use a derived class.");
-    }
+    PG_FAILSTR("Trying to recompute the data of the node \"%s\" but it should be done in a derived class.", GetName());
 
     // Return the data even if nullptr, but this code should never be reached
     updated = false;
@@ -138,27 +120,6 @@ void Node::ReleaseDataAndPropagate()
         GetInput(i)->ReleaseDataAndPropagate();
     }
 }
-
-//----------------------------------------------------------------------------------------
-
-#if PEGASUS_ENABLE_PROXIES
-void Node::SetName(const char * name)
-{
-    if (name == nullptr)
-    {
-        mName[0] = '\0';
-    }
-    else
-    {
-#if PEGASUS_COMPILER_MSVC
-        strncpy_s(mName, MAX_NAME_LENGTH, name, MAX_NAME_LENGTH);
-#else
-        mName[MAX_NAME_LENGTH - 1] = '\0';
-        strncpy(mName, name, MAX_NAME_LENGTH - 1);
-#endif  // PEGASUS_COMPILER_MSVC
-    }
-}
-#endif  // PEGASUS_ENABLE_PROXIES
 
 //----------------------------------------------------------------------------------------
 

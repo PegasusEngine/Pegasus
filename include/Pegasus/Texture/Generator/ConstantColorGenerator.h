@@ -23,10 +23,12 @@ class ConstantColorGenerator : public TextureGenerator
 {
     DECLARE_TEXTURE_GENERATOR_NODE(ConstantColorGenerator)
 
-    BEGIN_DECLARE_PROPERTIES()
-        DECLARE_PROPERTY(Math::Color8RGBA, Color)
+    BEGIN_DECLARE_PROPERTIES(ConstantColorGenerator, TextureGenerator)
+        DECLARE_PROPERTY(Math::Color8RGBA, Color, Math::Color8RGBA(0, 0, 0, 255))
     END_DECLARE_PROPERTIES()
 
+    //------------------------------------------------------------------------------------
+    
 public:
 
     //! Update the generator internal state by pulling external parameters.

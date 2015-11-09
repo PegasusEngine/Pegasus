@@ -13,8 +13,7 @@
 #define PEGASUS_GRAPH_NODE_H
 
 #include "Pegasus/Graph/NodeData.h"
-#include "Pegasus/PropertyGrid/PropertyGrid.h"
-#include "Pegasus/Core/Ref.h"
+#include "Pegasus/PropertyGrid/PropertyGridObject.h"
 #include "Pegasus/Core/Ref.h"
 #include "Pegasus/Core/RefCounted.h"
 
@@ -23,9 +22,12 @@ namespace Graph {
 
 
 //! Base node class for all graph-based systems (textures, meshes, shaders, etc.)
-class Node : public Core::RefCounted
+class Node : public Core::RefCounted, public PropertyGrid::PropertyGridObject
 {
     template<class C> friend class Pegasus::Core::Ref;
+
+    BEGIN_DECLARE_PROPERTIES_BASE(Node)
+    END_DECLARE_PROPERTIES()
 
 public:
 
@@ -36,10 +38,6 @@ public:
 
     //! Destructor
     virtual ~Node();
-
-    //! Initialize the property grid of the node
-    //! \note Empty by default, needs to be overridden by nodes that define properties
-    virtual void InitProperties();
 
 
     //! Get the number of input nodes connected to the current node
@@ -94,22 +92,6 @@ public:
     typedef Pegasus::Core::Ref<Node> (* CreateNodeFunc)(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
 #if PEGASUS_ENABLE_PROXIES
-
-    //! Maximum length of the node name
-    enum { MAX_NAME_LENGTH = 31 };
-
-    //! Set the name of the node
-    //! \param name New name of the node (MAX_NAME_LENGTH characters max),
-    //!             can be an empty string to delete the name
-    void SetName(const char * name);
-
-    //! Get the name of the node
-    //! \return Name of the node if defined, empty string otherwise (not nullptr)
-    inline const char * GetName() const { return mName; }
-
-    //! Test if the name of the node is defined
-    //! \return True if the name is not an empty string
-    inline bool IsNameDefined() const { return (mName[0] != '\0'); }
 
     //! Definition of the different types of nodes
     enum NodeType
@@ -213,22 +195,7 @@ protected:
     virtual void OnRemoveInput(unsigned int index);
 
 
-    //! Get the property grid
-    //! \return Reference to the property grid
-    inline const PropertyGrid::PropertyGrid & GetPropertyGrid() const { return mPropertyGrid; }
-
-    //! Get the property grid
-    //! \return Reference to the property grid
-    inline PropertyGrid::PropertyGrid & GetPropertyGrid() { return mPropertyGrid; }
-
-
 #if PEGASUS_ENABLE_PROXIES
-
-    //! Return the DOT representation of the node
-    //virtual const char * GetDOTDescription() const;
-
-    //! Maximum length of the node DOT description
-    enum { MAX_DOT_DESCRIPTION_LENGTH = 95 };
 
     //! Type of the node (NODETYPE_xxx constant)
     NodeType mNodeType;
@@ -256,19 +223,6 @@ private:
 
     //! Data node, used to store optional intermediate node data
     NodeDataRef mData;
-
-    //! Property grid, defining the set of editable properties
-    PropertyGrid::PropertyGrid mPropertyGrid;
-
-#if PEGASUS_ENABLE_PROXIES
-
-    //! Name of the node (includes the terminating character)
-    char mName[MAX_NAME_LENGTH + 1];
-
-    //! Description of the node in DOT language
-    char mDOTDescription[MAX_DOT_DESCRIPTION_LENGTH];
-
-#endif  // PEGASUS_ENABLE_PROXIES
 };
 
 //----------------------------------------------------------------------------------------

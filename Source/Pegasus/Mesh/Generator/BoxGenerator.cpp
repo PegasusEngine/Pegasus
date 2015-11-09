@@ -12,15 +12,15 @@
 #include "Pegasus/Mesh/Generator/BoxGenerator.h"
 #include "Pegasus/Math/Vector.h"
 
-namespace Pegasus
-{
-namespace Mesh
-{
+namespace Pegasus {
+namespace Mesh {
 
 //! Property implementations
-BEGIN_IMPLEMENT_PROPERTIES2(BoxGenerator)
-    IMPLEMENT_PROPERTY2(BoxGenerator, CubeExtends)
-END_IMPLEMENT_PROPERTIES2(BoxGenerator)
+BEGIN_IMPLEMENT_PROPERTIES(BoxGenerator)
+    IMPLEMENT_PROPERTY(BoxGenerator, CubeExtends)
+END_IMPLEMENT_PROPERTIES(BoxGenerator)
+
+//----------------------------------------------------------------------------------------
 
 BoxGenerator::BoxGenerator(Pegasus::Alloc::IAllocator* nodeAllocator, 
               Pegasus::Alloc::IAllocator* nodeDataAllocator) 
@@ -28,20 +28,24 @@ BoxGenerator::BoxGenerator(Pegasus::Alloc::IAllocator* nodeAllocator,
 {
     //INIT properties
     BEGIN_INIT_PROPERTIES(BoxGenerator)
-        INIT_PROPERTY2(CubeExtends)
+        INIT_PROPERTY(CubeExtends)
     END_INIT_PROPERTIES()
 
     mConfiguration.SetIsIndexed(true);
 
     mConfiguration.SetMeshPrimitiveType(MeshConfiguration::TRIANGLE);
 
-    //this mesh only contains position uvs and normals
+    //this mesh only contains position UVs and normals
     mConfiguration.GetInputLayout()->GenerateEditorLayout(MeshInputLayout::USE_POSITION | MeshInputLayout::USE_UV | MeshInputLayout::USE_NORMAL);
 }
+
+//----------------------------------------------------------------------------------------
 
 BoxGenerator::~BoxGenerator()
 {
 }
+
+//----------------------------------------------------------------------------------------
 
 void BoxGenerator::GenerateData()
 {

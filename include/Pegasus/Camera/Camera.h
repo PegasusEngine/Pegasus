@@ -12,19 +12,19 @@
 #ifndef PEGASUS_CAMERA_CAMERA_H
 #define PEGASUS_CAMERA_CAMERA_H
 
-#include "Pegasus/PropertyGrid/PropertyGrid.h"
+#include "Pegasus/PropertyGrid/PropertyGridObject.h"
 
 namespace Pegasus {
 namespace Camera {
 
 
 //! Camera object, storing the settings of one camera in the scene
-class Camera
+class Camera : public PropertyGrid::PropertyGridObject
 {
-    BEGIN_DECLARE_PROPERTIES()
+    BEGIN_DECLARE_PROPERTIES_BASE(Camera)
 
         //! Position of the camera in world space
-        DECLARE_PROPERTY(Math::Vec3, Position)
+        DECLARE_PROPERTY(Math::Vec3, Position, Math::Vec3(0.0f, 0.0f, 0.0f))
 
     END_DECLARE_PROPERTIES()
 
@@ -46,22 +46,6 @@ public:
     //! \param camera Camera to copy the parameters from
     //! \return Updated current camera
     Camera & operator=(const Camera & camera);
-
-
-    //! Get the property grid
-    //! \return Reference to the property grid
-    inline const PropertyGrid::PropertyGrid & GetPropertyGrid() const { return mPropertyGrid; }
-
-    //! Get the property grid
-    //! \return Reference to the property grid
-    inline PropertyGrid::PropertyGrid & GetPropertyGrid() { return mPropertyGrid; }
-
-    //------------------------------------------------------------------------------------
-
-private:
-
-    //! Property grid, defining the set of editable properties
-    PropertyGrid::PropertyGrid mPropertyGrid;
 };
 
 

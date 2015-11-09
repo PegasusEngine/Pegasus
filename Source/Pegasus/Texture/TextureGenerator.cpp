@@ -15,6 +15,11 @@ namespace Pegasus {
 namespace Texture {
 
 
+BEGIN_IMPLEMENT_PROPERTIES(TextureGenerator)
+END_IMPLEMENT_PROPERTIES(TextureGenerator)
+
+//----------------------------------------------------------------------------------------
+
 TextureGenerator::TextureGenerator(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :   Graph::GeneratorNode(nodeAllocator, nodeDataAllocator),
     mConfiguration()
@@ -22,7 +27,10 @@ TextureGenerator::TextureGenerator(Alloc::IAllocator* nodeAllocator, Alloc::IAll
 ,   mProxy(this)
 #endif
 {
-    //initialize event user data
+    BEGIN_INIT_PROPERTIES(TextureGenerator)
+    END_INIT_PROPERTIES()
+
+    // Initialize event user data
     GRAPH_EVENT_INIT_DISPATCHER
 }
 
@@ -36,7 +44,10 @@ TextureGenerator::TextureGenerator(const TextureConfiguration & configuration,
 ,   mProxy(this)
 #endif
 {
-    //initialize event user data
+    BEGIN_INIT_PROPERTIES(TextureGenerator)
+    END_INIT_PROPERTIES()
+
+    // Initialize event user data
     GRAPH_EVENT_INIT_DISPATCHER
 }
 

@@ -29,7 +29,10 @@ namespace Texture {
 //!                     so the operator node can be instantiated
 class TextureOperator : public Graph::OperatorNode
 {
-    //Generating code to allow texture handle macros
+    BEGIN_DECLARE_PROPERTIES(TextureOperator, OperatorNode)
+    END_DECLARE_PROPERTIES()
+        
+    // Generating code to allow texture handle macros
     GRAPH_EVENT_DECLARE_DISPATCHER(ITextureEventListener);
 
 public:

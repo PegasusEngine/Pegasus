@@ -24,8 +24,8 @@ namespace Wnd
 class WindowComponentState : public PropertyGrid::PropertyGridObject
 {
     BEGIN_DECLARE_PROPERTIES_BASE(WindowComponentState)
-        DECLARE_PROPERTY2(bool, Enable, true)
-    END_DECLARE_PROPERTIES2()
+        DECLARE_PROPERTY(bool, Enable, true)
+    END_DECLARE_PROPERTIES()
 
 public:
     WindowComponentState();

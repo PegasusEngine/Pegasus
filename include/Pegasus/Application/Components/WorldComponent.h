@@ -46,9 +46,9 @@ namespace App {
 //State of the world component
 class WorldComponentState : public Wnd::WindowComponentState
 {
-    BEGIN_DECLARE_PROPERTIES2(WorldComponentState, WindowComponentState)
-        DECLARE_PROPERTY2(WorldModeType, Mode, FILL_LIGHT)
-    END_DECLARE_PROPERTIES2()
+    BEGIN_DECLARE_PROPERTIES(WorldComponentState, WindowComponentState)
+        DECLARE_PROPERTY(WorldModeType, Mode, FILL_LIGHT)
+    END_DECLARE_PROPERTIES()
 
 public:
     WorldComponentState();

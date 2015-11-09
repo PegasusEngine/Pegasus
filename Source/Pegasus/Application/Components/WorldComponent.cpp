@@ -31,14 +31,14 @@ namespace Pegasus {
     }
 }
 
-BEGIN_IMPLEMENT_PROPERTIES2(WorldComponentState)
-    IMPLEMENT_PROPERTY2(WorldComponentState, Mode)
-END_IMPLEMENT_PROPERTIES2(WorldComponentState)
+BEGIN_IMPLEMENT_PROPERTIES(WorldComponentState)
+    IMPLEMENT_PROPERTY(WorldComponentState, Mode)
+END_IMPLEMENT_PROPERTIES(WorldComponentState)
 
 WorldComponentState::WorldComponentState()
 {
     BEGIN_INIT_PROPERTIES(WorldComponentState)
-        INIT_PROPERTY2(Mode)
+        INIT_PROPERTY(Mode)
     END_INIT_PROPERTIES();
 }
 

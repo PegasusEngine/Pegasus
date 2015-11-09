@@ -23,9 +23,11 @@ class AddOperator : public TextureOperator
 {
     DECLARE_TEXTURE_OPERATOR_NODE(AddOperator)
 
-    BEGIN_DECLARE_PROPERTIES()
-        DECLARE_PROPERTY(bool, Clamp)
+    BEGIN_DECLARE_PROPERTIES(AddOperator, TextureOperator)
+        DECLARE_PROPERTY(bool, Clamp, true)
     END_DECLARE_PROPERTIES()
+
+    //------------------------------------------------------------------------------------
 
 public:
 

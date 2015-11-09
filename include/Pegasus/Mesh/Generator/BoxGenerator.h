@@ -24,13 +24,14 @@ namespace Mesh
 //! Mesh cube generator. Generates a cube
 class BoxGenerator : public MeshGenerator
 {
-public:
     DECLARE_MESH_GENERATOR_NODE(BoxGenerator)
 
     //! Property declarations
-    BEGIN_DECLARE_PROPERTIES2(BoxGenerator, MeshGenerator)
-        DECLARE_PROPERTY2(Math::Vec3, CubeExtends, Math::Vec3(1.0f,1.0f,1.0f))
-    END_DECLARE_PROPERTIES2()
+    BEGIN_DECLARE_PROPERTIES(BoxGenerator, MeshGenerator)
+        DECLARE_PROPERTY(Math::Vec3, CubeExtends, Math::Vec3(1.0f, 1.0f, 1.0f))
+    END_DECLARE_PROPERTIES()
+
+public:
 
     //! Cube generator constructor
     //!\param nodeAllocator the allocator for the node properties (if any)

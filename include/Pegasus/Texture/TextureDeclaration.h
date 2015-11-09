@@ -15,12 +15,16 @@
 
 //! Macro to use just after the braces when declaring a texture generator node class.
 //! It declares the constructors, destructor and the functions for the texture manager
+//! \warning The InitProperties() function must be implemented in the source file
+//!          and call the proper BEING/END_INIT_PROPERTIES macros
 //! \param className Name of the class of the declared node
 #define DECLARE_TEXTURE_GENERATOR_NODE(className)                                               \
     DECLARE_TEXTURE_NODE(className, Pegasus::Texture::TextureGenerator)                         \
 
 //! Macro to use just after the braces when declaring a texture operator node class.
 //! It declares the constructors, destructor and the functions for the texture manager
+//! \warning The InitProperties() function must be implemented in the source file
+//!          and call the proper BEING/END_INIT_PROPERTIES macros
 //! \param className Name of the class of the declared node
 #define DECLARE_TEXTURE_OPERATOR_NODE(className)                                                \
     DECLARE_TEXTURE_NODE(className, Pegasus::Texture::TextureOperator)                          \
@@ -42,14 +46,16 @@
             {   return PG_NEW(nodeAllocator, -1, "Texture::" #className, Alloc::PG_MEM_PERM)    \
                                 className(nodeAllocator, nodeDataAllocator); }                  \
                                                                                                 \
+        void InitProperties();                                                                  \
+                                                                                                \
         className(Pegasus::Alloc::IAllocator* nodeAllocator,                                    \
                   Pegasus::Alloc::IAllocator* nodeDataAllocator)                                \
-        :   baseClassName(nodeAllocator, nodeDataAllocator) { }                                 \
+        :   baseClassName(nodeAllocator, nodeDataAllocator) { InitProperties(); }               \
                                                                                                 \
         className(const Pegasus::Texture::TextureConfiguration & configuration,                 \
                   Pegasus::Alloc::IAllocator* nodeAllocator,                                    \
                   Pegasus::Alloc::IAllocator* nodeDataAllocator)                                \
-        :   baseClassName(configuration, nodeAllocator, nodeDataAllocator) { }                  \
+        :   baseClassName(configuration, nodeAllocator, nodeDataAllocator) { InitProperties(); }\
                                                                                                 \
     protected:                                                                                  \
         virtual ~className() { }                                                                \

@@ -15,9 +15,17 @@ namespace Pegasus {
 namespace Graph {
 
 
+BEGIN_IMPLEMENT_PROPERTIES(OutputNode)
+END_IMPLEMENT_PROPERTIES(OutputNode)
+
+//----------------------------------------------------------------------------------------
+
 OutputNode::OutputNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :   Node(nodeAllocator, nodeDataAllocator)
 {
+    BEGIN_INIT_PROPERTIES(OutputNode)
+    END_INIT_PROPERTIES()
+
 #if PEGASUS_ENABLE_PROXIES
     mNodeType = NODETYPE_OUTPUT;
 #endif  // PEGASUS_ENABLE_PROXIES

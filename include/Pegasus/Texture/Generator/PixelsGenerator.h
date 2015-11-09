@@ -23,12 +23,14 @@ class PixelsGenerator : public TextureGenerator
 {
     DECLARE_TEXTURE_GENERATOR_NODE(PixelsGenerator)
 
-    BEGIN_DECLARE_PROPERTIES()
-        DECLARE_PROPERTY(unsigned int, NumPixels)
-        DECLARE_PROPERTY(unsigned int, Seed)
-        DECLARE_PROPERTY(Math::Color8RGBA, BackgroundColor)
-        DECLARE_PROPERTY(Math::Color8RGBA, Color0)
+    BEGIN_DECLARE_PROPERTIES(PixelsGenerator, TextureGenerator)
+        DECLARE_PROPERTY(unsigned int, NumPixels, 8192)
+        DECLARE_PROPERTY(unsigned int, Seed, 123456789)
+        DECLARE_PROPERTY(Math::Color8RGBA, BackgroundColor, Math::Color8RGBA(0, 0, 0, 255))
+        DECLARE_PROPERTY(Math::Color8RGBA, Color0, Math::Color8RGBA(255, 255, 255, 255))
     END_DECLARE_PROPERTIES()
+
+    //------------------------------------------------------------------------------------
 
 public:
 

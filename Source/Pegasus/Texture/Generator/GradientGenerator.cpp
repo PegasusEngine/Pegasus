@@ -18,11 +18,23 @@ namespace Texture {
 
 
 BEGIN_IMPLEMENT_PROPERTIES(GradientGenerator)
-    IMPLEMENT_PROPERTY(Math::Color8RGBA, Color0, Math::Color8RGBA(0, 0, 0, 255))
-    IMPLEMENT_PROPERTY(Math::Color8RGBA, Color1, Math::Color8RGBA(255, 255, 255, 255))
-    IMPLEMENT_PROPERTY(Math::Vec3, Point0, Math::Vec3(0.0f, 0.0f, 0.0f))
-    IMPLEMENT_PROPERTY(Math::Vec3, Point1, Math::Vec3(1.0f, 0.0f, 0.0f))
-END_IMPLEMENT_PROPERTIES()
+    IMPLEMENT_PROPERTY(GradientGenerator, Color0)
+    IMPLEMENT_PROPERTY(GradientGenerator, Color1)
+    IMPLEMENT_PROPERTY(GradientGenerator, Point0)
+    IMPLEMENT_PROPERTY(GradientGenerator, Point1)
+END_IMPLEMENT_PROPERTIES(GradientGenerator)
+
+//----------------------------------------------------------------------------------------
+
+void GradientGenerator::InitProperties()
+{
+    BEGIN_INIT_PROPERTIES(GradientGenerator)
+        INIT_PROPERTY(Color0)
+        INIT_PROPERTY(Color1)
+        INIT_PROPERTY(Point0)
+        INIT_PROPERTY(Point1)
+    END_INIT_PROPERTIES()
+}
 
 //----------------------------------------------------------------------------------------
 

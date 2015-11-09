@@ -32,6 +32,9 @@ class TextureTracker;
 //!       or one of its inputs
 class Texture : public Graph::OutputNode
 {
+    BEGIN_DECLARE_PROPERTIES(Texture, OutputNode)
+    END_DECLARE_PROPERTIES()
+
 public:
 
     //! Default constructor, uses the default texture configuration

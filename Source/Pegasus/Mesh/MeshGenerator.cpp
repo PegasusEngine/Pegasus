@@ -14,8 +14,11 @@
 namespace Pegasus {
 namespace Mesh {
 
-BEGIN_IMPLEMENT_PROPERTIES2(MeshGenerator)
-END_IMPLEMENT_PROPERTIES2(MeshGenerator)
+
+BEGIN_IMPLEMENT_PROPERTIES(MeshGenerator)
+END_IMPLEMENT_PROPERTIES(MeshGenerator)
+
+//----------------------------------------------------------------------------------------
 
 MeshGenerator::MeshGenerator(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :   Graph::GeneratorNode(nodeAllocator, nodeDataAllocator),
@@ -24,7 +27,7 @@ MeshGenerator::MeshGenerator(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator
     BEGIN_INIT_PROPERTIES(MeshGenerator)
     END_INIT_PROPERTIES()
 
-    //initialize event user data
+    // Initialize event user data
     GRAPH_EVENT_INIT_DISPATCHER
 }
 
@@ -35,7 +38,10 @@ MeshGenerator::MeshGenerator(const MeshConfiguration & configuration,
 :   Graph::GeneratorNode(nodeAllocator, nodeDataAllocator),
     mConfiguration(configuration)
 {
-    //initialize event user data
+    BEGIN_INIT_PROPERTIES(MeshGenerator)
+    END_INIT_PROPERTIES()
+
+    // Initialize event user data
     GRAPH_EVENT_INIT_DISPATCHER
 }
 

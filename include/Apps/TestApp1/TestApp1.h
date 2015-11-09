@@ -40,17 +40,17 @@ class TestClass2 : public Pegasus::PropertyGrid::PropertyGridObject
 {
 
     BEGIN_DECLARE_PROPERTIES_BASE(TestClass2)
-        DECLARE_PROPERTY2(bool, ParentBool, true)
-        DECLARE_PROPERTY2(int, ParentInt, -10)
-        DECLARE_PROPERTY2(unsigned int, ParentUInt, 23)
-        DECLARE_PROPERTY2(float, ParentFloat, 0.5f)
-        DECLARE_PROPERTY2(Vec2, ParentVec2, Vec2(1.0f, 2.0f))
-        DECLARE_PROPERTY2(Vec3, ParentVec3, Vec3(3.0f, 4.0f, 5.0f))
-        DECLARE_PROPERTY2(Vec4, ParentVec4, Vec4(6.0f, 7.0f, 8.0f, 9.0f))
-        DECLARE_PROPERTY2(Color8RGB, ParentRGB, Color8RGB(10, 11, 12))
-        DECLARE_PROPERTY2(Color8RGBA, ParentRGBA, Color8RGBA(13, 14, 15, 16))
-        DECLARE_PROPERTY2(Pegasus::PropertyGrid::String64, ParentStr64, "ParentStr64")
-    END_DECLARE_PROPERTIES2()
+        DECLARE_PROPERTY(bool, ParentBool, true)
+        DECLARE_PROPERTY(int, ParentInt, -10)
+        DECLARE_PROPERTY(unsigned int, ParentUInt, 23)
+        DECLARE_PROPERTY(float, ParentFloat, 0.5f)
+        DECLARE_PROPERTY(Vec2, ParentVec2, Vec2(1.0f, 2.0f))
+        DECLARE_PROPERTY(Vec3, ParentVec3, Vec3(3.0f, 4.0f, 5.0f))
+        DECLARE_PROPERTY(Vec4, ParentVec4, Vec4(6.0f, 7.0f, 8.0f, 9.0f))
+        DECLARE_PROPERTY(Color8RGB, ParentRGB, Color8RGB(10, 11, 12))
+        DECLARE_PROPERTY(Color8RGBA, ParentRGBA, Color8RGBA(13, 14, 15, 16))
+        DECLARE_PROPERTY(Pegasus::PropertyGrid::String64, ParentStr64, "ParentStr64")
+    END_DECLARE_PROPERTIES()
     
 public:
     TestClass2();
@@ -59,18 +59,18 @@ public:
 
 class TestClass3 : public TestClass2
 {
-    BEGIN_DECLARE_PROPERTIES2(TestClass3, TestClass2)
-        DECLARE_PROPERTY2(bool, DerivedBool, true)
-        DECLARE_PROPERTY2(int, DerivedInt, -20)
-        DECLARE_PROPERTY2(unsigned int, DerivedUInt, 45)
-        DECLARE_PROPERTY2(float, DerivedFloat, -0.5f)
-        DECLARE_PROPERTY2(Vec2, DerivedVec2, Vec2(101.0f, 102.0f))
-        DECLARE_PROPERTY2(Vec3, DerivedVec3, Vec3(103.0f, 104.0f, 105.0f))
-        DECLARE_PROPERTY2(Vec4, DerivedVec4, Vec4(106.0f, 107.0f, 108.0f, 109.0f))
-        DECLARE_PROPERTY2(Color8RGB, DerivedRGB, Color8RGB(110, 111, 112))
-        DECLARE_PROPERTY2(Color8RGBA, DerivedRGBA, Color8RGBA(113, 114, 115, 116))
-        DECLARE_PROPERTY2(Pegasus::PropertyGrid::String64, DerivedStr64, "DerivedStr64")
-    END_DECLARE_PROPERTIES2()
+    BEGIN_DECLARE_PROPERTIES(TestClass3, TestClass2)
+        DECLARE_PROPERTY(bool, DerivedBool, true)
+        DECLARE_PROPERTY(int, DerivedInt, -20)
+        DECLARE_PROPERTY(unsigned int, DerivedUInt, 45)
+        DECLARE_PROPERTY(float, DerivedFloat, -0.5f)
+        DECLARE_PROPERTY(Vec2, DerivedVec2, Vec2(101.0f, 102.0f))
+        DECLARE_PROPERTY(Vec3, DerivedVec3, Vec3(103.0f, 104.0f, 105.0f))
+        DECLARE_PROPERTY(Vec4, DerivedVec4, Vec4(106.0f, 107.0f, 108.0f, 109.0f))
+        DECLARE_PROPERTY(Color8RGB, DerivedRGB, Color8RGB(110, 111, 112))
+        DECLARE_PROPERTY(Color8RGBA, DerivedRGBA, Color8RGBA(113, 114, 115, 116))
+        DECLARE_PROPERTY(Pegasus::PropertyGrid::String64, DerivedStr64, "DerivedStr64")
+    END_DECLARE_PROPERTIES()
     
 public:
     TestClass3();

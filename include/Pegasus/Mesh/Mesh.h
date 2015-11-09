@@ -30,6 +30,9 @@ class IMeshFactory;
 //!       or one of its inputs
 class Mesh : public Graph::OutputNode
 {
+    BEGIN_DECLARE_PROPERTIES(Mesh, OutputNode)
+    END_DECLARE_PROPERTIES()
+
 public:
 
     //! Default constructor, uses the default mesh configuration

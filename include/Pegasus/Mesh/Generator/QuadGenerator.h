@@ -23,13 +23,14 @@ namespace Mesh
 //! Mesh quad generator. Generates a quad in homogeneous space [-1, 1]. Sets the z of such quad to 0
 class QuadGenerator : public MeshGenerator
 {
-public:
     DECLARE_MESH_GENERATOR_NODE(QuadGenerator)
 
     //! Property declarations
-    BEGIN_DECLARE_PROPERTIES2(QuadGenerator, MeshGenerator)
-        DECLARE_PROPERTY2(Math::Vec2, QuadExtends, Math::Vec2(1.0f,1.0f))
-    END_DECLARE_PROPERTIES2()
+    BEGIN_DECLARE_PROPERTIES(QuadGenerator, MeshGenerator)
+        DECLARE_PROPERTY(Math::Vec2, QuadExtends, Math::Vec2(1.0f,1.0f))
+    END_DECLARE_PROPERTIES()
+
+public:
 
     //!Quad generator constructor
     //!\param nodeAllocator the allocator for the node properties (if any)
