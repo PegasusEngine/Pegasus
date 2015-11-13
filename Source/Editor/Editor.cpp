@@ -101,11 +101,6 @@ Editor::Editor(QApplication * parentApplication)
     connect(sSettings, SIGNAL(OnCodeEditorStyleChanged()),
             mCodeEditorWidget, SLOT(OnSettingsChanged())); 
 
-    connect(mApplicationManager, SIGNAL(ApplicationLoaded()),
-            mTextureEditorDockWidget, SLOT(UpdateUIForAppLoaded()));
-    connect(mApplicationManager, SIGNAL(ApplicationFinished()),
-            mTextureEditorDockWidget, SLOT(UpdateUIForAppClosed()));
-
     connect(mActionEditUndo, SIGNAL(triggered()), mHistoryDockWidget, SLOT(TriggerUndo()));
     connect(mActionEditRedo, SIGNAL(triggered()), mHistoryDockWidget, SLOT(TriggerRedo()));
 
@@ -473,8 +468,8 @@ void Editor::CreateDockWidgets()
     mAssetLibraryWidget->hide();
     mAssetLibraryWidget->setFloating(true);
 
-    mTextureEditorDockWidget = new TextureEditorDockWidget(this);
-    addDockWidget(Qt::RightDockWidgetArea, mTextureEditorDockWidget);
+    mTextureEditorDockWidget = new TextureEditorDockWidget(this, this);
+    RegisterWidget(mTextureEditorDockWidget, Qt::RightDockWidgetArea);
     mViewportWidgets.push_back(mTextureEditorDockWidget->GetViewportWidget());
 
     mPropertyGridClassesDockWidget = new PropertyGridClassesDockWidget(this, this);

@@ -13,20 +13,26 @@
 #define EDITOR_TEXTUREEDITORDOCKWIDGET_H
 
 #include <QDockWidget>
+#include "Widgets/PegasusDockWidget.h"
 #include "ui_TextureEditorDockWidget.h"
 
 class ViewportWidget;
 class QMdiSubWindow;
+class Editor;
 
 namespace Pegasus {
     namespace Texture {
         class ITextureNodeProxy;
     }
+
+    namespace App {
+        class IApplicationProxy;
+    }
 }
 
 
 //! Dock widget for the texture editor
-class TextureEditorDockWidget : public QDockWidget
+class TextureEditorDockWidget : public PegasusDockWidget
 {
     Q_OBJECT
 
@@ -34,7 +40,16 @@ public:
 
     //! Constructor
     //! \param parent Parent of the dock widget
-    TextureEditorDockWidget(QWidget *parent = 0);
+    TextureEditorDockWidget(QWidget *parent, Editor* editor);
+
+    //! Callback fired when the UI needs to be set.
+    virtual void SetupUi();
+
+    //! Returns the name this widget
+    virtual const char* GetName() const { return "TextureEditorDockWidget"; } 
+
+    //! Returns the title of this widget
+    virtual const char* GetTitle() const { return "Texture Editor"; }
 
     //! Destructor
     ~TextureEditorDockWidget();
@@ -62,15 +77,18 @@ public slots:
     
 private slots:
         
-    //! Called when an application is successfully loaded
-    void UpdateUIForAppLoaded();
-
-    //! Called when an application is closed
-    void UpdateUIForAppClosed();
-
     //! Called when a different tab is selected (or when the tab is created)
     //! \param subWindow Subwindow corresponding to the selected tab
     void TabSelected(QMdiSubWindow * subWindow);
+
+    //------------------------------------------------------------------------------------
+
+protected:
+    //! Callback called when an app has been loaded
+    virtual void OnUIForAppLoaded(Pegasus::App::IApplicationProxy* application);
+
+    //! Callback called when an app has been closed
+    virtual void OnUIForAppClosed();
 
     //------------------------------------------------------------------------------------
     

@@ -18,6 +18,7 @@
 #include "MessageControllers/SourceIOMessageController.h"
 #include "MessageControllers/ProgramIOMessageController.h"
 #include "MessageControllers/WindowIOMessageController.h"
+#include "MessageControllers/PropertyGridIOMessageController.h"
 
 class Application;
 class CodeUserData;
@@ -124,6 +125,9 @@ private slots:
     //! forwards a to the window io controller so its executed in the render thread
     void ForwardWindowIoMessage(WindowIOMessageController::Message msg);
 
+    //! forwards a to the window io controller so its executed in the render thread
+    void ForwardPropertyGridIoMessage(PropertyGridIOMessageController::Message msg);
+
     //------------------------------------------------------------------------------------
 
 private:
@@ -149,6 +153,7 @@ private:
     SourceIOMessageController*      mSourceIoMessageController;
     ProgramIOMessageController*     mProgramIoMessageController;
     WindowIOMessageController*      mWindowIoMessageController;
+    PropertyGridIOMessageController* mPropertyGridMessageController;
     SourceCodeManagerEventListener* mSourceCodeEventListener;
     
 };

@@ -27,16 +27,15 @@
 #include <QToolBar>
 
 
-TextureEditorDockWidget::TextureEditorDockWidget(QWidget *parent)
-:   QDockWidget(parent)
+TextureEditorDockWidget::TextureEditorDockWidget(QWidget *parent, Editor* editor)
+:   PegasusDockWidget(parent, editor)
+{
+}
+
+void TextureEditorDockWidget::SetupUi()
 {
     ui.setupUi(this);
-    setWindowTitle(tr("Texture Editor"));
-	setObjectName("TextureEditorDockWidget");
-	setFeatures(  QDockWidget::DockWidgetClosable
-				| QDockWidget::DockWidgetMovable
-				| QDockWidget::DockWidgetFloatable);
-	setAllowedAreas(Qt::AllDockWidgetAreas);
+    ui.propertyGridWidget->SetMessenger(this);
 
     // Create the menu bar
     //! \todo Use proper actions
@@ -117,33 +116,6 @@ void TextureEditorDockWidget::OpenTabForTexture(Pegasus::Texture::ITextureNodePr
 
 //----------------------------------------------------------------------------------------
 
-void TextureEditorDockWidget::UpdateUIForAppLoaded()
-{
-    mViewportWidget->OnAppLoaded();
-
-    //! \todo Temporary code to load the list of textures and create a tab for each
-    Pegasus::Texture::ITextureManagerProxy * textureManagerProxy =
-                        Editor::GetInstance().GetApplicationManager().GetApplication()->GetTextureManagerProxy();
-    const unsigned int numTextures = textureManagerProxy->GetNumTextures();
-    for (unsigned int t = 0; t < numTextures; ++t)
-    {
-        Pegasus::Texture::ITextureNodeProxy * textureProxy = textureManagerProxy->GetTexture(t);
-        ED_ASSERTSTR(textureProxy->GetNodeType() == Pegasus::Texture::ITextureNodeProxy::NODETYPE_OUTPUT, "Invalid node type for a texture node proxy");
-        OpenTabForTexture(textureProxy);
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
-void TextureEditorDockWidget::UpdateUIForAppClosed()
-{
-    mViewportWidget->OnAppUnloaded();
-
-    //! \todo Handle the reset of the content. Or should the tab just be deleted?
-}
-
-//----------------------------------------------------------------------------------------
-
 void TextureEditorDockWidget::TabSelected(QMdiSubWindow * subWindow)
 {
     //! \todo Implement the update of the tab when it is selected
@@ -180,4 +152,26 @@ void TextureEditorDockWidget::UpdateTextureProperties(QMdiSubWindow * subWindow)
 
     // Set the property grid widget to the property grid proxy of the texture
     ui.propertyGridWidget->SetCurrentProxy(textureProxy->GetPropertyGridObjectProxy());
+}
+
+void TextureEditorDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* application)
+{
+    mViewportWidget->OnAppLoaded();
+
+    //! \todo Temporary code to load the list of textures and create a tab for each
+    Pegasus::Texture::ITextureManagerProxy * textureManagerProxy =
+                       application->GetTextureManagerProxy();
+    const unsigned int numTextures = textureManagerProxy->GetNumTextures();
+    for (unsigned int t = 0; t < numTextures; ++t)
+    {
+        Pegasus::Texture::ITextureNodeProxy * textureProxy = textureManagerProxy->GetTexture(t);
+        ED_ASSERTSTR(textureProxy->GetNodeType() == Pegasus::Texture::ITextureNodeProxy::NODETYPE_OUTPUT, "Invalid node type for a texture node proxy");
+        OpenTabForTexture(textureProxy);
+    }
+}
+
+void TextureEditorDockWidget::OnUIForAppClosed() 
+{
+    mViewportWidget->OnAppUnloaded();
+    ui.propertyGridWidget->Clear();
 }

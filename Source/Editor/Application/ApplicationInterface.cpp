@@ -79,6 +79,7 @@ ApplicationInterface::ApplicationInterface(Application * application)
     mSourceIoMessageController = new SourceIOMessageController(mApplication->GetApplicationProxy());
     mProgramIoMessageController = new ProgramIOMessageController(mApplication->GetApplicationProxy());
     mWindowIoMessageController  = new WindowIOMessageController(mApplication->GetApplicationProxy());
+    mPropertyGridMessageController = new PropertyGridIOMessageController(mApplication->GetApplicationProxy());
     mSourceCodeEventListener = new SourceCodeManagerEventListener();
 
     Editor& editor = Editor::GetInstance();
@@ -95,6 +96,9 @@ ApplicationInterface::ApplicationInterface(Application * application)
     
         connect(mAssetIoMessageController, SIGNAL(SignalPostMessage(PegasusDockWidget*, AssetIOMessageController::Message::IoResponseMessage)),
                 widget,   SLOT(ReceiveAssetIoMessage(PegasusDockWidget*, AssetIOMessageController::Message::IoResponseMessage)), Qt::QueuedConnection);
+
+        connect(widget, SIGNAL(OnSendPropertyGridIoMessage(PropertyGridIOMessageController::Message)),
+                this,   SLOT(ForwardPropertyGridIoMessage(PropertyGridIOMessageController::Message)), Qt::QueuedConnection);
         
     }
 
@@ -191,6 +195,7 @@ ApplicationInterface::~ApplicationInterface()
     delete mAssetIoMessageController;
     delete mProgramIoMessageController;
     delete mWindowIoMessageController;
+    delete mPropertyGridMessageController;
     delete mSourceCodeEventListener;
 }
 
@@ -385,4 +390,11 @@ void ApplicationInterface::ForwardProgramIoMessage(ProgramIOMessageController::M
 void ApplicationInterface::ForwardWindowIoMessage(WindowIOMessageController::Message msg)
 {
     mWindowIoMessageController->OnRenderThreadProcessMessage(msg);
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::ForwardPropertyGridIoMessage(PropertyGridIOMessageController::Message msg)
+{
+    mPropertyGridMessageController->OnRenderThreadProcessMessage(msg);
 }

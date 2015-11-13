@@ -13,7 +13,7 @@
 #define EDITOR_PROPERTYGRIDPROPERTYMANAGERS_H
 
 #include "PropertyGrid/qtpropertybrowser/qtpropertymanager.h"
-
+#include "PropertyTypes.h"
 
 // Managers using the Qt original implementations
 
@@ -25,45 +25,6 @@ typedef QtColorPropertyManager      PropertyGridColor8RGBPropertyManager;
 typedef QtColorPropertyManager      PropertyGridColor8RGBAPropertyManager;
 typedef QtStringPropertyManager     PropertyGridString64PropertyManager;
 
-//----------------------------------------------------------------------------------------
-
-// Additional types for properties (only used for storage in the widget,
-// we cannot use Pegasus types here
-
-struct Vec2Property
-{
-    float value[2];
-
-    Vec2Property()
-        {   value[0] = value[1] = 0.0f; }
-
-    bool operator==(const Vec2Property & v) const
-        {   return (value[0] == v.value[0]) && (value[1] == v.value[1]);    }
-};
-
-struct Vec3Property
-{
-    float value[3];
-
-    Vec3Property()
-        {   value[0] = value[1] = value[2] = 0.0f;  }
-
-    bool operator==(const Vec3Property & v) const
-        {   return (value[0] == v.value[0]) && (value[1] == v.value[1]) && (value[2] == v.value[2]);    }
-};
-
-struct Vec4Property
-{
-    float value[4];
-
-    Vec4Property()
-        {   value[0] = value[1] = value[2] = value[3] = 0.0f; }
-
-    bool operator==(const Vec4Property & v) const
-        {   return (value[0] == v.value[0]) && (value[1] == v.value[1]) && (value[2] == v.value[2]) && (value[3] == v.value[3]);    }
-};
-
-//----------------------------------------------------------------------------------------
 
 class PropertyGridVec2PropertyManagerPrivate;
 

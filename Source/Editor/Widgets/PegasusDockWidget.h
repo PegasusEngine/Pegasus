@@ -14,6 +14,7 @@
 
 #include <QDockWidget>
 #include "MessageControllers/AssetIOMessageController.h"
+#include "MessageControllers/PropertyGridIOMessageController.h"
 
 // fwd declarations
 namespace Pegasus {
@@ -67,6 +68,9 @@ public:
     //! Sends a message to the asset IO controller
     void SendAssetIoMessage(const AssetIOMessageController::Message& msg);
 
+    //! Sends a message to the property IO controller
+    void SendPropertyGridIoMessage(const PropertyGridIOMessageController::Message& msg);
+
     //! Returns the current undo stack in focus for this widget
     //! \return implementation specific, must return the current active undo stack of this widget
     virtual QUndoStack* GetCurrentUndoStack() const { return nullptr; }
@@ -104,6 +108,9 @@ signals:
 
     //! Sends a message to the asset IO controller
     void OnSendAssetIoMessage(PegasusDockWidget* sender, AssetIOMessageController::Message msg);
+
+    //! Sends a message to the asset IO controller
+    void OnSendPropertyGridIoMessage(PropertyGridIOMessageController::Message msg);
 
 public slots:
     

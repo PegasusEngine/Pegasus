@@ -11,6 +11,7 @@
 
 #include "Editor.h"
 #include <QtWidgets/QApplication>
+#include <QVector>
 
 
 //include all proxy types to declare meta types
@@ -23,10 +24,12 @@
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
+#include "Pegasus/PropertyGrid/Shared/IPropertyGridClassInfoProxy.h"
 #include "CodeEditor/SourceCodeManagerEventListener.h"
 #include "MessageControllers/AssetIOMessageController.h"
 #include "MessageControllers/SourceIOMessageController.h"
 #include "MessageControllers/WindowIOMessageController.h"
+#include "MessageControllers/PropertyGridIOMessageController.h"
 #include "Widgets/PegasusDockWidget.h"
 
 //! Name of the organization creating the software
@@ -54,6 +57,11 @@ Q_DECLARE_METATYPE(AssetIOMessageController::Message::IoResponseMessage);
 Q_DECLARE_METATYPE(SourceIOMessageController::Message);
 Q_DECLARE_METATYPE(ProgramIOMessageController::Message);
 Q_DECLARE_METATYPE(WindowIOMessageController::Message);
+Q_DECLARE_METATYPE(PropertyGridIOMessageController::Message);
+Q_DECLARE_METATYPE(PropertyGridIOMessageController::UpdateElement);
+Q_DECLARE_METATYPE(QVector<PropertyGridIOMessageController::UpdateElement>);
+Q_DECLARE_METATYPE(PropertyGridHandle);
+Q_DECLARE_METATYPE(Pegasus::PropertyGrid::IPropertyGridClassInfoProxy*);
 
 void RegisterMetaTypes()
 {
@@ -70,6 +78,11 @@ void RegisterMetaTypes()
     qRegisterMetaType<SourceIOMessageController::Message>();
     qRegisterMetaType<ProgramIOMessageController::Message>();
     qRegisterMetaType<WindowIOMessageController::Message>();
+    qRegisterMetaType<PropertyGridIOMessageController::Message>();
+    qRegisterMetaType<PropertyGridIOMessageController::UpdateElement>();
+    qRegisterMetaType<QVector<PropertyGridIOMessageController::UpdateElement> >();
+    qRegisterMetaType<PropertyGridHandle>();
+    qRegisterMetaType<Pegasus::PropertyGrid::IPropertyGridClassInfoProxy*>();
 }
 
 //----------------------------------------------------------------------------------------

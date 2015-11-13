@@ -564,6 +564,15 @@
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_PropertyGridPropertyManagers.cpp">
       <Filter>Generated\Dev-Debug</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\MessageControllers\PropertyGridIOMessageController.cpp">
+      <Filter>Source\MessageControllers</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_PropertyGridIOMessageController.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_PropertyGridIOMessageController.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -752,8 +761,8 @@
     <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\PropertyGridPropertyManagers.h">
       <Filter>Source\PropertyGrid</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\Source\Editor\PropertyGrid\PropertyGridEditorFactories.h">
-      <Filter>Source\PropertyGrid</Filter>
+    <CustomBuild Include="..\..\..\Source\Editor\MessageControllers\PropertyGridIOMessageController.h">
+      <Filter>Source\MessageControllers</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -783,6 +792,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\Source\Editor\AssetLibrary\SourceCodeListModel.h">
       <Filter>Source\AssetLibrary</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\PropertyTypes.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\PropertyGrid\PropertyGridEditorFactories.h">
+      <Filter>Source\PropertyGrid</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
