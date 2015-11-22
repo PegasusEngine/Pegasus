@@ -125,7 +125,7 @@ void Preprocessor::PushCode(const char* str)
 
 const Preprocessor::Definition* Preprocessor::FindDefinitionByName(const char* name) const
 {
-    for (int i = 0; i < mDefinitions.GetSize(); ++i)
+    for (unsigned int i = 0; i < mDefinitions.GetSize(); ++i)
     {
         if (!Utils::Strcmp(mDefinitions[i].mName, name))
         {

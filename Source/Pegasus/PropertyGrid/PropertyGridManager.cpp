@@ -66,8 +66,7 @@ void PropertyGridManager::BeginDeclareProperties(const char * className, const c
 void PropertyGridManager::ResolveInternalClassHierarchy()
 {
     // Resolve the links between the classes (to know who is the parent class of each class)
-    //! \todo Make ci an unsigned int (after upgrading Vector)
-    for (int ci = 0; ci < mClassInfos.GetSize(); ++ci)
+    for (unsigned int ci = 0; ci < mClassInfos.GetSize(); ++ci)
     {
         PropertyGridClassInfo * classInfo = &mClassInfos[ci];
 
@@ -75,8 +74,7 @@ void PropertyGridManager::ResolveInternalClassHierarchy()
         if (classInfo->GetParentClassName()[0] != '\0')
         {
             PropertyGridClassInfo* parentInfo = nullptr;
-            //! \todo Make pi an unsigned int (after upgrading Vector)
-            for (int pi = 0; pi < mClassInfos.GetSize(); ++pi)
+            for (unsigned int pi = 0; pi < mClassInfos.GetSize(); ++pi)
             {
                 if (Utils::Strcmp(mClassInfos[pi].GetClassName(), classInfo->GetParentClassName()) == 0)
                 {
@@ -92,10 +90,9 @@ void PropertyGridManager::ResolveInternalClassHierarchy()
 
     // Resolve the number of properties in each class (since the classes are not declared in a specific order,
     // the parent's number of properties is not known yet at declaration time)
-    //! \todo Make ci an unsigned int (after upgrading Vector)
-    for (int ci = 0; ci < mClassInfos.GetSize(); ++ci)
+    for (unsigned int ci = 0; ci < mClassInfos.GetSize(); ++ci)
     {
-        mClassInfos[ci].UpdateNumPropertiesFromParents();
+        mClassInfos[ci].UpdateNumClassPropertiesFromParents();
     }
 }
 
@@ -136,8 +133,7 @@ const PropertyGridClassInfo * PropertyGridManager::GetClassInfo(const char * cla
         return nullptr;
     }
 
-    //! \todo Make ci an unsigned int (after upgrading Vector)
-    for (int ci = 0; ci < mClassInfos.GetSize(); ++ci)
+    for (unsigned int ci = 0; ci < mClassInfos.GetSize(); ++ci)
     {
         if (Utils::Strcmp(mClassInfos[ci].GetClassName(), className) == 0)
         {
@@ -177,7 +173,7 @@ void PropertyGridManager::EndDeclareEnum()
 
 const EnumTypeInfo* PropertyGridManager::GetEnumInfo(const char* typeName) const
 {
-    for (int i = 0; i < mEnumInfos.GetSize(); ++i)
+    for (unsigned int i = 0; i < mEnumInfos.GetSize(); ++i)
     {
         if (!Utils::Strcmp(typeName, mEnumInfos[i].GetName()))
         {

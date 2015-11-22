@@ -56,6 +56,20 @@ const IPropertyGridClassInfoProxy * PropertyGridClassInfoProxy::GetParentClassIn
 
 //----------------------------------------------------------------------------------------
 
+unsigned int PropertyGridClassInfoProxy::GetNumDerivedClassProperties() const
+{
+    return mClassInfo->GetNumDerivedClassProperties();
+}
+
+//----------------------------------------------------------------------------------------
+
+const PropertyRecord & PropertyGridClassInfoProxy::GetDerivedClassPropertyRecord(unsigned int index) const
+{
+    return mClassInfo->GetDerivedClassPropertyRecord(index);
+}
+
+//----------------------------------------------------------------------------------------
+
 unsigned int PropertyGridClassInfoProxy::GetNumClassProperties() const
 {
     return mClassInfo->GetNumClassProperties();
@@ -63,23 +77,9 @@ unsigned int PropertyGridClassInfoProxy::GetNumClassProperties() const
 
 //----------------------------------------------------------------------------------------
 
-const PropertyRecord & PropertyGridClassInfoProxy::GetClassProperty(unsigned int index) const
+const PropertyRecord & PropertyGridClassInfoProxy::GetClassPropertyRecord(unsigned int index) const
 {
-    return mClassInfo->GetClassProperty(index);
-}
-
-//----------------------------------------------------------------------------------------
-
-unsigned int PropertyGridClassInfoProxy::GetNumProperties() const
-{
-    return mClassInfo->GetNumProperties();
-}
-
-//----------------------------------------------------------------------------------------
-
-const PropertyRecord & PropertyGridClassInfoProxy::GetProperty(unsigned int index) const
-{
-    return mClassInfo->GetProperty(index);
+    return mClassInfo->GetClassPropertyRecord(index);
 }
 
 

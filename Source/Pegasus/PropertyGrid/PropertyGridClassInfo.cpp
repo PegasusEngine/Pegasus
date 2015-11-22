@@ -21,7 +21,7 @@ PropertyGridClassInfo::PropertyGridClassInfo()
 ,   mParentClassName("")
 ,   mParentClassInfo(nullptr)
 ,   mClassPropertyRecords(&PropertyGridStaticAllocator::GetInstance())
-,   mNumProperties(0)
+,   mNumClassProperties(0)
 #if PEGASUS_ENABLE_PROXIES
 ,   mProxy(this)
 #endif
@@ -30,7 +30,7 @@ PropertyGridClassInfo::PropertyGridClassInfo()
 
 //----------------------------------------------------------------------------------------
 
-const PropertyRecord & PropertyGridClassInfo::GetClassProperty(unsigned int index) const
+const PropertyRecord & PropertyGridClassInfo::GetDerivedClassPropertyRecord(unsigned int index) const
 {
     //! \todo Test for the validity of the index
 
@@ -39,23 +39,23 @@ const PropertyRecord & PropertyGridClassInfo::GetClassProperty(unsigned int inde
 
 //----------------------------------------------------------------------------------------
 
-const PropertyRecord & PropertyGridClassInfo::GetProperty(unsigned int index) const
+const PropertyRecord & PropertyGridClassInfo::GetClassPropertyRecord(unsigned int index) const
 {
     //! \todo Test for the validity of the index
 
     if (mParentClassInfo != nullptr)
     {
-        if (index < mParentClassInfo->GetNumProperties())
+        if (index < mParentClassInfo->GetNumClassProperties())
         {
-            // If a parent class is defined and the index is among the properties of the parent class,
+            // If a parent class is defined and the index is among the class properties of the parent class,
             // call the parent class info to get the record
-            return mParentClassInfo->GetProperty(index);
+            return mParentClassInfo->GetClassPropertyRecord(index);
         }
         else
         {
-            // If a parent class is defined and the index is among the properties of the current class,
+            // If a parent class is defined and the index is among the class properties of the current class,
             // offset the index and access the local info
-            return mClassPropertyRecords[index - mParentClassInfo->GetNumProperties()];
+            return mClassPropertyRecords[index - mParentClassInfo->GetNumClassProperties()];
         }
     }
     else
@@ -101,7 +101,7 @@ void PropertyGridClassInfo::DeclareProperty(PropertyType type, int size, const c
         record.size = size;
         record.name = name;     		// Copy the pointer, not the string, since the input pointer is considered as constant
         record.typeName = typeName;
-        record.defaultValuePtr = defaultValuePtr;
+        record.defaultValuePtr = reinterpret_cast<unsigned char *>(defaultValuePtr);
     }
     else
     {
@@ -121,14 +121,14 @@ void PropertyGridClassInfo::DeclareProperty(PropertyType type, int size, const c
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridClassInfo::UpdateNumPropertiesFromParents()
+void PropertyGridClassInfo::UpdateNumClassPropertiesFromParents()
 {
-    PG_ASSERT(mNumProperties == 0);
+    PG_ASSERT(mNumClassProperties == 0);
 
     const PropertyGridClassInfo * classInfo = this;
     do
     {
-        mNumProperties += classInfo->GetNumClassProperties();
+        mNumClassProperties += classInfo->GetNumDerivedClassProperties();
         classInfo = classInfo->mParentClassInfo;
     }
     while (classInfo != nullptr);

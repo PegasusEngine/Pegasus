@@ -134,8 +134,8 @@ namespace PropertyGrid {
 //! \param className Name of the class the properties belong to
 //! \note To be used inside a class' constructor, before calling \a INIT_PROPERTY()
 #define END_INIT_PROPERTIES()                                                                                       \
-    PG_ASSERTSTR(GetNumPropertyPointers() == GetStaticClassInfo()->GetNumProperties(),                              \
-                 "Invalid declaration of properties for class %s with parent %s: GetNumPropertyPointers()==%u != GetNumProperties()==%u", GetStaticClassInfo()->GetClassName(), GetStaticClassInfo()->GetParentClassName(), GetNumPropertyPointers(), GetStaticClassInfo()->GetNumProperties());    \
+    PG_ASSERTSTR(GetNumClassPropertyPointers() == GetStaticClassInfo()->GetNumClassProperties(),                              \
+                 "Invalid declaration of class properties for class %s with parent %s: GetNumClassPropertyPointers()==%u != GetNumClassProperties()==%u", GetStaticClassInfo()->GetClassName(), GetStaticClassInfo()->GetParentClassName(), GetNumClassPropertyPointers(), GetStaticClassInfo()->GetNumClassProperties());    \
 
 //----------------------------------------------------------------------------------------
 
@@ -243,12 +243,12 @@ namespace PropertyGrid {
         static EndPropertyDeclarationHelper sEndPropertyDeclarationHelper;                                          \
 
 
-//! Add a property pointer to the object property pointer array
-//! \param p Property for which the pointer is desired
+//! Add a class property pointer to the object's class property pointer array
+//! \param p Class property for which the pointer is desired
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
-#define APPEND_PROPERTY_POINTER(p) AppendPropertyPointer(static_cast<void *>(&p), sizeof(p))
+#define APPEND_PROPERTY_POINTER(p) AppendClassPropertyPointer(static_cast<void *>(&p), sizeof(p))
 #else
-#define APPEND_PROPERTY_POINTER(p) AppendPropertyPointer(static_cast<void *>(&p))
+#define APPEND_PROPERTY_POINTER(p) AppendClassPropertyPointer(static_cast<void *>(&p))
 #endif
 
 //----------------------------------------------------------------------------------------
@@ -379,43 +379,93 @@ public:
     //! Constructor
     PropertyGridObject();
 
+    //! Destructor
+    virtual ~PropertyGridObject();
+
+
     //! \todo CHECK THAT THE NEXT TODO IS APPLICABLE
 
     //! \todo IMPORTANT Implement copy constructor and assignment operator.
     //!       When a Camera is copied for example, the property grid is copied, but not the members.
     //!       They should be.
 
-    //! Get the number of registered properties for the current class only
-    //! \return Number of successfully registered properties for the current class only
+
+    // Class properties (defined when declaring the classes at compile time, identical for all instances)
+
+    //! Get the number of registered properties for the current derived class only
+    //! \return Number of successfully registered properties for the current derived class only
+    inline unsigned int GetNumDerivedClassProperties() const
+        { return GetClassInfo()->GetNumDerivedClassProperties(); }
+
+    //! Get the record of a property for the current derived class only
+    //! \param index Index of the property (0 <= index < GetNumDerivedClassProperties())
+    //! \return Record of the property (information about the property)
+    inline const PropertyRecord & GetDerivedClassPropertyRecord(unsigned int index) const
+        { return GetClassInfo()->GetDerivedClassPropertyRecord(index); }
+
+    //! Get an accessor to a property for the current derived class only
+    //! \param index Index of the property (0 <= index < GetNumDerivedClassProperties())
+    //! \return Accessor for the property
+    PropertyAccessor GetDerivedClassPropertyAccessor(unsigned int index);
+
+    //! Get the number of registered class properties, including parent classes (but not derived classes)
+    //! \return Number of successfully registered class properties
     inline unsigned int GetNumClassProperties() const
         { return GetClassInfo()->GetNumClassProperties(); }
 
-    //! Get the record of a property for the current class only
-    //! \param index Index of the property (0 <= index < GetNumClassProperties())
-    //! \return Record of the property (information about the property)
-    inline const PropertyRecord & GetClassPropertyRecord(unsigned int index) const
-        { return GetClassInfo()->GetClassProperty(index); }
+    //! Get the record of a class property, including parent classes (but not derived classes)
+    //! \param index Index of the class property (0 <= index < GetNumClassProperties())
+    //! \return Record of the class property (information about the class property)
+    const PropertyRecord & GetClassPropertyRecord(unsigned int index) const
+        { return GetClassInfo()->GetClassPropertyRecord(index); }
 
-    //! Get an accessor to a property for the current class only
-    //! \param index Index of the property (0 <= index < GetNumClassProperties())
-    //! \return Accessor for the property
+    //! Get an accessor to a class property, including parent classes (but not derived classes)
+    //! \param index Index of the class property (0 <= index < GetNumClassProperties())
+    //! \return Accessor for the class property
     PropertyAccessor GetClassPropertyAccessor(unsigned int index);
 
-    //! Get the number of registered properties, including parent classes (but not derived classes)
-    //! \return Number of successfully registered properties
-    inline unsigned int GetNumProperties() const
-        { return GetClassInfo()->GetNumProperties(); }
+    //------------------------------------------------------------------------------------
 
-    //! Get the record of a property, including parent classes (but not derived classes)
-    //! \param index Index of the property (0 <= index < GetNumProperties())
-    //! \return Record of the property (information about the property)
-    const PropertyRecord & GetPropertyRecord(unsigned int index) const
-        { return GetClassInfo()->GetProperty(index); }
+    // Object properties (defined at runtime, per instance)
 
-    //! Get an accessor to a property, including parent classes (but not derived classes)
-    //! \param index Index of the property (0 <= index < GetNumProperties())
-    //! \return Accessor for the property
-    PropertyAccessor GetPropertyAccessor(unsigned int index);
+    //! Add an object property to the instance
+    //! \param type Type of the property, PROPERTYTYPE_xxx constant
+    //! \param size Size in bytes of the property (> 0)
+    //! \param name Name of the property, starting with an uppercase letter (non-empty),
+    //!             (has to be a pointer to a global constant, does not store the string)
+	//! \param typeName Name of the type of the property
+    //! \param defaultValuePtr Pointer to the default value of the property
+    void AddObjectProperty(PropertyType type, int typeSize, const char * name, const char * typeName, const void * defaultValuePtr);
+
+    //! Add an object property to the instance using a known type
+    //! \param name Name of the property, starting with an uppercase letter (non-empty),
+    //!             (has to be a pointer to a global constant, does not store the string)
+	//! \param defaultValuePtr Pointer to the default value of the property
+    template <typename T>
+    inline void AddObjectProperty(const char * name, const T * defaultValuePtr);
+
+    //! Remove an object property from list
+    //! \param index Index of the object property to remove
+    void RemoveObjectProperty(unsigned int index);
+
+    //! Clear the list of object properties
+    void ClearObjectProperties();
+
+    //! Get the number of object properties (can change any time and for any object)
+    //! \return Number of available object properties
+    inline unsigned int GetNumObjectProperties() const
+        { return mObjectProperties.GetSize(); }
+
+    //! Get the record of an object property
+    //! \param index Index of the object property (0 <= index < GetNumObjectProperties())
+    //! \return Record of the object property (information about the property)
+    const PropertyRecord & GetObjectPropertyRecord(unsigned int index) const
+        { return mObjectProperties[index].record; }
+
+    //! Get an accessor to an object property
+    //! \param index Index of the object property (0 <= index < GetNumObjectProperties())
+    //! \return Accessor for the object property
+    PropertyAccessor GetObjectPropertyAccessor(unsigned int index);
 
     //------------------------------------------------------------------------------------
     
@@ -440,8 +490,8 @@ public:
     //! Get the proxy associated with the property grid object
     //! \return Proxy associated with the property grid object
     //@{
-    inline PropertyGridObjectProxy * GetProxy() { return &mProxy; }
-    inline const PropertyGridObjectProxy * GetProxy() const { return &mProxy; }
+    inline PropertyGridObjectProxy * GetPropertyGridProxy() { return &mProxy; }
+    inline const PropertyGridObjectProxy * GetPropertyGridProxy() const { return &mProxy; }
     //@}
 
 #endif  // PEGASUS_ENABLE_PROXIES
@@ -450,34 +500,50 @@ public:
     
 protected:
 
-    //! Add a property pointer to the object property pointer array
-    //! \param ptr Pointer to the property to add
-    //! \param propertySize Size of the property pointed by the pointer in bytes (> 0)
+    //! Add a class property pointer to the object's property pointer array
+    //! \param ptr Pointer to the class property to add
+    //! \param propertySize Size of the class property pointed by the pointer in bytes (> 0)
     //! \warning To be used only by the INIT_PROPERTY() macro
-    void AppendPropertyPointer(  void * ptr
+    void AppendClassPropertyPointer(  void * ptr
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
-                               , unsigned int propertySize
+                                    , unsigned int propertySize
 #endif
-                              );
+                                   );
 
-    //! Get the number of property pointers that have been added to the array
-    //! \return Number of property pointers that have been added to the array
-    //! \note This should match GetNumProperties(), otherwise that means that the number
+    //! Get the number of class property pointers that have been added to the array
+    //! \return Number of class property pointers that have been added to the array
+    //! \note This should match GetNumClassProperties(), otherwise that means that the number
     //!       of declaration/implementation/initialization macros does not match
-    inline unsigned int GetNumPropertyPointers() const { return mPropertyPointers.GetSize(); }
+    inline unsigned int GetNumClassPropertyPointers() const { return mClassPropertyPointers.GetSize(); }
 
     //------------------------------------------------------------------------------------
     
 private:
 
-    //! List of pointers to the members, from the base class down to the class
+    //! List of pointers to the class properties, from the base class down to the class
     //! the object is instantiated as
-    Utils::Vector<void *> mPropertyPointers;
+    Utils::Vector<void *> mClassPropertyPointers;
 
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
-    //! Size of the properties in bytes (> 0), used for sanity checks in PropertyAccessor
-    Utils::Vector<unsigned int> mPropertySizes;
+    //! Size of the class properties in bytes (> 0), used for sanity checks in PropertyAccessor
+    Utils::Vector<unsigned int> mClassPropertySizes;
 #endif
+
+
+    //! Structure defining the properties and value of an object property
+    typedef struct ObjectProperty
+    {
+        //! Specifications of the property, such as the type
+        PropertyRecord record;
+
+        //! Pointer to the variable containing the property value,
+        //! dynamically allocated
+        unsigned char * valuePtr;
+    };
+
+    //! List of object properties, unique to the instance
+    Utils::Vector<ObjectProperty> mObjectProperties;
+
 
     //! Set to true after a property is updated,
     //! to tell the property grid object owner to regenerate its data
@@ -498,6 +564,18 @@ private:
 inline void PropertyAccessor::InvalidatePropertyGrid() const
 {
     mObj->InvalidatePropertyGrid();
+}
+
+//----------------------------------------------------------------------------------------
+
+template <typename T>
+inline void PropertyGridObject::AddObjectProperty(const char * name, const T * defaultValuePtr)
+{
+    AddObjectProperty(PropertyDefinition<T>::PROPERTY_TYPE,
+                      sizeof(T),
+                      name,
+                      PropertyDefinition<T>::GetTypeName(),
+                      defaultValuePtr);
 }
 
 

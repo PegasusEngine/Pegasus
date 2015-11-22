@@ -46,23 +46,23 @@ public:
 
     //----------------------------------------------------------------------------------------
     
-    //! Get the number of registered properties for the current class only
-    //! \return Number of successfully registered properties for the current class only
-    inline unsigned int GetNumClassProperties() const { return mClassPropertyRecords.GetSize(); }
+    //! Get the number of registered properties for the current derived class only
+    //! \return Number of successfully registered properties for the current derived class only
+    inline unsigned int GetNumDerivedClassProperties() const { return mClassPropertyRecords.GetSize(); }
 
-    //! Get the record of a property for the current class only
-    //! \param index Index of the property (0 <= index < GetNumClassProperties())
+    //! Get the record of a property for the current derived class only
+    //! \param index Index of the property (0 <= index < GetNumDerivedClassProperties())
     //! \return Record of the property
-    const PropertyRecord & GetClassProperty(unsigned int index) const;
+    const PropertyRecord & GetDerivedClassPropertyRecord(unsigned int index) const;
 
-    //! Get the number of registered properties, including parent classes (but not derived classes)
-    //! \return Number of successfully registered properties
-    inline unsigned int GetNumProperties() const { return mNumProperties; }
+    //! Get the number of registered class properties, including parent classes (but not derived classes)
+    //! \return Number of successfully registered class properties
+    inline unsigned int GetNumClassProperties() const { return mNumClassProperties; }
 
-    //! Get the record of a property, including parent classes (but not derived classes)
-    //! \param index Index of the property (0 <= index < GetNumProperties())
-    //! \return Record of the property
-    const PropertyRecord & GetProperty(unsigned int index) const;
+    //! Get the record of a class property, including parent classes (but not derived classes)
+    //! \param index Index of the class property (0 <= index < GetNumClassProperties())
+    //! \return Record of the class property
+    const PropertyRecord & GetClassPropertyRecord(unsigned int index) const;
 
     //------------------------------------------------------------------------------------
 
@@ -106,10 +106,10 @@ private:
     //! \note Called by \a IMPLEMENT_PROPERTY() through the templated \a RegisterProperty() function
     void DeclareProperty(PropertyType type, int size, const char * name, const char* typeName, void * defaultValuePtr);
 
-    //! Compute the number of properties (mNumProperties), including parent classes (but not derived classes)
+    //! Compute the number of class properties (mNumClassProperties), including parent classes (but not derived classes)
     //! \note The classes are not declared in a specific order,
-    //!       the parent's number of properties is not known yet at declaration time
-    void UpdateNumPropertiesFromParents();
+    //!       the parent's number of class properties is not known yet at declaration time
+    void UpdateNumClassPropertiesFromParents();
 
     //! Name of the class owning the property (non-empty when valid)
     //! \warning Not copied, the owner must be external
@@ -126,8 +126,8 @@ private:
     //! List of property records for the current class
     Utils::Vector<PropertyRecord> mClassPropertyRecords;
 
-    //! Number of properties for the current class and parent classes combined
-    unsigned int mNumProperties;
+    //! Number of class properties for the current class and parent classes combined
+    unsigned int mNumClassProperties;
 
     // Give access to \a RegisterProperty from the manager
     friend class PropertyGridManager;

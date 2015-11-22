@@ -41,6 +41,36 @@ const IPropertyGridClassInfoProxy * PropertyGridObjectProxy::GetClassInfoProxy()
 
 //----------------------------------------------------------------------------------------
 
+unsigned int PropertyGridObjectProxy::GetNumDerivedClassProperties() const
+{
+    return mObject->GetNumDerivedClassProperties();
+}
+
+//----------------------------------------------------------------------------------------
+
+const PropertyRecord & PropertyGridObjectProxy::GetDerivedClassPropertyRecord(unsigned int index) const
+{
+    return mObject->GetDerivedClassPropertyRecord(index);
+}
+
+//----------------------------------------------------------------------------------------
+
+void PropertyGridObjectProxy::ReadDerivedClassProperty(unsigned int index, void * outputBuffer, unsigned int outputBufferSize)
+{
+    const PropertyAccessor accessor = mObject->GetDerivedClassPropertyAccessor(index);
+    accessor.Read(outputBuffer, outputBufferSize);
+}
+
+//----------------------------------------------------------------------------------------
+
+void PropertyGridObjectProxy::WriteDerivedClassProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize)
+{
+    const PropertyAccessor accessor = mObject->GetDerivedClassPropertyAccessor(index);
+    accessor.Write(inputBuffer, inputBufferSize);
+}
+
+//----------------------------------------------------------------------------------------
+
 unsigned int PropertyGridObjectProxy::GetNumClassProperties() const
 {
     return mObject->GetNumClassProperties();
@@ -71,31 +101,31 @@ void PropertyGridObjectProxy::WriteClassProperty(unsigned int index, const void 
 
 //----------------------------------------------------------------------------------------
 
-unsigned int PropertyGridObjectProxy::GetNumProperties() const
+unsigned int PropertyGridObjectProxy::GetNumObjectProperties() const
 {
-    return mObject->GetNumProperties();
+    return mObject->GetNumObjectProperties();
 }
 
 //----------------------------------------------------------------------------------------
 
-const PropertyRecord & PropertyGridObjectProxy::GetPropertyRecord(unsigned int index) const
+const PropertyRecord & PropertyGridObjectProxy::GetObjectPropertyRecord(unsigned int index) const
 {
-    return mObject->GetPropertyRecord(index);
+    return mObject->GetObjectPropertyRecord(index);
 }
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridObjectProxy::ReadProperty(unsigned int index, void * outputBuffer, unsigned int outputBufferSize)
+void PropertyGridObjectProxy::ReadObjectProperty(unsigned int index, void * outputBuffer, unsigned int outputBufferSize)
 {
-    const PropertyAccessor accessor = mObject->GetPropertyAccessor(index);
+    const PropertyAccessor accessor = mObject->GetObjectPropertyAccessor(index);
     accessor.Read(outputBuffer, outputBufferSize);
 }
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridObjectProxy::WriteProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize)
+void PropertyGridObjectProxy::WriteObjectProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize)
 {
-    const PropertyAccessor accessor = mObject->GetPropertyAccessor(index);
+    const PropertyAccessor accessor = mObject->GetObjectPropertyAccessor(index);
     accessor.Write(inputBuffer, inputBufferSize);
 }
 

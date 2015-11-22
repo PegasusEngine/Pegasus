@@ -133,7 +133,7 @@ void TimelineScript::AddHeader(TimelineSourceIn header)
 
 void TimelineScript::ClearHeaderList()
 {
-    for (int i = 0; i < mHeaders.GetSize(); ++i)
+    for (unsigned int i = 0; i < mHeaders.GetSize(); ++i)
     {
         mHeaders[i]->UnregisterParent(this);
         mHeaders[i] = nullptr;
@@ -211,7 +211,7 @@ void TimelineScript::Compile()
 {
 #if PEGASUS_ENABLE_PROXIES
     //Once compilation is done, go ahead and call all observers
-    for (int i = 0; i < mCompilationObservers.GetSize(); ++i)
+    for (unsigned int i = 0; i < mCompilationObservers.GetSize(); ++i)
     {
         mCompilationObservers[i]->OnCompilationBegin();
     }
@@ -225,7 +225,7 @@ void TimelineScript::Compile()
 
 #if PEGASUS_ENABLE_PROXIES
     //Once compilation is done, go ahead and call all observers
-    for (int i = 0; i < mCompilationObservers.GetSize(); ++i)
+    for (unsigned int i = 0; i < mCompilationObservers.GetSize(); ++i)
     {
         mCompilationObservers[i]->OnCompilationEnd();
     }
@@ -336,7 +336,7 @@ void TimelineScript::RegisterObserver(ITimelineObserver* observer)
 
 void TimelineScript::UnregisterObserver(ITimelineObserver* observer)
 {
-    for (int i = 0; i < mCompilationObservers.GetSize(); ++i)
+    for (unsigned int i = 0; i < mCompilationObservers.GetSize(); ++i)
     {
         if (observer == mCompilationObservers[i])
         {

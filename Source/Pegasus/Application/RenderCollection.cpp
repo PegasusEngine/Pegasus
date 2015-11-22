@@ -68,16 +68,16 @@ namespace Application
             }
     
             //walk the node's properties and cache them.
-            for (unsigned int i = 0; i < node->GetNumProperties(); ++i)
+            for (unsigned int i = 0; i < node->GetNumClassProperties(); ++i)
             {
-                const PropertyGrid::PropertyRecord& record = node->GetPropertyRecord(i);
-                for (int propId = 0; propId < entryLayout->mProperties.GetSize(); ++propId)
+                const PropertyGrid::PropertyRecord& record = node->GetClassPropertyRecord(i);
+                for (unsigned int propId = 0; propId < entryLayout->mProperties.GetSize(); ++propId)
                 {
                     if (!Utils::Strcmp(record.name, entryLayout->mProperties[propId]))
                     {
                         mCachedInfos[propId].mValid = true;
                         mCachedInfos[propId].mSize  = record.size;
-                        mCachedInfos[propId].mCachedAccessor = node->GetPropertyAccessor(static_cast<unsigned>(i));
+                        mCachedInfos[propId].mCachedAccessor = node->GetClassPropertyAccessor(static_cast<unsigned>(i));
                         break;
                     }
                 }
@@ -134,7 +134,7 @@ namespace Application
 
     const RenderCollectionFactory::PropEntries* RenderCollectionFactory::FindNodeLayoutEntry(const char* nodeTypeName) const
     {
-        for (int i = 0; i < mPropLayoutEntries.GetSize(); ++i)
+        for (unsigned int i = 0; i < mPropLayoutEntries.GetSize(); ++i)
         {
             const RenderCollectionFactory::PropEntries& entry = mPropLayoutEntries[i];
             if (!Utils::Strcmp(nodeTypeName, entry.mName))
@@ -184,22 +184,22 @@ namespace Application
     void RenderCollectionImpl::Clean()
     {
         //cleanup of buffers using render API
-        for (int i = 0; i < mBuffers.GetSize(); ++i) 
+        for (unsigned int i = 0; i < mBuffers.GetSize(); ++i) 
         {
             Render::DeleteBuffer(mBuffers[i]);
         }
         
-        for (int i = 0; i < mRasterizerStates.GetSize(); ++i)
+        for (unsigned int i = 0; i < mRasterizerStates.GetSize(); ++i)
         {
             Render::DeleteRasterizerState(mRasterizerStates[i]);     
         }
 
-        for (int i = 0; i < mBlendingStates.GetSize(); ++i)
+        for (unsigned int i = 0; i < mBlendingStates.GetSize(); ++i)
         {
             Render::DeleteBlendingState(mBlendingStates[i]);
         }
 
-        for (int i = 0; i < mRenderTargets.GetSize(); ++i)
+        for (unsigned int i = 0; i < mRenderTargets.GetSize(); ++i)
         {
             Render::DeleteRenderTarget(mRenderTargets[i]);
         }

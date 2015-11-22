@@ -80,10 +80,10 @@ void PropertyGridClassesDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationP
         classMap.insert(classInfoProxy, classItem);
 
         // For each class property
-        const unsigned int numClassProperties = classInfoProxy->GetNumClassProperties();
-        for (unsigned int cp = 0; cp < numClassProperties; ++cp)
+        const unsigned int numDerivedClassProperties = classInfoProxy->GetNumDerivedClassProperties();
+        for (unsigned int cp = 0; cp < numDerivedClassProperties; ++cp)
         {
-            const Pegasus::PropertyGrid::PropertyRecord & record = classInfoProxy->GetClassProperty(cp);
+            const Pegasus::PropertyGrid::PropertyRecord & record = classInfoProxy->GetDerivedClassPropertyRecord(cp);
             
             // Create the content of the property item
             QStringList propertyList;
@@ -95,76 +95,76 @@ void PropertyGridClassesDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationP
             {
                 case Pegasus::PropertyGrid::PROPERTYTYPE_BOOL:
                     {
-                        const bool value = *reinterpret_cast<bool *>(record.defaultValuePtr);
+                        const bool value = *reinterpret_cast<const bool *>(record.defaultValuePtr);
                         propertyList.append(value ? "True" : "False");
                     }
                     break;
 
                 case Pegasus::PropertyGrid::PROPERTYTYPE_INT:
                     {
-                        const int value = *reinterpret_cast<int *>(record.defaultValuePtr);
+                        const int value = *reinterpret_cast<const int *>(record.defaultValuePtr);
                         propertyList.append(QString("%1").arg(value));
                     }
                     break;
 
                 case Pegasus::PropertyGrid::PROPERTYTYPE_UINT:
                     {
-                        const unsigned int value = *reinterpret_cast<unsigned int *>(record.defaultValuePtr);
+                        const unsigned int value = *reinterpret_cast<const unsigned int *>(record.defaultValuePtr);
                         propertyList.append(QString("%1").arg(value));
                     }
                     break;
 
                 case Pegasus::PropertyGrid::PROPERTYTYPE_FLOAT:
                     {
-                        const float value = *reinterpret_cast<float *>(record.defaultValuePtr);
+                        const float value = *reinterpret_cast<const float *>(record.defaultValuePtr);
                         propertyList.append(QString("%1").arg(value));
                     }
                     break;
 
                 case Pegasus::PropertyGrid::PROPERTYTYPE_VEC2:
                     {
-                        const float * value = reinterpret_cast<float *>(record.defaultValuePtr);
+                        const float * value = reinterpret_cast<const float *>(record.defaultValuePtr);
                         propertyList.append(QString("(%1, %2)").arg(value[0]).arg(value[1]));
                     }
                     break;
 
                 case Pegasus::PropertyGrid::PROPERTYTYPE_VEC3:
                     {
-                        const float * value = reinterpret_cast<float *>(record.defaultValuePtr);
+                        const float * value = reinterpret_cast<const float *>(record.defaultValuePtr);
                         propertyList.append(QString("(%1, %2, %3)").arg(value[0]).arg(value[1]).arg(value[2]));
                     }
                     break;
 
                 case Pegasus::PropertyGrid::PROPERTYTYPE_VEC4:
                     {
-                        const float * value = reinterpret_cast<float *>(record.defaultValuePtr);
+                        const float * value = reinterpret_cast<const float *>(record.defaultValuePtr);
                         propertyList.append(QString("(%1, %2, %3, %4)").arg(value[0]).arg(value[1]).arg(value[2]).arg(value[3]));
                     }
                     break;
 
                 case Pegasus::PropertyGrid::PROPERTYTYPE_COLOR8RGB:
                     {
-                        const unsigned char * value = reinterpret_cast<unsigned char *>(record.defaultValuePtr);
+                        const unsigned char * value = reinterpret_cast<const unsigned char *>(record.defaultValuePtr);
                         propertyList.append(QString("(%1, %2, %3)").arg(value[0]).arg(value[1]).arg(value[2]));
                     }
                     break;
 
                 case Pegasus::PropertyGrid::PROPERTYTYPE_COLOR8RGBA:
                     {
-                        const unsigned char * value = reinterpret_cast<unsigned char *>(record.defaultValuePtr);
+                        const unsigned char * value = reinterpret_cast<const unsigned char *>(record.defaultValuePtr);
                         propertyList.append(QString("(%1, %2, %3, %4)").arg(value[0]).arg(value[1]).arg(value[2]).arg(value[3]));
                     }
                     break;
 
                 case Pegasus::PropertyGrid::PROPERTYTYPE_STRING64:
                     {
-                        const char * value = reinterpret_cast<char *>(record.defaultValuePtr);
+                        const char * value = reinterpret_cast<const char *>(record.defaultValuePtr);
                         propertyList.append(QString("\"%1\"").arg(value));
                     }
                     break;
                 case Pegasus::PropertyGrid::PROPERTYTYPE_CUSTOM_ENUM:
                     {
-                        const Pegasus::PropertyGrid::BaseEnumType* value = reinterpret_cast< const Pegasus::PropertyGrid::BaseEnumType *>(record.defaultValuePtr);
+                        const Pegasus::PropertyGrid::BaseEnumType* value = reinterpret_cast<const Pegasus::PropertyGrid::BaseEnumType *>(record.defaultValuePtr);
                         const Pegasus::PropertyGrid::IEnumTypeInfoProxy* enumInfo = managerProxy->GetEnumInfo(record.typeName);
                         if (enumInfo == nullptr)
                         {

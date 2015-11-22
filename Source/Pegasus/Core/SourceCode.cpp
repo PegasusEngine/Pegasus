@@ -66,7 +66,7 @@ void SourceCode::Compile()
     //copy this vector to a temp vector to avoid pop / push issues
 
     mLockParentArray = true;
-    for (int i = 0; i < mParents.GetSize(); ++i)
+    for (unsigned int i = 0; i < mParents.GetSize(); ++i)
     {
         mParents[i]->InvalidateData();
         mParents[i]->Compile();
@@ -88,7 +88,7 @@ void SourceCode::UnregisterParent(SourceCode* parent)
 {
     if (!mLockParentArray)
     {
-        for (int i = 0; i < mParents.GetSize(); ++i)
+        for (unsigned int i = 0; i < mParents.GetSize(); ++i)
         {
             if (mParents[i] == parent)
             {

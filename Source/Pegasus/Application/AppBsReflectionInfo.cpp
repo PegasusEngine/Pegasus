@@ -67,14 +67,14 @@ BsTypeInfo::~BsTypeInfo()
 {
     if (mTypeDesc->GetModifier() == BlockScript::TypeDesc::M_STRUCT)
     {
-        for (int i = 0; i < mChildren.GetSize(); ++i)
+        for (unsigned int i = 0; i < mChildren.GetSize(); ++i)
         {
             PG_DELETE(mAlloc, mChildren[i].mType);
         }
     }
     else if (mTypeDesc->GetModifier() == BlockScript::TypeDesc::M_REFERECE)
     {
-        for (int i = 0; i < mProps.GetSize(); ++i)
+        for (unsigned int i = 0; i < mProps.GetSize(); ++i)
         {
             PG_DELETE(mAlloc, mProps[i].mType);
         }
@@ -163,7 +163,7 @@ BsFunInfo::BsFunInfo(Alloc::IAllocator* alloc, const BlockScript::FunDesc* funDe
 
 BsFunInfo::~BsFunInfo()
 {
-    for (int i = 0; i < mArgs.GetSize(); ++i)
+    for (unsigned int i = 0; i < mArgs.GetSize(); ++i)
     {
         NameTypePair& p = mArgs[i];
         PG_DELETE(mAlloc, p.mType);
@@ -212,12 +212,12 @@ AppBlockscriptLibInfo::AppBlockscriptLibInfo(Alloc::IAllocator* allocator, const
 
 AppBlockscriptLibInfo::~AppBlockscriptLibInfo()
 {
-    for (int i = 0; i < mTypes.GetSize(); ++i)
+    for (unsigned int i = 0; i < mTypes.GetSize(); ++i)
     {
         PG_DELETE(mAlloc, mTypes[i]);
     }
 
-    for (int i = 0; i < mFuns.GetSize(); ++i)
+    for (unsigned int i = 0; i < mFuns.GetSize(); ++i)
     {
         PG_DELETE(mAlloc, mFuns[i]);
     }
@@ -258,7 +258,7 @@ AppBsReflectionInfo::AppBsReflectionInfo(Alloc::IAllocator* allocator)
 //! Destructor
 AppBsReflectionInfo::~AppBsReflectionInfo()
 {
-    for (int i = 0; i < mLibs.GetSize(); ++i)
+    for (unsigned int i = 0; i < mLibs.GetSize(); ++i)
     {
         PG_DELETE(mAlloc, mLibs[i]);
     }

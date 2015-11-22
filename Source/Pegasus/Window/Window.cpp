@@ -162,7 +162,7 @@ void Window::AttachComponent(IWindowComponent* component)
 
 void Window::RemoveComponents()
 {
-    for (int i = 0; i < mComponents.GetSize(); ++i)
+    for (unsigned int i = 0; i < mComponents.GetSize(); ++i)
     {
         Window::StateComponentPair& scp = mComponents[i];
         ComponentContext ctx = { mWindowContext, this };
@@ -184,14 +184,14 @@ void Window::Draw()
         ComponentContext ctx = { mWindowContext, this };
 
         //call Update for all components.
-        for (int i = 0; i < mComponents.GetSize(); ++i)
+        for (unsigned int i = 0; i < mComponents.GetSize(); ++i)
         {
             Window::StateComponentPair& scp = mComponents[i];
             scp.mComponent->WindowUpdate(ctx, scp.mState);
         }
 
         //call Render for all components.
-        for (int i = 0; i < mComponents.GetSize(); ++i)
+        for (unsigned int i = 0; i < mComponents.GetSize(); ++i)
         {
             Window::StateComponentPair& scp = mComponents[i];
             scp.mComponent->Render(ctx, scp.mState);

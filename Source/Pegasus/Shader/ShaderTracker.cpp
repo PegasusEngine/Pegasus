@@ -37,7 +37,7 @@ void ShaderTracker::InsertShader (ShaderSource * shader)
 
 void ShaderTracker::DeleteProgram(ProgramLinkage * program)
 {
-    for (int i = 0; i < mProgramLinkages.GetSize(); ++i)
+    for (unsigned int i = 0; i < mProgramLinkages.GetSize(); ++i)
     {
         if (mProgramLinkages[i] == program)
         {
@@ -49,7 +49,7 @@ void ShaderTracker::DeleteProgram(ProgramLinkage * program)
 
 void ShaderTracker::DeleteShader (ShaderSource * shader)
 {
-    for (int i = 0; i < mShaderSources.GetSize(); ++i)
+    for (unsigned int i = 0; i < mShaderSources.GetSize(); ++i)
     {
         if (mShaderSources[i] == shader)
         {
@@ -75,7 +75,7 @@ ProgramLinkage* ShaderTracker::DeleteProgram(int id)
 
 int ShaderTracker::FindShaderIndex(ShaderSource* shader) const
 {
-    for (int i = 0; i < mShaderSources.GetSize(); ++i)
+    for (unsigned int i = 0; i < mShaderSources.GetSize(); ++i)
     {
         if (mShaderSources[i] == shader)
         {
@@ -87,7 +87,7 @@ int ShaderTracker::FindShaderIndex(ShaderSource* shader) const
 
 int ShaderTracker::FindProgramIndex(ProgramLinkage* program) const
 {
-    for (int i = 0; i < mProgramLinkages.GetSize(); ++i)
+    for (unsigned int i = 0; i < mProgramLinkages.GetSize(); ++i)
     {
         if (mProgramLinkages[i] == program)
         {

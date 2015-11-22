@@ -66,7 +66,7 @@ static bool PathsAreEqual(const char* str1, const char* str2)
 
 Pegasus::AssetLib::AssetLib::~AssetLib()
 {
-    for (int i = 0; i < mAssets.GetSize(); ++i)
+    for (unsigned int i = 0; i < mAssets.GetSize(); ++i)
     {      
         PG_DELETE(mAllocator, mAssets[i]);
     }
@@ -77,7 +77,7 @@ extern void Bison_AssetScriptParse(const Io::FileBuffer* fileBuffer, AssetBuilde
 Io::IoError Pegasus::AssetLib::AssetLib::LoadAsset(const char* path, bool isStructured, Pegasus::AssetLib::Asset** assetOut)
 {
     //try to find it first
-    for (int i = 0; i < mAssets.GetSize(); ++i)
+    for (unsigned int i = 0; i < mAssets.GetSize(); ++i)
     {
         if (PathsAreEqual(mAssets[i]->GetPath(), path))
         {
@@ -129,7 +129,7 @@ Io::IoError Pegasus::AssetLib::AssetLib::LoadAsset(const char* path, bool isStru
 void Pegasus::AssetLib::AssetLib::UnloadAsset(Asset* asset)
 {
     //find this asset
-    for (int i = 0; i < mAssets.GetSize(); ++i)
+    for (unsigned int i = 0; i < mAssets.GetSize(); ++i)
     {
         if (mAssets[i] == asset)
         {
@@ -149,7 +149,7 @@ Asset* Pegasus::AssetLib::AssetLib::CreateAsset(const char* path, bool isStructu
 {
     Asset* asset = nullptr;
     //try to find it first
-    for (int i = 0; i < mAssets.GetSize(); ++i)
+    for (unsigned int i = 0; i < mAssets.GetSize(); ++i)
     {
         if (PathsAreEqual(mAssets[i]->GetPath(), path))
         {
@@ -199,7 +199,7 @@ void Pegasus::AssetLib::AssetLib::RegisterObjectFactory(AssetRuntimeFactory* fac
 {
 #if PEGASUS_DEBUG
     //check if there is a duplicate factory, assert if so.
-    for (int i = 0; i < mFactories.GetSize(); ++i)
+    for (unsigned int i = 0; i < mFactories.GetSize(); ++i)
     {
         PG_ASSERTSTR(mFactories[i] != factory, "factory must not be inserted twice!");
     }
@@ -286,7 +286,7 @@ RuntimeAssetObjectRef Pegasus::AssetLib::AssetLib::CreateObject(const char* path
         AssetRuntimeFactory* factory = nullptr;
         const PegasusAssetTypeDesc* supportedType = nullptr;
         //find an available factory
-        for (int i = 0; factory == nullptr &&  i < mFactories.GetSize(); ++i)
+        for (unsigned int i = 0; factory == nullptr &&  i < mFactories.GetSize(); ++i)
         {
             AssetRuntimeFactory* candidate = mFactories[i];
             const PegasusAssetTypeDesc* const* supportedTypeList = candidate->GetAssetTypes();
@@ -338,7 +338,7 @@ Io::IoError Pegasus::AssetLib::AssetLib::SaveObject(RuntimeAssetObjectRef object
 
 Pegasus::AssetLib::AssetRuntimeFactory* Pegasus::AssetLib::AssetLib::FindFactory(Asset* asset, const char* ext, const PegasusAssetTypeDesc** outDesc) const
 {
-    for (int i = 0; i < mFactories.GetSize(); ++i)
+    for (unsigned int i = 0; i < mFactories.GetSize(); ++i)
     {
         if (mFactories[i]->IsCompatible(asset,ext,outDesc))
         {

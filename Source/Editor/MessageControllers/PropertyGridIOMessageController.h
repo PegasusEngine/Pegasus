@@ -25,7 +25,6 @@ namespace Pegasus
 {
     namespace PropertyGrid {
         class IPropertyGridObjectProxy;
-        class IPropertyGridClassInfoProxy;
     }
 
     namespace App {
@@ -166,10 +165,10 @@ public:
     //! Destructor
     virtual ~PropertyGridObserver() {}
 
-    //! Callback when this observer gets notified that the io controller is done initializing
-    //! \param handle - the new handle. Store this handle locally in this observer for this session.
-    //! \param classInfo - schema of instance corresponding to the handle
-    virtual void OnInitialized(PropertyGridHandle handle, const Pegasus::PropertyGrid::IPropertyGridClassInfoProxy* classInfo) = 0;
+    //! Callback when this observer gets notified that the IO controller is done initializing
+    //! \param handle The new handle. Store this handle locally in this observer for this session.
+    //! \param objectProxy Proxy for the observed property grid
+    virtual void OnInitialized(PropertyGridHandle handle, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy) = 0;
 
     //! Callback when an external (the render thread) process has edited a property.
     //! \param handle - the handle that has been updated. This parameter will always be the same one that was returned by OnInitialized.
@@ -181,14 +180,14 @@ public:
     virtual void OnShutdown(PropertyGridHandle handle) = 0;
 
 signals:
-    void OnInitializedSignal(PropertyGridHandle handle, const Pegasus::PropertyGrid::IPropertyGridClassInfoProxy* classInfo);
+    void OnInitializedSignal(PropertyGridHandle handle, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy);
 
     void OnUpdatedSignal(PropertyGridHandle handle, const QVector<PropertyGridIOMessageController::UpdateElement> els);
 
     void OnShutdownSignal(PropertyGridHandle handle);
 
 private slots:
-    void OnInitializedSlot(PropertyGridHandle handle, const Pegasus::PropertyGrid::IPropertyGridClassInfoProxy* classInfo) { OnInitialized(handle, classInfo); }
+    void OnInitializedSlot(PropertyGridHandle handle, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy) { OnInitialized(handle, objectProxy); }
 
     void OnUpdatedSlot(PropertyGridHandle handle, const QVector<PropertyGridIOMessageController::UpdateElement> els) { OnUpdated(handle, els); }
 

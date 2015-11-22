@@ -19,19 +19,13 @@ PEGASUS_AVOID_EMPTY_FILE_WARNING
 #include "Pegasus/Texture/TextureOperator.h"
 #include "Pegasus/Texture/Texture.h"
 
-/**************/
-// TEMPORARY! JUST FOR TESTING PROPERTY GRID
-//! \todo Remove once the temporary code in GetPropertyGridObjectProxy() is removed
-#include "Apps\TestApp1\TestApp1.h"
-/************/
-  
- namespace Pegasus {
+namespace Pegasus {
 namespace Texture {
 
 
 TextureNodeProxy::TextureNodeProxy(TextureGenerator * textureGenerator)
 :   mNodeType(NODETYPE_GENERATOR)
-,   mTextureGenerator(textureGenerator)
+,   mNode(textureGenerator)
 {
     PG_ASSERTSTR(textureGenerator != nullptr, "Trying to create a texture node proxy from an invalid texture generator object");
 }
@@ -40,7 +34,7 @@ TextureNodeProxy::TextureNodeProxy(TextureGenerator * textureGenerator)
 
 TextureNodeProxy::TextureNodeProxy(TextureOperator * textureOperator)
 :   mNodeType(NODETYPE_OPERATOR)
-,   mTextureOperator(textureOperator)
+,   mNode(textureOperator)
 {
     PG_ASSERTSTR(textureOperator != nullptr, "Trying to create a texture node proxy from an invalid texture operator object");
 }
@@ -49,7 +43,7 @@ TextureNodeProxy::TextureNodeProxy(TextureOperator * textureOperator)
 
 TextureNodeProxy::TextureNodeProxy(Texture * texture)
 :   mNodeType(NODETYPE_OUTPUT)
-,   mTexture(texture)
+,   mNode(texture)
 {
     PG_ASSERTSTR(texture != nullptr, "Trying to create a texture node proxy from an invalid texture object");
 }
@@ -65,7 +59,7 @@ TextureNodeProxy::~TextureNodeProxy()
 TextureGenerator * TextureNodeProxy::GetTextureGenerator() const
 {
     PG_ASSERTSTR(mNodeType == NODETYPE_GENERATOR, "Trying to get a texture node of the wrong type");
-    return mTextureGenerator;
+    return static_cast<TextureGenerator *>(mNode);
 }
 
 //----------------------------------------------------------------------------------------
@@ -73,7 +67,7 @@ TextureGenerator * TextureNodeProxy::GetTextureGenerator() const
 TextureOperator * TextureNodeProxy::GetTextureOperator() const
 {
     PG_ASSERTSTR(mNodeType == NODETYPE_OPERATOR, "Trying to get a texture node of the wrong type");
-    return mTextureOperator;
+    return static_cast<TextureOperator *>(mNode);
 }
 
 //----------------------------------------------------------------------------------------
@@ -81,37 +75,38 @@ TextureOperator * TextureNodeProxy::GetTextureOperator() const
 Texture * TextureNodeProxy::GetTexture() const
 {
     PG_ASSERTSTR(mNodeType == NODETYPE_OUTPUT, "Trying to get a texture node of the wrong type");
-    return mTexture;
+    return static_cast<Texture *>(mNode);
 }
 
 //----------------------------------------------------------------------------------------
 
 const char * TextureNodeProxy::GetName() const
 {
-    return mTexture->GetName();
+    return mNode->GetName();
 }
 
 //----------------------------------------------------------------------------------------
 
 const ITextureConfigurationProxy * TextureNodeProxy::GetConfiguration() const
 {
-    return mTexture->GetConfiguration().GetProxy();
+    PG_ASSERTSTR(mNodeType == NODETYPE_OUTPUT, "Trying to get the configuration of a non-output texture node");
+    return static_cast<Texture *>(mNode)->GetConfiguration().GetProxy();
 }
 
 //----------------------------------------------------------------------------------------
 
 unsigned int TextureNodeProxy::GetNumInputs() const
 {
-    return mTexture->GetNumInputs();
+    return mNode->GetNumInputs();
 }
 
 //----------------------------------------------------------------------------------------
 
 ITextureNodeProxy * TextureNodeProxy::GetInputNode(unsigned int index)
 {
-    if (mTexture->IsInputIndexValid(index))
+    if (mNode->IsInputIndexValid(index))
     {
-        Graph::NodeRef inputNode = mTexture->GetInput(index);
+        Graph::NodeRef inputNode = mNode->GetInput(index);
         switch (inputNode->GetNodeType())
         {
             case Graph::Node::NODETYPE_GENERATOR:
@@ -131,7 +126,7 @@ ITextureNodeProxy * TextureNodeProxy::GetInputNode(unsigned int index)
     }
     else
     {
-        PG_FAILSTR("Invalid input index (%d) to access a node, it must be < %d", index, mTexture->GetNumInputs());
+        PG_FAILSTR("Invalid input index (%d) to access a node, it must be < %d", index, mNode->GetNumInputs());
         return nullptr;
     }
 }
@@ -140,16 +135,7 @@ ITextureNodeProxy * TextureNodeProxy::GetInputNode(unsigned int index)
 
 PropertyGrid::IPropertyGridObjectProxy * TextureNodeProxy::GetPropertyGridObjectProxy() const
 {
-    /**************/
-    // TEMPORARY! JUST FOR TESTING PROPERTY GRID
-    //! \todo Needs to be replaced by the actual proxy of a texture, once the graph nodes have a property grid gen2
-    static TestClass3 * sClass3 = nullptr;
-    if (sClass3 == nullptr)
-    {
-        sClass3 = PG_NEW(Memory::GetGlobalAllocator(), -1, "TEST", Pegasus::Alloc::PG_MEM_PERM) TestClass3;
-    }
-    return sClass3->GetProxy();
-    /**************/
+    return mNode->GetPropertyGridProxy();
 }
 
 

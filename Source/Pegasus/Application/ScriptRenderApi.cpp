@@ -304,7 +304,7 @@ void LinearizeProperties(
             
             CoreClassProperties* targetBaseClassProps = nullptr;
             //find the base class property pool
-            for (int baseClassPoolIt = 0; baseClassPoolIt < outCoreClasses.GetSize(); ++baseClassPoolIt)
+            for (unsigned int baseClassPoolIt = 0; baseClassPoolIt < outCoreClasses.GetSize(); ++baseClassPoolIt)
             {
                 if (!Utils::Strcmp(outCoreClasses[baseClassPoolIt].mName, targetBaseClassName))
                 {
@@ -319,11 +319,11 @@ void LinearizeProperties(
             }
     
             //now we have a target pool to dump all the properties cached of such parent class
-            for (unsigned propIt = 0; propIt < classInfo->GetNumClassProperties(); ++propIt)
+            for (unsigned propIt = 0; propIt < classInfo->GetNumDerivedClassProperties(); ++propIt)
             {
                 int uniqueId = targetBaseClassProps->mPropertiesDescs.GetSize();
                 Pegasus::BlockScript::ObjectPropertyDesc& objPropDesc = targetBaseClassProps->mPropertiesDescs.PushEmpty(); 
-                const PropertyGrid::PropertyRecord& record = classInfo->GetClassProperty(propIt);
+                const PropertyGrid::PropertyRecord& record = classInfo->GetDerivedClassPropertyRecord(propIt);
     #if PEGASUS_ENABLE_ASSERT
                 targetBaseClassProps->mSanityCheckProperties.PushEmpty() = &record;
     #endif
@@ -424,7 +424,7 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
     {
         ClassTypeDesc& desc = nodeDefs[i];
         
-        for (int d = 0; d < coreClasses.GetSize(); ++d)
+        for (unsigned int d = 0; d < coreClasses.GetSize(); ++d)
         {
             CoreClassProperties& coreClassProp = coreClasses[d];
             if (!Utils::Strcmp(desc.classTypeName, coreClassProp.mName))
@@ -443,14 +443,14 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
     //now that types are recovered, lets do a sanity check on property grid sizes vs block script discovered size association
     //if we have properties that could stomp on memory we will check them right here.
 #if PEGASUS_ENABLE_ASSERT
-    for (int i = 0; i < coreClasses.GetSize(); ++i)
+    for (unsigned int i = 0; i < coreClasses.GetSize(); ++i)
     {
         CoreClassProperties& coreClassProp = coreClasses[i];
         const TypeDesc* blockScriptType = lib->GetSymbolTable()->GetTypeByName(coreClassProp.mName);
         if (blockScriptType == nullptr) continue; //means is a class we are not interested in but uses the property grid
         PG_ASSERTSTR(blockScriptType->GetModifier() == TypeDesc::M_REFERECE, "Type registered on blockscript is not a c++ class");
         
-        for (int p = 0; p < coreClassProp.mSanityCheckProperties.GetSize(); ++p)
+        for (unsigned int p = 0; p < coreClassProp.mSanityCheckProperties.GetSize(); ++p)
         {
             const PropertyGrid::PropertyRecord* record = coreClassProp.mSanityCheckProperties[p];
             //linearly walk over the node property link list, find the property and check sizes

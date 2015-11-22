@@ -44,7 +44,7 @@ void ScriptTracker::RegisterScript(TimelineScript* script)
 //! Removes script from tracker
 void ScriptTracker::UnregisterScript(TimelineScript* script)
 {
-    for (int i = 0; i < mData.GetSize(); ++i)
+    for (unsigned int i = 0; i < mData.GetSize(); ++i)
     {
         if (mData[i] == script)
         {

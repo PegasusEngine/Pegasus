@@ -51,7 +51,7 @@ IRuntimeAssetObjectProxy* AssetLibProxy::LoadObject(const char* path, bool* outI
 {
     RuntimeAssetObjectRef obj = mAssetLib->LoadObject(path);
 
-    for (int i = 0; i < mObjects.GetSize(); ++i)
+    for (unsigned int i = 0; i < mObjects.GetSize(); ++i)
     {
         if (obj == mObjects[i])
         {
@@ -91,7 +91,7 @@ IRuntimeAssetObjectProxy* AssetLibProxy::CreateObject(const char* path, const Pe
 void AssetLibProxy::CloseObject(IRuntimeAssetObjectProxy* object)
 {
     RuntimeAssetObjectRef obj = static_cast<AssetProxy*>(object->GetOwnerAsset())->GetObject()->GetRuntimeData();
-    for (int i = 0; i < mObjects.GetSize(); ++i)
+    for (unsigned int i = 0; i < mObjects.GetSize(); ++i)
     {
         if (mObjects[i] == obj)
         {

@@ -36,14 +36,14 @@ class PropertyGridWidget : public QWidget
 public:
 
     //! Constructor
-    PropertyGridWidget(QWidget* parent);
+    PropertyGridWidget(QWidget * parent);
 
     //! Destructor
     ~PropertyGridWidget();
 
     //! Sets the messenger responsible to send messages to the render thread.
     //! \param messenger - the messenger to cache
-    void SetMessenger(PegasusDockWidget* messenger) { mMessenger = messenger; }
+    void SetMessenger(PegasusDockWidget * messenger) { mMessenger = messenger; }
 
     //! Set the property grid object proxy associated with the widget.
     //! the content of the property browser will update accordingly.
@@ -57,24 +57,24 @@ public:
 private slots:
 
     //! Called when an item of the property browser has its value changed
-    void boolPropertyChanged(QtProperty* property);
-    void uintPropertyChanged(QtProperty* property);
-    void intPropertyChanged(QtProperty* property);
-    void floatPropertyChanged(QtProperty* property);
-    void vec2PropertyChanged(QtProperty* property);
-    void vec3PropertyChanged(QtProperty* property);
-    void vec4PropertyChanged(QtProperty* property);
-    void rgbPropertyChanged(QtProperty* property);
-    void rgbaPropertyChanged(QtProperty* property);
-    void s64PropertyChanged(QtProperty* property);
+    void boolPropertyChanged(QtProperty * property);
+    void uintPropertyChanged(QtProperty * property);
+    void intPropertyChanged(QtProperty * property);
+    void floatPropertyChanged(QtProperty * property);
+    void vec2PropertyChanged(QtProperty * property);
+    void vec3PropertyChanged(QtProperty * property);
+    void vec4PropertyChanged(QtProperty * property);
+    void rgbPropertyChanged(QtProperty * property);
+    void rgbaPropertyChanged(QtProperty * property);
+    void s64PropertyChanged(QtProperty * property);
     
 
 private:
 
-    void OnInitialized(PropertyGridHandle handle, const Pegasus::PropertyGrid::IPropertyGridClassInfoProxy* classInfoProxy);
+    void OnInitialized(PropertyGridHandle handle, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy);
     void OnUpdated(PropertyGridHandle handle, const QVector<PropertyGridIOMessageController::UpdateElement>& els);
 
-    int FindPropertyIndex(const QtProperty* property) const;
+    int FindPropertyIndex(const QtProperty * property) const;
 
     bool IsReady() const { return mProxyHandle != INVALID_PGRID_HANDLE; }
 
@@ -96,7 +96,7 @@ private:
     struct PropertyTypePair
     {
         Pegasus::PropertyGrid::PropertyType mType;
-        QtProperty* mProperty;
+        QtProperty * mProperty;
     };
 
     //! List of properties, follows same order as schema (index are consistent)
@@ -106,10 +106,10 @@ private:
     class Observer : public PropertyGridObserver
     {
     public:
-        explicit Observer(PropertyGridWidget* parent) : mParent(parent) {}
+        explicit Observer(PropertyGridWidget * parent) : mParent(parent) {}
         virtual ~Observer() {}
 
-        virtual void OnInitialized(PropertyGridHandle handle, const Pegasus::PropertyGrid::IPropertyGridClassInfoProxy* classInfo);
+        virtual void OnInitialized(PropertyGridHandle handle, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy);
 
         virtual void OnUpdated(PropertyGridHandle handle, const QVector<PropertyGridIOMessageController::UpdateElement>& els);
 
@@ -118,8 +118,8 @@ private:
         void OnShutdownInternal(PropertyGridHandle handle);
 
     private:
-        PropertyGridWidget* mParent;
-    }* mObserver;
+        PropertyGridWidget * mParent;
+    } * mObserver;
 
     // List of property managers, one per property type
     PropertyGridBoolPropertyManager mBoolManager;

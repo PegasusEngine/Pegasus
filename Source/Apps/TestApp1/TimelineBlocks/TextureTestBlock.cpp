@@ -17,6 +17,8 @@
 #include "Pegasus/Texture/Operator/AddOperator.h"
 #include "Pegasus/Texture/TextureManager.h"
 #include "Pegasus/Math/Scalar.h"
+#include "Pegasus/Math/Vector.h"
+#include "Pegasus/Math/Color.h"
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Mesh/MeshManager.h"
 #include "Pegasus/Window/Window.h"
@@ -235,6 +237,12 @@ void TextureTestBlock::CreateTextureGradient1()
 #if PEGASUS_ENABLE_PROXIES
     mTextureGradient1->SetName("Gradient1");
 #endif
+
+    // Object properties testing
+    static const Pegasus::Math::Vec2 sDefaultVec2 = Pegasus::Math::Vec2(1.0f, 5.0f);
+    static const Pegasus::Math::Color8RGBA sDefaultRGBA = Pegasus::Math::Color8RGBA(100, 120, 140, 255);
+    mTextureGradient1->AddObjectProperty<Pegasus::Math::Vec2>("TestObjVec2", &sDefaultVec2);
+    mTextureGradient1->AddObjectProperty<Pegasus::Math::Color8RGBA>("TestObjRGBA", &sDefaultRGBA);
 }
 
 //----------------------------------------------------------------------------------------

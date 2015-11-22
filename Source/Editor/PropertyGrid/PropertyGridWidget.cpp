@@ -45,24 +45,24 @@ PropertyGridWidget::PropertyGridWidget(QWidget * parent)
     mBrowser->setFactoryForManager(&mString64Manager, &mString64EditorFactory);
     
     // connect change of values events
-    connect(&mBoolManager, SIGNAL(propertyChanged(QtProperty* )),
-            this, SLOT(boolPropertyChanged(QtProperty* )));
-    connect(&mUIntManager, SIGNAL(propertyChanged(QtProperty* )),
-            this, SLOT(uintPropertyChanged(QtProperty* )));
-    connect(&mFloatManager, SIGNAL(propertyChanged(QtProperty* )),
-            this, SLOT(floatPropertyChanged(QtProperty* )));
-    connect(&mVec2Manager, SIGNAL(propertyChanged(QtProperty* )),
-            this, SLOT(vec2PropertyChanged(QtProperty* )));
-    connect(&mVec3Manager, SIGNAL(propertyChanged(QtProperty* )),
-            this, SLOT(vec3PropertyChanged(QtProperty* )));
-    connect(&mVec4Manager, SIGNAL(propertyChanged(QtProperty* )),
-            this, SLOT(vec4PropertyChanged(QtProperty* )));
-    connect(&mColor8RGBManager, SIGNAL(propertyChanged(QtProperty* )),
-            this, SLOT(rgbPropertyChanged(QtProperty* )));
-    connect(&mColor8RGBAManager, SIGNAL(propertyChanged(QtProperty* )),
-            this, SLOT(rgbaPropertyChanged(QtProperty* )));
-    connect(&mString64Manager, SIGNAL(propertyChanged(QtProperty* )),
-            this, SLOT(s64PropertyChanged(QtProperty* )));
+    connect(&mBoolManager, SIGNAL(propertyChanged(QtProperty *)),
+            this, SLOT(boolPropertyChanged(QtProperty *)));
+    connect(&mUIntManager, SIGNAL(propertyChanged(QtProperty *)),
+            this, SLOT(uintPropertyChanged(QtProperty *)));
+    connect(&mFloatManager, SIGNAL(propertyChanged(QtProperty *)),
+            this, SLOT(floatPropertyChanged(QtProperty *)));
+    connect(&mVec2Manager, SIGNAL(propertyChanged(QtProperty *)),
+            this, SLOT(vec2PropertyChanged(QtProperty *)));
+    connect(&mVec3Manager, SIGNAL(propertyChanged(QtProperty *)),
+            this, SLOT(vec3PropertyChanged(QtProperty *)));
+    connect(&mVec4Manager, SIGNAL(propertyChanged(QtProperty *)),
+            this, SLOT(vec4PropertyChanged(QtProperty *)));
+    connect(&mColor8RGBManager, SIGNAL(propertyChanged(QtProperty *)),
+            this, SLOT(rgbPropertyChanged(QtProperty *)));
+    connect(&mColor8RGBAManager, SIGNAL(propertyChanged(QtProperty *)),
+            this, SLOT(rgbaPropertyChanged(QtProperty *)));
+    connect(&mString64Manager, SIGNAL(propertyChanged(QtProperty *)),
+            this, SLOT(s64PropertyChanged(QtProperty *)));
 
     QVBoxLayout * layout = new QVBoxLayout(this);
     layout->addWidget(mBrowser);
@@ -80,7 +80,7 @@ PropertyGridWidget::~PropertyGridWidget()
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::intPropertyChanged(QtProperty* property)
+void PropertyGridWidget::intPropertyChanged(QtProperty * property)
 {
     if (!IsReady()) return;
 
@@ -94,7 +94,7 @@ void PropertyGridWidget::intPropertyChanged(QtProperty* property)
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::boolPropertyChanged(QtProperty* property)
+void PropertyGridWidget::boolPropertyChanged(QtProperty * property)
 {
     if (!IsReady()) return;
 
@@ -108,7 +108,7 @@ void PropertyGridWidget::boolPropertyChanged(QtProperty* property)
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::uintPropertyChanged(QtProperty* property)
+void PropertyGridWidget::uintPropertyChanged(QtProperty * property)
 {
     if (!IsReady()) return;
 
@@ -122,7 +122,7 @@ void PropertyGridWidget::uintPropertyChanged(QtProperty* property)
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::floatPropertyChanged(QtProperty* property)
+void PropertyGridWidget::floatPropertyChanged(QtProperty * property)
 {
     if (!IsReady()) return;
 
@@ -136,7 +136,7 @@ void PropertyGridWidget::floatPropertyChanged(QtProperty* property)
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::vec2PropertyChanged(QtProperty* property)
+void PropertyGridWidget::vec2PropertyChanged(QtProperty * property)
 {
     if (!IsReady()) return;
 
@@ -152,7 +152,7 @@ void PropertyGridWidget::vec2PropertyChanged(QtProperty* property)
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::vec3PropertyChanged(QtProperty* property)
+void PropertyGridWidget::vec3PropertyChanged(QtProperty * property)
 {
     if (!IsReady()) return;
 
@@ -169,7 +169,7 @@ void PropertyGridWidget::vec3PropertyChanged(QtProperty* property)
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::vec4PropertyChanged(QtProperty* property)
+void PropertyGridWidget::vec4PropertyChanged(QtProperty * property)
 {
     if (!IsReady()) return;
 
@@ -187,7 +187,7 @@ void PropertyGridWidget::vec4PropertyChanged(QtProperty* property)
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::rgbPropertyChanged(QtProperty* property)
+void PropertyGridWidget::rgbPropertyChanged(QtProperty * property)
 {
     if (!IsReady()) return;
 
@@ -205,7 +205,7 @@ void PropertyGridWidget::rgbPropertyChanged(QtProperty* property)
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::rgbaPropertyChanged(QtProperty* property)
+void PropertyGridWidget::rgbaPropertyChanged(QtProperty * property)
 {
     if (!IsReady()) return;
 
@@ -223,7 +223,7 @@ void PropertyGridWidget::rgbaPropertyChanged(QtProperty* property)
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::s64PropertyChanged(QtProperty* property)
+void PropertyGridWidget::s64PropertyChanged(QtProperty * property)
 {
     if (!IsReady()) return;
 
@@ -240,7 +240,7 @@ void PropertyGridWidget::s64PropertyChanged(QtProperty* property)
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::UpdateProxy(const PropertyGridIOMessageController::UpdateElement& el)
+void PropertyGridWidget::UpdateProxy(const PropertyGridIOMessageController::UpdateElement & el)
 {
     PropertyGridIOMessageController::Message msg;
     msg.SetMessageType(PropertyGridIOMessageController::Message::UPDATE);
@@ -251,7 +251,7 @@ void PropertyGridWidget::UpdateProxy(const PropertyGridIOMessageController::Upda
 
 //----------------------------------------------------------------------------------------
 
-int PropertyGridWidget::FindPropertyIndex(const QtProperty* property) const
+int PropertyGridWidget::FindPropertyIndex(const QtProperty * property) const
 {
     for (int i = 0; i < mProperties.size(); ++i)
     { 
@@ -278,7 +278,9 @@ void PropertyGridWidget::SetCurrentProxy(Pegasus::PropertyGrid::IPropertyGridObj
     mMessenger->SendPropertyGridIoMessage(msg);
 }
 
-void PropertyGridWidget::OnInitialized(PropertyGridHandle handle, const Pegasus::PropertyGrid::IPropertyGridClassInfoProxy* classInfoProxy)
+//----------------------------------------------------------------------------------------
+
+void PropertyGridWidget::OnInitialized(PropertyGridHandle handle, const Pegasus::PropertyGrid::IPropertyGridObjectProxy * objectProxy)
 {
     if (mProxyHandle == handle)
     {
@@ -298,38 +300,45 @@ void PropertyGridWidget::OnInitialized(PropertyGridHandle handle, const Pegasus:
 
     mProxyHandle = INVALID_PGRID_HANDLE;
 
+    const Pegasus::PropertyGrid::IPropertyGridClassInfoProxy * classInfoProxy = objectProxy->GetClassInfoProxy();
+
     // Stack the number of class properties for each part of the class hierarchy.
     // When popping the elements of the stack, we know what is the global property index
-    // of each class property
-    typedef QPair<const char *, unsigned int> ClassNameNumPropertiesPair;
-    QStack<ClassNameNumPropertiesPair> classStack;
-    classStack.push_back(ClassNameNumPropertiesPair(classInfoProxy->GetClassName(),
-                                                    classInfoProxy->GetNumClassProperties()));
+    // of each class property.
+    // Add the object properties at the end of the property grid
+    typedef QPair<const char *, unsigned int> SectionNameNumPropertiesPair;
+    QStack<SectionNameNumPropertiesPair> sectionStack;
+    sectionStack.push_back(SectionNameNumPropertiesPair("Object Properties",
+                                                        objectProxy->GetNumObjectProperties()));
+    sectionStack.push_back(SectionNameNumPropertiesPair(classInfoProxy->GetClassName(),
+                                                        classInfoProxy->GetNumDerivedClassProperties()));
     const Pegasus::PropertyGrid::IPropertyGridClassInfoProxy * parentInfoProxy = classInfoProxy->GetParentClassInfo();
     while (parentInfoProxy != nullptr)
     {
-        classStack.push_back(ClassNameNumPropertiesPair(parentInfoProxy->GetClassName(),
-                                                        parentInfoProxy->GetNumClassProperties()));
+        sectionStack.push_back(SectionNameNumPropertiesPair(parentInfoProxy->GetClassName(),
+                                                            parentInfoProxy->GetNumDerivedClassProperties()));
         parentInfoProxy = parentInfoProxy->GetParentClassInfo();
     }
 
-    // For each class of the hierarchy, starting from the root class
+    // For each class of the hierarchy (and object properties), starting from the root class
     static const QRegExp sString64RegExp("^[a-z0-9]{0,64}$", Qt::CaseInsensitive);
-    unsigned int firstClassPropertyIndex = 0;
-    while (!classStack.isEmpty())
+    unsigned int firstSectionPropertyIndex = 0;
+    while (!sectionStack.isEmpty())
     {
-        ClassNameNumPropertiesPair classPair = classStack.pop();
+        SectionNameNumPropertiesPair sectionPair = sectionStack.pop();
 
-        // Create a group property for the class name,
+        // Create a group property for the class name (or "Object Properties"),
         // corresponding to a collapsible section of the property grid widget
-        QtProperty * groupProperty = m_groupManager.addProperty(classPair.first);
+        QtProperty * groupProperty = m_groupManager.addProperty(sectionPair.first);
 
-        // For each class property, create a property in the tree property browser
-        const unsigned int numClassProperties = classPair.second;
-        for (unsigned int classPropertyIndex = 0; classPropertyIndex < numClassProperties; ++classPropertyIndex)
+        // For each class/object property, create a property in the tree property browser
+        const unsigned int numSectionProperties = sectionPair.second;
+        for (unsigned int propertyIndex = 0; propertyIndex < numSectionProperties; ++propertyIndex)
         {
             // Retrieve the description of the property
-            const Pegasus::PropertyGrid::PropertyRecord & record = classInfoProxy->GetProperty(firstClassPropertyIndex + classPropertyIndex);
+            const Pegasus::PropertyGrid::PropertyRecord & record = firstSectionPropertyIndex >= classInfoProxy->GetNumClassProperties() ?
+                objectProxy->GetObjectPropertyRecord(propertyIndex) : 
+                objectProxy->GetClassPropertyRecord(firstSectionPropertyIndex + propertyIndex);
 
             // Create the property object, with the class determined from the property type
             QtProperty * property = nullptr;
@@ -399,7 +408,7 @@ void PropertyGridWidget::OnInitialized(PropertyGridHandle handle, const Pegasus:
         // Add the group and its sub-properties to the tree property browser
         mBrowser->addProperty(groupProperty);
 
-        firstClassPropertyIndex += numClassProperties;
+        firstSectionPropertyIndex += numSectionProperties;
     }
 
     // Expand the section of each class, and collapse all the items (particularly vectors)
@@ -414,10 +423,10 @@ void PropertyGridWidget::OnInitialized(PropertyGridHandle handle, const Pegasus:
         }
     }
 
-    
     mProxyHandle = handle;
-
 }
+
+//----------------------------------------------------------------------------------------
 
 void PropertyGridWidget::Clear()
 {
@@ -443,10 +452,12 @@ void PropertyGridWidget::Clear()
     mString64Manager.clear();
 }
 
-void PropertyGridWidget::OnUpdated(PropertyGridHandle handle, const QVector<PropertyGridIOMessageController::UpdateElement>& els)
+//----------------------------------------------------------------------------------------
+
+void PropertyGridWidget::OnUpdated(PropertyGridHandle handle, const QVector<PropertyGridIOMessageController::UpdateElement> & els)
 {
     mProxyHandle = handle;
-    foreach (const PropertyGridIOMessageController::UpdateElement& el, els)
+    foreach (const PropertyGridIOMessageController::UpdateElement & el, els)
     {
         if (el.mIndex >= 0 && el.mIndex < mProperties.size())
         {
@@ -532,21 +543,27 @@ void PropertyGridWidget::OnUpdated(PropertyGridHandle handle, const QVector<Prop
     } 
 }
 
+//----------------------------------------------------------------------------------------
 
-
-void PropertyGridWidget::Observer::OnInitialized(PropertyGridHandle handle, const Pegasus::PropertyGrid::IPropertyGridClassInfoProxy* classInfoProxy)
+void PropertyGridWidget::Observer::OnInitialized(PropertyGridHandle handle, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy)
 {
-    mParent->OnInitialized(handle, classInfoProxy);
+    mParent->OnInitialized(handle, objectProxy);
 }
+
+//----------------------------------------------------------------------------------------
 
 void PropertyGridWidget::Observer::OnUpdated(PropertyGridHandle handle, const QVector<PropertyGridIOMessageController::UpdateElement>& els)
 {
     mParent->OnUpdated(handle, els);
 }
 
+//----------------------------------------------------------------------------------------
+
 void PropertyGridWidget::Observer::OnShutdown(PropertyGridHandle handle)
 {
 }
+
+//----------------------------------------------------------------------------------------
 
 void PropertyGridWidget::Observer::OnShutdownInternal(PropertyGridHandle handle)
 {

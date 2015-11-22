@@ -39,7 +39,7 @@ bool BlockScript::BlockScript::Compile(const Io::FileBuffer* fb)
 {
     //prepare runtime library
     mBuilder.GetSymbolTable()->RegisterChild(mRuntimeLib->GetSymbolTable());
-    for (int i = 0; i < mLibs.GetSize(); ++i)
+    for (unsigned int i = 0; i < mLibs.GetSize(); ++i)
     {
         mBuilder.GetSymbolTable()->RegisterChild(mLibs[i]->GetSymbolTable());
     }

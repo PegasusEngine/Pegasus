@@ -81,7 +81,7 @@ Wnd::Window* AppWindowManager::CreateNewWindow(const Wnd::WindowConfig& config, 
 
 void AppWindowManager::DestroyWindow(Wnd::Window* window)
 {
-    for (int i = 0; i < mContainer.GetSize(); ++i)
+    for (unsigned int i = 0; i < mContainer.GetSize(); ++i)
     {
         if (mContainer[i] == window)
         {

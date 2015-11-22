@@ -17,7 +17,7 @@
 using namespace Pegasus;
 using namespace Pegasus::Utils;
 
-BaseVector::BaseVector(Alloc::IAllocator* alloc, int typeSize)
+BaseVector::BaseVector(Alloc::IAllocator* alloc, unsigned int typeSize)
     : mAlloc(alloc),
       mElementByteSize(typeSize),
       mData(nullptr),
@@ -35,7 +35,7 @@ void* BaseVector::PushEmpty()
 {
     if (mDataCount <= mDataSize)
     {
-        const int PAGE_SIZE = 64;
+        const unsigned int PAGE_SIZE = 64;
         void* oldData = mData;
         
         mData = PG_NEW_ARRAY(mAlloc, -1, "Vector Page", Alloc::PG_MEM_PERM, char, (mDataCount + PAGE_SIZE)*mElementByteSize);
@@ -52,7 +52,7 @@ void* BaseVector::PushEmpty()
     return static_cast<char*>(mData) + (mDataSize++) * mElementByteSize;
 }
 
-void BaseVector::Delete(int index)
+void BaseVector::Delete(unsigned int index)
 {
     PG_ASSERT(index >= 0 && index < mDataSize);
     char* memToDelete = static_cast<char*>(mData) + index * mElementByteSize;

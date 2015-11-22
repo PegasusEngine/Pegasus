@@ -48,15 +48,15 @@ void PropertyGridIOMessageController::OnRenderThreadUpdate(PropertyGridObserver*
     if(it != mActiveProperties.end())
     {
         Pegasus::PropertyGrid::IPropertyGridObjectProxy* pgrid = it.value();
-        int propSizes = pgrid->GetNumProperties();
+        int propSizes = pgrid->GetNumClassProperties();
         for (int i = 0; i < elements.size(); ++i)
         {
             if (elements[i].mIndex < propSizes)
             {
-                const Pegasus::PropertyGrid::PropertyRecord& r = pgrid->GetPropertyRecord(elements[i].mIndex);
+                const Pegasus::PropertyGrid::PropertyRecord& r = pgrid->GetClassPropertyRecord(elements[i].mIndex);
                 if (r.type == elements[i].mType)
                 {
-                    pgrid->WriteProperty(elements[i].mIndex, &elements[i].mData, r.size);
+                    pgrid->WriteClassProperty(elements[i].mIndex, &elements[i].mData, r.size);
                 }
                 else
                 {
@@ -93,19 +93,19 @@ void PropertyGridIOMessageController::OnRenderThreadOpen(PropertyGridObserver* s
     QSet<PropertyGridObserver*>& observerList = mObservers.find(handle).value();
     observerList.insert(sender);
 
-    emit sender->OnInitializedSignal(handle, proxy->GetClassInfoProxy());
+    emit sender->OnInitializedSignal(handle, proxy);
 
     //prepare list of updates
     QVector<PropertyGridIOMessageController::UpdateElement> updates;
-    for (unsigned i = 0; i < proxy->GetNumProperties(); ++i)
+    for (unsigned i = 0; i < proxy->GetNumClassProperties(); ++i)
     {
-        const Pegasus::PropertyGrid::PropertyRecord& r = proxy->GetPropertyRecord(i);
+        const Pegasus::PropertyGrid::PropertyRecord& r = proxy->GetClassPropertyRecord(i);
         PropertyGridIOMessageController::UpdateElement el;
         el.mType = r.type;
         el.mIndex = (int)i;
         if (r.size  <= sizeof(el.mData))
         {
-            proxy->ReadProperty(i, &el.mData, r.size);
+            proxy->ReadClassProperty(i, &el.mData, r.size);
             updates.push_back(el);
         }
         else
@@ -138,8 +138,8 @@ void PropertyGridIOMessageController::OnRenderThreadClose(PropertyGridObserver* 
 
 PropertyGridObserver::PropertyGridObserver()
 {
-    connect(this, SIGNAL(OnInitializedSignal(PropertyGridHandle, const Pegasus::PropertyGrid::IPropertyGridClassInfoProxy*)),
-            this, SLOT(OnInitializedSlot(PropertyGridHandle, const Pegasus::PropertyGrid::IPropertyGridClassInfoProxy*)), Qt::QueuedConnection);
+    connect(this, SIGNAL(OnInitializedSignal(PropertyGridHandle, const Pegasus::PropertyGrid::IPropertyGridObjectProxy*)),
+            this, SLOT(OnInitializedSlot(PropertyGridHandle, const Pegasus::PropertyGrid::IPropertyGridObjectProxy*)), Qt::QueuedConnection);
 
     connect(this, SIGNAL(OnUpdatedSignal(PropertyGridHandle, QVector<PropertyGridIOMessageController::UpdateElement>)),
             this, SLOT(OnUpdatedSlot(PropertyGridHandle, QVector<PropertyGridIOMessageController::UpdateElement>)), Qt::QueuedConnection);

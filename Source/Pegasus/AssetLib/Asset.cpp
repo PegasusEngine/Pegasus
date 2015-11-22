@@ -267,14 +267,14 @@ void Asset::Clear()
     }
     else
     {
-        for (int i = 0; i < mChildObjects.GetSize(); ++i)
+        for (unsigned int i = 0; i < mChildObjects.GetSize(); ++i)
         {
             mChildObjects[i]->~Object();
         }
 
         mChildObjects.Clear();
 
-        for (int i = 0; i < mChildArrays.GetSize(); ++i)
+        for (unsigned int i = 0; i < mChildArrays.GetSize(); ++i)
         {
             mChildArrays[i]->~Array();
         }

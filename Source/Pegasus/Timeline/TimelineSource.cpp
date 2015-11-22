@@ -27,12 +27,12 @@ void TimelineSource::Compile()
     //the locking child mechanism does not work, therefore we keep a safe copy of the current parents
     // and then iterate over compilation
     Utils::Vector<SourceCode*> parentsCopy(mAllocator);
-    for (int i = 0; i < mParents.GetSize(); ++i)
+    for (unsigned int i = 0; i < mParents.GetSize(); ++i)
     {
         parentsCopy.PushEmpty() = mParents[i];
     }
 
-    for (int i = 0; i < parentsCopy.GetSize(); ++i)
+    for (unsigned int i = 0; i < parentsCopy.GetSize(); ++i)
     {
         parentsCopy[i]->InvalidateData();
         parentsCopy[i]->Compile();

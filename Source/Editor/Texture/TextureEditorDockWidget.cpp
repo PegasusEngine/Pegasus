@@ -108,29 +108,16 @@ void TextureEditorDockWidget::OpenTabForTexture(Pegasus::Texture::ITextureNodePr
     subWindow->setWindowTitle(textureName);
 
     // Show the new tab
-    //subWindow->show();
-
-    //! \todo **** Temporary, to test UpdateTextureProperties
-    UpdateTextureProperties(subWindow);
+    subWindow->show();
 }
 
 //----------------------------------------------------------------------------------------
 
 void TextureEditorDockWidget::TabSelected(QMdiSubWindow * subWindow)
 {
-    //! \todo Implement the update of the tab when it is selected
+    ED_ASSERTSTR(subWindow != nullptr, "Trying to update the texture properties with an invalid current subwindow");
 
-    if (subWindow != nullptr)
-    {
-        //const TextureGraphEditorGraphicsView * graphicsView = static_cast<TextureGraphEditorGraphicsView *>(subWindow->widget());
-        //ED_ASSERTSTR(graphicsView != nullptr, "Trying to update the texture properties with an invalid current graphics view");
-        //const Pegasus::Texture::ITextureNodeProxy * textureProxy = graphicsView->GetTextureProxy();
-        //ED_ASSERTSTR(textureProxy != nullptr, "Trying to update the texture properties with an invalid current texture");
-    }
-    else
-    {
-        /*****/
-    }
+    UpdateTextureProperties(subWindow);
 }
 
 //----------------------------------------------------------------------------------------
@@ -154,6 +141,8 @@ void TextureEditorDockWidget::UpdateTextureProperties(QMdiSubWindow * subWindow)
     ui.propertyGridWidget->SetCurrentProxy(textureProxy->GetPropertyGridObjectProxy());
 }
 
+//----------------------------------------------------------------------------------------
+
 void TextureEditorDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* application)
 {
     mViewportWidget->OnAppLoaded();
@@ -168,7 +157,12 @@ void TextureEditorDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* 
         ED_ASSERTSTR(textureProxy->GetNodeType() == Pegasus::Texture::ITextureNodeProxy::NODETYPE_OUTPUT, "Invalid node type for a texture node proxy");
         OpenTabForTexture(textureProxy);
     }
+
+    //! After all tabs are loaded, update the UI for the current tab
+    UpdateTextureProperties(ui.mdiArea->currentSubWindow());
 }
+
+//----------------------------------------------------------------------------------------
 
 void TextureEditorDockWidget::OnUIForAppClosed() 
 {

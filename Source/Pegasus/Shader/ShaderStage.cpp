@@ -159,7 +159,7 @@ Pegasus::Graph::NodeData * Pegasus::Shader::ShaderStage::AllocateData() const
 
 void Pegasus::Shader::ShaderStage::ClearChildrenIncludes()
 {
-    for (int i = 0; i < mIncludeReferences.GetSize(); ++i)
+    for (unsigned int i = 0; i < mIncludeReferences.GetSize(); ++i)
     {   
         Pegasus::Shader::ShaderSourceRef& src = mIncludeReferences[i];
         src->UnregisterParent(this);

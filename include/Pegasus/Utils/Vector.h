@@ -35,31 +35,31 @@ class BaseVector
 public:
 
     //! Constructor
-    BaseVector(Alloc::IAllocator* allocator, int typeSize);
+    BaseVector(Alloc::IAllocator* allocator, unsigned int typeSize);
 
     //! Destructor
     ~BaseVector();
 
     //! \return size of elements
-    int GetSize() const { return mDataSize; }
+    unsigned int GetSize() const { return mDataSize; }
 
     //! \return the allocator
     Alloc::IAllocator* GetAlloc() { return mAlloc; }
 
     //! Stores element into the target buffer
-    void* GetElement(int index) {
-        PG_ASSERT(index >= 0 && index < mDataSize);
+    void* GetElement(unsigned int index) {
+        PG_ASSERT(index < mDataSize);
         return static_cast<void*>(static_cast<char*>(mData) + index * mElementByteSize); 
     }
 
     //! Gets element into the target buffer
-    const void* GetElement(int index) const {
-        PG_ASSERT(index >= 0 && index < mDataSize);
+    const void* GetElement(unsigned int index) const {
+        PG_ASSERT(index < mDataSize);
         return static_cast<void*>(static_cast<char*>(mData) + index * mElementByteSize); 
     }
 
     //! deletes element at specified index
-    void Delete(int index);
+    void Delete(unsigned int index);
 
     //! Pushes an empty object and returns its pointer
     void* PushEmpty();
@@ -78,13 +78,13 @@ private:
     void* mData;
 
     //! size of the element
-    int mElementByteSize;
+    unsigned int mElementByteSize;
 
     //! capacity of vector
-    int mDataCount;
+    unsigned int mDataCount;
 
     //! the current size of the vector
-    int mDataSize;
+    unsigned int mDataSize;
 
     //! the allocator
     Alloc::IAllocator* mAlloc;
@@ -108,17 +108,17 @@ public:
     }
 
     //! Gets the size
-    inline int GetSize() const { return mBase.GetSize(); }
+    inline unsigned int GetSize() const { return mBase.GetSize(); }
 
     //! [] operator, just like an array
-    inline T& operator[](int index) 
+    inline T& operator[](unsigned int index) 
     {
         T* t = reinterpret_cast<T*>(mBase.GetElement(index));
         return *t;
     }
 
     //! [] operator, just like an array
-    inline const T& operator[](int index) const
+    inline const T& operator[](unsigned int index) const
     {
         const T* t = reinterpret_cast<const T*>(mBase.GetElement(index));
         return *t;
@@ -154,7 +154,7 @@ public:
     }
 
     //! deletes element at specified index
-    void Delete(int i)
+    void Delete(unsigned int i)
     {
         if (!TypeTraits<T>::IsPOD)
         {
@@ -169,8 +169,8 @@ public:
         if (!TypeTraits<T>::IsPOD)
         {
             // Call the destructor of each element for complex types
-            const int size = GetSize();
-            for (int i = 0; i < size; ++i)
+            const unsigned int size = GetSize();
+            for (unsigned int i = 0; i < size; ++i)
             {
                 ((*this)[i]).~T();
             }

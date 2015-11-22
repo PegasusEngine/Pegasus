@@ -17,6 +17,12 @@
 #include "Pegasus/Texture/Shared/ITextureNodeProxy.h"
 
 namespace Pegasus {
+    namespace Graph {
+        class Node;
+    }
+}
+
+namespace Pegasus {
 namespace Texture {
 
 class TextureGenerator;
@@ -97,12 +103,7 @@ private:
     const ITextureNodeProxy::NodeType mNodeType;
 
     //! Proxied texture object
-    union
-    {
-        TextureGenerator * mTextureGenerator;
-        TextureOperator * mTextureOperator;
-        Texture * mTexture;
-    };
+    Graph::Node * mNode;
 };
 
 

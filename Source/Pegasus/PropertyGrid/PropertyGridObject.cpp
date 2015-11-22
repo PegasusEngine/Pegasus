@@ -24,7 +24,7 @@ void PropertyAccessor::Read(void * outputBuffer, unsigned int outputBufferSize) 
     PG_ASSERTSTR(outputBufferSize == mSize, "Trying to read a property into a buffer whose size is incorrect.");
 #endif
 
-    //! \todo Use a fast memcopy function that always take the fast path
+    //! \todo Use a fast memcpy function that always take the fast path
     Utils::Memcpy(outputBuffer, mPtr, outputBufferSize);
 }
 
@@ -38,7 +38,7 @@ void PropertyAccessor::Write(const void * inputBuffer, unsigned int inputBufferS
     PG_ASSERTSTR(inputBufferSize == mSize, "Trying to write a property from a buffer whose size is incorrect.");
 #endif
 
-    //! \todo Use a fast memcopy function that always take the fast path
+    //! \todo Use a fast memcpy function that always take the fast path
     Utils::Memcpy(mPtr, inputBuffer, inputBufferSize);
     mObj->InvalidatePropertyGrid();
 }
@@ -52,11 +52,12 @@ END_IMPLEMENT_PROPERTIES(PropertyGridObject)
 //----------------------------------------------------------------------------------------
 
 PropertyGridObject::PropertyGridObject()
-:   mPropertyPointers(Memory::GetPropertyPointerAllocator())
+:   mClassPropertyPointers(Memory::GetPropertyPointerAllocator())
 ,   mPropertyGridDirty(true)
 #if PEGASUS_ENABLE_PROPGRID_SAFE_ACCESSOR
-,   mPropertySizes(Memory::GetPropertyPointerAllocator())
+,   mClassPropertySizes(Memory::GetPropertyPointerAllocator())
 #endif
+,   mObjectProperties(Memory::GetPropertyPointerAllocator())
 #if PEGASUS_ENABLE_PROXIES
 ,   mProxy(this)
 #endif
@@ -68,21 +69,53 @@ PropertyGridObject::PropertyGridObject()
 
 //----------------------------------------------------------------------------------------
 
+PropertyGridObject::~PropertyGridObject()
+{
+    ClearObjectProperties();
+}
+
+//----------------------------------------------------------------------------------------
+
+PropertyAccessor PropertyGridObject::GetDerivedClassPropertyAccessor(unsigned int index)
+{
+    if (index < GetNumDerivedClassProperties())
+    {
+        const unsigned int absoluteIndex = GetNumClassProperties() - GetNumDerivedClassProperties() + index;
+        return PropertyAccessor(  this
+                                , mClassPropertyPointers[absoluteIndex]
+#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
+                                , mClassPropertySizes[absoluteIndex]
+#endif
+                               );
+    }
+    else
+    {
+        PG_FAILSTR("Trying to access property %u but it has to be < %u", index, GetNumDerivedClassProperties());
+        return PropertyAccessor(  this
+                                , nullptr
+#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
+                                , 0
+#endif
+                               );
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 PropertyAccessor PropertyGridObject::GetClassPropertyAccessor(unsigned int index)
 {
     if (index < GetNumClassProperties())
     {
-        const unsigned int absoluteIndex = GetNumProperties() - GetNumClassProperties() + index;
         return PropertyAccessor(  this
-                                , mPropertyPointers[absoluteIndex]
+                                , mClassPropertyPointers[index]
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
-                                , mPropertySizes[absoluteIndex]
+                                , mClassPropertySizes[index]
 #endif
                                );
     }
     else
     {
-        PG_FAILSTR("Trying to access property %u but it has to be < %u", index, GetNumClassProperties());
+        PG_FAILSTR("Trying to access class property %u but it has to be < %u", index, GetNumClassProperties());
         return PropertyAccessor(  this
                                 , nullptr
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
@@ -94,20 +127,74 @@ PropertyAccessor PropertyGridObject::GetClassPropertyAccessor(unsigned int index
 
 //----------------------------------------------------------------------------------------
 
-PropertyAccessor PropertyGridObject::GetPropertyAccessor(unsigned int index)
+void PropertyGridObject::AddObjectProperty(PropertyType type, int typeSize, const char * name, const char * typeName, const void * defaultValuePtr)
 {
-    if (index < GetNumProperties())
+    PG_ASSERTSTR(name != nullptr, "Trying to create an object property without name");
+    PG_ASSERTSTR(type < NUM_PROPERTY_TYPES, "Trying to create the object property \"%s\" with an invalid type (%i)", name, type);
+    PG_ASSERTSTR(typeSize > 0, "Trying to create the object property \"%s\" with an invalid type size (%i)", name, typeSize);
+    PG_ASSERTSTR(typeName != nullptr, "Trying to create the object property \"%s\" without type name", name);
+    PG_ASSERTSTR(defaultValuePtr != nullptr, "Trying to create the object property \"%s\" without default value", name);
+
+    // Create the record of the object property
+    ObjectProperty & prop = mObjectProperties.PushEmpty();
+    prop.record.type = type;
+    prop.record.size = typeSize;
+    prop.record.name = name;
+    prop.record.typeName = typeName;
+
+    // Allocate the memory for the default value of the object property then copy the value
+    prop.record.defaultValuePtr = PG_NEW_ARRAY(Memory::GetPropertyPointerAllocator(), -1, "ObjectPropertyDefault", Pegasus::Alloc::PG_MEM_PERM, unsigned char, typeSize);
+    Utils::Memcpy(prop.record.defaultValuePtr, defaultValuePtr, typeSize);
+
+    // Allocate the memory for the object property then copy the value
+    prop.valuePtr = PG_NEW_ARRAY(Memory::GetPropertyPointerAllocator(), -1, "ObjectProperty", Pegasus::Alloc::PG_MEM_PERM, unsigned char, typeSize);
+    Utils::Memcpy(prop.valuePtr, defaultValuePtr, typeSize);
+}
+
+//----------------------------------------------------------------------------------------
+
+void PropertyGridObject::RemoveObjectProperty(unsigned int index)
+{
+    if (index < mObjectProperties.GetSize())
+    {
+        PG_DELETE_ARRAY(Memory::GetPropertyPointerAllocator(), mObjectProperties[index].record.defaultValuePtr);
+        PG_DELETE_ARRAY(Memory::GetPropertyPointerAllocator(), mObjectProperties[index].valuePtr);
+        mObjectProperties.Delete(index);
+    }
+    else
+    {
+        PG_FAILSTR("Trying to remove the object property %u but only %u properties are defined", index, mObjectProperties.GetSize());
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void PropertyGridObject::ClearObjectProperties()
+{
+    for (unsigned int p = 0; p < mObjectProperties.GetSize(); ++p)
+    {
+        PG_DELETE_ARRAY(Memory::GetPropertyPointerAllocator(), mObjectProperties[p].record.defaultValuePtr);
+        PG_DELETE_ARRAY(Memory::GetPropertyPointerAllocator(), mObjectProperties[p].valuePtr);
+    }
+    mObjectProperties.Clear();
+}
+
+//----------------------------------------------------------------------------------------
+
+PropertyAccessor PropertyGridObject::GetObjectPropertyAccessor(unsigned int index)
+{
+    if (index < GetNumObjectProperties())
     {
         return PropertyAccessor(  this
-                                , mPropertyPointers[index]
+                                , mObjectProperties[index].valuePtr
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
-                                , mPropertySizes[index]
+                                , mObjectProperties[index].record.size
 #endif
                                );
     }
     else
     {
-        PG_FAILSTR("Trying to access property %u but it has to be < %u", index, GetNumProperties());
+        PG_FAILSTR("Trying to access object property %u but it has to be < %u", index, GetNumObjectProperties());
         return PropertyAccessor(  this
                                 , nullptr
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
@@ -119,16 +206,16 @@ PropertyAccessor PropertyGridObject::GetPropertyAccessor(unsigned int index)
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridObject::AppendPropertyPointer(  void * ptr
+void PropertyGridObject::AppendClassPropertyPointer(  void * ptr
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
-                                               , unsigned int propertySize
+                                                    , unsigned int propertySize
 #endif
-                                               )
+                                                    )
 {
     PG_ASSERTSTR(ptr != nullptr, "Invalid property pointer added to the PropertyGridObject internal list");
-    mPropertyPointers.PushEmpty() = ptr;
+    mClassPropertyPointers.PushEmpty() = ptr;
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
-    mPropertySizes.PushEmpty() = propertySize;
+    mClassPropertySizes.PushEmpty() = propertySize;
 #endif
 }
 

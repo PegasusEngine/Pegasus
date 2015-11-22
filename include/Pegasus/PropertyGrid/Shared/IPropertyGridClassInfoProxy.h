@@ -38,23 +38,23 @@ public:
     virtual const IPropertyGridClassInfoProxy * GetParentClassInfo() const = 0;
 
 
-    //! Get the number of registered properties, for the current class only
-    //! \return Number of registered properties, for the current class only
+    //! Get the number of registered properties, for the current derived class only
+    //! \return Number of registered properties, for the current derived class only
+    virtual unsigned int GetNumDerivedClassProperties() const = 0;
+
+    //! Get the property record for one of the registered properties, for the current derived class only
+    //! \param index Index of the property (0 <= index < GetNumDerivedClassProperties())
+    //! \return Record for the property
+    virtual const PropertyRecord & GetDerivedClassPropertyRecord(unsigned int index) const = 0;
+
+    //! Get the number of registered class properties, including parent classes (but not derived classes)
+    //! \return Number of registered class properties, including parent classes (but not derived classes)
     virtual unsigned int GetNumClassProperties() const = 0;
 
-    //! Get the property record for one of the registered properties, for the current class only
-    //! \param index Index of the property (0 <= index < GetNumClassProperties())
-    //! \return Record for the property
-    virtual const PropertyRecord & GetClassProperty(unsigned int index) const = 0;
-
-    //! Get the number of registered properties, including parent classes (but not derived classes)
-    //! \return Number of registered properties, including parent classes (but not derived classes)
-    virtual unsigned int GetNumProperties() const = 0;
-
-    //! Get the property record for one of the registered properties, including parent classes (but not derived classes)
-    //! \param index Index of the property (0 <= index < GetNumProperties())
-    //! \return Record for the property
-    virtual const PropertyRecord & GetProperty(unsigned int index) const = 0;
+    //! Get the property record for one of the registered class properties, including parent classes (but not derived classes)
+    //! \param index Index of the class property (0 <= index < GetNumClassProperties())
+    //! \return Record for the class property
+    virtual const PropertyRecord & GetClassPropertyRecord(unsigned int index) const = 0;
 };
 
 

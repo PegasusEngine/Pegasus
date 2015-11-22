@@ -382,7 +382,7 @@ bool UNIT_TEST_Vector1()
 
     int last = -1;
 
-    for (int i = 0; i < v.GetSize(); ++i)
+    for (unsigned int i = 0; i < v.GetSize(); ++i)
     {
         if ((v[i] - last) != 1) return false;
         last = v[i];
@@ -413,7 +413,7 @@ bool UNIT_TEST_Vector2()
 
     if (v.GetSize() != 150) return false;
 
-    for (int i = 0; i < v.GetSize(); ++i)
+    for (unsigned int i = 0; i < v.GetSize(); ++i)
     {
         Ss& st = v[i];
         if (st.i != (2*i + 1) || st.c != (st.i % 56)) return false;
