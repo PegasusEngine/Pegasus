@@ -279,7 +279,7 @@ void TimelineScript::OnCompilationBegin()
     PG_LOG('TMLN', "Compilation started for blockscript: %s", GetDisplayName());    
 #endif
 
-    GRAPH_EVENT_DISPATCH(
+    PEGASUS_EVENT_DISPATCH(
         this,
         CompilerEvents::CompilationNotification, 
         // Event specific arguments:
@@ -293,7 +293,7 @@ void TimelineScript::OnCompilationError(int line, const char* errorMessage, cons
 {
     PG_LOG('ERR_', "Compilation error, line %d, %s. Around token %s", line, errorMessage, token);
 
-    GRAPH_EVENT_DISPATCH(
+    PEGASUS_EVENT_DISPATCH(
         this,
         CompilerEvents::CompilationNotification,
         // Shader Event specific arguments
@@ -318,7 +318,7 @@ void TimelineScript::OnCompilationEnd(bool success)
 #endif
     }
 
-    GRAPH_EVENT_DISPATCH (
+    PEGASUS_EVENT_DISPATCH (
         this,
         CompilerEvents::CompilationEvent,
         // Event specific arguments

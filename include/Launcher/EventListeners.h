@@ -53,10 +53,10 @@ public:
 
     virtual void OnInitUserData(Pegasus::Core::IBasicSourceProxy* proxy, const char* name){}
     virtual void OnDestroyUserData(Pegasus::Core::IBasicSourceProxy* proxy, const char* name){}
-    virtual void OnEvent(Graph::IGraphUserData * u, Core::CompilerEvents::SourceLoadedEvent& e);
-    virtual void OnEvent(Graph::IGraphUserData * u, Core::CompilerEvents::CompilationEvent& e);
-    virtual void OnEvent(Graph::IGraphUserData * u, Core::CompilerEvents::CompilationNotification& e);
-    virtual void OnEvent(Graph::IGraphUserData * u, Core::CompilerEvents::LinkingEvent& e);
+    virtual void OnEvent(Core::IEventUserData * u, Core::CompilerEvents::SourceLoadedEvent& e);
+    virtual void OnEvent(Core::IEventUserData * u, Core::CompilerEvents::CompilationEvent& e);
+    virtual void OnEvent(Core::IEventUserData * u, Core::CompilerEvents::CompilationNotification& e);
+    virtual void OnEvent(Core::IEventUserData * u, Core::CompilerEvents::LinkingEvent& e);
 };
 
 
@@ -67,9 +67,9 @@ public:
     : LogAssertDispatcher(logHandler, assertHandler) {}
     ~LauncherTextureListener(){}
 
-    virtual void OnEvent(Graph::IGraphUserData * u, Texture::TextureNotificationEvent& e);
-    virtual void OnEvent(Graph::IGraphUserData * u, Texture::TextureGenerationEvent&   e);
-    virtual void OnEvent(Graph::IGraphUserData * u, Texture::TextureOperationEvent&    e);
+    virtual void OnEvent(Core::IEventUserData * u, Texture::TextureNotificationEvent& e);
+    virtual void OnEvent(Core::IEventUserData * u, Texture::TextureGenerationEvent&   e);
+    virtual void OnEvent(Core::IEventUserData * u, Texture::TextureOperationEvent&    e);
 };
 
 
@@ -80,9 +80,9 @@ public:
     : LogAssertDispatcher(logHandler, assertHandler) {}
     ~LauncherMeshListener() {}
 
-    virtual void  OnEvent(Graph::IGraphUserData * u, Mesh::MeshNotificationEvent& e);
-    virtual void  OnEvent(Graph::IGraphUserData * u, Mesh::MeshGenerationEvent&   e);
-    virtual void  OnEvent(Graph::IGraphUserData * u, Mesh::MeshOperationEvent&    e);
+    virtual void  OnEvent(Core::IEventUserData * u, Mesh::MeshNotificationEvent& e);
+    virtual void  OnEvent(Core::IEventUserData * u, Mesh::MeshGenerationEvent&   e);
+    virtual void  OnEvent(Core::IEventUserData * u, Mesh::MeshOperationEvent&    e);
 };
 
 

@@ -12,6 +12,8 @@
 #ifndef PEGASUS_TEXTURE_SHARED_ITEXTURENODEPROXY_H
 #define PEGASUS_TEXTURE_SHARED_ITEXTURENODEPROXY_H
 
+#include "Pegasus/AssetLib/Shared/IRuntimeAssetObjectProxy.h"
+
 #if PEGASUS_ENABLE_PROXIES
 
 namespace Pegasus {
@@ -27,7 +29,7 @@ class ITextureConfigurationProxy;
 
 
 //! Proxy interface, used by the editor to interact with a texture node
-class ITextureNodeProxy
+class ITextureNodeProxy : public AssetLib::IRuntimeAssetObjectProxyDecorator
 {
 public:
 

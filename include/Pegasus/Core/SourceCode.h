@@ -38,7 +38,7 @@ namespace Core
 
 class SourceCode : public Graph::GeneratorNode, public AssetLib::RuntimeAssetObject
 {
-    GRAPH_EVENT_DECLARE_DISPATCHER(Pegasus::Core::CompilerEvents::ICompilerEventListener)
+    PEGASUS_EVENT_DECLARE_DISPATCHER(Pegasus::Core::CompilerEvents::ICompilerEventListener)
 
 public:
     SourceCode(Alloc::IAllocator* allocator, Alloc::IAllocator* nodeDatallocator);

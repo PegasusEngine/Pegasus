@@ -32,7 +32,7 @@ class TextureGenerator : public Graph::GeneratorNode
     END_DECLARE_PROPERTIES()
         
     // Generating code to allow texture handle macros
-    GRAPH_EVENT_DECLARE_DISPATCHER(ITextureEventListener);
+    PEGASUS_EVENT_DECLARE_DISPATCHER(ITextureEventListener);
 
 public:
 

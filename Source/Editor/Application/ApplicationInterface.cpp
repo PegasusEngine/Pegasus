@@ -242,6 +242,9 @@ void ApplicationInterface::RedrawAllViewports()
     // If the main viewport has been redrawn, skip the timeline update for the secondary window.
     // Otherwise, update the timeline.
     RedrawSecondaryViewport();
+
+    //! Flush all the updates done by the app into the ui observers.
+    mPropertyGridMessageController->FlushAllPendingUpdates();
 }
 
 //----------------------------------------------------------------------------------------

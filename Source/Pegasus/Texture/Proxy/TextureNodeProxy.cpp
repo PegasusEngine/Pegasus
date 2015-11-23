@@ -131,11 +131,20 @@ ITextureNodeProxy * TextureNodeProxy::GetInputNode(unsigned int index)
     }
 }
 
-//----------------------------------------------------------------------------------------
+
 
 PropertyGrid::IPropertyGridObjectProxy * TextureNodeProxy::GetPropertyGridObjectProxy() const
 {
     return mNode->GetPropertyGridProxy();
+}
+
+AssetLib::IRuntimeAssetObjectProxy* TextureNodeProxy::GetDecoratedObject() const
+{
+    if (mNode->GetNodeType() == Graph::Node::NODETYPE_OUTPUT)
+    {
+        return static_cast<Graph::OutputNode*>(mNode)->GetRuntimeAssetObjectProxy();
+    }
+    return nullptr;
 }
 
 

@@ -53,11 +53,11 @@ public:
 
     //! Sets the user data for this particular source code file
     //! \param userData. the user data to retrieve
-    virtual void SetUserData(Pegasus::Graph::IGraphUserData * userData);
+    virtual void SetUserData(Pegasus::Core::IEventUserData * userData);
 
     //! Gets the user data for this particular source code file
     //! \return user data reference
-    virtual Pegasus::Graph::IGraphUserData * GetUserData() const;
+    virtual Pegasus::Core::IEventUserData * GetUserData() const;
 
     //! set the compilation policy to be only on file save. Meaning, files won't compile until saving the file occurs.
     //! \return compilation policy

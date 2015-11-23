@@ -93,10 +93,21 @@ void PropertyGridObjectProxy::ReadClassProperty(unsigned int index, void * outpu
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridObjectProxy::WriteClassProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize)
+void PropertyGridObjectProxy::WriteClassProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize, bool sendMessage)
 {
     const PropertyAccessor accessor = mObject->GetClassPropertyAccessor(index);
+    IPropertyListener* tempListener = nullptr;
+    if (!sendMessage)
+    {
+        tempListener = mObject->GetEventListener();
+        mObject->SetEventListener(nullptr);
+    }
     accessor.Write(inputBuffer, inputBufferSize);
+
+    if (!sendMessage)
+    {
+        mObject->SetEventListener(tempListener);
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -123,12 +134,38 @@ void PropertyGridObjectProxy::ReadObjectProperty(unsigned int index, void * outp
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridObjectProxy::WriteObjectProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize)
+void PropertyGridObjectProxy::WriteObjectProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize, bool sendMessage)
 {
     const PropertyAccessor accessor = mObject->GetObjectPropertyAccessor(index);
+    IPropertyListener* tempListener = nullptr;
+    if (!sendMessage)
+    {
+        tempListener = mObject->GetEventListener();
+        mObject->SetEventListener(nullptr);
+    }
     accessor.Write(inputBuffer, inputBufferSize);
+    if (!sendMessage)
+    {
+        mObject->SetEventListener(tempListener);
+    }
 }
 
+//----------------------------------------------------------------------------------------
+
+void PropertyGridObjectProxy::SetEventListener(IPropertyListener* listener)
+{
+    mObject->SetEventListener(listener);
+}
+
+void PropertyGridObjectProxy::SetUserData(Pegasus::Core::IEventUserData* userData)
+{
+    mObject->SetEventUserData(userData);
+}
+
+Pegasus::Core::IEventUserData* PropertyGridObjectProxy::GetUserData() const
+{
+    return mObject->GetEventUserData();
+}
 
 }   // namespace PropertyGrid
 }   // namespace Pegasus

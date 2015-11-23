@@ -58,11 +58,11 @@ public:
 
     //! Sets the user data for this particular program
     //! \param userData. the user data to retrieve
-    virtual void SetUserData(Pegasus::Graph::IGraphUserData * userData);
+    virtual void SetUserData(Pegasus::Core::IEventUserData * userData);
 
     //! Gets the user data for this particular program 
     //! \return user data reference
-    virtual Pegasus::Graph::IGraphUserData * GetUserData() const;
+    virtual Pegasus::Core::IEventUserData * GetUserData() const;
 
     //! \return the object that belongs to this proxy
     ProgramLinkage* GetObject() { return mObject; }

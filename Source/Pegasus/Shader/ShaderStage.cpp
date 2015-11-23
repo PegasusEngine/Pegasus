@@ -182,7 +182,7 @@ void Pegasus::Shader::ShaderStage::GenerateData()
 #endif
 #endif  // PEGASUS_ENABLE_DETAILED_LOG
 
-    GRAPH_EVENT_DISPATCH(
+    PEGASUS_EVENT_DISPATCH(
         this,
         CompilerEvents::CompilationNotification, 
         // Event specific arguments:
@@ -252,7 +252,7 @@ bool Pegasus::Shader::ShaderStage::OnReadAsset(Pegasus::AssetLib::AssetLib* lib,
     return Pegasus::Core::SourceCode::OnReadAsset(lib,asset);
 }
 
-Pegasus::Graph::NodeReturn Pegasus::Shader::ShaderStage::CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
+Pegasus::Graph::NodeReturn Pegasus::Shader::ShaderStage::CreateNode(Graph::NodeManager* nodeManager, Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 {
     return PG_NEW(nodeAllocator, -1, "ShaderStage", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Shader::ShaderStage(nodeAllocator, nodeDataAllocator);
 }

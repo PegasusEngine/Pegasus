@@ -150,7 +150,7 @@ public:
     //! \return Pointer to the created block, nullptr if an error occurred
     Block * CreateBlock(const char * className);
 
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
     //! Register a compiler event listener for blocks that have scripts and get compiled.
     //! \param eventListener - the listener to events during compilation
     void RegisterEventListener(Pegasus::Core::CompilerEvents::ICompilerEventListener * eventListener);
@@ -272,7 +272,7 @@ private:
 
 #endif  // PEGASUS_ENABLE_PROXIES
 
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
     //! Reference to the event listener
     Core::CompilerEvents::ICompilerEventListener* mEventListener;
 #endif

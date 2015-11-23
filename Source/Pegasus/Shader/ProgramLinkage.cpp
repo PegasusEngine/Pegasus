@@ -20,7 +20,7 @@ unsigned char ToStageFlag(Pegasus::Shader::ShaderType type)
 
 } // namespace PegasusShaderPrivate
 
-Pegasus::Shader::ProgramLinkage::ProgramLinkage(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
+Pegasus::Shader::ProgramLinkage::ProgramLinkage(Graph::NodeManager* nodeManager, Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :
 Pegasus::Graph::OperatorNode(nodeAllocator, nodeDataAllocator), mStageFlags(0), mFactory(nullptr)
     ,AssetLib::RuntimeAssetObject(this)
@@ -30,7 +30,7 @@ Pegasus::Graph::OperatorNode(nodeAllocator, nodeDataAllocator), mStageFlags(0), 
     ,mShaderTracker(nullptr)
 #endif
 {
-    GRAPH_EVENT_INIT_DISPATCHER
+    PEGASUS_EVENT_INIT_DISPATCHER
 }
 
 Pegasus::Shader::ProgramLinkage::~ProgramLinkage()
@@ -54,7 +54,7 @@ Pegasus::Shader::ProgramLinkage::~ProgramLinkage()
 #endif
 
 #if PEGASUS_ENABLE_PROXIES
-    GRAPH_EVENT_DESTROY_USER_DATA(&mProxy, "ProgramLinkage", GetEventListener());
+    PEGASUS_EVENT_DESTROY_USER_DATA(&mProxy, "ProgramLinkage", GetEventListener());
 #endif
 }
 
@@ -149,9 +149,9 @@ void Pegasus::Shader::ProgramLinkage::AddInput(Pegasus::Graph::NodeIn node)
     PG_FAILSTR("Add input call not allowed for shader linkage! The topology must not be messed up with.");
 }
 
-Pegasus::Graph::NodeReturn Pegasus::Shader::ProgramLinkage::CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
+Pegasus::Graph::NodeReturn Pegasus::Shader::ProgramLinkage::CreateNode(Graph::NodeManager* nodeManager, Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 {
-    return PG_NEW(nodeAllocator, -1, "ProgramLinkage", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Shader::ProgramLinkage(nodeAllocator, nodeDataAllocator);
+    return PG_NEW(nodeAllocator, -1, "ProgramLinkage", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Shader::ProgramLinkage(nodeManager, nodeAllocator, nodeDataAllocator);
 }
 
 Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ProgramLinkage::FindShaderStage(Pegasus::Shader::ShaderType type) const

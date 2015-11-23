@@ -12,7 +12,7 @@
 #ifndef PEGASUS_MESHEVENT_H
 #define PEGASUS_MESHEVENT_H
 
-#include "Pegasus/Graph/Shared/GraphEventDefs.h"
+#include "Pegasus/Core/Shared/EventDefs.h"
 
 namespace Pegasus
 {
@@ -102,11 +102,11 @@ namespace Mesh
         OperationEventType mType;
     };
 
-    GRAPH_EVENT_BEGIN_REGISTRY (IMeshEventListener)
-        GRAPH_EVENT_REGISTER(MeshNotificationEvent)
-        GRAPH_EVENT_REGISTER(MeshGenerationEvent)
-        GRAPH_EVENT_REGISTER(MeshOperationEvent)
-    GRAPH_EVENT_END_REGISTRY
+    PEGASUS_EVENT_BEGIN_REGISTRY (IMeshEventListener)
+        PEGASUS_EVENT_REGISTER(MeshNotificationEvent)
+        PEGASUS_EVENT_REGISTER(MeshGenerationEvent)
+        PEGASUS_EVENT_REGISTER(MeshOperationEvent)
+    PEGASUS_EVENT_END_REGISTRY
 
 } //namespace Mesh
 } //namespace Pegasus

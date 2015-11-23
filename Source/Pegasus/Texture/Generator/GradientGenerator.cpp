@@ -40,7 +40,7 @@ void GradientGenerator::InitProperties()
 
 void GradientGenerator::GenerateData()
 {
-    GRAPH_EVENT_DISPATCH(this, TextureGenerationEvent, TextureGenerationEvent::BEGIN);
+    PEGASUS_EVENT_DISPATCH(this, TextureGenerationEvent, TextureGenerationEvent::BEGIN);
 
     //! \todo Use a simpler syntax
     Graph::NodeDataRef dataRef = GetData();
@@ -133,7 +133,7 @@ void GradientGenerator::GenerateData()
                 PG_FAILSTR("Unsupported number of bytes per pixel (%d) for GradientGenerator", numBytesPerPixel);
         }
     }
-    GRAPH_EVENT_DISPATCH(this, TextureGenerationEvent, TextureGenerationEvent::END_SUCCESS);
+    PEGASUS_EVENT_DISPATCH(this, TextureGenerationEvent, TextureGenerationEvent::END_SUCCESS);
 }
 
 

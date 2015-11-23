@@ -49,6 +49,9 @@ public:
     //! Force this script to compile
     virtual void Compile();
 
+    //! class instance name
+    virtual const char* GetClassInstanceName() const { return "TimelineSource"; }
+
 #if PEGASUS_ENABLE_PROXIES
     //! Gets the proxy 
     //! \return Proxy to this script

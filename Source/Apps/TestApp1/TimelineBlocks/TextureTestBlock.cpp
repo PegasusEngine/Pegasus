@@ -23,6 +23,8 @@
 #include "Pegasus/Mesh/MeshManager.h"
 #include "Pegasus/Window/Window.h"
 
+#include "Apps/TestApp1/TestApp1.h"
+
 //----------------------------------------------------------------------------------------
     
 TextureTestBlock::TextureTestBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Core::IApplicationContext* appContext)

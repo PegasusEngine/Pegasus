@@ -10,6 +10,7 @@
 //! \brief	PropertyGrid IO controller - thread safe, communicates with application and sets
 //!         correct state for application property grid
 
+#include "Pegasus/Preprocessor.h"
 #include "MessageControllers/PropertyGridIOMessageController.h"
 #include "Pegasus/PropertyGrid/Shared/IPropertyGridObjectProxy.h"
 
@@ -56,7 +57,7 @@ void PropertyGridIOMessageController::OnRenderThreadUpdate(PropertyGridObserver*
                 const Pegasus::PropertyGrid::PropertyRecord& r = pgrid->GetClassPropertyRecord(elements[i].mIndex);
                 if (r.type == elements[i].mType)
                 {
-                    pgrid->WriteClassProperty(elements[i].mIndex, &elements[i].mData, r.size);
+                    pgrid->WriteClassProperty(elements[i].mIndex, &elements[i].mData, r.size, /*don't send message*/ false);
                 }
                 else
                 {
@@ -74,19 +75,25 @@ void PropertyGridIOMessageController::OnRenderThreadUpdate(PropertyGridObserver*
 void PropertyGridIOMessageController::OnRenderThreadOpen(PropertyGridObserver* sender, Pegasus::PropertyGrid::IPropertyGridObjectProxy* proxy)
 {
     ED_ASSERT(proxy != nullptr);
-    PropertyGridIOMessageController::ProxyToHandleMap::iterator handleToProxy = mProxyToHandle.find(proxy);
+    
     PropertyGridHandle handle  = INVALID_PGRID_HANDLE;
-    if (handleToProxy == mProxyToHandle.end())
+    if (proxy->GetUserData() == nullptr)
     {
 
-        handle = mNextHandle++;
-        mProxyToHandle.insert(proxy, handle);
+        handle = mNextHandle++;        
         mActiveProperties.insert(handle, proxy);
         mObservers.insert(handle, QSet<PropertyGridObserver*>());
+        PropertyGridIOMessageController::UpdateCache newUpdateCache;
+        newUpdateCache.mHandle = handle;
+        PropertyGridIOMessageController::ProxyUpdateCache::iterator it = mUpdateCache.insert(handle, newUpdateCache);
+        proxy->SetEventListener(this);
+        ED_ASSERT(proxy->GetUserData() == nullptr);
+        proxy->SetUserData(new PropertyUserData(proxy, &(it.value()), handle));
     }
     else
     {
-        handle = handleToProxy.value();
+        PropertyUserData* u = static_cast<PropertyUserData*>(proxy->GetUserData());
+        handle = u->GetHandle();
     }
 
     ED_ASSERT(mObservers.find(handle) != mObservers.end());
@@ -116,24 +123,112 @@ void PropertyGridIOMessageController::OnRenderThreadOpen(PropertyGridObserver* s
 
     //send signal to UI so it can update the view
     emit sender->OnUpdatedSignal(handle, updates);
+
+
+}
+
+void PropertyGridIOMessageController::CloseHandleInternal(PropertyGridHandle handle)
+{
+    PropertyGridIOMessageController::HandleToProxyMap::iterator proxyIt = mActiveProperties.find(handle);
+    PropertyGridIOMessageController::ProxyUpdateCache::iterator cacheIt = mUpdateCache.find(handle);
+
+    proxyIt.value()->SetEventListener(nullptr);
+    delete proxyIt.value()->GetUserData();
+    proxyIt.value()->SetUserData(nullptr);
+
+        
+    mActiveProperties.erase(proxyIt);
+    mUpdateCache.erase(cacheIt);
 }
 
 void PropertyGridIOMessageController::OnRenderThreadClose(PropertyGridObserver* sender, PropertyGridHandle handle)
 {
     ED_ASSERT(handle != INVALID_PGRID_HANDLE);
-    PropertyGridIOMessageController::HandleToProxyMap::iterator proxyIt = mActiveProperties.find(handle);
-    PropertyGridIOMessageController::ProxyToHandleMap::iterator handleIt = mProxyToHandle.find(proxyIt.value());
-    
+
     QSet<PropertyGridObserver*>obsSet = mObservers.find(handle).value();
     obsSet.erase(obsSet.find(sender));
     
     if (obsSet.empty())
     {
-        mActiveProperties.erase(proxyIt);
-        mProxyToHandle.erase(handleIt);
+        CloseHandleInternal(handle);
     }
     
-    emit sender->OnShutdownSlot(handle);
+}
+
+void PropertyGridIOMessageController::OnEvent(Pegasus::Core::IEventUserData* userData, Pegasus::PropertyGrid::ValueChangedEventIndexed& e)
+{   
+    PropertyUserData* pUserData = static_cast<PropertyUserData*>(userData);
+    const Pegasus::PropertyGrid::PropertyRecord & r = pUserData->GetProxy()->GetClassPropertyRecord(e.GetIndex());
+
+    PropertyGridIOMessageController::UpdateElement el;
+    el.mIndex = e.GetIndex();
+    el.mType = r.type;
+    if (el.mIndex > 0 && r.size <= sizeof(el.mData))
+    {
+        pUserData->GetProxy()->ReadClassProperty(el.mIndex, &el.mData, r.size);
+    }
+    else
+    {
+        ED_FAIL();
+    }
+    pUserData->GetUpdateCache()->mUpdateCache.push_back(el);
+
+    const int  MAX_CACHE_SIZE = 20;
+    if (pUserData->GetUpdateCache()->mUpdateCache.size() >= MAX_CACHE_SIZE)
+    {
+        FlushPendingUpdates(pUserData);
+    }
+}
+
+void PropertyGridIOMessageController::FlushPendingUpdates(PropertyUserData* userData)
+{
+    UpdateCache* cache  = userData->GetUpdateCache();
+    ObserverMap::iterator obsIt = mObservers.find(userData->GetHandle());
+    if (obsIt != mObservers.end())
+    {
+        ObserverSet& observerSet = obsIt.value();
+        foreach (PropertyGridObserver* obs, observerSet)
+        {
+            emit obs->OnUpdatedSignal(userData->GetHandle(), userData->GetUpdateCache()->mUpdateCache);
+        }
+    }
+    cache->mUpdateCache.clear();
+}
+
+void PropertyGridIOMessageController::FlushAllPendingUpdates()
+{
+    HandleToProxyMap::iterator it = mActiveProperties.begin();
+    for (; it != mActiveProperties.end(); ++it)
+    {
+        PropertyUserData* userData = static_cast<PropertyUserData*>(it.value()->GetUserData());
+        FlushPendingUpdates(userData);
+    }
+}
+
+void PropertyGridIOMessageController::OnEvent(Pegasus::Core::IEventUserData* userData, Pegasus::PropertyGrid::PropertyGridDestroyed& e)
+{
+    PropertyUserData* pUserData = static_cast<PropertyUserData*>(userData);
+    Pegasus::PropertyGrid::IPropertyGridObjectProxy* proxy = pUserData->GetProxy();
+    PropertyGridHandle handle = pUserData->GetHandle();
+    
+    PropertyGridIOMessageController::ObserverMap::iterator obsIt = mObservers.find(handle);
+    if (obsIt != mObservers.end())
+    {
+        PropertyGridIOMessageController::ObserverSet& set = obsIt.value();
+        foreach(PropertyGridObserver* obs, set)
+        {
+            emit obs->OnShutdownSignal(handle);
+        }
+
+        mObservers.erase(obsIt);
+
+        CloseHandleInternal(handle);
+        
+    }
+    else
+    {
+        ED_FAIL();
+    }
 }
 
 PropertyGridObserver::PropertyGridObserver()

@@ -90,7 +90,11 @@ public:
     //! to save memory and to be able to restore the data later
     virtual void ReleaseDataAndPropagate();
 
-    static Graph::NodeReturn CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
+    //! Factory construction function for node manager
+    static Graph::NodeReturn CreateNode(Graph::NodeManager* nodeManager, Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
+
+    //! Get the class instance name for this node object.
+    virtual const char* GetClassInstanceName() const { return "ShaderStage"; }
 
     //! Registers a parent owner
     void RegisterParent(ProgramLinkage* programLinkage);

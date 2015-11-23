@@ -28,7 +28,7 @@ MeshGenerator::MeshGenerator(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator
     END_INIT_PROPERTIES()
 
     // Initialize event user data
-    GRAPH_EVENT_INIT_DISPATCHER
+    PEGASUS_EVENT_INIT_DISPATCHER
 }
 
 //----------------------------------------------------------------------------------------
@@ -42,7 +42,7 @@ MeshGenerator::MeshGenerator(const MeshConfiguration & configuration,
     END_INIT_PROPERTIES()
 
     // Initialize event user data
-    GRAPH_EVENT_INIT_DISPATCHER
+    PEGASUS_EVENT_INIT_DISPATCHER
 }
 
 //----------------------------------------------------------------------------------------

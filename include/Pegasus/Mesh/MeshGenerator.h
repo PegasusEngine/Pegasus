@@ -31,7 +31,7 @@ class MeshGenerator : public Graph::GeneratorNode
     BEGIN_DECLARE_PROPERTIES(MeshGenerator, GeneratorNode)
     END_DECLARE_PROPERTIES()
 
-    GRAPH_EVENT_DECLARE_DISPATCHER(IMeshEventListener);
+    PEGASUS_EVENT_DECLARE_DISPATCHER(IMeshEventListener);
 
 public:
 

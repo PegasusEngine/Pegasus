@@ -55,7 +55,7 @@ void QuadGenerator::GenerateData()
 {
     using namespace Pegasus::Math;
 
-    GRAPH_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::BEGIN);
+    PEGASUS_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::BEGIN);
 
     MeshDataRef meshData = GetData();
     PG_ASSERT(meshData != nullptr);
@@ -84,7 +84,7 @@ void QuadGenerator::GenerateData()
         stream[i].uv.t = stream[i].position.y * 0.5f + 0.5f;
     }
 
-    GRAPH_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::END_SUCCESS);
+    PEGASUS_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::END_SUCCESS);
 }
 
 } //Mesh

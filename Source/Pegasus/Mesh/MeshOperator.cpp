@@ -28,7 +28,7 @@ MeshOperator::MeshOperator(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* 
     END_INIT_PROPERTIES()
 
     //initialize event user data
-    GRAPH_EVENT_INIT_DISPATCHER
+    PEGASUS_EVENT_INIT_DISPATCHER
 }
 
 //----------------------------------------------------------------------------------------
@@ -39,7 +39,7 @@ MeshOperator::MeshOperator(const MeshConfiguration & configuration,
     mConfiguration(configuration)
 {
     //initialize event user data
-    GRAPH_EVENT_INIT_DISPATCHER
+    PEGASUS_EVENT_INIT_DISPATCHER
 }
 
 //----------------------------------------------------------------------------------------

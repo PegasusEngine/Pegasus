@@ -18,6 +18,14 @@
 #include "Pegasus/Mesh/MeshData.h"
 #include "Pegasus/Mesh/MeshGenerator.h"
 #include "Pegasus/Mesh/MeshOperator.h"
+#include "Pegasus/Mesh/Proxy/MeshNodeProxy.h"
+
+//! Forward declarations
+namespace Pegasus {
+namespace Graph {
+    class NodeManager;
+}
+}
 
 namespace Pegasus {
 namespace Mesh {
@@ -36,9 +44,10 @@ class Mesh : public Graph::OutputNode
 public:
 
     //! Default constructor, uses the default mesh configuration
+    //! \param nodeManager - reference to node manager for construction of internal nodes on load
     //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
     //! \param nodeDataAllocator Allocator used for NodeData
-    Mesh(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
+    Mesh(Graph::NodeManager* nodeManager, Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
 
     //! Get the configuration of the mesh
@@ -79,10 +88,19 @@ public:
     //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
     //! \param nodeDataAllocator Allocator used for NodeData
     //! \return New instance of the mesh node
-    static Graph::NodeReturn CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
-    {   return PG_NEW(nodeAllocator, -1, "Mesh", Alloc::PG_MEM_PERM) Mesh(nodeAllocator, nodeDataAllocator); }
+    static Graph::NodeReturn CreateNode(Graph::NodeManager* nodeManager, Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
+    {   return PG_NEW(nodeAllocator, -1, "Mesh", Alloc::PG_MEM_PERM) Mesh(nodeManager, nodeAllocator, nodeDataAllocator); }
+
+    //! Get the class name of this object instance.
+    virtual const char* GetClassInstanceName() const { return "Mesh"; }
 
     //------------------------------------------------------------------------------------
+
+#if PEGASUS_ENABLE_PROXIES
+    virtual AssetLib::IRuntimeAssetObjectProxy* GetProxy() { return &mProxy; }
+
+    virtual const AssetLib::IRuntimeAssetObjectProxy* GetProxy() const { return &mProxy; }
+#endif
 
 protected:
 
@@ -107,8 +125,14 @@ private:
     //! Configuration of the mesh, such as the resolution and pixel format
     MeshConfiguration mConfiguration;
 
+#if PEGASUS_ENABLE_PROXIES
+    //! Proxy
+    MeshNodeProxy mProxy;
+#endif
+
     //! Pointer to GPU Mesh factory
     IMeshFactory * mFactory;
+
 };
 
 //----------------------------------------------------------------------------------------

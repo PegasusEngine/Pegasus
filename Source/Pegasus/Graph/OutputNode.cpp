@@ -10,6 +10,7 @@
 //! \brief	Base output node class, for the root of the graphs
 
 #include "Pegasus/Graph/OutputNode.h"
+#include "Pegasus/AssetLib/Asset.h"
 
 namespace Pegasus {
 namespace Graph {
@@ -20,8 +21,8 @@ END_IMPLEMENT_PROPERTIES(OutputNode)
 
 //----------------------------------------------------------------------------------------
 
-OutputNode::OutputNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
-:   Node(nodeAllocator, nodeDataAllocator)
+OutputNode::OutputNode(NodeManager* nodeManager, Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
+:   Node(nodeAllocator, nodeDataAllocator), AssetLib::RuntimeAssetObject(this), mNodeManager(nodeManager)
 {
     BEGIN_INIT_PROPERTIES(OutputNode)
     END_INIT_PROPERTIES()
@@ -140,6 +141,19 @@ void OutputNode::OnRemoveInput(unsigned int index)
 {
 }
 
+//----------------------------------------------------------------------------------------
+
+bool OutputNode::OnReadAsset(AssetLib::AssetLib* lib, AssetLib::Asset* asset)
+{
+    return ReadFromObject(mNodeManager, asset, asset->Root());
+}
+
+//----------------------------------------------------------------------------------------
+
+void OutputNode::OnWriteAsset(AssetLib::AssetLib* lib, AssetLib::Asset* asset)
+{
+    WriteToObject(asset, asset->Root());
+}
 
 }   // namespace Graph
 }   // namespace Pegasus

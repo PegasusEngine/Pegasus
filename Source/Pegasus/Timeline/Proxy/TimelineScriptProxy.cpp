@@ -13,7 +13,7 @@ PEGASUS_AVOID_EMPTY_FILE_WARNING
 #if PEGASUS_ENABLE_PROXIES
 
 #include "Pegasus/Timeline/Proxy/TimelineScriptProxy.h"
-#include "Pegasus/Graph/Shared/GraphEventDefs.h"
+#include "Pegasus/Core/Shared/EventDefs.h"
 #include "Pegasus/Core/Io.h"
 
 #include "Pegasus/Timeline/TimelineSource.h"
@@ -40,14 +40,14 @@ void TimelineScriptProxy::SetSource(const char * source, int sourceSize)
     mTimelineSource->SetSource(source, sourceSize);
 }
 
-void TimelineScriptProxy::SetUserData(Pegasus::Graph::IGraphUserData * userData)
+void TimelineScriptProxy::SetUserData(Pegasus::Core::IEventUserData * userData)
 {
-    mTimelineSource->SetGraphEventUserData(userData);
+    mTimelineSource->SetEventUserData(userData);
 }
 
-Graph::IGraphUserData * TimelineScriptProxy::GetUserData() const
+Core::IEventUserData * TimelineScriptProxy::GetUserData() const
 {
-    return mTimelineSource->GetGraphEventUserData();
+    return mTimelineSource->GetEventUserData();
 }
 
 long long TimelineScriptProxy::GetGuid() const

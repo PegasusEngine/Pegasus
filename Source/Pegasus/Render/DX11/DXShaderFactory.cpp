@@ -151,7 +151,7 @@ Pegasus::Render::DXShaderGPUData* DXShaderFactory::GetOrCreateShaderGpuData(Pega
 static int ProcessErrorLog(Pegasus::Shader::ShaderStage * shaderNode, const char * log)
 {
     int errorCount = 0;
-#if PEGASUS_USE_GRAPH_EVENTS 
+#if PEGASUS_USE_EVENTS 
     //parsing log to extract line & column
     const char  * s = log;
 
@@ -188,7 +188,7 @@ static int ProcessErrorLog(Pegasus::Shader::ShaderStage * shaderNode, const char
                 ++s;
             } 
             descriptionError[idx] = '\0';
-            GRAPH_EVENT_DISPATCH(
+            PEGASUS_EVENT_DISPATCH(
                 shaderNode,
                 CompilerEvents::CompilationNotification,
                 // Shader Event specific arguments
@@ -346,7 +346,7 @@ void DXShaderFactory::GenerateShaderGPUData(Pegasus::Shader::ShaderStage * shade
             PG_ASSERT(res == S_OK);
         } 
 
-        GRAPH_EVENT_DISPATCH (
+        PEGASUS_EVENT_DISPATCH (
             shaderNode,
             CompilerEvents::CompilationEvent,
             // Event specific arguments
@@ -476,7 +476,7 @@ void DXShaderFactory::GenerateProgramGPUData(Pegasus::Shader::ProgramLinkage * p
             )
     )
     {
-        GRAPH_EVENT_DISPATCH (
+        PEGASUS_EVENT_DISPATCH (
             programNode,
             CompilerEvents::LinkingEvent,
             // Event specific arguments:
@@ -493,7 +493,7 @@ void DXShaderFactory::GenerateProgramGPUData(Pegasus::Shader::ProgramLinkage * p
     {
 		programGPUData->mProgramValid = true;
         ++programGPUData->mProgramVersion;
-        GRAPH_EVENT_DISPATCH (
+        PEGASUS_EVENT_DISPATCH (
             programNode,
             CompilerEvents::LinkingEvent,
             // Event specific arguments:
@@ -503,7 +503,7 @@ void DXShaderFactory::GenerateProgramGPUData(Pegasus::Shader::ProgramLinkage * p
     }
     else
     {
-        GRAPH_EVENT_DISPATCH (
+        PEGASUS_EVENT_DISPATCH (
             programNode,
             CompilerEvents::LinkingEvent,
             // Event specific arguments:

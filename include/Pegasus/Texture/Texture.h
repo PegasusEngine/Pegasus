@@ -18,13 +18,22 @@
 #include "Pegasus/Texture/TextureGenerator.h"
 #include "Pegasus/Texture/TextureOperator.h"
 #include "Pegasus/Texture/Proxy/TextureNodeProxy.h"
+#include "Pegasus/AssetLib/Shared/IRuntimeAssetObjectProxy.h"
+
+//! forward declarations
+namespace Pegasus {
+    namespace Texture {
+        class ITextureFactory;
+        class TextureTracker;
+    }
+
+    namespace Graph {
+        class NodeManager;
+    }
+}
 
 namespace Pegasus {
 namespace Texture {
-
-class ITextureFactory;
-class TextureTracker;
-
 
 //! Base output node class, for the root of the graphs.
 //! \warning Has one and only one input node, operator or generator
@@ -40,13 +49,13 @@ public:
     //! Default constructor, uses the default texture configuration
     //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
     //! \param nodeDataAllocator Allocator used for NodeData
-    Texture(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
+    Texture(Graph::NodeManager* nodeManager, Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
     //! Constructor
     //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
     //! \param nodeDataAllocator Allocator used for NodeData
     //! \param configuration Configuration of the texture, such as the resolution and pixel format
-    Texture(const TextureConfiguration & configuration,
+    Texture(Graph::NodeManager* nodeManager, const TextureConfiguration & configuration,
             Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
     //! Set the configuration of the texture
@@ -93,8 +102,11 @@ public:
     //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
     //! \param nodeDataAllocator Allocator used for NodeData
     //! \return New instance of the texture node
-    static Graph::NodeReturn CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
-    {   return PG_NEW(nodeAllocator, -1, "Texture", Alloc::PG_MEM_PERM) Texture(nodeAllocator, nodeDataAllocator); }
+    static Graph::NodeReturn CreateNode(Graph::NodeManager* nodeManager, Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
+    {   return PG_NEW(nodeAllocator, -1, "Texture", Alloc::PG_MEM_PERM) Texture(nodeManager, nodeAllocator, nodeDataAllocator); }
+
+    //! Get the class name of this object instance.
+    virtual const char* GetClassInstanceName() const { return "Texture"; }
 
 
 #if PEGASUS_ENABLE_PROXIES
@@ -102,8 +114,8 @@ public:
     //! Get the proxy associated with the texture
     //! \return Proxy associated with the texture
     //@{
-    inline TextureNodeProxy * GetProxy() { return &mProxy; }
-    inline const TextureNodeProxy * GetProxy() const { return &mProxy; }
+    virtual AssetLib::IRuntimeAssetObjectProxy * GetProxy() { return &mProxy; }
+    virtual const AssetLib::IRuntimeAssetObjectProxy * GetProxy() const { return &mProxy; }
     //@}
 
     //! Set the tracker associated with the texture

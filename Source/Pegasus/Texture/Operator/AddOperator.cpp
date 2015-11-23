@@ -34,7 +34,7 @@ void AddOperator::InitProperties()
 
 void AddOperator::GenerateData()
 {
-    GRAPH_EVENT_DISPATCH(this, TextureOperationEvent, TextureOperationEvent::BEGIN);
+    PEGASUS_EVENT_DISPATCH(this, TextureOperationEvent, TextureOperationEvent::BEGIN);
 
     //! \todo Use a simpler syntax
     Graph::NodeDataRef dataRef = GetData();
@@ -105,7 +105,7 @@ void AddOperator::GenerateData()
         }
     }
 
-    GRAPH_EVENT_DISPATCH(this, TextureOperationEvent, TextureOperationEvent::END_SUCCESS);
+    PEGASUS_EVENT_DISPATCH(this, TextureOperationEvent, TextureOperationEvent::END_SUCCESS);
 }
 
 

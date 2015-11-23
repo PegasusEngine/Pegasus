@@ -44,7 +44,7 @@ Pegasus::Shader::ShaderManager::ShaderManager(Pegasus::Graph::NodeManager * node
 ,   mProxy(this)
 ,   mShaderTracker(Pegasus::Memory::GetGlobalAllocator())
 #endif  // PEGASUS_ENABLE_PROXIES
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
 ,   mEventListener(nullptr)
 #endif
 {
@@ -76,13 +76,13 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::CreateShader(
 
     Pegasus::Shader::ShaderStageRef stage = mNodeManager->CreateNode("ShaderStage");
 
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
     stage->SetEventListener(mEventListener);
 #endif
     stage->SetFactory(mFactory);
 
 #if PEGASUS_ENABLE_PROXIES
-    GRAPH_EVENT_INIT_USER_DATA(static_cast<Pegasus::Core::IBasicSourceProxy*>(stage->GetProxy()), "ShaderStage", mEventListener);
+    PEGASUS_EVENT_INIT_USER_DATA(static_cast<Pegasus::Core::IBasicSourceProxy*>(stage->GetProxy()), "ShaderStage", mEventListener);
     stage->SetShaderTracker(&mShaderTracker);
     mShaderTracker.InsertShader(&(*stage));
 #endif
@@ -93,7 +93,7 @@ Pegasus::Shader::ProgramLinkageReturn Pegasus::Shader::ShaderManager::CreateProg
 {
     Pegasus::Shader::ProgramLinkageRef program = mNodeManager->CreateNode("ProgramLinkage");
     program->SetManager(this);
-#if PEGASUS_USE_GRAPH_EVENTS 
+#if PEGASUS_USE_EVENTS 
     program->SetEventListener(mEventListener);
 #endif
     program->SetFactory(mFactory);
@@ -104,7 +104,7 @@ Pegasus::Shader::ProgramLinkageReturn Pegasus::Shader::ShaderManager::CreateProg
 #endif
 
 #if PEGASUS_ENABLE_PROXIES
-    GRAPH_EVENT_INIT_USER_DATA(static_cast<Pegasus::Core::IBasicSourceProxy*>(program->GetProxy()), "ProgramLinkage", mEventListener);
+    PEGASUS_EVENT_INIT_USER_DATA(static_cast<Pegasus::Core::IBasicSourceProxy*>(program->GetProxy()), "ProgramLinkage", mEventListener);
 #endif
 
     return program; 
@@ -113,12 +113,12 @@ Pegasus::Shader::ProgramLinkageReturn Pegasus::Shader::ShaderManager::CreateProg
 Pegasus::Shader::ShaderSourceReturn Pegasus::Shader::ShaderManager::CreateHeader()
 {    
     Pegasus::Shader::ShaderSourceRef stage = mNodeManager->CreateNode("ShaderSource");
-    #if PEGASUS_USE_GRAPH_EVENTS
+    #if PEGASUS_USE_EVENTS
     stage->SetEventListener(mEventListener);
     #endif
 
     #if PEGASUS_ENABLE_PROXIES
-    GRAPH_EVENT_INIT_USER_DATA(static_cast<Pegasus::Core::IBasicSourceProxy*>(stage->GetProxy()), "ShaderStage", mEventListener);
+    PEGASUS_EVENT_INIT_USER_DATA(static_cast<Pegasus::Core::IBasicSourceProxy*>(stage->GetProxy()), "ShaderStage", mEventListener);
     #endif
     return stage;
 }

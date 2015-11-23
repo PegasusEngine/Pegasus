@@ -9,6 +9,7 @@
 //! \date   11th May 2014	
 //! \brief	Global mesh node manager, including the factory features
 
+#include "Pegasus/PegasusAssetTypes.h"
 #include "Pegasus/Mesh/MeshManager.h"
 #include "Pegasus/Mesh/Generator/QuadGenerator.h"
 #include "Pegasus/Mesh/Generator/BoxGenerator.h"
@@ -31,7 +32,7 @@ MeshManager::MeshManager(Graph::NodeManager * nodeManager, IMeshFactory * factor
 #if PEGASUS_ENABLE_PROXIES
     ,mProxy(this)
 #endif
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
     //initialize without an event listener
     , mEventListener(nullptr)
 #endif
@@ -93,7 +94,7 @@ MeshGeneratorReturn MeshManager::CreateMeshGeneratorNode(const char * className)
         //! \todo Check that the class corresponds to a generator mesh
 
         MeshGeneratorRef meshGenerator = mNodeManager->CreateNode(className);
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
         //propagate event listener
         meshGenerator->SetEventListener(mEventListener);
 #endif
@@ -117,7 +118,7 @@ MeshOperatorReturn MeshManager::CreateMeshOperatorNode(const char * className,
 
         MeshOperatorRef meshOperator = mNodeManager->CreateNode(className);
         meshOperator->SetConfiguration(configuration);
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
         //propagate event listener
         meshOperator->SetEventListener(mEventListener);
 #endif
@@ -146,6 +147,29 @@ void MeshManager::RegisterAllMeshNodes()
     REGISTER_MESH_NODE(BoxGenerator);
     REGISTER_MESH_NODE(IcosphereGenerator);
 
+}
+
+//----------------------------------------------------------------------------------------
+
+const PegasusAssetTypeDesc*const* MeshManager::GetAssetTypes() const
+{
+    static const Pegasus::PegasusAssetTypeDesc* gDescs[] = {
+         &ASSET_TYPE_MESH
+       , nullptr
+    };
+    return gDescs;
+}
+
+//----------------------------------------------------------------------------------------
+
+AssetLib::RuntimeAssetObjectRef MeshManager::CreateRuntimeObject(const PegasusAssetTypeDesc* desc)
+{
+    if (desc->mTypeGuid == ASSET_TYPE_MESH.mTypeGuid)
+    {
+        MeshReturn mesh = CreateMeshNode();
+        return mesh;
+    }
+    return nullptr;
 }
 
 

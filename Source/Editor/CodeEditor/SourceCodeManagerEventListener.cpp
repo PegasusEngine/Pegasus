@@ -36,7 +36,7 @@ SourceCodeManagerEventListener::~SourceCodeManagerEventListener()
 {
 }
 
-void SourceCodeManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::CompilationEvent& e)
+void SourceCodeManagerEventListener::OnEvent(Pegasus::Core::IEventUserData * userData, Pegasus::Core::CompilerEvents::CompilationEvent& e)
 {
     if (userData != nullptr)
     {
@@ -51,7 +51,7 @@ void SourceCodeManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * us
     }
 }
 
-void SourceCodeManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::LinkingEvent& e)
+void SourceCodeManagerEventListener::OnEvent(Pegasus::Core::IEventUserData * userData, Pegasus::Core::CompilerEvents::LinkingEvent& e)
 {
     if (userData != nullptr)
     {
@@ -107,11 +107,11 @@ void SourceCodeManagerEventListener::SafeDestroyUserData(CodeUserData* codeUserD
     delete codeUserData;
 }
 
-void SourceCodeManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::SourceLoadedEvent& e)
+void SourceCodeManagerEventListener::OnEvent(Pegasus::Core::IEventUserData * userData, Pegasus::Core::CompilerEvents::SourceLoadedEvent& e)
 {
 }
 
-void SourceCodeManagerEventListener::OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::CompilationNotification& e)
+void SourceCodeManagerEventListener::OnEvent(Pegasus::Core::IEventUserData * userData, Pegasus::Core::CompilerEvents::CompilationNotification& e)
 {
     if (userData != nullptr)
     {

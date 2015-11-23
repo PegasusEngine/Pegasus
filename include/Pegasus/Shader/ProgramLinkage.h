@@ -27,6 +27,10 @@ namespace Pegasus {
         class AssetLib;
         class Asset;
     }
+
+    namespace Graph {
+        class NodeManager;
+    }
 }
 
 namespace Pegasus
@@ -51,14 +55,15 @@ class ProgramLinkage : public Pegasus::Graph::OperatorNode, public Pegasus::Asse
     friend class ProgramProxy;
 #endif
     
-    GRAPH_EVENT_DECLARE_DISPATCHER(Pegasus::Core::CompilerEvents::ICompilerEventListener)
+    PEGASUS_EVENT_DECLARE_DISPATCHER(Pegasus::Core::CompilerEvents::ICompilerEventListener)
 
 public:
 
     //! Default constructor
+    //! \param  nodeManager
     //! \param  nodeAllocator used for specific allocations of nodes
     //! \param  nodeDataAllocator used for specific data allocations
-    ProgramLinkage(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
+    ProgramLinkage(Graph::NodeManager* nodeManager, Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
     //! Destructor
     virtual ~ProgramLinkage();
@@ -67,6 +72,8 @@ public:
     //! \param shaderStage the shader stage to be added
     void SetShaderStage(Pegasus::Shader::ShaderStageIn shaderStage);   
 
+    //! Return the class instance name for this serializable object
+    virtual const char* GetClassInstanceName() const { return "ProgramLinkage"; }
 
     //! Minimum number of input nodes
     //! \return the minimum number of input nodes
@@ -79,7 +86,7 @@ public:
     //! Static function that creates a program linkage
     //! nodeAllocator node allocator
     //! nodeDataAllocator node data allocator
-    static Graph::NodeReturn CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
+    static Graph::NodeReturn CreateNode(Graph::NodeManager* nodeManager, Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
     //! Returns a shader stage node
     //! \param type the type to be queried

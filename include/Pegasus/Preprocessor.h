@@ -304,9 +304,9 @@
 // See the implementation of the functions living in the Pegasus::Io namespace for more details
 #define PEGASUS_USE_NATIVE_IO_CALLS                     1
 
-//Enable node events only if dev mode. In rel mode the boiler plate code gets removed
+//Enable events only if dev mode. In rel mode the boiler plate code gets removed
 //Events are used to communicate information to an editor app.
-#define PEGASUS_USE_GRAPH_EVENTS                        (PEGASUS_DEV)
+#define PEGASUS_USE_EVENTS                        (PEGASUS_DEV)
 
 #define PEGASUS_SHADER_USE_SHADER_EVENTS                (PEGASUS_DEV)
 

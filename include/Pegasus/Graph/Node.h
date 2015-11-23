@@ -17,8 +17,18 @@
 #include "Pegasus/Core/Ref.h"
 #include "Pegasus/Core/RefCounted.h"
 
+//forward declarations
+namespace Pegasus {
+namespace AssetLib {
+    class Asset;
+    class Object;
+}
+}
+
 namespace Pegasus {
 namespace Graph {
+
+class NodeManager;
 
 
 //! Base node class for all graph-based systems (textures, meshes, shaders, etc.)
@@ -87,9 +97,14 @@ public:
 
 
     //! Creation function type used by the node manager
+    //! \param nodeManager - the node manager used for creation
     //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
     //! \param nodeDataAllocator Allocator used for NodeData
-    typedef Pegasus::Core::Ref<Node> (* CreateNodeFunc)(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
+    typedef Pegasus::Core::Ref<Node> (* CreateNodeFunc)(NodeManager* nodeManager, Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
+
+    //! Returns the class instance name of this node.
+    //! \return class instance name c string
+    virtual const char* GetClassInstanceName() const = 0;
 
 #if PEGASUS_ENABLE_PROXIES
 
@@ -194,6 +209,14 @@ protected:
     //! \param index Index of the node before it is removed
     virtual void OnRemoveInput(unsigned int index);
 
+
+    //! Called when a node is dumped into an asset
+    //! \param obj - the object to write the contents of this object to.
+    virtual void WriteToObject(AssetLib::Asset* parentAsset, AssetLib::Object* obj) const;
+
+    //! Called when a node is read from an object
+    //! \parama obj - the object to read the contents from.
+    virtual bool ReadFromObject(NodeManager* nodeManager, AssetLib::Asset* parentAsset, AssetLib::Object* obj);
 
 #if PEGASUS_ENABLE_PROXIES
 

@@ -50,11 +50,11 @@ public:
     
     //! Sets the user data for this particular shader
     //! \param userData. the user data to retrieve
-    virtual void SetUserData(Pegasus::Graph::IGraphUserData * userData);
+    virtual void SetUserData(Pegasus::Core::IEventUserData * userData);
 
     //! Gets the user data for this particular shader
     //! \return user data reference
-    virtual Pegasus::Graph::IGraphUserData * GetUserData() const;
+    virtual Pegasus::Core::IEventUserData * GetUserData() const;
 
     //! Compilation policy user defined: meaning that the user picks wether this script gets compiled on
     //! every key stroke, or only during save.

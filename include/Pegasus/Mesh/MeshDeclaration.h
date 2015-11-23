@@ -36,7 +36,10 @@
     public:                                                                                 \
         inline static const char * GetClassName() { return #className; }                    \
                                                                                             \
+        virtual const char* GetClassInstanceName() const { return GetClassName(); }         \
+                                                                                            \
         inline static Pegasus::Graph::NodeReturn CreateNode(                                \
+                                    Pegasus::Graph::NodeManager* nodeManager,               \
                                     Pegasus::Alloc::IAllocator* nodeAllocator,            \
                                     Pegasus::Alloc::IAllocator* nodeDataAllocator)        \
             {   return PG_NEW(nodeAllocator, -1, "Mesh::" #className, Alloc::PG_MEM_PERM)   \

@@ -85,7 +85,7 @@ void GLShaderFactory::Initialize(Pegasus::Alloc::IAllocator * allocator)
 static int ProcessErrorLog(Pegasus::Shader::ShaderStage * shaderNode, const char * log)
 {
     int errorCount = 0;
-#if PEGASUS_USE_GRAPH_EVENTS 
+#if PEGASUS_USE_EVENTS 
     //parsing log to extract line & column
     const char  * s = log;
 
@@ -128,7 +128,7 @@ static int ProcessErrorLog(Pegasus::Shader::ShaderStage * shaderNode, const char
                 ++s;
             } 
             descriptionError[idx] = '\0';
-            GRAPH_EVENT_DISPATCH(
+            PEGASUS_EVENT_DISPATCH(
                 shaderNode,
                 CompilerEvents::CompilationNotification,
                 // Shader Event specific arguments
@@ -238,7 +238,7 @@ void GLShaderFactory::GenerateShaderGPUData (Pegasus::Shader::ShaderStage * shad
     if (type == Pegasus::Shader::SHADER_STAGE_INVALID || sourceSize == 0)
     {
         //empty shader, ignore compilation
-        GRAPH_EVENT_DISPATCH (
+        PEGASUS_EVENT_DISPATCH (
             shaderNode,
             CompilerEvents::CompilationEvent,
             // Event specific arguments
@@ -277,7 +277,7 @@ void GLShaderFactory::GenerateShaderGPUData (Pegasus::Shader::ShaderStage * shad
        
     int errorCount = ProcessErrorLog(shaderNode, logBuffer);
     shaderCompiled = shaderCompiled && errorCount == 0;
-    GRAPH_EVENT_DISPATCH (
+    PEGASUS_EVENT_DISPATCH (
         shaderNode,
         CompilerEvents::CompilationEvent,
         // Event specific arguments
@@ -356,7 +356,7 @@ void GLShaderFactory::GenerateProgramGPUData (Pegasus::Shader::ProgramLinkage * 
             )
     )
     {
-        GRAPH_EVENT_DISPATCH (
+        PEGASUS_EVENT_DISPATCH (
             programNode,
             CompilerEvents::LinkingEvent,
             // Event specific arguments:
@@ -376,7 +376,7 @@ void GLShaderFactory::GenerateProgramGPUData (Pegasus::Shader::ProgramLinkage * 
         char logBuffer[bufferSize];
         GLsizei logLength = 0;
         glGetProgramInfoLog(gpuData->mHandle, bufferSize, &logLength, logBuffer);
-        GRAPH_EVENT_DISPATCH (
+        PEGASUS_EVENT_DISPATCH (
             programNode,
             CompilerEvents::LinkingEvent,
             // Event specific arguments:
@@ -406,7 +406,7 @@ void GLShaderFactory::GenerateProgramGPUData (Pegasus::Shader::ProgramLinkage * 
 
         if (triggerAlignmentWarning)
         {
-            GRAPH_EVENT_DISPATCH (
+            PEGASUS_EVENT_DISPATCH (
                 programNode,
                 CompilerEvents::LinkingEvent,
                 // Event specific arguments:
@@ -421,7 +421,7 @@ void GLShaderFactory::GenerateProgramGPUData (Pegasus::Shader::ProgramLinkage * 
         }
         else
         {
-            GRAPH_EVENT_DISPATCH (
+            PEGASUS_EVENT_DISPATCH (
                 programNode,
                 CompilerEvents::LinkingEvent,
                 // Event specific arguments:

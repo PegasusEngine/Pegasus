@@ -18,6 +18,15 @@
 #include "Pegasus/PropertyGrid/Proxy/PropertyGridObjectProxy.h"
 #include "Pegasus/Memory/MemoryManager.h"
 #include "Pegasus/Utils/Vector.h"
+#include "Pegasus/PropertyGrid/Shared/PropertyEventDefs.h"
+
+//forward declarations
+namespace Pegasus {
+namespace AssetLib {
+   class Asset;
+   class Object;
+}
+}
 
 namespace Pegasus {
 namespace PropertyGrid {
@@ -126,8 +135,8 @@ namespace PropertyGrid {
 //! Macro to initialize a property in the implementation file, in the constructor of the class
 //! \param name Name of the property, starting with an uppercase letter
 #define INIT_PROPERTY(name)                                                                                        \
-    Set##name##ToDefault();                                                                                         \
-    APPEND_PROPERTY_POINTER(mProperty##name);                                                   \
+    Set##name##ToDefault();                                                                                        \
+    mProperty##name##Index = APPEND_PROPERTY_POINTER(mProperty##name);                                             \
 
 
 //! Macro to start initializing a set of properties in the implementation file
@@ -184,9 +193,11 @@ namespace PropertyGrid {
             { return mProperty##name; }                                                                             \
         inline void Set##name(PPG::PropertyDefinition<type>::ParamType value)                                       \
             { PPG::PropertyDefinition<type>::CopyProperty(mProperty##name, value);                                  \
+              PEGASUS_EVENT_DISPATCH(((Pegasus::PropertyGrid::PropertyGridObject*)this), Pegasus::PropertyGrid::ValueChangedEventIndexed, mProperty##name##Index ); \
               InvalidatePropertyGrid(); }                                                                           \
     private:                                                                                                        \
         PPG::PropertyDefinition<type>::VarType mProperty##name;                                                     \
+        int mProperty##name##Index;                                                                                 \
 
 
 //! Declare the property default value getter (Get<PropertyName>DefaultValue()) and setter (Set<PropertyName>ToDefault())
@@ -255,19 +266,21 @@ namespace PropertyGrid {
 
 class PropertyGridObject;
 
-//! Class used to read and write the content of a property.
-//! This wrapper prevents bad casts to non-const pointers that would not invalidate the property grid properly,
-//! and it sets the dirty flag of the PropertyGridObject's property grid each time the value is set through Set<>()
-class PropertyAccessor
+//! Class used to read content of a property safely. Stores a const pointer to the class and 
+//! memory owning the property to be read. Only provides API accessors for reading.
+class PropertyReadAccessor
 {
 public:
 
     //! Default constructor
     //! \note Defined only to create arrays of accessors. However the initial state is invalid,
     //!       the accessors must be assigned to be valid
-    PropertyAccessor()
-        :   mObj(nullptr)
-        ,   mPtr(nullptr)
+    PropertyReadAccessor()
+        :   mConstObj(nullptr)
+        ,   mConstPtr(nullptr)
+#if PEGASUS_USE_EVENTS
+        ,   mIndex(-1)
+#endif
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
         ,   mSize(0)
 #endif
@@ -281,8 +294,84 @@ public:
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
             PG_ASSERTSTR(sizeof(T) == mSize, "Wrong template type when getting the value of a property.");
 #endif
-            return *static_cast<const T *>(mPtr);
+            return *static_cast<const T *>(mConstPtr);
         }
+
+
+    //! Read the property into a buffer
+    //! \param outputBuffer Buffer that is filled with the property data (!= nullptr)
+    //! \param outputBufferSize Size of the output buffer in bytes (> 0)
+    //! \warning The output buffer size must match the registered size of this accessor
+    void Read(void * outputBuffer, unsigned int outputBufferSize) const;
+
+    //------------------------------------------------------------------------------------
+
+protected:
+
+    // Make PropertyGridObject a friend to access the private constructor
+    // (to prevent external users from modifying the internal pointer)
+    friend class PropertyGridObject;
+
+    //! Constructor
+    //! \param obj Pointer to the property grid object owning the property (!= nullptr)
+    //! \param ptr Pointer to the property (!= nullptr)
+    //! \param size Size of the object pointed by the pointer in bytes (> 0)
+    //!             (used for size checking in the accessors when PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR == 1)
+    inline PropertyReadAccessor(
+          const PropertyGridObject * obj
+        , const void * ptr
+#if PEGASUS_USE_EVENTS
+        , int index 
+#endif
+
+#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
+        , unsigned int size
+#endif
+                           )
+        :   mConstObj(obj)
+        ,   mConstPtr(ptr)
+#if PEGASUS_USE_EVENTS
+        ,   mIndex (index)
+#endif
+
+#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
+        ,   mSize(size)
+#endif
+        { }
+
+    //! Non-null pointer to the property grid object owning the property
+    //! (nullptr only if using the default constructor)
+    const PropertyGridObject * mConstObj;
+
+    //! Pointer to the const property, nullptr if using the default constructor or in case of error
+    const void * mConstPtr;
+
+#if PEGASUS_USE_EVENTS
+    int mIndex;
+#endif
+
+#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
+    //! Size of the object pointed by the pointer in bytes (> 0)
+    //! (used for size checking in the accessors when PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR == 1)
+    unsigned int mSize;
+#endif
+};
+
+//! Class used to read and write the content of a property.
+//! This wrapper prevents bad casts to non-const pointers that would not invalidate the property grid properly,
+//! and it sets the dirty flag of the PropertyGridObject's property grid each time the value is set through Set<>()
+//! or through the Write API call.
+class PropertyAccessor : public PropertyReadAccessor
+{
+public:
+
+    //! Default constructor
+    //! \note Defined only to create arrays of accessors. However the initial state is invalid,
+    //!       the accessors must be assigned to be valid
+    PropertyAccessor()
+        :   mObj(nullptr)
+        ,   mPtr(nullptr)
+    { }
 
     //! Setter of the property
     //! \note Sets the dirty flag of the PropertyGridObject's property grid
@@ -296,12 +385,6 @@ public:
             *static_cast<T *>(mPtr) = value;
             InvalidatePropertyGrid();
         }
-
-    //! Read the property into a buffer
-    //! \param outputBuffer Buffer that is filled with the property data (!= nullptr)
-    //! \param outputBufferSize Size of the output buffer in bytes (> 0)
-    //! \warning The output buffer size must match the registered size of this accessor
-    void Read(void * outputBuffer, unsigned int outputBufferSize) const;
 
     //! Write the property using the content of a buffer
     //! \param inputBuffer Input buffer with content to copy to the property (!= nullptr)
@@ -324,15 +407,24 @@ private:
     inline PropertyAccessor(
           PropertyGridObject * obj
         , void * ptr
+#if PEGASUS_USE_EVENTS
+        , int index 
+#endif
+
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
         , unsigned int size
 #endif
                            )
-        :   mObj(obj)
-        ,   mPtr(ptr)
-#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
-        ,   mSize(size)
+        :   PropertyReadAccessor(obj, ptr
+#if PEGASUS_USE_EVENTS
+            ,index 
 #endif
+#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
+            ,size
+#endif
+            )
+        ,   mObj(obj)
+        ,   mPtr(ptr)
         { }
 
     //! Invalidate the property grid of the attached PropertyGridObject
@@ -347,12 +439,6 @@ private:
 
     //! Pointer to the property, nullptr if using the default constructor or in case of error
     void * mPtr;
-
-#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
-    //! Size of the object pointed by the pointer in bytes (> 0)
-    //! (used for size checking in the accessors when PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR == 1)
-    unsigned int mSize;
-#endif
 };
 
 //----------------------------------------------------------------------------------------
@@ -375,6 +461,7 @@ class PropertyGridObject
     //------------------------------------------------------------------------------------
 
 public:
+    PEGASUS_EVENT_DECLARE_DISPATCHER(IPropertyListener)
 
     //! Constructor
     PropertyGridObject();
@@ -423,6 +510,11 @@ public:
     //! \param index Index of the class property (0 <= index < GetNumClassProperties())
     //! \return Accessor for the class property
     PropertyAccessor GetClassPropertyAccessor(unsigned int index);
+
+    //! Get an accessor to a property, including parent classes (but not derived classes)
+    //! \param index Index of the property (0 <= index < GetNumProperties())
+    //! \return Accessor for the property
+    const PropertyReadAccessor GetClassReadPropertyAccessor(unsigned int index) const;
 
     //------------------------------------------------------------------------------------
 
@@ -473,6 +565,9 @@ public:
     //! \note Called automatically by setters, but can be used to force the dirty flag manually
     inline void InvalidatePropertyGrid() { mPropertyGridDirty = true; }
 
+    //! Pegasus event function to invalidate the data.
+    inline void InvalidateData() { InvalidatePropertyGrid(); }
+
     //! Test if the property grid is dirty, meaning that at least one member has changed
     //! \return True if the dirty flag is set
     inline bool IsPropertyGridDirty() const { return mPropertyGridDirty; }
@@ -503,8 +598,9 @@ protected:
     //! Add a class property pointer to the object's property pointer array
     //! \param ptr Pointer to the class property to add
     //! \param propertySize Size of the class property pointed by the pointer in bytes (> 0)
+	//! \return the index of this property in the list
     //! \warning To be used only by the INIT_PROPERTY() macro
-    void AppendClassPropertyPointer(  void * ptr
+    int AppendClassPropertyPointer(  void * ptr
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
                                     , unsigned int propertySize
 #endif
@@ -515,6 +611,15 @@ protected:
     //! \note This should match GetNumClassProperties(), otherwise that means that the number
     //!       of declaration/implementation/initialization macros does not match
     inline unsigned int GetNumClassPropertyPointers() const { return mClassPropertyPointers.GetSize(); }
+
+    
+    //! Called when a node is dumped into an asset
+    //! \param obj - the object to write the contents of this object to.
+    virtual void WriteToObject(AssetLib::Asset* parentAsset, AssetLib::Object* obj) const;
+
+    //! Called when a node is read from an object
+    //! \parama obj - the object to read the contents from.
+    virtual bool ReadFromObject(AssetLib::Asset* parentAsset, AssetLib::Object* obj);
 
     //------------------------------------------------------------------------------------
     

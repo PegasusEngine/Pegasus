@@ -159,6 +159,9 @@ protected:
     void RenderViaScript(float beat, Wnd::Window * window);
 
     // Accessors to the global manager for the derived classes
+
+    //! Get the asset manager
+    inline AssetLib::AssetLib* GetAssetLib() const { return mAppContext->GetAssetLib(); }
     
     //! Get the global IO manager
     //! \return Global IO manager

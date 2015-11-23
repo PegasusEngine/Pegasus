@@ -51,7 +51,7 @@ void BoxGenerator::GenerateData()
 {
     using namespace Pegasus::Math;
     
-    GRAPH_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::BEGIN);
+   PEGASUS_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::BEGIN);
     
     MeshDataRef meshData = GetData();
     PG_ASSERT(meshData != nullptr); 
@@ -119,7 +119,7 @@ void BoxGenerator::GenerateData()
 
     }
 
-    GRAPH_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::END_SUCCESS);
+    PEGASUS_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::END_SUCCESS);
 }
 
 

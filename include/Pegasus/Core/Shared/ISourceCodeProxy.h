@@ -17,8 +17,8 @@
 
 // forward declarations
 namespace Pegasus {
-    namespace Graph {
-        class IGraphUserData;
+    namespace Core {
+        class IEventUserData;
     }
 }
 
@@ -32,11 +32,11 @@ class IBasicSourceProxy : public AssetLib::IRuntimeAssetObjectProxyDecorator
 public:
     //! Sets the user data for this particular source code file
     //! \param userData. the user data to retrieve
-    virtual void SetUserData(Pegasus::Graph::IGraphUserData * userData) = 0;
+    virtual void SetUserData(Pegasus::Core::IEventUserData * userData) = 0;
 
     //! Gets the user data for this particular source code file
     //! \return user data reference
-    virtual Pegasus::Graph::IGraphUserData * GetUserData() const = 0;
+    virtual Pegasus::Core::IEventUserData * GetUserData() const = 0;
 };
 
 class ISourceCodeProxy : public IBasicSourceProxy

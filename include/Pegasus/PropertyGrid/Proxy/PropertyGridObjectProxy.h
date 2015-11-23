@@ -90,7 +90,7 @@ public:
     //! \param index Index of the class property (0 <= index < GetNumClassProperties())
     //! \param inputBuffer Input buffer with content to copy to the class property (!= nullptr)
     //! \param inputBufferSize Size in bytes of the input buffer (> 0)
-    virtual void WriteClassProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize) override;
+    virtual void WriteClassProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize, bool sendMessage = true) override;
 
 
     //! Get the number of object properties (can change any time and for any object)
@@ -113,7 +113,21 @@ public:
     //! \param index Index of the pbject property (0 <= index < GetNumObjectProperties())
     //! \param inputBuffer Input buffer with content to copy to the object property (!= nullptr)
     //! \param inputBufferSize Size in bytes of the input buffer (> 0)
-    virtual void WriteObjectProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize) override;
+    //! \param sendMessage - if true, sends a message to the property editor listener. Use this to avoid circular message feedback loop
+    //!                      between UI and worker threads
+    virtual void WriteObjectProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize, bool sendMessage = true) override;
+
+    //! Set the event listener of this property grid object
+    //! \param listener - the event listener.
+    virtual void SetEventListener(IPropertyListener* listener) override;
+
+    //! Set the user data of this event object
+    //! \param userData - the user data of this property grid proxy passed around events.
+    virtual void SetUserData(Pegasus::Core::IEventUserData* userData) override;
+
+    //! Get the user data of this event object
+    //! \return the user data of this property grid proxy passed around events.
+    virtual Pegasus::Core::IEventUserData* GetUserData() const override;
 
     //------------------------------------------------------------------------------------
 

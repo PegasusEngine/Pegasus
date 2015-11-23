@@ -9,9 +9,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Include\Shared">
-      <UniqueIdentifier>{a06e88b0-25f5-4503-a9c2-2499d8c78bf4}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\Node.h">
@@ -34,9 +31,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\NodeGpuData.h">
       <Filter>Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\Shared\GraphEventDefs.h">
-      <Filter>Include\Shared</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

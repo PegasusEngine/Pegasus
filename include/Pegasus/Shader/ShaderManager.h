@@ -87,7 +87,7 @@ public:
 
 #endif
 
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
     void RegisterEventListener(Pegasus::Core::CompilerEvents::ICompilerEventListener * eventListener) { mEventListener = eventListener; }
 #endif
 
@@ -123,7 +123,7 @@ private:
 
 #endif
 
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
     Pegasus::Core::CompilerEvents::ICompilerEventListener * mEventListener;
 #endif
 };

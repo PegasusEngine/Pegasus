@@ -12,7 +12,7 @@
 #ifndef PEGASUS_TEXTUREEVENT_H 
 #define PEGASUS_TEXTUREEVENT_H
 
-#include "Pegasus/Graph/Shared/GraphEventDefs.h"
+#include "Pegasus/Core/Shared/EventDefs.h"
 
 namespace Pegasus
 {
@@ -107,11 +107,11 @@ namespace Texture
         OperationEventType mType;
         
     };
-    GRAPH_EVENT_BEGIN_REGISTRY (ITextureEventListener)
-        GRAPH_EVENT_REGISTER (TextureNotificationEvent)
-        GRAPH_EVENT_REGISTER (TextureGenerationEvent)
-        GRAPH_EVENT_REGISTER (TextureOperationEvent)
-    GRAPH_EVENT_END_REGISTRY
+    PEGASUS_EVENT_BEGIN_REGISTRY (ITextureEventListener)
+        PEGASUS_EVENT_REGISTER (TextureNotificationEvent)
+        PEGASUS_EVENT_REGISTER (TextureGenerationEvent)
+        PEGASUS_EVENT_REGISTER (TextureOperationEvent)
+    PEGASUS_EVENT_END_REGISTRY
 }
 
 }

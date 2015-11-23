@@ -10,8 +10,12 @@
 //! \brief	Base node class for all graph-based systems (textures, meshes, etc.)
 
 #include "Pegasus/Graph/Node.h"
+#include "Pegasus/Graph/NodeManager.h"
+#include "Pegasus/AssetLib/Asset.h"
+#include "Pegasus/AssetLib/ASTree.h"
+#include "Pegasus/Utils/String.h"
 
-#include <string.h>
+using namespace Pegasus::AssetLib;
 
 namespace Pegasus {
 namespace Graph {
@@ -293,6 +297,91 @@ void Node::OnRemoveInput(unsigned int index)
 {
     // Empty default behavior
 }
+
+//----------------------------------------------------------------------------------------
+
+
+void Node::WriteToObject(AssetLib::Asset* parentAsset, AssetLib::Object* obj) const
+{
+    obj->AddString("class", GetClassInstanceName());
+    
+    Object* propertyGridObj = parentAsset->NewObject();
+    obj->AddObject("props", propertyGridObj);
+    PropertyGridObject::WriteToObject(parentAsset, propertyGridObj);
+
+    Array* inputs = parentAsset->NewArray();
+    inputs->CommitType(Array::AS_TYPE_OBJECT);
+    obj->AddArray("inputs", inputs);
+
+    for (unsigned int i = 0; i < GetNumInputs(); ++i)
+    {
+        NodeRef n = GetInput(i);
+        Object* inputObj = parentAsset->NewObject();
+        n->WriteToObject(parentAsset, inputObj);
+
+        Array::Element e;
+        e.o = inputObj;
+        inputs->PushElement(e);
+    }
+
+}
+
+bool Node::ReadFromObject(NodeManager* nodeManager, AssetLib::Asset* parentAsset, AssetLib::Object* obj)
+{
+    int strId = obj->FindString("class");
+    if (strId == -1 || Utils::Strcmp(obj->GetString(strId), GetClassInstanceName()))
+    {
+        PG_LOG('ERR_' , "Error while parsing node object");
+        return false;
+    }
+
+    int propGridObjId = obj->FindObject("props");
+    int inputsArrId = obj->FindArray("inputs");
+
+    if (propGridObjId == -1 || inputsArrId == -1)
+    {
+        PG_LOG('ERR_' , "Error while parsing node object. No property grid defined.");
+        return false;
+    }
+
+    Object* propGridObject = obj->GetObject(propGridObjId);
+    if (!PropertyGridObject::ReadFromObject(parentAsset, obj))
+    { 
+        PG_LOG('ERR_' , "Error while parsing node object. Invalid property grid.");
+        return false;
+    }
+
+    Array* inputs = obj->GetArray(inputsArrId);
+    if (inputs->GetSize() > 0 && inputs->GetType() != Array::AS_TYPE_OBJECT)
+    {
+        PG_LOG('ERR_' , "Error while parsing node object: invalid input array type.");
+        return false;
+    }
+
+    for (int i = 0; i < inputs->GetSize(); ++i)
+    {
+        const Array::Element& e = inputs->GetElement(i);
+        int nodeClassId = e.o->FindString("class"); 
+        if (nodeClassId == -1)
+        {
+            PG_LOG('ERR_' , "Error while parsing node object");
+            return false;
+        }
+
+        NodeRef inputNode = nodeManager->CreateNode(e.o->GetString(nodeClassId));
+        if (!inputNode->ReadFromObject(nodeManager, parentAsset, e.o))
+        {
+            return false;
+        }
+    
+        AddInput(inputNode);
+    }
+    
+
+    return true;
+
+}
+
 
 }   // namespace Graph
 }   // namespace Pegasus

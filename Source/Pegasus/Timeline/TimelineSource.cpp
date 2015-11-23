@@ -13,12 +13,12 @@ TimelineSource::TimelineSource(Alloc::IAllocator* allocator)
    ,mProxy(this)
 #endif
 {
-    GRAPH_EVENT_INIT_DISPATCHER
+    PEGASUS_EVENT_INIT_DISPATCHER
 }
 
 TimelineSource::~TimelineSource()
 {
-    GRAPH_EVENT_DESTROY_USER_DATA(&mProxy, "BlockScript", GetEventListener());
+    PEGASUS_EVENT_DESTROY_USER_DATA(&mProxy, "BlockScript", GetEventListener());
 }
 
 void TimelineSource::Compile()

@@ -29,7 +29,7 @@
 
 
 
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
 #include "Pegasus/Mesh/Shared/MeshEvent.h"
 #include "Pegasus/Texture/Shared/TextureEvent.h"
 #endif

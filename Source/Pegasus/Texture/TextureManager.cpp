@@ -35,7 +35,7 @@ TextureManager::TextureManager(Graph::NodeManager * nodeManager, ITextureFactory
 ,   mProxy(this)
 ,   mTracker()
 #endif  // PEGASUS_ENABLE_PROXIES
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
     // Initialize without an event listener
 ,   mEventListener(nullptr)
 #endif
@@ -105,7 +105,7 @@ TextureGeneratorReturn TextureManager::CreateTextureGeneratorNode(const char * c
 
         TextureGeneratorRef textureGenerator = mNodeManager->CreateNode(className);
         textureGenerator->SetConfiguration(configuration);
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
         //propagate event listener
         textureGenerator->SetEventListener(mEventListener);
 #endif
@@ -129,7 +129,7 @@ TextureOperatorReturn TextureManager::CreateTextureOperatorNode(const char * cla
 
         TextureOperatorRef textureOperator = mNodeManager->CreateNode(className);
         textureOperator->SetConfiguration(configuration);
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
         //propagate event listener
         textureOperator->SetEventListener(mEventListener);
 #endif
@@ -163,6 +163,32 @@ void TextureManager::RegisterAllTextureNodes()
     //            and update the list of #includes above
     REGISTER_TEXTURE_NODE(AddOperator);
 }
+
+//----------------------------------------------------------------------------------------
+
+AssetLib::RuntimeAssetObjectRef TextureManager::CreateRuntimeObject(const PegasusAssetTypeDesc* desc)
+{
+    if (desc->mTypeGuid == ASSET_TYPE_TEXTURE.mTypeGuid)
+    {
+        TextureConfiguration defaultConfig;
+        TextureRef tex = CreateTextureNode(defaultConfig);        
+        return tex;
+    }
+    return nullptr;
+}
+
+//----------------------------------------------------------------------------------------
+
+const PegasusAssetTypeDesc*const* TextureManager::GetAssetTypes() const
+{
+    static const PegasusAssetTypeDesc* gAssets[] = {
+        &ASSET_TYPE_TEXTURE,
+        nullptr
+    };
+
+    return gAssets;
+}
+
 
 
 }   // namespace Texture

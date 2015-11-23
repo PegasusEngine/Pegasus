@@ -17,6 +17,7 @@
 #include "Pegasus/Mesh/Mesh.h"
 #include "Pegasus/Mesh/MeshGenerator.h"
 #include "Pegasus/Mesh/MeshOperator.h"
+#include "Pegasus/AssetLib/AssetRuntimeFactory.h"
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/Mesh/Proxy/MeshManagerProxy.h"
@@ -34,7 +35,7 @@ namespace Mesh {
 class IMeshFactory;
 
 //! Global mesh node manager, including the factory features
-class MeshManager
+class MeshManager : public AssetLib::AssetRuntimeFactory
 {
 public:
 
@@ -72,7 +73,17 @@ public:
     MeshOperatorReturn CreateMeshOperatorNode(const char * className,
                                                     const MeshConfiguration & configuration);
 
-#if PEGASUS_USE_GRAPH_EVENTS
+    //! Returns a null terminated list of asset descriptions this runtime factory will accept.
+    //! \return a null terminated list of asset descriptions
+    virtual const PegasusAssetTypeDesc*const* GetAssetTypes() const;
+
+    //! Creates a runtime object from an asset. This function must add a reference to the 
+    //! runtime object returned, (if its ref counted)
+    //! \param the asset type requested.
+    //! \return the runtime asset created. return null if unsuccessfull.
+    virtual AssetLib::RuntimeAssetObjectRef CreateRuntimeObject(const PegasusAssetTypeDesc* desc);
+
+#if PEGASUS_USE_EVENTS
     //! Registers an event listener so we can listen to mesh specific event whilst constructing nodes.
     //! \param the event listener to use
     void RegisterEventListener(IMeshEventListener * eventListener) { mEventListener = eventListener; }
@@ -102,7 +113,7 @@ private:
     //! Pointer to the GPU factory. Generates GPU data from cpu mesh data
     IMeshFactory * mFactory;
 
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
     IMeshEventListener * mEventListener;
 #endif
 #if PEGASUS_ENABLE_PROXIES

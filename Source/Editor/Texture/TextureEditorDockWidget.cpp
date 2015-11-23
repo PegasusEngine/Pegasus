@@ -167,5 +167,4 @@ void TextureEditorDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* 
 void TextureEditorDockWidget::OnUIForAppClosed() 
 {
     mViewportWidget->OnAppUnloaded();
-    ui.propertyGridWidget->Clear();
 }

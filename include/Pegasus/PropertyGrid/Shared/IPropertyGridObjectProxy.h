@@ -16,6 +16,7 @@
 
 #include "Pegasus/PropertyGrid/Shared/PropertyDefs.h"
 #include "Pegasus/PropertyGrid/Shared/IPropertyGridClassInfoProxy.h"
+#include "Pegasus/PropertyGrid/Shared/PropertyEventDefs.h"
 
 namespace Pegasus {
 namespace PropertyGrid {
@@ -76,7 +77,7 @@ public:
     //! \param index Index of the class property (0 <= index < GetNumClassProperties())
     //! \param inputBuffer Input buffer with content to copy to the class property (!= nullptr)
     //! \param inputBufferSize Size in bytes of the input buffer (> 0)
-    virtual void WriteClassProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize) = 0;
+    virtual void WriteClassProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize, bool sendMessage = true) = 0;
 
 
     //! Get the number of object properties (can change any time and for any object)
@@ -99,7 +100,19 @@ public:
     //! \param index Index of the pbject property (0 <= index < GetNumObjectProperties())
     //! \param inputBuffer Input buffer with content to copy to the object property (!= nullptr)
     //! \param inputBufferSize Size in bytes of the input buffer (> 0)
-    virtual void WriteObjectProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize) = 0;
+    virtual void WriteObjectProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize, bool sendMessage = true) = 0;
+
+    //! Set the event listener of this property grid object
+    //! \param listener - the event listener.
+    virtual void SetEventListener(IPropertyListener* listener) = 0;
+
+    //! Set the user data of this event object
+    //! \param userData - the user data of this property grid proxy passed around events.
+    virtual void SetUserData(Pegasus::Core::IEventUserData* userData) = 0;
+
+    //! Get the user data of this event object
+    //! \return the user data of this property grid proxy passed around events.
+    virtual Pegasus::Core::IEventUserData* GetUserData() const = 0;
 };
 
 

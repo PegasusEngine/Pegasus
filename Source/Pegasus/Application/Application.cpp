@@ -101,8 +101,8 @@ Application::Application(const ApplicationConfig& config)
 
     mAssetLib->RegisterObjectFactory(mShaderManager);
     mAssetLib->RegisterObjectFactory(mTimelineManager);
-    //mAssetLib->RegisterObjectFactory(mTextureManager);
-    //mAssetLib->RegisterObjectFactory(mMeshManager);
+    mAssetLib->RegisterObjectFactory(mTextureManager);
+    mAssetLib->RegisterObjectFactory(mMeshManager);
 
     mRenderCollectionFactory = PG_NEW(nodeAlloc, -1, "RenderCollectionFactory", Alloc::PG_MEM_PERM) Pegasus::Application::RenderCollectionFactory(this, nodeAlloc);
 #if PEGASUS_ENABLE_BS_REFLECTION_INFO

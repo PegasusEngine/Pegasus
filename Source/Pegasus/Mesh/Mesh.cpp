@@ -21,9 +21,12 @@ END_IMPLEMENT_PROPERTIES(Mesh)
 
 //----------------------------------------------------------------------------------------
 
-Mesh::Mesh(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
-:   Graph::OutputNode(nodeAllocator, nodeDataAllocator),
-    mConfiguration()
+Mesh::Mesh(Graph::NodeManager* nodeManager, Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
+:   Graph::OutputNode(nodeManager, nodeAllocator, nodeDataAllocator)
+,   mConfiguration()
+#if PEGASUS_ENABLE_PROXIES
+    ,mProxy(this)
+#endif
 {
     //! \todo Add proxy and tracker (see Texture.cpp)
 

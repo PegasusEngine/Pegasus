@@ -31,7 +31,7 @@ TextureOperator::TextureOperator(Alloc::IAllocator* nodeAllocator, Alloc::IAlloc
     END_INIT_PROPERTIES()
 
     // Initialize event user data
-    GRAPH_EVENT_INIT_DISPATCHER
+    PEGASUS_EVENT_INIT_DISPATCHER
 }
 
 //----------------------------------------------------------------------------------------
@@ -48,7 +48,7 @@ TextureOperator::TextureOperator(const TextureConfiguration & configuration,
     END_INIT_PROPERTIES()
 
     // Initialize event user data
-    GRAPH_EVENT_INIT_DISPATCHER
+    PEGASUS_EVENT_INIT_DISPATCHER
 }
 
 //----------------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ void TextureOperator::SetConfiguration(const TextureConfiguration & configuratio
     }
     else
     {
-        GRAPH_EVENT_DISPATCH (
+        PEGASUS_EVENT_DISPATCH (
             this,
             TextureNotificationEvent,
             //event specific arguments
@@ -82,7 +82,7 @@ void TextureOperator::AddGeneratorInput(TextureGeneratorIn textureGenerator)
     }
     else
     {
-        GRAPH_EVENT_DISPATCH (
+        PEGASUS_EVENT_DISPATCH (
             this,
             TextureNotificationEvent,
             //event specific arguments
@@ -103,7 +103,7 @@ void TextureOperator::AddOperatorInput(const Pegasus::Core::Ref<TextureOperator>
     }
     else
     {
-        GRAPH_EVENT_DISPATCH (
+        PEGASUS_EVENT_DISPATCH (
             this,
             TextureNotificationEvent,
             //event specific arguments
@@ -124,7 +124,7 @@ void TextureOperator::ReplaceInputByGenerator(unsigned int index, TextureGenerat
     }
     else
     {
-        GRAPH_EVENT_DISPATCH (
+        PEGASUS_EVENT_DISPATCH (
             this,
             TextureNotificationEvent,
             //event specific arguments
@@ -145,7 +145,7 @@ void TextureOperator::ReplaceInputByOperator(unsigned int index, const Pegasus::
     }
     else
     {
-        GRAPH_EVENT_DISPATCH (
+        PEGASUS_EVENT_DISPATCH (
             this,
             TextureNotificationEvent,
             //event specific arguments

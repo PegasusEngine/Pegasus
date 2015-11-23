@@ -20,52 +20,52 @@ namespace Launcher
         mLogHandler(channel, msg);
     }
 
-    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, CompilerEvents::SourceLoadedEvent& e)
+    void LauncherShaderListener::OnEvent(Core::IEventUserData * u, CompilerEvents::SourceLoadedEvent& e)
     {
         Log('SHDR', "Shader text has been set.");
     }
 
-    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, CompilerEvents::CompilationEvent& e)
+    void LauncherShaderListener::OnEvent(Core::IEventUserData * u, CompilerEvents::CompilationEvent& e)
     {
         Assert(e.IsSuccess(), e.GetLogString());
     }
 
-    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, CompilerEvents::CompilationNotification& e)
+    void LauncherShaderListener::OnEvent(Core::IEventUserData * u, CompilerEvents::CompilationNotification& e)
     {
         //ignore notifications
     }
 
-    void LauncherShaderListener::OnEvent(Graph::IGraphUserData * u, CompilerEvents::LinkingEvent& e)
+    void LauncherShaderListener::OnEvent(Core::IEventUserData * u, CompilerEvents::LinkingEvent& e)
     {
         Assert(e.GetEventType() == CompilerEvents::LinkingEvent::LINKING_SUCCESS, e.GetLog());
     }
 
-    void LauncherTextureListener::OnEvent(Graph::IGraphUserData * u, Texture::TextureNotificationEvent& e)
+    void LauncherTextureListener::OnEvent(Core::IEventUserData * u, Texture::TextureNotificationEvent& e)
     {
         Assert(false, e.GetMessage());
     }
 
-    void LauncherTextureListener::OnEvent(Graph::IGraphUserData * u, Texture::TextureGenerationEvent&   e)
+    void LauncherTextureListener::OnEvent(Core::IEventUserData * u, Texture::TextureGenerationEvent&   e)
     {
         //ignore generation notifications
     }
 
-    void LauncherTextureListener::OnEvent(Graph::IGraphUserData * u, Texture::TextureOperationEvent&    e)
+    void LauncherTextureListener::OnEvent(Core::IEventUserData * u, Texture::TextureOperationEvent&    e)
     {
         //ignore operation notifications
     }
 
-    void LauncherMeshListener::OnEvent(Graph::IGraphUserData * u, Mesh::MeshNotificationEvent& e)
+    void LauncherMeshListener::OnEvent(Core::IEventUserData * u, Mesh::MeshNotificationEvent& e)
     {
         Assert(false, e.GetMessage());
     }
 
-    void LauncherMeshListener::OnEvent(Graph::IGraphUserData * u, Mesh::MeshGenerationEvent&   e)
+    void LauncherMeshListener::OnEvent(Core::IEventUserData * u, Mesh::MeshGenerationEvent&   e)
     {
         //ignore generation notifications
     }
 
-    void LauncherMeshListener::OnEvent(Graph::IGraphUserData * u, Mesh::MeshOperationEvent&    e)
+    void LauncherMeshListener::OnEvent(Core::IEventUserData * u, Mesh::MeshOperationEvent&    e)
     {
         //ignore operation notifications
     }

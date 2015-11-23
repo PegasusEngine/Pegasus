@@ -96,6 +96,9 @@ public:
     virtual PropertyGrid::IPropertyGridObjectProxy * GetPropertyGridObjectProxy() const override;
  
     //------------------------------------------------------------------------------------
+
+    //! Get the proxy of the decorated object
+    virtual IRuntimeAssetObjectProxy* GetDecoratedObject() const;
     
 private:
 

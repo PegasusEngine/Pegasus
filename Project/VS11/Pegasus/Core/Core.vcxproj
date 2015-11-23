@@ -34,6 +34,7 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\RefCounted.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Shared\AssertReturnCode.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Shared\CompilerEvents.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Shared\EventDefs.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Shared\IoErrors.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Ref.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Core\Shared\ISourceCodeManagerProxy.h" />

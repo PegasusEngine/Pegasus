@@ -47,6 +47,8 @@ PropertyGridWidget::PropertyGridWidget(QWidget * parent)
     // connect change of values events
     connect(&mBoolManager, SIGNAL(propertyChanged(QtProperty *)),
             this, SLOT(boolPropertyChanged(QtProperty *)));
+    connect(&mIntManager, SIGNAL(propertyChanged(QtProperty *)),
+            this, SLOT(intPropertyChanged(QtProperty *)));
     connect(&mUIntManager, SIGNAL(propertyChanged(QtProperty *)),
             this, SLOT(uintPropertyChanged(QtProperty *)));
     connect(&mFloatManager, SIGNAL(propertyChanged(QtProperty *)),
@@ -76,6 +78,7 @@ PropertyGridWidget::PropertyGridWidget(QWidget * parent)
 
 PropertyGridWidget::~PropertyGridWidget()
 {
+    delete mObserver;
 }
 
 //----------------------------------------------------------------------------------------
@@ -424,6 +427,7 @@ void PropertyGridWidget::OnInitialized(PropertyGridHandle handle, const Pegasus:
     }
 
     mProxyHandle = handle;
+
 }
 
 //----------------------------------------------------------------------------------------
@@ -561,6 +565,7 @@ void PropertyGridWidget::Observer::OnUpdated(PropertyGridHandle handle, const QV
 
 void PropertyGridWidget::Observer::OnShutdown(PropertyGridHandle handle)
 {
+    OnShutdownInternal(handle);
 }
 
 //----------------------------------------------------------------------------------------
@@ -568,5 +573,4 @@ void PropertyGridWidget::Observer::OnShutdown(PropertyGridHandle handle)
 void PropertyGridWidget::Observer::OnShutdownInternal(PropertyGridHandle handle)
 {
     mParent->Clear();
-
 }

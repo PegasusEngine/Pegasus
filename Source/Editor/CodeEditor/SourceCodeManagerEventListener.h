@@ -8,6 +8,7 @@
 //! \date   4rth April 2014
 //! \brief  Pegasus Source Code Manager Event Listener	
 
+#include "Pegasus/Preprocessor.h"
 #include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
@@ -23,7 +24,7 @@ class QTextDocument;
 class QSemaphore;
 
 //! User interface state user data for code
-class CodeUserData : public Pegasus::Graph::IGraphUserData
+class CodeUserData : public Pegasus::Core::IEventUserData
 {
 public:
     //! constructor
@@ -138,16 +139,16 @@ public:
     virtual void OnDestroyUserData(Pegasus::Core::IBasicSourceProxy* proxy, const char* name);
 
     //! Dispatch event callback on a compilation event
-    virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::CompilationEvent& e);
+    virtual void OnEvent(Pegasus::Core::IEventUserData * userData, Pegasus::Core::CompilerEvents::CompilationEvent& e);
 
     //! Dispatch event callback on a linker event
-    virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::LinkingEvent& e);
+    virtual void OnEvent(Pegasus::Core::IEventUserData * userData, Pegasus::Core::CompilerEvents::LinkingEvent& e);
 
     //! Dispatch event callback on a loading event
-    virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::SourceLoadedEvent& e);
+    virtual void OnEvent(Pegasus::Core::IEventUserData * userData, Pegasus::Core::CompilerEvents::SourceLoadedEvent& e);
 
     //! Dispatch event callback on a compilation notification event
-    virtual void OnEvent(Pegasus::Graph::IGraphUserData * userData, Pegasus::Core::CompilerEvents::CompilationNotification& e);
+    virtual void OnEvent(Pegasus::Core::IEventUserData * userData, Pegasus::Core::CompilerEvents::CompilationNotification& e);
 
 signals:
     //! triggered when any compilation state changes. Use a queued connection

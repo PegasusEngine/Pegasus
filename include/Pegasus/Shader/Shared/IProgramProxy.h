@@ -57,11 +57,11 @@ public:
 
     //! Sets the user data for this particular program
     //! \param userData. the user data to retrieve
-    virtual void SetUserData(Pegasus::Graph::IGraphUserData * userData) = 0;
+    virtual void SetUserData(Pegasus::Core::IEventUserData * userData) = 0;
 
     //! Gets the user data for this particular program 
     //! \return user data reference
-    virtual Pegasus::Graph::IGraphUserData * GetUserData() const = 0;
+    virtual Pegasus::Core::IEventUserData * GetUserData() const = 0;
     
 };
 

@@ -4,8 +4,8 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file	TimelineScript.cpp
-//! \author	Karolyn Boulanger
+//! \file	TimelineScript.h
+//! \author	Kleber Garcia
 //! \date	1st November 2014
 //! \brief	Script helper for scripting callbacks
 
@@ -15,7 +15,7 @@
 #include "Pegasus/Timeline/TimelineSource.h"
 #include "Pegasus/BlockScript/BlockScript.h"
 #include "Pegasus/BlockScript/IBlockScriptCompilerListener.h"
-#include "Pegasus/Graph/Shared/GraphEventDefs.h"
+#include "Pegasus/Core/Shared/EventDefs.h"
 #include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Core/Io.h"
 #include "Pegasus/Core/Ref.h"
@@ -73,6 +73,9 @@ public:
     
     //! Shuts down a script. It keeps a copy of the last opened script, so use Compile to revive this script again.
     void Shutdown();
+
+    //! Get the class instance name of this object
+    virtual const char* GetClassInstanceName() const { return "TimelineScript" ; }
 
     //! Calls the script once, to call anything executing in the global scope
     void CallGlobalScopeInit(BlockScript::BsVmState* state);

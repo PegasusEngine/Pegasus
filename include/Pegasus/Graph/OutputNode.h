@@ -13,16 +13,20 @@
 #define PEGASUS_GRAPH_OUTPUTNODE_H
 
 #include "Pegasus/Graph/Node.h"
+#include "Pegasus/AssetLib/RuntimeAssetObject.h"
 
 namespace Pegasus {
 namespace Graph {
+
+//forward declaration
+class NodeManager;
 
 
 //! Base output node class, for the root of the graphs.
 //! \warning Has one and only one input node, operator or generator
 //! \note Does not own an instance of NodeData, it only redirects the data of its input
 //!       or one of its inputs
-class OutputNode : public Node
+class OutputNode : public Node, public AssetLib::RuntimeAssetObject
 {
     BEGIN_DECLARE_PROPERTIES(OutputNode, Node)
     END_DECLARE_PROPERTIES()
@@ -30,9 +34,10 @@ class OutputNode : public Node
 public:
 
     //! Default constructor
+    //! \param nodeManager used to create new nodes within this node.
     //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
     //! \param nodeDataAllocator Allocator used for NodeData
-    OutputNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
+    OutputNode(NodeManager* nodeManager, Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
     //! Update the node internal state by pulling external parameters.
     //! \note Does only call Update() for the input node.
@@ -62,6 +67,16 @@ public:
     virtual NodeDataReturn GetUpdatedData();
 
     //------------------------------------------------------------------------------------
+
+    //! callback to implement reading / parsing an asset
+    //! \param lib the asset library, in case we need to access another asset reference
+    //! \param asset the asset to read from
+    virtual bool OnReadAsset(AssetLib::AssetLib* lib, AssetLib::Asset* asset);
+
+    //! callback that writes to an asset
+    //! \param lib the asset library, in case we need to access another asset reference
+    //! \param asset the asset to write to
+    virtual void OnWriteAsset(AssetLib::AssetLib* lib, AssetLib::Asset* asset);
 
 protected:
 
@@ -104,6 +119,9 @@ private:
 
     // Nodes cannot be copied, only references to them
     PG_DISABLE_COPY(OutputNode)
+
+    //! Node manager reference
+    NodeManager* mNodeManager;
 };
 
 

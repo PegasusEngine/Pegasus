@@ -40,17 +40,17 @@ void Pegasus::Shader::ShaderProxy::SetSource(const char * src, int size)
     mObject->SetSource(src, size);
 }
 
-void Pegasus::Shader::ShaderProxy::SetUserData(Pegasus::Graph::IGraphUserData * userData)
+void Pegasus::Shader::ShaderProxy::SetUserData(Pegasus::Core::IEventUserData * userData)
 {
-#if PEGASUS_USE_GRAPH_EVENTS
-    mObject->SetGraphEventUserData(userData);
+#if PEGASUS_USE_EVENTS
+    mObject->SetEventUserData(userData);
 #endif
 }
 
-Pegasus::Graph::IGraphUserData * Pegasus::Shader::ShaderProxy::GetUserData() const
+Pegasus::Core::IEventUserData * Pegasus::Shader::ShaderProxy::GetUserData() const
 {
-#if PEGASUS_USE_GRAPH_EVENTS
-    return mObject->GetGraphEventUserData();
+#if PEGASUS_USE_EVENTS
+    return mObject->GetEventUserData();
 #else
     return nullptr;
 #endif

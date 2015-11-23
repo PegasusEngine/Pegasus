@@ -24,7 +24,7 @@ ShaderSource::ShaderSource (Alloc::IAllocator* nodeAllocator, Alloc::IAllocator*
     , mProxy(this)
 #endif
 {
-    GRAPH_EVENT_INIT_DISPATCHER
+    PEGASUS_EVENT_INIT_DISPATCHER
 }
 
 ShaderSource::~ShaderSource()
@@ -34,11 +34,11 @@ ShaderSource::~ShaderSource()
     {
         mShaderTracker->DeleteShader(this);
     }
-    GRAPH_EVENT_DESTROY_USER_DATA(&mProxy, "ShaderSource", GetEventListener());
+    PEGASUS_EVENT_DESTROY_USER_DATA(&mProxy, "ShaderSource", GetEventListener());
 #endif
 }
 
-Pegasus::Graph::NodeReturn Pegasus::Shader::ShaderSource::CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
+Pegasus::Graph::NodeReturn Pegasus::Shader::ShaderSource::CreateNode(Graph::NodeManager* nodeManager, Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 {
     return PG_NEW(nodeAllocator, -1, "ShaderSource", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Shader::ShaderSource(nodeAllocator, nodeDataAllocator);
 }

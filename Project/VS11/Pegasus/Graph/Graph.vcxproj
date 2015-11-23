@@ -34,7 +34,6 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\NodeManager.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\OperatorNode.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\OutputNode.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\Shared\GraphEventDefs.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\GeneratorNode.cpp" />

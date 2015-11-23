@@ -13,7 +13,7 @@
 #define PEGASUS_COMPILEREVENTS_H
 
 #include "Pegasus/Core/Shared/IoErrors.h"
-#include "Pegasus/Graph/Shared/GraphEventDefs.h"
+#include "Pegasus/Core/Shared/EventDefs.h"
 
 namespace Pegasus
 {
@@ -135,13 +135,13 @@ namespace CompilerEvents
         const char * mLog;
     };
 
-    GRAPH_EVENT_BEGIN_REGISTRY (ICompilerEventListener)
-        GRAPH_EVENT_REGISTER_PROXY(IBasicSourceProxy)
-        GRAPH_EVENT_REGISTER (SourceLoadedEvent)
-        GRAPH_EVENT_REGISTER (CompilationEvent)
-        GRAPH_EVENT_REGISTER (CompilationNotification)
-        GRAPH_EVENT_REGISTER (LinkingEvent)
-    GRAPH_EVENT_END_REGISTRY
+    PEGASUS_EVENT_BEGIN_REGISTRY (ICompilerEventListener)
+        PEGASUS_EVENT_REGISTER_PROXY(IBasicSourceProxy)
+        PEGASUS_EVENT_REGISTER (SourceLoadedEvent)
+        PEGASUS_EVENT_REGISTER (CompilationEvent)
+        PEGASUS_EVENT_REGISTER (CompilationNotification)
+        PEGASUS_EVENT_REGISTER (LinkingEvent)
+    PEGASUS_EVENT_END_REGISTRY
 
 } //namespace CompilationEvents
 } //namespace Core

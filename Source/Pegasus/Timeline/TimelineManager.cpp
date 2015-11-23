@@ -41,7 +41,7 @@ TimelineManager::TimelineManager(Alloc::IAllocator * allocator, Core::IApplicati
 #if PEGASUS_ENABLE_PROXIES
 ,   mProxy(this)
 #endif
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
 ,   mEventListener(nullptr)
 #endif
 ,   mScriptTracker(allocator)
@@ -205,7 +205,7 @@ void TimelineManager::Update(unsigned int musicPosition)
 //----------------------------------------------------------------------------------------
 
 
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
 void TimelineManager::RegisterEventListener(Pegasus::Core::CompilerEvents::ICompilerEventListener * eventListener)
 {
     for (int i = 0; i < mScriptTracker.GetScriptCount(); ++i)
@@ -292,10 +292,10 @@ TimelineScriptReturn TimelineManager::CreateScript()
     TimelineScriptRef scriptRef = PG_NEW(mAllocator, -1, "Timeline Script", Alloc::PG_MEM_TEMP)
              TimelineScript(mAllocator, mAppContext);
 
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
     //register event listener
     scriptRef->SetEventListener(GetEventListener());
-    GRAPH_EVENT_INIT_USER_DATA(static_cast<Pegasus::Core::IBasicSourceProxy*>(scriptRef->GetProxy()), "BlockScript", scriptRef->GetEventListener());
+    PEGASUS_EVENT_INIT_USER_DATA(static_cast<Pegasus::Core::IBasicSourceProxy*>(scriptRef->GetProxy()), "BlockScript", scriptRef->GetEventListener());
 #endif
 
     scriptRef->Compile();
@@ -311,10 +311,10 @@ TimelineSourceReturn TimelineManager::CreateHeader()
     TimelineSourceRef scriptRef = PG_NEW(mAllocator, -1, "Timeline Script Header", Alloc::PG_MEM_TEMP)
                  TimelineSource(mAllocator);
     
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
     //register event listener
     scriptRef->SetEventListener(GetEventListener());
-    GRAPH_EVENT_INIT_USER_DATA(static_cast<Pegasus::Core::IBasicSourceProxy*>(scriptRef->GetProxy()), "BlockScript", scriptRef->GetEventListener());
+    PEGASUS_EVENT_INIT_USER_DATA(static_cast<Pegasus::Core::IBasicSourceProxy*>(scriptRef->GetProxy()), "BlockScript", scriptRef->GetEventListener());
 #endif
     return scriptRef;
 }

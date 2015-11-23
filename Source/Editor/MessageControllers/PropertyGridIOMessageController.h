@@ -17,7 +17,9 @@
 #include <QMap>
 #include <QSet>
 #include "PropertyTypes.h"
+#include "Pegasus/Preprocessor.h"
 #include "Pegasus/PropertyGrid/Shared/PropertyDefs.h"
+#include "Pegasus/PropertyGrid/Shared/PropertyEventDefs.h"
 
 
 // Forward declaration
@@ -60,7 +62,7 @@ private:
 const PropertyGridHandle INVALID_PGRID_HANDLE(-1);
 
 //! The message controller
-class PropertyGridIOMessageController : public QObject
+class PropertyGridIOMessageController : public QObject, private Pegasus::PropertyGrid::IPropertyListener
 {
 
     Q_OBJECT
@@ -82,6 +84,39 @@ public:
             unsigned char rgba8[4]; //! rgb and rgba
             float         v[4];     //! float2, float3 and float4
         } mData;
+    };
+
+
+    // Accumulation of object data
+    struct UpdateCache
+    {
+        PropertyGridHandle mHandle;
+        QVector<PropertyGridIOMessageController::UpdateElement> mUpdateCache;
+        UpdateCache() : mHandle(INVALID_PGRID_HANDLE) {}
+    };
+
+
+    //! User data attached to every property grid object
+    class PropertyUserData : public Pegasus::Core::IEventUserData
+    {
+    public:
+        PropertyUserData(
+                Pegasus::PropertyGrid::IPropertyGridObjectProxy* proxy, 
+                UpdateCache* updateCache,
+                PropertyGridHandle handle
+        )
+             : mProxy(proxy), mUpdateCache(updateCache), mHandle(handle) {}; 
+        virtual ~PropertyUserData() {};
+
+        Pegasus::PropertyGrid::IPropertyGridObjectProxy* GetProxy() const { return mProxy; }
+        UpdateCache* GetUpdateCache() const { return mUpdateCache; }
+        PropertyGridHandle GetHandle() const { return mHandle; }
+        
+    private:
+        Pegasus::PropertyGrid::IPropertyGridObjectProxy* mProxy;
+        UpdateCache* mUpdateCache;
+        PropertyGridHandle mHandle;
+        
     };
     
     //! Message container class so ui can communicate with render thread
@@ -127,9 +162,14 @@ public:
     explicit PropertyGridIOMessageController(Pegasus::App::IApplicationProxy* app);
 
     //! Destructor
-    ~PropertyGridIOMessageController();
+    virtual ~PropertyGridIOMessageController();
 
+    //! Called by render thread, when a render thread message should be processed.
+    //! \param m - the message to get processed
     void OnRenderThreadProcessMessage(const Message& m);
+
+    //! Call at the end of the frame, whenever it is ideal to flush all the properties.
+    void FlushAllPendingUpdates();
 
 private:
 
@@ -137,15 +177,26 @@ private:
     void OnRenderThreadOpen(PropertyGridObserver* sender, Pegasus::PropertyGrid::IPropertyGridObjectProxy* proxy);
     void OnRenderThreadClose(PropertyGridObserver* sender, PropertyGridHandle handle);
 
+    void CloseHandleInternal(PropertyGridHandle handle);
+
+    void FlushPendingUpdates(PropertyUserData* userData);
+
+    
+    // Property grid event listener callbacks (from app to ui)
+    virtual void OnEvent(Pegasus::Core::IEventUserData* userData, Pegasus::PropertyGrid::ValueChangedEventIndexed& e);
+    virtual void OnEvent(Pegasus::Core::IEventUserData* userData, Pegasus::PropertyGrid::PropertyGridDestroyed& e);
+    //
+
     Pegasus::App::IApplicationProxy* mApp;
 
-    typedef QMap< PropertyGridHandle, QSet<PropertyGridObserver*> > ObserverMap;
-    typedef QMap< PropertyGridHandle, Pegasus::PropertyGrid::IPropertyGridObjectProxy* > HandleToProxyMap;
-    typedef QMap< Pegasus::PropertyGrid::IPropertyGridObjectProxy*, PropertyGridHandle > ProxyToHandleMap;
+    typedef QSet<PropertyGridObserver*> ObserverSet;
+    typedef QMap< PropertyGridHandle, ObserverSet > ObserverMap;
+    typedef QMap< PropertyGridHandle, Pegasus::PropertyGrid::IPropertyGridObjectProxy* > HandleToProxyMap;    
+    typedef QMap< PropertyGridHandle, UpdateCache> ProxyUpdateCache;
     ObserverMap mObservers;
     HandleToProxyMap mActiveProperties;
-    ProxyToHandleMap mProxyToHandle;
     PropertyGridHandle mNextHandle;
+    ProxyUpdateCache mUpdateCache;
 };
 
 

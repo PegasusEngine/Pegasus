@@ -31,6 +31,10 @@ namespace Pegasus {
     namespace Shader {
         class ShaderTracker;
     }
+
+    namespace Graph {
+        class NodeManager;
+    }
 }
 
 namespace Pegasus
@@ -51,7 +55,10 @@ public:
     //! \return the shader type
     virtual ShaderType GetStageType() const { return SHADER_STAGE_INVALID; }
 
-    static Graph::NodeReturn CreateNode(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
+    //! Return the class instance name for this serializable object
+    virtual const char* GetClassInstanceName() const { return "ShaderSource"; }
+
+    static Graph::NodeReturn CreateNode(Graph::NodeManager* nodeManager, Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
     virtual void InvalidateData();
 

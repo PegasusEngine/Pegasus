@@ -32,7 +32,7 @@ class MeshOperator : public Graph::OperatorNode
     BEGIN_DECLARE_PROPERTIES_BASE(MeshOperator)
     END_DECLARE_PROPERTIES()
 
-    GRAPH_EVENT_DECLARE_DISPATCHER(IMeshEventListener);
+    PEGASUS_EVENT_DECLARE_DISPATCHER(IMeshEventListener);
 
 public:
 

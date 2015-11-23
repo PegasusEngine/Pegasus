@@ -17,6 +17,7 @@
 #include "Pegasus/Texture/TextureGenerator.h"
 #include "Pegasus/Texture/TextureOperator.h"
 #include "Pegasus/Texture/Proxy/TextureManagerProxy.h"
+#include "Pegasus/AssetLib/AssetRuntimeFactory.h"
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/Texture/Proxy/TextureTracker.h"
@@ -33,13 +34,13 @@ namespace Texture {
 
 class ITextureFactory;
 
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
 class ITextureEventListener;
 #endif
 
 
 //! Global texture node manager, including the factory features
-class TextureManager
+class TextureManager : public AssetLib::AssetRuntimeFactory
 {
 public:
 
@@ -93,13 +94,23 @@ public:
 
 #endif  // PEGASUS_ENABLE_PROXIES
 
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
 
     //! Registers an event listener so we can listen to texture specific events whilst constructing nodes.
     //! \param the event listener to use
     void RegisterEventListener(ITextureEventListener * eventListener) { mEventListener = eventListener; }
 
-#endif  // PEGASUS_USE_GRAPH_EVENTS
+#endif  // PEGASUS_USE_EVENTS
+
+    //! Creates a runtime object from an asset. This function must add a reference to the 
+    //! runtime object returned, (if its ref counted)
+    //! \param the asset type requested.
+    //! \return the runtime asset created. return null if unsuccessfull.
+    virtual AssetLib::RuntimeAssetObjectRef CreateRuntimeObject(const PegasusAssetTypeDesc* desc);
+
+    //! Returns a null terminated list of asset descriptions this runtime factory will accept.
+    //! \return a null terminated list of asset descriptions
+    virtual const PegasusAssetTypeDesc*const* GetAssetTypes() const;
 
     //------------------------------------------------------------------------------------
     
@@ -129,7 +140,7 @@ private:
 
 #endif  // PEGASUS_ENABLE_PROXIES
 
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
     ITextureEventListener * mEventListener;
 #endif
 };

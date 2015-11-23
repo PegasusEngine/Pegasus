@@ -44,14 +44,14 @@ namespace Pegasus {
 
     namespace Texture {
         class ITextureManagerProxy;
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
         class ITextureEventListener;
 #endif
     }
 
     namespace Mesh {
         class IMeshManagerProxy;
-#if PEGASUS_USE_GRAPH_EVENTS
+#if PEGASUS_USE_EVENTS
         class IMeshEventListener;
 #endif
     }

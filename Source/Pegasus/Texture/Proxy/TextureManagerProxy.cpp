@@ -49,7 +49,7 @@ ITextureNodeProxy * TextureManagerProxy::GetTexture(unsigned int index) const
     Texture * texture = mTextureManager->GetTracker().GetTexture(index);
     if (texture != nullptr)
     {
-        return texture->GetProxy();
+        return static_cast<ITextureNodeProxy*>(texture->GetProxy());
     }
     else
     {

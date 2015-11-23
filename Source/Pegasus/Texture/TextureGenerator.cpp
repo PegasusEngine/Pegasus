@@ -31,7 +31,7 @@ TextureGenerator::TextureGenerator(Alloc::IAllocator* nodeAllocator, Alloc::IAll
     END_INIT_PROPERTIES()
 
     // Initialize event user data
-    GRAPH_EVENT_INIT_DISPATCHER
+    PEGASUS_EVENT_INIT_DISPATCHER
 }
 
 //----------------------------------------------------------------------------------------
@@ -48,7 +48,7 @@ TextureGenerator::TextureGenerator(const TextureConfiguration & configuration,
     END_INIT_PROPERTIES()
 
     // Initialize event user data
-    GRAPH_EVENT_INIT_DISPATCHER
+    PEGASUS_EVENT_INIT_DISPATCHER
 }
 
 //----------------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ void TextureGenerator::SetConfiguration(const TextureConfiguration & configurati
     }
     else
     {
-        GRAPH_EVENT_DISPATCH (
+        PEGASUS_EVENT_DISPATCH (
             this,
             TextureNotificationEvent,
             //event specific arguments

@@ -26,8 +26,8 @@ END_IMPLEMENT_PROPERTIES(Texture)
 
 //----------------------------------------------------------------------------------------
 
-Texture::Texture(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
-:   Graph::OutputNode(nodeAllocator, nodeDataAllocator)
+Texture::Texture(Graph::NodeManager* nodeManager, Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
+:   Graph::OutputNode(nodeManager, nodeAllocator, nodeDataAllocator)
 ,   mConfiguration()
 #if PEGASUS_ENABLE_PROXIES
 ,   mProxy(this)
@@ -40,9 +40,9 @@ Texture::Texture(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAl
 
 //----------------------------------------------------------------------------------------
 
-Texture::Texture(const TextureConfiguration & configuration,
+Texture::Texture(Graph::NodeManager* nodeManager, const TextureConfiguration & configuration,
                  Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
-:   Graph::OutputNode(nodeAllocator, nodeDataAllocator)
+:   Graph::OutputNode(nodeManager, nodeAllocator, nodeDataAllocator)
 ,   mConfiguration(configuration)
 #if PEGASUS_ENABLE_PROXIES
 ,   mProxy(this)

@@ -148,7 +148,7 @@ void IcosphereGenerator::GenerateData()
 {
     using namespace Pegasus::Math;
     
-    GRAPH_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::BEGIN);
+    PEGASUS_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::BEGIN);
 
     MeshDataRef meshData = GetData();
     PG_ASSERT(meshData != nullptr); 
@@ -224,7 +224,7 @@ void IcosphereGenerator::GenerateData()
     } 
     mIdxCache.Clear();
 
-    GRAPH_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::END_SUCCESS);
+    PEGASUS_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::END_SUCCESS);
 }
 
 }
