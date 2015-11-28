@@ -18,7 +18,7 @@
 #include "Pegasus/Core/Assertion.h"
 #include "Pegasus/BlockScript/Container.h"
 #include "Pegasus/BlockScript/BlockScriptManager.h"
-#include "Pegasus/BlockScript/IBlockScriptCompilerListener.h"
+#include "Pegasus/BlockScript/EventListeners.h"
 #include <stdio.h>
 
 using namespace Pegasus::Io;

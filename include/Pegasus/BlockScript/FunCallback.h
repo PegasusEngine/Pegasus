@@ -189,7 +189,7 @@ struct ObjectPropertyDesc
 struct EnumDeclarationDesc
 {
     const char*  typeName;
-    const struct enumData{
+    struct enumData{
         const char* enumName;
         int enumVal;         
     } enumList[MAX_ENUM_MEMBER_LIST];

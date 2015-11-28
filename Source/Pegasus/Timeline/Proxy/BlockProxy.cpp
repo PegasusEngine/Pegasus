@@ -20,6 +20,7 @@ PEGASUS_AVOID_EMPTY_FILE_WARNING
 #include "Pegasus/Timeline/Lane.h"
 #include "Pegasus/Timeline/TimelineScript.h"
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
+#include "Pegasus/Math/Color.h"
 
 namespace Pegasus {
 namespace Timeline {
@@ -77,14 +78,18 @@ const char * BlockProxy::GetEditorString() const
 
 void BlockProxy::SetColor(unsigned char red, unsigned char green, unsigned char blue)
 {
-    mBlock->SetColor(red, green, blue);
+    Math::Color8RGB c(red, green, blue);
+    mBlock->SetColor(c);
 }
 
 //----------------------------------------------------------------------------------------
 
 void BlockProxy::GetColor(unsigned char & red, unsigned char & green, unsigned char & blue) const
 {
-    mBlock->GetColor(red, green, blue);
+    Math::Color8RGB c = mBlock->GetColor();
+    red = c.red;
+    green = c.green;
+    blue = c.blue;
 }
 
 //----------------------------------------------------------------------------------------

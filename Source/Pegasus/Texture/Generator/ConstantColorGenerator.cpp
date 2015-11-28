@@ -21,6 +21,8 @@ BEGIN_IMPLEMENT_PROPERTIES(ConstantColorGenerator)
     IMPLEMENT_PROPERTY(ConstantColorGenerator, Color)
 END_IMPLEMENT_PROPERTIES(ConstantColorGenerator)
 
+
+
 //----------------------------------------------------------------------------------------
 
 void ConstantColorGenerator::InitProperties()

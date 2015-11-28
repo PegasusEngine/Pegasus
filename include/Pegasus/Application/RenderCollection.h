@@ -164,6 +164,10 @@ namespace Application
         //!\return the texture generator pointer. This will assert if requesting an invalid id
         Texture::TextureGenerator* GetTextureGenerator(CollectionHandle id);
 
+        //! \param objectHandle the handle of the object containing the property
+        //! \param propertyId the cached id of the property
+        const PropertyGrid::PropertyAccessor* GetTextureGeneratorAccessor(CollectionHandle objectHandle, int propertyId);
+
         //!\return  tex generator count
         int GetTextureGeneratorCount() const;
 
@@ -176,6 +180,10 @@ namespace Application
         //!\param the handle to such  textureOperator
         //!\return the texture Operator pointer. This will assert if requesting an invalid id
         Texture::TextureOperator* GetTextureOperator(CollectionHandle id);
+
+        //! \param objectHandle the handle of the object containing the property
+        //! \param propertyId the cached id of the property
+        const PropertyGrid::PropertyAccessor* GetTextureOperatorAccessor(CollectionHandle objectHandle, int propertyId);
 
         //! \return the count to the texture operator
         int GetTextureOperatorCount() const;

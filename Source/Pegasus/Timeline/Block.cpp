@@ -22,26 +22,33 @@
 namespace Pegasus {
 namespace Timeline {
 
+BEGIN_IMPLEMENT_PROPERTIES(Block)
+    IMPLEMENT_PROPERTY(Block, Color)
+    IMPLEMENT_PROPERTY(Block, Beat)
+    IMPLEMENT_PROPERTY(Block, Duration)
+END_IMPLEMENT_PROPERTIES(Block)
+
 
 Block::Block(Alloc::IAllocator * allocator, Core::IApplicationContext * appContext)
 :   mAllocator(allocator)
 ,   mAppContext(appContext)
-,   mBeat(0)
-,   mDuration(1)
 ,   mLane(nullptr)
 ,   mTimelineScript(nullptr)
 ,   mVmState(nullptr)
 ,   mScriptVersion(-1)
 #if PEGASUS_ENABLE_PROXIES
 ,   mProxy(this)
-,   mColorRed(128)
-,   mColorGreen(128)
-,   mColorBlue(128)
 ,   mBlockScriptObserver(this)
 #endif  // PEGASUS_ENABLE_PROXIES
 {
     PG_ASSERTSTR(allocator != nullptr, "Invalid allocator given to a timeline Block object");
     PG_ASSERTSTR(appContext != nullptr, "Invalid application context given to a timeline Block object");
+    
+    BEGIN_INIT_PROPERTIES(Block)
+        INIT_PROPERTY(Color)
+        INIT_PROPERTY(Beat)
+        INIT_PROPERTY(Duration)
+    END_INIT_PROPERTIES()
 }
 
 //----------------------------------------------------------------------------------------
@@ -55,28 +62,6 @@ Block::~Block()
     }
 #endif
 }
-
-//----------------------------------------------------------------------------------------
-
-#if PEGASUS_ENABLE_PROXIES
-
-void Block::SetColor(unsigned char red, unsigned char green, unsigned char blue)
-{
-    mColorRed = red;
-    mColorGreen = green;
-    mColorBlue = blue;
-}
-
-//----------------------------------------------------------------------------------------
-
-void Block::GetColor(unsigned char & red, unsigned char & green, unsigned char & blue) const
-{
-    red = mColorRed;
-    green = mColorGreen;
-    blue = mColorBlue;
-}
-
-#endif  // PEGASUS_ENABLE_PROXIES
 
 //----------------------------------------------------------------------------------------
 
@@ -106,11 +91,6 @@ void Block::Shutdown()
 
 //----------------------------------------------------------------------------------------
 
-void Block::SetBeat(Beat beat)
-{
-    mBeat = beat;
-}
-
 void Block::InitializeScript()
 {
     if (mScriptVersion != mTimelineScript->GetSerialVersion())
@@ -125,7 +105,7 @@ void Block::InitializeScript()
         mVmState->Reset();
 
         //re-initialize everything!
-        mTimelineScript->CallGlobalScopeInit(mVmState);     
+        mTimelineScript->CallGlobalScopeInit(mVmState, this);     
     }
 }
 
@@ -205,21 +185,6 @@ void Block::ShutdownScript()
 
 //----------------------------------------------------------------------------------------
 
-void Block::SetDuration(Duration duration)
-{
-    if (duration == 0)
-    {
-        mDuration = 1;
-        PG_FAILSTR("Invalid duration given to the block (%u), setting it to 1 tick", duration);
-    }
-    else
-    {
-        mDuration = duration;
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
 void Block::SetLane(Lane * lane)
 {
     PG_ASSERTSTR(lane != nullptr, "Invalid lane associated with a block");
@@ -234,19 +199,11 @@ bool Block::OnReadObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* owne
         return false;
     }
 
-    int propsId = root->FindObject("properties");
+    int propsId = root->FindObject("props");
     if (propsId != -1)
     {
         AssetLib::Object* propsObj = root->GetObject(propsId);
-        int beatsId = propsObj->FindInt("Beat");
-        int durationId = propsObj->FindInt("Duration");
-        if (beatsId == -1 || durationId == -1)
-        {
-            return false;
-        }
-
-        mBeat = static_cast<Beat>(propsObj->GetInt(beatsId));
-        mDuration = static_cast<Duration>(propsObj->GetInt(durationId));
+        PropertyGrid::PropertyGridObject::ReadFromObject(owner, propsObj);
 
         int scriptId = propsObj->FindString("script");
         if (scriptId != -1)
@@ -263,21 +220,6 @@ bool Block::OnReadObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* owne
         return false;
     }
 
-#if PEGASUS_ENABLE_PROXIES
-    int editorPropsId = root->FindObject("editor-props");
-    if (editorPropsId != -1)
-    {
-        AssetLib::Object* editorProps = root->GetObject(editorPropsId);
-        int colId = editorProps->FindInt("color");
-        if (colId != -1)
-        {
-            unsigned int encodedCol = static_cast<unsigned int>(editorProps->GetInt(colId));
-            mColorRed =   static_cast<char>(encodedCol   & 0x000000FF);
-            mColorGreen = static_cast<char>((encodedCol & 0x0000FF00) >> 8);
-            mColorBlue =  static_cast<char>((encodedCol  & 0x00FF0000) >> 16);
-        }
-    }
-#endif
 
     return true;
 
@@ -286,22 +228,14 @@ bool Block::OnReadObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* owne
 void Block::OnWriteObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* owner, AssetLib::Object* root) 
 {
     root->AddString("type", GetClassName());
-    AssetLib::Object* properties = owner->NewObject();
-    root->AddObject("properties", properties);
-    properties->AddInt("Beat", static_cast<int>(mBeat));
-    properties->AddInt("Duration", static_cast<int>(mDuration));
+    AssetLib::Object* prop = owner->NewObject();
+    root->AddObject("props", prop);
     if (mTimelineScript != nullptr && mTimelineScript->GetOwnerAsset() != nullptr)
     {
-        properties->AddString("script", mTimelineScript->GetOwnerAsset()->GetPath());
+        prop->AddString("script", mTimelineScript->GetOwnerAsset()->GetPath());
     }
     
-#if PEGASUS_ENABLE_PROXIES
-    AssetLib::Object* editorProps = owner->NewObject();
-    root->AddObject("editor-props", editorProps);
-    //encode the color
-    unsigned int col = mColorRed + (mColorGreen << 8) + (mColorBlue << 16);
-    editorProps->AddInt("color", static_cast<int>(col));
-#endif
+    PropertyGrid::PropertyGridObject::WriteToObject(owner, prop);
 }
 
 #if PEGASUS_ENABLE_PROXIES

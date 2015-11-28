@@ -160,16 +160,23 @@ void PropertyGridObject::AddObjectProperty(PropertyType type, int typeSize, cons
     PG_ASSERTSTR(typeName != nullptr, "Trying to create the object property \"%s\" without type name", name);
     PG_ASSERTSTR(defaultValuePtr != nullptr, "Trying to create the object property \"%s\" without default value", name);
 
+
     // Create the record of the object property
     ObjectProperty & prop = mObjectProperties.PushEmpty();
     prop.record.type = type;
     prop.record.size = typeSize;
-    prop.record.name = name;
     prop.record.typeName = typeName;
 
     // Allocate the memory for the default value of the object property then copy the value
     prop.record.defaultValuePtr = PG_NEW_ARRAY(Memory::GetPropertyPointerAllocator(), -1, "ObjectPropertyDefault", Pegasus::Alloc::PG_MEM_PERM, unsigned char, typeSize);
     Utils::Memcpy(prop.record.defaultValuePtr, defaultValuePtr, typeSize);
+
+    
+    //Allocate memory to copy the name passed
+    char* copiedName = PG_NEW_ARRAY(Memory::GetPropertyPointerAllocator(), -1, "CopiedName", Pegasus::Alloc::PG_MEM_PERM, char, Utils::Strlen(name) + 1);
+    copiedName[0] = '\0';
+    Utils::Strcat(copiedName, name);
+    prop.record.name = copiedName;
 
     // Allocate the memory for the object property then copy the value
     prop.valuePtr = PG_NEW_ARRAY(Memory::GetPropertyPointerAllocator(), -1, "ObjectProperty", Pegasus::Alloc::PG_MEM_PERM, unsigned char, typeSize);
@@ -183,6 +190,7 @@ void PropertyGridObject::RemoveObjectProperty(unsigned int index)
     if (index < mObjectProperties.GetSize())
     {
         PG_DELETE_ARRAY(Memory::GetPropertyPointerAllocator(), mObjectProperties[index].record.defaultValuePtr);
+        PG_DELETE_ARRAY(Memory::GetPropertyPointerAllocator(), mObjectProperties[index].record.name);
         PG_DELETE_ARRAY(Memory::GetPropertyPointerAllocator(), mObjectProperties[index].valuePtr);
         mObjectProperties.Delete(index);
     }

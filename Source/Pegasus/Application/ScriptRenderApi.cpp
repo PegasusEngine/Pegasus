@@ -46,7 +46,6 @@ using namespace Pegasus::Math;
 static void RegisterTypes        (BlockLib* lib, Core::IApplicationContext* context);
 static void RegisterFunctions    (BlockLib* lib);
 
-
 ///////////////////////////////////////////////////////////////////////////////////
 //! Forward declaration of API function wrappers
 ///////////////////////////////////////////////////////////////////////////////////
@@ -123,23 +122,6 @@ struct CoreClassProperties
 #endif
 };
 
-const char* gPropertyBlockscriptTypeNames[PropertyGrid::NUM_PROPERTY_TYPES] =
-{
-    "int", //PROPERTYTYPE_BOOL = 0,
-    "int", //PROPERTYTYPE_INT,
-    "int", //PROPERTYTYPE_UINT,
-
-    "float",//PROPERTYTYPE_FLOAT,
-    "float2",//PROPERTYTYPE_VEC2,
-    "float3",//PROPERTYTYPE_VEC3,
-    "float4",//PROPERTYTYPE_VEC4,
-
-    "float3",//PROPERTYTYPE_COLOR8RGB,
-    "float4",//PROPERTYTYPE_COLOR8RGBA,
-
-    "string"//PROPERTYTYPE_STRING64,
-};
-
 ///////////////////////////////////////////////////////////////////////////////////
 //! Node / Render API registration functions. These are pure metadata attachments to
 //! the blockscript runtime lib
@@ -209,8 +191,44 @@ static void RegisterRenderEnums(BlockLib* lib)
     };
     
     lib->CreateEnumTypes(enumDefs, sizeof(enumDefs)/sizeof(enumDefs[0]));
+
 }
 
+static void RegisterPropertyGridEnums(BlockLib* lib, Core::IApplicationContext* context)
+{
+    //Create enums registered in blockscript.
+    PropertyGrid::PropertyGridManager* pgm = context->GetPropertyGridManager();
+    if (pgm->GetNumRegisteredEnumInfos() > 0)
+    {
+
+        Utils::Vector<EnumDeclarationDesc> blockscriptEnumRegistration;
+    
+        for (unsigned int i = 0; i < pgm->GetNumRegisteredEnumInfos(); ++i)
+        {
+            const PropertyGrid::EnumTypeInfo* info = pgm->GetEnumInfo(i);
+            EnumDeclarationDesc& desc = blockscriptEnumRegistration.PushEmpty();
+            desc.typeName = info->GetName();
+            const Utils::Vector<const PropertyGrid::BaseEnumType*>& enumerations = info->GetEnumerations();
+            int finalEnumCount = 0;
+            for (unsigned int e = 0; e < enumerations.GetSize(); ++e)
+            {
+                if (e == MAX_ENUM_MEMBER_LIST - 1)  
+                {
+                    PG_FAILSTR("Maximum number of enum registration reached in blockscript property grid registration. Increase this number!");
+                    break;
+                }
+
+                const PropertyGrid::BaseEnumType* enumValue = enumerations[e];
+                desc.enumList[e].enumName = enumValue->GetName();
+                desc.enumList[e].enumVal = enumValue->GetValue();
+                ++finalEnumCount;
+            }
+            desc.count = finalEnumCount;
+        }
+
+        lib->CreateEnumTypes(blockscriptEnumRegistration.Data(), blockscriptEnumRegistration.GetSize());
+    }
+}
 
 static void RegisterRenderStructs(BlockLib* lib)
 {
@@ -321,13 +339,35 @@ void LinearizeProperties(
             //now we have a target pool to dump all the properties cached of such parent class
             for (unsigned propIt = 0; propIt < classInfo->GetNumDerivedClassProperties(); ++propIt)
             {
-                int uniqueId = targetBaseClassProps->mPropertiesDescs.GetSize();
-                Pegasus::BlockScript::ObjectPropertyDesc& objPropDesc = targetBaseClassProps->mPropertiesDescs.PushEmpty(); 
+                int uniqueId = targetBaseClassProps->mPropertiesDescs.GetSize();                
                 const PropertyGrid::PropertyRecord& record = classInfo->GetDerivedClassPropertyRecord(propIt);
+    
+                //For now only support the following types of properties in blockscript for modification
+                const char* typeName = record.typeName;
+                //patch the type name for certain types.
+                if (record.type == PropertyGrid::PROPERTYTYPE_BOOL || record.type == PropertyGrid::PROPERTYTYPE_UINT)
+                {
+                    typeName = "int";
+                }
+
+                if (!(
+                      record.type == PropertyGrid::PROPERTYTYPE_BOOL
+                  ||  record.type == PropertyGrid::PROPERTYTYPE_FLOAT
+                  ||  record.type == PropertyGrid::PROPERTYTYPE_VEC2
+                  ||  record.type == PropertyGrid::PROPERTYTYPE_VEC3
+                  ||  record.type == PropertyGrid::PROPERTYTYPE_VEC4
+                  ||  record.type == PropertyGrid::PROPERTYTYPE_INT                  
+                  ||  record.type == PropertyGrid::PROPERTYTYPE_UINT     
+                  ||  record.type == PropertyGrid::PROPERTYTYPE_CUSTOM_ENUM
+                ))
+                {
+                    continue;
+                }
     #if PEGASUS_ENABLE_ASSERT
                 targetBaseClassProps->mSanityCheckProperties.PushEmpty() = &record;
     #endif
-                objPropDesc.propertyTypeName = gPropertyBlockscriptTypeNames[record.type];
+                Pegasus::BlockScript::ObjectPropertyDesc& objPropDesc = targetBaseClassProps->mPropertiesDescs.PushEmpty(); 
+                objPropDesc.propertyTypeName = typeName;
                 objPropDesc.propertyName = record.name;
                 objPropDesc.propertyUniqueId = uniqueId;
             }
@@ -462,7 +502,10 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
 
             PG_ASSERTSTR(propNode != nullptr, "Property node was not registered!");
             PG_ASSERTSTR(
-                record->size <= propNode->mType->GetByteSize() , 
+                record->size <= propNode->mType->GetByteSize() 
+                || ( propNode->mType->GetModifier() == Pegasus::BlockScript::TypeDesc::M_ENUM
+                     &&  sizeof(int) == propNode->mType->GetByteSize()
+                   ), 
                 "FATAL! record byte size won't fit inside blockscripts properties storage tables, causing memory stomps. Class: %s, property: %s",
                 coreClassProp.mName,
                 record->name
@@ -477,6 +520,7 @@ static void RegisterTypes(BlockLib* lib, Core::IApplicationContext* context)
 {
     RegisterRenderEnums(lib);
     RegisterRenderStructs(lib);
+    RegisterPropertyGridEnums(lib, context);
     RegisterNodes(lib, context);
 }
 
@@ -857,14 +901,61 @@ void Node_LoadProgram(FunCallbackContext& context)
 
 void Node_CreateTexture(FunCallbackContext& context)
 {
+    FunParamStream stream(context);
+    BsVmState* state = context.GetVmState();
+    RenderCollection* collection = GetContainer(state);  
+    Pegasus::Texture::TextureConfiguration blankConfig;
+    Pegasus::Texture::TextureRef t = collection->GetAppContext()->GetTextureManager()->CreateTextureNode(blankConfig);
+    if (t != nullptr)
+    {
+        RenderCollection::CollectionHandle handle = collection->AddTexture(t);
+        stream.SubmitReturn(handle);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Cannot create texture. Invalid handle returned");
+        stream.SubmitReturn(RenderCollection::INVALID_HANDLE);
+    }
 }
 
 void Node_CreateTextureGenerator(FunCallbackContext& context)
 {
+    FunParamStream stream(context);
+    BsVmState* state = context.GetVmState();
+    RenderCollection* collection = GetContainer(state);
+    const char* name = stream.NextBsStringArgument();
+    Pegasus::Texture::TextureConfiguration blankConfig;
+    Pegasus::Texture::TextureGeneratorRef t = collection->GetAppContext()->GetTextureManager()->CreateTextureGeneratorNode(name, blankConfig);
+    if (t != nullptr)
+    {
+        RenderCollection::CollectionHandle handle = collection->AddTextureGenerator(t);
+        stream.SubmitReturn(handle);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Cannot create texture. Invalid handle returned");
+        stream.SubmitReturn(RenderCollection::INVALID_HANDLE);
+    }
 }
 
 void Node_CreateTextureOperator(FunCallbackContext& context)
 {
+    FunParamStream stream(context);
+    BsVmState* state = context.GetVmState();
+    RenderCollection* collection = GetContainer(state);
+    const char* name = stream.NextBsStringArgument();
+    Pegasus::Texture::TextureConfiguration blankConfig;
+    Pegasus::Texture::TextureOperatorRef t = collection->GetAppContext()->GetTextureManager()->CreateTextureOperatorNode(name, blankConfig);
+    if (t != nullptr)
+    {
+        RenderCollection::CollectionHandle handle = collection->AddTextureOperator(t);
+        stream.SubmitReturn(handle);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Invalid handle returned.");
+        stream.SubmitReturn(RenderCollection::INVALID_HANDLE);
+    }
 }
 
 void Node_CreateMesh(FunCallbackContext& context)
@@ -1301,8 +1392,49 @@ void Render_CreateBlendingState(FunCallbackContext& context)
     stream.SubmitReturn( collection->AddBlendingState(blendState) );
 }
 
-bool MeshOperatorPropertyCallback    (const Pegasus::BlockScript::PropertyCallbackContext& context)
+
+bool PropertyGridPropertyCallback(const PropertyGrid::PropertyAccessor* accessor, const Pegasus::BlockScript::PropertyCallbackContext& context)
 {
+    if (accessor != nullptr)
+    {
+        const Pegasus::BlockScript::TypeDesc* typeDesc = context.propertyDesc->mType;
+        //for enums, we use type marshalling:
+        // we just copy the int value (in case of setting), and in case of getting
+        if (Pegasus::BlockScript::TypeDesc::M_ENUM == typeDesc->GetModifier())
+        {
+            const PropertyGrid::EnumTypeInfo* info = PropertyGrid::PropertyGridManager::GetInstance().GetEnumInfo(typeDesc->GetName());
+            const Utils::Vector<const PropertyGrid::BaseEnumType*>& enums = info->GetEnumerations();
+            PG_ASSERT(sizeof(int) == typeDesc->GetByteSize());
+            if (context.isRead)
+            {
+                PropertyGrid::BaseEnumType enumType;
+                accessor->Read(&enumType, sizeof(PropertyGrid::BaseEnumType));
+                int v = enumType.GetValue();
+                *static_cast<int*>(context.destBuffer) = v;
+            }
+            else
+            {
+                int enumValue = *static_cast<const int*>(context.srcBuffer);
+                int enumIndex = enumValue - 1;
+                PG_ASSERT(enumIndex >= 0 && static_cast<unsigned int>(enumIndex) < enums.GetSize());
+                const PropertyGrid::BaseEnumType* enumValuePtr = enums[enumIndex];
+                accessor->Write(enumValuePtr, sizeof(*enumValuePtr));
+            }
+            return true;
+        }
+        else
+        {
+            if (context.isRead)
+            {
+                accessor->Read(context.destBuffer, context.propertyDesc->mType->GetByteSize());
+            }
+            else
+            {
+                accessor->Write(context.srcBuffer, context.propertyDesc->mType->GetByteSize());
+            }
+            return true;
+        }
+    }
     return false;
 }
 
@@ -1310,29 +1442,19 @@ bool MeshGeneratorPropertyCallback   (const Pegasus::BlockScript::PropertyCallba
 {
     RenderCollection* collection = GetContainer(context.state);
     const PropertyGrid::PropertyAccessor* accessor = collection->GetMeshGeneratorAccessor(context.objectHandle, context.propertyDesc->mGuid);
-    if (accessor != nullptr)
-    {
-        if (context.isRead)
-        {
-            accessor->Read(context.destBuffer, context.propertyDesc->mType->GetByteSize());
-        }
-        else
-        {
-            accessor->Write(context.srcBuffer, context.propertyDesc->mType->GetByteSize());
-        }
-        return true;
-    }
-    return false;
+    return PropertyGridPropertyCallback(accessor, context);
 }
 
 bool TextureOperatorPropertyCallback (const Pegasus::BlockScript::PropertyCallbackContext& context)
 {
-    //TODO: implement this
-    return false;
+    RenderCollection* collection = GetContainer(context.state);
+    const PropertyGrid::PropertyAccessor* accessor = collection->GetTextureOperatorAccessor(context.objectHandle, context.propertyDesc->mGuid);
+    return PropertyGridPropertyCallback(accessor, context);
 }
 
 bool TextureGeneratorPropertyCallback(const Pegasus::BlockScript::PropertyCallbackContext& context)
 {
-    //TODO: implement this
-    return false;
+    RenderCollection* collection = GetContainer(context.state);
+    const PropertyGrid::PropertyAccessor* accessor = collection->GetTextureGeneratorAccessor(context.objectHandle, context.propertyDesc->mGuid);
+    return PropertyGridPropertyCallback(accessor, context);
 }

@@ -12,7 +12,7 @@
 
 #include "Pegasus/BlockScript/BlockScriptBuilder.h"
 #include "Pegasus/BlockScript/BlockScriptAst.h"
-#include "Pegasus/BlockScript/IBlockScriptCompilerListener.h"
+#include "Pegasus/BlockScript/EventListeners.h"
 #include "Pegasus/BlockScript/BsIntrinsics.h"
 #include "Pegasus/BlockScript/FunCallback.h"
 #include "Pegasus/BlockScript/TypeTable.h"
@@ -672,16 +672,28 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
 
 Exp* BlockScriptBuilder::BuildUnop(int op, Exp* exp)
 {
+    if (exp->GetTypeDesc() == nullptr)
+    {
+        BS_ErrorDispatcher(this, "Undefined unary operator on element.");
+        return nullptr;
+    }
     Exp* unop = BS_NEW Unop(op, exp);
     unop->SetTypeDesc(exp->GetTypeDesc());
+
     return unop;
 }
 
 Exp* BlockScriptBuilder::BuildExplicitCast(Exp* exp, const TypeDesc* type)
 {
-    //TODO: fix cast explicit! right now everything is reinterpret_cast
+    if (exp->GetTypeDesc() == nullptr)
+    {
+        BS_ErrorDispatcher(this, "Undefined element being casted.");
+        return nullptr;
+    }
+    //TODO: revise all potential paths of explicit casts.
     Unop* unop = BS_NEW Unop(O_EXPLICIT_CAST, exp);        
     unop->SetTypeDesc(type);
+
     return unop;
 }
 
@@ -788,7 +800,7 @@ Exp*   BlockScriptBuilder::BuildImmFloat4   (float a, float b, float c, float d)
     v.f[0] = a;
     v.f[1] = b;
     v.f[2] = c;
-    v.f[4] = d;
+    v.f[3] = d;
     Imm* imm = BS_NEW Imm(v);
     const TypeDesc* typeDesc = GetTypeByName("float4");
     PG_ASSERT(typeDesc != nullptr);

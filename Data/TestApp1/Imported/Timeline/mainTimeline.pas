@@ -10,13 +10,11 @@
             name : "",
             Blocks : [{
                     type : Block,
-                    properties : {
+                    props : {
                         Beat : 2042,
                         Duration : 2048,
-                        script : BlockScripts/test.bs
-                    },
-                    editor-props : {
-                        color : 12615935
+                        script : BlockScripts/test.bs,
+                        Color : [128, 0, 56]
                     }
                 }]
         }, {
@@ -24,12 +22,10 @@
             name : "",
             Blocks : [{
                     type : FractalCube2Block,
-                    properties : {
+                    props : {
                         Beat : 2030,
-                        Duration : 1024
-                    },
-                    editor-props : {
-                        color : 12648320
+                        Duration : 1024,
+                        Color : [58, 140, 249]
                     }
                 }]
         }, {
@@ -37,12 +33,10 @@
             name : "",
             Blocks : [{
                     type : TextureTestBlock,
-                    properties : {
+                    props : {
                         Beat : 2289,
-                        Duration : 2304
-                    },
-                    editor-props : {
-                        color : 8454080
+                        Duration : 2304,
+                        Color : [29, 99, 10]
                     }
                 }]
         }, {
@@ -50,12 +44,10 @@
             name : Camera,
             Blocks : [{
                     type : CameraLineBlock,
-                    properties : {
+                    props : {
                         Beat : 0,
-                        Duration : 1024
-                    },
-                    editor-props : {
-                        color : 65535
+                        Duration : 1024,
+                        Color : [240, 0, 240]
                     }
                 }]
         }, {
@@ -63,23 +55,19 @@
             name : Beads,
             Blocks : [{
                     type : Block,
-                    properties : {
+                    props : {
                         Beat : 0,
                         Duration : 1024,
-                        script : BlockScripts/partydemo.bs
-                    },
-                    editor-props : {
-                        color : 8421631
+                        script : BlockScripts/partydemo.bs,
+                        Color : [144, 244, 123]
                     }
                 }, {
                     type : Block,
-                    properties : {
+                    props : {
                         Beat : 1024,
                         Duration : 1024,
-                        script : BlockScripts/geometrytestblock.bs
-                    },
-                    editor-props : {
-                        color : 1849107
+                        script : BlockScripts/geometrytestblock.bs,
+                        Color : [0, 100, 100]
                     }
                 }]
         }, {
@@ -87,12 +75,10 @@
             name : Fractal,
             Blocks : [{
                     type : FractalCubeBlock,
-                    properties : {
+                    props : {
                         Beat : 4098,
-                        Duration : 768
-                    },
-                    editor-props : {
-                        color : 8454016
+                        Duration : 768,
+                        Color : [239, 248, 111]
                     }
                 }]
         }, {

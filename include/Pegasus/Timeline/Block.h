@@ -18,6 +18,7 @@
 #include "Pegasus/Timeline/TimelineScript.h"
 #include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/AssetLib/RuntimeAssetObject.h"
+#include "Pegasus/PropertyGrid/PropertyGridObject.h"
 
 namespace Pegasus {
     namespace AssetLib {
@@ -45,9 +46,16 @@ namespace Timeline {
 
 
 //! Timeline block, describing the instance of an effect on the timeline
-class Block
+class Block : public PropertyGrid::PropertyGridObject
 {
     DECLARE_TIMELINE_BLOCK(Block, "Block");
+
+
+    BEGIN_DECLARE_PROPERTIES_BASE(Block)
+        DECLARE_PROPERTY(Math::Color8RGB, Color, Math::Color8RGB(128,128,128));
+        DECLARE_PROPERTY(unsigned int, Beat, 0);
+        DECLARE_PROPERTY(unsigned int, Duration, 1);
+    END_DECLARE_PROPERTIES()
 
 public:
 
@@ -58,14 +66,6 @@ public:
 
     //! Destructor
     virtual ~Block();
-
-    //! Get the position of the block in the lane
-    //! \return Position of the block, measured in ticks
-    inline Beat GetBeat() const { return mBeat; }
-
-    //! Get the duration of the block
-    //! \return Duration of the block, measured in ticks (> 0)
-    inline Duration GetDuration() const { return mDuration; }
 
     //! Get the lane the block belongs to
     //! \return Lane the block belongs to, nullptr when the block is not associated with a lane yet
@@ -93,16 +93,6 @@ public:
 
 
 #if PEGASUS_ENABLE_PROXIES
-
-    //! Set the color of the block for the editor
-    //! \param red Red component (0-255)
-    //! \param green Green component (0-255)
-    //! \param blue Blue component (0-255)
-    void SetColor(unsigned char red, unsigned char green, unsigned char blue);
-
-    //! Get the color of the block for the editor
-    void GetColor(unsigned char & red, unsigned char & green, unsigned char & blue) const;
-
 
     //! Get the proxy associated with the block
     //! \return Proxy associated with the block
@@ -217,14 +207,6 @@ private:
     // of the owner lane to lose its sorting
     friend class Lane;
 
-    //! Set the position of the block in the lane
-    //! \param beat Position of the block, measured in ticks
-    void SetBeat(Beat beat);
-
-    //! Set the duration of the block
-    //! \param duration Duration of the block, measured in ticks (> 0)
-    void SetDuration(Duration duration);
-
     //! Set the lane the block belongs to
     //! \param lane Lane the block belongs to (!= nullptr)
     void SetLane(Lane * lane);
@@ -270,15 +252,6 @@ private:
     Lane * mLane;
 
 #if PEGASUS_ENABLE_PROXIES
-
-    //! Red component of the color for the editor (0-255)
-    unsigned char mColorRed;
-
-    //! Green component of the color for the editor (0-255)
-    unsigned char mColorGreen;
-
-    //! Blue component of the color for the editor (0-255)
-    unsigned char mColorBlue;
 
     class BlockScriptObserver : public ITimelineObserver
     {

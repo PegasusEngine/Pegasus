@@ -25,6 +25,10 @@ namespace Alloc
 namespace BlockScript
 {
 
+//! Forward declarations
+class BsVmState;
+class IRuntimeListener;
+
 // memory and register state of the current virtual machine
 class BsVmState
 {
@@ -48,6 +52,12 @@ public:
 
     //! Gets the user context 
     void* GetUserContext() const { return mUserContext; }
+
+    //! Set the runtime event listener
+    void SetRuntimeListener(IRuntimeListener* runtimeListener) { mRuntimeListener = runtimeListener; }
+
+    //! Get the runtime event listener
+    IRuntimeListener* GetRuntimeListener() const { return mRuntimeListener; }
     
     // gets registers
     int  GetReg(Canon::Register reg) const { return mR[reg]; }
@@ -114,6 +124,9 @@ private:
     //! heap random access lookup.
     //! every heap object reference has an id passed around.
     Container<HeapElement> mHeapContainer;
+
+    //! Runtime listener
+    IRuntimeListener* mRuntimeListener;
 };
 
 //actual virtual machine modifying the state

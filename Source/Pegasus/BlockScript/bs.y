@@ -34,7 +34,7 @@
     #endif
 
     #include "Pegasus/BlockScript/BlockScriptBuilder.h"
-    #include "Pegasus/BlockScript/IBlockScriptCompilerListener.h"
+    #include "Pegasus/BlockScript/EventListeners.h"
     #include "Pegasus/BlockScript/BlockScriptAst.h"
     #include "Pegasus/BlockScript/StackFrameInfo.h"
     #include "Pegasus/BlockScript/SymbolTable.h"

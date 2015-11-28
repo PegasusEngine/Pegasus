@@ -11,7 +11,7 @@
 
 #include "Pegasus/BlockScript/BlockScript.h"
 #include "Pegasus/BlockScript/BlockScriptAst.h"
-#include "Pegasus/BlockScript/IBlockScriptCompilerListener.h"
+#include "Pegasus/BlockScript/EventListeners.h"
 #include "Pegasus/Core/Io.h"
 #include "Pegasus/BlockScript/SymbolTable.h"
 #include "Pegasus/BlockScript/BlockLib.h"

@@ -148,9 +148,6 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\FunCallback.h">
       <Filter>Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\IBlockScriptCompilerListener.h">
-      <Filter>Include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\BlockScriptCompiler.h">
       <Filter>Include</Filter>
     </ClInclude>
@@ -173,6 +170,9 @@
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\IFileIncluder.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\BlockScript\EventListeners.h">
       <Filter>Include</Filter>
     </ClInclude>
   </ItemGroup>

@@ -15,6 +15,7 @@
 #include "Pegasus/BlockScript/BsVm.h"
 #include "Pegasus/BlockScript/Canonizer.h"
 #include "Pegasus/BlockScript/BlockScriptAst.h"
+#include "Pegasus/BlockScript/EventListeners.h"
 #include "Pegasus/Memory/MemoryManager.h"
 #include "Pegasus/Core/Assertion.h"
 #include "Pegasus/Allocator/Alloc.h"
@@ -318,6 +319,10 @@ void PushFrameCommand(const StackFrameInfo* info, BsVmState& state, const Contai
         state.SetReg(R_ESP, info->GetTotalFrameSize());
         state.SetReg(R_G, state.GetReg(R_SBP));
         ApplyExternDefaults(state, globalsInitData);
+        if (state.GetRuntimeListener() != nullptr)
+        {
+            state.GetRuntimeListener()->OnStackInitalized(state);
+        }
     }
 
     state.IncStackLevels();
@@ -443,7 +448,8 @@ BsVmState::BsVmState()
     mRamCount(0),
     mAllocator(nullptr),
     mStackLevels(-1),
-    mUserContext(nullptr)
+    mUserContext(nullptr),
+    mRuntimeListener(nullptr)
 {
     Reset();
 }
@@ -503,6 +509,10 @@ BsVmState::~BsVmState()
 void BsVm::Run(const Assembly& assembly, BsVmState& state) const
 {
     state.Reset();
+    if (state.GetRuntimeListener() != nullptr)
+    {
+        state.GetRuntimeListener()->OnRuntimeBegin(state);
+    }
     while (StepExecution(assembly, state));
 }
 
@@ -566,6 +576,10 @@ bool BsVm::StepExecution(const Assembly& assembly, BsVmState& state) const
     break;
     case Canon::T_EXIT:
     {
+        if (state.GetRuntimeListener() != nullptr)
+        {
+            state.GetRuntimeListener()->OnRuntimeExit(state);
+        }
         active = false;
     }
     break;

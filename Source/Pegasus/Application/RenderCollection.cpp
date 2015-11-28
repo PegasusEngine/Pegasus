@@ -155,10 +155,10 @@ namespace Application
         Vector<Shader::ProgramLinkageRef>    mPrograms;
         Vector<Shader::ShaderStageRef>       mShaders;
         Vector< Texture::TextureRef >        mTextures;
-        Vector< Texture::TextureGeneratorRef >  mTextureGenerators;
-        Vector< Texture::TextureOperatorRef >   mTextureOperators;
         Vector< Mesh::MeshRef >                 mMeshes;
         Vector< ObjectPropertyCache<Mesh::MeshGenerator> >       mMeshGenerators;
+        Vector< ObjectPropertyCache<Texture::TextureGenerator> >  mTextureGenerators;
+        Vector< ObjectPropertyCache<Texture::TextureOperator> >   mTextureOperators;
         Vector<Render::Buffer>               mBuffers;
         Vector<Render::RasterizerState>      mRasterizerStates;
         Vector<Render::BlendingState>        mBlendingStates;
@@ -242,6 +242,7 @@ namespace Application
 
     Shader::ProgramLinkage* RenderCollection::GetProgram(RenderCollection::CollectionHandle id)
     {
+        if (id == INVALID_HANDLE) return nullptr;
         return &(*mImpl->mPrograms[id]);
     }
 
@@ -258,6 +259,7 @@ namespace Application
 
     Shader::ShaderStage* RenderCollection::GetShader(RenderCollection::CollectionHandle id)
     {
+        if (id == INVALID_HANDLE) return nullptr;
         return &(*mImpl->mShaders[id]);
     }
 
@@ -274,6 +276,7 @@ namespace Application
 
     Texture::Texture* RenderCollection::GetTexture(RenderCollection::CollectionHandle id)
     {
+        if (id == INVALID_HANDLE) return nullptr;
         return &(*mImpl->mTextures[id]);
     }
 
@@ -284,13 +287,33 @@ namespace Application
 
     RenderCollection::CollectionHandle RenderCollection::AddTextureGenerator(Texture::TextureGenerator* texGen)
     {
-        mImpl->mTextureGenerators.PushEmpty() = texGen;
+        mImpl->mTextureGenerators.PushEmpty().Initialize("TextureGenerator", mFactory, texGen, mAlloc);
         return mImpl->mTextureGenerators.GetSize() - 1;
     }
 
     Texture::TextureGenerator* RenderCollection::GetTextureGenerator(RenderCollection::CollectionHandle id)
     {
-        return &(*mImpl->mTextureGenerators[id]);
+        if (id == INVALID_HANDLE) return nullptr;
+        return &(*mImpl->mTextureGenerators[id].mObject);
+    }
+
+    const PropertyGrid::PropertyAccessor* RenderCollection::GetTextureGeneratorAccessor(RenderCollection::CollectionHandle objectHandle, int propertyId)
+    {
+        if (objectHandle == INVALID_HANDLE) 
+        {
+            PG_LOG('ERR_', "Property requested from invalid object.");
+            return nullptr;
+        }
+        PG_ASSERT(propertyId < mImpl->mTextureGenerators[objectHandle].mCachedInfoCount);
+
+        PropertyInfo& info = mImpl->mTextureGenerators[objectHandle].mCachedInfos[propertyId];
+        
+        if (info.mValid)
+        {
+            return &info.mCachedAccessor;
+        } 
+
+        return nullptr;
     }
 
     int RenderCollection::GetTextureGeneratorCount() const
@@ -300,13 +323,34 @@ namespace Application
 
     RenderCollection::CollectionHandle RenderCollection::AddTextureOperator(Texture::TextureOperator* texOp)
     {
-        mImpl->mTextureOperators.PushEmpty() = texOp;
+        mImpl->mTextureOperators.PushEmpty().Initialize("TextureOperator", mFactory, texOp, mAlloc);
         return mImpl->mTextureOperators.GetSize() - 1 ;
     }
 
     Texture::TextureOperator* RenderCollection::GetTextureOperator(RenderCollection::CollectionHandle id)
     {
-        return &(*mImpl->mTextureOperators[id]);
+        if (id == INVALID_HANDLE) return nullptr;
+        return &(*mImpl->mTextureOperators[id].mObject);
+    }
+
+    const PropertyGrid::PropertyAccessor* RenderCollection::GetTextureOperatorAccessor(RenderCollection::CollectionHandle objectHandle, int propertyId)
+    {
+        if (objectHandle == INVALID_HANDLE) 
+        {
+            PG_LOG('ERR_', "Property requested from invalid object.");
+            return nullptr;
+        }
+
+        PG_ASSERT(propertyId < mImpl->mTextureOperators[objectHandle].mCachedInfoCount);
+
+        PropertyInfo& info = mImpl->mTextureOperators[objectHandle].mCachedInfos[propertyId];
+        
+        if (info.mValid)
+        {
+            return &info.mCachedAccessor;
+        } 
+
+        return nullptr;
     }
 
     int RenderCollection::GetTextureOperatorCount() const
@@ -322,6 +366,7 @@ namespace Application
 
     Mesh::Mesh* RenderCollection::GetMesh(RenderCollection::CollectionHandle id)
     {
+        if (id == INVALID_HANDLE) return nullptr;
         return &(*mImpl->mMeshes[id]);
     }
 
@@ -338,6 +383,12 @@ namespace Application
 
     const PropertyGrid::PropertyAccessor* RenderCollection::GetMeshGeneratorAccessor(RenderCollection::CollectionHandle objectHandle, int propertyId)
     {
+        if (objectHandle == INVALID_HANDLE) 
+        {
+            PG_LOG('ERR_', "Property requested from invalid object.");
+            return nullptr;
+        }
+
         PG_ASSERT(propertyId < mImpl->mMeshGenerators[objectHandle].mCachedInfoCount);
 
         PropertyInfo& info = mImpl->mMeshGenerators[objectHandle].mCachedInfos[propertyId];
@@ -369,6 +420,7 @@ namespace Application
 
     Render::Buffer* RenderCollection::GetBuffer(RenderCollection::CollectionHandle id)
     {
+        if (INVALID_HANDLE == id) return nullptr;
         return &(mImpl->mBuffers[id]);
     } 
 
@@ -390,6 +442,7 @@ namespace Application
 
     Render::RenderTarget* RenderCollection::GetRenderTarget(RenderCollection::CollectionHandle id)
     {
+        if (INVALID_HANDLE == id) return nullptr;
         return &(mImpl->mRenderTargets[id]);
     }
 
@@ -406,6 +459,7 @@ namespace Application
 
     Render::RasterizerState* RenderCollection::GetRasterizerState(RenderCollection::CollectionHandle id)
     {
+        if (id == INVALID_HANDLE) return nullptr;
         return &(mImpl->mRasterizerStates[id]);
     }
 
@@ -422,6 +476,7 @@ namespace Application
 
     Render::BlendingState* RenderCollection::GetBlendingState(RenderCollection::CollectionHandle id)
     {
+        if (id == INVALID_HANDLE) return nullptr;
         return &(mImpl->mBlendingStates[id]);
     }
 
