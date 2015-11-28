@@ -401,8 +401,6 @@ void PropertyGridWidget::OnInitialized(PropertyGridHandle handle, const Pegasus:
 
     SendCloseMessage();
 
-    mProxyHandle = INVALID_PGRID_HANDLE;
-
     ED_ASSERTSTR(mApplicationProxy != nullptr, "An application must be loaded to load the content of a property grid");
     Pegasus::PropertyGrid::IPropertyGridManagerProxy * propertyGridManagerProxy = mApplicationProxy->GetPropertyGridManagerProxy();
 
@@ -590,95 +588,97 @@ void PropertyGridWidget::Clear()
 
 void PropertyGridWidget::OnUpdated(PropertyGridHandle handle, const QVector<PropertyGridIOMessageController::UpdateElement> & els)
 {
-    mProxyHandle = handle;
-    foreach (const PropertyGridIOMessageController::UpdateElement & el, els)
+    if (mProxyHandle == handle)
     {
-        if (el.mIndex >= 0 && el.mIndex < mProperties[el.mCategory].size())
+        foreach (const PropertyGridIOMessageController::UpdateElement & el, els)
         {
-            PropertyGridWidget::PropertyRecordPair& pp = mProperties[el.mCategory][el.mIndex];
-            if (el.mType == pp.mRecord->type)
+            if (el.mIndex >= 0 && el.mIndex < mProperties[el.mCategory].size())
             {
-                switch (pp.mRecord->type)
+                PropertyGridWidget::PropertyRecordPair& pp = mProperties[el.mCategory][el.mIndex];
+                if (el.mType == pp.mRecord->type)
                 {
-                    case Pegasus::PropertyGrid::PROPERTYTYPE_BOOL:
-                        {
-                            mBoolManager.setValue(pp.mProperty, el.mData.b);
+                    switch (pp.mRecord->type)
+                    {
+                        case Pegasus::PropertyGrid::PROPERTYTYPE_BOOL:
+                            {
+                                mBoolManager.setValue(pp.mProperty, el.mData.b);
+                                break;
+                            }
+
+                        case Pegasus::PropertyGrid::PROPERTYTYPE_UINT:
+                            {
+                                mUIntManager.setValue(pp.mProperty, el.mData.u);
+                                break;
+                            }
+
+                        case Pegasus::PropertyGrid::PROPERTYTYPE_INT:
+                            {
+                                mIntManager.setValue(pp.mProperty, el.mData.i);
+                                break;
+                            }
+
+                        case Pegasus::PropertyGrid::PROPERTYTYPE_FLOAT:
+                            {
+                                mFloatManager.setValue(pp.mProperty, el.mData.f);
+                                break;
+                            }
+
+                        case Pegasus::PropertyGrid::PROPERTYTYPE_VEC2:
+                            {
+                                mVec2Manager.setValue(pp.mProperty, Vec2Property(el.mData.v));
+                                break;
+                            }
+
+                        case Pegasus::PropertyGrid::PROPERTYTYPE_VEC3:
+                            {
+                                mVec3Manager.setValue(pp.mProperty, Vec3Property(el.mData.v));
+                                break;
+                            }
+
+                        case Pegasus::PropertyGrid::PROPERTYTYPE_VEC4:
+                            {
+                                mVec4Manager.setValue(pp.mProperty, Vec4Property(el.mData.v));
+                                break;
+                            }
+
+                        case Pegasus::PropertyGrid::PROPERTYTYPE_COLOR8RGB:
+                            {
+                                QColor c(el.mData.rgba8[0], el.mData.rgba8[1], el.mData.rgba8[2], 255 ); 
+                                mColor8RGBManager.setValue(pp.mProperty, c);
+                                break;
+                            }
+
+                        case Pegasus::PropertyGrid::PROPERTYTYPE_COLOR8RGBA:
+                            {
+                                QColor c(el.mData.rgba8[0], el.mData.rgba8[1], el.mData.rgba8[2], el.mData.rgba8[3] ); 
+                                mColor8RGBAManager.setValue(pp.mProperty, c);
+                                break;
+                            }
+
+                        case Pegasus::PropertyGrid::PROPERTYTYPE_STRING64:
+                            mString64Manager.setValue(pp.mProperty, el.mData.s64);
                             break;
-                        }
 
-                    case Pegasus::PropertyGrid::PROPERTYTYPE_UINT:
-                        {
-                            mUIntManager.setValue(pp.mProperty, el.mData.u);
+                        case Pegasus::PropertyGrid::PROPERTYTYPE_CUSTOM_ENUM:
+                            mEnumManager.setValue(pp.mProperty, el.mData.i);
                             break;
-                        }
 
-                    case Pegasus::PropertyGrid::PROPERTYTYPE_INT:
-                        {
-                            mIntManager.setValue(pp.mProperty, el.mData.i);
+                        default:
+                            ED_FAILSTR("Unknown property type to set value");
                             break;
-                        }
-
-                    case Pegasus::PropertyGrid::PROPERTYTYPE_FLOAT:
-                        {
-                            mFloatManager.setValue(pp.mProperty, el.mData.f);
-                            break;
-                        }
-
-                    case Pegasus::PropertyGrid::PROPERTYTYPE_VEC2:
-                        {
-                            mVec2Manager.setValue(pp.mProperty, Vec2Property(el.mData.v));
-                            break;
-                        }
-
-                    case Pegasus::PropertyGrid::PROPERTYTYPE_VEC3:
-                        {
-                            mVec3Manager.setValue(pp.mProperty, Vec3Property(el.mData.v));
-                            break;
-                        }
-
-                    case Pegasus::PropertyGrid::PROPERTYTYPE_VEC4:
-                        {
-                            mVec4Manager.setValue(pp.mProperty, Vec4Property(el.mData.v));
-                            break;
-                        }
-
-                    case Pegasus::PropertyGrid::PROPERTYTYPE_COLOR8RGB:
-                        {
-                            QColor c(el.mData.rgba8[0], el.mData.rgba8[1], el.mData.rgba8[2], 255 ); 
-                            mColor8RGBManager.setValue(pp.mProperty, c);
-                            break;
-                        }
-
-                    case Pegasus::PropertyGrid::PROPERTYTYPE_COLOR8RGBA:
-                        {
-                            QColor c(el.mData.rgba8[0], el.mData.rgba8[1], el.mData.rgba8[2], el.mData.rgba8[3] ); 
-                            mColor8RGBAManager.setValue(pp.mProperty, c);
-                            break;
-                        }
-
-                    case Pegasus::PropertyGrid::PROPERTYTYPE_STRING64:
-                        mString64Manager.setValue(pp.mProperty, el.mData.s64);
-                        break;
-
-                    case Pegasus::PropertyGrid::PROPERTYTYPE_CUSTOM_ENUM:
-                        mEnumManager.setValue(pp.mProperty, el.mData.i);
-                        break;
-
-                    default:
-                        ED_FAILSTR("Unknown property type to set value");
-                        break;
+                    }
+                }
+                else
+                {
+                    ED_FAILSTR("Unmatched type of property! check the schema!");
                 }
             }
             else
             {
-                ED_FAILSTR("Unmatched type of property! check the schema!");
+                ED_FAILSTR("Unmatched index of property! check the schema!");
             }
-        }
-        else
-        {
-            ED_FAILSTR("Unmatched index of property! check the schema!");
-        }
-    } 
+        } 
+    }
 }
 
 //----------------------------------------------------------------------------------------
