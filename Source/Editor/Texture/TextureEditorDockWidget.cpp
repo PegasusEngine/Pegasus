@@ -32,6 +32,8 @@ TextureEditorDockWidget::TextureEditorDockWidget(QWidget *parent, Editor* editor
 {
 }
 
+//----------------------------------------------------------------------------------------
+
 void TextureEditorDockWidget::SetupUi()
 {
     ui.setupUi(this);
@@ -115,8 +117,6 @@ void TextureEditorDockWidget::OpenTabForTexture(Pegasus::Texture::ITextureNodePr
 
 void TextureEditorDockWidget::TabSelected(QMdiSubWindow * subWindow)
 {
-    ED_ASSERTSTR(subWindow != nullptr, "Trying to update the texture properties with an invalid current subwindow");
-
     UpdateTextureProperties(subWindow);
 }
 
@@ -124,32 +124,40 @@ void TextureEditorDockWidget::TabSelected(QMdiSubWindow * subWindow)
 
 void TextureEditorDockWidget::UpdateTextureProperties(QMdiSubWindow * subWindow)
 {
-    ED_ASSERTSTR(subWindow != nullptr, "Trying to update the texture properties with an invalid current subwindow");
-    const TextureGraphEditorGraphicsView * graphicsView = static_cast<TextureGraphEditorGraphicsView *>(subWindow->widget());
-    ED_ASSERTSTR(graphicsView != nullptr, "Trying to update the texture properties with an invalid current graphics view");
-    const Pegasus::Texture::ITextureNodeProxy * textureProxy = graphicsView->GetTextureProxy();
-    ED_ASSERTSTR(textureProxy != nullptr, "Trying to update the texture properties with an invalid current texture");
-    const Pegasus::Texture::ITextureConfigurationProxy * textureConfigurationProxy = textureProxy->GetConfiguration();
-    ED_ASSERTSTR(textureConfigurationProxy != nullptr, "Trying to update the texture properties with an invalid current texture configuration");
+    if (subWindow != nullptr)
+    {
+        const TextureGraphEditorGraphicsView * graphicsView = static_cast<TextureGraphEditorGraphicsView *>(subWindow->widget());
+        ED_ASSERTSTR(graphicsView != nullptr, "Trying to update the texture properties with an invalid current graphics view");
+        const Pegasus::Texture::ITextureNodeProxy * textureProxy = graphicsView->GetTextureProxy();
+        ED_ASSERTSTR(textureProxy != nullptr, "Trying to update the texture properties with an invalid current texture");
+        const Pegasus::Texture::ITextureConfigurationProxy * textureConfigurationProxy = textureProxy->GetConfiguration();
+        ED_ASSERTSTR(textureConfigurationProxy != nullptr, "Trying to update the texture properties with an invalid current texture configuration");
     
-    ui.resolutionValueLabel->setText(QString("%1 x %2 x %3").arg(textureConfigurationProxy->GetWidth())
-                                                            .arg(textureConfigurationProxy->GetHeight())
-                                                            .arg(textureConfigurationProxy->GetDepth()));
-    ui.layersValueLabel->setText(QString("%1").arg(textureConfigurationProxy->GetNumLayers()));
+        ui.resolutionValueLabel->setText(QString("%1 x %2 x %3").arg(textureConfigurationProxy->GetWidth())
+                                                                .arg(textureConfigurationProxy->GetHeight())
+                                                                .arg(textureConfigurationProxy->GetDepth()));
+        ui.layersValueLabel->setText(QString("%1").arg(textureConfigurationProxy->GetNumLayers()));
 
-    // Set the property grid widget to the property grid proxy of the texture
-    ui.propertyGridWidget->SetCurrentProxy(textureProxy->GetPropertyGridObjectProxy());
+        // Set the property grid widget to the property grid proxy of the texture
+        ui.propertyGridWidget->SetCurrentProxy(textureProxy->GetPropertyGridObjectProxy());
+    }
+    else
+    {
+        ui.resolutionValueLabel->setText(QString());
+        ui.layersValueLabel->setText(QString());
+        ui.propertyGridWidget->SetCurrentProxy(nullptr);
+    }
 }
 
 //----------------------------------------------------------------------------------------
 
-void TextureEditorDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* application)
+void TextureEditorDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* applicationProxy)
 {
     mViewportWidget->OnAppLoaded();
 
     //! \todo Temporary code to load the list of textures and create a tab for each
     Pegasus::Texture::ITextureManagerProxy * textureManagerProxy =
-                       application->GetTextureManagerProxy();
+                       applicationProxy->GetTextureManagerProxy();
     const unsigned int numTextures = textureManagerProxy->GetNumTextures();
     for (unsigned int t = 0; t < numTextures; ++t)
     {
@@ -159,6 +167,7 @@ void TextureEditorDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* 
     }
 
     //! After all tabs are loaded, update the UI for the current tab
+    ui.propertyGridWidget->SetApplicationProxy(applicationProxy);
     UpdateTextureProperties(ui.mdiArea->currentSubWindow());
 }
 
@@ -167,4 +176,5 @@ void TextureEditorDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* 
 void TextureEditorDockWidget::OnUIForAppClosed() 
 {
     mViewportWidget->OnAppUnloaded();
+    ui.propertyGridWidget->SetApplicationProxy(nullptr);
 }

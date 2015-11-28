@@ -24,6 +24,7 @@ typedef QtDoublePropertyManager     PropertyGridFloatPropertyManager;
 typedef QtColorPropertyManager      PropertyGridColor8RGBPropertyManager;
 typedef QtColorPropertyManager      PropertyGridColor8RGBAPropertyManager;
 typedef QtStringPropertyManager     PropertyGridString64PropertyManager;
+typedef QtEnumPropertyManager       PropertyGridEnumPropertyManager;
 
 
 class PropertyGridVec2PropertyManagerPrivate;

@@ -65,13 +65,13 @@ public:
 
     //! Returns the current undo stack in focus for this widget
     //! \return implementation specific, must return the current active undo stack of this widget
-    virtual QUndoStack* GetCurrentUndoStack() const { return mUndoStack; }
+    virtual QUndoStack * GetCurrentUndoStack() const { return mUndoStack; }
 
     //! Returns the name this widget
-    virtual const char* GetName() const  { return "TimelineDockWidget"; }
+    virtual const char * GetName() const  { return "TimelineDockWidget"; }
 
     //! Returns the title of this widget
-    virtual const char* GetTitle() const { return "Timeline"; }
+    virtual const char * GetTitle() const { return "Timeline"; }
 
     //! Callback to construct ui
     virtual void SetupUi();
@@ -79,7 +79,7 @@ public:
     //! Callback, implement here functionality that requires saving of current object
     virtual void OnSaveFocusedObject();
 
-    //! Special pegasus forwarder function which asserts if this widget has focus
+    //! Special Pegasus forwarder function which asserts if this widget has focus
     virtual bool HasFocus() const { return hasFocus() || ui.graphicsView->hasFocus(); }
 
 
@@ -92,16 +92,22 @@ signals:
     //! Emitted when a block has been moved by the user
     void BlockMoved();
 
+    //! Emitted when a single block is being selected (not multiple selection)
+    void BlockSelected(Pegasus::Timeline::IBlockProxy * blockProxy);
+
+    //! Emitted when blocks are deselected (single or multiple selection)
+    void BlocksDeselected();
+
     //! Emitted when a block has been double clicked by the user
-    void BlockDoubleClicked(Pegasus::Timeline::IBlockProxy* blockProxy);
+    void BlockDoubleClicked(Pegasus::Timeline::IBlockProxy * blockProxy);
 
     //! Emitted when the play mode button has been enabled or disabled
     //! \param enabled True if the play mode button has just been enabled
     void PlayModeToggled(bool enabled);
     
-public slots:
-
     //------------------------------------------------------------------------------------
+
+public slots:
 
     //! Emitted when the timeline is being saved
     void SaveTimeline();
@@ -132,6 +138,12 @@ private slots:
     //! \param milliseconds Integer number of milliseconds (0 <= milliseconds <= 999)
     void SetTimeLabel(unsigned int minutes, unsigned int seconds, unsigned int milliseconds);
 
+    //! Called when a single block is being selected (not multiple selection)
+    void OnBlockSelected(Pegasus::Timeline::IBlockProxy* blockProxy);
+
+    //! Called when blocks are deselected (single or multiple selection)
+    void OnBlocksDeselected();
+
     //------------------------------------------------------------------------------------
 
 private:
@@ -140,16 +152,13 @@ private:
     bool eventFilter(QObject* obj, QEvent* event);
 
     //! Callback called when an app has been loaded
-    virtual void OnUIForAppLoaded(Pegasus::App::IApplicationProxy* application);
+    virtual void OnUIForAppLoaded(Pegasus::App::IApplicationProxy* applicationProxy);
 
     //! Callback called when an app has been closed
     virtual void OnUIForAppClosed();
 
-    //! Receives an io message
+    //! Receives an IO message
     virtual void OnReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage msg);
-
-    // Update the content of the timeline block names list
-    void RefreshBlockNames();
 
 
     //! User interface definition
@@ -159,7 +168,7 @@ private:
     unsigned int mSnapNumTicks;
 
     //! Undo stack pointer
-    QUndoStack* mUndoStack;
+    QUndoStack * mUndoStack;
 
     //! True if undo commands can be sent
     bool mEnableUndo;

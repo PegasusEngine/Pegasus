@@ -33,7 +33,7 @@ namespace Pegasus
             virtual const char* GetName() const;
 
             //! Gets a list of all the enumerations values of this enumeration.
-            virtual const BaseEnumType** GetEnumerations(int& outSize) const;
+            virtual const BaseEnumType** GetEnumerations(unsigned int & outSize) const;
 
         private:
             EnumTypeInfo* mObject;

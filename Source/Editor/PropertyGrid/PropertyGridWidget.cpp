@@ -18,7 +18,9 @@
 #include "Pegasus/PropertyGrid/Shared/IPropertyGridClassInfoProxy.h"
 #include "Pegasus/PropertyGrid/Shared/IPropertyGridManagerProxy.h"
 #include "Pegasus/PropertyGrid/Shared/IPropertyGridObjectProxy.h"
-#include "Widgets/PegasusDockWidget.h"
+#include "Pegasus/PropertyGrid/Shared/IPropertyGridEnumTypeInfo.h"
+#include "Pegasus/PropertyGrid/Shared/PropertyDefs.h"
+#include "Pegasus/Application/Shared/IApplicationProxy.h"
 
 #include <QVBoxLayout>
 #include <QPair>
@@ -26,7 +28,10 @@
 
 
 PropertyGridWidget::PropertyGridWidget(QWidget * parent)
-:   QWidget(parent), mMessenger(nullptr), mProxyHandle(INVALID_PGRID_HANDLE)
+:   QWidget(parent)
+,   mApplicationProxy(nullptr)
+,   mMessenger(nullptr)
+,   mProxyHandle(INVALID_PGRID_HANDLE)
 {
     mBrowser = new QtTreePropertyBrowser(parent);
     mBrowser->setRootIsDecorated(false);
@@ -43,6 +48,7 @@ PropertyGridWidget::PropertyGridWidget(QWidget * parent)
     mBrowser->setFactoryForManager(&mColor8RGBManager, &mColor8RGBEditorFactory);
     mBrowser->setFactoryForManager(&mColor8RGBAManager, &mColor8RGBAEditorFactory);
     mBrowser->setFactoryForManager(&mString64Manager, &mString64EditorFactory);
+    mBrowser->setFactoryForManager(&mEnumManager, &mEnumEditorFactory);
     
     // connect change of values events
     connect(&mBoolManager, SIGNAL(propertyChanged(QtProperty *)),
@@ -65,6 +71,8 @@ PropertyGridWidget::PropertyGridWidget(QWidget * parent)
             this, SLOT(rgbaPropertyChanged(QtProperty *)));
     connect(&mString64Manager, SIGNAL(propertyChanged(QtProperty *)),
             this, SLOT(s64PropertyChanged(QtProperty *)));
+    connect(&mEnumManager, SIGNAL(propertyChanged(QtProperty *)),
+            this, SLOT(enumPropertyChanged(QtProperty *)));
 
     QVBoxLayout * layout = new QVBoxLayout(this);
     layout->addWidget(mBrowser);
@@ -87,10 +95,14 @@ void PropertyGridWidget::intPropertyChanged(QtProperty * property)
 {
     if (!IsReady()) return;
 
+    unsigned int propertyIndex = 0;
+    const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
+    
     PropertyGridIOMessageController::UpdateElement el;
+    el.mCategory = record->category;
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_INT;
     el.mData.i = mIntManager.value(property);
-    el.mIndex = FindPropertyIndex(property);
+    el.mIndex = propertyIndex;
 
     UpdateProxy(el);
 }
@@ -101,10 +113,14 @@ void PropertyGridWidget::boolPropertyChanged(QtProperty * property)
 {
     if (!IsReady()) return;
 
+    unsigned int propertyIndex = 0;
+    const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
+
     PropertyGridIOMessageController::UpdateElement el;
+    el.mCategory = record->category;
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_BOOL;
     el.mData.b = mBoolManager.value(property);
-    el.mIndex = FindPropertyIndex(property);
+    el.mIndex = propertyIndex;
 
     UpdateProxy(el);
 }
@@ -115,10 +131,14 @@ void PropertyGridWidget::uintPropertyChanged(QtProperty * property)
 {
     if (!IsReady()) return;
 
+    unsigned int propertyIndex = 0;
+    const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
+
     PropertyGridIOMessageController::UpdateElement el;
+    el.mCategory = record->category;
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_UINT;
     el.mData.u = mUIntManager.value(property);
-    el.mIndex = FindPropertyIndex(property);
+    el.mIndex = propertyIndex;
 
     UpdateProxy(el);
 }
@@ -129,10 +149,14 @@ void PropertyGridWidget::floatPropertyChanged(QtProperty * property)
 {
     if (!IsReady()) return;
 
+    unsigned int propertyIndex = 0;
+    const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
+
     PropertyGridIOMessageController::UpdateElement el;
+    el.mCategory = record->category;
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_FLOAT;
     el.mData.f = mFloatManager.value(property);
-    el.mIndex = FindPropertyIndex(property);
+    el.mIndex = propertyIndex;
 
     UpdateProxy(el);
 }
@@ -143,12 +167,16 @@ void PropertyGridWidget::vec2PropertyChanged(QtProperty * property)
 {
     if (!IsReady()) return;
 
+    unsigned int propertyIndex = 0;
+    const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
+
     PropertyGridIOMessageController::UpdateElement el;
+    el.mCategory = record->category;
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_VEC2;
     Vec2Property v = mVec2Manager.value(property);
     el.mData.v[0] = v.value[0];
     el.mData.v[1] = v.value[1];
-    el.mIndex = FindPropertyIndex(property);
+    el.mIndex = propertyIndex;
 
     UpdateProxy(el);
 }
@@ -159,13 +187,17 @@ void PropertyGridWidget::vec3PropertyChanged(QtProperty * property)
 {
     if (!IsReady()) return;
 
+    unsigned int propertyIndex = 0;
+    const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
+
     PropertyGridIOMessageController::UpdateElement el;
+    el.mCategory = record->category;
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_VEC3;
     Vec3Property v = mVec3Manager.value(property);
     el.mData.v[0] = v.value[0];
     el.mData.v[1] = v.value[1];
     el.mData.v[2] = v.value[2];
-    el.mIndex = FindPropertyIndex(property);
+    el.mIndex = propertyIndex;
 
     UpdateProxy(el);
 }
@@ -176,14 +208,18 @@ void PropertyGridWidget::vec4PropertyChanged(QtProperty * property)
 {
     if (!IsReady()) return;
 
+    unsigned int propertyIndex = 0;
+    const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
+
     PropertyGridIOMessageController::UpdateElement el;
+    el.mCategory = record->category;
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_VEC4;
     Vec4Property v = mVec4Manager.value(property);
     el.mData.v[0] = v.value[0];
     el.mData.v[1] = v.value[1];
     el.mData.v[2] = v.value[2];
     el.mData.v[3] = v.value[3];
-    el.mIndex = FindPropertyIndex(property);
+    el.mIndex = propertyIndex;
 
     UpdateProxy(el);
 }
@@ -194,14 +230,18 @@ void PropertyGridWidget::rgbPropertyChanged(QtProperty * property)
 {
     if (!IsReady()) return;
 
+    unsigned int propertyIndex = 0;
+    const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
+
     PropertyGridIOMessageController::UpdateElement el;
+    el.mCategory = record->category;
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_COLOR8RGB;
     QColor c = mColor8RGBManager.value(property);
     el.mData.rgba8[0] = (unsigned char)c.red();
     el.mData.rgba8[1] = (unsigned char)c.green();
     el.mData.rgba8[2] = (unsigned char)c.blue();
     el.mData.rgba8[3] = (unsigned char)1;
-    el.mIndex = FindPropertyIndex(property);
+    el.mIndex = propertyIndex;
 
     UpdateProxy(el);
 }
@@ -212,14 +252,18 @@ void PropertyGridWidget::rgbaPropertyChanged(QtProperty * property)
 {
     if (!IsReady()) return;
 
+    unsigned int propertyIndex = 0;
+    const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
+
     PropertyGridIOMessageController::UpdateElement el;
+    el.mCategory = record->category;
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_COLOR8RGBA;
     QColor c = mColor8RGBAManager.value(property);
     el.mData.rgba8[0] = (unsigned char)c.red();
     el.mData.rgba8[1] = (unsigned char)c.green();
     el.mData.rgba8[2] = (unsigned char)c.blue();
     el.mData.rgba8[3] = (unsigned char)c.alpha();
-    el.mIndex = FindPropertyIndex(property);
+    el.mIndex = propertyIndex;
 
     UpdateProxy(el);
 }
@@ -230,13 +274,36 @@ void PropertyGridWidget::s64PropertyChanged(QtProperty * property)
 {
     if (!IsReady()) return;
 
+    unsigned int propertyIndex = 0;
+    const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
+
     PropertyGridIOMessageController::UpdateElement el;
+    el.mCategory = record->category;
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_STRING64;
     QString s = mString64Manager.value(property);
     int i = 0;
     for (; i < s.size() && i < 63 ; ++i) { el.mData.s64[i] = s.at(i).toLatin1(); }
     el.mData.s64[i] = '\0';
-    el.mIndex = FindPropertyIndex(property);
+    el.mIndex = propertyIndex;
+
+    UpdateProxy(el);
+}
+
+//----------------------------------------------------------------------------------------
+
+void PropertyGridWidget::enumPropertyChanged(QtProperty * property)
+{
+    if (!IsReady()) return;
+
+    unsigned int propertyIndex = 0;
+    const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
+
+    PropertyGridIOMessageController::UpdateElement el;
+    el.mCategory = record->category;
+    el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_CUSTOM_ENUM;
+    int e = mEnumManager.value(property);
+    el.mData.i = e;
+    el.mIndex = propertyIndex;
 
     UpdateProxy(el);
 }
@@ -254,31 +321,73 @@ void PropertyGridWidget::UpdateProxy(const PropertyGridIOMessageController::Upda
 
 //----------------------------------------------------------------------------------------
 
-int PropertyGridWidget::FindPropertyIndex(const QtProperty * property) const
+void PropertyGridWidget::SendOpenMessage(Pegasus::PropertyGrid::IPropertyGridObjectProxy * proxy)
 {
-    for (int i = 0; i < mProperties.size(); ++i)
-    { 
-        if (mProperties[i].mProperty == property)
-        {
-            return i;
+    ED_ASSERTSTR(mMessenger != nullptr, "A messenger must be set in order for this widget to work.");
+    ED_ASSERT(mProxyHandle == INVALID_PGRID_HANDLE);
+
+    // Request to open this property proxy
+    PropertyGridIOMessageController::Message msg;
+    msg.SetMessageType(PropertyGridIOMessageController::Message::OPEN);
+    msg.SetPropertyGridObserver(mObserver);
+    msg.SetPropertyGrid(proxy);
+    mMessenger->SendPropertyGridIoMessage(msg);
+}
+
+//----------------------------------------------------------------------------------------
+
+void PropertyGridWidget::SendCloseMessage()
+{
+    ED_ASSERTSTR(mMessenger != nullptr, "A messenger must be set in order for this widget to work.");
+
+    if (mProxyHandle != INVALID_PGRID_HANDLE)
+    {
+        // Send a message to close the observer of this handle
+        PropertyGridIOMessageController::Message msg;
+        msg.SetMessageType(PropertyGridIOMessageController::Message::CLOSE);
+        msg.SetPropertyGridObserver(mObserver);
+        msg.SetPropertyGridHandle(mProxyHandle);
+        mMessenger->SendPropertyGridIoMessage(msg);
+        Clear();
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+const Pegasus::PropertyGrid::PropertyRecord * PropertyGridWidget::FindPropertyRecord(const QtProperty * property, unsigned int & outIndex) const
+{
+    for (unsigned int c = 0; c < Pegasus::PropertyGrid::NUM_PROPERTY_CATEGORIES; ++c)
+    {
+        for (int i = 0; i < mProperties[c].size(); ++i)
+        { 
+            if (mProperties[c][i].mProperty == property)
+            {
+                outIndex = i;
+                return mProperties[c][i].mRecord;
+            }
         }
     }
 
-    return -1;
+    outIndex = 0;
+    return nullptr;
 }
 
 //----------------------------------------------------------------------------------------
 
 void PropertyGridWidget::SetCurrentProxy(Pegasus::PropertyGrid::IPropertyGridObjectProxy * proxy)
 {
-    ED_ASSERTSTR(mMessenger != nullptr, "A messenger must be set in order for this widget to work.");
-
-    // request to open this property proxy
-    PropertyGridIOMessageController::Message msg;
-    msg.SetMessageType(PropertyGridIOMessageController::Message::OPEN);
-    msg.SetPropertyGridObserver(mObserver);
-    msg.SetPropertyGrid(proxy);
-    mMessenger->SendPropertyGridIoMessage(msg);
+    if (proxy != nullptr)
+    {
+        if (mProxyHandle != INVALID_PGRID_HANDLE)
+        {
+            SendCloseMessage();
+        }
+        SendOpenMessage(proxy);
+    }
+    else
+    {
+        SendCloseMessage();
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -290,18 +399,12 @@ void PropertyGridWidget::OnInitialized(PropertyGridHandle handle, const Pegasus:
         return;
     }
 
-    if (mProxyHandle != INVALID_PGRID_HANDLE)
-    {
-        //send a message to close the observer of this handle.
-        PropertyGridIOMessageController::Message msg;
-        msg.SetMessageType(PropertyGridIOMessageController::Message::CLOSE);
-        msg.SetPropertyGridObserver(mObserver);
-        msg.SetPropertyGridHandle(mProxyHandle);
-        mMessenger->SendPropertyGridIoMessage(msg);
-        Clear();
-    }
+    SendCloseMessage();
 
     mProxyHandle = INVALID_PGRID_HANDLE;
+
+    ED_ASSERTSTR(mApplicationProxy != nullptr, "An application must be loaded to load the content of a property grid");
+    Pegasus::PropertyGrid::IPropertyGridManagerProxy * propertyGridManagerProxy = mApplicationProxy->GetPropertyGridManagerProxy();
 
     const Pegasus::PropertyGrid::IPropertyGridClassInfoProxy * classInfoProxy = objectProxy->GetClassInfoProxy();
 
@@ -389,7 +492,29 @@ void PropertyGridWidget::OnInitialized(PropertyGridHandle handle, const Pegasus:
                     mString64Manager.setRegExp(property, sString64RegExp); 
                     break;
 
-                //! \todo Add support for enums
+                case Pegasus::PropertyGrid::PROPERTYTYPE_CUSTOM_ENUM:
+                    {
+                        // Gather the information about the enumerant
+                        const Pegasus::PropertyGrid::IEnumTypeInfoProxy * enumTypeInfoProxy = propertyGridManagerProxy->GetEnumInfo(record.typeName);
+                        ED_ASSERTSTR(enumTypeInfoProxy != nullptr, "Invalid enum type info for \"%s\"", record.typeName);
+                        unsigned int enumOptionCount = 0;
+                        const Pegasus::PropertyGrid::BaseEnumType ** enumerations = enumTypeInfoProxy->GetEnumerations(enumOptionCount);
+                        ED_ASSERTSTR(enumerations != nullptr, "Invalid enum type info for \"%s\"", record.typeName);
+                        
+                        // Build the list of enumerants for the current type
+                        QStringList enumOptionList;
+                        for (unsigned int enumTypeIndex = 0; enumTypeIndex < enumOptionCount; ++enumTypeIndex)
+                        {
+                            const Pegasus::PropertyGrid::BaseEnumType * enumRecord = enumerations[enumTypeIndex];
+                            ED_ASSERTSTR(enumRecord != nullptr, "Invalid enum type info for \"%s\"", record.typeName);
+                            enumOptionList += enumRecord->GetName();                            
+                        }
+
+                        // Add the property and its set of values
+                        property = mEnumManager.addProperty(record.name);
+                        mEnumManager.setEnumNames(property, enumOptionList);
+                    }
+                    break;
 
                 default:
                     ED_ASSERTSTR("Unknown property \"%s\" in a property grid. Ignored.", record.name);
@@ -404,8 +529,9 @@ void PropertyGridWidget::OnInitialized(PropertyGridHandle handle, const Pegasus:
             {
                 groupProperty->addSubProperty(property);
             }
-            PropertyTypePair pp = { record.type, property };
-            mProperties.push_back(pp);
+            PropertyRecordPair pp = { &record, property };
+            ED_ASSERT(record.category < Pegasus::PropertyGrid::NUM_PROPERTY_CATEGORIES);
+            mProperties[record.category].push_back(pp);
         }
 
         // Add the group and its sub-properties to the tree property browser
@@ -440,7 +566,10 @@ void PropertyGridWidget::Clear()
         return;
     }
 
-    mProperties.clear();
+    for (unsigned int c = 0; c < Pegasus::PropertyGrid::NUM_PROPERTY_CATEGORIES; ++c)
+    {
+        mProperties[c].clear();
+    }
 
     mProxyHandle = INVALID_PGRID_HANDLE;
     // clear local copy of property values
@@ -454,6 +583,7 @@ void PropertyGridWidget::Clear()
     mColor8RGBManager.clear();
     mColor8RGBAManager.clear();
     mString64Manager.clear();
+    mEnumManager.clear();
 }
 
 //----------------------------------------------------------------------------------------
@@ -463,12 +593,12 @@ void PropertyGridWidget::OnUpdated(PropertyGridHandle handle, const QVector<Prop
     mProxyHandle = handle;
     foreach (const PropertyGridIOMessageController::UpdateElement & el, els)
     {
-        if (el.mIndex >= 0 && el.mIndex < mProperties.size())
+        if (el.mIndex >= 0 && el.mIndex < mProperties[el.mCategory].size())
         {
-            PropertyGridWidget::PropertyTypePair& pp = mProperties[el.mIndex];
-            if (el.mType == pp.mType)
+            PropertyGridWidget::PropertyRecordPair& pp = mProperties[el.mCategory][el.mIndex];
+            if (el.mType == pp.mRecord->type)
             {
-                switch (pp.mType)
+                switch (pp.mRecord->type)
                 {
                     case Pegasus::PropertyGrid::PROPERTYTYPE_BOOL:
                         {
@@ -528,6 +658,10 @@ void PropertyGridWidget::OnUpdated(PropertyGridHandle handle, const QVector<Prop
 
                     case Pegasus::PropertyGrid::PROPERTYTYPE_STRING64:
                         mString64Manager.setValue(pp.mProperty, el.mData.s64);
+                        break;
+
+                    case Pegasus::PropertyGrid::PROPERTYTYPE_CUSTOM_ENUM:
+                        mEnumManager.setValue(pp.mProperty, el.mData.i);
                         break;
 
                     default:

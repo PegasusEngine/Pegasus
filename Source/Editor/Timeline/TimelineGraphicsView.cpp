@@ -37,7 +37,9 @@ TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     // Create the scene containing the items to render
-    QGraphicsScene *scene = new QGraphicsScene(this);
+    QGraphicsScene * scene = new QGraphicsScene(this);
+    connect(scene, SIGNAL(selectionChanged()),
+            this, SLOT(SelectionChanged()));
     
     // Set the indexing method of the items.
     // NoIndex is supposedly faster when items move a lot.
@@ -201,6 +203,23 @@ void TimelineGraphicsView::SetCursorFromBeat(float beat)
 void TimelineGraphicsView::OnPlayModeToggled(bool enable)
 {
     mRightClickCursorDraggingEnabled = !enable;
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineGraphicsView::SelectionChanged()
+{
+    QList<QGraphicsItem *> selectedItems = scene()->selectedItems();
+    if (selectedItems.size() == 0)
+    {
+        emit BlocksDeselected();
+    }
+    else if (selectedItems.size() == 1)
+    {
+        TimelineBlockGraphicsItem * item = static_cast<TimelineBlockGraphicsItem *>(selectedItems[0]);
+        Pegasus::Timeline::IBlockProxy * proxy = item->GetBlockProxy();
+        emit BlockSelected(proxy);
+    }
 }
 
 //----------------------------------------------------------------------------------------

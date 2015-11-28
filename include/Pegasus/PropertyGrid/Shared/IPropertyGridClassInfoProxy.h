@@ -47,11 +47,11 @@ public:
     //! \return Record for the property
     virtual const PropertyRecord & GetDerivedClassPropertyRecord(unsigned int index) const = 0;
 
-    //! Get the number of registered class properties, including parent classes (but not derived classes)
-    //! \return Number of registered class properties, including parent classes (but not derived classes)
+    //! Get the number of registered class properties, including parent classes (but not classes deriving from the current class)
+    //! \return Number of registered class properties, including parent classes (but not classes deriving from the current class)
     virtual unsigned int GetNumClassProperties() const = 0;
 
-    //! Get the property record for one of the registered class properties, including parent classes (but not derived classes)
+    //! Get the property record for one of the registered class properties, including parent classes (but not classes deriving from the current class)
     //! \param index Index of the class property (0 <= index < GetNumClassProperties())
     //! \return Record for the class property
     virtual const PropertyRecord & GetClassPropertyRecord(unsigned int index) const = 0;

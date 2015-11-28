@@ -22,6 +22,7 @@ typedef QtDoubleSpinBoxFactory      PropertyGridFloatEditorFactory;
 typedef QtColorEditorFactory        PropertyGridColor8RGBEditorFactory;
 typedef QtColorEditorFactory        PropertyGridColor8RGBAEditorFactory;
 typedef QtLineEditFactory           PropertyGridString64EditorFactory;
+typedef QtEnumEditorFactory         PropertyGridEnumEditorFactory;
 
 
 #endif // EDITOR_PROPERTYGRIDEDITORFACTORIES_H

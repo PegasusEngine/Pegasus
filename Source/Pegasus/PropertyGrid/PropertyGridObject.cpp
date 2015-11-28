@@ -48,7 +48,7 @@ void PropertyAccessor::Write(const void * inputBuffer, unsigned int inputBufferS
     //! \todo Use a fast memcpy function that always take the fast path
     Utils::Memcpy(mPtr, inputBuffer, inputBufferSize);
 
-    PEGASUS_EVENT_DISPATCH(mObj, ValueChangedEventIndexed, mIndex);
+    PEGASUS_EVENT_DISPATCH(mObj, ValueChangedEventIndexed, mCategory, mIndex);
 
     mObj->InvalidatePropertyGrid();
 }
@@ -97,6 +97,7 @@ PropertyAccessor PropertyGridObject::GetDerivedClassPropertyAccessor(unsigned in
         return PropertyAccessor(  this
                                 , mClassPropertyPointers[absoluteIndex]
 #if PEGASUS_USE_EVENTS
+                                ,  PROPERTYCATEGORY_CLASS
                                 ,  absoluteIndex
 #endif
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
@@ -110,6 +111,7 @@ PropertyAccessor PropertyGridObject::GetDerivedClassPropertyAccessor(unsigned in
         return PropertyAccessor(  this
                                 , nullptr
 #if PEGASUS_USE_EVENTS
+                                ,  PROPERTYCATEGORY_INVALID
                                 ,  -1
 #endif
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
@@ -128,6 +130,7 @@ PropertyAccessor PropertyGridObject::GetClassPropertyAccessor(unsigned int index
         return PropertyAccessor(  this
                                 ,  mClassPropertyPointers[index]
 #if PEGASUS_USE_EVENTS
+                                ,  PROPERTYCATEGORY_CLASS
                                 ,  index
 #endif
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
@@ -141,7 +144,41 @@ PropertyAccessor PropertyGridObject::GetClassPropertyAccessor(unsigned int index
         return PropertyAccessor(  this
                                 , nullptr
 #if PEGASUS_USE_EVENTS
+                                ,  PROPERTYCATEGORY_INVALID
                                 ,  -1
+#endif
+#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
+                                , 0
+#endif
+                               );
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+const PropertyReadAccessor PropertyGridObject::GetClassReadPropertyAccessor(unsigned int index) const
+{
+    if (index < GetNumClassProperties())
+    {
+        return PropertyReadAccessor(  this
+                                , mClassPropertyPointers[index]
+#if PEGASUS_USE_EVENTS
+                                ,  PROPERTYCATEGORY_CLASS
+                                ,  index
+#endif
+#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
+                                , mClassPropertySizes[index]
+#endif
+                               );
+    }
+    else
+    {
+        PG_FAILSTR("Trying to access property %u but it has to be < %u", index, GetNumClassProperties());
+        return PropertyReadAccessor(  this
+                                , nullptr
+#if PEGASUS_USE_EVENTS
+                                ,  PROPERTYCATEGORY_INVALID
+                                , -1 
 #endif
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
                                 , 0
@@ -163,6 +200,7 @@ void PropertyGridObject::AddObjectProperty(PropertyType type, int typeSize, cons
 
     // Create the record of the object property
     ObjectProperty & prop = mObjectProperties.PushEmpty();
+    prop.record.category = PROPERTYCATEGORY_OBJECT;
     prop.record.type = type;
     prop.record.size = typeSize;
     prop.record.typeName = typeName;
@@ -221,6 +259,7 @@ PropertyAccessor PropertyGridObject::GetObjectPropertyAccessor(unsigned int inde
         return PropertyAccessor(  this
                                 , mObjectProperties[index].valuePtr
 #if PEGASUS_USE_EVENTS
+                                ,  PROPERTYCATEGORY_OBJECT
                                 ,  index
 #endif
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
@@ -234,35 +273,7 @@ PropertyAccessor PropertyGridObject::GetObjectPropertyAccessor(unsigned int inde
         return PropertyAccessor(  this
                                 , nullptr
 #if PEGASUS_USE_EVENTS
-                                , -1 
-#endif
-#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
-                                , 0
-#endif
-                               );
-    }
-}
-
-const PropertyReadAccessor PropertyGridObject::GetClassReadPropertyAccessor(unsigned int index) const
-{
-    if (index < GetNumClassProperties())
-    {
-        return PropertyReadAccessor(  this
-                                , mClassPropertyPointers[index]
-#if PEGASUS_USE_EVENTS
-                                ,  index
-#endif
-#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
-                                , mClassPropertySizes[index]
-#endif
-                               );
-    }
-    else
-    {
-        PG_FAILSTR("Trying to access property %u but it has to be < %u", index, GetNumClassProperties());
-        return PropertyReadAccessor(  this
-                                , nullptr
-#if PEGASUS_USE_EVENTS
+                                ,  PROPERTYCATEGORY_INVALID
                                 , -1 
 #endif
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
@@ -510,6 +521,8 @@ bool PropertyGridObject::ReadFromObject(AssetLib::Asset* parentAsset, AssetLib::
                 if (index == -1) continue;
                 const char* str = obj->GetString(index); 
                 int len = Utils::Strlen(str);
+                //! \todo Fix by adding temporary 64 byte buffer
+                PG_FAILSTR("Kleber, get your shit together, bro!");
                 if (len < 63)
                 {
                     a.Write(str, len + 1 /*1 for null character*/);

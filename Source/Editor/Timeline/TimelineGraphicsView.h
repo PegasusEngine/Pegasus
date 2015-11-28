@@ -86,8 +86,14 @@ signals:
     //! Emitted when a block has been moved by the user
     void BlockMoved();
 
+    //! Emitted when a single block is being selected (not multiple selection)
+    void BlockSelected(Pegasus::Timeline::IBlockProxy * blockProxy);
+
+    //! Emitted when blocks are deselected (single or multiple selection)
+    void BlocksDeselected();
+
     //! Emitted when the user double clicks a block
-    void BlockDoubleClicked(Pegasus::Timeline::IBlockProxy* blockProxy);
+    void BlockDoubleClicked(Pegasus::Timeline::IBlockProxy * blockProxy);
 
     //------------------------------------------------------------------------------------
 
@@ -105,6 +111,13 @@ public slots:
     //!               on the timeline when right-click dragging
     void OnPlayModeToggled(bool enable);
 
+    //------------------------------------------------------------------------------------
+
+private slots:
+
+    //! Called when the selection changes in the scene
+    void SelectionChanged();
+        
     //------------------------------------------------------------------------------------
 
 protected:

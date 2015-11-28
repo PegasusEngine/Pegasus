@@ -172,10 +172,10 @@ void PropertyGridClassesDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationP
                         }
                         else
                         {
-                            int sz = 0;
+                            unsigned int sz = 0;
                             const Pegasus::PropertyGrid::BaseEnumType** outList = enumInfo->GetEnumerations(sz);
                             const Pegasus::PropertyGrid::BaseEnumType* targetEnum = nullptr;
-                            for (int i = 0; i < sz; ++i) if (outList[i]->GetValue() == value->GetValue()) {  targetEnum = outList[i]; break; }
+                            for (unsigned int i = 0; i < sz; ++i) if (outList[i]->GetValue() == value->GetValue()) {  targetEnum = outList[i]; break; }
                             propertyList.append(QString("\"%1\"").arg(targetEnum ==  nullptr ? "????" : targetEnum->GetName()));
                         }
                     }

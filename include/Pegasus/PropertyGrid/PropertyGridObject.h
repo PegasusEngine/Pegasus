@@ -193,7 +193,7 @@ namespace PropertyGrid {
             { return mProperty##name; }                                                                             \
         inline void Set##name(PPG::PropertyDefinition<type>::ParamType value)                                       \
             { PPG::PropertyDefinition<type>::CopyProperty(mProperty##name, value);                                  \
-              PEGASUS_EVENT_DISPATCH(((Pegasus::PropertyGrid::PropertyGridObject*)this), Pegasus::PropertyGrid::ValueChangedEventIndexed, mProperty##name##Index ); \
+              PEGASUS_EVENT_DISPATCH(((Pegasus::PropertyGrid::PropertyGridObject*)this), Pegasus::PropertyGrid::ValueChangedEventIndexed, Pegasus::PropertyGrid::PROPERTYCATEGORY_CLASS, mProperty##name##Index ); \
               InvalidatePropertyGrid(); }                                                                           \
     private:                                                                                                        \
         PPG::PropertyDefinition<type>::VarType mProperty##name;                                                     \
@@ -279,6 +279,7 @@ public:
         :   mConstObj(nullptr)
         ,   mConstPtr(nullptr)
 #if PEGASUS_USE_EVENTS
+        ,   mCategory(PROPERTYCATEGORY_INVALID)
         ,   mIndex(-1)
 #endif
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
@@ -321,6 +322,7 @@ protected:
           const PropertyGridObject * obj
         , const void * ptr
 #if PEGASUS_USE_EVENTS
+        , PropertyCategory category
         , int index 
 #endif
 
@@ -331,7 +333,8 @@ protected:
         :   mConstObj(obj)
         ,   mConstPtr(ptr)
 #if PEGASUS_USE_EVENTS
-        ,   mIndex (index)
+        ,   mCategory(category)
+        ,   mIndex(index)
 #endif
 
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
@@ -347,6 +350,7 @@ protected:
     const void * mConstPtr;
 
 #if PEGASUS_USE_EVENTS
+    PropertyCategory mCategory;
     int mIndex;
 #endif
 
@@ -384,7 +388,8 @@ public:
 #endif
             *static_cast<T *>(mPtr) = value;
             InvalidatePropertyGrid();
-        }
+            PEGASUS_EVENT_DISPATCH(mObj, ValueChangedEventIndexed, mCategory, mIndex);
+    }
 
     //! Write the property using the content of a buffer
     //! \param inputBuffer Input buffer with content to copy to the property (!= nullptr)
@@ -408,6 +413,7 @@ private:
           PropertyGridObject * obj
         , void * ptr
 #if PEGASUS_USE_EVENTS
+        , PropertyCategory category
         , int index 
 #endif
 
@@ -417,10 +423,11 @@ private:
                            )
         :   PropertyReadAccessor(obj, ptr
 #if PEGASUS_USE_EVENTS
-            ,index 
+            , category
+            , index 
 #endif
 #if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
-            ,size
+            , size
 #endif
             )
         ,   mObj(obj)
@@ -495,23 +502,23 @@ public:
     //! \return Accessor for the property
     PropertyAccessor GetDerivedClassPropertyAccessor(unsigned int index);
 
-    //! Get the number of registered class properties, including parent classes (but not derived classes)
+    //! Get the number of registered class properties, including parent classes (but not classes deriving from the current class)
     //! \return Number of successfully registered class properties
     inline unsigned int GetNumClassProperties() const
         { return GetClassInfo()->GetNumClassProperties(); }
 
-    //! Get the record of a class property, including parent classes (but not derived classes)
+    //! Get the record of a class property, including parent classes (but not classes deriving from the current class)
     //! \param index Index of the class property (0 <= index < GetNumClassProperties())
     //! \return Record of the class property (information about the class property)
     const PropertyRecord & GetClassPropertyRecord(unsigned int index) const
         { return GetClassInfo()->GetClassPropertyRecord(index); }
 
-    //! Get an accessor to a class property, including parent classes (but not derived classes)
+    //! Get an accessor to a class property, including parent classes (but not classes deriving from the current class)
     //! \param index Index of the class property (0 <= index < GetNumClassProperties())
     //! \return Accessor for the class property
     PropertyAccessor GetClassPropertyAccessor(unsigned int index);
 
-    //! Get an accessor to a property, including parent classes (but not derived classes)
+    //! Get an accessor to a property, including parent classes (but not classes deriving from the current class)
     //! \param index Index of the property (0 <= index < GetNumProperties())
     //! \return Accessor for the property
     const PropertyReadAccessor GetClassReadPropertyAccessor(unsigned int index) const;

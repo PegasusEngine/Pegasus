@@ -40,6 +40,20 @@ BlockProxy::~BlockProxy()
 
 //----------------------------------------------------------------------------------------
 
+PropertyGrid::IPropertyGridObjectProxy * BlockProxy::GetPropertyGridProxy()
+{
+    return mBlock->GetPropertyGridProxy();
+}
+
+//----------------------------------------------------------------------------------------
+
+const PropertyGrid::IPropertyGridObjectProxy * BlockProxy::GetPropertyGridProxy() const
+{
+    return mBlock->GetPropertyGridProxy();
+}
+
+//----------------------------------------------------------------------------------------
+
 Beat BlockProxy::GetBeat() const
 {
     return mBlock->GetBeat();

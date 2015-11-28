@@ -55,11 +55,11 @@ public:
     //! \return Record of the property
     const PropertyRecord & GetDerivedClassPropertyRecord(unsigned int index) const;
 
-    //! Get the number of registered class properties, including parent classes (but not derived classes)
+    //! Get the number of registered class properties, including parent classes (but not classes deriving from the current class)
     //! \return Number of successfully registered class properties
     inline unsigned int GetNumClassProperties() const { return mNumClassProperties; }
 
-    //! Get the record of a class property, including parent classes (but not derived classes)
+    //! Get the record of a class property, including parent classes (but not classes deriving from the current class)
     //! \param index Index of the class property (0 <= index < GetNumClassProperties())
     //! \return Record of the class property
     const PropertyRecord & GetClassPropertyRecord(unsigned int index) const;
@@ -106,7 +106,7 @@ private:
     //! \note Called by \a IMPLEMENT_PROPERTY() through the templated \a RegisterProperty() function
     void DeclareProperty(PropertyType type, int size, const char * name, const char* typeName, void * defaultValuePtr);
 
-    //! Compute the number of class properties (mNumClassProperties), including parent classes (but not derived classes)
+    //! Compute the number of class properties (mNumClassProperties), including parent classes (but not classes deriving from the current class)
     //! \note The classes are not declared in a specific order,
     //!       the parent's number of class properties is not known yet at declaration time
     void UpdateNumClassPropertiesFromParents();

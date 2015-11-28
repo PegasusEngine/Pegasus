@@ -85,7 +85,7 @@ private slots:
 
 protected:
     //! Callback called when an app has been loaded
-    virtual void OnUIForAppLoaded(Pegasus::App::IApplicationProxy* application);
+    virtual void OnUIForAppLoaded(Pegasus::App::IApplicationProxy* applicationProxy);
 
     //! Callback called when an app has been closed
     virtual void OnUIForAppClosed();

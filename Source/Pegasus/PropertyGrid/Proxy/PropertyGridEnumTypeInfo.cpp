@@ -23,7 +23,7 @@ const char* EnumTypeInfoProxy::GetName() const
 
 }
 
-const BaseEnumType** EnumTypeInfoProxy::GetEnumerations(int& outSize) const
+const BaseEnumType** EnumTypeInfoProxy::GetEnumerations(unsigned int & outSize) const
 {
 
     outSize = mObject->GetEnumerations().GetSize();

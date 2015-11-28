@@ -21,7 +21,10 @@ namespace Pegasus {
     namespace Core {
         class ISourceCodeProxy;
     }
-    
+
+    namespace PropertyGrid {
+        class IPropertyGridObjectProxy;
+    }
     namespace Timeline {
         class ILaneProxy;
     }
@@ -38,6 +41,13 @@ public:
 
     //! Destructor
     virtual ~IBlockProxy() {};
+
+    //! Get the property grid proxy associated with the block
+    //! \return Property grid proxy associated with the block
+    //@{
+    virtual PropertyGrid::IPropertyGridObjectProxy * GetPropertyGridProxy() = 0;
+    virtual const PropertyGrid::IPropertyGridObjectProxy * GetPropertyGridProxy() const = 0;
+    //@}
 
 
     //! Get the position of the block in the lane

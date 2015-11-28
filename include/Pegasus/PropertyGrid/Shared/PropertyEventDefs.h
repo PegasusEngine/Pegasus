@@ -23,13 +23,17 @@ namespace PropertyGrid {
     class ValueChangedEventIndexed
     {
     public:
-        explicit ValueChangedEventIndexed(int index) : mIndex(index) {}
+        explicit ValueChangedEventIndexed(PropertyCategory category, int index) : mCategory(category), mIndex(index) {}
         ~ValueChangedEventIndexed(){}
 
-        //! gets the index of the property whose value changed.
+        //! Gets the category of the property whose value changed.
+        PropertyCategory GetCategory() const { return mCategory; }
+
+        //! Gets the index of the property whose value changed.
         int GetIndex() const { return mIndex; }
 
     private:
+        PropertyCategory mCategory;
         int mIndex;
     };
 

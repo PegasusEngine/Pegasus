@@ -48,6 +48,14 @@ public:
     inline Block * GetBlock() const { return mBlock; }
 
 
+    //! Get the property grid proxy associated with the block
+    //! \return Property grid proxy associated with the block
+    //@{
+    virtual PropertyGrid::IPropertyGridObjectProxy * GetPropertyGridProxy() override;
+    virtual const PropertyGrid::IPropertyGridObjectProxy * GetPropertyGridProxy() const override;
+    //@}
+
+
     //! Get the position of the block in the lane
     //! \return Position of the block, measured in ticks
     virtual Beat GetBeat() const;

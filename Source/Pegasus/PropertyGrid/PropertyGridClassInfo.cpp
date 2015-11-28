@@ -97,6 +97,7 @@ void PropertyGridClassInfo::DeclareProperty(PropertyType type, int size, const c
         && (typeName[0] != '\0') )
     {
         PropertyRecord & record = mClassPropertyRecords.PushEmpty();
+        record.category = PROPERTYCATEGORY_CLASS;
         record.type = type;
         record.size = size;
         record.name = name;     		// Copy the pointer, not the string, since the input pointer is considered as constant

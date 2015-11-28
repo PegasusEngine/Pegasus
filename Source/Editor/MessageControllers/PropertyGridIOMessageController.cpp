@@ -49,24 +49,58 @@ void PropertyGridIOMessageController::OnRenderThreadUpdate(PropertyGridObserver*
     if(it != mActiveProperties.end())
     {
         Pegasus::PropertyGrid::IPropertyGridObjectProxy* pgrid = it.value();
-        int propSizes = pgrid->GetNumClassProperties();
         for (int i = 0; i < elements.size(); ++i)
         {
-            if (elements[i].mIndex < propSizes)
+            const PropertyGridIOMessageController::UpdateElement & el = elements[i];
+            switch (el.mCategory)
             {
-                const Pegasus::PropertyGrid::PropertyRecord& r = pgrid->GetClassPropertyRecord(elements[i].mIndex);
-                if (r.type == elements[i].mType)
-                {
-                    pgrid->WriteClassProperty(elements[i].mIndex, &elements[i].mData, r.size, /*don't send message*/ false);
-                }
-                else
-                {
-                    ED_FAILSTR("Failed reading property type.");
-                }
-            }
-            else
-            {
-                ED_FAILSTR("Failed setting property.");
+                case Pegasus::PropertyGrid::PROPERTYCATEGORY_CLASS:
+                    {
+                        int propSizes = pgrid->GetNumClassProperties();
+                        if (elements[i].mIndex < propSizes)
+                        {
+                            const Pegasus::PropertyGrid::PropertyRecord& r = pgrid->GetClassPropertyRecord(elements[i].mIndex);
+                            if (r.type == elements[i].mType)
+                            {
+                                pgrid->WriteClassProperty(elements[i].mIndex, &elements[i].mData, r.size, /*don't send message*/ false);
+                            }
+                            else
+                            {
+                                ED_FAILSTR("Failed reading class property type.");
+                            }
+                        }
+                        else
+                        {
+                            ED_FAILSTR("Failed setting class property.");
+                        }
+                    }
+                    break;
+
+                case Pegasus::PropertyGrid::PROPERTYCATEGORY_OBJECT:
+                    {
+                        int propSizes = pgrid->GetNumObjectProperties();
+                        if (elements[i].mIndex < propSizes)
+                        {
+                            const Pegasus::PropertyGrid::PropertyRecord& r = pgrid->GetObjectPropertyRecord(elements[i].mIndex);
+                            if (r.type == elements[i].mType)
+                            {
+                                pgrid->WriteObjectProperty(elements[i].mIndex, &elements[i].mData, r.size, /*don't send message*/ false);
+                            }
+                            else
+                            {
+                                ED_FAILSTR("Failed reading object property type.");
+                            }
+                        }
+                        else
+                        {
+                            ED_FAILSTR("Failed setting object property.");
+                        }
+                    }
+                    break;
+
+                default:
+                    ED_FAILSTR("Invalid category for a property");
+                    break;
             }
         }
     }
@@ -102,12 +136,16 @@ void PropertyGridIOMessageController::OnRenderThreadOpen(PropertyGridObserver* s
 
     emit sender->OnInitializedSignal(handle, proxy);
 
-    //prepare list of updates
+    //! \todo Refactor to loop over the categories
+
     QVector<PropertyGridIOMessageController::UpdateElement> updates;
-    for (unsigned i = 0; i < proxy->GetNumClassProperties(); ++i)
+
+    // Prepare list of updates for class properties
+    for (unsigned int i = 0; i < proxy->GetNumClassProperties(); ++i)
     {
         const Pegasus::PropertyGrid::PropertyRecord& r = proxy->GetClassPropertyRecord(i);
         PropertyGridIOMessageController::UpdateElement el;
+        el.mCategory = Pegasus::PropertyGrid::PROPERTYCATEGORY_CLASS;
         el.mType = r.type;
         el.mIndex = (int)i;
         if (r.size  <= sizeof(el.mData))
@@ -117,14 +155,31 @@ void PropertyGridIOMessageController::OnRenderThreadOpen(PropertyGridObserver* s
         }
         else
         {
-            ED_FAILSTR("Data container for ui cannot fit current property!");
+            ED_FAILSTR("Data container for ui cannot fit current class property!");
+        }
+    }
+
+    // Prepare list of updates for object properties
+    for (unsigned int i = 0; i < proxy->GetNumObjectProperties(); ++i)
+    {
+        const Pegasus::PropertyGrid::PropertyRecord& r = proxy->GetObjectPropertyRecord(i);
+        PropertyGridIOMessageController::UpdateElement el;
+        el.mCategory = Pegasus::PropertyGrid::PROPERTYCATEGORY_OBJECT;
+        el.mType = r.type;
+        el.mIndex = (int)i;
+        if (r.size  <= sizeof(el.mData))
+        {
+            proxy->ReadObjectProperty(i, &el.mData, r.size);
+            updates.push_back(el);
+        }
+        else
+        {
+            ED_FAILSTR("Data container for ui cannot fit current object property!");
         }
     }
 
     //send signal to UI so it can update the view
     emit sender->OnUpdatedSignal(handle, updates);
-
-
 }
 
 void PropertyGridIOMessageController::CloseHandleInternal(PropertyGridHandle handle)
@@ -161,6 +216,7 @@ void PropertyGridIOMessageController::OnEvent(Pegasus::Core::IEventUserData* use
     const Pegasus::PropertyGrid::PropertyRecord & r = pUserData->GetProxy()->GetClassPropertyRecord(e.GetIndex());
 
     PropertyGridIOMessageController::UpdateElement el;
+    el.mCategory = e.GetCategory();
     el.mIndex = e.GetIndex();
     el.mType = r.type;
     if (el.mIndex > 0 && r.size <= sizeof(el.mData))

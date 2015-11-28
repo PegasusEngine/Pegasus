@@ -19,13 +19,16 @@
 #include <QVector>
 
 namespace Pegasus {
+    namespace App {
+        class IApplicationProxy;
+    }
     namespace PropertyGrid {
         class IPropertyGridObjectProxy;
     }
 }
 
-class QtTreePropertyBrowser;
 class PegasusDockWidget;
+class QtTreePropertyBrowser;
 
 
 //! Property grid widget UI element
@@ -41,9 +44,13 @@ public:
     //! Destructor
     ~PropertyGridWidget();
 
+    //! Set the loaded application proxy
+    //! \param application Application proxy being loaded, nullptr otherwise
+    inline void SetApplicationProxy(Pegasus::App::IApplicationProxy * applicationProxy) { mApplicationProxy = applicationProxy; }
+
     //! Sets the messenger responsible to send messages to the render thread.
     //! \param messenger - the messenger to cache
-    void SetMessenger(PegasusDockWidget * messenger) { mMessenger = messenger; }
+    inline void SetMessenger(PegasusDockWidget * messenger) { mMessenger = messenger; }
 
     //! Set the property grid object proxy associated with the widget.
     //! the content of the property browser will update accordingly.
@@ -67,6 +74,7 @@ private slots:
     void rgbPropertyChanged(QtProperty * property);
     void rgbaPropertyChanged(QtProperty * property);
     void s64PropertyChanged(QtProperty * property);
+    void enumPropertyChanged(QtProperty * property);
     
 
 private:
@@ -74,11 +82,21 @@ private:
     void OnInitialized(PropertyGridHandle handle, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy);
     void OnUpdated(PropertyGridHandle handle, const QVector<PropertyGridIOMessageController::UpdateElement>& els);
 
-    int FindPropertyIndex(const QtProperty * property) const;
+    const Pegasus::PropertyGrid::PropertyRecord * FindPropertyRecord(const QtProperty * property, unsigned int & outIndex) const;
 
     bool IsReady() const { return mProxyHandle != INVALID_PGRID_HANDLE; }
 
     void UpdateProxy(const PropertyGridIOMessageController::UpdateElement& el);
+
+    //! Send an open message to the IO controller
+    //! \param proxy Proxy assigned to the widget
+    void SendOpenMessage(Pegasus::PropertyGrid::IPropertyGridObjectProxy * proxy);
+
+    //! Send a close message to the IO controller if there is a handle defined
+    void SendCloseMessage();
+
+    // Loaded application proxy, nullptr otherwise
+    Pegasus::App::IApplicationProxy * mApplicationProxy;
 
     // Widget showing a set of properties
     QtTreePropertyBrowser * mBrowser;
@@ -89,18 +107,18 @@ private:
     // dock widget that sends messages.
     PegasusDockWidget* mMessenger;
 
-    //! Handle retuned in OnInitialized from observer, which represents the current propertyGrid
+    //! Handle returned in OnInitialized from observer, which represents the current propertyGrid
     PropertyGridHandle mProxyHandle;
 
-    //! Pair containing a property / type pair
-    struct PropertyTypePair
+    //! Pair containing a property / record pair
+    struct PropertyRecordPair
     {
-        Pegasus::PropertyGrid::PropertyType mType;
+        const Pegasus::PropertyGrid::PropertyRecord * mRecord;
         QtProperty * mProperty;
     };
 
     //! List of properties, follows same order as schema (index are consistent)
-    QVector<PropertyTypePair> mProperties;
+    QVector<PropertyRecordPair> mProperties[Pegasus::PropertyGrid::NUM_PROPERTY_CATEGORIES];
 
     //! Observer of this widget, used to communicate with the IO controller.
     class Observer : public PropertyGridObserver
@@ -132,6 +150,7 @@ private:
     PropertyGridColor8RGBPropertyManager mColor8RGBManager;
     PropertyGridColor8RGBAPropertyManager mColor8RGBAManager;
     PropertyGridString64PropertyManager mString64Manager;
+    PropertyGridEnumPropertyManager mEnumManager;
     
     // List of editor factories, one per property editor type
     PropertyGridBoolEditorFactory mBoolEditorFactory;
@@ -141,8 +160,7 @@ private:
     PropertyGridColor8RGBEditorFactory mColor8RGBEditorFactory;
     PropertyGridColor8RGBAEditorFactory mColor8RGBAEditorFactory;
     PropertyGridString64EditorFactory mString64EditorFactory;
-    
-
+    PropertyGridEnumEditorFactory mEnumEditorFactory;
 };
 
 

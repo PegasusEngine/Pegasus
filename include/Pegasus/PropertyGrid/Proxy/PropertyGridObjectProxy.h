@@ -70,11 +70,11 @@ public:
     virtual void WriteDerivedClassProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize) override;
 
 
-    //! Get the number of registered class properties, including parent classes (but not derived classes)
+    //! Get the number of registered class properties, including parent classes (but not classes deriving from the current class)
     //! \return Number of successfully registered class properties
     virtual unsigned int GetNumClassProperties() const override;
 
-    //! Get the record of a class property, including parent classes (but not derived classes)
+    //! Get the record of a class property, including parent classes (but not classes deriving from the current class)
     //! \param index Index of the class property (0 <= index < GetNumClassProperties())
     //! \return Record of the class property (information about the class property)
     virtual const PropertyRecord & GetClassPropertyRecord(unsigned int index) const override;

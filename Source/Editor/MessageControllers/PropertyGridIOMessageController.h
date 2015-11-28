@@ -72,18 +72,26 @@ public:
     //! Structure with the update of an element
     struct UpdateElement
     {
+        Pegasus::PropertyGrid::PropertyCategory mCategory;
         Pegasus::PropertyGrid::PropertyType mType; //! property type
         int mIndex; // the index position of this property
         union Data //Union representing the data it holds
         {   
             float         f;        //! float
             unsigned int  u;        //! unsigned
-            int           i;        //! signed
+            int           i;        //! signed, enum
             bool          b;        //! bool
             char          s64[64];  //! string64
             unsigned char rgba8[4]; //! rgb and rgba
             float         v[4];     //! float2, float3 and float4
         } mData;
+    public:
+        UpdateElement() :
+            mCategory(Pegasus::PropertyGrid::PROPERTYCATEGORY_INVALID),
+            mType(Pegasus::PropertyGrid::PROPERTYTYPE_INVALID),
+            mIndex(-1)
+        {
+        }
     };
 
 

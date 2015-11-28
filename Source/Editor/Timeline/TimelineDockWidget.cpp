@@ -17,12 +17,10 @@
 
 #include "Pegasus/Timeline/Shared/ITimelineManagerProxy.h"
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
-#include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 #include "Pegasus/Timeline/Shared/ILaneProxy.h"
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include <QMessagebox>
-
 
 #include <QListWidgetItem>
 #include <QUndoStack>
@@ -36,10 +34,13 @@ TimelineDockWidget::TimelineDockWidget(QWidget *parent, Editor* editor)
 {
 }
 
+//----------------------------------------------------------------------------------------
+
 void TimelineDockWidget::SetupUi()
 {
     // Set the initial UI state
     ui.setupUi(this);
+    ui.propertyGridWidget->SetMessenger(this);
 
     mUndoStack = new QUndoStack(this);
 
@@ -56,8 +57,6 @@ void TimelineDockWidget::SetupUi()
     connect(ui.addButton, SIGNAL(clicked()),
             ui.graphicsView, SLOT(AddLane()));
     connect(ui.playButton, SIGNAL(toggled(bool)),
-            this, SIGNAL(PlayModeToggled(bool)));
-    connect(ui.playButton, SIGNAL(toggled(bool)),
             ui.graphicsView, SLOT(OnPlayModeToggled(bool)));
     connect(ui.bpmSpin, SIGNAL(valueChanged(double)),
             this, SLOT(OnBeatsPerMinuteChanged(double)));
@@ -65,8 +64,19 @@ void TimelineDockWidget::SetupUi()
             this, SLOT(OnSnapModeChanged(int)));
     connect(ui.graphicsView, SIGNAL(BeatUpdated(float)),
             this, SLOT(SetCurrentBeat(float)));
+    connect(ui.graphicsView, SIGNAL(BlockSelected(Pegasus::Timeline::IBlockProxy*)),
+            this, SLOT(OnBlockSelected(Pegasus::Timeline::IBlockProxy*)));
+    connect(ui.graphicsView, SIGNAL(BlocksDeselected()),
+            this, SLOT(OnBlocksDeselected()));
+
+    connect(ui.playButton, SIGNAL(toggled(bool)),
+            this, SIGNAL(PlayModeToggled(bool)));
     connect(ui.graphicsView, SIGNAL(BlockMoved()),
             this, SIGNAL(BlockMoved()));
+    connect(ui.graphicsView, SIGNAL(BlockSelected(Pegasus::Timeline::IBlockProxy*)),
+            this, SIGNAL(BlockSelected(Pegasus::Timeline::IBlockProxy*)));
+    connect(ui.graphicsView, SIGNAL(BlocksDeselected()),
+            this, SIGNAL(BlocksDeselected()));
     connect(ui.graphicsView, SIGNAL(BlockDoubleClicked(Pegasus::Timeline::IBlockProxy*)),
             this, SIGNAL(BlockDoubleClicked(Pegasus::Timeline::IBlockProxy*)));
 }
@@ -210,7 +220,7 @@ void TimelineDockWidget::OnReceiveAssetIoMessage(AssetIOMessageController::Messa
 
 //----------------------------------------------------------------------------------------
 
-void TimelineDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* application)
+void TimelineDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* applicationProxy)
 {
     mEnableUndo = false;
 
@@ -222,9 +232,9 @@ void TimelineDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* appli
     ui.playButton->setChecked(false);
     ui.graphicsView->OnPlayModeToggled(false);
 
-    if (application != nullptr)
+    if (applicationProxy != nullptr)
     {
-        Pegasus::Timeline::ITimelineManagerProxy * const timeline = application->GetTimelineManagerProxy();
+        Pegasus::Timeline::ITimelineManagerProxy * const timeline = applicationProxy->GetTimelineManagerProxy();
         timeline->GetCurrentTimeline()->SetPlayMode(Pegasus::Timeline::PLAYMODE_STOPPED);
         ui.bpmSpin->setValue(static_cast<double>(timeline->GetCurrentTimeline()->GetBeatsPerMinute()));
     }
@@ -240,8 +250,7 @@ void TimelineDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* appli
     UpdateUIFromBeat(0.0f);
     ui.graphicsView->setEnabled(true);
 
-    // Update the content of the timeline block names list
-    RefreshBlockNames();
+    ui.propertyGridWidget->SetApplicationProxy(applicationProxy);
 
     // Update the content of the timeline graphics view from the timeline of the app
     ui.graphicsView->RefreshFromTimeline();
@@ -259,6 +268,8 @@ void TimelineDockWidget::OnUIForAppClosed()
 
     ui.playButton->setEnabled(false);
     ui.playButton->setChecked(false);
+
+    ui.propertyGridWidget->SetApplicationProxy(nullptr);
 
     // Clear the content of the timeline graphics view and set the default timeline
     ui.graphicsView->Initialize();
@@ -357,23 +368,14 @@ void TimelineDockWidget::SetTimeLabel(unsigned int minutes, unsigned int seconds
 
 //----------------------------------------------------------------------------------------
 
-void TimelineDockWidget::RefreshBlockNames()
+void TimelineDockWidget::OnBlockSelected(Pegasus::Timeline::IBlockProxy * blockProxy)
 {
-    Application * const application = GetEditor()->GetApplicationManager().GetApplication();
-    if (application != nullptr)
-    {
-        Pegasus::Timeline::ITimelineManagerProxy * const timeline = application->GetTimelineProxy();
+    ui.propertyGridWidget->SetCurrentProxy(blockProxy->GetPropertyGridProxy());
+}
 
-        // Get the list from the Pegasus timeline
-        static char blockClassNames   [Pegasus::Timeline::MAX_NUM_REGISTERED_BLOCKS][Pegasus::Timeline::MAX_BLOCK_CLASS_NAME_LENGTH + 1];
-        static char blockEditorStrings[Pegasus::Timeline::MAX_NUM_REGISTERED_BLOCKS][Pegasus::Timeline::MAX_BLOCK_CLASS_NAME_LENGTH + 1];
-        const unsigned int numBlockNames = timeline->GetRegisteredBlockNames(blockClassNames, blockEditorStrings);
+//----------------------------------------------------------------------------------------
 
-        // Fill the list of block names
-        ui.blockNamesList->clear();
-        for (unsigned int b = 0; b < numBlockNames; ++b)
-        {
-            new QListWidgetItem(QString(blockEditorStrings[b]) + " (" + QString(blockClassNames[b]) + ")", ui.blockNamesList);
-        }
-    }
+void TimelineDockWidget::OnBlocksDeselected()
+{
+    ui.propertyGridWidget->SetCurrentProxy(nullptr);
 }

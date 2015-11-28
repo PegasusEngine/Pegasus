@@ -17,6 +17,18 @@ namespace Pegasus {
 namespace PropertyGrid {
 
 
+//! Enumerant for the different property categories. Each category represents a scope for the property.
+enum PropertyCategory
+{
+    PROPERTYCATEGORY_CLASS,             //!< For the current class derivation, and all the parent classes
+    PROPERTYCATEGORY_OBJECT,            //!< For the instances (created at runtime, per object)
+
+    NUM_PROPERTY_CATEGORIES,
+
+    PROPERTYCATEGORY_INVALID = NUM_PROPERTY_CATEGORIES
+};
+    
+    
 //! Enumerant for the different property types. Those are the only ones supported
 enum PropertyType
 {
@@ -135,6 +147,7 @@ protected:
 //! Structure holding the description of a property
 struct PropertyRecord
 {
+    PropertyCategory category;          //!< Category of the property, PROPERTYCATEGORY_xxx constant
     PropertyType type;                  //!< Type of the property, PROPERTYTYPE_xxx constant
     int size;                           //!< Size in bytes of the property (> 0)
     const char * name;                  //!< Name of the property, starting with an uppercase letter (non-empty)
