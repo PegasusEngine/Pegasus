@@ -15,6 +15,7 @@
 #if PEGASUS_ENABLE_PROXIES
 
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"
+#include "Pegasus/PropertyGrid/Shared/IPropertyGridObjectProxy.h"
 
 namespace Pegasus {
 
@@ -30,6 +31,46 @@ namespace Pegasus {
 namespace Pegasus {
 namespace Timeline {
 
+//! Property grid object proxy decorator, to intercept events from a property grid.
+class BlockPropertyGridObjectDecorator : public PropertyGrid::IPropertyGridObjectProxy
+{
+public:
+    //Constructor
+    BlockPropertyGridObjectDecorator(Block* block);
+
+    //Destructor
+    virtual ~BlockPropertyGridObjectDecorator() { }
+
+    //@{
+    //! Functions act exactly the same for the decorated property grid object
+    virtual const PropertyGrid::IPropertyGridClassInfoProxy * GetClassInfoProxy() const {return mDecorated->GetClassInfoProxy();}
+    virtual unsigned int GetNumDerivedClassProperties() const { return mDecorated->GetNumDerivedClassProperties(); }
+    virtual const PropertyGrid::PropertyRecord & GetDerivedClassPropertyRecord(unsigned int index) const { return mDecorated->GetDerivedClassPropertyRecord(index); }
+    virtual void ReadDerivedClassProperty(unsigned int index, void * outputBuffer, unsigned int outputBufferSize) { mDecorated->ReadDerivedClassProperty(index, outputBuffer, outputBufferSize); }
+    virtual void WriteDerivedClassProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize) { mDecorated->WriteDerivedClassProperty(index, inputBuffer, inputBufferSize); }
+    virtual unsigned int GetNumClassProperties() const { return mDecorated->GetNumClassProperties(); }
+    virtual const PropertyGrid::PropertyRecord & GetClassPropertyRecord(unsigned int index) const { return mDecorated->GetClassPropertyRecord(index); }
+    virtual void ReadClassProperty(unsigned int index, void * outputBuffer, unsigned int outputBufferSize) { mDecorated->ReadClassProperty(index, outputBuffer, outputBufferSize); }
+    virtual void WriteClassProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize, bool sendMessage = true) { mDecorated->WriteClassProperty(index, inputBuffer, inputBufferSize, sendMessage); }
+    virtual unsigned int GetNumObjectProperties() const { return mDecorated->GetNumObjectProperties(); }
+    virtual const PropertyGrid::PropertyRecord & GetObjectPropertyRecord(unsigned int index) const { return mDecorated->GetObjectPropertyRecord(index); }
+    virtual void ReadObjectProperty(unsigned int index, void * outputBuffer, unsigned int outputBufferSize) { mDecorated->ReadObjectProperty(index, outputBuffer, outputBufferSize); }
+    virtual void SetEventListener(PropertyGrid::IPropertyListener* listener) { mDecorated->SetEventListener(listener); }
+    virtual void SetUserData(Pegasus::Core::IEventUserData* userData) { mDecorated->SetUserData(userData); }
+    virtual Pegasus::Core::IEventUserData* GetUserData() const { return mDecorated->GetUserData(); }
+    //@}
+
+    //! Write the object property using the content of a buffer. Decorated to notify a block to rebuild itself based on the property modified.
+    //! \param index Index of the object property (0 <= index < GetNumObjectProperties())
+    //! \param inputBuffer Input buffer with content to copy to the object property (!= nullptr)
+    //! \param inputBufferSize Size in bytes of the input buffer (> 0)
+    virtual void WriteObjectProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize, bool sendMessage = true);
+
+private:
+    PropertyGrid::IPropertyGridObjectProxy* mDecorated;
+    Block* mBlock;
+
+};
 
 //! Proxy object, used by the editor to interact with the timeline blocks
 class BlockProxy : public IBlockProxy
@@ -93,6 +134,7 @@ private:
 
     //! Proxied timeline block object
     Block * const mBlock;
+    BlockPropertyGridObjectDecorator mPropertyGridDecorator;
 };
 
 

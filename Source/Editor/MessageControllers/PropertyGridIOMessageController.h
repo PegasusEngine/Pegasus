@@ -54,9 +54,16 @@ struct PropertyGridHandle
 
     bool operator < (const PropertyGridHandle& other) const { return mValue < other.mValue; }
 
+    int InternalValue() const { return mValue; }
+
 private:
     int mValue;
 };
+
+inline uint qHash(const PropertyGridHandle& h) 
+{
+    return qHash(h.InternalValue());
+}
 
 // invalid handle declaration
 const PropertyGridHandle INVALID_PGRID_HANDLE(-1);
@@ -179,12 +186,17 @@ public:
     //! Call at the end of the frame, whenever it is ideal to flush all the properties.
     void FlushAllPendingUpdates();
 
+signals:
+    //signal triggered when a redraw is requested.
+    void RequestRedraw();
+
 private:
 
     void OnRenderThreadUpdate(PropertyGridObserver* sender, PropertyGridHandle handle, const QVector<UpdateElement>& elements);
     void OnRenderThreadOpen(PropertyGridObserver* sender, Pegasus::PropertyGrid::IPropertyGridObjectProxy* proxy);
     void OnRenderThreadClose(PropertyGridObserver* sender, PropertyGridHandle handle);
 
+    void UpdateObserverInternal(PropertyGridObserver* sender, PropertyGridHandle handle, Pegasus::PropertyGrid::IPropertyGridObjectProxy* proxy);
     void CloseHandleInternal(PropertyGridHandle handle);
 
     void FlushPendingUpdates(PropertyUserData* userData);
@@ -192,12 +204,15 @@ private:
     
     // Property grid event listener callbacks (from app to ui)
     virtual void OnEvent(Pegasus::Core::IEventUserData* userData, Pegasus::PropertyGrid::ValueChangedEventIndexed& e);
+    virtual void OnEvent(Pegasus::Core::IEventUserData* userData, Pegasus::PropertyGrid::ObjectPropertiesLayoutChanged& e);
     virtual void OnEvent(Pegasus::Core::IEventUserData* userData, Pegasus::PropertyGrid::PropertyGridDestroyed& e);
+    virtual void OnEvent(Pegasus::Core::IEventUserData* userData, Pegasus::PropertyGrid::PropertyGridRenderRequest& e);
     //
 
     Pegasus::App::IApplicationProxy* mApp;
 
     typedef QSet<PropertyGridObserver*> ObserverSet;
+    typedef QSet< PropertyGridHandle> HandleSet;
     typedef QMap< PropertyGridHandle, ObserverSet > ObserverMap;
     typedef QMap< PropertyGridHandle, Pegasus::PropertyGrid::IPropertyGridObjectProxy* > HandleToProxyMap;    
     typedef QMap< PropertyGridHandle, UpdateCache> ProxyUpdateCache;
@@ -205,6 +220,7 @@ private:
     HandleToProxyMap mActiveProperties;
     PropertyGridHandle mNextHandle;
     ProxyUpdateCache mUpdateCache;
+    HandleSet        mLayoutsToReset;
 };
 
 

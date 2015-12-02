@@ -105,14 +105,30 @@ private:
     ExpList * mTail;
 };
 
+//! metadata of idd
+struct IddMetaData
+{
+    bool isGlobal;
+    bool isExtern;
+    bool isUsedInGlobalScope;
+public:
+    IddMetaData() :
+        isGlobal(false),
+        isExtern(false),
+        isUsedInGlobalScope(false)
+    {
+    }
+};
+
 //! identifier expression class
 class Idd : public Exp
 {
 public:
 
+
     static const int sType;
 
-    explicit Idd (const char * name) : mOffset(-1), mFrameOffset(-1), mIsGlobal(false), mIsExtern(false) { mName = name; }
+    explicit Idd (const char * name) : mOffset(-1), mFrameOffset(-1) { mName = name; }
 
     virtual ~Idd(){}
 
@@ -126,13 +142,9 @@ public:
 
     void SetFrameOffset(int frameOffset) { mFrameOffset = frameOffset; }
 
-    bool IsGlobal() const { return mIsGlobal; }
+    IddMetaData& GetMetaData() { return mMetaData; }
 
-    void SetIsGlobal(bool isGlobal) { mIsGlobal = isGlobal; }
-
-    bool IsExtern() const { return mIsExtern; }
-
-    void SetIsExtern(bool isExtern) { mIsExtern = isExtern; }
+    const IddMetaData& GetMetaData() const { return mMetaData; }
 
     VISITOR_ACCESS
 
@@ -143,8 +155,7 @@ private:
     const char* mName;
     int  mOffset;
     int  mFrameOffset;
-    bool mIsGlobal;
-    bool mIsExtern;
+    IddMetaData mMetaData;
 };
 
 class Unop : public Exp

@@ -348,7 +348,7 @@ void Canonizer::HandleArrayAccessOperator(Binop* n)
 void Canonizer::HandleSetOperator(Binop* n)
 {
     //Skip extern expressions. They are set separately at initialization. Only Imms are allowed to initialize externs
-    if (n->GetOp() == O_SET && n->GetLhs()->GetExpType() == Idd::sType && static_cast<Idd*>(n->GetLhs())->IsExtern())
+    if (n->GetOp() == O_SET && n->GetLhs()->GetExpType() == Idd::sType && static_cast<Idd*>(n->GetLhs())->GetMetaData().isExtern)
     {
         return;
     }
@@ -471,13 +471,13 @@ void Canonizer::HandleSetOperator(Binop* n)
                 Idd* destIdd = CANON_NEW Idd(nullptr);
                 destIdd->SetOffset(finalDestinationIdd->GetOffset() + destOffset);
                 destIdd->SetFrameOffset(finalDestinationIdd->GetFrameOffset());
-                destIdd->SetIsGlobal(finalDestinationIdd->IsGlobal());
+                destIdd->GetMetaData() = finalDestinationIdd->GetMetaData();
                 destIdd->SetTypeDesc(child);
 
                 Idd* srcIdd = CANON_NEW Idd(nullptr);
                 srcIdd->SetOffset(resultTemp->GetOffset() + i * child->GetByteSize());
                 srcIdd->SetFrameOffset(resultTemp->GetFrameOffset());
-                srcIdd->SetIsGlobal(resultTemp->IsGlobal());
+                srcIdd->GetMetaData() = resultTemp->GetMetaData();
                 srcIdd->SetTypeDesc(child);
 
                 PushCanon( CANON_NEW Move(destIdd, srcIdd) );
@@ -510,7 +510,7 @@ void Canonizer::HandleSetOperator(Binop* n)
                 Idd* srcIdd = CANON_NEW Idd(nullptr);
                 srcIdd->SetOffset(resultTemp->GetOffset() + i * child->GetByteSize());
                 srcIdd->SetFrameOffset(resultTemp->GetFrameOffset());
-                srcIdd->SetIsGlobal(resultTemp->IsGlobal());
+                srcIdd->GetMetaData() = resultTemp->GetMetaData();
                 srcIdd->SetTypeDesc(resultTemp->GetTypeDesc()->GetChild());
 
                 PushCanon( CANON_NEW LoadAddr(Canon::R_C, destBinop));
@@ -558,13 +558,13 @@ void Canonizer::HandleNonContinuousSwizzle(Exp* targetExp, Idd* swizzle, const T
             tempOffsetted->SetTypeDesc(child);
             tempOffsetted->SetOffset(temp->GetOffset() + i * countSizes);
             tempOffsetted->SetFrameOffset(temp->GetFrameOffset());
-            tempOffsetted->SetIsGlobal(temp->IsGlobal());
+            tempOffsetted->GetMetaData() = temp->GetMetaData();
 
             Idd* targetOffsetted = CANON_NEW Idd(nullptr);
             targetOffsetted->SetTypeDesc(child);
             targetOffsetted->SetOffset(element->GetOffset() + swizzleElementOffset * countSizes);
             targetOffsetted->SetFrameOffset(element->GetFrameOffset());
-            targetOffsetted->SetIsGlobal(element->IsGlobal());
+            targetOffsetted->GetMetaData() = element->GetMetaData();
 
             PushCanon( CANON_NEW Move(tempOffsetted, targetOffsetted) );
         }
@@ -585,7 +585,7 @@ void Canonizer::HandleNonContinuousSwizzle(Exp* targetExp, Idd* swizzle, const T
             tempOffsetted->SetTypeDesc(child);
             tempOffsetted->SetOffset(temp->GetOffset() + i * countSizes);
             tempOffsetted->SetFrameOffset(temp->GetFrameOffset());
-            tempOffsetted->SetIsGlobal(temp->IsGlobal());
+            tempOffsetted->GetMetaData() = temp->GetMetaData();
 
 
             Variant v;
@@ -634,7 +634,7 @@ void Canonizer::HandleDotOperator(Binop* n)
         PG_ASSERT(iddRhs->GetFrameOffset() == 0);
         Idd* newOffset = CANON_NEW Idd(nullptr);
         newOffset->SetFrameOffset(iddLhs->GetFrameOffset());
-        newOffset->SetIsGlobal(iddLhs->IsGlobal());
+        newOffset->GetMetaData() = iddLhs->GetMetaData();
         newOffset->SetTypeDesc(n->GetTypeDesc());
         mRebuiltExpression = newOffset;
 

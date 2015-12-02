@@ -28,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Block.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\BlockRuntimeScriptListener.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Lane.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Proxy\BlockProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Proxy\LaneProxy.h" />
@@ -49,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\Block.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\BlockRuntimeScriptListener.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\Lane.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\Proxy\BlockProxy.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\Proxy\LaneProxy.cpp" />

@@ -37,6 +37,14 @@ namespace PropertyGrid {
         int mIndex;
     };
 
+    //!  Event signaling that the layout of the object properties has changed (properties added or removed).
+    class ObjectPropertiesLayoutChanged
+    {
+    public:
+        ObjectPropertiesLayoutChanged(){}
+        ~ObjectPropertiesLayoutChanged(){}
+    };
+
     //! Event fired when this event gets destroyed
     class PropertyGridDestroyed
     {
@@ -45,10 +53,20 @@ namespace PropertyGrid {
         ~PropertyGridDestroyed() {}
     };
 
+    //! Event fired when a property requests a redraw of the app
+    class PropertyGridRenderRequest
+    {
+    public:
+        PropertyGridRenderRequest() {}
+        ~PropertyGridRenderRequest() {}
+    };
+
     
     PEGASUS_EVENT_BEGIN_REGISTRY (IPropertyListener)
         PEGASUS_EVENT_REGISTER(ValueChangedEventIndexed);
+        PEGASUS_EVENT_REGISTER(ObjectPropertiesLayoutChanged);
         PEGASUS_EVENT_REGISTER(PropertyGridDestroyed);
+        PEGASUS_EVENT_REGISTER(PropertyGridRenderRequest);
     PEGASUS_EVENT_END_REGISTRY
 
 }//namespace PropertyGrid

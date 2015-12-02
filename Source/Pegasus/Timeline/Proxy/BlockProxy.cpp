@@ -25,9 +25,26 @@ PEGASUS_AVOID_EMPTY_FILE_WARNING
 namespace Pegasus {
 namespace Timeline {
 
+BlockPropertyGridObjectDecorator::BlockPropertyGridObjectDecorator(Block* block)
+    :
+    mBlock(block),
+    mDecorated(block->GetPropertyGridProxy())
+{
+}
+
+
+void BlockPropertyGridObjectDecorator::WriteObjectProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize, bool sendMessage)
+{
+    mDecorated->WriteObjectProperty(index, inputBuffer, inputBufferSize, sendMessage);
+
+    //notify now the block that an internal property has now been updated.
+    mBlock->NotifyInternalObjectPropertyUpdated(index);
+}
+
 
 BlockProxy::BlockProxy(Block * block)
-:   mBlock(block)
+:   mBlock(block),
+    mPropertyGridDecorator(block)
 {
     PG_ASSERTSTR(block != nullptr, "Trying to create a timeline block proxy from an invalid timeline block object");
 }
@@ -42,14 +59,14 @@ BlockProxy::~BlockProxy()
 
 PropertyGrid::IPropertyGridObjectProxy * BlockProxy::GetPropertyGridProxy()
 {
-    return mBlock->GetPropertyGridProxy();
+    return &mPropertyGridDecorator;
 }
 
 //----------------------------------------------------------------------------------------
 
 const PropertyGrid::IPropertyGridObjectProxy * BlockProxy::GetPropertyGridProxy() const
 {
-    return mBlock->GetPropertyGridProxy();
+    return &mPropertyGridDecorator;
 }
 
 //----------------------------------------------------------------------------------------

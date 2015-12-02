@@ -122,7 +122,6 @@ ApplicationInterface::ApplicationInterface(Application * application)
     //from render to ui
     connect(mSourceIoMessageController, SIGNAL(SignalRedrawViewports()),
             this, SLOT(RedrawAllViewports()), Qt::DirectConnection);
-
     connect(mSourceIoMessageController, SIGNAL(SignalCompilationRequestEnded()),
             assetLibraryWidget, SLOT(UpdateUIItemsLayout()), Qt::QueuedConnection);
 
@@ -145,6 +144,10 @@ ApplicationInterface::ApplicationInterface(Application * application)
             programEditor, SLOT(SyncUiToProgram()));
     connect(mProgramIoMessageController, SIGNAL(SignalUpdateProgramView()),
             assetLibraryWidget, SLOT(UpdateUIItemsLayout()));
+
+    //<------- PropertyGrid IO Controller ----------->//
+    connect (mPropertyGridMessageController, SIGNAL(RequestRedraw()),
+             this, SLOT(RedrawAllViewports()));
 
     //<-------- Connect event listeners to app ------------>
     Pegasus::App::IApplicationProxy* appProxy = application->GetApplicationProxy();

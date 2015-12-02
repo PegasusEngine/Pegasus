@@ -136,8 +136,15 @@ void PropertyGridIOMessageController::OnRenderThreadOpen(PropertyGridObserver* s
 
     emit sender->OnInitializedSignal(handle, proxy);
 
-    //! \todo Refactor to loop over the categories
+    //now notify the observers to update the uis looking at this object
+    UpdateObserverInternal(sender, handle, proxy);
 
+}
+
+void PropertyGridIOMessageController::UpdateObserverInternal(PropertyGridObserver* sender, PropertyGridHandle handle, Pegasus::PropertyGrid::IPropertyGridObjectProxy* proxy)
+{
+
+    //! \todo Refactor to loop over the categories
     QVector<PropertyGridIOMessageController::UpdateElement> updates;
 
     // Prepare list of updates for class properties
@@ -181,7 +188,6 @@ void PropertyGridIOMessageController::OnRenderThreadOpen(PropertyGridObserver* s
     //send signal to UI so it can update the view
     emit sender->OnUpdatedSignal(handle, updates);
 }
-
 void PropertyGridIOMessageController::CloseHandleInternal(PropertyGridHandle handle)
 {
     PropertyGridIOMessageController::HandleToProxyMap::iterator proxyIt = mActiveProperties.find(handle);
@@ -236,6 +242,12 @@ void PropertyGridIOMessageController::OnEvent(Pegasus::Core::IEventUserData* use
     }
 }
 
+void PropertyGridIOMessageController::OnEvent(Pegasus::Core::IEventUserData* userData, Pegasus::PropertyGrid::PropertyGridRenderRequest& e)
+{
+    //request a new frame
+    emit RequestRedraw();
+}
+
 void PropertyGridIOMessageController::FlushPendingUpdates(PropertyUserData* userData)
 {
     UpdateCache* cache  = userData->GetUpdateCache();
@@ -253,12 +265,35 @@ void PropertyGridIOMessageController::FlushPendingUpdates(PropertyUserData* user
 
 void PropertyGridIOMessageController::FlushAllPendingUpdates()
 {
+    // first see if any object requested a layout change
+    if (!mLayoutsToReset.empty())
+    {
+        foreach (PropertyGridHandle h, mLayoutsToReset)
+        {
+            ObserverMap::iterator it = mObservers.find(h);
+            HandleToProxyMap::iterator h2pit = mActiveProperties.find(h);
+            if (h2pit == mActiveProperties.end()) continue;
+            Pegasus::PropertyGrid::IPropertyGridObjectProxy* proxy = h2pit.value();
+            if (it != mObservers.end())
+            {
+                foreach(PropertyGridObserver* obs, it.value())
+                {
+                    emit (obs->OnShutdownSignal(h));
+                    emit(obs->OnInitializedSignal(h, proxy));
+                    UpdateObserverInternal(obs, h, proxy);
+                }
+            }
+        }
+        mLayoutsToReset.clear();
+    }
+
     HandleToProxyMap::iterator it = mActiveProperties.begin();
     for (; it != mActiveProperties.end(); ++it)
     {
         PropertyUserData* userData = static_cast<PropertyUserData*>(it.value()->GetUserData());
         FlushPendingUpdates(userData);
     }
+
 }
 
 void PropertyGridIOMessageController::OnEvent(Pegasus::Core::IEventUserData* userData, Pegasus::PropertyGrid::PropertyGridDestroyed& e)
@@ -285,6 +320,16 @@ void PropertyGridIOMessageController::OnEvent(Pegasus::Core::IEventUserData* use
     {
         ED_FAIL();
     }
+}
+
+void PropertyGridIOMessageController::OnEvent(Pegasus::Core::IEventUserData* userData, Pegasus::PropertyGrid::ObjectPropertiesLayoutChanged& e)
+{
+    //accumulate all the layouts to reset for this particular property grid handle.
+    PropertyUserData* pUserData = static_cast<PropertyUserData*>(userData);
+    Pegasus::PropertyGrid::IPropertyGridObjectProxy* proxy = pUserData->GetProxy();
+    PropertyGridHandle handle = pUserData->GetHandle();
+    ED_ASSERT(handle != INVALID_PGRID_HANDLE);
+    mLayoutsToReset.insert(handle);
 }
 
 PropertyGridObserver::PropertyGridObserver()

@@ -5,6 +5,8 @@
 cbuffer uniformState
 {
 float time;
+float glitteIntensity;
+float2 glitterRepetition;
 }
 
 static const float E = 2.7182818284;
@@ -23,7 +25,7 @@ void main(
  
 	float outsideDisplacement = pow(E, sin(rad));
 	float internalDisplacement = clamp((1.0 - outsideDisplacement),0.0,1.0);
-	float glitter = 0.07*(cos(p.x*20.1+time*10.4)+sin(p.y*20.1+time*10.5));
+	float glitter = glitteIntensity*(cos(p.x*glitterRepetition.x+time*10.4)+sin(p.y*glitterRepetition.y+time*10.5));
 		
     color = float4(outsideDisplacement+glitter,internalDisplacement+glitter,0.0,1.0);
 } 

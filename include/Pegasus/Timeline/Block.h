@@ -19,6 +19,7 @@
 #include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/AssetLib/RuntimeAssetObject.h"
 #include "Pegasus/PropertyGrid/PropertyGridObject.h"
+#include "Pegasus/Timeline/BlockRuntimeScriptListener.h"
 
 namespace Pegasus {
     namespace AssetLib {
@@ -91,6 +92,11 @@ public:
     //! \return true if a script is present, false otherwise
     bool HasScript() const { return mTimelineScript != nullptr; }
 
+    //! Call when we want to make a potential update to the current state.
+    //! We will flush the internal state of the object property in the current index to the 
+    //! Corresponding internal block script virtual machine state.
+    //! \param index - index to update
+    void NotifyInternalObjectPropertyUpdated(unsigned int index);
 
 #if PEGASUS_ENABLE_PROXIES
 
@@ -102,12 +108,6 @@ public:
     //@}
 
 #endif  // PEGASUS_ENABLE_PROXIES
-
-    //------------------------------------------------------------------------------------
-
-public:
-
-    // Functions called in derived classes
 
     //! Initialize the data of the block
     virtual void Initialize();
@@ -244,6 +244,9 @@ private:
 
     //! virtual machine state
     BlockScript::BsVmState* mVmState;
+
+    //! object listener that manipulates a block state on any script runtime events
+    BlockRuntimeScriptListener mRuntimeListener;
 
     //! version of the script, used for global variable initialization
     int mScriptVersion;

@@ -79,6 +79,7 @@ void Block::Shutdown()
         mTimelineScript->CallGlobalScopeDestroy(mVmState);
         mAppContext->GetTimelineManager()->GetScriptTracker()->UnregisterScript(mTimelineScript);
         mTimelineScript = nullptr;
+        mRuntimeListener.Shutdown();
 
         if (mVmState->GetUserContext() != nullptr)
         {
@@ -93,7 +94,7 @@ void Block::Shutdown()
 
 void Block::InitializeScript()
 {
-    if (mScriptVersion != mTimelineScript->GetSerialVersion())
+    if (mScriptVersion != mTimelineScript->GetSerialVersion() && mTimelineScript->IsScriptActive())
     {
         mScriptVersion = mTimelineScript->GetSerialVersion();
 
@@ -104,10 +105,17 @@ void Block::InitializeScript()
         }
         mVmState->Reset();
 
+        //just listen for runtime events on the global scope initialization
+        mVmState->SetRuntimeListener(&mRuntimeListener);
         //re-initialize everything!
         mTimelineScript->CallGlobalScopeInit(mVmState, this);     
+
+        // remove the listener. No need to listen for more events.
+        mVmState->SetRuntimeListener(nullptr);
     }
 }
+
+//----------------------------------------------------------------------------------------
 
 void Block::UninitializeScript()
 {
@@ -118,13 +126,31 @@ void Block::UninitializeScript()
     }
 }
 
+//----------------------------------------------------------------------------------------
+
 void Block::UpdateViaScript(float beat, Wnd::Window* window)
 {
     if (mTimelineScript != nullptr)
     {
+        InitializeScript(); //in case a dirty compilation has been carried on.
         Application::RenderCollection* nodeContainer = static_cast<Application::RenderCollection*>(mVmState->GetUserContext());
         nodeContainer->SetWindow(window);
         mTimelineScript->CallUpdate(beat, mVmState);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Block::NotifyInternalObjectPropertyUpdated(unsigned int index)
+{
+    if (mTimelineScript != nullptr)
+    {
+        BlockRuntimeScriptListener::UpdateType updateType = mRuntimeListener.FlushProperty(*mVmState, index);
+        if (updateType == BlockRuntimeScriptListener::RERUN_GLOBALS)
+        {
+            mScriptVersion = -1; //invalidate the script version, only when running globals
+        }
+        PEGASUS_EVENT_DISPATCH(this, Pegasus::PropertyGrid::PropertyGridRenderRequest);
     }
 }
 
@@ -173,6 +199,7 @@ void Block::AttachScript(TimelineScriptInOut script)
     script->RegisterObserver(&mBlockScriptObserver);
 #endif
     mScriptVersion = -1;  
+    mRuntimeListener.Initialize(this, mTimelineScript->GetBlockScript());
     InitializeScript();
 }
 
@@ -181,6 +208,7 @@ void Block::AttachScript(TimelineScriptInOut script)
 void Block::ShutdownScript()
 {
     mTimelineScript = nullptr;
+    mRuntimeListener.Shutdown();
 }
 
 //----------------------------------------------------------------------------------------

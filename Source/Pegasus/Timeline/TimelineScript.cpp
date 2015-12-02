@@ -13,12 +13,7 @@
 #include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/Core/Assertion.h"
 #include "Pegasus/BlockScript/BlockScriptManager.h"
-#include "Pegasus/BlockScript/BlockScript.h"
 #include "Pegasus/BlockScript/IFileIncluder.h"
-#include "Pegasus/BlockScript/Container.h"
-#include "Pegasus/BlockScript/BlockScriptAst.h"
-#include "Pegasus/BlockScript/TypeDesc.h"
-#include "Pegasus/PropertyGrid/Shared/PropertyDefs.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/Memset.h"
 #include "Pegasus/Utils/Vector.h"
@@ -65,158 +60,6 @@ bool ScriptIncluder::Open(const char* filePath, const char** outBuffer, int& out
 void ScriptIncluder::Close(const char* buffer)
 {
     //do nothing
-}
-
-class TimelineScriptRuntimeListener : public Pegasus::BlockScript::IRuntimeListener
-{
-public:
-    explicit TimelineScriptRuntimeListener(PropertyGrid::PropertyGridObject* prop, Pegasus::BlockScript::BlockScript* script) 
-    : mPropGrid(prop)
-    , mScript(script) {}
-
-    virtual ~TimelineScriptRuntimeListener() {}
-
-    //! Triggered when the runtime has not triggered the first instruction
-    //! \param state the runtime vm state
-    virtual void OnRuntimeBegin(Pegasus::BlockScript::BsVmState& state);
-
-    //! Triggered when the first stack command has been triggered
-    //! \param state - the runtime state that has been initialized
-    virtual void OnStackInitalized(Pegasus::BlockScript::BsVmState& state);
-
-    //! Triggered when the runtime has exited. The global scope is still alive at this point
-    //! so functions can be called even after exiting the Vm.
-    //! \param state the runtime vm state
-    virtual void OnRuntimeExit(Pegasus::BlockScript::BsVmState& state);
-
-    //! Triggered when there is a crash.
-    //! \param state the state on the vm
-    //! \param crash information structure
-    virtual void OnCrash(BsVmState& state, const CrashInfo& crashInfo);
-
-private:
-    PropertyGrid::PropertyGridObject* mPropGrid;
-    Pegasus::BlockScript::BlockScript* mScript;
-
-};
-
-void TimelineScriptRuntimeListener::OnRuntimeBegin(Pegasus::BlockScript::BsVmState& state)
-{
-    /*nop*/
-}
-
-void TimelineScriptRuntimeListener::OnStackInitalized(Pegasus::BlockScript::BsVmState& state)
-{
-    //The stack has been initialized. Now lets patch everything that has a property grid.
-    Pegasus::BlockScript::Assembly a = mScript->GetAsm();
-    Pegasus::BlockScript::Container<Pegasus::BlockScript::GlobalMapEntry>& bsGlobals = *a.mGlobalsMap;
-    if (bsGlobals.Size() == 0)
-    {
-        return;
-    }
-
-    Utils::Vector<bool> foundInGrid;
-    for (unsigned int i = 0; i < mPropGrid->GetNumObjectProperties(); ++i)
-    {
-        foundInGrid.PushEmpty() = false;
-    }
-
-    for (int i = 0; i < bsGlobals.Size(); ++i)
-    {
-        Pegasus::BlockScript::GlobalMapEntry& bsGlobalEntry = bsGlobals[i];
-        const char* varName = bsGlobalEntry.mVar->GetName();
-        Pegasus::BlockScript::TypeDesc::AluEngine typeAlu = bsGlobalEntry.mVar->GetTypeDesc()->GetAluEngine();
-        Pegasus::PropertyGrid::PropertyType targetType = Pegasus::PropertyGrid::PROPERTYTYPE_INVALID;
-        int typeByteSize = 0;
-        const char* typeName = nullptr;
-        switch (typeAlu)
-        {
-        case Pegasus::BlockScript::TypeDesc::E_INT:
-            targetType = Pegasus::PropertyGrid::PROPERTYTYPE_INT;
-            typeByteSize = sizeof(int);
-            typeName = PropertyGrid::PropertyDefinition<int>::GetTypeName();
-            break;
-        case Pegasus::BlockScript::TypeDesc::E_FLOAT:
-            targetType = Pegasus::PropertyGrid::PROPERTYTYPE_FLOAT;
-            typeByteSize = sizeof(float);
-            typeName = PropertyGrid::PropertyDefinition<float>::GetTypeName();
-            break;
-        case Pegasus::BlockScript::TypeDesc::E_FLOAT2:
-            targetType = Pegasus::PropertyGrid::PROPERTYTYPE_VEC2;
-            typeByteSize = sizeof(Math::Vec2);
-            typeName = PropertyGrid::PropertyDefinition<Math::Vec2>::GetTypeName();
-            break;
-        case Pegasus::BlockScript::TypeDesc::E_FLOAT3:
-            targetType = Pegasus::PropertyGrid::PROPERTYTYPE_VEC3;
-            typeByteSize = sizeof(Math::Vec3);
-            typeName = PropertyGrid::PropertyDefinition<Math::Vec3>::GetTypeName();
-            break;
-        case Pegasus::BlockScript::TypeDesc::E_FLOAT4:
-            targetType = Pegasus::PropertyGrid::PROPERTYTYPE_VEC4;
-            typeByteSize = sizeof(Math::Vec4);
-            typeName = PropertyGrid::PropertyDefinition<Math::Vec4>::GetTypeName();
-            break;
-        default:
-            PG_LOG('ERR_', "Unsupported pegasus type from blockscript extern. On variable: %s ", varName);
-            continue;
-        }
-
-        //find the target property grid
-        bool foundObject = false;
-        for (unsigned int obPropIndex = 0; !foundObject && obPropIndex < mPropGrid->GetNumObjectProperties(); ++obPropIndex)
-        {
-            PropertyGrid::PropertyAccessor a = mPropGrid->GetObjectPropertyAccessor(obPropIndex);
-            const PropertyGrid::PropertyRecord& r = mPropGrid->GetObjectPropertyRecord(obPropIndex);
-            if (!Utils::Strcmp(varName, r.name))
-            {
-                foundObject = true;
-                if (targetType == r.type)
-                {
-                    foundInGrid[obPropIndex] = true; 
-                    float scratch[16];
-                    PG_ASSERT(typeByteSize <= sizeof(scratch));
-                    //initialize the runtime propertly
-                    a.Read(scratch, typeByteSize);
-                    mScript->WriteGlobalValue(&state, i, scratch, typeByteSize);
-                }
-                else
-                { 
-                    PG_ASSERTSTR(!foundInGrid[obPropIndex], "Cannot attempt to delete an object twice!");
-                    mPropGrid->RemoveObjectProperty(obPropIndex);
-                    foundInGrid.Delete(obPropIndex);
-                    mPropGrid->AddObjectProperty(targetType, typeByteSize, varName, typeName, &bsGlobalEntry.mDefaultVal->GetVariant());
-                    foundInGrid.PushEmpty() = true;
-                    foundInGrid[mPropGrid->GetNumObjectProperties() - 1] = true;
-                }
-            }
-        }
-
-        //We never found this property, lets create it from scratch
-        if (!foundObject)
-        {
-            mPropGrid->AddObjectProperty(targetType, typeByteSize, varName, typeName, &bsGlobalEntry.mDefaultVal->GetVariant());
-            foundInGrid.PushEmpty() = true;
-        }
-    }
-
-    //delete now all the properties that are unused
-    for (unsigned int i = foundInGrid.GetSize(); i >= 1; --i)
-    {
-        if (!foundInGrid[i - 1])
-        {
-            mPropGrid->RemoveObjectProperty(i - 1);
-        }
-    }   
-}
-
-void TimelineScriptRuntimeListener::OnRuntimeExit(Pegasus::BlockScript::BsVmState& state)
-{
-    /*nop*/
-}
-
-void TimelineScriptRuntimeListener::OnCrash(Pegasus::BlockScript::BsVmState& state, const Pegasus::BlockScript::CrashInfo& crashInfo)
-{
-    /*TODO: handle this*/
 }
 
 static int Pegasus_PrintString(const char * str)
@@ -304,10 +147,7 @@ void TimelineScript::CallGlobalScopeInit(BsVmState* state, PropertyGrid::Propert
 {
     if (mScriptActive)
     {
-        TimelineScriptRuntimeListener l(obj, mScript);
-        state->SetRuntimeListener(&l);
         mScript->Run(state);
-        state->SetRuntimeListener(nullptr);
     }
 }
 

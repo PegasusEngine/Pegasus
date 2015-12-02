@@ -54,6 +54,7 @@ void BlockScriptBuilder::Initialize(Pegasus::Alloc::IAllocator* allocator)
     mStrPool.Initialize(allocator);
     mSymbolTable.Initialize(allocator);
     mGlobalsMap.Initialize(allocator);
+    mGlobalsMetaData.Initialize(allocator);
     Reset();
 }
 
@@ -139,6 +140,7 @@ void BlockScriptBuilder::Reset()
 
     mCanonizer.Reset();
     mGlobalsMap.Reset();
+    mGlobalsMetaData.Reset();
 
     mStrPool.Clear();
 }
@@ -397,7 +399,7 @@ Exp* BlockScriptBuilder::BuildSetBinop(Exp* lhs, Exp* rhs, bool isExtern)
 
             if (isExtern)
             { 
-                if (!idd->IsGlobal())
+                if (!idd->GetMetaData().isGlobal)
                 {
                     BS_ErrorDispatcher(this, "Can only use extern keyword on global variables.");
                     return nullptr;
@@ -409,7 +411,7 @@ Exp* BlockScriptBuilder::BuildSetBinop(Exp* lhs, Exp* rhs, bool isExtern)
                     return nullptr;
                 }
 
-                idd->SetIsExtern(isExtern);
+                idd->GetMetaData().isExtern = isExtern;
 
                 Imm* imm = nullptr;
                 if (rhs->GetExpType() != Imm::sType)
@@ -493,7 +495,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
         PG_ASSERT(rhs->GetExpType() == Idd::sType);
         Idd* accessOffset = static_cast<Idd*>(rhs);
         accessOffset->SetFrameOffset(0);//no weird frames
-        accessOffset->SetIsGlobal(false);//not a global
+        accessOffset->GetMetaData().isGlobal = false;//not a global
         if (tid1 == nullptr)
         {
             BS_ErrorDispatcher(this, "undefined lhs of dot operator");
@@ -726,6 +728,8 @@ void BlockScriptBuilder::RegisterExternGlobal(Ast::Idd* var, Ast::Imm* defaultVa
     GlobalMapEntry& entry = mGlobalsMap.PushEmpty();
     entry.mVar = var;
     entry.mDefaultVal = defaultVal;
+
+    mGlobalsMetaData.PushEmpty() = &(var->GetMetaData());
 }
 
 Exp*  BlockScriptBuilder::BuildStrImm(const char* strToCopy)
@@ -839,7 +843,7 @@ Exp*   BlockScriptBuilder::BuildIdd   (const char * name)
                 idd->SetOffset(found->mOffset);
                 idd->SetFrameOffset(frameOffset);
                 idd->SetTypeDesc(found->mType);
-                idd->SetIsGlobal(currentFrame->GetParentStackFrame() == nullptr);
+                idd->GetMetaData().isGlobal = (currentFrame->GetParentStackFrame() == nullptr);
                 break;
             }
             currentFrame = currentFrame->GetParentStackFrame();
@@ -849,7 +853,25 @@ Exp*   BlockScriptBuilder::BuildIdd   (const char * name)
         //is this an undeclared idd/not found? see if its a global
         if (idd->GetOffset() == -1)
         {
-            idd->SetIsGlobal(mCurrentFrame->GetParentStackFrame() == nullptr);
+            idd->GetMetaData().isGlobal = (mCurrentFrame->GetParentStackFrame() == nullptr);
+        }
+        else
+        {
+            //if its actually found, and if its a global, is it used in the global scope?
+            if (idd->GetMetaData().isGlobal)
+            {
+                //find it in the extern definitions
+                for (int i = 0; i < mGlobalsMap.Size(); ++i)
+                {
+                    if (idd->GetOffset() == mGlobalsMap[i].mVar->GetOffset() &&
+                        !mGlobalsMap[i].mVar->GetMetaData().isUsedInGlobalScope
+                     )
+                    {
+                        mGlobalsMetaData[i]->isUsedInGlobalScope = !mInFunBody;
+                        break;
+                    }
+                }
+            }
         }
 
         return idd;

@@ -16,6 +16,8 @@ namespace Pegasus
 {
 namespace BlockScript
 {
+//forward declaration
+class BsVmState;
 
 //! Callback for compilation errors
 class IBlockScriptCompilerListener

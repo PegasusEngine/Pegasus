@@ -77,6 +77,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\Shared\ITimelineProxy.h">
       <Filter>Include\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Timeline\BlockRuntimeScriptListener.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\Lane.cpp">
@@ -114,6 +117,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\Proxy\TimelineProxy.cpp">
       <Filter>Source\Proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Timeline\BlockRuntimeScriptListener.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

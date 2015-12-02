@@ -37,7 +37,10 @@ namespace Pegasus
         #include "Pegasus/BLockScript/Ast.inl"
         #undef BS_PROCESS
         union Variant;
+        struct IddMetaData;
         }
+
+    
 
         class IBlockScriptCompilerListener;
     }
@@ -217,6 +220,7 @@ private:
     IBlockScriptCompilerListener* mEventListener;
 
     Container<GlobalMapEntry> mGlobalsMap;
+    Container<Ast::IddMetaData*> mGlobalsMetaData;
 
     bool mInFunBody;
 };

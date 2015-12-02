@@ -49,7 +49,7 @@ struct FrameInformation
 
 int GetIddOffset(Ast::Idd* idd, BsVmState& state)
 {
-    if (idd->IsGlobal())
+    if (idd->GetMetaData().isGlobal)
     {
         return state.GetReg(R_G) + idd->GetOffset();
     }

@@ -219,6 +219,9 @@ void PropertyGridObject::AddObjectProperty(PropertyType type, int typeSize, cons
     // Allocate the memory for the object property then copy the value
     prop.valuePtr = PG_NEW_ARRAY(Memory::GetPropertyPointerAllocator(), -1, "ObjectProperty", Pegasus::Alloc::PG_MEM_PERM, unsigned char, typeSize);
     Utils::Memcpy(prop.valuePtr, defaultValuePtr, typeSize);
+    
+    //notify the editor that the layout of this object has changed
+    PEGASUS_EVENT_DISPATCH(this, ObjectPropertiesLayoutChanged);
 }
 
 //----------------------------------------------------------------------------------------
@@ -231,6 +234,9 @@ void PropertyGridObject::RemoveObjectProperty(unsigned int index)
         PG_DELETE_ARRAY(Memory::GetPropertyPointerAllocator(), mObjectProperties[index].record.name);
         PG_DELETE_ARRAY(Memory::GetPropertyPointerAllocator(), mObjectProperties[index].valuePtr);
         mObjectProperties.Delete(index);
+
+        //notify the editor that the layout of this object has changed
+        PEGASUS_EVENT_DISPATCH(this, ObjectPropertiesLayoutChanged);
     }
     else
     {

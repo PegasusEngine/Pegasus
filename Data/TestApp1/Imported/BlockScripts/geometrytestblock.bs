@@ -2,17 +2,23 @@
 // geometry test block
 // by Kleber Garcia
 ////---------------------------------------------------------------------
+
+/// Extern input block from property grid
+extern SphereRadius = 0.45;
+extern CubeRotAxis = {0.3, 0.4, 0.01};
+extern SphereLayerCount = 4;
+extern Material_GlitterIntensity = 0.07;
+extern Material_GlitterRepetition = { 20.1, 20.1 };
+
+/// extern input block end
 #define MAX_SPHERES 10
 
-//TODO have to do some syntax to initialize a static array
+
 gDegreeArray = static_array<int[MAX_SPHERES]>;
-gDegreeArray[0] = 3;
-gDegreeArray[1] = 2;
-gDegreeArray[2] = 1;
-gDegreeArray[3] = 1;
-i = 4; while(i < MAX_SPHERES)
+
+i = 0; while(i < MAX_SPHERES)
 {
-	gDegreeArray[i] = 1;
+	gDegreeArray[i] = ((i + 1) % 3) + 1;
 	i = i + 1;
 }
 
@@ -25,7 +31,8 @@ struct StateStruct
 struct SpeakerStateStruct
 {
 	time : float;
-	pad : float3;
+	glitterIntensity : float;
+	glitterRepetition : float2;
 };
 
 ////---------------------------------------------------------------------
@@ -69,7 +76,7 @@ i = 0; while (i < MAX_SPHERES)
 	sphereMeshes[i] = CreateMesh();
 	icosph = CreateMeshGenerator("IcosphereGenerator");
 	icosph.Degree = gDegreeArray[i];
-	icosph.Radius = 0.45;
+	icosph.Radius = SphereRadius;
 	sphereMeshes[i]->SetGeneratorInput(icosph);
 	i = i + 1;
 }
@@ -112,6 +119,8 @@ int Timeline_Update(beat : float)
 	);
 
 	gSpeakerState.time = beat;
+	gSpeakerState.glitterIntensity = Material_GlitterIntensity;
+	gSpeakerState.glitterRepetition = Material_GlitterRepetition;
 }
 
 int Timeline_Render(beat : float)
@@ -147,7 +156,7 @@ int Timeline_Render(beat : float)
     Clear(1, 0, 0); //clear the surface
     SetProgram(blockProgram);
 
-    rotAxis = float3(0.3, 0.4, 0.01);
+    rotAxis = CubeRotAxis;
 
 	
     gState.transform = GetRotation(rotAxis, (float)beat * 0.92);
@@ -172,7 +181,7 @@ int Timeline_Render(beat : float)
 
         fi = 2.0 * ((float)i / (float)MAX_SPHERES) - 1.0;
         
-        maxDepth = 4;
+        maxDepth = SphereLayerCount;
         j = 0; while(j < maxDepth)
         {
             fj = 2.0 * ((float)j / (float)maxDepth) - 1.0; 
