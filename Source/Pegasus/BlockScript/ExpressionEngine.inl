@@ -39,6 +39,7 @@ template<class IntrinsicType> void ExpressionEngine<IntrinsicType>::Visit(Ast::S
 template<class IntrinsicType> void ExpressionEngine<IntrinsicType>::Visit(Ast::StmtStructDef* n)    {PG_FAILSTR("function not supported");}
 template<class IntrinsicType> void ExpressionEngine<IntrinsicType>::Visit(Ast::StmtEnumTypeDef* n)  {PG_FAILSTR("function not supported");}
 template<class IntrinsicType> void ExpressionEngine<IntrinsicType>::Visit(Ast::ArrayConstructor* n) {PG_FAILSTR("function not supported");}
+template<class IntrinsicType> void ExpressionEngine<IntrinsicType>::Visit(Ast::Annotations* n)      {PG_FAILSTR("function not supported");}
 
 template<class IntrinsicType> void ExpressionEngine<IntrinsicType>::Visit(Ast::Exp* n)              { n->Access(this); }
 

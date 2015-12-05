@@ -479,6 +479,7 @@ extern          { return K_EXTERN;       }
 =               { BS_TOKEN(O_SET);  }
 ->              { BS_TOKEN(O_METHOD_CALL); }
 \.              { BS_TOKEN(O_DOT); }
+@\(             { return K_A_PAREN;  }
 \(              { return K_L_PAREN; }
 \)              { return K_R_PAREN; }
 \{              { return K_L_BRAC;  }

@@ -59,7 +59,15 @@ namespace BlockScript
 class BlockScriptBuilder
 {
 public:
-    explicit BlockScriptBuilder() : mEventListener(nullptr), mCurrentFrame(nullptr), mErrorCount(0), mInFunBody(false), mCurrentLineNumber(0), mReturnTypeContext(nullptr), mScanner(nullptr) {}
+    explicit BlockScriptBuilder() 
+        : mEventListener(nullptr)
+        , mCurrentFrame(nullptr)
+        , mErrorCount(0)
+        , mInFunBody(false)
+        , mCurrentLineNumber(0)
+        , mReturnTypeContext(nullptr)
+        , mCurrAnnotations(nullptr)
+        , mScanner(nullptr) {}
 	
     struct CompilationResult
     {
@@ -102,6 +110,8 @@ public:
     Ast::Exp*   BuildImmFloat4   (float a, float b, float c, float d);
     Ast::Exp*   BuildIdd   (const char * name);
     Ast::StmtExp* BuildStmtExp(Ast::Exp* exp);
+    Ast::StmtExp* BuildExternVariable(Ast::Exp* lhs, Ast::Exp* rhs);
+    Ast::StmtExp* BuildDeclarationWithAnnotation(Ast::Annotations* ann, Ast::Exp* exp);
     Ast::StmtReturn* BuildStmtReturn(Ast::Exp* exp);
     Ast::StmtWhile*  BuildStmtWhile(Ast::Exp* exp, Ast::StmtList* stmtList);
     Ast::StmtFunDec* BuildStmtFunDec(Ast::ArgList* argList, const TypeDesc* returnType, const char * nameIdd);
@@ -144,6 +154,10 @@ public:
     FunDesc* FindFunctionDescription(Ast::FunCall* fcSignature);
 
     FunDesc* RegisterFunctionDeclaration(Ast::StmtFunDec* funDec);
+
+    Ast::Annotations* BeginAnnotations();
+    
+    Ast::Annotations* EndAnnotations(Ast::Annotations* annotations, Ast::ExpList* exps);
 
     SymbolTable* GetSymbolTable() { return &mSymbolTable; }
 
@@ -194,6 +208,9 @@ private:
 
     //! \return true if operation is valid for this type, false otherwise
     bool IsBinopValid(const TypeDesc* type, int op);
+
+    //! Is this in an annotation context?
+    bool IsInAnnotation() const { return mCurrAnnotations != nullptr; }
     
     //! Attempts a type promotion. Creates an implicit cast if successful
     //! \param exp the expression
@@ -221,6 +238,8 @@ private:
 
     Container<GlobalMapEntry> mGlobalsMap;
     Container<Ast::IddMetaData*> mGlobalsMetaData;
+
+    Ast::Annotations* mCurrAnnotations;
 
     bool mInFunBody;
 };

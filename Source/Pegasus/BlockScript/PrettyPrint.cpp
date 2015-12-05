@@ -296,6 +296,13 @@ void PrettyPrint::Visit(StmtList* n)
     }
 }
 
+void PrettyPrint::Visit(Annotations* n)
+{
+    mStr("@(");
+    n->GetExpList()->Access(this);
+    mStr(")");
+}
+
 void PrettyPrint::PrintType(const TypeDesc* type)
 {
     if (type->GetModifier() != TypeDesc::M_ARRAY)
@@ -330,6 +337,13 @@ void PrettyPrint::Visit(ArgList* n)
 
 void PrettyPrint::Visit(Idd* n)
 {
+    //print annotations first
+    if (n->GetAnnotations() != nullptr)
+    {
+        n->GetAnnotations()->Access(this);
+    }
+    mStr("\n");
+
     const char * name = n->GetName();
     if (name == nullptr || name[0] == '$') //this is a temp, print its offset instead
     {

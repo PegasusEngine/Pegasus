@@ -70,28 +70,29 @@ extern int BS_debug;
      K_STATIC_ARRAY = 279,
      K_SIZE_OF = 280,
      K_EXTERN = 281,
-     O_PLUS = 282,
-     O_MINUS = 283,
-     O_MUL = 284,
-     O_DIV = 285,
-     O_MOD = 286,
-     O_EQ = 287,
-     O_NEQ = 288,
-     O_GT = 289,
-     O_LT = 290,
-     O_GTE = 291,
-     O_LTE = 292,
-     O_LAND = 293,
-     O_LOR = 294,
-     O_SET = 295,
-     O_DOT = 296,
-     O_ACCESS = 297,
-     O_METHOD_CALL = 298,
-     O_IMPLICIT_CAST = 299,
-     O_EXPLICIT_CAST = 300,
-     ACCESS_PREC = 301,
-     CAST = 302,
-     NEG = 303
+     K_A_PAREN = 282,
+     O_PLUS = 283,
+     O_MINUS = 284,
+     O_MUL = 285,
+     O_DIV = 286,
+     O_MOD = 287,
+     O_EQ = 288,
+     O_NEQ = 289,
+     O_GT = 290,
+     O_LT = 291,
+     O_GTE = 292,
+     O_LTE = 293,
+     O_LAND = 294,
+     O_LOR = 295,
+     O_SET = 296,
+     O_DOT = 297,
+     O_ACCESS = 298,
+     O_METHOD_CALL = 299,
+     O_IMPLICIT_CAST = 300,
+     O_EXPLICIT_CAST = 301,
+     ACCESS_PREC = 302,
+     CAST = 303,
+     NEG = 304
    };
 #endif
 
@@ -115,7 +116,7 @@ typedef union YYSTYPE
 
 
 /* Line 2058 of yacc.c  */
-#line 119 "bs.parser.hpp"
+#line 120 "bs.parser.hpp"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

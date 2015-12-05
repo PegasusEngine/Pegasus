@@ -78,8 +78,8 @@
     //***************************************************//
 %}
 
-// expect 108 reduce/shift warnings due to grammar ambiguity
-%expect 130
+// expect 137 reduce/shift warnings due to grammar ambiguity
+%expect 137
 
 %union {
     int    token;
@@ -118,6 +118,7 @@
 %token <token> K_STATIC_ARRAY
 %token <token> K_SIZE_OF
 %token <token> K_EXTERN
+%token <token> K_A_PAREN
 %token <token> O_PLUS 
 %token <token> O_MINUS
 %token <token> O_MUL
@@ -157,6 +158,8 @@
 %type <vTypeDesc> fun_type
 %type <vTypeDesc> type_desc
 %type <vEnumNode> enum_list
+%type <vAnnotations> annotation_begin
+%type <vAnnotations> annotation_list
 
 %left O_LAND O_LOR
 %left O_SET
@@ -193,14 +196,23 @@ stmt_list : stmt_list stmt {
           ;
 
 stmt    : exp K_SEMICOLON { BS_BUILD($$, BuildStmtExp($1)); }
-        | K_EXTERN ident O_SET exp K_SEMICOLON  { 
-            Exp * exp = nullptr;
-            BS_BUILD(exp, BuildSetBinop($2, $4, true /*isExtern*/)); 
-            if (exp != nullptr)
-            {
-                BS_BUILD($$, BuildStmtExp(exp));
-            }
-        }
+        | K_EXTERN ident O_SET exp K_SEMICOLON  { BS_BUILD($$, BuildExternVariable($2,$4)); }
+        | annotation_list exp K_SEMICOLON { BS_BUILD($$, BuildDeclarationWithAnnotation($1, $2)); }
+        | annotation_list K_EXTERN ident O_SET exp K_SEMICOLON 
+          {
+                StmtExp* declaration = nullptr;
+                BS_BUILD(declaration, BuildExternVariable($3, $5));
+                if (declaration != nullptr)
+                {
+                    BS_BUILD($$, BuildDeclarationWithAnnotation($1, declaration->GetExp()));
+                }
+                else
+                {
+                    $$ = nullptr;
+                    BS_parseerror("Syntax error. Invalid expression with annotation.");
+                    YYERROR; 
+                }
+          }
         | K_RETURN exp K_SEMICOLON { BS_BUILD($$, BuildStmtReturn($2)); }
         | fun_declaration fun_stmt_list  {BS_BUILD($$, BindFunImplementation($1, $2));}
         | while_keyword K_L_PAREN exp K_R_PAREN K_L_BRAC stmt_list K_R_BRAC { BS_BUILD($$, BuildStmtWhile($3, $6));}
@@ -245,6 +257,13 @@ stmt    : exp K_SEMICOLON { BS_BUILD($$, BuildStmtExp($1)); }
 
 struct_keyword  : K_STRUCT { BS_BUILD($$, StartNewFrame()); }
                 ;
+
+annotation_list : annotation_begin exp_list K_R_PAREN {  BS_BUILD($$, EndAnnotations($1, $2)); }
+                ;
+
+annotation_begin : K_A_PAREN { BS_BUILD($$, BeginAnnotations()); }
+                 ;
+
 
 if_begin_scope : K_R_PAREN K_L_BRAC { BS_BUILD($$, StartNewFrame()); }
                ;

@@ -214,6 +214,11 @@ void Canonizer::Visit(Stmt* n)
     PG_FAILSTR("[Canonizer::Visit(Stmt*)] This node should not be visited!");
 }
 
+void Canonizer::Visit(Annotations* n)
+{
+    PG_FAILSTR("[Canonizer::Visit(Annotations*)] This node should not be visited!");
+}
+
 void Canonizer::Visit(StmtList* n)
 {
     StmtList* head = n;

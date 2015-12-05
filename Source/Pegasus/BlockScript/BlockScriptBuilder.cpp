@@ -127,6 +127,7 @@ void BlockScriptBuilder::Reset()
     mCurrentLineNumber = 1;
     mActiveResult.mAst = nullptr;
     mActiveResult.mAsm.mBlocks = nullptr;
+    mCurrAnnotations = nullptr;
     mInFunBody = false;
     mReturnTypeContext = nullptr;
 
@@ -814,6 +815,12 @@ Exp*   BlockScriptBuilder::BuildImmFloat4   (float a, float b, float c, float d)
 
 Exp*   BlockScriptBuilder::BuildIdd   (const char * name)
 {
+    //if this is an annotation, just create an idd.
+    if (IsInAnnotation())
+    {
+        return BS_NEW Idd(name);
+    }
+
     //see if this id is actually an enumeration
     const EnumNode* enumNode = nullptr;
     const TypeDesc* enumType = nullptr;
@@ -878,6 +885,88 @@ Exp*   BlockScriptBuilder::BuildIdd   (const char * name)
     }
 
     return nullptr;
+}
+
+
+StmtExp* BlockScriptBuilder::BuildExternVariable(Ast::Exp* lhs, Ast::Exp* rhs)
+{
+    Exp * exp = BuildSetBinop(lhs, rhs, true /*isExtern*/);
+    if (exp != nullptr)
+    {
+        return BuildStmtExp(exp);
+    }
+    
+    return nullptr;
+}
+
+Annotations* BlockScriptBuilder::BeginAnnotations()
+{   
+    if (mCurrentFrame->GetParentStackFrame() != nullptr)
+    {
+        BS_ErrorDispatcher(this, "Annotations are only allowed in the global scope.");
+        return nullptr;
+    }
+
+    mCurrAnnotations = BS_NEW Annotations();
+    return mCurrAnnotations;
+}
+
+Annotations* BlockScriptBuilder::EndAnnotations(Annotations* annotations, ExpList* expList)
+{
+    PG_ASSERT(annotations == mCurrAnnotations);
+    annotations->SetExpList(expList);
+
+    //process the annotation list. Only accept:
+    //an Idd = Imm or
+    //an Idd = StrImm
+
+    if (expList == nullptr || expList->GetExp() == nullptr)
+    {
+        BS_ErrorDispatcher(this, "Must declare at least 1 annotation.");
+        return nullptr;
+    }
+
+    ExpList* currEl = expList;
+    while (currEl != nullptr && currEl->GetExp() != nullptr)
+    {
+        Exp* currExp = currEl->GetExp();
+        if (
+            currExp->GetExpType() == Binop::sType 
+        &&  static_cast<Binop*>(currExp)->GetLhs()->GetExpType() == Idd::sType
+        &&  ( 
+                static_cast<Binop*>(currExp)->GetRhs()->GetExpType() == Imm::sType
+            ||  static_cast<Binop*>(currExp)->GetRhs()->GetExpType() == StrImm::sType
+            )
+        )
+        {
+            static_cast<Binop*>(currExp)->GetLhs()->SetTypeDesc(
+                static_cast<Binop*>(currExp)->GetRhs()->GetTypeDesc()
+            );
+        }
+        else
+        {
+            BS_ErrorDispatcher(this, "Annotations only allow an identifier with an immediate value or a string value.");
+            return nullptr;
+        }
+        currEl = currEl->GetTail();
+    }
+
+    mCurrAnnotations = nullptr;
+    return annotations;
+}
+
+
+StmtExp* BlockScriptBuilder::BuildDeclarationWithAnnotation(Ast::Annotations* ann, Ast::Exp* exp)
+{
+    if (exp->GetExpType() == Binop::sType &&
+        static_cast<Binop*>(exp)->GetOp() == O_SET &&
+        static_cast<Binop*>(exp)->GetLhs()->GetExpType() == Idd::sType
+       )
+    {
+        static_cast<Idd*>(static_cast<Binop*>(exp)->GetLhs())->SetAnnotations(ann);
+    }
+
+    return BuildStmtExp(exp);
 }
 
 FunDesc* BlockScriptBuilder::FindFunctionDescription(FunCall* fcSignature)

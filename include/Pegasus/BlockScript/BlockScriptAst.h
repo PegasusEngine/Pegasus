@@ -120,6 +120,24 @@ public:
     }
 };
 
+//! Annotation container class
+class Annotations : public Node
+{
+public:
+    Annotations() : mExpList(nullptr) {}
+
+    virtual ~Annotations(){}
+    
+    ExpList* GetExpList() const { return mExpList; }
+
+    void SetExpList(ExpList* expList) { mExpList = expList; }
+
+    VISITOR_ACCESS
+
+private:
+    ExpList* mExpList;
+};
+
 //! identifier expression class
 class Idd : public Exp
 {
@@ -128,7 +146,7 @@ public:
 
     static const int sType;
 
-    explicit Idd (const char * name) : mOffset(-1), mFrameOffset(-1) { mName = name; }
+    explicit Idd (const char * name) : mOffset(-1), mFrameOffset(-1), mAnnotations(nullptr) { mName = name; }
 
     virtual ~Idd(){}
 
@@ -141,6 +159,11 @@ public:
     int GetFrameOffset() const { return mFrameOffset; }
 
     void SetFrameOffset(int frameOffset) { mFrameOffset = frameOffset; }
+
+    Annotations* GetAnnotations() const { return mAnnotations; }
+
+    void SetAnnotations(Annotations* annotations) { mAnnotations = annotations; }
+
 
     IddMetaData& GetMetaData() { return mMetaData; }
 
@@ -155,6 +178,7 @@ private:
     const char* mName;
     int  mOffset;
     int  mFrameOffset;
+    Annotations* mAnnotations;
     IddMetaData mMetaData;
 };
 
