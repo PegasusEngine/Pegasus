@@ -52,6 +52,55 @@ enum PropertyType
     PROPERTYTYPE_INVALID = NUM_PROPERTY_TYPES
 };
 
+//! Enumerant for the type of editor that a certain property will use.
+enum PropertyEditor
+{
+    EDITOR_DEFAULT,
+    EDITOR_SLIDER,
+    EDITOR_COUNT
+};
+
+//! Variant parameter for an editor, such as min or max.
+union VariantParam
+{
+    unsigned int u;
+    int          i;
+    float        f;
+    float        v[4];
+    int          iv[4];
+
+    inline bool operator == (const VariantParam& other) const
+    {
+        //check if these are binary equivalent
+        return    iv[0] == other.iv[0]
+               && iv[1] == other.iv[1] 
+               && iv[2] == other.iv[2]
+               && iv[3] == other.iv[3];
+    }
+};
+
+//! Descriptor struct for the editor of a property
+struct EditorDesc
+{
+    PropertyEditor editorType;
+    union Parameters
+    {
+        struct SliderBarParams
+        {
+            VariantParam min;
+            VariantParam max;
+        } slidebar;
+
+    } params;
+
+    inline bool operator == (const EditorDesc& other) const
+    {
+        return editorType == other.editorType   
+               && params.slidebar.min == other.params.slidebar.min
+               && params.slidebar.max == other.params.slidebar.max;
+    }
+};
+
 class BaseEnumType
 {
 public:
@@ -154,6 +203,7 @@ struct PropertyRecord
                                         //!< (has to be a pointer to a global constant, does not store the string)
 	const char * typeName;		        //!< Name of the type of the property
     unsigned char * defaultValuePtr;    //!< Pointer to the default value of the property
+    EditorDesc editorDesc;              //!< Description of the editor this property will use.
 };
 
 

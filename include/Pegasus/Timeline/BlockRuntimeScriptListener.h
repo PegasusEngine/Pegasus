@@ -50,6 +50,15 @@ public:
         RERUN_RENDER   //this means we just call render and refresh the frame.
     };
 
+    enum ExternEditorType
+    {
+        EDITOR_TYPE_DEFAULT,
+        EDITOR_TYPE_CHECKBOX,
+        EDITOR_TYPE_COLOR,
+        EDITOR_TYPE_SLIDER,
+        EDITOR_TYPE_COUNT
+    };
+
     BlockRuntimeScriptListener() 
     : mPropGrid(nullptr)
     , mScript(nullptr) {}

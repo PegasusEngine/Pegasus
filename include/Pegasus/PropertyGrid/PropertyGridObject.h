@@ -534,7 +534,8 @@ public:
     //!             (has to be a pointer to a global constant, does not store the string)
 	//! \param typeName Name of the type of the property
     //! \param defaultValuePtr Pointer to the default value of the property
-    void AddObjectProperty(PropertyType type, int typeSize, const char * name, const char * typeName, const void * defaultValuePtr);
+    //! \param editorDesc descriptor structure of the editor to be used by this property grid object.
+    void AddObjectProperty(PropertyType type, int typeSize, const char * name, const char * typeName, const void * defaultValuePtr, const EditorDesc* editorDesc = nullptr);
 
     //! Add an object property to the instance using a known type
     //! \param name Name of the property, starting with an uppercase letter (non-empty),

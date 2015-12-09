@@ -34,6 +34,7 @@
 #include "Pegasus/Mesh/MeshManager.h"
 #include "Pegasus/Texture/TextureManager.h"
 #include "Pegasus/Window/Window.h"
+#include "Pegasus/Timeline/BlockRuntimeScriptListener.h"
 
 using namespace Pegasus;
 using namespace Pegasus::Timeline;
@@ -189,7 +190,16 @@ static void RegisterRenderEnums(BlockLib* lib)
             Pegasus::Render::PRIMITIVE_COUNT //this includes automatic
         }
     };
-    
+
+    //Sanity checks:
+#if PEGASUS_ENABLE_ASSERT
+    const char* assertstr = "Make sure to register the proper enumeration manually in blockscript.";
+    PG_ASSERTSTR(RasterizerConfig::COUNT_DF == 6, assertstr);
+    PG_ASSERTSTR(RasterizerConfig::COUNT_CM == 3,assertstr);
+    PG_ASSERTSTR(BlendingConfig::COUNT_BO   == 3,assertstr);
+    PG_ASSERTSTR(BlendingConfig::COUNT_M    == 2,assertstr);
+    PG_ASSERTSTR(Pegasus::Render::PRIMITIVE_COUNT == 6,assertstr);
+#endif
     lib->CreateEnumTypes(enumDefs, sizeof(enumDefs)/sizeof(enumDefs[0]));
 
 }
@@ -198,11 +208,26 @@ static void RegisterPropertyGridEnums(BlockLib* lib, Core::IApplicationContext* 
 {
     //Create enums registered in blockscript.
     PropertyGrid::PropertyGridManager* pgm = context->GetPropertyGridManager();
+    const EnumDeclarationDesc editorTypeEnum = {
+        "ExternEditorType",
+        {
+            { "EDITOR_TYPE_DEFAULT", Timeline::BlockRuntimeScriptListener::EDITOR_TYPE_DEFAULT},
+            { "EDITOR_TYPE_CHECKBOX",Timeline::BlockRuntimeScriptListener::EDITOR_TYPE_CHECKBOX},
+            { "EDITOR_TYPE_COLOR",   Timeline::BlockRuntimeScriptListener::EDITOR_TYPE_COLOR},
+            { "EDITOR_TYPE_SLIDER",  Timeline::BlockRuntimeScriptListener::EDITOR_TYPE_SLIDER},
+        },     
+        Timeline::BlockRuntimeScriptListener::EDITOR_TYPE_COUNT
+    };
+    
+    PG_ASSERTSTR(
+          Timeline::BlockRuntimeScriptListener::EDITOR_TYPE_COUNT == 4
+        , "The editor count enumeration must match that one of the registered property grid."
+    );
+
+    Utils::Vector<EnumDeclarationDesc> blockscriptEnumRegistration;
+    blockscriptEnumRegistration.PushEmpty() = editorTypeEnum;
     if (pgm->GetNumRegisteredEnumInfos() > 0)
     {
-
-        Utils::Vector<EnumDeclarationDesc> blockscriptEnumRegistration;
-    
         for (unsigned int i = 0; i < pgm->GetNumRegisteredEnumInfos(); ++i)
         {
             const PropertyGrid::EnumTypeInfo* info = pgm->GetEnumInfo(i);
@@ -226,8 +251,9 @@ static void RegisterPropertyGridEnums(BlockLib* lib, Core::IApplicationContext* 
             desc.count = finalEnumCount;
         }
 
-        lib->CreateEnumTypes(blockscriptEnumRegistration.Data(), blockscriptEnumRegistration.GetSize());
     }
+
+    lib->CreateEnumTypes(blockscriptEnumRegistration.Data(), blockscriptEnumRegistration.GetSize());
 }
 
 static void RegisterRenderStructs(BlockLib* lib)

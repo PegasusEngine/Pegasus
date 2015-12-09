@@ -11,6 +11,7 @@
 
 #include "Pegasus/PropertyGrid/PropertyGridClassInfo.h"
 #include "Pegasus/PropertyGrid/PropertyGridStaticAllocator.h"
+#include "Pegasus/Utils/Memset.h"
 
 namespace Pegasus {
 namespace PropertyGrid {
@@ -102,6 +103,9 @@ void PropertyGridClassInfo::DeclareProperty(PropertyType type, int size, const c
         record.size = size;
         record.name = name;     		// Copy the pointer, not the string, since the input pointer is considered as constant
         record.typeName = typeName;
+        //TODO: force this to be the default editor for now
+        Utils::Memset8(&record.editorDesc.params, 0, sizeof(record.editorDesc.params));
+        record.editorDesc.editorType = EDITOR_DEFAULT;
         record.defaultValuePtr = reinterpret_cast<unsigned char *>(defaultValuePtr);
     }
     else

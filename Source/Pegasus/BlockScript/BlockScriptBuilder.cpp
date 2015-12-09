@@ -815,12 +815,6 @@ Exp*   BlockScriptBuilder::BuildImmFloat4   (float a, float b, float c, float d)
 
 Exp*   BlockScriptBuilder::BuildIdd   (const char * name)
 {
-    //if this is an annotation, just create an idd.
-    if (IsInAnnotation())
-    {
-        return BS_NEW Idd(name);
-    }
-
     //see if this id is actually an enumeration
     const EnumNode* enumNode = nullptr;
     const TypeDesc* enumType = nullptr;
@@ -832,6 +826,11 @@ Exp*   BlockScriptBuilder::BuildIdd   (const char * name)
         Imm* enumVal = BS_NEW Imm(v);
         enumVal->SetTypeDesc(enumType);
         return enumVal;
+    }
+    else if (IsInAnnotation())
+    {
+        //if this is an annotation, just create an idd.
+        return BS_NEW Idd(name);
     }
     else
     {

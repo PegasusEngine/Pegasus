@@ -14,6 +14,7 @@
 #include "Pegasus/AssetLib/ASTree.h"
 #include "Pegasus/Utils/Memcpy.h"
 #include "Pegasus/Utils/String.h"
+#include "Pegasus/Utils/Memset.h"
 #include "Pegasus/Math/Vector.h"
 #include "Pegasus/Math/Color.h"
 
@@ -189,7 +190,7 @@ const PropertyReadAccessor PropertyGridObject::GetClassReadPropertyAccessor(unsi
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridObject::AddObjectProperty(PropertyType type, int typeSize, const char * name, const char * typeName, const void * defaultValuePtr)
+void PropertyGridObject::AddObjectProperty(PropertyType type, int typeSize, const char * name, const char * typeName, const void * defaultValuePtr, const EditorDesc* editorDesc)
 {
     PG_ASSERTSTR(name != nullptr, "Trying to create an object property without name");
     PG_ASSERTSTR(type < NUM_PROPERTY_TYPES, "Trying to create the object property \"%s\" with an invalid type (%i)", name, type);
@@ -197,13 +198,23 @@ void PropertyGridObject::AddObjectProperty(PropertyType type, int typeSize, cons
     PG_ASSERTSTR(typeName != nullptr, "Trying to create the object property \"%s\" without type name", name);
     PG_ASSERTSTR(defaultValuePtr != nullptr, "Trying to create the object property \"%s\" without default value", name);
 
-
     // Create the record of the object property
     ObjectProperty & prop = mObjectProperties.PushEmpty();
     prop.record.category = PROPERTYCATEGORY_OBJECT;
     prop.record.type = type;
     prop.record.size = typeSize;
     prop.record.typeName = typeName;
+
+    if (editorDesc == nullptr)
+    {
+        EditorDesc& defaultEditorDesc = prop.record.editorDesc;
+        defaultEditorDesc.editorType = EDITOR_DEFAULT;
+        Utils::Memset8(&defaultEditorDesc.params, 0, sizeof(defaultEditorDesc.params));
+    }
+    else
+    {
+        prop.record.editorDesc = *editorDesc;
+    }
 
     // Allocate the memory for the default value of the object property then copy the value
     prop.record.defaultValuePtr = PG_NEW_ARRAY(Memory::GetPropertyPointerAllocator(), -1, "ObjectPropertyDefault", Pegasus::Alloc::PG_MEM_PERM, unsigned char, typeSize);
