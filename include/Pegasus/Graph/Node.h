@@ -13,16 +13,16 @@
 #define PEGASUS_GRAPH_NODE_H
 
 #include "Pegasus/Graph/NodeData.h"
+#include "Pegasus/Graph/Proxy/NodeProxy.h"
 #include "Pegasus/PropertyGrid/PropertyGridObject.h"
 #include "Pegasus/Core/Ref.h"
 #include "Pegasus/Core/RefCounted.h"
 
-//forward declarations
 namespace Pegasus {
-namespace AssetLib {
-    class Asset;
-    class Object;
-}
+    namespace AssetLib {
+        class Asset;
+        class Object;
+    }
 }
 
 namespace Pegasus {
@@ -125,6 +125,19 @@ public:
 #endif  // PEGASUS_ENABLE_PROXIES
 
     //------------------------------------------------------------------------------------
+
+#if PEGASUS_ENABLE_PROXIES
+
+    //! Get the proxy associated with the node
+    //! \return Proxy associated with the node
+    //@{
+    inline NodeProxy * GetProxy() { return &mProxy; }
+    inline const NodeProxy * GetProxy() const { return &mProxy; }
+    //@}
+
+#endif  // PEGASUS_ENABLE_PROXIES
+
+    //------------------------------------------------------------------------------------
     
 protected:
 
@@ -211,11 +224,11 @@ protected:
 
 
     //! Called when a node is dumped into an asset
-    //! \param obj - the object to write the contents of this object to.
+    //! \param obj Object to write the content of this object to
     virtual void WriteToObject(AssetLib::Asset* parentAsset, AssetLib::Object* obj) const;
 
     //! Called when a node is read from an object
-    //! \parama obj - the object to read the contents from.
+    //! \param obj Object to read the content from
     virtual bool ReadFromObject(NodeManager* nodeManager, AssetLib::Asset* parentAsset, AssetLib::Object* obj);
 
 #if PEGASUS_ENABLE_PROXIES
@@ -246,6 +259,13 @@ private:
 
     //! Data node, used to store optional intermediate node data
     NodeDataRef mData;
+
+#if PEGASUS_ENABLE_PROXIES
+
+    //! Proxy associated with the node
+    NodeProxy mProxy;
+
+#endif  // PEGASUS_ENABLE_PROXIES
 };
 
 //----------------------------------------------------------------------------------------

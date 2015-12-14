@@ -66,6 +66,8 @@ void TimelineDockWidget::SetupUi()
             this, SLOT(SetCurrentBeat(float)));
     connect(ui.graphicsView, SIGNAL(BlockSelected(Pegasus::Timeline::IBlockProxy*)),
             this, SLOT(OnBlockSelected(Pegasus::Timeline::IBlockProxy*)));
+    connect(ui.graphicsView, SIGNAL(MultiBlocksSelected()),
+            this, SLOT(OnMultiBlocksSelected()));
     connect(ui.graphicsView, SIGNAL(BlocksDeselected()),
             this, SLOT(OnBlocksDeselected()));
 
@@ -77,6 +79,8 @@ void TimelineDockWidget::SetupUi()
             this, SIGNAL(BlockSelected(Pegasus::Timeline::IBlockProxy*)));
     connect(ui.graphicsView, SIGNAL(BlocksDeselected()),
             this, SIGNAL(BlocksDeselected()));
+    connect(ui.graphicsView, SIGNAL(MultiBlocksSelected()),
+            this, SIGNAL(MultiBlocksSelected()));
     connect(ui.graphicsView, SIGNAL(BlockDoubleClicked(Pegasus::Timeline::IBlockProxy*)),
             this, SIGNAL(BlockDoubleClicked(Pegasus::Timeline::IBlockProxy*)));
 }
@@ -371,6 +375,13 @@ void TimelineDockWidget::SetTimeLabel(unsigned int minutes, unsigned int seconds
 void TimelineDockWidget::OnBlockSelected(Pegasus::Timeline::IBlockProxy * blockProxy)
 {
     ui.propertyGridWidget->SetCurrentProxy(blockProxy->GetPropertyGridProxy());
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::OnMultiBlocksSelected()
+{
+    ui.propertyGridWidget->SetCurrentProxy(nullptr);
 }
 
 //----------------------------------------------------------------------------------------

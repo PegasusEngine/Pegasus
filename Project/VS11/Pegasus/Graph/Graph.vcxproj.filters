@@ -9,6 +9,15 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Source\Proxy">
+      <UniqueIdentifier>{0badc925-a42b-4390-9ad3-68f7b927b5f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Proxy">
+      <UniqueIdentifier>{e085d0fe-729c-44ad-b43e-ac37b8a63db1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Shared">
+      <UniqueIdentifier>{a807d161-7811-4ae2-88d5-5a3d4620130f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\Node.h">
@@ -32,6 +41,21 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\NodeGpuData.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\NodeInput.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\Proxy\NodeInputProxy.h">
+      <Filter>Include\Proxy</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\Shared\INodeInputProxy.h">
+      <Filter>Include\Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\Shared\INodeProxy.h">
+      <Filter>Include\Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\Proxy\NodeProxy.h">
+      <Filter>Include\Proxy</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\Node.cpp">
@@ -51,6 +75,15 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\NodeManager.cpp">
       <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\NodeInput.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\Proxy\NodeInputProxy.cpp">
+      <Filter>Source\Proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\Proxy\NodeProxy.cpp">
+      <Filter>Source\Proxy</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -41,6 +41,7 @@ void BlockScriptLibraryDockWidget::SetupUi()
     labels.append("Element");
     labels.append("Desc");
     mView->setHeaderLabels(labels);
+    mView->setSortingEnabled(true);
     setWidget(mView);
 }
 

@@ -1,0 +1,110 @@
+
+struct MeshState{
+	uWorld : float4x4;
+	uProj : float4x4;
+};
+
+struct PixelState {
+	uCameraPos_beat : float4;
+	uCenterPos_unused: float4;
+	uLightPosition : float4;
+	worldCamera : float4;
+	stripThickness_AA_unused : float4;
+};
+
+struct LightingState {
+	LIGHT : float4;
+	LIGHT2 : float4;
+	LIGHT3 : float4;
+}; 
+
+/*extern Light1 = { 2.0, 0.4, -0.5, 1.0 };
+extern Light2 = { -2.0, 0.4, 0.9, 1.0 };
+extern Light3 = { -20.0, 4.4, 10.3, 1.0 };*/
+
+extern Light1 = { 2.0, 0.4, 0.5, 1.0 };
+extern Light2 = { 2.0, 0.4, 0.9, 1.0 };
+extern Light3 = { 20.0, 4.4, 10.3, 1.0 };
+extern StripThickness = 55.0;
+extern StripAA = 5.0;
+
+gMarbleState = MeshState();
+gPixelState = PixelState();
+gLightingState = LightingState();
+
+cullConfig = RasterizerConfig();
+cullConfig.CullMode = CCW_CM;
+cullConfig.DepthFunc = NONE_DF;
+cullState = CreateRasterizerState(cullConfig);
+
+// PROGRAMS //
+marbleProgram = LoadProgram("Programs/BasketBall.pas");
+marbleStateUniform = GetUniformLocation(marbleProgram , "uniformState");
+marblePixelUniform = GetUniformLocation(marbleProgram, "pixelUniformState");
+marbleLightingUniform = GetUniformLocation(marbleProgram, "lightingUniformState");
+
+marbleStateBuffer = CreateUniformBuffer(sizeof(MeshState));
+marblePixelBuffer = CreateUniformBuffer(sizeof(PixelState));
+marbleLightingBuffer = CreateUniformBuffer(sizeof(LightingState));
+//////////////
+
+// MESH //
+sphereMesh = CreateMesh();
+icosphere = CreateMeshGenerator("IcosphereGenerator");
+sphereMesh->SetGeneratorInput(icosphere);
+icosphere.Degree = 5;
+
+//////////////
+
+
+
+
+int Timeline_Update(beat : float)
+{
+	wha = GetWidthHeightAspect();
+	aspect = wha.w;
+	//SETUP CAMERA
+	gPixelState.worldCamera = float4(0.0, 0.0, 0.0, 0.0);
+	gMarbleState.uProj = GetProjection(1.2,aspect,0.01,500.0);
+	sphereCenter = float3(-0.0,0.0,-3.7);
+	//SETUP SPHERE WORLD
+	worldMat = float4x4 (
+		1.0, 0.0, 0.0, sphereCenter.x,
+		0.0, 1.0, 0.0, sphereCenter.y,
+		0.0, 0.0, 1.0, sphereCenter.z,
+		0.0, 0.0, 0.0, 1.0 
+	);
+	rotMat = GetRotation(float3(0,1,0),beat);
+
+	gMarbleState.uWorld = mul(worldMat, rotMat);
+	
+	gPixelState.uCameraPos_beat = float4(float3(0.0,0.0,0.0),beat);
+	gPixelState.uCenterPos_unused = float4(sphereCenter, 1.0);
+	speed = 0.5;
+	gPixelState.uLightPosition = float4(1.0*sin(beat*speed*3.14),1.0*sin(1.0-beat),1.0*cos(beat*speed*3.14),0.0);
+	gPixelState.stripThickness_AA_unused = float4(StripThickness, StripAA, 0.0, 0.0);
+
+	gLightingState.LIGHT = Light1;
+	gLightingState.LIGHT2 = Light2;
+	gLightingState.LIGHT3 = Light3;
+}
+
+
+int Timeline_Render(beat : float)
+{
+	/// RENDER MARBLE
+	SetClearColorValue(float4(0,0,0,1));
+	Clear(1,0,0);
+	SetRasterizerState(cullState);
+	SetProgram(marbleProgram);
+	SetMesh(sphereMesh);
+	SetBuffer(marbleStateBuffer, gMarbleState);
+	SetBuffer(marblePixelBuffer, gPixelState);
+	SetBuffer(marbleLightingBuffer, gLightingState);
+	SetUniformBuffer(marbleStateUniform, marbleStateBuffer);
+	SetUniformBuffer(marblePixelUniform, marblePixelBuffer);
+	SetUniformBuffer(marbleLightingUniform, marbleLightingBuffer);
+	Draw();
+	
+}
+

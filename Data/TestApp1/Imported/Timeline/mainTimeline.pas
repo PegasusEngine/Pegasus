@@ -8,12 +8,17 @@
     lanes : [{
             type : Lane,
             name : "",
+            Blocks : []
+        }, {
+            type : Lane,
+            name : "",
             Blocks : [{
                     type : Block,
                     props : {
                         Beat : 2042,
                         Duration : 2048,
                         script : BlockScripts/test.bs,
+                        Name : "",
                         Color : [128, 0, 56]
                     }
                 }]
@@ -25,6 +30,7 @@
                     props : {
                         Beat : 2030,
                         Duration : 1024,
+                        Name : "",
                         Color : [58, 140, 249]
                     }
                 }]
@@ -36,6 +42,7 @@
                     props : {
                         Beat : 2289,
                         Duration : 2304,
+                        Name : "",
                         Color : [29, 99, 10]
                     }
                 }]
@@ -47,6 +54,7 @@
                     props : {
                         Beat : 0,
                         Duration : 1024,
+                        Name : "",
                         Color : [240, 0, 240]
                     }
                 }]
@@ -59,6 +67,7 @@
                         Beat : 0,
                         Duration : 1024,
                         script : BlockScripts/partydemo.bs,
+                        Name : "",
                         Color : [144, 244, 123]
                     }
                 }, {
@@ -66,7 +75,17 @@
                     props : {
                         Beat : 1024,
                         Duration : 1024,
+                        script : BlockScripts/basketball.bs,
+                        Name : "",
+                        Color : [228, 207, 245]
+                    }
+                }, {
+                    type : Block,
+                    props : {
+                        Beat : 2048,
+                        Duration : 1024,
                         script : BlockScripts/geometrytestblock.bs,
+                        Name : "",
                         Color : [0, 100, 100]
                     }
                 }]
@@ -78,6 +97,7 @@
                     props : {
                         Beat : 4098,
                         Duration : 768,
+                        Name : "",
                         Color : [239, 248, 111]
                     }
                 }]

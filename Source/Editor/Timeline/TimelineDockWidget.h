@@ -95,6 +95,9 @@ signals:
     //! Emitted when a single block is being selected (not multiple selection)
     void BlockSelected(Pegasus::Timeline::IBlockProxy * blockProxy);
 
+    //! Emitted when multiple blocks are being selected (not single selection)
+    void MultiBlocksSelected();
+
     //! Emitted when blocks are deselected (single or multiple selection)
     void BlocksDeselected();
 
@@ -140,6 +143,9 @@ private slots:
 
     //! Called when a single block is being selected (not multiple selection)
     void OnBlockSelected(Pegasus::Timeline::IBlockProxy* blockProxy);
+
+    //! Called when multiple blocks are being selected (not single selection)
+    void OnMultiBlocksSelected();
 
     //! Called when blocks are deselected (single or multiple selection)
     void OnBlocksDeselected();

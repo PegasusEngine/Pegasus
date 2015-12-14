@@ -31,17 +31,25 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\Node.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\NodeData.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\NodeGpuData.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\NodeInput.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\NodeManager.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\OperatorNode.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\OutputNode.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\Proxy\NodeInputProxy.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\Proxy\NodeProxy.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\Shared\INodeInputProxy.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Graph\Shared\INodeProxy.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\GeneratorNode.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\Node.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\NodeData.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\NodeInput.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\NodeManager.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\OperatorNode.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\OutputNode.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\Proxy\NodeInputProxy.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Graph\Proxy\NodeProxy.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{74B6C6B7-A176-4DA4-93B8-77CB715AB388}</ProjectGuid>

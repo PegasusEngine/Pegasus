@@ -31,6 +31,9 @@ Node::Node(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocato
 ,   mNodeAllocator(nodeAllocator)
 ,   mNodeDataAllocator(nodeDataAllocator)
 ,   mNumInputs(0)
+#if PEGASUS_ENABLE_PROXIES
+,   mProxy(this)
+#endif
 {
     BEGIN_INIT_PROPERTIES(Node)
     END_INIT_PROPERTIES()
@@ -300,7 +303,6 @@ void Node::OnRemoveInput(unsigned int index)
 
 //----------------------------------------------------------------------------------------
 
-
 void Node::WriteToObject(AssetLib::Asset* parentAsset, AssetLib::Object* obj) const
 {
     obj->AddString("class", GetClassInstanceName());
@@ -323,8 +325,9 @@ void Node::WriteToObject(AssetLib::Asset* parentAsset, AssetLib::Object* obj) co
         e.o = inputObj;
         inputs->PushElement(e);
     }
-
 }
+
+//----------------------------------------------------------------------------------------
 
 bool Node::ReadFromObject(NodeManager* nodeManager, AssetLib::Asset* parentAsset, AssetLib::Object* obj)
 {
@@ -376,10 +379,8 @@ bool Node::ReadFromObject(NodeManager* nodeManager, AssetLib::Asset* parentAsset
     
         AddInput(inputNode);
     }
-    
 
     return true;
-
 }
 
 

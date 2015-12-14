@@ -16,6 +16,8 @@ namespace Pegasus
 {
 namespace Utils
 {
+    //! \todo Add a Strcpy function
+
     //! Standard unsafe 8bit ascii null terminated string case sensitive comparison function
     int Strcmp(const char * str1, const char * str2);  
 

@@ -538,11 +538,11 @@ bool PropertyGridObject::ReadFromObject(AssetLib::Asset* parentAsset, AssetLib::
                 if (index == -1) continue;
                 const char* str = obj->GetString(index); 
                 int len = Utils::Strlen(str);
-                //! \todo Fix by adding temporary 64 byte buffer
-                PG_FAILSTR("Kleber, get your shit together, bro!");
-                if (len < 63)
+                if (len < 64)
                 {
-                    a.Write(str, len + 1 /*1 for null character*/);
+                    char tempString[64];
+                    Utils::Memcpy(tempString, str, len + 1);
+                    a.Write(str, 64);
                 }
             }
             break;

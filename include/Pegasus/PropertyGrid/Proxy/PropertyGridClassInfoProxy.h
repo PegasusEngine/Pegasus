@@ -32,7 +32,7 @@ class PropertyGridClassInfoProxy : public IPropertyGridClassInfoProxy
 public:
 
     //! Constructor
-    //! \param Class info associated with the proxy (!= nullptr)
+    //! \param classInfo Class info associated with the proxy (!= nullptr)
     PropertyGridClassInfoProxy(const PropertyGridClassInfo * classInfo);
 
     //! Destructor

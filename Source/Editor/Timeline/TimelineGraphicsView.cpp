@@ -220,6 +220,10 @@ void TimelineGraphicsView::SelectionChanged()
         Pegasus::Timeline::IBlockProxy * proxy = item->GetBlockProxy();
         emit BlockSelected(proxy);
     }
+    else
+    {
+        emit MultiBlocksSelected();
+    }
 }
 
 //----------------------------------------------------------------------------------------
