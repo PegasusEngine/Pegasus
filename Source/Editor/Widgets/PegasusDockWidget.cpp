@@ -74,3 +74,7 @@ void PegasusDockWidget::SendPropertyGridIoMessage(const PropertyGridIOMessageCon
     emit(OnSendPropertyGridIoMessage(msg));
 }
 
+void PegasusDockWidget::SendGraphIoMessage(const GraphIOMessageController::Message& msg)
+{
+    emit(OnSendGraphIoMessage(msg));
+}

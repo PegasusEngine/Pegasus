@@ -36,6 +36,11 @@ Texture::Texture(Graph::NodeManager* nodeManager, Alloc::IAllocator* nodeAllocat
 {
     BEGIN_INIT_PROPERTIES(Texture)
     END_INIT_PROPERTIES()
+
+    // Initialize event user data
+    PEGASUS_EVENT_INIT_DISPATCHER
+    //! \todo Do we need user data?
+    //PEGASUS_EVENT_INIT_USER_DATA(GetProxy(), "Texture", GetEventListener());
 }
 
 //----------------------------------------------------------------------------------------
@@ -51,6 +56,11 @@ Texture::Texture(Graph::NodeManager* nodeManager, const TextureConfiguration & c
 {
     BEGIN_INIT_PROPERTIES(Texture)
     END_INIT_PROPERTIES()
+
+    // Initialize event user data
+    PEGASUS_EVENT_INIT_DISPATCHER
+    //! \todo Do we need user data?
+    //PEGASUS_EVENT_INIT_USER_DATA(GetProxy(), "Texture", GetEventListener());
 }
 
 //----------------------------------------------------------------------------------------
@@ -170,6 +180,9 @@ void Texture::ReleaseGPUData()
 
 Texture::~Texture()
 {
+    //! \todo Do we need user data?
+    //PEGASUS_EVENT_DESTROY_USER_DATA(&mProxy, "Texture", GetEventListener());
+
     ReleaseGPUData();
 
 #if PEGASUS_ENABLE_PROXIES

@@ -14,14 +14,19 @@
 #include "MessageControllers/PropertyGridIOMessageController.h"
 #include "Pegasus/PropertyGrid/Shared/IPropertyGridObjectProxy.h"
 
+
 PropertyGridIOMessageController::PropertyGridIOMessageController(Pegasus::App::IApplicationProxy* app)
  : mApp(app), mNextHandle(0)
 {
 }
 
+//----------------------------------------------------------------------------------------
+
 PropertyGridIOMessageController::~PropertyGridIOMessageController()
 {
 }
+
+//----------------------------------------------------------------------------------------
 
 void PropertyGridIOMessageController::OnRenderThreadProcessMessage(const PropertyGridIOMessageController::Message& m)
 {
@@ -40,6 +45,8 @@ void PropertyGridIOMessageController::OnRenderThreadProcessMessage(const Propert
         ED_FAILSTR("Invalid message");
     }
 }
+
+//----------------------------------------------------------------------------------------
 
 void PropertyGridIOMessageController::OnRenderThreadUpdate(PropertyGridObserver* sender, PropertyGridHandle handle, const QVector<PropertyGridIOMessageController::UpdateElement>& elements)
 {
@@ -106,6 +113,8 @@ void PropertyGridIOMessageController::OnRenderThreadUpdate(PropertyGridObserver*
     }
 }
 
+//----------------------------------------------------------------------------------------
+
 void PropertyGridIOMessageController::OnRenderThreadOpen(PropertyGridObserver* sender, Pegasus::PropertyGrid::IPropertyGridObjectProxy* proxy)
 {
     ED_ASSERT(proxy != nullptr);
@@ -140,6 +149,8 @@ void PropertyGridIOMessageController::OnRenderThreadOpen(PropertyGridObserver* s
     UpdateObserverInternal(sender, handle, proxy);
 
 }
+
+//----------------------------------------------------------------------------------------
 
 void PropertyGridIOMessageController::UpdateObserverInternal(PropertyGridObserver* sender, PropertyGridHandle handle, Pegasus::PropertyGrid::IPropertyGridObjectProxy* proxy)
 {
@@ -188,6 +199,9 @@ void PropertyGridIOMessageController::UpdateObserverInternal(PropertyGridObserve
     //send signal to UI so it can update the view
     emit sender->OnUpdatedSignal(handle, updates);
 }
+
+//----------------------------------------------------------------------------------------
+
 void PropertyGridIOMessageController::CloseHandleInternal(PropertyGridHandle handle)
 {
     PropertyGridIOMessageController::HandleToProxyMap::iterator proxyIt = mActiveProperties.find(handle);
@@ -202,6 +216,8 @@ void PropertyGridIOMessageController::CloseHandleInternal(PropertyGridHandle han
     mUpdateCache.erase(cacheIt);
 }
 
+//----------------------------------------------------------------------------------------
+
 void PropertyGridIOMessageController::OnRenderThreadClose(PropertyGridObserver* sender, PropertyGridHandle handle)
 {
     ED_ASSERT(handle != INVALID_PGRID_HANDLE);
@@ -215,6 +231,8 @@ void PropertyGridIOMessageController::OnRenderThreadClose(PropertyGridObserver* 
     }
     
 }
+
+//----------------------------------------------------------------------------------------
 
 void PropertyGridIOMessageController::OnEvent(Pegasus::Core::IEventUserData* userData, Pegasus::PropertyGrid::ValueChangedEventIndexed& e)
 {   
@@ -242,11 +260,15 @@ void PropertyGridIOMessageController::OnEvent(Pegasus::Core::IEventUserData* use
     }
 }
 
+//----------------------------------------------------------------------------------------
+
 void PropertyGridIOMessageController::OnEvent(Pegasus::Core::IEventUserData* userData, Pegasus::PropertyGrid::PropertyGridRenderRequest& e)
 {
     //request a new frame
     emit RequestRedraw();
 }
+
+//----------------------------------------------------------------------------------------
 
 void PropertyGridIOMessageController::FlushPendingUpdates(PropertyUserData* userData)
 {
@@ -262,6 +284,8 @@ void PropertyGridIOMessageController::FlushPendingUpdates(PropertyUserData* user
     }
     cache->mUpdateCache.clear();
 }
+
+//----------------------------------------------------------------------------------------
 
 void PropertyGridIOMessageController::FlushAllPendingUpdates()
 {
@@ -296,6 +320,8 @@ void PropertyGridIOMessageController::FlushAllPendingUpdates()
 
 }
 
+//----------------------------------------------------------------------------------------
+
 void PropertyGridIOMessageController::OnEvent(Pegasus::Core::IEventUserData* userData, Pegasus::PropertyGrid::PropertyGridDestroyed& e)
 {
     PropertyUserData* pUserData = static_cast<PropertyUserData*>(userData);
@@ -322,6 +348,8 @@ void PropertyGridIOMessageController::OnEvent(Pegasus::Core::IEventUserData* use
     }
 }
 
+//----------------------------------------------------------------------------------------
+
 void PropertyGridIOMessageController::OnEvent(Pegasus::Core::IEventUserData* userData, Pegasus::PropertyGrid::ObjectPropertiesLayoutChanged& e)
 {
     //accumulate all the layouts to reset for this particular property grid handle.
@@ -332,15 +360,20 @@ void PropertyGridIOMessageController::OnEvent(Pegasus::Core::IEventUserData* use
     mLayoutsToReset.insert(handle);
 }
 
+//----------------------------------------------------------------------------------------
+
 PropertyGridObserver::PropertyGridObserver()
 {
     connect(this, SIGNAL(OnInitializedSignal(PropertyGridHandle, const Pegasus::PropertyGrid::IPropertyGridObjectProxy*)),
-            this, SLOT(OnInitializedSlot(PropertyGridHandle, const Pegasus::PropertyGrid::IPropertyGridObjectProxy*)), Qt::QueuedConnection);
+            this, SLOT(OnInitializedSlot(PropertyGridHandle, const Pegasus::PropertyGrid::IPropertyGridObjectProxy*)),
+            Qt::QueuedConnection);
 
     connect(this, SIGNAL(OnUpdatedSignal(PropertyGridHandle, QVector<PropertyGridIOMessageController::UpdateElement>)),
-            this, SLOT(OnUpdatedSlot(PropertyGridHandle, QVector<PropertyGridIOMessageController::UpdateElement>)), Qt::QueuedConnection);
+            this, SLOT(OnUpdatedSlot(PropertyGridHandle, QVector<PropertyGridIOMessageController::UpdateElement>)),
+            Qt::QueuedConnection);
 
     connect(this, SIGNAL(OnShutdownSignal(PropertyGridHandle)),
-            this, SLOT(OnShutdownSlot(PropertyGridHandle)), Qt::QueuedConnection);
+            this, SLOT(OnShutdownSlot(PropertyGridHandle)),
+            Qt::QueuedConnection);
 }
 

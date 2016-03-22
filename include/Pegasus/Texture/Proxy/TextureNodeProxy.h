@@ -17,12 +17,6 @@
 #include "Pegasus/Texture/Shared/ITextureNodeProxy.h"
 
 namespace Pegasus {
-    namespace Graph {
-        class Node;
-    }
-}
-
-namespace Pegasus {
 namespace Texture {
 
 class TextureGenerator;
@@ -37,15 +31,15 @@ public:
 
     // Constructor with a texture generator node
     //! \param textureGenerator Proxied texture generator node object, cannot be nullptr
-    TextureNodeProxy(TextureGenerator * textureGenerator);
+    TextureNodeProxy(TextureGenerator* textureGenerator);
 
     // Constructor with a texture operator node
     //! \param textureOperator Proxied texture operator node object, cannot be nullptr
-    TextureNodeProxy(TextureOperator * textureOperator);
+    TextureNodeProxy(TextureOperator* textureOperator);
 
     // Constructor with a texture output node
     //! \param texture Proxied texture output node object, cannot be nullptr
-    TextureNodeProxy(Texture * texture);
+    TextureNodeProxy(Texture* texture);
 
     //! Destructor
     virtual ~TextureNodeProxy();
@@ -95,18 +89,36 @@ public:
     //! \return Proxy of the texture's property grid
     virtual PropertyGrid::IPropertyGridObjectProxy * GetPropertyGridObjectProxy() const override;
  
-    //------------------------------------------------------------------------------------
-
     //! Get the proxy of the decorated object
     virtual IRuntimeAssetObjectProxy* GetDecoratedObject() const;
     
+
+    //! Set the event listener of this texture
+    //! \param listener Event listener
+    virtual void SetEventListener(ITextureNodeEventListener* listener) override;
+
+    //! Set the user data of this event object
+    //! \param userData User data of this texture proxy passed around events
+    virtual void SetUserData(Core::IEventUserData* userData) override;
+
+    //! Get the user data of this event object
+    //! \return user data of this texture proxy passed around events
+    virtual Core::IEventUserData* GetUserData() const override;
+
+    //------------------------------------------------------------------------------------
+
 private:
 
     //! Type of the node (ITextureNodeProxy::NODETYPE_xxx constant)
     const ITextureNodeProxy::NodeType mNodeType;
 
     //! Proxied texture object
-    Graph::Node * mNode;
+    union
+    {
+        TextureGenerator* mTextureGeneratorNode;
+        TextureOperator* mTextureOperatorNode;
+        Texture* mTextureNode;
+    };
 };
 
 

@@ -19,7 +19,7 @@ namespace Texture {
 
 class ITextureNodeProxy;
 class ITextureConfigurationProxy;
-class ITextureEventListener;
+class ITextureNodeEventListener;
 
 
 //! Proxy interface, used by the editor to interact with the textures
@@ -51,7 +51,7 @@ public:
 
     //! Sets the event listener to be used for the texture manager
     //! \param event listener reference
-    virtual void RegisterEventListener(ITextureEventListener * eventListener) = 0;
+    virtual void RegisterEventListener(ITextureNodeEventListener * eventListener) = 0;
 };
 
 

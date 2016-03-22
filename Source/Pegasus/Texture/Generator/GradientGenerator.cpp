@@ -11,7 +11,7 @@
 
 #include "Pegasus/Texture/Generator/GradientGenerator.h"
 #include "Pegasus/Math/Plane.h"
-#include "Pegasus/Texture/Shared/TextureEvent.h"
+#include "Pegasus/Texture/Shared/TextureEventDefs.h"
 
 namespace Pegasus {
 namespace Texture {
@@ -40,7 +40,7 @@ void GradientGenerator::InitProperties()
 
 void GradientGenerator::GenerateData()
 {
-    PEGASUS_EVENT_DISPATCH(this, TextureGenerationEvent, TextureGenerationEvent::BEGIN);
+    PEGASUS_EVENT_DISPATCH(this, TextureNodeGenerationEvent, TextureNodeGenerationEvent::BEGIN);
 
     //! \todo Use a simpler syntax
     Graph::NodeDataRef dataRef = GetData();
@@ -133,7 +133,7 @@ void GradientGenerator::GenerateData()
                 PG_FAILSTR("Unsupported number of bytes per pixel (%d) for GradientGenerator", numBytesPerPixel);
         }
     }
-    PEGASUS_EVENT_DISPATCH(this, TextureGenerationEvent, TextureGenerationEvent::END_SUCCESS);
+    PEGASUS_EVENT_DISPATCH(this, TextureNodeGenerationEvent, TextureNodeGenerationEvent::END_SUCCESS);
 }
 
 

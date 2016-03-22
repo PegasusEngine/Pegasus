@@ -23,9 +23,9 @@ namespace Pegasus {
 namespace Texture {
 
 
-TextureNodeProxy::TextureNodeProxy(TextureGenerator * textureGenerator)
+TextureNodeProxy::TextureNodeProxy(TextureGenerator* textureGenerator)
 :   mNodeType(NODETYPE_GENERATOR)
-,   mNode(textureGenerator)
+,   mTextureGeneratorNode(textureGenerator)
 {
     PG_ASSERTSTR(textureGenerator != nullptr, "Trying to create a texture node proxy from an invalid texture generator object");
 }
@@ -34,7 +34,7 @@ TextureNodeProxy::TextureNodeProxy(TextureGenerator * textureGenerator)
 
 TextureNodeProxy::TextureNodeProxy(TextureOperator * textureOperator)
 :   mNodeType(NODETYPE_OPERATOR)
-,   mNode(textureOperator)
+,   mTextureOperatorNode(textureOperator)
 {
     PG_ASSERTSTR(textureOperator != nullptr, "Trying to create a texture node proxy from an invalid texture operator object");
 }
@@ -43,7 +43,7 @@ TextureNodeProxy::TextureNodeProxy(TextureOperator * textureOperator)
 
 TextureNodeProxy::TextureNodeProxy(Texture * texture)
 :   mNodeType(NODETYPE_OUTPUT)
-,   mNode(texture)
+,   mTextureNode(texture)
 {
     PG_ASSERTSTR(texture != nullptr, "Trying to create a texture node proxy from an invalid texture object");
 }
@@ -56,57 +56,118 @@ TextureNodeProxy::~TextureNodeProxy()
 
 //----------------------------------------------------------------------------------------
 
-TextureGenerator * TextureNodeProxy::GetTextureGenerator() const
+TextureGenerator* TextureNodeProxy::GetTextureGenerator() const
 {
     PG_ASSERTSTR(mNodeType == NODETYPE_GENERATOR, "Trying to get a texture node of the wrong type");
-    return static_cast<TextureGenerator *>(mNode);
+    return mTextureGeneratorNode;
 }
 
 //----------------------------------------------------------------------------------------
 
-TextureOperator * TextureNodeProxy::GetTextureOperator() const
+TextureOperator* TextureNodeProxy::GetTextureOperator() const
 {
     PG_ASSERTSTR(mNodeType == NODETYPE_OPERATOR, "Trying to get a texture node of the wrong type");
-    return static_cast<TextureOperator *>(mNode);
+    return mTextureOperatorNode;
 }
 
 //----------------------------------------------------------------------------------------
 
-Texture * TextureNodeProxy::GetTexture() const
+Texture* TextureNodeProxy::GetTexture() const
 {
     PG_ASSERTSTR(mNodeType == NODETYPE_OUTPUT, "Trying to get a texture node of the wrong type");
-    return static_cast<Texture *>(mNode);
+    return mTextureNode;
 }
 
 //----------------------------------------------------------------------------------------
 
-const char * TextureNodeProxy::GetName() const
+const char* TextureNodeProxy::GetName() const
 {
-    return mNode->GetName();
+    switch (mNodeType)
+    {
+        case NODETYPE_GENERATOR:
+            return mTextureGeneratorNode->GetName();
+
+        case NODETYPE_OPERATOR:
+            return mTextureOperatorNode->GetName();
+
+        case NODETYPE_OUTPUT:
+            return mTextureNode->GetName();
+
+        default:
+            PG_FAILSTR("Trying to get the name of an unknown texture node type");
+            return nullptr;
+    }
 }
 
 //----------------------------------------------------------------------------------------
 
-const ITextureConfigurationProxy * TextureNodeProxy::GetConfiguration() const
+const ITextureConfigurationProxy* TextureNodeProxy::GetConfiguration() const
 {
-    PG_ASSERTSTR(mNodeType == NODETYPE_OUTPUT, "Trying to get the configuration of a non-output texture node");
-    return static_cast<Texture *>(mNode)->GetConfiguration().GetProxy();
+    if (mNodeType == NODETYPE_OUTPUT)
+    {
+        return mTextureNode->GetConfiguration().GetProxy();
+    }
+    else
+    {
+        PG_FAILSTR("Trying to get the configuration of a non-output texture node");
+        return nullptr;
+    }
 }
 
 //----------------------------------------------------------------------------------------
 
 unsigned int TextureNodeProxy::GetNumInputs() const
 {
-    return mNode->GetNumInputs();
+    switch (mNodeType)
+    {
+        case NODETYPE_GENERATOR:
+            PG_ASSERTSTR(mTextureGeneratorNode->GetNumInputs() == 0, "A texture generator node is supposed to have no input");
+            return mTextureGeneratorNode->GetNumInputs();
+
+        case NODETYPE_OPERATOR:
+            return mTextureOperatorNode->GetNumInputs();
+
+        case NODETYPE_OUTPUT:
+            PG_ASSERTSTR(mTextureGeneratorNode->GetNumInputs() <= 1, "A texture output node is supposed to have at most one input");
+            return mTextureNode->GetNumInputs();
+
+        default:
+            PG_FAILSTR("Trying to get the number of inputs of an unknown texture node type");
+            return 0;
+    }
 }
 
 //----------------------------------------------------------------------------------------
 
-ITextureNodeProxy * TextureNodeProxy::GetInputNode(unsigned int index)
+ITextureNodeProxy* TextureNodeProxy::GetInputNode(unsigned int index)
 {
-    if (mNode->IsInputIndexValid(index))
+    Graph::NodeRef inputNode;
+    switch (mNodeType)
     {
-        Graph::NodeRef inputNode = mNode->GetInput(index);
+        case NODETYPE_GENERATOR:
+            PG_FAILSTR("Trying to retrieve an input from a texture generator node, but it cannot have inputs");
+            break;
+
+        case NODETYPE_OPERATOR:
+            if (mTextureOperatorNode->IsInputIndexValid(index))
+            {
+                inputNode = mTextureOperatorNode->GetInput(index);
+            }
+            break;
+
+        case NODETYPE_OUTPUT:
+            if (mTextureNode->IsInputIndexValid(index))
+            {
+                inputNode = mTextureNode->GetInput(index);
+            }
+            break;
+
+        default:
+            PG_FAILSTR("Trying to get an input of an unknown texture node type");
+    }
+
+    if (inputNode != nullptr)
+    {
         switch (inputNode->GetNodeType())
         {
             case Graph::Node::NODETYPE_GENERATOR:
@@ -126,25 +187,112 @@ ITextureNodeProxy * TextureNodeProxy::GetInputNode(unsigned int index)
     }
     else
     {
-        PG_FAILSTR("Invalid input index (%d) to access a node, it must be < %d", index, mNode->GetNumInputs());
+        PG_FAILSTR("Invalid input index (%d) to access a node, it must be < %d", index, GetNumInputs());
         return nullptr;
     }
 }
 
+//----------------------------------------------------------------------------------------
 
-
-PropertyGrid::IPropertyGridObjectProxy * TextureNodeProxy::GetPropertyGridObjectProxy() const
+PropertyGrid::IPropertyGridObjectProxy* TextureNodeProxy::GetPropertyGridObjectProxy() const
 {
-    return mNode->GetPropertyGridProxy();
+    switch (mNodeType)
+    {
+        case NODETYPE_GENERATOR:
+            return mTextureGeneratorNode->GetPropertyGridProxy();
+
+        case NODETYPE_OPERATOR:
+            return mTextureOperatorNode->GetPropertyGridProxy();
+
+        case NODETYPE_OUTPUT:
+            return mTextureNode->GetPropertyGridProxy();
+
+        default:
+            PG_FAILSTR("Trying to get the property grid object of an unknown texture node type");
+            return nullptr;
+    }
 }
+
+//----------------------------------------------------------------------------------------
 
 AssetLib::IRuntimeAssetObjectProxy* TextureNodeProxy::GetDecoratedObject() const
 {
-    if (mNode->GetNodeType() == Graph::Node::NODETYPE_OUTPUT)
+    if (mNodeType == NODETYPE_OUTPUT)
     {
-        return static_cast<Graph::OutputNode*>(mNode)->GetRuntimeAssetObjectProxy();
+        return mTextureNode->GetRuntimeAssetObjectProxy();
     }
-    return nullptr;
+    else
+    {
+        PG_FAILSTR("Trying to get the decorated object of a non-output texture node");
+        return nullptr;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TextureNodeProxy::SetEventListener(ITextureNodeEventListener* listener)
+{
+    switch (mNodeType)
+    {
+        case NODETYPE_GENERATOR:
+            mTextureGeneratorNode->SetEventListener(listener);
+            break;
+
+        case NODETYPE_OPERATOR:
+            mTextureOperatorNode->SetEventListener(listener);
+            break;
+
+        case NODETYPE_OUTPUT:
+            mTextureNode->SetEventListener(listener);
+            break;
+
+        default:
+            PG_FAILSTR("Trying to set the event listener of an unknown texture node type");
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TextureNodeProxy::SetUserData(Core::IEventUserData* userData)
+{
+    switch (mNodeType)
+    {
+        case NODETYPE_GENERATOR:
+            mTextureGeneratorNode->SetEventUserData(userData);
+            break;
+
+        case NODETYPE_OPERATOR:
+            mTextureOperatorNode->SetEventUserData(userData);
+            break;
+
+        case NODETYPE_OUTPUT:
+            mTextureNode->SetEventUserData(userData);
+            break;
+
+        default:
+            PG_FAILSTR("Trying to set the event user data of an unknown texture node type");
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+Core::IEventUserData* TextureNodeProxy::GetUserData() const
+{
+    switch (mNodeType)
+    {
+        case NODETYPE_GENERATOR:
+            return mTextureGeneratorNode->GetEventUserData();
+
+        case NODETYPE_OPERATOR:
+            return mTextureOperatorNode->GetEventUserData();
+
+        case NODETYPE_OUTPUT:
+            return mTextureNode->GetEventUserData();
+
+        default:
+            PG_FAILSTR("Trying to get the event user data of an unknown texture node type");
+            return nullptr;
+    }
 }
 
 

@@ -45,7 +45,7 @@ namespace Pegasus {
     namespace Texture {
         class ITextureManagerProxy;
 #if PEGASUS_USE_EVENTS
-        class ITextureEventListener;
+        class ITextureNodeEventListener;
 #endif
     }
 

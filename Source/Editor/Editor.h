@@ -135,7 +135,7 @@ public:
     inline ProgramEditorWidget * GetProgramEditorWidget() const { return mProgramEditorWidget; }
 
     //! Gets the list of widgets for this editor
-    inline const QVector<PegasusDockWidget*>& GetWidgets() const { return mWidgets; }
+    inline const QVector<PegasusDockWidget*>& GetDockWidgets() const { return mDockWidgets; }
 
     //! Gets the list of viewport widgets for this editor
     inline const QVector<ViewportWidget*>& GetViewportWidgets() const { return mViewportWidgets; }
@@ -393,7 +393,7 @@ private:
     QSet<Pegasus::AssetLib::IRuntimeAssetObjectProxy*> mDirtyAssets;
 
     //! Master list of widgets
-    QVector<PegasusDockWidget*> mWidgets;
+    QVector<PegasusDockWidget*> mDockWidgets;
 
     //! List of viewport widgets
     QVector<ViewportWidget*> mViewportWidgets;

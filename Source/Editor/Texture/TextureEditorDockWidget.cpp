@@ -101,7 +101,7 @@ void TextureEditorDockWidget::OpenTabForTexture(Pegasus::Texture::ITextureNodePr
     ED_LOG("Opening tab for texture \"%s\" in the texture editor", textureName)
 
     // Create a graph editor view associated with the texture
-    TextureGraphEditorGraphicsView * graphicsView = new TextureGraphEditorGraphicsView(textureProxy);
+    TextureGraphEditorGraphicsView * graphicsView = new TextureGraphEditorGraphicsView(textureProxy, this);
 
     // Create a subwindow (tab) and associate the graph editor graphics view with it
     QMdiSubWindow * subWindow = ui.mdiArea->addSubWindow(graphicsView);
@@ -118,35 +118,6 @@ void TextureEditorDockWidget::OpenTabForTexture(Pegasus::Texture::ITextureNodePr
 void TextureEditorDockWidget::TabSelected(QMdiSubWindow * subWindow)
 {
     UpdateTextureProperties(subWindow);
-}
-
-//----------------------------------------------------------------------------------------
-
-void TextureEditorDockWidget::UpdateTextureProperties(QMdiSubWindow * subWindow)
-{
-    if (subWindow != nullptr)
-    {
-        const TextureGraphEditorGraphicsView * graphicsView = static_cast<TextureGraphEditorGraphicsView *>(subWindow->widget());
-        ED_ASSERTSTR(graphicsView != nullptr, "Trying to update the texture properties with an invalid current graphics view");
-        const Pegasus::Texture::ITextureNodeProxy * textureProxy = graphicsView->GetTextureProxy();
-        ED_ASSERTSTR(textureProxy != nullptr, "Trying to update the texture properties with an invalid current texture");
-        const Pegasus::Texture::ITextureConfigurationProxy * textureConfigurationProxy = textureProxy->GetConfiguration();
-        ED_ASSERTSTR(textureConfigurationProxy != nullptr, "Trying to update the texture properties with an invalid current texture configuration");
-    
-        ui.resolutionValueLabel->setText(QString("%1 x %2 x %3").arg(textureConfigurationProxy->GetWidth())
-                                                                .arg(textureConfigurationProxy->GetHeight())
-                                                                .arg(textureConfigurationProxy->GetDepth()));
-        ui.layersValueLabel->setText(QString("%1").arg(textureConfigurationProxy->GetNumLayers()));
-
-        // Set the property grid widget to the property grid proxy of the texture
-        ui.propertyGridWidget->SetCurrentProxy(textureProxy->GetPropertyGridObjectProxy());
-    }
-    else
-    {
-        ui.resolutionValueLabel->setText(QString());
-        ui.layersValueLabel->setText(QString());
-        ui.propertyGridWidget->SetCurrentProxy(nullptr);
-    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -177,4 +148,35 @@ void TextureEditorDockWidget::OnUIForAppClosed()
 {
     mViewportWidget->OnAppUnloaded();
     ui.propertyGridWidget->SetApplicationProxy(nullptr);
+}
+
+//----------------------------------------------------------------------------------------
+
+void TextureEditorDockWidget::UpdateTextureProperties(QMdiSubWindow * subWindow)
+{
+    if (subWindow != nullptr)
+    {
+        //! \todo NOT THREAD-SAFE, use messages to get the configuration
+
+        const TextureGraphEditorGraphicsView * graphicsView = static_cast<TextureGraphEditorGraphicsView *>(subWindow->widget());
+        ED_ASSERTSTR(graphicsView != nullptr, "Trying to update the texture properties with an invalid current graphics view");
+        const Pegasus::Texture::ITextureNodeProxy * textureProxy = graphicsView->GetTextureProxy();
+        ED_ASSERTSTR(textureProxy != nullptr, "Trying to update the texture properties with an invalid current texture");
+        const Pegasus::Texture::ITextureConfigurationProxy * textureConfigurationProxy = textureProxy->GetConfiguration();
+        ED_ASSERTSTR(textureConfigurationProxy != nullptr, "Trying to update the texture properties with an invalid current texture configuration");
+    
+        ui.resolutionValueLabel->setText(QString("%1 x %2 x %3").arg(textureConfigurationProxy->GetWidth())
+                                                                .arg(textureConfigurationProxy->GetHeight())
+                                                                .arg(textureConfigurationProxy->GetDepth()));
+        ui.layersValueLabel->setText(QString("%1").arg(textureConfigurationProxy->GetNumLayers()));
+
+        // Set the property grid widget to the property grid proxy of the texture
+        ui.propertyGridWidget->SetCurrentProxy(textureProxy->GetPropertyGridObjectProxy());
+    }
+    else
+    {
+        ui.resolutionValueLabel->setText(QString());
+        ui.layersValueLabel->setText(QString());
+        ui.propertyGridWidget->SetCurrentProxy(nullptr);
+    }
 }

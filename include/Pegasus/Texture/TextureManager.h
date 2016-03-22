@@ -35,7 +35,7 @@ namespace Texture {
 class ITextureFactory;
 
 #if PEGASUS_USE_EVENTS
-class ITextureEventListener;
+class ITextureNodeEventListener;
 #endif
 
 
@@ -98,7 +98,7 @@ public:
 
     //! Registers an event listener so we can listen to texture specific events whilst constructing nodes.
     //! \param the event listener to use
-    void RegisterEventListener(ITextureEventListener * eventListener) { mEventListener = eventListener; }
+    void RegisterEventListener(ITextureNodeEventListener * eventListener) { mEventListener = eventListener; }
 
 #endif  // PEGASUS_USE_EVENTS
 
@@ -141,7 +141,7 @@ private:
 #endif  // PEGASUS_ENABLE_PROXIES
 
 #if PEGASUS_USE_EVENTS
-    ITextureEventListener * mEventListener;
+    ITextureNodeEventListener * mEventListener;
 #endif
 };
 

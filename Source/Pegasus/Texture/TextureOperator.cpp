@@ -32,6 +32,8 @@ TextureOperator::TextureOperator(Alloc::IAllocator* nodeAllocator, Alloc::IAlloc
 
     // Initialize event user data
     PEGASUS_EVENT_INIT_DISPATCHER
+    //! \todo Do we need user data?
+    //PEGASUS_EVENT_INIT_USER_DATA(GetProxy(), "TextureOperator", GetEventListener());
 }
 
 //----------------------------------------------------------------------------------------
@@ -49,6 +51,8 @@ TextureOperator::TextureOperator(const TextureConfiguration & configuration,
 
     // Initialize event user data
     PEGASUS_EVENT_INIT_DISPATCHER
+    //! \todo Do we need user data?
+    //PEGASUS_EVENT_INIT_USER_DATA(GetProxy(), "TextureOperator", GetEventListener());
 }
 
 //----------------------------------------------------------------------------------------
@@ -63,9 +67,9 @@ void TextureOperator::SetConfiguration(const TextureConfiguration & configuratio
     {
         PEGASUS_EVENT_DISPATCH (
             this,
-            TextureNotificationEvent,
+            TextureNodeNotificationEvent,
             //event specific arguments
-            TextureNotificationEvent::CONFIGURATION_ERROR,
+            TextureNodeNotificationEvent::CONFIGURATION_ERROR,
             "Cannot set the configuration of a texture operator because the node is already in use"
         );
     }
@@ -84,9 +88,9 @@ void TextureOperator::AddGeneratorInput(TextureGeneratorIn textureGenerator)
     {
         PEGASUS_EVENT_DISPATCH (
             this,
-            TextureNotificationEvent,
+            TextureNodeNotificationEvent,
             //event specific arguments
-            TextureNotificationEvent::INCOMPATIBILITY_WARNING,
+            TextureNodeNotificationEvent::INCOMPATIBILITY_WARNING,
             "Unable to add a generator input to a TextureOperator node since their configurations are incompatible"
         );
     }
@@ -105,9 +109,9 @@ void TextureOperator::AddOperatorInput(const Pegasus::Core::Ref<TextureOperator>
     {
         PEGASUS_EVENT_DISPATCH (
             this,
-            TextureNotificationEvent,
+            TextureNodeNotificationEvent,
             //event specific arguments
-            TextureNotificationEvent::INCOMPATIBILITY_WARNING,
+            TextureNodeNotificationEvent::INCOMPATIBILITY_WARNING,
             "Unable to add an operator input to a TextureOperator node since their configurations are incompatible"
         );
     }
@@ -126,9 +130,9 @@ void TextureOperator::ReplaceInputByGenerator(unsigned int index, TextureGenerat
     {
         PEGASUS_EVENT_DISPATCH (
             this,
-            TextureNotificationEvent,
+            TextureNodeNotificationEvent,
             //event specific arguments
-            TextureNotificationEvent::INCOMPATIBILITY_WARNING,
+            TextureNodeNotificationEvent::INCOMPATIBILITY_WARNING,
             "Unable to replace an input of a TextureOperator node since the new configuration is incompatible with the current one"
         );
     }
@@ -147,9 +151,9 @@ void TextureOperator::ReplaceInputByOperator(unsigned int index, const Pegasus::
     {
         PEGASUS_EVENT_DISPATCH (
             this,
-            TextureNotificationEvent,
+            TextureNodeNotificationEvent,
             //event specific arguments
-            TextureNotificationEvent::INCOMPATIBILITY_WARNING,
+            TextureNodeNotificationEvent::INCOMPATIBILITY_WARNING,
             "Unable to replace an input of a TextureOperator node since the new configuration is incompatible with the current one"
         );
     }
@@ -159,6 +163,8 @@ void TextureOperator::ReplaceInputByOperator(unsigned int index, const Pegasus::
 
 TextureOperator::~TextureOperator()
 {
+    //! \todo Do we need user data?
+    //PEGASUS_EVENT_DESTROY_USER_DATA(&mProxy, "TextureOperator", GetEventListener());
 }
 
 //----------------------------------------------------------------------------------------

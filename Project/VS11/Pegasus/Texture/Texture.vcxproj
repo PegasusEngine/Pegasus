@@ -39,7 +39,7 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\ITextureConfigurationProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\ITextureManagerProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\ITextureNodeProxy.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\TextureEvent.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\TextureEventDefs.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Texture.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureConfiguration.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\TextureData.h" />

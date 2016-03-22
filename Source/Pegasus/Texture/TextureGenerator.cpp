@@ -32,6 +32,8 @@ TextureGenerator::TextureGenerator(Alloc::IAllocator* nodeAllocator, Alloc::IAll
 
     // Initialize event user data
     PEGASUS_EVENT_INIT_DISPATCHER
+    //! \todo Do we need user data?
+    //PEGASUS_EVENT_INIT_USER_DATA(GetProxy(), "TextureGenerator", GetEventListener());
 }
 
 //----------------------------------------------------------------------------------------
@@ -49,6 +51,8 @@ TextureGenerator::TextureGenerator(const TextureConfiguration & configuration,
 
     // Initialize event user data
     PEGASUS_EVENT_INIT_DISPATCHER
+    //! \todo Do we need user data?
+    //PEGASUS_EVENT_INIT_USER_DATA(GetProxy(), "TextureGenerator", GetEventListener());
 }
 
 //----------------------------------------------------------------------------------------
@@ -63,9 +67,9 @@ void TextureGenerator::SetConfiguration(const TextureConfiguration & configurati
     {
         PEGASUS_EVENT_DISPATCH (
             this,
-            TextureNotificationEvent,
+            TextureNodeNotificationEvent,
             //event specific arguments
-            TextureNotificationEvent::CONFIGURATION_ERROR,
+            TextureNodeNotificationEvent::CONFIGURATION_ERROR,
             "Cannot set the configuration of a texture generator because the node is already in use"
         );
     }
@@ -75,6 +79,8 @@ void TextureGenerator::SetConfiguration(const TextureConfiguration & configurati
     
 TextureGenerator::~TextureGenerator()
 {
+    //! \todo Do we need user data?
+    //PEGASUS_EVENT_DESTROY_USER_DATA(&mProxy, "TextureGenerator", GetEventListener());
 }
 
 //----------------------------------------------------------------------------------------

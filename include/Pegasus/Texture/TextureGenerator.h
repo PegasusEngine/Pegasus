@@ -13,7 +13,7 @@
 #define PEGASUS_TEXTURE_TEXTUREGENERATOR_H
 
 #include "Pegasus/Graph/GeneratorNode.h"
-#include "Pegasus/Texture/Shared/TextureEvent.h"
+#include "Pegasus/Texture/Shared/TextureEventDefs.h"
 #include "Pegasus/Texture/TextureConfiguration.h"
 #include "Pegasus/Texture/TextureData.h"
 #include "Pegasus/Texture/TextureDeclaration.h"
@@ -32,7 +32,7 @@ class TextureGenerator : public Graph::GeneratorNode
     END_DECLARE_PROPERTIES()
         
     // Generating code to allow texture handle macros
-    PEGASUS_EVENT_DECLARE_DISPATCHER(ITextureEventListener);
+    PEGASUS_EVENT_DECLARE_DISPATCHER(ITextureNodeEventListener);
 
 public:
 

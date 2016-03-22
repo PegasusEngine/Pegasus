@@ -31,7 +31,7 @@
 
 #if PEGASUS_USE_EVENTS
 #include "Pegasus/Mesh/Shared/MeshEvent.h"
-#include "Pegasus/Texture/Shared/TextureEvent.h"
+#include "Pegasus/Texture/Shared/TextureEventDefs.h"
 #endif
 
 namespace Pegasus {

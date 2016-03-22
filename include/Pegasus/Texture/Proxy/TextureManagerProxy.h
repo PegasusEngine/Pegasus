@@ -22,7 +22,7 @@ namespace Pegasus {
 namespace Texture {
 
 class TextureManager;
-class ITextureEventListener;
+class ITextureNodeEventListener;
 
 
 //! Proxy object, used by the editor to interact with the textures
@@ -62,7 +62,7 @@ public:
 
     //! Sets the event listener to be used for the texture manager
     //! \param event listener reference
-    virtual void RegisterEventListener(ITextureEventListener * eventListener);
+    virtual void RegisterEventListener(ITextureNodeEventListener * eventListener);
 
     //------------------------------------------------------------------------------------
     

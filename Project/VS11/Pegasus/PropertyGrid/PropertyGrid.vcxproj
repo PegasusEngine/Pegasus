@@ -42,6 +42,7 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\Shared\IPropertyGridManagerProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\Shared\IPropertyGridObjectProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\Shared\PropertyDefs.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\Shared\PropertyEventDefs.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\PropertyGrid\PropertyGridClassInfo.cpp" />

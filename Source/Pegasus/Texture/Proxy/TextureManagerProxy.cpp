@@ -82,7 +82,7 @@ ITextureNodeProxy * TextureManagerProxy::CreateGeneratorNode(const char * classN
 
 //----------------------------------------------------------------------------------------
 
-void TextureManagerProxy::RegisterEventListener(ITextureEventListener * eventListener)
+void TextureManagerProxy::RegisterEventListener(ITextureNodeEventListener * eventListener)
 {
     mTextureManager->RegisterEventListener(eventListener);
 }

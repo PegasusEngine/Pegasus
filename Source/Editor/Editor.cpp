@@ -130,7 +130,7 @@ Editor::~Editor()
 void Editor::RegisterWidget(PegasusDockWidget* widget, Qt::DockWidgetArea area)
 {
     widget->Initialize();
-    mWidgets.push_back(widget);
+    mDockWidgets.push_back(widget);
 
     addDockWidget(area, widget);
 
@@ -191,11 +191,11 @@ void Editor::CloseSplashScreen()
 
 void Editor::SaveCurrentAsset()
 {
-    for (int i = 0 ; i < mWidgets.size(); ++i)
+    for (int i = 0 ; i < mDockWidgets.size(); ++i)
     {
-        if (mWidgets[i]->HasFocus())
+        if (mDockWidgets[i]->HasFocus())
         {
-            mWidgets[i]->OnSaveFocusedObject();
+            mDockWidgets[i]->OnSaveFocusedObject();
             break;
         }
     }

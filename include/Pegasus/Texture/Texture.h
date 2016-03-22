@@ -44,6 +44,8 @@ class Texture : public Graph::OutputNode
     BEGIN_DECLARE_PROPERTIES(Texture, OutputNode)
     END_DECLARE_PROPERTIES()
 
+    PEGASUS_EVENT_DECLARE_DISPATCHER(ITextureNodeEventListener)
+
 public:
 
     //! Default constructor, uses the default texture configuration

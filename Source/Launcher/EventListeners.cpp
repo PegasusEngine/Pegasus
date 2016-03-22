@@ -40,17 +40,17 @@ namespace Launcher
         Assert(e.GetEventType() == CompilerEvents::LinkingEvent::LINKING_SUCCESS, e.GetLog());
     }
 
-    void LauncherTextureListener::OnEvent(Core::IEventUserData * u, Texture::TextureNotificationEvent& e)
+    void LauncherTextureNodeListener::OnEvent(Core::IEventUserData * u, Texture::TextureNodeNotificationEvent& e)
     {
         Assert(false, e.GetMessage());
     }
 
-    void LauncherTextureListener::OnEvent(Core::IEventUserData * u, Texture::TextureGenerationEvent&   e)
+    void LauncherTextureNodeListener::OnEvent(Core::IEventUserData * u, Texture::TextureNodeGenerationEvent& e)
     {
         //ignore generation notifications
     }
 
-    void LauncherTextureListener::OnEvent(Core::IEventUserData * u, Texture::TextureOperationEvent&    e)
+    void LauncherTextureNodeListener::OnEvent(Core::IEventUserData * u, Texture::TextureNodeOperationEvent& e)
     {
         //ignore operation notifications
     }

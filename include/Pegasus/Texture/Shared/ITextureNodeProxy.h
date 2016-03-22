@@ -13,6 +13,7 @@
 #define PEGASUS_TEXTURE_SHARED_ITEXTURENODEPROXY_H
 
 #include "Pegasus/AssetLib/Shared/IRuntimeAssetObjectProxy.h"
+#include "Pegasus/Texture/Shared/TextureEventDefs.h"
 
 #if PEGASUS_ENABLE_PROXIES
 
@@ -75,6 +76,19 @@ public:
     //! Get the proxy of the texture's property grid
     //! \return Proxy of the texture's property grid
     virtual PropertyGrid::IPropertyGridObjectProxy * GetPropertyGridObjectProxy() const = 0;
+
+
+    //! Set the event listener of this texture
+    //! \param listener Event listener
+    virtual void SetEventListener(ITextureNodeEventListener* listener) = 0;
+
+    //! Set the user data of this event object
+    //! \param userData User data of this texture proxy passed around events
+    virtual void SetUserData(Core::IEventUserData* userData) = 0;
+
+    //! Get the user data of this event object
+    //! \return user data of this texture proxy passed around events
+    virtual Core::IEventUserData* GetUserData() const = 0;
 };
 
 

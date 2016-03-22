@@ -70,7 +70,7 @@ void PixelsGenerator::InitProperties()
 void PixelsGenerator::GenerateData()
 {
     //! \todo Could it be placed in the caller instead?
-    PEGASUS_EVENT_DISPATCH(this, TextureGenerationEvent, TextureGenerationEvent::BEGIN);
+    PEGASUS_EVENT_DISPATCH(this, TextureNodeGenerationEvent, TextureNodeGenerationEvent::BEGIN);
 
     //! \todo Use a simpler syntax
     Graph::NodeDataRef dataRef = GetData();
@@ -121,7 +121,7 @@ void PixelsGenerator::GenerateData()
         }
     }
 
-    PEGASUS_EVENT_DISPATCH(this, TextureGenerationEvent, TextureGenerationEvent::END_SUCCESS);
+    PEGASUS_EVENT_DISPATCH(this, TextureNodeGenerationEvent, TextureNodeGenerationEvent::END_SUCCESS);
 }
 
 

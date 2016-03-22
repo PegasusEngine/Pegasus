@@ -157,15 +157,20 @@ void PropertyGridObjectProxy::SetEventListener(IPropertyListener* listener)
     mObject->SetEventListener(listener);
 }
 
+//----------------------------------------------------------------------------------------
+
 void PropertyGridObjectProxy::SetUserData(Pegasus::Core::IEventUserData* userData)
 {
     mObject->SetEventUserData(userData);
 }
 
+//----------------------------------------------------------------------------------------
+
 Pegasus::Core::IEventUserData* PropertyGridObjectProxy::GetUserData() const
 {
     return mObject->GetEventUserData();
 }
+
 
 }   // namespace PropertyGrid
 }   // namespace Pegasus

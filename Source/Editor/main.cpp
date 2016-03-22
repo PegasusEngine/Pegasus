@@ -25,11 +25,13 @@
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 #include "Pegasus/PropertyGrid/Shared/IPropertyGridClassInfoProxy.h"
+#include "Pegasus/Texture/Shared/ITextureNodeProxy.h"
 #include "CodeEditor/SourceCodeManagerEventListener.h"
 #include "MessageControllers/AssetIOMessageController.h"
 #include "MessageControllers/SourceIOMessageController.h"
 #include "MessageControllers/WindowIOMessageController.h"
 #include "MessageControllers/PropertyGridIOMessageController.h"
+#include "MessageControllers/GraphIOMessageController.h"
 #include "Widgets/PegasusDockWidget.h"
 
 //! Name of the organization creating the software
@@ -41,55 +43,85 @@
 //! Name of the application
 #define EDITOR_APPLICATION_NAME					"Pegasus Editor"
 
-//----------------------------------------------------------------------------------------
+
 //------------------- Public meta type declarations --------------------------------------
 
 Q_DECLARE_METATYPE(PegasusDockWidget*);
+
 Q_DECLARE_METATYPE(Pegasus::Core::ISourceCodeProxy*);
 Q_DECLARE_METATYPE(Pegasus::Shader::IProgramProxy*);
 Q_DECLARE_METATYPE(Pegasus::Timeline::ITimelineProxy*);
 Q_DECLARE_METATYPE(Pegasus::AssetLib::IRuntimeAssetObjectProxy*);
 Q_DECLARE_METATYPE(Pegasus::PegasusAssetTypeDesc*);
+
 Q_DECLARE_METATYPE(CodeUserData*);
+
 Q_DECLARE_METATYPE(Pegasus::Timeline::IBlockProxy*);
+
 Q_DECLARE_METATYPE(AssetIOMessageController::Message);
 Q_DECLARE_METATYPE(AssetIOMessageController::Message::IoResponseMessage);
+
 Q_DECLARE_METATYPE(SourceIOMessageController::Message);
+
 Q_DECLARE_METATYPE(ProgramIOMessageController::Message);
+
 Q_DECLARE_METATYPE(WindowIOMessageController::Message);
+
 Q_DECLARE_METATYPE(PropertyGridIOMessageController::Message);
 Q_DECLARE_METATYPE(PropertyGridIOMessageController::UpdateElement);
 Q_DECLARE_METATYPE(QVector<PropertyGridIOMessageController::UpdateElement>);
 Q_DECLARE_METATYPE(PropertyGridHandle);
 Q_DECLARE_METATYPE(Pegasus::PropertyGrid::IPropertyGridClassInfoProxy*);
 
+Q_DECLARE_METATYPE(GraphIOMessageController::Message);
+Q_DECLARE_METATYPE(GraphIOMessageController::UpdateElement);
+Q_DECLARE_METATYPE(QVector<GraphIOMessageController::UpdateElement>);
+Q_DECLARE_METATYPE(TextureNodeProxyHandle);
+Q_DECLARE_METATYPE(Pegasus::Texture::ITextureNodeProxy*);
+
+//----------------------------------------------------------------------------------------
+
 void RegisterMetaTypes()
 {
     qRegisterMetaType<PegasusDockWidget*>();
+
     qRegisterMetaType<Pegasus::Core::ISourceCodeProxy*>();
     qRegisterMetaType<Pegasus::Shader::IProgramProxy*>();
     qRegisterMetaType<Pegasus::Timeline::ITimelineProxy*>();
     qRegisterMetaType<Pegasus::AssetLib::IRuntimeAssetObjectProxy*>();
     qRegisterMetaType<Pegasus::PegasusAssetTypeDesc*>();
+
     qRegisterMetaType<CodeUserData*>();
+
     qRegisterMetaType<Pegasus::Timeline::IBlockProxy*>();
+
     qRegisterMetaType<AssetIOMessageController::Message>();
     qRegisterMetaType<AssetIOMessageController::Message::IoResponseMessage>();
+
     qRegisterMetaType<SourceIOMessageController::Message>();
+
     qRegisterMetaType<ProgramIOMessageController::Message>();
+
     qRegisterMetaType<WindowIOMessageController::Message>();
+
     qRegisterMetaType<PropertyGridIOMessageController::Message>();
     qRegisterMetaType<PropertyGridIOMessageController::UpdateElement>();
     qRegisterMetaType<QVector<PropertyGridIOMessageController::UpdateElement> >();
     qRegisterMetaType<PropertyGridHandle>();
     qRegisterMetaType<Pegasus::PropertyGrid::IPropertyGridClassInfoProxy*>();
+
+    qRegisterMetaType<GraphIOMessageController::Message>();
+    qRegisterMetaType<GraphIOMessageController::UpdateElement>();
+    qRegisterMetaType<QVector<GraphIOMessageController::UpdateElement> >();
+    qRegisterMetaType<TextureNodeProxyHandle>();
+    qRegisterMetaType<Pegasus::Texture::ITextureNodeProxy*>();
 }
 
 //----------------------------------------------------------------------------------------
 
 int main(int argc, char *argv[])
 {
-    //register all meta types in pegasus
+    // Register all meta types in Pegasus
     RegisterMetaTypes();
 
     QApplication app(argc, argv);

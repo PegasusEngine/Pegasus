@@ -36,7 +36,7 @@ void ConstantColorGenerator::InitProperties()
 
 void ConstantColorGenerator::GenerateData()
 {
-    PEGASUS_EVENT_DISPATCH(this, TextureGenerationEvent, TextureGenerationEvent::BEGIN);
+    PEGASUS_EVENT_DISPATCH(this, TextureNodeGenerationEvent, TextureNodeGenerationEvent::BEGIN);
 
     //! \todo Use a simpler syntax
     Graph::NodeDataRef dataRef = GetData();
@@ -70,7 +70,7 @@ void ConstantColorGenerator::GenerateData()
         }
     }
 
-    PEGASUS_EVENT_DISPATCH(this, TextureGenerationEvent, TextureGenerationEvent::END_SUCCESS);
+    PEGASUS_EVENT_DISPATCH(this, TextureNodeGenerationEvent, TextureNodeGenerationEvent::END_SUCCESS);
 }
 
 

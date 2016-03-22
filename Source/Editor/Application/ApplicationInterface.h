@@ -19,6 +19,7 @@
 #include "MessageControllers/ProgramIOMessageController.h"
 #include "MessageControllers/WindowIOMessageController.h"
 #include "MessageControllers/PropertyGridIOMessageController.h"
+#include "MessageControllers/GraphIOMessageController.h"
 
 class Application;
 class CodeUserData;
@@ -113,20 +114,23 @@ private slots:
     //! slot received when the user double clicks a block in the timeline
     void PerformBlockDoubleClickedAction(Pegasus::Timeline::IBlockProxy* blockProxy);
 
-    //! forwards a to the asset io controller so its executed in the render thread
+    //! forwards a message to the asset IO controller so its executed in the render thread
     void ForwardAssetIoMessage(PegasusDockWidget* sender, AssetIOMessageController::Message msg);
 
-    //! forwards a to the shader io controller so its executed in the render thread
+    //! forwards a message to the shader IO controller so its executed in the render thread
     void ForwardSourceIoMessage(SourceIOMessageController::Message msg);
 
-    //! forwards a to the program io controller so its executed in the render thread
+    //! forwards a message to the program IO controller so its executed in the render thread
     void ForwardProgramIoMessage(ProgramIOMessageController::Message msg);
 
-    //! forwards a to the window io controller so its executed in the render thread
+    //! forwards a message to the window IO controller so its executed in the render thread
     void ForwardWindowIoMessage(WindowIOMessageController::Message msg);
 
-    //! forwards a to the window io controller so its executed in the render thread
+    //! forwards a message to the property grid IO controller so its executed in the render thread
     void ForwardPropertyGridIoMessage(PropertyGridIOMessageController::Message msg);
+
+    //! forwards a message to the graph IO controller so its executed in the render thread
+    void ForwardGraphIoMessage(GraphIOMessageController::Message msg);
 
     //------------------------------------------------------------------------------------
 
@@ -149,12 +153,13 @@ private:
     bool mRedrawAllViewportsForBlockMovedEnqueued;
 
     //! Controllers, used to process messages from the application to the render thread, and messages back to the UI
-    AssetIOMessageController*       mAssetIoMessageController;
-    SourceIOMessageController*      mSourceIoMessageController;
-    ProgramIOMessageController*     mProgramIoMessageController;
-    WindowIOMessageController*      mWindowIoMessageController;
+    AssetIOMessageController*        mAssetIoMessageController;
+    SourceIOMessageController*       mSourceIoMessageController;
+    ProgramIOMessageController*      mProgramIoMessageController;
+    WindowIOMessageController*       mWindowIoMessageController;
     PropertyGridIOMessageController* mPropertyGridMessageController;
-    SourceCodeManagerEventListener* mSourceCodeEventListener;
+    GraphIOMessageController*        mGraphMessageController;
+    SourceCodeManagerEventListener*  mSourceCodeEventListener;
     
 };
 

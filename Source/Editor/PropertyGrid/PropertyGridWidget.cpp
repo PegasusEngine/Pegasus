@@ -323,10 +323,10 @@ void PropertyGridWidget::UpdateProxy(const PropertyGridIOMessageController::Upda
 
 void PropertyGridWidget::SendOpenMessage(Pegasus::PropertyGrid::IPropertyGridObjectProxy * proxy)
 {
-    ED_ASSERTSTR(mMessenger != nullptr, "A messenger must be set in order for this widget to work.");
+    ED_ASSERTSTR(mMessenger != nullptr, "A messenger must be set in order for the property grid widget to work.");
     ED_ASSERT(mProxyHandle == INVALID_PGRID_HANDLE);
 
-    // Request to open this property proxy
+    // Request to open this property grid proxy
     PropertyGridIOMessageController::Message msg;
     msg.SetMessageType(PropertyGridIOMessageController::Message::OPEN);
     msg.SetPropertyGridObserver(mObserver);
@@ -338,7 +338,7 @@ void PropertyGridWidget::SendOpenMessage(Pegasus::PropertyGrid::IPropertyGridObj
 
 void PropertyGridWidget::SendCloseMessage()
 {
-    ED_ASSERTSTR(mMessenger != nullptr, "A messenger must be set in order for this widget to work.");
+    ED_ASSERTSTR(mMessenger != nullptr, "A messenger must be set in order for the property grid widget to work.");
 
     if (mProxyHandle != INVALID_PGRID_HANDLE)
     {
@@ -400,6 +400,10 @@ void PropertyGridWidget::OnInitialized(PropertyGridHandle handle, const Pegasus:
     }
 
     SendCloseMessage();
+
+    //! \todo THIS ENTIRE FUNCTION IS THREAD-UNSAFE.
+    //!       The function executes in the UI thread, so it should not fetch from the proxy.
+    //!       Use UpdateElement or a new InitElement to describe the properties
 
     ED_ASSERTSTR(mApplicationProxy != nullptr, "An application must be loaded to load the content of a property grid");
     Pegasus::PropertyGrid::IPropertyGridManagerProxy * propertyGridManagerProxy = mApplicationProxy->GetPropertyGridManagerProxy();

@@ -18,7 +18,7 @@ TimelineSource::TimelineSource(Alloc::IAllocator* allocator)
 
 TimelineSource::~TimelineSource()
 {
-    PEGASUS_EVENT_DESTROY_USER_DATA(&mProxy, "BlockScript", GetEventListener());
+    PEGASUS_EVENT_DESTROY_USER_DATA(&mProxy, "Timeline", GetEventListener());
 }
 
 void TimelineSource::Compile()

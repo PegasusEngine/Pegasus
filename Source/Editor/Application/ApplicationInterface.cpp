@@ -65,7 +65,8 @@ ApplicationInterface::ApplicationInterface(Application * application)
     connect(timelineDockWidget, SIGNAL(BlockMoved()),
             this, SLOT(RequestRedrawAllViewportsAfterBlockMoved()));
     connect(timelineDockWidget, SIGNAL(BlockDoubleClicked(Pegasus::Timeline::IBlockProxy*)),
-            this, SLOT(PerformBlockDoubleClickedAction(Pegasus::Timeline::IBlockProxy*)), Qt::DirectConnection);
+            this, SLOT(PerformBlockDoubleClickedAction(Pegasus::Timeline::IBlockProxy*)),
+            Qt::DirectConnection);
     connect(this, SIGNAL(EnqueuedBlockMoved()),
             this, SLOT(RedrawAllViewportsForBlockMoved()),
             Qt::QueuedConnection);
@@ -80,56 +81,70 @@ ApplicationInterface::ApplicationInterface(Application * application)
     mProgramIoMessageController = new ProgramIOMessageController(mApplication->GetApplicationProxy());
     mWindowIoMessageController  = new WindowIOMessageController(mApplication->GetApplicationProxy());
     mPropertyGridMessageController = new PropertyGridIOMessageController(mApplication->GetApplicationProxy());
+    mGraphMessageController = new GraphIOMessageController(mApplication->GetApplicationProxy());
     mSourceCodeEventListener = new SourceCodeManagerEventListener();
 
     Editor& editor = Editor::GetInstance();
     connect(mAssetIoMessageController, SIGNAL(SignalOpenObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
             &editor, SLOT(OnOpenObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)), Qt::QueuedConnection); 
     
-    const QVector<PegasusDockWidget*>& widgets = editor.GetWidgets();
-    for (int i = 0; i < widgets.size(); ++i)
+    const QVector<PegasusDockWidget*>& dockWidgets = editor.GetDockWidgets();
+    for (int i = 0; i < dockWidgets.size(); ++i)
     {
-        PegasusDockWidget* widget = widgets[i];
+        PegasusDockWidget* dockWidget = dockWidgets[i];
 
-        connect(widget, SIGNAL(OnSendAssetIoMessage(PegasusDockWidget*, AssetIOMessageController::Message)),
-                this, SLOT(ForwardAssetIoMessage(PegasusDockWidget*, AssetIOMessageController::Message)), Qt::QueuedConnection);
+        connect(dockWidget, SIGNAL(OnSendAssetIoMessage(PegasusDockWidget*, AssetIOMessageController::Message)),
+                this, SLOT(ForwardAssetIoMessage(PegasusDockWidget*, AssetIOMessageController::Message)),
+                Qt::QueuedConnection);
     
         connect(mAssetIoMessageController, SIGNAL(SignalPostMessage(PegasusDockWidget*, AssetIOMessageController::Message::IoResponseMessage)),
-                widget,   SLOT(ReceiveAssetIoMessage(PegasusDockWidget*, AssetIOMessageController::Message::IoResponseMessage)), Qt::QueuedConnection);
+                dockWidget, SLOT(ReceiveAssetIoMessage(PegasusDockWidget*, AssetIOMessageController::Message::IoResponseMessage)),
+                Qt::QueuedConnection);
 
-        connect(widget, SIGNAL(OnSendPropertyGridIoMessage(PropertyGridIOMessageController::Message)),
-                this,   SLOT(ForwardPropertyGridIoMessage(PropertyGridIOMessageController::Message)), Qt::QueuedConnection);
+        connect(dockWidget, SIGNAL(OnSendPropertyGridIoMessage(PropertyGridIOMessageController::Message)),
+                this, SLOT(ForwardPropertyGridIoMessage(PropertyGridIOMessageController::Message)),
+                Qt::QueuedConnection);
         
+        connect(dockWidget, SIGNAL(OnSendGraphIoMessage(GraphIOMessageController::Message)),
+                this, SLOT(ForwardGraphIoMessage(GraphIOMessageController::Message)),
+                Qt::QueuedConnection);
     }
 
     const QVector<ViewportWidget*>& viewportWidgets = editor.GetViewportWidgets();
     for (int i = 0; i < viewportWidgets.size(); ++i)
     {
         ViewportWidget* viewportWidget = viewportWidgets[i];
-        connect (viewportWidget, SIGNAL(OnSendWindowIoMessage(WindowIOMessageController::Message)),
-                 this, SLOT(ForwardWindowIoMessage(WindowIOMessageController::Message)), Qt::QueuedConnection);
+        connect(viewportWidget, SIGNAL(OnSendWindowIoMessage(WindowIOMessageController::Message)),
+                this, SLOT(ForwardWindowIoMessage(WindowIOMessageController::Message)),
+                Qt::QueuedConnection);
     }
 
     //From render to ui
     connect(mAssetIoMessageController, SIGNAL(SignalUpdateNodeViews()),
-            assetLibraryWidget, SLOT(UpdateUIItemsLayout()), Qt::QueuedConnection); 
+            assetLibraryWidget, SLOT(UpdateUIItemsLayout()),
+            Qt::QueuedConnection); 
 
     //<------  Source IO Controller -------->//
     //From ui to render
     connect(codeEditorWidget, SIGNAL(SendSourceIoMessage(SourceIOMessageController::Message)),
-            this, SLOT(ForwardSourceIoMessage(SourceIOMessageController::Message)), Qt::QueuedConnection);
+            this, SLOT(ForwardSourceIoMessage(SourceIOMessageController::Message)),
+            Qt::QueuedConnection);
 
     //from render to ui
     connect(mSourceIoMessageController, SIGNAL(SignalRedrawViewports()),
-            this, SLOT(RedrawAllViewports()), Qt::DirectConnection);
+            this, SLOT(RedrawAllViewports()),
+            Qt::DirectConnection);
     connect(mSourceIoMessageController, SIGNAL(SignalCompilationRequestEnded()),
-            assetLibraryWidget, SLOT(UpdateUIItemsLayout()), Qt::QueuedConnection);
+            assetLibraryWidget, SLOT(UpdateUIItemsLayout()),
+            Qt::QueuedConnection);
 
     connect(mSourceIoMessageController, SIGNAL(SignalCompilationRequestEnded()),
-            assetLibraryWidget, SLOT(EnableProgramShaderViews()), Qt::QueuedConnection);
+            assetLibraryWidget, SLOT(EnableProgramShaderViews()),
+            Qt::QueuedConnection);
 
     connect(mSourceIoMessageController, SIGNAL(SignalCompilationRequestEnded()),
-            codeEditorWidget, SLOT(CompilationRequestReceived()), Qt::QueuedConnection);
+            codeEditorWidget, SLOT(CompilationRequestReceived()),
+            Qt::QueuedConnection);
 
     //from ui to ui
     connect(codeEditorWidget, SIGNAL(RequestCompilationBegin()),
@@ -137,7 +152,8 @@ ApplicationInterface::ApplicationInterface(Application * application)
 
     //<------  Program IO Controller -------->//
     connect(mProgramIoMessageController, SIGNAL(SignalRedrawViewports()),
-            this, SLOT(RedrawAllViewports()), Qt::DirectConnection);
+            this, SLOT(RedrawAllViewports()),
+            Qt::DirectConnection);
     connect(programEditor, SIGNAL(SendProgramIoMessage(ProgramIOMessageController::Message)),
             this, SLOT(ForwardProgramIoMessage(ProgramIOMessageController::Message)));
     connect(mProgramIoMessageController, SIGNAL(SignalUpdateProgramView()),
@@ -146,8 +162,10 @@ ApplicationInterface::ApplicationInterface(Application * application)
             assetLibraryWidget, SLOT(UpdateUIItemsLayout()));
 
     //<------- PropertyGrid IO Controller ----------->//
-    connect (mPropertyGridMessageController, SIGNAL(RequestRedraw()),
-             this, SLOT(RedrawAllViewports()));
+    connect(mPropertyGridMessageController, SIGNAL(RequestRedraw()),
+            this, SLOT(RedrawAllViewports()));
+    connect(mGraphMessageController, SIGNAL(RequestRedraw()),
+            this, SLOT(RedrawAllViewports()));
 
     //<-------- Connect event listeners to app ------------>
     Pegasus::App::IApplicationProxy* appProxy = application->GetApplicationProxy();
@@ -156,31 +174,40 @@ ApplicationInterface::ApplicationInterface(Application * application)
 
     //<-------- Connect event listener to widgets --------->
     connect(mSourceCodeEventListener, SIGNAL(OnCompilationError(CodeUserData*,int,QString)),
-        codeEditorWidget, SLOT(SignalCompilationError(CodeUserData*,int,QString)), Qt::QueuedConnection);
+            codeEditorWidget, SLOT(SignalCompilationError(CodeUserData*,int,QString)),
+            Qt::QueuedConnection);
 
     connect(mSourceCodeEventListener, SIGNAL(OnLinkingEvent(QString,int)),
-        codeEditorWidget, SLOT(SignalLinkingEvent(QString,int)), Qt::QueuedConnection);
+            codeEditorWidget, SLOT(SignalLinkingEvent(QString,int)),
+            Qt::QueuedConnection);
 
     connect(mSourceCodeEventListener, SIGNAL(OnCompilationBegin(CodeUserData*)),
-        codeEditorWidget, SLOT(SignalCompilationBegin(CodeUserData*)), Qt::QueuedConnection);
+            codeEditorWidget, SLOT(SignalCompilationBegin(CodeUserData*)),
+            Qt::QueuedConnection);
 
     connect(mSourceCodeEventListener, SIGNAL(OnCompilationEnd(QString)),
-        codeEditorWidget, SLOT(SignalCompilationEnd(QString)), Qt::QueuedConnection);
+            codeEditorWidget, SLOT(SignalCompilationEnd(QString)),
+            Qt::QueuedConnection);
 
     connect(mSourceCodeEventListener, SIGNAL(OnBlessUserData(CodeUserData*)),
-        codeEditorWidget, SLOT(BlessUserData(CodeUserData*)), Qt::QueuedConnection);
+            codeEditorWidget, SLOT(BlessUserData(CodeUserData*)),
+            Qt::QueuedConnection);
 
     connect(mSourceCodeEventListener, SIGNAL(OnUnblessUserData(CodeUserData*)),
-        codeEditorWidget, SLOT(UnblessUserData(CodeUserData*)), Qt::QueuedConnection);
+            codeEditorWidget, SLOT(UnblessUserData(CodeUserData*)),
+            Qt::QueuedConnection);
 
     connect(mSourceCodeEventListener, SIGNAL(OnSignalSaveSuccess()),
-        codeEditorWidget, SLOT(SignalSavedFileSuccess()), Qt::QueuedConnection);
+            codeEditorWidget, SLOT(SignalSavedFileSuccess()),
+            Qt::QueuedConnection);
 
     connect(mSourceCodeEventListener, SIGNAL(OnSignalSavedFileError(int, QString)),
-        codeEditorWidget, SLOT(SignalSavedFileIoError(int,QString)), Qt::QueuedConnection);
+            codeEditorWidget, SLOT(SignalSavedFileIoError(int,QString)),
+            Qt::QueuedConnection);
     
     connect(codeEditorWidget, SIGNAL(RequestSafeDeleteUserData(CodeUserData*)),
-        mSourceCodeEventListener, SLOT(SafeDestroyUserData(CodeUserData*)), Qt::QueuedConnection);
+            mSourceCodeEventListener, SLOT(SafeDestroyUserData(CodeUserData*)),
+            Qt::QueuedConnection);
 }
 
 //----------------------------------------------------------------------------------------
@@ -199,6 +226,7 @@ ApplicationInterface::~ApplicationInterface()
     delete mProgramIoMessageController;
     delete mWindowIoMessageController;
     delete mPropertyGridMessageController;
+    delete mGraphMessageController;
     delete mSourceCodeEventListener;
 }
 
@@ -248,6 +276,7 @@ void ApplicationInterface::RedrawAllViewports()
 
     //! Flush all the updates done by the app into the ui observers.
     mPropertyGridMessageController->FlushAllPendingUpdates();
+    mGraphMessageController->FlushAllPendingUpdates();
 }
 
 //----------------------------------------------------------------------------------------
@@ -403,4 +432,11 @@ void ApplicationInterface::ForwardWindowIoMessage(WindowIOMessageController::Mes
 void ApplicationInterface::ForwardPropertyGridIoMessage(PropertyGridIOMessageController::Message msg)
 {
     mPropertyGridMessageController->OnRenderThreadProcessMessage(msg);
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::ForwardGraphIoMessage(GraphIOMessageController::Message msg)
+{
+    mGraphMessageController->OnRenderThreadProcessMessage(msg);
 }

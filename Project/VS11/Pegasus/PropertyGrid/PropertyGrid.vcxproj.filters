@@ -65,6 +65,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\Shared\IPropertyGridObjectProxy.h">
       <Filter>Include\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\PropertyGrid\Shared\PropertyEventDefs.h">
+      <Filter>Include\Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\PropertyGrid\PropertyGridManager.cpp">

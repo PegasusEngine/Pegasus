@@ -295,6 +295,7 @@ TimelineScriptReturn TimelineManager::CreateScript()
 #if PEGASUS_USE_EVENTS
     //register event listener
     scriptRef->SetEventListener(GetEventListener());
+    //! \todo TO FIX, INVALID CAST AND DATA
     PEGASUS_EVENT_INIT_USER_DATA(static_cast<Pegasus::Core::IBasicSourceProxy*>(scriptRef->GetProxy()), "BlockScript", scriptRef->GetEventListener());
 #endif
 
@@ -314,7 +315,7 @@ TimelineSourceReturn TimelineManager::CreateHeader()
 #if PEGASUS_USE_EVENTS
     //register event listener
     scriptRef->SetEventListener(GetEventListener());
-    PEGASUS_EVENT_INIT_USER_DATA(static_cast<Pegasus::Core::IBasicSourceProxy*>(scriptRef->GetProxy()), "BlockScript", scriptRef->GetEventListener());
+    PEGASUS_EVENT_INIT_USER_DATA(static_cast<Pegasus::Core::IBasicSourceProxy*>(scriptRef->GetProxy()), "Timeline", scriptRef->GetEventListener());
 #endif
     return scriptRef;
 }

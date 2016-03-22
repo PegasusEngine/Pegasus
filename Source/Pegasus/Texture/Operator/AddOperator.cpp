@@ -9,7 +9,7 @@
 //! \date	01st November 2013
 //! \brief	Texture operator that adds an arbitrary number of textures together
 
-#include "Pegasus/Texture/Shared/TextureEvent.h"
+#include "Pegasus/Texture/Shared/TextureEventDefs.h"
 #include "Pegasus/Texture/Operator/AddOperator.h"
 #include "Pegasus/Utils/Memcpy.h"
 
@@ -34,7 +34,7 @@ void AddOperator::InitProperties()
 
 void AddOperator::GenerateData()
 {
-    PEGASUS_EVENT_DISPATCH(this, TextureOperationEvent, TextureOperationEvent::BEGIN);
+    PEGASUS_EVENT_DISPATCH(this, TextureNodeOperationEvent, TextureNodeOperationEvent::BEGIN);
 
     //! \todo Use a simpler syntax
     Graph::NodeDataRef dataRef = GetData();
@@ -105,7 +105,7 @@ void AddOperator::GenerateData()
         }
     }
 
-    PEGASUS_EVENT_DISPATCH(this, TextureOperationEvent, TextureOperationEvent::END_SUCCESS);
+    PEGASUS_EVENT_DISPATCH(this, TextureNodeOperationEvent, TextureNodeOperationEvent::END_SUCCESS);
 }
 
 

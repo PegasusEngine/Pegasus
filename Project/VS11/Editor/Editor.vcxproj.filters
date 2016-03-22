@@ -573,6 +573,15 @@
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_PropertyGridIOMessageController.cpp">
       <Filter>Generated\Dev-Debug</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\MessageControllers\GraphIOMessageController.cpp">
+      <Filter>Source\MessageControllers</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_GraphIOMessageController.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_GraphIOMessageController.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -762,6 +771,9 @@
       <Filter>Source\PropertyGrid</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\MessageControllers\PropertyGridIOMessageController.h">
+      <Filter>Source\MessageControllers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\MessageControllers\GraphIOMessageController.h">
       <Filter>Source\MessageControllers</Filter>
     </CustomBuild>
   </ItemGroup>
