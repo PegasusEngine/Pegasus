@@ -32,8 +32,6 @@ TextureOperator::TextureOperator(Alloc::IAllocator* nodeAllocator, Alloc::IAlloc
 
     // Initialize event user data
     PEGASUS_EVENT_INIT_DISPATCHER
-    //! \todo Do we need user data?
-    //PEGASUS_EVENT_INIT_USER_DATA(GetProxy(), "TextureOperator", GetEventListener());
 }
 
 //----------------------------------------------------------------------------------------
@@ -51,8 +49,6 @@ TextureOperator::TextureOperator(const TextureConfiguration & configuration,
 
     // Initialize event user data
     PEGASUS_EVENT_INIT_DISPATCHER
-    //! \todo Do we need user data?
-    //PEGASUS_EVENT_INIT_USER_DATA(GetProxy(), "TextureOperator", GetEventListener());
 }
 
 //----------------------------------------------------------------------------------------
@@ -163,8 +159,7 @@ void TextureOperator::ReplaceInputByOperator(unsigned int index, const Pegasus::
 
 TextureOperator::~TextureOperator()
 {
-    //! \todo Do we need user data?
-    //PEGASUS_EVENT_DESTROY_USER_DATA(&mProxy, "TextureOperator", GetEventListener());
+    PEGASUS_EVENT_DESTROY_USER_DATA(&mProxy, "TextureOperator", GetEventListener());
 }
 
 //----------------------------------------------------------------------------------------

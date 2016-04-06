@@ -14,6 +14,7 @@
 #define EDITOR_SOURCEIOMESSAGE_CTRL_H
 
 #include <QObject>
+#include "MessageControllers/AssetIOMessageController.h"
 
 //fwd declarations
 namespace Pegasus
@@ -29,7 +30,7 @@ namespace Core
 }
 }
 
-class SourceIOMessageController : public QObject
+class SourceIOMessageController : public QObject, public IAssetTranslator
 {
     Q_OBJECT;
 public:
@@ -45,7 +46,7 @@ public:
         };
 
         //! Constructor
-        Message() : mType(INVALID), mSrc(nullptr) {}
+        Message() : mType(INVALID) {}
 
         //! Sets the message type
         void SetMessageType(MessageType type) { mType = type; } 
@@ -59,26 +60,39 @@ public:
         //! Gets the source of the shader in the message
         const QString GetSourceText() const { return mSourceText; }
 
-        //! Sets the source node pointer
-        void SetSource(Pegasus::Core::ISourceCodeProxy* src) { mSrc = src; }
+        //! Sets the source asset handle
+        void SetHandle(AssetInstanceHandle handle) { mHandle = handle; }
     
-        //! Gets the source pointer
-        Pegasus::Core::ISourceCodeProxy* GetSource() const { return mSrc; }
+        //! Gets the source asset handle
+        AssetInstanceHandle GetHandle() const { return mHandle; } 
 
     private:
         MessageType mType;
         QString     mSourceText;
-        Pegasus::Core::ISourceCodeProxy* mSrc;
+        AssetInstanceHandle mHandle;
     };
 
     //! constructor
     explicit SourceIOMessageController(Pegasus::App::IApplicationProxy* app);
     
     //! destructor
-    ~SourceIOMessageController();
+    virtual ~SourceIOMessageController();
 
     //! Called by the render thread when we open a message
     void OnRenderThreadProcessMessage(const Message& msg);
+
+    //! \param object input asset to open
+    //! \return a qvariant that contains the representation of this asset for the ui to read.
+    virtual QVariant TranslateToQt(AssetInstanceHandle handle, Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+
+    //! \param object asked for validity.
+    //! \return a boolean expressing if the state of this object is valid, or not.
+    //!         for example, a shader code that had a compilation error must return false. This will help the asset instance
+    //!         viewer display feedback on such object.
+    virtual bool IsRuntimeObjectValid(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+
+    //! \return null terminated list that contains all the necessary asset data so assets can be translated.
+    virtual const Pegasus::PegasusAssetTypeDesc** GetTypeList() const;
 
 signals:
 
@@ -91,10 +105,10 @@ signals:
 private:
 
     //! called when a source code is compiled
-    void OnRenderRequestCompileSource(Pegasus::Core::ISourceCodeProxy* src);
+    void OnRenderRequestCompileSource(AssetInstanceHandle handle);
 
     //! called when a source code is getting its text set
-    void OnRenderRequestSetSource(Pegasus::Core::ISourceCodeProxy* src, const QString& srcTxt);
+    void OnRenderRequestSetSource(AssetInstanceHandle handle, const QString& srcTxt);
 
     Pegasus::App::IApplicationProxy* mApp;
 };

@@ -545,6 +545,7 @@ void Settings::SetDefaultConsoleTextColorForAllLogChannels()
     // Set the default colors of a few important channels
     mLogChannelColorTable['CRIT'] = QColor(255, 0, 0);
     mLogChannelColorTable['ERR_'] = QColor(255, 0, 0);
+    mLogChannelColorTable['CERR'] = QColor(255, 50, 0);
     mLogChannelColorTable['WARN'] = QColor(255, 128, 0);
     mLogChannelColorTable['ASRT'] = QColor(255, 128, 255);
     mLogChannelColorTable['EDIT'] = QColor(128, 255, 255);

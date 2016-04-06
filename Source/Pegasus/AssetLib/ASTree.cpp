@@ -10,6 +10,9 @@
 //! \brief  Asset Script Tree Implementation
 
 #include "Pegasus/AssetLib/ASTree.h"
+#include "Pegasus/AssetLib/Asset.h"
+#include "Pegasus/AssetLib/AssetLib.h"
+#include "Pegasus/AssetLib/Shared/AssetEvent.h"
 #include "Pegasus/Core/Assertion.h"
 #include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/Utils/String.h"
@@ -27,7 +30,11 @@ Object::Object(Alloc::IAllocator* alloc)
   mFloats(alloc),
   mStrings(alloc),
   mObjects(alloc),
+  mAssets(alloc),
   mArrays(alloc)
+#if PEGASUS_ENABLE_PROXIES
+  ,mProxy(this)
+#endif
 {
 }
 
@@ -127,6 +134,28 @@ void        Object::AddObject(const char* name, Object* o)
 
 }
 
+RuntimeAssetObjectRef  Object::GetAsset(int i) const
+{
+    return mAssets[i].mEl;
+}
+
+void Object::AddAsset(const char* name, RuntimeAssetObjectRef obj)
+{
+    Touple<RuntimeAssetObjectRef>& t =  mAssets.PushEmpty();
+    t.mEl = obj;
+    t.mName = name;
+    PEGASUS_EVENT_DISPATCH(obj->GetOwnerAsset()->GetLib(), AssetLinkAdded, GetProxy(), obj->GetOwnerAsset()->GetProxy());
+}
+
+int Object::FindAsset(const char* name) const
+{
+    GenericFindElement(mAssets, name);
+}
+
+const char* Object::GetAssetName(int i) const
+{
+    return mAssets[i].mName;
+}
 
 Array*      Object::GetArray(int i) const
 {
@@ -152,7 +181,11 @@ void        Object::AddArray(const char* name, Array* arr)
 
 Array::Array(Alloc::IAllocator* alloc)
 :   mType(Array::AS_TYPE_NULL),
-    mElements(alloc)
+    mElements(alloc),
+    mAssetObjReferences(alloc)
+#if PEGASUS_ENABLE_PROXIES
+    ,mProxy(this)
+#endif
 {
 }
 
@@ -174,4 +207,8 @@ const Array::Element& Array::GetElement(int i) const
 void     Array::PushElement(Array::Element& el)
 {
     mElements.PushEmpty() = el;
+    if (mType == Array::AS_TYPE_ASSET_PATH_REF)
+    {
+        mAssetObjReferences.PushEmpty() = el.asset;
+    }
 }

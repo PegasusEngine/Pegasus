@@ -15,13 +15,21 @@
 #include <QDockWidget>
 #include "MessageControllers/AssetIOMessageController.h"
 #include "Widgets/PegasusDockWidget.h"
+#include "PropertyGrid/qtpropertybrowser/qtpropertybrowser.h"
 
 #include "ui_TimelineDockWidget.h"
 
 namespace Pegasus {
     namespace Timeline {
+        class ITimelineProxy;
         class IBlockProxy;
     }
+
+    namespace App {
+        class IApplicationProxy;
+    }
+
+    struct PegasusAssetTypeDesc;
 }
 
 class QUndoStack;
@@ -82,6 +90,13 @@ public:
     //! Special Pegasus forwarder function which asserts if this widget has focus
     virtual bool HasFocus() const { return hasFocus() || ui.graphicsView->hasFocus(); }
 
+    //! Switch that holds every pegasus asset type that this dock widget can open for edit.
+    //! Asset types that get this type association, will be the ones passed through OnOpenRequest function 
+    virtual const Pegasus::PegasusAssetTypeDesc*const* GetTargetAssetTypes() const;
+
+    //! Implement this function with functionality on how to process for edit.
+    //! Only objects of type retured in GetTargetAssetTypes will be the ones opened.
+    virtual void OnOpenObject(AssetInstanceHandle object, const QString& displayName, const QVariant& initData);
 
 signals:
 
@@ -107,13 +122,26 @@ signals:
     //! Emitted when the play mode button has been enabled or disabled
     //! \param enabled True if the play mode button has just been enabled
     void PlayModeToggled(bool enabled);
-    
+
     //------------------------------------------------------------------------------------
 
 public slots:
 
     //! Emitted when the timeline is being saved
     void SaveTimeline();
+
+    //!  Focus command on a block item in the graphics view
+    void OnFocusBlock(unsigned blockGuid);
+
+    //When the master timeline button is pressed. request load of a blockscript asset.
+    void RequestMasterTimelineLoad();
+
+    //When clicked removes the master timeline script.
+    void RemoveMasterTimelineScript();
+    
+    //! Called when the timeline requires to be repainted.
+    void OnRepaintTimeline();
+
 
 private slots:
 
@@ -150,6 +178,13 @@ private slots:
     //! Called when blocks are deselected (single or multiple selection)
     void OnBlocksDeselected();
 
+    //! Called when a property has been updated
+    void OnPropertyUpdated(QtProperty* property);
+
+    //! Called to request / remove blockscripts
+    void RequestChangeScript(unsigned blockGuid); 
+    void RequestRemoveScript(unsigned blockGuid); 
+
     //------------------------------------------------------------------------------------
 
 private:
@@ -166,6 +201,8 @@ private:
     //! Receives an IO message
     virtual void OnReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage msg);
 
+    //! Launch loader window to find timeline script
+    QString AskForTimelineScript();
 
     //! User interface definition
     Ui::TimelineDockWidget ui;
@@ -173,11 +210,24 @@ private:
     //! Current snapping mode (in number of ticks per snap)
     unsigned int mSnapNumTicks;
 
+    //! reference to the application proxy
+    Pegasus::App::IApplicationProxy* mApplication;
+
     //! Undo stack pointer
     QUndoStack * mUndoStack;
 
     //! True if undo commands can be sent
     bool mEnableUndo;
+
+    //! Boolean state that indicates if a timeline is active open, or if there is non open.
+    //! This will soon be replaced by a proper active handle once we support multiple timelines edits
+    bool mTimelineOpen;
+
+    //HACK: for now hold a pointer to the timeline
+    Pegasus::Timeline::ITimelineProxy* mTimeline;
+
+    //! Handle of the asset instance
+    AssetInstanceHandle mTimelineHandle;
 
 };
 

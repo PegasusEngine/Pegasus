@@ -24,7 +24,6 @@
 namespace Pegasus {
     namespace Texture {
         class ITextureFactory;
-        class TextureTracker;
     }
 
     namespace Graph {
@@ -120,9 +119,6 @@ public:
     virtual const AssetLib::IRuntimeAssetObjectProxy * GetProxy() const { return &mProxy; }
     //@}
 
-    //! Set the tracker associated with the texture
-    //! \param tracker Global tracker used to get the list of textures in the editor
-    void SetTracker(TextureTracker * tracker);
 
 #endif  // PEGASUS_ENABLE_PROXIES
 
@@ -144,8 +140,6 @@ private:
     //! Proxy associated with the texture
     TextureNodeProxy mProxy;
 
-    //! Tracker associated with the texture
-    TextureTracker * mTracker;
 #endif  // PEGASUS_ENABLE_PROXIES
 
     void ReleaseGPUData();

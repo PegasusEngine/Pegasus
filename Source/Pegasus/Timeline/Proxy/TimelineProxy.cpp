@@ -14,6 +14,7 @@
 
 #include "Pegasus/Timeline/Proxy/TimelineProxy.h"
 #include "Pegasus/Timeline/Proxy/LaneProxy.h"
+#include "Pegasus/Timeline/Proxy/BlockProxy.h"
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Timeline/Lane.h"
 #include "Pegasus/Utils/String.h"
@@ -155,6 +156,29 @@ float TimelineProxy::GetCurrentBeat() const
 AssetLib::IRuntimeAssetObjectProxy* TimelineProxy::GetDecoratedObject() const
 {
     return mTimeline->GetRuntimeAssetObjectProxy();
+}
+
+//----------------------------------------------------------------------------------------
+
+IBlockProxy* TimelineProxy::FindBlockByGuid(unsigned blockGuid)
+{
+    unsigned int numOfLanes = GetNumLanes();
+    for (unsigned l = 0; l < numOfLanes; ++l)
+    {
+        ILaneProxy* lane = GetLane(l);
+        IBlockProxy* blocks[LANE_MAX_NUM_BLOCKS]; 
+        unsigned numOfBlocks = lane->GetBlocks(blocks);
+        for (unsigned b = 0; b < numOfBlocks; ++b)
+        {
+            IBlockProxy* blockProxy = blocks[b];
+            if (blockProxy->GetGuid() == blockGuid)
+            {
+                return blockProxy;
+            }
+        }
+    }
+    
+    return nullptr;
 }
 
 }   // namespace Timeline

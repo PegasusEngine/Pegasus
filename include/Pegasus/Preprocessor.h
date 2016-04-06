@@ -310,6 +310,9 @@
 
 #define PEGASUS_SHADER_USE_SHADER_EVENTS                (PEGASUS_DEV)
 
+//Enable asset category tracking for editor purposes.
+#define PEGASUS_ASSETLIB_ENABLE_CATEGORIES (PEGASUS_DEV)
+
 // Enable GPU data RunTime Type Information, for safe casting (asserts thrown if wrong type being casted)
 #define PEGASUS_GRAPH_GPUDATA_RTTI                      (PEGASUS_DEBUG)
 
@@ -323,6 +326,7 @@
 
 //! Enable size checks in the property grid accessors
 #define PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR       (PEGASUS_DEBUG)
+
 
 
 #endif  // PEGASUS_PREPROCESSOR_H

@@ -42,34 +42,14 @@ bool RuntimeAssetObjectProxy::ReloadFromAsset()
     Asset* asset = mObject->GetOwnerAsset();
     AssetLib* lib = asset->GetLib();
 
-    //copy the path to a temporary buffer. before destroying the asset
-    const int MAX_TEMP_PATH = 512;
-    char mTemporaryPath[MAX_TEMP_PATH];
-    mTemporaryPath[0] = '\0';
-    const char* oldPath = asset->GetPath();
-    PG_ASSERTSTR(Utils::Strlen(oldPath) + 1 <= MAX_TEMP_PATH, "Temporary path buffer is not big enough! you must increaseit! this will cause a stomp.");
-    
-    Utils::Strcat(mTemporaryPath, oldPath);
-    bool wasStructured = asset->GetFormat() == Asset::FMT_STRUCTURED;
-    const Pegasus::PegasusAssetTypeDesc* oldType = asset->GetTypeDesc();
-    lib->UnloadAsset(asset);    
-    asset = nullptr;
-    if (lib->LoadAsset(mTemporaryPath, wasStructured, &asset) != Pegasus::Io::ERR_NONE)
+    if (lib->ReloadAsset(asset) != Pegasus::Io::ERR_NONE)
     {
-        PG_LOG('ERR_', "Trying to reload an asset (%s) but failed.", mTemporaryPath);
+        PG_LOG('ERR_', "Trying to reload an asset (%s) but failed.", asset->GetPath());
         return false;
     }
-    asset->SetTypeDesc(oldType);
-    bool retValue = mObject->Read(asset);
-    if (asset != mObject->GetOwnerAsset())
-    {
-        PG_FAILSTR("The asset trying to reload is not opened already!");
-        return false;
-    }
-    else
-    {
-        return retValue;
-    }
+
+    mObject->Read(asset);
+    return true;
 }
 
 

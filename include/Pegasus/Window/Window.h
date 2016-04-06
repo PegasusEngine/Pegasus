@@ -103,6 +103,18 @@ public:
     //! Get the proxy associated with the window
     inline WindowProxy* GetProxy() const { return mProxy; }
 
+    //! Mouse & editor event callbacks. Called from the editor.
+    //! \param button - 1, 2 or 3, 1 is left, 2 is middle, 3 is right click.
+    //! \param isDown true if the mouse is down, false otherwise
+    //! \param x coordinate of the window, in texture coordinates [0, 1]
+    //! \param y coordinate of the window, in texture coordintes [0, 1], where 1 is the top.
+    void OnMouseEvent(IWindowComponent::MouseButton button, bool isDown, float x, float y);
+
+    //! Keyboard event, when a key is pressed. Called from the editor.
+    //! \param key ascii value of the key pressed.
+    //! \param isDown true if key is down, false if key goes up.
+    void OnKeyEvent(char key, bool isDown);
+
 #endif  // PEGASUS_ENABLE_PROXIES
 
     //! Attaches a window component to this window. Internally creates the state.
@@ -112,6 +124,13 @@ public:
     //! Removes all windows components. Destroys internal states created.
     //! \param component - the component to add to this window.
     void RemoveComponents();
+
+    struct StateComponentPair {
+        WindowComponentState* mState;
+        IWindowComponent* mComponent;
+    };
+
+    const Utils::Vector<StateComponentPair>& GetComponents() const { return mComponents; }
 
 protected:
 
@@ -144,11 +163,6 @@ private:
     float mRatio; //!< Aspect ratio (== width / height), 1.0f if height is undefined
     float mRatioInv; //!< Aspect ratio (== height / width), 1.0f if width is undefined
     bool mIsChild; //!< Current state, wether is child window or not
-    
-    struct StateComponentPair {
-        WindowComponentState* mState;
-        IWindowComponent* mComponent;
-    };
     
     Utils::Vector<StateComponentPair> mComponents;
 

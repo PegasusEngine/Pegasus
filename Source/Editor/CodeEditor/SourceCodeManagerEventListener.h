@@ -12,6 +12,7 @@
 #include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
+#include "MessageControllers/AssetIOMessageController.h"
 #include <QObject>
 #include <QSet>
 #include <QMap>
@@ -19,20 +20,18 @@
 #ifndef EDITOR_CODEMANAGEREVENTLISTENER_H
 #define EDITOR_CODEMANAGEREVENTLISTENER_H
 
-class QTextDocument;
-
-class QSemaphore;
-
 //! User interface state user data for code
 class CodeUserData : public Pegasus::Core::IEventUserData
 {
 public:
     //! constructor
-    //! \param parent code
+    //! \param handle parent handle
+    //! \param codeProxy parent code
     explicit CodeUserData(Pegasus::Core::ISourceCodeProxy * codeProxy);
 
     //! constructor
-    //! \param parent code
+    //! \param handle parent handle
+    //! \param programProxy parent code
     explicit CodeUserData(Pegasus::Shader::IProgramProxy * programProxy);
 
     //! destructor
@@ -46,9 +45,6 @@ public:
     //! \return the program
     Pegasus::Shader::IProgramProxy * GetProgram() const { return mData.mProgram; }
 
-    //! Clears any reference data
-    void ClearData() { mData.mSourceCode = nullptr; }
-
     //! true if this holds a program, false if it holds a source code
     bool IsProgram() const { return mIsProgram; }
 
@@ -60,56 +56,16 @@ public:
     //! \return validity return value: true if code runs, false if its errord
     bool IsValid() const { return mIsValid; }
 
-    //! clears all the invalid lines regustered in the code
-    void ClearInvalidLines() { mInvalidLinesSet.clear(); mMessagesMap.clear(); }
+    //! Return the asset handle of this instance
+    AssetInstanceHandle GetHandle() const { return mHandle; }
 
-    //TODO: mix these two into the same data structure
-    //! invalidates a line in the code
-    //! \param line to tag as invalid for syntax highlighing and presentation
-    void InvalidateLine(int line) { mInvalidLinesSet.insert(line); }
-    
-    //! registers a message for a single compiled line
-    //! \param the line that is invalid
-    //! \param the string to record for this invalid line
-    void InsertMessage(int line, const QString& str) { mMessagesMap.insert(line, str); }
+    //! Sets the handle of this instance
+    void SetHandle(const AssetInstanceHandle& handle) { mHandle = handle; }
 
-    //! tests whether the current line is valid
-    //! \param the line to test
-    //! \return true if the line contains a compilation or warning error
-    bool IsInvalidLine (int line) const { return mInvalidLinesSet.contains(line); }
-
-    //! \return gets the set of invalid lines (with compilation errors)
-    QSet<int>& GetInvalidLineSet() { return mInvalidLinesSet; }
-
-    //! \return gets the map with lines & messages to display in case of compilation errors
-    QMap<int, QString>& GetMessageMap() { return mMessagesMap; }
-
-    //! gets the error message that this program has
-    //! \return the last error message that this program had (in case of linking errors)
-    const QString& GetErrorMessage() const { return mErrorMessage; }
-
-    //! Sets an error message to be carried. 
-    void SetErrorMessage(const QString& message) { mErrorMessage = message; }
-
-    //! sets the intermediate document
-    void SetDocument(QTextDocument* document) { mIntermediateDocument = document; }
-
-    //! gets the intermediate document
-    QTextDocument* GetDocument() const { return mIntermediateDocument; }
-
-    //! Sets identifier of the type of source code opened
-    void SetName(const QString name) { mUserDataName = name; }
-
-    //! Gets the identifier of the type of source code opened
-    const QString& GetName() const { return mUserDataName; }
 
 private:
+    AssetInstanceHandle mHandle;
     bool mIsValid;
-    QSet<int> mInvalidLinesSet;
-    QMap<int, QString> mMessagesMap;
-    QString mErrorMessage;
-    QString mUserDataName;
-    QTextDocument* mIntermediateDocument;
     bool mIsProgram;
     
     union {
@@ -152,14 +108,14 @@ public:
 
 signals:
     //! triggered when any compilation state changes. Use a queued connection
-    void CompilationResultsChanged();
+    void CompilationResultsChanged(bool success);
 
     //! triggered when any compilation error is posted. This event can be triggered
     //! several times during the same compilation
-    void OnCompilationError(CodeUserData* code, int row, QString message);
+    void OnCompilationError(AssetInstanceHandle handle, int row, QString message);
 
     //! triggered when compilation begins
-    void OnCompilationBegin(CodeUserData* code);
+    void OnCompilationBegin(AssetInstanceHandle handle);
 
     //! triggered when compilation ends, posts the log string
     void OnCompilationEnd(QString log);
@@ -173,15 +129,8 @@ signals:
     //! triggered when a file has been not saved and there is an io error
     void OnSignalSavedFileError(int ioError, QString msg);
 
-    //! request ui thread to bless user data with ui specific stuff
-    void OnBlessUserData(CodeUserData* userData);
-    
-    //! request ui thread to unbless user data with ui specific stuff
-    void OnUnblessUserData(CodeUserData* userData);
-
-public slots:
-    //! safe call of user data destruction once the ui thread removes any references
-    void SafeDestroyUserData(CodeUserData* userData);
+    //! triggered when any compilation state changes. Use a queued connection
+    void OnTagValidity(QString assetPath, bool success);
 
 };
 

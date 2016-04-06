@@ -20,6 +20,7 @@
 namespace Pegasus {
     namespace Timeline {
         class ILaneProxy;
+        class IBlockProxy;
     }
 }
 
@@ -95,6 +96,11 @@ public:
     //! Get the current beat of the timeline
     //! \return Current beat, measured in ticks, can have fractional part
     virtual float GetCurrentBeat() const = 0;
+
+    //! Gets a block from a guid. 
+    //! \param blockGuid the guid to query this block from
+    //! \return the block proxy if found, nullptr otherwise
+    virtual IBlockProxy* FindBlockByGuid(unsigned blockGuid) = 0;
 };
 
 

@@ -53,8 +53,8 @@ void pointLight(float3 normal, float3 pos, float3 view, float3 lightPos, out flo
     
     float3 h = reflect(-view, normal);
     float nDoth = clamp(dot(-lightDir, h), 0.0, 1.0);    
-    spec = (pow(nDoth, specPow)).xxx;
-    spec = lerp(spec, (pow(nDoth, 32.0)).xxx, 0.4);
+    spec = (pow(saturate(nDoth.xxx), 10)).xxx;
+    spec = lerp(spec, (pow(nDoth.xxx, 1.0)).xxx, 0.4);
 }
 
 void scene(float3 pos, float3 localPos, float3 view, float3 normal, float2 uv, out float3 col)
@@ -74,11 +74,11 @@ void scene(float3 pos, float3 localPos, float3 view, float3 normal, float2 uv, o
 		isStrips = 1.0 - isStrips;
         float3 occ = (1.0 - pow(saturate(-p.y), 4.0)).xxx;
         float nDotv = dot(normal, -view);
-        float fresnel = clamp(0.4 + pow((1.0 - clamp(nDotv, 0.0, 1.0)), 9.0), 0.0, 1.0);
+        float fresnel = clamp(0.3 + pow((1.0 - clamp(nDotv, 0.0, 1.0)), 5.0), 0.0, 1.0);
 		float roughness = 2.0;
         float specForce = 1.0;
         normal = lerp(tweakNormal(uv, tweakNormal(uv, normal,3000.0,0.2), 100.0, 0.05), normal, pow(saturate(isStrips+(1.0 - saturate(nDotv))),0.5));
-        float camSpec = 0.2*clamp(pow(saturate(nDotv), 1.0), 0.0, 0.3);
+        float camSpec = 0.2*clamp(pow(saturate(nDotv).x, 1.0), 0.0, 0.3);
         nDotv = dot(normal, -view);
         alb = lerp(alb, stripsAlb, isStrips);
         
@@ -97,7 +97,7 @@ void scene(float3 pos, float3 localPos, float3 view, float3 normal, float2 uv, o
         diffuse += diffuse2;
         spec += spec2;
         float3 amb = lerp(FLOOR_AMB, CEIL_AMB, saturate(2.0*p.y));
-        col = alb*(occ*diffuse + amb) + occ*specForce*(spec+camSpec)*fresnel;//spec + alb * (clamp(dot(normal, lightDir),0.0,1.0) + occ*AMB) + occ*0.4*pow((1.0 - clamp(dot(normal, -ray), 0.0, 1.0)), 9.0);
+        col =  alb*(occ*diffuse + amb) + occ*specForce*(spec+camSpec)*fresnel;//spec + alb * (clamp(dot(normal, lightDir),0.0,1.0) + occ*AMB) + occ*0.4*pow((1.0 - clamp(dot(normal, -ray), 0.0, 1.0)), 9.0);
 
     }
     

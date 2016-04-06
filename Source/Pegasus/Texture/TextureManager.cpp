@@ -33,7 +33,6 @@ TextureManager::TextureManager(Graph::NodeManager * nodeManager, ITextureFactory
 ,   mFactory(textureFactory)
 #if PEGASUS_ENABLE_PROXIES
 ,   mProxy(this)
-,   mTracker()
 #endif  // PEGASUS_ENABLE_PROXIES
 #if PEGASUS_USE_EVENTS
     // Initialize without an event listener
@@ -81,8 +80,7 @@ TextureReturn TextureManager::CreateTextureNode(const TextureConfiguration & con
         texture->SetFactory(mFactory);
 
 #if PEGASUS_ENABLE_PROXIES
-        texture->SetTracker(&mTracker);
-        mTracker.InsertTexture(texture);
+        PEGASUS_EVENT_INIT_USER_DATA(static_cast<Pegasus::Texture::ITextureNodeProxy*>(texture->GetProxy()), "Texture", mEventListener);
 #endif
 
         return texture;
@@ -108,6 +106,7 @@ TextureGeneratorReturn TextureManager::CreateTextureGeneratorNode(const char * c
 #if PEGASUS_USE_EVENTS
         //propagate event listener
         textureGenerator->SetEventListener(mEventListener);
+        PEGASUS_EVENT_INIT_USER_DATA(textureGenerator->GetProxy(), "TextureGenerator", mEventListener);
 #endif
         return textureGenerator;
     }
@@ -132,6 +131,7 @@ TextureOperatorReturn TextureManager::CreateTextureOperatorNode(const char * cla
 #if PEGASUS_USE_EVENTS
         //propagate event listener
         textureOperator->SetEventListener(mEventListener);
+        PEGASUS_EVENT_INIT_USER_DATA(textureOperator->GetProxy(), "TextureOperator", mEventListener);
 #endif
         return textureOperator;
     }

@@ -43,6 +43,7 @@ namespace AssetLib
 class AssetBuilder
 {
 public:
+    friend class AssetLib;
 
     //! Constructor 
     //! \param allcator to use
@@ -100,10 +101,33 @@ public:
     //! Returns the error count of this compilation process
     int GetErrorCount() const { return mErrorCount; }
 
+    //! Enqueues the child asset of a particular object
+    void EnqueueChildAsset(const char* name, const char* newAssetPath);
+
+    //! Enqueues the child asset of a particular asset path
+    void EnqueueAssetArrayElement(const char* assetPath);
+
 private:
     Alloc::IAllocator* mAllocator;
     Utils::Vector<Array*>  mArrStack;
     Utils::Vector<Object*> mObjStack;
+
+    struct ObjectChildAssetRequest
+    {
+        Object*     object; 
+        const char* identifier;
+        const char* assetPath;
+    };
+
+    struct ArrayChildAssetRequest
+    {
+        Array* array;
+        const char* assetPath;
+    };
+
+    Utils::Vector<ObjectChildAssetRequest> mObjectChildAssetQueue;
+    Utils::Vector<ArrayChildAssetRequest>  mArrayChildAssetQueue;
+
     Asset*  mFinalAsset;
     int     mCurrentLine;
     int     mErrorCount;

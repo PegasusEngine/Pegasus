@@ -132,9 +132,6 @@ public:
     //! returns the proxy accessor for this program. Only available in dev mode.
     virtual AssetLib::IRuntimeAssetObjectProxy * GetProxy() { return &mProxy; }
     virtual const AssetLib::IRuntimeAssetObjectProxy * GetProxy() const { return &mProxy; }
-
-    //! Sets the shader tracker for shader / program book keeping
-    void SetShaderTracker(ShaderTracker* shaderTracker) { mShaderTracker = shaderTracker; }
 #endif
 
 protected:
@@ -175,7 +172,6 @@ private:
 
 #if PEGASUS_ENABLE_PROXIES
     ProgramProxy mProxy;    
-    ShaderTracker* mShaderTracker;
 #endif
 
 };

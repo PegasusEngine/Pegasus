@@ -35,6 +35,10 @@ public:
     virtual void OnDestroy();
     virtual void OnRepaint();
     virtual void OnResize(unsigned int width, unsigned int height);
+#if PEGASUS_ENABLE_PROXIES
+    //! Handles events on mouse clicks and such.
+    virtual void OnMouseEvent(IWindowComponent::MouseButton button, bool isDown, float x, float y);
+#endif
 
 private:
     // No copies allowed
@@ -100,6 +104,19 @@ void WindowMessageHandler::OnResize(unsigned int width, unsigned int height)
     mParent->mRatio = (height > 0 ? static_cast<float>(width) / static_cast<float>(height) : 1.0f);
     mParent->mRenderContext->Resize(width, height);
 }
+
+#if PEGASUS_ENABLE_PROXIES
+//----------------------------------------------------------------------------------------
+
+void WindowMessageHandler::OnMouseEvent(IWindowComponent::MouseButton button, bool isDown, float x, float y)
+{
+    for (unsigned i = 0; i < mParent->mComponents.GetSize(); ++i)
+    {
+        mParent->mComponents[i].mComponent->OnMouseEvent(mParent->mComponents[i].mState,  button, isDown, x, y);
+    }
+}
+
+#endif
 
 //----------------------------------------------------------------------------------------
 
@@ -225,6 +242,33 @@ void Window::HandleMainWindowEvents()
         mPrivateImpl->SetAsMainWindow();
     }
 }
+
+#if PEGASUS_ENABLE_PROXIES
+
+//----------------------------------------------------------------------------------------
+
+void Window::OnMouseEvent(IWindowComponent::MouseButton button, bool isDown, float x, float y)
+{
+    //broadcast mouse event to components
+    for (unsigned int i = 0; i < mComponents.GetSize(); ++i)
+    {
+        Window::StateComponentPair& scp = mComponents[i];
+        scp.mComponent->OnMouseEvent(scp.mState, button, isDown, x, y);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Window::OnKeyEvent(char key, bool isDown)
+{
+    //broadcast keyboard event to components
+    for (unsigned int i = 0; i < mComponents.GetSize(); ++i)
+    {
+        Window::StateComponentPair& scp = mComponents[i];
+        scp.mComponent->OnKeyEvent(scp.mState, key, isDown);
+    }
+}
+#endif
 
 }   // namespace Wnd
 }   // namespace Pegasus

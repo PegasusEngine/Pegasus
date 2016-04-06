@@ -295,6 +295,26 @@ Core::IEventUserData* TextureNodeProxy::GetUserData() const
     }
 }
 
+//----------------------------------------------------------------------------------------
+
+PropertyGrid::IPropertyGridObjectProxy* TextureNodeProxy::GetPropertyGrid()
+{
+    switch (mNodeType)
+    {
+        case NODETYPE_GENERATOR:
+            return mTextureGeneratorNode->GetPropertyGridProxy();
+
+        case NODETYPE_OPERATOR:
+            return mTextureOperatorNode->GetPropertyGridProxy();
+
+        case NODETYPE_OUTPUT:
+            return mTextureNode->GetPropertyGridProxy();
+
+        default:
+            PG_FAILSTR("Trying to get the event user data of an unknown texture node type");
+            return nullptr;
+    }
+}
 
 }   // namespace Texture
 }   // namespace Pegasus

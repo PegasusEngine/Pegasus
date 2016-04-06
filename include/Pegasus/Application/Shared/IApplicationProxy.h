@@ -58,6 +58,7 @@ namespace Pegasus {
 
     namespace AssetLib {
         class IAssetLibProxy;
+        class IRuntimeAssetObjectProxy;
     }
 }
 
@@ -133,6 +134,11 @@ public:
 
     //! returns the root folder for asset loading
     virtual const char* GetAssetsRoot() const = 0;
+
+    //! Sets a resource for this window to debug. Must be a window with a texture / mesh view component.
+    //! \param the window proxy to inject the resource into
+    //! \param resource the resource to put into this mesh.
+    virtual void SetDebugWindowResource(Pegasus::Wnd::IWindowProxy* window, Pegasus::AssetLib::IRuntimeAssetObjectProxy* resource) = 0;
 
 };
 

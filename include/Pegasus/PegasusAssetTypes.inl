@@ -55,22 +55,22 @@
 //            Pegasus will check for structureness the first asset type it finds.                                    //  
 //-------------------------------------------------------------------------------------------------------------------//
 //-------------------------------------------------------------------------------------------------------------------//
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////                           Runtime Name         |  TypeGuid |   TypeName          | mExtension | Is Structured ////
-/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_H_SHADER     ,  'HDSR'   ,  "ShaderHeader"     ,    "h"     ,    false )    /**/
-/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_VS_SHADER    ,  'VESR'   ,  "VertexShader"     ,    "vs"    ,    false )    /**/
-/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_PS_SHADER    ,  'PSSR'   ,  "PixelShader"      ,    "ps"    ,    false )    /**/
-/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_GS_SHADER    ,  'GESR'   ,  "GeometryShader"   ,    "gs"    ,    false )    /**/
-/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_TCS_SHADER   ,  'TCSR'   ,  "TCShader"         ,    "tcs"   ,    false )    /**/
-/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_TES_SHADER   ,  'TESR'   ,  "TESShader"        ,    "tes"   ,    false )    /**/
-/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_CS_SHADER    ,  'COSR'   ,  "ComputeShader"    ,    "cs"    ,    false )    /**/
-/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_PROGRAM      ,  'PRAS'   ,  "Program"          ,    "pas"   ,    true  )    /**/
-/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_TEXTURE      ,  'TEAS'   ,  "Texture"          ,    "pas"   ,    true  )    /**/
-/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_MESH         ,  'MEAS'   ,  "Mesh"             ,    "pas"   ,    true  )    /**/
-/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_TIMELINE     ,  'TIAS'   ,  "Timeline"         ,    "pas"   ,    true  )    /**/
-/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_BLOCKSCRIPT  ,  'BLAS'   ,  "Blockscript"      ,    "bs"    ,    false  )    /**/
-/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_H_BLOCKSCRIPT,  'BHAS'   ,  "BlockscriptHeader",    "bsh"   ,    false  )    /**/
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////                           Runtime Name         |  TypeGuid |   TypeName          | mExtension | Is Structured | Icon path////
+/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_H_SHADER     ,  'HDSR'   ,  "ShaderHeader"     ,    "h"     ,    false     , ":TypeIcons/shader.png") /**/
+/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_VS_SHADER    ,  'VESR'   ,  "VertexShader"     ,    "vs"    ,    false     , ":TypeIcons/shader.png") /**/
+/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_PS_SHADER    ,  'PSSR'   ,  "PixelShader"      ,    "ps"    ,    false     , ":TypeIcons/shader.png") /**/
+/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_GS_SHADER    ,  'GESR'   ,  "GeometryShader"   ,    "gs"    ,    false     , ":TypeIcons/shader.png") /**/
+/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_TCS_SHADER   ,  'TCSR'   ,  "TCShader"         ,    "tcs"   ,    false     , ":TypeIcons/shader.png") /**/
+/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_TES_SHADER   ,  'TESR'   ,  "TESShader"        ,    "tes"   ,    false     , ":TypeIcons/shader.png") /**/
+/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_CS_SHADER    ,  'COSR'   ,  "ComputeShader"    ,    "cs"    ,    false     , ":TypeIcons/shader.png") /**/
+/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_PROGRAM      ,  'PRAS'   ,  "Program"          ,    "pas"   ,    true      , ":TypeIcons/program.png") /**/
+/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_TEXTURE      ,  'TEAS'   ,  "Texture"          ,    "pas"   ,    true      , ":TypeIcons/texture.png") /**/
+/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_MESH         ,  'MEAS'   ,  "Mesh"             ,    "pas"   ,    true      , ":TypeIcons/mesh.png") /**/
+/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_TIMELINE     ,  'TIAS'   ,  "Timeline"         ,    "pas"   ,    true      , ":TypeIcons/timeline.png") /**/
+/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_BLOCKSCRIPT  ,  'BLAS'   ,  "Blockscript"      ,    "bs"    ,    false     , ":TypeIcons/timelinescript.png")  /**/
+/**/   REGISTER_ASSET_TYPE( ASSET_TYPE_H_BLOCKSCRIPT,  'BHAS'   ,  "BlockscriptHeader",    "bsh"   ,    false     , ":TypeIcons/timelinescript.png")  /**/
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////-------------------------------------Asset Registration Table End------------------------------------------//////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                                

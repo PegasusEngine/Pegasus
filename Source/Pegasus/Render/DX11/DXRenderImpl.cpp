@@ -59,20 +59,27 @@ void Pegasus::Render::SetProgram (Pegasus::Shader::ProgramLinkageInOut program)
     bool updated = false;
     Pegasus::Graph::NodeGPUData * nodeGpuData = program->GetUpdatedData(updated)->GetNodeGPUData();
     Pegasus::Render::DXProgramGPUData * shaderGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXProgramGPUData, nodeGpuData);
-
-    if (shaderGpuData->mProgramValid && (gDXState.mDispatchedShader != shaderGpuData || gDXState.mDispatchedProgramVersion != shaderGpuData->mProgramVersion))
+    if (shaderGpuData->mProgramValid)
     {
-        ID3D11DeviceContext * context;
-        ID3D11Device * device;
-        Pegasus::Render::GetDeviceAndContext(&device, &context);
-        gDXState.mDispatchedShader = shaderGpuData;
-        gDXState.mDispatchedProgramVersion = shaderGpuData->mProgramVersion;
-        context->VSSetShader(shaderGpuData->mVertex, nullptr, 0);
-        context->PSSetShader(shaderGpuData->mPixel, nullptr, 0);
-        context->DSSetShader(shaderGpuData->mDomain, nullptr, 0);
-        context->HSSetShader(shaderGpuData->mHull, nullptr, 0);
-        context->GSSetShader(shaderGpuData->mGeometry, nullptr, 0);
-        context->CSSetShader(shaderGpuData->mCompute, nullptr, 0);
+        if (gDXState.mDispatchedShader != shaderGpuData || gDXState.mDispatchedProgramVersion != shaderGpuData->mProgramVersion)
+        {
+            ID3D11DeviceContext * context;
+            ID3D11Device * device;
+            Pegasus::Render::GetDeviceAndContext(&device, &context);
+            gDXState.mDispatchedShader = shaderGpuData;
+            gDXState.mDispatchedProgramVersion = shaderGpuData->mProgramVersion;
+            context->VSSetShader(shaderGpuData->mVertex, nullptr, 0);
+            context->PSSetShader(shaderGpuData->mPixel, nullptr, 0);
+            context->DSSetShader(shaderGpuData->mDomain, nullptr, 0);
+            context->HSSetShader(shaderGpuData->mHull, nullptr, 0);
+            context->GSSetShader(shaderGpuData->mGeometry, nullptr, 0);
+            context->CSSetShader(shaderGpuData->mCompute, nullptr, 0);
+        }
+    }
+    else
+    {
+        gDXState.mDispatchedShader = nullptr;
+        gDXState.mDispatchedProgramVersion = 0;
     }
 }
 
@@ -167,7 +174,7 @@ void Pegasus::Render::SetMesh (Pegasus::Mesh::MeshInOut mesh)
             );
         if (res != S_OK)
         {
-            PG_LOG('WARN', "Incompatible input layout in shader and mesh");
+            PG_LOG('ERR_', "Incompatible input layout in shader and mesh");
         }
         inputLayoutEntry->mProgramGuid = programGpuData->mProgramGuid;
         inputLayoutEntry->mProgramVersion = programGpuData->mProgramVersion;
@@ -180,7 +187,7 @@ void Pegasus::Render::SetMesh (Pegasus::Mesh::MeshInOut mesh)
     }
     else
     {
-        PG_LOG('WARN', "Incompatible input layout in shader and mesh");
+        PG_LOG('ERR_', "Incompatible input layout in shader and mesh");
     }
     
     if (gDXState.mDispatchedMeshGpuData != meshGpuData)
@@ -728,6 +735,11 @@ static bool InternalSetTextureUniform(Pegasus::Render::Uniform& u, Pegasus::Rend
     Pegasus::Render::DXProgramGPUData * programData = gDXState.mDispatchedShader;
 	if (programData != nullptr && programData->mProgramValid && ProcessUpdateUniform(u,programData))
     {
+		if (u.mInternalIndex < 0 || u.mInternalIndex >= programData->mReflectionDataCount)
+        {
+            PG_LOG('ERR_', "Fatal error when setting uniform %s. Does this uniform corresponds to the program?", u.mName);
+            return false;
+        }
         ID3D11ShaderResourceView* srv = texGpuData->mSrv;
         PG_ASSERT(srv != nullptr);
         Pegasus::Render::DXProgramGPUData::UniformReflectionData& reflectionData = programData->mReflectionData[u.mInternalIndex];
@@ -780,16 +792,20 @@ bool Pegasus::Render::SetUniformBuffer(Pegasus::Render::Uniform& u, const Buffer
     DXProgramGPUData * programData = gDXState.mDispatchedShader;
 	if (programData != nullptr && programData->mProgramValid && ProcessUpdateUniform(u,programData))
     {
+		if (u.mInternalIndex < 0 || u.mInternalIndex >= programData->mReflectionDataCount)
+        {
+            PG_LOG('ERR_', "Fatal error when setting uniform %s. Does this uniform corresponds to the program?", u.mName);
+            return false;
+        }
         ID3D11Buffer * d3dBuffer = static_cast<ID3D11Buffer*>(buffer.mInternalData);
         PG_ASSERT(d3dBuffer != nullptr);
-		PG_ASSERT(u.mInternalIndex >= 0 && u.mInternalIndex < programData->mReflectionDataCount);
         Pegasus::Render::DXProgramGPUData::UniformReflectionData& reflectionData = programData->mReflectionData[u.mInternalIndex];
 		for (int s = 0; s < reflectionData.mStageCount; ++s)
         {
             Pegasus::Render::DXProgramGPUData::UniformReflectionData::StageBinding& binding = reflectionData.mStageBindings[s];
-            if (binding.mSize != buffer.mSize)
+            if (binding.mSize > buffer.mSize)
             {
-                PG_LOG('WARN', "Size of cbuffer does not match. Target size of \"%s\" must be %d bytes, instead of %d bytes", u.mName, binding.mSize, buffer.mSize);
+                PG_LOG('ERR_', "Size of cbuffer too small. Target size of \"%s\" must be %d bytes, instead expecting %d bytes", u.mName, binding.mSize, buffer.mSize);
                 continue;
             }
             switch(binding.mPipelineType)

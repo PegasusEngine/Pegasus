@@ -16,64 +16,6 @@
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QTabWidget" name="AssetLibMasterTab">
-      <property name="currentIndex">
-       <number>0</number>
-      </property>
-      <widget class="QWidget" name="Assets_tab">
-       <attribute name="title">
-        <string>Assets</string>
-       </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout_6">
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_4">
-          <item>
-           <widget class="QTreeView" name="AssetTreeView"/>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="Programs_tab">
-       <attribute name="title">
-        <string>Programs</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <widget class="QTreeView" name="ProgramTreeView">
-          <property name="selectionBehavior">
-           <enum>QAbstractItemView::SelectItems</enum>
-          </property>
-          <property name="itemsExpandable">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="Shaders_tab">
-       <attribute name="title">
-        <string>Shaders</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_4">
-        <item>
-         <widget class="QTreeView" name="ShaderTreeView"/>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="BlockScript_tab">
-       <attribute name="title">
-        <string>BlockScripts</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
-        <item>
-         <widget class="QTreeView" name="BlockScriptTreeView"/>
-        </item>
-       </layout>
-      </widget>
-     </widget>
-    </item>
-    <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
        <widget class="QToolButton" name="AddAssetButton">
@@ -101,6 +43,138 @@
       </item>
      </layout>
     </item>
+    <item>
+     <widget class="QTabWidget" name="AssetLibMasterTab">
+      <property name="currentIndex">
+       <number>1</number>
+      </property>
+      <widget class="QWidget" name="Assets_tab">
+       <attribute name="icon">
+        <iconset resource="../Resources/Resources.qrc">
+         <normaloff>:/MiscViews/LibraryIcon.png</normaloff>:/MiscViews/LibraryIcon.png</iconset>
+       </attribute>
+       <attribute name="title">
+        <string>Assets</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QTreeView" name="AssetTreeView"/>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="Instances_tab">
+       <attribute name="icon">
+        <iconset resource="../Resources/Resources.qrc">
+         <normaloff>:/MiscViews/TypeIcon.png</normaloff>:/MiscViews/TypeIcon.png</iconset>
+       </attribute>
+       <attribute name="title">
+        <string>Instances</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_6">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <widget class="QPushButton" name="sortByCategoryButton">
+              <property name="toolTip">
+               <string>Filter asset instances by categories (their owner block)</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="icon">
+               <iconset resource="../Resources/Resources.qrc">
+                <normaloff>:/PropertyGridClasses/Class16.png</normaloff>:/PropertyGridClasses/Class16.png</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="sortByTypeButton">
+              <property name="toolTip">
+               <string>Filter asset instances by their type.</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="icon">
+               <iconset resource="../Resources/Resources.qrc">
+                <normaloff>:/PropertyGridClasses/Property16.png</normaloff>:/PropertyGridClasses/Property16.png</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="expandButton">
+              <property name="toolTip">
+               <string>Expand all.</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="icon">
+               <iconset resource="../Resources/Resources.qrc">
+                <normaloff>:/AssetLibrary/expandall.jpg</normaloff>:/AssetLibrary/expandall.jpg</iconset>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>16</width>
+                <height>16</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="collapseButton">
+              <property name="toolTip">
+               <string>Collapse all.</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="icon">
+               <iconset resource="../Resources/Resources.qrc">
+                <normaloff>:/AssetLibrary/collapseall.jpg</normaloff>:/AssetLibrary/collapseall.jpg</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QTreeWidget" name="instanceTreeWidget">
+            <column>
+             <property name="text">
+              <string notr="true">1</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
    </layout>
   </widget>
  </widget>
@@ -108,5 +182,38 @@
  <resources>
   <include location="../Resources/Resources.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>collapseButton</sender>
+   <signal>clicked()</signal>
+   <receiver>instanceTreeWidget</receiver>
+   <slot>collapseAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>137</x>
+     <y>108</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>234</x>
+     <y>358</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>expandButton</sender>
+   <signal>clicked()</signal>
+   <receiver>instanceTreeWidget</receiver>
+   <slot>expandAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>103</x>
+     <y>108</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>234</x>
+     <y>358</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

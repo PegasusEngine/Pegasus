@@ -27,11 +27,7 @@ namespace Pegasus {
     namespace Alloc {
         class IAllocator;
     }
-
-    namespace Shader {
-        class ShaderTracker;
-    }
-
+    
     namespace Graph {
         class NodeManager;
     }
@@ -63,11 +59,6 @@ public:
     virtual void InvalidateData();
 
 #if PEGASUS_ENABLE_PROXIES
-    //! sets internal reference to shader tracker
-    //! this is needed so when the shader is deleted, it can remove itself from the tracker
-    //! \param tracker the shader tracker to reference.
-    void SetShaderTracker(ShaderTracker * tracker) {mShaderTracker = tracker;}
-
     virtual AssetLib::IRuntimeAssetObjectProxy * GetProxy() { return &mProxy; }
     virtual const AssetLib::IRuntimeAssetObjectProxy * GetProxy() const { return &mProxy; }
 #endif
@@ -86,8 +77,6 @@ private:
 
 //! editor metadata
 #if PEGASUS_ENABLE_PROXIES
-
-    ShaderTracker * mShaderTracker; //! reference to tracker
     ShaderProxy mProxy;
 
 #endif

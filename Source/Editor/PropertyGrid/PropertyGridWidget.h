@@ -15,6 +15,7 @@
 #include "PropertyGrid/PropertyGridPropertyManagers.h"
 #include "PropertyGrid/PropertyGridEditorFactories.h"
 #include "MessageControllers/PropertyGridIOMessageController.h"
+#include "MessageControllers/AssetIOMessageController.h"
 #include <QWidget>
 #include <QVector>
 
@@ -58,8 +59,17 @@ public:
     //!              nullptr to remove the displayed property grid
     void SetCurrentProxy(Pegasus::PropertyGrid::IPropertyGridObjectProxy * proxy);
 
+    //! Set the property grid object proxy associated with the asset instance handle.
+    //! the content of the property browser will update accordingly.
+    //! \param handle of the instance of the asset object. If there is no property grid associated with this object
+    //!        this call won't affect the contents of the property grid widget.
+    void SetCurrentProxy(AssetInstanceHandle assetHandle);
+
     //! Call when you want this property to lose references, only when the app closes.
     void Clear();
+
+signals:
+    void OnPropertyUpdated(QtProperty* property);
 
 private slots:
 
@@ -84,7 +94,7 @@ private:
 
     const Pegasus::PropertyGrid::PropertyRecord * FindPropertyRecord(const QtProperty * property, unsigned int & outIndex) const;
 
-    bool IsReady() const { return mProxyHandle != INVALID_PGRID_HANDLE; }
+    bool IsReady() const { return !mIsInitializing && mProxyHandle != INVALID_PGRID_HANDLE; }
 
     void UpdateProxy(const PropertyGridIOMessageController::UpdateElement& el);
 
@@ -161,6 +171,9 @@ private:
     PropertyGridColor8RGBAEditorFactory mColor8RGBAEditorFactory;
     PropertyGridString64EditorFactory mString64EditorFactory;
     PropertyGridEnumEditorFactory mEnumEditorFactory;
+
+    //bool used to prevent massive onPropertyChanged messages when the block is initializing
+    bool mIsInitializing;
 };
 
 

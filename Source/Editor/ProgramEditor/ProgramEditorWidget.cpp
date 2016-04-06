@@ -12,7 +12,6 @@
 #include "Editor.h"
 #include "Pegasus/AssetLib/Shared/IAssetLibProxy.h"
 #include "Pegasus/AssetLib/Shared/IAssetProxy.h"
-#include "Pegasus/AssetLib/Shared/IRuntimeAssetObjectProxy.h"
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
@@ -47,7 +46,7 @@ const char* gShaderStageNames[Pegasus::Shader::SHADER_STAGES_COUNT] = {
 };
 
 ProgramEditorWidget::ProgramEditorWidget(QWidget* parent, Editor* editor)
-    : PegasusDockWidget(parent, editor), mCurrentProgram(nullptr)
+    : PegasusDockWidget(parent, editor)
 {
 }
 
@@ -81,33 +80,23 @@ void ProgramEditorWidget::SetupUi()
     mTabBar = new NodeFileTabBar(this);
 
     connect(
-        mTabBar, SIGNAL(RuntimeObjectRemoved(Pegasus::AssetLib::IRuntimeAssetObjectProxy*, QObject*)),
-        this, SLOT(RequestCloseProgram(Pegasus::AssetLib::IRuntimeAssetObjectProxy*, QObject*))
+        mTabBar, SIGNAL(RuntimeObjectRemoved(AssetInstanceHandle, QObject*)),
+        this, SLOT(RequestCloseProgram(AssetInstanceHandle, QObject*))
     );
 
     connect(
-        mTabBar, SIGNAL(DisplayRuntimeObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
-        this,   SLOT(OnViewProgram(Pegasus::AssetLib::IRuntimeAssetObjectProxy*))
+        mTabBar, SIGNAL(DisplayRuntimeObject(AssetInstanceHandle)),
+        this,   SLOT(OnViewProgram(AssetInstanceHandle))
     );
 
     connect(
-        mTabBar, SIGNAL(SaveCurrentRuntimeObject()),
-        this,   SLOT(SignalSaveCurrentProgram())
+        mTabBar, SIGNAL(SaveRuntimeObject(int)),
+        this,   SLOT(SignalSaveTab(int))
     );
 
     connect(
-        mTabBar, SIGNAL(DiscardCurrentObjectChanges()),
-        this,   SLOT(SignalDiscardCurrentObjectChanges())
-    );
-
-    connect(
-        mTabBar, SIGNAL(RegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
-        this,   SIGNAL(OnRegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*))
-    );
-
-    connect(
-        mTabBar, SIGNAL(UnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
-        this,   SIGNAL(OnUnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*))
+        mTabBar, SIGNAL(DiscardObjectChanges(AssetInstanceHandle)),
+        this,   SLOT(SignalDiscardObjectChanges(AssetInstanceHandle))
     );
 
     mainLayout->addWidget(mTabBar);
@@ -117,7 +106,7 @@ void ProgramEditorWidget::SetupUi()
         ProgramEditorWidget::ShaderSlots& uiSlot = mShaderSlots[i];
 
         QHBoxLayout* vertLayout = new QHBoxLayout();
-        mainLayout->addItem(vertLayout); 
+        mainLayout->addItem(vertLayout);
 
         uiSlot.mSlotName = new QLabel(tr(gShaderStageNames[i]), mMainWidget);
         vertLayout->addWidget(uiSlot.mSlotName);
@@ -160,21 +149,13 @@ void ProgramEditorWidget::SetupUi()
 
 QString ProgramEditorWidget::GetCurrentShaderPath(Pegasus::Shader::ShaderType type)
 {
-    if (mCurrentProgram != nullptr)
+    if (mCurrentProgram.IsValid())
     {
-        int shaderCounts = mCurrentProgram->GetShaderCount();
-        for (int i = 0; i < shaderCounts; ++i)
+        ProgramData& pd = mProgramData[mCurrentProgram];
+        ShaderMap::iterator it = pd.shaders.find(type);
+        if (it != pd.shaders.end())
         {
-            Pegasus::Shader::IShaderProxy* shaderStage = mCurrentProgram->GetShader((unsigned)i);
-            Pegasus::Shader::ShaderType shaderType = shaderStage->GetStageType();
-            if (shaderType == type)
-            {
-                Pegasus::AssetLib::IAssetProxy* ownerAsset = shaderStage->GetOwnerAsset();
-                if (ownerAsset != nullptr)
-                {
-                    return tr(ownerAsset->GetPath());
-                }
-            }
+            return it.value();
         }
     }
     return tr("");
@@ -182,7 +163,7 @@ QString ProgramEditorWidget::GetCurrentShaderPath(Pegasus::Shader::ShaderType ty
 
 void ProgramEditorWidget::OnAddShader(int id)
 {
-    Pegasus::App::IApplicationProxy* app = Editor::GetInstance().GetApplicationManager().GetApplication()->GetApplicationProxy();
+    Pegasus::App::IApplicationProxy* app = GetEditor()->GetApplicationManager().GetApplication()->GetApplicationProxy();
     if (app != nullptr)
     {
         QString rootFolder = app->GetAssetsRoot();
@@ -212,11 +193,14 @@ void ProgramEditorWidget::OnAddShader(int id)
 
 void ProgramEditorWidget::SetShader(const QString& shaderFile, Pegasus::Shader::ShaderType shaderType)
 {
-    if (mCurrentProgram != nullptr)
+    if (mCurrentProgram.IsValid())
     {
+        ProgramData& pd = mProgramData[mCurrentProgram];
         mTabBar->MarkCurrentAsDirty();
         if (shaderFile == "")
         {
+            
+            pd.shaders.remove(shaderType);
             mTabBar->MarkCurrentAsDirty();
             ProgramIOMessageController::Message msg;
             msg.SetMessageType(ProgramIOMessageController::Message::REMOVE_SHADER);
@@ -226,6 +210,7 @@ void ProgramEditorWidget::SetShader(const QString& shaderFile, Pegasus::Shader::
         }
         else
         {
+            pd.shaders[shaderType] = shaderFile;
             ProgramIOMessageController::Message msg;
             msg.SetMessageType(ProgramIOMessageController::Message::MODIFY_SHADER);
             msg.SetShaderPath(shaderFile);
@@ -237,7 +222,7 @@ void ProgramEditorWidget::SetShader(const QString& shaderFile, Pegasus::Shader::
 
 void ProgramEditorWidget::OnRemoveShader(int id)
 {
-    if (mCurrentProgram != nullptr)
+    if (mCurrentProgram.IsValid())
     {
         Pegasus::Shader::ShaderType shaderType = static_cast<Pegasus::Shader::ShaderType>(id);
         GetCurrentUndoStack()->push( new ProgramEditorModifyShaderCmd (
@@ -287,46 +272,77 @@ void ProgramEditorWidget::OnSaveFocusedObject()
 {
     SignalSaveCurrentProgram();
 }
-
 void ProgramEditorWidget::SignalSaveCurrentProgram()
 {
-    if (mCurrentProgram != nullptr)
+    int idx = mTabBar->GetCurrentIndex();
+    SignalSaveTab(idx);
+}
+
+void ProgramEditorWidget::SignalSaveTab(int tabId)
+{
+    if (tabId < 0 || tabId >= mTabBar->GetTabCount()) return;
+
+    AssetInstanceHandle handle = mTabBar->GetTabObject(tabId);
+    if (handle.IsValid())
     {
         PostStatusBarMessage(tr("")); //clear the message bar
         AssetIOMessageController::Message msg;
         msg.SetMessageType(AssetIOMessageController::Message::SAVE_ASSET);
-        msg.SetObject(mCurrentProgram);
+        msg.SetObject(handle);
         SendAssetIoMessage(msg);
     }
 }
 
-void ProgramEditorWidget::SignalDiscardCurrentObjectChanges()
+void ProgramEditorWidget::SignalDiscardObjectChanges(AssetInstanceHandle object)
 {
-    mCurrentProgram->ReloadFromAsset();
+    if (object.IsValid())
+    {
+        AssetIOMessageController::Message msg(AssetIOMessageController::Message::RELOAD_FROM_ASSET);
+        msg.SetObject(object);
+        SendAssetIoMessage(msg);
+    }
 }
+    
 
-void ProgramEditorWidget::OnOpenObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
+void ProgramEditorWidget::OnOpenObject(AssetInstanceHandle handle, const QString& displayName, const QVariant& initData)
 {
     show();
     activateWindow();
+    QVariantMap map = initData.toMap();
+    QString name = map["Name"].toString();
+    QVariantList shaders = map["Shaders"].toList();
+
+    ProgramData pd;
+
+    for (QVariant v : shaders)
+    {
+        QVariantMap s = v.toMap();
+        QString shaderPath = s["Path"].toString();
+        Pegasus::Shader::ShaderType shaderType = static_cast<Pegasus::Shader::ShaderType>(s["Type"].toInt());
+        pd.shaders.insert(shaderType, shaderPath);
+    }
+
+    mProgramData.insert(handle, pd); 
+
     QUndoStack* programUndoStack = new QUndoStack(this);
-    mTabBar->Open(object, programUndoStack);
+    mTabBar->Open(handle, displayName, programUndoStack);
 }
 
 void ProgramEditorWidget::SyncUiToProgram()
 {
     ClearUi();
-    if (mCurrentProgram != nullptr)
+    if (mCurrentProgram.IsValid())
     {
-        int shaderCounts = mCurrentProgram->GetShaderCount();
-        for (int i = 0; i < shaderCounts; ++i)
+        ProgramData pd = mProgramData[mCurrentProgram];
+
+        ShaderMap::iterator it = pd.shaders.begin();
+        for (; it != pd.shaders.end(); ++it)
         {
-            Pegasus::Shader::IShaderProxy* shaderStage = mCurrentProgram->GetShader((unsigned)i);
-            Pegasus::Shader::ShaderType shaderType = shaderStage->GetStageType();
+            Pegasus::Shader::ShaderType shaderType = it.key();
             if (shaderType >= Pegasus::Shader::SHADER_STAGES_BEGIN && shaderType < Pegasus::Shader::SHADER_STAGES_COUNT)
             {
                 ProgramEditorWidget::ShaderSlots& slot = mShaderSlots[shaderType];
-                slot.mAsset->setText(tr(shaderStage->GetName()));
+                slot.mAsset->setText(it.value());
                 slot.mActive = true;
             }
         }
@@ -353,32 +369,31 @@ void ProgramEditorWidget::ClearUi()
     }
 }
 
-void ProgramEditorWidget::OnViewProgram(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
+void ProgramEditorWidget::OnViewProgram(AssetInstanceHandle handle)
 {
-    if (object != nullptr)
+    if (handle.IsValid())
     {
-        mCurrentProgram = static_cast<Pegasus::Shader::IProgramProxy*>(object);
+        mCurrentProgram = handle;
         SyncUiToProgram();
         EnableUi(true);
     }
     else
     {
-        mCurrentProgram = nullptr;
+        mCurrentProgram = AssetInstanceHandle();
         EnableUi(false);
         ClearUi();
     }
 }
 
 
-void ProgramEditorWidget::RequestCloseProgram(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object, QObject* extraData)
+void ProgramEditorWidget::RequestCloseProgram(AssetInstanceHandle handle, QObject* extraData)
 {
     ED_ASSERT(extraData != nullptr);
     delete extraData;
 
-    Pegasus::Shader::IProgramProxy* program = static_cast<Pegasus::Shader::IProgramProxy*>(object);
     AssetIOMessageController::Message msg;
     msg.SetMessageType(AssetIOMessageController::Message::CLOSE_ASSET);
-    msg.SetObject(program);
+    msg.SetObject(handle);
 
 
     if (mTabBar->GetTabCount() == 0)
@@ -391,7 +406,7 @@ void ProgramEditorWidget::RequestCloseProgram(Pegasus::AssetLib::IRuntimeAssetOb
 
 QUndoStack* ProgramEditorWidget::GetCurrentUndoStack() const
 {
-    if (mCurrentProgram != nullptr && mTabBar->GetCurrentIndex() >= 0)
+    if (mCurrentProgram.IsValid() && mTabBar->GetCurrentIndex() >= 0)
     {
         int index = mTabBar->GetCurrentIndex();
         return static_cast<QUndoStack*>(mTabBar->GetExtraData(index));

@@ -26,26 +26,6 @@ Pegasus::Shader::ShaderManagerProxy::ShaderManagerProxy(Pegasus::Shader::ShaderM
 {
 }
 
-int Pegasus::Shader::ShaderManagerProxy::GetProgramCount() const
-{
-    return mObject->GetShaderTracker()->ProgramSize();
-}
-
-Pegasus::Shader::IProgramProxy * Pegasus::Shader::ShaderManagerProxy::GetProgram(int i)
-{
-    return static_cast<Pegasus::Shader::IProgramProxy *>(mObject->GetShaderTracker()->GetProgram(i)->GetProxy());
-}
-
-int Pegasus::Shader::ShaderManagerProxy::GetShaderCount() const
-{
-    return mObject->GetShaderTracker()->ShaderSize();
-}
-
-Pegasus::Shader::IShaderProxy * Pegasus::Shader::ShaderManagerProxy::GetShader(int i)
-{
-    return static_cast<Pegasus::Shader::IShaderProxy*>(mObject->GetShaderTracker()->GetShaderSource(i)->GetProxy());
-}
- 
 void Pegasus::Shader::ShaderManagerProxy::RegisterEventListener(Pegasus::Core::CompilerEvents::ICompilerEventListener * eventListener)
 {
 #if PEGASUS_USE_EVENTS

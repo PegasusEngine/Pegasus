@@ -32,6 +32,7 @@ PropertyGridWidget::PropertyGridWidget(QWidget * parent)
 ,   mApplicationProxy(nullptr)
 ,   mMessenger(nullptr)
 ,   mProxyHandle(INVALID_PGRID_HANDLE)
+,   mIsInitializing(false)
 {
     mBrowser = new QtTreePropertyBrowser(parent);
     mBrowser->setRootIsDecorated(false);
@@ -105,6 +106,7 @@ void PropertyGridWidget::intPropertyChanged(QtProperty * property)
     el.mIndex = propertyIndex;
 
     UpdateProxy(el);
+    OnPropertyUpdated(property);
 }
 
 //----------------------------------------------------------------------------------------
@@ -123,6 +125,7 @@ void PropertyGridWidget::boolPropertyChanged(QtProperty * property)
     el.mIndex = propertyIndex;
 
     UpdateProxy(el);
+    OnPropertyUpdated(property);
 }
 
 //----------------------------------------------------------------------------------------
@@ -141,6 +144,7 @@ void PropertyGridWidget::uintPropertyChanged(QtProperty * property)
     el.mIndex = propertyIndex;
 
     UpdateProxy(el);
+    OnPropertyUpdated(property);
 }
 
 //----------------------------------------------------------------------------------------
@@ -159,6 +163,7 @@ void PropertyGridWidget::floatPropertyChanged(QtProperty * property)
     el.mIndex = propertyIndex;
 
     UpdateProxy(el);
+    OnPropertyUpdated(property);
 }
 
 //----------------------------------------------------------------------------------------
@@ -179,6 +184,7 @@ void PropertyGridWidget::vec2PropertyChanged(QtProperty * property)
     el.mIndex = propertyIndex;
 
     UpdateProxy(el);
+    OnPropertyUpdated(property);
 }
 
 //----------------------------------------------------------------------------------------
@@ -200,6 +206,7 @@ void PropertyGridWidget::vec3PropertyChanged(QtProperty * property)
     el.mIndex = propertyIndex;
 
     UpdateProxy(el);
+    OnPropertyUpdated(property);
 }
 
 //----------------------------------------------------------------------------------------
@@ -222,6 +229,7 @@ void PropertyGridWidget::vec4PropertyChanged(QtProperty * property)
     el.mIndex = propertyIndex;
 
     UpdateProxy(el);
+    OnPropertyUpdated(property);
 }
 
 //----------------------------------------------------------------------------------------
@@ -244,6 +252,7 @@ void PropertyGridWidget::rgbPropertyChanged(QtProperty * property)
     el.mIndex = propertyIndex;
 
     UpdateProxy(el);
+    OnPropertyUpdated(property);
 }
 
 //----------------------------------------------------------------------------------------
@@ -266,6 +275,7 @@ void PropertyGridWidget::rgbaPropertyChanged(QtProperty * property)
     el.mIndex = propertyIndex;
 
     UpdateProxy(el);
+    OnPropertyUpdated(property);
 }
 
 //----------------------------------------------------------------------------------------
@@ -273,7 +283,6 @@ void PropertyGridWidget::rgbaPropertyChanged(QtProperty * property)
 void PropertyGridWidget::s64PropertyChanged(QtProperty * property)
 {
     if (!IsReady()) return;
-
     unsigned int propertyIndex = 0;
     const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
 
@@ -287,6 +296,8 @@ void PropertyGridWidget::s64PropertyChanged(QtProperty * property)
     el.mIndex = propertyIndex;
 
     UpdateProxy(el);
+    OnPropertyUpdated(property);
+
 }
 
 //----------------------------------------------------------------------------------------
@@ -306,6 +317,7 @@ void PropertyGridWidget::enumPropertyChanged(QtProperty * property)
     el.mIndex = propertyIndex;
 
     UpdateProxy(el);
+    OnPropertyUpdated(property);
 }
 
 //----------------------------------------------------------------------------------------
@@ -392,8 +404,33 @@ void PropertyGridWidget::SetCurrentProxy(Pegasus::PropertyGrid::IPropertyGridObj
 
 //----------------------------------------------------------------------------------------
 
+void PropertyGridWidget::SetCurrentProxy(AssetInstanceHandle assetHandle)
+{
+    if (mProxyHandle != INVALID_PGRID_HANDLE)
+    {
+        SendCloseMessage();
+    }
+
+    PropertyGridIOMessageController::Message msg;
+    msg.SetMessageType(PropertyGridIOMessageController::Message::OPEN_FROM_ASSET_HANDLE);
+    msg.SetPropertyGridObserver(mObserver);
+    msg.SetAssetHandle(assetHandle);
+    mMessenger->SendPropertyGridIoMessage(msg);
+}
+
+//----------------------------------------------------------------------------------------
+
 void PropertyGridWidget::OnInitialized(PropertyGridHandle handle, const Pegasus::PropertyGrid::IPropertyGridObjectProxy * objectProxy)
 {
+    //! \todo THIS ENTIRE FUNCTION IS THREAD-UNSAFE.
+    //!       The function executes in the UI thread, so it should not fetch from the proxy.
+    //!       Use UpdateElement or a new InitElement to describe the properties
+
+    if (mApplicationProxy == nullptr)
+    {
+        return;
+    }
+    mIsInitializing = true;
     if (mProxyHandle == handle)
     {
         return;
@@ -401,11 +438,6 @@ void PropertyGridWidget::OnInitialized(PropertyGridHandle handle, const Pegasus:
 
     SendCloseMessage();
 
-    //! \todo THIS ENTIRE FUNCTION IS THREAD-UNSAFE.
-    //!       The function executes in the UI thread, so it should not fetch from the proxy.
-    //!       Use UpdateElement or a new InitElement to describe the properties
-
-    ED_ASSERTSTR(mApplicationProxy != nullptr, "An application must be loaded to load the content of a property grid");
     Pegasus::PropertyGrid::IPropertyGridManagerProxy * propertyGridManagerProxy = mApplicationProxy->GetPropertyGridManagerProxy();
 
     const Pegasus::PropertyGrid::IPropertyGridClassInfoProxy * classInfoProxy = objectProxy->GetClassInfoProxy();
@@ -413,7 +445,6 @@ void PropertyGridWidget::OnInitialized(PropertyGridHandle handle, const Pegasus:
     // Stack the number of class properties for each part of the class hierarchy.
     // When popping the elements of the stack, we know what is the global property index
     // of each class property.
-    // Add the object properties at the end of the property grid
     typedef QPair<const char *, unsigned int> SectionNameNumPropertiesPair;
     QStack<SectionNameNumPropertiesPair> sectionStack;
     sectionStack.push_back(SectionNameNumPropertiesPair("Object Properties",
@@ -555,7 +586,6 @@ void PropertyGridWidget::OnInitialized(PropertyGridHandle handle, const Pegasus:
     }
 
     mProxyHandle = handle;
-
 }
 
 //----------------------------------------------------------------------------------------
@@ -682,6 +712,7 @@ void PropertyGridWidget::OnUpdated(PropertyGridHandle handle, const QVector<Prop
                 ED_FAILSTR("Unmatched index of property! check the schema!");
             }
         } 
+        mIsInitializing = false;
     }
 }
 

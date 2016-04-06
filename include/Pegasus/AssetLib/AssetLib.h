@@ -17,6 +17,7 @@
 #include "Pegasus/Utils/Vector.h"
 #include "Pegasus/Core/Io.h"
 #include "Pegasus/PegasusAssetTypes.h"
+#include "Pegasus/AssetLib/Shared/AssetEvent.h"
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/AssetLib/Proxy/AssetLibProxy.h"
@@ -38,11 +39,16 @@ namespace AssetLib
 class Asset;
 class RuntimeAssetObject;
 class AssetRuntimeFactory;
-
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+class Category;
+#endif
 //! Asset Library class
 class AssetLib
 {
 public:
+
+    PEGASUS_EVENT_DECLARE_DISPATCHER(IAssetEventListener)
+    void InvalidateData() { /*for compliance, when SetEventListener is called */ }
     //! Constructor
     //! \param allocator the allocator to use internally
     //! \param ioMgr the input/output mgr, containing logic for the file system
@@ -61,6 +67,11 @@ public:
     //! \param the output asset pointer. This gets set to null if the return value != ERR_NONE
     //! \return the IO error. If successful, we are guaranteed to fill in the output pointer.
     Io::IoError LoadAsset(const char* path, bool isStructured, Asset** asset);
+
+    //! Reloads an asset (forcefully from the file system).    
+    //! \param the asset pointer.
+    //! \return the IO error.
+    Io::IoError ReloadAsset(Asset* asset);
 
     //! Destroys the asset called from LoadAsset. Only use this function if LoadAsset is used manually. Calling this
     //! on a runtimeAssetObjectRef will disconnect the object from an asset and set a reference to this asset to null.
@@ -129,9 +140,26 @@ public:
     IAssetLibProxy* GetProxy() { return &mProxy; }
 #endif
     
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+    //! Call in the API to start recording categories during loading
+    void BeginCategory(Category* category);
+    
+    //! Call in the API to end recording of categories during loading.
+    void EndCategory();
+
+    //! Find the category of assets by type
+    Category* FindTypeCategory(const Pegasus::PegasusAssetTypeDesc* typeDesc);
+
+    //! Returns a set of categories.
+    const Utils::Vector<Category*>& GetCategories() const { return mCategories; } 
+#endif
 
 private:
     Pegasus::AssetLib::AssetRuntimeFactory* FindFactory(Asset* asset, const char* ext, const PegasusAssetTypeDesc** outDesc) const;
+    Io::IoError InternalBuildAsset(Asset** memory, bool isStructured, const char* path);   
+
+    // resolves any pending child assets
+    void ResolvePendingChildAssets(Asset* asset);
 
 #if PEGASUS_ENABLE_PROXIES
     AssetLibProxy mProxy;
@@ -141,6 +169,13 @@ private:
     Io::IOManager* mIoMgr;
     Utils::Vector<Asset*> mAssets;
     Utils::Vector<AssetRuntimeFactory*> mFactories;
+
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+    Category* mCurrentCategory;
+    Utils::Vector<Category*> mCategories;
+    Category* mTypeCategories;
+    unsigned mTypeCategoryCount;
+#endif
 };
 
 }

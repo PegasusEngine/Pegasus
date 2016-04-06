@@ -33,7 +33,6 @@ namespace Utils
 class BaseVector
 {
 public:
-
     //! Constructor
     BaseVector(Alloc::IAllocator* allocator, unsigned int typeSize);
 
@@ -44,7 +43,7 @@ public:
     unsigned int GetSize() const { return mDataSize; }
 
     //! \return the allocator
-    Alloc::IAllocator* GetAlloc() { return mAlloc; }
+    Alloc::IAllocator* GetAlloc() const { return mAlloc; }
 
     //! Stores element into the target buffer
     void* GetElement(unsigned int index) {
@@ -73,6 +72,9 @@ public:
     //! \return gets the raw data pointer of this vector
     const void* Data() const { return mData; }
 
+    //! Sets a separate allocator
+    void SetAlloc(Alloc::IAllocator* other) { mAlloc = other; }
+    
 private:
     //! master data pointer
     void* mData;
@@ -99,6 +101,8 @@ public:
     explicit Vector(Alloc::IAllocator* alloc) : mBase(alloc, sizeof(T)) {}
 
     Vector() : mBase(Memory::GetGlobalAllocator(), sizeof(T)) {}
+
+    Vector(const Vector<T>& other) : mBase(nullptr, sizeof(T)) { *this = other; }
 
     //! Destructor
     ~Vector()
@@ -186,6 +190,17 @@ public:
     const T* Data() const
     {
         return static_cast<const T*>(mBase.Data());
+    }
+
+    Vector<T>& operator=(const Vector<T>& other)
+    {
+        Clear();
+        mBase.SetAlloc(other.mBase.GetAlloc());
+        for (unsigned i = 0; i < other.GetSize(); ++i)
+        {
+            PushEmpty() = other[i];
+        }
+        return *this;
     }
 
 private:

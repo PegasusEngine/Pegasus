@@ -32,6 +32,7 @@ namespace Pegasus {
 namespace Timeline {
 
 //! Property grid object proxy decorator, to intercept events from a property grid.
+//! This is so we prevent making WriteObjectProperty a virtual function.
 class BlockPropertyGridObjectDecorator : public PropertyGrid::IPropertyGridObjectProxy
 {
 public:
@@ -39,7 +40,7 @@ public:
     BlockPropertyGridObjectDecorator(Block* block);
 
     //Destructor
-    virtual ~BlockPropertyGridObjectDecorator() { }
+    virtual ~BlockPropertyGridObjectDecorator();
 
     //@{
     //! Functions act exactly the same for the decorated property grid object
@@ -109,11 +110,14 @@ public:
     //! \return Lane the block belongs to, nullptr when the block is not associated with a lane yet
     virtual ILaneProxy * GetLane() const;
 
+    //! Gets the string instance name of this block. The instance name is a unique identifier of this block.
+    //! \return the name of the instance
+    virtual const char * GetInstanceName() const;
 
-    //! Get the string displayed by the editor (usually class name without the "Block" suffix)
-    //! \warning To be defined in each derived class, using the DECLARE_TIMELINE_BLOCK macro
-    //! \return String displayed by the editor
-    virtual const char * GetEditorString() const;
+    //! Returns the name of this block. If it is "Block" means its a vanilla block type. Otherwise, whichever C++
+    //! Inheritance will be displayed
+    //! \return the name of the internal type
+    virtual const char* GetClassName() const;
 
     //! Set the color of the block
     //! \param red Red component (0-255)
@@ -127,6 +131,16 @@ public:
     //! Gets the script proxy if available, null if not available
     //! \return the source code proxy, null if it does not exist.
     virtual Core::ISourceCodeProxy* GetScript() const;
+
+    //! Returns the guid of this proxy
+    virtual unsigned GetGuid() const;
+
+    //! Sets a script proxy as a timeline element.
+    //! \param code - the code to attach
+    virtual void AttachScript(Core::ISourceCodeProxy* code);
+
+    //! Clears blockscript if there is one.
+    virtual void ClearScript();
 
     //------------------------------------------------------------------------------------
     

@@ -12,14 +12,34 @@
         }, {
             type : Lane,
             name : "",
+            Blocks : []
+        }, {
+            type : Lane,
+            name : "",
+            Blocks : []
+        }, {
+            type : Lane,
+            name : "",
+            Blocks : []
+        }, {
+            type : Lane,
+            name : "",
+            Blocks : []
+        }, {
+            type : Lane,
+            name : "",
+            Blocks : []
+        }, {
+            type : Lane,
+            name : "",
             Blocks : [{
                     type : Block,
                     props : {
                         Beat : 2042,
                         Duration : 2048,
-                        script : BlockScripts/test.bs,
-                        Name : "",
-                        Color : [128, 0, 56]
+                        Name : PsyBeads,
+                        Color : [128, 0, 56],
+                        script : {@BlockScripts/test.bs}
                     }
                 }]
         }, {
@@ -66,27 +86,27 @@
                     props : {
                         Beat : 0,
                         Duration : 1024,
-                        script : BlockScripts/partydemo.bs,
-                        Name : "",
-                        Color : [144, 244, 123]
+                        Name : BlockSegment,
+                        Color : [144, 244, 123],
+                        script : {@BlockScripts/partydemo.bs}
                     }
                 }, {
                     type : Block,
                     props : {
                         Beat : 1024,
                         Duration : 1024,
-                        script : BlockScripts/basketball.bs,
-                        Name : "",
-                        Color : [228, 207, 245]
+                        Name : Test,
+                        Color : [228, 207, 245],
+                        script : {@BlockScripts/basketball.bs}
                     }
                 }, {
                     type : Block,
                     props : {
                         Beat : 2048,
                         Duration : 1024,
-                        script : BlockScripts/geometrytestblock.bs,
-                        Name : "",
-                        Color : [0, 100, 100]
+                        Name : Test2,
+                        Color : [0, 100, 100],
+                        script : {@BlockScripts/geometrytestblock.bs}
                     }
                 }]
         }, {

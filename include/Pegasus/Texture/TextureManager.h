@@ -19,9 +19,6 @@
 #include "Pegasus/Texture/Proxy/TextureManagerProxy.h"
 #include "Pegasus/AssetLib/AssetRuntimeFactory.h"
 
-#if PEGASUS_ENABLE_PROXIES
-#include "Pegasus/Texture/Proxy/TextureTracker.h"
-#endif
 
 namespace Pegasus {
     namespace Graph {
@@ -89,9 +86,6 @@ public:
     inline const TextureManagerProxy * GetProxy() const { return &mProxy; }
     //@}
 
-    //! Returns the texture tracker, to get a list of texture proxies
-    inline const TextureTracker & GetTracker() const { return mTracker; }
-
 #endif  // PEGASUS_ENABLE_PROXIES
 
 #if PEGASUS_USE_EVENTS
@@ -135,8 +129,6 @@ private:
     //! Proxy associated with the texture manager
     TextureManagerProxy mProxy;
 
-    //! Texture tracker, to get a list of texture proxies
-    TextureTracker mTracker;
 
 #endif  // PEGASUS_ENABLE_PROXIES
 

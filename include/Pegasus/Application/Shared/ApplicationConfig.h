@@ -25,6 +25,7 @@ enum ComponentType
 {
     COMPONENT_WORLD                    ,//! World component. Renders the world / main timeline.
     COMPONENT_GRID                     ,//! Renders an xyz grid reticle.                       
+    COMPONENT_TEXTURE_VIEW             ,//! Renders 2d texture view.                       
     COMPONENT_SELECTION                ,//! Renders a box around a selection on the screen.     
     COMPONENT_TRANSLATION_SELECTION    ,//! Renders the icon / UI controller for translation    
     COMPONENT_ROTATION_SELECTION       ,//! Renders the icon / UI controller for rotation.      
@@ -38,6 +39,7 @@ enum ComponentType
 typedef int ComponentTypeFlags;
 const ComponentTypeFlags  COMPONENT_FLAG_WORLD                = 1 << COMPONENT_WORLD;//! World component. Renders the world / main timeline.
 const ComponentTypeFlags  COMPONENT_FLAG_GRID                 = 1 << COMPONENT_GRID;//! Renders an xyz grid reticle.                       
+const ComponentTypeFlags  COMPONENT_FLAG_TEXTURE_VIEW         = 1 << COMPONENT_TEXTURE_VIEW;//! Renders a 2d texture view.                       
 const ComponentTypeFlags  COMPONENT_FLAG_SELECTION            = 1 << COMPONENT_SELECTION;//! Renders a box around a selection on the screen.     
 const ComponentTypeFlags  COMPONENT_FLAG_TRANSLATION_SELECTION= 1 << COMPONENT_TRANSLATION_SELECTION;//! Renders the icon / UI controller for translation    
 const ComponentTypeFlags  COMPONENT_FLAG_ROTATION_SELECTION   = 1 << COMPONENT_ROTATION_SELECTION;//! Renders the icon / UI controller for rotation.      

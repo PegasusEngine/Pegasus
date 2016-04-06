@@ -53,9 +53,6 @@
     <Filter Include="Source\History">
       <UniqueIdentifier>{cc49ef2d-91fd-491e-8c9f-e87edbefeec5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Texture">
-      <UniqueIdentifier>{1b62beab-7720-420e-85cb-4f0c1b4f1a43}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Graph">
       <UniqueIdentifier>{2af47436-0925-4092-8689-19cbaa6f17d5}</UniqueIdentifier>
     </Filter>
@@ -297,15 +294,6 @@
     <ClCompile Include="..\..\..\Source\Editor\Timeline\TimelineUndoCommands.cpp">
       <Filter>Source\Timeline</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_TextureEditorDockWidget.cpp">
-      <Filter>Generated\Dev-Opt</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_TextureEditorDockWidget.cpp">
-      <Filter>Generated\Dev-Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Source\Editor\Texture\TextureEditorDockWidget.cpp">
-      <Filter>Source\Texture</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Dev-Opt\moc_GraphEditorGraphicsView.cpp">
       <Filter>Generated\Dev-Opt</Filter>
     </ClCompile>
@@ -315,15 +303,6 @@
     <ClCompile Include="..\..\..\Source\Editor\Graph\GraphEditorGraphicsView.cpp">
       <Filter>Source\Graph</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_TextureGraphEditorGraphicsView.cpp">
-      <Filter>Generated\Dev-Opt</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_TextureGraphEditorGraphicsView.cpp">
-      <Filter>Generated\Dev-Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Source\Editor\Texture\TextureGraphEditorGraphicsView.cpp">
-      <Filter>Source\Texture</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\Source\Editor\AssetLibrary\AssetLibraryWidget.cpp">
       <Filter>Source\AssetLibrary</Filter>
     </ClCompile>
@@ -332,12 +311,6 @@
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_AssetLibraryWidget.cpp">
       <Filter>Generated\Dev-Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Source\Editor\AssetLibrary\ProgramTreeModel.cpp">
-      <Filter>Source\AssetLibrary</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Source\Editor\AssetLibrary\SourceCodeListModel.cpp">
-      <Filter>Source\AssetLibrary</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Source\Editor\CodeEditor\CodeEditorWidget.cpp">
       <Filter>Source\CodeEditor</Filter>
@@ -582,6 +555,39 @@
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_GraphIOMessageController.cpp">
       <Filter>Generated\Dev-Debug</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Graph\GraphEditorDockWidget.cpp">
+      <Filter>Source\Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_GraphEditorDockWidget.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_GraphEditorDockWidget.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\AssetLibrary\InstanceViewer.cpp">
+      <Filter>Source\AssetLibrary</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_InstanceViewer.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_InstanceViewer.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\MessageControllers\TimelineIOMessageController.cpp">
+      <Filter>Source\MessageControllers</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_TimelineIOMessageController.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_TimelineIOMessageController.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Graph\MeshGraphEditorViewStrategy.cpp">
+      <Filter>Source\Graph</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Graph\TextureGraphEditorViewStrategy.cpp">
+      <Filter>Source\Graph</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -656,17 +662,8 @@
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineUndoCommands.h">
       <Filter>Source\Timeline</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\Source\Editor\Texture\TextureEditorDockWidget.h">
-      <Filter>Source\Texture</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\Source\Editor\Texture\TextureEditorDockWidget.ui">
-      <Filter>Forms</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Graph\GraphEditorGraphicsView.h">
       <Filter>Source\Graph</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\Source\Editor\Texture\TextureGraphEditorGraphicsView.h">
-      <Filter>Source\Texture</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\AssetLibrary\AssetLibraryWidget.h">
       <Filter>Source\AssetLibrary</Filter>
@@ -776,6 +773,18 @@
     <CustomBuild Include="..\..\..\Source\Editor\MessageControllers\GraphIOMessageController.h">
       <Filter>Source\MessageControllers</Filter>
     </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Graph\GraphEditorDockWidget.ui">
+      <Filter>Forms</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Graph\GraphEditorDockWidget.h">
+      <Filter>Source\Graph</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\AssetLibrary\InstanceViewer.h">
+      <Filter>Source\AssetLibrary</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\MessageControllers\TimelineIOMessageController.h">
+      <Filter>Source\MessageControllers</Filter>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Editor.rc" />
@@ -793,23 +802,26 @@
     <ClInclude Include="..\..\..\Source\Editor\Timeline\TimelineLaneHeaderGraphicsItem.h">
       <Filter>Source\Timeline</Filter>
     </ClInclude>
-    <ClInclude Include="GeneratedFiles\ui_TextureEditorDockWidget.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_AssetLibraryWidget.h">
       <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Source\Editor\AssetLibrary\ProgramTreeModel.h">
-      <Filter>Source\AssetLibrary</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Source\Editor\AssetLibrary\SourceCodeListModel.h">
-      <Filter>Source\AssetLibrary</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Source\Editor\PropertyTypes.h">
       <Filter>Source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Source\Editor\PropertyGrid\PropertyGridEditorFactories.h">
       <Filter>Source\PropertyGrid</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_GraphEditorDockWidget.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\Widgets\HandleMap.h">
+      <Filter>Source\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\Graph\MeshGraphEditorViewStrategy.h">
+      <Filter>Source\Graph</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\Graph\TextureGraphEditorViewStrategy.h">
+      <Filter>Source\Graph</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

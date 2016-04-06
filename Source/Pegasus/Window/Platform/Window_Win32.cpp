@@ -13,6 +13,8 @@
 #include "../Source/Pegasus/Window/Platform/Window_Win32.h"
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <windowsx.h>
+#include "Pegasus/Window/IWindowComponent.h"
 
 namespace Pegasus {
 namespace Wnd {
@@ -274,6 +276,47 @@ LRESULT CALLBACK WindowImpl_Win32::WndProc(HWND hwnd, UINT message, WPARAM wPara
     return wndProcReturn.retcode;
 }
 
+#if PEGASUS_ENABLE_PROXIES
+
+static IWindowComponent::MouseButton TranslateButton(unsigned int msg)
+{
+    switch(msg)
+    {
+    case WM_MBUTTONDOWN:
+    case WM_MBUTTONUP:
+        return IWindowComponent::MouseButton_Center;
+    case WM_LBUTTONDOWN:
+    case WM_LBUTTONUP:
+        return IWindowComponent::MouseButton_Left;
+    case WM_RBUTTONDOWN:
+    case WM_RBUTTONUP:    
+        return IWindowComponent::MouseButton_Right;
+    case WM_MOUSEMOVE:
+        return IWindowComponent::MouseButton_None;
+    }
+
+    return IWindowComponent::MouseButton_None;
+}
+
+static bool TranslateIsDown(unsigned int msg)
+{
+    switch(msg)
+    {
+    case WM_MBUTTONDOWN:
+    case WM_LBUTTONDOWN:
+    case WM_RBUTTONDOWN:
+        return true;
+    case WM_MBUTTONUP:
+    case WM_RBUTTONUP:    
+    case WM_LBUTTONUP:
+        return false;
+    }
+
+    return false;
+}
+
+#endif
+
 //----------------------------------------------------------------------------------------
 
 WindowImpl_Win32::HandleMessageReturn WindowImpl_Win32::HandleMessage(unsigned int message, unsigned int* wParam, unsigned long* lParam)
@@ -315,6 +358,28 @@ WindowImpl_Win32::HandleMessageReturn WindowImpl_Win32::HandleMessage(unsigned i
         mHandler->OnResize(LOWORD(lParam), HIWORD(lParam));
         ret.handled = true; ret.retcode = 0;
         break;
+#if PEGASUS_ENABLE_PROXIES
+    case WM_MOUSEMOVE:
+    case WM_MBUTTONDOWN:
+    case WM_MBUTTONUP:
+    case WM_LBUTTONDOWN:
+    case WM_LBUTTONUP:
+    case WM_RBUTTONDOWN:
+    case WM_RBUTTONUP:    
+    case WM_LBUTTONDBLCLK:
+        {
+            RECT rect;
+            GetWindowRect(mHWND, &rect);
+            IWindowComponent::MouseButton button = TranslateButton(message);
+            bool isDown = TranslateIsDown(message);
+            float x = (float)(GET_X_LPARAM(lParam)) / (float)(rect.left - rect.right);
+            float y = (float)(GET_Y_LPARAM(lParam)) / (float)(rect.bottom - rect.top);
+            x = x < 0.0f ? -1.0f*x : x;
+            y = y < 0.0f ? -1.0f*y : y;
+            mHandler->OnMouseEvent(button, isDown, x, y);
+        }
+    
+#endif
     default:
         break;
     }

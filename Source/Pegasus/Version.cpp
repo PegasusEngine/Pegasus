@@ -24,6 +24,11 @@ const char * const gCredits [] = {
     nullptr
 };
 
+namespace Pegasus
+{
+    extern const Pegasus::PegasusAssetTypeDesc* const* GetAllAssetTypesDescs();
+}
+
 void Internal_GetEngineDesc(Pegasus::PegasusDesc& engineDesc)
 {
 #if PEGASUS_GAPI_GL
@@ -41,6 +46,7 @@ void Internal_GetEngineDesc(Pegasus::PegasusDesc& engineDesc)
     engineDesc.mPegasusVersionMajor = PEGASUS_ENGINE_VERSION_MAJOR;
     engineDesc.mPegasusVersionMinor = PEGASUS_ENGINE_VERSION_MINOR;
     engineDesc.mPegasusCredits = gCredits;
+    engineDesc.mAssetTypes = Pegasus::GetAllAssetTypesDescs();
 }
 
 #else

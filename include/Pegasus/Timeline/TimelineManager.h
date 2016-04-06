@@ -17,7 +17,6 @@
 #include "Pegasus/Utils/Vector.h"
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Timeline/TimelineScript.h"
-#include "Pegasus/Timeline/ScriptTracker.h"
 #include "Pegasus/AssetLib/AssetRuntimeFactory.h"
 
 namespace Pegasus {
@@ -189,11 +188,7 @@ public:
     //! Returns the current timeline in the playback state.
     //! \return the timeline in the current playback.
     Pegasus::Timeline::TimelineRef GetCurrentTimeline() const { return mCurrentTimeline; }
-
-    //! Gets the script tracker registered
-    //! \return the script tracker
-    ScriptTracker* GetScriptTracker() { return &mScriptTracker; }
-
+    
     //! Creates a new timeline
     //! \return the timeline created
     TimelineRef CreateTimeline();
@@ -277,8 +272,6 @@ private:
     Core::CompilerEvents::ICompilerEventListener* mEventListener;
 #endif
     
-    ScriptTracker mScriptTracker;
-
 };
 
 

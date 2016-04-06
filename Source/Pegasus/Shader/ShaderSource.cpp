@@ -9,7 +9,6 @@
 //! \date 3rd March 2015
 //! \brief Pegasus Shader include source file
 
-#include "Pegasus/Shader/ShaderTracker.h"
 #include "Pegasus/Shader/ShaderSource.h"
 #include "Pegasus/Utils/String.h"
 
@@ -20,7 +19,6 @@ ShaderSource::ShaderSource (Alloc::IAllocator* nodeAllocator, Alloc::IAllocator*
 : Core::SourceCode(nodeAllocator, nodeDataAllocator),
   mAllocator(nodeAllocator)
 #if PEGASUS_ENABLE_PROXIES
-    , mShaderTracker(nullptr)
     , mProxy(this)
 #endif
 {
@@ -30,10 +28,6 @@ ShaderSource::ShaderSource (Alloc::IAllocator* nodeAllocator, Alloc::IAllocator*
 ShaderSource::~ShaderSource()
 {
 #if PEGASUS_ENABLE_PROXIES
-    if (mShaderTracker != nullptr)
-    {
-        mShaderTracker->DeleteShader(this);
-    }
     PEGASUS_EVENT_DESTROY_USER_DATA(&mProxy, "ShaderSource", GetEventListener());
 #endif
 }

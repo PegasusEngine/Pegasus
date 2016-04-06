@@ -91,8 +91,8 @@ const TypeDesc* BlockScriptCompiler::GetTypeDesc(GlobalBindPoint bindPoint) cons
 }
 
 
-void BlockScriptCompiler::SetCompilerEventListener(Pegasus::BlockScript::IBlockScriptCompilerListener* listener)
+void BlockScriptCompiler::AddCompilerEventListener(Pegasus::BlockScript::IBlockScriptCompilerListener* listener)
 {
-    mBuilder.SetEventListener(listener);
+    mBuilder.AddEventListener(listener);
 }
 

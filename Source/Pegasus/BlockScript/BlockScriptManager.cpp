@@ -42,7 +42,9 @@ void BlockScriptManager::Initialize(IAllocator* allocator)
 BlockScript* BlockScriptManager::CreateBlockScript()
 {
     PG_ASSERTSTR(mInternalRuntimeLib != nullptr, "Internal runtime library cannot be null");
-    return PG_NEW(mAllocator, -1, "Block Script", Alloc::PG_MEM_PERM) BlockScript(mAllocator, mInternalRuntimeLib);
+    BlockScript* bs = PG_NEW(mAllocator, -1, "Block Script", Alloc::PG_MEM_PERM) BlockScript(mAllocator, mInternalRuntimeLib);
+    bs->AddCompilerEventListener(GetIntrinsicCompilerListener());
+    return bs;
 }
 
 BlockLib*    BlockScriptManager::CreateBlockLib(const char* name)

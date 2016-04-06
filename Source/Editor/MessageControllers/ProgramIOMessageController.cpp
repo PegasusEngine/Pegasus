@@ -16,6 +16,8 @@
 #include "Pegasus/AssetLib/Shared/IAssetProxy.h"
 #include "Pegasus/AssetLib/Shared/IAssetLibProxy.h"
 #include "MessageControllers/ProgramIOMessageController.h"
+#include "CodeEditor\SourceCodeManagerEventListener.h"
+#include "Pegasus/PegasusAssetTypes.h"
 
 ProgramIOMessageController::ProgramIOMessageController(Pegasus::App::IApplicationProxy* app)
 : mApp(app)
@@ -41,8 +43,10 @@ void ProgramIOMessageController::OnRenderThreadProcessMessage(const ProgramIOMes
     }
 }
 
-void ProgramIOMessageController::OnRenderThreadRemoveShader(Pegasus::Shader::IProgramProxy* program, Pegasus::Shader::ShaderType shaderType)
+void ProgramIOMessageController::OnRenderThreadRemoveShader(AssetInstanceHandle handle, Pegasus::Shader::ShaderType shaderType)
 {
+    Pegasus::Shader::IProgramProxy* program = static_cast<Pegasus::Shader::IProgramProxy*>(FindInstance(handle));
+
     for (int i = 0; i < program->GetShaderCount(); ++i)
     {
         Pegasus::Shader::IShaderProxy* shader = program->GetShader(i);
@@ -56,8 +60,10 @@ void ProgramIOMessageController::OnRenderThreadRemoveShader(Pegasus::Shader::IPr
     }
 }
 
-void ProgramIOMessageController::OnRenderThreadModifyShader(Pegasus::Shader::IProgramProxy* program, const QString& path)
+void ProgramIOMessageController::OnRenderThreadModifyShader(AssetInstanceHandle handle, const QString& path)
 {
+    Pegasus::Shader::IProgramProxy* program = static_cast<Pegasus::Shader::IProgramProxy*>(FindInstance(handle));
+
     Pegasus::AssetLib::IAssetLibProxy* assetLib = mApp->GetAssetLibProxy();
     QByteArray ba = path.toLocal8Bit();
     const char* asciiPath = ba.constData();
@@ -83,3 +89,45 @@ void ProgramIOMessageController::OnRenderThreadModifyShader(Pegasus::Shader::IPr
     }
 }
 
+QVariant ProgramIOMessageController::TranslateToQt(AssetInstanceHandle handle, Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
+{
+    Pegasus::Shader::IProgramProxy* program = static_cast<Pegasus::Shader::IProgramProxy*>(object);
+
+    ED_ASSERT(program->GetUserData() != nullptr);
+
+    CodeUserData* codeUserData = static_cast<CodeUserData*>(program->GetUserData());
+
+    //! the user data now obtains the handle. This will help the event listener to
+    //! send messages back to the widgets
+    codeUserData->SetHandle(handle);
+
+    QVariantList shaders;
+    for (int i = 0; i < program->GetShaderCount(); ++i)
+    {
+        QVariantMap shaderInfo;
+        QString shaderPath = "<no asset>";
+        
+        if (program->GetShader(i)->GetOwnerAsset() != nullptr)
+        {
+            shaderPath = program->GetShader(i)->GetOwnerAsset()->GetPath();
+        }
+        shaderInfo.insert("Path", shaderPath);
+        shaderInfo.insert("Type", program->GetShader(i)->GetStageType());
+        shaders.push_back(shaderInfo);
+    }
+
+    QVariantMap programInfo;
+    programInfo.insert("Shaders", shaders);
+    programInfo.insert("Name", program->GetName());
+    return programInfo;
+}
+
+const Pegasus::PegasusAssetTypeDesc** ProgramIOMessageController::GetTypeList() const 
+{
+    static const Pegasus::PegasusAssetTypeDesc* gTypes[] = {
+             &Pegasus::ASSET_TYPE_PROGRAM  
+            ,nullptr
+    };
+    
+    return gTypes;
+}

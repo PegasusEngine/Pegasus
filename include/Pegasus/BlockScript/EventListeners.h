@@ -12,14 +12,25 @@
 #ifndef PEGASUS_BLOCKSCRIPT_COMPILER_ERRORS_H
 #define PEGASUS_BLOCKSCRIPT_COMPILER_ERRORS_H
 
+#include "Pegasus/BlockScript/BlockScriptAst.h"
+
+//forward declarations
+namespace Pegasus {
+    namespace BlockScript {
+        class BsVmState;
+    }
+    
+    namespace Alloc {
+        class IAllocator;
+    }
+}
+
 namespace Pegasus
 {
 namespace BlockScript
 {
-//forward declaration
-class BsVmState;
 
-//! Callback for compilation errors
+//! Callback for compile time events.
 class IBlockScriptCompilerListener
 {
 public:
@@ -31,6 +42,12 @@ public:
     //! \param line the actual
     //! \param errorMessage the actual error message
     virtual void OnCompilationError(int line, const char* errorMessage, const char* token) = 0;
+
+    //! Triggered at compile time on a function call. Use this function to evaluate at compile time
+    //! any function calls.
+    //! funcall - function call abstract syntax tree element to process.
+    //! alloc - allocator to use for allocation of Abstract syntax trees created on the fly.
+    virtual Ast::Exp* OnResolveFunCall(Alloc::IAllocator* alloc, Ast::FunCall* funcall) { return funcall; }
 
     //! Called at the end of a compilation
     //! \param success true if it was successful, false otherwise

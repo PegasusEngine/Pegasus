@@ -35,7 +35,6 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Proxy\TextureConfigurationProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Proxy\TextureManagerProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Proxy\TextureNodeProxy.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Proxy\TextureTracker.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\ITextureConfigurationProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\ITextureManagerProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\ITextureNodeProxy.h" />
@@ -56,7 +55,6 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Proxy\TextureConfigurationProxy.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Proxy\TextureManagerProxy.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Proxy\TextureNodeProxy.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Proxy\TextureTracker.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Texture.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureConfiguration.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\TextureData.cpp" />

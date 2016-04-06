@@ -14,7 +14,6 @@
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/Texture/Proxy/TextureNodeProxy.h"
-#include "Pegasus/Texture/Proxy/TextureTracker.h"
 #endif  // PEGASUS_ENABLE_PROXIES
 
 namespace Pegasus {
@@ -31,7 +30,6 @@ Texture::Texture(Graph::NodeManager* nodeManager, Alloc::IAllocator* nodeAllocat
 ,   mConfiguration()
 #if PEGASUS_ENABLE_PROXIES
 ,   mProxy(this)
-,   mTracker(nullptr)
 #endif  // PEGASUS_ENABLE_PROXIES
 {
     BEGIN_INIT_PROPERTIES(Texture)
@@ -39,8 +37,6 @@ Texture::Texture(Graph::NodeManager* nodeManager, Alloc::IAllocator* nodeAllocat
 
     // Initialize event user data
     PEGASUS_EVENT_INIT_DISPATCHER
-    //! \todo Do we need user data?
-    //PEGASUS_EVENT_INIT_USER_DATA(GetProxy(), "Texture", GetEventListener());
 }
 
 //----------------------------------------------------------------------------------------
@@ -51,7 +47,6 @@ Texture::Texture(Graph::NodeManager* nodeManager, const TextureConfiguration & c
 ,   mConfiguration(configuration)
 #if PEGASUS_ENABLE_PROXIES
 ,   mProxy(this)
-,   mTracker(nullptr)
 #endif  // PEGASUS_ENABLE_PROXIES
 {
     BEGIN_INIT_PROPERTIES(Texture)
@@ -59,8 +54,6 @@ Texture::Texture(Graph::NodeManager* nodeManager, const TextureConfiguration & c
 
     // Initialize event user data
     PEGASUS_EVENT_INIT_DISPATCHER
-    //! \todo Do we need user data?
-    //PEGASUS_EVENT_INIT_USER_DATA(GetProxy(), "Texture", GetEventListener());
 }
 
 //----------------------------------------------------------------------------------------
@@ -143,16 +136,6 @@ void Texture::ReleaseDataAndPropagate()
 
 //----------------------------------------------------------------------------------------
 
-#if PEGASUS_ENABLE_PROXIES
-void Texture::SetTracker(TextureTracker * tracker)
-{
-    PG_ASSERTSTR(tracker != nullptr, "Invalid tracker given to a tracker");
-    mTracker = tracker;
-}
-#endif  // PEGASUS_ENABLE_PROXIES
-
-//----------------------------------------------------------------------------------------
-
 void Texture::ReleaseGPUData()
 {
     //! \todo Investigate and optimize this function.
@@ -180,22 +163,9 @@ void Texture::ReleaseGPUData()
 
 Texture::~Texture()
 {
-    //! \todo Do we need user data?
-    //PEGASUS_EVENT_DESTROY_USER_DATA(&mProxy, "Texture", GetEventListener());
+    PEGASUS_EVENT_DESTROY_USER_DATA(&mProxy, "Texture", GetEventListener());
 
     ReleaseGPUData();
-
-#if PEGASUS_ENABLE_PROXIES
-    // Unregister the texture from the tracker
-    if (mTracker != nullptr)
-    {
-        mTracker->DeleteTexture(this);
-    }
-    else
-    {
-        PG_FAILSTR("Trying to delete a texture that has no associated tracker");
-    }
-#endif
 }
 
 

@@ -12,7 +12,6 @@
 #include "Pegasus/Timeline/TimelineManager.h"
 #include "Pegasus/Application/RenderCollection.h"
 #include "Pegasus/Timeline/Block.h"
-#include "Pegasus/Timeline/ScriptTracker.h"
 #include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/AssetLib/AssetLib.h"
@@ -27,7 +26,6 @@ BEGIN_IMPLEMENT_PROPERTIES(Block)
     IMPLEMENT_PROPERTY(Block, Beat)
     IMPLEMENT_PROPERTY(Block, Duration)
 END_IMPLEMENT_PROPERTIES(Block)
-
 
 Block::Block(Alloc::IAllocator * allocator, Core::IApplicationContext * appContext)
 :   mAllocator(allocator)
@@ -49,6 +47,11 @@ Block::Block(Alloc::IAllocator * allocator, Core::IApplicationContext * appConte
         INIT_PROPERTY(Beat)
         INIT_PROPERTY(Duration)
     END_INIT_PROPERTIES()
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+    static unsigned sNextGuid = 0;
+    mGuid = sNextGuid++;
+    mCategory.SetUserData(mGuid);
+#endif
 }
 
 //----------------------------------------------------------------------------------------
@@ -77,7 +80,6 @@ void Block::Shutdown()
     if (mTimelineScript != nullptr)
     {
         mTimelineScript->CallGlobalScopeDestroy(mVmState);
-        mAppContext->GetTimelineManager()->GetScriptTracker()->UnregisterScript(mTimelineScript);
         mTimelineScript = nullptr;
         mRuntimeListener.Shutdown();
 
@@ -87,6 +89,7 @@ void Block::Shutdown()
             mAppContext->GetRenderCollectionFactory()->DeleteRenderCollection(userCtx);
         }
         PG_DELETE(mAllocator, mVmState);
+        mVmState = nullptr;
     }
 }
 
@@ -108,7 +111,15 @@ void Block::InitializeScript()
         //just listen for runtime events on the global scope initialization
         mVmState->SetRuntimeListener(&mRuntimeListener);
         //re-initialize everything!
-        mTimelineScript->CallGlobalScopeInit(mVmState, this);     
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+        mCategory.RemoveAssets();
+        mAppContext->GetAssetLib()->BeginCategory(&mCategory);
+#endif
+        mTimelineScript->CallGlobalScopeInit(mVmState, this); 
+
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+        mAppContext->GetAssetLib()->EndCategory();
+#endif
 
         // remove the listener. No need to listen for more events.
         mVmState->SetRuntimeListener(nullptr);
@@ -143,7 +154,7 @@ void Block::UpdateViaScript(float beat, Wnd::Window* window)
 
 void Block::NotifyInternalObjectPropertyUpdated(unsigned int index)
 {
-    if (mTimelineScript != nullptr)
+    if (mTimelineScript != nullptr && mTimelineScript->IsScriptActive())
     {
         BlockRuntimeScriptListener::UpdateType updateType = mRuntimeListener.FlushProperty(*mVmState, index);
         if (updateType == BlockRuntimeScriptListener::RERUN_GLOBALS)
@@ -160,6 +171,8 @@ void Block::RenderViaScript(float beat, Wnd::Window* window)
 {
     if (mTimelineScript != nullptr)
     {
+        Application::RenderCollection* nodeContainer = static_cast<Application::RenderCollection*>(mVmState->GetUserContext());
+        nodeContainer->SetWindow(window);
         mTimelineScript->CallRender(beat, mVmState);
     }
 }
@@ -168,19 +181,20 @@ void Block::RenderViaScript(float beat, Wnd::Window* window)
 
 void Block::AttachScript(TimelineScriptInOut script)
 {
-    //! Remove compile out of this equation? is this the right place to compile?
-    script->Compile();
-
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES    
+    mCategory.RegisterAsset(script->GetOwnerAsset());    
+#endif
     if (mTimelineScript == nullptr)
     {
         mTimelineScript = script;
 
-        PG_ASSERT(mVmState == nullptr);
-        mVmState = PG_NEW(mAllocator, -1, "Vm State", Pegasus::Alloc::PG_MEM_PERM) BlockScript::BsVmState();
-        mVmState->Initialize(mAllocator);
-
-        Application::RenderCollection* userContext = mAppContext->GetRenderCollectionFactory()->CreateRenderCollection();
-        mVmState->SetUserContext(userContext);
+        if (mVmState == nullptr)
+        {
+            mVmState = PG_NEW(mAllocator, -1, "Vm State", Pegasus::Alloc::PG_MEM_PERM) BlockScript::BsVmState();
+            mVmState->Initialize(mAllocator);
+            Application::RenderCollection* userContext = mAppContext->GetRenderCollectionFactory()->CreateRenderCollection();
+            mVmState->SetUserContext(userContext);
+        }
     }
     else
     {
@@ -200,6 +214,7 @@ void Block::AttachScript(TimelineScriptInOut script)
 #endif
     mScriptVersion = -1;  
     mRuntimeListener.Initialize(this, mTimelineScript->GetBlockScript());
+    script->Compile();
     InitializeScript();
 }
 
@@ -207,7 +222,23 @@ void Block::AttachScript(TimelineScriptInOut script)
 
 void Block::ShutdownScript()
 {
-    mTimelineScript = nullptr;
+    if (mTimelineScript != nullptr)
+    {
+#if PEGASUS_ENABLE_PROXIES
+        mTimelineScript->UnregisterObserver(&mBlockScriptObserver);
+#endif
+        if (mVmState != nullptr)
+        {
+            if (mVmState->GetUserContext() != nullptr)
+            {
+                Application::RenderCollection* nodeContaier = static_cast<Application::RenderCollection*>(mVmState->GetUserContext());
+                nodeContaier->Clean();
+            }
+            mVmState->Reset();
+        }
+        mTimelineScript = nullptr;
+    }
+    
     mRuntimeListener.Shutdown();
 }
 
@@ -233,10 +264,10 @@ bool Block::OnReadObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* owne
         AssetLib::Object* propsObj = root->GetObject(propsId);
         PropertyGrid::PropertyGridObject::ReadFromObject(owner, propsObj);
 
-        int scriptId = propsObj->FindString("script");
-        if (scriptId != -1)
+        int scriptId = propsObj->FindAsset("script");
+        if (scriptId != -1 && propsObj->GetAsset(scriptId)->GetOwnerAsset()->GetTypeDesc()->mTypeGuid == Pegasus::ASSET_TYPE_BLOCKSCRIPT.mTypeGuid)
         {
-            TimelineScriptRef script = mAppContext->GetTimelineManager()->LoadScript(propsObj->GetString(scriptId));
+            TimelineScriptRef script = static_cast<TimelineScript*>(&(*propsObj->GetAsset(scriptId)));
             if (script != nullptr)
             {
                 AttachScript(script);
@@ -260,7 +291,7 @@ void Block::OnWriteObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* own
     root->AddObject("props", prop);
     if (mTimelineScript != nullptr && mTimelineScript->GetOwnerAsset() != nullptr)
     {
-        prop->AddString("script", mTimelineScript->GetOwnerAsset()->GetPath());
+        prop->AddAsset("script", mTimelineScript);
     }
     
     PropertyGrid::PropertyGridObject::WriteToObject(owner, prop);

@@ -71,16 +71,6 @@ void TimelineManagerProxy::Update()
     mTimelineManager->Update();
 }
 
-int TimelineManagerProxy::GetSourceCount() const
-{
-    return mTimelineManager->GetScriptTracker()->GetScriptCount();
-}
-
-Core::ISourceCodeProxy* TimelineManagerProxy::GetSource(int id)
-{
-    return static_cast<Core::ISourceCodeProxy*>(mTimelineManager->GetScriptTracker()->GetScriptById(id)->GetProxy());
-}
-
 void TimelineManagerProxy::RegisterEventListener(Pegasus::Core::CompilerEvents::ICompilerEventListener * eventListener)
 {
     mTimelineManager->RegisterEventListener(eventListener);

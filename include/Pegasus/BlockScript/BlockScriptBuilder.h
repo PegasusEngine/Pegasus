@@ -60,8 +60,7 @@ class BlockScriptBuilder
 {
 public:
     explicit BlockScriptBuilder() 
-        : mEventListener(nullptr)
-        , mCurrentFrame(nullptr)
+        : mCurrentFrame(nullptr)
         , mErrorCount(0)
         , mInFunBody(false)
         , mCurrentLineNumber(0)
@@ -105,9 +104,6 @@ public:
     Ast::Exp* BuildMethodCall(Ast::Exp* caller, const char * name, Ast::ExpList* args);
     Ast::Exp*   BuildImmFloat    (float v);
     Ast::Exp*   BuildImmInt      (int   v);
-    Ast::Exp*   BuildImmFloat2   (float a, float b);
-    Ast::Exp*   BuildImmFloat3   (float a, float b, float c);
-    Ast::Exp*   BuildImmFloat4   (float a, float b, float c, float d);
     Ast::Exp*   BuildIdd   (const char * name);
     Ast::StmtExp* BuildStmtExp(Ast::Exp* exp);
     Ast::StmtExp* BuildExternVariable(Ast::Exp* lhs, Ast::Exp* rhs);
@@ -143,9 +139,9 @@ public:
 
     void IncrementLine() { ++mCurrentLineNumber; }
 
-    IBlockScriptCompilerListener* GetEventListener() const { return mEventListener; }
+    void AddEventListener(IBlockScriptCompilerListener* eventListener) { mEventListeners.PushEmpty() = eventListener; }
 
-    void SetEventListener(IBlockScriptCompilerListener* eventListener) { mEventListener = eventListener; }
+    Container<IBlockScriptCompilerListener*>& GetEventListeners() { return mEventListeners; }
 
     const TypeDesc* GetTypeByName(const char* name) const;
 
@@ -234,8 +230,7 @@ private:
 
     Canonizer mCanonizer;
 
-    IBlockScriptCompilerListener* mEventListener;
-
+    Container<IBlockScriptCompilerListener*> mEventListeners;
     Container<GlobalMapEntry> mGlobalsMap;
     Container<Ast::IddMetaData*> mGlobalsMetaData;
 

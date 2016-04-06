@@ -82,9 +82,9 @@ public:
     //! \return list of blocks
     Assembly GetAsm() { return mAsm; }
 
-    //! Sets the compiler event listener, to be used to listen to internal blockscript compiler events
+    //! Adds a compiler event listener, to be used to listen to internal blockscript compiler events
     //! \param eventListener the listener to push
-    void SetCompilerEventListener(IBlockScriptCompilerListener* eventListener);
+    void AddCompilerEventListener(IBlockScriptCompilerListener* eventListener);
 
     //! Gets a function bind point to be used to call.
     //! \param funName - the string name of the function

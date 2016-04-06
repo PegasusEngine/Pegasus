@@ -131,6 +131,8 @@ public:
 
     //------------------------------------------------------------------------------------
 
+    PropertyGridObject* GetObject() { return mObject; }
+
 private:
 
     //! Proxied property grid object

@@ -25,12 +25,13 @@ PegasusDockWidget::PegasusDockWidget(QWidget* parent, Editor* editor)
 void PegasusDockWidget::Initialize()
 {
     setFocusPolicy(Qt::StrongFocus);
-    setWindowTitle(tr(GetTitle()));
-    setObjectName(GetName());
 	setFeatures(  QDockWidget::DockWidgetClosable
 				| QDockWidget::DockWidgetMovable
 				| QDockWidget::DockWidgetFloatable);
     SetupUi();
+    
+    setWindowTitle(tr(GetTitle()));
+    setObjectName(GetName());
 }
 
 PegasusDockWidget::~PegasusDockWidget()
@@ -78,3 +79,8 @@ void PegasusDockWidget::SendGraphIoMessage(const GraphIOMessageController::Messa
 {
     emit(OnSendGraphIoMessage(msg));
 }
+void PegasusDockWidget::SendTimelineIoMessage(const TimelineIOMessageController::Message& msg)
+{
+    emit(OnSendTimelineIoMessage(msg));
+}
+

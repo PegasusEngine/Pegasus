@@ -17,10 +17,9 @@
 #include <QSignalMapper>
 
 
-class CodeUserData;
 class CodeTextEditorWidget;
 class QLayout;
-
+struct SourceState;
 
 //! the class represents a view that can be splitted recursively
 class CodeTextEditorTreeWidget : public QSplitter
@@ -77,17 +76,21 @@ public:
 
     //! Displays a source code in the current text view
     //! \param source code the source code node
-    //! \param finalEditor an auxiliary editor, if all the subeditors are used, it will fall into this leaf editor
-    void DisplayCode(CodeUserData * code, CodeTextEditorWidget * finalEditor);
+    void DisplayCode(SourceState * code);
+
+    //! Finds the last leaf editor in the entire tree.
+    CodeTextEditorWidget* FindLastLeafEditor();
 
     //! Takes the source code out of the tree view
     //! \param source code target source code to show
-    void HideCode(CodeUserData * code);
+    void HideCode(SourceState * code);
 
     //! searches for the leaf that contains the current source code 
     //! \param proxy the source code to find
     //! \return the editor containign the source code, null if there isn't
-    CodeTextEditorWidget * FindCodeInEditors(CodeUserData * code);
+    CodeTextEditorWidget * FindCodeInEditors(SourceState * code);
+
+     
 
 signals:
     //! triggers when the text has changed on the CodeTextEditor
@@ -132,7 +135,7 @@ private:
 
     //! \param proxy the source code to display
     //! \return true if success (a focused view grabbed it) false otherwise
-    bool RecurseDisplayCode(CodeUserData * code);
+    bool RecurseDisplayCode(SourceState * code);
 
     //! signal set for events in the leafs
     SignalCombination mSignalCombo;

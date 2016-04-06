@@ -42,7 +42,6 @@ Pegasus::Shader::ShaderManager::ShaderManager(Pegasus::Graph::NodeManager * node
 ,   mFactory(factory)
 #if PEGASUS_ENABLE_PROXIES
 ,   mProxy(this)
-,   mShaderTracker(Pegasus::Memory::GetGlobalAllocator())
 #endif  // PEGASUS_ENABLE_PROXIES
 #if PEGASUS_USE_EVENTS
 ,   mEventListener(nullptr)
@@ -83,8 +82,6 @@ Pegasus::Shader::ShaderStageReturn Pegasus::Shader::ShaderManager::CreateShader(
 
 #if PEGASUS_ENABLE_PROXIES
     PEGASUS_EVENT_INIT_USER_DATA(static_cast<Pegasus::Core::IBasicSourceProxy*>(stage->GetProxy()), "ShaderStage", mEventListener);
-    stage->SetShaderTracker(&mShaderTracker);
-    mShaderTracker.InsertShader(&(*stage));
 #endif
     return stage;
 }
@@ -97,11 +94,6 @@ Pegasus::Shader::ProgramLinkageReturn Pegasus::Shader::ShaderManager::CreateProg
     program->SetEventListener(mEventListener);
 #endif
     program->SetFactory(mFactory);
-#if PEGASUS_ENABLE_PROXIES
-    //if proxies make sure to set metadata correctly
-    program->SetShaderTracker(&mShaderTracker);
-    mShaderTracker.InsertProgram(&(*program));
-#endif
 
 #if PEGASUS_ENABLE_PROXIES
     PEGASUS_EVENT_INIT_USER_DATA(static_cast<Pegasus::Core::IBasicSourceProxy*>(program->GetProxy()), "ProgramLinkage", mEventListener);

@@ -142,10 +142,10 @@ void Editor::RegisterWidget(PegasusDockWidget* widget, Qt::DockWidgetArea area)
             this, SLOT(OnDockFocus(PegasusDockWidget*)));
     connect(widget, SIGNAL(OutFocus(PegasusDockWidget*)),
             this, SLOT(OutDockFocus(PegasusDockWidget*)));
-    connect(widget, SIGNAL(OnRegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
-            this, SLOT(OnRegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)));
-    connect(widget, SIGNAL(OnUnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
-            this, SLOT(OnUnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)));
+    connect(widget, SIGNAL(OnRegisterDirtyObject(AssetInstanceHandle)),
+            this, SLOT(OnRegisterDirtyObject(AssetInstanceHandle)));
+    connect(widget, SIGNAL(OnUnregisterDirtyObject(AssetInstanceHandle)),
+            this, SLOT(OnUnregisterDirtyObject(AssetInstanceHandle)));
 
     const Pegasus::PegasusAssetTypeDesc*const* types = widget->GetTargetAssetTypes();
     
@@ -302,12 +302,16 @@ void Editor::CreateActions()
 	mActionWindowTextureEditor->setStatusTip(tr("Open the texture editor window"));
 	connect(mActionWindowTextureEditor, SIGNAL(triggered()), this, SLOT(OpenTextureEditorWindow()));
 
+    mActionWindowMeshEditor = new QAction(tr("&Mesh Editor"), this);
+    mActionWindowMeshEditor->setStatusTip(tr("Open the mesh editor window"));
+    connect(mActionWindowMeshEditor, SIGNAL(triggered()), this, SLOT(OpenMeshEditorWindow()));
+
     mActionProgramEditor = new QAction(tr("&Program Editor"), this);
     mActionProgramEditor->setStatusTip(tr("Open the program editor window"));
     connect(mActionProgramEditor, SIGNAL(triggered()), this, SLOT(OpenProgramEditorWindow()));
 
     mActionWindowDebugPropertyGridClasses = new QAction(tr("&Property Grid Classes"), this);
-	mActionWindowTextureEditor->setStatusTip(tr("Open the list of classes with their lists of properties"));
+	mActionWindowDebugPropertyGridClasses->setStatusTip(tr("Open the list of classes with their lists of properties"));
 	connect(mActionWindowDebugPropertyGridClasses, SIGNAL(triggered()), this, SLOT(OpenPropertyGridClassesWindow()));
 
     mActionWindowDebugBsLibWidget = new QAction(tr("BlockScript &Libraries View"), this);
@@ -331,16 +335,16 @@ void Editor::CreateActions()
 //----------------------------------------------------------------------------------------
 
 
-void Editor::OnRegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
+void Editor::OnRegisterDirtyObject(AssetInstanceHandle handle)
 {
-    mDirtyAssets.insert(object);
+    mDirtyAssets.insert(handle);
 }
 
 //----------------------------------------------------------------------------------------
 
-void Editor::OnUnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
+void Editor::OnUnregisterDirtyObject(AssetInstanceHandle handle)
 {
-    mDirtyAssets.remove(object);
+    mDirtyAssets.remove(handle);
 }
 
 //----------------------------------------------------------------------------------------
@@ -363,9 +367,7 @@ void Editor::CreateMenu()
 
     QMenu * viewMenu = menuBar()->addMenu(tr("&View"));
     viewMenu->addAction(mActionViewShowFullscreenViewport);
-
-    menuBar()->addMenu(mAssetLibraryWidget->CreateNewAssetMenu(tr("&Create"), this));
-
+    
     QMenu * windowMenu = menuBar()->addMenu(tr("&Window"));
 
     windowMenu->addAction(mActionWindowMainViewport);
@@ -376,6 +378,7 @@ void Editor::CreateMenu()
     windowMenu->addAction(mActionWindowCodeEditor);
     windowMenu->addAction(mActionWindowAssetLibrary);
     windowMenu->addAction(mActionWindowTextureEditor);
+    windowMenu->addAction(mActionWindowMeshEditor);
     windowMenu->addAction(mActionProgramEditor);
 
     QMenu * debugMenu = windowMenu->addMenu(tr("&Debug"));
@@ -468,9 +471,13 @@ void Editor::CreateDockWidgets()
     mAssetLibraryWidget->hide();
     mAssetLibraryWidget->setFloating(true);
 
-    mTextureEditorDockWidget = new TextureEditorDockWidget(this, this);
+    mTextureEditorDockWidget = new GraphEditorDockWidget(this, this, &mTextureEditorViewStrategy);
     RegisterWidget(mTextureEditorDockWidget, Qt::RightDockWidgetArea);
     mViewportWidgets.push_back(mTextureEditorDockWidget->GetViewportWidget());
+
+    mMeshEditorDockWidget = new GraphEditorDockWidget(this, this, &mMeshEditorViewStrategy);
+    RegisterWidget(mMeshEditorDockWidget, Qt::RightDockWidgetArea);
+    mViewportWidgets.push_back(mMeshEditorDockWidget->GetViewportWidget());
 
     mPropertyGridClassesDockWidget = new PropertyGridClassesDockWidget(this, this);
     RegisterWidget(mPropertyGridClassesDockWidget, Qt::RightDockWidgetArea);
@@ -688,6 +695,14 @@ void Editor::OpenTextureEditorWindow()
 
 //----------------------------------------------------------------------------------------
 
+void Editor::OpenMeshEditorWindow()
+{
+    mMeshEditorDockWidget->show();
+}
+
+
+//----------------------------------------------------------------------------------------
+
 void Editor::OpenPropertyGridClassesWindow()
 {
     mPropertyGridClassesDockWidget->show();
@@ -769,18 +784,16 @@ void Editor::OnDockFocus(PegasusDockWidget* target)
 
 //----------------------------------------------------------------------------------------
 
-void Editor::OnOpenObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
+void Editor::OnOpenObject(AssetInstanceHandle handle, QString displayName, int typeGuid, QVariant initData)
 {
-    ED_ASSERT(object->GetOwnerAsset()->GetTypeDesc() != nullptr);
-    int typeGuid = object->GetOwnerAsset()->GetTypeDesc()->mTypeGuid;
     QMap<int,PegasusDockWidget*>::iterator it = mTypeGuidWidgetMapping.find(typeGuid);
     if (it != mTypeGuidWidgetMapping.end())
     {
-        (*it)->ReceiveOpenRequest(object);
+        (*it)->ReceiveOpenRequest(handle, displayName, initData);
     }
     else
     {
-        ED_LOG("No editor found for asset: %s", object->GetOwnerAsset()->GetPath());
+        ED_LOG("No editor found for asset.");
     }
 }
 

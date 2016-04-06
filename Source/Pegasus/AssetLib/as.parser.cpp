@@ -158,12 +158,13 @@ extern int AS_debug;
      I_INT = 258,
      I_FLOAT = 259,
      IDENTIFIER = 260,
-     K_LEFT_LACE = 261,
-     K_RIGHT_LACE = 262,
-     K_LEFT_BRAC = 263,
-     K_RIGHT_BRAC = 264,
-     K_COMMA = 265,
-     K_COLON = 266
+     ASSET_PATH_REFERENCE = 261,
+     K_LEFT_LACE = 262,
+     K_RIGHT_LACE = 263,
+     K_LEFT_BRAC = 264,
+     K_RIGHT_BRAC = 265,
+     K_COMMA = 266,
+     K_COLON = 267
    };
 #endif
 
@@ -185,7 +186,7 @@ typedef union YYSTYPE
 
 
 /* Line 387 of yacc.c  */
-#line 189 "as.parser.cpp"
+#line 190 "as.parser.cpp"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -212,7 +213,7 @@ int AS_parse ();
 /* Copy the second part of user declarations.  */
 
 /* Line 390 of yacc.c  */
-#line 216 "as.parser.cpp"
+#line 217 "as.parser.cpp"
 
 #ifdef short
 # undef short
@@ -432,20 +433,20 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  5
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   16
+#define YYLAST   17
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  12
+#define YYNTOKENS  13
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  10
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  18
+#define YYNRULES  19
 /* YYNRULES -- Number of states.  */
-#define YYNSTATES  26
+#define YYNSTATES  27
 
 /* YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.  */
 #define YYUNDEFTOK  2
-#define YYMAXUTOK   266
+#define YYMAXUTOK   267
 
 #define YYTRANSLATE(YYX)						\
   ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
@@ -479,7 +480,7 @@ static const yytype_uint8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
-       5,     6,     7,     8,     9,    10,    11
+       5,     6,     7,     8,     9,    10,    11,    12
 };
 
 #if YYDEBUG
@@ -488,24 +489,24 @@ static const yytype_uint8 yytranslate[] =
 static const yytype_uint8 yyprhs[] =
 {
        0,     0,     3,     5,     9,    11,    15,    17,    18,    22,
-      24,    28,    30,    31,    35,    37,    39,    41,    43
+      24,    28,    30,    31,    35,    37,    39,    41,    43,    45
 };
 
 /* YYRHS -- A `-1'-separated list of the rules' RHS.  */
 static const yytype_int8 yyrhs[] =
 {
-      13,     0,    -1,    14,    -1,    15,    16,     9,    -1,     8,
-      -1,    16,    10,    20,    -1,    20,    -1,    -1,    18,    19,
-       7,    -1,     6,    -1,    19,    10,    21,    -1,    21,    -1,
-      -1,     5,    11,    21,    -1,     4,    -1,     3,    -1,     5,
-      -1,    14,    -1,    17,    -1
+      14,     0,    -1,    15,    -1,    16,    17,    10,    -1,     9,
+      -1,    17,    11,    21,    -1,    21,    -1,    -1,    19,    20,
+       8,    -1,     7,    -1,    20,    11,    22,    -1,    22,    -1,
+      -1,     5,    12,    22,    -1,     4,    -1,     3,    -1,     5,
+      -1,     6,    -1,    15,    -1,    18,    -1
 };
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
-static const yytype_uint8 yyrline[] =
+static const yytype_uint16 yyrline[] =
 {
-       0,    98,    98,   113,   128,   131,   132,   133,   136,   151,
-     154,   166,   180,   184,   216,   221,   226,   231,   236
+       0,    99,    99,   114,   129,   132,   133,   134,   137,   152,
+     155,   171,   192,   196,   231,   236,   241,   246,   251,   256
 };
 #endif
 
@@ -515,10 +516,10 @@ static const yytype_uint8 yyrline[] =
 static const char *const yytname[] =
 {
   "$end", "error", "$undefined", "I_INT", "I_FLOAT", "IDENTIFIER",
-  "K_LEFT_LACE", "K_RIGHT_LACE", "K_LEFT_BRAC", "K_RIGHT_BRAC", "K_COMMA",
-  "K_COLON", "$accept", "assetroot", "object", "begin_obj",
-  "value_pair_list", "array", "arr_begin", "comma_list", "value_pair",
-  "element", YY_NULL
+  "ASSET_PATH_REFERENCE", "K_LEFT_LACE", "K_RIGHT_LACE", "K_LEFT_BRAC",
+  "K_RIGHT_BRAC", "K_COMMA", "K_COLON", "$accept", "assetroot", "object",
+  "begin_obj", "value_pair_list", "array", "arr_begin", "comma_list",
+  "value_pair", "element", YY_NULL
 };
 #endif
 
@@ -528,22 +529,22 @@ static const char *const yytname[] =
 static const yytype_uint16 yytoknum[] =
 {
        0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
-     265,   266
+     265,   266,   267
 };
 # endif
 
 /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_uint8 yyr1[] =
 {
-       0,    12,    13,    14,    15,    16,    16,    16,    17,    18,
-      19,    19,    19,    20,    21,    21,    21,    21,    21
+       0,    13,    14,    15,    16,    17,    17,    17,    18,    19,
+      20,    20,    20,    21,    22,    22,    22,    22,    22,    22
 };
 
 /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
 static const yytype_uint8 yyr2[] =
 {
        0,     2,     1,     3,     1,     3,     1,     0,     3,     1,
-       3,     1,     0,     3,     1,     1,     1,     1,     1
+       3,     1,     0,     3,     1,     1,     1,     1,     1,     1
 };
 
 /* YYDEFACT[STATE-NAME] -- Default reduction number in state STATE-NUM.
@@ -552,30 +553,30 @@ static const yytype_uint8 yyr2[] =
 static const yytype_uint8 yydefact[] =
 {
        0,     4,     0,     2,     7,     1,     0,     0,     6,     0,
-       3,     0,    15,    14,    16,     9,    17,    18,    12,    13,
-       5,     0,    11,     8,     0,    10
+       3,     0,    15,    14,    16,    17,     9,    18,    19,    12,
+      13,     5,     0,    11,     8,     0,    10
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,     2,    16,     4,     7,    17,    18,    21,     8,    19
+      -1,     2,    17,     4,     7,    18,    19,    22,     8,    20
 };
 
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
    STATE-NUM.  */
-#define YYPACT_NINF -19
+#define YYPACT_NINF -15
 static const yytype_int8 yypact[] =
 {
-      -7,   -19,    12,   -19,     8,   -19,     3,     0,   -19,    -1,
-     -19,     8,   -19,   -19,   -19,   -19,   -19,   -19,    -1,   -19,
-     -19,     1,   -19,   -19,    -1,   -19
+       3,   -15,    13,   -15,     9,   -15,     4,    -2,   -15,    -3,
+     -15,     9,   -15,   -15,   -15,   -15,   -15,   -15,   -15,    -3,
+     -15,   -15,    -1,   -15,   -15,    -3,   -15
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -19,   -19,    15,   -19,   -19,   -19,   -19,   -19,     5,   -18
+     -15,   -15,    15,   -15,   -15,   -15,   -15,   -15,     6,   -14
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
@@ -584,29 +585,29 @@ static const yytype_int8 yypgoto[] =
 #define YYTABLE_NINF -1
 static const yytype_uint8 yytable[] =
 {
-      22,     1,    12,    13,    14,    15,    25,     1,    23,    10,
-      11,    24,     5,     6,     9,     3,    20
+      12,    13,    14,    15,    16,    23,     1,    24,    10,    11,
+      25,    26,     1,     5,     6,     3,     9,    21
 };
 
 #define yypact_value_is_default(Yystate) \
-  (!!((Yystate) == (-19)))
+  (!!((Yystate) == (-15)))
 
 #define yytable_value_is_error(Yytable_value) \
   YYID (0)
 
 static const yytype_uint8 yycheck[] =
 {
-      18,     8,     3,     4,     5,     6,    24,     8,     7,     9,
-      10,    10,     0,     5,    11,     0,    11
+       3,     4,     5,     6,     7,    19,     9,     8,    10,    11,
+      11,    25,     9,     0,     5,     0,    12,    11
 };
 
 /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
    symbol of state STATE-NUM.  */
 static const yytype_uint8 yystos[] =
 {
-       0,     8,    13,    14,    15,     0,     5,    16,    20,    11,
-       9,    10,     3,     4,     5,     6,    14,    17,    18,    21,
-      20,    19,    21,     7,    10,    21
+       0,     9,    14,    15,    16,     0,     5,    17,    21,    12,
+      10,    11,     3,     4,     5,     6,     7,    15,    18,    19,
+      22,    21,    20,    22,     8,    11,    22
 };
 
 #define yyerrok		(yyerrstatus = 0)
@@ -1427,7 +1428,7 @@ yyreduce:
     {
         case 2:
 /* Line 1792 of yacc.c  */
-#line 99 "as.y"
+#line 100 "as.y"
     {
                 (yyval.root) = AS_BUILDER->GetBuiltAsset();
                 if ((yyval.root) == nullptr)
@@ -1444,7 +1445,7 @@ yyreduce:
 
   case 3:
 /* Line 1792 of yacc.c  */
-#line 114 "as.y"
+#line 115 "as.y"
     {
                 if ((yyvsp[(1) - (3)].objVal) == nullptr)
                 {
@@ -1461,31 +1462,31 @@ yyreduce:
 
   case 4:
 /* Line 1792 of yacc.c  */
-#line 128 "as.y"
+#line 129 "as.y"
     { (yyval.objVal) = AS_BUILDER->BeginObject(); }
     break;
 
   case 5:
 /* Line 1792 of yacc.c  */
-#line 131 "as.y"
+#line 132 "as.y"
     { (yyval.objVal) = (yyvsp[(1) - (3)].objVal); }
     break;
 
   case 6:
 /* Line 1792 of yacc.c  */
-#line 132 "as.y"
+#line 133 "as.y"
     { (yyval.objVal) = (yyvsp[(1) - (1)].objVal); }
     break;
 
   case 7:
 /* Line 1792 of yacc.c  */
-#line 133 "as.y"
+#line 134 "as.y"
     { (yyval.objVal) = nullptr; }
     break;
 
   case 8:
 /* Line 1792 of yacc.c  */
-#line 137 "as.y"
+#line 138 "as.y"
     { 
                 if ((yyvsp[(1) - (3)].arrayVal) == nullptr)
                 {
@@ -1502,18 +1503,22 @@ yyreduce:
 
   case 9:
 /* Line 1792 of yacc.c  */
-#line 151 "as.y"
+#line 152 "as.y"
     { (yyval.arrayVal) = AS_BUILDER->BeginArray(); }
     break;
 
   case 10:
 /* Line 1792 of yacc.c  */
-#line 155 "as.y"
+#line 156 "as.y"
     {
                  if ((yyval.arrayVal)->GetType() != (yyvsp[(3) - (3)].variant).mType)
                  {
                      AS_ERROR("Array with inconsisten types. All elements must be the same type.");
                      YYERROR;
+                 }
+                 else if ((yyval.arrayVal)->GetType() == Array::AS_TYPE_ASSET_PATH_REF)
+                 {
+                    AS_BUILDER->EnqueueAssetArrayElement((yyvsp[(3) - (3)].variant).v.s);
                  }
                  else
                  {
@@ -1524,7 +1529,7 @@ yyreduce:
 
   case 11:
 /* Line 1792 of yacc.c  */
-#line 167 "as.y"
+#line 172 "as.y"
     {
                 (yyval.arrayVal) = AS_BUILDER->GetArray();
                 if ((yyval.arrayVal)->GetType() == Array::AS_TYPE_NULL)
@@ -1536,19 +1541,26 @@ yyreduce:
                     AS_ERROR("Array with inconsisten types. All elements must be the same type.");
                     YYERROR;
                 }
-                (yyval.arrayVal)->PushElement((yyvsp[(1) - (1)].variant).v);
+                if ((yyval.arrayVal)->GetType() == Array::AS_TYPE_ASSET_PATH_REF)
+                {
+                    AS_BUILDER->EnqueueAssetArrayElement((yyvsp[(1) - (1)].variant).v.s);
+                }
+                else
+                {
+                    (yyval.arrayVal)->PushElement((yyvsp[(1) - (1)].variant).v);
+                }
              }
     break;
 
   case 12:
 /* Line 1792 of yacc.c  */
-#line 180 "as.y"
+#line 192 "as.y"
     { (yyval.arrayVal) = nullptr; }
     break;
 
   case 13:
 /* Line 1792 of yacc.c  */
-#line 185 "as.y"
+#line 197 "as.y"
     { 
                 (yyval.objVal) = AS_BUILDER->GetObject(); 
                 if ((yyval.objVal) == nullptr)
@@ -1574,6 +1586,9 @@ yyreduce:
                 case Array::AS_TYPE_ARRAY:
                     (yyval.objVal)->AddArray((yyvsp[(1) - (3)].identifierText), (yyvsp[(3) - (3)].variant).v.a);
                     break;
+                case Array::AS_TYPE_ASSET_PATH_REF:
+                    AS_BUILDER->EnqueueChildAsset((yyvsp[(1) - (3)].identifierText), (yyvsp[(3) - (3)].variant).v.s);
+                    break;
                 default:
                     PG_FAILSTR("Unhandled case!");
                 }
@@ -1582,7 +1597,7 @@ yyreduce:
 
   case 14:
 /* Line 1792 of yacc.c  */
-#line 217 "as.y"
+#line 232 "as.y"
     { 
                 (yyval.variant).mType = Array::AS_TYPE_FLOAT;
                 (yyval.variant).v.f = (yyvsp[(1) - (1)].floatValue);
@@ -1591,7 +1606,7 @@ yyreduce:
 
   case 15:
 /* Line 1792 of yacc.c  */
-#line 222 "as.y"
+#line 237 "as.y"
     {   
                 (yyval.variant).mType = Array::AS_TYPE_INT;
                 (yyval.variant).v.i = (yyvsp[(1) - (1)].integerValue);
@@ -1600,7 +1615,7 @@ yyreduce:
 
   case 16:
 /* Line 1792 of yacc.c  */
-#line 227 "as.y"
+#line 242 "as.y"
     {
                 (yyval.variant).mType = Array::AS_TYPE_STRING;
                 (yyval.variant).v.s = (yyvsp[(1) - (1)].identifierText);
@@ -1609,16 +1624,25 @@ yyreduce:
 
   case 17:
 /* Line 1792 of yacc.c  */
-#line 232 "as.y"
+#line 247 "as.y"
+    {
+                (yyval.variant).mType = Array::AS_TYPE_ASSET_PATH_REF;
+                (yyval.variant).v.s = (yyvsp[(1) - (1)].identifierText);
+            }
+    break;
+
+  case 18:
+/* Line 1792 of yacc.c  */
+#line 252 "as.y"
     {
                 (yyval.variant).mType = Array::AS_TYPE_OBJECT;
                 (yyval.variant).v.o = (yyvsp[(1) - (1)].objVal);
             }
     break;
 
-  case 18:
+  case 19:
 /* Line 1792 of yacc.c  */
-#line 237 "as.y"
+#line 257 "as.y"
     {
                 (yyval.variant).mType = Array::AS_TYPE_ARRAY;
                 (yyval.variant).v.a = (yyvsp[(1) - (1)].arrayVal);
@@ -1627,7 +1651,7 @@ yyreduce:
 
 
 /* Line 1792 of yacc.c  */
-#line 1631 "as.parser.cpp"
+#line 1655 "as.parser.cpp"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1859,7 +1883,7 @@ yyreturn:
 
 
 /* Line 2055 of yacc.c  */
-#line 243 "as.y"
+#line 263 "as.y"
 
 
 

@@ -75,6 +75,7 @@
 %token <integerValue> I_INT
 %token <floatValue> I_FLOAT
 %token <identifierText> IDENTIFIER
+%token <identifierText> ASSET_PATH_REFERENCE
 %token <token> K_LEFT_LACE
 %token <token> K_RIGHT_LACE
 %token <token> K_LEFT_BRAC
@@ -158,6 +159,10 @@ comma_list : comma_list K_COMMA element
                      AS_ERROR("Array with inconsisten types. All elements must be the same type.");
                      YYERROR;
                  }
+                 else if ($$->GetType() == Array::AS_TYPE_ASSET_PATH_REF)
+                 {
+                    AS_BUILDER->EnqueueAssetArrayElement($3.v.s);
+                 }
                  else
                  {
                      $$ = $1; $$->PushElement($3.v); 
@@ -175,7 +180,14 @@ comma_list : comma_list K_COMMA element
                     AS_ERROR("Array with inconsisten types. All elements must be the same type.");
                     YYERROR;
                 }
-                $$->PushElement($1.v);
+                if ($$->GetType() == Array::AS_TYPE_ASSET_PATH_REF)
+                {
+                    AS_BUILDER->EnqueueAssetArrayElement($1.v.s);
+                }
+                else
+                {
+                    $$->PushElement($1.v);
+                }
              }
            | /*empty*/ { $$ = nullptr; }
            ;
@@ -207,6 +219,9 @@ value_pair : IDENTIFIER K_COLON element
                 case Array::AS_TYPE_ARRAY:
                     $$->AddArray($1, $3.v.a);
                     break;
+                case Array::AS_TYPE_ASSET_PATH_REF:
+                    AS_BUILDER->EnqueueChildAsset($1, $3.v.s);
+                    break;
                 default:
                     PG_FAILSTR("Unhandled case!");
                 }
@@ -226,6 +241,11 @@ element  : I_FLOAT
          | IDENTIFIER 
             {
                 $$.mType = Array::AS_TYPE_STRING;
+                $$.v.s = $1;
+            }
+         | ASSET_PATH_REFERENCE
+            {
+                $$.mType = Array::AS_TYPE_ASSET_PATH_REF;
                 $$.v.s = $1;
             }
          | object 

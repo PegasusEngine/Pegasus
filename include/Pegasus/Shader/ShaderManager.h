@@ -7,10 +7,6 @@
 #include "Pegasus/Shader/ShaderStage.h"
 #include "Pegasus/Shader/Proxy/ShaderManagerProxy.h"
 
-#if PEGASUS_ENABLE_PROXIES
-#include "Pegasus/Shader/ShaderTracker.h"
-#endif
-
 namespace Pegasus {
     namespace Core {
         namespace CompilerEvents {
@@ -80,11 +76,6 @@ public:
     inline ShaderManagerProxy * GetProxy() { return &mProxy; }
     inline const ShaderManagerProxy * GetProxy() const { return &mProxy; }
     //@}
-
-    //! Returns the shader tracker. Keeps track of all programs and shaders existant.
-    //! \return tracker helper. Use it to iterate over shaders and programs
-    const ShaderTracker * GetShaderTracker() const { return &mShaderTracker; }
-
 #endif
 
 #if PEGASUS_USE_EVENTS
@@ -117,10 +108,6 @@ private:
 
     //! Proxy associated with the shader manager
     ShaderManagerProxy mProxy;
-
-    //! Shader tracker. To be used by proxy to track and iterate over shader nodes
-    ShaderTracker mShaderTracker;
-
 #endif
 
 #if PEGASUS_USE_EVENTS

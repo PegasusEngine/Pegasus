@@ -32,13 +32,13 @@ class CodeSyntaxHighlighter : public QSyntaxHighlighter
 {
 public:
     CodeSyntaxHighlighter(QTextDocument * parent)
-    : QSyntaxHighlighter(parent), mSignalSyntaxError(false), mCodeUserData(nullptr)
+    : QSyntaxHighlighter(parent), mSignalSyntaxError(false), mSourceState(nullptr)
     {
     }
 
     virtual ~CodeSyntaxHighlighter() {}
 
-    void SetCodeUserData(const CodeUserData * codeUserData) { mCodeUserData = codeUserData;}
+    void SetSourceState(const SourceState * sourceState) { mSourceState = sourceState;}
 
     void SetSyntaxLanguage(Pegasus::PegasusDesc::GapiType gapi)
     {
@@ -149,7 +149,7 @@ protected:
     
     bool mWrongLines;
     bool mSignalSyntaxError;
-    const CodeUserData * mCodeUserData;
+    const SourceState * mSourceState;
 
     //! sets the formats for comments
     void SetCCommentStyle(int start, int end, Settings * settings)
@@ -193,7 +193,7 @@ protected:
         int start = 0;
         bool isCommentLine = false;
 
-        mSignalSyntaxError = mCodeUserData == nullptr ? false : mCodeUserData->IsInvalidLine(currentBlock().firstLineNumber()+1);
+        mSignalSyntaxError = mSourceState == nullptr ? false : mSourceState->errorLines.contains(currentBlock().firstLineNumber()+1);
 
         // for every character
         for (int i = 0; i < text.length(); ++i)
@@ -400,14 +400,13 @@ CodeTextEditorWidget::~CodeTextEditorWidget()
     delete mSyntaxHighlighter;
 }
 
-void CodeTextEditorWidget::Initialize(CodeUserData * code)
+void CodeTextEditorWidget::Initialize(SourceState * code)
 {
     mCode = code;
     mSyntaxHighlighter->setDocument(nullptr);
-    if (code != nullptr && code->GetSourceCode() != nullptr)
+    if (code != nullptr)
     {
-        ED_ASSERT(!code->IsProgram());
-        setDocument(code->GetDocument());
+        setDocument(code->document);
         Application * application = Editor::GetInstance().GetApplicationManager().GetApplication();
         Pegasus::App::IApplicationProxy * app = application->GetApplicationProxy();
         Pegasus::PegasusDesc::GapiType gapi = Pegasus::PegasusDesc::OPEN_GL;
@@ -421,9 +420,9 @@ void CodeTextEditorWidget::Initialize(CodeUserData * code)
         {
             ED_FAILSTR("No Gapi defined!");
         }
-        mSyntaxHighlighter->setDocument(code->GetDocument());
+        mSyntaxHighlighter->setDocument(code->document);
         static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetSyntaxLanguage(gapi);
-        static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetCodeUserData(code); 
+        static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetSourceState(code); 
         
     
     }
@@ -432,7 +431,7 @@ void CodeTextEditorWidget::Initialize(CodeUserData * code)
         mNullDocument->clear();
         setDocument(mNullDocument);
    
-        static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetCodeUserData(nullptr);
+        static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetSourceState(nullptr);
         setPlainText(tr(""));
     }
     UpdateAllDocumentSyntax();
@@ -441,7 +440,7 @@ void CodeTextEditorWidget::Initialize(CodeUserData * code)
 void CodeTextEditorWidget::Uninitialize()
 {
     mCode = nullptr;
-    static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetCodeUserData(nullptr);
+    static_cast<CodeSyntaxHighlighter*>(mSyntaxHighlighter)->SetSourceState(nullptr);
     
 }
 
@@ -449,7 +448,7 @@ void CodeTextEditorWidget::UpdateLineSyntax(int line)
 {
     QTextDocument * doc = document();
     int lineId = line - 1;
-    if (lineId > 0 && lineId < doc->lineCount())
+    if (lineId >= 0 && lineId < doc->lineCount())
     {
         QTextBlock block = doc->findBlockByLineNumber(lineId);
         mSyntaxHighlighter->rehighlightBlock(block);
@@ -480,10 +479,9 @@ bool CodeTextEditorWidget::event(QEvent * e)
 {
     if (e->type() == QEvent::ToolTip)
     {
-        if (mCode != nullptr && mCode->GetSourceCode() != nullptr)
+        if (mCode != nullptr)
         {
-            ED_ASSERT(!mCode->IsProgram());
-            QMap<int, QString>& messageMap = mCode->GetMessageMap();
+            QMap<int, QString>& messageMap = mCode->errorMessages;
             QHelpEvent * helpEvent = static_cast<QHelpEvent*>(e);
             const QPoint& pos = helpEvent->pos();
             QTextCursor cursor = cursorForPosition(pos);
@@ -509,16 +507,4 @@ void CodeTextEditorWidget::focusOutEvent(QFocusEvent * e)
 {
     mIsFocus = false;
     QPlainTextEdit::focusOutEvent(e);
-}
-
-void CodeTextEditorWidget::FlushTextToCode()
-{
-    if (mCode != nullptr && mCode->GetSourceCode() != nullptr)
-    {
-        QString qs = toPlainText();
-        QByteArray arr = qs.toLocal8Bit();
-        const char * source = arr.data();
-        int sourceSize = qs.size();
-        mCode->GetSourceCode()->SetSource(source, sourceSize);
-    }
 }

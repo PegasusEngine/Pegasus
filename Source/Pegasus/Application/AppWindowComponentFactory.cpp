@@ -11,6 +11,7 @@
 
 #include "Pegasus/Application/AppWindowComponentFactory.h"
 #include "Pegasus/Application/Components/WorldComponent.h"
+#include "Pegasus/Application/Components/EditorComponents.h"
 #include "Pegasus/Allocator/Alloc.h"
 #include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/Window/Window.h"
@@ -26,6 +27,9 @@ AppWindowComponentFactory::AppWindowComponentFactory(Alloc::IAllocator* allocato
 {
     Utils::Memset32(&mComponentInstances, 0, sizeof(mComponentInstances));
     mComponentInstances[COMPONENT_WORLD] = PG_NEW(allocator, -1, "WorldComponent", Pegasus::Alloc::PG_MEM_PERM) WorldComponent(allocator);
+#if PEGASUS_ENABLE_PROXIES
+    mComponentInstances[COMPONENT_TEXTURE_VIEW] = PG_NEW(allocator, -1, "TextureViewComponent", Pegasus::Alloc::PG_MEM_PERM) TextureViewComponent(allocator);
+#endif
 }
 
 AppWindowComponentFactory::~AppWindowComponentFactory()

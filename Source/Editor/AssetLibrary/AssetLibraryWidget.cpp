@@ -15,8 +15,7 @@
 #include "Pegasus/PegasusAssetTypes.h"
 #include "Application/ApplicationManager.h"
 #include "AssetLibrary/AssetLibraryWidget.h"
-#include "AssetLibrary/ProgramTreeModel.h"
-#include "AssetLibrary/SourceCodeListModel.h"
+#include "AssetLibrary/InstanceViewer.h"
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
@@ -26,6 +25,7 @@
 #include "Pegasus/Timeline/Shared/ITimelineManagerProxy.h"
 #include "Pegasus/AssetLib/Shared/IAssetLibProxy.h"
 #include "Pegasus/AssetLib/Shared/IAssetProxy.h"
+#include "Pegasus/Version.h"
 
 #include "Pegasus/Core/Shared/IoErrors.h"
 #include <QSignalMapper>
@@ -35,22 +35,181 @@
 #include <QTextDocument>
 #include <QFileSystemModel>
 #include <QFileDialog>
+#include <QBoxLayout>
 #include <qfilesystemwatcher.h>
 #include <qmessagebox.h>
+#include <qerrormessage.h>
 
 #include "Widgets/PegasusDockWidget.h"
 
-//global list of all the types
-static const Pegasus::PegasusAssetTypeDesc* gTypes[] = {
-#define REGISTER_ASSET_TYPE(r,g,n,e,is) &Pegasus:: ## r, 
-#include "Pegasus/PegasusAssetTypes.inl"
-#undef REGISTER_ASSET_TYPE
+//new asset dialog
+class QNewAssetDialog : public QDialog
+{
+public:
+    QNewAssetDialog(AssetLibraryWidget* parent) :
+        QDialog(parent),
+        mAppProxy(nullptr)
+    {
+        setupUI();
+    }
+
+public:
+
+    void OnAppOpened(Pegasus::App::IApplicationProxy* application)
+    {
+        application->GetEngineDesc(mEngineDesc);
+        setupTypeSelector();
+        mAppProxy = application;
+    }
+    
+    void OnAppClosed()
+    {
+        destroyTypeSelector();
+    }
+
+    void ClearTextPrompts()
+    {
+        mTargetFile = tr("");
+        mFileLabel->setText(mTargetFile);
+    }
+
+private:
+
+    void setupUI()
+    {
+        QVBoxLayout* mainLayout = new QVBoxLayout();
+        
+        QWidget* prompt = new QWidget(this);
+        QHBoxLayout* promptLayout = new QHBoxLayout();
+        QLabel* typeLabel = new QLabel(tr("Type:"));
+        promptLayout->addWidget(typeLabel);
+        mTypeCombo = new QComboBox(this);        
+        mTypeCombo->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+        promptLayout->addWidget(mTypeCombo);
+        prompt->setLayout(promptLayout);
+        mainLayout->addWidget(prompt);
+
+        QWidget* fileSelect = new QWidget(this);
+        QHBoxLayout* fileSelectLayout = new QHBoxLayout();
+        mFileLabel = new QLabel(this);
+        fileSelectLayout->addWidget(mFileLabel);
+        fileSelectLayout->addSpacerItem(new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Minimum));        
+        QPushButton* button = new QPushButton(this);
+        button->setText(tr("...")); 
+        connect(button, &QPushButton::clicked,
+                this, &QNewAssetDialog::SelectFile);
+        fileSelectLayout->addWidget(button);
+        fileSelect->setLayout(fileSelectLayout);
+        mainLayout->addWidget(fileSelect); 
+        mainLayout->addSpacerItem(new QSpacerItem(0,0, QSizePolicy::Minimum, QSizePolicy::Expanding));
+
+        QWidget* decision = new QWidget(this);
+        QHBoxLayout* decisionLayout = new QHBoxLayout(); 
+        decisionLayout->addSpacerItem(new QSpacerItem(0,0,QSizePolicy::Expanding, QSizePolicy::Minimum));
+        QPushButton* createButton = new QPushButton(this);
+        createButton->setText(tr("Create"));
+        decisionLayout->addWidget(createButton);
+        connect(createButton, &QPushButton::clicked,
+                this, &QNewAssetDialog::Create);
+        QPushButton* cancelButton = new QPushButton(this);
+        cancelButton->setText(tr("Cancel"));
+        connect(cancelButton, SIGNAL(clicked()),
+                this, SLOT(close()));
+        decisionLayout->addWidget(cancelButton);
+        decision->setLayout(decisionLayout);
+        mainLayout->addWidget(decision); 
+        
+        setLayout(mainLayout);
+    }
+    
+    void setupTypeSelector()
+    {
+        for (int i = 0; mEngineDesc.mAssetTypes[i] != nullptr; ++i)
+        {
+            QIcon assetIcon (tr(mEngineDesc.mAssetTypes[i]->mIconPath));
+            mTypeCombo->addItem(assetIcon, mEngineDesc.mAssetTypes[i]->mTypeName);
+        }
+    }
+
+    void destroyTypeSelector()
+    {
+        mTypeCombo->clear();
+    }
+
+private:
+    void SelectFile()
+    {
+        if (mTypeCombo->currentIndex() == -1)
+        {
+            QMessageBox::warning(
+                this, 
+                tr("Can't pick target file."), 
+                tr("Must select a proper asset type in order to create the target file."), QMessageBox::Ok);
+        }
+        else
+        {
+            const Pegasus::PegasusAssetTypeDesc* typeDesc = mEngineDesc.mAssetTypes[mTypeCombo->currentIndex()];
+            QString ext = tr(typeDesc->mExtension);
+            QString assetName = tr(typeDesc->mTypeName);
+            QString root = tr(mAppProxy->GetAssetsRoot());
+            QString filter = assetName + " ( *." + ext + ")";
+            QString newFile = QFileDialog::getSaveFileName(this, tr("Save Asset."), root, filter);
+            if (newFile.size() > 0)
+            {
+                mTargetFile = SanitizeSlashes(newFile);
+                mFileLabel->setText(mTargetFile);
+            }
+        }
+    }
+
+    void Create()
+    {
+        QString basePath = SanitizeSlashes(tr(mAppProxy->GetAssetsRoot()));
+        if (mTypeCombo->currentIndex() == -1)
+        {
+            QMessageBox::warning(
+                this, 
+                tr("Can't create asset."), 
+                tr("Must select a proper asset type in order to create the target file."), QMessageBox::Ok);
+        }
+        else if (mTargetFile.size() == 0 || !mTargetFile.startsWith(basePath))
+        {
+            QMessageBox::warning(
+                this, 
+                tr("Can't create asset."), 
+                tr("Invalid file path. Make sure the file path is in the proper root folder and is not empty."), QMessageBox::Ok);
+        }
+        else
+        {
+            QString newFilePath = mTargetFile.right(mTargetFile.size() - basePath.size());
+            const Pegasus::PegasusAssetTypeDesc* typeDesc = mEngineDesc.mAssetTypes[mTypeCombo->currentIndex()];
+
+            if (!newFilePath.endsWith(tr(typeDesc->mExtension)))
+            {
+                newFilePath += tr(".")+tr(typeDesc->mExtension);
+            }
+
+            AssetLibraryWidget* parent = static_cast<AssetLibraryWidget*>(parentWidget());
+            AssetIOMessageController::Message msg(AssetIOMessageController::Message::NEW_ASSET);
+            msg.SetString(newFilePath);
+            msg.SetTypeDesc(typeDesc);
+            parent->OnSendAssetIoMessage(parent, msg);            
+            close();
+        }    
+    }
+
+    QString SanitizeSlashes(QString in)
+    {
+        return in.replace('\\','/');
+    }
+    Pegasus::PegasusDesc mEngineDesc;
+
+    QComboBox* mTypeCombo;
+    Pegasus::App::IApplicationProxy* mAppProxy;
+    QLabel * mFileLabel;
+    QString mTargetFile;
+
 };
-
-static const int gTypesCount = sizeof(gTypes)/sizeof(gTypes[0]);
-
-
-
 
 AssetLibraryWidget::AssetLibraryWidget(
         QWidget * parent,
@@ -62,15 +221,6 @@ AssetLibraryWidget::AssetLibraryWidget(
 
 void AssetLibraryWidget::SetupUi()
 {
-    mProgramTreeModel = new ProgramTreeModel(this);
-    mProgramSelectionModel = new QItemSelectionModel(mProgramTreeModel);
-
-    mShaderListModel = new SourceCodeListModel(this);
-    mShaderListSelectionModel = new QItemSelectionModel(mShaderListModel);
-
-    mBlockScriptListModel = new SourceCodeListModel(this);
-    mBlockScriptListSelectionModel = new QItemSelectionModel(mBlockScriptListModel);
-
     mAssetTreeFileSystemModel = new QFileSystemModel(this);
     mAssetTreeSelectionModel = new QItemSelectionModel(mAssetTreeFileSystemModel);
 
@@ -82,129 +232,62 @@ void AssetLibraryWidget::SetupUi()
     connect(ui.AssetTreeView, SIGNAL(doubleClicked(QModelIndex)),
             this, SLOT(DispatchAsset(QModelIndex)));
 
-    connect(ui.ShaderTreeView, SIGNAL(doubleClicked(QModelIndex)),
-            this, SLOT(DispatchTextEditorThroughShaderView(QModelIndex)));
-
-    connect(ui.ProgramTreeView, SIGNAL(doubleClicked(QModelIndex)),
-            this, SLOT(DispatchTextEditorThroughProgramView(QModelIndex)));
-
-    connect(ui.BlockScriptTreeView, SIGNAL(doubleClicked(QModelIndex)),
-            this, SLOT(DispatchTextEditorThroughBlockScriptView(QModelIndex)));
-
-
-
     connect(mFileSystemWatcher, SIGNAL(fileChanged(QString)),
             this, SLOT(OnFileChanged(QString)));
+
+    connect(ui.AddAssetButton, SIGNAL(clicked()),
+            this, SLOT(StartNewDialog()));
 
     ui.AssetTreeView->setModel(mAssetTreeFileSystemModel);
     ui.AssetTreeView->setSelectionModel(mAssetTreeSelectionModel);
 
-    ui.ProgramTreeView->setModel(mProgramTreeModel);
-    ui.ProgramTreeView->setSelectionModel(mProgramSelectionModel);
+    mNewAssetDialog = new QNewAssetDialog(this);
 
-    ui.ShaderTreeView->setModel(mShaderListModel);
-    ui.ShaderTreeView->setSelectionModel(mShaderListSelectionModel);
+    ui.AddAssetButton->setEnabled(false);
 
-    ui.BlockScriptTreeView->setModel(mBlockScriptListModel);
-    ui.BlockScriptTreeView->setSelectionModel(mBlockScriptListSelectionModel);
+    mInstanceViewer = new InstanceViewer(ui.instanceTreeWidget);
+    connect(mInstanceViewer, SIGNAL(RequestOpenAsset(QString)), this, SLOT(OnOpenObject(QString)));
+    connect(mInstanceViewer, SIGNAL(RequestHighlightBlock(unsigned)), this, SIGNAL(OnHighlightBlock(unsigned)));
 
-    ui.AddAssetButton->setMenu(CreateNewAssetMenu(tr(""), this));
-    ui.AddAssetButton->setPopupMode(QToolButton::InstantPopup);
-    
+    connect(ui.sortByCategoryButton, SIGNAL(clicked()),
+            this, SLOT(OnFilterByCategoryPressed()));
+    connect(ui.sortByTypeButton, SIGNAL(clicked()),
+            this, SLOT(OnFilterByTypePressed()));
+
+    ui.sortByCategoryButton->setCheckable(true);
+    ui.sortByTypeButton->setCheckable(true);
+    //initial state of instance view is by type
+    OnFilterByCategoryPressed();
 }
 
-//----------------------------------------------------------------------------------------
-
-QMenu* AssetLibraryWidget::CreateNewAssetMenu(const QString& name, QWidget* parent)
+void AssetLibraryWidget::ResetAllFilterButtons()
 {
-    QMenu* assetLibMenuBar = new QMenu(name, this);    
-    
-    QSignalMapper* newButtonMapper = new QSignalMapper(this);
-    for (int i = 0; i < gTypesCount; ++i)
-    {
-        const Pegasus::PegasusAssetTypeDesc* type = gTypes[i];
-        QAction* a = new QAction(tr("New %1").arg(type->mTypeName), this);
-        assetLibMenuBar->addAction(a);
-        newButtonMapper->setMapping(a, i);
-        
-        connect(a, SIGNAL(triggered()),
-             newButtonMapper , SLOT(map()));
-    }
-    
-    connect(newButtonMapper, SIGNAL(mapped(int)),
-            this, SLOT(OnNewObject(int)));
-
-    mNewButtonMappers.push_back(newButtonMapper);
-    return assetLibMenuBar;
-
+    ui.sortByCategoryButton->setChecked(false);
+    ui.sortByTypeButton->setChecked(false);
 }
 
-//----------------------------------------------------------------------------------------
-QString AssetLibraryWidget::AskFilePath(const QString& filter)
+void AssetLibraryWidget::OnFilterByCategoryPressed()
 {
-    QString rootPath = mAssetTreeFileSystemModel->rootPath();
-    QString selectedFile = QFileDialog::getSaveFileName(this, tr("Save Asset."), rootPath, filter);
-    
-    if (selectedFile.size() == 0 || selectedFile.startsWith(rootPath))
-    {
-        QString relativePath = selectedFile.right(selectedFile.size() - rootPath.size() - 1);
-        return relativePath;
-    }
-    else
-    {
-        QMessageBox::warning(this, tr("Cant save asset."), tr("Asset must be saved into the root directory only of the project. ")+rootPath, QMessageBox::Ok);
-        return QString();
-    }
+    ResetAllFilterButtons();
+    ui.sortByCategoryButton->setChecked(true);
+    mInstanceViewer->SetFilterMode(InstanceViewer::BLOCK_FILTER);
 }
 
-//----------------------------------------------------------------------------------------
-
-void AssetLibraryWidget::SaveAsFile(const QString& filter, const Pegasus::PegasusAssetTypeDesc* desc)
+void AssetLibraryWidget::OnFilterByTypePressed()
 {
-    if (Editor::GetInstance().GetApplicationManager().IsApplicationOpened()) 
-    {
-        QString selectedFile = AskFilePath(filter);
-        if (selectedFile.size() != 0)
-        {
-            AssetIOMessageController::Message msg;
-            msg.SetMessageType(AssetIOMessageController::Message::NEW_ASSET);
-            msg.SetString(selectedFile);
-            msg.SetTypeDesc(desc);
-            SendAssetIoMessage(msg);
-        }
-    }
+    ResetAllFilterButtons();
+    ui.sortByTypeButton->setChecked(true);
+    mInstanceViewer->SetFilterMode(InstanceViewer::TYPE_FILTER);
 }
+
 
 //----------------------------------------------------------------------------------------
 
-void AssetLibraryWidget::OnNewObject(int index)
+void AssetLibraryWidget::StartNewDialog()
 {
-    ED_ASSERT(index < gTypesCount);
-    const Pegasus::PegasusAssetTypeDesc* desc = gTypes[index];
-    
-    SaveAsFile(tr("%1 (*.%2)").arg(desc->mTypeName).arg(desc->mExtension), desc);
+    mNewAssetDialog->ClearTextPrompts();
+    mNewAssetDialog->open();
 }
-
-//----------------------------------------------------------------------------------------
-
-void AssetLibraryWidget::DispatchTextEditorThroughShaderView(const QModelIndex& index)
-{
-    Pegasus::Core::ISourceCodeProxy * code = mShaderListModel->Translate(index);
-    Pegasus::AssetLib::IAssetProxy* asset = code->GetOwnerAsset();
-    if (asset != nullptr)
-    {
-        AssetIOMessageController::Message msg;
-        msg.SetMessageType(AssetIOMessageController::Message::OPEN_ASSET);
-        msg.SetString(asset->GetPath());
-        SendAssetIoMessage(msg);
-    }
-    else
-    {
-        //TODO: Cannot open node not represneted by asset
-    }
-}
-
-//----------------------------------------------------------------------------------------
 
 void AssetLibraryWidget::DispatchAsset(const QModelIndex& assetIdx)
 {
@@ -215,100 +298,19 @@ void AssetLibraryWidget::DispatchAsset(const QModelIndex& assetIdx)
         QString path = fileInfo.filePath();
         QString relativePath = path.right(path.size() - rootPath.size() - 1);
 
-        AssetIOMessageController::Message msg;
-        msg.SetMessageType(AssetIOMessageController::Message::OPEN_ASSET);
-        msg.SetString(relativePath);
-        SendAssetIoMessage(msg);
+        OnOpenObject(relativePath);
     }
 }
 
 //----------------------------------------------------------------------------------------
 
-void AssetLibraryWidget::DispatchTextEditorThroughBlockScriptView(const QModelIndex& index)
+void AssetLibraryWidget::OnOpenObject(QString assetPath)
 {
-    Pegasus::Core::ISourceCodeProxy * code = mBlockScriptListModel->Translate(index);
-    Pegasus::AssetLib::IAssetProxy* asset = code->GetOwnerAsset();
-    if (asset != nullptr)
-    {
-        AssetIOMessageController::Message msg;
-        msg.SetMessageType(AssetIOMessageController::Message::OPEN_ASSET);
-        msg.SetString(asset->GetPath());;
-        SendAssetIoMessage(msg);
-    }
-    else
-    {
-        //TODO: Cannot open shader not represented by an asset
-    }
-}
+    AssetIOMessageController::Message msg;
+    msg.SetMessageType(AssetIOMessageController::Message::OPEN_ASSET);
+    msg.SetString(assetPath);;
+    SendAssetIoMessage(msg);
 
-//----------------------------------------------------------------------------------------
-
-void AssetLibraryWidget::DispatchTextEditorThroughProgramView(const QModelIndex& index)
-{
-    if (mProgramTreeModel->IsProgramIndex(index))
-    {
-    }
-    else if (mProgramTreeModel->IsShaderIndex(index))
-    {
-        Pegasus::Core::ISourceCodeProxy * code = static_cast<Pegasus::Core::ISourceCodeProxy*>(mProgramTreeModel->TranslateShaderIndex(index));
-        Pegasus::AssetLib::IAssetProxy* asset = code->GetOwnerAsset();
-        if (asset != nullptr)
-        {
-            AssetIOMessageController::Message msg;
-            msg.SetMessageType(AssetIOMessageController::Message::OPEN_ASSET);
-            msg.SetString(asset->GetPath());
-            SendAssetIoMessage(msg);
-        }
-        else
-        {
-            //TODO: Cannot open shader not represented by an asset
-        }
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
-void AssetLibraryWidget::SetEnabledProgramShaderViews(bool enabled)
-{
-    if (enabled)
-    {
-        
-        Application* app = GetEditor()->GetApplicationManager().GetApplication();
-        if (app != nullptr)
-        {
-            mProgramTreeModel->SetShaderManager(app->GetApplicationProxy()->GetShaderManagerProxy());
-            mShaderListModel->OnAppLoaded(app->GetApplicationProxy()->GetShaderManagerProxy());
-            mBlockScriptListModel->OnAppLoaded(app->GetApplicationProxy()->GetTimelineManagerProxy());
-        }
-    }
-    else
-    {
-        mProgramTreeModel->ClearShaderManager();
-        mShaderListModel->OnAppDestroyed();
-        mBlockScriptListModel->OnAppDestroyed();
-    }
-    ui.ProgramTreeView->setEnabled(enabled);
-    ui.ShaderTreeView->setEnabled(enabled);
-    ui.BlockScriptTreeView->setEnabled(enabled);
-
-    if (enabled)
-    {
-        UpdateUIItemsLayout();
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
-void AssetLibraryWidget::EnableProgramShaderViews()
-{
-    SetEnabledProgramShaderViews(true);
-}
-
-//----------------------------------------------------------------------------------------
-
-void AssetLibraryWidget::DisableProgramShaderViews()
-{
-    SetEnabledProgramShaderViews(false);
 }
 
 //----------------------------------------------------------------------------------------
@@ -321,8 +323,8 @@ AssetLibraryWidget::~AssetLibraryWidget()
         delete(mapper);
     }
 
-    delete mProgramTreeModel;
-    delete mShaderListModel;
+    delete mAssetTreeFileSystemModel;    
+    delete mInstanceViewer;
 }
 
 // SLOTS
@@ -333,54 +335,30 @@ void AssetLibraryWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* appPr
     ED_ASSERTSTR(appProxy != nullptr, "App proxy can't be null");
     if (appProxy != nullptr)
     {
-        Pegasus::Shader::IShaderManagerProxy* shaderMgrProxy = appProxy->GetShaderManagerProxy();
-        ED_ASSERTSTR(shaderMgrProxy != nullptr, "Shader Manager not extracted from app");
-        
-        if (shaderMgrProxy != nullptr)
-        {
-            mShaderListModel->OnAppLoaded(shaderMgrProxy);
-            ui.ShaderTreeView->doItemsLayout();
-            
-            mProgramTreeModel->OnAppLoaded();
-            ui.ProgramTreeView->doItemsLayout();
-        }
-
-        Pegasus::Timeline::ITimelineManagerProxy* timelineProxy = appProxy->GetTimelineManagerProxy();
-        if (timelineProxy != nullptr)
-        {
-            mBlockScriptListModel->OnAppLoaded(timelineProxy);
-            ui.BlockScriptTreeView->doItemsLayout();
-        }
-
         // set the assets root folder
         QString assetRoot = appProxy->GetAssetsRoot();
         mAssetTreeFileSystemModel->setRootPath(assetRoot);
         QModelIndex idx = mAssetTreeFileSystemModel->index(assetRoot);
         ui.AssetTreeView->setRootIndex(idx);
         ui.AssetTreeView->show();
+
+        // register this widget instance viewer as an observer
+        AssetIOMessageController::Message msg(AssetIOMessageController::Message::QUERY_START_VIEW_ASSET_TREE);
+        msg.SetTreeObserver(mInstanceViewer);
+        SendAssetIoMessage(msg);
+
+        mNewAssetDialog->OnAppOpened(appProxy);
+        ui.AddAssetButton->setEnabled(true);
     }
     
-}
-
-void AssetLibraryWidget::UpdateUIItemsLayout()
-{
-    ui.ProgramTreeView->doItemsLayout();
-    ui.ShaderTreeView->doItemsLayout();
-    ui.BlockScriptTreeView->doItemsLayout();
 }
 
 //----------------------------------------------------------------------------------------
 
 void AssetLibraryWidget::OnUIForAppClosed()
 {    
-    mProgramTreeModel->OnAppDestroyed();
-    ui.ProgramTreeView->doItemsLayout();
-
-    mShaderListModel->OnAppDestroyed();
-    ui.ShaderTreeView->doItemsLayout();
-
-    mBlockScriptListModel->OnAppDestroyed();
-    ui.BlockScriptTreeView->doItemsLayout();
+    mNewAssetDialog->OnAppClosed();
+    ui.AddAssetButton->setEnabled(false);
 }
 
 //----------------------------------------------------------------------------------------

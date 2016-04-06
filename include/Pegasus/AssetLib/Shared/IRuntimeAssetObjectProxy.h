@@ -12,6 +12,15 @@
 #ifndef PEGASUS_I_RUNTIME_ASSET_OBJ_PROXY_H
 #define PEGASUS_I_RUNTIME_ASSET_OBJ_PROXY_H
 
+//forward declarations
+namespace Pegasus
+{
+    namespace PropertyGrid
+    {
+        class IPropertyGridObjectProxy;
+    }
+}
+
 namespace Pegasus
 {
 namespace AssetLib
@@ -44,8 +53,9 @@ public:
     //! \return true if successful, false otherwise
     virtual bool ReloadFromAsset() = 0;
 
-
-
+    //! If this asset runtime object has a property attached, the return it.
+    //! \return the property grid object of this proxy. If it doesn't exist then it returns null.
+    virtual PropertyGrid::IPropertyGridObjectProxy* GetPropertyGrid() = 0;
 
 };
 
@@ -73,6 +83,10 @@ public:
     //! Reloads changes from the internal asset contained
     //! \return true if successful, false otherwise
     virtual bool ReloadFromAsset() { return GetDecoratedObject()->ReloadFromAsset(); }
+
+    //! If this asset runtime object has a property attached, the return it.
+    //! \return the property grid object of this proxy. If it doesn't exist then it returns null.
+    virtual PropertyGrid::IPropertyGridObjectProxy* GetPropertyGrid() { return GetDecoratedObject()->GetPropertyGrid(); }
 
 protected:
     virtual IRuntimeAssetObjectProxy* GetDecoratedObject() const = 0;

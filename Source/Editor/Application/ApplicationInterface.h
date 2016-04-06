@@ -20,6 +20,7 @@
 #include "MessageControllers/WindowIOMessageController.h"
 #include "MessageControllers/PropertyGridIOMessageController.h"
 #include "MessageControllers/GraphIOMessageController.h"
+#include "MessageControllers/TimelineIOMessageController.h"
 
 class Application;
 class CodeUserData;
@@ -60,6 +61,12 @@ public:
 
     //! Garbage collect all windows and kill them.
     void DestroyAllWindows();
+
+    //! Connect the asset event listener
+    void ConnectAssetEventListeners();
+
+    //! Disconnect the asset event listener
+    void DisconnectAssetEventListeners();
 
 signals:
 
@@ -132,6 +139,9 @@ private slots:
     //! forwards a message to the graph IO controller so its executed in the render thread
     void ForwardGraphIoMessage(GraphIOMessageController::Message msg);
 
+    //! forwards a to the window io controller so its executed in the render thread
+    void ForwardTimelineIoMessage(TimelineIOMessageController::Message msg);
+
     //------------------------------------------------------------------------------------
 
 private:
@@ -160,6 +170,8 @@ private:
     PropertyGridIOMessageController* mPropertyGridMessageController;
     GraphIOMessageController*        mGraphMessageController;
     SourceCodeManagerEventListener*  mSourceCodeEventListener;
+    TimelineIOMessageController*     mTimelineMessageController;
+
     
 };
 

@@ -14,13 +14,17 @@ PEGASUS_AVOID_EMPTY_FILE_WARNING
 
 #if PEGASUS_ENABLE_PROXIES
 
+#include "Pegasus/PegasusAssetTypes.h"
 #include "Pegasus/Timeline/Proxy/BlockProxy.h"
 #include "Pegasus/Timeline/Proxy/LaneProxy.h"
 #include "Pegasus/Timeline/Block.h"
 #include "Pegasus/Timeline/Lane.h"
 #include "Pegasus/Timeline/TimelineScript.h"
+#include "Pegasus/AssetLib/Shared/IAssetProxy.h"
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 #include "Pegasus/Math/Color.h"
+#include "Pegasus/PropertyGrid/Shared/PropertyEventDefs.h"
+#include "Pegasus/PropertyGrid/PropertyGridObject.h"
 
 namespace Pegasus {
 namespace Timeline {
@@ -32,6 +36,10 @@ BlockPropertyGridObjectDecorator::BlockPropertyGridObjectDecorator(Block* block)
 {
 }
 
+BlockPropertyGridObjectDecorator::~BlockPropertyGridObjectDecorator()
+{
+    PEGASUS_EVENT_DISPATCH(static_cast<Pegasus::PropertyGrid::PropertyGridObjectProxy*>(mDecorated)->GetObject(), Pegasus::PropertyGrid::PropertyGridDestroyed);
+}
 
 void BlockPropertyGridObjectDecorator::WriteObjectProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize, bool sendMessage)
 {
@@ -100,13 +108,6 @@ ILaneProxy * BlockProxy::GetLane() const
 
 //----------------------------------------------------------------------------------------
 
-const char * BlockProxy::GetEditorString() const
-{
-    return mBlock->GetEditorString();
-}
-
-//----------------------------------------------------------------------------------------
-
 void BlockProxy::SetColor(unsigned char red, unsigned char green, unsigned char blue)
 {
     Math::Color8RGB c(red, green, blue);
@@ -134,6 +135,43 @@ Core::ISourceCodeProxy* BlockProxy::GetScript() const
     }
 
     return nullptr;
+}
+
+//----------------------------------------------------------------------------------------
+
+unsigned BlockProxy::GetGuid() const
+{
+    return mBlock->GetGuid();
+}
+
+//----------------------------------------------------------------------------------------
+
+const char * BlockProxy::GetInstanceName() const
+{
+    return mBlock->GetName();
+}
+
+//----------------------------------------------------------------------------------------
+
+const char* BlockProxy::GetClassName() const
+{
+    return mBlock->GetClassName();
+}
+
+void BlockProxy::AttachScript(Core::ISourceCodeProxy* code)
+{
+    PG_ASSERT(code->GetOwnerAsset()->GetTypeDesc()->mTypeGuid == ASSET_TYPE_BLOCKSCRIPT.mTypeGuid);
+    if (code->GetOwnerAsset()->GetTypeDesc()->mTypeGuid == ASSET_TYPE_BLOCKSCRIPT.mTypeGuid)
+    {
+        Pegasus::Timeline::TimelineScriptProxy* scriptProxy = static_cast<Pegasus::Timeline::TimelineScriptProxy*>(code);
+        Pegasus::Timeline::TimelineScriptRef timelineScript = static_cast<Pegasus::Timeline::TimelineScript*>(scriptProxy->GetObject());
+        mBlock->AttachScript(timelineScript); 
+    }
+}
+
+void BlockProxy::ClearScript()
+{
+    mBlock->ShutdownScript();
 }
 
 }   // namespace Timeline

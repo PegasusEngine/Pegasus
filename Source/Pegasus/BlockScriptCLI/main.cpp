@@ -192,7 +192,7 @@ int main(int argc, char* argv[])
 		    if (err == ERR_NONE)
             {
                 Pegasus::BlockScript::BlockScript* bs = bsManager.CreateBlockScript();
-                bs->SetCompilerEventListener(&gCompilerEventListener);
+                bs->AddCompilerEventListener(&gCompilerEventListener);
                 bool res = bs->Compile(&fb);
 	
                 if (!res)

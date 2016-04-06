@@ -15,8 +15,8 @@
 #include "Pegasus/PropertyGrid/Shared/IPropertyGridObjectProxy.h"
 
 
-PropertyGridIOMessageController::PropertyGridIOMessageController(Pegasus::App::IApplicationProxy* app)
- : mApp(app), mNextHandle(0)
+PropertyGridIOMessageController::PropertyGridIOMessageController(Pegasus::App::IApplicationProxy* app, AssetIOMessageController* assetMessageController)
+ : mApp(app), mNextHandle(0), mAssetMessageController(assetMessageController)
 {
 }
 
@@ -40,6 +40,9 @@ void PropertyGridIOMessageController::OnRenderThreadProcessMessage(const Propert
         break;
     case PropertyGridIOMessageController::Message::OPEN:
         OnRenderThreadOpen(m.GetPropertyGridObserver(), m.GetPropertyGrid());
+        break;
+    case PropertyGridIOMessageController::Message::OPEN_FROM_ASSET_HANDLE:
+        OnRenderThreadOpenFromAsset(m.GetPropertyGridObserver(), m.GetAssetHandle());
         break;
     default:
         ED_FAILSTR("Invalid message");
@@ -148,6 +151,21 @@ void PropertyGridIOMessageController::OnRenderThreadOpen(PropertyGridObserver* s
     //now notify the observers to update the uis looking at this object
     UpdateObserverInternal(sender, handle, proxy);
 
+}
+
+//----------------------------------------------------------------------------------------
+
+void PropertyGridIOMessageController::OnRenderThreadOpenFromAsset(PropertyGridObserver* sender, AssetInstanceHandle handle)
+{
+    Pegasus::AssetLib::IRuntimeAssetObjectProxy* runtimeObject = mAssetMessageController->FindInstance(handle);
+    if (runtimeObject != nullptr)
+    {
+        Pegasus::PropertyGrid::IPropertyGridObjectProxy* propertyGrid = runtimeObject->GetPropertyGrid();
+        if (propertyGrid != nullptr)
+        {
+            OnRenderThreadOpen(sender, propertyGrid);
+        }
+    }
 }
 
 //----------------------------------------------------------------------------------------

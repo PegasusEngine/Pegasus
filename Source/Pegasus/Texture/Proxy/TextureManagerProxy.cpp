@@ -37,28 +37,6 @@ TextureManagerProxy::~TextureManagerProxy()
 
 //----------------------------------------------------------------------------------------
 
-unsigned int TextureManagerProxy::GetNumTextures() const
-{
-    return mTextureManager->GetTracker().GetNumTextures();
-}
-
-//----------------------------------------------------------------------------------------
-
-ITextureNodeProxy * TextureManagerProxy::GetTexture(unsigned int index) const
-{
-    Texture * texture = mTextureManager->GetTracker().GetTexture(index);
-    if (texture != nullptr)
-    {
-        return static_cast<ITextureNodeProxy*>(texture->GetProxy());
-    }
-    else
-    {
-        return nullptr;
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
 ITextureNodeProxy * TextureManagerProxy::CreateGeneratorNode(const char * className,
                                                              ITextureConfigurationProxy * configurationProxy)
 {

@@ -56,6 +56,46 @@
        </widget>
       </item>
       <item>
+       <widget class="QToolButton" name="loadMasterScriptButton">
+        <property name="statusTip">
+         <string>Set master blockscript.</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../Resources/Resources.qrc">
+          <normaloff>:/TypeIcons/timelinescript.png</normaloff>:/TypeIcons/timelinescript.png</iconset>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="removeScriptButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="cursor">
+         <cursorShape>UpArrowCursor</cursorShape>
+        </property>
+        <property name="statusTip">
+         <string>Remove active master blockscript.</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../Resources/Resources.qrc">
+          <normaloff>:/AssetLibrary/success.png</normaloff>:/AssetLibrary/success.png</iconset>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QToolButton" name="addButton">
         <property name="toolTip">
          <string>Add lane</string>
@@ -441,6 +481,7 @@
          <height>0</height>
         </size>
        </property>
+       <layout class="QVBoxLayout" name="verticalLayout_3"/>
       </widget>
      </widget>
     </item>

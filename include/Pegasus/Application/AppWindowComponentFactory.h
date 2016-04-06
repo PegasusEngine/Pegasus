@@ -57,6 +57,9 @@ public:
     //! Calls update inside all components
     void UpdateAllComponents(Core::IApplicationContext* appContext);
 
+    //! \return the component type requested
+    Wnd::IWindowComponent* GetComponent(ComponentType type) { return mComponentInstances[type]; }
+
 private:
 
     Wnd::IWindowComponent* mComponentInstances[COMPONENT_COUNT];

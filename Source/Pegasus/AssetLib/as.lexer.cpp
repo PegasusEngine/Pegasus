@@ -350,8 +350,8 @@ static void yy_fatal_error (yyconst char msg[] ,yyscan_t yyscanner );
 	*yy_cp = '\0'; \
 	yyg->yy_c_buf_p = yy_cp;
 
-#define YY_NUM_RULES 19
-#define YY_END_OF_BUFFER 20
+#define YY_NUM_RULES 22
+#define YY_END_OF_BUFFER 23
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -359,11 +359,12 @@ struct yy_trans_info
 	flex_int32_t yy_verify;
 	flex_int32_t yy_nxt;
 	};
-static yyconst flex_int16_t yy_accept[31] =
+static yyconst flex_int16_t yy_accept[36] =
     {   0,
-        0,    0,    0,    0,    0,    0,   20,   18,    6,   10,
-        5,   15,   16,    9,    8,   17,   11,   12,   13,   14,
-        2,   19,    1,    4,    3,    9,    9,    8,    7,    0
+        0,    0,    0,    0,    0,    0,    0,    0,   23,   21,
+        8,   12,    7,   18,   19,   11,   10,   20,   13,   14,
+       16,   17,    2,   22,    1,    4,    3,    6,    5,   11,
+       11,   10,   15,    9,    0
     } ;
 
 static yyconst flex_int32_t yy_ec[256] =
@@ -374,14 +375,14 @@ static yyconst flex_int32_t yy_ec[256] =
         1,    2,    1,    4,    5,    1,    1,    1,    1,    1,
         1,    1,    1,    6,    7,    8,    7,    9,    9,    9,
         9,    9,    9,    9,    9,    9,    9,   10,    1,    1,
-        1,    1,    1,    1,    7,    7,    7,    7,    7,    7,
+        1,    1,    1,   11,    7,    7,    7,    7,    7,    7,
         7,    7,    7,    7,    7,    7,    7,    7,    7,    7,
         7,    7,    7,    7,    7,    7,    7,    7,    7,    7,
-       11,    7,   12,    1,    7,    1,    7,    7,    7,    7,
+       12,    7,   13,    1,    7,    1,    7,    7,    7,    7,
 
         7,    7,    7,    7,    7,    7,    7,    7,    7,    7,
         7,    7,    7,    7,    7,    7,    7,    7,    7,    7,
-        7,    7,   13,    1,   14,    1,    1,    1,    1,    1,
+        7,    7,   14,    1,   15,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
@@ -398,44 +399,46 @@ static yyconst flex_int32_t yy_ec[256] =
         1,    1,    1,    1,    1
     } ;
 
-static yyconst flex_int32_t yy_meta[15] =
+static yyconst flex_int32_t yy_meta[16] =
     {   0,
         1,    1,    1,    1,    1,    1,    2,    2,    2,    1,
-        1,    1,    1,    1
+        1,    1,    1,    1,    1
     } ;
 
-static yyconst flex_int16_t yy_base[34] =
+static yyconst flex_int16_t yy_base[40] =
     {   0,
-        0,    0,   12,   14,   27,   26,   28,   31,   31,   31,
-       31,   31,   31,    0,   12,   31,   31,   31,   31,   31,
-       31,   31,   31,   31,   31,    0,   18,    0,    0,   31,
-       21,   23,   24
+        0,    0,   13,   15,   24,   23,   17,   18,   25,   43,
+       43,   43,   43,   43,   43,    0,   27,   43,   43,   43,
+       13,   43,   43,   43,   43,   43,   43,   43,   43,    0,
+       14,    0,   43,    0,   43,   36,   38,   40,   20
     } ;
 
-static yyconst flex_int16_t yy_def[34] =
+static yyconst flex_int16_t yy_def[40] =
     {   0,
-       30,    1,   31,   31,   32,   32,   30,   30,   30,   30,
-       30,   30,   30,   33,   30,   30,   30,   30,   30,   30,
-       30,   30,   30,   30,   30,   33,   33,   15,   27,    0,
-       30,   30,   30
+       35,    1,   36,   36,   37,   37,   38,   38,   35,   35,
+       35,   35,   35,   35,   35,   39,   35,   35,   35,   35,
+       35,   35,   35,   35,   35,   35,   35,   35,   35,   39,
+       39,   17,   35,   31,    0,   35,   35,   35,   35
     } ;
 
-static yyconst flex_int16_t yy_nxt[46] =
+static yyconst flex_int16_t yy_nxt[59] =
     {   0,
-        8,    9,   10,   11,   12,   13,   14,   14,   15,   16,
-       17,   18,   19,   20,   22,   23,   22,   23,   26,   27,
-       28,   21,   21,   24,   24,   26,   29,   30,   25,   25,
-        7,   30,   30,   30,   30,   30,   30,   30,   30,   30,
-       30,   30,   30,   30,   30
+       10,   11,   12,   13,   14,   15,   16,   16,   17,   18,
+       10,   19,   20,   21,   22,   24,   25,   24,   25,   24,
+       24,   30,   34,   33,   35,   27,   27,   35,   35,   35,
+       35,   29,   29,   30,   31,   32,   23,   23,   26,   26,
+       28,   28,    9,   35,   35,   35,   35,   35,   35,   35,
+       35,   35,   35,   35,   35,   35,   35,   35
     } ;
 
-static yyconst flex_int16_t yy_chk[46] =
+static yyconst flex_int16_t yy_chk[59] =
     {   0,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
-        1,    1,    1,    1,    3,    3,    4,    4,   15,   15,
-       15,   31,   31,   32,   32,   33,   27,    7,    6,    5,
-       30,   30,   30,   30,   30,   30,   30,   30,   30,   30,
-       30,   30,   30,   30,   30
+        1,    1,    1,    1,    1,    3,    3,    4,    4,    7,
+        8,   39,   31,   21,    9,    6,    5,    0,    0,    0,
+        0,    7,    8,   17,   17,   17,   36,   36,   37,   37,
+       38,   38,   35,   35,   35,   35,   35,   35,   35,   35,
+       35,   35,   35,   35,   35,   35,   35,   35
     } ;
 
 /* The intent behind this definition is that it'll catch
@@ -496,13 +499,33 @@ static yyconst flex_int16_t yy_chk[46] =
 
     int AS_readInput(struct yyguts_t* yyg, char * buffer, yy_size_t& result, int maxToRead);
 
+    #define END_CAPTURE_STRING(STRING_TYPE) \
+        PG_ASSERT(yyextra->mStringAccumulatorPos < 512);\
+        yyextra->mStringAccumulator[yyextra->mStringAccumulatorPos] = '\0';\
+        yylval->identifierText = yyextra->mBuilder->CopyString(yyextra->mStringAccumulator);\
+		BEGIN(INITIAL);\
+        return STRING_TYPE;
+
+    #define CAPTURE_CHAR \
+        if (yyextra->mStringAccumulatorPos >= 511)\
+        {\
+            PG_LOG('ERR_', "String too long, exceeding the limit. Line %d", yyextra->mBuilder->GetCurrentLine());\
+            yyterminate();\
+        }\
+		else\
+		{\
+			yyextra->mStringAccumulator[yyextra->mStringAccumulatorPos++] = *yytext;\
+		}
 
 
-#line 502 "as.lexer.cpp"
+
+
+#line 524 "as.lexer.cpp"
 
 #define INITIAL 0
 #define STRING_BLOCK 1
 #define LINE_COMMENT 2
+#define ASSET_POINTER 3
 
 /*windows compatibility case*/
 #include <io.h>
@@ -734,9 +757,9 @@ YY_DECL
 	register int yy_act;
     struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
 
-#line 62 "as.l"
+#line 81 "as.l"
 
-#line 740 "as.lexer.cpp"
+#line 763 "as.lexer.cpp"
 
     yylval = yylval_param;
 
@@ -791,13 +814,13 @@ yy_match:
 			while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 				{
 				yy_current_state = (int) yy_def[yy_current_state];
-				if ( yy_current_state >= 31 )
+				if ( yy_current_state >= 36 )
 					yy_c = yy_meta[(unsigned int) yy_c];
 				}
 			yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
 			++yy_cp;
 			}
-		while ( yy_base[yy_current_state] != 31 );
+		while ( yy_base[yy_current_state] != 43 );
 
 yy_find_action:
 		yy_act = yy_accept[yy_current_state];
@@ -823,29 +846,16 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 65 "as.l"
+#line 84 "as.l"
 {
-        PG_ASSERT(yyextra->mStringAccumulatorPos < 512);
-        yyextra->mStringAccumulator[yyextra->mStringAccumulatorPos] = '\0';
-        yylval->identifierText = yyextra->mBuilder->CopyString(yyextra->mStringAccumulator);
-		BEGIN(INITIAL);
-        return IDENTIFIER;
+        END_CAPTURE_STRING(IDENTIFIER)
     }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 72 "as.l"
+#line 87 "as.l"
 {
-
-        if (yyextra->mStringAccumulatorPos >= 511)
-        {
-            PG_LOG('ERR_', "String too long, exceeding the limit. Line %d", yyextra->mBuilder->GetCurrentLine());
-            yyterminate();
-        }
-		else
-		{
-			yyextra->mStringAccumulator[yyextra->mStringAccumulatorPos++] = *yytext;
-		}
+        CAPTURE_CHAR
     }
 	YY_BREAK
 
@@ -854,12 +864,12 @@ YY_RULE_SETUP
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
-#line 88 "as.l"
+#line 94 "as.l"
 { BEGIN(INITIAL); }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 89 "as.l"
+#line 95 "as.l"
 ;
 	YY_BREAK
 
@@ -867,27 +877,44 @@ YY_RULE_SETUP
 
 case 5:
 YY_RULE_SETUP
-#line 94 "as.l"
-{ yyextra->mStringAccumulatorPos = 0; BEGIN(STRING_BLOCK); }
+#line 100 "as.l"
+{
+        END_CAPTURE_STRING(ASSET_PATH_REFERENCE)
+    }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 95 "as.l"
-;
+#line 103 "as.l"
+{
+        CAPTURE_CHAR
+    }
 	YY_BREAK
+
+
+
 case 7:
 YY_RULE_SETUP
-#line 96 "as.l"
-{ AS_FLOAT(I_FLOAT); }
+#line 110 "as.l"
+{ yyextra->mStringAccumulatorPos = 0; BEGIN(STRING_BLOCK); }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 97 "as.l"
-{ AS_INT(I_INT); }
+#line 111 "as.l"
+;
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 98 "as.l"
+#line 112 "as.l"
+{ AS_FLOAT(I_FLOAT); }
+	YY_BREAK
+case 10:
+YY_RULE_SETUP
+#line 113 "as.l"
+{ AS_INT(I_INT); }
+	YY_BREAK
+case 11:
+YY_RULE_SETUP
+#line 114 "as.l"
 { const char* txt = yyextra->mBuilder->CopyString(yytext); 
                    if (txt == nullptr)
                    {
@@ -898,62 +925,68 @@ YY_RULE_SETUP
                    return IDENTIFIER; 
                  }
 	YY_BREAK
-case 10:
-/* rule 10 can match eol */
-YY_RULE_SETUP
-#line 107 "as.l"
-{ yyextra->mBuilder->IncLine(); }
-	YY_BREAK
-case 11:
-YY_RULE_SETUP
-#line 108 "as.l"
-{ AS_TOKEN(K_LEFT_LACE); }
-	YY_BREAK
 case 12:
+/* rule 12 can match eol */
 YY_RULE_SETUP
-#line 109 "as.l"
-{ AS_TOKEN(K_RIGHT_LACE); }
+#line 123 "as.l"
+{ yyextra->mBuilder->IncLine(); }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 110 "as.l"
-{ AS_TOKEN(K_LEFT_BRAC); }
+#line 124 "as.l"
+{ AS_TOKEN(K_LEFT_LACE); }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 111 "as.l"
-{ AS_TOKEN(K_RIGHT_BRAC); } 
+#line 125 "as.l"
+{ AS_TOKEN(K_RIGHT_LACE); }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 112 "as.l"
-{ BEGIN(LINE_COMMENT); }
+#line 126 "as.l"
+{ yyextra->mStringAccumulatorPos = 0; BEGIN(ASSET_POINTER); }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 113 "as.l"
-{ AS_TOKEN(K_COMMA); }
+#line 127 "as.l"
+{ AS_TOKEN(K_LEFT_BRAC); }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 114 "as.l"
-{ AS_TOKEN(K_COLON); } 
+#line 128 "as.l"
+{ AS_TOKEN(K_RIGHT_BRAC); } 
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 115 "as.l"
+#line 129 "as.l"
+{ BEGIN(LINE_COMMENT); }
+	YY_BREAK
+case 19:
+YY_RULE_SETUP
+#line 130 "as.l"
+{ AS_TOKEN(K_COMMA); }
+	YY_BREAK
+case 20:
+YY_RULE_SETUP
+#line 131 "as.l"
+{ AS_TOKEN(K_COLON); } 
+	YY_BREAK
+case 21:
+YY_RULE_SETUP
+#line 132 "as.l"
 ;
 	YY_BREAK
 
-case 19:
+case 22:
 YY_RULE_SETUP
-#line 117 "as.l"
+#line 134 "as.l"
 ECHO;
 	YY_BREAK
-#line 954 "as.lexer.cpp"
+#line 986 "as.lexer.cpp"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(STRING_BLOCK):
 case YY_STATE_EOF(LINE_COMMENT):
+case YY_STATE_EOF(ASSET_POINTER):
 	yyterminate();
 
 	case YY_END_OF_BUFFER:
@@ -1246,7 +1279,7 @@ static int yy_get_next_buffer (yyscan_t yyscanner)
 		while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 			{
 			yy_current_state = (int) yy_def[yy_current_state];
-			if ( yy_current_state >= 31 )
+			if ( yy_current_state >= 36 )
 				yy_c = yy_meta[(unsigned int) yy_c];
 			}
 		yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
@@ -1275,11 +1308,11 @@ static int yy_get_next_buffer (yyscan_t yyscanner)
 	while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 		{
 		yy_current_state = (int) yy_def[yy_current_state];
-		if ( yy_current_state >= 31 )
+		if ( yy_current_state >= 36 )
 			yy_c = yy_meta[(unsigned int) yy_c];
 		}
 	yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
-	yy_is_jam = (yy_current_state == 30);
+	yy_is_jam = (yy_current_state == 35);
 
 	(void)yyg;
 	return yy_is_jam ? 0 : yy_current_state;
@@ -2116,7 +2149,7 @@ void AS_free (void * ptr , yyscan_t yyscanner)
 
 #define YYTABLES_NAME "yytables"
 
-#line 116 "as.l"
+#line 133 "as.l"
 
 
 

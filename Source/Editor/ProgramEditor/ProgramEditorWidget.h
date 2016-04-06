@@ -80,7 +80,7 @@ public:
 
     //! Implement this function with functionality on how to process for edit.
     //! Only objects of type retured in GetTargetAssetTypes will be the ones opened.
-    virtual void OnOpenObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+    virtual void OnOpenObject(AssetInstanceHandle handle, const QString& displayName, const QVariant& initData);
 
     //! Switch that holds every pegasus asset type that this dock widget can open for edit.
     //! Asset types that get this type association, will be the ones passed through OnOpenRequest function 
@@ -90,13 +90,17 @@ public slots:
 
     //! Closes a program.
     //! \param the tab index to request close
-    void RequestCloseProgram(Pegasus::AssetLib::IRuntimeAssetObjectProxy*, QObject* extraData);
+    void RequestCloseProgram(AssetInstanceHandle handle, QObject* extraData);
 
     //! Saves current program.
     void SignalSaveCurrentProgram();
 
+
+    //! Saves current program tab.
+    void SignalSaveTab(int tab);
+
     //! signal triggered right before closing an asset and discarding its internal changes
-    void SignalDiscardCurrentObjectChanges();
+    void SignalDiscardObjectChanges(AssetInstanceHandle object);
 
     //! Synchronizes the current program to the UI
     void SyncUiToProgram();
@@ -157,11 +161,19 @@ protected slots:
     void OnRemoveShader(int stageId);
 
     //! Triggered when a program has been viewd
-    void OnViewProgram(Pegasus::AssetLib::IRuntimeAssetObjectProxy*);
+    void OnViewProgram(AssetInstanceHandle);
 
 private:
     //! Pointer to the current program opened
-    Pegasus::Shader::IProgramProxy* mCurrentProgram;
+    AssetInstanceHandle mCurrentProgram;
+    typedef QMap<Pegasus::Shader::ShaderType, QString> ShaderMap;
+
+    struct ProgramData {
+        QString name;
+        ShaderMap shaders;
+    };
+    
+    QMap<AssetInstanceHandle, ProgramData> mProgramData;
 
 };
 

@@ -74,6 +74,9 @@ public:
     //! \param context - the application context
     void UnloadAllComponents(Core::IApplicationContext* context);
 
+    //! \return the component factory
+    AppWindowComponentFactory* GetComponentFactory() { return mComponentFactory; }
+
 private:
     // No copies allowed
     PG_DISABLE_COPY(AppWindowManager);

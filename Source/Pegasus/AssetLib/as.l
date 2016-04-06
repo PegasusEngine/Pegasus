@@ -54,32 +54,38 @@
 
     int AS_readInput(struct yyguts_t* yyg, char * buffer, yy_size_t& result, int maxToRead);
 
+    #define END_CAPTURE_STRING(STRING_TYPE) \
+        PG_ASSERT(yyextra->mStringAccumulatorPos < 512);\
+        yyextra->mStringAccumulator[yyextra->mStringAccumulatorPos] = '\0';\
+        yylval->identifierText = yyextra->mBuilder->CopyString(yyextra->mStringAccumulator);\
+		BEGIN(INITIAL);\
+        return STRING_TYPE;
+
+    #define CAPTURE_CHAR \
+        if (yyextra->mStringAccumulatorPos >= 511)\
+        {\
+            PG_LOG('ERR_', "String too long, exceeding the limit. Line %d", yyextra->mBuilder->GetCurrentLine());\
+            yyterminate();\
+        }\
+		else\
+		{\
+			yyextra->mStringAccumulator[yyextra->mStringAccumulatorPos++] = *yytext;\
+		}
+
 %}
 
 %x STRING_BLOCK
 %x LINE_COMMENT
+%x ASSET_POINTER
 
 %% 
 <STRING_BLOCK>
 {
 \"  {
-        PG_ASSERT(yyextra->mStringAccumulatorPos < 512);
-        yyextra->mStringAccumulator[yyextra->mStringAccumulatorPos] = '\0';
-        yylval->identifierText = yyextra->mBuilder->CopyString(yyextra->mStringAccumulator);
-		BEGIN(INITIAL);
-        return IDENTIFIER;
+        END_CAPTURE_STRING(IDENTIFIER)
     }
 .   {
-
-        if (yyextra->mStringAccumulatorPos >= 511)
-        {
-            PG_LOG('ERR_', "String too long, exceeding the limit. Line %d", yyextra->mBuilder->GetCurrentLine());
-            yyterminate();
-        }
-		else
-		{
-			yyextra->mStringAccumulator[yyextra->mStringAccumulatorPos++] = *yytext;
-		}
+        CAPTURE_CHAR
     }
 }
 
@@ -87,6 +93,16 @@
 {
     \n  { BEGIN(INITIAL); }
     .   ;
+}
+
+<ASSET_POINTER>
+{
+\}  {
+        END_CAPTURE_STRING(ASSET_PATH_REFERENCE)
+    }
+.   {
+        CAPTURE_CHAR
+    }
 }
 
 <INITIAL>
@@ -107,6 +123,7 @@
 \n               { yyextra->mBuilder->IncLine(); }
 \[               { AS_TOKEN(K_LEFT_LACE); }
 \]               { AS_TOKEN(K_RIGHT_LACE); }
+\{@              { yyextra->mStringAccumulatorPos = 0; BEGIN(ASSET_POINTER); }
 \{               { AS_TOKEN(K_LEFT_BRAC); }
 \}               { AS_TOKEN(K_RIGHT_BRAC); } 
 #                { BEGIN(LINE_COMMENT); }

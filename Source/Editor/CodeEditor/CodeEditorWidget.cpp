@@ -45,21 +45,6 @@ static const char * INSTANT_COMPILATION_DESC_OFF = "Turn instant compilation OFF
 
 
 
-static inline QString SrcToQString(const char* src, int srcSize)
-{    
-    QChar * qchar = new QChar[srcSize];
-    for (int i = 0; i < srcSize; ++i)
-    {
-        qchar[i] = src[i];
-    }
-
-    QString srcQString(qchar, srcSize);
-    delete[] qchar;            
-    return srcQString;
-
-}
-
-
 CodeEditorWidget::CodeEditorWidget (QWidget * parent, Editor* editor)
 : 
     PegasusDockWidget(parent, editor),
@@ -146,40 +131,25 @@ void CodeEditorWidget::SetupUi()
     mUi.mTabWidget = new NodeFileTabBar(this);
     
     connect(
-        mUi.mTabWidget, SIGNAL(RuntimeObjectRemoved(Pegasus::AssetLib::IRuntimeAssetObjectProxy*, QObject*)),
-        this, SLOT(RequestClose(Pegasus::AssetLib::IRuntimeAssetObjectProxy*, QObject*))
+        mUi.mTabWidget, SIGNAL(RuntimeObjectRemoved(AssetInstanceHandle, QObject*)),
+        this, SLOT(RequestClose(AssetInstanceHandle, QObject*))
     );
 
     connect(
-        mUi.mTabWidget, SIGNAL(DisplayRuntimeObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
-        this,   SLOT(SignalViewCode(Pegasus::AssetLib::IRuntimeAssetObjectProxy*))
+        mUi.mTabWidget, SIGNAL(DisplayRuntimeObject(AssetInstanceHandle)),
+        this,   SLOT(SignalViewCode(AssetInstanceHandle))
     );
 
     connect(
-        mUi.mTabWidget, SIGNAL(SaveCurrentRuntimeObject()),
-        this,   SLOT(SignalSaveCurrentCode())
+        mUi.mTabWidget, SIGNAL(SaveRuntimeObject(int)),
+        this,   SLOT(SignalSaveTab(int))
     );
 
     connect(
-        mUi.mTabWidget, SIGNAL(SaveCurrentRuntimeObject()),
-        this,   SLOT(SignalSaveCurrentCode())
+        mUi.mTabWidget, SIGNAL(DiscardObjectChanges(AssetInstanceHandle)),
+        this,   SLOT(SignalDiscardObjectChanges(AssetInstanceHandle))
     );
 
-    connect(
-        mUi.mTabWidget, SIGNAL(DiscardCurrentObjectChanges()),
-        this,   SLOT(SignalDiscardCurrentObjectChanges())
-    );
-
-    connect(
-        mUi.mTabWidget, SIGNAL(RegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
-        this,   SIGNAL(OnRegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*))
-    );
-
-    connect(
-        mUi.mTabWidget, SIGNAL(UnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
-        this,   SIGNAL(OnUnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*))
-    );
- 
     //setup the tree editor
     QSignalMapper * textChangedMapper = new QSignalMapper(this);
     QSignalMapper * selectedSignalMapper = new QSignalMapper(this);
@@ -283,13 +253,8 @@ void CodeEditorWidget::SignalCompileCurrentCode()
     int idx = mUi.mTabWidget->GetCurrentIndex();
     if (idx >= 0)
     {
-        Pegasus::Core::ISourceCodeProxy* sourceCode = mUi.mTabWidget->GetTabObject<Pegasus::Core::ISourceCodeProxy>(idx);
-        CodeUserData * code = static_cast<CodeUserData*>(sourceCode->GetUserData());
-        if (code != nullptr)
-        {
-            //ensure that no compilation is happening while saving this file
-            CompileCode(code);
-        }
+        AssetInstanceHandle handle = mUi.mTabWidget->GetTabObject(idx);
+        CompileCode(handle);
     }
 }
 
@@ -304,14 +269,15 @@ void CodeEditorWidget::CloseSearch()
     mUi.mFindTextWidget->hide();
 }
 
-void CodeEditorWidget::SignalCompilationError(CodeUserData* userData, int line, QString errorString)
+void CodeEditorWidget::SignalCompilationError(AssetInstanceHandle handle, int line, QString errorString)
 {
-    if (userData != nullptr)
+    if (handle.IsValid())
     {
-        userData->InvalidateLine(line);
-        userData->InsertMessage(line, errorString);
-        PostStatusBarMessage(errorString);
-        CodeTextEditorWidget * editor = mUi.mTreeEditor->FindCodeInEditors(userData);
+        SourceState* ss = mHandleMap[handle];
+        ss->errorLines.insert(line);
+        ss->errorMessages.insert(line, errorString);
+        PostStatusBarMessage(QString("(%1): ").arg(line) + errorString);
+        CodeTextEditorWidget * editor = mUi.mTreeEditor->FindCodeInEditors(ss);
         if (editor != nullptr)
         {
             UpdateSyntaxForLine(editor, line);
@@ -327,42 +293,23 @@ void CodeEditorWidget::SignalLinkingEvent(QString message, int eventType)
     }
 }
 
-void CodeEditorWidget::BlessUserData(CodeUserData* codeUserData)
+void CodeEditorWidget::SignalCompilationBegin(AssetInstanceHandle handle)
 {
-    ED_ASSERT(codeUserData != nullptr);
-    QTextDocument* textDocument = new QTextDocument();
-    textDocument->setDocumentLayout(new QPlainTextDocumentLayout(textDocument));
-    codeUserData->SetDocument(textDocument);
-}
-
-void CodeEditorWidget::UnblessUserData(CodeUserData* codeUserData)
-{
-    ED_ASSERT(codeUserData != nullptr);
-    int index = mUi.mTabWidget->FindIndex(codeUserData->GetSourceCode());
-    if (index != -1)
+    SourceStateMap::iterator it = mHandleMap.find(handle);
+    if (it != mHandleMap.end())
     {
-        mUi.mTabWidget->Close(index);
-    }
-
-    delete codeUserData->GetDocument();
-    codeUserData->SetDocument(nullptr);
-
-    //request that user data gets deleted on the app thread.
-    emit(RequestSafeDeleteUserData(codeUserData));
-}
-
-void CodeEditorWidget::SignalCompilationBegin(CodeUserData* target)
-{
-    CodeTextEditorWidget * editor = mUi.mTreeEditor->FindCodeInEditors(target);
-    if (editor != nullptr)
-    {
-        PostStatusBarMessage("");
-        ED_ASSERT(!target->IsProgram());
-        QSet<int> lineSetCopy = target->GetInvalidLineSet();
-        target->ClearInvalidLines();
-        for (int line : lineSetCopy)
+        SourceState* ss = it.value();
+        CodeTextEditorWidget * editor = mUi.mTreeEditor->FindCodeInEditors(ss);
+        if (editor != nullptr)
         {
-            UpdateSyntaxForLine(editor, line);
+            PostStatusBarMessage("");            
+            QSet<int> lineSetCopy = ss->errorLines;
+            ss->errorLines.clear();
+            ss->errorMessages.clear();
+            for (int line : lineSetCopy)
+            {
+                UpdateSyntaxForLine(editor, line);
+            }
         }
     }
 }
@@ -436,47 +383,47 @@ void CodeEditorWidget::OnSaveFocusedObject()
 
 void CodeEditorWidget::SignalSaveCurrentCode()
 {
-    PostStatusBarMessage("");
     int idx = mUi.mTabWidget->GetCurrentIndex();
+    SignalSaveTab(idx);
+}
+
+void CodeEditorWidget::SignalSaveTab(int idx)
+{
+    PostStatusBarMessage("");    
     if (idx >= 0)
     {
-        Pegasus::Core::ISourceCodeProxy* sourceCode = mUi.mTabWidget->GetTabObject<Pegasus::Core::ISourceCodeProxy>(idx);
+        AssetInstanceHandle handle = mUi.mTabWidget->GetTabObject(idx);
+        SourceState* ss = mHandleMap[handle];
 
         //dump ui document data to the internal node so we can save
-        CodeUserData* code = static_cast<CodeUserData*>(sourceCode->GetUserData());
-        QString& plainText = code->GetDocument()->toPlainText();
-        QByteArray ba = plainText.toLocal8Bit();
-        const char* asciiData = ba.constData();
-        sourceCode->SetSource(asciiData, plainText.size());
+        QString plainText = ss->document->toPlainText();
+        SourceIOMessageController::Message smsg;
+        smsg.SetMessageType(SourceIOMessageController::Message::SET_SOURCE);
+        smsg.SetHandle(handle);
+        smsg.SetSourceText(plainText);
+        SendSourceIoMessage(smsg);
 
+        //Save the document
         AssetIOMessageController::Message msg;
         msg.SetMessageType(AssetIOMessageController::Message::SAVE_ASSET);
-        msg.SetObject(sourceCode);
+        msg.SetObject(handle);
         SendAssetIoMessage(msg);
 
     }
 }
 
-void CodeEditorWidget::SignalDiscardCurrentObjectChanges()
+void CodeEditorWidget::SignalDiscardObjectChanges(AssetInstanceHandle handle)
 {
-    int idx = mUi.mTabWidget->GetCurrentIndex();
-    if (idx >= 0)
-    {
-        Pegasus::Core::ISourceCodeProxy* sourceCode = mUi.mTabWidget->GetTabObject<Pegasus::Core::ISourceCodeProxy>(idx);
-        sourceCode->ReloadFromAsset();
-        const char* src = nullptr;
-        int srcSize = 0;
-        sourceCode->GetSource(&src, srcSize);
-        QString qtxt = SrcToQString(src, srcSize);
-        CodeUserData* code = static_cast<CodeUserData*>(sourceCode->GetUserData());
-        if (code != nullptr)
-        {
-            mInternalBlockTextUpdated = true;
-            code->GetDocument()->setPlainText(qtxt);
-            mInternalBlockTextUpdated = false;
-            CompileCode(code);
-        }
-    }
+    //Internally reload the asset.
+    AssetIOMessageController::Message msg(AssetIOMessageController::Message::RELOAD_FROM_ASSET);
+    msg.SetObject(handle);
+    SendAssetIoMessage(msg);
+    
+    //Send a compilation request
+    SourceIOMessageController::Message smsg;
+    smsg.SetMessageType(SourceIOMessageController::Message::COMPILE_SOURCE);
+    smsg.SetHandle(handle);
+    SendSourceIoMessage(smsg);
 }
 
 void CodeEditorWidget::SignalSavedFileSuccess()
@@ -484,21 +431,16 @@ void CodeEditorWidget::SignalSavedFileSuccess()
     PostStatusBarMessage(tr("File Saved."));
 }
 
-void CodeEditorWidget::SignalViewCode(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
+void CodeEditorWidget::SignalViewCode(AssetInstanceHandle handle)
 {
-    if (object != nullptr)
+    if (handle.IsValid())
     {
-        CodeTextEditorWidget * editor = nullptr;
-        Pegasus::Core::ISourceCodeProxy* code = static_cast<Pegasus::Core::ISourceCodeProxy*>(object);
-        CodeUserData* userData = static_cast<CodeUserData*>(code->GetUserData());
-        
-        editor = mUi.mTreeEditor->FindCodeInEditors(userData);
-
+        SourceState* ss = mHandleMap[handle];
         mInternalBlockTextUpdated = true;
-        mUi.mTreeEditor->DisplayCode(userData, editor);
+        mUi.mTreeEditor->DisplayCode(ss);
         mInternalBlockTextUpdated = false;
 
-        UpdateInstantCompilationButton(userData);
+        UpdateInstantCompilationButton(ss);
     }
 }
 
@@ -555,18 +497,26 @@ void CodeEditorWidget::OnSettingsChanged()
 }
 
 
-void CodeEditorWidget::RequestClose(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object, QObject* extraData)
+void CodeEditorWidget::RequestClose(AssetInstanceHandle handle, QObject* extraData)
 {
-    Pegasus::Core::ISourceCodeProxy* code = static_cast<Pegasus::Core::ISourceCodeProxy*>(object);
-    CodeUserData* codeToClose = static_cast<CodeUserData*>(code->GetUserData()); 
+
+    SourceState* ss = mHandleMap[handle];
+
     mInternalBlockTextUpdated = true;
-    mUi.mTreeEditor->HideCode(codeToClose);
+    mUi.mTreeEditor->HideCode(ss);
     mInternalBlockTextUpdated = false;
+
+    mHandleMap.remove(handle);
+
+    delete ss->document;
+    ss->document = nullptr;
+    delete ss;
+
 
     //send a message to the render thread to close this code safely
     AssetIOMessageController::Message msg;
     msg.SetMessageType(AssetIOMessageController::Message::CLOSE_ASSET);
-    msg.SetObject(codeToClose->GetSourceCode());
+    msg.SetObject(handle);
     SendAssetIoMessage(msg);
 }
 
@@ -583,7 +533,7 @@ void CodeEditorWidget::OnTextChanged(QWidget * sender)
         CodeTextEditorWidget * textEditor = static_cast<CodeTextEditorWidget*>(sender);
         if (textEditor->GetCode() != nullptr)
         {
-            CompileCode(textEditor->GetCode());
+            CompileCode(textEditor->GetCode()->handle);
         }
     }
 }
@@ -593,11 +543,10 @@ void CodeEditorWidget::OnTextWindowSelected(QWidget * sender)
     CodeTextEditorWidget * textEditor = static_cast<CodeTextEditorWidget*>(sender);
     if (textEditor != nullptr)
     {
-        CodeUserData * code = textEditor->GetCode();
-
+        SourceState * code = textEditor->GetCode();
         if (code != nullptr)
         {
-            int i = mUi.mTabWidget->FindIndex(code->GetSourceCode());
+            int i = mUi.mTabWidget->FindIndex(code->handle);
             if (i >= 0 && i < mUi.mTabWidget->GetTabCount() && i != mUi.mTabWidget->GetCurrentIndex())
             {
                 mUi.mTabWidget->SetCurrentIndex(i);
@@ -606,8 +555,9 @@ void CodeEditorWidget::OnTextWindowSelected(QWidget * sender)
     }
 }
 
-void CodeEditorWidget::CompileCode(CodeUserData* code)
+void CodeEditorWidget::CompileCode(AssetInstanceHandle handle)
 {
+    if (!handle.IsValid() ) return;
     mCompilationRequestMutex->lock(); 
     if (!mCompilationRequestPending)
     {
@@ -616,8 +566,8 @@ void CodeEditorWidget::CompileCode(CodeUserData* code)
         emit(RequestCompilationBegin());
         SourceIOMessageController::Message msg;
         msg.SetMessageType(SourceIOMessageController::Message::SET_SOURCE_AND_COMPILE_SOURCE);
-        msg.SetSourceText(code->GetDocument()->toPlainText());
-        msg.SetSource(code->GetSourceCode());
+        msg.SetSourceText(mHandleMap[handle]->document->toPlainText());
+        msg.SetHandle(handle);
         emit (SendSourceIoMessage(msg));
     }
     else
@@ -626,12 +576,11 @@ void CodeEditorWidget::CompileCode(CodeUserData* code)
     }
 }
 
-void CodeEditorWidget::UpdateInstantCompilationButton(CodeUserData* code)
+void CodeEditorWidget::UpdateInstantCompilationButton(SourceState* ss)
 {
-    Pegasus::Core::ISourceCodeProxy* proxy = code->GetSourceCode();
-    if (proxy != nullptr && mCompilationPolicy != proxy->GetCompilationPolicy())
+    if (ss != nullptr && mCompilationPolicy != ss->compilationPolicy)
     {
-        mCompilationPolicy = proxy->GetCompilationPolicy();
+        mCompilationPolicy = ss->compilationPolicy;
         if (mCompilationPolicy == Pegasus::Core::ISourceCodeProxy::POLICY_USER_DEFINED)
         {
             if (!mInstantCompilationAction->isEnabled())
@@ -651,29 +600,37 @@ void CodeEditorWidget::UpdateInstantCompilationButton(CodeUserData* code)
 
 }
 
-void CodeEditorWidget::OnOpenObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
+void CodeEditorWidget::OnOpenObject(AssetInstanceHandle objectHandle, const QString& displayName, const QVariant& initData)
 {
+    ED_ASSERT (objectHandle.IsValid());
     show();
     activateWindow();
-    Pegasus::Core::ISourceCodeProxy* codeProxy = static_cast<Pegasus::Core::ISourceCodeProxy*>(object);
-    //TODO: bigass assert here
-    CodeUserData* codeUserData = static_cast<CodeUserData*>(codeProxy->GetUserData());
-    if (codeProxy == nullptr || codeUserData->GetDocument() == nullptr)
-    {
-        return;
-    }
-    //dump code contents to document text
-    //set the text of the current text editor
-    const char * srcChar = nullptr;
-    int srcSize = 0;
-    codeUserData->GetSourceCode()->GetSource(&srcChar, srcSize);
-    QString qtxt = SrcToQString(srcChar, srcSize);
-    mInternalBlockTextUpdated = true;
-    codeUserData->GetDocument()->setPlainText(qtxt);
-    mInternalBlockTextUpdated = false;
 
-    mUi.mTabWidget->Open(codeUserData->GetSourceCode());
-    CompileCode(codeUserData);
+    SourceStateMap::iterator it = mHandleMap.find(objectHandle);
+    //opened for the first time?
+    if (it == mHandleMap.end())
+    {
+        QVariantMap arguments = initData.toMap();
+        Pegasus::Core::ISourceCodeProxy::CompilationPolicy compilationPolicy =
+           static_cast<Pegasus::Core::ISourceCodeProxy::CompilationPolicy>(arguments["CompilationPolicy"].toInt());
+
+        QString plainText = arguments["Source"].toString();
+        
+        SourceState* ss = new SourceState();
+        ss->handle = objectHandle;
+        ss->document = new QTextDocument();
+        ss->document->setDocumentLayout(new QPlainTextDocumentLayout(ss->document));
+        ss->compilationPolicy = compilationPolicy;
+        //dump code contents to document text
+        //set the text of the current text editor
+        mInternalBlockTextUpdated = true;
+        ss->document->setPlainText(plainText);
+        mInternalBlockTextUpdated = false;
+        mHandleMap.insert(objectHandle, ss);
+    }
+
+    mUi.mTabWidget->Open(objectHandle, displayName);
+    CompileCode(objectHandle);
 }
 
 bool CodeEditorWidget::HasAnyChildFocus() const

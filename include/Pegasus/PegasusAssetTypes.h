@@ -24,18 +24,13 @@ struct PegasusAssetTypeDesc
     bool        mIsStructured; //!< true if this asset is structured, false otherwise
                                //!< a structured asset means is a json file.
                                //!< a non structured asset means is a raw file
+    const char* mIconPath;  //!< String that contains the icon resource path for this asset
 };
 
-#define REGISTER_ASSET_TYPE(__runtimeName, __typeGuid, __typeName, __ext, __isStruct) \
-    const PegasusAssetTypeDesc __runtimeName = { __typeGuid, __typeName, __ext, __isStruct };   
+#define REGISTER_ASSET_TYPE(__runtimeName, __typeGuid, __typeName, __ext, __isStruct, __icon) \
+    const PegasusAssetTypeDesc __runtimeName = { __typeGuid, __typeName, __ext, __isStruct, __icon };   
 #include "Pegasus/PegasusAssetTypes.inl"
 #undef REGISTER_ASSET_TYPE
-
-/////////////////////// ALL ASSETS ////////////////////////
-//! \return a list of all the asset types declared in this file. 
-//          The list ends with a null pointer.
-const PegasusAssetTypeDesc * const *  GetAllAssetTypesDescs();
-///////////////////////////////////////////////////////////
 
 }
 

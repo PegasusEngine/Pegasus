@@ -37,6 +37,7 @@
     #include "Pegasus/BlockScript/EventListeners.h"
     #include "Pegasus/BlockScript/BlockScriptAst.h"
     #include "Pegasus/BlockScript/StackFrameInfo.h"
+    #include "Pegasus/BlockScript/Container.h"
     #include "Pegasus/BlockScript/SymbolTable.h"
     #include "Pegasus/BlockScript/TypeDesc.h"
     #include "Pegasus/BlockScript/IFileIncluder.h"
@@ -63,10 +64,11 @@
     void BS_ErrorDispatcher(BlockScriptBuilder* builder, const char* message) 
     {
         builder->IncErrorCount();
-        if (builder->GetEventListener() != nullptr)
+        yyscan_t scanner = builder->GetScanner();
+        Container<IBlockScriptCompilerListener*>& listeners = builder->GetEventListeners();
+        for (int i = 0; i < listeners.Size(); ++i)
         {
-            yyscan_t scanner = builder->GetScanner();
-            builder->GetEventListener()->OnCompilationError(builder->GetCurrentLine(), message, BS_get_text(scanner));
+            listeners[i]->OnCompilationError(builder->GetCurrentLine(), message, BS_get_text(scanner));
         }
     }
 
@@ -78,8 +80,8 @@
     //***************************************************//
 %}
 
-// expect 137 reduce/shift warnings due to grammar ambiguity
-%expect 137
+// expect 130 reduce/shift warnings due to grammar ambiguity
+%expect 130
 
 %union {
     int    token;
@@ -332,9 +334,6 @@ fun_stmt_list : K_L_BRAC stmt_list K_R_BRAC { $$ = $2; }
 
 immediate : I_INT   { BS_BUILD($$, BuildImmInt($1)); }
           | I_FLOAT { BS_BUILD($$, BuildImmFloat($1)); }
-          |  K_L_BRAC I_FLOAT K_COMMA I_FLOAT K_COMMA I_FLOAT K_COMMA I_FLOAT K_R_BRAC { BS_BUILD($$, BuildImmFloat4($2,$4,$6,$8)); }
-          |  K_L_BRAC I_FLOAT K_COMMA I_FLOAT K_COMMA I_FLOAT K_R_BRAC { BS_BUILD($$, BuildImmFloat3($2,$4,$6)); }
-          |  K_L_BRAC I_FLOAT K_COMMA I_FLOAT K_R_BRAC { BS_BUILD($$, BuildImmFloat2($2,$4)); }
           |  K_SIZE_OF K_L_PAREN type_desc K_R_PAREN 
           {
             //figure out size at compile time!

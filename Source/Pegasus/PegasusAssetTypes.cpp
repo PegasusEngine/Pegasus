@@ -13,7 +13,7 @@
 #include "Pegasus/PegasusAssetTypes.h"
 namespace Pegasus
 {
-#define REGISTER_ASSET_TYPE(__runtimeName, __typeGuid, __typeName, __ext, __isStruct) \
+#define REGISTER_ASSET_TYPE(__runtimeName, __typeGuid, __typeName, __ext, __isStruct, __icon) \
     &__runtimeName,   
 
 static const PegasusAssetTypeDesc* gAllAssetTypes[] =

@@ -16,12 +16,14 @@
 #include "Pegasus/BlockScript/FunCallback.h"
 #include "Pegasus/BlockScript/BlockLib.h"
 #include "Pegasus/BlockScript/BsVm.h"
+#include "Pegasus/BlockScript/EventListeners.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/Memcpy.h"
 #include "Pegasus/Math/Vector.h"
 #include "Pegasus/Math/Matrix.h"
 #include "Pegasus/Math/Quaternion.h"
 #include "Pegasus/Core/Log.h"
+#include "Pegasus/Allocator/Alloc.h"
 
 using namespace Pegasus;
 using namespace Pegasus::BlockScript;
@@ -504,5 +506,75 @@ void Pegasus::BlockScript::RegisterIntrinsics(BlockLib* lib)
     };
         
     lib->CreateIntrinsicFunctions(mathFuncs, sizeof(mathFuncs) / sizeof(mathFuncs[0])); 
+}
+
+//! internal blockscript compiler listener for intrinsics. 
+class InternalIntrinsicsCompilerListener : public Pegasus::BlockScript::IBlockScriptCompilerListener
+{
+public:
+
+    virtual void OnCompilationBegin() { }
+
+    virtual void OnCompilationError(int line, const char* errorMessage, const char* token) {  }
+
+    virtual void OnCompilationEnd(bool success) { }
+
+    virtual Pegasus::BlockScript::Ast::Exp* OnResolveFunCall(Alloc::IAllocator* alloc, Pegasus::BlockScript::Ast::FunCall* funCall) 
+    {
+        Pegasus::BlockScript::Ast::Exp* finalExp = funCall;
+        const Pegasus::BlockScript::FunDesc* funDesc = funCall->GetDesc();
+        if (!funDesc->IsMethod() && funDesc->GetDec() != nullptr)
+        {
+            int d = 0;
+            if (!Utils::Strcmp(funCall->GetName(), "float2"))
+            {
+                d = 2;
+            }
+            else if (!Utils::Strcmp(funCall->GetName(), "float3"))
+            {
+                d = 3;
+            }
+            if (!Utils::Strcmp(funCall->GetName(), "float4"))
+            {
+                d = 4;
+            }
+            if (d >= 2)
+            {
+                Pegasus::BlockScript::Ast::ExpList* expList = funCall->GetArgs();
+                bool isConst = true;
+                int expListCount = 0;
+                Pegasus::BlockScript::Ast::Variant v;
+                while (isConst && expList != nullptr && expList->GetExp() != nullptr)  
+                {
+                    isConst = 
+                         expList->GetExp()->GetExpType() == Pegasus::BlockScript::Ast::Imm::sType
+                      && expList->GetExp()->GetTypeDesc()->GetAluEngine() == Pegasus::BlockScript::TypeDesc::E_FLOAT; 
+
+                    if (isConst && expListCount < 4)
+                    { 
+                        v.f[expListCount] = static_cast<Pegasus::BlockScript::Ast::Imm*>(expList->GetExp())->GetVariant().f[0];
+                    }
+                    ++expListCount;
+                    expList = expList->GetTail();
+                }
+                
+                if (isConst && expListCount == d)
+                {
+                    Pegasus::BlockScript::Ast::Imm* imm = PG_NEW(
+                        alloc, -1, "BlockScript::Ast", Pegasus::Alloc::PG_MEM_TEMP) 
+                        Pegasus::BlockScript::Ast::Imm(v);
+                    imm->SetTypeDesc(funCall->GetTypeDesc());
+                    finalExp = imm;
+                }
+            }
+        }
+        return finalExp;
+    }
+
+} gInternalIntrinsicsCompilerListener;
+
+Pegasus::BlockScript::IBlockScriptCompilerListener* Pegasus::BlockScript::GetIntrinsicCompilerListener()
+{
+    return &gInternalIntrinsicsCompilerListener;
 }
 

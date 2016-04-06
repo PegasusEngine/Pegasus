@@ -114,6 +114,7 @@ private:
 
 // Event declarations
 PEGASUS_EVENT_BEGIN_REGISTRY(ITextureNodeEventListener)
+    PEGASUS_EVENT_REGISTER_PROXY(ITextureNodeProxy)
     PEGASUS_EVENT_REGISTER(TextureNodeNotificationEvent)
     PEGASUS_EVENT_REGISTER(TextureNodeGenerationEvent)
     PEGASUS_EVENT_REGISTER(TextureNodeOperationEvent)

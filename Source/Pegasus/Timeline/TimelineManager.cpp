@@ -44,7 +44,6 @@ TimelineManager::TimelineManager(Alloc::IAllocator * allocator, Core::IApplicati
 #if PEGASUS_USE_EVENTS
 ,   mEventListener(nullptr)
 #endif
-,   mScriptTracker(allocator)
 ,   mCurrentTimeline(nullptr)
 {
     PG_ASSERTSTR(allocator != nullptr, "Invalid allocator given to the timeline object");
@@ -208,10 +207,6 @@ void TimelineManager::Update(unsigned int musicPosition)
 #if PEGASUS_USE_EVENTS
 void TimelineManager::RegisterEventListener(Pegasus::Core::CompilerEvents::ICompilerEventListener * eventListener)
 {
-    for (int i = 0; i < mScriptTracker.GetScriptCount(); ++i)
-    {
-        mScriptTracker.GetScriptById(i)->SetEventListener(mEventListener);
-    }
     mEventListener = eventListener;
 }
 #endif
@@ -300,9 +295,6 @@ TimelineScriptReturn TimelineManager::CreateScript()
 #endif
 
     scriptRef->Compile();
-    
-    //TODO remove tracker on release?
-    mScriptTracker.RegisterScript(&(*scriptRef));
 
     return scriptRef;
 }

@@ -113,6 +113,12 @@ protected:
     //! \param index Index of the node before it is removed
     virtual void OnRemoveInput(unsigned int index);
 
+#if PEGASUS_ENABLE_PROXIES
+    //! Returns the display name of this runtime object
+    //! \return string representing the display name of this object
+    virtual const char* GetDisplayName() const { return GetName(); }
+#endif
+
     //------------------------------------------------------------------------------------
 
 private:

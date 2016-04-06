@@ -51,6 +51,10 @@ public:
     //! \return true if successful, false otherwise
     virtual bool ReloadFromAsset();
 
+    //! Gets the property grid proxy on this object if available.
+    //! \return propertygrid object if available.
+    PropertyGrid::IPropertyGridObjectProxy* GetPropertyGrid() { return nullptr; }
+
 private:
     RuntimeAssetObject* mObject;
 };

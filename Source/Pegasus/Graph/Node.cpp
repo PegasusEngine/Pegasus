@@ -348,7 +348,7 @@ bool Node::ReadFromObject(NodeManager* nodeManager, AssetLib::Asset* parentAsset
     }
 
     Object* propGridObject = obj->GetObject(propGridObjId);
-    if (!PropertyGridObject::ReadFromObject(parentAsset, obj))
+    if (!PropertyGridObject::ReadFromObject(parentAsset, propGridObject))
     { 
         PG_LOG('ERR_' , "Error while parsing node object. Invalid property grid.");
         return false;

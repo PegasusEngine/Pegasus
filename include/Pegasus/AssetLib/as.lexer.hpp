@@ -223,6 +223,7 @@ void AS_free (void * ,yyscan_t yyscanner );
 #define INITIAL 0
 #define STRING_BLOCK 1
 #define LINE_COMMENT 2
+#define ASSET_POINTER 3
 
 #endif
 
@@ -337,9 +338,9 @@ extern int AS_lex \
 #undef YY_DECL
 #endif
 
-#line 116 "as.l"
+#line 133 "as.l"
 
 
-#line 344 "as.lexer.hpp"
+#line 345 "as.lexer.hpp"
 #undef AS_IN_HEADER
 #endif /* AS_HEADER_H */

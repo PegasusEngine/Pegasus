@@ -13,6 +13,9 @@
 #define PEGASUS_WND_IWINDOWMESSAGEHANDLER_H
 
 #include "Pegasus/Core/Shared/OsDefs.h"
+#if PEGASUS_ENABLE_PROXIES
+#include "Pegasus/Window/IWindowComponent.h"
+#endif
 
 namespace Pegasus {
 namespace Wnd {
@@ -39,6 +42,11 @@ public:
     //! \param width New width.
     //! \param height Nww height.
     virtual void OnResize(unsigned int width, unsigned int height) = 0;
+
+#if PEGASUS_ENABLE_PROXIES
+    //! Handles events on mouse clicks and such.
+    virtual void OnMouseEvent(IWindowComponent::MouseButton button, bool isDown, float x, float y) = 0;
+#endif
 };
 
 

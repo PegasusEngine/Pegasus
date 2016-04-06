@@ -95,7 +95,6 @@ public:
     //! \return Pointer to the lane proxy, nullptr in case of error
     virtual ILaneProxy * GetLane(unsigned int laneIndex) const;
 
-
     //! Set the play mode of the timeline
     //! \param playMode New play mode of the timeline (PLAYMODE_xxx constant)
     virtual void SetPlayMode(PlayMode playMode);
@@ -110,6 +109,19 @@ public:
     //! Get the current beat of the timeline
     //! \return Current beat, measured in ticks, can have fractional part
     virtual float GetCurrentBeat() const;
+
+    //! Gets a block from a guid. 
+    //! \param blockGuid the guid to query this block from
+    //! \return the block proxy if found, nullptr otherwise
+    virtual IBlockProxy* FindBlockByGuid(unsigned blockGuid);
+
+    //! If this asset runtime object has a property attached, the return it.
+    //! \return the property grid object of this proxy. If it doesn't exist then it returns null.
+    virtual PropertyGrid::IPropertyGridObjectProxy* GetPropertyGrid()
+    {
+        //timeline does not have a property grid associated with it yet.
+        return nullptr;
+    }
    
 protected:
     virtual AssetLib::IRuntimeAssetObjectProxy* GetDecoratedObject() const;

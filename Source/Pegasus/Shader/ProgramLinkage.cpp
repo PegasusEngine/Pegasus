@@ -1,7 +1,6 @@
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Shader/IShaderFactory.h"
-#include "Pegasus/Shader/ShaderTracker.h"
 #include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/Memcpy.h"
@@ -27,7 +26,6 @@ Pegasus::Graph::OperatorNode(nodeAllocator, nodeDataAllocator), mStageFlags(0), 
 #if PEGASUS_ENABLE_PROXIES
     //initializing proxy
     ,mProxy(this)
-    ,mShaderTracker(nullptr)
 #endif
 {
     PEGASUS_EVENT_INIT_DISPATCHER
@@ -45,13 +43,6 @@ Pegasus::Shader::ProgramLinkage::~ProgramLinkage()
     {
         mFactory->DestroyProgramGPUData(&(*GetData()));
     }
-
-#if PEGASUS_ENABLE_PROXIES
-    if (mShaderTracker != nullptr)
-    {
-        mShaderTracker->DeleteProgram(this);
-    }
-#endif
 
 #if PEGASUS_ENABLE_PROXIES
     PEGASUS_EVENT_DESTROY_USER_DATA(&mProxy, "ProgramLinkage", GetEventListener());
@@ -190,15 +181,30 @@ bool Pegasus::Shader::ProgramLinkage::OnReadAsset(Pegasus::AssetLib::AssetLib* l
     if (shaders != -1)
     {
         AssetLib::Array* shaderArr = root->GetArray(shaders);
-        if (shaderArr->GetType() == AssetLib::Array::AS_TYPE_STRING)
+        if (shaderArr->GetType() == AssetLib::Array::AS_TYPE_ASSET_PATH_REF)
         {
             for (int i = 0; i < shaderArr->GetSize(); ++i)
             {
-                const AssetLib::Array::Element& element = shaderArr->GetElement(i);
-                Pegasus::Shader::ShaderStageRef shaderStage = mManager->LoadShader(element.s);
-                if (shaderStage != nullptr)
+                AssetLib::Array::Element element = shaderArr->GetElement(i);
+                AssetLib::Asset* asset = element.asset->GetOwnerAsset();
+                if (
+                      asset->GetTypeDesc()->mTypeGuid ==  ASSET_TYPE_VS_SHADER.mTypeGuid
+                 ||   asset->GetTypeDesc()->mTypeGuid ==  ASSET_TYPE_PS_SHADER.mTypeGuid 
+                 ||   asset->GetTypeDesc()->mTypeGuid ==  ASSET_TYPE_GS_SHADER.mTypeGuid
+                 ||   asset->GetTypeDesc()->mTypeGuid ==  ASSET_TYPE_TCS_SHADER.mTypeGuid
+                 ||   asset->GetTypeDesc()->mTypeGuid ==  ASSET_TYPE_TES_SHADER.mTypeGuid
+                 ||   asset->GetTypeDesc()->mTypeGuid ==  ASSET_TYPE_CS_SHADER.mTypeGuid
+                )
                 {
-                    SetShaderStage(shaderStage);
+                    Pegasus::Shader::ShaderStageRef shaderStage = static_cast<Pegasus::Shader::ShaderStage*>(&(*element.asset));
+                    if (shaderStage != nullptr)
+                    {
+                        SetShaderStage(shaderStage);
+                    }
+                }
+                else
+                {
+                    PG_LOG('ERR_', "Invalid asset type for asset %s.", asset->GetPath());
                 }
             }
         }
@@ -222,16 +228,15 @@ void Pegasus::Shader::ProgramLinkage::OnWriteAsset(Pegasus::AssetLib::AssetLib* 
 #if PEGASUS_ENABLE_PROXIES
     root->AddString("name", GetName());
 #endif
-    shaderArr->CommitType(AssetLib::Array::AS_TYPE_STRING);
+    shaderArr->CommitType(AssetLib::Array::AS_TYPE_ASSET_PATH_REF);
 
     for (unsigned i = 0; i < GetNumInputs(); ++i)
     {
         ShaderStageRef shader = FindShaderStageInput(i);
-        AssetLib::Asset* shaderAsset = shader->GetOwnerAsset();
-        if (shaderAsset != nullptr)
+        if (shader->GetOwnerAsset() != nullptr)
         {
             AssetLib::Array::Element el;
-            el.s = shaderAsset->GetPath();
+            el.asset = &(*shader);
             shaderArr->PushElement(el);
         }
         else

@@ -41,6 +41,9 @@ namespace AssetLib
         //! Gets the type description of this asset
         virtual const PegasusAssetTypeDesc* GetTypeDesc() const;
 
+        //! Return's this asset runtime object representation.
+        virtual IRuntimeAssetObjectProxy* GetRuntimeObject() const;
+
         //! Sets the object of this proxy
         //! \param the asset object to save
         void SetObject(Asset* object) { mObject = object; }
@@ -52,7 +55,10 @@ namespace AssetLib
         //! Gets the object of this proxy
         //! \return the asset inside this proxy
         const Asset* GetObject() const { return mObject; }
-    
+
+        //! Gets this object's root. returns null if this is not a structured asset.
+        virtual IObjectProxy* Root();
+             
     private:
 
         Asset* mObject;

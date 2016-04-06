@@ -304,6 +304,7 @@ public:
     virtual ~Imm(){}
 
     const Variant& GetVariant() const { return mVariant; }
+    Variant& GetVariant() { return mVariant; }
 
     VISITOR_ACCESS
 

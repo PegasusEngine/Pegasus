@@ -35,12 +35,20 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\AssetLib.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\AssetRuntimeFactory.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\ASTree.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Category.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Proxy\ArrayProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Proxy\AssetLibProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Proxy\AssetProxy.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Proxy\CategoryProxy.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Proxy\ObjectProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Proxy\RuntimeAssetObjectProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\RuntimeAssetObject.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Shared\AssetEvent.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Shared\IArrayProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Shared\IAssetLibProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Shared\IAssetProxy.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Shared\ICategoryProxy.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Shared\IObjectProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\AssetLib\Shared\IRuntimeAssetObjectProxy.h" />
   </ItemGroup>
   <ItemGroup>
@@ -51,8 +59,12 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\AssetLib.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\AssetRuntimeFactory.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\ASTree.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\Category.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\Proxy\ArrayProxy.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\Proxy\AssetLibProxy.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\Proxy\AssetProxy.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\Proxy\CategoryProxy.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\Proxy\ObjectProxy.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\Proxy\RuntimeAssetObjectProxy.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\AssetLib\RuntimeAssetObject.cpp" />
   </ItemGroup>

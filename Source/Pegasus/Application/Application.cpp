@@ -16,6 +16,8 @@
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Application/AppWindowManager.h"
 #include "Pegasus/Application/AppBsReflectionInfo.h"
+#include "Pegasus/Application/AppWindowComponentFactory.h"
+#include "Pegasus/Application/Components/EditorComponents.h"
 #include "Pegasus/Camera/CameraManager.h"
 #include "Pegasus/Core/Time.h"
 #include "Pegasus/Graph/NodeManager.h"
@@ -26,6 +28,7 @@
 #include "Pegasus/Render/MeshFactory.h"
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Texture/TextureManager.h"
+#include "Pegasus/Texture/Texture.h"
 #include "Pegasus/Timeline/TimelineManager.h"
 #include "Pegasus/TimelineBlock/TimelineBlockRegistration.h"
 #include "Pegasus/Window/Window.h"
@@ -35,8 +38,10 @@
 #include "Pegasus/PropertyGrid/PropertyGridManager.h"
 #include "Pegasus/BlockScript/BlockScriptManager.h"
 #include "Pegasus/Mesh/MeshManager.h"
+#include "Pegasus/Mesh/Mesh.h"
 #include "Pegasus/Render/Render.h"
 #include "Pegasus/Render/RenderContext.h"
+#include "Pegasus/PegasusAssetTypes.h"
 
 #include <stdio.h>
 
@@ -160,11 +165,11 @@ Application::~Application()
 
     PG_DELETE(windowAlloc, mWindowManager);
 
-    // Delete the timeline
-    PG_DELETE(timelineAlloc, mTimelineManager);
+    
 
     // Delete the texture and node managers    
-    PG_DELETE(nodeAlloc, mAssetLib);
+    PG_DELETE(nodeAlloc, mAssetLib);    
+    PG_DELETE(timelineAlloc, mTimelineManager);
     PG_DELETE(nodeAlloc, mMeshManager);
     PG_DELETE(nodeAlloc, mTextureManager);
     PG_DELETE(nodeAlloc, mShaderManager);
@@ -286,7 +291,6 @@ void Application::DetachWindow(Wnd::Window* wnd)
 
     PG_LOG('APPL', "Window destroyed");
 }
-
 
 }   // namespace App
 }   // namespace Pegasus

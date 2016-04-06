@@ -24,6 +24,8 @@ using namespace Pegasus::AssetLib;
 AssetBuilder::AssetBuilder(Alloc::IAllocator* allocator)
 : mArrStack(allocator),
   mObjStack(allocator),
+  mObjectChildAssetQueue(allocator),
+  mArrayChildAssetQueue(allocator),
   mFinalAsset(nullptr),
   mCurrentLine(1),
   mErrorCount(0)
@@ -39,6 +41,8 @@ void AssetBuilder::Reset()
     mCurrentLine = 1;
     mArrStack.Clear();
     mObjStack.Clear();
+    mObjectChildAssetQueue.Clear();
+    mArrayChildAssetQueue.Clear();
     mFinalAsset = nullptr;
     mErrorCount = 0;
 }
@@ -87,3 +91,21 @@ const char* AssetBuilder::CopyString(const char* string)
     return mFinalAsset->CopyString(string);
 }
 
+void AssetBuilder::EnqueueChildAsset(const char* name, const char* newAssetPath)
+{
+    PG_ASSERT(mObjStack.GetSize() != 0)
+    Object* obj = GetObject();
+    ObjectChildAssetRequest& request = mObjectChildAssetQueue.PushEmpty();
+    request.object = obj;
+    request.identifier = name;
+    request.assetPath = newAssetPath;
+}
+
+void AssetBuilder::EnqueueAssetArrayElement(const char* assetPath)
+{
+    PG_ASSERT(mArrStack.GetSize() != 0);
+    Array* arr = GetArray();
+    ArrayChildAssetRequest& request = mArrayChildAssetQueue.PushEmpty();
+    request.array = arr;
+    request.assetPath = assetPath;
+}

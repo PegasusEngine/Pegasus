@@ -62,11 +62,14 @@ public:
     //! \return Lane the block belongs to, nullptr when the block is not associated with a lane yet
     virtual ILaneProxy * GetLane() const = 0;
 
+    //! Gets the string instance name of this block. The instance name is a unique identifier of this block.
+    //! \return the name of the instance
+    virtual const char * GetInstanceName() const = 0;
 
-    //! Get the string displayed by the editor (usually class name without the "Block" suffix)
-    //! \warning To be defined in each derived class, using the DECLARE_TIMELINE_BLOCK macro
-    //! \return String displayed by the editor
-    virtual const char * GetEditorString() const = 0;
+    //! Returns the name of this block. If it is "Block" means its a vanilla block type. Otherwise, whichever C++
+    //! Inheritance will be displayed
+    //! \return the name of the internal type
+    virtual const char* GetClassName() const = 0;
 
     //! Set the color of the block
     //! \param red Red component (0-255)
@@ -80,6 +83,16 @@ public:
     //! Gets the script proxy if available, null if not available
     //! \return the source code proxy, null if it does not exist.
     virtual Core::ISourceCodeProxy* GetScript() const = 0;
+
+    //! Sets a script proxy as a timeline element.
+    //! \param code - the code to attach
+    virtual void AttachScript(Core::ISourceCodeProxy* code) = 0;
+
+    //! Clears blockscript if there is one.
+    virtual void ClearScript() = 0;
+
+    //! Returns the guid of this proxy
+    virtual unsigned GetGuid() const = 0;
 };
 
 

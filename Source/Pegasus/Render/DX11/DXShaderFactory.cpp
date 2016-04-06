@@ -291,9 +291,9 @@ void DXShaderFactory::GenerateShaderGPUData(Pegasus::Shader::ShaderStage * shade
             ProcessErrorLog(shaderNode, logBuffer);
 #if PEGASUS_ENABLE_LOG
 #if PEGASUS_ENABLE_PROXIES
-            PG_LOG('ERR_', "(%s)Shader Compilation Failure: %s", shaderNode->GetName(), logBuffer);
+            PG_LOG('CERR', "(%s)Shader Compilation Failure: %s", shaderNode->GetName(), logBuffer);
 #else
-            PG_LOG('ERR_', "Shader Compilation Failure: %s", logBuffer);
+            PG_LOG('CERR', "Shader Compilation Failure: %s", logBuffer);
 #endif
 #endif
         }
@@ -484,9 +484,9 @@ void DXShaderFactory::GenerateProgramGPUData(Pegasus::Shader::ProgramLinkage * p
             "Incomplete shader stages"
         );
 #if PEGASUS_ENABLE_PROXIES
-        PG_LOG('ERR_', "(%s)Program Link Failure, incomplete shader pipeline", programNode->GetName());
+        PG_LOG('CERR', "(%s)Program Link Failure, incomplete shader pipeline", programNode->GetName());
 #else
-        PG_LOG('ERR_', "Program Link Failure, incomplete shader pipeline");
+        PG_LOG('CERR', "Program Link Failure, incomplete shader pipeline");
 #endif
     }
     else if (isProgramComplete)
@@ -511,9 +511,9 @@ void DXShaderFactory::GenerateProgramGPUData(Pegasus::Shader::ProgramLinkage * p
             "Linking failed"
         );
 #if PEGASUS_ENABLE_PROXIES
-        PG_LOG('ERR_', "(%s)Program Link Failure, compilation errors.", programNode->GetName());
+        PG_LOG('CERR', "(%s)Program Link Failure, compilation errors.", programNode->GetName());
 #else
-        PG_LOG('ERR_', "Program Link Failure, compilation errors.");
+        PG_LOG('CERR', "Program Link Failure, compilation errors.");
 #endif
     }
     nodeData->ValidateGPUData();

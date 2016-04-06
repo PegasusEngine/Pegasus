@@ -35,7 +35,6 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderManager.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderSource.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderStage.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderTracker.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\IProgramProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\IShaderProxy.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\ShaderDefs.h" />
@@ -48,7 +47,6 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderManager.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderSource.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderStage.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderTracker.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{13AFD782-33A5-4718-AEE8-5390E6918255}</ProjectGuid>

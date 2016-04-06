@@ -101,7 +101,7 @@ extern int BS_debug;
 typedef union YYSTYPE
 {
 /* Line 2058 of yacc.c  */
-#line 84 "bs.y"
+#line 86 "bs.y"
 
     int    token;
     int    integerValue;

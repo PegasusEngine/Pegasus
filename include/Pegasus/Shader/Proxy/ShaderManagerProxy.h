@@ -17,7 +17,6 @@
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
-#include "Pegasus/Shader/ShaderTracker.h"
 #include "Pegasus/Shader/Proxy/ProgramProxy.h"
 #include "Pegasus/Shader/ShaderSource.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
@@ -50,29 +49,9 @@ public:
     ShaderManagerProxy(ShaderManager * object);
     virtual ~ShaderManagerProxy(){}
 
-    //! \return gets the number of programs in the application
-    virtual int GetProgramCount() const;
-    
-    //! \param i index of the program requested
-    //! \return gets a reference to a program
-    virtual IProgramProxy* GetProgram(int i);
-
-    //! \return total number of shaders in the application
-    virtual int GetShaderCount() const;
-
-    //! \param id  of the shader requested
-    //! \return gets a reference to a shader
-    virtual IShaderProxy* GetShader(int id); 
-
     //! Sets the event listener to be used for the shader
     //! \param event listener reference
     virtual void RegisterEventListener(Pegasus::Core::CompilerEvents::ICompilerEventListener * eventListener);
-
-    //! number of shaders is the number of sources
-    virtual int GetSourceCount() const { return GetShaderCount(); }
-
-    //! returns the respective shader
-    virtual Pegasus::Core::ISourceCodeProxy* GetSource(int id) { return GetShader(id); }
 
 private:
 

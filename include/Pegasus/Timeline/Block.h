@@ -18,6 +18,7 @@
 #include "Pegasus/Timeline/TimelineScript.h"
 #include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/AssetLib/RuntimeAssetObject.h"
+#include "Pegasus/AssetLib/Category.h"
 #include "Pegasus/PropertyGrid/PropertyGridObject.h"
 #include "Pegasus/Timeline/BlockRuntimeScriptListener.h"
 
@@ -26,6 +27,9 @@ namespace Pegasus {
         class AssetLib;
         class Asset;
         class Object;
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+        class Category; 
+#endif
     }
 
     namespace Timeline {
@@ -130,6 +134,10 @@ public:
     virtual void Render(float beat, Wnd::Window * window) { RenderViaScript(beat, window); };
 
     //------------------------------------------------------------------------------------
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+    AssetLib::Category* GetAssetCategory() { return &mCategory; } 
+    unsigned GetGuid() const { return mGuid; }
+#endif
 
 protected:
 
@@ -268,6 +276,11 @@ private:
     } mBlockScriptObserver;
 
 #endif  // PEGASUS_ENABLE_PROXIES
+
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+    AssetLib::Category mCategory; 
+    unsigned mGuid;
+#endif
 };
 
 

@@ -145,6 +145,10 @@ void Application::run()
     // Load the assets required to render the timeline blocks
     mApplication->Load();
 
+    //! Connect asset event listeners after loading.
+    //! This should prevent the event listeners to fire like crazy when the app is loaded.
+    mApplicationInterface->ConnectAssetEventListeners();
+
     // Signal the success of the loading
     emit(LoadingSucceeded());
 
@@ -152,6 +156,9 @@ void Application::run()
     // the sequencing of the message loop from the editor, and to allow assertion dialog boxes to work correctly.
     // Uses QThread::exec() rather than QEventLoop::exec() to allow timers to work.
     this->exec();
+
+    //! Prepare for unloading assets.
+    mApplicationInterface->DisconnectAssetEventListeners();
 
     mApplication->Unload();
     mApplicationInterface->DestroyAllWindows();

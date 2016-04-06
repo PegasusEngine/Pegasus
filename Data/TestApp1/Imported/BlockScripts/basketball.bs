@@ -22,9 +22,9 @@ struct LightingState {
 extern Light2 = { -2.0, 0.4, 0.9, 1.0 };
 extern Light3 = { -20.0, 4.4, 10.3, 1.0 };*/
 
-extern Light1 = { 2.0, 0.4, 0.5, 1.0 };
-extern Light2 = { 2.0, 0.4, 0.9, 1.0 };
-extern Light3 = { 20.0, 4.4, 10.3, 1.0 };
+extern Light1 = float4( 2.0, 0.4, 0.5, 1.0 );
+extern Light2 = float4( 2.0, 0.4, 0.9, 1.0 );
+extern Light3 = float4( 20.0, 4.4, 10.3, 1.0 );
 extern StripThickness = 55.0;
 extern StripAA = 5.0;
 

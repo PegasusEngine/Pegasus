@@ -12,7 +12,11 @@
 #include "Timeline/TimelineBlockGraphicsItem.h"
 #include "Timeline/TimelineUndoCommands.h"
 #include "Timeline/TimelineSizes.h"
+#include "Pegasus/AssetLib/Shared/IAssetProxy.h"
+#include "Pegasus/AssetLib/Shared/IRuntimeAssetObjectProxy.h"
+#include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 
+#include "Pegasus/PegasusAssetTypes.h"
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"
 #include "Pegasus/Timeline/Shared/ILaneProxy.h"
 #include "Pegasus/Timeline/Shared/ITimelineManagerProxy.h"
@@ -23,6 +27,8 @@
 #include <QPainter>
 #include <QStyleOption>
 #include <QUndoStack>
+#include <QMenu>
+#include <QAction>
 
 
 //! Depth of the block when drawn. Positive since it needs to be rendered in front of the grid at least
@@ -39,12 +45,10 @@ TimelineBlockGraphicsItem::TimelineBlockGraphicsItem(Pegasus::Timeline::IBlockPr
                                                      QUndoStack* undoStack)
 :   QGraphicsObject(),
     mBlockProxy(blockProxy),
-    mName((blockProxy != nullptr) ? blockProxy->GetEditorString() : ""),
     mEnableUndo(true),
     mUndoStack(undoStack)
 {
-    ED_ASSERTSTR(blockProxy != nullptr, "A block proxy must be associated with the block item");
-    ED_ASSERTSTR(!QString(blockProxy->GetEditorString()).isEmpty(), "The name of the block must be defined");
+    ED_ASSERTSTR(blockProxy != nullptr, "A block proxy must be associated with the block item");    
 
     if (horizontalScale <= 0.0f)
     {
@@ -55,16 +59,6 @@ TimelineBlockGraphicsItem::TimelineBlockGraphicsItem(Pegasus::Timeline::IBlockPr
     {
         mHorizontalScale = horizontalScale;
     }
-
-    // Set the block color
-    unsigned char red, green, blue;
-    blockProxy->GetColor(red, green, blue);
-    mBaseColor = QColor(red, green, blue);
-
-    // Set the initial position and duration, and update the scaled position and length
-    SetDuration(blockProxy->GetDuration(), false);
-    SetLane(lane, false);
-    SetBeat(blockProxy->GetBeat(), true);
 
     // Make the block movable and selectable with the mouse
     setFlag(ItemIsMovable);
@@ -78,19 +72,58 @@ TimelineBlockGraphicsItem::TimelineBlockGraphicsItem(Pegasus::Timeline::IBlockPr
 
     // Caching performed at paint device level, best quality and lower memory usage
     setCacheMode(DeviceCoordinateCache);
-
+    SetLane(lane, false);
     // Set the depth of the block (positive since it needs to be rendered
     // in front of the grid at least)
     setZValue(TIMELINE_BLOCK_GRAPHICS_ITEM_Z_VALUE);
 
     //! Assign a unique ID to the block for merging undo commands when moving the block
     mBlockID = sCurrentBlockID++;
+
+    mCtxMenu = new QMenu();
+    mChangeScriptAction = mCtxMenu->addAction(tr(""));
+
+    connect(mChangeScriptAction, SIGNAL(triggered()),
+            this, SLOT(CtxMenuChangeScript()));
+    QAction* removeScriptAction = mCtxMenu->addAction(tr("remove script"));
+    connect (removeScriptAction, SIGNAL(triggered()),
+             this, SLOT(CtxRemoveScript()));
+
+    mNoScriptCtxMenu = new QMenu();
+    QAction* attachScriptAction = mNoScriptCtxMenu->addAction(tr("attach script"));
+    connect (attachScriptAction, SIGNAL(triggered()),
+            this, SLOT(CtxMenuChangeScript()));
+    
+    FlushVisualProperties();
+
+    mScriptIcon = QIcon(tr(Pegasus::ASSET_TYPE_BLOCKSCRIPT.mIconPath));
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineBlockGraphicsItem::FlushVisualProperties()
+{
+    if (mBlockProxy == nullptr) return;
+
+    // Set the block color
+    unsigned char red, green, blue;
+    mBlockProxy->GetColor(red, green, blue);
+    mBaseColor = QColor(red, green, blue);
+
+    // Set the initial position and duration, and update the scaled position and length
+    SetDuration(mBlockProxy->GetDuration(), false);
+    SetBeat(mBlockProxy->GetBeat(), true);
+
+    mName = mBlockProxy->GetInstanceName();
+    mClassName = mBlockProxy->GetClassName();
 }
 
 //----------------------------------------------------------------------------------------
 
 TimelineBlockGraphicsItem::~TimelineBlockGraphicsItem()
 {
+    delete (mCtxMenu);
+    delete (mNoScriptCtxMenu);
 }
 
 //----------------------------------------------------------------------------------------
@@ -202,6 +235,9 @@ void TimelineBlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGraph
 {
     Q_UNUSED(widget);
 
+    //HACK for now, ui draw thread should never access this!
+    mHasScript = mBlockProxy->GetScript() != nullptr;
+
     const qreal lod = option->levelOfDetailFromTransform(painter->worldTransform());
 
     // Set the outline of the block to a solid line with width 1 for any zoom (cosmetic pen) and square corners.
@@ -243,7 +279,18 @@ void TimelineBlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGraph
                     textMargin,
                     mLength - 3.0f * textMargin,        // Takes the extra space on the left into account
                     TIMELINE_BLOCK_HEIGHT - 2.0f * textMargin);
-    painter->drawText(textRect, mName);
+    painter->drawText(textRect, mName.isEmpty() ? mClassName :  mName + ":" + mClassName);
+
+
+    QRect rect(mLength - 16, 0, 16, 16);
+    fillColor = fillColor.lighter(160);
+    painter->setBrush(fillColor);
+    painter->drawRect(rect);
+    
+    if (mHasScript)
+    {
+        mScriptIcon.paint(painter, rect);
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -263,13 +310,13 @@ QVariant TimelineBlockGraphicsItem::itemChange(GraphicsItemChange change, const 
                     Pegasus::Timeline::ILaneProxy * laneProxy = mBlockProxy->GetLane();
                     if (laneProxy == nullptr)
                     {
-                        ED_FAILSTR("Unable to move the block \"%s\" since it has no associated lane", mBlockProxy->GetEditorString());
+                        ED_FAILSTR("Unable to move the block \"%s\" since it has no associated lane", mBlockProxy->GetInstanceName());
                         break;
                     }
                     Pegasus::Timeline::ITimelineProxy * timelineProxy = laneProxy->GetTimeline();
                     if (timelineProxy == nullptr)
                     {
-                        ED_FAILSTR("Unable to move the block \"%s\" since it has no associated timeline", mBlockProxy->GetEditorString());
+                        ED_FAILSTR("Unable to move the block \"%s\" since it has no associated timeline", mBlockProxy->GetInstanceName());
                         break;
                     }
 
@@ -414,6 +461,33 @@ void TimelineBlockGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *even
 
     update();
     QGraphicsItem::mouseReleaseEvent(event);
+
+    if (event->pos().x() <= qreal(mLength) && event->pos().x() >= (mLength - 16))
+    {
+        if (mBlockProxy->GetScript() == nullptr)
+        {
+            mNoScriptCtxMenu->exec(event->screenPos());
+        }
+        else
+        {
+            mChangeScriptAction->setText(tr("<") + tr(mBlockProxy->GetScript()->GetOwnerAsset()->GetPath()) + tr(">"));
+            mCtxMenu->exec(event->screenPos());
+        }
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineBlockGraphicsItem::CtxMenuChangeScript()
+{
+    emit(RequestChangeScript(mBlockProxy->GetGuid()));    
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineBlockGraphicsItem::CtxRemoveScript()
+{
+    emit(RequestRemoveScript(mBlockProxy->GetGuid()));
 }
 
 //----------------------------------------------------------------------------------------

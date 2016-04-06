@@ -32,6 +32,7 @@
 #include "MessageControllers/WindowIOMessageController.h"
 #include "MessageControllers/PropertyGridIOMessageController.h"
 #include "MessageControllers/GraphIOMessageController.h"
+#include "MessageControllers/TimelineIOMessageController.h"
 #include "Widgets/PegasusDockWidget.h"
 
 //! Name of the organization creating the software
@@ -51,6 +52,7 @@ Q_DECLARE_METATYPE(PegasusDockWidget*);
 Q_DECLARE_METATYPE(Pegasus::Core::ISourceCodeProxy*);
 Q_DECLARE_METATYPE(Pegasus::Shader::IProgramProxy*);
 Q_DECLARE_METATYPE(Pegasus::Timeline::ITimelineProxy*);
+Q_DECLARE_METATYPE(AssetInstanceHandle);
 Q_DECLARE_METATYPE(Pegasus::AssetLib::IRuntimeAssetObjectProxy*);
 Q_DECLARE_METATYPE(Pegasus::PegasusAssetTypeDesc*);
 
@@ -69,15 +71,17 @@ Q_DECLARE_METATYPE(WindowIOMessageController::Message);
 
 Q_DECLARE_METATYPE(PropertyGridIOMessageController::Message);
 Q_DECLARE_METATYPE(PropertyGridIOMessageController::UpdateElement);
+Q_DECLARE_METATYPE(TimelineIOMessageController::Message);
 Q_DECLARE_METATYPE(QVector<PropertyGridIOMessageController::UpdateElement>);
 Q_DECLARE_METATYPE(PropertyGridHandle);
 Q_DECLARE_METATYPE(Pegasus::PropertyGrid::IPropertyGridClassInfoProxy*);
+Q_DECLARE_METATYPE(AssetInformation);
+Q_DECLARE_METATYPE(AssetCategory);
+Q_DECLARE_METATYPE(AssetViewTree);
 
 Q_DECLARE_METATYPE(GraphIOMessageController::Message);
 Q_DECLARE_METATYPE(GraphIOMessageController::UpdateElement);
 Q_DECLARE_METATYPE(QVector<GraphIOMessageController::UpdateElement>);
-Q_DECLARE_METATYPE(TextureNodeProxyHandle);
-Q_DECLARE_METATYPE(Pegasus::Texture::ITextureNodeProxy*);
 
 //----------------------------------------------------------------------------------------
 
@@ -88,6 +92,7 @@ void RegisterMetaTypes()
     qRegisterMetaType<Pegasus::Core::ISourceCodeProxy*>();
     qRegisterMetaType<Pegasus::Shader::IProgramProxy*>();
     qRegisterMetaType<Pegasus::Timeline::ITimelineProxy*>();
+    qRegisterMetaType<AssetInstanceHandle>();
     qRegisterMetaType<Pegasus::AssetLib::IRuntimeAssetObjectProxy*>();
     qRegisterMetaType<Pegasus::PegasusAssetTypeDesc*>();
 
@@ -106,6 +111,7 @@ void RegisterMetaTypes()
 
     qRegisterMetaType<PropertyGridIOMessageController::Message>();
     qRegisterMetaType<PropertyGridIOMessageController::UpdateElement>();
+    qRegisterMetaType<TimelineIOMessageController::Message>();
     qRegisterMetaType<QVector<PropertyGridIOMessageController::UpdateElement> >();
     qRegisterMetaType<PropertyGridHandle>();
     qRegisterMetaType<Pegasus::PropertyGrid::IPropertyGridClassInfoProxy*>();
@@ -113,8 +119,9 @@ void RegisterMetaTypes()
     qRegisterMetaType<GraphIOMessageController::Message>();
     qRegisterMetaType<GraphIOMessageController::UpdateElement>();
     qRegisterMetaType<QVector<GraphIOMessageController::UpdateElement> >();
-    qRegisterMetaType<TextureNodeProxyHandle>();
-    qRegisterMetaType<Pegasus::Texture::ITextureNodeProxy*>();
+    qRegisterMetaType<AssetInformation>();
+    qRegisterMetaType<AssetCategory>();
+    qRegisterMetaType<AssetViewTree>();
 }
 
 //----------------------------------------------------------------------------------------

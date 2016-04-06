@@ -29,6 +29,7 @@ void RuntimeAssetObject::OnAssetRuntimeDestroyed()
     //do something here with the library
     if (mAsset != nullptr)
     {
+        PEGASUS_EVENT_DISPATCH(mAsset->GetLib(), RuntimeAssetObjectDestroyed, &mProxy);
         mAsset->GetLib()->UnloadAsset(mAsset);
         mAsset = nullptr;
     }
@@ -38,7 +39,10 @@ bool RuntimeAssetObject::Read(Asset* asset)
 {
     AssetLib* lib = asset->GetLib();
     Bind(asset);
-    return OnReadAsset(lib, asset);
+    bool ret = OnReadAsset(lib, asset);
+    PEGASUS_EVENT_DISPATCH(lib, RuntimeAssetObjectCreated, &mProxy);
+
+    return ret;
 }
 
 void RuntimeAssetObject::Write(Asset* asset)

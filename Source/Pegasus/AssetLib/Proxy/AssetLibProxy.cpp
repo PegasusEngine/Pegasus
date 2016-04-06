@@ -9,12 +9,14 @@
 //! \date   February 8 2015
 //! \brief  AssetLibProxy Class.
 
+#if PEGASUS_ENABLE_PROXIES
+
 #include "Pegasus/AssetLib/Proxy/AssetLibProxy.h"
 #include "Pegasus/AssetLib/Proxy/AssetProxy.h"
 #include "Pegasus/AssetLib/Proxy/RuntimeAssetObjectProxy.h"
 #include "Pegasus/AssetLib/AssetLib.h"
 #include "Pegasus/AssetLib/Asset.h"
-#if PEGASUS_ENABLE_PROXIES
+#include "Pegasus/AssetLib/Category.h"
 
 using namespace Pegasus;
 using namespace Pegasus::AssetLib;
@@ -50,6 +52,10 @@ Io::IoError AssetLibProxy::SaveAsset(IAssetProxy* asset)
 IRuntimeAssetObjectProxy* AssetLibProxy::LoadObject(const char* path, bool* outIsNew)
 {
     RuntimeAssetObjectRef obj = mAssetLib->LoadObject(path);
+    if (obj == nullptr)
+    {
+        return nullptr;
+    }
 
     for (unsigned int i = 0; i < mObjects.GetSize(); ++i)
     {
@@ -101,6 +107,25 @@ void AssetLibProxy::CloseObject(IRuntimeAssetObjectProxy* object)
     }
 }
 
+unsigned AssetLibProxy::GetCategoryCount() const
+{
+    return mAssetLib->GetCategories().GetSize();
+}
+
+ICategoryProxy* AssetLibProxy::GetCategory(unsigned i)
+{
+    return mAssetLib->GetCategories()[i]->GetProxy();
+}
+
+void AssetLibProxy::SetEventListener(IAssetEventListener* listener)
+{
+    mAssetLib->SetEventListener(listener);
+}
+
+ICategoryProxy* AssetLibProxy::FindTypeCategory(const Pegasus::PegasusAssetTypeDesc* typeDesc)
+{
+    return mAssetLib->FindTypeCategory(typeDesc)->GetProxy();
+}
 
 #else
 

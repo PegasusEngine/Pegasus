@@ -165,12 +165,12 @@ void TimelineSetBlockPositionUndoCommand::SetText()
     if (mHasLaneChanged)
     {
         setText(QObject::tr("Move Block \"%1\" to Lane %2 and Beat %3")
-                        .arg(mBlockItem->GetBlockProxy()->GetEditorString()).arg(mNewLane).arg(mNewBeat));
+            .arg(mBlockItem->GetBlockProxy()->GetInstanceName()).arg(mNewLane).arg(mNewBeat));
     }
     else
     {
         setText(QObject::tr("Move Block \"%1\" to Beat %2")
-                        .arg(mBlockItem->GetBlockProxy()->GetEditorString()).arg(mNewBeat));
+            .arg(mBlockItem->GetBlockProxy()->GetInstanceName()).arg(mNewBeat));
     }
 }
 

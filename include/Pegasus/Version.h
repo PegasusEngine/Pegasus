@@ -14,6 +14,9 @@
 
 namespace Pegasus
 {
+//forward declaration of pegasus asset types
+struct PegasusAssetTypeDesc;
+ 
 //! Description container of the pegasus engine description.
 struct PegasusDesc
 {
@@ -39,6 +42,9 @@ struct PegasusDesc
 
     //! null terminated string list of developers (no particular order)
     const char * const * mPegasusCredits;
+
+    //! null terminated list of pegasus asset types.
+    const Pegasus::PegasusAssetTypeDesc*const* mAssetTypes;
 };
 }
 

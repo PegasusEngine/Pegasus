@@ -11,7 +11,9 @@
 //!         these commands intend to modify shaders.
 
 #include "MessageControllers/SourceIOMessageController.h"
+#include "CodeEditor/SourceCodeManagerEventListener.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
+#include "Pegasus/PegasusAssetTypes.h"
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 
 
@@ -29,30 +31,93 @@ void SourceIOMessageController::OnRenderThreadProcessMessage(const SourceIOMessa
     switch(msg.GetMessageType())
     {
     case SourceIOMessageController::Message::COMPILE_SOURCE:
-        OnRenderRequestCompileSource(msg.GetSource());
+        OnRenderRequestCompileSource(msg.GetHandle());
         break;
     case SourceIOMessageController::Message::SET_SOURCE:
-        OnRenderRequestSetSource(msg.GetSource(), msg.GetSourceText());
+        OnRenderRequestSetSource(msg.GetHandle(), msg.GetSourceText());
         break;
     case SourceIOMessageController::Message::SET_SOURCE_AND_COMPILE_SOURCE:
-        OnRenderRequestSetSource(msg.GetSource(), msg.GetSourceText());
-        OnRenderRequestCompileSource(msg.GetSource());
+        OnRenderRequestSetSource(msg.GetHandle(), msg.GetSourceText());
+        OnRenderRequestCompileSource(msg.GetHandle());
     default:
         break;
     }
 }
 
-void SourceIOMessageController::OnRenderRequestCompileSource(Pegasus::Core::ISourceCodeProxy* src)
+void SourceIOMessageController::OnRenderRequestCompileSource(AssetInstanceHandle handle)
 {
+    ED_ASSERT(handle.IsValid());
+    Pegasus::Core::ISourceCodeProxy* src = static_cast<Pegasus::Core::ISourceCodeProxy*>(FindInstance(handle));
     src->Compile();
     emit(SignalCompilationRequestEnded());
     emit(SignalRedrawViewports());
 }
 
-void SourceIOMessageController::OnRenderRequestSetSource(Pegasus::Core::ISourceCodeProxy* src, const QString& srcTxt)
+void SourceIOMessageController::OnRenderRequestSetSource(AssetInstanceHandle handle, const QString& srcTxt)
 {
+    ED_ASSERT(handle.IsValid());
+    Pegasus::Core::ISourceCodeProxy* src = static_cast<Pegasus::Core::ISourceCodeProxy*>(FindInstance(handle));
     QByteArray arr = srcTxt.toLocal8Bit();
     const char * source = arr.data();
     int sourceSize = arr.size();
     src->SetSource(source, sourceSize);
+}
+
+QVariant SourceIOMessageController::TranslateToQt(AssetInstanceHandle handle, Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
+{
+    ED_ASSERT(handle.IsValid());
+    Pegasus::Core::ISourceCodeProxy* codeProxy = static_cast<Pegasus::Core::ISourceCodeProxy*>(object);
+    ED_ASSERT(codeProxy->GetUserData() != nullptr);
+
+    CodeUserData* codeUserData = static_cast<CodeUserData*>(codeProxy->GetUserData());
+
+    //! the user data now obtains the handle. This will help the event listener to
+    //! send messages back to the widgets
+    codeUserData->SetHandle(handle);
+
+    int srcSize = 0;
+    const char* src = nullptr;
+    codeProxy->GetSource(&src, srcSize);
+
+    QChar * qchar = new QChar[srcSize];
+    for (int i = 0; i < srcSize; ++i)
+    {
+        qchar[i] = src[i];
+    }
+
+    QString srcQString(qchar, srcSize);
+    delete[] qchar;            
+
+    QVariantMap vm;
+    vm.insert("Source", srcQString);
+    vm.insert("CompilationPolicy", static_cast<int>(codeProxy->GetCompilationPolicy()));
+    return vm;
+}
+
+bool SourceIOMessageController::IsRuntimeObjectValid(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
+{
+    Pegasus::Core::ISourceCodeProxy* codeProxy = static_cast<Pegasus::Core::ISourceCodeProxy*>(object);
+    ED_ASSERT(codeProxy->GetUserData() != nullptr);
+
+    CodeUserData* codeUserData = static_cast<CodeUserData*>(codeProxy->GetUserData());
+    return codeUserData->IsValid();
+
+}
+
+const Pegasus::PegasusAssetTypeDesc** SourceIOMessageController::GetTypeList() const
+{
+    static const Pegasus::PegasusAssetTypeDesc* gTypes[] = {
+             &Pegasus::ASSET_TYPE_H_SHADER    
+            ,&Pegasus::ASSET_TYPE_VS_SHADER   
+            ,&Pegasus::ASSET_TYPE_PS_SHADER   
+            ,&Pegasus::ASSET_TYPE_GS_SHADER   
+            ,&Pegasus::ASSET_TYPE_TCS_SHADER  
+            ,&Pegasus::ASSET_TYPE_TES_SHADER  
+            ,&Pegasus::ASSET_TYPE_CS_SHADER   
+            ,&Pegasus::ASSET_TYPE_BLOCKSCRIPT  
+            ,&Pegasus::ASSET_TYPE_H_BLOCKSCRIPT
+            ,nullptr
+    };
+
+    return gTypes;
 }

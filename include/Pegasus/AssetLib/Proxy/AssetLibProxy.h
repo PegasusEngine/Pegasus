@@ -88,6 +88,25 @@ public:
     //! Returns the internal object of this proxy
     AssetLib* GetObject() const { return mAssetLib; }
 
+    
+    //! Gets the count of categories in the entire app.
+    //! category count of assets in the entire app.
+    virtual unsigned GetCategoryCount() const;
+    
+    //! Gets a specific category based on an index.
+    //! \param i the index of the category to look for.
+    //! \return the category proxy. Cannot be null.
+    virtual ICategoryProxy* GetCategory(unsigned i);
+
+    //! Sets the asset event listener on this library manager.
+    //! \param listener the listener with callbacks.
+    virtual void SetEventListener(IAssetEventListener* listener);
+
+    //! Gets a specific category of a type. These are stored separate from block categories 
+    //! \param the type desc to find for this category, if typeDesc is null, we return the untyped assets.
+    //! \return the category proxy found. 
+    virtual ICategoryProxy* FindTypeCategory(const Pegasus::PegasusAssetTypeDesc* typeDesc); 
+
 private:
     AssetLib* mAssetLib;
     Utils::Vector<RuntimeAssetObjectRef> mObjects;

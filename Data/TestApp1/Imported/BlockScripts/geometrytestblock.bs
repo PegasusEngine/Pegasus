@@ -5,10 +5,10 @@
 
 /// Extern input block from property grid
 extern SphereRadius = 0.45;
-extern CubeRotAxis = {0.3, 0.4, 0.01};
+extern CubeRotAxis = float3(0.3, 0.4, 0.01);
 extern SphereLayerCount = 4;
 extern Material_GlitterIntensity = 0.07;
-extern Material_GlitterRepetition = { 20.1, 20.1 };
+extern Material_GlitterRepetition = float2( 20.1, 20.1 );
 
 /// extern input block end
 #define MAX_SPHERES 10

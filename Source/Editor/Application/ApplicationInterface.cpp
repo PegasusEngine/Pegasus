@@ -26,6 +26,7 @@
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
 #include "Pegasus/Window/Shared/IWindowProxy.h"
 #include "Pegasus/AssetLib/Shared/IAssetProxy.h"
+#include "Pegasus/AssetLib/Shared/IAssetLibProxy.h"
 
 
 ApplicationInterface::ApplicationInterface(Application * application)
@@ -80,13 +81,20 @@ ApplicationInterface::ApplicationInterface(Application * application)
     mSourceIoMessageController = new SourceIOMessageController(mApplication->GetApplicationProxy());
     mProgramIoMessageController = new ProgramIOMessageController(mApplication->GetApplicationProxy());
     mWindowIoMessageController  = new WindowIOMessageController(mApplication->GetApplicationProxy());
-    mPropertyGridMessageController = new PropertyGridIOMessageController(mApplication->GetApplicationProxy());
+    mPropertyGridMessageController = new PropertyGridIOMessageController(mApplication->GetApplicationProxy(), mAssetIoMessageController);
     mGraphMessageController = new GraphIOMessageController(mApplication->GetApplicationProxy());
+    mTimelineMessageController = new TimelineIOMessageController(mApplication->GetApplicationProxy());
     mSourceCodeEventListener = new SourceCodeManagerEventListener();
 
+    //Register asset translators. These will convert from app proxies to qvariant data:
+    mSourceIoMessageController->RegisterAssetIOController(mAssetIoMessageController);
+    mProgramIoMessageController->RegisterAssetIOController(mAssetIoMessageController);
+    mTimelineMessageController->RegisterAssetIOController(mAssetIoMessageController);
+    mGraphMessageController->RegisterAssetIOController(mAssetIoMessageController);
+
     Editor& editor = Editor::GetInstance();
-    connect(mAssetIoMessageController, SIGNAL(SignalOpenObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)),
-            &editor, SLOT(OnOpenObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy*)), Qt::QueuedConnection); 
+    connect(mAssetIoMessageController, SIGNAL(SignalOpenObject(AssetInstanceHandle, QString, int, QVariant)),
+            &editor, SLOT(OnOpenObject(AssetInstanceHandle, QString, int, QVariant)), Qt::QueuedConnection); 
     
     const QVector<PegasusDockWidget*>& dockWidgets = editor.GetDockWidgets();
     for (int i = 0; i < dockWidgets.size(); ++i)
@@ -100,14 +108,18 @@ ApplicationInterface::ApplicationInterface(Application * application)
         connect(mAssetIoMessageController, SIGNAL(SignalPostMessage(PegasusDockWidget*, AssetIOMessageController::Message::IoResponseMessage)),
                 dockWidget, SLOT(ReceiveAssetIoMessage(PegasusDockWidget*, AssetIOMessageController::Message::IoResponseMessage)),
                 Qt::QueuedConnection);
-
-        connect(dockWidget, SIGNAL(OnSendPropertyGridIoMessage(PropertyGridIOMessageController::Message)),
-                this, SLOT(ForwardPropertyGridIoMessage(PropertyGridIOMessageController::Message)),
-                Qt::QueuedConnection);
         
         connect(dockWidget, SIGNAL(OnSendGraphIoMessage(GraphIOMessageController::Message)),
                 this, SLOT(ForwardGraphIoMessage(GraphIOMessageController::Message)),
                 Qt::QueuedConnection);
+
+        connect(dockWidget, SIGNAL(OnSendPropertyGridIoMessage(PropertyGridIOMessageController::Message)),
+                this,   SLOT(ForwardPropertyGridIoMessage(PropertyGridIOMessageController::Message)),
+				Qt::QueuedConnection);
+
+        connect(dockWidget, SIGNAL(OnSendTimelineIoMessage(TimelineIOMessageController::Message)),
+                this,   SLOT(ForwardTimelineIoMessage(TimelineIOMessageController::Message)),
+				Qt::QueuedConnection);
     }
 
     const QVector<ViewportWidget*>& viewportWidgets = editor.GetViewportWidgets();
@@ -119,10 +131,17 @@ ApplicationInterface::ApplicationInterface(Application * application)
                 Qt::QueuedConnection);
     }
 
-    //From render to ui
-    connect(mAssetIoMessageController, SIGNAL(SignalUpdateNodeViews()),
-            assetLibraryWidget, SLOT(UpdateUIItemsLayout()),
-            Qt::QueuedConnection); 
+    //From render to ui    
+    connect(mAssetIoMessageController, SIGNAL(RedrawFrame()),
+            this, SLOT(RedrawAllViewports()),
+			Qt::QueuedConnection);
+    connect(mTimelineMessageController, SIGNAL(NotifyRepaintTimeline()),
+            timelineDockWidget, SLOT(OnRepaintTimeline()),
+			Qt::QueuedConnection);
+    connect(mTimelineMessageController, SIGNAL(NotifyRepaintTimeline()),
+            this, SLOT(RedrawAllViewports()),
+			Qt::QueuedConnection);
+
 
     //<------  Source IO Controller -------->//
     //From ui to render
@@ -133,22 +152,16 @@ ApplicationInterface::ApplicationInterface(Application * application)
     //from render to ui
     connect(mSourceIoMessageController, SIGNAL(SignalRedrawViewports()),
             this, SLOT(RedrawAllViewports()),
-            Qt::DirectConnection);
-    connect(mSourceIoMessageController, SIGNAL(SignalCompilationRequestEnded()),
-            assetLibraryWidget, SLOT(UpdateUIItemsLayout()),
-            Qt::QueuedConnection);
-
-    connect(mSourceIoMessageController, SIGNAL(SignalCompilationRequestEnded()),
-            assetLibraryWidget, SLOT(EnableProgramShaderViews()),
-            Qt::QueuedConnection);
+			Qt::DirectConnection);
 
     connect(mSourceIoMessageController, SIGNAL(SignalCompilationRequestEnded()),
             codeEditorWidget, SLOT(CompilationRequestReceived()),
-            Qt::QueuedConnection);
+			Qt::QueuedConnection);
+
 
     //from ui to ui
-    connect(codeEditorWidget, SIGNAL(RequestCompilationBegin()),
-            assetLibraryWidget, SLOT(DisableProgramShaderViews()));
+    connect(assetLibraryWidget, SIGNAL(OnHighlightBlock(unsigned)),
+            timelineDockWidget, SLOT(OnFocusBlock(unsigned)));
 
     //<------  Program IO Controller -------->//
     connect(mProgramIoMessageController, SIGNAL(SignalRedrawViewports()),
@@ -158,13 +171,9 @@ ApplicationInterface::ApplicationInterface(Application * application)
             this, SLOT(ForwardProgramIoMessage(ProgramIOMessageController::Message)));
     connect(mProgramIoMessageController, SIGNAL(SignalUpdateProgramView()),
             programEditor, SLOT(SyncUiToProgram()));
-    connect(mProgramIoMessageController, SIGNAL(SignalUpdateProgramView()),
-            assetLibraryWidget, SLOT(UpdateUIItemsLayout()));
 
     //<------- PropertyGrid IO Controller ----------->//
     connect(mPropertyGridMessageController, SIGNAL(RequestRedraw()),
-            this, SLOT(RedrawAllViewports()));
-    connect(mGraphMessageController, SIGNAL(RequestRedraw()),
             this, SLOT(RedrawAllViewports()));
 
     //<-------- Connect event listeners to app ------------>
@@ -173,28 +182,18 @@ ApplicationInterface::ApplicationInterface(Application * application)
     appProxy->GetTimelineManagerProxy()->RegisterEventListener( mSourceCodeEventListener );
 
     //<-------- Connect event listener to widgets --------->
-    connect(mSourceCodeEventListener, SIGNAL(OnCompilationError(CodeUserData*,int,QString)),
-            codeEditorWidget, SLOT(SignalCompilationError(CodeUserData*,int,QString)),
-            Qt::QueuedConnection);
+    connect(mSourceCodeEventListener, SIGNAL(OnCompilationError(AssetInstanceHandle,int,QString)),
+        codeEditorWidget, SLOT(SignalCompilationError(AssetInstanceHandle,int,QString)), Qt::QueuedConnection);
 
     connect(mSourceCodeEventListener, SIGNAL(OnLinkingEvent(QString,int)),
             codeEditorWidget, SLOT(SignalLinkingEvent(QString,int)),
             Qt::QueuedConnection);
 
-    connect(mSourceCodeEventListener, SIGNAL(OnCompilationBegin(CodeUserData*)),
-            codeEditorWidget, SLOT(SignalCompilationBegin(CodeUserData*)),
-            Qt::QueuedConnection);
+    connect(mSourceCodeEventListener, SIGNAL(OnCompilationBegin(AssetInstanceHandle)),
+        codeEditorWidget, SLOT(SignalCompilationBegin(AssetInstanceHandle)), Qt::QueuedConnection);
 
     connect(mSourceCodeEventListener, SIGNAL(OnCompilationEnd(QString)),
             codeEditorWidget, SLOT(SignalCompilationEnd(QString)),
-            Qt::QueuedConnection);
-
-    connect(mSourceCodeEventListener, SIGNAL(OnBlessUserData(CodeUserData*)),
-            codeEditorWidget, SLOT(BlessUserData(CodeUserData*)),
-            Qt::QueuedConnection);
-
-    connect(mSourceCodeEventListener, SIGNAL(OnUnblessUserData(CodeUserData*)),
-            codeEditorWidget, SLOT(UnblessUserData(CodeUserData*)),
             Qt::QueuedConnection);
 
     connect(mSourceCodeEventListener, SIGNAL(OnSignalSaveSuccess()),
@@ -204,10 +203,9 @@ ApplicationInterface::ApplicationInterface(Application * application)
     connect(mSourceCodeEventListener, SIGNAL(OnSignalSavedFileError(int, QString)),
             codeEditorWidget, SLOT(SignalSavedFileIoError(int,QString)),
             Qt::QueuedConnection);
-    
-    connect(codeEditorWidget, SIGNAL(RequestSafeDeleteUserData(CodeUserData*)),
-            mSourceCodeEventListener, SLOT(SafeDestroyUserData(CodeUserData*)),
-            Qt::QueuedConnection);
+
+    connect(mSourceCodeEventListener, SIGNAL(OnTagValidity(QString, bool)),
+            mAssetIoMessageController, SLOT(OnTagValidity(QString, bool)), Qt::QueuedConnection);
 }
 
 //----------------------------------------------------------------------------------------
@@ -215,6 +213,20 @@ ApplicationInterface::ApplicationInterface(Application * application)
 void ApplicationInterface::DestroyAllWindows()
 {
     mWindowIoMessageController->DestroyWindows();
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::ConnectAssetEventListeners()
+{
+    mApplication->GetApplicationProxy()->GetAssetLibProxy()->SetEventListener(mAssetIoMessageController);
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::DisconnectAssetEventListeners()
+{
+    mApplication->GetApplicationProxy()->GetAssetLibProxy()->SetEventListener(nullptr);
 }
 
 //----------------------------------------------------------------------------------------
@@ -228,6 +240,7 @@ ApplicationInterface::~ApplicationInterface()
     delete mPropertyGridMessageController;
     delete mGraphMessageController;
     delete mSourceCodeEventListener;
+    delete mTimelineMessageController;
 }
 
 //----------------------------------------------------------------------------------------
@@ -277,6 +290,7 @@ void ApplicationInterface::RedrawAllViewports()
     //! Flush all the updates done by the app into the ui observers.
     mPropertyGridMessageController->FlushAllPendingUpdates();
     mGraphMessageController->FlushAllPendingUpdates();
+    mAssetIoMessageController->FlushAllPendingUpdates();
 }
 
 //----------------------------------------------------------------------------------------
@@ -385,17 +399,13 @@ void ApplicationInterface::RequestFrameInPlayMode()
 
 void ApplicationInterface::PerformBlockDoubleClickedAction(Pegasus::Timeline::IBlockProxy* blockProxy)
 {
+    //TODO: make this thread safe:
     Pegasus::Core::ISourceCodeProxy* sourceCode = blockProxy->GetScript();
-    if (sourceCode != nullptr)
+    if (blockProxy->GetScript() != nullptr && sourceCode->GetOwnerAsset() != nullptr)
     {
-        ED_ASSERT(sourceCode->GetUserData() != nullptr);
-        if (sourceCode->GetUserData() != nullptr)
-        {
-            CodeEditorWidget * codeEditorWidget = Editor::GetInstance().GetCodeEditorWidget();
-            codeEditorWidget->show();
-            codeEditorWidget->activateWindow();
-            codeEditorWidget->OnOpenObject(sourceCode);
-        }
+        AssetIOMessageController::Message msg(AssetIOMessageController::Message::OPEN_ASSET);
+        msg.SetString(QString(sourceCode->GetOwnerAsset()->GetPath()));
+        emit (Editor::GetInstance().GetCodeEditorWidget()->SendAssetIoMessage(msg));
     }
 }
 
@@ -440,3 +450,10 @@ void ApplicationInterface::ForwardGraphIoMessage(GraphIOMessageController::Messa
 {
     mGraphMessageController->OnRenderThreadProcessMessage(msg);
 }
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::ForwardTimelineIoMessage(TimelineIOMessageController::Message msg)
+{
+    mTimelineMessageController->OnRenderThreadProcessMessage(msg);
+}
+

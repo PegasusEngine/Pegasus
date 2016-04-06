@@ -14,12 +14,21 @@
 #include "Pegasus/AssetLib/Asset.h"
 #include "Pegasus/AssetLib/RuntimeAssetObject.h"
 #include "Pegasus/AssetLib/AssetRuntimeFactory.h"
+#include "Pegasus/AssetLib/ASTree.h"
 #include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/Core/Io.h"
 #include "Pegasus/Core/Log.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/ByteStream.h"
 #include "Pegasus/Allocator/Alloc.h"
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+#include "Pegasus/AssetLib/Category.h"
+#endif
+
+namespace Pegasus
+{
+    extern const Pegasus::PegasusAssetTypeDesc* const* GetAllAssetTypesDescs();
+}
 
 using namespace Pegasus;
 using namespace Pegasus::AssetLib;
@@ -35,9 +44,25 @@ Pegasus::AssetLib::AssetLib::AssetLib(Alloc::IAllocator* allocator, Io::IOManage
 #if PEGASUS_ENABLE_PROXIES
   ,mProxy(this)
 #endif
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+  ,mCurrentCategory(nullptr)
+#endif
 {
-}
+    PEGASUS_EVENT_INIT_DISPATCHER
 
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+    //instantiate all the asset categories for types
+    const Pegasus::PegasusAssetTypeDesc* const* types = Pegasus::GetAllAssetTypesDescs();
+    mTypeCategoryCount = 0;
+    while (*types != nullptr) { ++types; ++mTypeCategoryCount; }
+    types = Pegasus::GetAllAssetTypesDescs(); //reset the list
+    mTypeCategories = PG_NEW_ARRAY(mAllocator, -1, "Type categories", Pegasus::Alloc::PG_MEM_PERM, Category, mTypeCategoryCount); 
+    for (unsigned i = 0; i < mTypeCategoryCount; ++i)
+    {
+        mTypeCategories[i].SetUserData(types[i]->mTypeGuid);
+    }
+#endif
+}
 char toLow(char c)
 {
     return c >= 'A' && c <= 'Z' ? c - 'A' + 'a' : c;
@@ -70,7 +95,52 @@ Pegasus::AssetLib::AssetLib::~AssetLib()
     {      
         PG_DELETE(mAllocator, mAssets[i]);
     }
+
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+    PG_DELETE_ARRAY(mAllocator, mTypeCategories);
+#endif
 }
+
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+void Pegasus::AssetLib::AssetLib::BeginCategory(Category* category)
+{
+    mCurrentCategory = category;
+}
+
+void Pegasus::AssetLib::AssetLib::EndCategory()
+{   
+    PG_ASSERTSTR(mCurrentCategory != nullptr, "BeginCategory must be called.");
+    bool shouldAddIt = true;
+    //push the new category if is not registered already
+    for (unsigned i = 0; shouldAddIt && i < mCategories.GetSize(); ++i)
+    {
+        if (mCategories[i] == mCurrentCategory)
+        {
+            shouldAddIt = false;
+        }
+    }
+
+    if (shouldAddIt)
+    {
+        mCategories.PushEmpty() = mCurrentCategory;
+    }
+
+    mCurrentCategory = nullptr;
+}
+
+Category* Pegasus::AssetLib::AssetLib::FindTypeCategory(const Pegasus::PegasusAssetTypeDesc* typeDesc)
+{
+    for (unsigned i = 0; i < mTypeCategoryCount; ++i)
+    {
+        if (mTypeCategories[i].GetUserData() == typeDesc->mTypeGuid)
+        {
+            return &mTypeCategories[i];
+        }
+    }
+    PG_FAILSTR("A category was not created for a type! this is a fatal error!");
+    return nullptr;
+}
+#endif
 
 extern void Bison_AssetScriptParse(const Io::FileBuffer* fileBuffer, AssetBuilder* builder);
 
@@ -87,6 +157,13 @@ Io::IoError Pegasus::AssetLib::AssetLib::LoadAsset(const char* path, bool isStru
                 return Io::ERR_READING_FILE;
             }
             *assetOut = mAssets[i];
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+            //asset is referenced on this cateogry
+            if (mCurrentCategory != nullptr)
+            {
+                mCurrentCategory->RegisterAsset(*assetOut);
+            }
+#endif
             return Io::ERR_NONE;
         }
     }
@@ -94,12 +171,44 @@ Io::IoError Pegasus::AssetLib::AssetLib::LoadAsset(const char* path, bool isStru
     //not found? lets build it from a file..
     *assetOut = nullptr;
     mBuilder.Reset();
+    Io::IoError err = InternalBuildAsset(assetOut, isStructured, path);         
+    if (*assetOut != nullptr)
+    {
+        mAssets.PushEmpty() = *assetOut;
+    }
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+    if (err == Io::ERR_NONE && mCurrentCategory != nullptr)
+    {
+        mCurrentCategory->RegisterAsset(*assetOut);
+    }
+#endif
+
+    return err;
+}
+
+Io::IoError Pegasus::AssetLib::AssetLib::ReloadAsset(Pegasus::AssetLib::Asset* assetOut)
+{
+    PG_ASSERTSTR(assetOut != nullptr, "This asset passed cannot be null!");
+    assetOut->Clear();
+    return InternalBuildAsset(&assetOut, /*unused*/false, /*unused*/nullptr);   
+}
+
+Io::IoError Pegasus::AssetLib::AssetLib::InternalBuildAsset(Asset** assetOut, bool isStructured, const char* path)
+{
+    mBuilder.Reset();
+    bool isPreallocated = *assetOut != nullptr;
+    path = isPreallocated ? (*assetOut)->GetPath() : path;
+    isStructured = isPreallocated ? (*assetOut)->GetFormat() == Asset::FMT_STRUCTURED : isStructured;
+
     Io::FileBuffer fileBuffer;
     Io::IoError err = mIoMgr->OpenFileToBuffer(path, fileBuffer, true, mAllocator); //open the raw file first
 
     if (err == Io::ERR_NONE)
     {
-        *assetOut = PG_NEW(mAllocator, -1, "Asset", Alloc::PG_MEM_TEMP) Asset(mAllocator, this, isStructured ? Asset::FMT_STRUCTURED : Asset::FMT_RAW);
+        if (!isPreallocated)
+        {
+            *assetOut = PG_NEW(mAllocator, -1, "Asset", Alloc::PG_MEM_TEMP) Asset(mAllocator, this, isStructured ? Asset::FMT_STRUCTURED : Asset::FMT_RAW);            
+        }
         (*assetOut)->SetPath(path);
         if (isStructured)
         {
@@ -107,12 +216,15 @@ Io::IoError Pegasus::AssetLib::AssetLib::LoadAsset(const char* path, bool isStru
             Bison_AssetScriptParse(&fileBuffer, &mBuilder);    
             if (mBuilder.GetErrorCount() == 0)
             {
-                mAssets.PushEmpty() = *assetOut;
+                ResolvePendingChildAssets(*assetOut);
             }
             else
             {
-                PG_DELETE(mAllocator, *assetOut);
-                *assetOut = nullptr;
+                if (!isPreallocated)
+                {
+                    PG_DELETE(mAllocator, *assetOut);
+                    *assetOut = nullptr;
+                }
                 err = Io::ERR_READING_FILE;
             }
         }
@@ -120,8 +232,8 @@ Io::IoError Pegasus::AssetLib::AssetLib::LoadAsset(const char* path, bool isStru
         {
             (*assetOut)->SetFileBuffer(fileBuffer);
             fileBuffer.ForgetBuffer(); //forget this buffer, so we dont destroy it twice.
-            mAssets.PushEmpty() = *assetOut;
         }
+        
     }
     return err;
 }
@@ -143,6 +255,37 @@ void Pegasus::AssetLib::AssetLib::UnloadAsset(Asset* asset)
         }
     }
     PG_FAILSTR("Asset not found!, do not call this function if this asset is not associated with this library");
+}
+
+void Pegasus::AssetLib::AssetLib::ResolvePendingChildAssets(Asset* asset)
+{
+    //it's important to copy these two vectors. Because the builder gets resetted when loading, this will
+    // mean that the builder gets reset when recursive loading takes place.
+    Pegasus::Utils::Vector<AssetBuilder::ObjectChildAssetRequest> objectRequest = mBuilder.mObjectChildAssetQueue;
+    Pegasus::Utils::Vector<AssetBuilder::ArrayChildAssetRequest> arrayRequests = mBuilder.mArrayChildAssetQueue;
+
+    for (unsigned i = 0; i < objectRequest.GetSize(); ++i)
+    {
+
+        AssetBuilder::ObjectChildAssetRequest& request = objectRequest[i];
+        RuntimeAssetObjectRef childAsset = LoadObject(request.assetPath);
+        if (childAsset != nullptr)
+        {
+            request.object->AddAsset(request.identifier, childAsset);
+        }
+    }
+
+    for (unsigned i = 0; i < arrayRequests.GetSize(); ++i)
+    {
+        AssetBuilder::ArrayChildAssetRequest& request = arrayRequests[i];
+        RuntimeAssetObjectRef childAsset = LoadObject(request.assetPath);
+        if (childAsset != nullptr)
+        {
+            Array::Element el;
+            el.asset = &(*childAsset);
+            request.array->PushElement(el);
+        }
+    }
 }
 
 Asset* Pegasus::AssetLib::AssetLib::CreateAsset(const char* path, bool isStructured)
@@ -210,7 +353,6 @@ void Pegasus::AssetLib::AssetLib::RegisterObjectFactory(AssetRuntimeFactory* fac
     mFactories.PushEmpty() = factory;
 }
 
-
 RuntimeAssetObjectRef Pegasus::AssetLib::AssetLib::LoadObject(const char* path)
 {
     
@@ -228,7 +370,7 @@ RuntimeAssetObjectRef Pegasus::AssetLib::AssetLib::LoadObject(const char* path)
     ++extension; //skip the . character
 
     //find out if its structured or not.
-    const Pegasus::PegasusAssetTypeDesc* const* desc = Pegasus::GetAllAssetTypesDescs();
+    const Pegasus::PegasusAssetTypeDesc* const* desc = GetAllAssetTypesDescs();
     while (*desc != nullptr)
     {
         if (!Utils::Stricmp(extension,(*desc)->mExtension))
@@ -259,6 +401,9 @@ RuntimeAssetObjectRef Pegasus::AssetLib::AssetLib::LoadObject(const char* path)
             RuntimeAssetObjectRef obj = factory->CreateRuntimeObject(foundDesc);
             PG_ASSERTSTR(obj != nullptr, "FATAL: factory returned invalid asset runtime object.");
             asset->SetTypeDesc(foundDesc);
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+            FindTypeCategory(foundDesc)->RegisterAsset(asset);
+#endif
             if (obj->Read(asset)) //Read binds this asset together.
             {
                 return obj;
@@ -314,6 +459,7 @@ RuntimeAssetObjectRef Pegasus::AssetLib::AssetLib::CreateObject(const char* path
             RuntimeAssetObjectRef obj = factory->CreateRuntimeObject(desc);
             asset->SetTypeDesc(desc);
             obj->Bind(asset);
+            PEGASUS_EVENT_DISPATCH(this, RuntimeAssetObjectCreated, obj->GetProxy());
             return obj;
         }
     }

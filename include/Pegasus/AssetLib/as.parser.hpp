@@ -49,12 +49,13 @@ extern int AS_debug;
      I_INT = 258,
      I_FLOAT = 259,
      IDENTIFIER = 260,
-     K_LEFT_LACE = 261,
-     K_RIGHT_LACE = 262,
-     K_LEFT_BRAC = 263,
-     K_RIGHT_BRAC = 264,
-     K_COMMA = 265,
-     K_COLON = 266
+     ASSET_PATH_REFERENCE = 261,
+     K_LEFT_LACE = 262,
+     K_RIGHT_LACE = 263,
+     K_LEFT_BRAC = 264,
+     K_RIGHT_BRAC = 265,
+     K_COMMA = 266,
+     K_COLON = 267
    };
 #endif
 
@@ -76,7 +77,7 @@ typedef union YYSTYPE
 
 
 /* Line 2058 of yacc.c  */
-#line 80 "as.parser.hpp"
+#line 81 "as.parser.hpp"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

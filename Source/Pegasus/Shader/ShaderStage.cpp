@@ -14,7 +14,6 @@
 #include "Pegasus/Shader/IShaderFactory.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/Memcpy.h"
-#include "Pegasus/Shader/ShaderTracker.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/AssetLib/AssetLib.h"
 #include "Pegasus/AssetLib/Asset.h"
@@ -51,6 +50,7 @@ Pegasus::Shader::ShaderStage::ShaderStage(Pegasus::Alloc::IAllocator * allocator
       mFactory(nullptr),
       mParentReferences(allocator),
       mIncludeReferences(allocator),
+      mAllocator(allocator),
       mIsInDestructor(false)
 {
 }

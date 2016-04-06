@@ -10,7 +10,9 @@
 //! \brief  Proxy for asset
 
 #include "Pegasus/AssetLib/Proxy/AssetProxy.h"
+#include "Pegasus/AssetLib/RuntimeAssetObject.h"
 #include "Pegasus/AssetLib/Asset.h"
+#include "Pegasus/AssetLib/ASTree.h"
 
 #if PEGASUS_ENABLE_PROXIES
 
@@ -36,6 +38,26 @@ const PegasusAssetTypeDesc* AssetProxy::GetTypeDesc() const
     return mObject->GetTypeDesc();
 }
 
+IObjectProxy* AssetProxy::Root()
+{
+    if (mObject->GetFormat() == Asset::FMT_STRUCTURED &&mObject->Root() != nullptr )  
+    {
+        return mObject->Root()->GetProxy();
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
+IRuntimeAssetObjectProxy* AssetProxy::GetRuntimeObject() const
+{
+    if (mObject->GetRuntimeData() != nullptr)
+    {
+        return mObject->GetRuntimeData()->GetProxy(); 
+    }
+    return nullptr;
+}
 #else
 PEGASUS_AVOID_EMPTY_FILE_WARNING;
 #endif

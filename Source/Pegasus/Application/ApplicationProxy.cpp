@@ -17,8 +17,14 @@
 #include "Pegasus/Timeline/TimelineManager.h"
 #include "Pegasus/Window/WindowProxy.h"
 #include "Pegasus/Window/Window.h"
+#include "Pegasus/AssetLib/Proxy/RuntimeAssetObjectProxy.h"
+#include "Pegasus/AssetLib/RuntimeAssetObject.h"
+#include "Pegasus/AssetLib/Asset.h"
 #include "Pegasus/Shader/Proxy/ShaderManagerProxy.h"
 #include "Pegasus/Texture/Proxy/TextureManagerProxy.h"
+#include "Pegasus/Application/AppWindowManager.h"
+#include "Pegasus/Application/AppWindowComponentFactory.h"
+#include "Pegasus/Application/Components/EditorComponents.h"
 
 extern Pegasus::App::Application* CreateApplication(const Pegasus::App::ApplicationConfig& config);
 extern void DestroyApplication(Pegasus::App::Application* app);
@@ -54,7 +60,7 @@ Wnd::IWindowProxy* ApplicationProxy::AttachWindow(const AppWindowConfig& config)
 
 void ApplicationProxy::DetachWindow(Wnd::IWindowProxy* wnd)
 {
-    mApplication->DetachWindow(wnd->Unwrap()); // Unwrap and destroy proxied window
+    mApplication->DetachWindow(static_cast<Pegasus::Wnd::WindowProxy*>(wnd)->Unwrap()); // Unwrap and destroy proxied window
 }
 
 //----------------------------------------------------------------------------------------
@@ -85,8 +91,50 @@ Timeline::ITimelineManagerProxy* ApplicationProxy::GetTimelineManagerProxy() con
     return mApplication->GetTimelineManager()->GetProxy();
 }
 
+//----------------------------------------------------------------------------------------
+
+void ApplicationProxy::SetDebugWindowResource(Pegasus::Wnd::IWindowProxy* windowP, Pegasus::AssetLib::IRuntimeAssetObjectProxy* resourceP)
+{
+    Pegasus::Wnd::Window* window = static_cast<Pegasus::Wnd::WindowProxy*>(windowP)->Unwrap();
+    Pegasus::AssetLib::IAssetProxy* assetProxy  = static_cast<Pegasus::AssetLib::RuntimeAssetObjectProxy*>(resourceP)->GetOwnerAsset();
+    
+    if (assetProxy != nullptr)
+    {
+        Pegasus::AssetLib::Asset* asset = static_cast<Pegasus::AssetLib::AssetProxy*>(assetProxy)->GetObject();
+        const Pegasus::Utils::Vector<Pegasus::Wnd::Window::StateComponentPair>& windowComponents = window->GetComponents();
+        const Pegasus::PegasusAssetTypeDesc* typeDesc = asset->GetTypeDesc();
+        
+        //Which type is it?
+        if (typeDesc->mTypeGuid == Pegasus::ASSET_TYPE_TEXTURE.mTypeGuid)
+        {
+            // inject it in the texture component state of this window
+            Pegasus::Wnd::IWindowComponent* textureComponent = mApplication->GetWindowManager()->GetComponentFactory()->GetComponent(COMPONENT_TEXTURE_VIEW);
+            Pegasus::App::TextureViewComponentState* state = nullptr;
+
+            for (unsigned i = 0; i < windowComponents.GetSize() && state == nullptr; ++i)
+            {
+                if (textureComponent == windowComponents[i].mComponent)
+                {
+                    state = static_cast<Pegasus::App::TextureViewComponentState*>(windowComponents[i].mState);
+                }
+            }
+
+            //find the component
+            if (state != nullptr)
+            {
+                Pegasus::Texture::TextureRef texture = (Pegasus::Texture::Texture*)(asset->GetRuntimeData());
+                state->mTargetTexture = texture;
+            }
+        }
+        else if (typeDesc->mTypeGuid == Pegasus::ASSET_TYPE_MESH.mTypeGuid)
+        {
+            //TODO: do work for mesh
+        }
+    }
+}
 
 //----------------------------------------------------------------------------------------
+
 
 void ApplicationProxy::GetEngineDesc(Pegasus::PegasusDesc& engineDesc) const
 {

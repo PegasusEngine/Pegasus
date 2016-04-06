@@ -52,6 +52,7 @@ void BlockScriptBuilder::Initialize(Pegasus::Alloc::IAllocator* allocator)
     mAllocator.Initialize(STRING_PAGE_SIZE, allocator);
     mCanonizer.Initialize(allocator);
     mStrPool.Initialize(allocator);
+    mEventListeners.Initialize(allocator);
     mSymbolTable.Initialize(allocator);
     mGlobalsMap.Initialize(allocator);
     mGlobalsMetaData.Initialize(allocator);
@@ -68,9 +69,10 @@ void BlockScriptBuilder::BeginBuild()
         mInFunBody == false,
         "Reset() must be called prior to compiling on BlockScriptBuilder!"
     );
-    if (mEventListener != nullptr)
+
+    for (int i = 0; i < mEventListeners.Size(); ++i)
     {
-        mEventListener->OnCompilationBegin();
+        mEventListeners[i]->OnCompilationBegin();
     }
 }
 
@@ -110,11 +112,9 @@ void BlockScriptBuilder::EndBuild(BlockScriptBuilder::CompilationResult& result)
         mActiveResult.mAsm.mBlocks = nullptr;
     }
 
-    if (mEventListener != nullptr)
+    for (int i = 0; i < mEventListeners.Size(); ++i)
     {
-        //TODO: would be nice to pass down stats of the compilation here (such as assembly count,
-        //      compilation time and so on
-        mEventListener->OnCompilationEnd(mErrorCount == 0);
+        mEventListeners[i]->OnCompilationEnd(mErrorCount == 0);
     }
     
     result = mActiveResult;
@@ -144,6 +144,8 @@ void BlockScriptBuilder::Reset()
     mGlobalsMetaData.Reset();
 
     mStrPool.Clear();
+
+    //Event listeners must be persistent per builder instance.
 }
 
 bool BlockScriptBuilder::StartNewFunction(const TypeDesc* returnTypeContext)
@@ -680,8 +682,32 @@ Exp* BlockScriptBuilder::BuildUnop(int op, Exp* exp)
         BS_ErrorDispatcher(this, "Undefined unary operator on element.");
         return nullptr;
     }
+
+    if (op == O_MINUS && exp->GetExpType() == Imm::sType)
+    {
+        Imm* imm = static_cast<Imm*>(exp);
+        switch (exp->GetTypeDesc()->GetAluEngine())
+        {
+        case TypeDesc::E_INT:
+            imm->GetVariant().i[0] = -imm->GetVariant().i[0];
+            return imm;
+        case TypeDesc::E_FLOAT4:
+            imm->GetVariant().f[3] = -imm->GetVariant().f[3];
+        case TypeDesc::E_FLOAT3:
+            imm->GetVariant().f[2] = -imm->GetVariant().f[2];
+        case TypeDesc::E_FLOAT2:
+            imm->GetVariant().f[1] = -imm->GetVariant().f[1];
+        case TypeDesc::E_FLOAT:
+            imm->GetVariant().f[0] = -imm->GetVariant().f[0];
+            return imm;
+        default:
+            break;
+        }
+    }
+
     Exp* unop = BS_NEW Unop(op, exp);
     unop->SetTypeDesc(exp->GetTypeDesc());
+
 
     return unop;
 }
@@ -769,45 +795,6 @@ Exp*   BlockScriptBuilder::BuildImmFloat   (float f)
     v.f[0] = f;
     Imm* imm = BS_NEW Imm(v);
     const TypeDesc* typeDesc = GetTypeByName("float");
-    PG_ASSERT(typeDesc != nullptr);
-    imm->SetTypeDesc(typeDesc);
-    return imm;
-}
-
-Exp*   BlockScriptBuilder::BuildImmFloat2   (float a, float b)
-{
-    Ast::Variant v;
-    v.f[0] = a;
-    v.f[1] = b;
-    Imm* imm = BS_NEW Imm(v);
-    const TypeDesc* typeDesc = GetTypeByName("float2");
-    PG_ASSERT(typeDesc != nullptr);
-    imm->SetTypeDesc(typeDesc);
-    return imm;
-}
-
-Exp*   BlockScriptBuilder::BuildImmFloat3   (float a, float b, float c)
-{
-    Ast::Variant v;
-    v.f[0] = a;
-    v.f[1] = b;
-    v.f[2] = c;
-    Imm* imm = BS_NEW Imm(v);
-    const TypeDesc* typeDesc = GetTypeByName("float3");
-    PG_ASSERT(typeDesc != nullptr);
-    imm->SetTypeDesc(typeDesc);
-    return imm;
-}
-
-Exp*   BlockScriptBuilder::BuildImmFloat4   (float a, float b, float c, float d)
-{
-    Ast::Variant v;
-    v.f[0] = a;
-    v.f[1] = b;
-    v.f[2] = c;
-    v.f[3] = d;
-    Imm* imm = BS_NEW Imm(v);
-    const TypeDesc* typeDesc = GetTypeByName("float4");
     PG_ASSERT(typeDesc != nullptr);
     imm->SetTypeDesc(typeDesc);
     return imm;
@@ -1006,7 +993,21 @@ Exp* BlockScriptBuilder::BuildFunCall(ExpList* args, const char* name, bool isMe
         fc->SetDesc(desc);
 		const TypeDesc* type = desc->GetDec()->GetReturnType();
         fc->SetTypeDesc(type);
-        return fc;
+        Exp* finalExp = fc;
+        // compile time resolutions
+        for (int i = 0; i < mEventListeners.Size(); ++i)
+        {
+            finalExp = mEventListeners[i]->OnResolveFunCall(&mAllocator, fc);
+            if (finalExp->GetExpType() == FunCall::sType)
+            {
+                fc = static_cast<FunCall*>(finalExp);
+            }
+            else
+            {
+                break;
+            }
+        }
+        return finalExp;
     }
     else
     {

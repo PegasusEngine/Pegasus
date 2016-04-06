@@ -30,17 +30,6 @@ public:
     //! Destructor
     virtual ~ITextureManagerProxy() {};
 
-
-    //! Get the number of currently allocated textures
-    //! \return Number of currently allocated textures
-    virtual unsigned int GetNumTextures() const = 0;
-
-    //! Get one of the currently allocated textures
-    //! \param index Index of the texture to get (< GetNumTextures())
-    //! \return Proxy to the desired texture
-    virtual ITextureNodeProxy * GetTexture(unsigned int index) const = 0;
-
-
     //! Create a texture generator node by class name
     //! \param className Name of the texture generator node class to instantiate
     //! \param configurationProxy Proxy for the configuration of the texture, such as resolution and pixel format

@@ -69,14 +69,6 @@ public:
     //! \return the current timeline of the app
     virtual ITimelineProxy* GetCurrentTimeline() const;
 
-    //! Returns the number of sources this manager has
-    //! \return source count in the application
-    virtual int GetSourceCount() const;
-
-    //! Gets the program based on its id. The id range goes from 0 to ProgramCount
-    //! \return program proxy
-    virtual Core::ISourceCodeProxy* GetSource(int id);
-
     //! Updates the clock of the app based on the timeline state
     virtual void Update();
 

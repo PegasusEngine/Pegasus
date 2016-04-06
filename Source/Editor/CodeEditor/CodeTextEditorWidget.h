@@ -13,10 +13,22 @@
 #define EDITOR_CODETEXTEDITORWIDGET_H
 #include <QPlainTextEdit>
 
-class CodeUserData;
 class QEvent;
 class QSyntaxHighlighter;
 class QPaintEvent;
+
+//! Data structure holding the state of code.
+struct SourceState
+{
+    AssetInstanceHandle handle; //! handle to pegasus asset 
+    QTextDocument* document; //! ui qt document holding the ui text
+    QSet<int> errorLines;   //! set of lines that have compilation errors
+    QMap<int, QString> errorMessages; //! map of line / string error messages.
+    Pegasus::Core::ISourceCodeProxy::CompilationPolicy compilationPolicy; //compilation policy
+
+    //! constructor
+    SourceState() : document(nullptr), compilationPolicy(Pegasus::Core::ISourceCodeProxy::POLICY_USER_DEFINED) {}
+};
 
 //! text editor widget class. Represents the text editor widget
 class CodeTextEditorWidget : public QPlainTextEdit
@@ -31,14 +43,14 @@ public:
     virtual ~CodeTextEditorWidget();
 
     //! initialization function. Call whenever you want a source code to be opened
-    void Initialize(CodeUserData * code); 
+    void Initialize(SourceState * code); 
 
     //! function that clears the state of the widget
     void Uninitialize(); 
 
     //! gets the source code being used
     //! \return the source code assigned
-    CodeUserData * GetCode() { return mCode; }
+    SourceState * GetCode() { return mCode; }
 
     //! updates the syntax of a single line in the document.
     //! \param the line to update. If the line is out of range nothing happens
@@ -47,9 +59,6 @@ public:
     //! forces a full syntax update on the document
     //! \warning this function is very expensive
     void UpdateAllDocumentSyntax();
-
-    //! flushes the text container to the source code internals
-    void FlushTextToCode();
 
     //! \return true if the user has this widget in focus, false otherwise
     bool IsFocus() const { return mIsFocus; }
@@ -92,7 +101,7 @@ private:
     bool mIsFocus;
 
     //! source code reference
-    CodeUserData* mCode;
+    SourceState* mCode;
 
     QTextDocument* mNullDocument;
 

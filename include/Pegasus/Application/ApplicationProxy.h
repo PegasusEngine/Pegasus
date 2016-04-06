@@ -75,6 +75,10 @@ public:
     //! returns the assets root folder
     virtual const char* GetAssetsRoot() const { return mApplication->GetIOManager()->GetRoot(); }
 
+    //! Sets a resource for this window to debug. Must be a window with a texture / mesh view component.
+    //! \param the window proxy to inject the resource into
+    //! \param resource the resource to put into this mesh.
+    virtual void SetDebugWindowResource(Pegasus::Wnd::IWindowProxy* window, Pegasus::AssetLib::IRuntimeAssetObjectProxy* resource);
 private:
     //! The proxied application object
     Application* mApplication;

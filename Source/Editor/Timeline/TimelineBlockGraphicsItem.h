@@ -13,6 +13,7 @@
 #define EDITOR_TIMELINEBLOCKGRAPHICSITEM_H
 
 #include <QGraphicsObject>
+#include <QIcon>
 
 #include "Pegasus/Timeline/Shared/TimelineDefs.h"
 
@@ -23,6 +24,8 @@ namespace Pegasus {
 }
 
 class QUndoStack;
+class QMenu;
+class QAction;
 
 
 //! Graphics item representing one timeline block.
@@ -113,15 +116,32 @@ signals:
     //! Emitted when the user does a double click to this block
     void DoubleClicked(Pegasus::Timeline::IBlockProxy * block);
 
+    //! Request this script to be changed for the block with the guid.
+    void RequestChangeScript(unsigned blockId);
+
+    //! Request the blockscript to be removed
+    void RequestRemoveScript(unsigned blockId);
+
     //------------------------------------------------------------------------------------
+
+public slots:
+
+    //! Flushes visual properties from a timeline block into this graphics item.
+    void FlushVisualProperties();
+
+    //! Asks the user to attach a new script
+    void CtxMenuChangeScript();
+
+    //! Removes a script for this block executed from ctx menu
+    void CtxRemoveScript();
     
 protected:
 
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
 
     //------------------------------------------------------------------------------------
 
@@ -162,6 +182,9 @@ private:
     //! Name of the block, displayed as text on top of the block
     QString mName;
 
+    //! Name of the block, displayed as text on top of the block
+    QString mClassName;
+
     //! Base color of the block, when not selected
     QColor mBaseColor;
 
@@ -194,6 +217,17 @@ private:
     //! Block ID, unique to each block, used for merging undo commands
     //! (so moving a block does not create a new undo command for each pixel moved)
     unsigned int mBlockID;
+
+    //! Context menu on right click.
+    QMenu* mCtxMenu;
+    QMenu* mNoScriptCtxMenu;
+    QAction* mChangeScriptAction;
+    
+    //! Flag that determines if this block has a script.
+    bool mHasScript;
+
+    //! Icon of a script
+    QIcon mScriptIcon;
 
     //! Mouse click ID, unique for each time the click is maintained while moving a block.
     //! Used to create new undo commands each time the mouse click is released.

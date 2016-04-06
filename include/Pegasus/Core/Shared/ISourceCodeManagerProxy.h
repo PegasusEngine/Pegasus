@@ -36,14 +36,6 @@ public:
     //! Destructor
     virtual ~ISourceCodeManagerProxy() {};
 
-    //! Returns the number of sources this manager has
-    //! \return source count in the application
-    virtual int GetSourceCount() const = 0;
-
-    //! Gets the program based on its id. The id range goes from 0 to ProgramCount
-    //! \return program proxy
-    virtual ISourceCodeProxy* GetSource(int id) = 0;
-
     //! Sets the event listener to be used for the shader
     //! \param event listener reference
     virtual void RegisterEventListener(Pegasus::Core::CompilerEvents::ICompilerEventListener * eventListener) = 0;

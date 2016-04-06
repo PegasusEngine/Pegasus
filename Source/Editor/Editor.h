@@ -19,13 +19,16 @@
 #include "Timeline/TimelineDockWidget.h"
 #include "AssetLibrary/AssetLibraryWidget.h"
 #include "CodeEditor/CodeEditorWidget.h"
-#include "Texture/TextureEditorDockWidget.h"
+#include "Graph/GraphEditorDockWidget.h"
+#include "Graph/TextureGraphEditorViewStrategy.h"
+#include "Graph/MeshGraphEditorViewStrategy.h"
 #include "Debug/PropertyGridClasses/PropertyGridClassesDockWidget.h"
 #include "Debug/BlockScriptLibraries/BlockScriptLibraryDockWidget.h"
 #include "ProgramEditor/ProgramEditorWidget.h"
 #include "Viewport/ViewportDockWidget.h"
 #include "Viewport/ViewportWidget.h"
 #include "Pegasus/AssetLib/Shared/IRuntimeAssetObjectProxy.h"
+#include "MessageControllers/AssetIOMessageController.h"
 
 #include <QtWidgets/QMainWindow>
 #include <QMap>
@@ -120,7 +123,11 @@ public:
 
     //! Get the texture editor dock widget
     //! \return Pointer to the texture editor dock widget
-    inline TextureEditorDockWidget * GetTextureEditorDockWidget() const { return mTextureEditorDockWidget; }
+    inline GraphEditorDockWidget * GetTextureEditorDockWidget() const { return mTextureEditorDockWidget; }
+
+    //! Get the graph editor dock widget
+    //! \return Pointer to he graph editor dock widget
+    inline GraphEditorDockWidget* GetMeshEditorDockWidget() const { return mMeshEditorDockWidget; }
 
     //! Get the property grid classes dock widget
     //! \return Pointer to the property grid classes dock widget
@@ -215,6 +222,7 @@ private slots:
     void OpenAssetLibraryWindow();
     void OpenTextureEditorWindow();
     void OpenProgramEditorWindow();
+    void OpenMeshEditorWindow();
     //@}
 
     //@{
@@ -240,10 +248,10 @@ private slots:
     //! Called when an object has been marked as dirty / non dirty
     
     //! Called when an object has been registered as dirty
-    void OnRegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+    void OnRegisterDirtyObject(AssetInstanceHandle object);
 
     //! Called when an object has been unregistered as dirty
-    void OnUnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+    void OnUnregisterDirtyObject(AssetInstanceHandle object);
 
     //@}
 
@@ -266,7 +274,7 @@ public slots:
     void OutDockFocus(PegasusDockWidget* target);
 
     //! Action taken when the asset controller requests opening of assets
-    void OnOpenObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+    void OnOpenObject(AssetInstanceHandle handle, QString displayName, int typeGuid, QVariant initData);
 
     //------------------------------------------------------------------------------------
 
@@ -308,6 +316,8 @@ private:
     QAction * mActionWindowCodeEditor;
     QAction * mActionWindowAssetLibrary;
     QAction * mActionWindowTextureEditor;
+    QAction * mActionWindowMeshEditor;
+    QAction*  mGraphEditorDockWidget;
     QAction * mActionProgramEditor;
     //@}
 
@@ -370,10 +380,17 @@ private:
     AssetLibraryWidget      * mAssetLibraryWidget;
     CodeEditorWidget        * mCodeEditorWidget;
     ConsoleDockWidget       * mConsoleDockWidget;
-    TextureEditorDockWidget * mTextureEditorDockWidget;
+    GraphEditorDockWidget   * mTextureEditorDockWidget;
+    GraphEditorDockWidget   * mMeshEditorDockWidget;
     ProgramEditorWidget     * mProgramEditorWidget;
     PropertyGridClassesDockWidget * mPropertyGridClassesDockWidget;
     BlockScriptLibraryDockWidget*       mBsLibWidget;
+    //@}
+
+    //@{
+    //! View strategies for graph editors
+    TextureGraphEditorViewStrategy  mTextureEditorViewStrategy;
+    MeshGraphEditorViewStrategy     mMeshEditorViewStrategy;
     //@}
 
 	//! Menu containing the checkable actions for the tool bars
@@ -390,7 +407,7 @@ private:
     QApplication * mQtApplication;
 
     //! List holding all the dirty assets, so we warn the user there are dirty assets
-    QSet<Pegasus::AssetLib::IRuntimeAssetObjectProxy*> mDirtyAssets;
+    QSet<AssetInstanceHandle> mDirtyAssets;
 
     //! Master list of widgets
     QVector<PegasusDockWidget*> mDockWidgets;

@@ -16,14 +16,8 @@
 #include <QWidget>
 #include <QTabBar>
 #include <QVector>
+#include "MessageControllers/AssetIOMessageController.h"
 
-//fwd declarations
-namespace Pegasus
-{
-    namespace AssetLib {
-        class IRuntimeAssetObjectProxy;
-    }
-}
 
 class QTabBar;
 class PegasusDockWidget;
@@ -43,7 +37,7 @@ public:
     //! Opens an object into the tab bar
     //! \param object the object to insert into the tabbed bar
     //! \param extra data attached to this pegasus node object
-    void Open(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object, QObject* extraData = nullptr);
+    void Open(AssetInstanceHandle handle, const QString& displayName, QObject* extraData = nullptr);
 
     //! Closes an object from the tab bar
     //! \param tab index.
@@ -55,8 +49,8 @@ public:
 
     //! Returns the tab object contained in the tab index
     //! \param the tab index
-    template <class T>
-    T* GetTabObject(int tabIndex) { return static_cast<T*>(mContainerList[tabIndex].mObject); }
+    //! \return the handle of this object
+    AssetInstanceHandle GetTabObject(int tabIndex) { return mContainerList[tabIndex].mObject; }
 
     //! Sets this object extra data
     void SetExtraData(int index, QObject* obj);
@@ -77,26 +71,26 @@ public:
     void SetCurrentIndex(int idx) { mTabBar->setCurrentIndex(idx); }
 
     //! Finds the index of the object passed, returns -1 if it doesnt exist
-    int FindIndex(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object) const;
+    int FindIndex(AssetInstanceHandle object) const;
 
 signals:
     //signal fired when a runtime object is displayed
-    void DisplayRuntimeObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+    void DisplayRuntimeObject(AssetInstanceHandle object);
 
     //signal fired when a runtime object is removed
-    void RuntimeObjectRemoved(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object, QObject* extraData);
+    void RuntimeObjectRemoved(AssetInstanceHandle object, QObject* extraData);
 
     //! signal fired when a dirty element attempted to be closed is requested to be saved before being done.
-    void SaveCurrentRuntimeObject();
+    void SaveRuntimeObject(int tabId);
     
     //! signal that discards the elements changes
-    void DiscardCurrentObjectChanges();
+    void DiscardObjectChanges(AssetInstanceHandle object);
 
     //! Called when an object has been registered as dirty
-    void RegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+    void RegisterDirtyObject(AssetInstanceHandle object);
 
     //! Called when an object has been unregistered as dirty
-    void UnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+    void UnregisterDirtyObject(AssetInstanceHandle object);
 
 private slots:
     void ReceiveTabIdChanged(int index);
@@ -111,9 +105,10 @@ private:
     struct FileTabContainer
     {
         bool mIsDirty;
-        Pegasus::AssetLib::IRuntimeAssetObjectProxy* mObject;
+        AssetInstanceHandle mObject;
+        QString mDisplayName;
         QObject* mExtraData;
-        FileTabContainer() : mIsDirty(false), mExtraData(nullptr), mObject(nullptr) {}
+        FileTabContainer() : mIsDirty(false), mExtraData(nullptr) {}
     };
 
     QVector<FileTabContainer> mContainerList;

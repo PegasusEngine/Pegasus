@@ -20,7 +20,6 @@
 #include "Application/Application.h"
 #include "Application/ApplicationManager.h"
 
-#include "Pegasus/Timeline/Shared/ITimelineManagerProxy.h"
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 #include "Pegasus/Timeline/Shared/ILaneProxy.h"
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"
@@ -75,6 +74,20 @@ TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
 
 //----------------------------------------------------------------------------------------
 
+void TimelineGraphicsView::RedrawInternalBlocks()
+{
+    for (LaneBlockList& blockList : mBlockItems)
+    {
+        LaneBlockList::iterator it = blockList.begin();
+        for (; it != blockList.end(); ++it)
+        {
+            it.value()->update();
+        }
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 TimelineGraphicsView::~TimelineGraphicsView()
 {
     Clear();
@@ -101,15 +114,10 @@ void TimelineGraphicsView::EnableAntialiasing(bool enable)
 
 void TimelineGraphicsView::RefreshFromTimeline()
 {
-    Application * const application = Editor::GetInstance().GetApplicationManager().GetApplication();
-    if (application != nullptr)
+    if (mTimeline != nullptr)
     {
-        // Application running
-
-        Pegasus::Timeline::ITimelineManagerProxy * const timeline = application->GetTimelineProxy();
-
         // Handle the length of the timeline
-        const unsigned int numBeats = timeline->GetCurrentTimeline()->GetNumBeats();
+        const unsigned int numBeats = mTimeline->GetNumBeats();
         if (numBeats < mNumBeats)
         {
             // Remove the background items at the end of the timeline
@@ -124,7 +132,7 @@ void TimelineGraphicsView::RefreshFromTimeline()
         }
 
         // Handle the number of lanes of the timeline
-        const unsigned int numLanes = timeline->GetCurrentTimeline()->GetNumLanes();
+        const unsigned int numLanes = mTimeline->GetNumLanes();
         if (numLanes < mNumLanes)
         {
             // Remove the extra lanes from the end of the list
@@ -141,7 +149,7 @@ void TimelineGraphicsView::RefreshFromTimeline()
         // Refresh the content of every lane
         for (unsigned int l = 0; l < numLanes; ++l)
         {
-            RefreshLaneFromTimelineLane(l, timeline->GetCurrentTimeline()->GetLane(l));
+            RefreshLaneFromTimelineLane(l, mTimeline->GetLane(l));
         }
     }
 }
@@ -505,6 +513,31 @@ void TimelineGraphicsView::CreateLanes(unsigned int firstLane, unsigned int numL
 
 //----------------------------------------------------------------------------------------
 
+void TimelineGraphicsView::OnFocusBlock(unsigned blockGuid)
+{
+    if (mTimeline != nullptr)
+    {
+        Pegasus::Timeline::IBlockProxy* blockProxy = mTimeline->FindBlockByGuid(blockGuid);
+        if (blockProxy != nullptr)
+        {
+            for (LaneBlockList blockMap : mBlockItems)
+            {
+                LaneBlockList::iterator it = blockMap.find(blockProxy);
+                if (it != blockMap.end())
+                {
+                    scene()->clearSelection();
+                    it.value()->setSelected(true);
+                    centerOn(it.value()->pos());    
+                    SelectionChanged();
+                    return;
+                }
+            }
+        }
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 void TimelineGraphicsView::RemoveLanes(unsigned int firstLane, unsigned int numLanes)
 {
     ED_ASSERTSTR(firstLane <= mNumLanes, "Invalid first lane (%d), it should be <= %d", firstLane, mNumLanes);
@@ -647,6 +680,12 @@ void TimelineGraphicsView::RefreshLaneFromTimelineLane(unsigned int laneIndex, c
                 // Connect the block moved signal to request a double click action 
                 connect(item, SIGNAL(DoubleClicked(Pegasus::Timeline::IBlockProxy*)),
                         this, SIGNAL(BlockDoubleClicked(Pegasus::Timeline::IBlockProxy*)));
+
+                // Connect request of this blocks request signal for new block script / remove blockscripts
+                connect(item, SIGNAL(RequestChangeScript(unsigned)),
+                        this, SIGNAL(RequestChangeScript(unsigned)));
+                connect(item, SIGNAL(RequestRemoveScript(unsigned)),
+                        this, SIGNAL(RequestRemoveScript(unsigned)));
             }
             else
             {
@@ -659,6 +698,20 @@ void TimelineGraphicsView::RefreshLaneFromTimelineLane(unsigned int laneIndex, c
     else
     {
         ED_FAILSTR("Unable to refresh the lane %d because it is nullptr", laneIndex);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineGraphicsView::FlushVisualProperties()
+{
+    for (LaneBlockList& blockList : mBlockItems)
+    {
+        LaneBlockList::iterator it = blockList.begin();
+        for (; it != blockList.end(); ++it)
+        {
+            it.value()->FlushVisualProperties();
+        }
     }
 }
 

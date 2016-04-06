@@ -23,8 +23,9 @@ typedef unsigned long LogChannel;
 //! Set of predefined log channels that can be used throughout the engine
 static const LogChannel sLogChannels[] = {
     'CRIT',     // Critical errors, typically resulting in a crash or instability
-    'ERR_',     // Error that can be recovered
-    'WARN',     // Warnings
+    'ERR_',     // General errors that can be recovered.
+    'CERR',     // Compilation Errors, for codes / scripts compiled internally.
+    'WARN',     // General warnings.
     'ASRT',     // Assertions
 
     'EDIT',     // Editor
@@ -40,7 +41,7 @@ static const LogChannel sLogChannels[] = {
     'TMLN',     // Timeline info
     'TXTR',     // Texture (generation)
     'MESH',     // Mesh (generation)
-    'SHDR',     // Shader (compilation, info, error)
+    'SHDR',     // Shader (generation)
     'SOUN',     // Sound info
     'MUSC',     // Music info
 };

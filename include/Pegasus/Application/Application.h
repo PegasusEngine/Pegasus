@@ -15,6 +15,7 @@
 
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 #include "Pegasus/Core/IApplicationContext.h"
+#include "Pegasus/AssetLib/RuntimeAssetObject.h"
 
 // Forward declarations
 namespace Pegasus {
@@ -121,6 +122,7 @@ public:
     virtual App::AppBsReflectionInfo*                       GetBsReflectionInfo() const { return mBsReflectionInfo; }
 #endif
 
+    AppWindowManager*                                       GetWindowManager() const { return mWindowManager; }
 protected:
     
     //! Custom initialization, done in the user application before the timeline triggers the loading of blocks and their assets

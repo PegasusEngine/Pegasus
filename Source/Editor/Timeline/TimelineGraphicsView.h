@@ -24,6 +24,7 @@ class TimelineCursorGraphicsItem;
 
 namespace Pegasus {
     namespace Timeline {
+        class ITimelineProxy;
         class ILaneProxy;
         class IBlockProxy;
     }
@@ -75,6 +76,15 @@ public:
     //! Refresh the content of the graphics view from the application timeline
     void RefreshFromTimeline();
 
+    //! Sets the current timeline.
+    void SetTimeline(Pegasus::Timeline::ITimelineProxy* timeline) { mTimeline = timeline;}
+
+    //! Flushes (copies) all internal visual properties to intermediate buffers
+    void FlushVisualProperties();
+
+    //! Forces a redraw on all internal graphics items.
+    void RedrawInternalBlocks();
+
     //------------------------------------------------------------------------------------
 
 signals:
@@ -98,6 +108,12 @@ signals:
     //! Emitted when the user double clicks a block
     void BlockDoubleClicked(Pegasus::Timeline::IBlockProxy * blockProxy);
 
+    //! Request this script to be changed for the block with the guid.
+    void RequestChangeScript(unsigned blockId);
+
+    //! Request the blockscript to be removed
+    void RequestRemoveScript(unsigned blockId);
+
     //------------------------------------------------------------------------------------
 
 public slots:
@@ -113,6 +129,10 @@ public slots:
     //! \param enable True when play mode is enabled, resulting in disabling the update of the beat
     //!               on the timeline when right-click dragging
     void OnPlayModeToggled(bool enable);
+
+    //! Focus selection on the block with the specified guid.
+    //! \param the guid of the block to focus onto.
+    void OnFocusBlock(unsigned blockGuid);
 
     //------------------------------------------------------------------------------------
 
@@ -195,7 +215,6 @@ private:
     //! \param event Qt mouse event
     void SetBeatFromMouse(QMouseEvent * event);
 
-
     //! True to update the beat on the timeline when right-click dragging (true by default)
     bool mRightClickCursorDraggingEnabled;
 
@@ -237,6 +256,9 @@ private:
 
     //! Undo stack
     QUndoStack * mUndoStack;
+
+    //! The current timeline
+    Pegasus::Timeline::ITimelineProxy* mTimeline;
 };
 
 

@@ -34,7 +34,6 @@ namespace Shader
 // forward declarations
 class IShaderFactory;
 class ProgramLinkage;
-class ShaderTracker;
 
 //! Shader Stage class, holds information about a shader stage
 class ShaderStage : public ShaderSource 

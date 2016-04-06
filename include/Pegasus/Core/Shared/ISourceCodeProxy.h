@@ -30,6 +30,14 @@ namespace Core
 class IBasicSourceProxy : public AssetLib::IRuntimeAssetObjectProxyDecorator
 {
 public:
+    //! If this asset runtime object has a property attached, the return it.
+    //! \return the property grid object of this proxy. If it doesn't exist then it returns null.
+    virtual PropertyGrid::IPropertyGridObjectProxy* GetPropertyGrid()
+    {
+        //no source code does not have a property grid associated with it yet.
+        return nullptr;
+    }
+
     //! Sets the user data for this particular source code file
     //! \param userData. the user data to retrieve
     virtual void SetUserData(Pegasus::Core::IEventUserData * userData) = 0;

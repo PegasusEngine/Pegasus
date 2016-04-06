@@ -38,9 +38,6 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\Shared\IShaderProxy.h">
       <Filter>Include\Shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\ShaderTracker.h">
-      <Filter>Include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Shader\IShaderFactory.h">
       <Filter>Include</Filter>
     </ClInclude>
@@ -65,9 +62,6 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ProgramLinkage.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\ShaderTracker.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Shader\Proxy\ProgramProxy.cpp">

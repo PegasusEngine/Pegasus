@@ -16,6 +16,7 @@
 #include "Pegasus/Utils/ByteStream.h"
 #include "Pegasus/Allocator/Alloc.h"
 #include "Pegasus/Utils/Memcpy.h"
+#include "Pegasus/AssetLib/Category.h"
 
 #include <stdio.h>
 
@@ -25,6 +26,7 @@ using namespace Pegasus::AssetLib;
 namespace AssetPrivate
 {
     void DumpElementToStream(int tabCount, const Object* obj, Utils::ByteStream& stream);
+    void DumpElementToStream(int tabCount, const RuntimeAssetObject* obj, Utils::ByteStream& stream);
 
     void Tabulate(Utils::ByteStream& stream, int tabSz)
     {
@@ -106,6 +108,12 @@ namespace AssetPrivate
                 AssetPrivate::DumpElementToStream(tabSize + 1, a->GetElement(i).a, stream);
                 if ( i != a->GetSize() - 1) stream.Append(COMMA, COMMASZ);
             }
+        case Array::AS_TYPE_ASSET_PATH_REF:
+            for (int i = 0; i < a->GetSize(); ++i)
+            {
+                AssetPrivate::DumpElementToStream(tabSize + 1, a->GetElement(i).asset, stream);
+                if ( i != a->GetSize() - 1) stream.Append(COMMA, COMMASZ);
+            }
             break;
         }
         stream.Append(RBRAC, RBRACSZ);
@@ -132,7 +140,15 @@ namespace AssetPrivate
         const int   NLSZ = 1;
 
         stream.Append(L_BRAC, L_BRACSZ);
-        int totalEls = obj->GetIntCount() + obj->GetFloatCount() + obj->GetStringCount() + obj->GetArrayCount() + obj->GetObjectCount() - 1;
+
+        //**IMPORTNANT** Update this serialization total elements before dumping all the members of this object//
+        int totalEls = 
+             obj->GetIntCount() +
+             obj->GetFloatCount() + 
+             obj->GetStringCount() +
+             obj->GetArrayCount() +
+             obj->GetObjectCount() +
+             obj->GetAssetsCount() - 1;
         int c = 0;
 
         for (int i = 0; i < obj->GetIntCount(); ++i, ++c)
@@ -184,9 +200,26 @@ namespace AssetPrivate
             if (c != totalEls) stream.Append(COMMANL, COMMANLSZ);
             else stream.Append(NL, NLSZ);
         }
+
+        for (int i = 0; i < obj->GetAssetsCount(); ++i)
+        {
+            AssetPrivate::Tabulate(stream, tabCount + 1);
+            AssetPrivate::DumpElementToStream(obj->GetAssetName(i), stream);
+            stream.Append(COL, COLZ);
+            AssetPrivate::DumpElementToStream(tabCount + 1, &(*obj->GetAsset(i)), stream);
+            if (c != totalEls) stream.Append(COMMANL, COMMANLSZ);
+            else stream.Append(NL, NLSZ);
+        }
     
         AssetPrivate::Tabulate(stream ,tabCount);
         stream.Append(R_BRAC, R_BRACSZ);
+    }
+
+    void DumpElementToStream(int tabCount, const RuntimeAssetObject* assetObject, Utils::ByteStream& stream)
+    {
+        stream.Append("{@", 2);
+        stream.Append(assetObject->GetOwnerAsset()->GetPath(), Utils::Strlen(assetObject->GetOwnerAsset()->GetPath())); 
+        stream.Append("}", 1);
     }
 }
 
@@ -212,15 +245,27 @@ Asset::Asset(Alloc::IAllocator* allocator, Pegasus::AssetLib::AssetLib* lib, Ass
 #if PEGASUS_ENABLE_PROXIES
     mProxy.SetObject(this);
 #endif
+
+    PEGASUS_EVENT_DISPATCH(lib, AssetCreated, &mProxy);
 }
 
 Asset::~Asset()
 {
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+    //kill all categories
+    for (unsigned i = 0; i < mCategories.GetSize(); ++i)
+    {
+        mCategories[i]->UnregisterAsset(this,true);
+    }
+#endif
+
     Clear();
     if (GetRuntimeData() != nullptr)
     {
         GetRuntimeData()->mAsset = nullptr;
     }
+
+    PEGASUS_EVENT_DISPATCH(mAssetLib, AssetDestroyed, &mProxy);
 }
 
 Object* Asset::NewObject()
@@ -267,6 +312,9 @@ void Asset::Clear()
     }
     else
     {
+                
+        mRoot = nullptr;
+
         for (unsigned int i = 0; i < mChildObjects.GetSize(); ++i)
         {
             mChildObjects[i]->~Object();
@@ -283,8 +331,7 @@ void Asset::Clear()
 
         mAstAllocator.FreeMemory();
         mStringAllocator.FreeMemory();
-        
-        mRoot = nullptr;
+
     }
 }
 
@@ -302,6 +349,8 @@ void Asset::SetFileBuffer(const Io::FileBuffer& fb)
 
 void Asset::SetPath(const char* path)
 {
+    if (path == mPathString) return;
+
     int sz = Utils::Strlen(path) + 1; 
     PG_ASSERT(sz <= MAX_ASSET_PATH_STRING);
     mPathString[0] = '\0';
@@ -333,3 +382,25 @@ void Asset::DumpToStream(Utils::ByteStream& stream)
         AssetPrivate::DumpElementToStream(0, mRoot, stream);
     }
 }
+
+
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+void Asset::RegisterToCategory(Category* category)
+{
+    //find duplicate
+    for (unsigned i = 0; i < mCategories.GetSize(); ++i) if (category == mCategories[i]) return;
+    mCategories.PushEmpty() = category;
+}
+
+void Asset::UnregisterToCategory(Category* category)
+{
+    for (unsigned i = 0; i < mCategories.GetSize(); ++i)
+    {
+        if (category == mCategories[i])
+        {
+            mCategories.Delete(i);
+            return;
+        }
+    }
+}
+#endif

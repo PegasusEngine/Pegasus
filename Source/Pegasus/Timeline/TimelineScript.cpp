@@ -115,7 +115,7 @@ TimelineScript::TimelineScript(IAllocator* allocator, Core::IApplicationContext*
         Pegasus::BlockScript::SystemCallbacks::gPrintFloatCallback = Pegasus_PrintFloat;
     }
     mScript = appContext->GetBlockScriptManager()->CreateBlockScript();
-    mScript->SetCompilerEventListener(this);
+    mScript->AddCompilerEventListener(this);
 }
 
 void TimelineScript::Shutdown()
@@ -270,7 +270,6 @@ void TimelineScript::CallRender(float beat, BsVmState* state)
 TimelineScript::~TimelineScript()
 {
     ClearHeaderList();
-    mAppContext->GetTimelineManager()->GetScriptTracker()->UnregisterScript(this);
     mAppContext->GetBlockScriptManager()->DestroyBlockScript(mScript);
 }
 
@@ -292,7 +291,7 @@ void TimelineScript::OnCompilationBegin()
 
 void TimelineScript::OnCompilationError(int line, const char* errorMessage, const char* token)
 {
-    PG_LOG('ERR_', "Compilation error, line %d, %s. Around token %s", line, errorMessage, token);
+    PG_LOG('CERR', "Compilation error, line %d, %s. Around token %s", line, errorMessage, token);
 
     PEGASUS_EVENT_DISPATCH(
         this,
@@ -315,7 +314,7 @@ void TimelineScript::OnCompilationEnd(bool success)
     else
     {
 #if PEGASUS_ENABLE_PROXIES
-        PG_LOG('ERR_', "Compilation failed for script %s", GetDisplayName());
+        PG_LOG('CERR', "Compilation failed for script %s", GetDisplayName());
 #endif
     }
 

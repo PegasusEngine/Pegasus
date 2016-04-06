@@ -18,11 +18,15 @@ namespace BlockScript
 {
 
 class BlockLib;
+class IBlockScriptCompilerListener;
 
 //! registers all the default intrinsics and runtime types (int, float etc).
 //! \param lib the core runtime library
 void RegisterIntrinsics(BlockLib* lib);
 
+//! \return gets intrinsic compiler listener. This listener does mostly compile time resolution of 
+//!         compile time constants.
+IBlockScriptCompilerListener* GetIntrinsicCompilerListener();
 
 }
 }

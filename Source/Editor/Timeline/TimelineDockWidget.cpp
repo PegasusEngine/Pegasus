@@ -20,7 +20,9 @@
 #include "Pegasus/Timeline/Shared/ILaneProxy.h"
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
+#include "Pegasus/PegasusAssetTypes.h"
 #include <QMessagebox>
+#include <QFileDialog>
 
 #include <QListWidgetItem>
 #include <QUndoStack>
@@ -30,7 +32,9 @@ TimelineDockWidget::TimelineDockWidget(QWidget *parent, Editor* editor)
     :   
     PegasusDockWidget(parent, editor),
     mSnapNumTicks(1),
-    mEnableUndo(true)
+    mEnableUndo(true),
+    mTimeline(nullptr),
+    mApplication(nullptr)
 {
 }
 
@@ -70,6 +74,10 @@ void TimelineDockWidget::SetupUi()
             this, SLOT(OnMultiBlocksSelected()));
     connect(ui.graphicsView, SIGNAL(BlocksDeselected()),
             this, SLOT(OnBlocksDeselected()));
+    connect(ui.graphicsView, SIGNAL(RequestChangeScript(unsigned)),
+            this, SLOT(RequestChangeScript(unsigned)));
+    connect(ui.graphicsView, SIGNAL(RequestRemoveScript(unsigned)),
+            this, SLOT(RequestRemoveScript(unsigned)));
 
     connect(ui.playButton, SIGNAL(toggled(bool)),
             this, SIGNAL(PlayModeToggled(bool)));
@@ -83,12 +91,126 @@ void TimelineDockWidget::SetupUi()
             this, SIGNAL(MultiBlocksSelected()));
     connect(ui.graphicsView, SIGNAL(BlockDoubleClicked(Pegasus::Timeline::IBlockProxy*)),
             this, SIGNAL(BlockDoubleClicked(Pegasus::Timeline::IBlockProxy*)));
+
+    connect(ui.propertyGridWidget, SIGNAL(OnPropertyUpdated(QtProperty*)),
+            this, SLOT(OnPropertyUpdated(QtProperty*)));
+
+    connect(ui.loadMasterScriptButton, SIGNAL(clicked()),
+            this, SLOT(RequestMasterTimelineLoad()));
+    connect(ui.removeScriptButton, SIGNAL(clicked()),
+            this, SLOT(RemoveMasterTimelineScript()));
 }
 
 //----------------------------------------------------------------------------------------
 
 TimelineDockWidget::~TimelineDockWidget()
 {
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::OnPropertyUpdated(QtProperty* property)
+{
+    if (property->propertyName() == "Name" ||
+        property->propertyName() == "Color"||
+        property->propertyName() == "Beat"||
+        property->propertyName() == "Duration")
+    {
+        ui.graphicsView->FlushVisualProperties();
+        ui.graphicsView->RedrawInternalBlocks();
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::OnRepaintTimeline()
+{
+    ui.graphicsView->RedrawInternalBlocks();
+}
+
+//----------------------------------------------------------------------------------------
+
+QString TimelineDockWidget::AskForTimelineScript()
+{
+    QString rootFolder = mApplication->GetAssetsRoot();
+    QDir qd(rootFolder);
+    QString fileExtension = tr("%1 Shader (*.%2)").arg(tr(Pegasus::ASSET_TYPE_BLOCKSCRIPT.mTypeName), tr(Pegasus::ASSET_TYPE_BLOCKSCRIPT.mExtension));
+    QString requestedFile = QFileDialog::getOpenFileName(this, tr("Open shader."), rootFolder, fileExtension);
+    QString filePath = qd.path();
+    if (requestedFile.startsWith(filePath))
+    {
+        QString path = requestedFile.right(requestedFile.size() - filePath.size() - 1);
+        return path;
+    }
+    else if (requestedFile.length() > 0)
+    { 
+        QMessageBox::warning(this, tr("Can't load asset."), tr("Asset must be loaded into the root directory only of the project. ")+rootFolder, QMessageBox::Ok);
+        return tr("");
+    }
+
+    return tr("");
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::RequestChangeScript(unsigned blockGuid)
+{
+    if (mApplication != nullptr)
+    {
+        QString requestedScript = AskForTimelineScript();
+        TimelineIOMessageController::Message msg(TimelineIOMessageController::Message::SET_BLOCKSCRIPT);
+        msg.SetBlockGuid(blockGuid);
+        msg.SetString(requestedScript);
+        SendTimelineIoMessage(msg);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::RequestRemoveScript(unsigned blockGuid)
+{
+    if (mApplication != nullptr)
+    {
+        TimelineIOMessageController::Message msg(TimelineIOMessageController::Message::CLEAR_BLOCKSCRIPT);
+        msg.SetBlockGuid(blockGuid);
+        SendTimelineIoMessage(msg);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::OnFocusBlock(unsigned blockGuid)
+{
+    setFocus();
+    ui.graphicsView->OnFocusBlock(blockGuid);
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::RequestMasterTimelineLoad()
+{
+    if (mApplication != nullptr)
+    {
+        QString timelineToLoad = AskForTimelineScript();
+        //TODO: send a message to the timeline to load a script
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::RemoveMasterTimelineScript()
+{
+    if (mApplication != nullptr)
+    {
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+const Pegasus::PegasusAssetTypeDesc*const* TimelineDockWidget::GetTargetAssetTypes() const
+{
+    static const Pegasus::PegasusAssetTypeDesc* sAssetTypes[] =  { &Pegasus::ASSET_TYPE_TIMELINE, nullptr };
+    return sAssetTypes;
 }
 
 //----------------------------------------------------------------------------------------
@@ -120,28 +242,23 @@ void TimelineDockWidget::EnableAntialiasing(bool enable)
 
 void TimelineDockWidget::SetBeatsPerMinute(double bpm)
 {
-    Application * const application = GetEditor()->GetApplicationManager().GetApplication();
-    if (application != nullptr)
+    if (mTimelineHandle.IsValid())
     {
-        Pegasus::Timeline::ITimelineManagerProxy * const timeline = application->GetTimelineProxy();
-        if (timeline != nullptr)
+        mEnableUndo = false;
+
+        // Apply the new tempo to the timeline
+        mTimeline->SetBeatsPerMinute(static_cast<float>(bpm));
+
+        // Update the tempo field
+        ui.bpmSpin->setValue(bpm);
+
+        // Update the timeline view from the new tempo
+        if (mTimeline->GetCurrentBeat() >= 0.0f)
         {
-            mEnableUndo = false;
-
-            // Apply the new tempo to the timeline
-            timeline->GetCurrentTimeline()->SetBeatsPerMinute(static_cast<float>(bpm));
-
-            // Update the tempo field
-            ui.bpmSpin->setValue(bpm);
-
-            // Update the timeline view from the new tempo
-            if (timeline->GetCurrentTimeline()->GetCurrentBeat() >= 0.0f)
-            {
-                UpdateUIFromBeat(timeline->GetCurrentTimeline()->GetCurrentBeat());
-            }
-
-            mEnableUndo = true;
+            UpdateUIFromBeat(mTimeline->GetCurrentBeat());
         }
+
+        mEnableUndo = true;
     }
 }
 
@@ -187,20 +304,13 @@ void TimelineDockWidget::OnSaveFocusedObject()
 
 void TimelineDockWidget::SaveTimeline()
 {
-    Application * const application = GetEditor()->GetApplicationManager().GetApplication();
-    if (application != nullptr)
+    if (mTimelineHandle.IsValid())
     {
-        Pegasus::Timeline::ITimelineManagerProxy * const timeline = application->GetTimelineProxy();
-        
-        if (timeline->GetCurrentTimeline() != nullptr)
-        {
-            AssetIOMessageController::Message msg;
-            msg.SetMessageType(AssetIOMessageController::Message::SAVE_ASSET);
-            msg.SetObject(timeline->GetCurrentTimeline());
-            SendAssetIoMessage(msg);
-        }
+        AssetIOMessageController::Message msg;
+        msg.SetMessageType(AssetIOMessageController::Message::SAVE_ASSET);
+        msg.SetObject(mTimelineHandle);
+        SendAssetIoMessage(msg);
     }
-    
 }
 
 //----------------------------------------------------------------------------------------
@@ -226,46 +336,64 @@ void TimelineDockWidget::OnReceiveAssetIoMessage(AssetIOMessageController::Messa
 
 void TimelineDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* applicationProxy)
 {
-    mEnableUndo = false;
+    //HACK: for now force open the timeline when the UI is ready.
+    AssetIOMessageController::Message msg(AssetIOMessageController::Message::OPEN_ASSET); 
+    msg.SetString(QString("Timeline/mainTimeline.pas"));
+    SendAssetIoMessage(msg);
 
-    ui.addButton->setEnabled(true);
-    ui.removeButton->setEnabled(true);
-    ui.deleteButton->setEnabled(true);
+    mApplication = applicationProxy;
+}
 
-    ui.playButton->setEnabled(true);
-    ui.playButton->setChecked(false);
-    ui.graphicsView->OnPlayModeToggled(false);
+//----------------------------------------------------------------------------------------
 
-    if (applicationProxy != nullptr)
+void TimelineDockWidget::OnOpenObject(AssetInstanceHandle object, const QString& displayName, const QVariant& initData)
+{
+    if (!mTimelineHandle.IsValid())
     {
-        Pegasus::Timeline::ITimelineManagerProxy * const timeline = applicationProxy->GetTimelineManagerProxy();
-        timeline->GetCurrentTimeline()->SetPlayMode(Pegasus::Timeline::PLAYMODE_STOPPED);
-        ui.bpmSpin->setValue(static_cast<double>(timeline->GetCurrentTimeline()->GetBeatsPerMinute()));
+        mTimelineHandle = object;
+        mEnableUndo = false;
+
+        ui.addButton->setEnabled(true);
+        ui.removeButton->setEnabled(true);
+        ui.deleteButton->setEnabled(true);
+
+        ui.playButton->setEnabled(true);
+        ui.playButton->setChecked(false);
+        ui.graphicsView->OnPlayModeToggled(false);
+    
+        //HACK: This widget should not have direct access to the timeline (not thread safe). 
+        //      later it will all be edited by handles and interthread messages
+        mTimeline = static_cast<Pegasus::Timeline::ITimelineProxy*>(initData.value<void*>());
+        mTimeline->SetPlayMode(Pegasus::Timeline::PLAYMODE_STOPPED);
+        ui.bpmSpin->setValue(static_cast<double>(mTimeline->GetBeatsPerMinute()));
+        ui.bpmSpin->setEnabled(true);
+
+        ui.snapCombo->setEnabled(true);
+        ui.snapCombo->setCurrentIndex(0);
+        mSnapNumTicks = 1;
+        UpdateUIFromBeat(0.0f);
+        ui.graphicsView->setEnabled(true);
+
+        ui.propertyGridWidget->SetApplicationProxy(GetEditor()->GetApplicationManager().GetApplication()->GetApplicationProxy());
+
+        ui.graphicsView->SetTimeline(mTimeline);
+
+        // Update the content of the timeline graphics view from the timeline of the app
+        ui.graphicsView->RefreshFromTimeline();
+
+        mEnableUndo = true;
     }
     else
     {
-        ui.bpmSpin->setValue(138.0);
+        ED_LOG("Multiple timeline editing of pegasus is not supported on this version.");
     }
-    ui.bpmSpin->setEnabled(true);
-
-    ui.snapCombo->setEnabled(true);
-    ui.snapCombo->setCurrentIndex(0);
-    mSnapNumTicks = 1;
-    UpdateUIFromBeat(0.0f);
-    ui.graphicsView->setEnabled(true);
-
-    ui.propertyGridWidget->SetApplicationProxy(applicationProxy);
-
-    // Update the content of the timeline graphics view from the timeline of the app
-    ui.graphicsView->RefreshFromTimeline();
-
-    mEnableUndo = true;
 }
 
 //----------------------------------------------------------------------------------------
 
 void TimelineDockWidget::OnUIForAppClosed()
 {
+    mApplication = nullptr;
     ui.addButton->setEnabled(false);
     ui.removeButton->setEnabled(false);
     ui.deleteButton->setEnabled(false);
@@ -286,6 +414,9 @@ void TimelineDockWidget::OnUIForAppClosed()
     mSnapNumTicks = 1;
     UpdateUIFromBeat(0.0f);
     ui.graphicsView->setEnabled(false);
+    ui.graphicsView->SetTimeline(nullptr);
+    mTimeline = nullptr;
+    mTimelineHandle = AssetInstanceHandle();
 }
 
 //----------------------------------------------------------------------------------------
@@ -294,13 +425,10 @@ void TimelineDockWidget::OnBeatsPerMinuteChanged(double bpm)
 {
     if (mEnableUndo)
     {
-        Application * const application = GetEditor()->GetApplicationManager().GetApplication();
-        if (application != nullptr)
+        if (mTimelineHandle.IsValid())
         {
-            Pegasus::Timeline::ITimelineManagerProxy * const timeline = application->GetTimelineProxy();
-
             // Create the undo command
-            TimelineSetBPMUndoCommand * undoCommand = new TimelineSetBPMUndoCommand(static_cast<double>(timeline->GetCurrentTimeline()->GetBeatsPerMinute()),
+            TimelineSetBPMUndoCommand * undoCommand = new TimelineSetBPMUndoCommand(static_cast<double>(mTimeline->GetBeatsPerMinute()),
                                                                                     bpm);
             mUndoStack->push(undoCommand);
         }
@@ -318,33 +446,28 @@ void TimelineDockWidget::OnSnapModeChanged(int mode)
         return;
     }
     
-    Application * const application = GetEditor()->GetApplicationManager().GetApplication();
-    if (application != nullptr)
+    if (mTimelineHandle.IsValid())
     {
-        Pegasus::Timeline::ITimelineManagerProxy * const timeline = application->GetTimelineProxy();
-        if (timeline != nullptr)
+        unsigned int numTicksPerBeat = mTimeline->GetNumTicksPerBeat();
+
+        switch (mode)
         {
-            unsigned int numTicksPerBeat = timeline->GetCurrentTimeline()->GetNumTicksPerBeat();
+            case 1:     mSnapNumTicks = numTicksPerBeat / 16;   break;
+            case 2:     mSnapNumTicks = numTicksPerBeat / 8;    break;
+            case 3:     mSnapNumTicks = numTicksPerBeat / 4;    break;
+            case 4:     mSnapNumTicks = numTicksPerBeat / 2;    break;
+            case 5:     mSnapNumTicks = numTicksPerBeat;        break;
+            case 6:     mSnapNumTicks = numTicksPerBeat * 2;    break;
+            case 7:     mSnapNumTicks = numTicksPerBeat * 4;    break;
+            case 8:     mSnapNumTicks = numTicksPerBeat * 8;    break;
 
-            switch (mode)
-            {
-                case 1:     mSnapNumTicks = numTicksPerBeat / 16;   break;
-                case 2:     mSnapNumTicks = numTicksPerBeat / 8;    break;
-                case 3:     mSnapNumTicks = numTicksPerBeat / 4;    break;
-                case 4:     mSnapNumTicks = numTicksPerBeat / 2;    break;
-                case 5:     mSnapNumTicks = numTicksPerBeat;        break;
-                case 6:     mSnapNumTicks = numTicksPerBeat * 2;    break;
-                case 7:     mSnapNumTicks = numTicksPerBeat * 4;    break;
-                case 8:     mSnapNumTicks = numTicksPerBeat * 8;    break;
-
-                default:
-                    ED_FAILSTR("Invalid snap mode (%d), it should be <= 8", mode);
-                    mSnapNumTicks = 1;
-                    break;
-            }
-
-            ED_LOG("Number of ticks for timeline block snap: %u", mSnapNumTicks);
+            default:
+                ED_FAILSTR("Invalid snap mode (%d), it should be <= 8", mode);
+                mSnapNumTicks = 1;
+                break;
         }
+
+        ED_LOG("Number of ticks for timeline block snap: %u", mSnapNumTicks);
     }
 }
 

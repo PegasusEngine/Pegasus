@@ -46,12 +46,19 @@ class RuntimeAssetObject;
 class AssetLib;
 class RuntimeAssetObjectProxy;
 
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+class Category;
+#endif
+
 //! Asset representation
 class Asset
 {
     friend RuntimeAssetObjectProxy;
     friend RuntimeAssetObject;
     friend AssetLib;
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+    friend class Category;
+#endif
 
 public:
 
@@ -125,6 +132,10 @@ public:
     //! \return the type description. Null if this is a raw json or binary file.
     const PegasusAssetTypeDesc* GetTypeDesc() const { return mTypeDesc; }
 
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+    Utils::Vector<Category*>& GetCategories() { return mCategories; }
+#endif
+
 #if PEGASUS_ENABLE_PROXIES
     IAssetProxy* GetProxy() { return &mProxy; }
     const IAssetProxy* GetProxy() const { return &mProxy; }
@@ -134,6 +145,13 @@ public:
 #endif
 
 private:
+
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+    //! Registers a category
+    void RegisterToCategory(Category* category);
+    //! Unregisters a category
+    void UnregisterToCategory(Category* category);
+#endif
 
     //! Sets the runtime data
     void SetRuntimeData(RuntimeAssetObject * obj) { mRuntimeData = obj; }
@@ -163,6 +181,10 @@ private:
     //! Filename metadata. Name of this asset.
     char mName[MAX_ASSET_PATH_STRING];
     AssetProxy mProxy;
+#endif
+
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+    Utils::Vector<Category*> mCategories;
 #endif
 };
 

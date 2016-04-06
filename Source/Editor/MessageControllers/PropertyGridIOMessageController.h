@@ -17,6 +17,7 @@
 #include <QMap>
 #include <QSet>
 #include "PropertyTypes.h"
+#include "MessageControllers/AssetIOMessageController.h"
 #include "Pegasus/Preprocessor.h"
 #include "Pegasus/PropertyGrid/Shared/PropertyDefs.h"
 #include "Pegasus/PropertyGrid/Shared/PropertyEventDefs.h"
@@ -141,6 +142,7 @@ public:
         enum MessageType
         {
             OPEN, //! when a new property grid is desired to be open
+            OPEN_FROM_ASSET_HANDLE, //! Open the property grid from an asset handle
             CLOSE, //! when a widget will not view a property grid any more
             UPDATE, //! when the widget request a change in the state of a property grid
             INVALID
@@ -151,6 +153,7 @@ public:
         Message() : mMessageType(INVALID), mPropGrid(nullptr), mPropGridHandle(-1), mObserver(nullptr) {}
     
         //! Getters
+        AssetInstanceHandle GetAssetHandle() const { return mAssetHandle; }
         MessageType GetMessageType() const { return mMessageType; }
         QVector<UpdateElement>& GetUpdateBatch() { return mUpdates; }
         const QVector<UpdateElement>& GetUpdateBatch() const { return mUpdates; }
@@ -159,6 +162,7 @@ public:
         PropertyGridObserver* GetPropertyGridObserver() const { return mObserver; }
 
         //! Setters
+        void SetAssetHandle(AssetInstanceHandle handle) { mAssetHandle = handle ; }
         void SetPropertyGridHandle(PropertyGridHandle handle) { mPropGridHandle = handle; }
         void SetPropertyGrid(Pegasus::PropertyGrid::IPropertyGridObjectProxy* proxy) { mPropGrid  = proxy; }
         void SetPropertyGridObserver(PropertyGridObserver* observer) { mObserver = observer; }
@@ -166,6 +170,7 @@ public:
         
 
     private:
+        AssetInstanceHandle mAssetHandle;
         MessageType mMessageType;
         QVector<UpdateElement> mUpdates;
         PropertyGridHandle mPropGridHandle;
@@ -174,7 +179,7 @@ public:
     };
     
     //! Constructor
-    explicit PropertyGridIOMessageController(Pegasus::App::IApplicationProxy* app);
+    explicit PropertyGridIOMessageController(Pegasus::App::IApplicationProxy* app, AssetIOMessageController* assetMessageController);
 
     //! Destructor
     virtual ~PropertyGridIOMessageController();
@@ -194,6 +199,7 @@ private:
 
     void OnRenderThreadUpdate(PropertyGridObserver* sender, PropertyGridHandle handle, const QVector<UpdateElement>& elements);
     void OnRenderThreadOpen(PropertyGridObserver* sender, Pegasus::PropertyGrid::IPropertyGridObjectProxy* proxy);
+    void OnRenderThreadOpenFromAsset(PropertyGridObserver* sender, AssetInstanceHandle handle);
     void OnRenderThreadClose(PropertyGridObserver* sender, PropertyGridHandle handle);
 
     void UpdateObserverInternal(PropertyGridObserver* sender, PropertyGridHandle handle, Pegasus::PropertyGrid::IPropertyGridObjectProxy* proxy);
@@ -221,6 +227,9 @@ private:
     PropertyGridHandle mNextHandle;
     ProxyUpdateCache mUpdateCache;
     HandleSet        mLayoutsToReset;
+
+    //reference to asset io controller
+    AssetIOMessageController* mAssetMessageController;
 };
 
 

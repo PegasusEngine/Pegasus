@@ -14,6 +14,7 @@
 
 #include <QObject>
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
+#include "MessageControllers/AssetIOMessageController.h"
 
 //forward declarations
 namespace Pegasus
@@ -31,7 +32,7 @@ namespace Pegasus
 }
 
 //! Program IO controller Message class
-class ProgramIOMessageController : public QObject
+class ProgramIOMessageController : public QObject, public IAssetTranslator
 {
     Q_OBJECT;
 public:
@@ -49,7 +50,7 @@ public:
         };
     
         //!Constructor
-        Message() : mMessageType(INVALID), mProgram(nullptr), mShaderType(Pegasus::Shader::SHADER_STAGE_INVALID)
+        Message() : mMessageType(INVALID), mShaderType(Pegasus::Shader::SHADER_STAGE_INVALID)
         {
         }
     
@@ -61,20 +62,20 @@ public:
         //Getters
         MessageType GetMessageType() const { return mMessageType; }
         const QString& GetShaderPath() const { return mShaderPath; }
-        Pegasus::Shader::IProgramProxy* GetProgram() const { return mProgram; }
+        AssetInstanceHandle GetProgram() const { return mProgram; }
         Pegasus::Shader::ShaderType GetShaderType() const { return mShaderType; }
         
     
         //Setters
         void SetMessageType(MessageType t) { mMessageType = t; }
         void SetShaderPath(const QString& shader) { mShaderPath = shader; }
-        void SetProgram(Pegasus::Shader::IProgramProxy* p) { mProgram = p; }
+        void SetProgram(AssetInstanceHandle handle) { mProgram = handle; }
         void SetShaderType(Pegasus::Shader::ShaderType type) { mShaderType = type; }
     
     private:
         MessageType mMessageType;
         QString mShaderPath;
-        Pegasus::Shader::IProgramProxy* mProgram;
+        AssetInstanceHandle mProgram;
         Pegasus::Shader::ShaderType mShaderType;
     };
 
@@ -87,6 +88,13 @@ public:
     //! Called by the render thread when we open a message
     void OnRenderThreadProcessMessage(const Message& msg);
 
+    //! \param object input asset to open
+    //! \return a qvariant that contains the representation of this asset for the ui to read.
+    virtual QVariant TranslateToQt(AssetInstanceHandle handle, Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+
+    //! \return null terminated list that contains all the necessary asset data so assets can be translated.
+    virtual const Pegasus::PegasusAssetTypeDesc** GetTypeList() const;
+
 signals:
 
     //! Signal triggered when the UI needs to update the active node views
@@ -97,9 +105,9 @@ signals:
 
 private:
 
-    void OnRenderThreadRemoveShader(Pegasus::Shader::IProgramProxy* program, Pegasus::Shader::ShaderType shaderType);
+    void OnRenderThreadRemoveShader(AssetInstanceHandle handle, Pegasus::Shader::ShaderType shaderType);
     
-    void OnRenderThreadModifyShader(Pegasus::Shader::IProgramProxy* program, const QString& path);
+    void OnRenderThreadModifyShader(AssetInstanceHandle handle, const QString& path);
 
     //! Called when a shader is requested for opening from the render thread
     Pegasus::App::IApplicationProxy* mApp;

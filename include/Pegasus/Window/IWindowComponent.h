@@ -75,6 +75,29 @@ public:
     //! \param appContext - the application context
     virtual void Unload(Core::IApplicationContext* appContext) = 0;
 
+#if PEGASUS_ENABLE_PROXIES
+    enum MouseButton
+    {
+        MouseButton_Left,
+        MouseButton_Right,
+        MouseButton_Center,
+        MouseButton_DoubleClick,
+        MouseButton_None,
+    };
+
+    //! Mouse & editor event callbacks. Called from the editor.
+    //! \param button - 1, 2 or 3, 1 is left, 2 is middle, 3 is right click.
+    //! \param isDown true if the mouse is down, false otherwise
+    //! \param x coordinate of the window, in texture coordinates [0, 1]
+    //! \param y coordinate of the window, in texture coordintes [0, 1], where 1 is the top.
+    virtual void OnMouseEvent(WindowComponentState* state, MouseButton button, bool isDown, float x, float y) {}
+
+    //! Keyboard event, when a key is pressed. Called from the editor.
+    //! \param key ascii value of the key pressed.
+    //! \param isDown true if key is down, false if key goes up.
+    virtual void OnKeyEvent(WindowComponentState* state, char key, bool isDown) {}
+#endif
+
 };
 
 }

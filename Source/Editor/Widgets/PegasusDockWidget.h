@@ -14,6 +14,7 @@
 
 #include <QDockWidget>
 #include "MessageControllers/AssetIOMessageController.h"
+#include "MessageControllers/TimelineIOMessageController.h"
 #include "MessageControllers/PropertyGridIOMessageController.h"
 #include "MessageControllers/GraphIOMessageController.h"
 
@@ -75,6 +76,8 @@ public:
     //! Sends a message to the graph IO controller
     void SendGraphIoMessage(const GraphIOMessageController::Message& msg);
 
+    //! Sends a message to the timeline IO controller
+    void SendTimelineIoMessage(const TimelineIOMessageController::Message& msg);
 
     //! Returns the current undo stack in focus for this widget
     //! \return implementation specific, must return the current active undo stack of this widget
@@ -92,7 +95,7 @@ public:
 
     //! Implement this function with functionality on how to process for edit.
     //! Only objects of type retured in GetTargetAssetTypes will be the ones opened.
-    virtual void OnOpenObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object) { }
+    virtual void OnOpenObject(AssetInstanceHandle object, const QString& displayName, const QVariant& initData) { }
 
     //! Refocus this widget
     void PerformFocus();
@@ -106,10 +109,10 @@ signals:
     void OutFocus(PegasusDockWidget* owner);
 
     //! Fired by the user, when we want to register dirtiness on an object
-    void OnRegisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+    void OnRegisterDirtyObject(AssetInstanceHandle object);
 
     //! Fired by the user, when we want to unregister dirtiness on an object
-    void OnUnregisterDirtyObject(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object);
+    void OnUnregisterDirtyObject(AssetInstanceHandle object);
 
     //! Sends a message to the asset IO controller
     void OnSendAssetIoMessage(PegasusDockWidget* sender, AssetIOMessageController::Message msg);
@@ -119,6 +122,8 @@ signals:
 
     //! Sends a message to the graph IO controller
     void OnSendGraphIoMessage(GraphIOMessageController::Message msg);
+    //! Sends a message to the timeline message controller.
+    void OnSendTimelineIoMessage(TimelineIOMessageController::Message msg);
 
 public slots:
     
@@ -132,7 +137,7 @@ public slots:
     void ReceiveAssetIoMessage(PegasusDockWidget* sender, AssetIOMessageController::Message::IoResponseMessage msg) { if (this == sender) { OnReceiveAssetIoMessage(msg); } }
 
     //! Received when an object has be requested to be opened.
-    void ReceiveOpenRequest(Pegasus::AssetLib::IRuntimeAssetObjectProxy* object) { OnOpenObject(object); }
+    void ReceiveOpenRequest(AssetInstanceHandle object, const QString& displayName, const QVariant& initData) { OnOpenObject(object, displayName, initData); }
 
 protected:
     // Receive an IO message, to be implemented by the widget

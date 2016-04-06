@@ -19,6 +19,7 @@
 #include "MessageControllers/AssetIOMessageController.h"
 #include "Widgets/PegasusDockWidget.h"
 
+
 namespace Pegasus {
 
     struct PegasusAssetTypeDesc;
@@ -37,9 +38,9 @@ class QFileSystemModel;
 class QMenu;
 class QFileSystemWatcher;
 class QSignalMapper;
-class ProgramTreeModel;
-class SourceCodeListModel;
+class QNewAssetDialog;
 class Editor;
+class InstanceViewer;
 
 //! Graphics Widget meant for shader navigation & management
 class AssetLibraryWidget : public PegasusDockWidget
@@ -47,15 +48,12 @@ class AssetLibraryWidget : public PegasusDockWidget
     Q_OBJECT
 
 public:
-    
+        
     AssetLibraryWidget(QWidget * parent, Editor* editor);
     virtual ~AssetLibraryWidget();
 
-    //! Creates the menu that contains list of assets. Does binding internally
-    QMenu* CreateNewAssetMenu(const QString& name, QWidget* parent);
-
     //! Callback fired when the UI needs to be set.
-    virtual void SetupUi();
+    void SetupUi();
     
     //! Returns the name this widget
     virtual const char* GetName() const { return "AssetLibraryWidget"; }
@@ -63,39 +61,27 @@ public:
     //! Returns the title of this widget
     virtual const char* GetTitle() const { return "Asset Library"; }
 
-public slots:
+signals:
+    //! Highlights a block.
+    void OnHighlightBlock(unsigned blockGuid);
 
-    //! updates the ui items laytout
-    void UpdateUIItemsLayout();
+public slots:
 
     //! slot, triggered when an asset is dispatched through the asset view
     void DispatchAsset(const QModelIndex& index);
 
-    //! slot triggered when something has been selected through shader tree view
-    void DispatchTextEditorThroughShaderView(const QModelIndex& index);
+    //! Opens an asset.
+    void OnOpenObject(QString assetPath);
 
-    //! slot triggered when something has been selected through program tree view
-    void DispatchTextEditorThroughProgramView(const QModelIndex& index);
+    void StartNewDialog();
 
-     //! slot triggered when something has been selected through blockscript tree view
-    void DispatchTextEditorThroughBlockScriptView(const QModelIndex& index);
-
-    //! grays/ungrays out shader / program views. Prevents any asset view thread race condition while adding new program / shader assets
-    void SetEnabledProgramShaderViews(bool enabled);
-
-    //! ungrays out shader / program views. Prevents any asset view thread race condition while adding new program / shader assets
-    void EnableProgramShaderViews();
-
-    //! grays out shader / program views. Prevents any asset view thread race condition while adding new program / shader assets
-    void DisableProgramShaderViews();
-
-    //! functions that trigger a new asset
-    void OnNewObject(int index);
-
-
-    //slots on file system changes
 private slots:
+    //slots on file system changes
     void OnFileChanged(const QString& path);
+
+    void OnFilterByCategoryPressed();
+
+    void OnFilterByTypePressed();
 
 private:
 
@@ -105,47 +91,30 @@ private:
     //! slot triggered when app is unloaded
     virtual void OnUIForAppClosed();
 
-    //! Asks through a popup the file name to use to save this asset
-    //! \param the filter to use
-    //! \return a blank string if unsuccessful, otherwise a string
-    QString AskFilePath(const QString& filter);
-
-    //! Saves a new asset from scratch. Triggers the event chain from ui -> render -> ui
-    //! \param the filter to use
-    void SaveAsFile(const QString& filter, const Pegasus::PegasusAssetTypeDesc* desc);
+    //! Resets the state of all the button filters.
+    void ResetAllFilterButtons();
 
     //! ui components
     Ui::AssetLibraryWidget ui;
 
-    //! reference to the program tree data model
-    ProgramTreeModel * mProgramTreeModel;
+    //! procedural dialog for new asset
+    QNewAssetDialog* mNewAssetDialog;
+
 
     //! reference to the shader list selection model (used to determine what shader is selected)
     QFileSystemModel* mAssetTreeFileSystemModel;
 
     //! reference to the asset list selection model
     QItemSelectionModel * mAssetTreeSelectionModel;
-
-    //! reference to the program tree selection model (used to determine what is selected)
-    QItemSelectionModel * mProgramSelectionModel;
-
-    //! reference to the shader list data model
-    SourceCodeListModel * mShaderListModel;
-
-    //! reference to the block script list data model
-    SourceCodeListModel * mBlockScriptListModel;
-
-    //! reference to the shader list selection model (used to determine what shader is selected)
-    QItemSelectionModel * mShaderListSelectionModel;
-
-    //! reference to the shader list selection model (used to determine what shader is selected)
-    QItemSelectionModel * mBlockScriptListSelectionModel;
-
+    
     //! file system watcher to detect any changes outside pegasus on asset files
     QFileSystemWatcher* mFileSystemWatcher;
 
     //! Mappers for all new menus
     QVector<QSignalMapper*> mNewButtonMappers;
+
+    //! Reference to the instance viewer (manipulates the tree widget).
+    InstanceViewer* mInstanceViewer;
 
 };
 

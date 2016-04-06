@@ -200,7 +200,7 @@ bool CodeTextEditorTreeWidget::RecurseCloseSplit()
     return false;
 }
 
-bool CodeTextEditorTreeWidget::RecurseDisplayCode(CodeUserData * code)
+bool CodeTextEditorTreeWidget::RecurseDisplayCode(SourceState * code)
 {
     for (int i = 0; i < mChildrenCount; ++i)
     {
@@ -224,7 +224,7 @@ bool CodeTextEditorTreeWidget::RecurseDisplayCode(CodeUserData * code)
     return false;
 }
 
-CodeTextEditorWidget * CodeTextEditorTreeWidget::FindCodeInEditors(CodeUserData * code)
+CodeTextEditorWidget * CodeTextEditorTreeWidget::FindCodeInEditors(SourceState * code)
 {
     for (int i = 0; i < mChildrenCount; ++i)
     {
@@ -293,7 +293,7 @@ bool CodeTextEditorTreeWidget::PushLeafChild(int i, CodeTextEditorWidget * alloc
     return false;
 }
 
-void CodeTextEditorTreeWidget::DisplayCode(CodeUserData * code, CodeTextEditorWidget * finalEditor)
+void CodeTextEditorTreeWidget::DisplayCode(SourceState * code)
 {
     CodeTextEditorWidget * editor = FindCodeInEditors(code);
     if (editor != nullptr)
@@ -308,21 +308,39 @@ void CodeTextEditorTreeWidget::DisplayCode(CodeUserData * code, CodeTextEditorWi
         {
             //no text editor in focus? no problem. Lets find the next available empty slot
             editor = FindCodeInEditors(nullptr);
+            if (editor == nullptr)
+            { 
+                editor = FindLastLeafEditor();
+            }
+            ED_ASSERT(editor != nullptr);
             if (editor != nullptr)
             {
                 editor->Initialize(code);
                 editor->setFocus();
             }
-            else if (finalEditor != nullptr)
-            {
-                finalEditor->Initialize(code);
-                finalEditor->setFocus();
-            }
         }
     }
 }
 
-void CodeTextEditorTreeWidget::HideCode(CodeUserData * code)
+CodeTextEditorWidget* CodeTextEditorTreeWidget::FindLastLeafEditor()
+{
+    ED_ASSERT(mChildrenCount != 0)
+    if (mChildrenCount > 0)
+    {
+        if (mChildren[mChildrenCount - 1].mIsLeaf)
+        {
+            return mChildren[mChildrenCount - 1].mLeafChild;
+        }
+        else
+        {
+            return mChildren[mChildrenCount - 1].mTreeChild->FindLastLeafEditor();
+        }
+    } 
+
+    return nullptr;
+}
+
+void CodeTextEditorTreeWidget::HideCode(SourceState * code)
 {
     CodeTextEditorWidget * editor = FindCodeInEditors(code);
     if (editor != nullptr)

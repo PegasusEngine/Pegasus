@@ -105,6 +105,10 @@ public:
     //! \return user data of this texture proxy passed around events
     virtual Core::IEventUserData* GetUserData() const override;
 
+    //! If this asset runtime object has a property attached, the return it.
+    //! \return the property grid object of this proxy. If it doesn't exist then it returns null.
+    virtual PropertyGrid::IPropertyGridObjectProxy* GetPropertyGrid();
+
     //------------------------------------------------------------------------------------
 
 private:

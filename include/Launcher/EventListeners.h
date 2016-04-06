@@ -67,6 +67,8 @@ public:
     : LogAssertDispatcher(logHandler, assertHandler) {}
     ~LauncherTextureNodeListener(){}
 
+    virtual void OnInitUserData(Pegasus::Texture::ITextureNodeProxy* proxy, const char* name){}
+    virtual void OnDestroyUserData(Pegasus::Texture::ITextureNodeProxy* proxy, const char* name){}
     virtual void OnEvent(Core::IEventUserData * u, Texture::TextureNodeNotificationEvent& e);
     virtual void OnEvent(Core::IEventUserData * u, Texture::TextureNodeGenerationEvent& e);
     virtual void OnEvent(Core::IEventUserData * u, Texture::TextureNodeOperationEvent& e);
