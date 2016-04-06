@@ -17,6 +17,7 @@
 #include "Pegasus/Shader/ShaderStage.h"
 #include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/Mesh/MeshManager.h"
+#include "Pegasus/Window/Window.h"
 
 
 #if PEGASUS_ENABLE_PROXIES
@@ -82,9 +83,9 @@ void TextureViewComponent::Load(Core::IApplicationContext* appContext)
         "Texture2D targetTexture;"
         "SamplerState S"
         "{"
-	    "    MipFilter = LINEAR;"
-        "    MinFilter = LINEAR;"
-        "    MagFilter = LINEAR;"
+	    "    MipFilter = POINT;"
+        "    MinFilter = POINT;"
+        "    MagFilter = POINT;"
         "};"
         "float4 main(in float2 texCoord : TEXTURE0) : SV_Target"
         "{"
@@ -105,6 +106,16 @@ void TextureViewComponent::Load(Core::IApplicationContext* appContext)
     mQuad = appContext->GetMeshManager()->CreateMeshNode();
     Pegasus::Mesh::MeshGeneratorRef quadGen = appContext->GetMeshManager()->CreateMeshGeneratorNode("QuadGenerator");
     mQuad->SetGeneratorInput(quadGen);
+
+    //default raster / blend states
+    Pegasus::Render::RasterizerConfig rasterConfig;
+    rasterConfig.mCullMode = Pegasus::Render::RasterizerConfig::NONE_CM;
+    rasterConfig.mDepthFunc = Pegasus::Render::RasterizerConfig::NONE_DF;
+    Pegasus::Render::CreateRasterizerState(rasterConfig, mRasterState);
+
+    Pegasus::Render::BlendingConfig blendConfig;
+    blendConfig.mBlendingOperator = Pegasus::Render::BlendingConfig::NONE_BO;
+    Pegasus::Render::CreateBlendingState(blendConfig, mBlendState);
 }
 
 void TextureViewComponent::Update(Core::IApplicationContext* appContext)
@@ -121,6 +132,10 @@ void TextureViewComponent::Render(const Wnd::ComponentContext& context, Wnd::Win
     if (textureViewState->mTargetTexture != nullptr)
     {
         Pegasus::Render::DispatchDefaultRenderTarget();
+        Pegasus::Render::Viewport vp(context.mTargetWindow->GetWidth(), context.mTargetWindow->GetHeight());
+        Pegasus::Render::SetViewport(vp);
+        Pegasus::Render::SetBlendingState(mBlendState);
+        Pegasus::Render::SetRasterizerState(mRasterState);
         Pegasus::Render::SetClearColorValue(Pegasus::Math::ColorRGBA(0.0f, 0.0f, 0.0f, 0.0f));
         Pegasus::Render::Clear(true, false, false);
         Pegasus::Render::SetProgram(mTextureRenderProgram);
@@ -132,6 +147,8 @@ void TextureViewComponent::Render(const Wnd::ComponentContext& context, Wnd::Win
 
 void TextureViewComponent::Unload(Core::IApplicationContext* appContext)
 {
+    Pegasus::Render::DeleteBlendingState(mBlendState);
+    Pegasus::Render::DeleteRasterizerState(mRasterState);
 } 
 
 void TextureViewComponent::OnMouseEvent(Wnd::WindowComponentState* state, IWindowComponent::MouseButton button, bool isDown, float x, float y)

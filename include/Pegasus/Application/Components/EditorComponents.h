@@ -110,6 +110,8 @@ private:
     Pegasus::Shader::ProgramLinkageRef mTextureRenderProgram;
     Pegasus::Mesh::MeshRef mQuad;
     Pegasus::Render::Uniform mTargetTexUniform;
+    Pegasus::Render::RasterizerState mRasterState;
+    Pegasus::Render::BlendingState mBlendState;
 };
 
 }
