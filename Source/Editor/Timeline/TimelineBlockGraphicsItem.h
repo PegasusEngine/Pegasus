@@ -41,7 +41,8 @@ public:
     //! \param lane Index of the timeline lane the block belongs to
     //! \param horizontalScale Horizontal scale of the block, 1.0f for a 1:1 ratio,
     //!                        < 1.0f for a compressed block, > 1.0f for an expanded block
-    TimelineBlockGraphicsItem(Pegasus::Timeline::IBlockProxy * blockProxy,
+    //! \param undoStack Undo stack associated with the item
+    TimelineBlockGraphicsItem(Pegasus::Timeline::IBlockProxy* blockProxy,
                               unsigned int lane,
                               float horizontalScale,
                               QUndoStack* undoStack);
@@ -51,7 +52,7 @@ public:
 
     //! Get the block proxy associated with the item
     //! \return Block proxy associated with the item (!= nullptr)
-    inline Pegasus::Timeline::IBlockProxy * GetBlockProxy() const { return mBlockProxy; }
+    inline Pegasus::Timeline::IBlockProxy* GetBlockProxy() const { return mBlockProxy; }
 
 
     //! Set the timeline lane of the block
@@ -173,9 +174,6 @@ private:
     //! Block proxy associated with the item
     Pegasus::Timeline::IBlockProxy * mBlockProxy;
 
-    //! Reference to its undo stack
-    QUndoStack* mUndoStack;
-
     //! Index of the timeline lane the block belongs to
     unsigned int mLane;
     
@@ -206,6 +204,10 @@ private:
 
     //! Length in pixels (with no zoom applied, but horizontal scale applied)
     float mLength;
+
+
+    //! Undo stack associated with this item
+    QUndoStack* mUndoStack;
 
     //! True if undo commands can be sent
     bool mEnableUndo;

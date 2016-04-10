@@ -91,6 +91,9 @@
       <Extensions>h</Extensions>
       <ParseFiles>true</ParseFiles>
     </Filter>
+    <Filter Include="Source\Graph\Items">
+      <UniqueIdentifier>{d14f72d0-a718-4784-8773-8c3f58df2b51}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Source\Editor\Editor.cpp">
@@ -588,6 +591,15 @@
     <ClCompile Include="..\..\..\Source\Editor\Graph\TextureGraphEditorViewStrategy.cpp">
       <Filter>Source\Graph</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Graph\Items\GraphNodeGraphicsItem.cpp">
+      <Filter>Source\Graph\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_GraphNodeGraphicsItem.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_GraphNodeGraphicsItem.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -781,6 +793,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\AssetLibrary\InstanceViewer.h">
       <Filter>Source\AssetLibrary</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Graph\Items\GraphNodeGraphicsItem.h">
+      <Filter>Source\Graph\Items</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\MessageControllers\TimelineIOMessageController.h">
       <Filter>Source\MessageControllers</Filter>
