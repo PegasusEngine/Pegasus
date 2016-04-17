@@ -10,6 +10,9 @@
 //! \brief	Graphics item representing one node in the graph
 
 #include "Graph/Items/GraphNodeGraphicsItem.h"
+#include "Graph/Items/GraphGraphicsItemDefs.h"
+#include "Graph/Items/GraphNodeInputGraphicsItem.h"
+#include "Graph/Items/GraphNodeOutputGraphicsItem.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
@@ -23,16 +26,19 @@ unsigned int GraphNodeGraphicsItem::sMouseClickID = 0;
 
 //----------------------------------------------------------------------------------------
 
-GraphNodeGraphicsItem::GraphNodeGraphicsItem(QUndoStack* undoStack)
-:   QGraphicsObject(),
-    mUndoStack(undoStack)
+GraphNodeGraphicsItem::GraphNodeGraphicsItem(const QString& title,
+                                             QGraphicsScene* scene,
+                                             QUndoStack* undoStack)
+:   QGraphicsObject()
+,   mTitle(title)
+,   mUndoStack(undoStack)
 {
     // Make the block movable and selectable with the mouse
     setFlag(ItemIsMovable);
     setFlag(ItemIsSelectable);
 
     // Enable the itemChange() callback, to receive notifications about the item movements
-    //setFlag(ItemSendsGeometryChanges);
+    setFlag(ItemSendsGeometryChanges);
 
     // Enable mouse hovering state for the paint() function
     setAcceptHoverEvents(true);
@@ -44,9 +50,42 @@ GraphNodeGraphicsItem::GraphNodeGraphicsItem(QUndoStack* undoStack)
     // in front of the grid at least)
     //******setZValue(TIMELINE_BLOCK_GRAPHICS_ITEM_Z_VALUE);
 
+    /************/
+    // Connectors test
+    QPen pathPen;
+    pathPen.setWidth(GRAPHITEM_CONNECTOR_WIDTH);
+    QColor pathPenColor(170, 198, 198, 255);
+    pathPen.setColor(pathPenColor);
+
+    QPainterPath path;
+    path.moveTo(-200.0f, 200.0f);
+    path.cubicTo(-150.0f, 200.0f, -48.0f, 36.0f, 2.0f, 36.0f);
+    QGraphicsPathItem* pathItem = scene->addPath(path, pathPen, Qt::NoBrush);
+    pathItem->setParentItem(this);
+
+    QPainterPath path2;
+    path2.moveTo(-100.0f, 400.0f);
+    path2.cubicTo(-50.0f, 400.0f, -48.0f, 52.0f, 2.0f, 52.0f);
+    QGraphicsPathItem* pathItem2 = scene->addPath(path2, pathPen, Qt::NoBrush);
+    pathItem2->setParentItem(this);
+
+    QPainterPath path3;
+    path3.moveTo(128.0f, 36.0f);
+    path3.cubicTo(178.0f, 36.0f, 250.0f, 160.0f, 300.0f, 160.0f);
+    QGraphicsPathItem* pathItem3 = scene->addPath(path3, pathPen, Qt::NoBrush);
+    pathItem3->setParentItem(this);
+    /************/
+
+    // Create the output item
+    mOutput.item = new GraphNodeOutputGraphicsItem(scene, undoStack);
+    scene->addItem(mOutput.item);
+    mOutput.item->setParentItem(this);
+    mOutput.item->setPos(GRAPHITEM_NODE_WIDTHF + GRAPHITEM_OUTPUT_OFFSET_XF,
+                           GRAPHITEM_OUTPUT_REFERENCE_YF
+                         + GRAPHITEM_OUTPUT_ROW_MARGIN_YF);
+
     //! Assign a unique ID to the block for merging undo commands when moving the block
     mNodeID = sCurrentNodeID++;
-
 }
 
 //----------------------------------------------------------------------------------------
@@ -57,12 +96,61 @@ GraphNodeGraphicsItem::~GraphNodeGraphicsItem()
 
 //----------------------------------------------------------------------------------------
 
+void GraphNodeGraphicsItem::AddInput(const QString& name)
+{
+    const unsigned int inputIndex = GetNumInputs();
+
+    // Create the new input description
+    Input newInput;
+    newInput.name = name;
+
+    // Create the graphics item for the input connector
+    newInput.item = new GraphNodeInputGraphicsItem(scene(), mUndoStack);
+    scene()->addItem(newInput.item);
+    newInput.item->setParentItem(this);
+    newInput.item->setPos(GRAPHITEM_INPUT_OFFSET_XF,
+                            GRAPHITEM_INPUT_REFERENCE_YF
+                          + inputIndex * GRAPHITEM_INPUT_ROW_HEIGHTF
+                          + GRAPHITEM_INPUT_ROW_MARGIN_YF);
+
+    // Create the text label next to the input connector
+    newInput.labelItem = scene()->addSimpleText(newInput.name);
+    newInput.labelItem->setParentItem(this);
+    newInput.labelItem->setPos(GRAPHITEM_INPUT_LABEL_OFFSET_XF,
+                                 GRAPHITEM_INPUT_REFERENCE_YF
+                               + inputIndex * GRAPHITEM_INPUT_ROW_HEIGHTF
+                               + GRAPHITEM_INPUT_ROW_MARGIN_YF
+                               + GRAPHITEM_INPUT_LABEL_OFFSET_YF);
+
+    mInputs += newInput;
+
+    //! \todo Send signal? Ask for redraw? Avoid at construction time at least
+}
+
+//----------------------------------------------------------------------------------------
+
+const GraphNodeInputGraphicsItem* GraphNodeGraphicsItem::GetInputItem(unsigned int index) const
+{
+    if (index < GetNumInputs())
+    {
+        return mInputs[index].item;
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 QRectF GraphNodeGraphicsItem::boundingRect() const
 {
-    return QRectF(0.0f,
+    return QRectF(-GRAPHITEM_INPUT_HALF_WIDTHF + GRAPHITEM_INPUT_OFFSET_XF,
                   0.0f,
-                  /*****mLength*/50.0f,
-                  /*****TIMELINE_BLOCK_HEIGHT*/100.0f);
+                  GRAPHITEM_INPUT_HALF_WIDTHF - GRAPHITEM_INPUT_OFFSET_XF
+                  + GRAPHITEM_NODE_WIDTHF
+                  + GRAPHITEM_OUTPUT_HALF_WIDTHF + GRAPHITEM_OUTPUT_OFFSET_XF,
+                  GRAPHITEM_NODE_HEADER_HEIGHTF + GetBodyHeight() + GRAPHITEM_NODE_FOOTER_HEIGHTF);
 }
 
 //----------------------------------------------------------------------------------------
@@ -83,37 +171,77 @@ void GraphNodeGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsI
     //}
     //else
     //{
-    //    painter->setPen(Qt::NoPen);
+    painter->setPen(Qt::NoPen);
     //}
 
     // Set the fill color, darker when selected, lighter when hovered by the mouse
     //QColor fillColor = (option->state & QStyle::State_Selected) ? mBaseColor.darker(150) : mBaseColor;
-    QColor fillColor = Qt::blue;
-    if (option->state & QStyle::State_MouseOver)
-    {
-        fillColor = fillColor.lighter(125);
-    }
-    painter->setBrush(fillColor);
+    //QColor fillColor = Qt::blue;
+    //if (option->state & QStyle::State_MouseOver)
+    //{
+    //    fillColor = fillColor.lighter(125);
+    //}
+    //painter->setBrush(fillColor);
+    painter->setBrush(Qt::NoBrush);
 
     // Draw the block
-    painter->drawRect(0.0f,
-                      0.0f,
-                      /**mLength*/50.0f,
-                      /**TIMELINE_BLOCK_HEIGHT*/100.0f);
 
-    //// Draw the label of the block
-    //QFont font = painter->font();
-    //font.setPixelSize(TIMELINE_BLOCK_FONT_HEIGHT);
-    //font.setBold(false);
-    //painter->setFont(font);
-    //painter->setPen(Qt::black);
-    //const float fontHeightScale = 1.25f;                // To handle text below the base line
-    //const float textMargin = (TIMELINE_BLOCK_HEIGHT - fontHeightScale * (float)TIMELINE_BLOCK_FONT_HEIGHT) * 0.5f;
-    //QRectF textRect(textMargin * 2,                     // Added extra space on the left
-    //                textMargin,
-    //                mLength - 3.0f * textMargin,        // Takes the extra space on the left into account
-    //                TIMELINE_BLOCK_HEIGHT - 2.0f * textMargin);
-    //painter->drawText(textRect, mName);
+    static const QPointF sHeaderPixOrigin (0.0f, 0.0f);
+    static const QPointF sBodyTopPixOrigin(0.0f, sHeaderPixOrigin.y()  + GRAPHITEM_NODE_HEADER_HEIGHTF);
+    static const QPointF sBodyPixOrigin   (0.0f, sBodyTopPixOrigin.y() + GRAPHITEM_NODE_BODY_TOP_HEIGHTF);
+
+    /*****/QPixmap nodeHeaderPix(":/GraphEditor/NodeHeader128.png");
+    painter->drawPixmap(sHeaderPixOrigin, nodeHeaderPix);
+
+    /*****/QPixmap nodeBodyTopPix(":/GraphEditor/NodeBodyTop128.png");
+    painter->drawPixmap(sBodyTopPixOrigin, nodeBodyTopPix);
+
+    const float bodyHeight = GetBodyHeight();
+    const QSizeF bodyPixSize(GRAPHITEM_NODE_WIDTHF, bodyHeight - GRAPHITEM_NODE_BODY_TOP_HEIGHTF);
+    const QRectF sBodyPixRect(sBodyPixOrigin, bodyPixSize);
+    /*****/QPixmap nodeBodyPix(":/GraphEditor/NodeBody128.png");
+    painter->drawTiledPixmap(sBodyPixRect, nodeBodyPix);
+
+    const QPointF footerPixOrigin(0.0f, sBodyTopPixOrigin.y() + bodyHeight);
+    /*****/QPixmap nodeFooterPix(":/GraphEditor/NodeFooter128.png");
+    painter->drawPixmap(footerPixOrigin, nodeFooterPix);
+
+    QFont titleFont;
+    titleFont.setPointSize(GRAPHITEM_NODE_TITLE_POINT_SIZE);
+    titleFont.setWeight(/******/QFont::Bold);
+    painter->setFont(titleFont);
+    painter->setPen(/******/Qt::white);
+    QRectF titleRect(GRAPHITEM_NODE_TITLE_MARGIN_XF,
+                     GRAPHITEM_NODE_TITLE_MARGIN_TOPYF,
+                     GRAPHITEM_NODE_WIDTHF
+                     - 2.0f * GRAPHITEM_NODE_TITLE_MARGIN_XF,
+                     GRAPHITEM_NODE_HEADER_HEIGHTF
+                     - GRAPHITEM_NODE_TITLE_MARGIN_TOPYF
+                     - GRAPHITEM_NODE_TITLE_MARGIN_BOTTOMYF);
+    painter->drawText(titleRect, Qt::AlignCenter, mTitle);
+}
+
+//----------------------------------------------------------------------------------------
+
+float GraphNodeGraphicsItem::GetBodyHeight() const
+{
+    // If there is no input, count at least one row for the output connector
+    const unsigned int numInputs = (GetNumInputs() >= 1 ? GetNumInputs() : 1);
+
+    // Desired height without accounting for edge cases
+    const float desiredHeight =   static_cast<float>(numInputs) * GRAPHITEM_INPUT_ROW_HEIGHTF
+                                + GRAPHITEM_INPUT_ROW_MARGIN_YF * 2.0f;
+
+    // If the height is so small we cannot fit the body top image,
+    // set the height to the body top image
+    if (desiredHeight < GRAPHITEM_NODE_BODY_TOP_HEIGHTF)
+    {
+        return GRAPHITEM_NODE_BODY_TOP_HEIGHTF;
+    }
+    else
+    {
+        return desiredHeight;
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -128,6 +256,13 @@ QVariant GraphNodeGraphicsItem::itemChange(GraphicsItemChange change, const QVar
         // In all cases, Pegasus is informed of the update
         case ItemPositionChange:
             {
+                /*****/
+                //QPointF newPos = value.toPointF();
+                //QPointF newGridPos(floorf((newPos.x() + 32.0f) / 64.0f) * 64.0f - 32.0f,
+                //                   floorf((newPos.y() + 32.0f) / 64.0f) * 64.0f - 32.0f);
+                //return newGridPos;
+                /*****/
+
                 if (mEnableUndo)
                 {
                     /*Pegasus::Timeline::ILaneProxy * laneProxy = mBlockProxy->GetLane();

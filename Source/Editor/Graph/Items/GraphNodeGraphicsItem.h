@@ -15,6 +15,9 @@
 #include <QGraphicsItem>
 
 class QUndoStack;
+class GraphNodeInputGraphicsItem;
+class GraphNodeOutputGraphicsItem;
+class QGraphicsSimpleTextItem;
 
 
 //! Graphics item representing one node in the graph
@@ -25,11 +28,37 @@ class GraphNodeGraphicsItem : public QGraphicsObject
 public:
 
     //! Constructor
+    //! \param scene Scene the item will belong to
+    //! \param title Name that appears in the header of the node
     //! \param undoStack Undo stack associated with the item
-    GraphNodeGraphicsItem(QUndoStack* undoStack);
+    //! \warning Use scene for access to the scene, and not scene(),
+    //!          as it is not defined yet in the constructor
+    GraphNodeGraphicsItem(const QString& title,
+                          QGraphicsScene* scene,
+                          QUndoStack* undoStack);
 
     //! Destructor
     virtual ~GraphNodeGraphicsItem();
+
+    //! Add an input to the node
+    //! \param name Name of the input, needs to be short to fit in the node item,
+    //!             starts with an uppercase letter
+    //! \warning The node item has to be added to the scene before this function can be called
+    void AddInput(const QString& name);
+
+    //! Get the current number of inputs of the node item
+    //! \return Current number of inputs
+    inline unsigned int GetNumInputs() const { return static_cast<unsigned int>(mInputs.size()); }
+
+    //! Get one of the input items
+    //! \param Index of the input (0 <= index < GetNumInputs())
+    //! \return Pointer to the input item if the index is valid, nullptr otherwise
+    const GraphNodeInputGraphicsItem* GetInputItem(unsigned int index) const;
+
+
+    //! Get the output item
+    //! \return Pointer to the output item
+    const GraphNodeOutputGraphicsItem* GetOutputItem() const;
 
 
     //! \todo Document those functions
@@ -57,6 +86,11 @@ signals:
     
 protected:
 
+    //! Get the height of the node body depending on the number of inputs
+    //! (from the bottom of the header to the top of the footer)
+    //! \return Height of the node body in pixels
+    float GetBodyHeight() const;
+
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
@@ -66,6 +100,38 @@ protected:
     //------------------------------------------------------------------------------------
     
 private:
+
+    //! Name that appears in the header of the node
+    const QString mTitle;
+
+
+    //! Description of an input
+    struct Input
+    {
+        //! Name of the input, needs to be short to fit in the node item, starts with an uppercase letter
+        QString name;       
+
+        //! Child item representing an input connector
+        GraphNodeInputGraphicsItem* item;
+
+        //! Child item representing the text next to the input connector
+        QGraphicsSimpleTextItem* labelItem; 
+    };
+
+    //! List of inputs used by the node
+    QList<Input> mInputs;
+
+
+    //! Description of an output
+    struct Output
+    {
+        //! Child item representing an output connector
+        GraphNodeOutputGraphicsItem* item;
+    };
+
+    //! Output used by the node
+    Output mOutput;
+
 
     //! Undo stack associated with this item
     QUndoStack* mUndoStack;

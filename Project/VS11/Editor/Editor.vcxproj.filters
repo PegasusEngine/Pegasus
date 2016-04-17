@@ -600,6 +600,24 @@
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_GraphNodeGraphicsItem.cpp">
       <Filter>Generated\Dev-Debug</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Graph\Items\GraphNodeInputGraphicsItem.cpp">
+      <Filter>Source\Graph\Items</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_GraphNodeInputGraphicsItem.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_GraphNodeInputGraphicsItem.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_GraphNodeOutputGraphicsItem.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_GraphNodeOutputGraphicsItem.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Graph\Items\GraphNodeOutputGraphicsItem.cpp">
+      <Filter>Source\Graph\Items</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -799,6 +817,15 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\MessageControllers\TimelineIOMessageController.h">
       <Filter>Source\MessageControllers</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Graph\Items\GraphNodeInputGraphicsItem.h">
+      <Filter>Source\Graph\Items</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Graph\Items\GraphGraphicsItemDefs.h">
+      <Filter>Source\Graph\Items</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Graph\Items\GraphNodeOutputGraphicsItem.h">
+      <Filter>Source\Graph\Items</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

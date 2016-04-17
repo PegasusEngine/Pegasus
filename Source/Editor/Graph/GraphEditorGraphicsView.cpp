@@ -9,7 +9,8 @@
 //! \date	06th June 2014
 //! \brief	Generic graphics view for a graph editor (texture, mesh, etc.)
 
-#include "GraphEditorGraphicsView.h"
+#include "Graph/GraphEditorGraphicsView.h"
+#include "Graph/Items/GraphNodeGraphicsItem.h"
 
 //! \todo Temporary
 #include <QGraphicsRectItem>
@@ -19,7 +20,14 @@
 GraphEditorGraphicsView::GraphEditorGraphicsView(QWidget *parent)
 :   QGraphicsView(parent)
 {
-    //! \todo That entire code is temporary.
+    // Set the background to a tilable grid image
+    //! \todo Use a common picture repository
+    QPixmap backgroundPix(":/GraphEditor/GraphBackground.png");
+    QBrush backgroundBrush(backgroundPix);
+    setBackgroundBrush(backgroundBrush);
+    
+    // Enable antialiasing. It looks really bad otherwise
+    setRenderHint(QPainter::Antialiasing, true);
 
     // Create the scene containing the items to render
     QGraphicsScene *scene = new QGraphicsScene(this);
@@ -32,48 +40,58 @@ GraphEditorGraphicsView::GraphEditorGraphicsView(QWidget *parent)
 
     // Set the graphics view to the created scene
     setScene(scene);
-
-    QPen pen/*(Qt::NoPen)*/;
-    QLinearGradient generatorGradient(0.0f, 0.0f, 0.0f, 32.0f);
-    generatorGradient.setColorAt(0, QColor(255, 0, 0, 255).lighter(160));
-    generatorGradient.setColorAt(1, QColor(255, 0, 0, 255).lighter(160).darker(120));
-    QBrush generatorBrush(generatorGradient);
-    QLinearGradient operatorGradient(0.0f, 32.0f, 0.0f, 64.0f);
-    operatorGradient.setColorAt(0, QColor(100, 230, 230, 255));
-    operatorGradient.setColorAt(1, QColor(100, 230, 230, 255).darker(120));
-    QBrush operatorBrush(operatorGradient);
-    QLinearGradient assetGradient(0.0f, 64.0f, 0.0f, 96.0f);
-    assetGradient.setColorAt(0, QColor(192, 192, 192, 255));
-    assetGradient.setColorAt(1, QColor(192, 192, 192, 255).darker(120));
-    QBrush assetBrush(assetGradient);
-
-    QGraphicsRectItem * rect = scene->addRect(-128.0f, 0.0f, 128.0f, 32.0f, pen, generatorBrush);
-    rect->setFlag(QGraphicsItem::ItemIsMovable, true);
-    QGraphicsSimpleTextItem * text = scene->addSimpleText("Gradient");
-    text->setPos(-88.0f, 8.0f);
-    text->setParentItem(rect);
-
-    QGraphicsRectItem * rect2 = scene->addRect(0.0f, 0.0f, 128.0f, 32.0f, pen, generatorBrush);
-    rect2->setFlag(QGraphicsItem::ItemIsMovable, true);
-    QGraphicsSimpleTextItem * text2 = scene->addSimpleText("Color");
-    text2->setPos(48.0f, 8.0f);
-    text2->setParentItem(rect2);
-
-    QGraphicsRectItem * rect3 = scene->addRect(-128.0f, 32.0f, 256.0f, 32.0f, pen, operatorBrush);
-    rect3->setFlag(QGraphicsItem::ItemIsMovable, true);
-    QGraphicsSimpleTextItem * text3 = scene->addSimpleText("Add");
-    text3->setPos(-16.0f, 40.0f);
-    text3->setParentItem(rect3);
-
-    QGraphicsRectItem * rect4 = scene->addRect(-128.0f, 64.0f, 128.0f, 32.0f, pen, assetBrush);
-    rect4->setFlag(QGraphicsItem::ItemIsMovable, true);
-    QGraphicsSimpleTextItem * text4 = scene->addSimpleText("<Gradient1>");
-    text4->setPos(-104.0f, 72.0f);
-    text4->setParentItem(rect4);
 }
 
 //----------------------------------------------------------------------------------------
 
 GraphEditorGraphicsView::~GraphEditorGraphicsView()
 {
+}
+
+//----------------------------------------------------------------------------------------
+
+void GraphEditorGraphicsView::CreateNode(const QString& title, const QList<QString>& inputList)
+{
+    // Create the node item and add it to the scene
+    GraphNodeGraphicsItem* nodeItem = new GraphNodeGraphicsItem(title, scene(), nullptr);
+    scene()->addItem(nodeItem);
+
+    // Add all declared inputs
+    foreach (const QString& inputName, inputList)
+    {
+        nodeItem->AddInput(inputName);
+    }
+
+    /*******/
+    //! \todo TEMPORARY position calculation
+    static unsigned int sPosIndex = 0;
+         if (sPosIndex == 0) nodeItem->setPos(0.0f, 0.0f);
+    else if (sPosIndex == 1) nodeItem->setPos(0.0f, 64.0f);
+    else if (sPosIndex == 2) nodeItem->setPos(1.5f * 128.0f, 0.0f);
+    else if (sPosIndex == 3) nodeItem->setPos(3.0f * 128.0f, 0.0f);
+    sPosIndex++;
+    /*******/
+}
+
+//----------------------------------------------------------------------------------------
+
+void GraphEditorGraphicsView::CreateConnection(const GraphNodeOutputGraphicsItem* srcOutput,
+                                               const GraphNodeInputGraphicsItem* dstInput)
+{
+    if ((srcOutput != nullptr) && (dstInput != nullptr))
+    {
+        //! \todo 
+        /*****/ED_ASSERTSTR(false, "Not implemented")
+    }
+    else
+    {
+        if (srcOutput == nullptr)
+        {
+            ED_FAILSTR("Trying to create a connection between two nodes, but the source node output is null")
+        }
+        else
+        {
+            ED_FAILSTR("Trying to create a connection between two nodes, but the destination node input is null")
+        }
+    }
 }

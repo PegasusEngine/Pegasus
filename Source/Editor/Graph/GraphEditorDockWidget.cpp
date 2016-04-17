@@ -72,6 +72,23 @@ void GraphEditorDockWidget::SetupUi()
         mNodeFileTabBar, SIGNAL(DiscardObjectChanges(AssetInstanceHandle)),
         this,   SLOT(SignalDiscardObjectChanges(AssetInstanceHandle))
     );
+
+
+    /********************/
+    //! \todo TEMPORARY graph to see what the editor looks like
+    QList<QString> inputList;
+    mGraphViewWidget->CreateNode("Gradient", inputList);
+    mGraphViewWidget->CreateNode("Color", inputList);
+
+    inputList.clear();
+    inputList << "InputA";
+    inputList << "InputB";
+    mGraphViewWidget->CreateNode("Blend", inputList);
+
+    inputList.clear();
+    inputList << "Out";
+    mGraphViewWidget->CreateNode("Output", inputList);
+    /********************/
 }
 
 //----------------------------------------------------------------------------------------
