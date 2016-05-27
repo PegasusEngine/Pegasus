@@ -11,6 +11,7 @@
 
 #include "Graph/GraphEditorGraphicsView.h"
 #include "Graph/Items/GraphNodeGraphicsItem.h"
+#include "Graph/Items/GraphConnectionGraphicsItem.h"
 
 //! \todo Temporary
 #include <QGraphicsRectItem>
@@ -50,10 +51,11 @@ GraphEditorGraphicsView::~GraphEditorGraphicsView()
 
 //----------------------------------------------------------------------------------------
 
-void GraphEditorGraphicsView::CreateNode(const QString& title, const QList<QString>& inputList)
+GraphNodeGraphicsItem* GraphEditorGraphicsView::CreateNode(const QString& title, const QList<QString>& inputList)
 {
     // Create the node item and add it to the scene
-    GraphNodeGraphicsItem* nodeItem = new GraphNodeGraphicsItem(title, scene(), nullptr);
+    //! \todo Add the undo stack
+    GraphNodeGraphicsItem* nodeItem = new GraphNodeGraphicsItem(title, scene(), /***/nullptr);
     scene()->addItem(nodeItem);
 
     // Add all declared inputs
@@ -71,27 +73,35 @@ void GraphEditorGraphicsView::CreateNode(const QString& title, const QList<QStri
     else if (sPosIndex == 3) nodeItem->setPos(3.0f * 128.0f, 0.0f);
     sPosIndex++;
     /*******/
+
+    return nodeItem;
 }
 
 //----------------------------------------------------------------------------------------
 
-void GraphEditorGraphicsView::CreateConnection(const GraphNodeOutputGraphicsItem* srcOutput,
-                                               const GraphNodeInputGraphicsItem* dstInput)
+GraphConnectionGraphicsItem* GraphEditorGraphicsView::CreateConnection(GraphNodeOutputGraphicsItem* srcOutput,
+                                                                       GraphNodeInputGraphicsItem* dstInput)
 {
     if ((srcOutput != nullptr) && (dstInput != nullptr))
     {
-        //! \todo 
-        /*****/ED_ASSERTSTR(false, "Not implemented")
+        // Create the connection item and add it to the scene
+        //! \todo Add the undo stack
+        GraphConnectionGraphicsItem* connectionItem = new GraphConnectionGraphicsItem(srcOutput, dstInput, scene(), /***/nullptr);
+        scene()->addItem(connectionItem);
+
+        return connectionItem;
     }
     else
     {
         if (srcOutput == nullptr)
         {
-            ED_FAILSTR("Trying to create a connection between two nodes, but the source node output is null")
+            ED_FAILSTR("Trying to create a connection between two nodes, but the source node output is null");
         }
         else
         {
-            ED_FAILSTR("Trying to create a connection between two nodes, but the destination node input is null")
+            ED_FAILSTR("Trying to create a connection between two nodes, but the destination node input is null");
         }
     }
+
+    return nullptr;
 }

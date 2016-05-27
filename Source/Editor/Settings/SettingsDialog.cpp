@@ -63,6 +63,8 @@ SettingsDialog::SettingsDialog(QWidget *parent)
     setLayout(mainLayout);
 
     setWindowTitle(tr("Pegasus Editor Preferences"));
+
+    setModal(true);
 }
 
 //----------------------------------------------------------------------------------------

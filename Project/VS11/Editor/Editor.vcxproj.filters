@@ -618,6 +618,15 @@
     <ClCompile Include="..\..\..\Source\Editor\Graph\Items\GraphNodeOutputGraphicsItem.cpp">
       <Filter>Source\Graph\Items</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_GraphConnectionGraphicsItem.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_GraphConnectionGraphicsItem.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Graph\Items\GraphConnectionGraphicsItem.cpp">
+      <Filter>Source\Graph\Items</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -825,6 +834,9 @@
       <Filter>Source\Graph\Items</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Graph\Items\GraphNodeOutputGraphicsItem.h">
+      <Filter>Source\Graph\Items</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Graph\Items\GraphConnectionGraphicsItem.h">
       <Filter>Source\Graph\Items</Filter>
     </CustomBuild>
   </ItemGroup>

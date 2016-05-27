@@ -12,6 +12,8 @@
 #ifndef EDITOR_GRAPHGRAPHICSITEMDEFS_H
 #define EDITOR_GRAPHGRAPHICSITEMDEFS_H
 
+#include <QColor>
+
 
 //! Width of a node in pixels, without the input and output connectors
 static const float GRAPHITEM_NODE_WIDTHF = 128.0f;
@@ -96,9 +98,31 @@ static const float GRAPHITEM_OUTPUT_OFFSET_XF = -4.0f;
 
 //----------------------------------------------------------------------------------------
 
-//! Width in pixels of the splines for connectors
-static const unsigned int GRAPHITEM_CONNECTOR_WIDTH = 4;
+//! Width in pixels of the splines for connections
+static const int GRAPHITEM_CONNECTION_WIDTH = 4;
 
+//! Length in pixels of the control vectors for the splines
+static const float GRAPHITEM_CONNECTION_CONTROL_VECTOR_LENGTH = 50.0f;
+
+//! Color of the connections
+static QColor GRAPHITEM_CONNECTION_COLOR = QColor(170, 198, 198, 255);
+
+//! Margin around the spline in pixels to expand the control box (>= GRAPHITEM_CONNECTION_WIDTH)
+static const float GRAPHITEM_CONNECTION_MARGIN = 5.0f;
+
+//----------------------------------------------------------------------------------------
+
+//! Depth of the nodes in the scene (> 0.0f to be in front of the background)
+static const float GRAPHITEM_NODE_Z_VALUE = 2.0f;
+
+//! Depth of the node inputs in the scene (in front of the nodes)
+static const float GRAPHITEM_INPUT_Z_VALUE = 3.0f;
+
+//! Depth of the node outputs in the scene (in front of the nodes)
+static const float GRAPHITEM_OUTPUT_Z_VALUE = 3.0f;
+
+//! Depth of the node inputs in the scene (behind inputs and outputs)
+static const float GRAPHITEM_CONNECTION_Z_VALUE = 1.0f;
 
 
 #endif // EDITOR_GRAPHGRAPHICSITEMDEFS_H

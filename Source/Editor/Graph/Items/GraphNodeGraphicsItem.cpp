@@ -46,35 +46,8 @@ GraphNodeGraphicsItem::GraphNodeGraphicsItem(const QString& title,
     // Caching performed at paint device level, best quality and lower memory usage
     setCacheMode(DeviceCoordinateCache);
 
-    // Set the depth of the block (positive since it needs to be rendered
-    // in front of the grid at least)
-    //******setZValue(TIMELINE_BLOCK_GRAPHICS_ITEM_Z_VALUE);
-
-    /************/
-    // Connectors test
-    QPen pathPen;
-    pathPen.setWidth(GRAPHITEM_CONNECTOR_WIDTH);
-    QColor pathPenColor(170, 198, 198, 255);
-    pathPen.setColor(pathPenColor);
-
-    QPainterPath path;
-    path.moveTo(-200.0f, 200.0f);
-    path.cubicTo(-150.0f, 200.0f, -48.0f, 36.0f, 2.0f, 36.0f);
-    QGraphicsPathItem* pathItem = scene->addPath(path, pathPen, Qt::NoBrush);
-    pathItem->setParentItem(this);
-
-    QPainterPath path2;
-    path2.moveTo(-100.0f, 400.0f);
-    path2.cubicTo(-50.0f, 400.0f, -48.0f, 52.0f, 2.0f, 52.0f);
-    QGraphicsPathItem* pathItem2 = scene->addPath(path2, pathPen, Qt::NoBrush);
-    pathItem2->setParentItem(this);
-
-    QPainterPath path3;
-    path3.moveTo(128.0f, 36.0f);
-    path3.cubicTo(178.0f, 36.0f, 250.0f, 160.0f, 300.0f, 160.0f);
-    QGraphicsPathItem* pathItem3 = scene->addPath(path3, pathPen, Qt::NoBrush);
-    pathItem3->setParentItem(this);
-    /************/
+    // Set the depth of the node
+    setZValue(GRAPHITEM_NODE_Z_VALUE);
 
     // Create the output item
     mOutput.item = new GraphNodeOutputGraphicsItem(scene, undoStack);
@@ -129,7 +102,7 @@ void GraphNodeGraphicsItem::AddInput(const QString& name)
 
 //----------------------------------------------------------------------------------------
 
-const GraphNodeInputGraphicsItem* GraphNodeGraphicsItem::GetInputItem(unsigned int index) const
+GraphNodeInputGraphicsItem* GraphNodeGraphicsItem::GetInputItem(unsigned int index) const
 {
     if (index < GetNumInputs())
     {

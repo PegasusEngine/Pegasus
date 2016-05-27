@@ -14,6 +14,8 @@
 
 #include <QGraphicsView>
 
+class GraphNodeGraphicsItem;
+class GraphConnectionGraphicsItem;
 class GraphNodeOutputGraphicsItem;
 class GraphNodeInputGraphicsItem;
 
@@ -32,13 +34,15 @@ public:
     //! Create a new node item in the view
     //! \param title Name that appears in the header of the node
     //! \param inputList List of inputs for the new node
-    void CreateNode(const QString& title, const QList<QString>& inputList);
+    //! \return Created node graphics item
+    GraphNodeGraphicsItem* CreateNode(const QString& title, const QList<QString>& inputList);
 
     //! Create a new connection item between a source node output and a destination node input
     //! \param srcOutput Output item of the source node
     //! \param dstInput One of the input items of the destination node
-    void CreateConnection(const GraphNodeOutputGraphicsItem* srcOutput,
-                          const GraphNodeInputGraphicsItem* dstInput);
+    //! \return Created connection graphics item, nullptr in case of error
+    GraphConnectionGraphicsItem* CreateConnection(GraphNodeOutputGraphicsItem* srcOutput,
+                                                  GraphNodeInputGraphicsItem* dstInput);
 };
 
 

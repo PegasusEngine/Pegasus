@@ -11,6 +11,7 @@
 
 #include "Graph/GraphEditorDockWidget.h"
 #include "Graph/GraphEditorGraphicsView.h"
+#include "Graph/Items/GraphNodeGraphicsItem.h"
 #include "Viewport/ViewportWidget.h"
 
 //! \todo Temporary
@@ -77,17 +78,31 @@ void GraphEditorDockWidget::SetupUi()
     /********************/
     //! \todo TEMPORARY graph to see what the editor looks like
     QList<QString> inputList;
-    mGraphViewWidget->CreateNode("Gradient", inputList);
-    mGraphViewWidget->CreateNode("Color", inputList);
+    GraphNodeGraphicsItem* gradientItem = mGraphViewWidget->CreateNode("Gradient", inputList);
+    GraphNodeGraphicsItem* colorItem = mGraphViewWidget->CreateNode("Color", inputList);
 
     inputList.clear();
     inputList << "InputA";
     inputList << "InputB";
-    mGraphViewWidget->CreateNode("Blend", inputList);
+    inputList << "InputC";
+    GraphNodeGraphicsItem* blendItem = mGraphViewWidget->CreateNode("Blend", inputList);
 
     inputList.clear();
     inputList << "Out";
-    mGraphViewWidget->CreateNode("Output", inputList);
+    GraphNodeGraphicsItem* outputItem = mGraphViewWidget->CreateNode("Output", inputList);
+
+    GraphNodeOutputGraphicsItem* gradientOutputItem = gradientItem->GetOutputItem();
+    GraphNodeOutputGraphicsItem* colorOutputItem = colorItem->GetOutputItem();
+    GraphNodeInputGraphicsItem* blendInputItem0 = blendItem->GetInputItem(0);
+    GraphNodeInputGraphicsItem* blendInputItem1 = blendItem->GetInputItem(1);
+    GraphNodeInputGraphicsItem* blendInputItem2 = blendItem->GetInputItem(2);
+    GraphNodeOutputGraphicsItem* blendOutputItem = blendItem->GetOutputItem();
+    GraphNodeInputGraphicsItem* outputInputItem0 = outputItem->GetInputItem(0);
+
+    mGraphViewWidget->CreateConnection(gradientOutputItem, blendInputItem0);
+    mGraphViewWidget->CreateConnection(gradientOutputItem, blendInputItem2);
+    mGraphViewWidget->CreateConnection(colorOutputItem, blendInputItem1);
+    mGraphViewWidget->CreateConnection(blendOutputItem, outputInputItem0);
     /********************/
 }
 

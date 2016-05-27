@@ -13,8 +13,10 @@
 #define EDITOR_GRAPHNODEOUTPUTGRAPHICSITEM_H
 
 #include <QGraphicsItem>
+#include <QList>
 
 class QUndoStack;
+class GraphConnectionGraphicsItem;
 
 
 //! Graphics item representing one node output in the graph
@@ -33,6 +35,10 @@ public:
 
     //! Destructor
     virtual ~GraphNodeOutputGraphicsItem();
+
+    //! Add a connection linked to this output
+    //! \param connectionItem Connection graphics item to add
+    void AddConnection(GraphConnectionGraphicsItem* connectionItem);
 
 
     //! \todo Document those functions
@@ -60,7 +66,7 @@ signals:
     
 protected:
 
-    //QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
@@ -75,6 +81,9 @@ private:
 
     //! True if undo commands can be sent
     bool mEnableUndo;
+
+    //! Connection graphics items linked to this output
+    QList<GraphConnectionGraphicsItem*> mConnectionItems;
 
     //! Node ID counter, assigned uniquely to each block, used for merging undo commands
     //! (so moving a node does not create a new undo command for each pixel moved)

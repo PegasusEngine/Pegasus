@@ -15,6 +15,7 @@
 #include <QGraphicsItem>
 
 class QUndoStack;
+class GraphConnectionGraphicsItem;
 
 
 //! Graphics item representing one node input in the graph
@@ -33,6 +34,10 @@ public:
 
     //! Destructor
     virtual ~GraphNodeInputGraphicsItem();
+
+    //! Set the connection linked to this input
+    //! \param connectionItem Connection graphics item to set, nullptr to remove the connection
+    void SetConnection(GraphConnectionGraphicsItem* connectionItem);
 
 
     //! \todo Document those functions
@@ -60,7 +65,7 @@ signals:
     
 protected:
 
-    //QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
@@ -75,6 +80,9 @@ private:
 
     //! True if undo commands can be sent
     bool mEnableUndo;
+
+    //! Connection graphics item linked to this input (nullptr by default)
+    GraphConnectionGraphicsItem* mConnectionItem;
 
     //! Node ID counter, assigned uniquely to each block, used for merging undo commands
     //! (so moving a node does not create a new undo command for each pixel moved)

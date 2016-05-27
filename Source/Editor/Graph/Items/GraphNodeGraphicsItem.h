@@ -53,12 +53,12 @@ public:
     //! Get one of the input items
     //! \param Index of the input (0 <= index < GetNumInputs())
     //! \return Pointer to the input item if the index is valid, nullptr otherwise
-    const GraphNodeInputGraphicsItem* GetInputItem(unsigned int index) const;
+    GraphNodeInputGraphicsItem* GetInputItem(unsigned int index) const;
 
 
     //! Get the output item
     //! \return Pointer to the output item
-    const GraphNodeOutputGraphicsItem* GetOutputItem() const;
+    inline GraphNodeOutputGraphicsItem* GetOutputItem() const { return mOutput.item; }
 
 
     //! \todo Document those functions
