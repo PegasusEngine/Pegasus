@@ -15,7 +15,13 @@
 #include "Pegasus/Timeline/Shared/TimelineDefs.h"
 #include "Pegasus/Timeline/Proxy/TimelineProxy.h"
 #include "Pegasus/AssetLib/RuntimeAssetObject.h"
+#include "Pegasus/Timeline/TimelineScript.h"
+#include "Pegasus/Timeline/TimelineScriptRunner.h"
 #include "Pegasus/Core/RefCounted.h"
+
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+#include "Pegasus/AssetLib/Category.h"
+#endif
 
 namespace Pegasus {
 
@@ -35,6 +41,10 @@ namespace Pegasus {
     namespace AssetLib {
         class AssetLib;
         class Asset;
+    }
+
+    namespace PropertyGrid{
+        class PropertyGridObject;
     }
 }
 
@@ -147,6 +157,29 @@ public:
     //! \return the context
     Core::IApplicationContext* GetApplicationContext() const { return mAppContext; }
 
+    //! Attempts to open and compile a script. True if success, false otherwise.
+    //! \param script reference to attach
+    void AttachScript(TimelineScriptInOut script);
+
+    //! Attempts to shutdown a script if it has been opened
+    void ShutdownScript();
+
+    //! Returns the script of this block, null if none is attached.
+    //! \return the script object, null if not attached
+    TimelineScriptReturn GetScript();
+
+    //! Returns the script runner of this timeline
+    TimelineScriptRunner* GetScriptRunner()
+    {
+        return &mScriptRunner;
+    }
+
+    //! Returns the property grid
+    PropertyGrid::PropertyGridObject* GetPropertyGrid()
+    {
+        return &mPropertyGrid;
+    }
+
 #if PEGASUS_ENABLE_PROXIES
 
     //! Get the proxy associated with the timeline
@@ -176,6 +209,8 @@ protected:
     //------------------------------------------------------------------------------------
 
 private:
+
+    void InternalClear();
 
     // The timeline cannot be copied
     PG_DISABLE_COPY(Timeline)
@@ -232,8 +267,19 @@ private:
     //! Pegasus time returned by \a GetPegasusTime() when the timeline was started being played
     double mStartPegasusTime;
 
+    //! script helper object
+    TimelineScriptRunner mScriptRunner;
+
     //! True if the start time has been modified to synchronize the beat of the timeline with the music
     bool mSyncedToMusic;
+
+    //! Temporarily hold a property grid to store and interact with dynamic pieces of data.
+    PropertyGrid::PropertyGridObject mPropertyGrid;
+
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+    AssetLib::Category mCategory;
+#endif
+
 };
 
 typedef Pegasus::Core::Ref<Timeline> TimelineRef;

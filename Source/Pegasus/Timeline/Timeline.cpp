@@ -46,6 +46,11 @@ Timeline::Timeline(Alloc::IAllocator * allocator, Core::IApplicationContext* app
 ,   mCurrentBeat(INVALID_BEAT)
 ,   mStartPegasusTime(0.0)
 ,   mSyncedToMusic(false)
+,   mScriptRunner(allocator, appContext, &mPropertyGrid
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+    ,   &mCategory
+#endif
+    )
 #if PEGASUS_ENABLE_PROXIES
 ,   mProxy(this)
 ,   mRequiresStartTimeComputation(false)
@@ -77,16 +82,23 @@ Block * Timeline::CreateBlock(const char * className)
 
 //----------------------------------------------------------------------------------------
 
-void Timeline::Clear()
+void Timeline::InternalClear()
 {
-    // Delete the existing lanes
     for (unsigned int lane = 0; lane < mNumLanes; ++lane)
     {
         PG_DELETE(mAllocator, mLanes[lane]);
     }
     mNumLanes = 0;
+}
 
-    // Create a default lane
+//----------------------------------------------------------------------------------------
+
+void Timeline::Clear()
+{
+    // Delete the existing lanes
+    InternalClear();
+
+    //Create default lane
     CreateLane();
 }
 
@@ -202,6 +214,8 @@ Lane * Timeline::GetLane(unsigned int laneIndex) const
 
 void Timeline::InitializeBlocks()
 {
+    mScriptRunner.InitializeScript();
+
     for (unsigned int l = 0; l < mNumLanes; ++l)
     {
         Lane * lane = GetLane(l);
@@ -294,6 +308,8 @@ void Timeline::Render(Wnd::Window * window)
     {
         unsigned int l;
 
+
+        mScriptRunner.CallUpdate(mCurrentBeat, window);
         // Update the content of each lane from top to bottom
         for (l = 0; l < mNumLanes; ++l)
         {
@@ -305,6 +321,8 @@ void Timeline::Render(Wnd::Window * window)
         }
 
         // Render the content of each lane from top to bottom
+        mScriptRunner.CallRender(mCurrentBeat, window);
+
         //! \todo Add support for render passes
         for (l = 0; l < mNumLanes; ++l)
         {
@@ -371,9 +389,24 @@ void Timeline::SetCurrentBeat(float beat)
 #endif  // PEGASUS_ENABLE_PROXIES
 }
 
+void Timeline::AttachScript(TimelineScriptInOut script)
+{
+    mScriptRunner.AttachScript(script);
+}
+
+void Timeline::ShutdownScript()
+{
+    mScriptRunner.ShutdownScript();
+}
+
+TimelineScriptReturn Timeline::GetScript()
+{
+    return mScriptRunner.GetScript();
+}
 
 bool Timeline::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* asset)
 {
+    InternalClear();
     AssetLib::Object* root = asset->Root();
     if (root == nullptr)
     {
@@ -385,7 +418,7 @@ bool Timeline::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* as
     int pbmId = root->FindInt("beats-per-minute-bin");
     int lanesId = root->FindArray("lanes");
 
-    if (beatsId == -1 || tpbId == -1 || pbmId == -1 || lanesId == -1)
+    if (beatsId == -1 || tpbId == -1 || pbmId == -1)
     {
         return false;
     }
@@ -401,21 +434,53 @@ bool Timeline::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* as
     fie.i = root->GetInt(pbmId);
     SetBeatsPerMinute(fie.f);
 
-    AssetLib::Array* lanesArr = root->GetArray(lanesId);
-    if (lanesArr->GetType() != AssetLib::Array::AS_TYPE_OBJECT)
+    bool createDefaultLane = false;
+
+    if (lanesId != -1)
     {
-        return false;
+        AssetLib::Array* lanesArr = root->GetArray(lanesId);
+        if (lanesArr->GetSize() > 0)
+        {
+            if (lanesArr->GetType() != AssetLib::Array::AS_TYPE_OBJECT)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < lanesArr->GetSize(); ++i)
+            {
+                AssetLib::Object* laneObj = lanesArr->GetElement(i).o;
+                Lane* l = CreateLane();
+                if (!l->OnReadObject(lib, asset, laneObj))
+                {
+                    return false;
+                }
+            } 
+        }
+        else
+        {
+            createDefaultLane = true;
+        }
+    }
+    else
+    {
+        createDefaultLane = true;
     }
 
-    for (int i = 0; i < lanesArr->GetSize(); ++i)
+    if (createDefaultLane)
     {
-        AssetLib::Object* laneObj = lanesArr->GetElement(i).o;
-        Lane* l = CreateLane();
-        if (!l->OnReadObject(lib, asset, laneObj))
+        CreateLane();
+    }
+
+    int assetIndex = root->FindAsset("master-script");
+    if (assetIndex != -1)
+    {
+        AssetLib::RuntimeAssetObjectRef assetScriptFile = root->GetAsset(assetIndex);
+        if (assetScriptFile->GetOwnerAsset()->GetTypeDesc()->mTypeGuid == Pegasus::ASSET_TYPE_BLOCKSCRIPT.mTypeGuid)
         {
-            return false;
+            TimelineScriptRef loadedScript = assetScriptFile;
+            AttachScript(loadedScript);
         }
-    } 
+    }
 
     return true;
 }
@@ -423,6 +488,11 @@ bool Timeline::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* as
 void Timeline::OnWriteAsset(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* asset)
 {
     AssetLib::Object* root = asset->Root();
+
+    if (GetScript() != nullptr)
+    {
+        root->AddAsset("master-script", GetScript());
+    }
     
     root->AddInt("num-beats", mNumBeats);
     

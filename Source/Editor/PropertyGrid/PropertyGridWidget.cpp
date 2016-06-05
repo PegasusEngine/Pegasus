@@ -74,8 +74,9 @@ PropertyGridWidget::PropertyGridWidget(QWidget * parent)
             this, SLOT(s64PropertyChanged(QtProperty *)));
     connect(&mEnumManager, SIGNAL(propertyChanged(QtProperty *)),
             this, SLOT(enumPropertyChanged(QtProperty *)));
-
+    mTitle = new QLabel(this);
     QVBoxLayout * layout = new QVBoxLayout(this);
+    layout->addWidget(mTitle);
     layout->addWidget(mBrowser);
     layout->setMargin(0);
     layout->setSpacing(0);
@@ -333,7 +334,7 @@ void PropertyGridWidget::UpdateProxy(const PropertyGridIOMessageController::Upda
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::SendOpenMessage(Pegasus::PropertyGrid::IPropertyGridObjectProxy * proxy)
+void PropertyGridWidget::SendOpenMessage(Pegasus::PropertyGrid::IPropertyGridObjectProxy * proxy, const QString& title)
 {
     ED_ASSERTSTR(mMessenger != nullptr, "A messenger must be set in order for the property grid widget to work.");
     ED_ASSERT(mProxyHandle == INVALID_PGRID_HANDLE);
@@ -343,6 +344,7 @@ void PropertyGridWidget::SendOpenMessage(Pegasus::PropertyGrid::IPropertyGridObj
     msg.SetMessageType(PropertyGridIOMessageController::Message::OPEN);
     msg.SetPropertyGridObserver(mObserver);
     msg.SetPropertyGrid(proxy);
+    msg.SetTitle(title);
     mMessenger->SendPropertyGridIoMessage(msg);
 }
 
@@ -386,7 +388,7 @@ const Pegasus::PropertyGrid::PropertyRecord * PropertyGridWidget::FindPropertyRe
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::SetCurrentProxy(Pegasus::PropertyGrid::IPropertyGridObjectProxy * proxy)
+void PropertyGridWidget::SetCurrentProxy(Pegasus::PropertyGrid::IPropertyGridObjectProxy * proxy, const QString& title)
 {
     if (proxy != nullptr)
     {
@@ -394,7 +396,7 @@ void PropertyGridWidget::SetCurrentProxy(Pegasus::PropertyGrid::IPropertyGridObj
         {
             SendCloseMessage();
         }
-        SendOpenMessage(proxy);
+        SendOpenMessage(proxy, title);
     }
     else
     {
@@ -420,7 +422,7 @@ void PropertyGridWidget::SetCurrentProxy(AssetInstanceHandle assetHandle)
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::OnInitialized(PropertyGridHandle handle, const Pegasus::PropertyGrid::IPropertyGridObjectProxy * objectProxy)
+void PropertyGridWidget::OnInitialized(PropertyGridHandle handle, QString title, const Pegasus::PropertyGrid::IPropertyGridObjectProxy * objectProxy)
 {
     //! \todo THIS ENTIRE FUNCTION IS THREAD-UNSAFE.
     //!       The function executes in the UI thread, so it should not fetch from the proxy.
@@ -431,6 +433,7 @@ void PropertyGridWidget::OnInitialized(PropertyGridHandle handle, const Pegasus:
         return;
     }
     mIsInitializing = true;
+    mTitle->setText(title);
     if (mProxyHandle == handle)
     {
         return;
@@ -598,6 +601,8 @@ void PropertyGridWidget::Clear()
         return;
     }
 
+    mTitle->setText(tr(""));
+
     for (unsigned int c = 0; c < Pegasus::PropertyGrid::NUM_PROPERTY_CATEGORIES; ++c)
     {
         mProperties[c].clear();
@@ -718,9 +723,9 @@ void PropertyGridWidget::OnUpdated(PropertyGridHandle handle, const QVector<Prop
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::Observer::OnInitialized(PropertyGridHandle handle, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy)
+void PropertyGridWidget::Observer::OnInitialized(PropertyGridHandle handle, QString title, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy)
 {
-    mParent->OnInitialized(handle, objectProxy);
+    mParent->OnInitialized(handle, title, objectProxy);
 }
 
 //----------------------------------------------------------------------------------------

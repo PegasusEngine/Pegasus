@@ -22,6 +22,10 @@ namespace Pegasus {
         class ILaneProxy;
         class IBlockProxy;
     }
+
+    namespace Core {
+        class ISourceCodeProxy;
+    }
 }
 
 namespace Pegasus {
@@ -96,6 +100,17 @@ public:
     //! Get the current beat of the timeline
     //! \return Current beat, measured in ticks, can have fractional part
     virtual float GetCurrentBeat() const = 0;
+
+    //! Gets the script proxy if available, null if not available
+    //! \return the source code proxy, null if it does not exist.
+    virtual Core::ISourceCodeProxy* GetScript() const = 0;
+
+    //! Sets a script proxy as a timeline element.
+    //! \param code - the code to attach
+    virtual void AttachScript(Core::ISourceCodeProxy* code) = 0;
+
+    //! Clears blockscript if there is one.
+    virtual void ClearScript() = 0;
 
     //! Gets a block from a guid. 
     //! \param blockGuid the guid to query this block from

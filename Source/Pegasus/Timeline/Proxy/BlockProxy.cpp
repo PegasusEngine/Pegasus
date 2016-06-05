@@ -29,30 +29,29 @@ PEGASUS_AVOID_EMPTY_FILE_WARNING
 namespace Pegasus {
 namespace Timeline {
 
-BlockPropertyGridObjectDecorator::BlockPropertyGridObjectDecorator(Block* block)
-    :
-    mBlock(block),
-    mDecorated(block->GetPropertyGridProxy())
+PropertyFlusherPropertyGridObjectDecorator::PropertyFlusherPropertyGridObjectDecorator(TimelineScriptRunner* runner, PropertyGrid::IPropertyGridObjectProxy* propertyGrid)
+    : mRunner(runner)
+    , mDecorated(propertyGrid)
 {
 }
 
-BlockPropertyGridObjectDecorator::~BlockPropertyGridObjectDecorator()
+PropertyFlusherPropertyGridObjectDecorator::~PropertyFlusherPropertyGridObjectDecorator()
 {
     PEGASUS_EVENT_DISPATCH(static_cast<Pegasus::PropertyGrid::PropertyGridObjectProxy*>(mDecorated)->GetObject(), Pegasus::PropertyGrid::PropertyGridDestroyed);
 }
 
-void BlockPropertyGridObjectDecorator::WriteObjectProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize, bool sendMessage)
+void PropertyFlusherPropertyGridObjectDecorator::WriteObjectProperty(unsigned int index, const void * inputBuffer, unsigned int inputBufferSize, bool sendMessage)
 {
     mDecorated->WriteObjectProperty(index, inputBuffer, inputBufferSize, sendMessage);
 
     //notify now the block that an internal property has now been updated.
-    mBlock->NotifyInternalObjectPropertyUpdated(index);
+    mRunner->NotifyInternalObjectPropertyUpdated(index);
 }
 
 
 BlockProxy::BlockProxy(Block * block)
 :   mBlock(block),
-    mPropertyGridDecorator(block)
+    mPropertyGridDecorator(&block->GetScriptRunner(), block->GetPropertyGridProxy())
 {
     PG_ASSERTSTR(block != nullptr, "Trying to create a timeline block proxy from an invalid timeline block object");
 }

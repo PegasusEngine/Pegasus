@@ -1,0 +1,11 @@
+extern myProp = 1;
+echo("RERUN");
+
+int Timeline_Update(beat : float)
+{
+	echo(myProp);
+}
+
+int Timeline_Render(beat: float)
+{
+}

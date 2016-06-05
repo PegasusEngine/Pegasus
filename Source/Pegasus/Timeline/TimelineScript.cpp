@@ -143,7 +143,7 @@ void TimelineScript::ClearHeaderList()
     mHeaders.Clear();
 }
 
-void TimelineScript::CallGlobalScopeInit(BsVmState* state, PropertyGrid::PropertyGridObject* obj)
+void TimelineScript::CallGlobalScopeInit(BsVmState* state)
 {
     if (mScriptActive)
     {

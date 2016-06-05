@@ -57,7 +57,8 @@ public:
     //! the content of the property browser will update accordingly.
     //! \param proxy Proxy providing the property grid interface,
     //!              nullptr to remove the displayed property grid
-    void SetCurrentProxy(Pegasus::PropertyGrid::IPropertyGridObjectProxy * proxy);
+    //! \param title of current property grid window
+    void SetCurrentProxy(Pegasus::PropertyGrid::IPropertyGridObjectProxy * proxy, const QString& title);
 
     //! Set the property grid object proxy associated with the asset instance handle.
     //! the content of the property browser will update accordingly.
@@ -89,7 +90,7 @@ private slots:
 
 private:
 
-    void OnInitialized(PropertyGridHandle handle, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy);
+    void OnInitialized(PropertyGridHandle handle, QString title, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy);
     void OnUpdated(PropertyGridHandle handle, const QVector<PropertyGridIOMessageController::UpdateElement>& els);
 
     const Pegasus::PropertyGrid::PropertyRecord * FindPropertyRecord(const QtProperty * property, unsigned int & outIndex) const;
@@ -100,7 +101,7 @@ private:
 
     //! Send an open message to the IO controller
     //! \param proxy Proxy assigned to the widget
-    void SendOpenMessage(Pegasus::PropertyGrid::IPropertyGridObjectProxy * proxy);
+    void SendOpenMessage(Pegasus::PropertyGrid::IPropertyGridObjectProxy * proxy, const QString& title);
 
     //! Send a close message to the IO controller if there is a handle defined
     void SendCloseMessage();
@@ -137,7 +138,7 @@ private:
         explicit Observer(PropertyGridWidget * parent) : mParent(parent) {}
         virtual ~Observer() {}
 
-        virtual void OnInitialized(PropertyGridHandle handle, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy);
+        virtual void OnInitialized(PropertyGridHandle handle, QString title, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy);
 
         virtual void OnUpdated(PropertyGridHandle handle, const QVector<PropertyGridIOMessageController::UpdateElement>& els);
 
@@ -171,6 +172,9 @@ private:
     PropertyGridColor8RGBAEditorFactory mColor8RGBAEditorFactory;
     PropertyGridString64EditorFactory mString64EditorFactory;
     PropertyGridEnumEditorFactory mEnumEditorFactory;
+
+    // title of the property grid widget
+    QLabel* mTitle;
 
     //bool used to prevent massive onPropertyChanged messages when the block is initializing
     bool mIsInitializing;

@@ -25,6 +25,7 @@ namespace Pegasus {
 
     namespace Timeline {
         class Block;
+        class TimelineScriptRunner;
     }
 }
 
@@ -33,14 +34,14 @@ namespace Timeline {
 
 //! Property grid object proxy decorator, to intercept events from a property grid.
 //! This is so we prevent making WriteObjectProperty a virtual function.
-class BlockPropertyGridObjectDecorator : public PropertyGrid::IPropertyGridObjectProxy
+class PropertyFlusherPropertyGridObjectDecorator : public PropertyGrid::IPropertyGridObjectProxy
 {
 public:
     //Constructor
-    BlockPropertyGridObjectDecorator(Block* block);
+    PropertyFlusherPropertyGridObjectDecorator(TimelineScriptRunner* runner, PropertyGrid::IPropertyGridObjectProxy* propertyGrid);
 
     //Destructor
-    virtual ~BlockPropertyGridObjectDecorator();
+    virtual ~PropertyFlusherPropertyGridObjectDecorator();
 
     //@{
     //! Functions act exactly the same for the decorated property grid object
@@ -69,7 +70,7 @@ public:
 
 private:
     PropertyGrid::IPropertyGridObjectProxy* mDecorated;
-    Block* mBlock;
+    TimelineScriptRunner* mRunner;
 
 };
 
@@ -148,7 +149,7 @@ private:
 
     //! Proxied timeline block object
     Block * const mBlock;
-    BlockPropertyGridObjectDecorator mPropertyGridDecorator;
+    PropertyFlusherPropertyGridObjectDecorator mPropertyGridDecorator;
 };
 
 

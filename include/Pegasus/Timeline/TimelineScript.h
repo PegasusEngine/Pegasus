@@ -20,7 +20,6 @@
 #include "Pegasus/Core/Io.h"
 #include "Pegasus/Core/Ref.h"
 #include "Pegasus/AssetLib/RuntimeAssetObject.h"
-#include "Pegasus/PropertyGrid/PropertyGridObject.h"
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/Timeline/Proxy/TimelineScriptProxy.h"
@@ -81,7 +80,7 @@ public:
     //! Calls the script once, to call anything executing in the global scope
     //! \param state the state containing definitions
     //! \param propertyGrid the property grid that will fill in the state / or synchronize the state of this block
-    void CallGlobalScopeInit(BlockScript::BsVmState* state, PropertyGrid::PropertyGridObject* propertyGrid);
+    void CallGlobalScopeInit(BlockScript::BsVmState* state);
 
     //! Calls the destruction of a script
     void CallGlobalScopeDestroy(BlockScript::BsVmState* state);

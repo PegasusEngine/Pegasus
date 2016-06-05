@@ -133,5 +133,6 @@
             type : Lane,
             name : "",
             Blocks : []
-        }]
+        }],
+    master-script : {@Timeline/masterScript.bs}
 }

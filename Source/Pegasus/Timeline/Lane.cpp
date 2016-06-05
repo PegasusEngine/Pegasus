@@ -308,10 +308,7 @@ void Lane::InitializeBlocks()
             mTimeline->GetApplicationContext()->GetAssetLib()->BeginCategory(block->GetAssetCategory());
 #endif
             block->Initialize();
-            if (block->HasScript())
-            {
-                block->InitializeScript(); 
-            }
+
 #if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
             mTimeline->GetApplicationContext()->GetAssetLib()->EndCategory();            
 #endif

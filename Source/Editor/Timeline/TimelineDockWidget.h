@@ -33,7 +33,9 @@ namespace Pegasus {
 }
 
 class QUndoStack;
+class QMenu;
 class Editor;
+class QAction;
 
 //! Dock widget containing the timeline graphics view
 class TimelineDockWidget : public PegasusDockWidget 
@@ -134,13 +136,19 @@ public slots:
     void OnFocusBlock(unsigned blockGuid);
 
     //When the master timeline button is pressed. request load of a blockscript asset.
-    void RequestMasterTimelineLoad();
+    void RequestMasterTimelineScriptLoad();
 
     //When clicked removes the master timeline script.
-    void RemoveMasterTimelineScript();
+    void EditMasterScript();
+
+    //When clicked removes the master timeline script.
+    void RemoveMasterScript();
     
     //! Called when the timeline requires to be repainted.
     void OnRepaintTimeline();
+
+    //! Called when there is an active timeline script
+    void OnShowActiveTimelineButton(bool shouldShowActiveScript, QString script);
 
 
 private slots:
@@ -216,6 +224,9 @@ private:
     //! Undo stack pointer
     QUndoStack * mUndoStack;
 
+    //! Menu button for script open / removal
+    QMenu* mMasterScriptMenu;
+
     //! True if undo commands can be sent
     bool mEnableUndo;
 
@@ -228,6 +239,13 @@ private:
 
     //! Handle of the asset instance
     AssetInstanceHandle mTimelineHandle;
+
+    //! path of master loaded script
+    QString mLoadedScript;
+
+    //! actions for removing / editing master script
+    QAction* mEditMasterScriptButton;
+    QAction* mRemoveMasterScriptButton;
 
 };
 

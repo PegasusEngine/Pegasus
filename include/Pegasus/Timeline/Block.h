@@ -15,12 +15,11 @@
 #include "Pegasus/Timeline/Shared/BlockDefs.h"
 #include "Pegasus/Timeline/Shared/TimelineDefs.h"
 #include "Pegasus/Timeline/Proxy/BlockProxy.h"
-#include "Pegasus/Timeline/TimelineScript.h"
+#include "Pegasus/Timeline/TimelineScriptRunner.h"
 #include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/AssetLib/RuntimeAssetObject.h"
 #include "Pegasus/AssetLib/Category.h"
 #include "Pegasus/PropertyGrid/PropertyGridObject.h"
-#include "Pegasus/Timeline/BlockRuntimeScriptListener.h"
 
 namespace Pegasus {
     namespace AssetLib {
@@ -38,11 +37,6 @@ namespace Pegasus {
 
     namespace Wnd {
         class Window;
-    }
-
-    namespace BlockScript {
-        class BlockScript;
-        class BlockScriptManager;
     }
 }
 
@@ -76,32 +70,6 @@ public:
     //! \return Lane the block belongs to, nullptr when the block is not associated with a lane yet
     inline Lane * GetLane() const { return mLane; }
 
-    //! Attempts to open and compile a script. True if success, false otherwise.
-    //! \param script reference to attach
-    void AttachScript(TimelineScriptInOut script);
-
-    //! Attempts to shutdown a script if it has been opened
-    void ShutdownScript();
-
-    //! Returns the script of this block, null if none is attached.
-    //! \return the script object, null if not attached
-    TimelineScriptReturn GetScript() { return mTimelineScript; }
-
-    //! Attempts to initialize a script
-    void InitializeScript();
-
-    //! Uninitializes a script
-    void UninitializeScript();
-
-    //! \return true if a script is present, false otherwise
-    bool HasScript() const { return mTimelineScript != nullptr; }
-
-    //! Call when we want to make a potential update to the current state.
-    //! We will flush the internal state of the object property in the current index to the 
-    //! Corresponding internal block script virtual machine state.
-    //! \param index - index to update
-    void NotifyInternalObjectPropertyUpdated(unsigned int index);
-
 #if PEGASUS_ENABLE_PROXIES
 
     //! Get the proxy associated with the block
@@ -119,19 +87,33 @@ public:
     //! Deallocate the data used by the block
     virtual void Shutdown();
 
+    //! Attempts to open and compile a script. True if success, false otherwise.
+    //! \param script reference to attach
+    void AttachScript(TimelineScriptInOut script);
+
+    //! Removes a script
+    void ShutdownScript();
+
+    //! Returns the script of this block, null if none is attached.
+    //! \return the script object, null if not attached
+    TimelineScriptReturn GetScript();
+
     //! Update the content of the block, called once at the beginning of each rendered frame
     //! \param beat Current beat relative to the beginning of the block,
     //!             can have fractional part (>= 0.0f)
     //! \param window Window in which the lane is being rendered
     //! \todo That dependency is ugly. Find a way to remove that dependency
-    virtual void Update(float beat, Wnd::Window * window) { UpdateViaScript(beat, window); };
+    virtual void Update(float beat, Wnd::Window * window);
 
     //! Render the content of the block
     //! \param beat Current beat relative to the beginning of the block,
     //!             can have fractional part (>= 0.0f)
     //! \param window Window in which the lane is being rendered
     //! \todo That dependency is ugly. Find a way to remove that dependency
-    virtual void Render(float beat, Wnd::Window * window) { RenderViaScript(beat, window); };
+    virtual void Render(float beat, Wnd::Window * window);
+
+    //! Gets the internal script runner of this block.
+    TimelineScriptRunner& GetScriptRunner() { return mScriptRunner; }
 
     //------------------------------------------------------------------------------------
 #if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
@@ -140,23 +122,6 @@ public:
 #endif
 
 protected:
-
-    //! Update the content of the block by calling the script callback within.
-    //! \note if the script does not implement an "int Timeline_Update(beat : float)" function, 
-    //!        then update becomes a NOP for this block.
-    //! \param beat Current beat relative to the beginning of the block,
-    //!             can have fractional part (>= 0.0f)
-    //! \param window Window in which the lane is being rendered
-    void UpdateViaScript(float beat, Wnd::Window * window);
-
-    //! Render the content of the block by calling the script callback within
-    //! \note if the script does not implement a "int Timeline_Render(beat : float)" function, 
-    //!        then render becomes a NOP for this block.
-    //! \param beat the beat
-    //! \param window Window in which the lane is being rendered
-    void RenderViaScript(float beat, Wnd::Window * window);
-
-    // Accessors to the global manager for the derived classes
 
     //! Get the asset manager
     inline AssetLib::AssetLib* GetAssetLib() const { return mAppContext->GetAssetLib(); }
@@ -207,6 +172,7 @@ protected:
     //! \return true if successful, false otherwise
     void OnWriteObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* owner, AssetLib::Object* root);
 
+
     //------------------------------------------------------------------------------------
 
 private:
@@ -247,35 +213,11 @@ private:
     //! Duration of the block, measured in ticks (> 0)
     Duration mDuration;
 
-    //! script helper object
-    TimelineScriptRef mTimelineScript;
-
-    //! virtual machine state
-    BlockScript::BsVmState* mVmState;
-
-    //! object listener that manipulates a block state on any script runtime events
-    BlockRuntimeScriptListener mRuntimeListener;
-
-    //! version of the script, used for global variable initialization
-    int mScriptVersion;
-
     //! Lane the block belongs to, nullptr when the block is not associated with a lane yet
     Lane * mLane;
 
-#if PEGASUS_ENABLE_PROXIES
-
-    class BlockScriptObserver : public ITimelineObserver
-    {
-    public:
-        BlockScriptObserver(Block * block) : mBlock(block) {}
-        virtual ~BlockScriptObserver(){}
-        virtual void OnCompilationBegin(); 
-        virtual void OnCompilationEnd(); 
-    private:
-        Block* mBlock;
-    } mBlockScriptObserver;
-
-#endif  // PEGASUS_ENABLE_PROXIES
+    //! Coordinator for loading / running of scripts
+    TimelineScriptRunner mScriptRunner;
 
 #if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
     AssetLib::Category mCategory; 

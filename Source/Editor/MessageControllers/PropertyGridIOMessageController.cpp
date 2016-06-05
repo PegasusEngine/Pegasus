@@ -13,6 +13,8 @@
 #include "Pegasus/Preprocessor.h"
 #include "MessageControllers/PropertyGridIOMessageController.h"
 #include "Pegasus/PropertyGrid/Shared/IPropertyGridObjectProxy.h"
+#include "Pegasus/AssetLib/Shared/IAssetProxy.h"
+#include "Pegasus/PegasusAssetTypes.h"
 
 
 PropertyGridIOMessageController::PropertyGridIOMessageController(Pegasus::App::IApplicationProxy* app, AssetIOMessageController* assetMessageController)
@@ -39,7 +41,7 @@ void PropertyGridIOMessageController::OnRenderThreadProcessMessage(const Propert
         OnRenderThreadClose(m.GetPropertyGridObserver(), m.GetPropertyGridHandle());
         break;
     case PropertyGridIOMessageController::Message::OPEN:
-        OnRenderThreadOpen(m.GetPropertyGridObserver(), m.GetPropertyGrid());
+        OnRenderThreadOpen(m.GetPropertyGridObserver(), m.GetTitle(), m.GetPropertyGrid());
         break;
     case PropertyGridIOMessageController::Message::OPEN_FROM_ASSET_HANDLE:
         OnRenderThreadOpenFromAsset(m.GetPropertyGridObserver(), m.GetAssetHandle());
@@ -118,7 +120,7 @@ void PropertyGridIOMessageController::OnRenderThreadUpdate(PropertyGridObserver*
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridIOMessageController::OnRenderThreadOpen(PropertyGridObserver* sender, Pegasus::PropertyGrid::IPropertyGridObjectProxy* proxy)
+void PropertyGridIOMessageController::OnRenderThreadOpen(PropertyGridObserver* sender, QString title, Pegasus::PropertyGrid::IPropertyGridObjectProxy* proxy)
 {
     ED_ASSERT(proxy != nullptr);
     
@@ -134,7 +136,8 @@ void PropertyGridIOMessageController::OnRenderThreadOpen(PropertyGridObserver* s
         PropertyGridIOMessageController::ProxyUpdateCache::iterator it = mUpdateCache.insert(handle, newUpdateCache);
         proxy->SetEventListener(this);
         ED_ASSERT(proxy->GetUserData() == nullptr);
-        proxy->SetUserData(new PropertyUserData(proxy, &(it.value()), handle));
+        //TODO: setup title
+        proxy->SetUserData(new PropertyUserData(proxy, &(it.value()), title, handle));
     }
     else
     {
@@ -146,7 +149,7 @@ void PropertyGridIOMessageController::OnRenderThreadOpen(PropertyGridObserver* s
     QSet<PropertyGridObserver*>& observerList = mObservers.find(handle).value();
     observerList.insert(sender);
 
-    emit sender->OnInitializedSignal(handle, proxy);
+    emit sender->OnInitializedSignal(handle, title, proxy);
 
     //now notify the observers to update the uis looking at this object
     UpdateObserverInternal(sender, handle, proxy);
@@ -160,10 +163,17 @@ void PropertyGridIOMessageController::OnRenderThreadOpenFromAsset(PropertyGridOb
     Pegasus::AssetLib::IRuntimeAssetObjectProxy* runtimeObject = mAssetMessageController->FindInstance(handle);
     if (runtimeObject != nullptr)
     {
+        QString title;
+        Pegasus::AssetLib::IAssetProxy* assetProxy = runtimeObject->GetOwnerAsset();
+        if (assetProxy != nullptr && assetProxy->GetTypeDesc() != nullptr)
+        {
+            title = assetProxy->GetTypeDesc()->mTypeName;
+        }
+
         Pegasus::PropertyGrid::IPropertyGridObjectProxy* propertyGrid = runtimeObject->GetPropertyGrid();
         if (propertyGrid != nullptr)
         {
-            OnRenderThreadOpen(sender, propertyGrid);
+            OnRenderThreadOpen(sender, title, propertyGrid);
         }
     }
 }
@@ -316,12 +326,13 @@ void PropertyGridIOMessageController::FlushAllPendingUpdates()
             HandleToProxyMap::iterator h2pit = mActiveProperties.find(h);
             if (h2pit == mActiveProperties.end()) continue;
             Pegasus::PropertyGrid::IPropertyGridObjectProxy* proxy = h2pit.value();
+            QString title = static_cast<PropertyUserData*>(proxy->GetUserData())->GetTitle();
             if (it != mObservers.end())
             {
                 foreach(PropertyGridObserver* obs, it.value())
                 {
                     emit (obs->OnShutdownSignal(h));
-                    emit(obs->OnInitializedSignal(h, proxy));
+                    emit(obs->OnInitializedSignal(h, title, proxy));
                     UpdateObserverInternal(obs, h, proxy);
                 }
             }
@@ -382,8 +393,8 @@ void PropertyGridIOMessageController::OnEvent(Pegasus::Core::IEventUserData* use
 
 PropertyGridObserver::PropertyGridObserver()
 {
-    connect(this, SIGNAL(OnInitializedSignal(PropertyGridHandle, const Pegasus::PropertyGrid::IPropertyGridObjectProxy*)),
-            this, SLOT(OnInitializedSlot(PropertyGridHandle, const Pegasus::PropertyGrid::IPropertyGridObjectProxy*)),
+    connect(this, SIGNAL(OnInitializedSignal(PropertyGridHandle, QString, const Pegasus::PropertyGrid::IPropertyGridObjectProxy*)),
+            this, SLOT(OnInitializedSlot(PropertyGridHandle, QString, const Pegasus::PropertyGrid::IPropertyGridObjectProxy*)),
             Qt::QueuedConnection);
 
     connect(this, SIGNAL(OnUpdatedSignal(PropertyGridHandle, QVector<PropertyGridIOMessageController::UpdateElement>)),

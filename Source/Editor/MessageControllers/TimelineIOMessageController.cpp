@@ -39,6 +39,14 @@ QVariant TimelineIOMessageController::TranslateToQt(AssetInstanceHandle handle, 
 {
     Pegasus::Timeline::ITimelineProxy* timelineProxy = static_cast<Pegasus::Timeline::ITimelineProxy*>(object);
 
+    QString loadedScript = tr("");
+    bool scriptIsLoaded = timelineProxy->GetScript() != nullptr;
+    if (scriptIsLoaded)
+    {
+        loadedScript = tr(timelineProxy->GetScript()->GetOwnerAsset()->GetPath());
+    }
+    emit(NotifyMasterScriptState(scriptIsLoaded, loadedScript));
+
     //HACK: just pass the timeline proxy as a qvariant for now.
     return qVariantFromValue((void*)timelineProxy);
     
@@ -119,11 +127,35 @@ void TimelineIOMessageController::OnClearBlockscript(unsigned blockGuid)
 void TimelineIOMessageController::OnSetMasterBlockscript(const QString& str)
 {
     ITimelineProxy* timeline = mApp->GetTimelineManagerProxy()->GetCurrentTimeline();
+    IAssetLibProxy* assetLib = mApp->GetAssetLibProxy();
+    QByteArray ba = str.toLocal8Bit();
+    bool success = false;
+    const char* asciiPath = ba.constData();
+    bool isNew = false;
+    IRuntimeAssetObjectProxy* object = assetLib->LoadObject(asciiPath, &isNew);
+    if (object != nullptr)
+    {                                                                                                         
+        if(object->GetOwnerAsset()->GetTypeDesc()->mTypeGuid == Pegasus::ASSET_TYPE_BLOCKSCRIPT.mTypeGuid)    
+        {                                                                                                     
+            ISourceCodeProxy* sourceProxy = static_cast<ISourceCodeProxy*>(object);                           
+            timeline->AttachScript(sourceProxy);                                                                 
+            success = true;
+        }                                                                                                     
+        //no need to keep a reference of this in the asset lib.                                               
+        if (isNew)                                                                                            
+        {                                                                                                     
+            assetLib->CloseObject(object);                                                                    
+        }                                                                                                     
+    }                                                                                                         
+    emit(NotifyMasterScriptState(success, str));
+        
 }
 
 void TimelineIOMessageController::OnClearMasterBlockscript()
 {
     ITimelineProxy* timeline = mApp->GetTimelineManagerProxy()->GetCurrentTimeline();
+    timeline->ClearScript();
+    emit(NotifyMasterScriptState(false, tr("")));
 }
 
 

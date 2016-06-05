@@ -141,6 +141,8 @@ ApplicationInterface::ApplicationInterface(Application * application)
     connect(mTimelineMessageController, SIGNAL(NotifyRepaintTimeline()),
             this, SLOT(RedrawAllViewports()),
 			Qt::QueuedConnection);
+    connect(mTimelineMessageController, SIGNAL(NotifyMasterScriptState(bool, QString)),
+            timelineDockWidget, SLOT(OnShowActiveTimelineButton(bool, QString)));
 
 
     //<------  Source IO Controller -------->//

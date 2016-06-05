@@ -26,6 +26,7 @@
 
 #include <QListWidgetItem>
 #include <QUndoStack>
+#include <QMenu>
 
 
 TimelineDockWidget::TimelineDockWidget(QWidget *parent, Editor* editor)
@@ -96,9 +97,19 @@ void TimelineDockWidget::SetupUi()
             this, SLOT(OnPropertyUpdated(QtProperty*)));
 
     connect(ui.loadMasterScriptButton, SIGNAL(clicked()),
-            this, SLOT(RequestMasterTimelineLoad()));
-    connect(ui.removeScriptButton, SIGNAL(clicked()),
-            this, SLOT(RemoveMasterTimelineScript()));
+            this, SLOT(RequestMasterTimelineScriptLoad()));
+
+    mMasterScriptMenu = new QMenu();
+    mEditMasterScriptButton = mMasterScriptMenu->addAction(tr("Edit master script."));
+    mRemoveMasterScriptButton = mMasterScriptMenu->addAction(tr("Remove master script."));
+    ui.removeScriptButton->setMenu(mMasterScriptMenu);
+    ui.removeScriptButton->setPopupMode(QToolButton::InstantPopup);
+
+    connect(mEditMasterScriptButton, SIGNAL(triggered()),
+            this, SLOT(EditMasterScript()));
+
+    connect(mRemoveMasterScriptButton, SIGNAL(triggered()),
+            this, SLOT(RemoveMasterScript()));
 }
 
 //----------------------------------------------------------------------------------------
@@ -187,21 +198,37 @@ void TimelineDockWidget::OnFocusBlock(unsigned blockGuid)
 
 //----------------------------------------------------------------------------------------
 
-void TimelineDockWidget::RequestMasterTimelineLoad()
+void TimelineDockWidget::RequestMasterTimelineScriptLoad()
 {
     if (mApplication != nullptr)
     {
-        QString timelineToLoad = AskForTimelineScript();
-        //TODO: send a message to the timeline to load a script
+        QString requestedScript = AskForTimelineScript();
+        TimelineIOMessageController::Message msg(TimelineIOMessageController::Message::SET_MASTER_BLOCKSCRIPT);
+        msg.SetString(requestedScript);
+        SendTimelineIoMessage(msg);
     }
 }
 
 //----------------------------------------------------------------------------------------
 
-void TimelineDockWidget::RemoveMasterTimelineScript()
+void TimelineDockWidget::RemoveMasterScript()
 {
     if (mApplication != nullptr)
     {
+        TimelineIOMessageController::Message msg(TimelineIOMessageController::Message::CLEAR_MASTER_BLOCKSCRIPT);
+        SendTimelineIoMessage(msg);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::EditMasterScript()
+{
+    if (mApplication != nullptr && mLoadedScript != "")
+    {
+        AssetIOMessageController::Message msg(AssetIOMessageController::Message::OPEN_ASSET);
+        msg.SetString(mLoadedScript);
+        SendAssetIoMessage(msg);
     }
 }
 
@@ -375,6 +402,7 @@ void TimelineDockWidget::OnOpenObject(AssetInstanceHandle object, const QString&
         ui.graphicsView->setEnabled(true);
 
         ui.propertyGridWidget->SetApplicationProxy(GetEditor()->GetApplicationManager().GetApplication()->GetApplicationProxy());
+        ui.propertyGridWidget->SetCurrentProxy(mTimelineHandle);
 
         ui.graphicsView->SetTimeline(mTimeline);
 
@@ -391,17 +419,27 @@ void TimelineDockWidget::OnOpenObject(AssetInstanceHandle object, const QString&
 
 //----------------------------------------------------------------------------------------
 
+void TimelineDockWidget::OnShowActiveTimelineButton(bool shouldShowActiveScript, QString script)
+{
+    ui.removeScriptButton->setEnabled(shouldShowActiveScript);
+    mLoadedScript = script; //cache the name so we can reopen it easily
+}
+
+//----------------------------------------------------------------------------------------
+
 void TimelineDockWidget::OnUIForAppClosed()
 {
     mApplication = nullptr;
     ui.addButton->setEnabled(false);
     ui.removeButton->setEnabled(false);
     ui.deleteButton->setEnabled(false);
+    ui.removeScriptButton->setEnabled(false);
 
     ui.playButton->setEnabled(false);
     ui.playButton->setChecked(false);
 
     ui.propertyGridWidget->SetApplicationProxy(nullptr);
+    ui.propertyGridWidget->SetCurrentProxy(nullptr, QString(""));
 
     // Clear the content of the timeline graphics view and set the default timeline
     ui.graphicsView->Initialize();
@@ -497,19 +535,20 @@ void TimelineDockWidget::SetTimeLabel(unsigned int minutes, unsigned int seconds
 
 void TimelineDockWidget::OnBlockSelected(Pegasus::Timeline::IBlockProxy * blockProxy)
 {
-    ui.propertyGridWidget->SetCurrentProxy(blockProxy->GetPropertyGridProxy());
+    QString title = blockProxy->GetClassName();
+    ui.propertyGridWidget->SetCurrentProxy(blockProxy->GetPropertyGridProxy(), title);
 }
 
 //----------------------------------------------------------------------------------------
 
 void TimelineDockWidget::OnMultiBlocksSelected()
 {
-    ui.propertyGridWidget->SetCurrentProxy(nullptr);
+    ui.propertyGridWidget->SetCurrentProxy(nullptr, QString());
 }
 
 //----------------------------------------------------------------------------------------
 
 void TimelineDockWidget::OnBlocksDeselected()
 {
-    ui.propertyGridWidget->SetCurrentProxy(nullptr);
+    ui.propertyGridWidget->SetCurrentProxy(mTimelineHandle);
 }

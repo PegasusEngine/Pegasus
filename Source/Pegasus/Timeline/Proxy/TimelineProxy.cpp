@@ -18,6 +18,11 @@
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Timeline/Lane.h"
 #include "Pegasus/Utils/String.h"
+#include "Pegasus/Core/Shared/ISourceCodeProxy.h"
+#include "Pegasus/AssetLib/Shared/IAssetProxy.h"
+#include "Pegasus/PegasusAssetTypes.h"
+
+
 
 using namespace Pegasus;
 
@@ -26,7 +31,8 @@ namespace Timeline {
 
 
 TimelineProxy::TimelineProxy(Timeline * timeline)
-    :   mTimeline(timeline)
+    :   mTimeline(timeline),
+        mPropertyGridDecorator(timeline->GetScriptRunner(), timeline->GetPropertyGrid()->GetPropertyGridProxy())
 {
     PG_ASSERTSTR(timeline != nullptr, "Trying to create a timeline proxy from an invalid timeline object");
 }
@@ -179,6 +185,39 @@ IBlockProxy* TimelineProxy::FindBlockByGuid(unsigned blockGuid)
     }
     
     return nullptr;
+}
+
+//----------------------------------------------------------------------------------------
+
+Core::ISourceCodeProxy* TimelineProxy::GetScript() const
+{
+    TimelineScript* helper = mTimeline->GetScript();
+    if (helper != nullptr)
+    {
+        return static_cast<Core::ISourceCodeProxy*>(helper->GetProxy());
+    }
+
+    return nullptr;
+} 
+
+//----------------------------------------------------------------------------------------
+
+void TimelineProxy::ClearScript()
+{
+    mTimeline->ShutdownScript();
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineProxy::AttachScript(Core::ISourceCodeProxy* code)
+{
+    PG_ASSERT(code->GetOwnerAsset()->GetTypeDesc()->mTypeGuid == ASSET_TYPE_BLOCKSCRIPT.mTypeGuid);
+    if (code->GetOwnerAsset()->GetTypeDesc()->mTypeGuid == ASSET_TYPE_BLOCKSCRIPT.mTypeGuid)
+    {
+        Pegasus::Timeline::TimelineScriptProxy* scriptProxy = static_cast<Pegasus::Timeline::TimelineScriptProxy*>(code);
+        Pegasus::Timeline::TimelineScriptRef timelineScript = static_cast<Pegasus::Timeline::TimelineScript*>(scriptProxy->GetObject());
+        mTimeline->AttachScript(timelineScript); 
+    }
 }
 
 }   // namespace Timeline

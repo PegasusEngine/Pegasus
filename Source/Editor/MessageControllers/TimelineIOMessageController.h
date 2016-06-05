@@ -87,6 +87,8 @@ public:
     void OnRenderThreadProcessMessage(const Message& msg);
 
 signals:
+    void NotifyMasterScriptState(bool isScriptLoaded, QString path);
+
     void NotifyRepaintTimeline();
 
 private:

@@ -17,6 +17,7 @@
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 #include "Pegasus/Timeline/TimelineSource.h"
 #include "Pegasus/Utils/Vector.h"
+#include "Pegasus/Timeline/Proxy/BlockProxy.h"
 
 namespace Pegasus {
     namespace Timeline {
@@ -115,13 +116,20 @@ public:
     //! \return the block proxy if found, nullptr otherwise
     virtual IBlockProxy* FindBlockByGuid(unsigned blockGuid);
 
+    //! Gets the script proxy if available, null if not available
+    //! \return the source code proxy, null if it does not exist.
+    virtual Core::ISourceCodeProxy* GetScript() const;
+
+    //! Sets a script proxy as a timeline element.
+    //! \param code - the code to attach
+    virtual void AttachScript(Core::ISourceCodeProxy* code);
+
+    //! Clears blockscript if there is one.
+    virtual void ClearScript();
+
     //! If this asset runtime object has a property attached, the return it.
     //! \return the property grid object of this proxy. If it doesn't exist then it returns null.
-    virtual PropertyGrid::IPropertyGridObjectProxy* GetPropertyGrid()
-    {
-        //timeline does not have a property grid associated with it yet.
-        return nullptr;
-    }
+    virtual PropertyGrid::IPropertyGridObjectProxy* GetPropertyGrid() { return &mPropertyGridDecorator; }
    
 protected:
     virtual AssetLib::IRuntimeAssetObjectProxy* GetDecoratedObject() const;
@@ -129,6 +137,10 @@ protected:
 private:
     //! Proxied timeline object
     Timeline * const mTimeline;
+
+    // property grid decorator to pass arguments from editor to runtime for live editing
+    PropertyFlusherPropertyGridObjectDecorator mPropertyGridDecorator;
+
 };
 
 

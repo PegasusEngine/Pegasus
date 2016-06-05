@@ -49,7 +49,7 @@ void geomTestFun_callback(Pegasus::BlockScript::FunCallbackContext& context)
 void GeometryTestBlock::Initialize()
 {
 
-    if (HasScript())
+    if (GetScriptRunner().HasScript())
     {
         Pegasus::Timeline::TimelineScriptRef timelineScript = GetScript();
         Pegasus::BlockScript::BlockScript* bs = timelineScript->GetBlockScript();
@@ -168,14 +168,14 @@ void GeometryTestBlock::Shutdown()
 
 void GeometryTestBlock::Update(float beat, Pegasus::Wnd::Window * window)
 {
-    UpdateViaScript(beat, window);
+    Block::Update(beat, window);
 }
 
 //----------------------------------------------------------------------------------------
 
 void GeometryTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
 {
-    RenderViaScript(beat, window);
+    Block::Render(beat, window);
     //figure out aspect ratio
     const unsigned int viewportWidth = window->GetWidth();
     const unsigned int viewportHeight = window->GetHeight();
