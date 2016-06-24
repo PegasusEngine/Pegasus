@@ -14,6 +14,7 @@
 #include "Pegasus/Utils/Vector.h"
 #include "Pegasus/BlockScript/FunCallback.h"
 #include "Pegasus/PropertyGrid/PropertyGridObject.h"
+#include "Pegasus/Render/Render.h"
 
 namespace Pegasus
 {
@@ -46,13 +47,6 @@ namespace Mesh {
     //class MeshOperator; TODO: implement any mesh operator! yet to be done :)
 }
 
-namespace Render {
-    struct Buffer;
-    struct RasterizerState;
-    struct BlendingState;
-    struct RenderTarget;
-}
-
 namespace Application {    
     class RenderCollectionImpl;
     class RenderCollection;
@@ -60,6 +54,78 @@ namespace Application {
 
 namespace Application
 {
+
+#if PEGASUS_ENABLE_SCRIPT_PERMISSIONS 
+    //! permission for script functions
+    enum ScriptPermissions
+    {
+        PERMISSIONS_RENDER_GLOBAL_CACHE_READ  = (0x1 << 0x0), //!< allows reading the global cache
+        PERMISSIONS_RENDER_GLOBAL_CACHE_WRITE = (0x1 << 0x1), //!< allows writting to the global cache
+        PERMISSIONS_RENDER_API_CALL           = (0x1 << 0x2), //!< allows calls to the render API
+        PERMISSIONS_ASSET_LOAD                = (0x1 << 0x3), //!< allows calls to the asset loading
+        PERMISSIONS_DEFAULT                   = (0x0)         //!< default permissions
+    };
+#endif
+
+    //! the global cache
+    class GlobalCacheImpl;
+
+    class GlobalCache
+    {
+    public:
+        //! the listener callback to listen into cache events
+        class IListener
+        {
+        public:
+            virtual void OnGlobalCacheDirty() = 0;
+        };
+
+        //! Constructor
+        explicit GlobalCache(Alloc::IAllocator* allocator);
+
+        //! Destructor
+        ~GlobalCache();
+
+        //! string hash containing cache name
+        typedef unsigned int CacheName;
+        
+        //! Registers an element of type T into global cache.
+        //! If the name already exists, it will get replaced.
+        //! \param cache - the cache that contains all resource elements
+        //! \param name - the hashed name of the resource to register
+        //! \param resource - the resource to store
+        template<typename T>
+        static void Register(GlobalCache* cache, GlobalCache::CacheName name, T* resource); 
+
+        //! Find an element of type T in global cache.
+        //! \param cache container
+        //! \param name the hashed name of the resource to find
+        //! \return If not found, returns null.
+        template<typename T>
+        static T* Find(GlobalCache* cache, GlobalCache::CacheName name);
+
+        //! Adds listener to global cache
+        //! \param listener the listener to register
+        void AddListener(IListener* listener);
+
+        //! Removes listener from global cache
+        //! \param listener to remove the listener object registered.
+        void RemoveListener(IListener* listener);
+
+        //! Gets internal opaque implementation
+        GlobalCacheImpl* GetImpl() { return mImpl; }
+
+        //! Clears all internal resources and notifies listeners that it changed
+        void Clear();
+
+    private:
+
+        void NotifyListeners();
+
+        GlobalCacheImpl* mImpl;
+        Utils::Vector<IListener*> mListeners;
+        Alloc::IAllocator* mAlloc;
+    };
 
     //! Implementation of a render collection factory
     class RenderCollectionFactory 
@@ -72,6 +138,7 @@ namespace Application
         };
 
         //! Constructor
+        //!\param context - the application context
         //!\param alloc the allocator to use
         RenderCollectionFactory(Core::IApplicationContext* context, Alloc::IAllocator* alloc);
 
@@ -82,6 +149,7 @@ namespace Application
         void RegisterProperties(const BlockScript::ClassTypeDesc& classDesc);
 
         //! Creates a render collection
+        //!\param globalCache - the global cache that will hold resources shared across timeline blocks
         RenderCollection* CreateRenderCollection();
 
         //! Deletes a render collection
@@ -102,7 +170,8 @@ namespace Application
     };
 
     //! container of all the node types. Used by timeline blocks.
-    class RenderCollection {
+    class RenderCollection 
+    {
 
         friend RenderCollectionFactory;
 
@@ -113,155 +182,41 @@ namespace Application
 
         //! Destructor
         ~RenderCollection();
-        
 
-        //! Adds a reference to a program
-        //!\param the program pointer
-        //!\return gets the handle of this program
-        CollectionHandle AddProgram(Shader::ProgramLinkage* program);
+        //! \param R the resource type we want to get
+        //! \param collection the collection containing the resources
+        //! \param r the resource to store
+        //! \return  the handle of the resource
+        template<typename R>
+        static CollectionHandle AddResource(RenderCollection* collection, R* r);
 
-        //! Gets a pointer to a program
-        //!\param the handle to such program
-        //!\return the program pointer. This will assert if requesting an invalid id
-        Shader::ProgramLinkage* GetProgram(CollectionHandle id);
+        //! \param R the resource type we want to get
+        //! \param collection the collection containing the resources
+        //! \return the count of these resource types
+        template<typename R>
+        static int ResourceCount(RenderCollection* collection);
 
-        //!\return the count to the number of programs traced
-        int GetProgramCount() const;
+        //! \param R the resource type we want to get
+        //! \param handle the handle of such resource
+        //! \return a pointer to the resource. If the resource is not found, null is returned
+        template<typename R>
+        static R* GetResource(RenderCollection* collection, CollectionHandle handle);
 
-        //! Adds a reference to a shader 
-        //!\param the shader pointer
-        //!\return gets the handle of this shader 
-        CollectionHandle AddShader(Shader::ShaderStage* shader);
+        //! \param R the typename R
+        //! \param the name of the resource stored in the global cache
+        template<typename R>
+        static CollectionHandle ResolveResourceFromGlobalCache(RenderCollection* collection, GlobalCache::CacheName name);
 
-        //! Gets a pointer to a shader 
-        //!\param the handle to such shader
-        //!\return the shader pointer. This will assert if requesting an invalid id
-        Shader::ShaderStage* GetShader(CollectionHandle id);
+        //! \param R the resource type we want to get
+        //! \param collection which we want to extract the object
+        //! \param handle the handle of such resource
+        //! \param propertyId property offset which we want to use to access
+        //! \return a pointer to the accessor.
+        template<typename R>
+        static const PropertyGrid::PropertyAccessor* GetPropAccessor(RenderCollection* collection, CollectionHandle objectHandle, int propertyId);
 
-        //!\return the count to the number of programs traced
-        int GetShaderCount() const;
-
-        //! Adds a reference to a texture
-        //!\param the texture pointer
-        //!\return gets the handle of this texture
-        CollectionHandle AddTexture(Texture::Texture* texture);
-
-        //! Gets a pointer to a  texture
-        //!\param the handle to such texture 
-        //!\return the texture pointer. This will assert if requesting an invalid id
-        Texture::Texture* GetTexture(CollectionHandle id);
-
-        //!\return the count to the number of textures traced
-        int GetTextureCount() const;
-
-        //! Adds a reference to a texture generator
-        //!\param the texture generator pointer
-        //!\return gets the handle of this texture generator
-        CollectionHandle AddTextureGenerator(Texture::TextureGenerator* texGen);
-
-        //! Gets a pointer to a texGenerator
-        //!\param the handle to such  textureGenerator
-        //!\return the texture generator pointer. This will assert if requesting an invalid id
-        Texture::TextureGenerator* GetTextureGenerator(CollectionHandle id);
-
-        //! \param objectHandle the handle of the object containing the property
-        //! \param propertyId the cached id of the property
-        const PropertyGrid::PropertyAccessor* GetTextureGeneratorAccessor(CollectionHandle objectHandle, int propertyId);
-
-        //!\return  tex generator count
-        int GetTextureGeneratorCount() const;
-
-        //! Adds a reference to a texture operator
-        //!\param the texture operator pointer
-        //!\return gets the handle of this texture operator 
-        CollectionHandle AddTextureOperator(Texture::TextureOperator* texOp);
-
-        //! Gets a pointer to a texOperator
-        //!\param the handle to such  textureOperator
-        //!\return the texture Operator pointer. This will assert if requesting an invalid id
-        Texture::TextureOperator* GetTextureOperator(CollectionHandle id);
-
-        //! \param objectHandle the handle of the object containing the property
-        //! \param propertyId the cached id of the property
-        const PropertyGrid::PropertyAccessor* GetTextureOperatorAccessor(CollectionHandle objectHandle, int propertyId);
-
-        //! \return the count to the texture operator
-        int GetTextureOperatorCount() const;
-
-        //! Adds a reference to a mesh
-        //!\param the  mesh  pointer
-        //!\return gets the handle of this mesh
-        CollectionHandle AddMesh(Mesh::Mesh* mesh);
-
-        //! Gets a pointer to a mesh
-        //!\param the handle to such mesh
-        //!\return the texture mesh pointer. This will assert if requesting an invalid id
-        Mesh::Mesh* GetMesh(CollectionHandle id);
-
-        //! \return the count to the number of meshes
-        int GetMeshCount() const;
-
-        //! Adds a reference to a mesh generator
-        //!\param the  mesh pointer
-        //!\return gets the handle of this mesh generator
-        CollectionHandle AddMeshGenerator(Mesh::MeshGenerator* mesh);
-
-        //! \param id handle to mesh generator
-        //! \return the mesh generator reference
-        Mesh::MeshGenerator* GetMeshGenerator(CollectionHandle id);
-
-        //! \param objectHandle the handle of the object containing the property
-        //! \param propertyId the cached id of the property
-        const PropertyGrid::PropertyAccessor* GetMeshGeneratorAccessor(CollectionHandle objectHandle, int propertyId);
-
-        //! the total count of mesh generators    
-        int GetMeshGeneratorCount();
-
-        //! adds a buffer reference. Buffers are structs in render so the struct passed gets copied internally
-        //! \param reference to the buffer created
-        CollectionHandle AddBuffer(const Render::Buffer& buffer);
-
-        //! \returns the buffer pointer stored internally, null if invalid
-        Render::Buffer* GetBuffer(CollectionHandle id);
-
-        //! the total count of buffers
-        int GetBufferCount();
-
-        //! adds a reference
-        // \param the target reference
-        CollectionHandle AddRenderTarget(const Render::RenderTarget& target);
-
-        //! gets a reference from an id
-        //! \param id
-        //! \return the reference
-        Render::RenderTarget* GetRenderTarget(CollectionHandle id);
-
-        //! \return the count of this list
-        int GetRenderTargetCount() const;
-
-        //! adds a reference
-        // \param the target reference
-        CollectionHandle AddRasterizerState(const Render::RasterizerState& state);
-
-        //! gets a reference from an id
-        //! \param id
-        //! \return the reference
-        Render::RasterizerState* GetRasterizerState(CollectionHandle id);
-
-        //! \return the count of this list
-        int GetRasterizerStateCount() const;
-
-        //! adds a reference
-        // \param the target reference
-        CollectionHandle AddBlendingState(const Render::BlendingState& state);
-
-        //! gets a reference from an id
-        //! \param id
-        //! \return the reference
-        Render::BlendingState* GetBlendingState(CollectionHandle id);
-
-        //! \return the count of this list
-        int GetBlendingStateCount() const;
+        //! updates all the internal resources.
+        void UpdateAll();
 
         //! \return the application context pointer
         Core::IApplicationContext* GetAppContext() { return mContext; }
@@ -277,12 +232,45 @@ namespace Application
         //! \return the current window
         Wnd::Window* GetWindow() const { return mCurrentWindow; }
 
+        //! Gets the factory
+        RenderCollectionFactory* GetFactory() { return mFactory; }
+
+        //! Gets the internal impl
+        RenderCollectionImpl* GetImpl() { return mImpl; }
+
+        //! Gets the internal allocator
+        Alloc::IAllocator* GetAlloc() { return mAlloc; }
+
+        //! Get reference to the global cache
+        GlobalCache* GetGlobalCache() { return mGlobalCache; }
+
+        //! Set the global cache.
+        void SetGlobalCache(Application::GlobalCache* globalCache) { mGlobalCache = globalCache; }
+
+        //! Sets this render collection to be using the global cache, registers a listener internally.
+        //! note\ do not call if a global cache and a cache listener have not been set
+        void SignalIsUsingGlobalCache();
+
+        //! Sets the global cache listener
+        void SetGlobalCacheListener(GlobalCache::IListener* listener) { mGlobalCacheListener = listener; }
+
+#if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
+        //! Sets the permissions for this context call.
+        void SetPermissions(ScriptPermissions permissions) { mPermissions = static_cast<unsigned>(permissions); }
+
+        //! Gets the permissions for this context call.
+        int GetPermissions() const { return mPermissions; }
+#endif
+
     private:
 
         //! Constructor
         //!\param alloc the allocator to use internally
         //!\param context pointer to the application context
         RenderCollection(Alloc::IAllocator* alloc, RenderCollectionFactory* factory, Core::IApplicationContext* context);
+
+        //! Removes any cache listener if there is one active
+        void InternalRemoveGlobalCache();
 
         //! internal memory allocator
         Alloc::IAllocator* mAlloc;
@@ -298,6 +286,22 @@ namespace Application
 
         //! The current window
         Wnd::Window* mCurrentWindow;
+
+        //! Reference to the global cache
+        Application::GlobalCache* mGlobalCache;
+
+        //! the global cache listener, for whant the global cache updates itself
+        GlobalCache::IListener* mGlobalCacheListener;
+
+#if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
+        //! Script permissions
+        unsigned mPermissions;
+#endif
+
+        //! boolean that tags if this render collection is sensitive to cache changes or is pointing to a resource that 
+        //! has been resolved in the global cache
+        bool mIsUsingGlobalCache;
+        
     };
 }
 

@@ -70,7 +70,7 @@ void WorldComponent::Load(Core::IApplicationContext* appContext)
     Pegasus::Render::RasterizerConfig rasterConfig;
     rasterConfig.mDepthFunc = Pegasus::Render::RasterizerConfig::NONE_DF;
     rasterConfig.mCullMode = Pegasus::Render::RasterizerConfig::CW_CM;
-    Pegasus::Render::CreateRasterizerState(rasterConfig, mDefaultRasterState);
+    mDefaultRasterState = Pegasus::Render::CreateRasterizerState(rasterConfig);
     appContext->GetTimelineManager()->InitializeAllTimelines();
 }
 
@@ -125,5 +125,4 @@ void WorldComponent::Unload(Core::IApplicationContext* appContext)
 {
     PG_ASSERTSTR(appContext->GetTimelineManager() != nullptr, "Invalid timeline for the application");
     appContext->GetTimelineManager()->ShutdownAllTimelines();
-    Pegasus::Render::DeleteRasterizerState(mDefaultRasterState);
 }

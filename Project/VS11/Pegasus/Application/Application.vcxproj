@@ -52,6 +52,9 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Application\RenderCollection.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Application\ScriptRenderApi.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\Source\Pegasus\Application\RenderResources.inl" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B1C699DC-4BA7-4FE8-AB4C-6A449084B094}</ProjectGuid>
     <RootNamespace>Window</RootNamespace>

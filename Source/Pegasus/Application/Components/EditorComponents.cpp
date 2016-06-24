@@ -111,11 +111,11 @@ void TextureViewComponent::Load(Core::IApplicationContext* appContext)
     Pegasus::Render::RasterizerConfig rasterConfig;
     rasterConfig.mCullMode = Pegasus::Render::RasterizerConfig::NONE_CM;
     rasterConfig.mDepthFunc = Pegasus::Render::RasterizerConfig::NONE_DF;
-    Pegasus::Render::CreateRasterizerState(rasterConfig, mRasterState);
+    mRasterState =  Pegasus::Render::CreateRasterizerState(rasterConfig);
 
     Pegasus::Render::BlendingConfig blendConfig;
     blendConfig.mBlendingOperator = Pegasus::Render::BlendingConfig::NONE_BO;
-    Pegasus::Render::CreateBlendingState(blendConfig, mBlendState);
+    mBlendState = Pegasus::Render::CreateBlendingState(blendConfig);
 }
 
 void TextureViewComponent::Update(Core::IApplicationContext* appContext)
@@ -147,8 +147,6 @@ void TextureViewComponent::Render(const Wnd::ComponentContext& context, Wnd::Win
 
 void TextureViewComponent::Unload(Core::IApplicationContext* appContext)
 {
-    Pegasus::Render::DeleteBlendingState(mBlendState);
-    Pegasus::Render::DeleteRasterizerState(mRasterState);
 } 
 
 void TextureViewComponent::OnMouseEvent(Wnd::WindowComponentState* state, IWindowComponent::MouseButton button, bool isDown, float x, float y)

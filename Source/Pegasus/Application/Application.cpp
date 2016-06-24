@@ -41,6 +41,7 @@
 #include "Pegasus/Mesh/Mesh.h"
 #include "Pegasus/Render/Render.h"
 #include "Pegasus/Render/RenderContext.h"
+#include "Pegasus/RenderSystems/System/RenderSystemManager.h"
 #include "Pegasus/PegasusAssetTypes.h"
 
 #include <stdio.h>
@@ -118,10 +119,12 @@ Application::Application(const ApplicationConfig& config)
     shaderFactory->RegisterShaderManager(mShaderManager);
 
     // Register the entire render api
-    Pegasus::Application::RegisterRenderApi(mBlockScriptManager->GetRuntimeLib(), this);
+    mRenderApiScript = mBlockScriptManager->CreateBlockLib("RenderApi");
+    Pegasus::Application::RegisterRenderApi(mRenderApiScript, this);
 
 #if PEGASUS_ENABLE_BS_REFLECTION_INFO
     mBsReflectionInfo->RegisterLib(mBlockScriptManager->GetRuntimeLib());
+    mBsReflectionInfo->RegisterLib(mRenderApiScript);
 #endif
     
 	// Create the owner of all global cameras
@@ -150,6 +153,7 @@ Application::Application(const ApplicationConfig& config)
     // Register the Pegasus-side timeline blocks
     TimelineBlock::RegisterBaseBlocks(GetTimelineManager());
 
+    mRenderSystemManager = PG_NEW(coreAlloc, -1, "Render System Manager", Alloc::PG_MEM_PERM) RenderSystems::RenderSystemManager(coreAlloc, this);
 }
 
 //----------------------------------------------------------------------------------------
@@ -168,6 +172,7 @@ Application::~Application()
     
 
     // Delete the texture and node managers    
+    PG_DELETE(coreAlloc, mRenderSystemManager);
     PG_DELETE(nodeAlloc, mAssetLib);    
     PG_DELETE(timelineAlloc, mTimelineManager);
     PG_DELETE(nodeAlloc, mMeshManager);
@@ -175,6 +180,8 @@ Application::~Application()
     PG_DELETE(nodeAlloc, mShaderManager);
     PG_DELETE(nodeAlloc, mNodeManager);
     PG_DELETE(nodeAlloc, mRenderCollectionFactory);
+
+    mBlockScriptManager->DestroyBlockLib(mRenderApiScript);
     PG_DELETE(timelineAlloc, mBlockScriptManager);
 #if PEGASUS_ENABLE_BS_REFLECTION_INFO
     PG_DELETE(nodeAlloc, mBsReflectionInfo);
@@ -201,6 +208,20 @@ Application::~Application()
 
 void Application::Load()
 {
+    mRenderSystemManager->AddInternalSystems();
+    RegisterCustomRenderSystems(mRenderSystemManager);
+    mRenderSystemManager->InitializeSystems(this);
+    if (mRenderSystemManager->GetLibs().GetSize() != 0)
+    {
+        mTimelineManager->RegisterExtraLibs(mRenderSystemManager->GetLibs());
+    }
+    mTimelineManager->GetLibs().PushEmpty() = mRenderApiScript;
+#if PEGASUS_ENABLE_BS_REFLECTION_INFO
+    for (unsigned int i = 0; i < mRenderSystemManager->GetLibs().GetSize(); ++i)
+    {
+        mBsReflectionInfo->RegisterLib(mRenderSystemManager->GetLibs()[i]);
+    }
+#endif
     //Load must be called / should be able to be called, before attaching any window.
     //Therefore, any timeline item doing a load time render pass to anything but the default render target
     // (since hte default render target belongs to the window) should be allowed,by creating a temporary context.
@@ -245,6 +266,9 @@ void Application::Unload()
 
     // Custom shutdown, done in the user application
     ShutdownApp();
+
+    // Destroy all the systems this app might have
+    mRenderSystemManager->DestroyAllSystems();
 }
 
 //----------------------------------------------------------------------------------------

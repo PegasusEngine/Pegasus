@@ -47,10 +47,15 @@ namespace Pegasus {
 
     namespace BlockScript {
         class BlockScriptManager;
+        class BlockLib;
     }
 
     namespace AssetLib {
         class AssetLib;
+    }
+
+    namespace RenderSystems {
+        class RenderSystemManager;
     }
 
     namespace Camera {
@@ -131,6 +136,8 @@ protected:
     //! Custom shutdown, done in the user application
     virtual void ShutdownApp() = 0;
 
+    //! Optional custom function, utilize this function to register any custom system that the app might want to register
+    virtual void RegisterCustomRenderSystems(RenderSystems::RenderSystemManager* renderSystemManager) {}
 
 private:
     // No copies allowed
@@ -149,10 +156,14 @@ private:
     AssetLib::AssetLib*                             mAssetLib;               //!< AssetLib manager
     Camera::CameraManager*                          mCameraManager;          //!< Camera manager
     PropertyGrid::PropertyGridManager*              mPropertyGridManager;    //!< Property grid manager
+    RenderSystems::RenderSystemManager*             mRenderSystemManager;    //!< Render systems manager. Used to instantiate custom systems.
     Pegasus::Application::RenderCollectionFactory*  mRenderCollectionFactory;//!< Render collection factory
 #if PEGASUS_ENABLE_BS_REFLECTION_INFO
     App::AppBsReflectionInfo*                       mBsReflectionInfo; //!< Reflection and library info of blockscript libraries registered
 #endif
+
+    //Reference to the render api blockscript lib
+    BlockScript::BlockLib* mRenderApiScript;
 };
 
 }   // namespace App

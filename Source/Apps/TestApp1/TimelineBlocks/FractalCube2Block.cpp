@@ -37,10 +37,10 @@ void FractalCube2Block::Initialize()
     blendingConfig.mBlendingOperator = Pegasus::Render::BlendingConfig::ADD_BO;
     blendingConfig.mSource = Pegasus::Render::BlendingConfig::ONE_M;
     blendingConfig.mDest = Pegasus::Render::BlendingConfig::ONE_M;
-    Pegasus::Render::CreateBlendingState(blendingConfig, mCurrentBlockBlendingState);
+    mCurrentBlockBlendingState = Pegasus::Render::CreateBlendingState(blendingConfig);
 
     blendingConfig.mBlendingOperator = Pegasus::Render::BlendingConfig::NONE_BO;
-    Pegasus::Render::CreateBlendingState(blendingConfig, mDefaultBlendingState);
+    mDefaultBlendingState = Pegasus::Render::CreateBlendingState(blendingConfig);
 
     //Set up quad
     Pegasus::Mesh::MeshGeneratorRef quadGenerator = GetMeshManager()->CreateMeshGeneratorNode("QuadGenerator");
@@ -51,7 +51,7 @@ void FractalCube2Block::Initialize()
     mProgram = GetShaderManager()->LoadProgram("Programs/FractalCube2.pas");
 
     // Set up shader uniforms
-    Pegasus::Render::CreateUniformBuffer(sizeof(mState), mStateBuffer);
+    mStateBuffer = Pegasus::Render::CreateUniformBuffer(sizeof(mState));
     Pegasus::Render::GetUniformLocation(mProgram, "uniformState", mStateBufferUniform);
 }
 
@@ -59,14 +59,11 @@ void FractalCube2Block::Initialize()
 
 void FractalCube2Block::Shutdown()
 {
-    Pegasus::Render::DeleteBlendingState(mCurrentBlockBlendingState);
-    Pegasus::Render::DeleteBlendingState(mDefaultBlendingState);
-    Pegasus::Render::DeleteBuffer(mStateBuffer);
 }
 
 //----------------------------------------------------------------------------------------
 
-void FractalCube2Block::Update(float beat, Pegasus::Wnd::Window * window)
+void FractalCube2Block::Update(float beat)
 {
     // Update the graph of all textures and meshes, in case they have dynamic data
     mQuad->Update();

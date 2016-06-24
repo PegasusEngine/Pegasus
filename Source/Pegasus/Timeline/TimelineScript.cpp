@@ -115,6 +115,11 @@ TimelineScript::TimelineScript(IAllocator* allocator, Core::IApplicationContext*
         Pegasus::BlockScript::SystemCallbacks::gPrintFloatCallback = Pegasus_PrintFloat;
     }
     mScript = appContext->GetBlockScriptManager()->CreateBlockScript();
+    Utils::Vector<BlockScript::BlockLib*>& libs = appContext->GetTimelineManager()->GetLibs();
+    for (unsigned int i = 0; i < libs.GetSize(); ++i)
+    {
+        mScript->IncludeLib(libs[i]);
+    }
     mScript->AddCompilerEventListener(this);
 }
 

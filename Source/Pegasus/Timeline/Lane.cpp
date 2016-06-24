@@ -338,7 +338,7 @@ void Lane::UninitializeBlocks()
 }
 
 //----------------------------------------------------------------------------------------
-void Lane::Update(float beat, Wnd::Window * window)
+void Lane::Update(float beat)
 {
     //! \todo The current approach is extremely brute force and inefficient.
     //! \todo Cache the current selected block in function of the timeline time.
@@ -347,7 +347,7 @@ void Lane::Update(float beat, Wnd::Window * window)
     float relativeBeat = 0.0f;
     if (FindBlockAndComputeRelativeBeat(beat, block, relativeBeat))
     {
-        block->Update(relativeBeat, window);
+        block->Update(relativeBeat);
     }
 }
 

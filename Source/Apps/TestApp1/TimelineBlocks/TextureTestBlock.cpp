@@ -73,9 +73,8 @@ void TextureTestBlock::Initialize()
         mUniformState
     );
 
-    Pegasus::Render::CreateUniformBuffer(
-        sizeof(mState),
-        mUniformBuffer
+    mUniformBuffer = Pegasus::Render::CreateUniformBuffer(
+        sizeof(mState)
     );
 
     // Create the textures
@@ -91,13 +90,12 @@ void TextureTestBlock::Initialize()
 
 void TextureTestBlock::Shutdown()
 {
-    //! \todo Uninitialize VAOs, buffers, shaders
-    Pegasus::Render::DeleteBuffer(mUniformBuffer);
+
 }
 
 //----------------------------------------------------------------------------------------
 
-void TextureTestBlock::Update(float beat, Pegasus::Wnd::Window * window)
+void TextureTestBlock::Update(float beat)
 {
     // Update the graph of all textures and meshes, in case they have dynamic data
     mTexture1->Update();

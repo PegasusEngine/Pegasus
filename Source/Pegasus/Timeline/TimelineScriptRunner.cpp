@@ -38,6 +38,8 @@ namespace Timeline
     , mBlockScriptObserver(this)
 #endif
     , mVmState(nullptr)
+    , mGlobalCache(nullptr)
+    , mControlGlobalCacheReset(false)
 #if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
     , mCategory(category)
 #endif
@@ -67,7 +69,9 @@ namespace Timeline
 
     
     void TimelineScriptRunner::AttachScript(TimelineScriptInOut script)
-    {
+    {        
+        script->Compile();
+
 #if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
         mCategory->RegisterAsset(script->GetOwnerAsset());
 #endif
@@ -102,8 +106,6 @@ namespace Timeline
 #endif
         mScriptVersion = -1;  
         mRuntimeListener.Initialize(mPropertyGrid, mTimelineScript->GetBlockScript());
-        script->Compile();
-        InitializeScript();
     }
 
     void TimelineScriptRunner::ShutdownScript()
@@ -128,7 +130,7 @@ namespace Timeline
         mRuntimeListener.Shutdown();
     }
 
-    void TimelineScriptRunner::InitializeScript()
+    void TimelineScriptRunner::InitializeScript(bool useCategories)
     {
         if (HasScript() && mScriptVersion != mTimelineScript->GetSerialVersion() && mTimelineScript->IsScriptActive())
         {
@@ -136,8 +138,10 @@ namespace Timeline
 
             if (mVmState->GetUserContext() != nullptr)
             {
-                Application::RenderCollection* nodeContaier = static_cast<Application::RenderCollection*>(mVmState->GetUserContext());
-                nodeContaier->Clean();
+                Application::RenderCollection* nodeContainer = static_cast<Application::RenderCollection*>(mVmState->GetUserContext());
+                nodeContainer->Clean();
+                nodeContainer->SetGlobalCache(mGlobalCache);
+                nodeContainer->SetGlobalCacheListener(this);
             }
             mVmState->Reset();
 
@@ -145,13 +149,25 @@ namespace Timeline
             mVmState->SetRuntimeListener(&mRuntimeListener);
             //re-initialize everything!
 #if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
-            mCategory->RemoveAssets();
-            mAppContext->GetAssetLib()->BeginCategory(mCategory);
+            if (useCategories) mAppContext->GetAssetLib()->BeginCategory(mCategory);
+#endif
+
+#if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
+            unsigned permissions = Application::PERMISSIONS_RENDER_API_CALL | Application::PERMISSIONS_ASSET_LOAD;
+            if (mControlGlobalCacheReset)
+            {
+                permissions |= Application::PERMISSIONS_RENDER_GLOBAL_CACHE_WRITE;
+            }
+            else
+            {
+                permissions |= Application::PERMISSIONS_RENDER_GLOBAL_CACHE_READ;
+            }
+            static_cast<Application::RenderCollection*>(mVmState->GetUserContext())->SetPermissions((Application::ScriptPermissions)permissions);
 #endif
             mTimelineScript->CallGlobalScopeInit(mVmState); 
 
 #if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
-            mAppContext->GetAssetLib()->EndCategory();
+            if (useCategories) mAppContext->GetAssetLib()->EndCategory();
 #endif
 
             // remove the listener. No need to listen for more events.
@@ -161,10 +177,18 @@ namespace Timeline
 
     void TimelineScriptRunner::UninitializeScript()
     {
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES        
+        mCategory->RemoveAssets();
+#endif
         //TODO: remove this global scope destroy stuff
         if (mTimelineScript != nullptr && mTimelineScript->IsDirty())
         {
             mTimelineScript->CallGlobalScopeDestroy(mVmState);
+        }
+
+        if (mControlGlobalCacheReset)
+        {
+            mGlobalCache->Clear();
         }
     }
 
@@ -181,14 +205,18 @@ namespace Timeline
         }
     }
 
-    void TimelineScriptRunner::CallUpdate(float beat, Wnd::Window * window)
+    void TimelineScriptRunner::CallUpdate(float beat)
     {
         if (mTimelineScript != nullptr)
         {
             InitializeScript(); //in case a dirty compilation has been carried on.
             Application::RenderCollection* nodeContainer = static_cast<Application::RenderCollection*>(mVmState->GetUserContext());
-            nodeContainer->SetWindow(window);
+#if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
+            nodeContainer->SetPermissions(Application::PERMISSIONS_DEFAULT);
+#endif
+            nodeContainer->SetWindow(nullptr);
             mTimelineScript->CallUpdate(beat, mVmState);
+            nodeContainer->UpdateAll();
         }
     }
 
@@ -198,8 +226,16 @@ namespace Timeline
         {
             Application::RenderCollection* nodeContainer = static_cast<Application::RenderCollection*>(mVmState->GetUserContext());
             nodeContainer->SetWindow(window);
+#if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
+            nodeContainer->SetPermissions(Application::PERMISSIONS_RENDER_API_CALL);
+#endif
             mTimelineScript->CallRender(beat, mVmState);
         }
+    }
+
+    void TimelineScriptRunner::OnGlobalCacheDirty()
+    {
+        mScriptVersion = -1; // invalidate the script version, will force rerun of globals 
     }
 
 

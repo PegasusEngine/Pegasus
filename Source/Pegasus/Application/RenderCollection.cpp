@@ -42,21 +42,24 @@ namespace Application
         PropertyInfo() : mSize(0), mValid(false) {}
     };
 
-    template<class T>
-    struct ObjectPropertyCache
+    template<typename NodeType, bool hasProperties>
+    struct PropertyExtraInfo
     {
-        Core::Ref<T> mObject;
-        PropertyInfo* mCachedInfos;
-        Alloc::IAllocator* mAllocator;
-        int mCachedInfoCount;
+        void Initialize(const char* nodeName, const RenderCollectionFactory* factory, NodeType* node, Alloc::IAllocator* allocator) {}
+        void Reset() {}
+        PropertyInfo* GetPropertyInfo(int propertyId) { return nullptr; }
+    };
 
-        ObjectPropertyCache()
+    //specialization
+    template<typename NodeType>
+    struct PropertyExtraInfo<NodeType, true>
+    {
+        PropertyExtraInfo()
         : mCachedInfos(nullptr), mCachedInfoCount(0), mAllocator(nullptr) {}
 
-        void Initialize(const char* nodeName, const RenderCollectionFactory* factory,  T* node, Alloc::IAllocator* allocator)
+        void Initialize(const char* nodeName, const RenderCollectionFactory* factory, NodeType* node, Alloc::IAllocator* allocator)
         {
             mAllocator = allocator;
-            mObject = node;
 
             //find the processed description of this node.
             const RenderCollectionFactory::PropEntries* entryLayout = factory->FindNodeLayoutEntry(nodeName);
@@ -86,13 +89,55 @@ namespace Application
 
         void Reset()
         {
-            mObject = nullptr;
             if (mCachedInfoCount > 0)
             {
                 PG_DELETE_ARRAY(mAllocator, mCachedInfos);
                 mCachedInfos = nullptr;
                 mCachedInfoCount = 0;
             }
+        }
+
+        PropertyInfo* GetPropertyInfo(int propertyId)
+        {
+            PG_ASSERT(propertyId < mCachedInfoCount); 
+            if (propertyId >= 0 && propertyId < mCachedInfoCount)
+            {
+                return mCachedInfos[propertyId].mValid ? &mCachedInfos[propertyId] : nullptr;
+            }
+            return nullptr;
+        }
+
+        ~PropertyExtraInfo()
+        {
+            Reset();
+        }
+
+        PropertyInfo* mCachedInfos;
+        int mCachedInfoCount;
+        Pegasus::Alloc::IAllocator* mAllocator;
+        
+    };
+
+    template<class T, bool hasProperties>
+    struct ObjectPropertyCache
+    {
+        Core::Ref<T> mObject;
+        Alloc::IAllocator* mAllocator;
+        PropertyExtraInfo<T, hasProperties> mInfo;
+        
+        ObjectPropertyCache()
+        : mAllocator(nullptr) {}
+
+        void Initialize(const char* nodeName, const RenderCollectionFactory* factory,  T* node, Alloc::IAllocator* allocator)
+        {
+            mObject = node;
+            mInfo.Initialize(nodeName, factory, node, allocator);
+        }
+
+        void Reset()
+        {
+            mObject = nullptr;
+            mInfo.Reset();
         }
 
         ~ObjectPropertyCache()
@@ -152,69 +197,58 @@ namespace Application
         ~RenderCollectionImpl() { Clean(); }
         void Clean();
     
-        Vector<Shader::ProgramLinkageRef>    mPrograms;
-        Vector<Shader::ShaderStageRef>       mShaders;
-        Vector< Texture::TextureRef >        mTextures;
-        Vector< Mesh::MeshRef >                 mMeshes;
-        Vector< ObjectPropertyCache<Mesh::MeshGenerator> >       mMeshGenerators;
-        Vector< ObjectPropertyCache<Texture::TextureGenerator> >  mTextureGenerators;
-        Vector< ObjectPropertyCache<Texture::TextureOperator> >   mTextureOperators;
-        Vector<Render::Buffer>               mBuffers;
-        Vector<Render::RasterizerState>      mRasterizerStates;
-        Vector<Render::BlendingState>        mBlendingStates;
-        Vector<Render::RenderTarget>         mRenderTargets;
+        #define RES_PROCESS(type, instance, metaname, hasProperties, canUpdate) Utils::Vector< ObjectPropertyCache<type, hasProperties> > instance;
+        #include "../Source/Pegasus/Application/RenderResources.inl"
+        #undef RES_PROCESS
+        Pegasus::Alloc::IAllocator* mAlloc;
     };
+
+    template<typename T, bool hasProperties>
+    static Utils::Vector<ObjectPropertyCache<T, hasProperties> >* GetContainer(RenderCollectionImpl* impl)
+    {
+        return nullptr;
+    }
+    
+    #define RES_PROCESS(type, instance, metaname, hasProperties, canUpdate) \
+        template<> static Utils::Vector< ObjectPropertyCache<type,hasProperties > >* GetContainer<type, hasProperties>(RenderCollectionImpl* impl) \
+        { \
+            return &impl->instance; \
+        }
+    #include "../Source/Pegasus/Application/RenderResources.inl"
+    #undef RES_PROCESS
+    
+    template<typename T>
+    struct ResourceTrait
+    {
+        static const char* GetMetaName() { return "???" };
+        static const bool HasProperties = false;
+        static const bool CanUpdate = false;
+    };
+    #define RES_PROCESS(type, instance, metaname, hasProperties, canUpdate) \
+        template<>\
+        struct ResourceTrait<type>\
+        {\
+            static const char* GetMetaName() { return metaname; }\
+            static const bool HasProperties = hasProperties;\
+            static const bool CanUpdate = canUpdate;\
+        };
+    #include "../Source/Pegasus/Application/RenderResources.inl"
+    #undef RES_PROCESS
 
     RenderCollectionImpl::RenderCollectionImpl(Alloc::IAllocator * alloc)
         :
-        mPrograms(alloc),
-        mShaders(alloc),
-        mTextures(alloc),
-        mTextureGenerators(alloc),
-        mTextureOperators(alloc),
-        mMeshes(alloc),
-        mMeshGenerators(alloc),
-        mBuffers(alloc),
-        mRasterizerStates(alloc),
-        mBlendingStates(alloc),
-        mRenderTargets(alloc)
+        #define RES_PROCESS(type, instance, metaname, hasProperties, canUpdate) instance(alloc),
+        #include "../Source/Pegasus/Application/RenderResources.inl"
+        #undef RES_PROCESS
+        mAlloc(alloc)
     {
     }
 
     void RenderCollectionImpl::Clean()
     {
-        //cleanup of buffers using render API
-        for (unsigned int i = 0; i < mBuffers.GetSize(); ++i) 
-        {
-            Render::DeleteBuffer(mBuffers[i]);
-        }
-        
-        for (unsigned int i = 0; i < mRasterizerStates.GetSize(); ++i)
-        {
-            Render::DeleteRasterizerState(mRasterizerStates[i]);     
-        }
-
-        for (unsigned int i = 0; i < mBlendingStates.GetSize(); ++i)
-        {
-            Render::DeleteBlendingState(mBlendingStates[i]);
-        }
-
-        for (unsigned int i = 0; i < mRenderTargets.GetSize(); ++i)
-        {
-            Render::DeleteRenderTarget(mRenderTargets[i]);
-        }
-        
-        mPrograms.Clear();
-        mShaders.Clear();
-        mTextures.Clear();
-        mTextureGenerators.Clear();
-        mTextureOperators.Clear();
-        mMeshes.Clear();
-        mMeshGenerators.Clear();
-        mBuffers.Clear();
-        mRasterizerStates.Clear();
-        mBlendingStates.Clear();
-        mRenderTargets.Clear();
+        #define RES_PROCESS(type, instance, metaname, hasProperties, canUpdate) instance.Clear();
+        #include "../Source/Pegasus/Application/RenderResources.inl"
+        #undef RES_PROCESS
 
         //remove any references if they exist of shaders / programs and meshes internally
         Render::CleanInternalState();
@@ -224,266 +258,284 @@ namespace Application
     : mAlloc(alloc),
       mContext(context),
       mFactory(factory),
-      mCurrentWindow(nullptr)
+      mIsUsingGlobalCache(false),
+      mCurrentWindow(nullptr),
+      mGlobalCache(nullptr),
+      mGlobalCacheListener(nullptr)
+#if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
+      ,mPermissions(PERMISSIONS_DEFAULT)
+#endif
     {
         mImpl = PG_NEW(alloc, -1, "RenderCollectionImpl", Alloc::PG_MEM_TEMP) RenderCollectionImpl(alloc);
     }
 
     RenderCollection::~RenderCollection()
     {
+        InternalRemoveGlobalCache();
         PG_DELETE(mAlloc, mImpl);
     }
-    
-    RenderCollection::CollectionHandle RenderCollection::AddProgram(Shader::ProgramLinkage* program)
-    {
-        mImpl->mPrograms.PushEmpty() = program;
-        return mImpl->mPrograms.GetSize() - 1;
-    }
 
-    Shader::ProgramLinkage* RenderCollection::GetProgram(RenderCollection::CollectionHandle id)
+    void RenderCollection::InternalRemoveGlobalCache()
     {
-        if (id == INVALID_HANDLE) return nullptr;
-        return &(*mImpl->mPrograms[id]);
-    }
-
-    int RenderCollection::GetProgramCount() const
-    {
-        return mImpl->mPrograms.GetSize();
-    }
-
-    RenderCollection::CollectionHandle RenderCollection::AddShader(Shader::ShaderStage* shader)
-    {
-        mImpl->mShaders.PushEmpty() = shader;
-        return mImpl->mShaders.GetSize() - 1;
-    }
-
-    Shader::ShaderStage* RenderCollection::GetShader(RenderCollection::CollectionHandle id)
-    {
-        if (id == INVALID_HANDLE) return nullptr;
-        return &(*mImpl->mShaders[id]);
-    }
-
-    int RenderCollection::GetShaderCount() const
-    {
-        return mImpl->mShaders.GetSize();
-    }
-
-    RenderCollection::CollectionHandle RenderCollection::AddTexture(Texture::Texture* texture)
-    {
-        mImpl->mTextures.PushEmpty() = texture;
-        return mImpl->mTextures.GetSize() - 1;
-    }
-
-    Texture::Texture* RenderCollection::GetTexture(RenderCollection::CollectionHandle id)
-    {
-        if (id == INVALID_HANDLE) return nullptr;
-        return &(*mImpl->mTextures[id]);
-    }
-
-    int RenderCollection::GetTextureCount() const
-    {
-        return mImpl->mTextures.GetSize();
-    }
-
-    RenderCollection::CollectionHandle RenderCollection::AddTextureGenerator(Texture::TextureGenerator* texGen)
-    {
-        mImpl->mTextureGenerators.PushEmpty().Initialize("TextureGenerator", mFactory, texGen, mAlloc);
-        return mImpl->mTextureGenerators.GetSize() - 1;
-    }
-
-    Texture::TextureGenerator* RenderCollection::GetTextureGenerator(RenderCollection::CollectionHandle id)
-    {
-        if (id == INVALID_HANDLE) return nullptr;
-        return &(*mImpl->mTextureGenerators[id].mObject);
-    }
-
-    const PropertyGrid::PropertyAccessor* RenderCollection::GetTextureGeneratorAccessor(RenderCollection::CollectionHandle objectHandle, int propertyId)
-    {
-        if (objectHandle == INVALID_HANDLE) 
+        if (mIsUsingGlobalCache)
         {
-            PG_LOG('ERR_', "Property requested from invalid object.");
-            return nullptr;
+            PG_ASSERTSTR(mGlobalCache != nullptr, "There must be a global cache on this container.");
+            PG_ASSERTSTR(mGlobalCacheListener != nullptr, "there must be a global cache listener on this container");
+            mIsUsingGlobalCache = false;
+            mGlobalCache->RemoveListener(mGlobalCacheListener);
+            mGlobalCache = nullptr;
+            mGlobalCacheListener = nullptr;
         }
-        PG_ASSERT(propertyId < mImpl->mTextureGenerators[objectHandle].mCachedInfoCount);
-
-        PropertyInfo& info = mImpl->mTextureGenerators[objectHandle].mCachedInfos[propertyId];
-        
-        if (info.mValid)
-        {
-            return &info.mCachedAccessor;
-        } 
-
-        return nullptr;
-    }
-
-    int RenderCollection::GetTextureGeneratorCount() const
-    {
-        return mImpl->mTextureGenerators.GetSize();
-    }
-
-    RenderCollection::CollectionHandle RenderCollection::AddTextureOperator(Texture::TextureOperator* texOp)
-    {
-        mImpl->mTextureOperators.PushEmpty().Initialize("TextureOperator", mFactory, texOp, mAlloc);
-        return mImpl->mTextureOperators.GetSize() - 1 ;
-    }
-
-    Texture::TextureOperator* RenderCollection::GetTextureOperator(RenderCollection::CollectionHandle id)
-    {
-        if (id == INVALID_HANDLE) return nullptr;
-        return &(*mImpl->mTextureOperators[id].mObject);
-    }
-
-    const PropertyGrid::PropertyAccessor* RenderCollection::GetTextureOperatorAccessor(RenderCollection::CollectionHandle objectHandle, int propertyId)
-    {
-        if (objectHandle == INVALID_HANDLE) 
-        {
-            PG_LOG('ERR_', "Property requested from invalid object.");
-            return nullptr;
-        }
-
-        PG_ASSERT(propertyId < mImpl->mTextureOperators[objectHandle].mCachedInfoCount);
-
-        PropertyInfo& info = mImpl->mTextureOperators[objectHandle].mCachedInfos[propertyId];
-        
-        if (info.mValid)
-        {
-            return &info.mCachedAccessor;
-        } 
-
-        return nullptr;
-    }
-
-    int RenderCollection::GetTextureOperatorCount() const
-    {
-        return mImpl->mTextureOperators.GetSize();
-    }
-
-    RenderCollection::CollectionHandle RenderCollection::AddMesh(Mesh::Mesh* mesh)
-    {
-        mImpl->mMeshes.PushEmpty() = mesh;
-        return mImpl->mMeshes.GetSize() - 1;
-    }
-
-    Mesh::Mesh* RenderCollection::GetMesh(RenderCollection::CollectionHandle id)
-    {
-        if (id == INVALID_HANDLE) return nullptr;
-        return &(*mImpl->mMeshes[id]);
-    }
-
-    int RenderCollection::GetMeshCount() const
-    {
-        return mImpl->mMeshes.GetSize();
-    }
-
-    RenderCollection::CollectionHandle RenderCollection::AddMeshGenerator(Mesh::MeshGenerator* mesh)
-    {
-        mImpl->mMeshGenerators.PushEmpty().Initialize("MeshGenerator", mFactory, mesh, mAlloc);
-        return mImpl->mMeshGenerators.GetSize() - 1; 
-    }
-
-    const PropertyGrid::PropertyAccessor* RenderCollection::GetMeshGeneratorAccessor(RenderCollection::CollectionHandle objectHandle, int propertyId)
-    {
-        if (objectHandle == INVALID_HANDLE) 
-        {
-            PG_LOG('ERR_', "Property requested from invalid object.");
-            return nullptr;
-        }
-
-        PG_ASSERT(propertyId < mImpl->mMeshGenerators[objectHandle].mCachedInfoCount);
-
-        PropertyInfo& info = mImpl->mMeshGenerators[objectHandle].mCachedInfos[propertyId];
-        
-        if (info.mValid)
-        {
-            return &info.mCachedAccessor;
-        } 
-
-        return nullptr;
-    }
-
-    Mesh::MeshGenerator* RenderCollection::GetMeshGenerator(RenderCollection::CollectionHandle id)
-    {
-        return &(*mImpl->mMeshGenerators[id].mObject);
-    }
-
-    int RenderCollection::GetMeshGeneratorCount()
-    {
-        return mImpl->mMeshGenerators.GetSize();
-    }
-
-    RenderCollection::CollectionHandle RenderCollection::AddBuffer(const Render::Buffer& buffer)
-    {
-        mImpl->mBuffers.PushEmpty() = buffer;
-        return mImpl->mBuffers.GetSize() - 1;
-        
-    }
-
-    Render::Buffer* RenderCollection::GetBuffer(RenderCollection::CollectionHandle id)
-    {
-        if (INVALID_HANDLE == id) return nullptr;
-        return &(mImpl->mBuffers[id]);
-    } 
-
-    int RenderCollection::GetBufferCount()
-    {
-        return mImpl->mBuffers.GetSize();
     }
 
     void RenderCollection::Clean()
     {
+        InternalRemoveGlobalCache();
         mImpl->Clean();
     }
 
-    RenderCollection::CollectionHandle RenderCollection::AddRenderTarget(const Render::RenderTarget& target)
+    void RenderCollection::SignalIsUsingGlobalCache()
     {
-        mImpl->mRenderTargets.PushEmpty() = target;        
-        return mImpl->mRenderTargets.GetSize() - 1;
+        if (!mIsUsingGlobalCache)
+        {
+            PG_ASSERTSTR(mGlobalCache != nullptr, "There must be a global cache on this container.");
+            PG_ASSERTSTR(mGlobalCacheListener != nullptr, "there must be a global cache listener on this container");
+            mGlobalCache->AddListener(mGlobalCacheListener);
+            mIsUsingGlobalCache = true;
+        }
     }
 
-    Render::RenderTarget* RenderCollection::GetRenderTarget(RenderCollection::CollectionHandle id)
+    //define some traits
+    
+    template<typename R>
+    static RenderCollection::CollectionHandle AddResourceInternal(RenderCollection* collection, R* r)
     {
-        if (INVALID_HANDLE == id) return nullptr;
-        return &(mImpl->mRenderTargets[id]);
+        auto* container = GetContainer<R,ResourceTrait<R>::HasProperties>(collection->GetImpl());
+        RenderCollection::CollectionHandle h = container->GetSize(); 
+        container->PushEmpty().Initialize(ResourceTrait<R>::GetMetaName(), collection->GetFactory(),  r, collection->GetAlloc());
+        return h;
+    }
+    
+    template<typename R>
+    static int ResourceCountInternal(RenderCollection* collection)
+    {
+        auto* container = GetContainer<R, ResourceTrait<R>::HasProperties>(collection->GetImpl());
+        return container->GetSize();
+    }
+    
+    template<typename R>
+    static R* GetResourceInternal(RenderCollection* collection, RenderCollection::CollectionHandle handle)
+    {
+        auto* container = GetContainer<R,ResourceTrait<R>::HasProperties>(collection->GetImpl());
+        if (handle < 0 || handle >= static_cast<RenderCollection::CollectionHandle>(container->GetSize()))
+        {
+            return nullptr;
+        }
+        return (*container)[handle].mObject;
     }
 
-    int RenderCollection::GetRenderTargetCount() const
+    template<typename R>
+    static const PropertyGrid::PropertyAccessor* GetPropAccessorInternal(RenderCollection* collection, RenderCollection::CollectionHandle objectHandle, int propertyId)
     {
-        return mImpl->mRenderTargets.GetSize();
+        if (objectHandle == RenderCollection::INVALID_HANDLE) 
+        {
+            PG_LOG('ERR_', "Property requested from invalid object.");
+            return nullptr;
+        }
+
+        auto* container = GetContainer<R,ResourceTrait<R>::HasProperties>(collection->GetImpl());
+        auto& cachedInfo = (*container)[objectHandle];
+
+        PropertyInfo* info = cachedInfo.mInfo.GetPropertyInfo(propertyId);
+        return info ? &info->mCachedAccessor : nullptr;
     }
 
-    RenderCollection::CollectionHandle RenderCollection::AddRasterizerState(const Render::RasterizerState& state)
+    template<typename R> 
+    static RenderCollection::CollectionHandle ResolveResourceFromGlobalCacheInternal(RenderCollection* collection, GlobalCache::CacheName name)
     {
-        mImpl->mRasterizerStates.PushEmpty() = state;
-        return mImpl->mRasterizerStates.GetSize() - 1;
+        
+        collection->SignalIsUsingGlobalCache();
+
+        if (collection->GetGlobalCache() == nullptr)
+        {
+            return RenderCollection::INVALID_HANDLE;
+        }
+
+        R* resource = GlobalCache::Find<R>(collection->GetGlobalCache(), name);
+        if (resource == nullptr)
+        {
+            return RenderCollection::INVALID_HANDLE;
+        }
+
+
+        return RenderCollection::AddResource<R>(collection, resource);
     }
 
-    Render::RasterizerState* RenderCollection::GetRasterizerState(RenderCollection::CollectionHandle id)
+    template<typename R, bool canUpdate>
+    struct Updater {
+        static void TemplateUpdateAll(Utils::Vector<ObjectPropertyCache<R, ResourceTrait<R>::HasProperties> >& resList)
+        {
+            for (unsigned i = 0; i < resList.GetSize(); ++i)
+            {
+                resList[i].mObject->Update();
+            }
+        }
+    };
+
+    template<typename R >
+    struct Updater<R, false> { 
+        static void TemplateUpdateAll(Utils::Vector<ObjectPropertyCache<R, ResourceTrait<R>::HasProperties> >& resList)
+        {
+            //no update
+        }
+    };
+
+    void RenderCollection::UpdateAll()
     {
-        if (id == INVALID_HANDLE) return nullptr;
-        return &(mImpl->mRasterizerStates[id]);
+        #define RES_PROCESS(type, instance, metaname, hasProperties, canUpdate) \
+            Updater<type,canUpdate>::TemplateUpdateAll(mImpl->instance);
+        #include "../Source/Pegasus/Application/RenderResources.inl"
+        #undef RES_PROCESS
     }
 
-    int RenderCollection::GetRasterizerStateCount() const
+    #define RES_PROCESS(type, instance, metaname, hasProperties, canUpdate) \
+        template<>\
+        RenderCollection::CollectionHandle RenderCollection::AddResource<type>(RenderCollection* collection, type* r) { return AddResourceInternal<type>(collection, r);}\
+        template<>\
+        int RenderCollection::ResourceCount<type>(RenderCollection* collection) { return ResourceCountInternal<type>(collection);}\
+        template<>\
+        type* RenderCollection::GetResource<type>(RenderCollection* collection, RenderCollection::CollectionHandle handle) { return GetResourceInternal<type>(collection, handle);}\
+        template<>\
+        const PropertyGrid::PropertyAccessor* RenderCollection::GetPropAccessor<type>(RenderCollection* collection, RenderCollection::CollectionHandle objectHandle, int propertyId) {\
+            return GetPropAccessorInternal<type>(collection, objectHandle, propertyId); }\
+        template<>\
+        RenderCollection::CollectionHandle RenderCollection::ResolveResourceFromGlobalCache<type>(RenderCollection* collection, GlobalCache::CacheName name)\
+            { return ResolveResourceFromGlobalCacheInternal<type>(collection, name); }
+    #include "../Source/Pegasus/Application/RenderResources.inl"
+    #undef RES_PROCESS
+   
+    template<typename T>
+    struct GlobalCacheSlot
     {
-        return mImpl->mRasterizerStates.GetSize();
+        GlobalCacheSlot() : mName(0) {}
+        GlobalCache::CacheName mName;
+        Core::Ref<T> mObj;
+    }; 
+
+    class GlobalCacheImpl
+    {
+    public:
+        explicit GlobalCacheImpl(Alloc::IAllocator* alloc)
+        : mAlloc(alloc) 
+        #define RES_PROCESS(type, instance, metaname, hasProperties, canUpdate) ,instance(alloc)
+        #include "../Source/Pegasus/Application/RenderResources.inl"
+        #undef RES_PROCESS
+        {
+        }
+    
+        #define RES_PROCESS(type, instance, metaname, hasProperties, canUpdate) Utils::Vector< GlobalCacheSlot<type> > instance;
+        #include "../Source/Pegasus/Application/RenderResources.inl"
+        #undef RES_PROCESS
+
+        void Clear()
+        {
+        #define RES_PROCESS(type, instance, metaname, hasProperties, canUpdate) instance.Clear();
+        #include "../Source/Pegasus/Application/RenderResources.inl"
+        #undef RES_PROCESS
+        }
+
+        Alloc::IAllocator* mAlloc;
+    };
+
+    template<typename T>
+    Utils::Vector<GlobalCacheSlot<T> >* GetGlobalCacheInternalContainer(GlobalCacheImpl* impl)
+    {
+        return nullptr;
     }
 
-    RenderCollection::CollectionHandle RenderCollection::AddBlendingState(const Render::BlendingState& state)
+    #define RES_PROCESS(type, instance, metaname, hasProperties, canUpdate) \
+        template<> Utils::Vector<GlobalCacheSlot<type> >* GetGlobalCacheInternalContainer<type>(GlobalCacheImpl* impl)\
+        {\
+            return &impl->instance;\
+        }
+    #include "../Source/Pegasus/Application/RenderResources.inl"
+    #undef RES_PROCESS
+
+    GlobalCache::GlobalCache(Alloc::IAllocator* alloc)
+    : mAlloc(alloc)
     {
-        mImpl->mBlendingStates.PushEmpty() = state;        
-        return mImpl->mBlendingStates.GetSize() - 1;
+        mImpl = PG_NEW(alloc, -1, "GlobalCacheImpl",Alloc::PG_MEM_PERM) GlobalCacheImpl(alloc);
     }
 
-    Render::BlendingState* RenderCollection::GetBlendingState(RenderCollection::CollectionHandle id)
+    GlobalCache::~GlobalCache()
     {
-        if (id == INVALID_HANDLE) return nullptr;
-        return &(mImpl->mBlendingStates[id]);
+        PG_ASSERTSTR(mListeners.GetSize() == 0, "Not all listeners of global cache removed");
+        PG_DELETE(mAlloc, mImpl);
     }
 
-    int RenderCollection::GetBlendingStateCount() const
+    void GlobalCache::AddListener(GlobalCache::IListener* listener)
     {
-        return mImpl->mBlendingStates.GetSize();
+        mListeners.PushEmpty() = listener;
     }
+
+    void GlobalCache::Clear()
+    {
+        mImpl->Clear();
+    }
+
+    void GlobalCache::NotifyListeners()
+    {
+        //tag all resource listeners as dirty
+        for (unsigned i = 0; i < mListeners.GetSize(); ++i)
+        {
+            mListeners[i]->OnGlobalCacheDirty();
+        }
+    }
+
+    void GlobalCache::RemoveListener(GlobalCache::IListener* listener)
+    {
+        for (unsigned i = 0; i < mListeners.GetSize(); ++i)
+        {
+            if (mListeners[i] == listener)
+            {
+                mListeners.Delete(i);
+                return;
+            }
+        }
+    }
+
+    template<typename T>
+    void GlobalCacheRegisterInternal(GlobalCache* cache, GlobalCache::CacheName name, T* resource)
+    {
+        auto* container = GetGlobalCacheInternalContainer<T>(cache->GetImpl());
+        auto& slot = container->PushEmpty();
+        slot.mName = name;
+        slot.mObj = resource;
+    }
+
+    template<typename T>
+    T* GlobalCacheFindInternal(GlobalCache* cache, GlobalCache::CacheName name)
+    {
+        auto* container = GetGlobalCacheInternalContainer<T>(cache->GetImpl());
+        for (unsigned i = 0; i < container->GetSize(); ++i)
+        {
+            auto& slot = (*container)[i];
+            if (slot.mName == name)
+            {
+                return slot.mObj;
+            }
+        }
+        return nullptr;
+    }
+    #define RES_PROCESS(type, instance, metaname, hasProperties, canUpdate) \
+        template<> void GlobalCache::Register<type>(GlobalCache* cache, GlobalCache::CacheName name, type* resource)\
+            {\
+                GlobalCacheRegisterInternal<type>(cache, name, resource);\
+                cache->NotifyListeners();\
+            }\
+        template<> type* GlobalCache::Find<type>(GlobalCache* cache, GlobalCache::CacheName name) { return GlobalCacheFindInternal<type>(cache, name);}
+    #include "../Source/Pegasus/Application/RenderResources.inl"
+    #undef RES_PROCESS
 }
 }
 

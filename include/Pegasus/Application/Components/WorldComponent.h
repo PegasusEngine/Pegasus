@@ -93,7 +93,7 @@ public:
 private:
     Alloc::IAllocator* mAlloc;
     
-    Render::RasterizerState mDefaultRasterState;
+    Render::RasterizerStateRef mDefaultRasterState;
 };
 
 }

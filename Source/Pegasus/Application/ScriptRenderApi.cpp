@@ -104,11 +104,24 @@ void Render_CreateRenderTarget(FunCallbackContext& context);
 void Render_CreateRasterizerState(FunCallbackContext& context);
 void Render_CreateBlendingState(FunCallbackContext& context);
 
+#if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
+#define CHECK_PERMISSIONS(_renderCollection, funcall, perms) \
+    if (!(_renderCollection->GetPermissions() & perms))\
+    {\
+        PG_LOG('ERR_', "Cannot call \"%s\" on this context. Invalid permissions.", funcall);\
+        return;\
+    }
+#else
+#define CHECK_PERMISSIONS(_renderCollection, funcall, perms)
+#endif
+
+/////Global cache Functions////////////////////////////////////
+template<typename T> void GlobalCache_Register(FunCallbackContext& context);
+template<typename T> void GlobalCache_Find(FunCallbackContext& context);
+
 // property callback functions
-bool MeshOperatorPropertyCallback    (const Pegasus::BlockScript::PropertyCallbackContext& callback);
-bool MeshGeneratorPropertyCallback   (const Pegasus::BlockScript::PropertyCallbackContext& callback);
-bool TextureOperatorPropertyCallback (const Pegasus::BlockScript::PropertyCallbackContext& callback);
-bool TextureGeneratorPropertyCallback(const Pegasus::BlockScript::PropertyCallbackContext& callback);
+template<typename T>
+bool TemplatePropertyCallback   (const Pegasus::BlockScript::PropertyCallbackContext& context);
 
 /////  Declaration of all Texture node properties  /////
 struct CoreClassProperties
@@ -122,6 +135,7 @@ struct CoreClassProperties
     Utils::Vector<const PropertyGrid::PropertyRecord*> mSanityCheckProperties;
 #endif
 };
+
 
 ///////////////////////////////////////////////////////////////////////////////////
 //! Node / Render API registration functions. These are pure metadata attachments to
@@ -391,7 +405,7 @@ void LinearizeProperties(
                 }
     #if PEGASUS_ENABLE_ASSERT
                 targetBaseClassProps->mSanityCheckProperties.PushEmpty() = &record;
-    #endif
+    #endif  
                 Pegasus::BlockScript::ObjectPropertyDesc& objPropDesc = targetBaseClassProps->mPropertiesDescs.PushEmpty(); 
                 objPropDesc.propertyTypeName = typeName;
                 objPropDesc.propertyName = record.name;
@@ -443,7 +457,7 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
             "MeshGenerator",
             {},0,
             nullptr, 0, 
-            MeshGeneratorPropertyCallback
+            TemplatePropertyCallback<Mesh::MeshGenerator>
         },
         {
             "Mesh",
@@ -457,7 +471,7 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
             "TextureGenerator",
             {}, 0,
             nullptr, 0,
-            TextureGeneratorPropertyCallback
+            TemplatePropertyCallback<Texture::TextureGenerator>
         },
         {
             "TextureOperator",
@@ -466,7 +480,8 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
                 { "AddOperatorInput",  "int", { "TextureOperator", "TextureOperator", nullptr },  { "this", "texOperator", nullptr },  TextureOperator_AddOperatorInput  }
             },
             2,
-            nullptr, 0, TextureOperatorPropertyCallback
+            nullptr, 0,
+            TemplatePropertyCallback<Texture::TextureOperator>
         },
         {
             "Texture",
@@ -786,6 +801,20 @@ static void RegisterFunctions(BlockLib* lib)
             { "BlendingConfig", nullptr },
             { "config", nullptr },
             Render_CreateBlendingState
+        },
+        {
+            "GlobalRegisterRenderTarget",
+            "int",
+            { "string", "RenderTarget", nullptr },
+            { "Name", "renderTarget", nullptr },
+            GlobalCache_Register<Render::RenderTarget>
+        },
+        {
+            "GlobalFindRenderTarget",
+            "RenderTarget",
+            { "string", nullptr },
+            { "Name", nullptr },
+            GlobalCache_Find<Render::RenderTarget> 
         }
     };
 
@@ -811,12 +840,23 @@ void Util_GetWidthHeightAspect(FunCallbackContext& context)
 {
     Application::RenderCollection* container = GetContainer(context.GetVmState());
     Wnd::Window* w = container->GetWindow();
-    PG_ASSERT(context.GetOutputBufferSize() == sizeof(float) * 4);
     float* widthheightaspect = static_cast<float*>(context.GetRawOutputBuffer());
-    widthheightaspect[0] = static_cast<float>(w->GetWidth());
-    widthheightaspect[1] = static_cast<float>(w->GetHeight());
-    widthheightaspect[2] = w->GetRatio();
-    widthheightaspect[3] = w->GetRatioInv();
+    if (w != nullptr)
+    {
+        PG_ASSERT(context.GetOutputBufferSize() == sizeof(float) * 4);
+       
+        widthheightaspect[0] = static_cast<float>(w->GetWidth());
+        widthheightaspect[1] = static_cast<float>(w->GetHeight());
+        widthheightaspect[2] = w->GetRatio();
+        widthheightaspect[3] = w->GetRatioInv();
+    }
+    else
+    {
+        widthheightaspect[0] = 0.0f;
+        widthheightaspect[1] = 0.0f;
+        widthheightaspect[2] = 0.0f;
+        widthheightaspect[3] = 0.0f;
+    }
 }
 
 /////////////////////////////////////////////////////////////
@@ -834,10 +874,10 @@ void Program_SetShaderStage(FunCallbackContext& context)
     int retVal = 0;
     if (programId != RenderCollection::INVALID_HANDLE && stageId != RenderCollection::INVALID_HANDLE)
     {
-        PG_ASSERT(programId >= 0 && programId < container->GetProgramCount());
-        PG_ASSERT(stageId   >= 0 && stageId < container->GetShaderCount());
-        Shader::ShaderStageRef currShader = container->GetShader(stageId);
-        container->GetProgram(programId)->SetShaderStage(currShader);
+        PG_ASSERT(programId >= 0 && programId < RenderCollection::ResourceCount<Shader::ProgramLinkage>(container));
+        PG_ASSERT(stageId   >= 0 && stageId < RenderCollection::ResourceCount<Shader::ShaderStage>(container));
+        Shader::ShaderStageRef currShader = RenderCollection::GetResource<Shader::ShaderStage>(container, stageId);
+        RenderCollection::GetResource<Shader::ProgramLinkage>(container, programId)->SetShaderStage(currShader);
         retVal = 1;
     }
     else
@@ -861,8 +901,8 @@ void MeshGenerator_SetGeneratorInput(FunCallbackContext& context)
     
     if ( meshHandle != RenderCollection::INVALID_HANDLE && genHandle != RenderCollection::INVALID_HANDLE)
     {
-        Mesh::MeshRef mesh = collection->GetMesh(meshHandle);
-        Mesh::MeshGeneratorRef meshGeneratorRef = collection->GetMeshGenerator(genHandle);
+        Mesh::MeshRef mesh = RenderCollection::GetResource<Mesh::Mesh>(collection, meshHandle);
+        Mesh::MeshGeneratorRef meshGeneratorRef = RenderCollection::GetResource<Mesh::MeshGenerator>(collection, genHandle);
         mesh->SetGeneratorInput(meshGeneratorRef);
     }
     else
@@ -907,6 +947,7 @@ void Node_LoadProgram(FunCallbackContext& context)
     FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
     Application::RenderCollection* container = GetContainer(state);
+    CHECK_PERMISSIONS(container, "LoadProgram", PERMISSIONS_ASSET_LOAD);
 
     const char* path = stream.NextBsStringArgument();
 
@@ -917,7 +958,7 @@ void Node_LoadProgram(FunCallbackContext& context)
         bool unused = false;
         program->GetUpdatedData(unused);
 
-        stream.SubmitReturn( container->AddProgram(&(*program)) );
+        stream.SubmitReturn( RenderCollection::AddResource<Shader::ProgramLinkage>(container,program));
     }
     else
     {
@@ -934,7 +975,7 @@ void Node_CreateTexture(FunCallbackContext& context)
     Pegasus::Texture::TextureRef t = collection->GetAppContext()->GetTextureManager()->CreateTextureNode(blankConfig);
     if (t != nullptr)
     {
-        RenderCollection::CollectionHandle handle = collection->AddTexture(t);
+        RenderCollection::CollectionHandle handle = RenderCollection::AddResource<Texture::Texture>(collection, t);
         stream.SubmitReturn(handle);
     }
     else
@@ -954,7 +995,7 @@ void Node_CreateTextureGenerator(FunCallbackContext& context)
     Pegasus::Texture::TextureGeneratorRef t = collection->GetAppContext()->GetTextureManager()->CreateTextureGeneratorNode(name, blankConfig);
     if (t != nullptr)
     {
-        RenderCollection::CollectionHandle handle = collection->AddTextureGenerator(t);
+        RenderCollection::CollectionHandle handle = RenderCollection::AddResource<Texture::TextureGenerator>(collection, t);
         stream.SubmitReturn(handle);
     }
     else
@@ -974,7 +1015,7 @@ void Node_CreateTextureOperator(FunCallbackContext& context)
     Pegasus::Texture::TextureOperatorRef t = collection->GetAppContext()->GetTextureManager()->CreateTextureOperatorNode(name, blankConfig);
     if (t != nullptr)
     {
-        RenderCollection::CollectionHandle handle = collection->AddTextureOperator(t);
+        RenderCollection::CollectionHandle handle = RenderCollection::AddResource<Texture::TextureOperator>(collection, t);
         stream.SubmitReturn(handle);
     }
     else
@@ -992,7 +1033,7 @@ void Node_CreateMesh(FunCallbackContext& context)
     Core::IApplicationContext* appCtx = collection->GetAppContext();
     Mesh::MeshManager* meshManager = appCtx->GetMeshManager();
     Mesh::MeshRef newMesh = meshManager->CreateMeshNode();
-    RenderCollection::CollectionHandle handle = collection->AddMesh(newMesh);
+    RenderCollection::CollectionHandle handle = RenderCollection::AddResource<Mesh::Mesh>(collection, newMesh);
     stream.SubmitReturn(handle);
 }
 
@@ -1009,7 +1050,7 @@ void Node_CreateMeshGenerator(FunCallbackContext& context)
 
     //create new mesh generator
     Mesh::MeshGeneratorRef meshGenerator = meshManager->CreateMeshGeneratorNode(name);
-    RenderCollection::CollectionHandle handle = collection->AddMeshGenerator(meshGenerator);
+    RenderCollection::CollectionHandle handle = RenderCollection::AddResource<Mesh::MeshGenerator>(collection, meshGenerator);
     stream.SubmitReturn(handle);
     
 }
@@ -1021,6 +1062,8 @@ void Render_CreateUniformBuffer(FunCallbackContext& context)
 {
     FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
+    Application::RenderCollection* renderCollection = GetContainer(state);
+    CHECK_PERMISSIONS(renderCollection, "CreateUniformBuffer", PERMISSIONS_RENDER_API_CALL);
 
     int& bufferSize = stream.NextArgument<int>();
 
@@ -1031,11 +1074,8 @@ void Render_CreateUniformBuffer(FunCallbackContext& context)
     }
     else
     {
-     
-        Application::RenderCollection* renderCollection = GetContainer(state);
-        Render::Buffer buffer;
-        Render::CreateUniformBuffer(bufferSize, buffer);
-        stream.SubmitReturn( renderCollection->AddBuffer(buffer));
+        Render::BufferRef buffer = Render::CreateUniformBuffer(bufferSize);
+        stream.SubmitReturn( RenderCollection::AddResource<Render::Buffer>(renderCollection, buffer));
 
     }
 }
@@ -1047,15 +1087,16 @@ void Render_SetBuffer(FunCallbackContext& context)
     FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
     
-    RenderCollection::CollectionHandle& bufferRef = stream.NextArgument<RenderCollection::CollectionHandle>();
+    RenderCollection::CollectionHandle& handle = stream.NextArgument<RenderCollection::CollectionHandle>();
+    Application::RenderCollection* collection = GetContainer(state);
+    CHECK_PERMISSIONS(collection, "SetBuffer", PERMISSIONS_RENDER_API_CALL);
     int& ramRef = stream.NextArgument<int>(); //since the second parameter is a *, we can just gets its pointer in memory
     char* bufferPointer = state->Ram() + ramRef;
  
-    if (bufferRef != Application::RenderCollection::INVALID_HANDLE)
+    if (handle != Application::RenderCollection::INVALID_HANDLE)
     {
-        Application::RenderCollection* renderCollection = GetContainer(state);
-        Render::Buffer* buff = renderCollection->GetBuffer(bufferRef);
-        Render::SetBuffer(*buff, bufferPointer);
+        Render::BufferRef buff = RenderCollection::GetResource<Render::Buffer>(collection, handle);
+        Render::SetBuffer(buff, bufferPointer);
     }
     else
     {
@@ -1069,10 +1110,11 @@ void Render_GetUniformLocation(FunCallbackContext& context)
     FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
     Application::RenderCollection* renderCollection = GetContainer(state);
+    CHECK_PERMISSIONS(renderCollection, "GetUniformLocation", PERMISSIONS_RENDER_API_CALL);
     RenderCollection::CollectionHandle& programId = stream.NextArgument<RenderCollection::CollectionHandle>();
     if (programId != RenderCollection::INVALID_HANDLE)
     {
-        Shader::ProgramLinkageRef program = renderCollection->GetProgram(programId);
+        Shader::ProgramLinkageRef program = RenderCollection::GetResource<Shader::ProgramLinkage>(renderCollection, programId);
         const char* uniformNameStr = stream.NextBsStringArgument();
 
         //this is more confusing but avoids an extra memory copy, contrasted if we were using stream.SubmitReturn
@@ -1094,12 +1136,13 @@ void Render_SetUniformBuffer(FunCallbackContext& context)
     BsVmState * state = context.GetVmState();
     Render::Uniform& uniform  = stream.NextArgument<Render::Uniform>(); 
     int& bufferHandle = stream.NextArgument<int>();
+    Application::RenderCollection* renderCollection = GetContainer(state);
+    CHECK_PERMISSIONS(renderCollection, "SetUniformBuffer", PERMISSIONS_RENDER_API_CALL);
 
     if (bufferHandle != Application::RenderCollection::INVALID_HANDLE)
     {
-        Application::RenderCollection* renderCollection = GetContainer(state);
-        Render::Buffer* buffer = renderCollection->GetBuffer(bufferHandle);
-        bool res = Render::SetUniformBuffer(uniform, *buffer);
+        Render::BufferRef buffer = RenderCollection::GetResource<Render::Buffer>(renderCollection, bufferHandle);
+        bool res = Render::SetUniformBuffer(uniform, buffer);
         if (!res)
         {
             PG_LOG('ERR_', "Error setting uniform. Check that uniform exists and that program is set.");
@@ -1117,11 +1160,12 @@ void Render_SetUniformTexture(FunCallbackContext& context)
     BsVmState * state = context.GetVmState();
     Render::Uniform& uniform  = stream.NextArgument<Render::Uniform>(); 
     RenderCollection::CollectionHandle& texHandle = stream.NextArgument<RenderCollection::CollectionHandle>();
+    Application::RenderCollection* renderCollection = GetContainer(state);
+    CHECK_PERMISSIONS(renderCollection, "SetUniformTexture", PERMISSIONS_RENDER_API_CALL);
 
     if (texHandle != Application::RenderCollection::INVALID_HANDLE)
     {
-        Application::RenderCollection* renderCollection = GetContainer(state);
-        Texture::TextureRef texture = renderCollection->GetTexture(texHandle);
+        Texture::TextureRef texture = RenderCollection::GetResource<Texture::Texture>(renderCollection, texHandle);
         bool res = Render::SetUniformTexture(uniform, texture);
         if (!res)
         {
@@ -1142,10 +1186,11 @@ void Render_SetUniformTextureRenderTarget(FunCallbackContext& context)
     Render::Uniform& uniform = stream.NextArgument<Render::Uniform>();
     RenderCollection::CollectionHandle& renderTargetId = stream.NextArgument<RenderCollection::CollectionHandle>();
 
+    CHECK_PERMISSIONS(renderCollection, "SetUniformTextureRenderTarget", PERMISSIONS_RENDER_API_CALL);
     if (renderTargetId != Application::RenderCollection::INVALID_HANDLE)
     {
-        Render::RenderTarget* renderTarget = renderCollection->GetRenderTarget(renderTargetId);
-        Render::SetUniformTextureRenderTarget(uniform, *renderTarget);
+        Render::RenderTargetRef renderTarget = RenderCollection::GetResource<Render::RenderTarget>(renderCollection, renderTargetId);
+        Render::SetUniformTextureRenderTarget(uniform, renderTarget);
     }
     else
     {
@@ -1159,10 +1204,11 @@ void Render_SetProgram(FunCallbackContext& context)
     FunParamStream stream(context);
     BsVmState * state = context.GetVmState();
     Application::RenderCollection* renderCollection = GetContainer(state);
+    CHECK_PERMISSIONS(renderCollection, "SetProgram", PERMISSIONS_RENDER_API_CALL);
     RenderCollection::CollectionHandle& programId = stream.NextArgument<RenderCollection::CollectionHandle>();
     if (programId != Application::RenderCollection::INVALID_HANDLE)
     {
-        Shader::ProgramLinkageRef program = renderCollection->GetProgram(programId);
+        Shader::ProgramLinkageRef program = RenderCollection::GetResource<Shader::ProgramLinkage>(renderCollection, programId);
         Render::SetProgram(program);
     }
     else
@@ -1176,10 +1222,11 @@ void Render_SetMesh(FunCallbackContext& context)
     FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
     Application::RenderCollection* renderCollection = GetContainer(state);
+    CHECK_PERMISSIONS(renderCollection, "SetMesh", PERMISSIONS_RENDER_API_CALL);
     RenderCollection::CollectionHandle& meshId = stream.NextArgument<RenderCollection::CollectionHandle>();
     if (meshId != Application::RenderCollection::INVALID_HANDLE)
     {
-        Mesh::MeshRef mesh = renderCollection->GetMesh(meshId);
+        Mesh::MeshRef mesh = RenderCollection::GetResource<Mesh::Mesh>(renderCollection, meshId);
         Render::SetMesh(mesh);
     }
     else
@@ -1192,6 +1239,7 @@ void Render_SetViewport(FunCallbackContext& context)
 {
     FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
+    CHECK_PERMISSIONS(GetContainer(state), "SetViewport", PERMISSIONS_RENDER_API_CALL);
     Render::Viewport& viewport = stream.NextArgument<Render::Viewport>();
     Render::SetViewport(viewport);
 }
@@ -1201,11 +1249,12 @@ void Render_SetViewport2(FunCallbackContext& context)
     FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
     RenderCollection* collection = GetContainer(state);
+    CHECK_PERMISSIONS(collection, "SetViewport", PERMISSIONS_RENDER_API_CALL);
     RenderCollection::CollectionHandle& handle = stream.NextArgument<RenderCollection::CollectionHandle>();
     if (handle != RenderCollection::INVALID_HANDLE)
     {
-        Render::RenderTarget* rt = collection->GetRenderTarget(handle);
-        Pegasus::Render::SetViewport(*rt);
+        Render::RenderTargetRef rt = RenderCollection::GetResource<Render::RenderTarget>(collection, handle);
+        Pegasus::Render::SetViewport(rt);
     }
     else
     {
@@ -1222,11 +1271,12 @@ void Render_SetRenderTarget(FunCallbackContext& context)
     FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
     RenderCollection* renderCollection = GetContainer(state);
+    CHECK_PERMISSIONS(renderCollection, "SetRenderTarget", PERMISSIONS_RENDER_API_CALL);
     RenderCollection::CollectionHandle& rtHandle = stream.NextArgument<RenderCollection::CollectionHandle>();
     if (rtHandle != RenderCollection::INVALID_HANDLE)
     {
-        Render::RenderTarget* rt = renderCollection->GetRenderTarget(rtHandle);
-        Render::SetRenderTarget(*rt);
+        Render::RenderTargetRef rt = RenderCollection::GetResource<Render::RenderTarget>(renderCollection,rtHandle);
+        Render::SetRenderTarget(rt);
     }
     else
     {
@@ -1244,6 +1294,7 @@ void Render_SetRenderTargets(FunCallbackContext& context)
     FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
     RenderCollection* renderCollection = GetContainer(state);
+    CHECK_PERMISSIONS(renderCollection, "SetRenderTarget", PERMISSIONS_RENDER_API_CALL);
     int targetCounts = stream.NextArgument<int>();
     int targetsOffset = stream.NextArgument<int>();
     
@@ -1270,7 +1321,7 @@ void Render_SetRenderTargets(FunCallbackContext& context)
     RenderCollection::CollectionHandle* handles = reinterpret_cast<RenderCollection::CollectionHandle*>(targetsPtr);
 
     //dump all into temp buffer
-    Pegasus::Render::RenderTarget* targets[Pegasus::Render::Constants::MAX_RENDER_TARGETS];
+    Pegasus::Render::RenderTargetRef targets[Pegasus::Render::Constants::MAX_RENDER_TARGETS];
     for (int i = 0; i < targetCounts; ++i)
     {
         if (handles[i] != RenderCollection::INVALID_HANDLE)
@@ -1280,7 +1331,7 @@ void Render_SetRenderTargets(FunCallbackContext& context)
         }
         else
         {
-            targets[i] = renderCollection->GetRenderTarget(handles[i]);
+            targets[i] = RenderCollection::GetResource<Render::RenderTarget>(renderCollection, handles[i]);
         }
     }
 
@@ -1292,6 +1343,7 @@ void Render_SetRenderTargets2(FunCallbackContext& context)
     FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
     RenderCollection* renderCollection = GetContainer(state);
+    CHECK_PERMISSIONS(renderCollection, "SetRenderTargets", PERMISSIONS_RENDER_API_CALL);
     int targetCounts = stream.NextArgument<int>();
     int targetsOffset = stream.NextArgument<int>(); 
     
@@ -1307,11 +1359,19 @@ void Render_SetRenderTargets2(FunCallbackContext& context)
 
 void Render_SetDefaultRenderTarget(FunCallbackContext& context)
 {
+#if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
+    RenderCollection* renderCollection = GetContainer(context.GetVmState());
+    CHECK_PERMISSIONS(renderCollection, "SetDefaultRenderTarget", PERMISSIONS_RENDER_API_CALL);
+#endif
     Pegasus::Render::DispatchDefaultRenderTarget();
 }
 
 void Render_SetPrimitiveMode(FunCallbackContext& context)
 {
+#if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
+    RenderCollection* renderCollection = GetContainer(context.GetVmState());
+    CHECK_PERMISSIONS(renderCollection, "SetPrimitiveMode", PERMISSIONS_RENDER_API_CALL);
+#endif
     PG_ASSERT(context.GetInputBufferSize() == sizeof(Pegasus::Render::PrimitiveMode));
     FunParamStream stream(context);
     Render::SetPrimitiveMode(stream.NextArgument<Pegasus::Render::PrimitiveMode>());
@@ -1321,6 +1381,10 @@ void Render_Clear(FunCallbackContext& context)
 {
     PG_ASSERT(context.GetInputBufferSize() == 3 * sizeof(int));
     FunParamStream stream(context);
+#if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
+    RenderCollection* renderCollection = GetContainer(context.GetVmState());
+    CHECK_PERMISSIONS(renderCollection, "SetPrimitiveMode", PERMISSIONS_RENDER_API_CALL);
+#endif
     bool col = stream.NextArgument<int>() != 0;
     bool depth = stream.NextArgument<int>() != 0;
     bool stencil = stream.NextArgument<int>() != 0;
@@ -1330,6 +1394,10 @@ void Render_Clear(FunCallbackContext& context)
 void Render_SetClearColorValue(FunCallbackContext& context)
 {
     FunParamStream stream(context);
+#if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
+    RenderCollection* renderCollection = GetContainer(context.GetVmState());
+    CHECK_PERMISSIONS(renderCollection, "SetClearColorValue", PERMISSIONS_RENDER_API_CALL);
+#endif
     Math::ColorRGBA& color = stream.NextArgument<Math::ColorRGBA>();
     Render::SetClearColorValue(color);
 }
@@ -1339,11 +1407,12 @@ void Render_SetRasterizerState(FunCallbackContext& context)
     FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
     RenderCollection* collection = GetContainer(state);
+    CHECK_PERMISSIONS(collection, "SetRasterizerState", PERMISSIONS_RENDER_API_CALL);
     RenderCollection::CollectionHandle& handle = stream.NextArgument<RenderCollection::CollectionHandle>();
     if (handle != RenderCollection::INVALID_HANDLE)
     {
-        Render::RasterizerState* rasterState = collection->GetRasterizerState(handle);
-        Render::SetRasterizerState(*rasterState);
+        Render::RasterizerStateRef rasterState = RenderCollection::GetResource<Render::RasterizerState>(collection, handle);
+        Render::SetRasterizerState(rasterState);
     }
     else
     {
@@ -1356,11 +1425,12 @@ void Render_SetBlendingState(FunCallbackContext& context)
     FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
     RenderCollection* collection = GetContainer(state);
+    CHECK_PERMISSIONS(collection, "SetBlendingState", PERMISSIONS_RENDER_API_CALL);
     RenderCollection::CollectionHandle& handle = stream.NextArgument<RenderCollection::CollectionHandle>();
     if (handle != RenderCollection::INVALID_HANDLE)
     {
-        Render::BlendingState* blendState = collection->GetBlendingState(handle);
-        Render::SetBlendingState(*blendState);
+        Render::BlendingStateRef blendState = RenderCollection::GetResource<Render::BlendingState>(collection, handle);
+        Render::SetBlendingState(blendState);
     }
     else
     {
@@ -1371,12 +1441,20 @@ void Render_SetBlendingState(FunCallbackContext& context)
 void Render_SetDepthClearValue(FunCallbackContext& context)
 {
     FunParamStream stream(context);
+#if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
+    RenderCollection* renderCollection = GetContainer(context.GetVmState());
+    CHECK_PERMISSIONS(renderCollection, "setDepthClearValue", PERMISSIONS_RENDER_API_CALL);
+#endif
     float& depthClearVal = stream.NextArgument<float>();
     Render::SetDepthClearValue(depthClearVal);
 }
 
 void Render_Draw(FunCallbackContext& context)
 {
+#if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
+    RenderCollection* renderCollection = GetContainer(context.GetVmState());
+    CHECK_PERMISSIONS(renderCollection, "Draw", PERMISSIONS_RENDER_API_CALL);
+#endif
     Render::Draw();
 }
 
@@ -1385,11 +1463,10 @@ void Render_CreateRenderTarget(FunCallbackContext& context)
     FunParamStream stream(context);
     BsVmState* vmState = context.GetVmState();
     Application::RenderCollection* renderCollection = GetContainer(vmState);
+    CHECK_PERMISSIONS(renderCollection, "CreateRenderTarget", PERMISSIONS_RENDER_API_CALL);
     Render::RenderTargetConfig& config = stream.NextArgument<Render::RenderTargetConfig>();
-    Render::RenderTarget rt;
-    Render::CreateRenderTarget(config, rt);
-    stream.SubmitReturn( renderCollection->AddRenderTarget(rt));
-    
+    Render::RenderTargetRef rt = Render::CreateRenderTarget(config);
+    stream.SubmitReturn( RenderCollection::AddResource<Render::RenderTarget>( renderCollection, rt));
 }
 
 void Render_CreateRasterizerState(FunCallbackContext& context)
@@ -1397,12 +1474,10 @@ void Render_CreateRasterizerState(FunCallbackContext& context)
     FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
     RenderCollection* collection = GetContainer(state);
-   
+    CHECK_PERMISSIONS(collection, "CreateRasterizerState", PERMISSIONS_RENDER_API_CALL);
     Render::RasterizerConfig& rasterConfig = stream.NextArgument<Render::RasterizerConfig>();
-    Render::RasterizerState rasterState;
-    Render::CreateRasterizerState(rasterConfig, rasterState);
-
-    stream.SubmitReturn( collection->AddRasterizerState(rasterState) );
+    Render::RasterizerStateRef rasterState = Render::CreateRasterizerState(rasterConfig);
+    stream.SubmitReturn( RenderCollection::AddResource<Render::RasterizerState>(collection, rasterState) );
 }
 
 void Render_CreateBlendingState(FunCallbackContext& context)
@@ -1410,12 +1485,11 @@ void Render_CreateBlendingState(FunCallbackContext& context)
     FunParamStream stream(context);
     BsVmState* state = context.GetVmState();
     RenderCollection* collection = GetContainer(state);
+    CHECK_PERMISSIONS(collection, "CreateBlendingState", PERMISSIONS_RENDER_API_CALL);
     
     Render::BlendingConfig* blendConfig = static_cast<Render::BlendingConfig*>(context.GetRawOutputBuffer());
-    Render::BlendingState blendState;
-    Render::CreateBlendingState(*blendConfig, blendState);
-    
-    stream.SubmitReturn( collection->AddBlendingState(blendState) );
+    Render::BlendingStateRef blendState = Render::CreateBlendingState(*blendConfig);
+    stream.SubmitReturn( RenderCollection::AddResource<Render::BlendingState>(collection, blendState) );
 }
 
 
@@ -1464,23 +1538,51 @@ bool PropertyGridPropertyCallback(const PropertyGrid::PropertyAccessor* accessor
     return false;
 }
 
-bool MeshGeneratorPropertyCallback   (const Pegasus::BlockScript::PropertyCallbackContext& context)
+template<typename T>
+bool TemplatePropertyCallback   (const Pegasus::BlockScript::PropertyCallbackContext& context)
 {
     RenderCollection* collection = GetContainer(context.state);
-    const PropertyGrid::PropertyAccessor* accessor = collection->GetMeshGeneratorAccessor(context.objectHandle, context.propertyDesc->mGuid);
+    const PropertyGrid::PropertyAccessor* accessor = RenderCollection::GetPropAccessor<T>(collection, context.objectHandle, context.propertyDesc->mGuid);
     return PropertyGridPropertyCallback(accessor, context);
 }
 
-bool TextureOperatorPropertyCallback (const Pegasus::BlockScript::PropertyCallbackContext& context)
+
+template<typename T>
+void GlobalCache_Register<T>(FunCallbackContext& context)
 {
-    RenderCollection* collection = GetContainer(context.state);
-    const PropertyGrid::PropertyAccessor* accessor = collection->GetTextureOperatorAccessor(context.objectHandle, context.propertyDesc->mGuid);
-    return PropertyGridPropertyCallback(accessor, context);
+    FunParamStream stream(context);
+    BsVmState* vmState = context.GetVmState();
+    Application::RenderCollection* renderCollection = GetContainer(vmState);
+    CHECK_PERMISSIONS(renderCollection, "GlobalCache_Register", PERMISSIONS_RENDER_GLOBAL_CACHE_WRITE);
+    const char* name = stream.NextBsStringArgument();
+    RenderCollection::CollectionHandle handle = stream.NextArgument<RenderCollection::CollectionHandle>();
+    bool isSuccess = false;
+    if (handle != RenderCollection::INVALID_HANDLE)
+    {
+        unsigned int strHash = Pegasus::Utils::HashStr(name);
+        T* resource = RenderCollection::GetResource<T>(renderCollection, handle);
+        GlobalCache* gc = renderCollection->GetGlobalCache();
+        PG_ASSERT(gc != nullptr);
+        GlobalCache::Register<T>(gc, strHash, resource);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Trying to store invalid resource in cache name: \"%s\"", name);
+    }
+    stream.SubmitReturn<int>(isSuccess ? 1 : 0);
 }
 
-bool TextureGeneratorPropertyCallback(const Pegasus::BlockScript::PropertyCallbackContext& context)
+template<typename T>
+void GlobalCache_Find<T>(FunCallbackContext& context)
 {
-    RenderCollection* collection = GetContainer(context.state);
-    const PropertyGrid::PropertyAccessor* accessor = collection->GetTextureGeneratorAccessor(context.objectHandle, context.propertyDesc->mGuid);
-    return PropertyGridPropertyCallback(accessor, context);
+    FunParamStream stream(context);
+    BsVmState* vmState = context.GetVmState();
+    Application::RenderCollection* renderCollection = GetContainer(vmState);
+    CHECK_PERMISSIONS(renderCollection, "GlobalCache_Register", PERMISSIONS_RENDER_GLOBAL_CACHE_READ);
+    GlobalCache* gc = renderCollection->GetGlobalCache();
+    PG_ASSERT(gc != nullptr);
+    const char* name = stream.NextBsStringArgument();
+    unsigned int strHash = Pegasus::Utils::HashStr(name);
+    RenderCollection::CollectionHandle collectionHandle = RenderCollection::ResolveResourceFromGlobalCache<T>(renderCollection, strHash);
+    stream.SubmitReturn<RenderCollection::CollectionHandle>(collectionHandle);
 }

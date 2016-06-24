@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Include">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Include\Shared">
+      <UniqueIdentifier>{b4d6772f-c17a-4038-9e8a-85b3d58332a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\System">
+      <UniqueIdentifier>{0cb5eef8-52a2-4580-bf0e-722f9f92bce2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\System">
+      <UniqueIdentifier>{7ac46f9f-e007-48a5-a8a9-f5f86fda623e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Grass">
+      <UniqueIdentifier>{c9c23000-cd3a-4d0d-b565-38716d6dc5d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\3dTerrain">
+      <UniqueIdentifier>{fec8ba31-7cd3-47b0-9067-b9675dafc0e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\2dTerrain">
+      <UniqueIdentifier>{06a90c2e-c9f8-4000-a1da-cd091ddf9b6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\DeferredRenderer">
+      <UniqueIdentifier>{33d079f4-6b06-4e4e-9e84-f7a642107a9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Grass">
+      <UniqueIdentifier>{4692e508-ca36-436e-9746-fa023489cb73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\3dTerrain">
+      <UniqueIdentifier>{318e327a-ec34-4ef6-8204-d89ca86ba418}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\2dTerrain">
+      <UniqueIdentifier>{c5ae3b52-5788-49f0-b76e-241249a3c61c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\DeferredRenderer">
+      <UniqueIdentifier>{06be7b02-9adc-49e6-9988-8a66011ac58d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\Grass\GrassSystem.h">
+      <Filter>Include\Grass</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\3dTerrain\3dTerrainSystem.h">
+      <Filter>Include\3dTerrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\2dTerrain\2dTerrainSystem.h">
+      <Filter>Include\2dTerrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\DeferredRenderer\DeferredRendererSystem.h">
+      <Filter>Include\DeferredRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\System\RenderSystemManager.h">
+      <Filter>Include\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\Config.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\System\RenderSystem.h">
+      <Filter>Include\System</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Grass\GrassSystem.cpp">
+      <Filter>Source\Grass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\3dTerrain\3dTerrainSystem.cpp">
+      <Filter>Source\3dTerrain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\2dTerrain\2dTerrainSystem.cpp">
+      <Filter>Source\2dTerrain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\DeferredRenderer\DeferredRendererSystem.cpp">
+      <Filter>Source\DeferredRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\System\RenderSystemManager.cpp">
+      <Filter>Source\System</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

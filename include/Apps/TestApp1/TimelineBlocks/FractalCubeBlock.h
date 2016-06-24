@@ -44,9 +44,8 @@ public:
     //! Update the content of the block, called once at the beginning of each rendered frame
     //! \param beat Current beat relative to the beginning of the block,
     //!             can have fractional part (>= 0.0f)
-    //! \param window Window in which the lane is being rendered
     //! \todo That dependency is ugly. Find a way to remove that dependency
-    virtual void Update(float beat, Pegasus::Wnd::Window * window);
+    virtual void Update(float beat);
 
     //! Render the content of the block
     //! \param beat Current beat relative to the beginning of the block,
@@ -65,7 +64,7 @@ private:
     Pegasus::Shader::ProgramLinkageRef mProgram;
     Pegasus::Mesh::MeshRef mQuad;
 
-    Pegasus::Render::Buffer mStateBuffer;
+    Pegasus::Render::BufferRef mStateBuffer;
     Pegasus::Render::Uniform mStateBufferUniform;
     PEGASUS_ALIGN_BEGIN(16)
     struct UniformState

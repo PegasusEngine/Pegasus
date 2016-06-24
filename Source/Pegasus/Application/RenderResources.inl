@@ -1,0 +1,13 @@
+//! Inline file to process render resources
+//RES_PROCESS(type, membername, metaname, (bool?)hasProperties, (bool) canUpdate)
+RES_PROCESS(Pegasus::Shader::ProgramLinkage, mPrograms, "ProgramLinkage", false, true)
+RES_PROCESS(Pegasus::Shader::ShaderStage, mShaders, "ShaderStage", false, true)
+RES_PROCESS(Pegasus::Texture::Texture, mTextures, "Texture", false, true)
+RES_PROCESS(Pegasus::Mesh::Mesh, mMeshes, "Mesh", false, true)
+RES_PROCESS(Pegasus::Mesh::MeshGenerator, mMeshGenerators, "MeshGenerator", true, true)
+RES_PROCESS(Pegasus::Texture::TextureGenerator, mTextureGenerators, "TextureGenerator", true, true)
+RES_PROCESS(Pegasus::Texture::TextureOperator, mTextureOperators, "TextureOperator", true, true)
+RES_PROCESS(Pegasus::Render::Buffer, mBuffers, "Buffer", false, false)
+RES_PROCESS(Pegasus::Render::RasterizerState, mRasterizers, "RasterizerState", false, false)
+RES_PROCESS(Pegasus::Render::BlendingState, mBlendingStates, "BlendingState", false, false)
+RES_PROCESS(Pegasus::Render::RenderTarget, mRenderTargets, "RenderTarget", false, false)

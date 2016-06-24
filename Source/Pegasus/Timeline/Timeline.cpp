@@ -46,6 +46,7 @@ Timeline::Timeline(Alloc::IAllocator * allocator, Core::IApplicationContext* app
 ,   mCurrentBeat(INVALID_BEAT)
 ,   mStartPegasusTime(0.0)
 ,   mSyncedToMusic(false)
+,   mGlobalCache(allocator)
 ,   mScriptRunner(allocator, appContext, &mPropertyGrid
 #if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
     ,   &mCategory
@@ -58,6 +59,8 @@ Timeline::Timeline(Alloc::IAllocator * allocator, Core::IApplicationContext* app
 {
     PG_ASSERTSTR(allocator != nullptr, "Invalid allocator given to the timeline object");
     PG_ASSERTSTR(appContext != nullptr, "Invalid application context given to the timeline object");
+
+    mScriptRunner.SetGlobalCache(&mGlobalCache, true);
 
     // Create the initial default lane
     Clear();
@@ -296,7 +299,20 @@ void Timeline::Update(unsigned int musicPosition)
                 mCurrentBeat = 0.0f;
             }
 #endif  // PEGASUS_ENABLE_PROXIES
+
         }
+
+        mScriptRunner.CallUpdate(mCurrentBeat);
+        // Update the content of each lane from top to bottom
+        for (unsigned int l = 0; l < mNumLanes; ++l)
+        {
+            Lane * lane = GetLane(l);
+            if (lane != nullptr)
+            {
+                lane->Update(mCurrentBeat);
+            }
+        }
+
     }
 }
 
@@ -306,25 +322,12 @@ void Timeline::Render(Wnd::Window * window)
 {
     if (window != nullptr)
     {
-        unsigned int l;
-
-
-        mScriptRunner.CallUpdate(mCurrentBeat, window);
-        // Update the content of each lane from top to bottom
-        for (l = 0; l < mNumLanes; ++l)
-        {
-            Lane * lane = GetLane(l);
-            if (lane != nullptr)
-            {
-                lane->Update(mCurrentBeat, window);
-            }
-        }
-
+        
         // Render the content of each lane from top to bottom
         mScriptRunner.CallRender(mCurrentBeat, window);
 
         //! \todo Add support for render passes
-        for (l = 0; l < mNumLanes; ++l)
+        for (unsigned int l = 0; l < mNumLanes; ++l)
         {
             Lane * lane = GetLane(l);
             if (lane != nullptr)

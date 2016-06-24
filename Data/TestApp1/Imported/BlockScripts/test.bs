@@ -27,7 +27,6 @@ int echoF(ab: float2)
 int Timeline_Update(beat : float)
 {
 	quadGenerator.QuadExtends = float2(1.0,1.0);
-	echo(TEST_SZ);
 }
 
 int Timeline_Render(beat : float)

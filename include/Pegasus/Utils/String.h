@@ -50,6 +50,9 @@ namespace Utils
     
     //! convert a string to a float
     float Atof(const char * str);
+
+    //! returns a hash of the string
+    unsigned int HashStr(const char* str);
     
 }
 }

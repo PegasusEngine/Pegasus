@@ -41,6 +41,10 @@ namespace Pegasus {
     namespace AssetLib {
         class Asset;
     }
+
+    namespace BlockScript {
+        class BlockLib;
+    }
 }
 
 namespace Pegasus {
@@ -146,6 +150,7 @@ public:
 
     //! Create a block by class name
     //! \param className Name of the block class to instantiate
+    //! \param timeline Pointer to timeline owner asset. A block must be owned by a timeline.
     //! \return Pointer to the created block, nullptr if an error occurred
     Block * CreateBlock(const char * className);
 
@@ -218,6 +223,13 @@ public:
     //! \return a null terminated list of asset descriptions
     virtual const PegasusAssetTypeDesc*const* GetAssetTypes() const;
 
+    //! Register extra libs for blockscripts that are created at timeline
+    //! \param libs the list of libraries to include extra.
+    void RegisterExtraLibs(const Utils::Vector<BlockScript::BlockLib*>& libs) { mExtraLibs = libs; }
+
+    //! Return list of extra libs used for timeline scripts
+    Utils::Vector<BlockScript::BlockLib*>& GetLibs() { return mExtraLibs; }
+
 
     //------------------------------------------------------------------------------------
 
@@ -270,7 +282,10 @@ private:
 #if PEGASUS_USE_EVENTS
     //! Reference to the event listener
     Core::CompilerEvents::ICompilerEventListener* mEventListener;
-#endif
+#endif 
+
+    //! Lists of extra libs that the timeline might use
+    Utils::Vector<BlockScript::BlockLib*> mExtraLibs;
     
 };
 

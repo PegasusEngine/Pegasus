@@ -92,4 +92,9 @@
       <Filter>Source\Components</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\Source\Pegasus\Application\RenderResources.inl">
+      <Filter>Source</Filter>
+    </None>
+  </ItemGroup>
 </Project>

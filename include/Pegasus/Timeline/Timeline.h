@@ -12,6 +12,7 @@
 #ifndef PEGASUS_TIMELINE_TIMELINE_H
 #define PEGASUS_TIMELINE_TIMELINE_H
 
+#include "Pegasus/Application/RenderCollection.h"
 #include "Pegasus/Timeline/Shared/TimelineDefs.h"
 #include "Pegasus/Timeline/Proxy/TimelineProxy.h"
 #include "Pegasus/AssetLib/RuntimeAssetObject.h"
@@ -190,6 +191,9 @@ public:
     //@}
 
 #endif  // PEGASUS_ENABLE_PROXIES
+    
+    //! \return the global cache containing resources of this timeline
+    Application::GlobalCache* GetGlobalCache() { return &mGlobalCache; }
 
     //------------------------------------------------------------------------------------
 
@@ -275,6 +279,9 @@ private:
 
     //! Temporarily hold a property grid to store and interact with dynamic pieces of data.
     PropertyGrid::PropertyGridObject mPropertyGrid;
+
+    //! Global resource cache, containing shared render targets and such.
+    Application::GlobalCache mGlobalCache;
 
 #if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
     AssetLib::Category mCategory;

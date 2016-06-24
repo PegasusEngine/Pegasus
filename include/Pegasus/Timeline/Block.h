@@ -33,6 +33,7 @@ namespace Pegasus {
 
     namespace Timeline {
         class Lane;
+        class Timeline;
     }
 
     namespace Wnd {
@@ -101,9 +102,8 @@ public:
     //! Update the content of the block, called once at the beginning of each rendered frame
     //! \param beat Current beat relative to the beginning of the block,
     //!             can have fractional part (>= 0.0f)
-    //! \param window Window in which the lane is being rendered
     //! \todo That dependency is ugly. Find a way to remove that dependency
-    virtual void Update(float beat, Wnd::Window * window);
+    virtual void Update(float beat);
 
     //! Render the content of the block
     //! \param beat Current beat relative to the beginning of the block,

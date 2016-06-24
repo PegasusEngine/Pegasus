@@ -1,6 +1,10 @@
 extern myProp = 1;
 echo("RERUN");
 
+tmpConfig = RenderTargetConfig(500, 50);
+tempTarget1 = CreateRenderTarget( tmpConfig );
+GlobalRegisterRenderTarget("temp1", tempTarget1);
+
 int Timeline_Update(beat : float)
 {
 	echo(myProp);

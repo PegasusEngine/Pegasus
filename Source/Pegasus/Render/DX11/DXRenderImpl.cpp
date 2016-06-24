@@ -11,6 +11,8 @@
 
 #if PEGASUS_GAPI_DX
 
+#include "Pegasus/Memory/MemoryManager.h"
+#include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/Render/MeshFactory.h"
 #include "Pegasus/Render/Render.h"
 #include "Pegasus/Utils/Memcpy.h"
@@ -18,6 +20,13 @@
 #include "Pegasus/Utils/String.h"
 #include "../Source/Pegasus/Render/DX11/DXRenderContext.h"
 #include "../Source/Pegasus/Render/DX11/DXGpuDataDefs.h"
+
+/// MACROS ///
+
+#define RENDER_NEW(__type) \
+        PG_NEW(Pegasus::Memory::GetRenderAllocator(), -1, #__type, Pegasus::Alloc::PG_MEM_PERM) __type(Pegasus::Memory::GetRenderAllocator())
+
+//////////////
 
 //////////////////        GLOBALS CODE BLOCK     //////////////////////////////
 //         All globals holding state data are declared on this block       ////
@@ -190,7 +199,6 @@ void Pegasus::Render::SetMesh (Pegasus::Mesh::MeshInOut mesh)
         PG_LOG('ERR_', "Incompatible input layout in shader and mesh");
     }
     
-    if (gDXState.mDispatchedMeshGpuData != meshGpuData)
     {
         unsigned int strides  [MESH_MAX_STREAMS];
         unsigned int offsets[MESH_MAX_STREAMS];
@@ -245,7 +253,7 @@ void Pegasus::Render::SetViewport(const Pegasus::Render::Viewport& viewport)
     );
 }
 
-void Pegasus::Render::SetViewport(const Pegasus::Render::RenderTarget& viewport)
+void Pegasus::Render::SetViewport(const Pegasus::Render::RenderTargetRef& viewport)
 {
     DXRenderContext * ctx = DXRenderContext::GetBindedContext();
     PG_ASSERTSTR(ctx != nullptr, "must bind a context!!");
@@ -253,8 +261,8 @@ void Pegasus::Render::SetViewport(const Pegasus::Render::RenderTarget& viewport)
     D3D11_VIEWPORT vp = {
         0.0f,
         0.0f,
-        static_cast<float>(viewport.mConfig.mWidth),
-        static_cast<float>(viewport.mConfig.mHeight),
+        static_cast<float>(viewport->GetConfig().mWidth),
+        static_cast<float>(viewport->GetConfig().mHeight),
         0.0f,
         1.0f
     };
@@ -264,7 +272,7 @@ void Pegasus::Render::SetViewport(const Pegasus::Render::RenderTarget& viewport)
     );
 }
 
-void Pegasus::Render::SetViewport(const Pegasus::Render::DepthStencilTarget& viewport)
+void Pegasus::Render::SetViewport(const Pegasus::Render::DepthStencilRef& viewport)
 {
     DXRenderContext * ctx = DXRenderContext::GetBindedContext();
     PG_ASSERTSTR(ctx != nullptr, "must bind a context!!");
@@ -275,24 +283,23 @@ void Pegasus::Render::SetViewport(const Pegasus::Render::DepthStencilTarget& vie
 ///////////////////////////////////////////////////////////////////////////////
 /////////////   SetRenderTargets FUNCTION IMPLEMENTATION //////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-void Pegasus::Render::SetRenderTarget (Pegasus::Render::RenderTarget& renderTarget)
+void Pegasus::Render::SetRenderTarget (Pegasus::Render::RenderTargetRef& renderTarget)
 {
-    Pegasus::Render::RenderTarget* targetPtr = &renderTarget;
-    Pegasus::Render::SetRenderTargets(1, &targetPtr);
+    Pegasus::Render::SetRenderTargets(1, &renderTarget);
 }
 
-void Pegasus::Render::SetRenderTarget (Pegasus::Render::RenderTarget& renderTarget, Pegasus::Render::DepthStencilTarget& depthStencil)
+void Pegasus::Render::SetRenderTarget (Pegasus::Render::RenderTargetRef& renderTarget, Pegasus::Render::DepthStencilRef& depthStencil)
 {
-    Pegasus::Render::RenderTarget* targetPtr = &renderTarget;
-    Pegasus::Render::SetRenderTargets(1, &targetPtr, depthStencil);
+    Pegasus::Render::SetRenderTargets(1, &renderTarget, depthStencil);
 }
 
-void Pegasus::Render::SetRenderTargets (int renderTargetCount, Pegasus::Render::RenderTarget** renderTarget)
+void Pegasus::Render::SetRenderTargets (int renderTargetCount, Pegasus::Render::RenderTargetRef* renderTarget)
 {
-    Pegasus::Render::SetRenderTargets(renderTargetCount, renderTarget, DepthStencilTarget());
+    DepthStencilRef ds = nullptr;
+    Pegasus::Render::SetRenderTargets(renderTargetCount, renderTarget, ds);
 }
 
-void Pegasus::Render::SetRenderTargets (int renderTargetNum, Pegasus::Render::RenderTarget** renderTarget, Pegasus::Render::DepthStencilTarget& depthStencil)
+void Pegasus::Render::SetRenderTargets (int renderTargetNum, Pegasus::Render::RenderTargetRef* renderTarget, Pegasus::Render::DepthStencilRef& depthStencil)
 {
     DXRenderContext * ctx = DXRenderContext::GetBindedContext();
     PG_ASSERTSTR(ctx != nullptr, "must bind a context!!");
@@ -306,7 +313,7 @@ void Pegasus::Render::SetRenderTargets (int renderTargetNum, Pegasus::Render::Re
 
     for (int i = 0; i < renderTargetNum; ++i)
     {
-        Pegasus::Render::DXRenderTargetGPUData* rtGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXRenderTargetGPUData, renderTarget[i]->mInternalData);
+        Pegasus::Render::DXRenderTargetGPUData* rtGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXRenderTargetGPUData, renderTarget[i]->GetInternalData());
         gDXState.mDispatchedTargets[i] = rtGpuData->mRenderTarget;
         
     }
@@ -385,15 +392,15 @@ void Pegasus::Render::SetClearColorValue(const Pegasus::Math::ColorRGBA& color)
 ///////////////////////////////////////////////////////////////////////////////
 /////////////   SETRASTERIZERSTATE IMPLEMENTATION      ///////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-void Pegasus::Render::SetRasterizerState(const RasterizerState& state)
+void Pegasus::Render::SetRasterizerState(const RasterizerStateRef& state)
 {
     ID3D11DeviceContext * context;
     ID3D11Device * device;
     Pegasus::Render::GetDeviceAndContext(&device, &context);
 
-    PG_ASSERT(state.mInternalDataAux != nullptr && state.mInternalData != nullptr);
-    ID3D11RasterizerState* r = static_cast<ID3D11RasterizerState*>(state.mInternalData);
-    ID3D11DepthStencilState * d = static_cast<ID3D11DepthStencilState*>(state.mInternalDataAux);
+    PG_ASSERT(state->GetInternalData() != nullptr && state->GetInternalDataAux() != nullptr);
+    ID3D11RasterizerState* r = static_cast<ID3D11RasterizerState*>(state->GetInternalData());
+    ID3D11DepthStencilState * d = static_cast<ID3D11DepthStencilState*>(state->GetInternalDataAux());
     context->RSSetState(r);
     context->OMSetDepthStencilState(d, 0);
 
@@ -403,13 +410,12 @@ void Pegasus::Render::SetRasterizerState(const RasterizerState& state)
 ///////////////////////////////////////////////////////////////////////////////
 /////////////   SETBLENDINGSTATE IMPLEMENTATION      ///////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-void Pegasus::Render::SetBlendingState(const Pegasus::Render::BlendingState& blendingState)
+void Pegasus::Render::SetBlendingState(const Pegasus::Render::BlendingStateRef blendingState)
 {
-    
     ID3D11DeviceContext * context;
     ID3D11Device * device;
     Pegasus::Render::GetDeviceAndContext(&device, &context);
-    ID3D11BlendState* d3dState = static_cast<ID3D11BlendState*>(blendingState.mInternalData);
+    ID3D11BlendState* d3dState = static_cast<ID3D11BlendState*>(blendingState->GetInternalData());
     context->OMSetBlendState(d3dState, NULL, 0xffffffff);
 }
 
@@ -532,8 +538,11 @@ bool Pegasus::Render::GetUniformLocation(Pegasus::Shader::ProgramLinkageInOut pr
 ///////////////////////////////////////////////////////////////////////////////
 /////////////   CREATEUNIFORMBUFFER IMPLEMENTATION      ///////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-void Pegasus::Render::CreateUniformBuffer(int size, Pegasus::Render::Buffer& outputBuffer)
+Pegasus::Render::BufferRef Pegasus::Render::CreateUniformBuffer(int size)
 {
+    
+    Pegasus::Render::Buffer* b = RENDER_NEW(Pegasus::Render::Buffer);
+
     ID3D11DeviceContext * context;
     ID3D11Device * device;
     Pegasus::Render::GetDeviceAndContext(&device, &context);
@@ -547,20 +556,32 @@ void Pegasus::Render::CreateUniformBuffer(int size, Pegasus::Render::Buffer& out
     desc.StructureByteStride = 0;
 
     VALID_DECLARE(device->CreateBuffer(&desc, NULL, &bufferResource));
-    outputBuffer.mInternalData = bufferResource;
-    outputBuffer.mSize = size;
+
+    BufferConfig bc;
+    bc.mSize = size;
+    b->SetConfig(bc);
+    b->SetInternalData(bufferResource);
+    return b;
+}
+
+template<>
+Pegasus::Render::BasicResource<Pegasus::Render::BufferConfig>::~BasicResource()
+{
+    ID3D11Buffer * d3dBuffer = static_cast<ID3D11Buffer*>(GetInternalData());
+    d3dBuffer->Release();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 /////////////   CREATERASTERSTATE IMPLEMENTATION      ///////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-void Pegasus::Render::CreateRasterizerState(Pegasus::Render::RasterizerConfig& config, Pegasus::Render::RasterizerState& outputRasterizerState)
+Pegasus::Render::RasterizerStateRef Pegasus::Render::CreateRasterizerState(const Pegasus::Render::RasterizerConfig& config)
 {
+    Pegasus::Render::RasterizerState* rasterizerState = RENDER_NEW(Pegasus::Render::RasterizerState);
     ID3D11DeviceContext * context;
     ID3D11Device * device;
     Pegasus::Render::GetDeviceAndContext(&device, &context);
-    outputRasterizerState.mConfig = config;
+    rasterizerState->SetConfig(config);
 
     static const D3D11_CULL_MODE cullTranslation[] = {
         D3D11_CULL_NONE,
@@ -582,7 +603,7 @@ void Pegasus::Render::CreateRasterizerState(Pegasus::Render::RasterizerConfig& c
     
     ID3D11RasterizerState* rasterState = nullptr;
     VALID_DECLARE(device->CreateRasterizerState(&rasterDesc, &rasterState));
-    outputRasterizerState.mInternalData = static_cast<void*>(rasterState);
+    rasterizerState->SetInternalData(static_cast<void*>(rasterState));
 
     static const D3D11_COMPARISON_FUNC depthFunTranslation[] = {
         D3D11_COMPARISON_ALWAYS,
@@ -614,15 +635,17 @@ void Pegasus::Render::CreateRasterizerState(Pegasus::Render::RasterizerConfig& c
 
     ID3D11DepthStencilState* depthStencilState = nullptr;
     VALID(device->CreateDepthStencilState(&depthStencilDesc, &depthStencilState));
-    outputRasterizerState.mInternalDataAux = static_cast<void*>(depthStencilState);
+    rasterizerState->SetInternalDataAux( static_cast<void*>(depthStencilState) );
+    return rasterizerState;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 /////////////   CREATEBLENDIGNSTATE IMPLEMENTATION      ///////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-void Pegasus::Render::CreateBlendingState(Pegasus::Render::BlendingConfig& config, Pegasus::Render::BlendingState& blendingState)
+Pegasus::Render::BlendingStateRef Pegasus::Render::CreateBlendingState(const Pegasus::Render::BlendingConfig& config)
 {
+    Pegasus::Render::BlendingState* blendingState = RENDER_NEW(Pegasus::Render::BlendingState);
     ID3D11DeviceContext * context;
     ID3D11Device * device;
     Pegasus::Render::GetDeviceAndContext(&device, &context);
@@ -653,45 +676,44 @@ void Pegasus::Render::CreateBlendingState(Pegasus::Render::BlendingConfig& confi
     rtBlendDesc.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
     VALID_DECLARE(device->CreateBlendState(&blendDesc, &d3dBlendState));
-    blendingState.mInternalData = static_cast<void*>(d3dBlendState);
+    blendingState->SetInternalData(static_cast<void*>(d3dBlendState));
+    blendingState->SetConfig(config);
+    return blendingState;
 }
-///////////////////////////////////////////////////////////////////////////////
-/////////////   DELETERASTERSTATE IMPLEMENTATION      ///////////////////////
-///////////////////////////////////////////////////////////////////////////////
-void Pegasus::Render::DeleteRasterizerState(Pegasus::Render::RasterizerState& state)
+
+template<>
+Pegasus::Render::BasicResource<Pegasus::Render::RasterizerConfig>::~BasicResource()
 {
-    PG_ASSERT(state.mInternalDataAux != nullptr && state.mInternalData != nullptr);
-    ID3D11RasterizerState* r = static_cast<ID3D11RasterizerState*>(state.mInternalData);
-    ID3D11DepthStencilState * d = static_cast<ID3D11DepthStencilState*>(state.mInternalDataAux);
+    PG_ASSERT(GetInternalData() != nullptr && GetInternalDataAux() != nullptr);
+    ID3D11RasterizerState* r = static_cast<ID3D11RasterizerState*>(GetInternalData());
+    ID3D11DepthStencilState * d = static_cast<ID3D11DepthStencilState*>(GetInternalDataAux());
 
     r->Release();
     d->Release();
-    state.mInternalDataAux = nullptr;
-    state.mInternalData = nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 /////////////   DELETEBLENDIGNSTATE IMPLEMENTATION      ///////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-void Pegasus::Render::DeleteBlendingState(Pegasus::Render::BlendingState& blendingState)
+template<>
+Pegasus::Render::BasicResource<Pegasus::Render::BlendingConfig>::~BasicResource()
 {
-    PG_ASSERT(blendingState.mInternalData != nullptr);
-    ID3D11BlendState* d3dBlendState = static_cast<ID3D11BlendState*>(blendingState.mInternalData);
+    PG_ASSERT(GetInternalData() != nullptr);
+    ID3D11BlendState* d3dBlendState = static_cast<ID3D11BlendState*>(GetInternalData());
     d3dBlendState->Release();
-    blendingState.mInternalData = nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 /////////////   SETBUFFER IMPLEMENTATION                ///////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-void Pegasus::Render::SetBuffer(Pegasus::Render::Buffer& dstBuffer, void * src, int size, int offset)
+void Pegasus::Render::SetBuffer(Pegasus::Render::BufferRef& dstBuffer, void * src, int size, int offset)
 {
-    ID3D11Buffer* d3dBuffer = static_cast<ID3D11Buffer*>(dstBuffer.mInternalData);
-    size = size == -1 ? dstBuffer.mSize : size;
+    ID3D11Buffer* d3dBuffer = static_cast<ID3D11Buffer*>(dstBuffer->GetInternalData());
+    size = size == -1 ? dstBuffer->GetConfig().mSize : size;
     int actualSize = size + offset;
     PG_ASSERT(d3dBuffer != nullptr);
-    PG_ASSERT(actualSize == dstBuffer.mSize);
+    PG_ASSERT(actualSize == dstBuffer->GetConfig().mSize);
     
     ID3D11DeviceContext * context;
     ID3D11Device * device;
@@ -709,18 +731,6 @@ void Pegasus::Render::SetBuffer(Pegasus::Render::Buffer& dstBuffer, void * src, 
     {
         PG_FAILSTR("Map of subresource failed");
     }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-/////////////   DELETE BUFFER IMPLEMENTATION            ///////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-void Pegasus::Render::DeleteBuffer(Pegasus::Render::Buffer& buffer)
-{
-    ID3D11Buffer * d3dBuffer = static_cast<ID3D11Buffer*>(buffer.mInternalData);
-    d3dBuffer->Release();
-    buffer.mSize = 0;
-    buffer.mInternalData = nullptr;
 }
 
 // ---------------------------------------------------------------------------
@@ -784,7 +794,7 @@ bool Pegasus::Render::SetUniformTexture(Pegasus::Render::Uniform& u, Pegasus::Te
 
 // ---------------------------------------------------------------------------
 
-bool Pegasus::Render::SetUniformBuffer(Pegasus::Render::Uniform& u, const Buffer& buffer)
+bool Pegasus::Render::SetUniformBuffer(Pegasus::Render::Uniform& u, const BufferRef& buffer)
 {
     ID3D11DeviceContext * context;
     ID3D11Device * device;
@@ -797,15 +807,15 @@ bool Pegasus::Render::SetUniformBuffer(Pegasus::Render::Uniform& u, const Buffer
             PG_LOG('ERR_', "Fatal error when setting uniform %s. Does this uniform corresponds to the program?", u.mName);
             return false;
         }
-        ID3D11Buffer * d3dBuffer = static_cast<ID3D11Buffer*>(buffer.mInternalData);
+        ID3D11Buffer * d3dBuffer = static_cast<ID3D11Buffer*>(buffer->GetInternalData());
         PG_ASSERT(d3dBuffer != nullptr);
         Pegasus::Render::DXProgramGPUData::UniformReflectionData& reflectionData = programData->mReflectionData[u.mInternalIndex];
 		for (int s = 0; s < reflectionData.mStageCount; ++s)
         {
             Pegasus::Render::DXProgramGPUData::UniformReflectionData::StageBinding& binding = reflectionData.mStageBindings[s];
-            if (binding.mSize > buffer.mSize)
+            if (binding.mSize > buffer->GetConfig().mSize)
             {
-                PG_LOG('ERR_', "Size of cbuffer too small. Target size of \"%s\" must be %d bytes, instead expecting %d bytes", u.mName, binding.mSize, buffer.mSize);
+                PG_LOG('ERR_', "Size of cbuffer too small. Target size of \"%s\" must be %d bytes, instead expecting %d bytes", u.mName, binding.mSize, buffer->GetConfig().mSize);
                 continue;
             }
             switch(binding.mPipelineType)
@@ -839,15 +849,15 @@ bool Pegasus::Render::SetUniformBuffer(Pegasus::Render::Uniform& u, const Buffer
 
 // ---------------------------------------------------------------------------
 
-bool Pegasus::Render::SetUniformTextureRenderTarget(Pegasus::Render::Uniform& u, const RenderTarget& renderTarget)
+bool Pegasus::Render::SetUniformTextureRenderTarget(Pegasus::Render::Uniform& u, const RenderTargetRef renderTarget)
 {
-    Pegasus::Render::DXRenderTargetGPUData * renderTargetGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXRenderTargetGPUData, renderTarget.mInternalData);
+    Pegasus::Render::DXRenderTargetGPUData * renderTargetGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXRenderTargetGPUData, renderTarget->GetInternalData());
     return InternalSetTextureUniform(u, &renderTargetGpuData->mTextureView);
 }
 
 // ---------------------------------------------------------------------------
 
-bool Pegasus::Render::SetUniformCubeMap(Pegasus::Render::Uniform& u, const CubeMap& cubeMap)
+bool Pegasus::Render::SetUniformCubeMap(Pegasus::Render::Uniform& u, CubeMapRef& cubeMap)
 {
     //todo: implement
     return false;

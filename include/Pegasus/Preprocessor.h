@@ -313,6 +313,9 @@
 //Enable asset category tracking for editor purposes.
 #define PEGASUS_ASSETLIB_ENABLE_CATEGORIES (PEGASUS_DEV)
 
+//Enables error checkin on functions in blockscript that are called out of context
+#define PEGASUS_ENABLE_SCRIPT_PERMISSIONS (PEGASUS_DEV)
+
 // Enable GPU data RunTime Type Information, for safe casting (asserts thrown if wrong type being casted)
 #define PEGASUS_GRAPH_GPUDATA_RTTI                      (PEGASUS_DEBUG)
 

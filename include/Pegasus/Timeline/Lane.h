@@ -122,9 +122,8 @@ public:
 
     //! Update the content of the lane for the given window (done once per frame if active)
     //! \param beat Current beat, measured in ticks, can have fractional part
-    //! \param window Window in which the lane is being rendered
     //! \todo That dependency is ugly. Find a way to remove that dependency
-    void Update(float beat, Wnd::Window * window);
+    void Update(float beat);
 
     //! Render the content of the lane for the given window
     //! \param beat Current beat, measured in ticks, can have fractional part

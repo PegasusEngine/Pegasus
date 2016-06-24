@@ -19,6 +19,7 @@
 #include "Pegasus/AssetLib/Category.h"
 #include "Pegasus/PropertyGrid/PropertyGridObject.h"
 #include "Pegasus/Timeline/BlockRuntimeScriptListener.h"
+#include "Pegasus/Application/RenderCollection.h"
 
 namespace Pegasus {
 
@@ -51,7 +52,7 @@ namespace Timeline {
 
 
 //! 
-class TimelineScriptRunner
+class TimelineScriptRunner : public Application::GlobalCache::IListener
 {
 public:
 
@@ -79,7 +80,9 @@ public:
     void ShutdownScript();
 
     //! Attempts to initialize a script
-    void InitializeScript();
+    //! \param useAssetCategories use this if we want to put all the internal assets loaded on this script to the 
+    //!         asset category that was set
+    void InitializeScript(bool useAssetCategories = true);
 
     //! Uninitializes a script
     void UninitializeScript();
@@ -98,7 +101,7 @@ public:
     //!             can have fractional part (>= 0.0f)
     //! \param window Window in which the lane is being rendered
     //! \todo That dependency is ugly. Find a way to remove that dependency
-    virtual void CallUpdate(float beat, Wnd::Window * window);
+    virtual void CallUpdate(float beat);
 
     //! Render the content of the block
     //! \param beat Current beat relative to the beginning of the block,
@@ -109,6 +112,15 @@ public:
 
     //Gets the property grid that this runner is using to dispatch externs
     PropertyGrid::PropertyGridObject* GetPropertyGrid() { return mPropertyGrid; }
+
+    //Sets the global cache to be used by this blockscript
+    //! \param globalCache to own
+    //! \param controlReset controls the reset of this global cache. Only one script runner is allowed to do this (the master script).
+    void SetGlobalCache(Application::GlobalCache* globalCache, bool controlReset = false) { mGlobalCache = globalCache; mControlGlobalCacheReset = controlReset; }
+
+protected:
+    //! callback from GlobalCache IListener
+    virtual void OnGlobalCacheDirty();
 
 private:
 
@@ -132,6 +144,12 @@ private:
 
     //! version of the script, used for global variable initialization
     int mScriptVersion;
+
+    //! Boolean that decides if we control the reset of the global cache.
+    bool mControlGlobalCacheReset;
+
+    //! The global cache of this runner
+    Application::GlobalCache* mGlobalCache;
 
 #if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
     AssetLib::Category* mCategory;

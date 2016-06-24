@@ -97,4 +97,6 @@ bool UNIT_TEST_ByteStream2();
 
 bool UNIT_TEST_ByteStream3();
 
+bool UNIT_TEST_HashStr();
+
 #endif

@@ -86,6 +86,9 @@ int main()
     RUN_TEST(Strcat5);
     RUN_TEST(Strcat6);
 
+    //StringHash
+    RUN_TEST(HashStr);
+
     //Atoi
     RUN_TEST(Atoi1);
     RUN_TEST(Atoi2);

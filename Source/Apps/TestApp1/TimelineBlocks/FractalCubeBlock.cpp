@@ -45,7 +45,7 @@ void FractalCubeBlock::Initialize()
     mProgram->GetUpdatedData(updated);
 
     // Set up shader uniforms
-    Pegasus::Render::CreateUniformBuffer(sizeof(mState), mStateBuffer);
+    mStateBuffer = Pegasus::Render::CreateUniformBuffer(sizeof(mState));
     Pegasus::Render::GetUniformLocation(mProgram, "uniformState", mStateBufferUniform);
 
 }
@@ -54,13 +54,11 @@ void FractalCubeBlock::Initialize()
 
 void FractalCubeBlock::Shutdown()
 {
-    //! \todo Uninitialize VAOs, buffers, shaders
-    Pegasus::Render::DeleteBuffer(mStateBuffer);
 }
 
 //----------------------------------------------------------------------------------------
 
-void FractalCubeBlock::Update(float beat, Pegasus::Wnd::Window * window)
+void FractalCubeBlock::Update(float beat)
 {
     // Update the graph of all textures and meshes, in case they have dynamic data
     mQuad->Update();

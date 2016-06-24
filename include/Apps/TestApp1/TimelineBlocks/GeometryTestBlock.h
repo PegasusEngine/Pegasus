@@ -44,9 +44,8 @@ public:
     //! Update the content of the block, called once at the beginning of each rendered frame
     //! \param beat Current beat relative to the beginning of the block,
     //!             can have fractional part (>= 0.0f)
-    //! \param window Window in which the lane is being rendered
     //! \todo That dependency is ugly. Find a way to remove that dependency
-    virtual void Update(float beat, Pegasus::Wnd::Window * window);
+    virtual void Update(float beat);
 
     //! Render the content of the block
     //! \param beat Current beat relative to the beginning of the block,
@@ -75,7 +74,7 @@ private:
     // block program uniforms
     Pegasus::Render::Uniform mCubeTextureUniform;
     Pegasus::Render::Uniform mUniformBlock;
-    Pegasus::Render::Buffer  mUniformStateBuffer;
+    Pegasus::Render::BufferRef  mUniformStateBuffer;
 
     Pegasus::Render::Uniform mHorizontalInput;
     Pegasus::Render::Uniform mVerticalInput;
@@ -84,9 +83,9 @@ private:
 
     // screen program uniforms
     Pegasus::Render::Uniform mSpeakerUniformBlock;
-    Pegasus::Render::Buffer  mSpeakerStateBuffer;
-    Pegasus::Render::CubeMap mCubeMap;
-    Pegasus::Render::RenderTarget mCubeMapTarget;
+    Pegasus::Render::BufferRef  mSpeakerStateBuffer;
+    Pegasus::Render::CubeMapRef mCubeMap;
+    Pegasus::Render::RenderTargetRef mCubeMapTarget;
     PEGASUS_ALIGN_BEGIN(16)
     struct SpeakerUniformState
     {
@@ -94,14 +93,14 @@ private:
     } mSpeakerState
     PEGASUS_ALIGN_END(16);
 
-    Pegasus::Render::RenderTarget mCubeFaceRenderTarget;
+    Pegasus::Render::RenderTargetRef mCubeFaceRenderTarget;
 
-    Pegasus::Render::RenderTarget mTempTarget1;
-    Pegasus::Render::RenderTarget mTempTarget2;
-    Pegasus::Render::RenderTarget mTempTarget3;
+    Pegasus::Render::RenderTargetRef mTempTarget1;
+    Pegasus::Render::RenderTargetRef mTempTarget2;
+    Pegasus::Render::RenderTargetRef mTempTarget3;
 
-    Pegasus::Render::RasterizerState mDefaultRasterState;
-    Pegasus::Render::RasterizerState mCurrentBlockRasterState;
+    Pegasus::Render::RasterizerStateRef mDefaultRasterState;
+    Pegasus::Render::RasterizerStateRef mCurrentBlockRasterState;
     
     PEGASUS_ALIGN_BEGIN(16)
     struct UniformState

@@ -69,11 +69,11 @@ void GeometryTestBlock::Initialize()
     rasterConfig.mCullMode = Pegasus::Render::RasterizerConfig::CW_CM;
     rasterConfig.mDepthFunc = Pegasus::Render::RasterizerConfig::GREATER_DF;
 
-    Pegasus::Render::CreateRasterizerState(rasterConfig, mCurrentBlockRasterState);
+    mCurrentBlockRasterState = Pegasus::Render::CreateRasterizerState(rasterConfig);
     rasterConfig.mCullMode = Pegasus::Render::RasterizerConfig::NONE_CM;
     rasterConfig.mDepthFunc = Pegasus::Render::RasterizerConfig::NONE_DF;
 
-    Pegasus::Render::CreateRasterizerState(rasterConfig, mDefaultRasterState);
+    mDefaultRasterState = Pegasus::Render::CreateRasterizerState(rasterConfig);
     
     // setup shaders
     Pegasus::Shader::ShaderManager * const shaderManager = GetShaderManager();
@@ -91,11 +91,11 @@ void GeometryTestBlock::Initialize()
     // setup uniforms
     Pegasus::Render::GetUniformLocation(mBlockProgram, "cubeTex", mCubeTextureUniform);
     Pegasus::Render::GetUniformLocation(mBlockProgram, "uniformState", mUniformBlock);
-    Pegasus::Render::CreateUniformBuffer(sizeof(mState), mUniformStateBuffer);
+    mUniformStateBuffer = Pegasus::Render::CreateUniformBuffer(sizeof(mState));
     Pegasus::Math::SetIdentity(mState.mRotation);
 
     Pegasus::Render::GetUniformLocation(mDiscoSpeaker, "uniformState",   mSpeakerUniformBlock);
-    Pegasus::Render::CreateUniformBuffer(sizeof(mSpeakerState), mSpeakerStateBuffer);
+    mSpeakerStateBuffer = Pegasus::Render::CreateUniformBuffer(sizeof(mSpeakerState));
 
     Pegasus::Render::GetUniformLocation(mComposite, "inputTexture1", mCompositeInput1);
     Pegasus::Render::GetUniformLocation(mComposite, "inputTexture2", mCompositeInput2);
@@ -132,43 +132,34 @@ void GeometryTestBlock::Initialize()
     Pegasus::Render::RenderTargetConfig c;
     c.mWidth = 512;
     c.mHeight = 512;
-    Pegasus::Render::CreateRenderTarget(c, mCubeFaceRenderTarget);
+    mCubeFaceRenderTarget = Pegasus::Render::CreateRenderTarget(c);
 
     c.mWidth = 1280;
     c.mHeight = 720;
-    Pegasus::Render::CreateRenderTarget(c, mTempTarget1);
+    mTempTarget1 = Pegasus::Render::CreateRenderTarget(c);
     c.mWidth /= 4;
     c.mHeight /= 4;
-    Pegasus::Render::CreateRenderTarget(c, mTempTarget2);
-    Pegasus::Render::CreateRenderTarget(c, mTempTarget3);
+    mTempTarget2 = Pegasus::Render::CreateRenderTarget(c);
+    mTempTarget3 = Pegasus::Render::CreateRenderTarget(c);
 
     Pegasus::Render::CubeMapConfig cubeDesc;
     cubeDesc.mWidth = 256;
     cubeDesc.mHeight = 256;
     
-    Pegasus::Render::CreateCubeMap(cubeDesc, mCubeMap);
+    mCubeMap = Pegasus::Render::CreateCubeMap(cubeDesc);
 }
 
 //----------------------------------------------------------------------------------------
 
 void GeometryTestBlock::Shutdown()
 {
-    Pegasus::Render::DeleteBuffer(mUniformStateBuffer);
-    Pegasus::Render::DeleteBuffer(mSpeakerStateBuffer);
-    Pegasus::Render::DeleteRenderTarget(mTempTarget1);
-    Pegasus::Render::DeleteRenderTarget(mTempTarget2);
-    Pegasus::Render::DeleteRenderTarget(mTempTarget3);
-    Pegasus::Render::DeleteRenderTarget(mCubeFaceRenderTarget);
-    Pegasus::Render::DeleteRasterizerState(mCurrentBlockRasterState);
-    Pegasus::Render::DeleteRasterizerState(mDefaultRasterState);
-    Pegasus::Render::DeleteCubeMap(mCubeMap);
 }
 
 //----------------------------------------------------------------------------------------
 
-void GeometryTestBlock::Update(float beat, Pegasus::Wnd::Window * window)
+void GeometryTestBlock::Update(float beat)
 {
-    Block::Update(beat, window);
+    Block::Update(beat);
 }
 
 //----------------------------------------------------------------------------------------

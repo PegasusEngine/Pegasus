@@ -12,6 +12,8 @@
 #include "Pegasus/Timeline/TimelineManager.h"
 #include "Pegasus/Application/RenderCollection.h"
 #include "Pegasus/Timeline/Block.h"
+#include "Pegasus/Timeline/Lane.h"
+#include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/AssetLib/AssetLib.h"
@@ -84,9 +86,9 @@ TimelineScriptReturn Block::GetScript()
 
 //----------------------------------------------------------------------------------------
 
-void Block::Update(float beat, Wnd::Window * window)
+void Block::Update(float beat)
 {
-    mScriptRunner.CallUpdate(beat, window);
+    mScriptRunner.CallUpdate(beat);
 }
 
 //----------------------------------------------------------------------------------------
@@ -100,7 +102,8 @@ void Block::Render(float beat, Wnd::Window * window)
 
 void Block::Initialize()
 {
-    mScriptRunner.InitializeScript();
+    //! don't use asset categories because these are set externally already.
+    mScriptRunner.InitializeScript(false);
 }
 
 //----------------------------------------------------------------------------------------
@@ -115,7 +118,11 @@ void Block::Shutdown()
 void Block::SetLane(Lane * lane)
 {
     PG_ASSERTSTR(lane != nullptr, "Invalid lane associated with a block");
+    PG_ASSERTSTR(lane->GetTimeline() != nullptr, "The lane must belong to a timeline in order for this block to be part of it");
     mLane = lane;
+
+    //link the script runner with the proper global cache from the timeline
+    mScriptRunner.SetGlobalCache(lane->GetTimeline()->GetGlobalCache());
 }
 
 bool Block::OnReadObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* owner, AssetLib::Object* root) 

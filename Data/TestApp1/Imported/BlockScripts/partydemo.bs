@@ -33,7 +33,7 @@ icosphere.Degree = 5;
 
 
 
-int Timeline_Update(beat : float)
+int SetupState(beat : float)
 {
 	wha = GetWidthHeightAspect();
 	aspect = wha.w;
@@ -55,9 +55,16 @@ int Timeline_Update(beat : float)
 	gPixelState.uLightPosition = float4(1.0*sin(beat*speed*3.14),1.0*sin(1.0-beat),1.0*cos(beat*speed*3.14),0.0);
 }
 
+int Timeline_Update(beat : float)
+{
+}
+
 
 int Timeline_Render(beat : float)
 {
+
+	SetupState(beat);
+
 	/// RENDER MARBLE
 	Clear(1,0,0);
 	SetClearColorValue(float4(0,0,0,1));

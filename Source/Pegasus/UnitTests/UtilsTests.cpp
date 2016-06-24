@@ -465,3 +465,33 @@ bool UNIT_TEST_ByteStream3()
 
     return !Pegasus::Utils::Strcmp(static_cast<char*>(bs2.GetBuffer()), static_cast<char*>(bs.GetBuffer()));
 }
+
+bool UNIT_TEST_HashStr()
+{
+    int hashes[10];
+    hashes[0] = Pegasus::Utils::HashStr("Test string 1");
+    hashes[1] = Pegasus::Utils::HashStr("Test string 2");
+    hashes[2] = Pegasus::Utils::HashStr("Test string 11");
+    hashes[3] = Pegasus::Utils::HashStr("Test strina 1");
+    hashes[4] = Pegasus::Utils::HashStr("Tect strinG 1");
+    hashes[5] = Pegasus::Utils::HashStr("Test ssring 1");
+    hashes[6] = Pegasus::Utils::HashStr("Test  tring 1");
+    hashes[7] = Pegasus::Utils::HashStr("Teststring 1 ");
+    hashes[8] = Pegasus::Utils::HashStr("Test stiing 1");
+    hashes[9] = Pegasus::Utils::HashStr("test string 1");
+
+    bool pass = true;
+
+    for (int i = 0; i < 10; ++i)
+    {
+        for (int j = 0; j < 10; ++j)
+        {
+            if (i != j)
+            {
+                pass = pass && hashes[i] != hashes[j];
+            }
+        }
+    }
+
+    return pass;
+}

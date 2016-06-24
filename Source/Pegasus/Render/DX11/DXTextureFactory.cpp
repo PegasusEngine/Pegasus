@@ -18,6 +18,7 @@
 #include "Pegasus/Utils/Memcpy.h"
 #include "../Source/Pegasus/Render/DX11/DXGpuDataDefs.h"
 #include "../Source/Pegasus/Render/DX11/DXRenderContext.h"
+#include "Pegasus/Memory/MemoryManager.h"
 
 class DXTextureFactory : public Pegasus::Texture::ITextureFactory
 {
@@ -249,7 +250,7 @@ void DXTextureFactory::InternalCreateRenderTarget(
     else
     {
         PG_ASSERT(cubeMap != nullptr);
-        const Pegasus::Render::DXTextureGPUData* texGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXTextureGPUData, cubeMap->mInternalData);
+        const Pegasus::Render::DXTextureGPUData* texGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXTextureGPUData, cubeMap->GetInternalData());
         renderTargetGpuData->mTextureView.mDesc = texGpuData->mDesc;
         renderTargetGpuData->mTextureView.mTexture = texGpuData->mTexture;
         renderTargetGpuData->mTextureView.mSrvDesc = texGpuData->mSrvDesc;
@@ -282,19 +283,19 @@ void DXTextureFactory::InternalCreateRenderTarget(
 
     VALID_DECLARE(device->CreateRenderTargetView(renderTargetGpuData->mTextureView.mTexture, &rtDesc, &renderTargetGpuData->mRenderTarget));
 
-    renderTarget.mConfig = *config;
-    renderTarget.mInternalData = static_cast<void*>(renderTargetGpuData);
+    renderTarget.SetConfig(*config);
+    renderTarget.SetInternalData(static_cast<void*>(renderTargetGpuData));
 }
 
 void DXTextureFactory::InternalDestroyRenderTarget(Pegasus::Render::RenderTarget& renderTarget)
 {
-    PG_ASSERT(renderTarget.mInternalData != nullptr);
-    Pegasus::Render::DXRenderTargetGPUData * renderTargetGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXRenderTargetGPUData, renderTarget.mInternalData);
+    PG_ASSERT(renderTarget.GetInternalData() != nullptr);
+    Pegasus::Render::DXRenderTargetGPUData * renderTargetGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXRenderTargetGPUData, renderTarget.GetInternalData());
     renderTargetGpuData->mRenderTarget = nullptr;
     renderTargetGpuData->mTextureView.mSrv = nullptr;
     renderTargetGpuData->mTextureView.mTexture = nullptr;
     PG_DELETE(mAllocator, renderTargetGpuData);
-    renderTarget.mInternalData = nullptr;
+    renderTarget.SetInternalData(nullptr);
 }
 
 void DXTextureFactory::InternalCreateCubeMap(const Pegasus::Render::CubeMapConfig& config, Pegasus::Render::CubeMap& cubeMap)
@@ -333,13 +334,13 @@ void DXTextureFactory::InternalCreateCubeMap(const Pegasus::Render::CubeMapConfi
     
     VALID(device->CreateShaderResourceView(texGpuData->mTexture, &srvDesc, &texGpuData->mSrv));
     
-    cubeMap.mConfig = config;
-    cubeMap.mInternalData = texGpuData;   
+    cubeMap.SetConfig(config);
+    cubeMap.SetInternalData(texGpuData);   
 }
 
 void DXTextureFactory::InternalDestroyCubeMap(Pegasus::Render::CubeMap& cubeMap)
 {
-    Pegasus::Render::DXTextureGPUData* texGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXTextureGPUData, cubeMap.mInternalData);
+    Pegasus::Render::DXTextureGPUData* texGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXTextureGPUData, cubeMap.GetInternalData());
     texGpuData->mTexture = nullptr;
     texGpuData->mSrv = nullptr;
     PG_DELETE(mAllocator, texGpuData);
@@ -363,32 +364,41 @@ Texture::ITextureFactory * GetRenderTextureFactory()
 ///////////////////////////////////////////////////////////////////////////////
 /////////////   CREATE RENDER TARGET IMPLEMENTATION /////////////////////////// 
 ///////////////////////////////////////////////////////////////////////////////
-void Pegasus::Render::CreateRenderTarget(Pegasus::Render::RenderTargetConfig& config, Pegasus::Render::RenderTarget& renderTarget)
+Pegasus::Render::RenderTargetRef Pegasus::Render::CreateRenderTarget(Pegasus::Render::RenderTargetConfig& config)
 {
-    Pegasus::Render::gTextureFactory.InternalCreateRenderTarget(&config, nullptr, Pegasus::Render::X /*unused*/, renderTarget);    
+    RenderTarget* rt = PG_NEW(Pegasus::Memory::GetRenderAllocator(), -1, "RenderTarget", Pegasus::Alloc::PG_MEM_PERM) RenderTarget(Pegasus::Memory::GetRenderAllocator());
+    Pegasus::Render::gTextureFactory.InternalCreateRenderTarget(&config, nullptr, Pegasus::Render::X /*unused*/, *rt);    
+    return rt;
 }
 
-void Pegasus::Render::CreateRenderTargetFromCubeMap(CubeFace targetFace, CubeMap& cubeMap, RenderTarget& target)
+Pegasus::Render::RenderTargetRef Pegasus::Render::CreateRenderTargetFromCubeMap(Pegasus::Render::CubeFace targetFace, Pegasus::Render::CubeMapRef& cubeMap)
 {
-    Pegasus::Render::gTextureFactory.InternalCreateRenderTarget(nullptr, &cubeMap, targetFace,  target);
+    RenderTarget* rt = PG_NEW(Pegasus::Memory::GetRenderAllocator(), -1, "RenderTarget", Pegasus::Alloc::PG_MEM_PERM) RenderTarget(Pegasus::Memory::GetRenderAllocator());
+    Pegasus::Render::gTextureFactory.InternalCreateRenderTarget(nullptr, &(*cubeMap), targetFace,  *rt);
+    return rt;
 }
 
-void Pegasus::Render::CreateCubeMap(Pegasus::Render::CubeMapConfig& config, Pegasus::Render::CubeMap& cubeMap)
+Pegasus::Render::CubeMapRef Pegasus::Render::CreateCubeMap(Pegasus::Render::CubeMapConfig& config)
 {
-    Pegasus::Render::gTextureFactory.InternalCreateCubeMap(config, cubeMap);
+    CubeMap* cubeMap = PG_NEW(Pegasus::Memory::GetRenderAllocator(), -1, "RenderTarget", Pegasus::Alloc::PG_MEM_PERM) CubeMap(Pegasus::Memory::GetRenderAllocator());
+    Pegasus::Render::gTextureFactory.InternalCreateCubeMap(config, *cubeMap);
+    return cubeMap;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/////////////   DELETE RENDER TARGET IMPLEMENTATION            ///////////////////////
+/////////////   DELETE RENDER TARGET IMPLEMENTATION       /////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-void Pegasus::Render::DeleteRenderTarget(Pegasus::Render::RenderTarget& renderTarget)
+
+template<>
+Pegasus::Render::BasicResource<Pegasus::Render::RenderTargetConfig>::~BasicResource()
 {
-    Pegasus::Render::gTextureFactory.InternalDestroyRenderTarget(renderTarget);
+    Pegasus::Render::gTextureFactory.InternalDestroyRenderTarget(*this);
 }
 
-void Pegasus::Render::DeleteCubeMap(Pegasus::Render::CubeMap& cubeMap)
+template<>
+Pegasus::Render::BasicResource<Pegasus::Render::CubeMapConfig>::~BasicResource()
 {
-    Pegasus::Render::gTextureFactory.InternalDestroyCubeMap(cubeMap);
+    Pegasus::Render::gTextureFactory.InternalDestroyCubeMap(*this);
 }
 
 #else
