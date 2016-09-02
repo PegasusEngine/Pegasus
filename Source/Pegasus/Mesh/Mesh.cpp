@@ -99,9 +99,7 @@ void Mesh::ReleaseGPUData()
     //!       This function can destroy GPU data of another graph sharing the same node.
     //!       GetUpdatedData() is called twice, and the first call might generate the data
     //!       of the graph that could have been empty, to release the content right after.
-
-    bool dummyVariable = false;
-    if (GetNumInputs() == 1 && GetInput(0)->GetUpdatedData(dummyVariable) != nullptr && mFactory != nullptr)
+    if (GetNumInputs() == 1 && GetInput(0)->GetData() != nullptr && mFactory != nullptr)
     {
 #if PEGASUS_ENABLE_DETAILED_LOG
 #if PEGASUS_ENABLE_PROXIES
@@ -111,7 +109,7 @@ void Mesh::ReleaseGPUData()
 #endif
 #endif  // PEGASUS_ENABLE_DETAILED_LOG
 
-        mFactory->DestroyNodeGPUData((MeshData*)&(*GetInput(0)->GetUpdatedData(dummyVariable)));
+        mFactory->DestroyNodeGPUData((MeshData*)&(*GetInput(0)->GetData()));
     }
 }
 

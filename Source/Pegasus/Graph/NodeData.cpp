@@ -28,6 +28,7 @@ NodeData::NodeData(Alloc::IAllocator * allocator)
 
 NodeData::~NodeData()
 {
+    PG_ASSERTSTR(mNodeGPUData == nullptr, "GPU data not freed! this means there is a memory leak.");
 }
 
 //----------------------------------------------------------------------------------------

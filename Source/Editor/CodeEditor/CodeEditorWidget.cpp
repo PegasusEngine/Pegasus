@@ -274,6 +274,8 @@ void CodeEditorWidget::SignalCompilationError(AssetInstanceHandle handle, int li
     if (handle.IsValid())
     {
         SourceState* ss = mHandleMap[handle];
+        if (ss == nullptr) return;
+
         ss->errorLines.insert(line);
         ss->errorMessages.insert(line, errorString);
         PostStatusBarMessage(QString("(%1): ").arg(line) + errorString);
@@ -394,6 +396,7 @@ void CodeEditorWidget::SignalSaveTab(int idx)
     {
         AssetInstanceHandle handle = mUi.mTabWidget->GetTabObject(idx);
         SourceState* ss = mHandleMap[handle];
+        if (ss == nullptr) return;
 
         //dump ui document data to the internal node so we can save
         QString plainText = ss->document->toPlainText();
@@ -436,6 +439,8 @@ void CodeEditorWidget::SignalViewCode(AssetInstanceHandle handle)
     if (handle.IsValid())
     {
         SourceState* ss = mHandleMap[handle];
+        if (ss == nullptr) return;
+
         mInternalBlockTextUpdated = true;
         mUi.mTreeEditor->DisplayCode(ss);
         mInternalBlockTextUpdated = false;
@@ -557,7 +562,7 @@ void CodeEditorWidget::OnTextWindowSelected(QWidget * sender)
 
 void CodeEditorWidget::CompileCode(AssetInstanceHandle handle)
 {
-    if (!handle.IsValid() ) return;
+    if (!handle.IsValid() ) return;    
     mCompilationRequestMutex->lock(); 
     if (!mCompilationRequestPending)
     {

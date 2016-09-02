@@ -10,6 +10,7 @@
 //! \brief	Base mesh operator node class
 
 #include "Pegasus/Mesh/MeshOperator.h"
+#include "Pegasus/Mesh/IMeshFactory.h"
 
 namespace Pegasus {
 namespace Mesh {
@@ -22,6 +23,7 @@ END_IMPLEMENT_PROPERTIES(MeshOperator)
 
 MeshOperator::MeshOperator(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :   Graph::OperatorNode(nodeAllocator, nodeDataAllocator),
+    mFactory(nullptr),
     mConfiguration()
 {
     BEGIN_INIT_PROPERTIES(MeshOperator)
@@ -60,14 +62,34 @@ void MeshOperator::SetConfiguration(const MeshConfiguration & configuration)
 
 MeshOperator::~MeshOperator()
 {
+    ReleaseGPUData();
 }
 
+//----------------------------------------------------------------------------------------
+
+void MeshOperator::ReleaseGPUData()
+{
+    if (GetData() != nullptr)
+    {
+        GetFactory()->DestroyNodeGPUData((MeshData*)&(*GetData()));
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void MeshOperator::ReleaseDataAndPropagate()
+{
+    //! \todo See note in ReleaseGPUData()
+    ReleaseGPUData();
+
+    Graph::Node::ReleaseDataAndPropagate();
+}
 //----------------------------------------------------------------------------------------
 
 Graph::NodeData * MeshOperator::AllocateData() const
 {
     return PG_NEW(GetNodeAllocator(), -1, "MeshOperator::MeshData", Pegasus::Alloc::PG_MEM_TEMP)
-                    MeshData(mConfiguration, GetNodeDataAllocator());
+                    MeshData(mConfiguration, GetMode(), GetNodeDataAllocator());
 }
 
 

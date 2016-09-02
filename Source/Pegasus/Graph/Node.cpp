@@ -173,6 +173,12 @@ void Node::AddInput(const Pegasus::Core::Ref<Node> & inputNode)
         return;
     }
 
+    if (GetMode() != Node::ANY && inputNode->GetMode() != Node::ANY && inputNode->GetMode() != GetMode())
+    {
+        PG_FAILSTR("trying to connect incompatible mode nodes");
+        return;
+    }
+
     if (mNumInputs >= MAX_NUM_INPUTS)
     {
         PG_FAILSTR("Too many nodes added to the current node");
@@ -202,6 +208,12 @@ void Node::ReplaceInput(unsigned int index, const Pegasus::Core::Ref<Node> & inp
     if (inputNode == nullptr)
     {
         PG_FAILSTR("Invalid node added as an input to the current node");
+        return;
+    }
+
+    if (inputNode->GetMode() != GetMode())
+    {
+        PG_FAILSTR("trying to connect incompatible nodes.");
         return;
     }
 

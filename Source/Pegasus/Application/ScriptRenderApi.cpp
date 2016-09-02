@@ -58,7 +58,7 @@ void Util_GetWidthHeightAspect(FunCallbackContext& context);
 void Program_SetShaderStage(FunCallbackContext& context);
 
 ////Mesh Methods/////////////////////////////////////////////
-void MeshGenerator_SetGeneratorInput(FunCallbackContext& context);
+void Mesh_SetGeneratorInput(FunCallbackContext& context);
 
 /////Texture Methods/////////////////////////////////////////
 void TextureGenerator_AddOperatorInput(FunCallbackContext& context);
@@ -85,6 +85,12 @@ void Render_SetUniformTexture(FunCallbackContext& context);
 void Render_SetUniformTextureRenderTarget(FunCallbackContext& context);
 void Render_SetProgram(FunCallbackContext& context);
 void Render_SetMesh(FunCallbackContext& context);
+void Render_UnbindMesh(FunCallbackContext& context);
+void Render_UnbindComputeOutputs(FunCallbackContext& context);
+void Render_UnbindRenderTargets(FunCallbackContext& context);
+void Render_UnbindComputeResources(FunCallbackContext& context);
+void Render_UnbindPixelResources(FunCallbackContext& context);
+void Render_UnbindVertexResources(FunCallbackContext& context);
 void Render_SetViewport(FunCallbackContext& context);
 void Render_SetViewport2(FunCallbackContext& context);
 void Render_SetViewport3(FunCallbackContext& context);
@@ -202,6 +208,55 @@ static void RegisterRenderEnums(BlockLib* lib)
                 { "PRIMITIVE_AUTOMATIC",     Pegasus::Render::PRIMITIVE_AUTOMATIC     }
             },
             Pegasus::Render::PRIMITIVE_COUNT //this includes automatic
+        },
+        {
+            "Format",
+            {
+                { "FORMAT_RGBA_32_FLOAT" , Pegasus::Core::FORMAT_RGBA_32_FLOAT },
+                { "FORMAT_RGBA_32_UINT" , Pegasus::Core::FORMAT_RGBA_32_UINT },
+                { "FORMAT_RGBA_32_SINT" , Pegasus::Core::FORMAT_RGBA_32_SINT },
+                { "FORMAT_RGBA_32_TYPELESS" , Pegasus::Core::FORMAT_RGBA_32_TYPELESS },
+                { "FORMAT_RGB_32_FLOAT" , Pegasus::Core::FORMAT_RGB_32_FLOAT },
+                { "FORMAT_RGB_32_UINT" , Pegasus::Core::FORMAT_RGB_32_UINT },
+                { "FORMAT_RGB_32_SINT" , Pegasus::Core::FORMAT_RGB_32_SINT },
+                { "FORMAT_RGB_32_TYPELESS" , Pegasus::Core::FORMAT_RGB_32_TYPELESS },
+                { "FORMAT_RGBA_16_FLOAT" , Pegasus::Core::FORMAT_RGBA_16_FLOAT },
+                { "FORMAT_RGBA_16_UINT" , Pegasus::Core::FORMAT_RGBA_16_UINT },
+                { "FORMAT_RGBA_16_SINT" , Pegasus::Core::FORMAT_RGBA_16_SINT },
+                { "FORMAT_RGBA_16_UNORM" , Pegasus::Core::FORMAT_RGBA_16_UNORM },
+                { "FORMAT_RGBA_16_SNORM" , Pegasus::Core::FORMAT_RGBA_16_SNORM },
+                { "FORMAT_RGBA_16_TYPELESS" , Pegasus::Core::FORMAT_RGBA_16_TYPELESS },
+                { "FORMAT_RGBA_8_UINT" , Pegasus::Core::FORMAT_RGBA_8_UINT },
+                { "FORMAT_RGBA_8_SINT" , Pegasus::Core::FORMAT_RGBA_8_SINT },
+                { "FORMAT_RGBA_8_UNORM" , Pegasus::Core::FORMAT_RGBA_8_UNORM },
+                { "FORMAT_RGBA_8_UNORM_SRGB" , Pegasus::Core::FORMAT_RGBA_8_UNORM_SRGB },
+                { "FORMAT_RGBA_8_SNORM" , Pegasus::Core::FORMAT_RGBA_8_SNORM },
+                { "FORMAT_RGBA_8_TYPELESS" , Pegasus::Core::FORMAT_RGBA_8_TYPELESS },
+                { "FORMAT_D32_FLOAT" , Pegasus::Core::FORMAT_D32_FLOAT },
+                { "FORMAT_R32_FLOAT" , Pegasus::Core::FORMAT_R32_FLOAT },
+                { "FORMAT_R32_UINT" , Pegasus::Core::FORMAT_R32_UINT },
+                { "FORMAT_R32_SINT" , Pegasus::Core::FORMAT_R32_SINT },
+                { "FORMAT_R32_TYPELESS" , Pegasus::Core::FORMAT_R32_TYPELESS },
+                { "FORMAT_D16_UNORM" , Pegasus::Core::FORMAT_D16_UNORM },
+                { "FORMAT_R16_FLOAT" , Pegasus::Core::FORMAT_R16_FLOAT },
+                { "FORMAT_R16_UINT" , Pegasus::Core::FORMAT_R16_UINT },
+                { "FORMAT_R16_SINT" , Pegasus::Core::FORMAT_R16_SINT },
+                { "FORMAT_R16_UNORM" , Pegasus::Core::FORMAT_R16_UNORM },
+                { "FORMAT_R16_SNORM" , Pegasus::Core::FORMAT_R16_SNORM },
+                { "FORMAT_R16_TYPELESS" , Pegasus::Core::FORMAT_R16_TYPELESS },
+                { "FORMAT_RG16_FLOAT",  Pegasus::Core::FORMAT_RG16_FLOAT },
+                { "FORMAT_RG16_UINT",   Pegasus::Core::FORMAT_RG16_UINT },
+                { "FORMAT_RG16_SINT",   Pegasus::Core::FORMAT_RG16_SINT },
+                { "FORMAT_RG16_UNORM",  Pegasus::Core::FORMAT_RG16_UNORM },
+                { "FORMAT_RG16_SNORM",  Pegasus::Core::FORMAT_RG16_SNORM },
+                { "FORMAT_RG16_TYPELESS", Pegasus::Core::FORMAT_RG16_TYPELESS },
+                { "FORMAT_R8_UNORM" , Pegasus::Core::FORMAT_R8_UNORM },
+                { "FORMAT_R8_SINT" , Pegasus::Core::FORMAT_R8_SINT },
+                { "FORMAT_R8_UINT" , Pegasus::Core::FORMAT_R8_UINT },
+                { "FORMAT_R8_SNORM" , Pegasus::Core::FORMAT_R8_SNORM },
+                { "FORMAT_R8_TYPELESS" , Pegasus::Core::FORMAT_R8_TYPELESS }
+            },
+            Pegasus::Core::FORMAT_MAX_COUNT //this includes automatic
         }
     };
 
@@ -289,8 +344,8 @@ static void RegisterRenderStructs(BlockLib* lib)
         }, 
         {
             "RenderTargetConfig",
-            {"int"  , "int"   , nullptr },
-            {"Width", "Height", nullptr }
+            {"int"  , "int"   , "Format", nullptr },
+            {"Width", "Height", "format",  nullptr }
         },
         {
             "Viewport",
@@ -462,7 +517,7 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
         {
             "Mesh",
             {
-                { "SetGeneratorInput", "int", {"Mesh", "MeshGenerator", nullptr}, {"this", "meshGenerator", nullptr}, MeshGenerator_SetGeneratorInput }
+                { "SetGeneratorInput", "int", {"Mesh", "MeshGenerator", nullptr}, {"this", "meshGenerator", nullptr}, Mesh_SetGeneratorInput }
             },
             1,
             nullptr, 0, nullptr
@@ -675,6 +730,48 @@ static void RegisterFunctions(BlockLib* lib)
             { "Mesh", nullptr },
             { "mesh", nullptr },
             Render_SetMesh
+        },
+        {
+            "UnbindMesh",
+            "int",
+            { nullptr },
+            { nullptr },
+            Render_UnbindMesh
+        },
+        {
+            "UnbindComputeOutputs",
+            "int",
+            { nullptr },
+            { nullptr },
+            Render_UnbindComputeOutputs
+        },
+        {
+            "UnbindRenderTargets",
+            "int",
+            { nullptr },
+            { nullptr },
+            Render_UnbindRenderTargets
+        },
+        {
+            "UnbindPixelResources",
+            "int",
+            { nullptr },
+            { nullptr },
+            Render_UnbindPixelResources
+        },
+        {
+            "UnbindComputeResources",
+            "int",
+            { nullptr },
+            { nullptr },
+            Render_UnbindComputeResources
+        },
+        {
+            "UnbindVertexResources",
+            "int",
+            { nullptr },
+            { nullptr },
+            Render_UnbindVertexResources
         },
         {
             "SetViewport",
@@ -890,7 +987,7 @@ void Program_SetShaderStage(FunCallbackContext& context)
 /////////////////////////////////////////////////////////////
 //!> Mesh Node functions
 /////////////////////////////////////////////////////////////
-void MeshGenerator_SetGeneratorInput(FunCallbackContext& context)
+void Mesh_SetGeneratorInput(FunCallbackContext& context)
 {
     BsVmState* state = context.GetVmState();    
     RenderCollection* collection = GetContainer(state);
@@ -1233,6 +1330,34 @@ void Render_SetMesh(FunCallbackContext& context)
     {
         PG_LOG('ERR_', "Can't set an invalid mesh");
     }
+}
+
+void Render_UnbindMesh(FunCallbackContext& context)
+{
+    Pegasus::Render::UnbindMesh();
+}
+
+void Render_UnbindComputeOutputs(FunCallbackContext& context)
+{
+    Pegasus::Render::UnbindComputeOutputs();
+}
+
+void Render_UnbindRenderTargets(FunCallbackContext& context)
+{
+    Pegasus::Render::UnbindRenderTargets();
+}
+
+void Render_UnbindComputeResources(FunCallbackContext& context)
+{
+    Pegasus::Render::UnbindComputeResources();
+}
+void Render_UnbindVertexResources(FunCallbackContext& context)
+{
+    Pegasus::Render::UnbindVertexResources();
+}
+void Render_UnbindPixelResources(FunCallbackContext& context)
+{
+    Pegasus::Render::UnbindPixelResources();
 }
 
 void Render_SetViewport(FunCallbackContext& context)

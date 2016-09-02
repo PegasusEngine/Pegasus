@@ -23,6 +23,7 @@
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Core/Log.h"
 #include "Pegasus/Core/Assertion.h"
+#include "Pegasus/Core/Time.h"
 
 using namespace Pegasus;
 using namespace Pegasus::BlockScript;
@@ -172,9 +173,32 @@ bool Pegasus::BlockScript::ExecuteFunction(
             Utils::Memcpy(stackBase, inputBuffer, inputBufferSize);
 
             //run until we are done
+#if PEGASUS_ENABLE_PROXIES
+            int loopCount = 0;
+            const int CheckTimeLoopCount = 100;
+            Pegasus::Core::UpdatePegasusTime();
+            double capturedTime = Pegasus::Core::GetPegasusTime();
+#endif
             while (state.GetStackLevels() != 0)
             {
                 vm.StepExecution(assembly, state);
+#if PEGASUS_ENABLE_PROXIES
+                bool checkTime = loopCount == CheckTimeLoopCount;
+                if (checkTime)
+                {
+                    loopCount = 0;
+                    Pegasus::Core::UpdatePegasusTime();
+                    double newTime = Pegasus::Core::GetPegasusTime();
+                    if (newTime - capturedTime > 4.0)
+                    {
+                        state.SetReg(Canon::R_IP, savedIp);
+                        PG_FAILSTR("Blockscript is taking too long to execute. Infinite loop? breaking execution. Warning: this can leave the VM in a devastated state.");
+                        return false;
+                    }
+                }
+                ++loopCount;
+                
+#endif
             }
 
             //copy the result to the output buffer

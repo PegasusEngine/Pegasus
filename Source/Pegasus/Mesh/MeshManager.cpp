@@ -98,6 +98,7 @@ MeshGeneratorReturn MeshManager::CreateMeshGeneratorNode(const char * className)
         //propagate event listener
         meshGenerator->SetEventListener(mEventListener);
 #endif
+        meshGenerator->SetFactory(mFactory);
         return meshGenerator;
     }
     else
@@ -122,6 +123,7 @@ MeshOperatorReturn MeshManager::CreateMeshOperatorNode(const char * className,
         //propagate event listener
         meshOperator->SetEventListener(mEventListener);
 #endif
+        meshOperator->SetFactory(mFactory);
         return meshOperator;
     }
     else

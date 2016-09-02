@@ -69,6 +69,10 @@ DXRenderContext::~DXRenderContext()
     {
         mFrameBuffer->Release();
     }
+    if (mFrameBufferDepthStencil != nullptr)
+    {
+        mFrameBufferDepthStencil->Release();
+    }
 }
 
 void DXRenderContext::Present()
@@ -207,7 +211,6 @@ void DXRenderContext::Resize(int width, int height)
     mFrameBufferHeight = height;
 
     InitializeFrame();
-    
 }
 
 Context::Context(const ContextConfig& config)

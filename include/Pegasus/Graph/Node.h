@@ -30,7 +30,6 @@ namespace Graph {
 
 class NodeManager;
 
-
 //! Base node class for all graph-based systems (textures, meshes, shaders, etc.)
 class Node : public Core::RefCounted, public PropertyGrid::PropertyGridObject
 {
@@ -40,6 +39,15 @@ class Node : public Core::RefCounted, public PropertyGrid::PropertyGridObject
     END_DECLARE_PROPERTIES()
 
 public:
+
+    //! the mode of this graph.
+    enum Mode
+    {
+        STANDARD, //! standard cpu based created.
+        COMPUTE,  //! standard compute shader / gpu based graphs. For now only generators support it.
+        ANY       //! nodes that have many can handle both. Compute and Standard
+    };
+
 
     //! Default constructor
     //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)
@@ -95,6 +103,10 @@ public:
     //! to save memory and to be able to restore the data later
     virtual void ReleaseDataAndPropagate();
 
+    //! Return the node data, even if dirty or unallocated
+    //! \return Node data, can be nullptr
+    //! \warning The data can be missing. Use \a GetUpdatedData() if up-to-date data is required
+    inline NodeDataReturn GetData() const { return mData; }
 
     //! Creation function type used by the node manager
     //! \param nodeManager - the node manager used for creation
@@ -105,6 +117,9 @@ public:
     //! Returns the class instance name of this node.
     //! \return class instance name c string
     virtual const char* GetClassInstanceName() const = 0;
+
+    //! Gets the mode of this graph.
+    virtual Mode GetMode() const { return STANDARD; }
 
 #if PEGASUS_ENABLE_PROXIES
 
@@ -171,11 +186,6 @@ protected:
     //!       node data. Otherwise the pointers to the original data would become invalid.
     //!       In that case, the dirty flag of the node data is set
     void CreateData();
-
-    //! Return the node data, even if dirty or unallocated
-    //! \return Node data, can be nullptr
-    //! \warning The data can be missing. Use \a GetUpdatedData() if up-to-date data is required
-    inline NodeDataReturn GetData() const { return mData; }
 
     //! Test if the node data are allocated (does not test for dirtiness)
     //! \return True if the node data are allocated

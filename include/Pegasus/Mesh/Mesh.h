@@ -83,6 +83,9 @@ public:
     //! Releases the node internal data
     virtual void ReleaseDataAndPropagate();
 
+    //! Returns the mode at which this node can run.
+    //! Mesh nodes dont need to handle anything so they handle any.
+    virtual Node::Mode GetMode() const { return Node::ANY; }
 
     //! Mesh node creation function, used by the mesh manager
     //! \param nodeAllocator Allocator used for node internal data (except the attached NodeData)

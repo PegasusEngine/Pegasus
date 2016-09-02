@@ -65,6 +65,9 @@ public:
     //! Gets wether this mesh is static or dynamic
     bool    GetIsDynamic() const { return mIsDynamic; }
 
+    //! Gets wether this mesh supports draw indirect.
+    bool    GetIsDrawIndirect() const { return mIsDrawIndirect; }
+
     //! Gets the primitive type for this mesh
     MeshPrim GetMeshPrimitiveType() const { return mPrimitiveType; }
 
@@ -73,6 +76,10 @@ public:
 
     //! Sets wether this mesh is dynamic or static
     void    SetIsDynamic(bool isDynamic) { mIsDynamic = isDynamic; }
+
+    //! Draw indirect is for meshes that expect their draw parameters be filled by a compute shader.
+    //! To access the indirect buffer created, use the Render API
+    void    SetIsDrawIndirect(bool isDrawIndirect) { mIsDrawIndirect = isDrawIndirect; }
 
     //! Sets the primitive type for this mesh
     void    SetMeshPrimitiveType(MeshPrim primitiveType) { mPrimitiveType = primitiveType; }
@@ -83,6 +90,9 @@ private:
 
     //! boolean that determines if the buffer is dynamic (for draw)
     bool     mIsDynamic;
+
+    //! Does this mesh has support for draw indirect.
+    bool     mIsDrawIndirect;
 
     //! the primitive type
     MeshPrim mPrimitiveType;

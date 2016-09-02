@@ -29,6 +29,7 @@ Category::Category()
 
 Category::~Category()
 {
+    RemoveAssets();
 }
 
 void Category::RegisterAsset(Asset* asset)

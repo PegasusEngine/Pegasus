@@ -109,7 +109,7 @@
 {
 \"               { yyextra->mStringAccumulatorPos = 0; BEGIN(STRING_BLOCK); }
 [ \t]            ;
-[0-9]+\.[0-9]+   { AS_FLOAT(I_FLOAT); }
+\-?[0-9]+\.[0-9]+   { AS_FLOAT(I_FLOAT); }
 [0-9]+           { AS_INT(I_INT); }
 [_a-zA-Z0-9\-\.\\\\\/]+    { const char* txt = yyextra->mBuilder->CopyString(yytext); 
                    if (txt == nullptr)

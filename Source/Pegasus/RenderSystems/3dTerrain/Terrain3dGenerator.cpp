@@ -1,0 +1,124 @@
+#include "Pegasus/RenderSystems/3dTerrain/Terrain3dGenerator.h"
+#include "Pegasus/Mesh/IMeshFactory.h"
+#include "Pegasus/Mesh/Shared/MeshEvent.h"
+#include "Pegasus/Allocator/IAllocator.h"
+#include "Pegasus/Math/Vector.h"
+#include "Pegasus/Utils/Memset.h"
+
+using namespace Pegasus;
+using namespace Pegasus::Mesh;
+using namespace Pegasus::RenderSystems;
+using namespace Pegasus::Math;
+
+extern RenderSystems::Terrain3dSystem* g3dTerrainSystemInstance;
+
+
+BEGIN_IMPLEMENT_PROPERTIES(Terrain3dGenerator)
+    IMPLEMENT_PROPERTY(Terrain3dGenerator, TerrainSeed)
+    IMPLEMENT_PROPERTY(Terrain3dGenerator, BlockCenter)
+    IMPLEMENT_PROPERTY(Terrain3dGenerator, BlockExtends)
+END_IMPLEMENT_PROPERTIES(Terrain3dGenerator)
+
+Terrain3dGenerator::Terrain3dGenerator(Pegasus::Alloc::IAllocator* nodeAllocator,
+                          Pegasus::Alloc::IAllocator* nodeDataAllocator) : MeshGenerator(nodeAllocator, nodeDataAllocator), mIsAllocated(false)
+{
+    BEGIN_INIT_PROPERTIES(Terrain3dGenerator)
+        INIT_PROPERTY(TerrainSeed)
+        INIT_PROPERTY(BlockCenter)
+        INIT_PROPERTY(BlockExtends)
+    END_INIT_PROPERTIES()
+
+    mConfiguration.SetIsIndexed(true);
+    mConfiguration.SetIsDynamic(false);//not dynamic, we dont push data through the CPU
+    mConfiguration.SetIsDrawIndirect(true);//draw parameters are filled by internal compute shaders.
+    mConfiguration.SetMeshPrimitiveType(MeshConfiguration::TRIANGLE);
+
+    Mesh::MeshInputLayout* inputLayout = mConfiguration.GetInputLayout();
+    
+    Mesh::MeshInputLayout::AttrDesc posDesc;
+    posDesc.mSemantic = Mesh::MeshInputLayout::POSITION;
+    posDesc.mType = Mesh::MeshInputLayout::FLOAT;
+    posDesc.mByteOffset = 0;
+    posDesc.mSemanticIndex = 0;
+    posDesc.mAttributeTypeCount = 3;
+    posDesc.mStreamIndex = 0;
+    posDesc.mIsNormalized = false;
+    inputLayout->RegisterAttribute(posDesc);
+
+    Mesh::MeshInputLayout::AttrDesc normDesc;
+    normDesc.mSemantic = Mesh::MeshInputLayout::NORMAL;
+    normDesc.mType = Mesh::MeshInputLayout::FLOAT;
+    normDesc.mByteOffset = 0;
+    normDesc.mSemanticIndex = 0;
+    normDesc.mAttributeTypeCount = 3;
+    normDesc.mStreamIndex = 1;
+    normDesc.mIsNormalized = false;
+    inputLayout->RegisterAttribute(normDesc);
+
+    
+    Utils::Memset32(mProgramVersions, 0x0, sizeof(mProgramVersions));
+}
+
+bool Terrain3dGenerator::Update()
+{
+    bool updated = MeshGenerator::Update();
+
+    for (unsigned int i = 0; i < Terrain3dSystem::PROGRAM_COUNT; ++i)
+    {
+        int newVersion = Render::GetProgramVersion(g3dTerrainSystemInstance->GetProgram(static_cast<Terrain3dSystem::Programs>(i)));
+        if (newVersion != mProgramVersions[i])
+        {
+            mProgramVersions[i] = newVersion;
+            updated = true;
+        }
+    }
+    
+    if (updated)
+    {
+        InvalidateData();
+        bool dummy;
+        //TODO: allow user to do this explictely.
+        GetUpdatedData(dummy);//generate data immediately. We dont want to lazily 
+        GetData()->Validate();
+    }
+    return updated;
+}
+
+void Terrain3dGenerator::CreateRenderResources()
+{
+    //allocate all the buffers
+    MeshDataRef meshData = GetData(); 
+    meshData->AllocateVertexes(g3dTerrainSystemInstance->GetVertexCount());
+    meshData->AllocateIndexes(g3dTerrainSystemInstance->GetIndexCount());
+    
+    GetFactory()->GenerateMeshGPUData(meshData);
+    mVertexBuffer = Render::GetVertexBuffer(meshData, 0);
+    mNormalBuffer = Render::GetVertexBuffer(meshData, 1);
+    mIndexBuffer = Render::GetIndexBuffer(meshData);
+    mDrawIndirectBuffer = Render::GetDrawIndirectBuffer(meshData);
+
+    g3dTerrainSystemInstance->CreateResources(mResources);
+
+    mIsAllocated = true;
+
+    
+}
+
+void Terrain3dGenerator::GenerateData()
+{
+    PEGASUS_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::BEGIN);
+    MeshDataRef meshData = GetData(); 
+    if (!mIsAllocated)
+    {
+        CreateRenderResources();
+    }
+    else
+    {
+        //this is so Mesh does not call GenerateMeshGpuData again
+        meshData->ValidateGPUData();
+    }
+    g3dTerrainSystemInstance->RenderTerrain(mResources, mIndexBuffer, mVertexBuffer, mNormalBuffer, mDrawIndirectBuffer);
+    
+    PEGASUS_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::END_SUCCESS);
+}
+

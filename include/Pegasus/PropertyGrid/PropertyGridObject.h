@@ -19,6 +19,7 @@
 #include "Pegasus/Memory/MemoryManager.h"
 #include "Pegasus/Utils/Vector.h"
 #include "Pegasus/PropertyGrid/Shared/PropertyEventDefs.h"
+#include "Pegasus/Memory/BlockAllocator.h"
 
 //forward declarations
 namespace Pegasus {
@@ -567,6 +568,11 @@ public:
     //! \return Accessor for the object property
     PropertyAccessor GetObjectPropertyAccessor(unsigned int index);
 
+    //! Get an accessor to a property read only, object property living only in the objects definition.
+    //! \param index Index of the property (0 <= index < GetNumProperties())
+    //! \return Accessor for the property
+    const PropertyReadAccessor GetObjectReadPropertyAccessor(unsigned int index) const;
+
     //------------------------------------------------------------------------------------
     
     //! Invalidate the property grid (sets the dirty flag)
@@ -598,6 +604,14 @@ public:
     //@}
 
 #endif  // PEGASUS_ENABLE_PROXIES
+    
+    //! Called when a node is dumped into an asset
+    //! \param obj - the object to write the contents of this object to.
+    virtual void WriteToObject(AssetLib::Asset* parentAsset, AssetLib::Object* obj) const;
+
+    //! Called when a node is read from an object
+    //! \parama obj - the object to read the contents from.
+    virtual bool ReadFromObject(AssetLib::Asset* parentAsset, AssetLib::Object* obj);
 
     //------------------------------------------------------------------------------------
     
@@ -620,14 +634,6 @@ protected:
     //!       of declaration/implementation/initialization macros does not match
     inline unsigned int GetNumClassPropertyPointers() const { return mClassPropertyPointers.GetSize(); }
 
-    
-    //! Called when a node is dumped into an asset
-    //! \param obj - the object to write the contents of this object to.
-    virtual void WriteToObject(AssetLib::Asset* parentAsset, AssetLib::Object* obj) const;
-
-    //! Called when a node is read from an object
-    //! \parama obj - the object to read the contents from.
-    virtual bool ReadFromObject(AssetLib::Asset* parentAsset, AssetLib::Object* obj);
 
     //------------------------------------------------------------------------------------
     
@@ -661,6 +667,9 @@ private:
     //! Set to true after a property is updated,
     //! to tell the property grid object owner to regenerate its data
     bool mPropertyGridDirty;
+
+    //! Allocator for types of strings.
+    Memory::BlockAllocator mStringAllocator;
 
 #if PEGASUS_ENABLE_PROXIES
 

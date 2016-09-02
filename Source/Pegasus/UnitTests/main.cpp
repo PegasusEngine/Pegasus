@@ -94,6 +94,11 @@ int main()
     RUN_TEST(Atoi2);
     RUN_TEST(Atoi3);
 
+    //Atoi
+    RUN_TEST(Atof1);
+    RUN_TEST(Atof2);
+    RUN_TEST(Atof3);
+
     //TesselationTable
     RUN_TEST(TesselationTable1);
     RUN_TEST(TesselationTable2);

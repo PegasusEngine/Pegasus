@@ -60,6 +60,9 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLShaderReflect.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLTextureFactory.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\Source\Pegasus\Render\DX11\DXPegasusFormat.inl" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B1169EA8-9728-4F43-B328-CD2002450798}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

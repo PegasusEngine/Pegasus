@@ -53,6 +53,9 @@ public:
     //! destructor
     virtual ~RenderSystem() {}
 
+    //! Internal function, called to initialize and load any render resources required.
+    virtual void Load(Core::IApplicationContext* appContext) {}
+
     //! API function to see if this system requires block script lib.
     //! \return true if we want to create a new blockscript api, false otherwise. If true, then OnRegisterBlockscriptApi gets created, and the new lib gets passed.
     virtual bool CanCreateBlockScriptApi() const { return false; }

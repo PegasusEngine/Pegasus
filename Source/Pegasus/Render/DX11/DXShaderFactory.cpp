@@ -247,7 +247,7 @@ void DXShaderFactory::GenerateShaderGPUData(Pegasus::Shader::ShaderStage * shade
         "vs_5_0", // vertex shader stage
         "ps_5_0", // pixel shader stage
         "hs_5_0", // tesselation control / hull stage
-        "ds_5_0"  // tesselation evaluation / domain stage
+        "ds_5_0",  // tesselation evaluation / domain stage
         "gs_5_0", // geometry shader stage
         "cs_5_0", // compute shader stage. Must be by itself if activated
     };

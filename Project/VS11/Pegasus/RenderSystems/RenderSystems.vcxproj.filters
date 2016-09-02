@@ -65,6 +65,18 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\System\RenderSystem.h">
       <Filter>Include\System</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\3dTerrain\CaseTable.h">
+      <Filter>Include\3dTerrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\3dTerrain\MarchingCubeMeshGenerator.h">
+      <Filter>Include\3dTerrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\3dTerrain\Terrain3dGenerator.h">
+      <Filter>Include\3dTerrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\3dTerrain\Terrain3d.h">
+      <Filter>Include\3dTerrain</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Grass\GrassSystem.cpp">
@@ -81,6 +93,18 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\System\RenderSystemManager.cpp">
       <Filter>Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\3dTerrain\CaseTable.cpp">
+      <Filter>Source\3dTerrain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\3dTerrain\MarchingCubeMeshGenerator.cpp">
+      <Filter>Source\3dTerrain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\3dTerrain\Terrain3dGenerator.cpp">
+      <Filter>Source\3dTerrain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\3dTerrain\Terrain3d.cpp">
+      <Filter>Source\3dTerrain</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

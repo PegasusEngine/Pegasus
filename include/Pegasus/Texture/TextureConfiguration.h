@@ -14,6 +14,7 @@
 #define PEGASUS_TEXTURE_TEXTURECONFIGURATION_H
 
 #include "Pegasus/Texture/Proxy/TextureConfigurationProxy.h"
+#include "Pegasus/Core/Formats.h"
 
 namespace Pegasus {
 namespace Texture {
@@ -38,15 +39,6 @@ public:
         NUM_TYPES
     };
 
-    //! Available pixel formats
-    enum PixelFormat
-    {
-        PIXELFORMAT_RGBA8 = 0,
-
-        NUM_PIXELFORMATS
-    };
-
-
     //! Default constructor, sets the resolution to 256x256 and the pixel format to RGB8
     TextureConfiguration();
 
@@ -58,7 +50,7 @@ public:
     //! \param depth Depth of the texture in pixels (>= 1)
     //! \param numLayers Number of layers for array textures, 6 for cube maps, 1 otherwise
     TextureConfiguration(Type type,
-                         PixelFormat pixelFormat,
+                         Core::Format pixelFormat,
                          unsigned int width,
                          unsigned int height,
                          unsigned int depth,
@@ -79,7 +71,7 @@ public:
 
     //! Get the pixel format of the texture
     //! \return Pixel format of the texture (PIXELFORMAT_xxx constant)
-    inline PixelFormat GetPixelFormat() const { return mPixelFormat; }
+    inline Core::Format GetPixelFormat() const { return mPixelFormat; }
 
     //! Get the width of the texture in pixels
     //! \return Horizontal resolution of the texture in pixels (>= 1)
@@ -148,7 +140,7 @@ private:
     Type mType;
 
     //! Pixel format of the texture (TextureData::PIXELFORMAT_xxx constant)
-    PixelFormat mPixelFormat;
+    Core::Format mPixelFormat;
 
     //! Horizontal resolution of the texture in pixels (>= 1)
     unsigned int mWidth;

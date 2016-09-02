@@ -11,6 +11,7 @@
 //!         rendering graphs
 
 #include "Pegasus/Utils/Vector.h"
+#include "Pegasus/Application/GenericResource.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Shader/ShaderStage.h"
 #include "Pegasus/Texture/Texture.h"

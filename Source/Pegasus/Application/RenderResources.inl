@@ -11,3 +11,6 @@ RES_PROCESS(Pegasus::Render::Buffer, mBuffers, "Buffer", false, false)
 RES_PROCESS(Pegasus::Render::RasterizerState, mRasterizers, "RasterizerState", false, false)
 RES_PROCESS(Pegasus::Render::BlendingState, mBlendingStates, "BlendingState", false, false)
 RES_PROCESS(Pegasus::Render::RenderTarget, mRenderTargets, "RenderTarget", false, false)
+RES_PROCESS(Pegasus::Render::VolumeTexture, mVolumeTextures, "VolumeTexture", false, false)
+RES_PROCESS(Pegasus::Render::CubeMap, mCubeMaps, "CubeMap", false, false)
+RES_PROCESS(Pegasus::Application::GenericResource, mGenericResources, "GenericResource", false, true) //properties are handled different for a generic resource (see implementation of generic resource).

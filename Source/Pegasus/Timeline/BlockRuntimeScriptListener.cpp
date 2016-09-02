@@ -295,7 +295,14 @@ void BlockRuntimeScriptListener::OnStackInitalized(Pegasus::BlockScript::BsVmSta
                 if (translation.typeEnum == r.type && translation.editorDesc == r.editorDesc)
                 {
                     foundInGrid[obPropIndex] = true; 
-                    mGridToGlobalMap[obPropIndex] = i;
+                    if (obPropIndex >= mGridToGlobalMap.GetSize())
+                    {
+                        mGridToGlobalMap.PushEmpty() = i;
+                    }
+                    else
+                    {
+                        mGridToGlobalMap[obPropIndex] = i;
+                    }                    
                     SetScriptVariable(translation, obPropIndex, state, i);
                 }
                 else
@@ -314,7 +321,10 @@ void BlockRuntimeScriptListener::OnStackInitalized(Pegasus::BlockScript::BsVmSta
 
                     foundInGrid.PushEmpty() = true;
                     foundInGrid[mPropGrid->GetNumObjectProperties() - 1] = true;
-                    mGridToGlobalMap.Delete(obPropIndex);
+                    if (obPropIndex <= mGridToGlobalMap.GetSize())
+                    {
+                        mGridToGlobalMap.Delete(obPropIndex);
+                    }
                     mGridToGlobalMap.PushEmpty() = i;
                 }
             }

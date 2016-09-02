@@ -16,11 +16,12 @@ namespace Pegasus {
 namespace Mesh {
 
 
-MeshData::MeshData(const MeshConfiguration & configuration, Alloc::IAllocator* allocator)
+MeshData::MeshData(const MeshConfiguration & configuration, Graph::Node::Mode mode, Alloc::IAllocator* allocator)
 :   Graph::NodeData(allocator),
     mConfiguration(configuration),
     mIndexCount(0),
-    mVertexCount(0)
+    mVertexCount(0),
+    mMode(mode)
 {
     
     //fill in stream strides
@@ -38,7 +39,8 @@ MeshData::MeshData(const MeshConfiguration & configuration, Alloc::IAllocator* a
 }
 
 unsigned short MeshData::InternalPushVertex(const void * vertex, int streamId)
-{
+{   
+    PG_ASSERTSTR(mMode == Graph::Node::STANDARD, "Function only available in mesh STANDARD mode.");
     PG_ASSERT(streamId < MESH_MAX_STREAMS);
 
     int newElementIndex = GetVertexCount();
@@ -58,6 +60,7 @@ unsigned short MeshData::InternalPushVertex(const void * vertex, int streamId)
 
 void MeshData::PushIndex(unsigned short index)
 {
+    PG_ASSERTSTR(mMode == Graph::Node::STANDARD, "Function only available in mesh STANDARD mode.");
     int idxOffset = GetIndexCount();
     InternalAllocateIndexes(GetIndexCount() + 1, true);
     PG_ASSERT(mIndexBuffer.GetByteSize() >= GetIndexCount() * mIndexBuffer.GetStride());
@@ -79,9 +82,12 @@ void MeshData::InternalAllocateVertexes(int count, bool preserveElements)
 {
     mVertexCount = count;
     
-    for (int stream = 0; stream < MESH_MAX_STREAMS; ++stream)
+    if (mMode == Graph::Node::STANDARD)
     {
-        mVertexStreams[stream].Grow(GetAllocator(), count, preserveElements);        
+        for (int stream = 0; stream < MESH_MAX_STREAMS; ++stream)
+        {
+            mVertexStreams[stream].Grow(GetAllocator(), count, preserveElements);        
+        }
     }
 }
 
@@ -90,7 +96,10 @@ void MeshData::InternalAllocateIndexes(int count, bool preserveElements)
     if (mConfiguration.GetIsIndexed())
     {
         mIndexCount = count;
-        mIndexBuffer.Grow(GetAllocator(), count, preserveElements);
+        if (mMode == Graph::Node::STANDARD)
+        {
+            mIndexBuffer.Grow(GetAllocator(), count, preserveElements);
+        }
     }
 }
 

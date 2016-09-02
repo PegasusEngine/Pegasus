@@ -75,6 +75,7 @@ private:
     Pegasus::Render::Uniform mTextureUniform2;
     Pegasus::Render::Uniform mUniformState;
     Pegasus::Render::BufferRef  mUniformBuffer;
+    Pegasus::Render::SamplerStateRef mSampler;
 
     PEGASUS_ALIGN_BEGIN(16)
     struct UniformState

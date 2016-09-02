@@ -485,6 +485,12 @@ bool Timeline::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* as
         }
     }
 
+    int propertyGridObjectId = root->FindObject("properties");
+    if (propertyGridObjectId != -1)
+    {
+        AssetLib::Object* propGridObjObj = root->GetObject(propertyGridObjectId);
+        mPropertyGrid.ReadFromObject(asset, propGridObjObj);
+    }
     return true;
 }
 
@@ -521,6 +527,11 @@ void Timeline::OnWriteAsset(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* a
         e.o = laneObj;
         laneArray->PushElement(e);
     }
+
+    AssetLib::Object* propertyObject = asset->NewObject();
+    mPropertyGrid.WriteToObject(asset, propertyObject);
+
+    root->AddObject("properties", propertyObject);
     
     
 }

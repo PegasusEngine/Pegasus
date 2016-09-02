@@ -21,7 +21,7 @@ void main(
 	
 	float beat = uCameraPos_beat.w;
 	float3 centerPos  = uCenterPos_unused.xyz;
-	float3 viewVector = normalize(uCameraPos_beat.xyz - p.xyz);
+	float3 viewVector = -normalize(uCameraPos_beat.xyz - p.xyz);
 	float3 tweak = float3(sin(256*t.x),cos(256*t.y),0.0);
 	normal = normalize(normal);
 	float3 amb = float3(0.0,0.1,0.2);

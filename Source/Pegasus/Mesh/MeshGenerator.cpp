@@ -10,6 +10,7 @@
 //! \brief	Base mesh generator node class
 
 #include "Pegasus/Mesh/MeshGenerator.h"
+#include "Pegasus/Mesh/IMeshFactory.h"
 
 namespace Pegasus {
 namespace Mesh {
@@ -22,6 +23,7 @@ END_IMPLEMENT_PROPERTIES(MeshGenerator)
 
 MeshGenerator::MeshGenerator(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator)
 :   Graph::GeneratorNode(nodeAllocator, nodeDataAllocator),
+    mFactory(nullptr),
     mConfiguration()
 {
     BEGIN_INIT_PROPERTIES(MeshGenerator)
@@ -63,6 +65,27 @@ void MeshGenerator::SetConfiguration(const MeshConfiguration & configuration)
     
 MeshGenerator::~MeshGenerator()
 {
+    ReleaseGPUData();
+}
+
+//----------------------------------------------------------------------------------------
+
+void MeshGenerator::ReleaseGPUData()
+{
+    if (GetData() != nullptr)
+    {
+        GetFactory()->DestroyNodeGPUData((MeshData*)&(*GetData()));
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void MeshGenerator::ReleaseDataAndPropagate()
+{
+    //! \todo See note in ReleaseGPUData()
+    ReleaseGPUData();
+
+    Graph::Node::ReleaseDataAndPropagate();
 }
 
 //----------------------------------------------------------------------------------------
@@ -70,7 +93,7 @@ MeshGenerator::~MeshGenerator()
 Graph::NodeData * MeshGenerator::AllocateData() const
 {
     return PG_NEW(GetNodeDataAllocator(), -1, "MeshGenerator::MeshData", Pegasus::Alloc::PG_MEM_TEMP)
-                    MeshData(mConfiguration, GetNodeDataAllocator());
+                    MeshData(mConfiguration, GetMode(), GetNodeDataAllocator());
 }
 
 

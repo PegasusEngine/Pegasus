@@ -59,6 +59,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Application\Components\EditorComponents.h">
       <Filter>Include\Components</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Application\GenericResource.h">
+      <Filter>Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Application\Application.cpp">
@@ -90,6 +93,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Application\Components\EditorComponents.cpp">
       <Filter>Source\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Application\GenericResource.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

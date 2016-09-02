@@ -1,15 +1,69 @@
-extern myProp = 1;
-echo("RERUN");
-
-tmpConfig = RenderTargetConfig(500, 50);
+extern signature = 1;
+tmpConfig = RenderTargetConfig(500, 50, FORMAT_RGBA_8_UNORM);
 tempTarget1 = CreateRenderTarget( tmpConfig );
 GlobalRegisterRenderTarget("temp1", tempTarget1);
 
+struct MeshState{
+	uWorld : float4x4;
+	uProj : float4x4;
+};
+enum TT
+{
+	A, B, C
+};
+extern worldPos = float3(0.0,0.0,0.0);
+extern rotVec = float4(1.0,0.0,0.0,0.0);
+
+gState = MeshState();
+
+meshGenerator = CreateMeshGenerator("Terrain3dGenerator");
+//meshGenerator = CreateMeshGenerator("MarchingCubeMeshGenerator");
+//meshGenerator.CaseNumber = 1;
+testMesh = CreateMesh();
+testMesh->SetGeneratorInput(meshGenerator);
+marchingCubeProgram = LoadProgram("Programs/MarchingCubeProgram.pas");
+
+uniformBuffer = CreateUniformBuffer(sizeof(MeshState));
+stateUniform = GetUniformLocation(marchingCubeProgram, "uniformState");
+
+int SetupState(beat : float)
+{
+	wha = GetWidthHeightAspect();
+	aspect = wha.w;
+	//SETUP CAMERA
+	gState.uProj = GetProjection(1.1,aspect,3.0,500.0);
+	
+	//SETUP SPHERE WORLD
+	worldMat = float4x4 (
+		1.0, 0.0, 0.0, worldPos.x,
+		0.0, 1.0, 0.0, worldPos.y,
+		0.0, 0.0, 1.0, worldPos.z,
+		0.0, 0.0, 0.0, 1.0 
+	);
+
+	rotMat = GetRotation(rotVec.xyz,rotVec.w);
+	gState.uWorld = mul(worldMat,rotMat);	
+}
+
+stateBuffer = CreateUniformBuffer(sizeof(MeshState));
+stateBufferUniform = GetUniformLocation(marchingCubeProgram, "uniformState");
+rs=CreateRasterizerState(RasterizerConfig(CW_CM,LESSER_DF));
+
 int Timeline_Update(beat : float)
 {
-	echo(myProp);
+	meshGenerator.TerrainSeed = 1;
 }
 
 int Timeline_Render(beat: float)
 {
+
+	SetupState(beat);
+	SetProgram(marchingCubeProgram);
+	SetBuffer(uniformBuffer, gState);
+	SetUniformBuffer(stateUniform,uniformBuffer);
+	SetRasterizerState(rs);
+	SetMesh(testMesh);
+	Draw();
+	UnbindMesh();
+
 }

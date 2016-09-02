@@ -33,7 +33,12 @@ DXDevice::DXDevice(const DeviceConfig& config, Alloc::IAllocator * allocator)
         NULL, // use default adapter
         D3D_DRIVER_TYPE_HARDWARE, //use hardware capabilities
         NULL, // no software rasterizer handle
-        D3D11_CREATE_DEVICE_SINGLETHREADED,
+
+        D3D11_CREATE_DEVICE_SINGLETHREADED 
+#if PEGASUS_DEBUG
+        | D3D11_CREATE_DEVICE_DEBUG //enable debug flag on debug builds.
+#endif
+        ,
         gFeatureLevel,
         sizeof(gFeatureLevel) / sizeof(D3D_FEATURE_LEVEL),
         D3D11_SDK_VERSION,

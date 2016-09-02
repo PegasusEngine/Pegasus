@@ -110,4 +110,9 @@
       <Filter>Source\DX11</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\Source\Pegasus\Render\DX11\DXPegasusFormat.inl">
+      <Filter>Source\DX11</Filter>
+    </None>
+  </ItemGroup>
 </Project>

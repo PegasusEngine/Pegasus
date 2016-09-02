@@ -14,6 +14,7 @@
 
 #include "Pegasus/Core/Ref.h"
 #include "Pegasus/Graph/NodeData.h"
+#include "Pegasus/Graph/Node.h"
 #include "Pegasus/Mesh/MeshConfiguration.h"
 
 namespace Pegasus {
@@ -27,13 +28,16 @@ public:
 
     //! Default constructor
     //! \param configuration Configuration of the mesh
+    //! \param mode the mode of this mesh data. Most of functions only work under STANDARD mode.
     //! \param allocator Allocator used for the node data
     //! \note Sets the dirty flag
-    MeshData(const MeshConfiguration & configuration, Alloc::IAllocator* allocator);
+    MeshData(const MeshConfiguration & configuration, Graph::Node::Mode mode, Alloc::IAllocator* allocator);
 
     //! Get the configuration of the mesh data
     //! \return Configuration of the mesh data
     inline const MeshConfiguration & GetConfiguration() const { return mConfiguration; }
+
+    Graph::Node::Mode GetMode() const { return mMode; }
 
     //! Gets the stream, casted properly
     //! \param streamId the id of the stream
@@ -68,11 +72,11 @@ public:
 
     //! Gets the index buffer reference
     //! \return  the index buffer pointer
-    unsigned short * GetIndexBuffer() { return static_cast<unsigned short*>(mIndexBuffer.GetBuffer()); }
+    unsigned short * GetIndexBuffer() { PG_ASSERTSTR(mMode == Graph::Node::STANDARD, "Function only available in mesh STANDARD mode."); return static_cast<unsigned short*>(mIndexBuffer.GetBuffer()); }
 
     //! Gets the vertex count
     //! \return the count of vertex elements
-    int GetVertexCount() const { return mVertexCount; }
+    int GetVertexCount() const {return mVertexCount; }
 
     //! Gets the index buffer count
     //! \return the count of index buffers elements
@@ -176,6 +180,9 @@ private:
 
     //! total count of indices
     int mIndexCount;
+
+    // mode of mesh data.
+    Graph::Node::Mode mMode;
 };
 
 

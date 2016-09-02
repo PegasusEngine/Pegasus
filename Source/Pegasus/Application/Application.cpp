@@ -167,14 +167,22 @@ Application::~Application()
     Alloc::IAllocator* coreAlloc  = Memory::GetCoreAllocator();
     Alloc::IAllocator* renderAlloc = Memory::GetRenderAllocator();
 
+    //create a fake context in case we require deletion of a graphics api resource.
+    Render::ContextConfig config;
+    config.mAllocator = Memory::GetCoreAllocator();
+    config.mDevice = mDevice;
+    Render::Context context(config);
+    context.Bind();
+
     PG_DELETE(windowAlloc, mWindowManager);
 
     
 
-    // Delete the texture and node managers    
+    // Delete the texture and node managers        
+    // WARNING: order of destructors is very important.
+    PG_DELETE(timelineAlloc, mTimelineManager);
     PG_DELETE(coreAlloc, mRenderSystemManager);
     PG_DELETE(nodeAlloc, mAssetLib);    
-    PG_DELETE(timelineAlloc, mTimelineManager);
     PG_DELETE(nodeAlloc, mMeshManager);
     PG_DELETE(nodeAlloc, mTextureManager);
     PG_DELETE(nodeAlloc, mShaderManager);
@@ -208,6 +216,15 @@ Application::~Application()
 
 void Application::Load()
 {
+    //Load must be called / should be able to be called, before attaching any window.
+    //Therefore, any timeline item doing a load time render pass to anything but the default render target
+    // (since the default render target belongs to the window) should be allowed,by creating a temporary context.
+    Render::ContextConfig config;
+    config.mAllocator = Memory::GetCoreAllocator();
+    config.mDevice = mDevice;
+    Render::Context context(config);
+    context.Bind();
+
     mRenderSystemManager->AddInternalSystems();
     RegisterCustomRenderSystems(mRenderSystemManager);
     mRenderSystemManager->InitializeSystems(this);
@@ -222,14 +239,6 @@ void Application::Load()
         mBsReflectionInfo->RegisterLib(mRenderSystemManager->GetLibs()[i]);
     }
 #endif
-    //Load must be called / should be able to be called, before attaching any window.
-    //Therefore, any timeline item doing a load time render pass to anything but the default render target
-    // (since hte default render target belongs to the window) should be allowed,by creating a temporary context.
-    Render::ContextConfig config;
-    config.mAllocator = Memory::GetCoreAllocator();
-    config.mDevice = mDevice;
-    Render::Context context(config);
-    context.Bind();
     
     //! Call custom initialize here
     InitializeApp();

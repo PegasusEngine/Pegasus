@@ -85,6 +85,7 @@ void RenderSystemManager::InitializeSystems(Core::IApplicationContext* appContex
     for (unsigned int i = 0; i < mSystems.GetSize(); ++i)
     {
         RenderSystemManager::RenderSystemContainer& container = mSystems[i];
+        container.system->Load(appContext);
         if (container.blockscriptLib != nullptr)
         {
             container.system->OnRegisterBlockscriptApi(container.blockscriptLib, mAppContext);

@@ -15,6 +15,7 @@
 #include "Pegasus/Mesh/MeshData.h"
 #include "Pegasus/Mesh/MeshConfiguration.h"
 #include "Pegasus/Mesh/MeshInputLayout.h"
+#include "Pegasus/Graph/Node.h"
 
 #include "Pegasus/Utils/Memset.h"
 #include "Pegasus/Utils/Memcpy.h"
@@ -100,12 +101,31 @@ Pegasus::Render::DXMeshGPUData* DXMeshFactory::GetOrAllocateGPUData(Pegasus::Mes
 
         meshGpuData->mTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
         meshGpuData->mIsIndexed = false;
+        meshGpuData->mIsIndirect = false;
         meshGpuData->mVertexCount = 0;
         meshGpuData->mIndexCount = 0;
 
+        for (unsigned i = 0; i < MESH_MAX_STREAMS; ++i)
+        {
+            Pegasus::Render::DXInitBufferData(meshGpuData->mVertexStreams[i]);
+            Pegasus::Render::Buffer* bufferWrapper = PG_NEW(Pegasus::Memory::GetRenderAllocator(), -1, "VertexStreamBuffer", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Render::Buffer(Pegasus::Memory::GetRenderAllocator()); 
+            bufferWrapper->SetInternalData(&meshGpuData->mVertexStreams[i]);
+            meshGpuData->mVertexBuffers[i] = bufferWrapper;
+        }
 
-        Pegasus::Utils::Memset8(&meshGpuData->mVertexBufferDesc, 0x0, sizeof(meshGpuData->mVertexBufferDesc));
-        Pegasus::Utils::Memset8(&meshGpuData->mIndexBufferDesc, 0x0, sizeof(meshGpuData->mIndexBufferDesc));
+        {
+            Pegasus::Render::DXInitBufferData(meshGpuData->mIndirectDrawStream);
+            Pegasus::Render::Buffer* bufferWrapper = PG_NEW(Pegasus::Memory::GetRenderAllocator(), -1, "IndirectDrawBufferStream", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Render::Buffer(Pegasus::Memory::GetRenderAllocator()); 
+            bufferWrapper->SetInternalData(&meshGpuData->mIndirectDrawStream);
+            meshGpuData->mDrawIndirectBuffer = bufferWrapper;
+        }
+        
+        {
+            Pegasus::Render::DXInitBufferData(meshGpuData->mIndexStream);
+            Pegasus::Render::Buffer* bufferWrapper = PG_NEW(Pegasus::Memory::GetRenderAllocator(), -1, "IndexStreamBuffer", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Render::Buffer(Pegasus::Memory::GetRenderAllocator()); 
+            bufferWrapper->SetInternalData(&meshGpuData->mIndexStream);
+            meshGpuData->mIndexBuffer = bufferWrapper;
+        }
         nodeGpuData = reinterpret_cast<Pegasus::Graph::NodeGPUData*>(meshGpuData);
         nodeData->SetNodeGPUData(nodeGpuData);
     };
@@ -121,6 +141,7 @@ void DXMeshFactory::Initialize(Pegasus::Alloc::IAllocator * allocator)
 
 void DXMeshFactory::GenerateMeshGPUData(Pegasus::Mesh::MeshData * nodeData)
 {
+    const bool isCompute = nodeData->GetMode() == Pegasus::Graph::Node::COMPUTE;
     
     ID3D11DeviceContext * context;
     ID3D11Device * device;
@@ -129,6 +150,7 @@ void DXMeshFactory::GenerateMeshGPUData(Pegasus::Mesh::MeshData * nodeData)
     const Pegasus::Mesh::MeshInputLayout*   meshInputLayout = configuration.GetInputLayout();
     Pegasus::Render::DXMeshGPUData*   meshGpuData = GetOrAllocateGPUData(nodeData);
     meshGpuData->mIsIndexed = configuration.GetIsIndexed();
+    meshGpuData->mIsIndirect = configuration.GetIsDrawIndirect();
     switch(configuration.GetMeshPrimitiveType())
     {    
     case Pegasus::Mesh::MeshConfiguration::TRIANGLE:
@@ -152,45 +174,45 @@ void DXMeshFactory::GenerateMeshGPUData(Pegasus::Mesh::MeshData * nodeData)
 
     int vertexCount = nodeData->GetVertexCount();
     meshGpuData->mVertexCount = vertexCount;
-
+    PG_ASSERTSTR(vertexCount != 0, "Cannot pass 0 size vertex buffer. Forgot to call AllocVertices on meshData?");
     for (int streamIndex = 0; streamIndex < MESH_MAX_STREAMS; ++streamIndex)
     {
         if (nodeData->GetStreamStride(streamIndex) > 0)
         {
-            D3D11_BUFFER_DESC& streamDesc = meshGpuData->mVertexBufferDesc[streamIndex];
-            CComPtr<ID3D11Buffer>& bufferPtr = meshGpuData->mVertexBuffer[streamIndex];
-            int streamByteSize = nodeData->GetStreamStride(streamIndex) * vertexCount;
+            Pegasus::Render::DXBufferGPUData& bufferData = meshGpuData->mVertexStreams[streamIndex];
+            D3D11_BUFFER_DESC& streamDesc = bufferData.mDesc;
+            unsigned streamByteSize = nodeData->GetStreamStride(streamIndex) * vertexCount;
 
             //has the size changed? or are we trying to update the contents of a non dynamic resource?
-            if (bufferPtr != nullptr && (streamByteSize != streamDesc.ByteWidth || streamDesc.Usage == D3D11_USAGE_DEFAULT))
+            if (bufferData.mBuffer != nullptr && (streamByteSize > streamDesc.ByteWidth || (streamDesc.Usage == D3D11_USAGE_DEFAULT && !isCompute)))
             {
                 //erase this buffer
-                bufferPtr = nullptr;
+                bufferData.mBuffer = nullptr;
+                bufferData.mUav = nullptr;
+                bufferData.mSrv = nullptr;
             }
 
-            if (bufferPtr == nullptr)
+            if (bufferData.mBuffer == nullptr)
             {
-                streamDesc.Usage = configuration.GetIsDynamic() ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
-                streamDesc.ByteWidth = streamByteSize;
-                streamDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-                streamDesc.CPUAccessFlags = configuration.GetIsDynamic() ? D3D11_CPU_ACCESS_WRITE : 0;
-                streamDesc.MiscFlags = 0;
-            
-                D3D11_SUBRESOURCE_DATA initData;
-                initData.pSysMem = nodeData->GetStream<void>(streamIndex);
-                initData.SysMemPitch = 0;
-                initData.SysMemSlicePitch = 0;
-            
-                VALID_DECLARE(device->CreateBuffer(&streamDesc, &initData, &bufferPtr));
+                Pegasus::Render::DXCreateBuffer(
+                    device,
+                    streamByteSize,
+                    meshGpuData->mVertexCount,
+                    configuration.GetIsDynamic(),
+                    isCompute ? nullptr : nodeData->GetStream<void>(streamIndex),
+                    (D3D11_BIND_FLAG)(D3D11_BIND_VERTEX_BUFFER | (isCompute ? (D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE) : 0)),
+                    bufferData
+                );
             }
-            else
+            else if (!isCompute)
             {
+                PG_ASSERT(streamDesc.Usage == D3D11_USAGE_DYNAMIC);
                 D3D11_MAPPED_SUBRESOURCE mappedResource;
-                if (context->Map(bufferPtr, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource) == S_OK)
+                if (context->Map(bufferData.mBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource) == S_OK)
                 {
                     PG_ASSERTSTR(mappedResource.pData != nullptr,"map returned a null pointer of data!");
                     Pegasus::Utils::Memcpy(mappedResource.pData, nodeData->GetStream<void>(streamIndex), streamByteSize);
-                    context->Unmap(bufferPtr, 0);
+                    context->Unmap(bufferData.mBuffer, 0);
                 }
                 else
                 {
@@ -202,47 +224,58 @@ void DXMeshFactory::GenerateMeshGPUData(Pegasus::Mesh::MeshData * nodeData)
 
     if (configuration.GetIsIndexed())
     {
-        if (meshGpuData->mIndexBuffer != nullptr && meshGpuData->mIndexBufferDesc.ByteWidth != nodeData->GetIndexCount() * sizeof(unsigned short))
+        Pegasus::Render::DXBufferGPUData& bufferData = meshGpuData->mIndexStream;
+        D3D11_BUFFER_DESC& streamDesc = bufferData.mDesc;
+        unsigned streamByteSize = nodeData->GetIndexCount() * sizeof(unsigned short);
+
+        if (bufferData.mBuffer != nullptr && (streamByteSize > streamDesc.ByteWidth || (streamDesc.Usage == D3D11_USAGE_DEFAULT && !isCompute)))
         {
-            meshGpuData->mIndexBuffer = nullptr;
+            bufferData.mBuffer = nullptr;
         }
 
-        if (meshGpuData->mIndexBuffer == nullptr)
+        meshGpuData->mIndexCount = nodeData->GetIndexCount();
+        PG_ASSERTSTR( nodeData->GetIndexCount() != 0, "Cannot pass 0 size index buffer. Forgot to call AllocIndices on meshData?");
+        if (bufferData.mBuffer == nullptr)
         {
-            meshGpuData->mIndexCount = nodeData->GetIndexCount();
-            D3D11_BUFFER_DESC& bufferDesc = meshGpuData->mIndexBufferDesc;
-            bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-            bufferDesc.ByteWidth = nodeData->GetIndexCount() * sizeof(unsigned short);
-            bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-            bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-            bufferDesc.MiscFlags = 0;
-
-            D3D11_SUBRESOURCE_DATA initData;
-	    	initData.pSysMem = static_cast<void*>(nodeData->GetIndexBuffer());
-            initData.SysMemPitch = 0;
-            initData.SysMemSlicePitch = 0;
-            VALID_DECLARE(device->CreateBuffer(&bufferDesc, &initData, &meshGpuData->mIndexBuffer));
-        }
-        else
-        {
-            PG_ASSERT(
-                meshGpuData->mIndexBuffer != nullptr &&
-                meshGpuData->mIndexBufferDesc.Usage == D3D11_USAGE_DYNAMIC &&
-                meshGpuData->mIndexBufferDesc.ByteWidth == nodeData->GetIndexCount() * sizeof(unsigned short)
+            Pegasus::Render::DXCreateBuffer(
+                device,
+                streamByteSize,
+                meshGpuData->mIndexCount,
+                configuration.GetIsDynamic(),
+                isCompute ? nullptr : nodeData->GetIndexBuffer(),
+                (D3D11_BIND_FLAG)(D3D11_BIND_INDEX_BUFFER | (isCompute ? (D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE) : 0)),
+                bufferData
             );
-
+        }
+        else if (!isCompute)
+        {
             D3D11_MAPPED_SUBRESOURCE mappedResource;
-            if (context->Map(meshGpuData->mIndexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource) == S_OK)
+            if (context->Map(bufferData.mBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource) == S_OK)
             {
                 PG_ASSERTSTR(mappedResource.pData != nullptr, "map returned a null pointer of data!");
-                Pegasus::Utils::Memcpy(mappedResource.pData, nodeData->GetIndexBuffer(), nodeData->GetIndexCount() * sizeof(unsigned short));
-                context->Unmap(meshGpuData->mIndexBuffer, 0);
+                Pegasus::Utils::Memcpy(mappedResource.pData, nodeData->GetIndexBuffer(), streamByteSize);
+                context->Unmap(bufferData.mBuffer, 0);
             }
             else
             {
                 PG_FAILSTR("GPU Map failed!");
             }
         }
+    }
+
+    if (configuration.GetIsDrawIndirect())
+    {
+        Pegasus::Render::DXBufferGPUData& bufferData = meshGpuData->mIndirectDrawStream;
+        Pegasus::Render::DXCreateBuffer(
+            device,
+            5 * 4, //5 arguments, 4 bytes each.
+            5,
+            false, //not dynamic
+            nullptr, //no init data
+            (D3D11_BIND_FLAG)(D3D11_BIND_UNORDERED_ACCESS),
+            bufferData,
+            D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS
+        );
     }
 
     //reset all the existing input layouts
@@ -293,9 +326,22 @@ void DXMeshFactory::DestroyNodeGPUData(Pegasus::Mesh::MeshData * nodeData)
         Pegasus::Render::DXMeshGPUData* meshGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXMeshGPUData, nodeGpuData);
         for (int i = 0; i < MESH_MAX_STREAMS; ++i)
         {
-            meshGpuData->mVertexBuffer[i] = nullptr;
+            meshGpuData->mVertexStreams[i].mBuffer = nullptr;
+            meshGpuData->mVertexStreams[i].mUav = nullptr;
+            meshGpuData->mVertexStreams[i].mSrv = nullptr;
+            meshGpuData->mVertexBuffers[i]->SetInternalData(nullptr);
         }
-        meshGpuData->mIndexBuffer = nullptr;
+        meshGpuData->mIndexStream.mBuffer = nullptr;
+        meshGpuData->mIndexStream.mUav = nullptr;
+        meshGpuData->mIndexStream.mSrv = nullptr;
+        meshGpuData->mIndexBuffer->SetInternalData(nullptr);
+
+        meshGpuData->mIndirectDrawStream.mBuffer = nullptr;
+        meshGpuData->mIndirectDrawStream.mUav = nullptr;
+        meshGpuData->mIndirectDrawStream.mSrv = nullptr;
+        meshGpuData->mDrawIndirectBuffer->SetInternalData(nullptr);
+
+
         //reset all the existing input layouts
         for (int i = 0; i < meshGpuData->mInputLayoutTableCount; ++i)
         {

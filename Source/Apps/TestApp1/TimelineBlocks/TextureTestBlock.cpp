@@ -84,6 +84,9 @@ void TextureTestBlock::Initialize()
     CreateTextureGradient2();
     CreateTextureAdd1();
     CreateTextureAdd2();
+
+    Pegasus::Render::SamplerStateConfig samplerConfig;
+    mSampler = Pegasus::Render::CreateSamplerState(samplerConfig);
 }
 
 //----------------------------------------------------------------------------------------
@@ -112,6 +115,7 @@ void TextureTestBlock::Update(float beat)
 void TextureTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
 {
     // Test dynamic data for the first gradient and the pixels generator
+    Pegasus::Render::SetPixelSampler(mSampler, 0);
     Pegasus::Texture::GradientGenerator * gradientGenerator1 = static_cast<Pegasus::Texture::GradientGenerator *>(mTextureGradientGenerator1);
     Pegasus::Math::Vec3 & point0 = gradientGenerator1->GetPoint0();
     point0.y = Pegasus::Math::Sin(beat * 2.0f) * 0.5f + 0.5f;
@@ -164,7 +168,7 @@ void TextureTestBlock::CreateTexture1()
 
     TextureManager* textureManager = GetTextureManager();
     TextureConfiguration texConfig(TextureConfiguration::TYPE_2D,
-                                   TextureConfiguration::PIXELFORMAT_RGBA8,
+                                   Pegasus::Core::FORMAT_RGBA_8_UNORM,
                                    256, 256, 1, 1);
 
     TextureGeneratorRef constantColorGenerator1Node = textureManager->CreateTextureGeneratorNode("ConstantColorGenerator", texConfig);
@@ -191,7 +195,7 @@ void TextureTestBlock::CreateTexture2()
 
     TextureManager* textureManager = GetTextureManager();
     TextureConfiguration texConfig(TextureConfiguration::TYPE_2D,
-                                   TextureConfiguration::PIXELFORMAT_RGBA8,
+                                   Pegasus::Core::FORMAT_RGBA_8_UNORM,
                                    256, 256, 1, 1);
 
     TextureGeneratorRef constantColorGenerator2Node = textureManager->CreateTextureGeneratorNode("ConstantColorGenerator", texConfig);
@@ -218,7 +222,7 @@ void TextureTestBlock::CreateTextureGradient1()
 
     TextureManager* textureManager = GetTextureManager();
     TextureConfiguration texConfig(TextureConfiguration::TYPE_2D,
-                                   TextureConfiguration::PIXELFORMAT_RGBA8,
+                                   Pegasus::Core::FORMAT_RGBA_8_UNORM,
                                    256, 256, 1, 1);
 
     TextureGeneratorRef gradientGenerator1Node = textureManager->CreateTextureGeneratorNode("GradientGenerator", texConfig);
@@ -254,7 +258,7 @@ void TextureTestBlock::CreateTextureGradient2()
 
     TextureManager* textureManager = GetTextureManager();
     TextureConfiguration texConfig(TextureConfiguration::TYPE_2D,
-                                   TextureConfiguration::PIXELFORMAT_RGBA8,
+                                   Pegasus::Core::FORMAT_RGBA_8_UNORM,
                                    256, 256, 1, 1);
 
     TextureGeneratorRef gradientGenerator2Node = textureManager->CreateTextureGeneratorNode("GradientGenerator", texConfig);

@@ -21,6 +21,7 @@ MeshConfiguration::MeshConfiguration()
     :
 mIsIndexed(true),
 mIsDynamic(false),
+mIsDrawIndirect(false),
 mPrimitiveType(TRIANGLE)
 {
 }

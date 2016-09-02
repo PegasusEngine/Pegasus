@@ -153,7 +153,12 @@ int Pegasus::Utils::Atoi(const char * str)
 float Pegasus::Utils::Atof(const char * str)
 {
     const char * p = str;
-    float sign = *str == '-' ? -1.0f : 1.0f;
+    float sign = 1.0f;
+    if (*str == '-')
+    {
+        sign = -1.0f;
+        ++p;
+    }
     float f = 0.0;
     float r = 10.0;
     bool pastPoint = false;

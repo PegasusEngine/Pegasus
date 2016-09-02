@@ -22,6 +22,7 @@
 namespace Pegasus {
 namespace Mesh {
 
+class IMeshFactory;
 
 //! Base mesh generator node class
 //! \warning IMPORTANT! When deriving from this class, update MeshManager::RegisterAllMeshNodes()
@@ -55,6 +56,8 @@ public:
     //! \return Configuration of the generator
     inline const MeshConfiguration & GetConfiguration() const { return mConfiguration; }
 
+    //! Sets the GPU factory for the mesh
+    void SetFactory(IMeshFactory * factory) { mFactory = factory; }
 
     //! Return the mesh generator up-to-date data.
     //! \note Defines the standard behavior of all generator nodes.
@@ -83,6 +86,8 @@ protected:
     //! \return Pointer to the data being allocated
     virtual Graph::NodeData * AllocateData() const;
 
+    //! Gets the GPU factory for the mesh
+    IMeshFactory* GetFactory() { return mFactory; }
 
     //! Generate the content of the data associated with the mesh generator
     //! \warning To be redefined by each derived class, to implement its behavior
@@ -91,6 +96,15 @@ protected:
 
     //! Configuration of the generator
     MeshConfiguration mConfiguration;
+
+    //! Pointer to GPU Mesh factory
+    IMeshFactory * mFactory;
+
+    //! Releases the node internal data
+    void ReleaseGPUData();
+
+    //! Releases the node internal data
+    virtual void ReleaseDataAndPropagate();
 
     //------------------------------------------------------------------------------------
 

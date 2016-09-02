@@ -78,6 +78,7 @@ PropertyGridObject::PropertyGridObject()
     BEGIN_INIT_PROPERTIES(PropertyGridObject)
         INIT_PROPERTY(Name)
     END_INIT_PROPERTIES()
+    mStringAllocator.Initialize(256, Memory::GetPropertyPointerAllocator());
 }
 
 //----------------------------------------------------------------------------------------
@@ -300,6 +301,37 @@ PropertyAccessor PropertyGridObject::GetObjectPropertyAccessor(unsigned int inde
     }
 }
 
+const PropertyReadAccessor PropertyGridObject::GetObjectReadPropertyAccessor(unsigned int index) const
+{
+    if (index < GetNumObjectProperties())
+    {
+        return PropertyReadAccessor(  this
+                                , mObjectProperties[index].valuePtr
+#if PEGASUS_USE_EVENTS
+                                ,  PROPERTYCATEGORY_CLASS
+                                ,  (int)index
+#endif
+#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
+                                , (unsigned int)mObjectProperties[index].record.size
+#endif
+                               );
+    }
+    else
+    {
+        PG_FAILSTR("Trying to access property %u but it has to be < %u", index, GetNumObjectProperties());
+        return PropertyReadAccessor(  this
+                                , nullptr
+#if PEGASUS_USE_EVENTS
+                                ,  PROPERTYCATEGORY_INVALID
+                                , -1 
+#endif
+#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
+                                , 0
+#endif
+                               );
+    }
+}
+
 //----------------------------------------------------------------------------------------
 
 int PropertyGridObject::AppendClassPropertyPointer(  void * ptr
@@ -355,12 +387,8 @@ static void WriteColor(AssetLib::Object* obj, C c, AssetLib::Asset* asset, const
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridObject::WriteToObject(AssetLib::Asset* parentAsset, AssetLib::Object* obj) const
+static void AddPropertyToObj(AssetLib::Asset* parentAsset, const PropertyRecord& r, const PropertyReadAccessor& a, AssetLib::Object* obj)
 {
-    for (unsigned int i = 0; i < GetNumClassProperties(); ++i)
-    {
-        const PropertyRecord& r = GetClassPropertyRecord(i);
-        const PropertyReadAccessor a = GetClassReadPropertyAccessor(i);
         switch(r.type)
         {
         case PROPERTYTYPE_BOOL:
@@ -412,7 +440,56 @@ void PropertyGridObject::WriteToObject(AssetLib::Asset* parentAsset, AssetLib::O
             }
             break;
         }
+}
+
+void PropertyGridObject::WriteToObject(AssetLib::Asset* parentAsset, AssetLib::Object* obj) const
+{
+    for (unsigned int i = 0; i < GetNumClassProperties(); ++i)
+    {
+        const PropertyRecord& r = GetClassPropertyRecord(i);
+        const PropertyReadAccessor a = GetClassReadPropertyAccessor(i);
+        AddPropertyToObj(parentAsset, r,a,obj);
     }
+
+    AssetLib::Object* objectProperties = parentAsset->NewObject();
+    obj->AddObject("_o_p_", objectProperties);
+
+    //create schema objects
+    AssetLib::Object* schemaObject = parentAsset->NewObject();
+    objectProperties->AddObject("__schema__", schemaObject);
+    
+    AssetLib::Array* sizetypesArray = parentAsset->NewArray();
+    sizetypesArray->CommitType(AssetLib::Array::AS_TYPE_INT);
+    schemaObject->AddArray("sizetypes", sizetypesArray);
+
+    AssetLib::Array* propNamesArray = parentAsset->NewArray();
+    propNamesArray->CommitType(AssetLib::Array::AS_TYPE_STRING);
+    schemaObject->AddArray("names", propNamesArray);
+
+    AssetLib::Array* typeNamesArray = parentAsset->NewArray();
+    typeNamesArray->CommitType(AssetLib::Array::AS_TYPE_STRING);
+    schemaObject->AddArray("typeNames", typeNamesArray);
+
+    for (unsigned int i = 0; i < GetNumObjectProperties(); ++i)
+    {
+        const PropertyRecord& r = GetObjectPropertyRecord(i);
+        const PropertyReadAccessor a = GetObjectReadPropertyAccessor(i);
+        
+        AddPropertyToObj(parentAsset, r,a,objectProperties);
+
+        //push into schema. Pack 16 bits for bite size, 16 bits for enum.
+        AssetLib::Array::Element el;
+        el.i = (static_cast<int>(r.type) << 16) | (0xffff & static_cast<int>(r.size));
+        sizetypesArray->PushElement(el);
+
+        el.s = r.name;
+        propNamesArray->PushElement(el);
+
+        el.s = r.typeName;
+        typeNamesArray->PushElement(el);
+    }
+    
+
 }
 
 //----------------------------------------------------------------------------------------
@@ -472,70 +549,67 @@ bool ReadColor(PropertyAccessor& a, const char* name, AssetLib::Object* object)
 
 //----------------------------------------------------------------------------------------
 
-bool PropertyGridObject::ReadFromObject(AssetLib::Asset* parentAsset, AssetLib::Object* obj)
+static void ReadProperty(AssetLib::Asset* parentAsset, const PropertyRecord& r, PropertyAccessor& a, AssetLib::Object* obj)
 {
-    for (unsigned int i = 0; i < GetNumClassProperties(); ++i)
-    {
-        const PropertyRecord& r = GetClassPropertyRecord(i);
-        PropertyAccessor a = GetClassPropertyAccessor(i);
         switch(r.type)
         {
         case PROPERTYTYPE_BOOL:
             {
                 int index = obj->FindInt(r.name);
-                if (index == -1) continue;
+                if (index == -1) return;
                 a.Set<bool>(obj->GetInt(index) != 0);
             }
             break;
         case PROPERTYTYPE_UINT:
             {
                 int index = obj->FindInt(r.name);
-                if (index == -1) continue;
+                if (index == -1) return;
                 a.Set<unsigned int>(static_cast<unsigned int>(obj->GetInt(index)));
             }
+            break;
         case PROPERTYTYPE_INT:
             {
                 int index = obj->FindInt(r.name);
-                if (index == -1) continue;
+                if (index == -1) return;
                 a.Set<int>(obj->GetInt(index));
             }
             break;
         case PROPERTYTYPE_FLOAT:
             {
                 int index = obj->FindFloat(r.name);
-                if (index == -1) continue;
+                if (index == -1) return;
                 a.Set<float>(obj->GetFloat(index));
             }
             break;
         case PROPERTYTYPE_VEC2:
             {
-                if (!ReadVector<Math::Vec2, 2>(a, r.name, obj)) continue;
+                if (!ReadVector<Math::Vec2, 2>(a, r.name, obj)) return;
             }
             break;
         case PROPERTYTYPE_VEC3:
             {
-                if (!ReadVector<Math::Vec3, 3>(a, r.name, obj)) continue;
+                if (!ReadVector<Math::Vec3, 3>(a, r.name, obj)) return;
             }
             break;
         case PROPERTYTYPE_VEC4:
             {
-                if (!ReadVector<Math::Vec4, 4>(a, r.name, obj)) continue;
+                if (!ReadVector<Math::Vec4, 4>(a, r.name, obj)) return;
             }
             break;
         case PROPERTYTYPE_COLOR8RGB:
             {
-                if (!ReadColor<Math::Color8RGB, 3>(a, r.name, obj)) continue;
+                if (!ReadColor<Math::Color8RGB, 3>(a, r.name, obj)) return;
             }
             break;
         case PROPERTYTYPE_COLOR8RGBA:
             {
-                if (!ReadColor<Math::Color8RGBA, 4>(a, r.name, obj)) continue;
+                if (!ReadColor<Math::Color8RGBA, 4>(a, r.name, obj)) return;
             }
             break;
         case PROPERTYTYPE_STRING64:
             {
                 int index = obj->FindString(r.name);
-                if (index == -1) continue;
+                if (index == -1) return;
                 const char* str = obj->GetString(index); 
                 int len = Utils::Strlen(str);
                 if (len < 64)
@@ -546,6 +620,78 @@ bool PropertyGridObject::ReadFromObject(AssetLib::Asset* parentAsset, AssetLib::
                 }
             }
             break;
+        }
+}
+
+static const char* CopyString(Memory::BlockAllocator& ba, const char* str)
+{
+    unsigned toAlloc = Utils::Strlen(str) + 1;
+    char* newBuffer = (char*)ba.Alloc(toAlloc, Pegasus::Alloc::PG_MEM_TEMP);
+    Utils::Memcpy(newBuffer, str, toAlloc);
+    return newBuffer;
+}
+
+bool PropertyGridObject::ReadFromObject(AssetLib::Asset* parentAsset, AssetLib::Object* obj)
+{
+    mStringAllocator.Reset(); //for strings that will be copied.
+
+    for (unsigned int i = 0; i < GetNumClassProperties(); ++i)
+    {
+        const PropertyRecord& r = GetClassPropertyRecord(i);
+        PropertyAccessor a = GetClassPropertyAccessor(i);
+        ReadProperty(parentAsset,r,a,obj);
+    }
+
+    char str64[64];
+    Utils::Memset32(str64, 0x0,sizeof(str64));
+
+    int objPropJson = obj->FindObject("_o_p_");
+    if (objPropJson != -1)
+    {
+        AssetLib::Object* objPropObj = obj->GetObject(objPropJson);
+
+        int schemaIndex = objPropObj->FindObject("__schema__");
+        PG_ASSERTSTR(schemaIndex != -1, "Could not find a schema for this object property! runtime does not know how to parse!");
+
+        AssetLib::Object* schemaObject = objPropObj->GetObject(schemaIndex);
+        int sizeTypesId = schemaObject->FindArray("sizetypes");
+        PG_ASSERT(sizeTypesId != -1);
+        AssetLib::Array* sizeTypesArray = schemaObject->GetArray(sizeTypesId);
+        if (sizeTypesArray->GetSize() > 0)
+        {
+            PG_ASSERT(sizeTypesArray->GetType() == AssetLib::Array::AS_TYPE_INT);
+
+            int namesId = schemaObject->FindArray("names");
+            PG_ASSERT(namesId != -1);
+            AssetLib::Array* namesArray = schemaObject->GetArray(namesId);
+            PG_ASSERT(namesArray->GetType() == AssetLib::Array::AS_TYPE_STRING);
+
+            int typeNamesId = schemaObject->FindArray("typeNames");
+            PG_ASSERT(typeNamesId != -1);
+            AssetLib::Array* typeNamesArray = schemaObject->GetArray(typeNamesId);
+            PG_ASSERT(typeNamesArray->GetType() == AssetLib::Array::AS_TYPE_STRING);
+            PG_ASSERT(typeNamesArray->GetSize() == namesArray->GetSize() && namesArray->GetSize() == sizeTypesArray->GetSize());
+
+
+            for (int i = 0; i < sizeTypesArray->GetSize(); ++i)
+            {
+                const AssetLib::Array::Element& el = sizeTypesArray->GetElement(i);
+                int packedValue = static_cast<PropertyType>(el.i);
+                PropertyType propTypeEnum = static_cast<PropertyType>( packedValue >> 16 );
+                int typeSize = packedValue & 0xffff;
+
+                const AssetLib::Array::Element& elName = namesArray->GetElement(i);
+                const AssetLib::Array::Element& elTypeName = typeNamesArray->GetElement(i);
+
+                AddObjectProperty(propTypeEnum, typeSize, CopyString(mStringAllocator, elName.s), CopyString(mStringAllocator, elTypeName.s), str64);
+            }
+
+            for (unsigned int i = 0; i < GetNumObjectProperties(); ++i)
+            {
+                const PropertyRecord& r = GetObjectPropertyRecord(i);
+                PropertyAccessor a = GetObjectPropertyAccessor(i);
+                ReadProperty(parentAsset, r, a, objPropObj);
+            }
         }
     }
 

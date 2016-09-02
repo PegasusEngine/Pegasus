@@ -83,9 +83,9 @@ i = 0; while (i < MAX_SPHERES)
 
 
 //// SETUP RENDER TARGETS ////
-cubeFaceTarget = CreateRenderTarget( RenderTargetConfig(512, 512) );
+cubeFaceTarget = CreateRenderTarget( RenderTargetConfig(512, 512, FORMAT_RGBA_8_UNORM) );
 
-tmpConfig = RenderTargetConfig(1280, 720);
+tmpConfig = RenderTargetConfig(1280, 720, FORMAT_RGBA_8_UNORM);
 tempTarget1 = CreateRenderTarget( tmpConfig );
 
 tmpConfig.Height = tmpConfig.Height / 4;
@@ -174,7 +174,6 @@ int Timeline_Render(beat : float)
     SetRasterizerState(currentBlockRasterState);
 	SetMesh(cubeMesh);
     Draw();
-
     i = 0; while (i < MAX_SPHERES)
     {
         SetMesh(sphereMeshes[i]);
@@ -230,4 +229,5 @@ int Timeline_Render(beat : float)
 
     SetRasterizerState(defaultRasterState);
 
+	UnbindPixelResources();
 }

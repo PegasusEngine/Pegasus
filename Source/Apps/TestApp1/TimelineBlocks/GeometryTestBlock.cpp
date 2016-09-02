@@ -132,6 +132,7 @@ void GeometryTestBlock::Initialize()
     Pegasus::Render::RenderTargetConfig c;
     c.mWidth = 512;
     c.mHeight = 512;
+    c.mFormat = Pegasus::Core::FORMAT_RGBA_8_UNORM;
     mCubeFaceRenderTarget = Pegasus::Render::CreateRenderTarget(c);
 
     c.mWidth = 1280;
@@ -145,7 +146,7 @@ void GeometryTestBlock::Initialize()
     Pegasus::Render::CubeMapConfig cubeDesc;
     cubeDesc.mWidth = 256;
     cubeDesc.mHeight = 256;
-    
+    cubeDesc.mFormat = Pegasus::Core::FORMAT_RGBA_8_UNORM;
     mCubeMap = Pegasus::Render::CreateCubeMap(cubeDesc);
 }
 

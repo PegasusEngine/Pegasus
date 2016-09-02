@@ -108,7 +108,7 @@ void WorldComponent::Render(const ComponentContext& context, Wnd::WindowComponen
     Pegasus::Render::SetClearColorValue(Pegasus::Math::ColorRGBA(0.0, 0.0, 0.0, 1.0));
 
     // - todo inverted depth
-    Pegasus::Render::SetDepthClearValue(0.0);
+    Pegasus::Render::SetDepthClearValue(1.0);
     
     // clear buffers
     Pegasus::Render::Clear(/*color*/true, /*depth*/ true, /*stencil*/false);

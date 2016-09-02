@@ -249,8 +249,8 @@ void Pegasus::AssetLib::AssetLib::UnloadAsset(Asset* asset)
             {
                 asset->GetRuntimeData()->mAsset = nullptr;
             }
-            PG_DELETE(mAllocator, mAssets[i]);
             mAssets.Delete(i);
+            PG_DELETE(mAllocator, asset);
             return;
         }
     }

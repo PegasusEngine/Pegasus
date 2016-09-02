@@ -20,6 +20,7 @@
 #include "Pegasus/Texture/Texture.h"
 #include "Pegasus/Core/RefCounted.h"
 #include "Pegasus/Core/Ref.h"
+#include "Pegasus/Core/Formats.h"
 
 namespace Pegasus
 {
@@ -90,9 +91,10 @@ namespace Render
     {
         int mWidth;
         int mHeight;
+        Core::Format mFormat;
     public:
         RenderTargetConfig()
-        : mWidth(-1), mHeight(-1)
+        : mWidth(-1), mHeight(-1), mFormat(Core::FORMAT_RGBA_8_UNORM)
         {
         }
 
@@ -146,6 +148,18 @@ namespace Render
     {
         int mWidth;
         int mHeight;
+        Core::Format mFormat;
+        CubeMapConfig() : mWidth(-1), mHeight(-1), mFormat(Core::FORMAT_RGBA_8_UNORM) {}
+    };
+
+    //! Structure handle wtih the respective 3d texture configurations
+    struct VolumeTextureConfig
+    {
+        int mWidth;
+        int mHeight;
+        int mDepth;
+        Core::Format mFormat;
+        VolumeTextureConfig() : mWidth(-1), mHeight(-1), mDepth(-1), mFormat(Core::FORMAT_RGBA_8_UNORM) {}
     };
 
     //! Structure containing configuration for blending state
@@ -230,26 +244,77 @@ namespace Render
             }
     };
 
+    //! Sampler descriptor
+    struct SamplerStateConfig
+    {
+        enum Filter
+        {
+            POINT,
+            BILINEAR,
+            ANISO
+        };
+
+        enum CoordMode
+        {
+            WARP,
+            MIRROR,
+            CLAMP,
+            BORDER
+        };
+
+        Filter mFilter;
+        CoordMode mUCoordMode;
+        CoordMode mVCoordMode;
+        CoordMode mWCoordMode;
+        int mMipBias;
+        int mMinMip;
+        int mMaxMip;
+        int mMaxAnisotropy;
+        Math::ColorRGBA mBorderColor;
+
+        SamplerStateConfig()
+        : mFilter(BILINEAR),
+          mUCoordMode(CLAMP),
+          mVCoordMode(CLAMP),
+          mWCoordMode(CLAMP),
+          mMipBias(0),
+          mMinMip(-1),
+          mMaxMip(-1),
+          mMaxAnisotropy(-1),
+          mBorderColor(0.0f,0.0f,0.0f,0.0f)
+        {
+        }
+        
+    };
+
     //Resource definitions
     typedef BasicResource<BufferConfig>       Buffer;
     typedef BasicResource<RenderTargetConfig> RenderTarget;
     typedef BasicResource<CubeMapConfig>      CubeMap;
+    typedef BasicResource<VolumeTextureConfig> VolumeTexture;
     typedef BasicResource<DepthStencilConfig> DepthStencil;
     typedef BasicResource<RasterizerConfig> RasterizerState;
     typedef BasicResource<BlendingConfig> BlendingState;
+    typedef BasicResource<SamplerStateConfig> SamplerState;
 
     //Ref typedefs
     typedef Core::Ref<Buffer> BufferRef;
     typedef Core::Ref<RenderTarget> RenderTargetRef;
     typedef Core::Ref<CubeMap> CubeMapRef;
+    typedef Core::Ref<VolumeTexture> VolumeTextureRef;
     typedef Core::Ref<DepthStencil> DepthStencilRef;
     typedef Core::Ref<RasterizerState> RasterizerStateRef;
     typedef Core::Ref<BlendingState> BlendingStateRef;
+    typedef Core::Ref<SamplerState> SamplerStateRef;
 
 
     //! Dispatches a shader pipeline.
     //! \param program the shader program to dispatch
     void SetProgram (Shader::ProgramLinkageInOut program);
+
+    //! Gets the internal gpu version of a program. Use to figure out if this program has changed for workflows
+    //! \return every time the program gets compiled, its version increases
+    int GetProgramVersion (Shader::ProgramLinkageInOut program);
 
     //! Dispatches a mesh.
     //! \param mesh that the system will dispatch.
@@ -257,6 +322,9 @@ namespace Render
     //!           not dispatching a shader will cause the mesh to be incorrectly rendered
     //!           or throw an assert
     void SetMesh (Mesh::MeshInOut mesh);
+
+    //! Clears mesh streams and indices being set. Use only when using meshes as compute outputs.
+    void UnbindMesh();
 
     //! Sets a viewport
     //! \param the viewport to set
@@ -292,11 +360,11 @@ namespace Render
     //! \param render target array
     //! \param depth stencil dispatched
     //! \note renderTargetCount must be between 0 and MAX_RENDER_TARGETS
-    void SetRenderTargets (int renderTargetNum, RenderTargetRef* renderTarget, DepthStencilRef& depthStencil);
+    void SetRenderTargets (int renderTargetCount, RenderTargetRef* renderTarget, DepthStencilRef& depthStencil);
 
     //! Sets all color / depth and stencil to null 
     //! \note this is equivalent of calling SetRenderTargets(0, nullptr);
-    void ClearAllTargets();
+    void UnbindRenderTargets();
 
     //! Sets the default render target frame buffer (the basic window render target)
     //! Sets also the default depth stencil buffer
@@ -341,7 +409,20 @@ namespace Render
     //! Creates a buffer optimized for uniform usage
     //! \param bufferSize, the size of the buffer to be used in bytes
     //! \return outputBuffer the output struct to be filled
+    //! \note Uniform buffers are dynamic and unable to get written through compute. They can only be bound as cbuffers.
     BufferRef CreateUniformBuffer(int bufferSize);
+    
+    //! Creates a buffer that will contain read / write access for compute.
+    //! \param the size of the buffer
+    //! \param elementCount - the number of elements this buffer contains. Must be non 0, so it can be treated as an Array when set as an UAV
+    //! \param true if this buffer can be binded as a uniform. If false, it will only be able to get binded as a read buffer.
+    //! \note for now, compute buffers are static, and inaccessible for the cpu.
+    BufferRef CreateComputeBuffer(int bufferSize, int elementCount, bool makeUniformBuffer);
+
+    //! Creates a sampler state to be set.
+    //! \param config the config
+    //! \return the sampler state to get returned.
+    SamplerStateRef CreateSamplerState(const SamplerStateConfig& samplerConfig);
 
     //! Creates a render target with the assigned texture configuration
     //! \param configuration of the render target
@@ -356,8 +437,19 @@ namespace Render
 
     //! Creates a cube map from a description
     //! \param config the cube map configuration
-    //! \param the cube map to create
-    CubeMapRef CreateCubeMap(CubeMapConfig& config);
+    //! \return the cube map
+    CubeMapRef CreateCubeMap(const CubeMapConfig& config);
+
+    //! Creates a volume texture from config
+    //! \param config the volume texture config
+    //! \return the created volume texture
+    VolumeTextureRef CreateVolumeTexture(const VolumeTextureConfig& config);
+
+    //! Creates a render target looking at a slice of the volume texture
+    //! \param volume texture
+    //! \param the slice in z to use as a render target
+    //! \return the render target reference
+    RenderTargetRef CreateRenderTargetFromVolumeTexture(int slice, VolumeTextureRef& volumeTexture);
 
     //! Creates a rasterizer state given a configuration.
     //! \param config the configuration structure
@@ -369,13 +461,27 @@ namespace Render
     //! \param output blendign state created
     BlendingStateRef CreateBlendingState(const BlendingConfig& config);
 
+    //! Gets the index buffer of a mesh data.
+    //! \return the index buffer of this mesh data
+    BufferRef GetIndexBuffer(Mesh::MeshDataRef meshData);
+
+    //! Gets the vertex buffer of a mesh data.
+    //! \param stream, the stream id to get. Must be < 8
+    //! \return the vertex buffer of this mesh data    
+    BufferRef GetVertexBuffer(Mesh::MeshDataRef meshData, int stream);
+
+    //! Gets the draw indirect parameters of a mesh.
+    //! Use this function to bind a compute shader and write into such data.
+    BufferRef GetDrawIndirectBuffer(Mesh::MeshDataRef meshData);
+
     //! Memcpys a buffer to the gpu destination.
-    //! \param dstBuffer the GPU destination buffer to copy to
+    //! \param dstBuffer the GPU destination buffer to copy to. This buffer must be a constant uniform buffer. Cannot
+    //!                  do this operation to compute buffers. Compute buffers must be written through compute shaders only.
     //! \param src the source buffer to use
     //! \param size, the size of the src buffer to copy to dstBuffer in bytes. If -1, 
     //!        it will use the size registered in dstBuffer
     //! \param offset, the offset to use
-    void SetBuffer(BufferRef& dstBuffer, void * src, int size = -1, int offset = 0);
+    void SetBuffer(BufferRef& dstBuffer, const void * src, int size = -1, int offset = 0);
 
     //! Sets the uniform value to a texture
     //! \param u uniform to set the value to
@@ -383,18 +489,24 @@ namespace Render
     //! \return boolean, true on success, false on error
     bool SetUniformTexture(Uniform& u, Texture::TextureInOut texture);
 
-    //! Sets the uniform block buffer
+    //! Sets the uniform block buffer (constant buffer block).
     //! \param u uniform block to set the value to
     //! \param buffer to set to the uniform block slot
     //! \return boolean, true on success, false on error
     bool SetUniformBuffer(Uniform& u, const BufferRef& buffer);
+
+    //! Sets a buffer as a resource 
+    //! \param u uniform block to set the value to
+    //! \param buffer to set as a resource.
+    //! \return boolean, true on success, false on error
+    bool SetUniformBufferResource(Uniform& u, const BufferRef& buffer);
 
     //! Sets the render target as a texture view in the specified uniform location 
     //! \param u uniform parameter to set the value
     //! \param renderTarget render target to set as a texture view
     //! \param index of the render target to set
     //! \return boolean, true on success, false on error
-    bool SetUniformTextureRenderTarget(Uniform& u, const RenderTargetRef renderTarget);
+    bool SetUniformTextureRenderTarget(Uniform& u, const RenderTargetRef& renderTarget);
 
     //! Sets a cube map as a view
     //! \param u uniform parameter to set the value
@@ -402,10 +514,61 @@ namespace Render
     //! \return boolean, true on success, false on error
     bool SetUniformCubeMap(Uniform& u, CubeMapRef& cubeMap);
 
+    //! Sets a volume texture as a view
+    //! \param u uniform parameter to set the value
+    //! \param  volume texture to set
+    //! \return boolean, true on success, false on error
+    bool SetUniformVolume(Uniform& u, const VolumeTextureRef& volume);
+
+    //! Sets the sampler state. Must have a program bound.
+    //! \param sampler to set in such program
+    //! \param the slot of the sampler.
+    //! \note a program must be bound, otherwise this will fail.
+    void SetComputeSampler(SamplerStateRef& sampler, int slot);
+
+    //! Sets the sampler state. Must have a program bound.
+    //! \param sampler to set in such program
+    //! \param the slot of the sampler.
+    //! \note a program must be bound, otherwise this will fail.
+    void SetPixelSampler(SamplerStateRef& sampler, int slot);
+
+    //! Sets the sampler state. Must have a program bound.
+    //! \param sampler to set in such program
+    //! \param the slot of the sampler.
+    //! \note a program must be bound, otherwise this will fail.
+    void SetVertexSampler(SamplerStateRef& sampler, int slot);
+
     //! function that internally cleans any dispatched programs / shaders / meshes
     //! from the global state.
     void CleanInternalState();
 
+    //! Sets a compute output, in the given slot
+    //! \param buffer to set as an output for compute
+    //! \param slot the slot id as an output for compute
+    void SetComputeOutput(BufferRef buffer, int slot);
+
+    //! Sets a compute output, in the given slot
+    //! \param volume texture to set as an output for compute
+    //! \param slot the slot id as an output for compute
+    void SetComputeOutput(VolumeTextureRef buffer, int slot);
+
+    //! Unsets all the state of the buffer outputs.
+    void UnbindComputeOutputs();
+
+    //! Clears any resources binded for compute.
+    void UnbindComputeResources();
+
+    //! Clears any resources binded for vertex shaders.
+    void UnbindPixelResources();
+
+    //! Clears any resources binded for pixel shaders.
+    void UnbindVertexResources();
+
+    //! Dispatches a compute shader.
+    //! \param x the number of threadgroups in x
+    //! \param y the number of threadgroups in y
+    //! \param z the number of threadgroups in z
+    void Dispatch(unsigned int x, unsigned int y, unsigned int z);
 }
 }
 

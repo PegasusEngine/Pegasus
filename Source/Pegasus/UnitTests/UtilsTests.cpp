@@ -279,6 +279,30 @@ bool UNIT_TEST_Atoi3()
     return Pegasus::Utils::Atoi(n) == 1;
 }
 
+bool UNIT_TEST_Atof1()
+{
+    const char * n = "3.0";
+    float res = Pegasus::Utils::Atof(n) - 3.0f;
+    res = res < 0.0 ? -res : res;
+    return  res < 0.001;
+}
+
+bool UNIT_TEST_Atof2()
+{
+    const char * n = "643.0283";
+    float res = Pegasus::Utils::Atof(n) - 643.0283f;
+    res = res < 0.0 ? -res : res;
+    return  res < 0.001;
+}
+
+bool UNIT_TEST_Atof3()
+{
+    const char * n = "-7.0283";
+    float res = Pegasus::Utils::Atof(n) - (-7.0283f);
+    res = res < 0.0 ? -res : res;
+    return  res < 0.001;
+}
+
 bool UNIT_TEST_TesselationTable1()
 {
     Pegasus::Utils::TesselationTable t (&sGlobalAllocator, sizeof(int));

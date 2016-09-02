@@ -79,6 +79,12 @@ bool UNIT_TEST_Atoi2();
 
 bool UNIT_TEST_Atoi3();
 
+bool UNIT_TEST_Atof1();
+
+bool UNIT_TEST_Atof2();
+
+bool UNIT_TEST_Atof3();
+
 bool UNIT_TEST_TesselationTable1();
 
 bool UNIT_TEST_TesselationTable2();

@@ -18,7 +18,7 @@ namespace Texture {
 
 TextureConfiguration::TextureConfiguration()
 :   mType(TYPE_2D)
-,   mPixelFormat(PIXELFORMAT_RGBA8)
+,   mPixelFormat(Core::FORMAT_RGBA_8_UNORM)
 ,   mWidth(256)
 ,   mHeight(256)
 ,   mDepth(1)
@@ -32,7 +32,7 @@ TextureConfiguration::TextureConfiguration()
 //----------------------------------------------------------------------------------------
 
 TextureConfiguration::TextureConfiguration(Type type,
-                                           PixelFormat pixelFormat,
+                                           Core::Format pixelFormat,
                                            unsigned int width,
                                            unsigned int height,
                                            unsigned int depth,
@@ -55,14 +55,14 @@ TextureConfiguration::TextureConfiguration(Type type,
     }
 
     // Pixel format
-    if (pixelFormat < NUM_PIXELFORMATS)
+    if (pixelFormat < Core::FORMAT_MAX_COUNT)
     {
         mPixelFormat = pixelFormat;
     }
     else
     {
-        PG_FAILSTR("Invalid pixel format for a texture (%d), it must be < %d", pixelFormat, NUM_PIXELFORMATS);
-        mPixelFormat = PIXELFORMAT_RGBA8;
+        PG_FAILSTR("Invalid pixel format for a texture (%d), it must be < %d", pixelFormat, Core::FORMAT_MAX_COUNT);
+        mPixelFormat = Core::FORMAT_RGBA_8_UNORM;
     }
 
     // Width
@@ -159,7 +159,7 @@ TextureConfiguration::TextureConfiguration(const TextureConfiguration & other)
 TextureConfiguration & TextureConfiguration::operator=(const TextureConfiguration & other)
 {
     PG_ASSERT(other.mType < NUM_TYPES);
-    PG_ASSERT(other.mPixelFormat < NUM_PIXELFORMATS);
+    PG_ASSERT(other.mPixelFormat < Core::FORMAT_MAX_COUNT);
     PG_ASSERT(other.mWidth >= 1);
     PG_ASSERT(other.mHeight >= 1);
     PG_ASSERT(other.mDepth >= 1);
@@ -181,10 +181,10 @@ unsigned int TextureConfiguration::GetNumBytesPerPixel() const
 {
     switch (mPixelFormat)
     {
-        case PIXELFORMAT_RGBA8:         return 4;
+        case Core::FORMAT_RGBA_8_UNORM:         return 4;
 
         default:
-            PG_FAILSTR("Invalid texture pixel format (%d), it should be less than %d", mPixelFormat, NUM_PIXELFORMATS);
+            PG_FAILSTR("Invalid texture pixel format (%d), it should be less than %d", mPixelFormat, Core::FORMAT_RGBA_8_UNORM);
             return 1;
     }
 }
