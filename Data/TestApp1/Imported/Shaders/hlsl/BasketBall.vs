@@ -1,3 +1,5 @@
+#include "RenderSystems/Camera/Common.h"
+
 cbuffer uniformState
 {
 	float4x4 uWorld;
@@ -21,11 +23,12 @@ VS_OUT  main(
 )
 {
 	VS_OUT vo;
-	vo.p =  mul(p0, uWorld);
+	float4x4 worldView = mul(uWorld,gView);
+	vo.p =  mul(p0, worldView);
 	vo.localPos = p0;
 	vo.normal = mul(float4(n0,0.0),uWorld).xyz;
 	vo.t = t0;
-	pos = mul(vo.p,uProj);
+	pos = mul(vo.p,gProj);
 	return vo;
 
 }

@@ -147,6 +147,9 @@ public:
     //! Gets the list of viewport widgets for this editor
     inline const QVector<ViewportWidget*>& GetViewportWidgets() const { return mViewportWidgets; }
 
+    //! Gets the list of viewport dock widgets.
+    inline const QVector<ViewportDockWidget*>& GetViewportDockWidget() const { return mViewportDockWidgets; }
+
     //----------------------------------------------------------------------------------------
 
 private:
@@ -414,6 +417,10 @@ private:
 
     //! List of viewport widgets
     QVector<ViewportWidget*> mViewportWidgets;
+
+    //! List of viewport dock widgets. Viewport dock widgets are the actual dock windows with view into the world.
+    //! Other viewports are just views into the texture or mesh editors.
+    QVector<ViewportDockWidget*> mViewportDockWidgets;
 
     //! Mapping that maps an asset type to a widget that can process and open it.
     QMap<int, PegasusDockWidget*> mTypeGuidWidgetMapping;

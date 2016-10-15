@@ -33,8 +33,8 @@ gPixelState = PixelState();
 gLightingState = LightingState();
 
 cullConfig = RasterizerConfig();
-cullConfig.CullMode = CCW_CM;
-cullConfig.DepthFunc = NONE_DF;
+cullConfig.CullMode = CW_CM;
+cullConfig.DepthFunc = LESSER_DF;
 cullState = CreateRasterizerState(cullConfig);
 
 // PROGRAMS //
@@ -75,7 +75,7 @@ int SetupState(beat : float)
 	);
 	rotMat = GetRotation(float3(0,1,0),beat);
 
-	gMarbleState.uWorld = mul(worldMat, rotMat);
+	gMarbleState.uWorld = mul(worldMat,rotMat);
 	
 	gPixelState.uCameraPos_beat = float4(float3(0.0,0.0,0.0),beat);
 	gPixelState.uCenterPos_unused = float4(sphereCenter, 1.0);
@@ -98,8 +98,6 @@ int Timeline_Render(beat : float)
 
 	SetupState(beat);
 	/// RENDER MARBLE
-	SetClearColorValue(float4(0,0,0,1));
-	Clear(1,0,0);
 	SetRasterizerState(cullState);
 	SetProgram(marbleProgram);
 	SetMesh(sphereMesh);

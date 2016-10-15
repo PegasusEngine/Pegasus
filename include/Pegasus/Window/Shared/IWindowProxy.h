@@ -13,10 +13,16 @@
 #define PEGASUS_SHARED_IWINDOWPROXY_H
 
 #if PEGASUS_ENABLE_PROXIES
+#include "Pegasus/Application/Shared/ApplicationConfig.h"
+#include "Pegasus/Window/Shared/WindowConfig.h"
+
 // Forward declarations
 namespace Pegasus {
     namespace Wnd {
         class Window;
+    }
+    namespace PropertyGrid {
+        class IPropertyGridObjectProxy;
     }
 }
 
@@ -35,6 +41,9 @@ public:
     //! Bind the render context and render the window
     virtual void Draw() = 0;
 
+    //! Bool value, setting if this window is enabled or disabled for drawing.
+    virtual void EnableDraw(bool enabled) = 0;
+
     //! Resizes this window.
     //! \param width New width in pixels of the window
     //! \param height New height in pixels of the window
@@ -44,6 +53,16 @@ public:
     //! Internal use only.
     //! \return Window object.
     virtual Window* Unwrap() const = 0;
+
+    //! Returns the state of a component. Use this to send / receive realtime messages to a window component.
+    //! \return the property grid of this component. Null if there isn't one.
+    virtual PropertyGrid::IPropertyGridObjectProxy* GetComponentState(Pegasus::App::ComponentType type) = 0;
+
+    //! Hacky, but allows control of passing by keyboard events.
+    //! \param k key passed.
+    //! \param isDown true if the key was pressed, otherwise if released
+    virtual void HandleKeyEvent(Keys k, bool isDown) = 0;
+
 };
 
 

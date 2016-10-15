@@ -1,5 +1,11 @@
 #include "RenderSystems/3dTerrain/terrainCommon.h"
 
+cbuffer BlockStateCbuffer
+{
+    float4 gWorldOffset;
+    float4 gWorldScale;
+};
+
 Texture3D<float> densityTexture;
 Texture3D<uint> meshCounts;
 Texture3D<uint> meshSparse8;
@@ -17,7 +23,6 @@ uint getGridVertexOffset(uint3 gridCoord)
 	return dot(uint3(3,3*17,3*17*17), gridCoord);
 }
 
-
 float3 ComputeVertexNorm(int3 voxelPos)
 {
 	//gradient samples
@@ -25,18 +30,19 @@ float3 ComputeVertexNorm(int3 voxelPos)
 	float2 ySamples = float2(densityTexture[voxelPos - int3(0,1,0)], densityTexture[voxelPos + int3(0,1,0)]);
 	float2 zSamples = float2(densityTexture[voxelPos + int3(0,0,1)], densityTexture[voxelPos - int3(0,0,1)]);
 	return normalize(-float3(xSamples.x - xSamples.y,ySamples.x - ySamples.y,zSamples.x - xSamples.y));  
+	return float3(1.0,0.0,0.0);
 }
 
 float3 ComputeVertexNormBilinear(float3 voxelPos)
 {
-	float3 voxelUv = float3(voxelPos)/DENSITY_DIMS + 0.5/DENSITY_DIMS;
+	float3 voxelUv = (voxelPos)/(DENSITY_DIMS - 1.0);
 
 	//gradient samples
 	float delta = 1.0/16.0;
 	float2 xSamples = float2(densityTexture.SampleLevel(densitySampler,voxelUv - delta*float3(1,0,0), 0).x, densityTexture.SampleLevel(densitySampler,float3(voxelUv + delta*float3(1,0,0)), 0).x);
 	float2 ySamples = float2(densityTexture.SampleLevel(densitySampler,voxelUv - delta*float3(0,1,0), 0).x, densityTexture.SampleLevel(densitySampler,float3(voxelUv + delta*float3(0,1,0)), 0).x);
 	float2 zSamples = float2(densityTexture.SampleLevel(densitySampler,voxelUv + delta*float3(0,0,1), 0).x, densityTexture.SampleLevel(densitySampler,float3(voxelUv - delta*float3(0,0,1)), 0).x);
-	return normalize(-float3(xSamples.x - xSamples.y,ySamples.x - ySamples.y,zSamples.x - xSamples.y));
+   	return normalize(-float3(xSamples.x - xSamples.y,ySamples.x - ySamples.y,zSamples.x - zSamples.y));
 
 }
 
@@ -84,8 +90,8 @@ float3 ComputeVertexPos(uint edgeIndex, uint3 voxelPos)
 	int3 sampleCoordA = sampleOffsetA + voxelPos;
 	int3 sampleCoordB = sampleOffsetB + voxelPos;
 	float2 densitySamples = float2(densityTexture[sampleCoordA], densityTexture[sampleCoordB]); 
-	float3 fCoordA = (float3(sampleOffsetA) - 0.5);
-	float3 fCoordB = (float3(sampleOffsetB) - 0.5);	
+	float3 fCoordA = (float3(sampleOffsetA));
+	float3 fCoordB = (float3(sampleOffsetB));	
 	float midPoint = (MID_POINT - densitySamples.x) / (densitySamples.y - densitySamples.x);
 	float3 coord = lerp(fCoordA,fCoordB, midPoint*float3(1,1,1));
 	return coord + float3(voxelPos);
@@ -143,7 +149,7 @@ void WriteVertexes(uint voffset, uint3 voxelPos, uint3 gti, uint countInfo, uint
 		uint edgeIndex = edgeOrder[edgeId];
 	    if (GetEdgeBit(countInfo, edgeIndex))
 		{
-			float3 vertexPos = ComputeVertexPos(edgeIndex, voxelPos);
+			float3 vertexPos = ComputeVertexPos(edgeIndex, voxelPos)*gWorldScale.x + gWorldOffset.xyz;
 			StoreFloat3Vertex(outVertexBuffer, byteOffset + 12*edgeId, vertexPos);
 		}
 	}

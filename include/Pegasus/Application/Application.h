@@ -57,10 +57,6 @@ namespace Pegasus {
     namespace RenderSystems {
         class RenderSystemManager;
     }
-
-    namespace Camera {
-        class CameraManager;
-    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -119,9 +115,10 @@ public:
     virtual Timeline::TimelineManager*                      GetTimelineManager()         const { return mTimelineManager;         }
     virtual BlockScript::BlockScriptManager*                GetBlockScriptManager()      const { return mBlockScriptManager;      }
     virtual AssetLib::AssetLib*                             GetAssetLib()                const { return mAssetLib;                }
-    virtual Camera::CameraManager*                          GetCameraManager()           const { return mCameraManager;           }
     virtual Pegasus::Application::RenderCollectionFactory*  GetRenderCollectionFactory() const { return mRenderCollectionFactory; }
     virtual PropertyGrid::PropertyGridManager*              GetPropertyGridManager()     const { return mPropertyGridManager;     }
+    virtual RenderSystems::RenderSystemManager*             GetRenderSystemManager()     const { return mRenderSystemManager;     }
+    virtual BlockScript::BlockLib*                          GetRenderBsApi()             const { return mRenderApiScript;         }
 #if PEGASUS_ENABLE_BS_REFLECTION_INFO
     //! Returns the reflection information from blockscript.
     virtual App::AppBsReflectionInfo*                       GetBsReflectionInfo() const { return mBsReflectionInfo; }
@@ -153,8 +150,7 @@ private:
     Mesh::MeshManager*                              mMeshManager;            //!< Mesh node manager
     Timeline::TimelineManager*                      mTimelineManager;        //!< Timeline manager
     BlockScript::BlockScriptManager*                mBlockScriptManager;     //!< BlockScriptManager manager.
-    AssetLib::AssetLib*                             mAssetLib;               //!< AssetLib manager
-    Camera::CameraManager*                          mCameraManager;          //!< Camera manager
+    AssetLib::AssetLib*                             mAssetLib;               //!< AssetLib manager    
     PropertyGrid::PropertyGridManager*              mPropertyGridManager;    //!< Property grid manager
     RenderSystems::RenderSystemManager*             mRenderSystemManager;    //!< Render systems manager. Used to instantiate custom systems.
     Pegasus::Application::RenderCollectionFactory*  mRenderCollectionFactory;//!< Render collection factory

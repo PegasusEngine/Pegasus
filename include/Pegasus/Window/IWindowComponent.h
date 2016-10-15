@@ -13,6 +13,7 @@
 #define PEGASUS_WND_ICOMPONENT
 
 #include "Pegasus/PropertyGrid/PropertyGridObject.h"
+#include "Pegasus/Window/Shared/WindowConfig.h"
 
 //fwd declarations
 namespace Pegasus {
@@ -78,6 +79,7 @@ public:
 #if PEGASUS_ENABLE_PROXIES
     enum MouseButton
     {
+        MouseButton_Cancel,
         MouseButton_Left,
         MouseButton_Right,
         MouseButton_Center,
@@ -95,8 +97,11 @@ public:
     //! Keyboard event, when a key is pressed. Called from the editor.
     //! \param key ascii value of the key pressed.
     //! \param isDown true if key is down, false if key goes up.
-    virtual void OnKeyEvent(WindowComponentState* state, char key, bool isDown) {}
+    virtual void OnKeyEvent(WindowComponentState* state, Pegasus::Wnd::Keys key, bool isDown) {}
 #endif
+
+    //! Return unique id for a component, for easy finding.
+    virtual unsigned int GetUniqueId() const = 0;
 
 };
 

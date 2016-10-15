@@ -50,9 +50,9 @@ static const QString gDarkStyleNameSuffix(" (dark)");
 
 //----------------------------------------------------------------------------------------
 
-Settings::Settings(QMainWindow * mainWindow)
+Settings::Settings(Editor * editor)
 :   QObject(),
-    mMainWindow(mainWindow)
+    mEditor(editor)
 {
     // Set internal variables
     mWidgetStyleNameList = QStyleFactory::keys();
@@ -86,8 +86,8 @@ void Settings::Load()
     settings.beginGroup("MainWindow");
     {
         // Main window geometry and state
-        mMainWindow->restoreGeometry(settings.value("Geometry").toByteArray());
-        mMainWindow->restoreState(settings.value("State").toByteArray());
+        mEditor->restoreGeometry(settings.value("Geometry").toByteArray());
+        mEditor->restoreState(settings.value("State").toByteArray());
     }
     settings.endGroup();    // MainWindow
 
@@ -209,6 +209,21 @@ void Settings::Load()
         SetCodeEditorTabSize( settings.value("TabSize", 4).toInt() );
      }
     settings.endGroup();    // CodeEditor
+
+    settings.beginGroup("Viewports");
+        if (settings.contains("viewportStates"))
+        {
+            QVariantList viewportStates = settings.value("viewportStates").toList();
+            const QVector<ViewportDockWidget*>& viewports = mEditor->GetViewportDockWidget();
+
+            for (int i = 0; i < viewports.size(); ++i)
+            {
+                ViewportDockWidget* v = viewports[i];
+                QVariantList viewState = viewportStates[i].toList();
+                v->SetButtonStatuses(viewState);
+            }
+        }
+    settings.endGroup();
 }
 
 //----------------------------------------------------------------------------------------
@@ -225,8 +240,8 @@ void Settings::Save()
     settings.beginGroup("MainWindow");
     {
         // Main window geometry and state
-        settings.setValue("Geometry", mMainWindow->saveGeometry());
-        settings.setValue("State", mMainWindow->saveState());
+        settings.setValue("Geometry", mEditor->saveGeometry());
+        settings.setValue("State", mEditor->saveState());
     }
     settings.endGroup();    // MainWindow
 
@@ -311,6 +326,18 @@ void Settings::Save()
         settings.setValue("TabSize", GetCodeEditorTabSize());
     }
     settings.endGroup();    // CodeEditor
+
+    settings.beginGroup("Viewports");
+        QVariantList viewportStates;
+        const QVector<ViewportDockWidget*>& viewports = mEditor->GetViewportDockWidget();
+        foreach (ViewportDockWidget* v, viewports)
+        {
+            QVariantList viewState;
+            v->GetButtonStatuses(viewState);
+            viewportStates.push_back(viewState);
+        }
+        settings.setValue("viewportStates", viewportStates);
+    settings.endGroup();
 }
 
 //----------------------------------------------------------------------------------------
@@ -420,12 +447,12 @@ void Settings::SetWidgetStyleName(const QString & name)
             QFile styleFile( ":/SettingsDialog/DarkStyle.qss");
             styleFile.open(QFile::ReadOnly);
             QString style(styleFile.readAll());
-            Editor::GetInstance().GetQtApplication()->setStyleSheet(style);
+            mEditor->GetQtApplication()->setStyleSheet(style);
         }
         else
         {
             // Remove the dark theme stylesheet
-            Editor::GetInstance().GetQtApplication()->setStyleSheet("");
+            mEditor->GetQtApplication()->setStyleSheet("");
         }
     }
 }
@@ -465,8 +492,8 @@ void Settings::SetUseTimelineAntialiasing(bool timelineAntialiasing)
 
     mUseTimelineAntialiasing = timelineAntialiasing;
 
-    ED_ASSERT(Editor::GetInstance().GetTimelineDockWidget() != nullptr);
-    Editor::GetInstance().GetTimelineDockWidget()->EnableAntialiasing(mUseTimelineAntialiasing);
+    ED_ASSERT(mEditor->GetTimelineDockWidget() != nullptr);
+    mEditor->GetTimelineDockWidget()->EnableAntialiasing(mUseTimelineAntialiasing);
 }
 
 //----------------------------------------------------------------------------------------
@@ -477,8 +504,8 @@ void Settings::SetConsoleBackgroundColor(const QColor & color)
 
     mConsoleBackgroundColor = color;
 
-    ED_ASSERT(Editor::GetInstance().GetConsoleDockWidget() != nullptr);
-    Editor::GetInstance().GetConsoleDockWidget()->SetBackgroundColor(mConsoleBackgroundColor);
+    ED_ASSERT(mEditor->GetConsoleDockWidget() != nullptr);
+    mEditor->GetConsoleDockWidget()->SetBackgroundColor(mConsoleBackgroundColor);
 }
 
 //----------------------------------------------------------------------------------------
@@ -489,8 +516,8 @@ void Settings::SetConsoleTextDefaultColor(const QColor & color)
 
     mConsoleTextDefaultColor = color;
 
-    ED_ASSERT(Editor::GetInstance().GetConsoleDockWidget() != nullptr);
-    Editor::GetInstance().GetConsoleDockWidget()->SetTextDefaultColor(mConsoleTextDefaultColor);
+    ED_ASSERT(mEditor->GetConsoleDockWidget() != nullptr);
+    mEditor->GetConsoleDockWidget()->SetTextDefaultColor(mConsoleTextDefaultColor);
 }
 
 //----------------------------------------------------------------------------------------
@@ -509,7 +536,7 @@ void Settings::SetConsoleFilterStateForLogChannel(Pegasus::Core::LogChannel logC
         mLogChannelFilterTable[logChannel] = false;
     }
 
-    Editor::GetInstance().GetConsoleDockWidget()->SetFilterStateForLogChannel(logChannel, state);
+    mEditor->GetConsoleDockWidget()->SetFilterStateForLogChannel(logChannel, state);
 }
 
 //----------------------------------------------------------------------------------------
@@ -530,7 +557,7 @@ void Settings::SetConsoleTextColorForLogChannel(Pegasus::Core::LogChannel logCha
            ConvertLogChannelToString(logChannel).toLatin1().constData());
 
     mLogChannelColorTable[logChannel] = color;    
-    Editor::GetInstance().GetConsoleDockWidget()->SetTextColorForLogChannel(logChannel, color);
+    mEditor->GetConsoleDockWidget()->SetTextColorForLogChannel(logChannel, color);
 }
 
 //----------------------------------------------------------------------------------------

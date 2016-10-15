@@ -449,10 +449,12 @@ void Editor::CreateDockWidgets()
     mMainViewportDockWidget = new ViewportDockWidget(this,this,"Viewport 1", "MainViewportDockWidget");
     RegisterWidget(mMainViewportDockWidget,Qt::TopDockWidgetArea);
     mViewportWidgets.push_back(mMainViewportDockWidget->GetViewportWidget());
+    mViewportDockWidgets.push_back(mMainViewportDockWidget); 
 
     mSecondaryViewportDockWidget = new ViewportDockWidget(this,this,"Viewport 2", "SecondaryViewportDockWidget");
     RegisterWidget(mSecondaryViewportDockWidget,Qt::TopDockWidgetArea);
     mViewportWidgets.push_back(mSecondaryViewportDockWidget->GetViewportWidget());
+    mViewportDockWidgets.push_back(mSecondaryViewportDockWidget);
 
     mHistoryDockWidget = new HistoryDockWidget(this);
     addDockWidget(Qt::RightDockWidgetArea, mHistoryDockWidget);
@@ -486,6 +488,12 @@ void Editor::CreateDockWidgets()
     RegisterWidget(mBsLibWidget, Qt::RightDockWidgetArea);
     mBsLibWidget->hide();
     mBsLibWidget->setFloating(true);
+
+
+    //from ui to ui
+    connect(mAssetLibraryWidget, SIGNAL(OnHighlightBlock(unsigned)),
+            mTimelineDockWidget, SLOT(OnFocusBlock(unsigned)));
+
 }
 
 //----------------------------------------------------------------------------------------

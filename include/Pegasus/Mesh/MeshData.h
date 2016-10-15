@@ -55,7 +55,7 @@ public:
     //! \param streamId the target stream to set this vertex element to
     //! \return the new index
     template<class T>
-    unsigned short PushVertex(const T * vertex, int streamId);
+    unsigned short PushVertex(const T& vertex, int streamId);
 
     //! Pushes (and does respective allocations) an index element
     //! \param index the index to push
@@ -200,10 +200,10 @@ void * MeshData::GetStream(int stream)
 }
 
 template<class T>
-unsigned short MeshData::PushVertex(const T * vertex, int streamId)
+unsigned short MeshData::PushVertex(const T& vertex, int streamId)
 {
     PG_ASSERTSTR(sizeof(T) == mVertexStreams[streamId].GetStride(), "stream strides must match!");
-    return InternalPushVertex(static_cast<const void *>(vertex), streamId);
+    return InternalPushVertex(static_cast<const void *>(&vertex), streamId);
 }
 
 //----------------------------------------------------------------------------------------

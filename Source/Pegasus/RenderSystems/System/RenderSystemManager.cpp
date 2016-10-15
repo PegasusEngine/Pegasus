@@ -13,6 +13,8 @@
 #include "Pegasus/RenderSystems/System/RenderSystem.h"
 #include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/BlockScript/BlockScriptManager.h"
+#include "Pegasus/BlockScript/BlockLib.h"
+#include "Pegasus/BlockScript/SymbolTable.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Core/Assertion.h"
 #include "Pegasus/Allocator/IAllocator.h"
@@ -20,10 +22,13 @@
 #include "Pegasus/RenderSystems/2dTerrain/2dTerrainSystem.h"
 #include "Pegasus/RenderSystems/3dTerrain/3dTerrainSystem.h"
 #include "Pegasus/RenderSystems/DeferredRenderer/DeferredRendererSystem.h"
+#include "Pegasus/RenderSystems/Camera/CameraSystem.h"
 #include "Pegasus/Allocator/Alloc.h"
 
 using namespace Pegasus;
 using namespace Pegasus::RenderSystems;
+
+int RenderSystems::RenderSystem::sNextId = 0;
 
 RenderSystemManager::~RenderSystemManager()
 {
@@ -32,6 +37,11 @@ RenderSystemManager::~RenderSystemManager()
 
 void RenderSystemManager::AddInternalSystems()
 {
+//a lot of render systems depend on camera, so registering it first.
+#if RENDER_SYSTEM_CONFIG_ENABLE_CAMERA
+    RegisterSystem(mAllocator, PG_NEW(mAllocator, -1, "Deferred Renderer System", Alloc::PG_MEM_PERM) Camera::CameraSystem(mAllocator));
+#endif
+
 #if RENDER_SYSTEM_CONFIG_ENABLE_GRASS
     //RegisterSystem(mAllocator, PG_NEW(mAllocator, -1, "Grass System", Alloc::PG_MEM_PERM) GrassSystem(mAllocator));
 #endif
@@ -66,14 +76,14 @@ void RenderSystemManager::RegisterSystem(Alloc::IAllocator* alloc, RenderSystem*
     }
 }
 
-RenderSystem* RenderSystemManager::FindSystem(const char* systemName)
+const RenderSystemManager::RenderSystemContainer* RenderSystemManager::FindSystem(const char* systemName)
 {
     unsigned int hash = Utils::HashStr(systemName);
     for (unsigned int i = 0; i < mSystems.GetSize(); ++i)
     {
         if (mSystems[i].hash == hash)
         {
-            return mSystems[i].system;
+            return &mSystems[i];
         }
     }
 
@@ -88,7 +98,14 @@ void RenderSystemManager::InitializeSystems(Core::IApplicationContext* appContex
         container.system->Load(appContext);
         if (container.blockscriptLib != nullptr)
         {
+            //register the render api in case the render api types want to get used
+            container.blockscriptLib->GetSymbolTable()->RegisterChild(appContext->GetRenderBsApi()->GetSymbolTable());
+
             container.system->OnRegisterBlockscriptApi(container.blockscriptLib, mAppContext);
+
+            //unregister the render api, once compilation is done.
+            // render api will be available through  the global list of libs, and this will avoid looking symbols into the render api twice.
+            container.blockscriptLib->GetSymbolTable()->UnregisterChild(appContext->GetRenderBsApi()->GetSymbolTable());
         }
 
         container.system->OnRegisterCustomMeshNodes(mAppContext->GetMeshManager());

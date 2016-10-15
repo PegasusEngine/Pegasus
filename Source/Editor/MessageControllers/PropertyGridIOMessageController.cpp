@@ -233,15 +233,18 @@ void PropertyGridIOMessageController::UpdateObserverInternal(PropertyGridObserve
 void PropertyGridIOMessageController::CloseHandleInternal(PropertyGridHandle handle)
 {
     PropertyGridIOMessageController::HandleToProxyMap::iterator proxyIt = mActiveProperties.find(handle);
-    PropertyGridIOMessageController::ProxyUpdateCache::iterator cacheIt = mUpdateCache.find(handle);
+    if (proxyIt != mActiveProperties.end())
+    {
+        PropertyGridIOMessageController::ProxyUpdateCache::iterator cacheIt = mUpdateCache.find(handle);
 
-    proxyIt.value()->SetEventListener(nullptr);
-    delete proxyIt.value()->GetUserData();
-    proxyIt.value()->SetUserData(nullptr);
+        proxyIt.value()->SetEventListener(nullptr);
+        delete proxyIt.value()->GetUserData();
+        proxyIt.value()->SetUserData(nullptr);
 
-        
-    mActiveProperties.erase(proxyIt);
-    mUpdateCache.erase(cacheIt);
+            
+        mActiveProperties.erase(proxyIt);
+        mUpdateCache.erase(cacheIt);
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -250,12 +253,18 @@ void PropertyGridIOMessageController::OnRenderThreadClose(PropertyGridObserver* 
 {
     ED_ASSERT(handle != INVALID_PGRID_HANDLE);
 
-    QSet<PropertyGridObserver*>obsSet = mObservers.find(handle).value();
-    obsSet.erase(obsSet.find(sender));
-    
-    if (obsSet.empty())
+    ObserverMap::iterator it = mObservers.find(handle);
+    if (it != mObservers.end())
     {
-        CloseHandleInternal(handle);
+        QSet<PropertyGridObserver*>obsSet = it.value();
+        QSet<PropertyGridObserver*>::iterator obsSetResult = obsSet.find(sender);
+        ED_ASSERT(obsSetResult != obsSet.end());
+        obsSet.erase(obsSetResult);
+        
+        if (obsSet.empty())
+        {
+            CloseHandleInternal(handle);
+        }
     }
     
 }

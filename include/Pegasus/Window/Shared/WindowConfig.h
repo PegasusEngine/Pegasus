@@ -51,6 +51,18 @@ public:
     int mHeight; //!< Initial height of the window in pixels (> 0)
     bool mCreateVisible; //!< Whether to create the window as initially visible or not
 
+#if PEGASUS_ENABLE_PROXIES
+
+    //! Callback to the pegasus editor for redrawing the frame.
+    //! This callback is to be used to request another frame within a window. This will gaurantee to delegate a new redrawing
+    //! within the editors architecture. In the case of qt, redrawing must be forwarded all the way up to the ui thread. Having
+    //! calls internally to UpdateWindow or RenderWindow won't work unless using this.
+    typedef void(*RedrawProxyFun)(void*);
+    void* mRedrawCallbackArg;
+    RedrawProxyFun mRedrawEditorCallback;
+#endif
+
+
     //! Constructor
     inline WindowConfig()
         :   mIsChild(false),
@@ -62,7 +74,20 @@ public:
             mWidth(960),
             mHeight(540),
             mCreateVisible(false)
+#if PEGASUS_ENABLE_PROXIES
+            ,mRedrawCallbackArg(nullptr),
+            mRedrawEditorCallback(nullptr)
+#endif
+
         { }
+};
+
+enum Keys
+{
+    KEYS_INVALID,
+    KEYS_SHIFT,
+    KEYS_ALT,
+    KEYS_COUNT
 };
 
 

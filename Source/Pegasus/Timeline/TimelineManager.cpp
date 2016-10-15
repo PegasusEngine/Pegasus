@@ -48,6 +48,10 @@ TimelineManager::TimelineManager(Alloc::IAllocator * allocator, Core::IApplicati
 {
     PG_ASSERTSTR(allocator != nullptr, "Invalid allocator given to the timeline object");
     PG_ASSERTSTR(appContext != nullptr, "Invalid application context given to the timeline object");
+    
+    // register the most basic block.
+    TimelineManager* timelineManager = this;
+    REGISTER_BASE_TIMELINE_BLOCK(Block);
 }
 
 //----------------------------------------------------------------------------------------

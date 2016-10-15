@@ -20,6 +20,7 @@
 #include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/PropertyGrid/Shared/PropertyDefs.h"
 #include "Pegasus/PropertyGrid/PropertyGridClassInfo.h"
+#include "Pegasus/Utils/String.h"
 
 using namespace Pegasus;
 using namespace Pegasus::Application;
@@ -30,6 +31,14 @@ using namespace Pegasus::PropertyGrid;
 //TODO:  put this in a nice header file
 extern 
 bool PropertyGridPropertyCallback(const PropertyGrid::PropertyAccessor* accessor, const Pegasus::BlockScript::PropertyCallbackContext& context);
+
+extern
+void GlobalCache_PrototypeRegisterGenericResource(BlockScript::FunCallbackContext& context);
+
+extern
+void GlobalCache_PrototypeFindGenericResource(BlockScript::FunCallbackContext& context);
+
+
 namespace Pegasus
 {
 namespace Application
@@ -126,6 +135,34 @@ void GenericResource::RegisterGenericResourceType(
     nodeDef.propertyCount = typeDescriptions.GetSize();
     nodeDef.getPropertyCallback = Update_PropertyAccessCallback;
     lib->CreateClassTypes(&nodeDef, 1);
+
+    BlockScript::FunctionDeclarationDesc globalFunctions[2];
+    globalFunctions[0].functionName = "RegisterGlobalResource";
+    globalFunctions[0].returnType = "int";
+    globalFunctions[0].argumentTypes[0] = "string";
+    globalFunctions[0].argumentNames[0] = "Name";
+    globalFunctions[0].argumentTypes[1] = propertyGridClass->GetClassName();
+    globalFunctions[0].argumentNames[1] = "Obj";
+    globalFunctions[0].argumentTypes[2] = nullptr;
+    globalFunctions[0].argumentNames[2] = nullptr;
+    globalFunctions[0].callback = GlobalCache_PrototypeRegisterGenericResource;
+
+    char findFunctionName[256];
+    const char* findFunPrefix = "FindGlobal";
+    PG_ASSERT(Utils::Strlen(findFunPrefix) + Utils::Strlen(propertyGridClass->GetClassName()) + 1 < 256);
+    findFunctionName[0] = '\0';
+    Utils::Strcat(findFunctionName, findFunPrefix);
+    Utils::Strcat(findFunctionName, propertyGridClass->GetClassName());
+    
+    globalFunctions[1].functionName = findFunctionName;
+    globalFunctions[1].returnType = propertyGridClass->GetClassName();
+    globalFunctions[1].argumentTypes[0] = "string";
+    globalFunctions[1].argumentNames[0] = "Name";
+    globalFunctions[1].argumentTypes[1] = nullptr;
+    globalFunctions[1].argumentNames[1] = nullptr;
+    globalFunctions[1].callback = GlobalCache_PrototypeFindGenericResource;
+
+    lib->CreateIntrinsicFunctions(globalFunctions, sizeof(globalFunctions)/sizeof(globalFunctions[0]));
 }
 
 

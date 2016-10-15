@@ -15,9 +15,16 @@
 #include "../Source/Pegasus/Window/IWindowImpl.h"
 #include "Pegasus/Sound/Sound.h"
 #include "Pegasus/Timeline/TimelineManager.h"
+#include "Pegasus/RenderSystems/System/RenderSystemManager.h"
+#include "Pegasus/RenderSystems/System/RenderSystem.h"
+#include "Pegasus/Window/WindowComponentState.h"
+
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/Window/WindowProxy.h"
+#include "Pegasus/Timeline/TimelineManager.h"
+#include "Pegasus/Timeline/Timeline.h"
+#include "Pegasus/PropertyGrid/Shared/PropertyEventDefs.h"
 #endif  // PEGASUS_ENABLE_PROXIES
 
 namespace Pegasus {
@@ -38,6 +45,13 @@ public:
 #if PEGASUS_ENABLE_PROXIES
     //! Handles events on mouse clicks and such.
     virtual void OnMouseEvent(IWindowComponent::MouseButton button, bool isDown, float x, float y);
+    //! Sends a message to the editor, so it can repaint the entire window.
+    virtual void RequestRepaintEditorWindow();
+    void* mRedrawCallbackArg;
+    WindowConfig::RedrawProxyFun mRedrawEditorCallback;
+
+    //! Handles events on key presses
+    virtual void OnKeyEvent(Pegasus::Wnd::Keys key, bool isDown);
 #endif
 
 private:
@@ -52,6 +66,9 @@ private:
 
 WindowMessageHandler::WindowMessageHandler(Window* parent)
  : mParent(parent)
+#if PEGASUS_ENABLE_PROXIES
+    ,mRedrawEditorCallback(nullptr), mRedrawCallbackArg(nullptr)
+#endif
 {
 }
 
@@ -75,6 +92,19 @@ void WindowMessageHandler::OnCreate(Os::WindowHandle handle)
     mParent->mRenderContext = PG_NEW(mParent->mRenderAllocator, -1, "Render::Context", Pegasus::Alloc::PG_MEM_PERM) Render::Context(contextConfig);
     mParent->mContextCreated = true;
 }
+
+//----------------------------------------------------------------------------------------
+
+#if PEGASUS_ENABLE_PROXIES
+void WindowMessageHandler::RequestRepaintEditorWindow()
+{
+    if (mRedrawEditorCallback != nullptr)
+    {
+        mRedrawEditorCallback(mRedrawCallbackArg);
+    }
+
+}
+#endif
 
 //----------------------------------------------------------------------------------------
 
@@ -116,6 +146,14 @@ void WindowMessageHandler::OnMouseEvent(IWindowComponent::MouseButton button, bo
     }
 }
 
+void WindowMessageHandler::OnKeyEvent(Pegasus::Wnd::Keys key, bool isDown)
+{
+    for (unsigned i = 0; i < mParent->mComponents.GetSize(); ++i)
+    {
+        mParent->mComponents[i].mComponent->OnKeyEvent(mParent->mComponents[i].mState,  key, isDown);
+    }
+}
+
 #endif
 
 //----------------------------------------------------------------------------------------
@@ -135,13 +173,19 @@ Window::Window(const WindowConfig& config)
     mIsChild(config.mIsChild)
 {
     // Create platform stuff
-    mMessageHandler = PG_NEW(mAllocator, -1, "Window message handler", Pegasus::Alloc::PG_MEM_PERM) WindowMessageHandler(this);
-    mPrivateImpl = IWindowImpl::CreateImpl(config, mAllocator, mMessageHandler);
+    WindowMessageHandler * messageHandler = PG_NEW(mAllocator, -1, "Window message handler", Pegasus::Alloc::PG_MEM_PERM) WindowMessageHandler(this);
+    mPrivateImpl = IWindowImpl::CreateImpl(config, mAllocator, messageHandler);
 
 #if PEGASUS_ENABLE_PROXIES
     //! Create the proxy associated with the timeline
     mProxy = PG_NEW(mAllocator, -1, "Window::mProxy", Pegasus::Alloc::PG_MEM_PERM) WindowProxy(this);
+    mEnableDraw = true;
+
+    messageHandler->mRedrawCallbackArg = config.mRedrawCallbackArg;
+    messageHandler->mRedrawEditorCallback = config.mRedrawEditorCallback;
 #endif  // PEGASUS_ENABLE_PROXIES
+
+    mMessageHandler = messageHandler;
 }
 
 //----------------------------------------------------------------------------------------
@@ -193,6 +237,9 @@ void Window::RemoveComponents()
 
 void Window::Draw()
 {
+#if PEGASUS_ENABLE_PROXIES
+    if (!mEnableDraw) return;
+#endif
     if (mRenderContext != nullptr)
     {
         //Use this context on this thread.
@@ -200,18 +247,30 @@ void Window::Draw()
         
         ComponentContext ctx = { mWindowContext, this };
 
+        RenderSystems::RenderSystemManager* renderSystemManager = mWindowContext->GetRenderSystemManager();
+        for (unsigned i = 0; i < renderSystemManager->GetSystemCount(); ++i)
+        {
+            renderSystemManager->GetSystem(i)->WindowUpdate(this);
+        }
+
         //call Update for all components.
         for (unsigned int i = 0; i < mComponents.GetSize(); ++i)
         {
             Window::StateComponentPair& scp = mComponents[i];
-            scp.mComponent->WindowUpdate(ctx, scp.mState);
+            if (scp.mState->GetEnable())
+            {
+                scp.mComponent->WindowUpdate(ctx, scp.mState);
+            }
         }
 
         //call Render for all components.
         for (unsigned int i = 0; i < mComponents.GetSize(); ++i)
         {
             Window::StateComponentPair& scp = mComponents[i];
-            scp.mComponent->Render(ctx, scp.mState);
+            if (scp.mState->GetEnable())
+            {
+                scp.mComponent->Render(ctx, scp.mState);
+            }
         }
 
         //Double buffer / end frame update.
@@ -259,7 +318,7 @@ void Window::OnMouseEvent(IWindowComponent::MouseButton button, bool isDown, flo
 
 //----------------------------------------------------------------------------------------
 
-void Window::OnKeyEvent(char key, bool isDown)
+void Window::OnKeyEvent(Pegasus::Wnd::Keys key, bool isDown)
 {
     //broadcast keyboard event to components
     for (unsigned int i = 0; i < mComponents.GetSize(); ++i)

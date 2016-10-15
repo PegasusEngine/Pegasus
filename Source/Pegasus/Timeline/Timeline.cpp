@@ -43,7 +43,7 @@ Timeline::Timeline(Alloc::IAllocator * allocator, Core::IApplicationContext* app
 ,   mNumBeats(128)
 ,   mNumLanes(0)
 ,   mPlayMode(PLAYMODE_REALTIME)
-,   mCurrentBeat(INVALID_BEAT)
+,   mCurrentBeat(0.0)
 ,   mStartPegasusTime(0.0)
 ,   mSyncedToMusic(false)
 ,   mGlobalCache(allocator)

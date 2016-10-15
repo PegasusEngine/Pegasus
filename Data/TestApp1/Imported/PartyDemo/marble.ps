@@ -13,8 +13,9 @@ cbuffer pixelUniformState
 
 void main(
 	in float4 p : POSITION0,
+	in float4 localPos : TEXTURE0,
 	in float3 normal : NORMAL0,
-	in float2 t : TEXTURE0,
+	in float2 t : TEXTURE1,
 	out float4 color : SV_Target
 )
 {
@@ -29,7 +30,7 @@ void main(
 	float3 innerLight = float3(0,0,0);
 	float beatMul = uCameraPos_beat.w;
 	// INNER LIGHT BITCHES
-	float3 p0 = p.xyz;
+	float3 p0 = localPos.xyz;
 	#define RAYS 50
 	#define BEGIN 0
 	#define STEPS 9
@@ -57,7 +58,7 @@ void main(
 
 	for (int i = END - 1; i >= BEGIN; --i)
 	{
-		float3 intersection = p0 + stepLight * viewVector * float(i);
+		float3 intersection = p0 - stepLight * viewVector * float(i);
 		float3 posInSphere = (centerPos - intersection);
 		float radInSlice = pow(length(posInSphere),3);
 		//tweak the normal depending on current radius		

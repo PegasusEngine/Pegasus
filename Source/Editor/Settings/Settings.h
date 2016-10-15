@@ -20,6 +20,7 @@
 #include "Pegasus/Core/Shared/LogChannel.h"
 
 class QMainWindow;
+class Editor;
 
 
 //! Settings for the entire editor
@@ -33,7 +34,7 @@ public:
     //! setting the default values for the unknown parameters
     //! and applying the values to the application
     //! \param mainWindow Pointer to the main editor window. This allows to save its geometry and the state of the dock widgets
-    Settings(QMainWindow * mainWindow);
+    Settings(Editor* editor);
 
     //! Destructor
     virtual ~Settings();
@@ -284,8 +285,8 @@ private:
 
     // Internal variables
 
-    //! Pointer to the main editor window. This allows to save its geometry and the state of the dock widgets
-    QMainWindow * mMainWindow;
+    //! Pointer to the main editor window.
+    Editor * mEditor;
 
     //! List of possible widget style names
     QStringList mWidgetStyleNameList;

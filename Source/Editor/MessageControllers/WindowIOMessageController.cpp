@@ -27,6 +27,9 @@ void WindowIOMessageController::OnRenderThreadProcessMessage(const WindowIOMessa
     case WindowIOMessageController::Message::WINDOW_RESIZED:
         OnRenderResizeWindow(msg.GetViewportWidget(), msg.GetWidth(), msg.GetHeight());
         break;
+    case WindowIOMessageController::Message::ENABLE_DRAW:
+        OnRenderEnableDraw(msg.GetViewportWidget(), msg.GetEnableDraw());
+        break;
     }
 }
 
@@ -40,7 +43,10 @@ void WindowIOMessageController::OnRenderInitializeWindow(ViewportWidget* viewpor
     windowConfig.mParentWindowHandle = viewportWidget->GetWindowHandle();
     windowConfig.mWidth = viewportWidget->GetWidth();
     windowConfig.mHeight = viewportWidget->GetHeight();
+    windowConfig.mRedrawEditorCallback = WindowIOMessageController::RequestRedrawCallback;
+    windowConfig.mRedrawArgCallback = static_cast<void*>(this);
     Pegasus::Wnd::IWindowProxy* wnd = mApplication->AttachWindow(windowConfig);
+    wnd->EnableDraw(false); //disable draw until window is ready. Avoids OS calling draw on the window, unless we processed once already.
     viewportWidget->AttachWindowProxy(wnd);
     ED_ASSERT(wnd != nullptr);
     mAppWindowsList.append(wnd);
@@ -58,6 +64,12 @@ void WindowIOMessageController::OnRenderResizeWindow(ViewportWidget* window, uns
     window->GetWindowProxy()->Resize(width, height);
 }
 
+void WindowIOMessageController::OnRenderEnableDraw(ViewportWidget* window, bool enable)
+{
+    ED_ASSERT(window->GetWindowProxy() != nullptr);
+    window->GetWindowProxy()->EnableDraw(enable);
+}
+
 void WindowIOMessageController::DestroyWindows()
 {
     for (int i = 0; i < mAppWindowsList.count(); ++i)
@@ -66,5 +78,11 @@ void WindowIOMessageController::DestroyWindows()
     }
 
     mAppWindowsList.clear();
+}
+
+void WindowIOMessageController::RequestRedrawCallback(void* arg)
+{
+    WindowIOMessageController* ctroller = static_cast<WindowIOMessageController*>(arg);
+    emit ctroller->RedrawFrame();
 }
 

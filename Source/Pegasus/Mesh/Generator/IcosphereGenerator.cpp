@@ -97,7 +97,7 @@ unsigned short IcosphereGenerator::GenChild(MeshData * meshData, unsigned short 
         newVert.normal = normalizedP;
         newVert.uv = GenUvs(normalizedP);
         
-        r = meshData->PushVertex(&newVert, 0) + 1;
+        r = meshData->PushVertex(newVert, 0) + 1;
         
         //store the cached index
         mIdxCache.Insert(p1, p2, r);
@@ -208,7 +208,7 @@ void IcosphereGenerator::GenerateData()
         v.position = Vec4(GetRadius()*pos, 1.0);
         v.normal = pos;
         v.uv = GenUvs(pos);
-        meshData->PushVertex<Vertex>(&v, 0);
+        meshData->PushVertex<Vertex>(v, 0);
     }
     PG_ASSERT(GetDegree() > 0);
     // do tesseleation step on icosahedron so we generate an icosphere
@@ -217,9 +217,9 @@ void IcosphereGenerator::GenerateData()
         Tesselate(
             &(*meshData),
             GetDegree() <= 0 ? 1 : GetDegree(),
-            icotriangles[i],
+            icotriangles[i + 2],
             icotriangles[i + 1],
-            icotriangles[i + 2]
+            icotriangles[i]
         );
     } 
     mIdxCache.Clear();

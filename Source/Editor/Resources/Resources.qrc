@@ -53,5 +53,12 @@
         <file>GraphEditor/GraphBackground.png</file>
         <file>GraphEditor/NodeInput16.png</file>
         <file>GraphEditor/NodeOutput16.png</file>
+        <file>MiscViews/camIcon.png</file>
+        <file>MiscViews/resetCamIcon.png</file>
+        <file>MiscViews/gridIcon.png</file>
+        <file>MiscViews/xyz.png</file>
+        <file>MiscViews/debugCamIcon.png</file>
+        <file>MiscViews/terrainIcon.png</file>
+        <file>MiscViews/terrain3dCamCullDebug.png</file>
     </qresource>
 </RCC>

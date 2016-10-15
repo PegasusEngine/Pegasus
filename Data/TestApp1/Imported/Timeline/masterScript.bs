@@ -2,19 +2,24 @@ extern signature = 1;
 tmpConfig = RenderTargetConfig(500, 50, FORMAT_RGBA_8_UNORM);
 tempTarget1 = CreateRenderTarget( tmpConfig );
 GlobalRegisterRenderTarget("temp1", tempTarget1);
+cam = CreateCamera();
+cam.Far = 1000.0;
 
-struct MeshState{
-	uWorld : float4x4;
-	uProj : float4x4;
-};
+t = CreateTerrain3d(0,0);
+t.BlockLod0Threshold = 2;
+t.BlockLod1Threshold = 4;
+t.BlockLod2Threshold = 8;
+t.BlockHeight = 4;
+t->SetCullCamera(cam);
+
+extern CamPos = float3(0.0,1.0,0.0);
+extern Fov = 0.5;
+
 enum TT
 {
 	A, B, C
 };
-extern worldPos = float3(0.0,0.0,0.0);
-extern rotVec = float4(1.0,0.0,0.0,0.0);
-
-gState = MeshState();
+extern CamDir = float3(0.0,0.0,-1.0);
 
 meshGenerator = CreateMeshGenerator("Terrain3dGenerator");
 //meshGenerator = CreateMeshGenerator("MarchingCubeMeshGenerator");
@@ -23,47 +28,24 @@ testMesh = CreateMesh();
 testMesh->SetGeneratorInput(meshGenerator);
 marchingCubeProgram = LoadProgram("Programs/MarchingCubeProgram.pas");
 
-uniformBuffer = CreateUniformBuffer(sizeof(MeshState));
-stateUniform = GetUniformLocation(marchingCubeProgram, "uniformState");
-
-int SetupState(beat : float)
-{
-	wha = GetWidthHeightAspect();
-	aspect = wha.w;
-	//SETUP CAMERA
-	gState.uProj = GetProjection(1.1,aspect,3.0,500.0);
-	
-	//SETUP SPHERE WORLD
-	worldMat = float4x4 (
-		1.0, 0.0, 0.0, worldPos.x,
-		0.0, 1.0, 0.0, worldPos.y,
-		0.0, 0.0, 1.0, worldPos.z,
-		0.0, 0.0, 0.0, 1.0 
-	);
-
-	rotMat = GetRotation(rotVec.xyz,rotVec.w);
-	gState.uWorld = mul(worldMat,rotMat);	
-}
-
-stateBuffer = CreateUniformBuffer(sizeof(MeshState));
-stateBufferUniform = GetUniformLocation(marchingCubeProgram, "uniformState");
-rs=CreateRasterizerState(RasterizerConfig(CW_CM,LESSER_DF));
+rs=CreateRasterizerState(RasterizerConfig(NONE_CM,LESSER_DF));
 
 int Timeline_Update(beat : float)
 {
+	cam.Position = CamPos + beat*float3(0.5,0.0,0.5);
+	cam.Dir = CamDir;
+	cam.Fov = Fov;
+	BindCamera(cam, CAM_WORLD_CONTEXT);
 	meshGenerator.TerrainSeed = 1;
 }
 
 int Timeline_Render(beat: float)
 {
 
-	SetupState(beat);
+	t->Generate();
 	SetProgram(marchingCubeProgram);
-	SetBuffer(uniformBuffer, gState);
-	SetUniformBuffer(stateUniform,uniformBuffer);
 	SetRasterizerState(rs);
-	SetMesh(testMesh);
-	Draw();
+	t->Draw();
 	UnbindMesh();
 
 }

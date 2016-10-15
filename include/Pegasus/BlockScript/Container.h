@@ -36,7 +36,7 @@ namespace BlockScript
     public:
 
         //! constructor
-        Container() {}
+        Container() : mSize(0) {}
 
         //! destructor
         virtual ~Container();
@@ -58,9 +58,15 @@ namespace BlockScript
         //! Resets the container, sets the count to 0. Does not free memory.
         void Reset(); 
 
+        //! Pops the last value on this container.
+        void Pop();
+
         //! Pushes empty element
         //! \return the unallocated structure to use. Calls empty constructor of such structure
         T& PushEmpty();
+
+    private:
+        int mSize;
     };
 
     template<class T>
@@ -77,7 +83,7 @@ namespace BlockScript
 				Alloc::PG_MEM_TEMP,
                 -1
         );
-
+        ++mSize;
 		return *(new(mem) T);
         
     }
@@ -91,6 +97,7 @@ namespace BlockScript
             T& t = (*this)[i];
             t.~T();
         }
+        mSize = 0;
 		Memory::BlockAllocator::Reset();
     }
 
@@ -125,13 +132,20 @@ namespace BlockScript
     template <class T>
     int Container<T>::Size() const
     {
-        return GetMemorySize() / sizeof(T);
+        return mSize;
     }
 
 	template <class T>
     Container<T>::~Container()
     {
         Reset();
+    }
+
+    template<class T>
+    void Container<T>::Pop()
+    {
+        PG_ASSERTSTR(Size() > 0, "Nothing to pop! memory corruption to follow.");
+        --mSize;
     }
 };
 

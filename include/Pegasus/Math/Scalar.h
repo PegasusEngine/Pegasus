@@ -268,7 +268,7 @@ inline bool IsMultiple(PUInt32 n, PUInt32 m) { PG_ASSERT(m > 0); return (n % m) 
 //! \param v2 The second value to compare
 //! \return The minimum between the two input values
 template <typename T>
-inline const T & Min(const T & v1, const T & v2) { return v1.operator<(v2) ? v1 : v2; }
+inline const T & Min(const T & v1, const T & v2) { return (v1 < v2) ? v1 : v2; }
 
 //@{
 //! Minimum of 2 base types (by value)
@@ -292,7 +292,7 @@ inline PFloat64 Min(PFloat64 v1, PFloat64 v2) { return v1 < v2 ? v1 : v2; }
 //! \param v2 The second value to compare
 //! \return The maximum between the two input values
 template <typename T>
-inline const T & Max(const T & v1, const T & v2) { return v2.operator<(v1) ? v1 : v2; }
+inline const T & Max(const T & v1, const T & v2) { return (v1 > v2) ? v1 : v2; }
 
 //@{
 //! Maximum of 2 base types (by value)

@@ -379,12 +379,12 @@ PFloat32 Determinant(Mat44In mat);
 //! Inverse of a 3x3 matrix
 //! \param mat The input 3x3 matrix
 //! \param dst The resulting inversed 3x3 matrix
-//void Inverse(Mat33InOut dst, Mat33In mat);
+void Inverse(Mat33InOut dst, Mat33In mat);
 
 //! Inverse of a 4x4 matrix
 //! \param mat The input 4x4 matrix
 //! \param dst The resulting inversed 4x4 matrix
-//void Inverse(Mat44InOut dst, Mat44In mat);
+void Inverse(Mat44InOut dst, Mat44In mat);
 
 //! Inverse of a homogeneous 4x4 matrix (containing a rotation in the top left 3x3 corner
 //! and a translation in the last column)

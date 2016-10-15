@@ -54,6 +54,16 @@ class RenderSystemManager
 
 public:
 
+    
+    //Render system container.
+    struct RenderSystemContainer
+    {
+        unsigned int hash;
+        RenderSystem* system;
+        Alloc::IAllocator* allocator;
+        BlockScript::BlockLib* blockscriptLib;
+    };
+
     //! Constructor.
     RenderSystemManager(Alloc::IAllocator* allocator, Core::IApplicationContext* appContext) : mAllocator(allocator), mAppContext(appContext), mSystems(allocator) {}
 
@@ -72,7 +82,7 @@ public:
     //! Find a system by its name. If not found, return null.
     //! \param systemName the system name to find.
     //! \return the found system. If not found, returns null.
-    RenderSystem* FindSystem(const char* systemName);
+    const RenderSystemContainer* FindSystem(const char* systemName);
 
     //! Call that initializes all the systems internally, registers its nodes and blockscript calls.
     //! \param appContext the application context so we can initialize the systems.
@@ -81,20 +91,18 @@ public:
     //! Destroys the desired systems.
     void DestroyAllSystems();
 
+    //! Gets a reference to a render system.
+    RenderSystem* GetSystem(unsigned int i) { return mSystems[i].system; }
+
+    //! Gets the total count of registered systems.
+    unsigned int GetSystemCount() { return mSystems.GetSize(); }
+
     //! Gets the list of exported libs
     Utils::Vector<BlockScript::BlockLib*>& GetLibs() { return mLibs; }
 
 private:
     Alloc::IAllocator* mAllocator;
     Core::IApplicationContext* mAppContext;
-    
-    struct RenderSystemContainer
-    {
-        unsigned int hash;
-        RenderSystem* system;
-        Alloc::IAllocator* allocator;
-        BlockScript::BlockLib* blockscriptLib;
-    };
 
     Utils::Vector<RenderSystemContainer> mSystems;
     Utils::Vector<BlockScript::BlockLib*> mLibs;

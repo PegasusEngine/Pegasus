@@ -63,6 +63,12 @@ public:
     //! \param symbolTable - the symbol table to have as a child
     void RegisterChild(SymbolTable* symbolTable);
 
+    //! Unregister a child symbol table
+    //! \param symbol table to unregister
+    //! \notes use this when you know ahead that other symbol tables references are duplicated. This avoids looking
+    //!        into the same symbol table twice.
+    void UnregisterChild(SymbolTable* symbolTable);
+
     //! Call to go back to initial empty state and restart compilation (children need to be re-added)
     void Reset();
 

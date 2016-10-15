@@ -22,6 +22,7 @@
 
 #define MAX_UNIFORM_NAME 64
 #define UNIFORM_DATA_INCREMENT 16
+#define GLOBAL_UNIFORM_COUNT 8
 
 namespace Pegasus
 {
@@ -91,6 +92,11 @@ struct DXProgramGPUData
     int mProgramGuid;
     int mProgramVersion;
     bool mProgramValid;
+
+    // Global uniforms pushed by render systems. For example, cameras.
+    Render::Uniform   mGlobalUniforms[GLOBAL_UNIFORM_COUNT];
+    Render::BufferRef mGlobalBuffers[GLOBAL_UNIFORM_COUNT];
+    int mGlobalUniformCount;
 };
 
 struct DXBufferGPUData

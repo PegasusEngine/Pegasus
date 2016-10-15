@@ -12,6 +12,9 @@
 #ifndef PEGASUS_TERRAIN_3D_MESH_GENERATOR
 #define PEGASUS_TERRAIN_3D_MESH_GENERATOR
 
+#include "Pegasus/RenderSystems/Config.h"
+#if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
+
 #include "Pegasus/Mesh/MeshGenerator.h"
 #include "Pegasus/RenderSystems/3dTerrain/3dTerrainSystem.h"
 #include "Pegasus/Render/Render.h"
@@ -30,8 +33,6 @@ class Terrain3dGenerator : public Mesh::MeshGenerator
     //! Property declarations
     BEGIN_DECLARE_PROPERTIES(Terrain3dGenerator, MeshGenerator)
         DECLARE_PROPERTY(float, TerrainSeed, 0.0f)
-        DECLARE_PROPERTY(Math::Vec3, BlockCenter, Math::Vec3(0.0f,0.0f,0.0f))
-        DECLARE_PROPERTY(Math::Vec3, BlockExtends, Math::Vec3(16.0f,16.0f,16.0f))
     END_DECLARE_PROPERTIES()
 
 public:
@@ -50,15 +51,19 @@ public:
     //! Override of Update
     virtual bool Update();
 
+    //! creates internally render resources if they have not been created.
+    void CreateComputeTerrainResources();
+
+    //! Sets the offset and scale of this block. for the GPU to generate the mesh.
+    void SetOffsetScale(float scale, const Math::Vec3 offset);
+
 protected:
 
     //! Generate the content of the data associated with the texture generator
     virtual void GenerateData();
 
-    void CreateRenderResources();
-
 private:
-    bool mIsAllocated;
+    bool mIsComputeResourcesAllocated;
 
     Render::BufferRef mCaseUniformBuffer;
 
@@ -75,4 +80,5 @@ private:
 }
 }
 
+#endif
 #endif

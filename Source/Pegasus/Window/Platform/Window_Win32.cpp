@@ -322,7 +322,6 @@ static bool TranslateIsDown(unsigned int msg)
 WindowImpl_Win32::HandleMessageReturn WindowImpl_Win32::HandleMessage(unsigned int message, unsigned int* wParam, unsigned long* lParam)
 {
     HandleMessageReturn ret;
-
     switch(message)
     {
     case WM_CREATE: // Window is being created
@@ -358,8 +357,15 @@ WindowImpl_Win32::HandleMessageReturn WindowImpl_Win32::HandleMessage(unsigned i
         mHandler->OnResize(LOWORD(lParam), HIWORD(lParam));
         ret.handled = true; ret.retcode = 0;
         break;
+
+        // Mouse controls for editor and all that good stuff.
 #if PEGASUS_ENABLE_PROXIES
     case WM_MOUSEMOVE:
+    case WM_MOUSEHOVER:
+        {
+            SetFocus(mHWND);
+            ///let it fallthrough on purpose.
+        }
     case WM_MBUTTONDOWN:
     case WM_MBUTTONUP:
     case WM_LBUTTONDOWN:
@@ -368,6 +374,12 @@ WindowImpl_Win32::HandleMessageReturn WindowImpl_Win32::HandleMessage(unsigned i
     case WM_RBUTTONUP:    
     case WM_LBUTTONDBLCLK:
         {
+            TRACKMOUSEEVENT ev;
+            ev.cbSize = sizeof(TRACKMOUSEEVENT);
+            ev.dwFlags = TME_LEAVE;
+            ev.dwHoverTime = HOVER_DEFAULT;
+            ev.hwndTrack = mHWND;
+            TrackMouseEvent(&ev);
             RECT rect;
             GetWindowRect(mHWND, &rect);
             IWindowComponent::MouseButton button = TranslateButton(message);
@@ -376,8 +388,23 @@ WindowImpl_Win32::HandleMessageReturn WindowImpl_Win32::HandleMessage(unsigned i
             float y = (float)(GET_Y_LPARAM(lParam)) / (float)(rect.bottom - rect.top);
             x = x < 0.0f ? -1.0f*x : x;
             y = y < 0.0f ? -1.0f*y : y;
-            mHandler->OnMouseEvent(button, isDown, x, y);
+            mHandler->OnMouseEvent(button, isDown, 2.0f*x - 1.0f, 2.0f*y-1.0f); 
+            mHandler->RequestRepaintEditorWindow();
         }
+        break;
+
+    case WM_KEYDOWN:
+    case WM_KEYUP:
+        {
+            bool isShiftDown = (GetKeyState(VK_LSHIFT) & 0x8000) != 0;
+            mHandler->OnKeyEvent(Pegasus::Wnd::KEYS_SHIFT, isShiftDown);
+        }
+        break;
+    case WM_MOUSELEAVE:
+        {
+            mHandler->OnMouseEvent(IWindowComponent::MouseButton_Cancel, false, 0.0f,0.0f);
+        }
+        break;
     
 #endif
     default:

@@ -40,18 +40,7 @@ const char * gSemanticTranslations[Pegasus::Mesh::MeshInputLayout::SEMANTIC_COUN
     "USER_GENERIC" //! user generic, used for any generic custom attribute type
 };
 
-static const DXGI_FORMAT DXGI_INVALID_FMT = static_cast<DXGI_FORMAT>(-1);
-const DXGI_FORMAT gVertexFormatTranslations [Pegasus::Mesh::MeshInputLayout::ATTRTYPE_COUNT][4] =
-{
-       //           0                      1                         2                            3
-       /* FLOAT */ {DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32B32_FLOAT, DXGI_FORMAT_R32G32B32A32_FLOAT },
-       /* INT   */ {DXGI_FORMAT_R32_SINT,  DXGI_FORMAT_R32G32_SINT,  DXGI_FORMAT_R32G32B32_SINT,  DXGI_FORMAT_R32G32B32A32_SINT     },
-       /* UNT   */ {DXGI_FORMAT_R32_UINT,  DXGI_FORMAT_R32G32_UINT,  DXGI_FORMAT_R32G32B32_UINT,  DXGI_FORMAT_R32G32B32A32_UINT     },
-       /* SHORT */ {DXGI_FORMAT_R16_SINT,  DXGI_FORMAT_R16G16_SINT,  DXGI_INVALID_FMT          ,  DXGI_FORMAT_R16G16B16A16_SINT     },
-       /* SHORT */ {DXGI_FORMAT_R16_UINT,  DXGI_FORMAT_R16G16_UINT,  DXGI_INVALID_FMT          ,  DXGI_FORMAT_R16G16B16A16_UINT     },
-       /* BOOL  */ {DXGI_INVALID_FMT,      DXGI_INVALID_FMT,         DXGI_INVALID_FMT          ,  DXGI_INVALID_FMT}
-};
-
+extern DXGI_FORMAT GetDxFormat(Pegasus::Core::Format format);
 
 class DXMeshFactory : public Pegasus::Mesh::IMeshFactory
 {
@@ -297,12 +286,11 @@ void DXMeshFactory::GenerateMeshGPUData(Pegasus::Mesh::MeshData * nodeData)
     {
         const Pegasus::Mesh::MeshInputLayout::AttrDesc& attr = meshInputLayout->GetAttributeDesc(i);
         PG_ASSERT(
-            attr.mType < Pegasus::Mesh::MeshInputLayout::ATTRTYPE_COUNT &&
-            attr.mAttributeTypeCount > 0 && attr.mAttributeTypeCount <= 4 && 
+            attr.mType < Pegasus::Core::FORMAT_MAX_COUNT &&
             attr.mSemanticIndex < Pegasus::Mesh::MeshInputLayout::SEMANTIC_COUNT
         );
         
-        DXGI_FORMAT fmt = gVertexFormatTranslations[attr.mType][attr.mAttributeTypeCount - 1];
+        DXGI_FORMAT fmt = GetDxFormat(attr.mType);
         const char * semanticStr = gSemanticTranslations[attr.mSemantic];
         
         D3D11_INPUT_ELEMENT_DESC& descStruct = meshGpuData->mInputElementsDesc[meshGpuData->mInputElementsCount++];

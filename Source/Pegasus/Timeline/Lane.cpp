@@ -1015,18 +1015,20 @@ bool Lane::OnReadObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* owner
                 }
                 
                 Block* newBlock = GetTimeline()->GetApplicationContext()->GetTimelineManager()->CreateBlock(e.o->GetString(typeId));
-                if (newBlock == nullptr)
-                {
-                    return false;
-                } 
-
-                if (newBlock->OnReadObject(lib, owner, e.o))
-                {
-                    InsertBlock(newBlock);
+                if (newBlock != nullptr)
+                {                
+                    if (newBlock->OnReadObject(lib, owner, e.o))
+                    {
+                        InsertBlock(newBlock);
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
                 else
                 {
-                    return false;
+                    PG_LOG('ERR_', "ERROR! could not find timeline block of type: %s. Timeline will still load.", e.o->GetString(typeId));
                 }
             }
         }

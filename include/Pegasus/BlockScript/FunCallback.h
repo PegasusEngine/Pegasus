@@ -94,6 +94,9 @@ public:
     //! \return the output buffer size
     int   GetOutputBufferSize() const { return mOutputBufferSize; }
 
+    //! \return the function description of the caller.
+    const FunDesc* GetFunDesc() { return mFunDesc; }
+
 private:
 
     BsVmState* mState;

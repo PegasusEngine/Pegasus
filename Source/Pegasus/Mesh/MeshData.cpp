@@ -29,7 +29,7 @@ MeshData::MeshData(const MeshConfiguration & configuration, Graph::Node::Mode mo
     for (int i = 0; i < inputLayout->GetAttributeCount(); ++i)
     {
         const MeshInputLayout::AttrDesc& desc = inputLayout->GetAttributeDesc(i);
-        int size = MeshInputLayout::AttrTypeSizes[desc.mType] * desc.mAttributeTypeCount;
+        int size = desc.mByteSize;
         int prevStride = mVertexStreams[desc.mStreamIndex].GetStride();
         mVertexStreams[desc.mStreamIndex].SetStride(prevStride + size);
     }

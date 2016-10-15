@@ -1,8 +1,4 @@
-cbuffer uniformState
-{
-	float4x4 uWorld;
-	float4x4 uProj;
-};
+#include "RenderSystems/Camera/Common.h"
 
 struct VS_OUT
 {
@@ -19,9 +15,9 @@ VS_OUT  main(
 {
 	VS_OUT vo;
 	vo.ccc =  abs(p0.rgb);
-	vo.p =  mul(p0, uWorld);
-	vo.n = mul(float4(n0,0.0),uWorld).xyz;
-	pos = mul(vo.p,uProj);
+	vo.p =  mul(p0, gView);
+	vo.n = n0;
+	pos = mul(vo.p,gProj);
 	return vo;
 
 }

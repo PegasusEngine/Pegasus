@@ -12,9 +12,11 @@
 #include "Viewport/ViewportDockWidget.h"
 #include "Viewport/ViewportWidget.h"
 
-#include <QMenuBar>
+#include <QToolBar>
 #include <QMenu>
 #include <QVBoxLayout>
+#include <QPushButton>
+#include <QSignalMapper>
 
 
 ViewportDockWidget::ViewportDockWidget(Editor* editor, QWidget * parent, const char* title, const char* objName)
@@ -30,6 +32,9 @@ void ViewportDockWidget::SetupUi()
 				| QDockWidget::DockWidgetMovable
 				| QDockWidget::DockWidgetFloatable);
 	setAllowedAreas(Qt::AllDockWidgetAreas);
+    
+    mButtonMapper = new QSignalMapper(this);
+    connect(mButtonMapper, SIGNAL(mapped(int)), this, SLOT(OnSetButtonProperty(int)));
 
     // Create the main widget of the dock, covering the entire child area
     QWidget * mainWidget = new QWidget(this);
@@ -41,10 +46,11 @@ void ViewportDockWidget::SetupUi()
     verticalLayout->setContentsMargins(0, 0, 0, 0);
 
     // Create the menu bar
-    QMenuBar * menuBar = CreateMenu(mainWidget);
+    QToolBar * menuBar = CreateMenu(mainWidget);
 
     // Create the viewport widget that will contain the renderer
-    mViewportWidget = new ViewportWidget(mainWidget, Pegasus::App::COMPONENT_FLAG_DEBUG_TEXT | Pegasus::App::COMPONENT_FLAG_WORLD);
+    mViewportWidget = new ViewportWidget(mainWidget, Pegasus::App::COMPONENT_FLAG_GRID | Pegasus::App::COMPONENT_FLAG_WORLD | Pegasus::App::COMPONENT_FLAG_DEBUG_CAMERA | Pegasus::App::COMPONENT_FLAG_TERRAIN3D);
+    connect(mViewportWidget, SIGNAL(OnWindowProxyReady()), this, SLOT(OnWindowProxyReady()));
 
     // Set the elements of the layout
     verticalLayout->setMenuBar(menuBar);
@@ -57,6 +63,24 @@ void ViewportDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* appli
 {
     mViewportWidget->OnAppLoaded();
 }
+
+//----------------------------------------------------------------------------------------
+
+void ViewportDockWidget::OnWindowProxyReady()
+{
+    for (int i = 0; i < mButtons.size(); ++i)
+    {
+        OnSetButtonProperty(i);
+    }
+
+    //! Once everything is done, lets send manually a signal saying, do render things:
+    WindowIOMessageController::Message msg;
+    msg.SetMessageType(WindowIOMessageController::Message::ENABLE_DRAW); 
+    msg.SetViewportWidget(mViewportWidget);
+    msg.SetEnableDraw(true);
+    emit mViewportWidget->OnSendWindowIoMessage(msg);
+}
+
 
 //----------------------------------------------------------------------------------------
 
@@ -74,29 +98,135 @@ ViewportDockWidget::~ViewportDockWidget()
 
 //----------------------------------------------------------------------------------------
 
-QMenuBar * ViewportDockWidget::CreateMenu(QWidget * mainWidget)
+void ViewportDockWidget::RegisterPropertyButton(QPushButton* button, const char* propertyName, Pegasus::App::ComponentType component)
 {
-    // Create the actions
+    PropertyButton pb;
+    pb.button = button;
+    pb.name = propertyName;
+    pb.component = component;
+    int buttonIdx = mButtons.size();
+    mButtons.push_back(pb);
 
-    QAction * actionModeWireframe = new QAction(tr("Wireframe"), this);
-	//actionModeWireframe->setIcon(QIcon(":/Toolbar/File/OpenApp24.png"));
-    actionModeWireframe->setStatusTip(tr("Wireframe mode"));
-    //connect(actionModeWireframe, SIGNAL(triggered()), this, SLOT(SetModeWireframe()));
+    mButtonMapper->setMapping(button, buttonIdx);
+
+    if (button->isCheckable())
+    {
+        connect(button, SIGNAL(toggled(bool)), mButtonMapper, SLOT(map()));
+    }
+    else
+    {
+        connect(button, SIGNAL(clicked()), mButtonMapper, SLOT(map()));
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void ViewportDockWidget::OnSetButtonProperty(int buttonIdx)
+{
+    if (mViewportWidget != nullptr)
+    {
+        ViewportDockWidget::PropertyButton& pb = mButtons[buttonIdx];
+        bool propertyValue = !pb.button->isCheckable() || pb.button->isChecked();
+        mViewportWidget->SetBoolProperty(pb.component, pb.name, propertyValue);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void ViewportDockWidget::GetButtonStatuses(QVariantList& outputList)
+{
+    for (int i = 0; i < mButtons.size(); ++i)
+    {
+        const ViewportDockWidget::PropertyButton& pb = mButtons[i];
+        outputList.push_back(QVariant(pb.button->isChecked()));
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void ViewportDockWidget::SetButtonStatuses(const QVariantList& inputList)
+{
+    if (inputList.size() != mButtons.size()) return;
+    for (int i = 0; i < mButtons.size(); ++i)
+    {
+        ViewportDockWidget::PropertyButton& pb = mButtons[i];
+        bool val = inputList[i].toBool();
+        pb.button->setChecked(val);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+QToolBar * ViewportDockWidget::CreateMenu(QWidget * mainWidget)
+{
     
-    QAction * actionModeFilled = new QAction(tr("Filled"), this);
-	//actionModeFilled->setIcon(QIcon(":/Toolbar/File/OpenApp24.png"));
-	actionModeFilled->setStatusTip(tr("Filled mode"));
-    //connect(actionModeFilled, SIGNAL(triggered()), this, SLOT(SetModeFilled()));
+    QIcon freeCamIcon(":MiscViews/camIcon.png");
+    QPushButton* freeCamera = new QPushButton(freeCamIcon,tr(""),mainWidget);
+    freeCamera->setCheckable(true);
+    freeCamera->setChecked(true);
+    freeCamera->setToolTip(tr("Toggle free cam on/off"));    
+    RegisterPropertyButton(freeCamera, "EnableFreeCam", Pegasus::App::COMPONENT_WORLD);
 
-    // Create the menu bar and its menus
+    QIcon resetCamIcon(":MiscViews/resetCamIcon.png");
+    QPushButton* resetCamera = new QPushButton(resetCamIcon,tr(""),mainWidget);
+    resetCamera->setToolTip(tr("Reset free camera to origin."));    
+    RegisterPropertyButton(resetCamera, "ResetFreeCam", Pegasus::App::COMPONENT_WORLD);
 
-    QMenuBar * menuBar = new QMenuBar(mainWidget);
+    QIcon debugCamIcon(":MiscViews/debugCamIcon.png");
+    QPushButton* debugCamsButton = new QPushButton(debugCamIcon,tr(""),mainWidget);
+    debugCamsButton->setCheckable(true);
+    debugCamsButton->setChecked(false);
+    debugCamsButton->setToolTip(tr("Toggle debug cam on/off"));    
+    RegisterPropertyButton(debugCamsButton, "EnableDebug", Pegasus::App::COMPONENT_DEBUG_CAMERA);
 
-    QMenu * modeMenu = menuBar->addMenu(tr("Mode"));
-    modeMenu->addAction(actionModeWireframe);
-    modeMenu->addAction(actionModeFilled);
+    QIcon wireframeIcon(":TypeIcons/mesh.png");
+    QPushButton* wireframeButton = new QPushButton(wireframeIcon,tr(""),mainWidget);
+    wireframeButton->setCheckable(true);
+    wireframeButton->setChecked(false);
+    wireframeButton->setToolTip(tr("Toggle wire frame mode on/off"));
+    RegisterPropertyButton(wireframeButton, "IsWireframe", Pegasus::App::COMPONENT_WORLD);
 
-    return menuBar;
+    QIcon gridIcon(":MiscViews/gridIcon.png");
+    QPushButton* gridButton = new QPushButton(gridIcon,tr(""),mainWidget);
+    gridButton->setCheckable(true);
+    gridButton->setChecked(true);
+    gridButton->setToolTip(tr("Toggle grid on/off"));
+    RegisterPropertyButton(gridButton, "EnableGrid", Pegasus::App::COMPONENT_GRID);
+
+    QIcon reticleIcon(":MiscViews/xyz.png");
+    QPushButton* reticleButton = new QPushButton(reticleIcon,tr(""),mainWidget);
+    reticleButton->setCheckable(true);
+    reticleButton->setChecked(true);
+    reticleButton->setToolTip(tr("Toggle xyz axis on/off"));
+    RegisterPropertyButton(reticleButton, "EnableReticle", Pegasus::App::COMPONENT_GRID);
+
+    QIcon terrainDebugIcon(":MiscViews/terrainIcon.png");
+    QPushButton* terrainButton = new QPushButton(terrainDebugIcon,tr(""),mainWidget);
+    terrainButton->setCheckable(true);
+    terrainButton->setChecked(false);
+    terrainButton->setToolTip(tr("3d terrain: debug geometry of terrain. Visualizes marching cube grid and density as dots in the corners."));
+    RegisterPropertyButton(terrainButton, "EnableDebugGeometry", Pegasus::App::COMPONENT_TERRAIN3D);
+
+    QIcon terrainCamCullDebugIcon(":MiscViews/terrain3dCamCullDebug.png");
+    QPushButton* terrainCamCullButton = new QPushButton(terrainCamCullDebugIcon,tr(""),mainWidget);
+    terrainCamCullButton->setCheckable(true);
+    terrainCamCullButton->setChecked(false);
+    terrainCamCullButton->setToolTip(tr("3d terrain: freeze camera cull of 3d terrain voxels."));
+    RegisterPropertyButton(terrainCamCullButton, "EnableDebugCameraCull", Pegasus::App::COMPONENT_TERRAIN3D);
+
+    QToolBar* tb = new QToolBar(this);
+    tb->addWidget(freeCamera);
+    tb->addWidget(resetCamera);
+    tb->addWidget(debugCamsButton);
+    tb->addSeparator();
+    tb->addWidget(wireframeButton);
+    tb->addWidget(gridButton);
+    tb->addWidget(reticleButton);
+    tb->addSeparator();
+    tb->addWidget(terrainButton);
+    tb->addWidget(terrainCamCullButton);
+
+    return tb;
 }
 
 

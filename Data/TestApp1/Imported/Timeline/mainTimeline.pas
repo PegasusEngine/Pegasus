@@ -141,21 +141,6 @@
             type : Lane,
             name : Fractal,
             Blocks : [{
-                    type : CameraLineBlock,
-                    props : {
-                        Beat : 1020,
-                        Duration : 1024,
-                        Name : "",
-                        Color : [240, 0, 240],
-                        _o_p_ : {
-                            __schema__ : {
-                                sizetypes : [],
-                                names : [],
-                                typeNames : []
-                            }
-                        }
-                    }
-                }, {
                     type : FractalCubeBlock,
                     props : {
                         Beat : 4098,
@@ -177,15 +162,16 @@
             Blocks : [{
                     type : Block,
                     props : {
-                        Beat : 1006,
+                        Beat : 1010,
                         Duration : 1024,
                         Name : BlockSegment,
                         Color : [144, 244, 123],
                         _o_p_ : {
+                            SphereCenter : [0.000000, 0.000000, -4.000000],
                             __schema__ : {
-                                sizetypes : [],
-                                names : [],
-                                typeNames : []
+                                sizetypes : [327692],
+                                names : [SphereCenter],
+                                typeNames : [float3]
                             }
                         },
                         script : {@BlockScripts/partydemo.bs}
@@ -204,12 +190,13 @@
         Name : "",
         _o_p_ : {
             signature : 1,
-            worldPos : [-16.000000, -8.000000, -48.150002],
-            rotVec : [0.000000, 1.000000, 0.000000, 26.000000],
+            Fov : 2.500000,
+            CamPos : [0.000000, 5.000000, 13.000000],
+            CamDir : [0.000000, -0.100000, -1.000000],
             __schema__ : {
-                sizetypes : [327692, 65540, 393232],
-                names : [worldPos, signature, rotVec],
-                typeNames : [float3, int, float4]
+                sizetypes : [65540, 327692, 327692, 196612],
+                names : [signature, CamPos, CamDir, Fov],
+                typeNames : [int, float3, float3, float]
             }
         }
     },

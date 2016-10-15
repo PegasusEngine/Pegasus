@@ -18,7 +18,6 @@
 #include "Pegasus/Application/AppBsReflectionInfo.h"
 #include "Pegasus/Application/AppWindowComponentFactory.h"
 #include "Pegasus/Application/Components/EditorComponents.h"
-#include "Pegasus/Camera/CameraManager.h"
 #include "Pegasus/Core/Time.h"
 #include "Pegasus/Graph/NodeManager.h"
 #include "Pegasus/Memory/MemoryManager.h"
@@ -30,7 +29,6 @@
 #include "Pegasus/Texture/TextureManager.h"
 #include "Pegasus/Texture/Texture.h"
 #include "Pegasus/Timeline/TimelineManager.h"
-#include "Pegasus/TimelineBlock/TimelineBlockRegistration.h"
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/Render/RenderContext.h"
 #include "Pegasus/AssetLib/AssetLib.h"
@@ -42,6 +40,7 @@
 #include "Pegasus/Render/Render.h"
 #include "Pegasus/Render/RenderContext.h"
 #include "Pegasus/RenderSystems/System/RenderSystemManager.h"
+#include "Pegasus/RenderSystems/System/RenderSystem.h"
 #include "Pegasus/PegasusAssetTypes.h"
 
 #include <stdio.h>
@@ -127,9 +126,6 @@ Application::Application(const ApplicationConfig& config)
     mBsReflectionInfo->RegisterLib(mRenderApiScript);
 #endif
     
-	// Create the owner of all global cameras
-    mCameraManager = PG_NEW(timelineAlloc, -1, "CameraManager", Alloc::PG_MEM_PERM) Camera::CameraManager(timelineAlloc);
-
     // Cache config
     mConfig = config;
 
@@ -149,10 +145,7 @@ Application::Application(const ApplicationConfig& config)
 
     mDevice = Pegasus::Render::IDevice::CreatePlatformDevice(deviceConfig, renderAlloc);
     PG_LOG('APPL', "Startup finished");
-
-    // Register the Pegasus-side timeline blocks
-    TimelineBlock::RegisterBaseBlocks(GetTimelineManager());
-
+    
     mRenderSystemManager = PG_NEW(coreAlloc, -1, "Render System Manager", Alloc::PG_MEM_PERM) RenderSystems::RenderSystemManager(coreAlloc, this);
 }
 
@@ -232,6 +225,7 @@ void Application::Load()
     {
         mTimelineManager->RegisterExtraLibs(mRenderSystemManager->GetLibs());
     }
+
     mTimelineManager->GetLibs().PushEmpty() = mRenderApiScript;
 #if PEGASUS_ENABLE_BS_REFLECTION_INFO
     for (unsigned int i = 0; i < mRenderSystemManager->GetLibs().GetSize(); ++i)
@@ -239,6 +233,19 @@ void Application::Load()
         mBsReflectionInfo->RegisterLib(mRenderSystemManager->GetLibs()[i]);
     }
 #endif
+
+    //register per system shader constants to shader factory
+    Pegasus::Shader::IShaderFactory * shaderFactory = Pegasus::Render::GetRenderShaderFactory();
+    for (unsigned int i = 0; i < mRenderSystemManager->GetSystemCount(); ++i) 
+    {
+        Utils::Vector<RenderSystems::RenderSystem::ShaderGlobalConstantDesc> descs;
+        mRenderSystemManager->GetSystem(i)->OnRegisterShaderGlobalConstants(descs);
+        for (unsigned int j = 0; j < descs.GetSize(); ++j)
+        {
+            RenderSystems::RenderSystem::ShaderGlobalConstantDesc& desc = descs[j];
+            Render::RegisterGlobalConstant(desc.constantName, desc.buffer);
+        }
+    }
     
     //! Call custom initialize here
     InitializeApp();
@@ -271,6 +278,7 @@ void Application::Unload()
     // Initialize all the components for all the windows.
     mWindowManager->UnloadAllComponents(this);
     
+    Render::ClearGlobalConstants();
     context.Unbind();
 
     // Custom shutdown, done in the user application
@@ -302,6 +310,10 @@ Wnd::Window* Application::AttachWindow(const AppWindowConfig& appWindowConfig)
     config.mHeight = appWindowConfig.mHeight;
     config.mCreateVisible = true;
     
+#if PEGASUS_ENABLE_PROXIES
+    config.mRedrawCallbackArg = appWindowConfig.mRedrawArgCallback;
+    config.mRedrawEditorCallback = appWindowConfig.mRedrawEditorCallback;
+#endif
     newWnd = mWindowManager->CreateNewWindow(config, appWindowConfig.mComponentFlags);
 
     if (newWnd != nullptr)

@@ -47,7 +47,8 @@ public:
             INVALID = -1,
             INITIALIZE_WINDOW,    
             DRAW_WINDOW,    
-            WINDOW_RESIZED
+            WINDOW_RESIZED,
+            ENABLE_DRAW
         };
 
         //! Constructor
@@ -55,7 +56,8 @@ public:
                     mViewportWidget(nullptr),
                     mComponentFlags(Pegasus::App::COMPONENT_FLAG_UNUSED_SLOT),
                     mWidth(1),
-                    mHeight(1)
+                    mHeight(1),
+                    mEnableDraw(false)
         {} 
 
         ~Message() {}
@@ -66,6 +68,7 @@ public:
         Pegasus::App::ComponentTypeFlags GetComponentFlags() const { return mComponentFlags; }
         unsigned GetWidth() const { return mWidth; }
         unsigned GetHeight() const { return mHeight; }
+        bool GetEnableDraw() const { return mEnableDraw; }
 
         //! Setters
         void SetMessageType(MessageType type) { mMessageType = type; }
@@ -73,11 +76,13 @@ public:
         void SetComponentFlags(Pegasus::App::ComponentTypeFlags flags)  { mComponentFlags = flags; }
         void SetWidth(unsigned w)  { mWidth = w; }
         void SetHeight(unsigned h) { mHeight = h; }
+        void SetEnableDraw(bool enableDraw) { mEnableDraw = enableDraw; }
 
     private:
         MessageType     mMessageType;
         ViewportWidget* mViewportWidget;
         Pegasus::App::ComponentTypeFlags mComponentFlags;
+        bool mEnableDraw;
         unsigned mWidth;
         unsigned mHeight;
         
@@ -97,6 +102,11 @@ public:
     //! Must call after all viewports remove references to their windows.
     void DestroyWindows();
 
+    static void RequestRedrawCallback(void* arg);
+
+signals:
+    void RedrawFrame();
+
 private:
 
     void OnRenderInitializeWindow(ViewportWidget* window, Pegasus::App::ComponentTypeFlags componentFlags);
@@ -104,6 +114,8 @@ private:
     void OnRenderDrawWindow(ViewportWidget* window);
 
     void OnRenderResizeWindow(ViewportWidget* window, unsigned width, unsigned height);
+
+    void OnRenderEnableDraw(ViewportWidget* window, bool enable);
 
     Pegasus::App::IApplicationProxy*  mApplication;
 

@@ -10,6 +10,9 @@
 //! \brief  Marching cube geneator of meshes.
 
 #include "Pegasus/RenderSystems/3dTerrain/MarchingCubeMeshGenerator.h"
+
+#if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
+
 #include "Pegasus/RenderSystems/3dTerrain/3dTerrainSystem.h"
 #include "Pegasus/Mesh/Shared/MeshEvent.h"
 #include "Pegasus/Allocator/IAllocator.h"
@@ -101,3 +104,7 @@ void MarchingCubeMeshGenerator::GenerateData()
     PEGASUS_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::END_SUCCESS);
 }
 
+
+#else
+PEGASUS_AVOID_EMPTY_FILE_WARNING
+#endif

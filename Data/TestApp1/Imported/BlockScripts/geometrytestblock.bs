@@ -99,8 +99,6 @@ tempTarget3 = CreateRenderTarget( tmpConfig );
 
 //// SETUP RASTER STATES ////
 
-currentBlockRasterState = CreateRasterizerState(RasterizerConfig(CW_CM,GREATER_DF));
-defaultRasterState = CreateRasterizerState(RasterizerConfig(NONE_CM,GREATER_DF));
 
 /////////////////////////////
 
@@ -171,7 +169,6 @@ int Timeline_Render(beat : float)
     SetUniformBuffer(uniformState, uniformStateBuffer);
     SetUniformTextureRenderTarget(cubeTex, cubeFaceTarget);
 
-    SetRasterizerState(currentBlockRasterState);
 	SetMesh(cubeMesh);
     Draw();
     i = 0; while (i < MAX_SPHERES)
@@ -227,7 +224,6 @@ int Timeline_Render(beat : float)
     SetUniformTextureRenderTarget(compositeInput2, tempTarget3); //bloomed scene
     Draw();
 
-    SetRasterizerState(defaultRasterState);
 
 	UnbindPixelResources();
 }

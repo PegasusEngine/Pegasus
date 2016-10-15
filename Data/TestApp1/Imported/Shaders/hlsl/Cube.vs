@@ -1,3 +1,5 @@
+#include "RenderSystems/Camera/Common.h"
+
 //
 // Cube vs by Kleber Garcia 2014
 //
@@ -25,9 +27,10 @@ VS_OUT  main(
 )
 {
 	VS_OUT vo;
-    vo.p = mul(p0, uTransform);
+	float4x4 worldView = mul(uTransform,gView);
+    vo.p = mul(p0, worldView);
 	
-	pos = mul(vo.p,uProj);
+	pos = mul(vo.p,gProj);
     vo.t = t0.xy;
 	
 	//dx11 the y axis is inverted

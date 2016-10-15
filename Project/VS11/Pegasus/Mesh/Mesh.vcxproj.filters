@@ -83,6 +83,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\Shared\IMeshNodeProxy.h">
       <Filter>Include\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\Generator\CustomGenerator.h">
+      <Filter>Include\Generator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Mesh.cpp">
@@ -120,6 +123,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Proxy\MeshNodeProxy.cpp">
       <Filter>Source\Proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Generator\CustomGenerator.cpp">
+      <Filter>Source\Generator</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

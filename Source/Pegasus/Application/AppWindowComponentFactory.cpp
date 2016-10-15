@@ -29,6 +29,13 @@ AppWindowComponentFactory::AppWindowComponentFactory(Alloc::IAllocator* allocato
     mComponentInstances[COMPONENT_WORLD] = PG_NEW(allocator, -1, "WorldComponent", Pegasus::Alloc::PG_MEM_PERM) WorldComponent(allocator);
 #if PEGASUS_ENABLE_PROXIES
     mComponentInstances[COMPONENT_TEXTURE_VIEW] = PG_NEW(allocator, -1, "TextureViewComponent", Pegasus::Alloc::PG_MEM_PERM) TextureViewComponent(allocator);
+    mComponentInstances[COMPONENT_GRID] = PG_NEW(allocator, -1, "GridComponent", Pegasus::Alloc::PG_MEM_PERM) GridComponent(allocator);
+    #if RENDER_SYSTEM_CONFIG_ENABLE_CAMERA
+        mComponentInstances[COMPONENT_DEBUG_CAMERA] = PG_NEW(allocator, -1, "DebugCameraComponent", Pegasus::Alloc::PG_MEM_PERM) CameraDebugComponent(allocator);
+    #endif
+    #if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
+        mComponentInstances[COMPONENT_TERRAIN3D] = PG_NEW(allocator, -1, "Terrain3dDebugComponent", Pegasus::Alloc::PG_MEM_PERM) Terrain3dDebugComponent(allocator);
+    #endif
 #endif
 }
 

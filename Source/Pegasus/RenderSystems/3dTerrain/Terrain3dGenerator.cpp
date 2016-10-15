@@ -1,4 +1,8 @@
 #include "Pegasus/RenderSystems/3dTerrain/Terrain3dGenerator.h"
+#if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
+
+#define PEGASUS_TERRAIN_3D_MESH_GENERATOR
+
 #include "Pegasus/Mesh/IMeshFactory.h"
 #include "Pegasus/Mesh/Shared/MeshEvent.h"
 #include "Pegasus/Allocator/IAllocator.h"
@@ -15,17 +19,13 @@ extern RenderSystems::Terrain3dSystem* g3dTerrainSystemInstance;
 
 BEGIN_IMPLEMENT_PROPERTIES(Terrain3dGenerator)
     IMPLEMENT_PROPERTY(Terrain3dGenerator, TerrainSeed)
-    IMPLEMENT_PROPERTY(Terrain3dGenerator, BlockCenter)
-    IMPLEMENT_PROPERTY(Terrain3dGenerator, BlockExtends)
 END_IMPLEMENT_PROPERTIES(Terrain3dGenerator)
 
 Terrain3dGenerator::Terrain3dGenerator(Pegasus::Alloc::IAllocator* nodeAllocator,
-                          Pegasus::Alloc::IAllocator* nodeDataAllocator) : MeshGenerator(nodeAllocator, nodeDataAllocator), mIsAllocated(false)
+                          Pegasus::Alloc::IAllocator* nodeDataAllocator) : MeshGenerator(nodeAllocator, nodeDataAllocator), mIsComputeResourcesAllocated(false)
 {
     BEGIN_INIT_PROPERTIES(Terrain3dGenerator)
         INIT_PROPERTY(TerrainSeed)
-        INIT_PROPERTY(BlockCenter)
-        INIT_PROPERTY(BlockExtends)
     END_INIT_PROPERTIES()
 
     mConfiguration.SetIsIndexed(true);
@@ -37,22 +37,20 @@ Terrain3dGenerator::Terrain3dGenerator(Pegasus::Alloc::IAllocator* nodeAllocator
     
     Mesh::MeshInputLayout::AttrDesc posDesc;
     posDesc.mSemantic = Mesh::MeshInputLayout::POSITION;
-    posDesc.mType = Mesh::MeshInputLayout::FLOAT;
+    posDesc.mType = Pegasus::Core::FORMAT_RGB_32_FLOAT;
+    posDesc.mByteSize = 12;
     posDesc.mByteOffset = 0;
     posDesc.mSemanticIndex = 0;
-    posDesc.mAttributeTypeCount = 3;
     posDesc.mStreamIndex = 0;
-    posDesc.mIsNormalized = false;
     inputLayout->RegisterAttribute(posDesc);
 
     Mesh::MeshInputLayout::AttrDesc normDesc;
     normDesc.mSemantic = Mesh::MeshInputLayout::NORMAL;
-    normDesc.mType = Mesh::MeshInputLayout::FLOAT;
+    normDesc.mType = Pegasus::Core::FORMAT_RGB_32_FLOAT;
+    normDesc.mByteSize = 12;
     normDesc.mByteOffset = 0;
     normDesc.mSemanticIndex = 0;
-    normDesc.mAttributeTypeCount = 3;
     normDesc.mStreamIndex = 1;
-    normDesc.mIsNormalized = false;
     inputLayout->RegisterAttribute(normDesc);
 
     
@@ -63,13 +61,16 @@ bool Terrain3dGenerator::Update()
 {
     bool updated = MeshGenerator::Update();
 
-    for (unsigned int i = 0; i < Terrain3dSystem::PROGRAM_COUNT; ++i)
+    if (!updated)
     {
-        int newVersion = Render::GetProgramVersion(g3dTerrainSystemInstance->GetProgram(static_cast<Terrain3dSystem::Programs>(i)));
-        if (newVersion != mProgramVersions[i])
+        for (unsigned int i = 0; i < Terrain3dSystem::PROGRAM_COUNT; ++i)
         {
-            mProgramVersions[i] = newVersion;
-            updated = true;
+            int newVersion = Render::GetProgramVersion(g3dTerrainSystemInstance->GetProgram(static_cast<Terrain3dSystem::Programs>(i)));
+            if (newVersion != mProgramVersions[i])
+            {
+                mProgramVersions[i] = newVersion;
+                updated = true;
+            }
         }
     }
     
@@ -84,9 +85,14 @@ bool Terrain3dGenerator::Update()
     return updated;
 }
 
-void Terrain3dGenerator::CreateRenderResources()
+void Terrain3dGenerator::CreateComputeTerrainResources()
 {
-    //allocate all the buffers
+    if (!IsDataAllocated())
+    {
+        CreateData();
+    }
+
+    PG_ASSERTSTR(mIsComputeResourcesAllocated == false, "Internal gpu data is not allocated.");
     MeshDataRef meshData = GetData(); 
     meshData->AllocateVertexes(g3dTerrainSystemInstance->GetVertexCount());
     meshData->AllocateIndexes(g3dTerrainSystemInstance->GetIndexCount());
@@ -99,26 +105,35 @@ void Terrain3dGenerator::CreateRenderResources()
 
     g3dTerrainSystemInstance->CreateResources(mResources);
 
-    mIsAllocated = true;
-
-    
+    mIsComputeResourcesAllocated = true;
 }
 
 void Terrain3dGenerator::GenerateData()
 {
     PEGASUS_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::BEGIN);
     MeshDataRef meshData = GetData(); 
-    if (!mIsAllocated)
+    if (!mIsComputeResourcesAllocated)
     {
-        CreateRenderResources();
+        CreateComputeTerrainResources();
     }
     else
     {
         //this is so Mesh does not call GenerateMeshGpuData again
         meshData->ValidateGPUData();
     }
-    g3dTerrainSystemInstance->RenderTerrain(mResources, mIndexBuffer, mVertexBuffer, mNormalBuffer, mDrawIndirectBuffer);
+    g3dTerrainSystemInstance->ComputeTerrainMesh(mResources, mIndexBuffer, mVertexBuffer, mNormalBuffer, mDrawIndirectBuffer);
     
     PEGASUS_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::END_SUCCESS);
 }
 
+void Terrain3dGenerator::SetOffsetScale(float scale, const Math::Vec3 offset)
+{
+    mResources.blockState.worldOffset = Math::Vec4(offset, 0.0f);
+    mResources.blockState.worldScale = Math::Vec4(scale, 0.0f,0.0f, 0.0f);
+}
+
+#else
+
+PEGASUS_AVOID_EMPTY_FILE_WARNING
+
+#endif

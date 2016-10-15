@@ -22,12 +22,14 @@
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Shader/ShaderStage.h"
 #include "Pegasus/Shader/ShaderManager.h"
+#include "Pegasus/Utils/Vector.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/Memcpy.h"
 #include "../Source/Pegasus/Render/DX11/DXGpuDataDefs.h"
 #include "../Source/Pegasus/Render/DX11/DXRenderContext.h"
 #include "../Source/Pegasus/Render/DX11/DXDevice.h"
 
+using namespace Pegasus;
 using namespace Pegasus::Core;
 
 static int gNextProgramGuid = 1;
@@ -51,12 +53,23 @@ public:
 
     virtual void RegisterShaderManager(Pegasus::Shader::ShaderManager* shaderManager) { mShaderManager = shaderManager; }
 
+    void RegisterGlobalConstant(const char* globalConstantName, Render::BufferRef& buffer);
+
+    void ClearGlobalConstants() { mGlobalConstants.Clear(); }
+
 private:
     Pegasus::Render::DXShaderGPUData* GetOrCreateShaderGpuData(Pegasus::Graph::NodeData* nodeData);
     Pegasus::Render::DXProgramGPUData* GetOrCreateProgramGpuData(Pegasus::Graph::NodeData* nodeData);
     void PopulateReflectionData(Pegasus::Render::DXProgramGPUData* programData, const CComPtr<ID3D11ShaderReflection>& reflectionInfo, Pegasus::Shader::ShaderType shaderType);
+    void PopulateGlobalUniformData(Pegasus::Render::DXProgramGPUData* programData);
     Pegasus::Alloc::IAllocator * mAllocator;
     Pegasus::Shader::ShaderManager* mShaderManager;
+    struct GlobalShaderConstantDesc
+    {
+        const char* name;
+        Render::BufferRef buffer;
+    };
+    Utils::Vector<GlobalShaderConstantDesc> mGlobalConstants; 
 };
 
 // !internal class that handles inclusion of files
@@ -117,6 +130,13 @@ HRESULT DXShaderIncludeHandler::Close(
 void DXShaderFactory::Initialize(Pegasus::Alloc::IAllocator * allocator)
 {
     mAllocator = allocator;
+}
+
+void DXShaderFactory::RegisterGlobalConstant(const char* globalConstantName, Render::BufferRef& buffer)
+{
+    GlobalShaderConstantDesc& newDesc = mGlobalConstants.PushEmpty();
+    newDesc.name = globalConstantName;
+    newDesc.buffer = buffer;
 }
 
 //! allocates lazily or returns an existent shader gpu data
@@ -393,7 +413,7 @@ Pegasus::Render::DXProgramGPUData* DXShaderFactory::GetOrCreateProgramGpuData(Pe
         programGPUData->mReflectionData = nullptr;
         programGPUData->mReflectionDataCount = 0;
         programGPUData->mReflectionDataCapacity = 0;
-        
+        programGPUData->mGlobalUniformCount = 0;
     }
     else
     {
@@ -417,6 +437,12 @@ void DXShaderFactory::GenerateProgramGPUData(Pegasus::Shader::ProgramLinkage * p
     programGPUData->mInputLayoutBlob = nullptr;
     programGPUData->mProgramValid = false;
     programGPUData->mReflectionDataCount = 0; //empty the reflection data
+    for (int i = 0; i < programGPUData->mGlobalUniformCount; ++i) 
+    {
+        programGPUData->mGlobalUniforms[i] = Render::Uniform();
+        programGPUData->mGlobalBuffers[i] = nullptr;
+    }
+    programGPUData->mGlobalUniformCount = 0;
     
     bool isProgramComplete = true; //assume true
     for (unsigned i = 0; i < programNode->GetNumInputs(); ++i)
@@ -493,6 +519,7 @@ void DXShaderFactory::GenerateProgramGPUData(Pegasus::Shader::ProgramLinkage * p
     {
 		programGPUData->mProgramValid = true;
         ++programGPUData->mProgramVersion;
+        PopulateGlobalUniformData(programGPUData);
         PEGASUS_EVENT_DISPATCH (
             programNode,
             CompilerEvents::LinkingEvent,
@@ -588,6 +615,25 @@ void DXShaderFactory::PopulateReflectionData(Pegasus::Render::DXProgramGPUData* 
     }
 }
 
+extern bool UpdateUniformLocation(Pegasus::Render::DXProgramGPUData* programGPUData, const char * name, Pegasus::Render::Uniform& outputUniform);
+
+void DXShaderFactory::PopulateGlobalUniformData(Pegasus::Render::DXProgramGPUData* programGPUData)
+{
+    PG_ASSERT(programGPUData->mGlobalUniformCount == 0);
+    for (unsigned int i = 0; i < mGlobalConstants.GetSize(); ++i)
+    {
+        GlobalShaderConstantDesc& desc = mGlobalConstants[i];
+        Render::Uniform& candidateUniform = programGPUData->mGlobalUniforms[programGPUData->mGlobalUniformCount];
+        Render::BufferRef& candidateBuffer = programGPUData->mGlobalBuffers[programGPUData->mGlobalUniformCount];
+        if (UpdateUniformLocation(programGPUData, desc.name, candidateUniform))
+        {
+            candidateBuffer = desc.buffer;
+            ++programGPUData->mGlobalUniformCount;
+            PG_ASSERTSTR(programGPUData->mGlobalUniformCount <= GLOBAL_UNIFORM_COUNT, "The max count of global uniforms has been reached! this will cause a memory stomp!");
+        }
+    }
+}
+
 //Dedestroy gpu data of program
 void DXShaderFactory::DestroyProgramGPUData (Pegasus::Graph::NodeData * nodeData)
 {
@@ -603,7 +649,11 @@ void DXShaderFactory::DestroyProgramGPUData (Pegasus::Graph::NodeData * nodeData
         programData->mHull     = nullptr;
         programData->mGeometry = nullptr;
         programData->mCompute  = nullptr;
-
+        for (int i = 0; i < programData->mGlobalUniformCount; ++i)
+        {
+            programData->mGlobalUniforms[i] = Render::Uniform();
+            programData->mGlobalBuffers[i] = nullptr;
+        }
         if (programData->mReflectionData != nullptr)
         {
             PG_DELETE_ARRAY(mAllocator, programData->mReflectionData);
@@ -629,6 +679,16 @@ DXShaderFactory gShaderFactory;
 Shader::IShaderFactory * GetRenderShaderFactory()
 {
     return &gShaderFactory;
+}
+
+void RegisterGlobalConstant(const char* name, Render::BufferRef& buffer)
+{
+    gShaderFactory.RegisterGlobalConstant(name, buffer);
+}
+
+void ClearGlobalConstants()
+{
+    gShaderFactory.ClearGlobalConstants();
 }
 
 }

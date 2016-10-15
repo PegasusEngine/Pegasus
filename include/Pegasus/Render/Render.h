@@ -177,6 +177,10 @@ namespace Render
         {
             ZERO_M,
             ONE_M,
+            SRC_ALPHA,
+            INV_SRC_ALPHA,
+            DEST_ALPHA,
+            INV_DEST_ALPHA,
             COUNT_M
         };
 
@@ -307,6 +311,17 @@ namespace Render
     typedef Core::Ref<BlendingState> BlendingStateRef;
     typedef Core::Ref<SamplerState> SamplerStateRef;
 
+    //! registers a global constant to all the programs created after this call.
+    //! a global cosntant will be automatically be binded during SetProgram, to the corresponding buffer
+    //! being passed, as long as the shader program has a constant buffer with the corresponding name of 'name'.
+    //! A good example is camera transforms, which are usually global. If the shader does not have such consant name,
+    //! then it is not bound.
+    //! \param name the name of the cbuffer area used to bind such constant.
+    //! \param buffer the buffer to bind into the shader.
+    void RegisterGlobalConstant(const char* name, Render::BufferRef& buffer);
+
+    //! Must be called on app uninitialization, or if global constants want to get dereferrenced.
+    void ClearGlobalConstants();
 
     //! Dispatches a shader pipeline.
     //! \param program the shader program to dispatch

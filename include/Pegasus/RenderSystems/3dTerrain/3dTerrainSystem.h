@@ -18,11 +18,14 @@
 #include "Pegasus/RenderSystems/3dTerrain/CaseTable.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Render/Render.h"
+#include "Pegasus/Math/Vector.h"
 
 namespace Pegasus 
 {
 namespace RenderSystems
 {
+
+class Terrain3d;
 
 //! Deferred renderer system implementation. Adds a blockscript library.
 class Terrain3dSystem : public RenderSystem
@@ -34,6 +37,17 @@ public:
         Render::VolumeTextureRef geoInfo;
         Render::VolumeTextureRef sparse8;
         Render::VolumeTextureRef sparse4;
+        struct
+        {
+            Math::Vec4 worldOffset;
+            Math::Vec4 worldScale; //only x component used.
+        } blockState;
+
+        TerrainResources()
+        {
+            blockState.worldOffset = Math::Vec4(0.0f,0.0f,0.0f,0.0f);
+            blockState.worldScale = Math::Vec4(1.0f,0.0f,0.0f,0.0f);
+        }
     };
 
     enum Programs
@@ -78,7 +92,19 @@ public:
     void CreateResources(TerrainResources& resources) const;
 
     //! renders and processes using the resources struct, outputs a vertex / index and normal buffer.
-    void RenderTerrain(TerrainResources& resources, Render::BufferRef indexBuffer, Render::BufferRef vertexPosBuffer, Render::BufferRef vertexNormalBuffer, Render::BufferRef drawIndirectBufferArgs);
+    void ComputeTerrainMesh(TerrainResources& resources, Render::BufferRef indexBuffer, Render::BufferRef vertexPosBuffer, Render::BufferRef vertexNormalBuffer, Render::BufferRef drawIndirectBufferArgs);
+
+#if PEGASUS_ENABLE_PROXIES
+    //! Updates debug state.
+    void UpdateDebugState(bool enableDebugGeometry, bool enableDebugCamera)
+    {
+        mEnableGeoDebug = enableDebugGeometry;
+        mEnableCamCullDebug = enableDebugCamera;
+    }
+    bool CamCullDebugEnable() const { return mEnableCamCullDebug; }
+    void LoadDebugObjects(Core::IApplicationContext* appContext);
+    void DrawDebugTerrain(Terrain3d* terrain);
+#endif
     
 
 private:
@@ -87,7 +113,11 @@ private:
     Shader::ProgramLinkageRef mPrograms[PROGRAM_COUNT];
     Render::BufferRef mPackedCaseCountInfoBuffer;
     Render::BufferRef mPackedIndexCasesBuffer;    
+    Render::BufferRef mDensityInputBuffer;
     Render::SamplerStateRef  mDensitySampler;
+
+    //density inputs
+    Render::Uniform mDensityBlockStateUniform;
 
     //compute count / caseId inputs
     Render::Uniform mGeomInfoDensityInput;
@@ -98,6 +128,7 @@ private:
     Render::Uniform mSparse8Uniform;
 
     //mesh prod inputs
+    Render::Uniform mMeshBlockStateUniform;
     Render::Uniform mMeshInfoCaseCountInfoInput;
     Render::Uniform mMeshInfoCaseIndices;
     Render::Uniform mMeshDensity;
@@ -105,6 +136,26 @@ private:
     Render::Uniform mMeshSparse8;
     Render::Uniform mMeshSparse4;
 
+#if PEGASUS_ENABLE_PROXIES
+    void RenderDebugBox(const Math::Vec3& minAabb, const Math::Vec3& maxAabb, const Math::Vec4& color);
+
+    bool mEnableGeoDebug;
+    bool mEnableCamCullDebug;
+
+    Pegasus::Shader::ProgramLinkageRef mGridProgram;
+    Render::Uniform mGridInput;
+    Render::BufferRef mGridInputBuffer;
+
+    Pegasus::Shader::ProgramLinkageRef mBlockProgram;
+    Render::Uniform mBlockInput;
+    Render::BufferRef mBlockInputBuffer;
+
+    Render::RasterizerStateRef mGridStateOutside;
+    Render::BlendingStateRef mAlphaBlending;
+    Render::BlendingStateRef mNoBlending;
+    Pegasus::Mesh::MeshRef mGridMesh;
+    Pegasus::Mesh::MeshRef mBlockMesh;
+#endif
 
 };
 }

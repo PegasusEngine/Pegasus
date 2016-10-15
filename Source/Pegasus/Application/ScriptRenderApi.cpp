@@ -13,14 +13,17 @@
 #include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/Application/RenderCollection.h"
 #include "Pegasus/Application/ScriptRenderApi.h"
+#include "Pegasus/Application/GenericResource.h"
 #include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/BlockScript/BlockScriptManager.h"
 #include "Pegasus/BlockScript/BlockScript.h"
 #include "Pegasus/BlockScript/BlockScriptAst.h"
 #include "Pegasus/BlockScript/BlockLib.h"
+#include "Pegasus/BlockScript/FunDesc.h"
 #include "Pegasus/BlockScript/FunCallback.h"
 #include "Pegasus/BlockScript/SymbolTable.h"
 #include "Pegasus/BlockScript/IddStrPool.h"
+#include "Pegasus/BlockScript/BLockScriptAst.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/Vector.h"
 #include "Pegasus/Render/Render.h"
@@ -50,6 +53,8 @@ static void RegisterFunctions    (BlockLib* lib);
 ///////////////////////////////////////////////////////////////////////////////////
 //! Forward declaration of API function wrappers
 ///////////////////////////////////////////////////////////////////////////////////
+
+static Application::RenderCollection* GetContainer(BsVmState* state);
 
 ////Utility methods//////////////////////////////////////////
 void Util_GetWidthHeightAspect(FunCallbackContext& context);
@@ -125,6 +130,31 @@ void Render_CreateBlendingState(FunCallbackContext& context);
 template<typename T> void GlobalCache_Register(FunCallbackContext& context);
 template<typename T> void GlobalCache_Find(FunCallbackContext& context);
 
+void GlobalCache_PrototypeRegisterGenericResource(FunCallbackContext& context)
+{
+    GlobalCache_Register<Application::GenericResource>(context);
+}
+
+void GlobalCache_PrototypeFindGenericResource(FunCallbackContext& context)
+{
+    GlobalCache_Find<Application::GenericResource>(context);
+    Application::RenderCollection* collection = GetContainer(context.GetVmState());
+    //check if the types are correct, if not error out and submit an invalid handle.
+    PG_ASSERT(sizeof(RenderCollection::CollectionHandle) == context.GetOutputBufferSize());
+    RenderCollection::CollectionHandle* requestedReturn = static_cast<RenderCollection::CollectionHandle*>(context.GetRawOutputBuffer());
+    if (*requestedReturn != RenderCollection::INVALID_HANDLE)
+    {
+        const FunDesc* fundDesc =  context.GetFunDesc();
+        const char* requestedReturnType = fundDesc->GetDec()->GetReturnType()->GetName();
+        Application::GenericResource* genericResource = RenderCollection::GetResource<Application::GenericResource>(collection, *requestedReturn);
+        if (Utils::Strcmp(genericResource->GetClassInfo()->GetClassName(), requestedReturnType) != 0)
+        {
+            PG_LOG('ERR_', "Error while trying to find generic resource. Incompatible types, Pegasus cannot cast to a %s. Resource is registered as a %s",requestedReturnType,genericResource->GetClassInfo()->GetClassName());
+            *requestedReturn = RenderCollection::INVALID_HANDLE; // set as invalid handle and bail!
+        }
+    }
+}
+
 // property callback functions
 template<typename T>
 bool TemplatePropertyCallback   (const Pegasus::BlockScript::PropertyCallbackContext& context);
@@ -194,6 +224,10 @@ static void RegisterRenderEnums(BlockLib* lib)
             {
                 { "ZERO_M",BlendingConfig::ZERO_M },
                 { "ONE_M",BlendingConfig::ONE_M },
+                { "SRC_ALPHA", BlendingConfig::SRC_ALPHA },
+                { "INV_SRC_ALPHA", BlendingConfig::INV_SRC_ALPHA },
+                { "DEST_ALPHA", BlendingConfig::DEST_ALPHA },
+                { "INV_DEST_ALPHA", BlendingConfig::INV_DEST_ALPHA }
             },
             BlendingConfig::COUNT_M
         },
@@ -220,6 +254,10 @@ static void RegisterRenderEnums(BlockLib* lib)
                 { "FORMAT_RGB_32_UINT" , Pegasus::Core::FORMAT_RGB_32_UINT },
                 { "FORMAT_RGB_32_SINT" , Pegasus::Core::FORMAT_RGB_32_SINT },
                 { "FORMAT_RGB_32_TYPELESS" , Pegasus::Core::FORMAT_RGB_32_TYPELESS },
+                { "FORMAT_RG_32_FLOAT" , Pegasus::Core::FORMAT_RG_32_FLOAT },
+                { "FORMAT_RG_32_UINT" , Pegasus::Core::FORMAT_RG_32_UINT },
+                { "FORMAT_RG_32_SINT" , Pegasus::Core::FORMAT_RG_32_SINT },
+                { "FORMAT_RG_32_TYPELESS" , Pegasus::Core::FORMAT_RG_32_TYPELESS },
                 { "FORMAT_RGBA_16_FLOAT" , Pegasus::Core::FORMAT_RGBA_16_FLOAT },
                 { "FORMAT_RGBA_16_UINT" , Pegasus::Core::FORMAT_RGBA_16_UINT },
                 { "FORMAT_RGBA_16_SINT" , Pegasus::Core::FORMAT_RGBA_16_SINT },
@@ -266,7 +304,7 @@ static void RegisterRenderEnums(BlockLib* lib)
     PG_ASSERTSTR(RasterizerConfig::COUNT_DF == 6, assertstr);
     PG_ASSERTSTR(RasterizerConfig::COUNT_CM == 3,assertstr);
     PG_ASSERTSTR(BlendingConfig::COUNT_BO   == 3,assertstr);
-    PG_ASSERTSTR(BlendingConfig::COUNT_M    == 2,assertstr);
+    PG_ASSERTSTR(BlendingConfig::COUNT_M    == 6,assertstr);
     PG_ASSERTSTR(Pegasus::Render::PRIMITIVE_COUNT == 6,assertstr);
 #endif
     lib->CreateEnumTypes(enumDefs, sizeof(enumDefs)/sizeof(enumDefs[0]));
@@ -1709,5 +1747,9 @@ void GlobalCache_Find<T>(FunCallbackContext& context)
     const char* name = stream.NextBsStringArgument();
     unsigned int strHash = Pegasus::Utils::HashStr(name);
     RenderCollection::CollectionHandle collectionHandle = RenderCollection::ResolveResourceFromGlobalCache<T>(renderCollection, strHash);
+    if (collectionHandle == RenderCollection::INVALID_HANDLE)
+    {
+        PG_LOG('ERR_', "No global resource found, with the name of %s. Make sure is registered from the master timeline script.", name);
+    }
     stream.SubmitReturn<RenderCollection::CollectionHandle>(collectionHandle);
 }

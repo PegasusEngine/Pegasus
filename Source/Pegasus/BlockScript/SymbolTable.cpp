@@ -40,6 +40,29 @@ void SymbolTable::RegisterChild(SymbolTable* symbolTable)
     *newSpace = symbolTable;
 }
 
+void SymbolTable::UnregisterChild(SymbolTable* symbolTable)
+{
+
+    int foundChild = -1;
+    for (int i = 0; i < mChildren.Size(); ++i)
+    {
+        if (mChildren[i] == symbolTable)
+        {
+            foundChild = i;
+        }
+    }
+
+    if (foundChild == -1)
+    {
+        PG_FAILSTR("Trying to unregister lib that hasn't been registered?");
+    }
+    else
+    {
+        mChildren[foundChild] = mChildren[mChildren.Size() - 1];
+        mChildren.Pop();        
+    }
+}
+
 void SymbolTable::Reset()
 {
     mFunTable.Reset();

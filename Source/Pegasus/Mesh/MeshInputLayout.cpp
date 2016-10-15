@@ -30,17 +30,6 @@ const char MeshInputLayout::SemanticNames[MeshInputLayout::SEMANTIC_COUNT] =
     'u'  //! user defined in shader
 };
 
-const int MeshInputLayout::AttrTypeSizes[MeshInputLayout::ATTRTYPE_COUNT] =
-{
-    4, //FLOAT
-    4, //INT
-    4, //UINT
-    2, //SHORT
-    2, //USHORT
-    1 //BOOL
-};
-
-
 MeshInputLayout::MeshInputLayout()
     :
 mAttributeCount(0)
@@ -73,15 +62,14 @@ void MeshInputLayout::GenerateEditorLayout(MeshInputLayout::LayoutUsageBitMask m
     {
         AttrDesc attrPos = { 
             MeshInputLayout::POSITION,
-            MeshInputLayout::FLOAT, // 32 bit precision
+            Pegasus::Core::FORMAT_RGBA_32_FLOAT, // 32 bit precision
+            16,
             offset, // byte offset
-            0, // semantic index
-            4, // vec4
-            0, // use the first stream
-            true, // snorm
+            0, // semantic index            
+            0 // use the first stream
         };
         RegisterAttribute(attrPos);
-        offset += 4 * MeshInputLayout::AttrTypeSizes[attrPos.mType];
+        offset += attrPos.mByteSize;
     }
 
     
@@ -89,15 +77,14 @@ void MeshInputLayout::GenerateEditorLayout(MeshInputLayout::LayoutUsageBitMask m
     {
         AttrDesc attrNorm = {
             MeshInputLayout::NORMAL,
-            MeshInputLayout::FLOAT, // 16 bit precision
+            Pegasus::Core::FORMAT_RGB_32_FLOAT, // 16 bit precision
+            12,
             offset, // byte offset
             0, // semantic index
-            3, // vec3 
-            0, // use the first stream
-            true, // snorm
+            0 // use the first stream
         };
         RegisterAttribute(attrNorm);
-        offset += 3 * MeshInputLayout::AttrTypeSizes[attrNorm.mType];
+        offset += attrNorm.mByteSize;
     }
     
 
@@ -105,12 +92,11 @@ void MeshInputLayout::GenerateEditorLayout(MeshInputLayout::LayoutUsageBitMask m
     {
         AttrDesc attrUV = {
             MeshInputLayout::UV,
-            MeshInputLayout::FLOAT, // 32 bit precision
+            Pegasus::Core::FORMAT_RG_32_FLOAT, // 32 bit precision
+            8,
             offset, // byte offset
             0, // semantic index
-            2, // vec2
-            0, // use the first stream
-            true, // snorm
+            0  // use the first stream
         };
         RegisterAttribute(attrUV);
     }

@@ -14,6 +14,9 @@
 
 #include "Pegasus/Mesh/MeshGenerator.h"
 
+#include "Pegasus/RenderSystems/3dTerrain/Terrain3dGenerator.h"
+#if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
+
 namespace Pegasus
 {
 namespace RenderSystems
@@ -49,4 +52,5 @@ protected:
 }
 }
 
+#endif
 #endif

@@ -20,7 +20,6 @@
 #include "Pegasus/AssetLib/Asset.h"
 #include "TimelineBlocks/GeometryTestBlock.h"
 
-#include "Pegasus/TimelineBlock/Camera/CameraLineBlock.h"
 #include "Pegasus/Timeline/TimelineManager.h"
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Timeline/Lane.h"

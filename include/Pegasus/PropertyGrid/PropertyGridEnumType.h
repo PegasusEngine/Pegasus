@@ -31,6 +31,7 @@
     public:\
         enumTypeName() {}\
         enumTypeName(const char* valueName) : ::Pegasus::PropertyGrid::BaseEnumType(valueName) { mValue = ++::Pegasus::PropertyGrid::EnumBuilder::sCurrVal; }\
+        enumTypeName(int value) : ::Pegasus::PropertyGrid::BaseEnumType("",value) { }\
         enumTypeName(const enumTypeName& other) : ::Pegasus::PropertyGrid::BaseEnumType(other.GetName(), other.GetValue()) {}\
         static const char* GetTypeName() { return #enumTypeName; }\
     };\

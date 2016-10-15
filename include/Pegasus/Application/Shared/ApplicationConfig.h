@@ -16,6 +16,7 @@
 #include "Pegasus/Core/Shared/LogChannel.h"
 #include "Pegasus/Core/Shared/AssertReturnCode.h"
 #include "Pegasus/Core/Shared/OsDefs.h"
+#include "Pegasus/Window/Shared/WindowConfig.h"
 
 namespace Pegasus {
 namespace App {
@@ -23,10 +24,12 @@ namespace App {
 //! System specific components.
 enum ComponentType
 {
-    COMPONENT_WORLD                    ,//! World component. Renders the world / main timeline.
+    COMPONENT_BEGIN = 0,
+    COMPONENT_WORLD = COMPONENT_BEGIN  ,//! World component. Renders the world / main timeline.
     COMPONENT_GRID                     ,//! Renders an xyz grid reticle.                       
+    COMPONENT_DEBUG_CAMERA             ,//! Renders debug boxes for cameras.                       
     COMPONENT_TEXTURE_VIEW             ,//! Renders 2d texture view.                       
-    COMPONENT_SELECTION                ,//! Renders a box around a selection on the screen.     
+    COMPONENT_TERRAIN3D                ,//! Debug rendering of 3d terrain.     
     COMPONENT_TRANSLATION_SELECTION    ,//! Renders the icon / UI controller for translation    
     COMPONENT_ROTATION_SELECTION       ,//! Renders the icon / UI controller for rotation.      
     COMPONENT_SCALE_SELECTION          ,//! Renders the icon / UI controller for selection.     
@@ -39,8 +42,9 @@ enum ComponentType
 typedef int ComponentTypeFlags;
 const ComponentTypeFlags  COMPONENT_FLAG_WORLD                = 1 << COMPONENT_WORLD;//! World component. Renders the world / main timeline.
 const ComponentTypeFlags  COMPONENT_FLAG_GRID                 = 1 << COMPONENT_GRID;//! Renders an xyz grid reticle.                       
+const ComponentTypeFlags  COMPONENT_FLAG_DEBUG_CAMERA         = 1 << COMPONENT_DEBUG_CAMERA;//! Renders debug camera boxes.                       
 const ComponentTypeFlags  COMPONENT_FLAG_TEXTURE_VIEW         = 1 << COMPONENT_TEXTURE_VIEW;//! Renders a 2d texture view.                       
-const ComponentTypeFlags  COMPONENT_FLAG_SELECTION            = 1 << COMPONENT_SELECTION;//! Renders a box around a selection on the screen.     
+const ComponentTypeFlags  COMPONENT_FLAG_TERRAIN3D            = 1 << COMPONENT_TERRAIN3D;//! Renders a box around a selection on the screen.     
 const ComponentTypeFlags  COMPONENT_FLAG_TRANSLATION_SELECTION= 1 << COMPONENT_TRANSLATION_SELECTION;//! Renders the icon / UI controller for translation    
 const ComponentTypeFlags  COMPONENT_FLAG_ROTATION_SELECTION   = 1 << COMPONENT_ROTATION_SELECTION;//! Renders the icon / UI controller for rotation.      
 const ComponentTypeFlags  COMPONENT_FLAG_SCALE_SELECTION      = 1 << COMPONENT_SCALE_SELECTION;//! Renders the icon / UI controller for selection.     
@@ -95,12 +99,20 @@ public:
     int mWidth; //!< Initial width of the window in pixels (> 0)
     int mHeight; //!< Initial height of the window in pixels (> 0)
 
+#if PEGASUS_ENABLE_PROXIES
+    void* mRedrawArgCallback;
+    Pegasus::Wnd::WindowConfig::RedrawProxyFun mRedrawEditorCallback;
+#endif
     //! Default constructor
     inline AppWindowConfig()
         :   mIsChild(false),
             mParentWindowHandle(0),            
             mWidth(960),
             mHeight(540)
+#if PEGASUS_ENABLE_PROXIES
+            ,mRedrawArgCallback(nullptr)
+            ,mRedrawEditorCallback(nullptr)
+#endif
         {}
 };
 

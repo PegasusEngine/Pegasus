@@ -158,7 +158,17 @@ public:
         return GetValue() == value;
     }
 
+    inline bool operator==(const BaseEnumType& value) const
+    {
+        return GetValue() == value.GetValue();
+    }
+
     inline bool operator != (int value) const
+    {
+        return !(*this == value);
+    }
+
+    inline bool operator != (const BaseEnumType& value) const
     {
         return !(*this == value);
     }

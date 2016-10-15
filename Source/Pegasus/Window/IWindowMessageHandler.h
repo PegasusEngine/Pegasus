@@ -38,6 +38,11 @@ public:
     //! Handles the repaint message
     virtual void OnRepaint() = 0;
 
+#if PEGASUS_ENABLE_PROXIES
+    //! Sends a message to the editor, so it can repaint the entire window.
+    virtual void RequestRepaintEditorWindow() = 0;
+#endif
+
     //! Handles the resize message
     //! \param width New width.
     //! \param height Nww height.
@@ -46,6 +51,9 @@ public:
 #if PEGASUS_ENABLE_PROXIES
     //! Handles events on mouse clicks and such.
     virtual void OnMouseEvent(IWindowComponent::MouseButton button, bool isDown, float x, float y) = 0;
+
+    //! Handles events on key presses
+    virtual void OnKeyEvent(Pegasus::Wnd::Keys key, bool isDown) = 0;
 #endif
 };
 

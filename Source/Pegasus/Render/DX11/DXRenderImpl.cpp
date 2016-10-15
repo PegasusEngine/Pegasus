@@ -97,6 +97,11 @@ void Pegasus::Render::SetProgram (Pegasus::Shader::ProgramLinkageInOut program)
             context->HSSetShader(shaderGpuData->mHull, nullptr, 0);
             context->GSSetShader(shaderGpuData->mGeometry, nullptr, 0);
             context->CSSetShader(shaderGpuData->mCompute, nullptr, 0);
+            //set the global uniforms this program might have.
+            for (int i = 0; i < shaderGpuData->mGlobalUniformCount; ++i)
+            {
+                SetUniformBuffer(shaderGpuData->mGlobalUniforms[i], shaderGpuData->mGlobalBuffers[i]);            
+            }
         }
     }
     else
@@ -699,7 +704,7 @@ void Pegasus::Render::Dispatch(unsigned int x, unsigned int y, unsigned int z)
 ///////////////////////////////////////////////////////////////////////////////
 /////////////   GET UNIFORM FUNCTION IMPLEMENTATIONS    ///////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-static bool UpdateUniformLocation(Pegasus::Render::DXProgramGPUData* programGPUData, const char * name, Pegasus::Render::Uniform& outputUniform)
+bool UpdateUniformLocation(Pegasus::Render::DXProgramGPUData* programGPUData, const char * name, Pegasus::Render::Uniform& outputUniform)
 {
     if (programGPUData->mProgramValid && programGPUData->mReflectionData != nullptr)
     {
@@ -959,7 +964,11 @@ Pegasus::Render::BlendingStateRef Pegasus::Render::CreateBlendingState(const Peg
 
     static const D3D11_BLEND sBlendTranslator[] = {
         D3D11_BLEND_ZERO,
-        D3D11_BLEND_ONE
+        D3D11_BLEND_ONE,
+        D3D11_BLEND_SRC_ALPHA,
+        D3D11_BLEND_INV_SRC_ALPHA,
+        D3D11_BLEND_DEST_ALPHA,
+        D3D11_BLEND_INV_DEST_ALPHA
     };
 
     static const D3D11_BLEND_OP sBlendOpTranslator[] = {

@@ -122,12 +122,17 @@ ApplicationInterface::ApplicationInterface(Application * application)
 				Qt::QueuedConnection);
     }
 
+    //connect messages for viewports
     const QVector<ViewportWidget*>& viewportWidgets = editor.GetViewportWidgets();
     for (int i = 0; i < viewportWidgets.size(); ++i)
     {
         ViewportWidget* viewportWidget = viewportWidgets[i];
         connect(viewportWidget, SIGNAL(OnSendWindowIoMessage(WindowIOMessageController::Message)),
                 this, SLOT(ForwardWindowIoMessage(WindowIOMessageController::Message)),
+                Qt::QueuedConnection);
+
+        connect(viewportWidget, SIGNAL(OnSendPropertyGridIoMessage(PropertyGridIOMessageController::Message)),
+                this, SLOT(ForwardPropertyGridIoMessage(PropertyGridIOMessageController::Message)),
                 Qt::QueuedConnection);
     }
 
@@ -143,7 +148,9 @@ ApplicationInterface::ApplicationInterface(Application * application)
 			Qt::QueuedConnection);
     connect(mTimelineMessageController, SIGNAL(NotifyMasterScriptState(bool, QString)),
             timelineDockWidget, SLOT(OnShowActiveTimelineButton(bool, QString)));
-
+    connect(mWindowIoMessageController, SIGNAL(RedrawFrame()),
+            this, SLOT(RedrawAllViewports()),
+			Qt::QueuedConnection);
 
     //<------  Source IO Controller -------->//
     //From ui to render
@@ -160,10 +167,6 @@ ApplicationInterface::ApplicationInterface(Application * application)
             codeEditorWidget, SLOT(CompilationRequestReceived()),
 			Qt::QueuedConnection);
 
-
-    //from ui to ui
-    connect(assetLibraryWidget, SIGNAL(OnHighlightBlock(unsigned)),
-            timelineDockWidget, SLOT(OnFocusBlock(unsigned)));
 
     //<------  Program IO Controller -------->//
     connect(mProgramIoMessageController, SIGNAL(SignalRedrawViewports()),

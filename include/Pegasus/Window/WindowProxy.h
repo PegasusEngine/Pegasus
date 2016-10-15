@@ -41,11 +41,22 @@ public:
     // Stateflow API
     virtual void Draw();
 
+    //! Bool value, setting if this window is enabled or disabled for drawing.
+    virtual void EnableDraw(bool enabled);
+
     // Resize API
     virtual void Resize(unsigned int width, unsigned int height);
 
+    // Window component state, to control component behaviour.
+    virtual PropertyGrid::IPropertyGridObjectProxy* GetComponentState(Pegasus::App::ComponentType type);
+
     // Unwrap API
     virtual Window* Unwrap() const;
+
+    //! Hacky, but allows control of passing by keyboard events.
+    //! \param k key passed.
+    //! \param isDown true if the key was pressed, otherwise if released
+    virtual void HandleKeyEvent(Keys k, bool isDown);
 
 private:
     //! The proxied window object

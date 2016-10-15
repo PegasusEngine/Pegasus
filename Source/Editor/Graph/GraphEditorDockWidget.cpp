@@ -127,6 +127,12 @@ void GraphEditorDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* ap
 
     //! After all tabs are loaded, update the UI for the current tab
     ui.propertyGridWidget->SetApplicationProxy(applicationProxy);
+
+    WindowIOMessageController::Message msg;
+    msg.SetMessageType(WindowIOMessageController::Message::ENABLE_DRAW);
+    msg.SetViewportWidget(mViewportWidget);
+    msg.SetEnableDraw(true);
+    emit mViewportWidget->OnSendWindowIoMessage(msg);
 }
 
 //----------------------------------------------------------------------------------------
@@ -138,7 +144,6 @@ void GraphEditorDockWidget::OnUIForAppClosed()
     {
         mNodeFileTabBar->Close(0);
     }
-
     mViewportWidget->OnAppUnloaded();
     ui.propertyGridWidget->SetApplicationProxy(nullptr);
 }

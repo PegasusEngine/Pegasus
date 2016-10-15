@@ -33,6 +33,8 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\3dTerrain\MarchingCubeMeshGenerator.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\3dTerrain\Terrain3d.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\3dTerrain\Terrain3dGenerator.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\Camera\Camera.h" />
+    <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\Camera\CameraSystem.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\Config.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\DeferredRenderer\DeferredRendererSystem.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\Grass\GrassSystem.h" />
@@ -46,6 +48,8 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\3dTerrain\MarchingCubeMeshGenerator.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\3dTerrain\Terrain3d.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\3dTerrain\Terrain3dGenerator.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Camera\Camera.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Camera\CameraSystem.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\DeferredRenderer\DeferredRendererSystem.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Grass\GrassSystem.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\System\RenderSystemManager.cpp" />

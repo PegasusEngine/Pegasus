@@ -37,6 +37,7 @@ namespace Pegasus {
     }
     namespace BlockScript {
         class BlockScriptManager;
+        class BlockLib;
     }
     namespace AssetLib {
         class AssetLib;
@@ -46,6 +47,9 @@ namespace Pegasus {
     } 
     namespace PropertyGrid {
         class PropertyGridManager;
+    }
+    namespace RenderSystems {
+        class RenderSystemManager;
     }
 
 #if PEGASUS_ENABLE_BS_REFLECTION_INFO
@@ -87,10 +91,6 @@ public:
     //! \return The texture manager.
     virtual Mesh::MeshManager* GetMeshManager() const = 0;
 
-    //! Gets the camera manager for use by this window
-    //! \return The camera manager.
-    virtual Camera::CameraManager* GetCameraManager() const = 0;
-
     //! Gets the timeline for use by this window
     //! \return The timeline.
     virtual Timeline::TimelineManager* GetTimelineManager() const = 0;
@@ -110,6 +110,14 @@ public:
     //! Gets the property grid manager for this application
     //! \return property grid manager for this application
     virtual PropertyGrid::PropertyGridManager* GetPropertyGridManager() const = 0;
+    
+    //! Gets the render systems manager.
+    //! \return The render systems manager.
+    virtual RenderSystems::RenderSystemManager* GetRenderSystemManager() const = 0;
+
+    //! Returns a reference to the symbol table / bs functions of the render api
+    //! \return render API block library
+    virtual BlockScript::BlockLib* GetRenderBsApi() const = 0;
 
 #if PEGASUS_ENABLE_BS_REFLECTION_INFO
     //! Returns the reflection information from blockscript.

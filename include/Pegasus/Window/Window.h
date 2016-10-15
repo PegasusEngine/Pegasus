@@ -30,7 +30,7 @@ namespace Pegasus {
     }
     namespace Wnd {
         class IWindowImpl;
-        class WindowMessageHandler;
+        class IWindowMessageHandler;
         class WindowProxy;
         class WindowComponentState;
     }
@@ -113,7 +113,11 @@ public:
     //! Keyboard event, when a key is pressed. Called from the editor.
     //! \param key ascii value of the key pressed.
     //! \param isDown true if key is down, false if key goes up.
-    void OnKeyEvent(char key, bool isDown);
+    void OnKeyEvent(Pegasus::Wnd::Keys key, bool isDown);
+
+    //! Boolean determining if this window allows drawing. Used to prevent the OS from calling draw before the systems are correclty
+    //! initialized. Only required for the strange drawing behaviour of the editor.
+    void EnableDraw(bool enableDraw) { mEnableDraw = enableDraw; }
 
 #endif  // PEGASUS_ENABLE_PROXIES
 
@@ -132,6 +136,9 @@ public:
 
     const Utils::Vector<StateComponentPair>& GetComponents() const { return mComponents; }
 
+
+    IWindowMessageHandler* GetMessageHandler() { return mMessageHandler; }
+
 protected:
 
     //! Gets the window context for this window
@@ -147,13 +154,16 @@ private:
 
     //! Proxy associated with the window
     WindowProxy * mProxy;
+    
+    //! Boolean, proxy only, to stop drawing.
+    bool mEnableDraw;
 
 #endif  // PEGASUS_ENABLE_PROXIES
 
     Alloc::IAllocator* mAllocator; //!< Allocator to use when creating this window
     Alloc::IAllocator* mRenderAllocator; //!< Allocator to use when creating this window's render resources
     IWindowImpl* mPrivateImpl; //!< Private implementation, platform-specific
-    WindowMessageHandler* mMessageHandler; //!< Message handler object
+    IWindowMessageHandler* mMessageHandler; //!< Message handler object
     Core::IApplicationContext* mWindowContext; //!< Context for this window to operate in
     Render::IDevice * mDevice;
     Render::Context* mRenderContext; //!< Rendering context

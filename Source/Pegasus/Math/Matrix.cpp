@@ -419,6 +419,95 @@ void InverseHomogeneous(Mat44InOut dst, Mat44In mat)
 }
 
 //----------------------------------------------------------------------------------------
+//-- generic template matrix multiplication
+template <unsigned N, class T> void GenericAddRow(int row, T * r1, T * r2, int resultRows)
+{
+    for (int i = 0 ; i < N; ++i)
+    {
+        int srcIdx =  N*resultRows + i;
+        int dstIdx =  N*row + i;
+        r1[srcIdx] += r1[dstIdx]; 
+        r2[srcIdx] += r2[dstIdx]; 
+    }
+}
+
+template<unsigned N, class T> void GenericMulRow(T * r1, T * r2, int r, T f)
+{
+    for (int i = 0; i < N; ++i)
+    {
+        int dstIdx =  N*r + i;
+        r1[dstIdx] *= f;
+        r2[dstIdx] *= f;
+    }
+}
+
+template<unsigned N, class T> void GenericSwapRow(T * M ,int i, int j)
+{
+    for (int k = 0; k < N; ++k)
+    {
+        int srcIndx = N*i + k;
+        int dstIndx = N*j + k;
+        T tmp = M[dstIndx];
+        M[dstIndx] = M[srcIndx];
+        M[srcIndx] = tmp;
+    }
+}
+
+template <unsigned N, class T> void GenericInverse(T * M, T * result)
+{
+    for (int i = 0; i < N; ++i)
+    {
+        for (int j = 0; j < N; ++j) result[N*i + j] = i == j ? static_cast<T>(1) : static_cast<T>(0);
+    }
+    for (int i = 0; i < N; ++i)
+    {
+        //find max row
+        for (int k = i+1; k < N; ++k)
+        {
+            if (Abs(M[N*i + i]) < Abs(M[N*k + i]))
+            {
+                GenericSwapRow<N,T>(M,i,k);
+                GenericSwapRow<N,T>(result,i,k);
+            } 
+        }
+        //zero out columns
+        for (int j = i + 1; j < N; ++j)
+        {
+            T d = M[N*i + i];
+            if (Abs(M[N*j + i]) < 0.00001f)continue;
+            T factor = -d / M[N*j + i];
+            GenericMulRow<N,T>(M,result,j,factor);
+            GenericAddRow<N,T>(i,M,result,j);
+        }
+    }
+
+    for (int i = 0; i < N; ++i)
+    {
+        for (int j = i + 1; j < N; ++j)
+        {
+            if (Abs(M[N*i + j]) < 0.00001f) continue;
+            T factor = -M[N*i + j] / M[N*j + j];
+            GenericMulRow<N,T>(M,result,j,factor);
+            GenericAddRow<N,T>(j,M,result,i);
+        } 
+        GenericMulRow<N,T>(M,result,i,1.0f/M[N*i + i]);
+    }
+}
+
+void Inverse(Mat44InOut dst, Mat44In mat)
+{
+    Mat44 tmp = mat;
+    GenericInverse<4, PFloat32>(tmp.m,dst.m);
+}
+
+
+void Inverse(Mat33InOut dst, Mat33In mat)
+{
+    Mat33 tmp = mat;
+    GenericInverse<3, PFloat32>(tmp.m,dst.m);
+}
+
+//----------------------------------------------------------------------------------------
 
 Vec3Return SolveLinearSystem(Mat33In A, Vec3In B)
 {

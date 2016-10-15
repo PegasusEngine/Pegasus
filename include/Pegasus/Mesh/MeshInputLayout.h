@@ -12,6 +12,8 @@
 #ifndef PEGASUS_MESH_MESHINPUTLAYOUT_H
 #define PEGASUS_MESH_MESHINPUTLAYOUT_H
 
+#include "Pegasus/Core/Formats.h"
+
 //Increase this number if we are to use more than 32 attributes
 
 //! Total maximum number of attributes allowed per mesh
@@ -67,30 +69,14 @@ public:
     //! Matrices must be packed in group of float4s
     static const char SemanticNames[SEMANTIC_COUNT];
 
-    //! the attribute type enum list. These types get translated into DX or OpenGL types internally
-    enum AttrType
-    {
-        FLOAT,
-        INT,
-        UINT,
-        SHORT,
-        USHORT,
-        BOOL,
-        ATTRTYPE_COUNT
-    };
-
-    //! type sizes, order must match those of the enum values of AttributeType
-    static const int AttrTypeSizes[ATTRTYPE_COUNT];
-
     struct AttrDesc
     {
         Semantic mSemantic; //! The pegasus semantic. Used to bind to shader inputs. The shader inputs must match the description of VertexSemanticAttributeNames list
-        AttrType      mType;     //! the internal type of the buffer containing the semantic
+        Pegasus::Core::Format mType;     //! the internal type of the buffer containing the semantic
+        int           mByteSize;
         int           mByteOffset; //! the offset position of the particular stream
         int           mSemanticIndex      : 8;  //! the index followed by the semantic. For example "p0" or "p1", would be semantic POSITION, with semanticIndex 0 and semanticIndex 1
-        int           mAttributeTypeCount : 8;  //! 1 if is a scalar, 2,3 or 4 if is a vector
         int           mStreamIndex        : 8 ; //! the stream index where this attribute belongs to.
-        bool          mIsNormalized       : 1;  //! if the types of this mesh are UNORMS. Do not set to true if mType is FLOAT
     };
 
     //! Default constructor

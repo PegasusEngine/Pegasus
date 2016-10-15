@@ -275,6 +275,14 @@ void BlockRuntimeScriptListener::OnStackInitalized(Pegasus::BlockScript::BsVmSta
         foundInGrid.PushEmpty() = false;
     }
 
+    if (mGridToGlobalMap.GetSize() != mPropGrid->GetNumObjectProperties())
+    {
+        for (unsigned int i = 0; i < mPropGrid->GetNumObjectProperties(); ++i)
+        {
+            mGridToGlobalMap.PushEmpty() = 0;
+        }
+    }
+
     for (int i = 0; i < bsGlobals.Size(); ++i)
     {
         Pegasus::BlockScript::GlobalMapEntry& bsGlobalEntry = bsGlobals[i];
@@ -294,15 +302,8 @@ void BlockRuntimeScriptListener::OnStackInitalized(Pegasus::BlockScript::BsVmSta
                 foundObject = true;
                 if (translation.typeEnum == r.type && translation.editorDesc == r.editorDesc)
                 {
-                    foundInGrid[obPropIndex] = true; 
-                    if (obPropIndex >= mGridToGlobalMap.GetSize())
-                    {
-                        mGridToGlobalMap.PushEmpty() = i;
-                    }
-                    else
-                    {
-                        mGridToGlobalMap[obPropIndex] = i;
-                    }                    
+                    foundInGrid[obPropIndex] = true;
+                    mGridToGlobalMap[obPropIndex] = i;                
                     SetScriptVariable(translation, obPropIndex, state, i);
                 }
                 else
@@ -340,7 +341,7 @@ void BlockRuntimeScriptListener::OnStackInitalized(Pegasus::BlockScript::BsVmSta
                 translation.typeName, 
                 translation.varDefault,
                 &translation.editorDesc);
-
+            int outputIndex = (int)mPropGrid->GetNumObjectProperties() - 1;
             foundInGrid.PushEmpty() = true;
             mGridToGlobalMap.PushEmpty() = i;
         }

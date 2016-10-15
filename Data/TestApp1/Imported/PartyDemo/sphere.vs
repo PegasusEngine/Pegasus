@@ -1,3 +1,5 @@
+#include "RenderSystems/Camera/Common.h"
+
 cbuffer uniformState
 {
 	float4x4 uWorld;
@@ -7,8 +9,10 @@ cbuffer uniformState
 struct VS_OUT
 {
 	float4 p : POSITION;
+	float4 localPos : TEXTURE0;
 	float3 normal : NORMAL0;
-	float2 t : TEXTURE0;
+	float2 t : TEXTURE1;
+
 
 };
 
@@ -20,10 +24,13 @@ VS_OUT  main(
 )
 {
 	VS_OUT vo;
-	vo.p =  mul(p0, uWorld);
-	vo.normal = n0;//mul(float4(n0,0.0),uWorld).xyz;
+	float4x4 worldView = mul(uWorld,gView);
+	vo.localPos = mul(p0,uWorld); 
+	vo.p =  mul(p0, worldView);
+	vo.normal = n0;
 	vo.t = t0;
-	pos = mul(vo.p,uProj);
+	pos = mul(vo.p,gProj);
+	pos.z = pos.z;
 	return vo;
 
 }

@@ -1,5 +1,5 @@
 float3 main(float4 p0 : POSITION, float3 n : NORMAL, float3 col : TEXCOORD0) : SV_Target
 {
 	n = normalize(n);
-	return 0.6*saturate(dot(n,float3(1,0,0)))+0.1*saturate(dot(n,float3(-1,0,0)))+0.5*saturate(dot(n,float3(0,0,-1)));
+	return 0.6*saturate(dot(n,float3(1,0,0)))+0.1*saturate(dot(n,float3(-0.1,-1,0)))+0.5*saturate(dot(n,float3(0,0,-1)));
 }

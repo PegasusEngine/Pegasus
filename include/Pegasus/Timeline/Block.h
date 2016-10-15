@@ -146,10 +146,6 @@ protected:
     //! \return Global mesh manager
     inline Mesh::MeshManager * GetMeshManager() const { return mAppContext->GetMeshManager(); }
 
-    //! Get the camera manager
-    //! \return Global camera manager
-    inline Camera::CameraManager * GetCameraManager() const { return mAppContext->GetCameraManager(); }
-
     //! Get the bs manager 
     //! \return Global bs manager
     inline BlockScript::BlockScriptManager * GetBlockScriptManager() const { return mAppContext->GetBlockScriptManager(); }

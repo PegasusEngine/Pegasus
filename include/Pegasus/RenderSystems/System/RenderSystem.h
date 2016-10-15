@@ -12,6 +12,9 @@
 #ifndef PEGASUS_RENDER_SYSTEMS_SYSTEM_H
 #define PEGASUS_RENDER_SYSTEMS_SYSTEM_H
 
+#include "Pegasus/Render/Render.h"
+#include "Pegasus/Utils/Vector.h"
+
 //! forward declarations
 namespace Pegasus {
 
@@ -34,6 +37,10 @@ namespace Pegasus {
     namespace Texture {
         class TextureManager;
     }
+
+    namespace Wnd {
+        class Window;
+    }
 }
 
 namespace Pegasus
@@ -46,9 +53,15 @@ class RenderSystem
 {
 
 public:
+    struct ShaderGlobalConstantDesc
+    {
+        const char* constantName;
+        Render::BufferRef buffer;
+    };
+
     //! Constructor
     //! \param allocator the actual allocator used to register a system
-    explicit RenderSystem(Alloc::IAllocator* allocator) : mAllocator(allocator) {}
+    explicit RenderSystem(Alloc::IAllocator* allocator) : mAllocator(allocator), mId(sNextId++) {}
 
     //! destructor
     virtual ~RenderSystem() {}
@@ -77,8 +90,19 @@ public:
     //! Use this call to register any custom texture nodes via the "RegisterNode" function available in the texture manager.
     virtual void OnRegisterCustomTextureNodes(Texture::TextureManager* textureManager) {}
 
+    //! Use this call to register global shader constants.
+    virtual void OnRegisterShaderGlobalConstants(Utils::Vector<ShaderGlobalConstantDesc>& outConstants) {}
+
+    //! Use this call to perform window specific computations.
+    virtual void WindowUpdate(Wnd::Window* window) {}
+
+    //! Gets the id of a render system.
+    int GetId() const { return mId; }
+
 protected:
     Alloc::IAllocator* mAllocator;
+    static int sNextId;
+    int mId;
 
 };
 
