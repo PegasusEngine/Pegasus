@@ -15,6 +15,8 @@
 #include "Pegasus/PropertyGrid/Shared/IPropertyGridObjectProxy.h"
 #include "Pegasus/AssetLib/Shared/IAssetProxy.h"
 #include "Pegasus/PegasusAssetTypes.h"
+#include "Pegasus/Timeline/Shared/ITimelineProxy.h"
+#include "Pegasus/Timeline/Shared/IBlockProxy.h"
 
 
 PropertyGridIOMessageController::PropertyGridIOMessageController(Pegasus::App::IApplicationProxy* app, AssetIOMessageController* assetMessageController)
@@ -45,6 +47,9 @@ void PropertyGridIOMessageController::OnRenderThreadProcessMessage(const Propert
         break;
     case PropertyGridIOMessageController::Message::OPEN_FROM_ASSET_HANDLE:
         OnRenderThreadOpenFromAsset(m.GetPropertyGridObserver(), m.GetAssetHandle());
+        break;
+    case PropertyGridIOMessageController::Message::OPEN_BLOCK_FROM_TIMELINE:
+        OnRenderThreadOpenFromTimelineBlock(m.GetPropertyGridObserver(), m.GetTitle(), m.GetAssetHandle(), m.GetBlockGuid());
         break;
     default:
         ED_FAILSTR("Invalid message");
@@ -119,7 +124,6 @@ void PropertyGridIOMessageController::OnRenderThreadUpdate(PropertyGridObserver*
 }
 
 //----------------------------------------------------------------------------------------
-
 void PropertyGridIOMessageController::OnRenderThreadOpen(PropertyGridObserver* sender, QString title, Pegasus::PropertyGrid::IPropertyGridObjectProxy* proxy)
 {
     ED_ASSERT(proxy != nullptr);
@@ -153,7 +157,28 @@ void PropertyGridIOMessageController::OnRenderThreadOpen(PropertyGridObserver* s
 
     //now notify the observers to update the uis looking at this object
     UpdateObserverInternal(sender, handle, proxy);
+}
 
+//----------------------------------------------------------------------------------------
+
+void PropertyGridIOMessageController::OnRenderThreadOpenFromTimelineBlock(PropertyGridObserver* sender, QString title, AssetInstanceHandle timelineHandle, unsigned blockGuid)
+{
+    Pegasus::AssetLib::IRuntimeAssetObjectProxy* runtimeObject = mAssetMessageController->FindInstance(timelineHandle);
+    if (runtimeObject != nullptr && runtimeObject->GetOwnerAsset() != nullptr && runtimeObject->GetOwnerAsset()->GetTypeDesc()->mTypeGuid == Pegasus::ASSET_TYPE_TIMELINE.mTypeGuid)
+    {
+        QString newTitle = runtimeObject->GetOwnerAsset()->GetTypeDesc()->mTypeName;
+
+        Pegasus::Timeline::ITimelineProxy* timelineProxy = static_cast<Pegasus::Timeline::ITimelineProxy*>(runtimeObject);
+        Pegasus::Timeline::IBlockProxy* blockProxy = timelineProxy->FindBlockByGuid(blockGuid);
+        if (blockProxy != nullptr)
+        {
+            Pegasus::PropertyGrid::IPropertyGridObjectProxy* propertyGrid = blockProxy->GetPropertyGridProxy();
+            if (propertyGrid != nullptr)
+            {
+                OnRenderThreadOpen(sender, newTitle, propertyGrid);
+            }
+        }
+    }
 }
 
 //----------------------------------------------------------------------------------------

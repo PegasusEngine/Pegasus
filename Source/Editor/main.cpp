@@ -72,6 +72,8 @@ Q_DECLARE_METATYPE(WindowIOMessageController::Message);
 Q_DECLARE_METATYPE(PropertyGridIOMessageController::Message);
 Q_DECLARE_METATYPE(PropertyGridIOMessageController::UpdateElement);
 Q_DECLARE_METATYPE(TimelineIOMessageController::Message);
+Q_DECLARE_METATYPE(TimelineIOMessageController::BlockOpResponse);
+Q_DECLARE_METATYPE(TimelineIOMessageObserver*);
 Q_DECLARE_METATYPE(QVector<PropertyGridIOMessageController::UpdateElement>);
 Q_DECLARE_METATYPE(PropertyGridHandle);
 Q_DECLARE_METATYPE(Pegasus::PropertyGrid::IPropertyGridClassInfoProxy*);
@@ -112,6 +114,8 @@ void RegisterMetaTypes()
     qRegisterMetaType<PropertyGridIOMessageController::Message>();
     qRegisterMetaType<PropertyGridIOMessageController::UpdateElement>();
     qRegisterMetaType<TimelineIOMessageController::Message>();
+    qRegisterMetaType<TimelineIOMessageController::BlockOpResponse>();
+    qRegisterMetaType<TimelineIOMessageObserver*>();
     qRegisterMetaType<QVector<PropertyGridIOMessageController::UpdateElement> >();
     qRegisterMetaType<PropertyGridHandle>();
     qRegisterMetaType<Pegasus::PropertyGrid::IPropertyGridClassInfoProxy*>();

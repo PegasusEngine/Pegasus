@@ -32,8 +32,6 @@
 ApplicationInterface::ApplicationInterface(Application * application)
 :   QObject(nullptr)
 ,   mApplication(application)
-,   mSetCurrentBeatEnqueued(false)
-,   mSetCurrentBeatEnqueuedBeat(0.0f)
 ,   mRedrawAllViewportsForBlockMovedEnqueued(false)
 //,   mAssertionBeingHandled(false)
     //! \todo Seems not useful anymore. Test and remove if possible
@@ -57,17 +55,6 @@ ApplicationInterface::ApplicationInterface(Application * application)
             this, SLOT(RequestFrameInPlayMode()),
             Qt::QueuedConnection);
 
-    connect(timelineDockWidget, SIGNAL(BeatUpdated(float)),
-            this, SLOT(RequestSetCurrentBeatAfterBeatUpdated(float)));
-    connect(this, SIGNAL(EnqueuedBeatUpdated()),
-            this, SLOT(SetCurrentBeat()),
-            Qt::QueuedConnection);
-
-    connect(timelineDockWidget, SIGNAL(BlockMoved()),
-            this, SLOT(RequestRedrawAllViewportsAfterBlockMoved()));
-    connect(timelineDockWidget, SIGNAL(BlockDoubleClicked(Pegasus::Timeline::IBlockProxy*)),
-            this, SLOT(PerformBlockDoubleClickedAction(Pegasus::Timeline::IBlockProxy*)),
-            Qt::DirectConnection);
     connect(this, SIGNAL(EnqueuedBlockMoved()),
             this, SLOT(RedrawAllViewportsForBlockMoved()),
             Qt::QueuedConnection);
@@ -300,24 +287,6 @@ void ApplicationInterface::RedrawAllViewports()
 
 //----------------------------------------------------------------------------------------
 
-void ApplicationInterface::RequestSetCurrentBeatAfterBeatUpdated(float beat)
-{
-    // Always set the enqueued beat even after the enqueued flag has been set
-    // so the last beat of the enqueued requests is used rather than the first one
-    mSetCurrentBeatEnqueuedBeat = beat;
-
-    if (!mSetCurrentBeatEnqueued)
-    {
-        // The first time that function is called, consider the request as enqueued.
-        // All subsequent calls are not calling emit, until the application thread
-        // takes care of the enqueued request
-        mSetCurrentBeatEnqueued = true;
-        emit EnqueuedBeatUpdated();
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
 void ApplicationInterface::RequestRedrawAllViewportsAfterBlockMoved()
 {
     if (!mRedrawAllViewportsForBlockMovedEnqueued)
@@ -328,23 +297,6 @@ void ApplicationInterface::RequestRedrawAllViewportsAfterBlockMoved()
         mRedrawAllViewportsForBlockMovedEnqueued = true;
         emit EnqueuedBlockMoved();
     }
-}
-
-//----------------------------------------------------------------------------------------
-
-void ApplicationInterface::SetCurrentBeat()
-{
-    Pegasus::Timeline::ITimelineManagerProxy * timeline = mApplication->GetTimelineProxy();
-    ED_ASSERT(timeline != nullptr);
-
-    // Set the timeline beat with the last enqueued beat rather than the first one
-    timeline->GetCurrentTimeline()->SetCurrentBeat(mSetCurrentBeatEnqueuedBeat);
-
-    // Since the enqueued beat has been taken into account, we can now reset the enqueued flag
-    // to allow now requests to be enqueued
-    mSetCurrentBeatEnqueued = false;
-
-    RedrawAllViewports();
 }
 
 //----------------------------------------------------------------------------------------
@@ -396,22 +348,6 @@ void ApplicationInterface::RequestFrameInPlayMode()
 
     // We are still in play mode, inform the linked objects that will request a refresh of the viewports
     emit ViewportRedrawnInPlayMode(timeline->GetCurrentTimeline()->GetCurrentBeat());
-}
-
-
-//----------------------------------------------------------------------------------------
-
-
-void ApplicationInterface::PerformBlockDoubleClickedAction(Pegasus::Timeline::IBlockProxy* blockProxy)
-{
-    //TODO: make this thread safe:
-    Pegasus::Core::ISourceCodeProxy* sourceCode = blockProxy->GetScript();
-    if (blockProxy->GetScript() != nullptr && sourceCode->GetOwnerAsset() != nullptr)
-    {
-        AssetIOMessageController::Message msg(AssetIOMessageController::Message::OPEN_ASSET);
-        msg.SetString(QString(sourceCode->GetOwnerAsset()->GetPath()));
-        emit (Editor::GetInstance().GetCodeEditorWidget()->SendAssetIoMessage(msg));
-    }
 }
 
 //----------------------------------------------------------------------------------------

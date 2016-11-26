@@ -20,10 +20,6 @@
 #include "Application/Application.h"
 #include "Application/ApplicationManager.h"
 
-#include "Pegasus/Timeline/Shared/ITimelineProxy.h"
-#include "Pegasus/Timeline/Shared/ILaneProxy.h"
-#include "Pegasus/Timeline/Shared/IBlockProxy.h"
-
 #include <QWheelEvent>
 
 
@@ -132,7 +128,7 @@ void TimelineGraphicsView::RefreshFromTimeline()
         }
 
         // Handle the number of lanes of the timeline
-        const unsigned int numLanes = mTimeline->GetNumLanes();
+        const unsigned int numLanes = mTimeline->GetLaneCount();
         if (numLanes < mNumLanes)
         {
             // Remove the extra lanes from the end of the list
@@ -147,9 +143,12 @@ void TimelineGraphicsView::RefreshFromTimeline()
         }
 
         // Refresh the content of every lane
+        QVariantList laneList = (mTimeline->GetRootState())[ShadowTimelineState::Str(ShadowTimelineState::PROP_LANES)].toList();
         for (unsigned int l = 0; l < numLanes; ++l)
         {
-            RefreshLaneFromTimelineLane(l, mTimeline->GetLane(l));
+            ShadowLaneState laneState;
+            laneState.SetState(laneList[l].toMap());
+            RefreshLaneFromTimelineLane(l, laneState);
         }
     }
 }
@@ -194,11 +193,13 @@ void TimelineGraphicsView::SetCursorFromBeat(float beat)
     if (mCursorItem != nullptr)
     {
         // Reposition the cursor
+        QRectF rect = mCursorItem->boundingRect();
+        rect.translate(mCursorItem->pos());
         mCursorItem->SetBeat(beat);
-
         // Make sure cursor is visible, scroll otherwise
         // (100 pixels horizontal margin, default vertical margin)
         ensureVisible(mCursorItem, 100, 50);
+        invalidateScene(rect);
     }
     else
     {
@@ -225,8 +226,8 @@ void TimelineGraphicsView::SelectionChanged()
     else if (selectedItems.size() == 1)
     {
         TimelineBlockGraphicsItem * item = static_cast<TimelineBlockGraphicsItem *>(selectedItems[0]);
-        Pegasus::Timeline::IBlockProxy * proxy = item->GetBlockProxy();
-        emit BlockSelected(proxy);
+        const ShadowBlockState& blockState = item->GetBlockProxy();
+        emit BlockSelected(blockState.GetGuid());
     }
     else
     {
@@ -258,9 +259,10 @@ void TimelineGraphicsView::SetHorizontalScale(float scale)
         ED_ASSERTSTR(backgroundBeatLineItem != nullptr, "Invalid item in the list of background beat line graphics items");
         backgroundBeatLineItem->SetHorizontalScale(mHorizontalScale);
     }
+
     for (unsigned int l = 0; l < mNumLanes; ++l)
     {
-        QMapIterator<Pegasus::Timeline::IBlockProxy *, TimelineBlockGraphicsItem *> it(mBlockItems[l]);
+        QMapIterator<unsigned, TimelineBlockGraphicsItem *> it(mBlockItems[l]);
         while (it.hasNext())
         {
             it.next();
@@ -517,20 +519,16 @@ void TimelineGraphicsView::OnFocusBlock(unsigned blockGuid)
 {
     if (mTimeline != nullptr)
     {
-        Pegasus::Timeline::IBlockProxy* blockProxy = mTimeline->FindBlockByGuid(blockGuid);
-        if (blockProxy != nullptr)
+        for (LaneBlockList blockMap : mBlockItems)
         {
-            for (LaneBlockList blockMap : mBlockItems)
+            LaneBlockList::iterator it = blockMap.find(blockGuid);
+            if (it != blockMap.end())
             {
-                LaneBlockList::iterator it = blockMap.find(blockProxy);
-                if (it != blockMap.end())
-                {
-                    scene()->clearSelection();
-                    it.value()->setSelected(true);
-                    centerOn(it.value()->pos());    
-                    SelectionChanged();
-                    return;
-                }
+                scene()->clearSelection();
+                it.value()->setSelected(true);
+                centerOn(it.value()->pos());    
+                SelectionChanged();
+                return;
             }
         }
     }
@@ -554,6 +552,7 @@ void TimelineGraphicsView::RemoveLanes(unsigned int firstLane, unsigned int numL
     {
         //! Remove the content of the lane
         ClearBlockItems(l);
+
         mBlockItems.removeAt(l);
 
         // Remove the lane header
@@ -628,7 +627,7 @@ void TimelineGraphicsView::ClearBlockItems(unsigned int laneIndex)
     ED_ASSERTSTR(laneIndex < static_cast<unsigned int>(mBlockItems.size()), "Invalid block items list index (%d), it should be < %d", laneIndex, mBlockItems.size());
 
     // Clear the list of block items for the lane
-    QMapIterator<Pegasus::Timeline::IBlockProxy *, TimelineBlockGraphicsItem *> it(mBlockItems[laneIndex]);
+    QMapIterator<unsigned, TimelineBlockGraphicsItem *> it(mBlockItems[laneIndex]);
     while (it.hasNext())
     {
         it.next();
@@ -638,66 +637,49 @@ void TimelineGraphicsView::ClearBlockItems(unsigned int laneIndex)
 }
 
 //----------------------------------------------------------------------------------------
-
-void TimelineGraphicsView::RefreshLaneFromTimelineLane(unsigned int laneIndex, const Pegasus::Timeline::ILaneProxy * laneProxy)
+void TimelineGraphicsView::RefreshLaneFromTimelineLane(unsigned int laneIndex, const ShadowLaneState& lane)
 {
-    if (laneProxy != nullptr)
+    // Perform a full refresh of the lane rather than an incremental one
+    ClearBlockItems(laneIndex);
+
+    // Update the name of the lane
+    if (lane.GetName() != tr(""))
     {
-        // Perform a full refresh of the lane rather than an incremental one
-        ClearBlockItems(laneIndex);
-
-        // Update the name of the lane
-        if (laneProxy->IsNameDefined())
-        {
-            mLaneHeaderItems[laneIndex]->SetName(laneProxy->GetName());
-        }
-        else
-        {
-            mLaneHeaderItems[laneIndex]->SetDefaultName();
-        }
-
-        // Get the list of blocks in the timeline
-        Pegasus::Timeline::IBlockProxy ** blockProxies = new Pegasus::Timeline::IBlockProxy * [Pegasus::Timeline::LANE_MAX_NUM_BLOCKS];
-        const unsigned int numBlocks = laneProxy->GetBlocks(blockProxies);
-
-        // For each block, create a corresponding graphics item
-        for (unsigned int b = 0; b < numBlocks; ++b)
-        {
-            Pegasus::Timeline::IBlockProxy * blockProxy = blockProxies[b];
-            if (blockProxy != nullptr)
-            {
-                TimelineBlockGraphicsItem * item = new TimelineBlockGraphicsItem(blockProxy,
-                                                                                 laneIndex,
-                                                                                 mHorizontalScale,
-                                                                                 GetUndoStack());
-                scene()->addItem(item);
-                mBlockItems[laneIndex].insert(blockProxy, item);
-
-                // Connect the block moved signal to a request to re-render the viewport
-                connect(item, SIGNAL(BlockMoved()),
-                        this, SIGNAL(BlockMoved()));
-
-                // Connect the block moved signal to request a double click action 
-                connect(item, SIGNAL(DoubleClicked(Pegasus::Timeline::IBlockProxy*)),
-                        this, SIGNAL(BlockDoubleClicked(Pegasus::Timeline::IBlockProxy*)));
-
-                // Connect request of this blocks request signal for new block script / remove blockscripts
-                connect(item, SIGNAL(RequestChangeScript(unsigned)),
-                        this, SIGNAL(RequestChangeScript(unsigned)));
-                connect(item, SIGNAL(RequestRemoveScript(unsigned)),
-                        this, SIGNAL(RequestRemoveScript(unsigned)));
-            }
-            else
-            {
-                ED_FAILSTR("Unable to get the block %d of lane %d, it is a nullptr", b, laneIndex);
-            }
-        }
-
-        delete[] blockProxies;
+        mLaneHeaderItems[laneIndex]->SetName(lane.GetName());
     }
     else
     {
-        ED_FAILSTR("Unable to refresh the lane %d because it is nullptr", laneIndex);
+        mLaneHeaderItems[laneIndex]->SetDefaultName();
+    }
+
+    // Get the list of blocks in the timeline
+    const unsigned int numBlocks = lane.GetBlockCount();
+    QVariantList blockList = ((lane.GetRootState())[ShadowLaneState::Str(ShadowLaneState::PROP_BLOCK_LIST)]).toList();
+
+    // For each block, create a corresponding graphics item
+    for (unsigned int b = 0; b < numBlocks; ++b)
+    {
+        ShadowBlockState blockState;
+        blockState.SetState(blockList[b].toMap());
+        TimelineBlockGraphicsItem * item = new TimelineBlockGraphicsItem(blockState,
+                                                                         mTimeline,
+                                                                         laneIndex,
+                                                                         mHorizontalScale,
+                                                                         GetUndoStack());
+        scene()->addItem(item);
+        mBlockItems[laneIndex].insert(blockState.GetGuid(), item);
+
+        //connect block double clicekd message to this
+        connect (item, SIGNAL(DoubleClicked(QString)),
+                 this, SIGNAL(BlockDoubleClicked(QString)));
+
+        // Connect request of this blocks request signal for new block script / remove blockscripts
+        connect(item, SIGNAL(RequestChangeScript(QGraphicsObject*, unsigned)),
+                this, SIGNAL(RequestChangeScript(QGraphicsObject*, unsigned)));
+        connect(item, SIGNAL(RequestRemoveScript(QGraphicsObject*, unsigned)),
+                this, SIGNAL(RequestRemoveScript(QGraphicsObject*, unsigned)));
+        connect(item, SIGNAL(RequestBlockMove(QGraphicsObject*, QPointF)),
+                this, SIGNAL(RequestBlockMove(QGraphicsObject*, QPointF)));
     }
 }
 
@@ -732,3 +714,52 @@ void TimelineGraphicsView::SetBeatFromMouse(QMouseEvent * event)
     // Update user interface, including the cursor
     emit BeatUpdated(beat);
 }
+
+//----------------------------------------------------------------------------------------
+
+int TimelineGraphicsView::FindLane(unsigned blockGuid, TimelineBlockGraphicsItem*& outBlock) const
+{
+    //first find the target block
+    outBlock = nullptr;
+    foreach (const LaneBlockList& laneUI, mBlockItems)
+    {
+        LaneBlockList::const_iterator it = laneUI.find(blockGuid);
+        if (it != laneUI.end())
+        {
+            outBlock = it.value();
+            break;
+        }
+    }
+
+    if (outBlock == nullptr)
+    {
+        return -1;
+    }
+    else
+    {
+        return (int)outBlock->GetLane();
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineGraphicsView::UpdateBeatVisuals(int newLane, unsigned blockGuid, unsigned newBeat)
+{
+    //first find the target block
+    TimelineBlockGraphicsItem* targetGraphicsItem = nullptr;
+    int oldLane = FindLane(blockGuid, targetGraphicsItem);
+
+    if (targetGraphicsItem)
+    {
+        ED_ASSERT(oldLane != -1);
+        if (newLane > 0)
+        {
+            targetGraphicsItem->SetLane((unsigned)newLane);
+            mBlockItems[oldLane].remove(blockGuid);
+            mBlockItems[newLane].insert(blockGuid, targetGraphicsItem);
+        }
+        targetGraphicsItem->SetBeat(newBeat);
+    }
+
+}
+

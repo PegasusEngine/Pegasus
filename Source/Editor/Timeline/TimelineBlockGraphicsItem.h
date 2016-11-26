@@ -16,12 +16,8 @@
 #include <QIcon>
 
 #include "Pegasus/Timeline/Shared/TimelineDefs.h"
-
-namespace Pegasus {
-    namespace Timeline {
-        class IBlockProxy;
-    }
-}
+#include "MessageControllers/AssetIOMessageController.h"
+#include "MessageControllers/TimelineIOMessageController.h"
 
 class QUndoStack;
 class QMenu;
@@ -42,7 +38,8 @@ public:
     //! \param horizontalScale Horizontal scale of the block, 1.0f for a 1:1 ratio,
     //!                        < 1.0f for a compressed block, > 1.0f for an expanded block
     //! \param undoStack Undo stack associated with the item
-    TimelineBlockGraphicsItem(Pegasus::Timeline::IBlockProxy* blockProxy,
+    TimelineBlockGraphicsItem(const ShadowBlockState& blockState,
+                              const ShadowTimelineState* timelineState,
                               unsigned int lane,
                               float horizontalScale,
                               QUndoStack* undoStack);
@@ -52,13 +49,12 @@ public:
 
     //! Get the block proxy associated with the item
     //! \return Block proxy associated with the item (!= nullptr)
-    inline Pegasus::Timeline::IBlockProxy* GetBlockProxy() const { return mBlockProxy; }
+    inline const ShadowBlockState& GetBlockProxy() const { return mBlockState; }
 
 
     //! Set the timeline lane of the block
     //! \param lane Index of the timeline lane the block belongs to
-    //! \param updateItem True if the graphics item needs to be updated (use false only for special cases)
-    void SetLane(unsigned int lane, bool updateItem = true);
+    void SetLane(unsigned int lane);
 
     //! Get the timeline lane of the block
     //! \return Index of the timeline lane the block belongs to
@@ -66,8 +62,7 @@ public:
 
     //! Set the position of the block
     //! \param beat Position of the block, measured in ticks
-    //! \param updateItem True if the graphics item needs to be updated (use false only for special cases)
-    void SetBeat(Pegasus::Timeline::Beat beat, bool updateItem = true);
+    void SetBeat(Pegasus::Timeline::Beat beat);
 
     //! Get the position of the block
     //! \return Position of the block, measured in ticks
@@ -95,11 +90,27 @@ public:
     //! \return ID unique to the block
     inline unsigned int GetBlockID() const { return mBlockID; }
 
+    //! updates ui shadow state to display the script updated.
+    void UIUpdateBlockScript(const QString& script);
+
+    //! updates ui shadow state to clear the blockscript ui.
+    void UIClearBlockScript();
+
 
     //! \todo Document those functions
 
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+
+    //! Update the scaled length from the duration in ticks
+    Pegasus::Timeline::Beat GetBeatFromX(float x) const;
+
+    //! Update the scaled length from the duration in ticks
+    unsigned int GetLaneFromY(float lanePosition) const;
+    
+    //! Mouse click ID, unique for each time the click is maintained while moving a block.
+    //! Used to create new undo commands each time the mouse click is released.
+    static unsigned int sMouseClickID;
 
     // Enable the use of qgraphicsitem_cast
     //! \todo Use a common repository of indexes to avoid conflicts
@@ -111,19 +122,18 @@ public:
 
 signals:
 
-    //! Emitted when the block has been moved by the user
-    void BlockMoved();
-
     //! Emitted when the user does a double click to this block
-    void DoubleClicked(Pegasus::Timeline::IBlockProxy * block);
+    void DoubleClicked(QString blockScriptToOpen);
 
     //! Request this script to be changed for the block with the guid.
-    void RequestChangeScript(unsigned blockId);
+    void RequestChangeScript(QGraphicsObject* sender, unsigned blockId);
 
     //! Request the blockscript to be removed
-    void RequestRemoveScript(unsigned blockId);
+    void RequestRemoveScript(QGraphicsObject* sender, unsigned blockId);
 
-    //------------------------------------------------------------------------------------
+    //! Requests this block move.
+    void RequestBlockMove(QGraphicsObject* sender, QPointF amount);
+
 
 public slots:
 
@@ -142,6 +152,7 @@ protected:
 
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     virtual void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
 
     //------------------------------------------------------------------------------------
@@ -151,28 +162,20 @@ private:
     //! Update the scaled position in pixels from the position in ticks
     void SetXFromBeat();
 
-    //! Get the beat in ticks from the scaled position
-    //! \param x Horizontal position in pixels (for a zoom of 1.0f)
-    //! \return Beat, measured in ticks
-    Pegasus::Timeline::Beat GetBeatFromX(float x) const;
-
     //! Update the vertical position from the lane index
     void SetYFromLane();
-
-    //! Get the lane index (linked to lane size) from an input vertical coordinate
-    //! \param lanePosition Vertical position in pixels (for a zoom of 1.0f)
-    //! \return Lane index
-    unsigned int GetLaneFromY(float lanePosition) const;
 
     //! Update the scaled length from the duration in ticks
     void SetLengthFromDuration();
 
-    //! Update the duration in ticks from the scaled length
-    void SetBaseLengthFromPixelLength();
-
-
     //! Block proxy associated with the item
-    Pegasus::Timeline::IBlockProxy * mBlockProxy;
+    ShadowBlockState mBlockState;
+    
+    //! Parent timeline state 
+    const ShadowTimelineState* mTimelineState;
+
+    //! Handle of the parent timeline state
+    AssetInstanceHandle mTimelineHandle;
 
     //! Index of the timeline lane the block belongs to
     unsigned int mLane;
@@ -231,9 +234,12 @@ private:
     //! Icon of a script
     QIcon mScriptIcon;
 
-    //! Mouse click ID, unique for each time the click is maintained while moving a block.
-    //! Used to create new undo commands each time the mouse click is released.
-    static unsigned int sMouseClickID;
+    //! Queue of candidate positions to move this block.
+    QVector<QPointF> mPositionQueue;
+
+    bool mIsMoving;
+    QPointF mInitialPoint;
+    QPointF mInitialMouse;
 };
 
 

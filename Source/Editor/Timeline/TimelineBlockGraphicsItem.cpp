@@ -12,15 +12,7 @@
 #include "Timeline/TimelineBlockGraphicsItem.h"
 #include "Timeline/TimelineUndoCommands.h"
 #include "Timeline/TimelineSizes.h"
-#include "Pegasus/AssetLib/Shared/IAssetProxy.h"
-#include "Pegasus/AssetLib/Shared/IRuntimeAssetObjectProxy.h"
-#include "Pegasus/Core/Shared/ISourceCodeProxy.h"
-
 #include "Pegasus/PegasusAssetTypes.h"
-#include "Pegasus/Timeline/Shared/IBlockProxy.h"
-#include "Pegasus/Timeline/Shared/ILaneProxy.h"
-#include "Pegasus/Timeline/Shared/ITimelineManagerProxy.h"
-#include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
@@ -39,16 +31,18 @@ unsigned int TimelineBlockGraphicsItem::sMouseClickID = 0;
 
 //----------------------------------------------------------------------------------------
 
-TimelineBlockGraphicsItem::TimelineBlockGraphicsItem(Pegasus::Timeline::IBlockProxy * blockProxy,
+TimelineBlockGraphicsItem::TimelineBlockGraphicsItem(const ShadowBlockState& blockState,
+                                                     const ShadowTimelineState* timelineState,
                                                      unsigned int lane,
                                                      float horizontalScale,
                                                      QUndoStack* undoStack)
 :   QGraphicsObject(),
-    mBlockProxy(blockProxy),
+    mBlockState(blockState),
+    mTimelineState(timelineState),
     mEnableUndo(true),
+    mIsMoving(false),
     mUndoStack(undoStack)
 {
-    ED_ASSERTSTR(blockProxy != nullptr, "A block proxy must be associated with the block item");    
 
     if (horizontalScale <= 0.0f)
     {
@@ -72,7 +66,7 @@ TimelineBlockGraphicsItem::TimelineBlockGraphicsItem(Pegasus::Timeline::IBlockPr
 
     // Caching performed at paint device level, best quality and lower memory usage
     setCacheMode(DeviceCoordinateCache);
-    SetLane(lane, false);
+    SetLane(lane);
     // Set the depth of the block (positive since it needs to be rendered
     // in front of the grid at least)
     setZValue(TIMELINE_BLOCK_GRAPHICS_ITEM_Z_VALUE);
@@ -103,19 +97,16 @@ TimelineBlockGraphicsItem::TimelineBlockGraphicsItem(Pegasus::Timeline::IBlockPr
 
 void TimelineBlockGraphicsItem::FlushVisualProperties()
 {
-    if (mBlockProxy == nullptr) return;
-
     // Set the block color
-    unsigned char red, green, blue;
-    mBlockProxy->GetColor(red, green, blue);
-    mBaseColor = QColor(red, green, blue);
+    unsigned col = mBlockState.GetColor();
+    mBaseColor = QColor((col >> 24) & 0xFF, (col >> 16) & 0xFF, (col >> 8) & 0xFF);
 
     // Set the initial position and duration, and update the scaled position and length
-    SetDuration(mBlockProxy->GetDuration(), false);
-    SetBeat(mBlockProxy->GetBeat(), true);
+    SetDuration(mBlockState.GetDuration());
+    SetBeat(mBlockState.GetBeat());
 
-    mName = mBlockProxy->GetInstanceName();
-    mClassName = mBlockProxy->GetClassName();
+    mName = mBlockState.GetName();
+    mClassName = mBlockState.GetClassName();
 }
 
 //----------------------------------------------------------------------------------------
@@ -128,7 +119,7 @@ TimelineBlockGraphicsItem::~TimelineBlockGraphicsItem()
 
 //----------------------------------------------------------------------------------------
 
-void TimelineBlockGraphicsItem::SetLane(unsigned int lane, bool updateItem)
+void TimelineBlockGraphicsItem::SetLane(unsigned int lane)
 {
     mEnableUndo = false;
 
@@ -136,41 +127,24 @@ void TimelineBlockGraphicsItem::SetLane(unsigned int lane, bool updateItem)
 
     // Update the vertical position
     SetYFromLane();
-
-    // Update the graphics item, so it is redrawn at the right location
-    if (updateItem)
-    {
-        // Set the new position of the graphics item
-        setPos(mX, mY);
-        update(boundingRect());
-
-        emit BlockMoved();
-    }
-
+    setPos(mX, mY);
+    update(boundingRect());
     mEnableUndo = true;
 }
 
 //----------------------------------------------------------------------------------------
 
-void TimelineBlockGraphicsItem::SetBeat(Pegasus::Timeline::Beat beat, bool updateItem)
+void TimelineBlockGraphicsItem::SetBeat(Pegasus::Timeline::Beat beat)
 {
     mEnableUndo = false;
 
+    mBlockState.GetRootState().insert(ShadowBlockState::Str(ShadowBlockState::PROP_BLOCK_BEAT), QVariant((unsigned)beat));
     mBeat = beat;
 
     // Update the scaled position
     SetXFromBeat();
-
-    // Update the graphics item, so it is redrawn at the right location
-    if (updateItem)
-    {
-        // Set the new position of the graphics item
-        setPos(mX, mY);
-        update(boundingRect());
-
-        emit BlockMoved();
-    }
-
+    setPos(mX, mY);
+    update(boundingRect());
     mEnableUndo = true;
 }
 
@@ -235,9 +209,6 @@ void TimelineBlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGraph
 {
     Q_UNUSED(widget);
 
-    //HACK for now, ui draw thread should never access this!
-    mHasScript = mBlockProxy->GetScript() != nullptr;
-
     const qreal lod = option->levelOfDetailFromTransform(painter->worldTransform());
 
     // Set the outline of the block to a solid line with width 1 for any zoom (cosmetic pen) and square corners.
@@ -287,7 +258,7 @@ void TimelineBlockGraphicsItem::paint(QPainter *painter, const QStyleOptionGraph
     painter->setBrush(fillColor);
     painter->drawRect(rect);
     
-    if (mHasScript)
+    if (mBlockState.HasBlockScript())
     {
         mScriptIcon.paint(painter, rect);
     }
@@ -305,141 +276,18 @@ QVariant TimelineBlockGraphicsItem::itemChange(GraphicsItemChange change, const 
         // In all cases, Pegasus is informed of the update
         case ItemPositionChange:
             {
-                if (mEnableUndo)
+                if (!mPositionQueue.empty())
                 {
-                    Pegasus::Timeline::ILaneProxy * laneProxy = mBlockProxy->GetLane();
-                    if (laneProxy == nullptr)
-                    {
-                        ED_FAILSTR("Unable to move the block \"%s\" since it has no associated lane", mBlockProxy->GetInstanceName());
-                        break;
-                    }
-                    Pegasus::Timeline::ITimelineProxy * timelineProxy = laneProxy->GetTimeline();
-                    if (timelineProxy == nullptr)
-                    {
-                        ED_FAILSTR("Unable to move the block \"%s\" since it has no associated timeline", mBlockProxy->GetInstanceName());
-                        break;
-                    }
-
-                    // Compute the desired beat and lane from the mouse position
-                    QPointF newMousePos = value.toPointF();
-                    Pegasus::Timeline::Beat newBeat = GetBeatFromX(newMousePos.x());
-                    unsigned int newLane = GetLaneFromY(newMousePos.y());
-
-                    // Apply snapping
-                    const unsigned int snapNumTicks = Editor::GetInstance().GetTimelineDockWidget()->GetSnapNumTicks();
-                    newBeat = (newBeat / snapNumTicks) * snapNumTicks;
-
-                    // If the beat and lane have not changed (movement smaller than a tick),
-                    // keep the old location and tell the item we overrode the position
-                    if ((newBeat == mBeat) && (newLane == mLane))
-                    {
-                        return QPointF(mX, mY);
-                    }
-
-                    // Determine if the block is part of a multiple selection
-                    bool isMultipleSelection = false;
-                    QGraphicsScene * const parentScene = scene();
-                    QList<QGraphicsItem *> selectedItems;
-                    if (parentScene != nullptr)
-                    {
-                        selectedItems = parentScene->selectedItems();
-                        if (selectedItems.count() >= 2)
-                        {
-                            ED_ASSERTSTR(selectedItems.contains(this), "Invalid block selection");
-                            isMultipleSelection = true;
-                        }
-                    }
-
-                    // Test if the block fits in its new location
-                    Pegasus::Timeline::ILaneProxy * newLaneProxy = timelineProxy->GetLane(newLane);
-                    if (newLaneProxy == nullptr)
-                    {
-                        newLaneProxy = laneProxy;
-                    }
-                    if (newLaneProxy->IsBlockFitting(mBlockProxy, newBeat, mBlockProxy->GetDuration()))
-                    {
-                        // If the block fits
-                    
-                        // Create the undo command
-                        QUndoCommand * undoCommand = nullptr;
-                        if (isMultipleSelection)
-                        {
-                            undoCommand = new TimelineSetMultiBlockPositionUndoCommand(this, selectedItems,
-                                                                                       (newLane != mLane), newLane, newBeat,
-                                                                                       sMouseClickID);
-                        }
-                        else
-                        {
-                            undoCommand = new TimelineSetBlockPositionUndoCommand(this,
-                                                                                  (newLane != mLane), newLane, newBeat,
-                                                                                  sMouseClickID);
-                        }
-        
-                        mUndoStack->push(undoCommand);
-
-                        // If the new coordinates differ from the new mouse position,
-                        // tell the item we overrode the position
-                        if ( (mX != newMousePos.x()) || (mY != newMousePos.y()) )
-                        {
-                            return QPointF(mX, mY);
-                        }
-                    }
-                    else
-                    {
-                        // If the block does not fit
-
-                        if ((newLane != mLane) && (newBeat != mBeat))
-                        {
-                            // If the lane and the beats have changed, test if the block fits in the original lane.
-                            // In that case, just affect the beat
-                            if (laneProxy->IsBlockFitting(mBlockProxy, newBeat, mBlockProxy->GetDuration()))
-                            {
-                                // Create the undo command
-                                QUndoCommand * undoCommand = nullptr;
-                                if (isMultipleSelection)
-                                {
-                                    undoCommand = new TimelineSetMultiBlockPositionUndoCommand(this, selectedItems,
-                                                                                               false, mLane, newBeat,
-                                                                                               sMouseClickID);
-                                }
-                                else
-                                {
-                                    undoCommand = new TimelineSetBlockPositionUndoCommand(this,
-                                                                                          false, mLane, newBeat,
-                                                                                          sMouseClickID);
-                                }
-        
-                                mUndoStack->push(undoCommand);
-
-                                // If the new coordinates differ from the new mouse position,
-                                // tell the item we overrode the position
-                                if ( (mX != newMousePos.x()) || (mY != newMousePos.y()) )
-                                {
-                                    return QPointF(mX, mY);
-                                }
-                            }
-                            else
-                            {
-                                // If the block does not fit in the new location in a different lane,
-                                // keep the old location and tell the item we overrode the position
-                                return QPointF(mX, mY);
-                            }
-                        }
-                        else
-                        {
-                            // If the block does not fit in the new location in the same lane,
-                            // keep the old location and tell the item we overrode the position
-                            return QPointF(mX, mY);
-                        }
-                    }
+                    QPointF candidatePoint = mPositionQueue.front();
+                    mX = candidatePoint.x();
+                    mY = candidatePoint.y();
+                    mPositionQueue.pop_front();
                 }
+                return QPointF(mX,mY);
             }
-            break;
-
         default:
             break;
     };
-
     return QGraphicsItem::itemChange(change, value);
 }
 
@@ -447,8 +295,46 @@ QVariant TimelineBlockGraphicsItem::itemChange(GraphicsItemChange change, const 
 
 void TimelineBlockGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
+    QGraphicsScene * const parentScene = scene();
+    QList<QGraphicsItem *> selectedItems;
+    mInitialMouse = QPointF(mX,mY)+event->pos();
+    mInitialPoint = QPointF(mX,mY);
+    if (parentScene != nullptr)
+    {
+        mIsMoving = true;        
+        selectedItems = parentScene->selectedItems();
+        for (int i = 0; i < selectedItems.size(); ++i)
+        {
+            TimelineBlockGraphicsItem* blockGraphicsItem = static_cast<TimelineBlockGraphicsItem*>(selectedItems[i]);                
+            
+            blockGraphicsItem->mInitialPoint = QPointF(blockGraphicsItem->mX,blockGraphicsItem->mY);
+        }
+    }
     update();
     QGraphicsItem::mousePressEvent(event);
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineBlockGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+    if (mIsMoving)
+    {
+        QGraphicsScene * const parentScene = scene();
+        QList<QGraphicsItem *> selectedItems;
+        
+        if (parentScene != nullptr)
+        {
+            QPointF delta = event->pos()+QPointF(mX,mY)-mInitialMouse;
+            selectedItems = parentScene->selectedItems();
+            for (int i = 0; i < selectedItems.size(); ++i)
+            {
+                TimelineBlockGraphicsItem* blockGraphicsItem = static_cast<TimelineBlockGraphicsItem*>(selectedItems[i]);                
+                emit RequestBlockMove(blockGraphicsItem, QPointF(blockGraphicsItem->mInitialPoint.x(), blockGraphicsItem->mInitialPoint.y()) + delta);
+            }
+        }
+        
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -464,30 +350,47 @@ void TimelineBlockGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *even
 
     if (event->pos().x() <= qreal(mLength) && event->pos().x() >= (mLength - 16))
     {
-        if (mBlockProxy->GetScript() == nullptr)
+        if (!mBlockState.HasBlockScript())
         {
             mNoScriptCtxMenu->exec(event->screenPos());
         }
         else
         {
-            mChangeScriptAction->setText(tr("<") + tr(mBlockProxy->GetScript()->GetOwnerAsset()->GetPath()) + tr(">"));
+            mChangeScriptAction->setText(tr("<") + mBlockState.GetBlockScriptPath() + tr(">"));
             mCtxMenu->exec(event->screenPos());
         }
     }
+    mIsMoving = false;
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineBlockGraphicsItem::UIUpdateBlockScript(const QString& script)
+{
+    //update the shadow state, purely for UI purposes.
+    mBlockState.SetScript(script);
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineBlockGraphicsItem::UIClearBlockScript()
+{
+    //update the shadow state, purely for UI purposes.
+    mBlockState.RemoveScript();
 }
 
 //----------------------------------------------------------------------------------------
 
 void TimelineBlockGraphicsItem::CtxMenuChangeScript()
 {
-    emit(RequestChangeScript(mBlockProxy->GetGuid()));    
+    emit(RequestChangeScript(this, mBlockState.GetGuid()));    
 }
 
 //----------------------------------------------------------------------------------------
 
 void TimelineBlockGraphicsItem::CtxRemoveScript()
 {
-    emit(RequestRemoveScript(mBlockProxy->GetGuid()));
+    emit(RequestRemoveScript(this, mBlockState.GetGuid()));
 }
 
 //----------------------------------------------------------------------------------------
@@ -496,46 +399,36 @@ void TimelineBlockGraphicsItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *
 {
     update();
     QGraphicsItem::mouseDoubleClickEvent(event);
-    emit(DoubleClicked(mBlockProxy));
+    if (mBlockState.HasBlockScript())
+    {
+        emit(DoubleClicked(mBlockState.GetBlockScriptPath()));
+    }
 }
 
 //----------------------------------------------------------------------------------------
 
 void TimelineBlockGraphicsItem::SetXFromBeat()
 {
-    Pegasus::Timeline::ILaneProxy * laneProxy = mBlockProxy->GetLane();
-    if (laneProxy != nullptr)
-    {
-        Pegasus::Timeline::ITimelineProxy * timelineProxy = laneProxy->GetTimeline();
-        if (timelineProxy != nullptr)
-        {
-            mX = (mBeat * timelineProxy->GetRcpNumTicksPerBeat()) * mHorizontalScale * TIMELINE_BEAT_WIDTH;
-        }
-    }
+    mX = (mBeat * 1.0f/((float)mTimelineState->GetNumTicksPerBeat())) * mHorizontalScale * TIMELINE_BEAT_WIDTH;
 }
 
 //----------------------------------------------------------------------------------------
 
 Pegasus::Timeline::Beat TimelineBlockGraphicsItem::GetBeatFromX(float x) const
 {
-    int beat = static_cast<int>(mBeat);
-
-    Pegasus::Timeline::ILaneProxy * laneProxy = mBlockProxy->GetLane();
-    if (laneProxy != nullptr)
+    //TODO: use the cached ticks per beat if this becomes expensive.
+    float ticksPerBeatFloat = static_cast<float>(mTimelineState->GetNumTicksPerBeat());
+    int beat = static_cast<int>(floor((x / (mHorizontalScale * TIMELINE_BEAT_WIDTH)) * ticksPerBeatFloat));
+    if (beat < 0)
     {
-        Pegasus::Timeline::ITimelineProxy * timelineProxy = laneProxy->GetTimeline();
-        if (timelineProxy != nullptr)
-        {
-            beat = static_cast<int>(floor((x / (mHorizontalScale * TIMELINE_BEAT_WIDTH)) * timelineProxy->GetNumTicksPerBeatFloat()));
-            if (beat < 0)
-            {
-                beat = 0;
-            }
-        }
+        beat = 0;
     }
 
     return static_cast<Pegasus::Timeline::Beat>(beat);
 }
+
+//----------------------------------------------------------------------------------------
+
 
 //----------------------------------------------------------------------------------------
     
@@ -555,49 +448,22 @@ unsigned int TimelineBlockGraphicsItem::GetLaneFromY(float lanePosition) const
     }
 
     // Clamp to avoid blocks to move to an invalid lane
-    Pegasus::Timeline::ILaneProxy * laneProxy = mBlockProxy->GetLane();
-    if (laneProxy != nullptr)
+    const int numLanes = static_cast<int>(mTimelineState->GetLaneCount());
+    if (lane >= numLanes)
     {
-        Pegasus::Timeline::ITimelineProxy * timelineProxy = laneProxy->GetTimeline();
-        if (timelineProxy != nullptr)
-        {
-            const int numLanes = static_cast<int>(timelineProxy->GetNumLanes());
-            if (lane >= numLanes)
-            {
-                lane = numLanes - 1;
-            }
-        }
+        lane = numLanes - 1;
     }
 
     return static_cast<unsigned int>(lane);
 }
 
+
 //----------------------------------------------------------------------------------------
 
 void TimelineBlockGraphicsItem::SetLengthFromDuration()
 {
-    Pegasus::Timeline::ILaneProxy * laneProxy = mBlockProxy->GetLane();
-    if (laneProxy != nullptr)
-    {
-        Pegasus::Timeline::ITimelineProxy * timelineProxy = laneProxy->GetTimeline();
-        if (timelineProxy != nullptr)
-        {
-            mLength = (mDuration * timelineProxy->GetRcpNumTicksPerBeat()) * (mHorizontalScale * TIMELINE_BEAT_WIDTH);
-        }
-    }
+
+    mLength = (mDuration * 1.0f/(float)(mTimelineState->GetNumTicksPerBeat())) * (mHorizontalScale * TIMELINE_BEAT_WIDTH);
+
 }
 
-//----------------------------------------------------------------------------------------
-
-void TimelineBlockGraphicsItem::SetBaseLengthFromPixelLength()
-{
-    Pegasus::Timeline::ILaneProxy * laneProxy = mBlockProxy->GetLane();
-    if (laneProxy != nullptr)
-    {
-        Pegasus::Timeline::ITimelineProxy * timelineProxy = laneProxy->GetTimeline();
-        if (timelineProxy != nullptr)
-        {
-            mDuration = (mLength / (mHorizontalScale * TIMELINE_BEAT_WIDTH)) * timelineProxy->GetNumTicksPerBeatFloat();
-        }
-    }
-}

@@ -18,13 +18,273 @@
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 #include "Pegasus/Timeline/Shared/ITimelineManagerProxy.h"
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
+#include "Pegasus/Timeline/Shared/ILaneProxy.h"
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"
 #include "Pegasus/AssetLib/Shared/IAssetLibProxy.h"
 #include "Pegasus/AssetLib/Shared/IRuntimeAssetObjectProxy.h"
 
-using namespace Pegasus::Core;
+using namespace Pegasus;
 using namespace Pegasus::Timeline;
 using namespace Pegasus::AssetLib;
+
+#define E2S_BEGIN(V) switch(V) {
+#define E2S(X) case X: return QString( #X );
+#define E2S_END() default: return QString("Unknown-enum"); }
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//Implementation of all shadow states of timeline.
+ShadowTimelineState::ShadowTimelineState()
+{
+}
+
+QString ShadowTimelineState::Str(ShadowTimelineState::PropName nm)
+{
+    E2S_BEGIN(nm)
+    E2S(PROP_CURR_BEAT)
+    E2S(PROP_BEATS)
+    E2S(PROP_BEATS_PER_MIN)
+    E2S(PROP_TICKS_PER_BEAT)
+    E2S(PROP_SCRIPT_PATH)
+    E2S(PROP_LANE_COUNT)
+    E2S(PROP_LANES)
+    E2S(PROP_COUNT)
+    E2S_END()
+}
+
+unsigned ShadowTimelineState::GetLaneCount() const
+{
+    return mRootState[Str(PROP_LANE_COUNT)].toUInt();
+}
+
+unsigned ShadowTimelineState::GetNumBeats() const
+{
+    return mRootState[Str(PROP_BEATS)].toUInt();
+}
+
+float ShadowTimelineState::GetBeatsPerMinute() const
+{
+    return mRootState[Str(PROP_BEATS_PER_MIN)].toFloat();
+}
+
+QString ShadowTimelineState::GetMasterScriptPath() const
+{
+    return mRootState[Str(PROP_SCRIPT_PATH)].toString();
+}
+
+float ShadowTimelineState::GetCurrBeat() const
+{
+    return mRootState[Str(PROP_CURR_BEAT)].toFloat();
+}
+
+bool ShadowTimelineState::HasMasterScript() const
+{
+    return mRootState.find(Str(PROP_SCRIPT_PATH)) != mRootState.end();
+}
+
+unsigned ShadowTimelineState::GetNumTicksPerBeat() const
+{
+    return mRootState[Str(PROP_TICKS_PER_BEAT)].toUInt();
+}
+
+void ShadowTimelineState::Build(const ITimelineProxy* proxy)
+{
+    mRootState = QVariantMap();
+    mRootState.insert(Str(PROP_LANE_COUNT), proxy->GetNumLanes());
+    mRootState.insert(Str(PROP_BEATS), proxy->GetNumBeats());
+    mRootState.insert(Str(PROP_BEATS_PER_MIN), proxy->GetBeatsPerMinute() );
+    mRootState.insert(Str(PROP_CURR_BEAT), proxy->GetCurrentBeat() );
+    mRootState.insert(Str(PROP_TICKS_PER_BEAT), proxy->GetNumTicksPerBeat() );
+
+    bool scriptIsLoaded = proxy->GetScript() != nullptr;
+    if (scriptIsLoaded)
+    {
+        mRootState.insert(Str(PROP_SCRIPT_PATH), QString(proxy->GetScript()->GetOwnerAsset()->GetPath()));
+    }
+
+    QVariantList lanes;
+    for (unsigned i = 0; i < proxy->GetNumLanes(); ++i)
+    {
+        ShadowLaneState laneState;
+        laneState.Build(proxy->GetLane(i));
+        lanes.append(laneState.GetRootState());
+    }
+
+    mRootState.insert(Str(PROP_LANES), lanes);
+}
+
+void ShadowTimelineState::FlushProp(ShadowTimelineState::PropName name, const QVariant& val, ITimelineProxy* dest)
+{
+    switch (name)
+    {
+    case PROP_BEATS:
+        dest->SetNumBeats(val.toUInt());
+        break;
+    case PROP_BEATS_PER_MIN:
+        dest->SetBeatsPerMinute(val.toFloat());
+        break;
+    case PROP_TICKS_PER_BEAT:
+        //nothing to do here. Assert?
+        break;
+    case PROP_CURR_BEAT:
+        dest->SetCurrentBeat(val.toFloat());
+        break;
+    default:
+        ED_FAILSTR("Unable to flush property from shadow state.");
+        break;
+    }
+}
+
+ShadowLaneState::ShadowLaneState()
+{
+}
+
+QString ShadowLaneState::Str(ShadowLaneState::PropName name)
+{
+    E2S_BEGIN(name)
+        E2S(PROP_BLOCK_COUNT)
+        E2S(PROP_BLOCK_LIST)
+        E2S(PROP_LANE_NAME)
+    E2S_END()
+}
+
+QString ShadowLaneState::GetName() const
+{
+    return mRootState[Str(PROP_LANE_NAME)].toString();
+}
+
+unsigned ShadowLaneState::GetBlockCount() const
+{
+    return mRootState[Str(PROP_BLOCK_COUNT)].toUInt();
+}
+
+void ShadowLaneState::Build(const ILaneProxy* proxy)
+{
+    mRootState.insert(Str(PROP_LANE_NAME), QString(proxy->IsNameDefined() ? proxy->GetName() : ""));
+    IBlockProxy* blockList[LANE_MAX_NUM_BLOCKS];
+    unsigned int numBlocks = proxy->GetBlocks(blockList);
+    mRootState.insert(Str(PROP_BLOCK_COUNT), numBlocks);
+
+    QVariantList blockQtList;    
+    for (unsigned int i = 0; i < numBlocks; ++i)
+    {
+        ShadowBlockState blockState;
+        blockState.Build(blockList[i]);
+        blockQtList.append(blockState.GetRootState());
+    }
+
+    mRootState.insert(Str(PROP_BLOCK_LIST), blockQtList);
+}
+
+void ShadowLaneState::FlushProp(ShadowLaneState::PropName name, const QVariant& val, ILaneProxy* proxy)
+{
+    switch (name)
+    {
+    case PROP_LANE_NAME:
+        {
+            QString qs = val.toString();
+            QByteArray ba = qs.toLocal8Bit();
+            const char* name = ba.constData();
+            proxy->SetName(name);
+        }
+        break;
+    default:
+        ED_FAILSTR("Unable to flush property from shadow state.");
+        break;
+    }
+}
+
+ShadowBlockState::ShadowBlockState()
+{
+}
+
+QString ShadowBlockState::Str(ShadowBlockState::PropName name)
+{
+    E2S_BEGIN(name)
+        E2S(PROP_BLOCK_NAME)
+        E2S(PROP_CLASS_NAME)
+        E2S(PROP_BLOCK_COLOR)
+        E2S(PROP_BLOCK_BEAT)
+        E2S(PROP_BLOCK_GUID)
+        E2S(PROP_BLOCK_DURATION)
+        E2S(PROP_BLOCK_SCRIPT_PATH)
+    E2S_END()
+}
+
+QString ShadowBlockState::GetName() const
+{
+    return mRootState[Str(PROP_BLOCK_NAME)].toString();
+}
+
+QString ShadowBlockState::GetClassName() const
+{
+    return mRootState[Str(PROP_CLASS_NAME)].toString();
+}
+
+unsigned ShadowBlockState::GetColor() const
+{
+    return mRootState[Str(PROP_BLOCK_COLOR)].toUInt();
+}
+
+unsigned ShadowBlockState::GetGuid() const
+{
+    return mRootState[Str(PROP_BLOCK_GUID)].toUInt();
+}
+
+unsigned ShadowBlockState::GetBeat() const
+{
+    return mRootState[Str(PROP_BLOCK_BEAT)].toUInt();
+}
+
+unsigned ShadowBlockState::GetDuration() const
+{
+    return mRootState[Str(PROP_BLOCK_DURATION)].toUInt();
+}
+
+bool ShadowBlockState::HasBlockScript() const
+{
+    return mRootState.find(Str(PROP_BLOCK_SCRIPT_PATH)) != mRootState.end();
+}
+
+QString ShadowBlockState::GetBlockScriptPath() const
+{
+    return mRootState[Str(PROP_BLOCK_SCRIPT_PATH)].toString();
+}
+
+void ShadowBlockState::Build(const IBlockProxy* proxy)
+{
+    mRootState.insert(Str(PROP_BLOCK_NAME), QString(proxy->GetInstanceName()));
+    mRootState.insert(Str(PROP_CLASS_NAME), QString(proxy->GetClassName()));
+    mRootState.insert(Str(PROP_BLOCK_BEAT), (unsigned int)proxy->GetBeat());
+    if (proxy->GetScript() != nullptr && proxy->GetScript()->GetOwnerAsset() != nullptr)
+    {
+        mRootState.insert(Str(PROP_BLOCK_SCRIPT_PATH), QString(proxy->GetScript()->GetOwnerAsset()->GetPath()));
+    }
+    unsigned char r, g, b;
+    proxy->GetColor(r,g,b);
+    unsigned int col = (r << 24) | (g << 16) | (b << 8);
+    mRootState.insert(Str(PROP_BLOCK_COLOR), col);
+    mRootState.insert(Str(PROP_BLOCK_GUID), proxy->GetGuid());
+    unsigned int duration = proxy->GetDuration();
+    mRootState.insert(Str(PROP_BLOCK_DURATION), duration);
+}
+
+void ShadowBlockState::SetScript(const QString& script)
+{
+    mRootState.insert(Str(PROP_BLOCK_SCRIPT_PATH), script);
+}
+
+void ShadowBlockState::RemoveScript()
+{
+    QVariantMap::iterator it = mRootState.find(Str(PROP_BLOCK_SCRIPT_PATH));
+    if (it != mRootState.end())
+    {
+        mRootState.erase(it);
+    }
+}
+
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
 
 TimelineIOMessageController::TimelineIOMessageController(Pegasus::App::IApplicationProxy* app)
 : mApp(app)
@@ -39,17 +299,10 @@ QVariant TimelineIOMessageController::TranslateToQt(AssetInstanceHandle handle, 
 {
     Pegasus::Timeline::ITimelineProxy* timelineProxy = static_cast<Pegasus::Timeline::ITimelineProxy*>(object);
 
-    QString loadedScript = tr("");
-    bool scriptIsLoaded = timelineProxy->GetScript() != nullptr;
-    if (scriptIsLoaded)
-    {
-        loadedScript = tr(timelineProxy->GetScript()->GetOwnerAsset()->GetPath());
-    }
-    emit(NotifyMasterScriptState(scriptIsLoaded, loadedScript));
-
-    //HACK: just pass the timeline proxy as a qvariant for now.
-    return qVariantFromValue((void*)timelineProxy);
-    
+    timelineProxy->SetPlayMode(Pegasus::Timeline::PLAYMODE_STOPPED);
+    ShadowTimelineState shadowState;
+    shadowState.Build(timelineProxy);
+    return shadowState.GetRootState();
 }
 
 const Pegasus::PegasusAssetTypeDesc** TimelineIOMessageController::GetTypeList() const
@@ -64,7 +317,6 @@ const Pegasus::PegasusAssetTypeDesc** TimelineIOMessageController::GetTypeList()
 
 void TimelineIOMessageController::OnRenderThreadProcessMessage(const TimelineIOMessageController::Message& msg)
 {
-    //TODO: process any messages here.
     switch(msg.GetMessageType())
     {
     case TimelineIOMessageController::Message::SET_BLOCKSCRIPT:
@@ -78,6 +330,12 @@ void TimelineIOMessageController::OnRenderThreadProcessMessage(const TimelineIOM
         break;
     case TimelineIOMessageController::Message::CLEAR_MASTER_BLOCKSCRIPT:
         OnClearMasterBlockscript();
+        break;
+    case TimelineIOMessageController::Message::SET_PARAMETER:
+        OnSetParameter(msg.GetTarget(), msg.GetTimelineHandle(), msg.GetLaneId(), msg.GetParameterName(), msg.GetArg(), msg.GetObserver());
+        break;
+    case TimelineIOMessageController::Message::BLOCK_OPERATION:
+        OnBlockOp(msg.GetTimelineHandle(), msg.GetBlockOp(), msg.GetBlockGuid(), msg.GetLaneId(), msg.GetArg(), msg.GetMouseClickId(), msg.GetObserver());
         break;
     default:
         break;
@@ -100,7 +358,7 @@ void TimelineIOMessageController::OnSetBlockscript(const QString& str, unsigned 
         {
             if(object->GetOwnerAsset()->GetTypeDesc()->mTypeGuid == Pegasus::ASSET_TYPE_BLOCKSCRIPT.mTypeGuid)
             {
-                ISourceCodeProxy* sourceProxy = static_cast<ISourceCodeProxy*>(object);
+                Core::ISourceCodeProxy* sourceProxy = static_cast<Core::ISourceCodeProxy*>(object);
                 block->AttachScript(sourceProxy);
             }
             //no need to keep a reference of this in the asset lib.
@@ -137,7 +395,7 @@ void TimelineIOMessageController::OnSetMasterBlockscript(const QString& str)
     {                                                                                                         
         if(object->GetOwnerAsset()->GetTypeDesc()->mTypeGuid == Pegasus::ASSET_TYPE_BLOCKSCRIPT.mTypeGuid)    
         {                                                                                                     
-            ISourceCodeProxy* sourceProxy = static_cast<ISourceCodeProxy*>(object);                           
+            Core::ISourceCodeProxy* sourceProxy = static_cast<Core::ISourceCodeProxy*>(object);                           
             timeline->AttachScript(sourceProxy);                                                                 
             success = true;
         }                                                                                                     
@@ -157,5 +415,162 @@ void TimelineIOMessageController::OnClearMasterBlockscript()
     timeline->ClearScript();
     emit(NotifyMasterScriptState(false, tr("")));
 }
+
+Pegasus::Timeline::ITimelineProxy* TimelineIOMessageController::ResolveTimeline(const AssetInstanceHandle& assetHandle)
+{
+    AssetLib::IRuntimeAssetObjectProxy* timelineAssetInstance = FindInstance(assetHandle);
+    if (timelineAssetInstance != nullptr)
+    {
+        bool isTimeline = timelineAssetInstance->GetOwnerAsset()->GetTypeDesc()->mTypeGuid == Pegasus::ASSET_TYPE_TIMELINE.mTypeGuid;
+        if (isTimeline)
+        {
+            return static_cast<Pegasus::Timeline::ITimelineProxy*>(timelineAssetInstance);
+        }
+    }
+    return nullptr;
+}
+
+void TimelineIOMessageController::OnSetParameter(TimelineIOMessageController::Target targetObject, const AssetInstanceHandle& timelineHandle, unsigned laneId, unsigned parameterName, const QVariant& paramValue, TimelineIOMessageObserver* observer)
+{
+
+    Pegasus::Timeline::ITimelineProxy* timelineProxy = ResolveTimeline(timelineHandle); 
+    bool success = false;
+    if (timelineProxy != nullptr)
+    {
+        switch (targetObject)
+        {
+        case TimelineIOMessageController::TIMELINE_OBJECT:
+            {
+                ShadowTimelineState::PropName propName = static_cast<ShadowTimelineState::PropName>(parameterName);
+                ShadowTimelineState::FlushProp(propName, paramValue, timelineProxy);
+                success = true;
+            }
+            break;
+        case TimelineIOMessageController::LANE_OBJECT:
+            {
+                if (laneId < timelineProxy->GetNumLanes())
+                {
+                    ShadowLaneState::PropName propName = static_cast<ShadowLaneState::PropName>(parameterName);
+                    Timeline::ILaneProxy* laneProxy = timelineProxy->GetLane(laneId);
+                    ShadowLaneState::FlushProp(propName, paramValue, laneProxy);
+                    success = true;
+                }
+                else
+                {
+                    ED_FAILSTR("Invalid lane number!"); 
+                }
+            }
+        default:
+            ED_FAILSTR("Unimplemented message for timeline object");
+        }
+    }
+    else
+    {
+        ED_FAILSTR("Cannot cast to timeline type!");
+    }
+
+    // request a frame
+    emit NotifyRepaintTimeline();
+
+    if (success && observer != nullptr)
+    {
+        emit observer->SignalParameterUpdated(timelineHandle, laneId, (unsigned)targetObject, parameterName, paramValue);
+    }
+}
+
+
+void TimelineIOMessageController::OnBlockOp(const AssetInstanceHandle& timelineHandle, TimelineIOMessageController::BlockOp blockOp, unsigned blockGuid, unsigned targetLaneId, const QVariant& arg, unsigned mouseClickId, TimelineIOMessageObserver* observer)
+{
+    Pegasus::Timeline::ITimelineProxy* timeline = ResolveTimeline(timelineHandle);
+    if (timeline != nullptr)
+    {
+        bool performOperationsOnTimeline = false;
+        bool performQuestioningOfTimeline = false;
+        TimelineIOMessageController::BlockOpResponse response;
+        response.op = blockOp;
+        response.blockGuid = blockGuid;
+        response.timelineHandle = timelineHandle;
+        response.success = false;
+        response.mouseClickId = mouseClickId;
+        switch (blockOp)
+        {
+        case TimelineIOMessageController::ASK_POSITION:
+            {
+                performOperationsOnTimeline = false;
+                performQuestioningOfTimeline = true;
+            }
+            break;
+        case TimelineIOMessageController::MOVE:
+            {
+                performOperationsOnTimeline = true;
+                performQuestioningOfTimeline = true;
+            }
+            break;
+        default:
+            ED_FAIL();
+            break;
+        }
+
+        Pegasus::Timeline::IBlockProxy* block = timeline->FindBlockByGuid(blockGuid);
+        Pegasus::Timeline::ILaneProxy* targetLane = timeline->GetLane(targetLaneId);
+        if (block != nullptr && targetLane != nullptr)
+        {
+            unsigned newBeat = arg.toUInt();
+            Pegasus::Timeline::ILaneProxy* oldLane = block->GetLane();
+            if (targetLane->IsBlockFitting(block, newBeat, block->GetDuration()))
+            {
+                response.success = true;
+                if (oldLane != targetLane)
+                {
+                    if (performOperationsOnTimeline)
+                        oldLane->MoveBlockToLane(block, targetLane, newBeat);
+                    response.newLane = (int)targetLaneId;
+                    response.newBeat = newBeat;
+                }
+                else
+                {
+                    if (performOperationsOnTimeline)
+                        targetLane->SetBlockBeat(block, newBeat);
+                    response.newBeat = newBeat;
+                }
+            }
+            else 
+            {
+                //try to fit it on the same lane.
+                if (oldLane->IsBlockFitting(block, newBeat, block->GetDuration()))
+                {
+                    if (performOperationsOnTimeline)
+                        oldLane->SetBlockBeat(block, newBeat);
+                    response.success = true;
+                    response.newBeat = newBeat;
+                }
+            }
+
+            //send response back to UI
+            emit observer->SignalBlockOpResponse(response);
+        }
+    }
+}
+
+TimelineIOMessageObserver::TimelineIOMessageObserver()
+{
+    connect(this,SIGNAL(SignalParameterUpdated(AssetInstanceHandle, unsigned, unsigned, unsigned, QVariant)),
+            this, SLOT(SlotParameterUpdated(AssetInstanceHandle, unsigned, unsigned, unsigned, QVariant)),
+            Qt::QueuedConnection);
+    connect(this,SIGNAL(SignalBlockOpResponse(TimelineIOMessageController::BlockOpResponse)),
+            this, SLOT(SlotBlockOpResponse(TimelineIOMessageController::BlockOpResponse)),
+            Qt::QueuedConnection);
+}
+
+void TimelineIOMessageObserver::SlotParameterUpdated(AssetInstanceHandle timelineHandle, unsigned laneId, unsigned parameterTarget, unsigned parameterName, QVariant parameterValue)
+{
+    OnParameterUpdated(timelineHandle, laneId, parameterTarget, parameterName, parameterValue);
+}
+
+void TimelineIOMessageObserver::SlotBlockOpResponse(TimelineIOMessageController::BlockOpResponse response)
+{
+    OnBlockOpResponse(response);
+}
+
 
 

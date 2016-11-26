@@ -23,9 +23,6 @@ namespace Pegasus {
     namespace App {
         class IApplicationProxy;
     }
-    namespace PropertyGrid {
-        class IPropertyGridObjectProxy;
-    }
 }
 
 class PegasusDockWidget;
@@ -53,18 +50,18 @@ public:
     //! \param messenger - the messenger to cache
     inline void SetMessenger(PegasusDockWidget * messenger) { mMessenger = messenger; }
 
-    //! Set the property grid object proxy associated with the widget.
-    //! the content of the property browser will update accordingly.
-    //! \param proxy Proxy providing the property grid interface,
-    //!              nullptr to remove the displayed property grid
-    //! \param title of current property grid window
-    void SetCurrentProxy(Pegasus::PropertyGrid::IPropertyGridObjectProxy * proxy, const QString& title);
-
     //! Set the property grid object proxy associated with the asset instance handle.
     //! the content of the property browser will update accordingly.
     //! \param handle of the instance of the asset object. If there is no property grid associated with this object
     //!        this call won't affect the contents of the property grid widget.
     void SetCurrentProxy(AssetInstanceHandle assetHandle);
+
+    //! Clears all contents of this widget.
+    void ClearProperties();
+
+    //! Sets the property grid to be the block of a specific timeline handle.
+    //! Ideally, this function should live somewhere else.
+    void SetCurrentTimelineBlock(AssetInstanceHandle timelineHandle, unsigned int blockGuid, const QString& title);
 
     //! Call when you want this property to lose references, only when the app closes.
     void Clear();

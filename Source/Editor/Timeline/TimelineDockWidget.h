@@ -13,6 +13,7 @@
 #define EDITOR_TIMELINEDOCKWIDGET_H
 
 #include <QDockWidget>
+#include "MessageControllers/TimelineIOMessageController.h"
 #include "MessageControllers/AssetIOMessageController.h"
 #include "Widgets/PegasusDockWidget.h"
 #include "PropertyGrid/qtpropertybrowser/qtpropertybrowser.h"
@@ -20,10 +21,6 @@
 #include "ui_TimelineDockWidget.h"
 
 namespace Pegasus {
-    namespace Timeline {
-        class ITimelineProxy;
-        class IBlockProxy;
-    }
 
     namespace App {
         class IApplicationProxy;
@@ -38,7 +35,7 @@ class Editor;
 class QAction;
 
 //! Dock widget containing the timeline graphics view
-class TimelineDockWidget : public PegasusDockWidget 
+class TimelineDockWidget : public PegasusDockWidget
 {
     Q_OBJECT
 
@@ -99,33 +96,17 @@ public:
     //! Implement this function with functionality on how to process for edit.
     //! Only objects of type retured in GetTargetAssetTypes will be the ones opened.
     virtual void OnOpenObject(AssetInstanceHandle object, const QString& displayName, const QVariant& initData);
+    
+    //------------------------------------------------------------------------------------
+
+    const AssetInstanceHandle& GetTimelineAssetHandle() const { return mTimelineHandle; }
 
 signals:
-
-    //! Emitted when the current beat has been updated
-    //! \param beat Beat after update, can have fractional part
-    void BeatUpdated(float beat);
-
-    //! Emitted when a block has been moved by the user
-    void BlockMoved();
-
-    //! Emitted when a single block is being selected (not multiple selection)
-    void BlockSelected(Pegasus::Timeline::IBlockProxy * blockProxy);
-
-    //! Emitted when multiple blocks are being selected (not single selection)
-    void MultiBlocksSelected();
-
-    //! Emitted when blocks are deselected (single or multiple selection)
-    void BlocksDeselected();
-
-    //! Emitted when a block has been double clicked by the user
-    void BlockDoubleClicked(Pegasus::Timeline::IBlockProxy * blockProxy);
 
     //! Emitted when the play mode button has been enabled or disabled
     //! \param enabled True if the play mode button has just been enabled
     void PlayModeToggled(bool enabled);
 
-    //------------------------------------------------------------------------------------
 
 public slots:
 
@@ -150,6 +131,8 @@ public slots:
     //! Called when there is an active timeline script
     void OnShowActiveTimelineButton(bool shouldShowActiveScript, QString script);
 
+    //! Emitted when a block has been double clicked by the user
+    void OnBlockDoubleClicked(QString blockScriptToOpen);
 
 private slots:
 
@@ -178,7 +161,7 @@ private slots:
     void SetTimeLabel(unsigned int minutes, unsigned int seconds, unsigned int milliseconds);
 
     //! Called when a single block is being selected (not multiple selection)
-    void OnBlockSelected(Pegasus::Timeline::IBlockProxy* blockProxy);
+    void OnBlockSelected(unsigned blockGuid);
 
     //! Called when multiple blocks are being selected (not single selection)
     void OnMultiBlocksSelected();
@@ -190,12 +173,35 @@ private slots:
     void OnPropertyUpdated(QtProperty* property);
 
     //! Called to request / remove blockscripts
-    void RequestChangeScript(unsigned blockGuid); 
-    void RequestRemoveScript(unsigned blockGuid); 
+    void RequestChangeScript(QGraphicsObject* sender, unsigned blockGuid); 
+    void RequestRemoveScript(QGraphicsObject* sender, unsigned blockGuid); 
+    void RequestMoveBlock(QGraphicsObject* sender, QPointF amount);
 
     //------------------------------------------------------------------------------------
 
+public:
+
+    class Observer : public TimelineIOMessageObserver
+    {
+    public:
+        explicit Observer(TimelineDockWidget* dockWidget)
+        : mDockWidget(dockWidget)
+        {
+        }
+
+        virtual void OnParameterUpdated(const AssetInstanceHandle& timelineHandle, unsigned laneId, unsigned parameterTarget, unsigned parameterName, const QVariant& parameterValue);
+
+        virtual void OnBlockOpResponse(const TimelineIOMessageController::BlockOpResponse& response);
+
+    private:
+        TimelineDockWidget* mDockWidget;
+    } ;
+
+    Observer* GetObserver() { return &mObserver; }
+
 private:
+
+    Observer mObserver;
 
     //! Event filter override
     bool eventFilter(QObject* obj, QEvent* event);
@@ -234,11 +240,11 @@ private:
     //! This will soon be replaced by a proper active handle once we support multiple timelines edits
     bool mTimelineOpen;
 
-    //HACK: for now hold a pointer to the timeline
-    Pegasus::Timeline::ITimelineProxy* mTimeline;
-
     //! Handle of the asset instance
     AssetInstanceHandle mTimelineHandle;
+
+    //! Shadow state of the timeline.
+    ShadowTimelineState mTimelineState;
 
     //! path of master loaded script
     QString mLoadedScript;
@@ -246,6 +252,9 @@ private:
     //! actions for removing / editing master script
     QAction* mEditMasterScriptButton;
     QAction* mRemoveMasterScriptButton;
+
+    //boolean avoids sending too many messages on setting beat.
+    bool mIsCursorQueued;
 
 };
 

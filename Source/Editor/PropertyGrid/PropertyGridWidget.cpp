@@ -334,22 +334,6 @@ void PropertyGridWidget::UpdateProxy(const PropertyGridIOMessageController::Upda
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::SendOpenMessage(Pegasus::PropertyGrid::IPropertyGridObjectProxy * proxy, const QString& title)
-{
-    ED_ASSERTSTR(mMessenger != nullptr, "A messenger must be set in order for the property grid widget to work.");
-    ED_ASSERT(mProxyHandle == INVALID_PGRID_HANDLE);
-
-    // Request to open this property grid proxy
-    PropertyGridIOMessageController::Message msg;
-    msg.SetMessageType(PropertyGridIOMessageController::Message::OPEN);
-    msg.SetPropertyGridObserver(mObserver);
-    msg.SetPropertyGrid(proxy);
-    msg.SetTitle(title);
-    mMessenger->SendPropertyGridIoMessage(msg);
-}
-
-//----------------------------------------------------------------------------------------
-
 void PropertyGridWidget::SendCloseMessage()
 {
     ED_ASSERTSTR(mMessenger != nullptr, "A messenger must be set in order for the property grid widget to work.");
@@ -388,36 +372,39 @@ const Pegasus::PropertyGrid::PropertyRecord * PropertyGridWidget::FindPropertyRe
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::SetCurrentProxy(Pegasus::PropertyGrid::IPropertyGridObjectProxy * proxy, const QString& title)
-{
-    if (proxy != nullptr)
-    {
-        if (mProxyHandle != INVALID_PGRID_HANDLE)
-        {
-            SendCloseMessage();
-        }
-        SendOpenMessage(proxy, title);
-    }
-    else
-    {
-        SendCloseMessage();
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
 void PropertyGridWidget::SetCurrentProxy(AssetInstanceHandle assetHandle)
 {
-    if (mProxyHandle != INVALID_PGRID_HANDLE)
-    {
-        SendCloseMessage();
-    }
+    ClearProperties();
 
     PropertyGridIOMessageController::Message msg;
     msg.SetMessageType(PropertyGridIOMessageController::Message::OPEN_FROM_ASSET_HANDLE);
     msg.SetPropertyGridObserver(mObserver);
     msg.SetAssetHandle(assetHandle);
     mMessenger->SendPropertyGridIoMessage(msg);
+}
+
+void PropertyGridWidget::SetCurrentTimelineBlock(AssetInstanceHandle timelineHandle, unsigned int blockGuid, const QString& title)
+{
+    ClearProperties();
+
+    PropertyGridIOMessageController::Message msg;
+    msg.SetMessageType(PropertyGridIOMessageController::Message::OPEN_BLOCK_FROM_TIMELINE);
+    msg.SetPropertyGridObserver(mObserver);
+    msg.SetAssetHandle(timelineHandle);
+    msg.SetBlockGuid(blockGuid);
+    msg.SetTitle(title);
+    mMessenger->SendPropertyGridIoMessage(msg);
+}
+
+
+//----------------------------------------------------------------------------------------
+
+void PropertyGridWidget::ClearProperties()
+{
+    if (mProxyHandle != INVALID_PGRID_HANDLE)
+    {
+        SendCloseMessage();
+    }
 }
 
 //----------------------------------------------------------------------------------------

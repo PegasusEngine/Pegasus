@@ -15,6 +15,7 @@
 #include <QGraphicsView>
 #include <QList>
 #include <QMap>
+#include "MessageControllers/TimelineIOMessageController.h"
 
 class TimelineBackgroundBeatGraphicsItem;
 class TimelineBackgroundBeatLineGraphicsItem;
@@ -22,15 +23,8 @@ class TimelineLaneHeaderGraphicsItem;
 class TimelineBlockGraphicsItem;
 class TimelineCursorGraphicsItem;
 
-namespace Pegasus {
-    namespace Timeline {
-        class ITimelineProxy;
-        class ILaneProxy;
-        class IBlockProxy;
-    }
-}
-
 class QUndoStack;
+class ShadowTimelineState;
 
 //! Minimum horizontal scale factor
 #define TIMELINE_GRAPHICS_VIEW_HORIZONTAL_SCALE_MIN     0.1f
@@ -77,13 +71,20 @@ public:
     void RefreshFromTimeline();
 
     //! Sets the current timeline.
-    void SetTimeline(Pegasus::Timeline::ITimelineProxy* timeline) { mTimeline = timeline;}
+    void SetTimeline(ShadowTimelineState* timeline ) { mTimeline = timeline;}
 
     //! Flushes (copies) all internal visual properties to intermediate buffers
     void FlushVisualProperties();
 
     //! Forces a redraw on all internal graphics items.
     void RedrawInternalBlocks();
+
+    //! Updates the visuals of a beat.
+    void UpdateBeatVisuals(int newLane, unsigned blockGuid, unsigned newBeat);
+
+    //! Finds a lane id for a particular block guid
+    //! returns -1 if the lane does not exist. Fills in the block pointer if found in lane.
+    int FindLane(unsigned blockGuid, TimelineBlockGraphicsItem*& outBlock) const;
 
     //------------------------------------------------------------------------------------
 
@@ -93,11 +94,8 @@ signals:
     //! \param beat Current beat, can have fractional part
     void BeatUpdated(float beat);
 
-    //! Emitted when a block has been moved by the user
-    void BlockMoved();
-
     //! Emitted when a single block is being selected (not multiple selection)
-    void BlockSelected(Pegasus::Timeline::IBlockProxy * blockProxy);
+    void BlockSelected(unsigned blockGuid);
 
     //! Emitted when multiple blocks are being selected (not single selection)
     void MultiBlocksSelected();
@@ -106,15 +104,16 @@ signals:
     void BlocksDeselected();
 
     //! Emitted when the user double clicks a block
-    void BlockDoubleClicked(Pegasus::Timeline::IBlockProxy * blockProxy);
+    void BlockDoubleClicked(QString blockscriptToOpen);
 
     //! Request this script to be changed for the block with the guid.
-    void RequestChangeScript(unsigned blockId);
+    void RequestChangeScript(QGraphicsObject* sender, unsigned blockId);
 
     //! Request the blockscript to be removed
-    void RequestRemoveScript(unsigned blockId);
-
-    //------------------------------------------------------------------------------------
+    void RequestRemoveScript(QGraphicsObject* sender, unsigned blockId);
+    
+    //! Request the blockscript to be removed
+    void RequestBlockMove(QGraphicsObject* sender, QPointF amount);
 
 public slots:
 
@@ -209,7 +208,7 @@ private:
     //! Refresh the content of a lane using the data from the application timeline lane
     //! \param laneIndex Index of the lane to refresh (< mNumLanes)
     //! \param laneProxy Proxy of the timeline lane to get the data from
-    void RefreshLaneFromTimelineLane(unsigned int laneIndex, const Pegasus::Timeline::ILaneProxy * laneProxy);
+    void RefreshLaneFromTimelineLane(unsigned int laneIndex, const ShadowLaneState& lane);
 
     //! Called when a right-click or right-dragging occurs, this then sets the current beat and updates the UI
     //! \param event Qt mouse event
@@ -241,8 +240,8 @@ private:
     //! List of lane header graphics items (block with name)
     QList<TimelineLaneHeaderGraphicsItem *> mLaneHeaderItems;
 
-    //! Type for a list of blocks stored in a timeline lane
-    typedef QMap<Pegasus::Timeline::IBlockProxy *, TimelineBlockGraphicsItem *> LaneBlockList;
+    //! Type for a list of block guids stored in a timeline lane
+    typedef QMap<unsigned int, TimelineBlockGraphicsItem *> LaneBlockList;
 
     //! List of blocks for each lane of the timeline
     QList<LaneBlockList> mBlockItems;
@@ -258,7 +257,7 @@ private:
     QUndoStack * mUndoStack;
 
     //! The current timeline
-    Pegasus::Timeline::ITimelineProxy* mTimeline;
+    ShadowTimelineState* mTimeline;
 };
 
 

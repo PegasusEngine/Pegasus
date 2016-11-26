@@ -74,9 +74,6 @@ signals:
     //! \param beat Beat used to render the last frame in the viewport, can have fractional part
     void ViewportRedrawnInPlayMode(float beat);
 
-    //! Signal emitted when \a RequestSetCurrentBeatAfterBeatUpdated() has been called at least once
-    void EnqueuedBeatUpdated();
-
     //! Signal emitted when \a RequestRedrawAllViewportsAfterBlockMoved() has been called at least once
     void EnqueuedBlockMoved();
 
@@ -97,16 +94,8 @@ private slots:
     //! \note Nothing happens if the dock widgets are closed
     void RedrawAllViewports();
 
-    //! Request a set current beat call in the application thread after the current beat has been updated on the timeline
-    //! \param beat Current beat, can have fractional part
-    void RequestSetCurrentBeatAfterBeatUpdated(float beat);
-
     //! Request a redraw all viewports call in the application thread after a block has been moved on the timeline
     void RequestRedrawAllViewportsAfterBlockMoved();
-
-    //! Called when the current beat has been updated, to force a redraw of all viewports
-    //! \note Uses mSetCurrentBeatEnqueuedBeat for the beat to use
-    void SetCurrentBeat();
 
     //! Called when a timeline block has been moved, to force a redraw of all viewports
     void RedrawAllViewportsForBlockMoved();
@@ -117,9 +106,6 @@ private slots:
 
     //! Request the rendering of a new frame while in play mode
     void RequestFrameInPlayMode();
-    
-    //! slot received when the user double clicks a block in the timeline
-    void PerformBlockDoubleClickedAction(Pegasus::Timeline::IBlockProxy* blockProxy);
 
     //! forwards a message to the asset IO controller so its executed in the render thread
     void ForwardAssetIoMessage(PegasusDockWidget* sender, AssetIOMessageController::Message msg);
@@ -152,12 +138,6 @@ private:
     //! True while an assertion dialog box is shown to prevent any paint message to reach the application windows
     //! \todo Seems not useful anymore. Test and remove if possible
     //bool mAssertionBeingHandled;
-
-    //! True while a set current beat call has been enqueued (to avoid duplicated calls, reset by the Pegasus thread)
-    bool mSetCurrentBeatEnqueued;
-
-    //! Enqueued beat to use for a set current beat call
-    float mSetCurrentBeatEnqueuedBeat;
 
     //! True while a redraw all viewports call has been enqueued (to avoid duplicated calls, reset by the Pegasus thread)
     bool mRedrawAllViewportsForBlockMovedEnqueued;

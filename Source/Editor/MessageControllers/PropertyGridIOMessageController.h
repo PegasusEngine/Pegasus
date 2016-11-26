@@ -145,18 +145,20 @@ public:
     public:
         enum MessageType
         {
-            OPEN, //! when a new property grid is desired to be open
+            OPEN,
             OPEN_FROM_ASSET_HANDLE, //! Open the property grid from an asset handle
+            OPEN_BLOCK_FROM_TIMELINE, //! Open the property grid from an asset handle
             CLOSE, //! when a widget will not view a property grid any more
             UPDATE, //! when the widget request a change in the state of a property grid
             INVALID
         };
         
         //! Constructors
-        explicit Message(MessageType t) : mMessageType(t), mPropGrid(nullptr), mPropGridHandle(-1), mObserver(nullptr) {}
-        Message() : mMessageType(INVALID), mPropGrid(nullptr), mPropGridHandle(-1), mObserver(nullptr) {}
+        explicit Message(MessageType t) : mMessageType(t), mPropGrid(nullptr), mBlockGuid(0xffffff), mPropGridHandle(-1), mObserver(nullptr) {}
+        Message() : mMessageType(INVALID), mPropGrid(nullptr), mBlockGuid(0xffffffff), mPropGridHandle(-1), mObserver(nullptr) {}
     
         //! Getters
+        unsigned GetBlockGuid() const { return mBlockGuid; }
         AssetInstanceHandle GetAssetHandle() const { return mAssetHandle; }
         MessageType GetMessageType() const { return mMessageType; }
         QVector<UpdateElement>& GetUpdateBatch() { return mUpdates; }
@@ -167,6 +169,7 @@ public:
         const QString& GetTitle() const { return mTitle; }
     
         //! Setters
+        void SetBlockGuid(unsigned blockGuid) { mBlockGuid = blockGuid; }
         void SetAssetHandle(AssetInstanceHandle handle) { mAssetHandle = handle ; }
         void SetPropertyGridHandle(PropertyGridHandle handle) { mPropGridHandle = handle; }
         void SetPropertyGrid(Pegasus::PropertyGrid::IPropertyGridObjectProxy* proxy) { mPropGrid  = proxy; }
@@ -182,6 +185,7 @@ public:
         PropertyGridHandle mPropGridHandle;
         Pegasus::PropertyGrid::IPropertyGridObjectProxy* mPropGrid;
         PropertyGridObserver* mObserver;
+        unsigned mBlockGuid;
         QString mTitle;
     };
     
@@ -206,6 +210,7 @@ private:
 
     void OnRenderThreadUpdate(PropertyGridObserver* sender, PropertyGridHandle handle, const QVector<UpdateElement>& elements);
     void OnRenderThreadOpen(PropertyGridObserver* sender, QString title, Pegasus::PropertyGrid::IPropertyGridObjectProxy* proxy);
+    void OnRenderThreadOpenFromTimelineBlock(PropertyGridObserver* sender, QString title, AssetInstanceHandle timelineHandle, unsigned blockId);
     void OnRenderThreadOpenFromAsset(PropertyGridObserver* sender, AssetInstanceHandle handle);
     void OnRenderThreadClose(PropertyGridObserver* sender, PropertyGridHandle handle);
 
