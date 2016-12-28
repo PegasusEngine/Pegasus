@@ -46,13 +46,25 @@
         <file>TypeIcons/timelinescript.png</file>
         <file>TypeIcons/program.png</file>
         <file>TypeIcons/timeline.png</file>
-        <file>GraphEditor/NodeBody128.png</file>
-        <file>GraphEditor/NodeBodyTop128.png</file>
-        <file>GraphEditor/NodeFooter128.png</file>
-        <file>GraphEditor/NodeHeader128.png</file>
         <file>GraphEditor/GraphBackground.png</file>
-        <file>GraphEditor/NodeInput16.png</file>
-        <file>GraphEditor/NodeOutput16.png</file>
+        <file>GraphEditor/NodeBodyIdle128.png</file>
+        <file>GraphEditor/NodeBodyTopIdle128.png</file>
+        <file>GraphEditor/NodeFooterIdle128.png</file>
+        <file>GraphEditor/NodeHeaderIdle128.png</file>
+        <file>GraphEditor/NodeInputIdle16.png</file>
+        <file>GraphEditor/NodeOutputIdle16.png</file>
+        <file>GraphEditor/NodeBodyHover128.png</file>
+        <file>GraphEditor/NodeBodyTopHover128.png</file>
+        <file>GraphEditor/NodeFooterHover128.png</file>
+        <file>GraphEditor/NodeHeaderHover128.png</file>
+        <file>GraphEditor/NodeInputHover16.png</file>
+        <file>GraphEditor/NodeOutputHover16.png</file>
+        <file>GraphEditor/NodeBodySelect128.png</file>
+        <file>GraphEditor/NodeBodyTopSelect128.png</file>
+        <file>GraphEditor/NodeFooterSelect128.png</file>
+        <file>GraphEditor/NodeHeaderSelect128.png</file>
+        <file>GraphEditor/NodeInputSelect16.png</file>
+        <file>GraphEditor/NodeOutputSelect16.png</file>
         <file>MiscViews/camIcon.png</file>
         <file>MiscViews/resetCamIcon.png</file>
         <file>MiscViews/gridIcon.png</file>

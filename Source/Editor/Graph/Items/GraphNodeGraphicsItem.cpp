@@ -160,24 +160,31 @@ void GraphNodeGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsI
 
     // Draw the block
 
+    bool isSelected = (option->state & QStyle::State_Selected) != 0;
+    bool isHovering = (option->state & QStyle::State_MouseOver) != 0;
+    //if (GetOutputItem()->isUnderMouse())
+    //{
+    //    isHovering = false;
+    //}
+
     static const QPointF sHeaderPixOrigin (0.0f, 0.0f);
     static const QPointF sBodyTopPixOrigin(0.0f, sHeaderPixOrigin.y()  + GRAPHITEM_NODE_HEADER_HEIGHTF);
     static const QPointF sBodyPixOrigin   (0.0f, sBodyTopPixOrigin.y() + GRAPHITEM_NODE_BODY_TOP_HEIGHTF);
 
-    /*****/QPixmap nodeHeaderPix(":/GraphEditor/NodeHeader128.png");
+    /*****/QPixmap nodeHeaderPix(isSelected ? ":/GraphEditor/NodeHeaderSelect128.png" : (isHovering ? ":/GraphEditor/NodeHeaderHover128.png" : ":/GraphEditor/NodeHeaderIdle128.png"));
     painter->drawPixmap(sHeaderPixOrigin, nodeHeaderPix);
 
-    /*****/QPixmap nodeBodyTopPix(":/GraphEditor/NodeBodyTop128.png");
+    /*****/QPixmap nodeBodyTopPix(isSelected ? ":/GraphEditor/NodeBodyTopSelect128.png" : (isHovering ? ":/GraphEditor/NodeBodyTopHover128.png" : ":/GraphEditor/NodeBodyTopIdle128.png"));
     painter->drawPixmap(sBodyTopPixOrigin, nodeBodyTopPix);
 
     const float bodyHeight = GetBodyHeight();
     const QSizeF bodyPixSize(GRAPHITEM_NODE_WIDTHF, bodyHeight - GRAPHITEM_NODE_BODY_TOP_HEIGHTF);
     const QRectF sBodyPixRect(sBodyPixOrigin, bodyPixSize);
-    /*****/QPixmap nodeBodyPix(":/GraphEditor/NodeBody128.png");
+    /*****/QPixmap nodeBodyPix(isSelected ? ":/GraphEditor/NodeBodySelect128.png" : (isHovering ? ":/GraphEditor/NodeBodyHover128.png" : ":/GraphEditor/NodeBodyIdle128.png"));
     painter->drawTiledPixmap(sBodyPixRect, nodeBodyPix);
 
     const QPointF footerPixOrigin(0.0f, sBodyTopPixOrigin.y() + bodyHeight);
-    /*****/QPixmap nodeFooterPix(":/GraphEditor/NodeFooter128.png");
+    /*****/QPixmap nodeFooterPix(isSelected ? ":/GraphEditor/NodeFooterSelect128.png" : (isHovering ? ":/GraphEditor/NodeFooterHover128.png" : ":/GraphEditor/NodeFooterIdle128.png"));
     painter->drawPixmap(footerPixOrigin, nodeFooterPix);
 
     QFont titleFont;

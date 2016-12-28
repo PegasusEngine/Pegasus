@@ -33,7 +33,7 @@ GraphNodeInputGraphicsItem::GraphNodeInputGraphicsItem(QGraphicsScene* scene, QU
 {
     // Make the block movable and selectable with the mouse
     //setFlag(ItemIsMovable);
-    //setFlag(ItemIsSelectable);
+    setFlag(ItemIsSelectable);
 
     // Enable the itemChange() callback, to receive notifications about the item movements
     setFlag(ItemSendsScenePositionChanges);
@@ -74,20 +74,20 @@ GraphNodeInputGraphicsItem::GraphNodeInputGraphicsItem(QGraphicsScene* scene, QU
 //    operatorGradient.setColorAt(1, QColor(100, 230, 230, 255).darker(120));
 //    QBrush operatorBrush(operatorGradient);
 ////    QGraphicsEllipseItem * ellipse = scene->addEllipse(0.0f, 24.0f, 8.0f, 8.0f, inputPen, operatorBrush);
-//    QGraphicsPixmapItem * ellipse = scene->addPixmap(QPixmap(":/GraphEditor/NodeInput16.png"));
+//    QGraphicsPixmapItem * ellipse = scene->addPixmap(QPixmap(":/GraphEditor/NodeInputIdle16.png"));
 //    ellipse->setParentItem(this);
 //    ellipse->setPos(-4.0f, 36.0f);
 //    QGraphicsSimpleTextItem * text1 = scene->addSimpleText("Item1");
 //    text1->setPos(16.0f, 38.0f);
 //    text1->setParentItem(this);
 //    //QGraphicsEllipseItem * ellipse2 = scene->addEllipse(0.0f, 40.0f, 8.0f, 8.0f, inputPen, operatorBrush);
-//    QGraphicsPixmapItem * ellipse2 = scene->addPixmap(QPixmap(":/GraphEditor/NodeInput16.png"));
+//    QGraphicsPixmapItem * ellipse2 = scene->addPixmap(QPixmap(":/GraphEditor/NodeInputIdle16.png"));
 //    ellipse2->setParentItem(this);
 //    ellipse2->setPos(-4.0f, 52.0f);
 //    QGraphicsSimpleTextItem * text2 = scene->addSimpleText("Item2");
 //    text2->setPos(16.0f, 54.0f);
 //    text2->setParentItem(this);
-//    QGraphicsPixmapItem * ellipse3 = scene->addPixmap(QPixmap(":/GraphEditor/NodeInput16.png"));
+//    QGraphicsPixmapItem * ellipse3 = scene->addPixmap(QPixmap(":/GraphEditor/NodeInputIdle16.png"));
 //    ellipse3->setParentItem(this);
 //    ellipse3->setPos(116.0f, 36.0f);
 
@@ -134,13 +134,16 @@ void GraphNodeInputGraphicsItem::paint(QPainter* painter, const QStyleOptionGrap
 
     static const QPointF sPixOrigin(-GRAPHITEM_INPUT_HALF_WIDTHF, -GRAPHITEM_INPUT_HALF_WIDTHF);
 
-    QPixmap nodeInputPix(":/GraphEditor/NodeInput16.png");
+    bool isSelected = (option->state & QStyle::State_Selected) != 0;
+    bool isHovering = (option->state & QStyle::State_MouseOver) != 0;
+
+    /*****/QPixmap nodeInputPix(isSelected ? ":/GraphEditor/NodeInputSelect16.png" : (isHovering ? ":/GraphEditor/NodeInputHover16.png" : ":/GraphEditor/NodeInputIdle16.png"));
     painter->drawPixmap(sPixOrigin, /****/nodeInputPix);
 }
 
 //----------------------------------------------------------------------------------------
 
-QVariant GraphNodeInputGraphicsItem::itemChange(GraphicsItemChange change, const QVariant &value)
+QVariant GraphNodeInputGraphicsItem::itemChange(GraphicsItemChange change, const QVariant& value)
 {
     switch (change)
     {
@@ -295,30 +298,36 @@ QVariant GraphNodeInputGraphicsItem::itemChange(GraphicsItemChange change, const
 
 //----------------------------------------------------------------------------------------
 
-void GraphNodeInputGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void GraphNodeInputGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
     update();
-    QGraphicsItem::mousePressEvent(event);
+    emit StartFloatingSrcConnection(this, mouseEvent);
+    mouseEvent->accept();
+
+    QGraphicsItem::mousePressEvent(mouseEvent);
 }
 
 //----------------------------------------------------------------------------------------
 
-void GraphNodeInputGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+void GraphNodeInputGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
     // Consider the next time we move the same node as a new undo command
     // (do not test for left button, it does not seem to work)
     //sMouseClickID++;
 
     update();
-    QGraphicsItem::mouseReleaseEvent(event);
+    emit EndFloatingSrcConnection(this, mouseEvent);
+    mouseEvent->accept();
+
+    QGraphicsItem::mouseReleaseEvent(mouseEvent);
 }
 
 //----------------------------------------------------------------------------------------
 
-void GraphNodeInputGraphicsItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+void GraphNodeInputGraphicsItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
     update();
-    QGraphicsItem::mouseDoubleClickEvent(event);
+    QGraphicsItem::mouseDoubleClickEvent(mouseEvent);
     //*****emit(DoubleClicked(mBlockProxy));
 }
 

@@ -86,11 +86,6 @@
     <Filter Include="Source\PropertyGrid\qtpropertybrowser\images">
       <UniqueIdentifier>{e54f0e6a-72f8-4b4c-88e6-a5564633024a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h</Extensions>
-      <ParseFiles>true</ParseFiles>
-    </Filter>
     <Filter Include="Source\Graph\Items">
       <UniqueIdentifier>{d14f72d0-a718-4784-8773-8c3f58df2b51}</UniqueIdentifier>
     </Filter>
@@ -627,6 +622,15 @@
     <ClCompile Include="..\..\..\Source\Editor\Graph\Items\GraphConnectionGraphicsItem.cpp">
       <Filter>Source\Graph\Items</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_GraphEditorGraphicsScene.cpp">
+      <Filter>Generated\Dev-Opt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_GraphEditorGraphicsScene.cpp">
+      <Filter>Generated\Dev-Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Source\Editor\Graph\GraphEditorGraphicsScene.cpp">
+      <Filter>Source\Graph</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\Source\Editor\Timeline\TimelineDockWidget.ui">
@@ -838,6 +842,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\Source\Editor\Graph\Items\GraphConnectionGraphicsItem.h">
       <Filter>Source\Graph\Items</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Graph\GraphEditorGraphicsScene.h">
+      <Filter>Source\Graph</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

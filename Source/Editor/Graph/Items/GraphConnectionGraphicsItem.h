@@ -24,12 +24,19 @@ class GraphConnectionGraphicsItem : public QGraphicsObject
 {
     Q_OBJECT
 
-public:
+    // The constructor and destructor are private. The only way to create or remove a connection
+    // is through GraphEditorGraphicsScene
+
+private:
+
+    friend class GraphEditorGraphicsScene;
 
     //! Constructor
     //! \param scene Scene the item will belong to
-    //! \param srcOutput Node output that is the source of the connection (!= nullptr)
-    //! \param dstInput Node input that is the destination of the connection (!= nullptr)
+    //! \param srcOutput Node output that is the source of the connection,
+    //!                 or nullptr for a floating connection
+    //! \param dstInput Node input that is the destination of the connection,
+    //!                 or nullptr for a floating connection
     //! \param undoStack Undo stack associated with the item
     //! \warning Use scene for access to the scene, and not scene(),
     //!          as it is not defined yet in the constructor
@@ -41,18 +48,37 @@ public:
     //! Destructor
     virtual ~GraphConnectionGraphicsItem();
 
+    //! Test if the connection is floating
+    //! \return True if either the source output or the destination input is undefined
+    inline bool IsFloating() const { return (mSrcOutput == nullptr) || (mDstInput == nullptr); }
+
+    //------------------------------------------------------------------------------------
+    
+public:
+
     //! Get the node output that is the source of the connection
-    //! \return Pointer to the node output that is the source of the connection (!= nullptr)
+    //! \return Pointer to the node output that is the source of the connection,
+    //!         nullptr for a floating connection
     inline GraphNodeOutputGraphicsItem* GetSrcOutput() const { return mSrcOutput; }
 
     //! Get the node input that is the destination of the connection
-    //! \return Pointer to the node input that is the destination of the connection (!= nullptr)
+    //! \return Pointer to the node input that is the destination of the connection,
+    //!         nullptr for a floating connection
     inline GraphNodeInputGraphicsItem* GetDstInput() const { return mDstInput; }
 
     //! Call when the source output or destination input are being moved,
     //! to update the connection's geometry and ask for a redraw
     void AdjustGeometry();
 
+    //! Call when the start point is being moved while floating,
+    //! to update the connection's geometry and ask for a redraw
+    //! \param srcOutputPos Scene position of the current start point of the connection when floating
+    void AdjustSrcGeometry(QPointF srcOutputPos);
+
+    //! Call when the end point is being moved while floating,
+    //! to update the connection's geometry and ask for a redraw
+    //! \param dstInputPos Scene position of the current end point of the connection when floating
+    void AdjustDstGeometry(QPointF dstInputPos);
 
     //! \todo Document those functions
 
@@ -92,7 +118,8 @@ private:
     //! Node output that is the source of the connection (!= nullptr)
     GraphNodeOutputGraphicsItem* mSrcOutput;
 
-    //! Node input that is the destination of the connection (!= nullptr)
+    //! Node input that is the destination of the connection.
+    //! nullptr for a floating connection
     GraphNodeInputGraphicsItem* mDstInput;
 
 
@@ -113,6 +140,12 @@ private:
     ////! Mouse click ID, unique for each time the click is maintained while moving a node.
     ////! Used to create new undo commands each time the mouse click is released.
     //static unsigned int sMouseClickID;
+
+    //! Scene position of the current start point of the connection when floating
+    QPointF mFloatingSrcOutputPos;
+
+    //! Scene position of the current end point of the connection when floating
+    QPointF mFloatingDstInputPos;
 };
 
 

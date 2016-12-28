@@ -14,10 +14,7 @@
 
 #include <QGraphicsView>
 
-class GraphNodeGraphicsItem;
-class GraphConnectionGraphicsItem;
-class GraphNodeOutputGraphicsItem;
-class GraphNodeInputGraphicsItem;
+class GraphEditorGraphicsScene;
 
 
 //! Generic graphics view for a graph editor (texture, mesh, etc.)
@@ -30,19 +27,15 @@ public:
     GraphEditorGraphicsView(QWidget *parent = 0);
     ~GraphEditorGraphicsView();
 
+    //! Get the scene associated with the view
+    inline GraphEditorGraphicsScene* GetScene() const { return mScene; }
 
-    //! Create a new node item in the view
-    //! \param title Name that appears in the header of the node
-    //! \param inputList List of inputs for the new node
-    //! \return Created node graphics item
-    GraphNodeGraphicsItem* CreateNode(const QString& title, const QList<QString>& inputList);
+    //------------------------------------------------------------------------------------
 
-    //! Create a new connection item between a source node output and a destination node input
-    //! \param srcOutput Output item of the source node
-    //! \param dstInput One of the input items of the destination node
-    //! \return Created connection graphics item, nullptr in case of error
-    GraphConnectionGraphicsItem* CreateConnection(GraphNodeOutputGraphicsItem* srcOutput,
-                                                  GraphNodeInputGraphicsItem* dstInput);
+private:
+
+    //! Scene associated with the view
+    GraphEditorGraphicsScene* mScene;
 };
 
 

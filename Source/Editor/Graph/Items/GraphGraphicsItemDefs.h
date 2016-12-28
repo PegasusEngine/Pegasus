@@ -106,6 +106,8 @@ static const float GRAPHITEM_CONNECTION_CONTROL_VECTOR_LENGTH = 50.0f;
 
 //! Color of the connections
 static QColor GRAPHITEM_CONNECTION_COLOR = QColor(170, 198, 198, 255);
+static QColor GRAPHITEM_SELECTED_CONNECTION_COLOR = QColor(210, 159, 90, 255);
+static QColor GRAPHITEM_FLOATING_CONNECTION_COLOR = QColor(210, 159, 90, 255);
 
 //! Margin around the spline in pixels to expand the control box (>= GRAPHITEM_CONNECTION_WIDTH)
 static const float GRAPHITEM_CONNECTION_MARGIN = 5.0f;
@@ -121,8 +123,12 @@ static const float GRAPHITEM_INPUT_Z_VALUE = 3.0f;
 //! Depth of the node outputs in the scene (in front of the nodes)
 static const float GRAPHITEM_OUTPUT_Z_VALUE = 3.0f;
 
-//! Depth of the node inputs in the scene (behind inputs and outputs)
+//! Depth of the connections in the scene (behind inputs and outputs)
 static const float GRAPHITEM_CONNECTION_Z_VALUE = 1.0f;
+
+//! Depth of the floating connections in the scene
+//! (behind inputs and outputs, but in front of regular connections)
+static const float GRAPHITEM_FLOATING_CONNECTION_Z_VALUE = 1.5f;
 
 
 #endif // EDITOR_GRAPHGRAPHICSITEMDEFS_H

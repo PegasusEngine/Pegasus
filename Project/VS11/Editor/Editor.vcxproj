@@ -133,6 +133,7 @@
     <ClCompile Include="..\..\..\Source\Editor\Debug\PropertyGridClasses\PropertyGridClassesDockWidget.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Editor.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Graph\GraphEditorDockWidget.cpp" />
+    <ClCompile Include="..\..\..\Source\Editor\Graph\GraphEditorGraphicsScene.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Graph\GraphEditorGraphicsView.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Graph\Items\GraphConnectionGraphicsItem.cpp" />
     <ClCompile Include="..\..\..\Source\Editor\Graph\Items\GraphNodeGraphicsItem.cpp" />
@@ -230,6 +231,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_GraphEditorDockWidget.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Debug\moc_GraphEditorGraphicsScene.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Dev-Debug\moc_GraphEditorGraphicsView.cpp">
@@ -403,6 +407,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Dev-Opt\moc_GraphEditorDockWidget.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Dev-Opt\moc_GraphEditorGraphicsScene.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Dev-Opt\moc_GraphEditorGraphicsView.cpp">
@@ -898,6 +905,16 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_OPT "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture" "-I.\..\..\..\Source\Editor\Graph\Items"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">Moc%27ing GraphConnectionGraphicsItem.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_DEBUG "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture" "-I.\..\..\..\Source\Editor\Graph\Items"</Command>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\Source\Editor\Graph\GraphEditorGraphicsScene.h">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">Moc%27ing GraphEditorGraphicsScene.h...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_OPT "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture" "-I.\..\..\..\Source\Editor\Graph\Items"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">Moc%27ing GraphEditorGraphicsScene.h...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DQT_DLL -DQT_CORE_LIB -DQT_GUI_LIB -DQT_CONCURRENT_LIB -DQT_WIDGETS_LIB -DQT_XML_LIB -DQT_XMLPATTERNS_LIB "-D\"$(INHERIT)\"" -D_PEGASUS_DEV -D_PEGASUS_DEBUG "-I$(SolutionDir)..\..\Include" "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtConcurrent" "-I$(QTDIR)\include\QtWidgets" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include\QtXmlPatterns" "-I.\..\..\..\Source\Editor\Timeline" "-I.\..\..\..\Source\Editor" "-I.\..\..\..\Source\Editor\Console" "-I.\..\..\..\Source\Editor\Settings" "-I.\..\..\..\Source\Editor\Widgets" "-I.\..\..\..\Source\Editor\Console\ConsoleChannelColorTable" "-I.\..\..\..\Source\Editor\History" "-I.\..\..\..\Source\Editor\Graph" "-I.\..\..\..\Source\Editor\Texture" "-I.\..\..\..\Source\Editor\Graph\Items"</Command>
     </CustomBuild>

@@ -11,6 +11,7 @@
 
 #include "Graph/GraphEditorDockWidget.h"
 #include "Graph/GraphEditorGraphicsView.h"
+#include "Graph/GraphEditorGraphicsScene.h"
 #include "Graph/Items/GraphNodeGraphicsItem.h"
 #include "Viewport/ViewportWidget.h"
 
@@ -79,18 +80,19 @@ void GraphEditorDockWidget::SetupUi()
     /********************/
     //! \todo TEMPORARY graph to see what the editor looks like
     QList<QString> inputList;
-    GraphNodeGraphicsItem* gradientItem = mGraphViewWidget->CreateNode("Gradient", inputList);
-    GraphNodeGraphicsItem* colorItem = mGraphViewWidget->CreateNode("Color", inputList);
+    GraphEditorGraphicsScene* scene = mGraphViewWidget->GetScene();
+    GraphNodeGraphicsItem* gradientItem = scene->CreateNode("Gradient", inputList);
+    GraphNodeGraphicsItem* colorItem = scene->CreateNode("Color", inputList);
 
     inputList.clear();
     inputList << "InputA";
     inputList << "InputB";
     inputList << "InputC";
-    GraphNodeGraphicsItem* blendItem = mGraphViewWidget->CreateNode("Blend", inputList);
+    GraphNodeGraphicsItem* blendItem = scene->CreateNode("Blend", inputList);
 
     inputList.clear();
     inputList << "Out";
-    GraphNodeGraphicsItem* outputItem = mGraphViewWidget->CreateNode("Output", inputList);
+    GraphNodeGraphicsItem* outputItem = scene->CreateNode("Output", inputList);
 
     GraphNodeOutputGraphicsItem* gradientOutputItem = gradientItem->GetOutputItem();
     GraphNodeOutputGraphicsItem* colorOutputItem = colorItem->GetOutputItem();
@@ -100,10 +102,10 @@ void GraphEditorDockWidget::SetupUi()
     GraphNodeOutputGraphicsItem* blendOutputItem = blendItem->GetOutputItem();
     GraphNodeInputGraphicsItem* outputInputItem0 = outputItem->GetInputItem(0);
 
-    mGraphViewWidget->CreateConnection(gradientOutputItem, blendInputItem0);
-    mGraphViewWidget->CreateConnection(gradientOutputItem, blendInputItem2);
-    mGraphViewWidget->CreateConnection(colorOutputItem, blendInputItem1);
-    mGraphViewWidget->CreateConnection(blendOutputItem, outputInputItem0);
+    scene->CreateConnection(gradientOutputItem, blendInputItem0);
+    scene->CreateConnection(gradientOutputItem, blendInputItem2);
+    scene->CreateConnection(colorOutputItem, blendInputItem1);
+    scene->CreateConnection(blendOutputItem, outputInputItem0);
     /********************/
 }
 

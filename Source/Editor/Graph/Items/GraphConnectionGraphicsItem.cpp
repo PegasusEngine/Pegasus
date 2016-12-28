@@ -36,11 +36,10 @@ GraphConnectionGraphicsItem::GraphConnectionGraphicsItem(GraphNodeOutputGraphics
 ,   mSrcOutput(srcOutput)
 ,   mDstInput(dstInput)
 {
-    ED_ASSERTSTR(srcOutput != nullptr, "Trying to create a connection between two nodes, but the source node output is null");
-    ED_ASSERTSTR(dstInput != nullptr, "Trying to create a connection between two nodes, but the destination node input is null");
+    ED_ASSERTSTR((srcOutput != nullptr) || (dstInput != nullptr),
+                 "Trying to create a connection between two nodes, but both input and output are null");
 
-    // Make the block movable and selectable with the mouse
-    //setFlag(ItemIsMovable);
+    // Make the connection selectable with the mouse
     setFlag(ItemIsSelectable);
 
     // Enable the itemChange() callback, to receive notifications about the item movements
@@ -53,14 +52,10 @@ GraphConnectionGraphicsItem::GraphConnectionGraphicsItem(GraphNodeOutputGraphics
     setCacheMode(DeviceCoordinateCache);
 
     // Set the depth of the connection (behind inputs and outputs)
-    setZValue(GRAPHITEM_CONNECTION_Z_VALUE);
+    setZValue(IsFloating() ? GRAPHITEM_FLOATING_CONNECTION_Z_VALUE : GRAPHITEM_CONNECTION_Z_VALUE);
 
     //! Assign a unique ID to the block for merging undo commands when moving the block
     //mNodeID = sCurrentNodeID++;
-
-    // Update the output and input to know we are connected to them
-    srcOutput->AddConnection(this);
-    dstInput->SetConnection(this);
 }
 
 //----------------------------------------------------------------------------------------
@@ -80,10 +75,26 @@ void GraphConnectionGraphicsItem::AdjustGeometry()
 
 //----------------------------------------------------------------------------------------
 
+void GraphConnectionGraphicsItem::AdjustSrcGeometry(QPointF srcOutputPos)
+{
+    mFloatingSrcOutputPos = srcOutputPos;
+    AdjustGeometry();
+}
+
+//----------------------------------------------------------------------------------------
+
+void GraphConnectionGraphicsItem::AdjustDstGeometry(QPointF dstInputPos)
+{
+    mFloatingDstInputPos = dstInputPos;
+    AdjustGeometry();
+}
+
+//----------------------------------------------------------------------------------------
+
 QRectF GraphConnectionGraphicsItem::boundingRect() const
 {
-    const QPointF srcPos = mSrcOutput->scenePos();
-    const QPointF dstPos = mDstInput->scenePos();
+    const QPointF srcPos = (mSrcOutput != nullptr ? mSrcOutput->scenePos() : mFloatingSrcOutputPos);
+    const QPointF dstPos = (mDstInput  != nullptr ? mDstInput->scenePos()  : mFloatingDstInputPos );
 
     const qreal minX = srcPos.x() < dstPos.x() ? srcPos.x() : dstPos.x();
     const qreal maxX = srcPos.x() > dstPos.x() ? srcPos.x() : dstPos.x();
@@ -111,12 +122,14 @@ void GraphConnectionGraphicsItem::paint(QPainter* painter, const QStyleOptionGra
 {
     Q_UNUSED(widget);
 
-    const QPointF srcPos = mSrcOutput->scenePos();
-    const QPointF dstPos = mDstInput->scenePos();
+    const QPointF srcPos = (mSrcOutput != nullptr ? mSrcOutput->scenePos() : mFloatingSrcOutputPos);
+    const QPointF dstPos = (mDstInput  != nullptr ? mDstInput->scenePos()  : mFloatingDstInputPos );
 
     QPen pathPen;
     pathPen.setWidth(GRAPHITEM_CONNECTION_WIDTH);
-    pathPen.setColor(GRAPHITEM_CONNECTION_COLOR);
+    const bool isSelected = (option->state & QStyle::State_Selected) != 0;
+    pathPen.setColor(isSelected ? GRAPHITEM_SELECTED_CONNECTION_COLOR :
+                        (IsFloating() ? GRAPHITEM_FLOATING_CONNECTION_COLOR : GRAPHITEM_CONNECTION_COLOR));
     painter->setPen(pathPen);
 
     QPainterPath path;

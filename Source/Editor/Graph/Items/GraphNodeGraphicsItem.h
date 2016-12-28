@@ -25,7 +25,9 @@ class GraphNodeGraphicsItem : public QGraphicsObject
 {
     Q_OBJECT
 
-public:
+private:
+
+    friend class GraphEditorGraphicsScene;
 
     //! Constructor
     //! \param scene Scene the item will belong to
@@ -40,6 +42,10 @@ public:
     //! Destructor
     virtual ~GraphNodeGraphicsItem();
 
+    //------------------------------------------------------------------------------------
+    
+public:
+
     //! Add an input to the node
     //! \param name Name of the input, needs to be short to fit in the node item,
     //!             starts with an uppercase letter
@@ -51,7 +57,7 @@ public:
     inline unsigned int GetNumInputs() const { return static_cast<unsigned int>(mInputs.size()); }
 
     //! Get one of the input items
-    //! \param Index of the input (0 <= index < GetNumInputs())
+    //! \param index Index of the input (0 <= index < GetNumInputs())
     //! \return Pointer to the input item if the index is valid, nullptr otherwise
     GraphNodeInputGraphicsItem* GetInputItem(unsigned int index) const;
 

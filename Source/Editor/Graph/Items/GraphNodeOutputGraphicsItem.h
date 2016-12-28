@@ -40,6 +40,20 @@ public:
     //! \param connectionItem Connection graphics item to add
     void AddConnection(GraphConnectionGraphicsItem* connectionItem);
 
+    //! Disconnect a connection linked to this output
+    //! \warning Does not delete the connection item, only removes the weak pointer
+    //! \param connectionItem Connection graphics item to remove
+    void DisconnectConnection(GraphConnectionGraphicsItem* connectionItem);
+
+    //! Get the number of connections linked to this output
+    //! \return Number of connections linked to this output (>= 0)
+    inline unsigned int GetNumConnections() const { return mConnectionItems.size(); }
+
+    //! Get one of the connections linked to this output
+    //! \param index Index of the connection (0 <= index < GetNumConnections())
+    //! \return Connection linked to this output
+    inline GraphConnectionGraphicsItem* GetConnection(unsigned int index) const { return mConnectionItems[index]; }
+
 
     //! \todo Document those functions
 
@@ -56,6 +70,14 @@ public:
 
 signals:
 
+    //! Emitted when the user starts a new floating connection
+    void StartFloatingDstConnection(GraphNodeOutputGraphicsItem* outputItem,
+                                    QGraphicsSceneMouseEvent* mouseEvent);
+
+    //! Emitted when the user releases the current floating connection
+    void EndFloatingDstConnection(GraphNodeOutputGraphicsItem* outputItem,
+                                  QGraphicsSceneMouseEvent* mouseEvent);
+
     //! Emitted when the node has been moved by the user
     //void NodeMoved();
 
@@ -66,11 +88,11 @@ signals:
     
 protected:
 
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+    QVariant itemChange(GraphicsItemChange change, const QVariant& value);
 
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
+    void mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* mouseEvent);
 
     //------------------------------------------------------------------------------------
     

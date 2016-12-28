@@ -39,6 +39,14 @@ public:
     //! \param connectionItem Connection graphics item to set, nullptr to remove the connection
     void SetConnection(GraphConnectionGraphicsItem* connectionItem);
 
+    //! Disconnects the connection linked to this input
+    //! \warning Does not delete the connection item, only removes the weak pointer
+    inline void DisconnectConnection() { SetConnection(nullptr); }
+
+    //! Get the connection linked to this input
+    //! \return Connection graphics item, nullptr if no connection
+    inline GraphConnectionGraphicsItem* GetConnection() const { return mConnectionItem; }
+
 
     //! \todo Document those functions
 
@@ -55,6 +63,14 @@ public:
 
 signals:
 
+    //! Emitted when the user starts a new floating connection
+    void StartFloatingSrcConnection(GraphNodeInputGraphicsItem* inputItem,
+                                    QGraphicsSceneMouseEvent* mouseEvent);
+
+    //! Emitted when the user releases the current floating connection
+    void EndFloatingSrcConnection(GraphNodeInputGraphicsItem* inputItem,
+                                  QGraphicsSceneMouseEvent* mouseEvent);
+
     //! Emitted when the node has been moved by the user
     //void NodeMoved();
 
@@ -65,11 +81,11 @@ signals:
     
 protected:
 
-    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+    QVariant itemChange(GraphicsItemChange change, const QVariant& value);
 
-    void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
+    void mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent* mouseEvent);
 
     //------------------------------------------------------------------------------------
     

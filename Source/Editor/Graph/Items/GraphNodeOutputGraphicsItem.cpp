@@ -33,7 +33,7 @@ GraphNodeOutputGraphicsItem::GraphNodeOutputGraphicsItem(QGraphicsScene* scene, 
 {
     // Make the block movable and selectable with the mouse
     //setFlag(ItemIsMovable);
-    //setFlag(ItemIsSelectable);
+    setFlag(ItemIsSelectable);
 
     // Enable the itemChange() callback, to receive notifications about the item movements
     setFlag(ItemSendsScenePositionChanges);
@@ -70,6 +70,21 @@ void GraphNodeOutputGraphicsItem::AddConnection(GraphConnectionGraphicsItem* con
 
 //----------------------------------------------------------------------------------------
 
+void GraphNodeOutputGraphicsItem::DisconnectConnection(GraphConnectionGraphicsItem* connectionItem)
+{
+    if (connectionItem != nullptr)
+    {
+        const bool success = mConnectionItems.removeOne(connectionItem);
+        ED_ASSERTSTR(success, "Trying to remove a connection from an incorrect node output.");
+    }        
+    else
+    {
+        ED_FAILSTR("Trying to remove an invalid connection from a node output.");
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 QRectF GraphNodeOutputGraphicsItem::boundingRect() const
 {
     return QRectF(-GRAPHITEM_OUTPUT_HALF_WIDTHF, -GRAPHITEM_OUTPUT_HALF_WIDTHF,
@@ -87,13 +102,16 @@ void GraphNodeOutputGraphicsItem::paint(QPainter* painter, const QStyleOptionGra
 
     static const QPointF sPixOrigin(-GRAPHITEM_OUTPUT_HALF_WIDTHF, -GRAPHITEM_OUTPUT_HALF_WIDTHF);
 
-    QPixmap nodeOutputPix(":/GraphEditor/NodeOutput16.png");
+    bool isSelected = (option->state & QStyle::State_Selected) != 0;
+    bool isHovering = (option->state & QStyle::State_MouseOver) != 0;
+
+    /*****/QPixmap nodeOutputPix(isSelected ? ":/GraphEditor/NodeOutputSelect16.png" : (isHovering ? ":/GraphEditor/NodeOutputHover16.png" : ":/GraphEditor/NodeOutputIdle16.png"));
     painter->drawPixmap(sPixOrigin, /****/nodeOutputPix);
 }
 
 //----------------------------------------------------------------------------------------
 
-QVariant GraphNodeOutputGraphicsItem::itemChange(GraphicsItemChange change, const QVariant &value)
+QVariant GraphNodeOutputGraphicsItem::itemChange(GraphicsItemChange change, const QVariant& value)
 {
     switch (change)
     {
@@ -248,30 +266,36 @@ QVariant GraphNodeOutputGraphicsItem::itemChange(GraphicsItemChange change, cons
 
 //----------------------------------------------------------------------------------------
 
-void GraphNodeOutputGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void GraphNodeOutputGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
     update();
-    QGraphicsItem::mousePressEvent(event);
+    emit StartFloatingDstConnection(this, mouseEvent);
+    mouseEvent->accept();
+
+    QGraphicsItem::mousePressEvent(mouseEvent);
 }
 
 //----------------------------------------------------------------------------------------
 
-void GraphNodeOutputGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+void GraphNodeOutputGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
     // Consider the next time we move the same node as a new undo command
     // (do not test for left button, it does not seem to work)
     //sMouseClickID++;
 
     update();
-    QGraphicsItem::mouseReleaseEvent(event);
+    emit EndFloatingDstConnection(this, mouseEvent);
+    mouseEvent->accept();
+
+    QGraphicsItem::mouseReleaseEvent(mouseEvent);
 }
 
 //----------------------------------------------------------------------------------------
 
-void GraphNodeOutputGraphicsItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+void GraphNodeOutputGraphicsItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent* mouseEvent)
 {
     update();
-    QGraphicsItem::mouseDoubleClickEvent(event);
+    QGraphicsItem::mouseDoubleClickEvent(mouseEvent);
     //*****emit(DoubleClicked(mBlockProxy));
 }
 
