@@ -34,6 +34,7 @@
 #include <QDir>
 #include <QStatusBar>
 #include <QUndoStack>
+#include <QSignalMapper>
 #include "AssetLibrary/AssetLibraryWidget.h"
 
 const char* gShaderStageNames[Pegasus::Shader::SHADER_STAGES_COUNT] = {
@@ -202,8 +203,8 @@ void ProgramEditorWidget::SetShader(const QString& shaderFile, Pegasus::Shader::
             
             pd.shaders.remove(shaderType);
             mTabBar->MarkCurrentAsDirty();
-            ProgramIOMessageController::Message msg;
-            msg.SetMessageType(ProgramIOMessageController::Message::REMOVE_SHADER);
+            ProgramIOMCMessage msg;
+            msg.SetMessageType(ProgramIOMCMessage::REMOVE_SHADER);
             msg.SetShaderType(shaderType);
             msg.SetProgram(mCurrentProgram);
             emit SendProgramIoMessage(msg);
@@ -211,8 +212,8 @@ void ProgramEditorWidget::SetShader(const QString& shaderFile, Pegasus::Shader::
         else
         {
             pd.shaders[shaderType] = shaderFile;
-            ProgramIOMessageController::Message msg;
-            msg.SetMessageType(ProgramIOMessageController::Message::MODIFY_SHADER);
+            ProgramIOMCMessage msg;
+            msg.SetMessageType(ProgramIOMCMessage::MODIFY_SHADER);
             msg.SetShaderPath(shaderFile);
             msg.SetProgram(mCurrentProgram);
             emit SendProgramIoMessage(msg);
@@ -244,23 +245,23 @@ void ProgramEditorWidget::PostStatusBarMessage(const QString& msg)
     }
 }
 
-void ProgramEditorWidget::OnReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage id)
+void ProgramEditorWidget::OnReceiveAssetIoMessage(AssetIOMCMessage::IoResponseMessage id)
 {
     switch(id)
     {
-    case AssetIOMessageController::Message::IO_SAVE_SUCCESS:
+    case AssetIOMCMessage::IO_SAVE_SUCCESS:
         // This might create a race condition, if the user changes a tab wile the file is saving... to fix this we need
         // to pass the object around... if this becomes a problem then we could fix it later...
         mTabBar->ClearCurrentDirty();
         PostStatusBarMessage(tr("Saved file successfully."));
         break;
-    case AssetIOMessageController::Message::IO_SAVE_ERROR:
+    case AssetIOMCMessage::IO_SAVE_ERROR:
         PostStatusBarMessage(tr("IO Error saving file."));
         break;
-    case AssetIOMessageController::Message::IO_NEW_SUCCESS:
+    case AssetIOMCMessage::IO_NEW_SUCCESS:
         PostStatusBarMessage(tr(""));
         break;
-    case AssetIOMessageController::Message::IO_NEW_ERROR:
+    case AssetIOMCMessage::IO_NEW_ERROR:
         PostStatusBarMessage(tr("IO Error creating new program file."));
         break;
     default:
@@ -286,8 +287,8 @@ void ProgramEditorWidget::SignalSaveTab(int tabId)
     if (handle.IsValid())
     {
         PostStatusBarMessage(tr("")); //clear the message bar
-        AssetIOMessageController::Message msg;
-        msg.SetMessageType(AssetIOMessageController::Message::SAVE_ASSET);
+        AssetIOMCMessage msg;
+        msg.SetMessageType(AssetIOMCMessage::SAVE_ASSET);
         msg.SetObject(handle);
         SendAssetIoMessage(msg);
     }
@@ -297,7 +298,7 @@ void ProgramEditorWidget::SignalDiscardObjectChanges(AssetInstanceHandle object)
 {
     if (object.IsValid())
     {
-        AssetIOMessageController::Message msg(AssetIOMessageController::Message::RELOAD_FROM_ASSET);
+        AssetIOMCMessage msg(AssetIOMCMessage::RELOAD_FROM_ASSET);
         msg.SetObject(object);
         SendAssetIoMessage(msg);
     }
@@ -391,8 +392,8 @@ void ProgramEditorWidget::RequestCloseProgram(AssetInstanceHandle handle, QObjec
     ED_ASSERT(extraData != nullptr);
     delete extraData;
 
-    AssetIOMessageController::Message msg;
-    msg.SetMessageType(AssetIOMessageController::Message::CLOSE_ASSET);
+    AssetIOMCMessage msg;
+    msg.SetMessageType(AssetIOMCMessage::CLOSE_ASSET);
     msg.SetObject(handle);
 
 

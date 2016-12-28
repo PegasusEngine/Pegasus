@@ -13,6 +13,7 @@
 #include "Graph/Items/GraphConnectionGraphicsItem.h"
 #include "Graph/Items/GraphGraphicsItemDefs.h"
 
+#include <QAbstractScrollArea>
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>

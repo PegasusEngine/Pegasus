@@ -11,12 +11,13 @@
 
 #include "Timeline/TimelineUndoCommands.h"
 #include "Timeline/TimelineBlockGraphicsItem.h"
-#include "MessageControllers/TimelineIOMessageController.h"
+#include "Timeline/TimelineDockWidget.h"
 
 #include "Pegasus/Timeline/Shared/ITimelineManagerProxy.h"
 #include "Pegasus/Timeline/Shared/ITimelineProxy.h"
 #include "Pegasus/Timeline/Shared/ILaneProxy.h"
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"
+#include "MessageControllers/TimelineIOMessageController.h"
 
 
 #include <QObject>
@@ -65,8 +66,8 @@ TimelineSetBlockPositionUndoCommand::TimelineSetBlockPositionUndoCommand(Timelin
     const ShadowBlockState& blockState = blockItem->GetBlockProxy();
 
     //ask the render thread runtime the best available position for the candidate beat & lane.
-    TimelineIOMessageController::Message undoMsg(TimelineIOMessageController::Message::BLOCK_OPERATION);
-    undoMsg.SetBlockOp(TimelineIOMessageController::MOVE);
+    TimelineIOMCMessage undoMsg(TimelineIOMCMessage::BLOCK_OPERATION);
+    undoMsg.SetBlockOp(MOVE);
     undoMsg.SetTimelineHandle(mMessenger->GetTimelineAssetHandle());
     undoMsg.SetBlockGuid(blockState.GetGuid());
     undoMsg.SetLaneId(blockItem->GetLane());
@@ -74,8 +75,8 @@ TimelineSetBlockPositionUndoCommand::TimelineSetBlockPositionUndoCommand(Timelin
     undoMsg.SetArg(QVariant(blockItem->GetBeat()));
 
     //ask the render thread runtime the best available position for the candidate beat & lane.
-    TimelineIOMessageController::Message redoMsg(TimelineIOMessageController::Message::BLOCK_OPERATION);
-    redoMsg.SetBlockOp(TimelineIOMessageController::MOVE);
+    TimelineIOMCMessage redoMsg(TimelineIOMCMessage::BLOCK_OPERATION);
+    redoMsg.SetBlockOp(MOVE);
     redoMsg.SetTimelineHandle(mMessenger->GetTimelineAssetHandle());
     redoMsg.SetBlockGuid(blockState.GetGuid());
     redoMsg.SetLaneId(newLane);
@@ -122,7 +123,7 @@ int TimelineSetBlockPositionUndoCommand::id() const
 
 //----------------------------------------------------------------------------------------
 
-const TimelineIOMessageController::Message* TimelineSetBlockPositionUndoCommand::FindMessage(bool isUndoStack, unsigned blockGuid) const
+const TimelineIOMCMessage* TimelineSetBlockPositionUndoCommand::FindMessage(bool isUndoStack, unsigned blockGuid) const
 {
     const BlockMessageMap& targetMap = isUndoStack ? mUndoMessages : mRedoMessages;
     BlockMessageMap::const_iterator it = targetMap.find(blockGuid);
@@ -143,7 +144,7 @@ bool TimelineSetBlockPositionUndoCommand::mergeWith(const QUndoCommand * command
 
     for (BlockMessageMap::const_iterator it = otherCmd->mUndoMessages.begin(); it != otherCmd->mUndoMessages.end(); ++it)
     {
-        const TimelineIOMessageController::Message* thisMsg = FindMessage(true, it.value().GetBlockGuid());
+        const TimelineIOMCMessage* thisMsg = FindMessage(true, it.value().GetBlockGuid());
         if (thisMsg == nullptr)
         {
             mUndoMessages.insert(it.value().GetBlockGuid(), it.value());
@@ -152,7 +153,7 @@ bool TimelineSetBlockPositionUndoCommand::mergeWith(const QUndoCommand * command
 
     for (BlockMessageMap::const_iterator it = otherCmd->mRedoMessages.begin(); it != otherCmd->mRedoMessages.end(); ++it)
     {
-        const TimelineIOMessageController::Message* thisMsg = FindMessage(false, it.value().GetBlockGuid());
+        const TimelineIOMCMessage* thisMsg = FindMessage(false, it.value().GetBlockGuid());
         mRedoMessages.insert(it.value().GetBlockGuid(), it.value());
     }
 

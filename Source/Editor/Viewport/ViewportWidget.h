@@ -12,8 +12,7 @@
 #ifndef EDITOR_VIEWPORTWIDGET_H
 #define EDITOR_VIEWPORTWIDGET_H
 
-#include "MessageControllers/WindowIOMessageController.h"
-#include "MessageControllers/PropertyGridIOMessageController.h"
+#include "MessageControllers/MsgDefines.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 
 #include <QWidget>
@@ -84,7 +83,7 @@ public:
 
     void OnInitialized(const PropertyGridHandle& handle, const QString& title, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy);
 
-    void OnUpdated(const PropertyGridHandle& handle, const QVector<PropertyGridIOMessageController::UpdateElement>& els);
+    void OnUpdated(const PropertyGridHandle& handle, const QVector<PropertyGridIOMCUpdateElement>& els);
 
     void OnShutdown(const PropertyGridHandle& handle);
 
@@ -92,10 +91,10 @@ public:
 signals:
 
     //! Sends a message to the window controller
-    void OnSendWindowIoMessage(WindowIOMessageController::Message msg);
+    void OnSendWindowIoMessage(WindowIOMCMessage msg);
 
     //! Sends a message to the property grid controller
-    void OnSendPropertyGridIoMessage(PropertyGridIOMessageController::Message msg);
+    void OnSendPropertyGridIoMessage(PropertyGridIOMCMessage msg);
 
     //! Sends a message when this window is ready
     void OnWindowProxyReady();
@@ -113,27 +112,11 @@ protected:
 private:
 
     //! Observer of this widget, used to communicate with the IO controller.
-    class Observer : public PropertyGridObserver
-    {
-    public:
-        explicit Observer(ViewportWidget * parent) : mParent(parent) {}
-        virtual ~Observer() {}
-
-        virtual void OnInitialized(PropertyGridHandle handle, QString title, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy);
-
-        virtual void OnUpdated(PropertyGridHandle handle, const QVector<PropertyGridIOMessageController::UpdateElement>& els);
-
-        virtual void OnShutdown(PropertyGridHandle handle);
-
-        void OnShutdownInternal(PropertyGridHandle handle);
-
-    private:
-        ViewportWidget * mParent;
-    } * mObserver;
+    PropertyGridObserver* mObserver;
 
     //! Sets a boolean property of a component
-    void InitUpdateElement(Pegasus::App::ComponentType component, const char* name, PropertyGridIOMessageController::UpdateElement& outUpdateEl);
-    void SendUpdateEl(Pegasus::App::ComponentType component, PropertyGridIOMessageController::UpdateElement& el);
+    void InitUpdateElement(Pegasus::App::ComponentType component, const char* name, PropertyGridIOMCUpdateElement& outUpdateEl);
+    void SendUpdateEl(Pegasus::App::ComponentType component, PropertyGridIOMCUpdateElement& el);
 
     PropertyGridHandle mComponentPropertyHandles[Pegasus::App::COMPONENT_COUNT]; 
     QMap<QString, int> mComponentPropertyLookups[Pegasus::App::COMPONENT_COUNT]; 

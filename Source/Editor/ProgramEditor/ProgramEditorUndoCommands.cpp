@@ -1,4 +1,5 @@
 #include "ProgramEditor/ProgramEditorUndoCommands.h"
+#include "ProgramEditor/ProgramEditorWidget.h"
 
 static char gUniqueId = 'P';
 

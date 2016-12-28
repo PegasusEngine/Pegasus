@@ -15,6 +15,7 @@
 #include "Editor.h"
 
 #include <QObject>
+#include <QtCore/qobjectdefs.h>
 
 
 //! Use this macro for hard failures, typically code paths that should not be reached

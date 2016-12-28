@@ -21,6 +21,7 @@
 #include "Application/ApplicationManager.h"
 
 #include <QWheelEvent>
+#include <QScrollBar>
 
 
 TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
@@ -35,6 +36,12 @@ TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
     QGraphicsScene * scene = new QGraphicsScene(this);
     connect(scene, SIGNAL(selectionChanged()),
             this, SLOT(SelectionChanged()));
+
+    QScrollBar* hScrollArea = horizontalScrollBar();
+    connect(
+       hScrollArea, SIGNAL(valueChanged(int)),
+       this, SLOT(OnHorizontalScroll(int))
+    );
     
     // Set the indexing method of the items.
     // NoIndex is supposedly faster when items move a lot.
@@ -66,6 +73,9 @@ TimelineGraphicsView::TimelineGraphicsView(QWidget *parent)
     // Initialize members to default value, but do not create the default lane,
     // this will be done by a call to Initialize()
     Clear();
+
+    //set the initial lane positions
+    ResetLaneHeaderPositions();
 }
 
 //----------------------------------------------------------------------------------------
@@ -80,6 +90,23 @@ void TimelineGraphicsView::RedrawInternalBlocks()
             it.value()->update();
         }
     }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineGraphicsView::ResetLaneHeaderPositions()
+{
+    QScrollBar* hBar = horizontalScrollBar();
+    qreal viewOffset = qreal(hBar->sliderPosition() - hBar->minimum()) / (hBar->pageStep() + hBar->maximum() - hBar->minimum());
+    foreach (TimelineLaneHeaderGraphicsItem *item, mLaneHeaderItems)
+    {
+        qreal pixelSize = sceneRect().width();
+        item->setX(viewOffset * pixelSize );
+    }
+}
+void TimelineGraphicsView::OnHorizontalScroll(int amount)
+{
+    ResetLaneHeaderPositions();
 }
 
 //----------------------------------------------------------------------------------------
@@ -151,6 +178,8 @@ void TimelineGraphicsView::RefreshFromTimeline()
             RefreshLaneFromTimelineLane(l, laneState);
         }
     }
+
+    ResetLaneHeaderPositions();
 }
 
 //----------------------------------------------------------------------------------------
@@ -672,6 +701,9 @@ void TimelineGraphicsView::RefreshLaneFromTimelineLane(unsigned int laneIndex, c
         //connect block double clicekd message to this
         connect (item, SIGNAL(DoubleClicked(QString)),
                  this, SIGNAL(BlockDoubleClicked(QString)));
+
+        connect (item, SIGNAL(RequestDrawAllViewports()),
+                 this, SIGNAL(RequestDrawAllViewports()));
 
         // Connect request of this blocks request signal for new block script / remove blockscripts
         connect(item, SIGNAL(RequestChangeScript(QGraphicsObject*, unsigned)),

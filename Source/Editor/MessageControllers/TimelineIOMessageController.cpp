@@ -315,26 +315,26 @@ const Pegasus::PegasusAssetTypeDesc** TimelineIOMessageController::GetTypeList()
     return sAssetTypeList;
 }
 
-void TimelineIOMessageController::OnRenderThreadProcessMessage(const TimelineIOMessageController::Message& msg)
+void TimelineIOMessageController::OnRenderThreadProcessMessage(const TimelineIOMCMessage& msg)
 {
     switch(msg.GetMessageType())
     {
-    case TimelineIOMessageController::Message::SET_BLOCKSCRIPT:
+    case TimelineIOMCMessage::SET_BLOCKSCRIPT:
         OnSetBlockscript(msg.GetString(), msg.GetBlockGuid());
         break;
-    case TimelineIOMessageController::Message::CLEAR_BLOCKSCRIPT:
+    case TimelineIOMCMessage::CLEAR_BLOCKSCRIPT:
         OnClearBlockscript(msg.GetBlockGuid());
         break;
-    case TimelineIOMessageController::Message::SET_MASTER_BLOCKSCRIPT:
+    case TimelineIOMCMessage::SET_MASTER_BLOCKSCRIPT:
         OnSetMasterBlockscript(msg.GetString());
         break;
-    case TimelineIOMessageController::Message::CLEAR_MASTER_BLOCKSCRIPT:
+    case TimelineIOMCMessage::CLEAR_MASTER_BLOCKSCRIPT:
         OnClearMasterBlockscript();
         break;
-    case TimelineIOMessageController::Message::SET_PARAMETER:
+    case TimelineIOMCMessage::SET_PARAMETER:
         OnSetParameter(msg.GetTarget(), msg.GetTimelineHandle(), msg.GetLaneId(), msg.GetParameterName(), msg.GetArg(), msg.GetObserver());
         break;
-    case TimelineIOMessageController::Message::BLOCK_OPERATION:
+    case TimelineIOMCMessage::BLOCK_OPERATION:
         OnBlockOp(msg.GetTimelineHandle(), msg.GetBlockOp(), msg.GetBlockGuid(), msg.GetLaneId(), msg.GetArg(), msg.GetMouseClickId(), msg.GetObserver());
         break;
     default:
@@ -430,7 +430,7 @@ Pegasus::Timeline::ITimelineProxy* TimelineIOMessageController::ResolveTimeline(
     return nullptr;
 }
 
-void TimelineIOMessageController::OnSetParameter(TimelineIOMessageController::Target targetObject, const AssetInstanceHandle& timelineHandle, unsigned laneId, unsigned parameterName, const QVariant& paramValue, TimelineIOMessageObserver* observer)
+void TimelineIOMessageController::OnSetParameter(TimelineIOMCTarget targetObject, const AssetInstanceHandle& timelineHandle, unsigned laneId, unsigned parameterName, const QVariant& paramValue, TimelineIOMessageObserver* observer)
 {
 
     Pegasus::Timeline::ITimelineProxy* timelineProxy = ResolveTimeline(timelineHandle); 
@@ -439,14 +439,14 @@ void TimelineIOMessageController::OnSetParameter(TimelineIOMessageController::Ta
     {
         switch (targetObject)
         {
-        case TimelineIOMessageController::TIMELINE_OBJECT:
+        case TIMELINE_OBJECT:
             {
                 ShadowTimelineState::PropName propName = static_cast<ShadowTimelineState::PropName>(parameterName);
                 ShadowTimelineState::FlushProp(propName, paramValue, timelineProxy);
                 success = true;
             }
             break;
-        case TimelineIOMessageController::LANE_OBJECT:
+        case LANE_OBJECT:
             {
                 if (laneId < timelineProxy->GetNumLanes())
                 {
@@ -479,14 +479,14 @@ void TimelineIOMessageController::OnSetParameter(TimelineIOMessageController::Ta
 }
 
 
-void TimelineIOMessageController::OnBlockOp(const AssetInstanceHandle& timelineHandle, TimelineIOMessageController::BlockOp blockOp, unsigned blockGuid, unsigned targetLaneId, const QVariant& arg, unsigned mouseClickId, TimelineIOMessageObserver* observer)
+void TimelineIOMessageController::OnBlockOp(const AssetInstanceHandle& timelineHandle,TimelineIOMCBlockOp blockOp, unsigned blockGuid, unsigned targetLaneId, const QVariant& arg, unsigned mouseClickId, TimelineIOMessageObserver* observer)
 {
     Pegasus::Timeline::ITimelineProxy* timeline = ResolveTimeline(timelineHandle);
     if (timeline != nullptr)
     {
         bool performOperationsOnTimeline = false;
         bool performQuestioningOfTimeline = false;
-        TimelineIOMessageController::BlockOpResponse response;
+        TimelineIOMCBlockOpResponse response;
         response.op = blockOp;
         response.blockGuid = blockGuid;
         response.timelineHandle = timelineHandle;
@@ -494,13 +494,13 @@ void TimelineIOMessageController::OnBlockOp(const AssetInstanceHandle& timelineH
         response.mouseClickId = mouseClickId;
         switch (blockOp)
         {
-        case TimelineIOMessageController::ASK_POSITION:
+        case ASK_POSITION:
             {
                 performOperationsOnTimeline = false;
                 performQuestioningOfTimeline = true;
             }
             break;
-        case TimelineIOMessageController::MOVE:
+        case MOVE:
             {
                 performOperationsOnTimeline = true;
                 performQuestioningOfTimeline = true;
@@ -557,8 +557,8 @@ TimelineIOMessageObserver::TimelineIOMessageObserver()
     connect(this,SIGNAL(SignalParameterUpdated(AssetInstanceHandle, unsigned, unsigned, unsigned, QVariant)),
             this, SLOT(SlotParameterUpdated(AssetInstanceHandle, unsigned, unsigned, unsigned, QVariant)),
             Qt::QueuedConnection);
-    connect(this,SIGNAL(SignalBlockOpResponse(TimelineIOMessageController::BlockOpResponse)),
-            this, SLOT(SlotBlockOpResponse(TimelineIOMessageController::BlockOpResponse)),
+    connect(this,SIGNAL(SignalBlockOpResponse(TimelineIOMCBlockOpResponse)),
+            this, SLOT(SlotBlockOpResponse(TimelineIOMCBlockOpResponse)),
             Qt::QueuedConnection);
 }
 
@@ -567,7 +567,7 @@ void TimelineIOMessageObserver::SlotParameterUpdated(AssetInstanceHandle timelin
     OnParameterUpdated(timelineHandle, laneId, parameterTarget, parameterName, parameterValue);
 }
 
-void TimelineIOMessageObserver::SlotBlockOpResponse(TimelineIOMessageController::BlockOpResponse response)
+void TimelineIOMessageObserver::SlotBlockOpResponse(TimelineIOMCBlockOpResponse response)
 {
     OnBlockOpResponse(response);
 }

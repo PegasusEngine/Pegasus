@@ -10,7 +10,6 @@
 //! \brief	Widget show the tree of a property grid
 
 #include "PropertyGrid/PropertyGridWidget.h"
-
 #include "PropertyGrid/qtpropertybrowser/qttreepropertybrowser.h"
 #include "PropertyGrid/qtpropertybrowser/qtpropertymanager.h"
 #include "PropertyGrid/qtpropertybrowser/qteditorfactory.h"
@@ -21,11 +20,30 @@
 #include "Pegasus/PropertyGrid/Shared/IPropertyGridEnumTypeInfo.h"
 #include "Pegasus/PropertyGrid/Shared/PropertyDefs.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
+#include "MessageControllers/PropertyGridIOMessageController.h"
+#include "Widgets/PegasusDockWidget.h"
 
 #include <QVBoxLayout>
 #include <QPair>
 #include <QStack>
+#include <QLabel>
+class PgwObserver : public PropertyGridObserver
+{
+public:
+    explicit PgwObserver(PropertyGridWidget * parent) : mParent(parent) {}
+    virtual ~PgwObserver() {}
 
+    virtual void OnInitialized(PropertyGridHandle handle, QString title, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy);
+
+    virtual void OnUpdated(PropertyGridHandle handle, const QVector<PropertyGridIOMCUpdateElement>& els);
+
+    virtual void OnShutdown(PropertyGridHandle handle);
+
+    void OnShutdownInternal(PropertyGridHandle handle);
+
+private:
+    PropertyGridWidget * mParent;
+};
 
 PropertyGridWidget::PropertyGridWidget(QWidget * parent)
 :   QWidget(parent)
@@ -81,7 +99,7 @@ PropertyGridWidget::PropertyGridWidget(QWidget * parent)
     layout->setMargin(0);
     layout->setSpacing(0);
 
-    mObserver = new PropertyGridWidget::Observer(this);
+    mObserver = new PgwObserver(this);
 }
 
 //----------------------------------------------------------------------------------------
@@ -100,7 +118,7 @@ void PropertyGridWidget::intPropertyChanged(QtProperty * property)
     unsigned int propertyIndex = 0;
     const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
     
-    PropertyGridIOMessageController::UpdateElement el;
+    PropertyGridIOMCUpdateElement el;
     el.mCategory = record->category;
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_INT;
     el.mData.i = mIntManager.value(property);
@@ -119,7 +137,7 @@ void PropertyGridWidget::boolPropertyChanged(QtProperty * property)
     unsigned int propertyIndex = 0;
     const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
 
-    PropertyGridIOMessageController::UpdateElement el;
+    PropertyGridIOMCUpdateElement el;
     el.mCategory = record->category;
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_BOOL;
     el.mData.b = mBoolManager.value(property);
@@ -138,7 +156,7 @@ void PropertyGridWidget::uintPropertyChanged(QtProperty * property)
     unsigned int propertyIndex = 0;
     const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
 
-    PropertyGridIOMessageController::UpdateElement el;
+    PropertyGridIOMCUpdateElement el;
     el.mCategory = record->category;
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_UINT;
     el.mData.u = mUIntManager.value(property);
@@ -157,7 +175,7 @@ void PropertyGridWidget::floatPropertyChanged(QtProperty * property)
     unsigned int propertyIndex = 0;
     const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
 
-    PropertyGridIOMessageController::UpdateElement el;
+    PropertyGridIOMCUpdateElement el;
     el.mCategory = record->category;
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_FLOAT;
     el.mData.f = mFloatManager.value(property);
@@ -176,7 +194,7 @@ void PropertyGridWidget::vec2PropertyChanged(QtProperty * property)
     unsigned int propertyIndex = 0;
     const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
 
-    PropertyGridIOMessageController::UpdateElement el;
+    PropertyGridIOMCUpdateElement el;
     el.mCategory = record->category;
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_VEC2;
     Vec2Property v = mVec2Manager.value(property);
@@ -197,7 +215,7 @@ void PropertyGridWidget::vec3PropertyChanged(QtProperty * property)
     unsigned int propertyIndex = 0;
     const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
 
-    PropertyGridIOMessageController::UpdateElement el;
+    PropertyGridIOMCUpdateElement el;
     el.mCategory = record->category;
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_VEC3;
     Vec3Property v = mVec3Manager.value(property);
@@ -219,7 +237,7 @@ void PropertyGridWidget::vec4PropertyChanged(QtProperty * property)
     unsigned int propertyIndex = 0;
     const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
 
-    PropertyGridIOMessageController::UpdateElement el;
+    PropertyGridIOMCUpdateElement el;
     el.mCategory = record->category;
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_VEC4;
     Vec4Property v = mVec4Manager.value(property);
@@ -242,7 +260,7 @@ void PropertyGridWidget::rgbPropertyChanged(QtProperty * property)
     unsigned int propertyIndex = 0;
     const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
 
-    PropertyGridIOMessageController::UpdateElement el;
+    PropertyGridIOMCUpdateElement el;
     el.mCategory = record->category;
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_COLOR8RGB;
     QColor c = mColor8RGBManager.value(property);
@@ -265,7 +283,7 @@ void PropertyGridWidget::rgbaPropertyChanged(QtProperty * property)
     unsigned int propertyIndex = 0;
     const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
 
-    PropertyGridIOMessageController::UpdateElement el;
+    PropertyGridIOMCUpdateElement el;
     el.mCategory = record->category;
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_COLOR8RGBA;
     QColor c = mColor8RGBAManager.value(property);
@@ -287,7 +305,7 @@ void PropertyGridWidget::s64PropertyChanged(QtProperty * property)
     unsigned int propertyIndex = 0;
     const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
 
-    PropertyGridIOMessageController::UpdateElement el;
+    PropertyGridIOMCUpdateElement el;
     el.mCategory = record->category;
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_STRING64;
     QString s = mString64Manager.value(property);
@@ -310,7 +328,7 @@ void PropertyGridWidget::enumPropertyChanged(QtProperty * property)
     unsigned int propertyIndex = 0;
     const Pegasus::PropertyGrid::PropertyRecord * record = FindPropertyRecord(property, propertyIndex);
 
-    PropertyGridIOMessageController::UpdateElement el;
+    PropertyGridIOMCUpdateElement el;
     el.mCategory = record->category;
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_CUSTOM_ENUM;
     int e = mEnumManager.value(property);
@@ -323,10 +341,10 @@ void PropertyGridWidget::enumPropertyChanged(QtProperty * property)
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::UpdateProxy(const PropertyGridIOMessageController::UpdateElement & el)
+void PropertyGridWidget::UpdateProxy(const PropertyGridIOMCUpdateElement & el)
 {
-    PropertyGridIOMessageController::Message msg;
-    msg.SetMessageType(PropertyGridIOMessageController::Message::UPDATE);
+    PropertyGridIOMCMessage msg;
+    msg.SetMessageType(PropertyGridIOMCMessage::UPDATE);
     msg.SetPropertyGridHandle(mProxyHandle);
     msg.GetUpdateBatch().push_back(el);
     mMessenger->SendPropertyGridIoMessage(msg);
@@ -341,8 +359,8 @@ void PropertyGridWidget::SendCloseMessage()
     if (mProxyHandle != INVALID_PGRID_HANDLE)
     {
         // Send a message to close the observer of this handle
-        PropertyGridIOMessageController::Message msg;
-        msg.SetMessageType(PropertyGridIOMessageController::Message::CLOSE);
+        PropertyGridIOMCMessage msg;
+        msg.SetMessageType(PropertyGridIOMCMessage::CLOSE);
         msg.SetPropertyGridObserver(mObserver);
         msg.SetPropertyGridHandle(mProxyHandle);
         mMessenger->SendPropertyGridIoMessage(msg);
@@ -376,8 +394,8 @@ void PropertyGridWidget::SetCurrentProxy(AssetInstanceHandle assetHandle)
 {
     ClearProperties();
 
-    PropertyGridIOMessageController::Message msg;
-    msg.SetMessageType(PropertyGridIOMessageController::Message::OPEN_FROM_ASSET_HANDLE);
+    PropertyGridIOMCMessage msg;
+    msg.SetMessageType(PropertyGridIOMCMessage::OPEN_FROM_ASSET_HANDLE);
     msg.SetPropertyGridObserver(mObserver);
     msg.SetAssetHandle(assetHandle);
     mMessenger->SendPropertyGridIoMessage(msg);
@@ -387,8 +405,8 @@ void PropertyGridWidget::SetCurrentTimelineBlock(AssetInstanceHandle timelineHan
 {
     ClearProperties();
 
-    PropertyGridIOMessageController::Message msg;
-    msg.SetMessageType(PropertyGridIOMessageController::Message::OPEN_BLOCK_FROM_TIMELINE);
+    PropertyGridIOMCMessage msg;
+    msg.SetMessageType(PropertyGridIOMCMessage::OPEN_BLOCK_FROM_TIMELINE);
     msg.SetPropertyGridObserver(mObserver);
     msg.SetAssetHandle(timelineHandle);
     msg.SetBlockGuid(blockGuid);
@@ -612,11 +630,11 @@ void PropertyGridWidget::Clear()
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::OnUpdated(PropertyGridHandle handle, const QVector<PropertyGridIOMessageController::UpdateElement> & els)
+void PropertyGridWidget::OnUpdated(PropertyGridHandle handle, const QVector<PropertyGridIOMCUpdateElement> & els)
 {
     if (mProxyHandle == handle)
     {
-        foreach (const PropertyGridIOMessageController::UpdateElement & el, els)
+        foreach (const PropertyGridIOMCUpdateElement & el, els)
         {
             if (el.mIndex >= 0 && el.mIndex < mProperties[el.mCategory].size())
             {
@@ -710,28 +728,28 @@ void PropertyGridWidget::OnUpdated(PropertyGridHandle handle, const QVector<Prop
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::Observer::OnInitialized(PropertyGridHandle handle, QString title, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy)
+void PgwObserver::OnInitialized(PropertyGridHandle handle, QString title, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy)
 {
     mParent->OnInitialized(handle, title, objectProxy);
 }
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::Observer::OnUpdated(PropertyGridHandle handle, const QVector<PropertyGridIOMessageController::UpdateElement>& els)
+void PgwObserver::OnUpdated(PropertyGridHandle handle, const QVector<PropertyGridIOMCUpdateElement>& els)
 {
     mParent->OnUpdated(handle, els);
 }
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::Observer::OnShutdown(PropertyGridHandle handle)
+void PgwObserver::OnShutdown(PropertyGridHandle handle)
 {
     OnShutdownInternal(handle);
 }
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridWidget::Observer::OnShutdownInternal(PropertyGridHandle handle)
+void PgwObserver::OnShutdownInternal(PropertyGridHandle handle)
 {
     mParent->Clear();
 }

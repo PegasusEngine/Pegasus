@@ -22,8 +22,10 @@
 #include "Pegasus/Window/Shared/IWindowProxy.h"
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
 #include "CodeEditor\SourceCodeManagerEventListener.h"
+#include "Timeline/TimelineDockWidget.h"
 
 #include <QTimer>
+#include <QEventLoop>
 #include <stdio.h>
 
 #if PEGASUS_PLATFORM_WINDOWS

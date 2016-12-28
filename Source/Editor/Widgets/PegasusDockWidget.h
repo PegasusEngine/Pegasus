@@ -13,10 +13,7 @@
 #define EDITOR_PEGASUS_DOCK_WIDGET_H
 
 #include <QDockWidget>
-#include "MessageControllers/AssetIOMessageController.h"
-#include "MessageControllers/TimelineIOMessageController.h"
-#include "MessageControllers/PropertyGridIOMessageController.h"
-#include "MessageControllers/GraphIOMessageController.h"
+#include "MessageControllers/MsgDefines.h"
 
 // fwd declarations
 namespace Pegasus {
@@ -68,16 +65,16 @@ public:
     virtual const char* GetTitle() const = 0;
 
     //! Sends a message to the asset IO controller
-    void SendAssetIoMessage(const AssetIOMessageController::Message& msg);
+    void SendAssetIoMessage(const AssetIOMCMessage& msg);
 
     //! Sends a message to the property grid IO controller
-    void SendPropertyGridIoMessage(const PropertyGridIOMessageController::Message& msg);
+    void SendPropertyGridIoMessage(const PropertyGridIOMCMessage& msg);
 
     //! Sends a message to the graph IO controller
-    void SendGraphIoMessage(const GraphIOMessageController::Message& msg);
+    void SendGraphIoMessage(const GraphIOMCMessage& msg);
 
     //! Sends a message to the timeline IO controller
-    void SendTimelineIoMessage(const TimelineIOMessageController::Message& msg);
+    void SendTimelineIoMessage(const TimelineIOMCMessage& msg);
 
     //! Returns the current undo stack in focus for this widget
     //! \return implementation specific, must return the current active undo stack of this widget
@@ -115,15 +112,19 @@ signals:
     void OnUnregisterDirtyObject(AssetInstanceHandle object);
 
     //! Sends a message to the asset IO controller
-    void OnSendAssetIoMessage(PegasusDockWidget* sender, AssetIOMessageController::Message msg);
+    void OnSendAssetIoMessage(PegasusDockWidget* sender, AssetIOMCMessage msg);
 
     //! Sends a message to the property grid IO controller
-    void OnSendPropertyGridIoMessage(PropertyGridIOMessageController::Message msg);
+    void OnSendPropertyGridIoMessage(PropertyGridIOMCMessage msg);
 
     //! Sends a message to the graph IO controller
-    void OnSendGraphIoMessage(GraphIOMessageController::Message msg);
+    void OnSendGraphIoMessage(GraphIOMCMessage msg);
+
     //! Sends a message to the timeline message controller.
-    void OnSendTimelineIoMessage(TimelineIOMessageController::Message msg);
+    void OnSendTimelineIoMessage(TimelineIOMCMessage msg);
+
+    //! Generic request a frame from the render thread.
+    void OnRequestRedrawAllViewports();
 
 public slots:
     
@@ -134,7 +135,7 @@ public slots:
     void UpdateUIForAppClosed();
 
     //! Receives an IO message
-    void ReceiveAssetIoMessage(PegasusDockWidget* sender, AssetIOMessageController::Message::IoResponseMessage msg) { if (this == sender) { OnReceiveAssetIoMessage(msg); } }
+    void ReceiveAssetIoMessage(PegasusDockWidget* sender, AssetIOMCMessage::IoResponseMessage msg) { if (this == sender) { OnReceiveAssetIoMessage(msg); } }
 
     //! Received when an object has be requested to be opened.
     void ReceiveOpenRequest(AssetInstanceHandle object, const QString& displayName, const QVariant& initData) { OnOpenObject(object, displayName, initData); }
@@ -142,7 +143,7 @@ public slots:
 protected:
     // Receive an IO message, to be implemented by the widget
     //! \param msg the message
-    virtual void OnReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage msg) {}
+    virtual void OnReceiveAssetIoMessage(AssetIOMCMessage::IoResponseMessage msg) {}
 
     //! Callback called when an app has been loaded
     virtual void OnUIForAppLoaded(Pegasus::App::IApplicationProxy* application) {}

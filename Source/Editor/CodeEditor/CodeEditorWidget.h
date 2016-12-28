@@ -15,8 +15,7 @@
 #include <QDockWidget>
 #include "CodeEditor/CodeTextEditorTreeWidget.h"
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
-#include "MessageControllers/AssetIOMessageController.h"
-#include "MessageControllers/SourceIOMessageController.h"
+#include "MessageControllers/MsgDefines.h"
 #include "Widgets/PegasusDockWidget.h"
 #include <QMap>
 
@@ -100,7 +99,7 @@ signals:
     void RequestCompilationBegin();
 
     //! Sends a message to the source IO controller
-    void SendSourceIoMessage(SourceIOMessageController::Message msg);
+    void SendSourceIoMessage(SourceIOMCMessage msg);
 
 public slots:
 
@@ -205,7 +204,7 @@ private:
 
     // Receive an io message, to be implemented by the widget
     //! \param msg the message
-    virtual void OnReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage msg);
+    virtual void OnReceiveAssetIoMessage(AssetIOMCMessage::IoResponseMessage msg);
 
     //! ui component pool
     struct Ui

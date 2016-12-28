@@ -34,44 +34,6 @@ class SourceIOMessageController : public QObject, public IAssetTranslator
 {
     Q_OBJECT;
 public:
-    class Message
-    {
-    public:
-        enum MessageType
-        {
-            INVALID = -1,
-            SET_SOURCE_AND_COMPILE_SOURCE,
-            COMPILE_SOURCE,
-            SET_SOURCE
-        };
-
-        //! Constructor
-        Message() : mType(INVALID) {}
-
-        //! Sets the message type
-        void SetMessageType(MessageType type) { mType = type; } 
-
-        //! Sets the source of the shader in the message
-        void SetSourceText(const QString& str) { mSourceText = str; }
-
-        //! Gets the message type
-        MessageType GetMessageType() const { return mType; } 
-
-        //! Gets the source of the shader in the message
-        const QString GetSourceText() const { return mSourceText; }
-
-        //! Sets the source asset handle
-        void SetHandle(AssetInstanceHandle handle) { mHandle = handle; }
-    
-        //! Gets the source asset handle
-        AssetInstanceHandle GetHandle() const { return mHandle; } 
-
-    private:
-        MessageType mType;
-        QString     mSourceText;
-        AssetInstanceHandle mHandle;
-    };
-
     //! constructor
     explicit SourceIOMessageController(Pegasus::App::IApplicationProxy* app);
     
@@ -79,7 +41,7 @@ public:
     virtual ~SourceIOMessageController();
 
     //! Called by the render thread when we open a message
-    void OnRenderThreadProcessMessage(const Message& msg);
+    void OnRenderThreadProcessMessage(const SourceIOMCMessage& msg);
 
     //! \param object input asset to open
     //! \return a qvariant that contains the representation of this asset for the ui to read.

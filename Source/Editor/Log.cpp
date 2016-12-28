@@ -13,7 +13,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-
+#include "Console/ConsoleDockWidget.h"
 
 //! Maximum size of the buffer containing one log message
 static const size_t LOGARGS_BUFFER_SIZE = 1024; 

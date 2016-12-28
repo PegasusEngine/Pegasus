@@ -16,6 +16,7 @@
 #include "Pegasus/Pegasus.h"
 #include "Pegasus/Core/Shared/IoErrors.h"
 #include "Widgets/HandleMap.h"
+#include "MessageControllers/MsgDefines.h"
 #include "Pegasus/AssetLib/Shared/AssetEvent.h"
 
 //forward declarations
@@ -43,64 +44,6 @@ namespace Pegasus
         class ISourceCodeProxy;
     }
 }
-
-//! Qt UI asset instance handle. Represents  a handle to a RuntimeAssetObjectProxy on the render thread side.
-//! This is a ui copy of the data that an asset contains to get visualized when opened.
-struct AssetInstanceHandle
-{
-    explicit AssetInstanceHandle(int v) { mValue = v; }
-
-    AssetInstanceHandle() : mValue(-1) {}
-
-    bool operator == (const AssetInstanceHandle& other) const { return other.mValue == mValue;}
-
-    bool operator != (const AssetInstanceHandle& other) const { return !(other == *this); }
-
-    AssetInstanceHandle operator++(int) { return AssetInstanceHandle(mValue++); }
-
-    const AssetInstanceHandle& operator = (const AssetInstanceHandle& other) { mValue = other.mValue; return *this; }
-
-    bool operator < (const AssetInstanceHandle& other) const { return mValue < other.mValue; }
-
-    int InternalValue() const { return mValue; }
-
-    bool IsValid() const { return mValue != -1; }
-
-private:
-    int mValue;
-};
-
-inline uint qHash(const AssetInstanceHandle& h) 
-{
-    return qHash(h.InternalValue());
-}
-
-//! Represents the information of one asset. Contains list of indexes of children.
-struct AssetInformation
-{
-    AssetInformation() : typeInfo(nullptr) {}
-
-    const Pegasus::PegasusAssetTypeDesc* typeInfo;
-    QString displayName;
-    QVector<int> children;
-    bool isValid;
-};
-
-//! Represents an asset category. Contains list of indexes of children.
-struct AssetCategory
-{
-    QString displayName;
-    unsigned blockGuid;
-    QVector<int> children;
-};
-
-//! Tree representing all the assets
-struct AssetViewTree
-{
-    QVector<AssetCategory> categories; //block categories
-    QVector<AssetCategory> typeCategories; //typed categories
-    QVector<AssetInformation> allAssets;
-};
 
 //-------------------------------------------------------------
 
@@ -182,77 +125,6 @@ class AssetIOMessageController : public QObject, public Pegasus::AssetLib::IAsse
 {
     Q_OBJECT;
 public:
-    //! Asset IO controller message definition
-    class Message 
-    {
-    public:
-    
-        //! Operation type
-        enum MessageType
-        {
-            INVALID = -1,
-            OPEN_ASSET,
-            CLOSE_ASSET,
-            SAVE_ASSET,
-            RELOAD_FROM_ASSET,
-            NEW_ASSET,
-            QUERY_START_VIEW_ASSET_TREE,
-            QUERY_REFRESH_VIEW_ASSET_TREE,
-            QUERY_STOP_VIEW_ASSET_TREE
-        };
-
-        enum IoResponseMessage
-        {
-            IO_SAVE_SUCCESS,
-            IO_SAVE_ERROR,
-            IO_NEW_SUCCESS,
-            IO_NEW_ERROR
-        };
-    
-        //!Constructor
-        Message() : mMessageType(INVALID),
-                    mTypeDesc(nullptr),
-                    mTreeObserver(nullptr)
-        {
-        }
-    
-        explicit Message(MessageType t) : mMessageType(t),
-                                          mTypeDesc(nullptr),
-                                          mTreeObserver(nullptr)
-        {
-        }
-    
-        //! Destructor
-        ~Message()
-        {
-        }
-    
-        //Getters
-        MessageType GetMessageType() const { return mMessageType; }
-        QString GetString() const { return mString; }        
-        AssetInstanceHandle GetObject() const { return mObject; }
-        const Pegasus::PegasusAssetTypeDesc* GetTypeDesc() const { return mTypeDesc; }
-        AssetTreeObserver* GetTreeObserver() const { return mTreeObserver; }
-    
-    
-        //Setters
-        void SetMessageType(MessageType t) { mMessageType = t; }
-        void SetString(const QString& s) { mString = s; }
-        void SetObject(AssetInstanceHandle obj) { mObject = obj; }
-        void SetTypeDesc(const Pegasus::PegasusAssetTypeDesc* desc) { mTypeDesc = desc; }
-        void SetTreeObserver(AssetTreeObserver* treeObserver) { mTreeObserver = treeObserver; }
-    
-    
-    private:
-    
-        AssetInstanceHandle mObject;
-        const Pegasus::PegasusAssetTypeDesc* mTypeDesc;
-        MessageType mMessageType;
-        QString mString;
-        AssetTreeObserver* mTreeObserver;
-    
-    };
-
     //! Constructor
     explicit AssetIOMessageController(Pegasus::App::IApplicationProxy* app);
 
@@ -263,7 +135,7 @@ public:
     void RegisterQtTranslator(IAssetTranslator* translator);
 
     //! Called by the render thread when we open a message
-    void OnRenderThreadProcessMessage(PegasusDockWidget* sender, const Message& msg);
+    void OnRenderThreadProcessMessage(PegasusDockWidget* sender, const AssetIOMCMessage& msg);
 
     //! Returns the asset instance using a handle.
     Pegasus::AssetLib::IRuntimeAssetObjectProxy* FindInstance(AssetInstanceHandle handle);
@@ -290,7 +162,7 @@ signals:
     void SignalOnErrorMessagePopup(const QString& message);
 
     //! Signal triggered when a message is sent to the code editor.
-    void SignalPostMessage(PegasusDockWidget* sender, AssetIOMessageController::Message::IoResponseMessage id);
+    void SignalPostMessage(PegasusDockWidget* sender, AssetIOMCMessage::IoResponseMessage id);
 
 private:
     

@@ -32,23 +32,23 @@ PropertyGridIOMessageController::~PropertyGridIOMessageController()
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridIOMessageController::OnRenderThreadProcessMessage(const PropertyGridIOMessageController::Message& m)
+void PropertyGridIOMessageController::OnRenderThreadProcessMessage(const PropertyGridIOMCMessage& m)
 {
     switch(m.GetMessageType())
     {
-    case PropertyGridIOMessageController::Message::UPDATE:
+    case PropertyGridIOMCMessage::UPDATE:
         OnRenderThreadUpdate(m.GetPropertyGridObserver(), m.GetPropertyGridHandle(), m.GetUpdateBatch());
         break;
-    case PropertyGridIOMessageController::Message::CLOSE:
+    case PropertyGridIOMCMessage::CLOSE:
         OnRenderThreadClose(m.GetPropertyGridObserver(), m.GetPropertyGridHandle());
         break;
-    case PropertyGridIOMessageController::Message::OPEN:
+    case PropertyGridIOMCMessage::OPEN:
         OnRenderThreadOpen(m.GetPropertyGridObserver(), m.GetTitle(), m.GetPropertyGrid());
         break;
-    case PropertyGridIOMessageController::Message::OPEN_FROM_ASSET_HANDLE:
+    case PropertyGridIOMCMessage::OPEN_FROM_ASSET_HANDLE:
         OnRenderThreadOpenFromAsset(m.GetPropertyGridObserver(), m.GetAssetHandle());
         break;
-    case PropertyGridIOMessageController::Message::OPEN_BLOCK_FROM_TIMELINE:
+    case PropertyGridIOMCMessage::OPEN_BLOCK_FROM_TIMELINE:
         OnRenderThreadOpenFromTimelineBlock(m.GetPropertyGridObserver(), m.GetTitle(), m.GetAssetHandle(), m.GetBlockGuid());
         break;
     default:
@@ -58,7 +58,7 @@ void PropertyGridIOMessageController::OnRenderThreadProcessMessage(const Propert
 
 //----------------------------------------------------------------------------------------
 
-void PropertyGridIOMessageController::OnRenderThreadUpdate(PropertyGridObserver* sender, PropertyGridHandle handle, const QVector<PropertyGridIOMessageController::UpdateElement>& elements)
+void PropertyGridIOMessageController::OnRenderThreadUpdate(PropertyGridObserver* sender, PropertyGridHandle handle, const QVector<PropertyGridIOMCUpdateElement>& elements)
 {
     ED_ASSERT(handle != INVALID_PGRID_HANDLE);
     PropertyGridIOMessageController::HandleToProxyMap::iterator it = mActiveProperties.find(handle);
@@ -68,7 +68,7 @@ void PropertyGridIOMessageController::OnRenderThreadUpdate(PropertyGridObserver*
         Pegasus::PropertyGrid::IPropertyGridObjectProxy* pgrid = it.value();
         for (int i = 0; i < elements.size(); ++i)
         {
-            const PropertyGridIOMessageController::UpdateElement & el = elements[i];
+            const PropertyGridIOMCUpdateElement & el = elements[i];
             switch (el.mCategory)
             {
                 case Pegasus::PropertyGrid::PROPERTYCATEGORY_CLASS:
@@ -135,7 +135,7 @@ void PropertyGridIOMessageController::OnRenderThreadOpen(PropertyGridObserver* s
         handle = mNextHandle++;        
         mActiveProperties.insert(handle, proxy);
         mObservers.insert(handle, QSet<PropertyGridObserver*>());
-        PropertyGridIOMessageController::UpdateCache newUpdateCache;
+        PropertyGridIOMCUpdateCache newUpdateCache;
         newUpdateCache.mHandle = handle;
         PropertyGridIOMessageController::ProxyUpdateCache::iterator it = mUpdateCache.insert(handle, newUpdateCache);
         proxy->SetEventListener(this);
@@ -209,13 +209,13 @@ void PropertyGridIOMessageController::UpdateObserverInternal(PropertyGridObserve
 {
 
     //! \todo Refactor to loop over the categories
-    QVector<PropertyGridIOMessageController::UpdateElement> updates;
+    QVector<PropertyGridIOMCUpdateElement> updates;
 
     // Prepare list of updates for class properties
     for (unsigned int i = 0; i < proxy->GetNumClassProperties(); ++i)
     {
         const Pegasus::PropertyGrid::PropertyRecord& r = proxy->GetClassPropertyRecord(i);
-        PropertyGridIOMessageController::UpdateElement el;
+        PropertyGridIOMCUpdateElement el;
         el.mCategory = Pegasus::PropertyGrid::PROPERTYCATEGORY_CLASS;
         el.mType = r.type;
         el.mIndex = (int)i;
@@ -234,7 +234,7 @@ void PropertyGridIOMessageController::UpdateObserverInternal(PropertyGridObserve
     for (unsigned int i = 0; i < proxy->GetNumObjectProperties(); ++i)
     {
         const Pegasus::PropertyGrid::PropertyRecord& r = proxy->GetObjectPropertyRecord(i);
-        PropertyGridIOMessageController::UpdateElement el;
+        PropertyGridIOMCUpdateElement el;
         el.mCategory = Pegasus::PropertyGrid::PROPERTYCATEGORY_OBJECT;
         el.mType = r.type;
         el.mIndex = (int)i;
@@ -301,7 +301,7 @@ void PropertyGridIOMessageController::OnEvent(Pegasus::Core::IEventUserData* use
     PropertyUserData* pUserData = static_cast<PropertyUserData*>(userData);
     const Pegasus::PropertyGrid::PropertyRecord & r = pUserData->GetProxy()->GetClassPropertyRecord(e.GetIndex());
 
-    PropertyGridIOMessageController::UpdateElement el;
+    PropertyGridIOMCUpdateElement el;
     el.mCategory = e.GetCategory();
     el.mIndex = e.GetIndex();
     el.mType = r.type;
@@ -334,7 +334,7 @@ void PropertyGridIOMessageController::OnEvent(Pegasus::Core::IEventUserData* use
 
 void PropertyGridIOMessageController::FlushPendingUpdates(PropertyUserData* userData)
 {
-    UpdateCache* cache  = userData->GetUpdateCache();
+    PropertyGridIOMCUpdateCache* cache  = userData->GetUpdateCache();
     ObserverMap::iterator obsIt = mObservers.find(userData->GetHandle());
     if (obsIt != mObservers.end())
     {
@@ -431,8 +431,8 @@ PropertyGridObserver::PropertyGridObserver()
             this, SLOT(OnInitializedSlot(PropertyGridHandle, QString, const Pegasus::PropertyGrid::IPropertyGridObjectProxy*)),
             Qt::QueuedConnection);
 
-    connect(this, SIGNAL(OnUpdatedSignal(PropertyGridHandle, QVector<PropertyGridIOMessageController::UpdateElement>)),
-            this, SLOT(OnUpdatedSlot(PropertyGridHandle, QVector<PropertyGridIOMessageController::UpdateElement>)),
+    connect(this, SIGNAL(OnUpdatedSignal(PropertyGridHandle, QVector<PropertyGridIOMCUpdateElement>)),
+            this, SLOT(OnUpdatedSlot(PropertyGridHandle, QVector<PropertyGridIOMCUpdateElement>)),
             Qt::QueuedConnection);
 
     connect(this, SIGNAL(OnShutdownSignal(PropertyGridHandle)),

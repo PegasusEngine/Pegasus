@@ -14,9 +14,28 @@
 #include "Pegasus/PropertyGrid/Shared/IPropertyGridClassInfoProxy.h"
 #include "Pegasus/PropertyGrid/Shared/PropertyDefs.h"
 #include "Pegasus/Window/Shared/IWindowProxy.h"
+#include "MessageControllers/PropertyGridIOMessageController.h"
 
 #include <QResizeEvent>
 
+    //! Observer of this widget, used to communicate with the IO controller.
+class VwObserver : public PropertyGridObserver
+{
+public:
+    explicit VwObserver(ViewportWidget * parent) : mParent(parent) {}
+    virtual ~VwObserver() {}
+
+    virtual void OnInitialized(PropertyGridHandle handle, QString title, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy);
+
+    virtual void OnUpdated(PropertyGridHandle handle, const QVector<PropertyGridIOMCUpdateElement>& els);
+
+    virtual void OnShutdown(PropertyGridHandle handle);
+
+    void OnShutdownInternal(PropertyGridHandle handle);
+
+private:
+    ViewportWidget * mParent;
+};
 
 ViewportWidget::ViewportWidget(QWidget * parent, Pegasus::App::ComponentTypeFlags componentFlags)
 :   QWidget(parent), mWindowProxy(nullptr), mComponentFlags(componentFlags)
@@ -41,7 +60,7 @@ ViewportWidget::ViewportWidget(QWidget * parent, Pegasus::App::ComponentTypeFlag
     //! \todo Do not use unsigned int, use a Pegasus type instead
     WId windowHandle = winId();
     mWindowHandle = *reinterpret_cast<unsigned int *>(&windowHandle);
-    mObserver = new ViewportWidget::Observer(this);
+    mObserver = new VwObserver(this);
 }
 
 //----------------------------------------------------------------------------------------
@@ -57,8 +76,8 @@ void ViewportWidget::resizeEvent(QResizeEvent * event)
 {
     if (mWindowProxy != nullptr)
     {
-        WindowIOMessageController::Message msg;
-        msg.SetMessageType(WindowIOMessageController::Message::WINDOW_RESIZED);
+        WindowIOMCMessage msg;
+        msg.SetMessageType(WindowIOMCMessage::WINDOW_RESIZED);
         msg.SetViewportWidget(this);
         msg.SetWidth(event->size().width());
         msg.SetHeight(event->size().height());
@@ -70,8 +89,8 @@ void ViewportWidget::resizeEvent(QResizeEvent * event)
 
 void ViewportWidget::DrawPegasusWindow()
 {
-    WindowIOMessageController::Message msg;
-    msg.SetMessageType(WindowIOMessageController::Message::DRAW_WINDOW);
+    WindowIOMCMessage msg;
+    msg.SetMessageType(WindowIOMCMessage::DRAW_WINDOW);
     msg.SetViewportWidget(this);
     emit(OnSendWindowIoMessage(msg));
 }
@@ -80,8 +99,8 @@ void ViewportWidget::DrawPegasusWindow()
 
 void ViewportWidget::OnAppLoaded()
 {
-    WindowIOMessageController::Message msg;
-    msg.SetMessageType(WindowIOMessageController::Message::INITIALIZE_WINDOW);
+    WindowIOMCMessage msg;
+    msg.SetMessageType(WindowIOMCMessage::INITIALIZE_WINDOW);
     msg.SetViewportWidget(this);
     msg.SetComponentFlags(mComponentFlags);
     msg.SetWidth(width());
@@ -101,9 +120,9 @@ void ViewportWidget::AttachWindowProxy(Pegasus::Wnd::IWindowProxy* proxy)
             Pegasus::PropertyGrid::IPropertyGridObjectProxy* state = proxy->GetComponentState(static_cast<Pegasus::App::ComponentType>(t));
             if (state != nullptr)
             {
-                PropertyGridIOMessageController::Message msg;
+                PropertyGridIOMCMessage msg;
                 QString encodedTitle = QString::number(t);
-                msg.SetMessageType(PropertyGridIOMessageController::Message::OPEN);
+                msg.SetMessageType(PropertyGridIOMCMessage::OPEN);
                 msg.SetPropertyGridObserver(mObserver);
                 msg.SetTitle(encodedTitle);
                 msg.SetPropertyGrid(state);
@@ -131,7 +150,7 @@ void ViewportWidget::OnInitialized(const PropertyGridHandle& handle, const QStri
     emit(OnWindowProxyReady());
 }
 
-void ViewportWidget::InitUpdateElement(Pegasus::App::ComponentType component, const char* name, PropertyGridIOMessageController::UpdateElement& outUpdateEl)
+void ViewportWidget::InitUpdateElement(Pegasus::App::ComponentType component, const char* name, PropertyGridIOMCUpdateElement& outUpdateEl)
 {
     if (mComponentPropertyHandles[component] != INVALID_PGRID_HANDLE)
     {
@@ -150,12 +169,12 @@ void ViewportWidget::InitUpdateElement(Pegasus::App::ComponentType component, co
 }
 
 
-void ViewportWidget::SendUpdateEl(Pegasus::App::ComponentType component, PropertyGridIOMessageController::UpdateElement& el)
+void ViewportWidget::SendUpdateEl(Pegasus::App::ComponentType component, PropertyGridIOMCUpdateElement& el)
 {
     if (mComponentPropertyHandles[component] != INVALID_PGRID_HANDLE)
     {
-        PropertyGridIOMessageController::Message msg;
-        msg.SetMessageType(PropertyGridIOMessageController::Message::UPDATE);
+        PropertyGridIOMCMessage msg;
+        msg.SetMessageType(PropertyGridIOMCMessage::UPDATE);
         msg.SetPropertyGridHandle(mComponentPropertyHandles[component]);
         msg.SetPropertyGridObserver(mObserver);
         msg.GetUpdateBatch().push_back(el);
@@ -166,7 +185,7 @@ void ViewportWidget::SendUpdateEl(Pegasus::App::ComponentType component, Propert
 
 void ViewportWidget::SetBoolProperty(Pegasus::App::ComponentType component, const char* name, bool value)
 {
-    PropertyGridIOMessageController::UpdateElement el;
+    PropertyGridIOMCUpdateElement el;
     InitUpdateElement(component, name, el);
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_BOOL;
     el.mData.b = value;
@@ -175,7 +194,7 @@ void ViewportWidget::SetBoolProperty(Pegasus::App::ComponentType component, cons
 
 void ViewportWidget::SetFloatProperty(Pegasus::App::ComponentType component, const char* name, float value)
 {
-    PropertyGridIOMessageController::UpdateElement el;
+    PropertyGridIOMCUpdateElement el;
     InitUpdateElement(component, name, el);
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_FLOAT;
     el.mData.f = value;
@@ -184,14 +203,14 @@ void ViewportWidget::SetFloatProperty(Pegasus::App::ComponentType component, con
 
 void ViewportWidget::SetIntProperty(Pegasus::App::ComponentType component, const char* name, int value)
 {
-    PropertyGridIOMessageController::UpdateElement el;
+    PropertyGridIOMCUpdateElement el;
     InitUpdateElement(component, name, el);
     el.mType = Pegasus::PropertyGrid::PROPERTYTYPE_INT;
     el.mData.i = value;
     SendUpdateEl(component, el); 
 }
 
-void ViewportWidget::OnUpdated(const PropertyGridHandle& handle, const QVector<PropertyGridIOMessageController::UpdateElement>& els)
+void ViewportWidget::OnUpdated(const PropertyGridHandle& handle, const QVector<PropertyGridIOMCUpdateElement>& els)
 {    
 }
 
@@ -202,21 +221,21 @@ void ViewportWidget::OnShutdown(const PropertyGridHandle& handle)
 
 //----------------------------------------------------------------------------------------
 
-void ViewportWidget::Observer::OnInitialized(PropertyGridHandle handle, QString title, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy)
+void VwObserver::OnInitialized(PropertyGridHandle handle, QString title, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy)
 {
     mParent->OnInitialized(handle, title, objectProxy);
 }
 
 //----------------------------------------------------------------------------------------
 
-void ViewportWidget::Observer::OnUpdated(PropertyGridHandle handle, const QVector<PropertyGridIOMessageController::UpdateElement>& els)
+void VwObserver::OnUpdated(PropertyGridHandle handle, const QVector<PropertyGridIOMCUpdateElement>& els)
 {
     mParent->OnUpdated(handle, els);
 }
 
 //----------------------------------------------------------------------------------------
 
-void ViewportWidget::Observer::OnShutdown(PropertyGridHandle handle)
+void VwObserver::OnShutdown(PropertyGridHandle handle)
 {
     mParent->OnShutdown(handle);
 }

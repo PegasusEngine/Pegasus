@@ -14,6 +14,15 @@
 #ifndef PEGASUS_RENDER_DEVICE
 #define PEGASUS_RENDER_DEVICE
 
+//forward declarations
+namespace Pegasus
+{
+    namespace Alloc
+    {
+        class IAllocator;
+    }
+}
+
 namespace Pegasus
 {
 namespace Render

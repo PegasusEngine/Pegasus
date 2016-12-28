@@ -15,7 +15,7 @@
 #include <QGraphicsView>
 #include <QList>
 #include <QMap>
-#include "MessageControllers/TimelineIOMessageController.h"
+#include "MessageControllers/MsgDefines.h"
 
 class TimelineBackgroundBeatGraphicsItem;
 class TimelineBackgroundBeatLineGraphicsItem;
@@ -115,6 +115,9 @@ signals:
     //! Request the blockscript to be removed
     void RequestBlockMove(QGraphicsObject* sender, QPointF amount);
 
+    //! Requests draw all viewports
+    void RequestDrawAllViewports();
+
 public slots:
 
     //! Create a new lane and add it at the bottom of the list
@@ -132,6 +135,9 @@ public slots:
     //! Focus selection on the block with the specified guid.
     //! \param the guid of the block to focus onto.
     void OnFocusBlock(unsigned blockGuid);
+
+    //! Action triggered when the horizontal bar moves.
+    void OnHorizontalScroll(int amount);
 
     //------------------------------------------------------------------------------------
 
@@ -209,6 +215,9 @@ private:
     //! \param laneIndex Index of the lane to refresh (< mNumLanes)
     //! \param laneProxy Proxy of the timeline lane to get the data from
     void RefreshLaneFromTimelineLane(unsigned int laneIndex, const ShadowLaneState& lane);
+
+    //! Sets the lane header positions aligned to the current view of the horizontal scrollbar.
+    void ResetLaneHeaderPositions();
 
     //! Called when a right-click or right-dragging occurs, this then sets the current beat and updates the UI
     //! \param event Qt mouse event

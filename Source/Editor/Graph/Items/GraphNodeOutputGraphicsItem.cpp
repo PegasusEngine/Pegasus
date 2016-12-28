@@ -13,11 +13,13 @@
 #include "Graph/Items/GraphConnectionGraphicsItem.h"
 #include "Graph/Items/GraphGraphicsItemDefs.h"
 
+#include <QAbstractScrollArea>
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 #include <QStyleOption>
 #include <QUndoStack>
+
 
 
 //unsigned int GraphNodeOutputGraphicsItem::sCurrentNodeID = 0;

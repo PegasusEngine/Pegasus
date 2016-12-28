@@ -36,49 +36,6 @@ class ProgramIOMessageController : public QObject, public IAssetTranslator
 {
     Q_OBJECT;
 public:
-    //! Program IO controller message definition
-    class Message 
-    {
-    public:
-    
-        //! Operation type
-        enum MessageType
-        {
-            INVALID = -1,
-            REMOVE_SHADER,
-            MODIFY_SHADER
-        };
-    
-        //!Constructor
-        Message() : mMessageType(INVALID), mShaderType(Pegasus::Shader::SHADER_STAGE_INVALID)
-        {
-        }
-    
-        //! Destructor
-        ~Message()
-        {
-        }
-    
-        //Getters
-        MessageType GetMessageType() const { return mMessageType; }
-        const QString& GetShaderPath() const { return mShaderPath; }
-        AssetInstanceHandle GetProgram() const { return mProgram; }
-        Pegasus::Shader::ShaderType GetShaderType() const { return mShaderType; }
-        
-    
-        //Setters
-        void SetMessageType(MessageType t) { mMessageType = t; }
-        void SetShaderPath(const QString& shader) { mShaderPath = shader; }
-        void SetProgram(AssetInstanceHandle handle) { mProgram = handle; }
-        void SetShaderType(Pegasus::Shader::ShaderType type) { mShaderType = type; }
-    
-    private:
-        MessageType mMessageType;
-        QString mShaderPath;
-        AssetInstanceHandle mProgram;
-        Pegasus::Shader::ShaderType mShaderType;
-    };
-
     //! Constructor
     explicit ProgramIOMessageController(Pegasus::App::IApplicationProxy* app);
 
@@ -86,7 +43,7 @@ public:
     virtual ~ProgramIOMessageController();
 
     //! Called by the render thread when we open a message
-    void OnRenderThreadProcessMessage(const Message& msg);
+    void OnRenderThreadProcessMessage(const ProgramIOMCMessage& msg);
 
     //! \param object input asset to open
     //! \return a qvariant that contains the representation of this asset for the ui to read.

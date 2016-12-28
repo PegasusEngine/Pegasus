@@ -17,6 +17,21 @@
 #include "Settings/SettingsDialog.h"
 #include "Pegasus/AssetLib/Shared/IAssetProxy.h"
 
+
+#include  "Console/ConsoleDockWidget.h"
+#include  "History/HistoryDockWidget.h"
+#include  "Timeline/TimelineDockWidget.h"
+#include  "AssetLibrary/AssetLibraryWidget.h"
+#include  "CodeEditor/CodeEditorWidget.h"
+#include  "Graph/GraphEditorDockWidget.h"
+#include  "Graph/TextureGraphEditorViewStrategy.h"
+#include  "Graph/MeshGraphEditorViewStrategy.h"
+#include  "Debug/PropertyGridClasses/PropertyGridClassesDockWidget.h"
+#include  "Debug/BlockScriptLibraries/BlockScriptLibraryDockWidget.h"
+#include  "ProgramEditor/ProgramEditorWidget.h"
+#include  "Viewport/ViewportDockWidget.h"
+#include  "Viewport/ViewportWidget.h"
+
 #include <QUndoStack>
 #include <QSplashScreen>
 #include <QAction>
@@ -121,6 +136,14 @@ Editor::~Editor()
     if (mLogManager != nullptr)
     {
         delete mLogManager;
+    }
+    if (mTextureEditorViewStrategy != nullptr)
+    {
+        delete mTextureEditorViewStrategy;
+    }
+    if (mMeshEditorViewStrategy != nullptr)
+    {
+        delete mMeshEditorViewStrategy;
     }
     sInstance = nullptr;
 }
@@ -442,6 +465,9 @@ void Editor::CreateDockWidgets()
     mProgramEditorWidget->hide();
     mProgramEditorWidget->setFloating(true);
 
+    mTextureEditorViewStrategy = new TextureGraphEditorViewStrategy();
+    mMeshEditorViewStrategy = new MeshGraphEditorViewStrategy();
+
 
     // Create the dock widgets and assign their initial position
     //! \todo Use the correct icons for the docks, and add them to the menu and toolbar
@@ -473,11 +499,11 @@ void Editor::CreateDockWidgets()
     mAssetLibraryWidget->hide();
     mAssetLibraryWidget->setFloating(true);
 
-    mTextureEditorDockWidget = new GraphEditorDockWidget(this, this, &mTextureEditorViewStrategy);
+    mTextureEditorDockWidget = new GraphEditorDockWidget(this, this, mTextureEditorViewStrategy);
     RegisterWidget(mTextureEditorDockWidget, Qt::RightDockWidgetArea);
     mViewportWidgets.push_back(mTextureEditorDockWidget->GetViewportWidget());
 
-    mMeshEditorDockWidget = new GraphEditorDockWidget(this, this, &mMeshEditorViewStrategy);
+    mMeshEditorDockWidget = new GraphEditorDockWidget(this, this, mMeshEditorViewStrategy);
     RegisterWidget(mMeshEditorDockWidget, Qt::RightDockWidgetArea);
     mViewportWidgets.push_back(mMeshEditorDockWidget->GetViewportWidget());
 

@@ -27,12 +27,7 @@
 #include "Pegasus/PropertyGrid/Shared/IPropertyGridClassInfoProxy.h"
 #include "Pegasus/Texture/Shared/ITextureNodeProxy.h"
 #include "CodeEditor/SourceCodeManagerEventListener.h"
-#include "MessageControllers/AssetIOMessageController.h"
-#include "MessageControllers/SourceIOMessageController.h"
-#include "MessageControllers/WindowIOMessageController.h"
-#include "MessageControllers/PropertyGridIOMessageController.h"
-#include "MessageControllers/GraphIOMessageController.h"
-#include "MessageControllers/TimelineIOMessageController.h"
+#include "MessageControllers/MsgDefines.h"
 #include "Widgets/PegasusDockWidget.h"
 
 //! Name of the organization creating the software
@@ -60,30 +55,29 @@ Q_DECLARE_METATYPE(CodeUserData*);
 
 Q_DECLARE_METATYPE(Pegasus::Timeline::IBlockProxy*);
 
-Q_DECLARE_METATYPE(AssetIOMessageController::Message);
-Q_DECLARE_METATYPE(AssetIOMessageController::Message::IoResponseMessage);
+Q_DECLARE_METATYPE(AssetIOMCMessage);
+Q_DECLARE_METATYPE(AssetIOMCMessage::IoResponseMessage);
 
-Q_DECLARE_METATYPE(SourceIOMessageController::Message);
+Q_DECLARE_METATYPE(SourceIOMCMessage);
 
-Q_DECLARE_METATYPE(ProgramIOMessageController::Message);
+Q_DECLARE_METATYPE(ProgramIOMCMessage);
 
-Q_DECLARE_METATYPE(WindowIOMessageController::Message);
+Q_DECLARE_METATYPE(WindowIOMCMessage);
 
-Q_DECLARE_METATYPE(PropertyGridIOMessageController::Message);
-Q_DECLARE_METATYPE(PropertyGridIOMessageController::UpdateElement);
-Q_DECLARE_METATYPE(TimelineIOMessageController::Message);
-Q_DECLARE_METATYPE(TimelineIOMessageController::BlockOpResponse);
-Q_DECLARE_METATYPE(TimelineIOMessageObserver*);
-Q_DECLARE_METATYPE(QVector<PropertyGridIOMessageController::UpdateElement>);
+Q_DECLARE_METATYPE(PropertyGridIOMCMessage);
+Q_DECLARE_METATYPE(PropertyGridIOMCUpdateElement);
+Q_DECLARE_METATYPE(TimelineIOMCMessage);
+Q_DECLARE_METATYPE(TimelineIOMCBlockOpResponse);
+Q_DECLARE_METATYPE(QVector<PropertyGridIOMCUpdateElement>);
 Q_DECLARE_METATYPE(PropertyGridHandle);
 Q_DECLARE_METATYPE(Pegasus::PropertyGrid::IPropertyGridClassInfoProxy*);
 Q_DECLARE_METATYPE(AssetInformation);
 Q_DECLARE_METATYPE(AssetCategory);
 Q_DECLARE_METATYPE(AssetViewTree);
 
-Q_DECLARE_METATYPE(GraphIOMessageController::Message);
-Q_DECLARE_METATYPE(GraphIOMessageController::UpdateElement);
-Q_DECLARE_METATYPE(QVector<GraphIOMessageController::UpdateElement>);
+Q_DECLARE_METATYPE(GraphIOMCMessage);
+Q_DECLARE_METATYPE(GraphIOMCUpdateElement);
+Q_DECLARE_METATYPE(QVector<GraphIOMCUpdateElement>);
 
 //----------------------------------------------------------------------------------------
 
@@ -102,27 +96,26 @@ void RegisterMetaTypes()
 
     qRegisterMetaType<Pegasus::Timeline::IBlockProxy*>();
 
-    qRegisterMetaType<AssetIOMessageController::Message>();
-    qRegisterMetaType<AssetIOMessageController::Message::IoResponseMessage>();
+    qRegisterMetaType<AssetIOMCMessage>();
+    qRegisterMetaType<AssetIOMCMessage::IoResponseMessage>();
 
-    qRegisterMetaType<SourceIOMessageController::Message>();
+    qRegisterMetaType<SourceIOMCMessage>();
 
-    qRegisterMetaType<ProgramIOMessageController::Message>();
+    qRegisterMetaType<ProgramIOMCMessage>();
 
-    qRegisterMetaType<WindowIOMessageController::Message>();
+    qRegisterMetaType<WindowIOMCMessage>();
 
-    qRegisterMetaType<PropertyGridIOMessageController::Message>();
-    qRegisterMetaType<PropertyGridIOMessageController::UpdateElement>();
-    qRegisterMetaType<TimelineIOMessageController::Message>();
-    qRegisterMetaType<TimelineIOMessageController::BlockOpResponse>();
-    qRegisterMetaType<TimelineIOMessageObserver*>();
-    qRegisterMetaType<QVector<PropertyGridIOMessageController::UpdateElement> >();
+    qRegisterMetaType<PropertyGridIOMCMessage>();
+    qRegisterMetaType<PropertyGridIOMCUpdateElement>();
+    qRegisterMetaType<TimelineIOMCMessage>();
+    qRegisterMetaType<TimelineIOMCBlockOpResponse>();
+    qRegisterMetaType<QVector<PropertyGridIOMCUpdateElement> >();
     qRegisterMetaType<PropertyGridHandle>();
     qRegisterMetaType<Pegasus::PropertyGrid::IPropertyGridClassInfoProxy*>();
 
-    qRegisterMetaType<GraphIOMessageController::Message>();
-    qRegisterMetaType<GraphIOMessageController::UpdateElement>();
-    qRegisterMetaType<QVector<GraphIOMessageController::UpdateElement> >();
+    qRegisterMetaType<GraphIOMCMessage>();
+    qRegisterMetaType<GraphIOMCUpdateElement>();
+    qRegisterMetaType<QVector<GraphIOMCUpdateElement> >();
     qRegisterMetaType<AssetInformation>();
     qRegisterMetaType<AssetCategory>();
     qRegisterMetaType<AssetViewTree>();

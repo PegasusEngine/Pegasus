@@ -15,8 +15,7 @@
 #include "Widgets/PegasusDockWidget.h"
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
-#include "MessageControllers/AssetIOMessageController.h"
-#include "MessageControllers/ProgramIOMessageController.h"
+#include "MessageControllers/MsgDefines.h"
 #include "Pegasus/Shader/Shared/ShaderDefs.h"
 
 #include <QDockWidget>
@@ -32,6 +31,7 @@ class QFocusEvent;
 class QStatusBar;
 class QUndoStack;
 class NodeFileTabBar;
+class QLabel;
 
 namespace Pegasus
 {
@@ -109,11 +109,11 @@ public slots:
     void PostStatusBarMessage(const QString& message);
 
     //! Receives an IO message response
-    virtual void OnReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage id);
+    virtual void OnReceiveAssetIoMessage(AssetIOMCMessage::IoResponseMessage id);
 
 signals:
     //! Sends a job to the render thread. This is connected in the application interface
-    void SendProgramIoMessage(ProgramIOMessageController::Message msg);
+    void SendProgramIoMessage(ProgramIOMCMessage msg);
 
 private:
 

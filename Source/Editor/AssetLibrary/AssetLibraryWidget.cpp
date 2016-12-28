@@ -17,17 +17,19 @@
 #include "AssetLibrary/AssetLibraryWidget.h"
 #include "AssetLibrary/InstanceViewer.h"
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
+#include "Pegasus/Core/Shared/IoErrors.h"
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
 #include "Pegasus/Timeline/Shared/ITimelineManagerProxy.h"
-#include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/Timeline/Shared/ITimelineManagerProxy.h"
+#include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/AssetLib/Shared/IAssetLibProxy.h"
 #include "Pegasus/AssetLib/Shared/IAssetProxy.h"
 #include "Pegasus/Version.h"
 
-#include "Pegasus/Core/Shared/IoErrors.h"
+#include "ui_AssetLibraryWidget.h"
+
 #include <QSignalMapper>
 #include <QMenu>
 #include <QGroupBox>
@@ -36,6 +38,8 @@
 #include <QFileSystemModel>
 #include <QFileDialog>
 #include <QBoxLayout>
+#include <QLabel>
+#include <QComboBox>
 #include <qfilesystemwatcher.h>
 #include <qmessagebox.h>
 #include <qerrormessage.h>
@@ -190,7 +194,7 @@ private:
             }
 
             AssetLibraryWidget* parent = static_cast<AssetLibraryWidget*>(parentWidget());
-            AssetIOMessageController::Message msg(AssetIOMessageController::Message::NEW_ASSET);
+            AssetIOMCMessage msg(AssetIOMCMessage::NEW_ASSET);
             msg.SetString(newFilePath);
             msg.SetTypeDesc(typeDesc);
             parent->OnSendAssetIoMessage(parent, msg);            
@@ -217,6 +221,7 @@ AssetLibraryWidget::AssetLibraryWidget(
 )
 : PegasusDockWidget(parent, editor)
 {
+    mUi = new Ui::AssetLibraryWidget();
 }
 
 void AssetLibraryWidget::SetupUi()
@@ -227,56 +232,56 @@ void AssetLibraryWidget::SetupUi()
     //TODO: use this file watcher to resolve external changes in real time to files
     mFileSystemWatcher = new QFileSystemWatcher();
 
-    ui.setupUi(this);
+    mUi->setupUi(this);
 
-    connect(ui.AssetTreeView, SIGNAL(doubleClicked(QModelIndex)),
+    connect(mUi->AssetTreeView, SIGNAL(doubleClicked(QModelIndex)),
             this, SLOT(DispatchAsset(QModelIndex)));
 
     connect(mFileSystemWatcher, SIGNAL(fileChanged(QString)),
             this, SLOT(OnFileChanged(QString)));
 
-    connect(ui.AddAssetButton, SIGNAL(clicked()),
+    connect(mUi->AddAssetButton, SIGNAL(clicked()),
             this, SLOT(StartNewDialog()));
 
-    ui.AssetTreeView->setModel(mAssetTreeFileSystemModel);
-    ui.AssetTreeView->setSelectionModel(mAssetTreeSelectionModel);
+    mUi->AssetTreeView->setModel(mAssetTreeFileSystemModel);
+    mUi->AssetTreeView->setSelectionModel(mAssetTreeSelectionModel);
 
     mNewAssetDialog = new QNewAssetDialog(this);
 
-    ui.AddAssetButton->setEnabled(false);
+    mUi->AddAssetButton->setEnabled(false);
 
-    mInstanceViewer = new InstanceViewer(ui.instanceTreeWidget);
+    mInstanceViewer = new InstanceViewer(mUi->instanceTreeWidget);
     connect(mInstanceViewer, SIGNAL(RequestOpenAsset(QString)), this, SLOT(OnOpenObject(QString)));
     connect(mInstanceViewer, SIGNAL(RequestHighlightBlock(unsigned)), this, SIGNAL(OnHighlightBlock(unsigned)));
 
-    connect(ui.sortByCategoryButton, SIGNAL(clicked()),
+    connect(mUi->sortByCategoryButton, SIGNAL(clicked()),
             this, SLOT(OnFilterByCategoryPressed()));
-    connect(ui.sortByTypeButton, SIGNAL(clicked()),
+    connect(mUi->sortByTypeButton, SIGNAL(clicked()),
             this, SLOT(OnFilterByTypePressed()));
 
-    ui.sortByCategoryButton->setCheckable(true);
-    ui.sortByTypeButton->setCheckable(true);
+    mUi->sortByCategoryButton->setCheckable(true);
+    mUi->sortByTypeButton->setCheckable(true);
     //initial state of instance view is by type
     OnFilterByCategoryPressed();
 }
 
 void AssetLibraryWidget::ResetAllFilterButtons()
 {
-    ui.sortByCategoryButton->setChecked(false);
-    ui.sortByTypeButton->setChecked(false);
+    mUi->sortByCategoryButton->setChecked(false);
+    mUi->sortByTypeButton->setChecked(false);
 }
 
 void AssetLibraryWidget::OnFilterByCategoryPressed()
 {
     ResetAllFilterButtons();
-    ui.sortByCategoryButton->setChecked(true);
+    mUi->sortByCategoryButton->setChecked(true);
     mInstanceViewer->SetFilterMode(InstanceViewer::BLOCK_FILTER);
 }
 
 void AssetLibraryWidget::OnFilterByTypePressed()
 {
     ResetAllFilterButtons();
-    ui.sortByTypeButton->setChecked(true);
+    mUi->sortByTypeButton->setChecked(true);
     mInstanceViewer->SetFilterMode(InstanceViewer::TYPE_FILTER);
 }
 
@@ -306,8 +311,8 @@ void AssetLibraryWidget::DispatchAsset(const QModelIndex& assetIdx)
 
 void AssetLibraryWidget::OnOpenObject(QString assetPath)
 {
-    AssetIOMessageController::Message msg;
-    msg.SetMessageType(AssetIOMessageController::Message::OPEN_ASSET);
+    AssetIOMCMessage msg;
+    msg.SetMessageType(AssetIOMCMessage::OPEN_ASSET);
     msg.SetString(assetPath);;
     SendAssetIoMessage(msg);
 
@@ -325,6 +330,7 @@ AssetLibraryWidget::~AssetLibraryWidget()
 
     delete mAssetTreeFileSystemModel;    
     delete mInstanceViewer;
+    delete mUi;
 }
 
 // SLOTS
@@ -339,16 +345,16 @@ void AssetLibraryWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* appPr
         QString assetRoot = appProxy->GetAssetsRoot();
         mAssetTreeFileSystemModel->setRootPath(assetRoot);
         QModelIndex idx = mAssetTreeFileSystemModel->index(assetRoot);
-        ui.AssetTreeView->setRootIndex(idx);
-        ui.AssetTreeView->show();
+        mUi->AssetTreeView->setRootIndex(idx);
+        mUi->AssetTreeView->show();
 
         // register this widget instance viewer as an observer
-        AssetIOMessageController::Message msg(AssetIOMessageController::Message::QUERY_START_VIEW_ASSET_TREE);
+        AssetIOMCMessage msg(AssetIOMCMessage::QUERY_START_VIEW_ASSET_TREE);
         msg.SetTreeObserver(mInstanceViewer);
         SendAssetIoMessage(msg);
 
         mNewAssetDialog->OnAppOpened(appProxy);
-        ui.AddAssetButton->setEnabled(true);
+        mUi->AddAssetButton->setEnabled(true);
     }
     
 }
@@ -358,7 +364,7 @@ void AssetLibraryWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* appPr
 void AssetLibraryWidget::OnUIForAppClosed()
 {    
     mNewAssetDialog->OnAppClosed();
-    ui.AddAssetButton->setEnabled(false);
+    mUi->AddAssetButton->setEnabled(false);
 }
 
 //----------------------------------------------------------------------------------------

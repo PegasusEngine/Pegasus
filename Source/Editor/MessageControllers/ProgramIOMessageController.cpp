@@ -28,14 +28,14 @@ ProgramIOMessageController::~ProgramIOMessageController()
 {
 }
 
-void ProgramIOMessageController::OnRenderThreadProcessMessage(const ProgramIOMessageController::Message& msg)
+void ProgramIOMessageController::OnRenderThreadProcessMessage(const ProgramIOMCMessage& msg)
 {
     switch(msg.GetMessageType())
     {
-    case ProgramIOMessageController::Message::REMOVE_SHADER:
+    case ProgramIOMCMessage::REMOVE_SHADER:
         OnRenderThreadRemoveShader(msg.GetProgram(), msg.GetShaderType());
         break;
-    case ProgramIOMessageController::Message::MODIFY_SHADER:
+    case ProgramIOMCMessage::MODIFY_SHADER:
         OnRenderThreadModifyShader(msg.GetProgram(), msg.GetShaderPath());
         break;
     default:

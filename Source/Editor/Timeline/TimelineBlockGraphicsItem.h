@@ -134,6 +134,9 @@ signals:
     //! Requests this block move.
     void RequestBlockMove(QGraphicsObject* sender, QPointF amount);
 
+    //! Requests draw all viewports
+    void RequestDrawAllViewports();
+
 
 public slots:
 

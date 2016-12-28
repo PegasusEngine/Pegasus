@@ -14,10 +14,10 @@
 
 #include "PropertyGrid/PropertyGridPropertyManagers.h"
 #include "PropertyGrid/PropertyGridEditorFactories.h"
-#include "MessageControllers/PropertyGridIOMessageController.h"
-#include "MessageControllers/AssetIOMessageController.h"
+#include "MessageControllers/MsgDefines.h"
 #include <QWidget>
 #include <QVector>
+
 
 namespace Pegasus {
     namespace App {
@@ -26,8 +26,9 @@ namespace Pegasus {
 }
 
 class PegasusDockWidget;
+class PropertyGridObserver;
 class QtTreePropertyBrowser;
-
+class QLabel;
 
 //! Property grid widget UI element
 class PropertyGridWidget : public QWidget
@@ -35,6 +36,7 @@ class PropertyGridWidget : public QWidget
     Q_OBJECT
 
 public:
+    friend class PgwObserver;
 
     //! Constructor
     PropertyGridWidget(QWidget * parent);
@@ -88,13 +90,13 @@ private slots:
 private:
 
     void OnInitialized(PropertyGridHandle handle, QString title, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy);
-    void OnUpdated(PropertyGridHandle handle, const QVector<PropertyGridIOMessageController::UpdateElement>& els);
+    void OnUpdated(PropertyGridHandle handle, const QVector<PropertyGridIOMCUpdateElement>& els);
 
     const Pegasus::PropertyGrid::PropertyRecord * FindPropertyRecord(const QtProperty * property, unsigned int & outIndex) const;
 
     bool IsReady() const { return !mIsInitializing && mProxyHandle != INVALID_PGRID_HANDLE; }
 
-    void UpdateProxy(const PropertyGridIOMessageController::UpdateElement& el);
+    void UpdateProxy(const PropertyGridIOMCUpdateElement& el);
 
     //! Send an open message to the IO controller
     //! \param proxy Proxy assigned to the widget
@@ -129,23 +131,7 @@ private:
     QVector<PropertyRecordPair> mProperties[Pegasus::PropertyGrid::NUM_PROPERTY_CATEGORIES];
 
     //! Observer of this widget, used to communicate with the IO controller.
-    class Observer : public PropertyGridObserver
-    {
-    public:
-        explicit Observer(PropertyGridWidget * parent) : mParent(parent) {}
-        virtual ~Observer() {}
-
-        virtual void OnInitialized(PropertyGridHandle handle, QString title, const Pegasus::PropertyGrid::IPropertyGridObjectProxy* objectProxy);
-
-        virtual void OnUpdated(PropertyGridHandle handle, const QVector<PropertyGridIOMessageController::UpdateElement>& els);
-
-        virtual void OnShutdown(PropertyGridHandle handle);
-
-        void OnShutdownInternal(PropertyGridHandle handle);
-
-    private:
-        PropertyGridWidget * mParent;
-    } * mObserver;
+    PropertyGridObserver * mObserver;
 
     // List of property managers, one per property type
     PropertyGridBoolPropertyManager mBoolManager;

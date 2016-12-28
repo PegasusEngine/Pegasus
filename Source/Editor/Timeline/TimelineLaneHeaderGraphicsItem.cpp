@@ -11,10 +11,13 @@
 
 #include "Timeline/TimelineLaneHeaderGraphicsItem.h"
 #include "Timeline/TimelineSizes.h"
+#include <QAbstractScrollArea>
 #include <QGraphicsScene>
 #include <QPainter>
 #include <QStyleOption>
 
+
+#define TIMELINE_LANE_HEADER_ITEM_Z_VALUE 3.0f
 
 //! Table of base colors for the lane headers when they are created
 static const QColor LANE_HEADER_BASE_COLORS[] = 
@@ -57,8 +60,7 @@ TimelineLaneHeaderGraphicsItem::TimelineLaneHeaderGraphicsItem(unsigned int lane
     setCacheMode(DeviceCoordinateCache);
 
     // Set the depth of the block to be the most in the background
-    //! \todo Create TimelineDepths.h and set the values so they do not conflict
-    setZValue(0.0f);
+    setZValue(TIMELINE_LANE_HEADER_ITEM_Z_VALUE);
 }
 
 //----------------------------------------------------------------------------------------

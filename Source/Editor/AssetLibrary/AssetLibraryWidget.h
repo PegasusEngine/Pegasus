@@ -15,8 +15,7 @@
 #include <QDockWidget>
 #include <QAction>
 #include <qvector.h>
-#include "ui_AssetLibraryWidget.h"
-#include "MessageControllers/AssetIOMessageController.h"
+#include "MessageControllers/MsgDefines.h"
 #include "Widgets/PegasusDockWidget.h"
 
 
@@ -29,6 +28,11 @@ namespace Pegasus {
         class IApplicationProxy;
     }
 
+}
+
+namespace Ui
+{
+    class AssetLibraryWidget;
 }
 
 class QWidget;
@@ -95,7 +99,7 @@ private:
     void ResetAllFilterButtons();
 
     //! ui components
-    Ui::AssetLibraryWidget ui;
+    Ui::AssetLibraryWidget* mUi;
 
     //! procedural dialog for new asset
     QNewAssetDialog* mNewAssetDialog;

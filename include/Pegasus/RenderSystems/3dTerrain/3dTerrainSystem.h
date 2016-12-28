@@ -62,7 +62,14 @@ public:
 
 
     //! Constructor
-    explicit Terrain3dSystem (Alloc::IAllocator* allocator) : RenderSystem(allocator) {}
+    explicit Terrain3dSystem (Alloc::IAllocator* allocator)
+        : RenderSystem(allocator)
+#if PEGASUS_ENABLE_PROXIES 
+        , mEnableCamCullDebug(false)
+        , mEnableGeoDebug(false)
+#endif
+    {
+    }
 
     //! destructor
     virtual ~Terrain3dSystem () {}

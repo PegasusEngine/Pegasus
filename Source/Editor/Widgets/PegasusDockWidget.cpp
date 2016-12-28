@@ -65,21 +65,21 @@ void PegasusDockWidget::UpdateUIForAppLoaded()
     OnUIForAppLoaded(GetEditor()->GetApplicationManager().GetApplication()->GetApplicationProxy());
 }
 
-void PegasusDockWidget::SendAssetIoMessage(const AssetIOMessageController::Message& msg)
+void PegasusDockWidget::SendAssetIoMessage(const AssetIOMCMessage& msg)
 {
     emit(OnSendAssetIoMessage(this, msg));
 }
 
-void PegasusDockWidget::SendPropertyGridIoMessage(const PropertyGridIOMessageController::Message& msg)
+void PegasusDockWidget::SendPropertyGridIoMessage(const PropertyGridIOMCMessage& msg)
 {
     emit(OnSendPropertyGridIoMessage(msg));
 }
 
-void PegasusDockWidget::SendGraphIoMessage(const GraphIOMessageController::Message& msg)
+void PegasusDockWidget::SendGraphIoMessage(const GraphIOMCMessage& msg)
 {
     emit(OnSendGraphIoMessage(msg));
 }
-void PegasusDockWidget::SendTimelineIoMessage(const TimelineIOMessageController::Message& msg)
+void PegasusDockWidget::SendTimelineIoMessage(const TimelineIOMCMessage& msg)
 {
     emit(OnSendTimelineIoMessage(msg));
 }

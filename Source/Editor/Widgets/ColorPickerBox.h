@@ -14,7 +14,6 @@
 
 #include <QFrame>
 
-
 class ColorPickerBox : public QFrame
 {
     Q_OBJECT

@@ -12,7 +12,10 @@
 #ifndef EDITOR_APPLICATION_H
 #define EDITOR_APPLICATION_H
 
+#include <QObject>
 #include <QThread>
+#include <QString>
+#include <QtCore/qobjectdefs.h>
 
 #include "Pegasus/Core/Shared/LogChannel.h"
 #include "Pegasus/Core/Shared/AssertReturnCode.h"

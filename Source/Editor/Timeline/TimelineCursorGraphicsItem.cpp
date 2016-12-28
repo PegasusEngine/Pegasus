@@ -15,6 +15,8 @@
 #include <QPainter>
 
 
+#define TIMELINE_CURSOR_Z_GRAPHICS_VALUE  2.9f
+
 TimelineCursorGraphicsItem::TimelineCursorGraphicsItem(unsigned int numLanes, float horizontalScale)
 :   QGraphicsItem(),
     mBeat(0.0f)
@@ -45,9 +47,7 @@ TimelineCursorGraphicsItem::TimelineCursorGraphicsItem(unsigned int numLanes, fl
     // No caching, as the cursor is a very simple primitive
     setCacheMode(NoCache);
 
-    // Set the depth of the line to be the second most in the background
-    //! \todo Create TimelineDepths.h and set the values so they do not conflict
-    setZValue(20.0f);
+    setZValue(TIMELINE_CURSOR_Z_GRAPHICS_VALUE);
 }
 
 //----------------------------------------------------------------------------------------

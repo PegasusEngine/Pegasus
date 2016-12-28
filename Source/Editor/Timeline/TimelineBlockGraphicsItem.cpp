@@ -13,7 +13,7 @@
 #include "Timeline/TimelineUndoCommands.h"
 #include "Timeline/TimelineSizes.h"
 #include "Pegasus/PegasusAssetTypes.h"
-
+#include <QAbstractScrollArea>
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
@@ -24,7 +24,7 @@
 
 
 //! Depth of the block when drawn. Positive since it needs to be rendered in front of the grid at least
-#define TIMELINE_BLOCK_GRAPHICS_ITEM_Z_VALUE                10.0f
+#define TIMELINE_BLOCK_GRAPHICS_ITEM_Z_VALUE                2.0f
 
 unsigned int TimelineBlockGraphicsItem::sCurrentBlockID = 0;
 unsigned int TimelineBlockGraphicsItem::sMouseClickID = 0;
@@ -322,6 +322,7 @@ void TimelineBlockGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     {
         QGraphicsScene * const parentScene = scene();
         QList<QGraphicsItem *> selectedItems;
+        bool requestDrawAllViewports = false;
         
         if (parentScene != nullptr)
         {
@@ -329,8 +330,24 @@ void TimelineBlockGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             selectedItems = parentScene->selectedItems();
             for (int i = 0; i < selectedItems.size(); ++i)
             {
+                requestDrawAllViewports = true;
                 TimelineBlockGraphicsItem* blockGraphicsItem = static_cast<TimelineBlockGraphicsItem*>(selectedItems[i]);                
                 emit RequestBlockMove(blockGraphicsItem, QPointF(blockGraphicsItem->mInitialPoint.x(), blockGraphicsItem->mInitialPoint.y()) + delta);
+            }
+        }
+
+        static const int MAX_PER_FRAME_THROTTLE = 6;
+        static int sCurrentPerFrameThrottleRequest = 0;
+
+        if (requestDrawAllViewports)
+        {
+            //Crappy but pretty elegant hack:
+            // in order to not oversaturate and send every single time the mouse move event fires a frame,
+            // we just send it every MAX_PER_FRAME_THROTTLE events the mouse moves. This improves behaviour and makes it possible to not have
+            // an outrageous lag when we move a set of timelines.
+            if ((sCurrentPerFrameThrottleRequest++ % MAX_PER_FRAME_THROTTLE) == 0)
+            {
+                emit RequestDrawAllViewports();
             }
         }
         
@@ -361,6 +378,7 @@ void TimelineBlockGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *even
         }
     }
     mIsMoving = false;
+    emit RequestDrawAllViewports();
 }
 
 //----------------------------------------------------------------------------------------

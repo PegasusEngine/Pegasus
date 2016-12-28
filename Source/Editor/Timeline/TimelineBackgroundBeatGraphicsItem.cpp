@@ -11,14 +11,16 @@
 
 #include "Timeline/TimelineBackgroundBeatGraphicsItem.h"
 #include "Timeline/TimelineSizes.h"
+#include <QAbstractScrollArea>
 #include <QGraphicsScene>
 #include <QPainter>
 #include <QStyleOption>
 
+#define  TIMELINE_BEAT_BG_Z_VALUE 1.0f
+
 //! Multiplier for the horizontal scale to increase the width of the drawn blocks a bit,
 //! to avoid white space between them when zooming in/out.
-static const float HORIZONTAL_SCALE_MARGIN = 1.1f;
-
+static const float HORIZONTAL_SCALE_MARGIN = 1.0f;
 
 TimelineBackgroundBeatGraphicsItem::TimelineBackgroundBeatGraphicsItem(unsigned int beat,
                                                                        unsigned int numLanes,
@@ -53,8 +55,7 @@ TimelineBackgroundBeatGraphicsItem::TimelineBackgroundBeatGraphicsItem(unsigned 
     setCacheMode(DeviceCoordinateCache);
 
     // Set the depth of the block to be the most in the background
-    //! \todo Create TimelineDepths.h and set the values so they do not conflict
-    setZValue(0.0f);
+    setZValue(TIMELINE_BEAT_BG_Z_VALUE);
 }
 
 //----------------------------------------------------------------------------------------

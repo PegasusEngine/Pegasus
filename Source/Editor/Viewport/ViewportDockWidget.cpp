@@ -74,8 +74,8 @@ void ViewportDockWidget::OnWindowProxyReady()
     }
 
     //! Once everything is done, lets send manually a signal saying, do render things:
-    WindowIOMessageController::Message msg;
-    msg.SetMessageType(WindowIOMessageController::Message::ENABLE_DRAW); 
+    WindowIOMCMessage msg;
+    msg.SetMessageType(WindowIOMCMessage::ENABLE_DRAW); 
     msg.SetViewportWidget(mViewportWidget);
     msg.SetEnableDraw(true);
     emit mViewportWidget->OnSendWindowIoMessage(msg);

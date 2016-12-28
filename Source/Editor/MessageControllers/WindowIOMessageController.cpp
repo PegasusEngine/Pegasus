@@ -14,20 +14,20 @@ WindowIOMessageController::~WindowIOMessageController()
     DestroyWindows();
 }
 
-void WindowIOMessageController::OnRenderThreadProcessMessage(const WindowIOMessageController::Message& msg)
+void WindowIOMessageController::OnRenderThreadProcessMessage(const WindowIOMCMessage& msg)
 {
     switch (msg.GetMessageType())
     {
-    case WindowIOMessageController::Message::INITIALIZE_WINDOW:
+    case WindowIOMCMessage::INITIALIZE_WINDOW:
         OnRenderInitializeWindow(msg.GetViewportWidget(), msg.GetComponentFlags());
         break;
-    case WindowIOMessageController::Message::DRAW_WINDOW:
+    case WindowIOMCMessage::DRAW_WINDOW:
         OnRenderDrawWindow(msg.GetViewportWidget());
         break;
-    case WindowIOMessageController::Message::WINDOW_RESIZED:
+    case WindowIOMCMessage::WINDOW_RESIZED:
         OnRenderResizeWindow(msg.GetViewportWidget(), msg.GetWidth(), msg.GetHeight());
         break;
-    case WindowIOMessageController::Message::ENABLE_DRAW:
+    case WindowIOMCMessage::ENABLE_DRAW:
         OnRenderEnableDraw(msg.GetViewportWidget(), msg.GetEnableDraw());
         break;
     }

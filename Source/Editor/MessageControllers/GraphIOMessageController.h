@@ -14,6 +14,7 @@
 #define PEGASUS_GRAPHIOMESSAGECONTROLLER_H
 
 #include "Pegasus/Texture/Shared/TextureEventDefs.h"
+#include "MessageControllers/MsgDefines.h"
 #include "MessageControllers/AssetIOMessageController.h"
 #include <QMap>
 #include <QSet>
@@ -42,88 +43,25 @@ class GraphIOMessageController : public QObject, public IAssetTranslator, privat
 
 public:
 
-    //! Structure with the update of an element
-    struct UpdateElement
-    {
-        QString mNodeName;
-
-    public:
-
-        UpdateElement()
-        {
-        }
-    };
-
-
-    // Accumulation of update elements
-    struct UpdateCache
-    {
-        QVector<UpdateElement> mUpdateCache;
-        UpdateCache()
-        { }
-    };
-
 
     //! User data attached to every texture
     class GraphNodeUserData : public Pegasus::Core::IEventUserData
     {
     public:
         GraphNodeUserData(Pegasus::Texture::ITextureNodeProxy* proxy, 
-                            UpdateCache* updateCache)
+                            GraphIOMCUpdateCache* updateCache)
             :   mTextureNodeProxy(proxy), mUpdateCache(updateCache)
             { }
 
         virtual ~GraphNodeUserData() { }
 
         Pegasus::Texture::ITextureNodeProxy* GetProxy() const { return mTextureNodeProxy; }
-        UpdateCache* GetUpdateCache() const { return mUpdateCache; }
+        GraphIOMCUpdateCache* GetUpdateCache() const { return mUpdateCache; }
 
     private:
         Pegasus::Texture::ITextureNodeProxy* mTextureNodeProxy;
-        UpdateCache* mUpdateCache;
+        GraphIOMCUpdateCache* mUpdateCache;
     };
-
-
-    //! Message container class so the UI can communicate with the application render thread
-    class Message
-    {
-    public:
-        enum MessageType
-        {
-            VIEW_GRAPH_ON_VIEWPORT,
-            INVALID
-        };
-        
-
-        //! Constructors
-        explicit Message(MessageType type)
-            : mMessageType(type), mGraphNodeObserver(nullptr), mTargetViewport(nullptr) { }
-        
-        Message()
-            : mMessageType(INVALID), mGraphNodeObserver(nullptr), mTargetViewport(nullptr) { }
-    
-
-        // Getters
-        inline MessageType GetMessageType() const { return mMessageType; }
-        GraphNodeObserver* GetGraphNodeObserver() const { return mGraphNodeObserver; }
-        ViewportWidget* GetTargetViewport() const { return mTargetViewport; }
-        AssetInstanceHandle GetGraphHandle() const { return mGraphHandle; }
-
-        // Setters
-        void SetMessageType(MessageType t) { mMessageType = t; }
-        void SetGraphNodeObserver(GraphNodeObserver* graphNodeObserver) { mGraphNodeObserver = graphNodeObserver; }
-        void SetTargetViewport(ViewportWidget* viewport) { mTargetViewport = viewport; }
-        void SetGraphHandle(AssetInstanceHandle graphHandle) { mGraphHandle = graphHandle; }
-        
-    private:
-
-        //! Type of the message being sent
-        MessageType mMessageType;
-        GraphNodeObserver* mGraphNodeObserver;
-        ViewportWidget* mTargetViewport;
-        AssetInstanceHandle mGraphHandle;
-    };
-
 
     //! Constructor
     explicit GraphIOMessageController(Pegasus::App::IApplicationProxy* appProxy);
@@ -140,7 +78,7 @@ public:
 
     //! Called by the render thread when a render thread message should be processed
     //! \param m The message to get processed
-    void OnRenderThreadProcessMessage(const Message& m);
+    void OnRenderThreadProcessMessage(const GraphIOMCMessage& m);
 
     //! Call at the end of the frame, whenever it is ideal to flush all the changes in the graph
     void FlushAllPendingUpdates();

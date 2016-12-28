@@ -13,12 +13,9 @@
 #define EDITOR_TIMELINEDOCKWIDGET_H
 
 #include <QDockWidget>
-#include "MessageControllers/TimelineIOMessageController.h"
-#include "MessageControllers/AssetIOMessageController.h"
-#include "Widgets/PegasusDockWidget.h"
+#include "MessageControllers/MsgDefines.h"
+#include "Widgets/PegasusDockWidget.h" 
 #include "PropertyGrid/qtpropertybrowser/qtpropertybrowser.h"
-
-#include "ui_TimelineDockWidget.h"
 
 namespace Pegasus {
 
@@ -29,10 +26,18 @@ namespace Pegasus {
     struct PegasusAssetTypeDesc;
 }
 
+namespace Ui
+{
+    class TimelineDockWidget;
+}
+
 class QUndoStack;
 class QMenu;
 class Editor;
 class QAction;
+class QGraphicsObject;
+class TdwObserver;
+class TimelineIOMessageObserver;
 
 //! Dock widget containing the timeline graphics view
 class TimelineDockWidget : public PegasusDockWidget
@@ -40,6 +45,7 @@ class TimelineDockWidget : public PegasusDockWidget
     Q_OBJECT
 
 public:
+    friend TdwObserver;
 
     TimelineDockWidget(QWidget *parent, Editor* editor);
     virtual ~TimelineDockWidget();
@@ -55,7 +61,7 @@ public:
 
     //! Test if the play mode is currently enabled
     //! \return True if the play button is currently toggled
-    inline bool IsPlaying() const { return ui.playButton->isChecked(); }
+    bool IsPlaying() const;
 
 
     //! Set the speed of the demo
@@ -87,7 +93,7 @@ public:
     virtual void OnSaveFocusedObject();
 
     //! Special Pegasus forwarder function which asserts if this widget has focus
-    virtual bool HasFocus() const { return hasFocus() || ui.graphicsView->hasFocus(); }
+    virtual bool HasFocus() const;
 
     //! Switch that holds every pegasus asset type that this dock widget can open for edit.
     //! Asset types that get this type association, will be the ones passed through OnOpenRequest function 
@@ -181,27 +187,11 @@ private slots:
 
 public:
 
-    class Observer : public TimelineIOMessageObserver
-    {
-    public:
-        explicit Observer(TimelineDockWidget* dockWidget)
-        : mDockWidget(dockWidget)
-        {
-        }
-
-        virtual void OnParameterUpdated(const AssetInstanceHandle& timelineHandle, unsigned laneId, unsigned parameterTarget, unsigned parameterName, const QVariant& parameterValue);
-
-        virtual void OnBlockOpResponse(const TimelineIOMessageController::BlockOpResponse& response);
-
-    private:
-        TimelineDockWidget* mDockWidget;
-    } ;
-
-    Observer* GetObserver() { return &mObserver; }
+    TimelineIOMessageObserver* GetObserver() { return mObserver; }
 
 private:
 
-    Observer mObserver;
+    TimelineIOMessageObserver* mObserver;
 
     //! Event filter override
     bool eventFilter(QObject* obj, QEvent* event);
@@ -213,13 +203,10 @@ private:
     virtual void OnUIForAppClosed();
 
     //! Receives an IO message
-    virtual void OnReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage msg);
+    virtual void OnReceiveAssetIoMessage(AssetIOMCMessage::IoResponseMessage msg);
 
     //! Launch loader window to find timeline script
     QString AskForTimelineScript();
-
-    //! User interface definition
-    Ui::TimelineDockWidget ui;
 
     //! Current snapping mode (in number of ticks per snap)
     unsigned int mSnapNumTicks;
@@ -255,6 +242,9 @@ private:
 
     //boolean avoids sending too many messages on setting beat.
     bool mIsCursorQueued;
+
+    //! User interface definition
+    Ui::TimelineDockWidget* mUi;
 
 };
 

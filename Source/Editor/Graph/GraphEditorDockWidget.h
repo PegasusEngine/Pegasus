@@ -15,7 +15,6 @@
 #include <QDockWidget>
 #include "Widgets/PegasusDockWidget.h"
 #include "Widgets/NodeFileTabBar.h"
-#include "ui_GraphEditorDockWidget.h"
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
 
 class ViewportWidget;
@@ -31,6 +30,11 @@ namespace Pegasus {
     namespace App {
         class IApplicationProxy;
     }
+}
+
+namespace Ui
+{
+    class GraphEditorDockWidget;
 }
 
 //! Interface that defines specific visualization patterns
@@ -138,7 +142,7 @@ protected:
 private:
 
     //! UI associated with the dock widget
-    Ui::GraphEditorDockWidget ui;
+    Ui::GraphEditorDockWidget* mUi;
     
     //! File tab bar
     NodeFileTabBar* mNodeFileTabBar;

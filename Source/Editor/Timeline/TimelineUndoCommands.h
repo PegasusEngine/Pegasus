@@ -15,6 +15,7 @@
 #include <QUndoCommand>
 #include <QMap>
 #include "Pegasus/Timeline/Shared/TimelineDefs.h"
+#include "MessageControllers/MsgDefines.h"
 
 class TimelineBlockGraphicsItem;
 class TimelineDockWidget;
@@ -90,14 +91,14 @@ public:
 
 private:
 
-    const TimelineIOMessageController::Message* FindMessage(bool isUndoStack, unsigned blockId) const;
+    const TimelineIOMCMessage* FindMessage(bool isUndoStack, unsigned blockId) const;
 
     void ExecuteMessages(bool isUndoStack);
 
     //! Set the text of the command from the current state
     void SetText();
 
-    typedef QMap<unsigned, TimelineIOMessageController::Message> BlockMessageMap;
+    typedef QMap<unsigned, TimelineIOMCMessage> BlockMessageMap;
     BlockMessageMap mRedoMessages;
     BlockMessageMap mUndoMessages;
 

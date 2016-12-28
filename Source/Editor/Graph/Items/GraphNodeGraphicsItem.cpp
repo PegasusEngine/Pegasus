@@ -14,6 +14,7 @@
 #include "Graph/Items/GraphNodeInputGraphicsItem.h"
 #include "Graph/Items/GraphNodeOutputGraphicsItem.h"
 
+#include <QAbstractScrollArea>
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>

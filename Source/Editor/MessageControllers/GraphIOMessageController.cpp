@@ -34,11 +34,11 @@ GraphIOMessageController::~GraphIOMessageController()
 
 //----------------------------------------------------------------------------------------
 
-void GraphIOMessageController::OnRenderThreadProcessMessage(const GraphIOMessageController::Message& m)
+void GraphIOMessageController::OnRenderThreadProcessMessage(const GraphIOMCMessage& m)
 {
     switch(m.GetMessageType())
     {
-    case GraphIOMessageController::Message::VIEW_GRAPH_ON_VIEWPORT:
+    case GraphIOMCMessage::VIEW_GRAPH_ON_VIEWPORT:
         OnRenderThreadViewGraphOnViewport(m.GetTargetViewport(), m.GetGraphHandle());
         break;
     }

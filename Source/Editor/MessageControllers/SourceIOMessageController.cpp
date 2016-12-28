@@ -26,17 +26,17 @@ SourceIOMessageController::~SourceIOMessageController()
 {
 }
 
-void SourceIOMessageController::OnRenderThreadProcessMessage(const SourceIOMessageController::Message& msg)
+void SourceIOMessageController::OnRenderThreadProcessMessage(const SourceIOMCMessage& msg)
 {
     switch(msg.GetMessageType())
     {
-    case SourceIOMessageController::Message::COMPILE_SOURCE:
+    case SourceIOMCMessage::COMPILE_SOURCE:
         OnRenderRequestCompileSource(msg.GetHandle());
         break;
-    case SourceIOMessageController::Message::SET_SOURCE:
+    case SourceIOMCMessage::SET_SOURCE:
         OnRenderRequestSetSource(msg.GetHandle(), msg.GetSourceText());
         break;
-    case SourceIOMessageController::Message::SET_SOURCE_AND_COMPILE_SOURCE:
+    case SourceIOMCMessage::SET_SOURCE_AND_COMPILE_SOURCE:
         OnRenderRequestSetSource(msg.GetHandle(), msg.GetSourceText());
         OnRenderRequestCompileSource(msg.GetHandle());
     default:

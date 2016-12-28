@@ -14,17 +14,17 @@
 #define EDITOR_APPLICATIONINTERFACE_H
 
 #include "ProgramEditor/ProgramEditorWidget.h"
-#include "MessageControllers/AssetIOMessageController.h"
-#include "MessageControllers/SourceIOMessageController.h"
-#include "MessageControllers/ProgramIOMessageController.h"
-#include "MessageControllers/WindowIOMessageController.h"
-#include "MessageControllers/PropertyGridIOMessageController.h"
-#include "MessageControllers/GraphIOMessageController.h"
-#include "MessageControllers/TimelineIOMessageController.h"
 
 class Application;
 class CodeUserData;
 class SourceCodeManagerEventListener;
+class TimelineIOMessageController;
+class GraphIOMessageController;
+class WindowIOMessageController;
+class ProgramIOMessageController;
+class SourceIOMessageController;
+class AssetIOMessageController;
+class PropertyGridIOMessageController;
 
 namespace Pegasus {
     namespace Timeline {
@@ -108,25 +108,25 @@ private slots:
     void RequestFrameInPlayMode();
 
     //! forwards a message to the asset IO controller so its executed in the render thread
-    void ForwardAssetIoMessage(PegasusDockWidget* sender, AssetIOMessageController::Message msg);
+    void ForwardAssetIoMessage(PegasusDockWidget* sender, AssetIOMCMessage msg);
 
     //! forwards a message to the shader IO controller so its executed in the render thread
-    void ForwardSourceIoMessage(SourceIOMessageController::Message msg);
+    void ForwardSourceIoMessage(SourceIOMCMessage msg);
 
     //! forwards a message to the program IO controller so its executed in the render thread
-    void ForwardProgramIoMessage(ProgramIOMessageController::Message msg);
+    void ForwardProgramIoMessage(ProgramIOMCMessage msg);
 
     //! forwards a message to the window IO controller so its executed in the render thread
-    void ForwardWindowIoMessage(WindowIOMessageController::Message msg);
+    void ForwardWindowIoMessage(WindowIOMCMessage msg);
 
     //! forwards a message to the property grid IO controller so its executed in the render thread
-    void ForwardPropertyGridIoMessage(PropertyGridIOMessageController::Message msg);
+    void ForwardPropertyGridIoMessage(PropertyGridIOMCMessage msg);
 
     //! forwards a message to the graph IO controller so its executed in the render thread
-    void ForwardGraphIoMessage(GraphIOMessageController::Message msg);
+    void ForwardGraphIoMessage(GraphIOMCMessage msg);
 
     //! forwards a to the window io controller so its executed in the render thread
-    void ForwardTimelineIoMessage(TimelineIOMessageController::Message msg);
+    void ForwardTimelineIoMessage(TimelineIOMCMessage msg);
 
     //------------------------------------------------------------------------------------
 

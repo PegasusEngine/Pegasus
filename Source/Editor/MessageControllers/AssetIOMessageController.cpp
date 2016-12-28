@@ -19,6 +19,7 @@
 #include "Pegasus/Timeline/Shared/LaneDefs.h"
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"
 #include "CodeEditor/SourceCodeManagerEventListener.h"
+#include "Widgets/PegasusDockWidget.h"
 #include <QByteArray>
 
 
@@ -59,42 +60,42 @@ void AssetIOMessageController::RegisterQtTranslator(IAssetTranslator* translator
     }
 }
 
-void AssetIOMessageController::OnRenderThreadProcessMessage(PegasusDockWidget* sender, const AssetIOMessageController::Message& msg)
+void AssetIOMessageController::OnRenderThreadProcessMessage(PegasusDockWidget* sender, const AssetIOMCMessage& msg)
 {
     switch(msg.GetMessageType())
     {
-        case AssetIOMessageController::Message::OPEN_ASSET:
+        case AssetIOMCMessage::OPEN_ASSET:
             {
                 OnRenderRequestOpenObject(msg.GetString());
             }
             break;
-        case AssetIOMessageController::Message::CLOSE_ASSET:
+        case AssetIOMCMessage::CLOSE_ASSET:
             {
                 OnRenderRequestCloseObject(msg.GetObject());
             }
             break;
-        case AssetIOMessageController::Message::RELOAD_FROM_ASSET:
+        case AssetIOMCMessage::RELOAD_FROM_ASSET:
             {
                 OnRenderRequestReloadObject(msg.GetObject());
             }
             break;
-        case AssetIOMessageController::Message::SAVE_ASSET:
+        case AssetIOMCMessage::SAVE_ASSET:
             {
                 OnSaveObject(sender, msg.GetObject());
             }
             break;
-        case AssetIOMessageController::Message::NEW_ASSET:
+        case AssetIOMCMessage::NEW_ASSET:
             {
                 OnRenderRequestNewObject(sender, msg.GetString(), msg.GetTypeDesc());
             }
             break;
-        case AssetIOMessageController::Message::QUERY_START_VIEW_ASSET_TREE:
-        case AssetIOMessageController::Message::QUERY_REFRESH_VIEW_ASSET_TREE:
+        case AssetIOMCMessage::QUERY_START_VIEW_ASSET_TREE:
+        case AssetIOMCMessage::QUERY_REFRESH_VIEW_ASSET_TREE:
             {
                 OnRenderRequestQueryStartViewAssetTree(msg.GetTreeObserver());
             }
             break;
-        case AssetIOMessageController::Message::QUERY_STOP_VIEW_ASSET_TREE:
+        case AssetIOMCMessage::QUERY_STOP_VIEW_ASSET_TREE:
             {
                 OnRenderRequestQueryStopViewAssetTree(msg.GetTreeObserver());
             }
@@ -174,11 +175,11 @@ void AssetIOMessageController::OnSaveObject(PegasusDockWidget* sender, AssetInst
 
     if (err == Pegasus::Io::ERR_NONE)
     {
-        emit(SignalPostMessage(sender, AssetIOMessageController::Message::IO_SAVE_SUCCESS));
+        emit(SignalPostMessage(sender, AssetIOMCMessage::IO_SAVE_SUCCESS));
     }
     else
     {
-        emit(SignalPostMessage(sender, AssetIOMessageController::Message::IO_SAVE_ERROR));
+        emit(SignalPostMessage(sender, AssetIOMCMessage::IO_SAVE_ERROR));
     }
 
     FlushAllPendingUpdates();
@@ -208,12 +209,12 @@ void AssetIOMessageController::OnRenderRequestNewObject(PegasusDockWidget* sende
             } 
             else
             {
-                emit(SignalPostMessage(sender, AssetIOMessageController::Message::IO_NEW_ERROR));
+                emit(SignalPostMessage(sender, AssetIOMCMessage::IO_NEW_ERROR));
             }
         }
         else
         {
-            emit(SignalPostMessage(sender, AssetIOMessageController::Message::IO_NEW_ERROR));
+            emit(SignalPostMessage(sender, AssetIOMCMessage::IO_NEW_ERROR));
         }
     }
     else

@@ -25,6 +25,7 @@
 #include <QTextCharFormat>
 #include <QVector>
 #include <QSet>
+#include <QPainter>
 
 
 //! internal class serving as the syntax highlighter for shade code

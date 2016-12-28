@@ -21,6 +21,7 @@
 #include "Pegasus/Texture/Shared/ITextureNodeProxy.h"
 #include "Pegasus/Texture/Shared/ITextureManagerProxy.h"
 #include "Pegasus/Texture/Shared/ITextureConfigurationProxy.h"
+#include "ui_GraphEditorDockWidget.h"
 
 #include <QMdiSubWindow>
 #include <QMenuBar>
@@ -29,30 +30,30 @@
 
 
 GraphEditorDockWidget::GraphEditorDockWidget(QWidget *parent, Editor* editor, IGraphEditorViewStrategy* viewStrategy)
-:   PegasusDockWidget(parent, editor), mViewStrategy(viewStrategy)
+:   PegasusDockWidget(parent, editor), mViewStrategy(viewStrategy), mUi(nullptr)
 {
-
+    mUi = new Ui::GraphEditorDockWidget();
 }
 
 //----------------------------------------------------------------------------------------
 
 void GraphEditorDockWidget::SetupUi()
 {
-    ui.setupUi(this);
+    mUi->setupUi(this);
     setFocusPolicy(Qt::NoFocus);
-    ui.propertyGridWidget->SetMessenger(this);
+    mUi->propertyGridWidget->SetMessenger(this);
 
     // Create the viewport widget that will contain the previewer
-    mViewportWidget = new ViewportWidget(ui.mainWidget, mViewStrategy->GetViewportComponents());
+    mViewportWidget = new ViewportWidget(mUi->mainWidget, mViewStrategy->GetViewportComponents());
     mViewportWidget->setMinimumSize(128, 128);
     mViewportWidget->setMaximumSize(1080, 1080);
-    ui.viewportLayout->insertWidget(0, mViewportWidget);
+    mUi->viewportLayout->insertWidget(0, mViewportWidget);
     
     // Connect the message that signals that the tab selection has changed
     mNodeFileTabBar = new NodeFileTabBar(this);
     mGraphViewWidget =  new GraphEditorGraphicsView(this);
-    ui.graphEditorLayout->insertWidget(0, mNodeFileTabBar);
-    ui.graphEditorLayout->insertWidget(1, mGraphViewWidget);
+    mUi->graphEditorLayout->insertWidget(0, mNodeFileTabBar);
+    mUi->graphEditorLayout->insertWidget(1, mGraphViewWidget);
 
     connect(
         mNodeFileTabBar, SIGNAL(RuntimeObjectRemoved(AssetInstanceHandle, QObject*)),
@@ -110,6 +111,7 @@ void GraphEditorDockWidget::SetupUi()
 
 GraphEditorDockWidget::~GraphEditorDockWidget()
 {
+    delete mUi;
 }
 
 //----------------------------------------------------------------------------------------
@@ -126,10 +128,10 @@ void GraphEditorDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* ap
     mViewportWidget->OnAppLoaded();
 
     //! After all tabs are loaded, update the UI for the current tab
-    ui.propertyGridWidget->SetApplicationProxy(applicationProxy);
+    mUi->propertyGridWidget->SetApplicationProxy(applicationProxy);
 
-    WindowIOMessageController::Message msg;
-    msg.SetMessageType(WindowIOMessageController::Message::ENABLE_DRAW);
+    WindowIOMCMessage msg;
+    msg.SetMessageType(WindowIOMCMessage::ENABLE_DRAW);
     msg.SetViewportWidget(mViewportWidget);
     msg.SetEnableDraw(true);
     emit mViewportWidget->OnSendWindowIoMessage(msg);
@@ -145,7 +147,7 @@ void GraphEditorDockWidget::OnUIForAppClosed()
         mNodeFileTabBar->Close(0);
     }
     mViewportWidget->OnAppUnloaded();
-    ui.propertyGridWidget->SetApplicationProxy(nullptr);
+    mUi->propertyGridWidget->SetApplicationProxy(nullptr);
 }
 
 //----------------------------------------------------------------------------------------
@@ -167,7 +169,7 @@ void GraphEditorDockWidget::OnOpenObject(AssetInstanceHandle object, const QStri
 
 void GraphEditorDockWidget::RequestClose(AssetInstanceHandle objectHandle, QObject* extraData)
 {
-    AssetIOMessageController::Message msg(AssetIOMessageController::Message::CLOSE_ASSET);
+    AssetIOMCMessage msg(AssetIOMCMessage::CLOSE_ASSET);
     msg.SetObject(objectHandle);
     SendAssetIoMessage(msg);
     delete static_cast<GraphState*>(extraData);
@@ -190,10 +192,10 @@ void GraphEditorDockWidget::SignalViewGraph(AssetInstanceHandle objectHandle)
         if (graphState != nullptr)
         {
             //let the property grid visualize this graph's root:
-            ui.propertyGridWidget->SetCurrentProxy(graphState->assetHandle);
+            mUi->propertyGridWidget->SetCurrentProxy(graphState->assetHandle);
 
             //let the viewport draw this graph's result:
-            GraphIOMessageController::Message msg(GraphIOMessageController::Message::VIEW_GRAPH_ON_VIEWPORT);
+            GraphIOMCMessage msg(GraphIOMCMessage::VIEW_GRAPH_ON_VIEWPORT);
             msg.SetTargetViewport(mViewportWidget);
             msg.SetGraphHandle(graphState->assetHandle);
             SendGraphIoMessage(msg);
@@ -218,7 +220,7 @@ void GraphEditorDockWidget::OnSaveFocusedObject()
 void GraphEditorDockWidget::SignalSaveTab(int tabId)
 {
     AssetInstanceHandle objectHandle = mNodeFileTabBar->GetTabObject(tabId);
-    AssetIOMessageController::Message msg(AssetIOMessageController::Message::SAVE_ASSET);
+    AssetIOMCMessage msg(AssetIOMCMessage::SAVE_ASSET);
     msg.SetObject(objectHandle);
     SendAssetIoMessage(msg);
 }
@@ -234,7 +236,7 @@ void GraphEditorDockWidget::SignalDiscardObjectChanges(AssetInstanceHandle objec
     // - the user selects discard changes.
     // Make sure that after the reload from asset message has been set, you re-visualize or refresh somehow the view
     // of this graph.
-    AssetIOMessageController::Message msg(AssetIOMessageController::Message::RELOAD_FROM_ASSET);
+    AssetIOMCMessage msg(AssetIOMCMessage::RELOAD_FROM_ASSET);
     msg.SetObject(objectHandle);
     SendAssetIoMessage(msg);
 }

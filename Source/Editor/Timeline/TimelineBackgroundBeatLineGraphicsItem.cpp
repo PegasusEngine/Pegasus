@@ -11,10 +11,12 @@
 
 #include "Timeline/TimelineBackgroundBeatLineGraphicsItem.h"
 #include "Timeline/TimelineSizes.h"
+#include <QAbstractScrollArea>
 #include <QGraphicsScene>
 #include <QPainter>
 #include <QStyleOption>
 
+#define TIMELINE_BG_LINE_BEAT_Z_VALUE 1.1f
 
 TimelineBackgroundBeatLineGraphicsItem::TimelineBackgroundBeatLineGraphicsItem(unsigned int beat,
                                                                                unsigned int numLanes,
@@ -50,7 +52,7 @@ TimelineBackgroundBeatLineGraphicsItem::TimelineBackgroundBeatLineGraphicsItem(u
 
     // Set the depth of the line to be the second most in the background
     //! \todo Create TimelineDepths.h and set the values so they do not conflict
-    setZValue(1.0f);
+    setZValue(TIMELINE_BG_LINE_BEAT_Z_VALUE);
 }
 
 //----------------------------------------------------------------------------------------

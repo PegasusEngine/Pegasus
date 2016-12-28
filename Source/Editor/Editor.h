@@ -14,24 +14,12 @@
 
 #include "Settings/Settings.h"
 
-#include "Console/ConsoleDockWidget.h"
-#include "History/HistoryDockWidget.h"
-#include "Timeline/TimelineDockWidget.h"
-#include "AssetLibrary/AssetLibraryWidget.h"
-#include "CodeEditor/CodeEditorWidget.h"
-#include "Graph/GraphEditorDockWidget.h"
-#include "Graph/TextureGraphEditorViewStrategy.h"
-#include "Graph/MeshGraphEditorViewStrategy.h"
-#include "Debug/PropertyGridClasses/PropertyGridClassesDockWidget.h"
-#include "Debug/BlockScriptLibraries/BlockScriptLibraryDockWidget.h"
-#include "ProgramEditor/ProgramEditorWidget.h"
-#include "Viewport/ViewportDockWidget.h"
-#include "Viewport/ViewportWidget.h"
-#include "Pegasus/AssetLib/Shared/IRuntimeAssetObjectProxy.h"
-#include "MessageControllers/AssetIOMessageController.h"
+#include "MessageControllers/MsgDefines.h"
 
 #include <QtWidgets/QMainWindow>
 #include <QMap>
+#include <QSet>
+
 
 class ApplicationManager;
 class LogManager;
@@ -43,6 +31,20 @@ class QUndoCommand;
 class QAction;
 class QUndoStack;
 
+class PegasusDockWidget;
+class ConsoleDockWidget;
+class HistoryDockWidget;
+class TimelineDockWidget;
+class AssetLibraryWidget;
+class CodeEditorWidget;
+class GraphEditorDockWidget;
+class TextureGraphEditorViewStrategy;
+class MeshGraphEditorViewStrategy;
+class PropertyGridClassesDockWidget;
+class BlockScriptLibraryDockWidget;
+class ProgramEditorWidget;
+class ViewportDockWidget;
+class ViewportWidget;
 
 //! Main window of Pegasus Editor
 class Editor : public QMainWindow
@@ -392,8 +394,8 @@ private:
 
     //@{
     //! View strategies for graph editors
-    TextureGraphEditorViewStrategy  mTextureEditorViewStrategy;
-    MeshGraphEditorViewStrategy     mMeshEditorViewStrategy;
+    TextureGraphEditorViewStrategy*  mTextureEditorViewStrategy;
+    MeshGraphEditorViewStrategy*     mMeshEditorViewStrategy;
     //@}
 
 	//! Menu containing the checkable actions for the tool bars

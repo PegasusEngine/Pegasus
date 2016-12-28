@@ -877,6 +877,9 @@
     <ClInclude Include="..\..\..\Source\Editor\Graph\TextureGraphEditorViewStrategy.h">
       <Filter>Source\Graph</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\Source\Editor\MessageControllers\MsgDefines.h">
+      <Filter>Source\MessageControllers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-arrow.png">

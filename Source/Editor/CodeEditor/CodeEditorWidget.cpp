@@ -37,6 +37,10 @@
 #include <QStatusBar>
 #include <QCheckBox>
 #include <QLineEdit>
+#include <QLabel>
+#include <QToolBox>
+#include <QToolButton>
+
 
 static const char * DOCKABLE_DESC = "Dockable: Allow to be docked when hovering over main window.";
 static const char * UNDOCKABLE_DESC = "Undockable: Allow to hover over window w/o docking.";
@@ -400,15 +404,15 @@ void CodeEditorWidget::SignalSaveTab(int idx)
 
         //dump ui document data to the internal node so we can save
         QString plainText = ss->document->toPlainText();
-        SourceIOMessageController::Message smsg;
-        smsg.SetMessageType(SourceIOMessageController::Message::SET_SOURCE);
+        SourceIOMCMessage smsg;
+        smsg.SetMessageType(SourceIOMCMessage::SET_SOURCE);
         smsg.SetHandle(handle);
         smsg.SetSourceText(plainText);
         SendSourceIoMessage(smsg);
 
         //Save the document
-        AssetIOMessageController::Message msg;
-        msg.SetMessageType(AssetIOMessageController::Message::SAVE_ASSET);
+        AssetIOMCMessage msg;
+        msg.SetMessageType(AssetIOMCMessage::SAVE_ASSET);
         msg.SetObject(handle);
         SendAssetIoMessage(msg);
 
@@ -418,13 +422,13 @@ void CodeEditorWidget::SignalSaveTab(int idx)
 void CodeEditorWidget::SignalDiscardObjectChanges(AssetInstanceHandle handle)
 {
     //Internally reload the asset.
-    AssetIOMessageController::Message msg(AssetIOMessageController::Message::RELOAD_FROM_ASSET);
+    AssetIOMCMessage msg(AssetIOMCMessage::RELOAD_FROM_ASSET);
     msg.SetObject(handle);
     SendAssetIoMessage(msg);
     
     //Send a compilation request
-    SourceIOMessageController::Message smsg;
-    smsg.SetMessageType(SourceIOMessageController::Message::COMPILE_SOURCE);
+    SourceIOMCMessage smsg;
+    smsg.SetMessageType(SourceIOMCMessage::COMPILE_SOURCE);
     smsg.SetHandle(handle);
     SendSourceIoMessage(smsg);
 }
@@ -472,23 +476,23 @@ void CodeEditorWidget::PostStatusBarMessage(const QString& message)
     }
 }
 
-void CodeEditorWidget::OnReceiveAssetIoMessage(AssetIOMessageController::Message::IoResponseMessage id)
+void CodeEditorWidget::OnReceiveAssetIoMessage(AssetIOMCMessage::IoResponseMessage id)
 {
     switch(id)
     {
-    case AssetIOMessageController::Message::IO_SAVE_SUCCESS:
+    case AssetIOMCMessage::IO_SAVE_SUCCESS:
         // This might create a race condition, if the user changes a tab wile the file is saving... to fix this we need
         // to pass the object around... if this becomes a problem then we could fix it later...
         mUi.mTabWidget->ClearCurrentDirty();
         PostStatusBarMessage(tr("Saved file successfully."));
         break;
-    case AssetIOMessageController::Message::IO_SAVE_ERROR:
+    case AssetIOMCMessage::IO_SAVE_ERROR:
         PostStatusBarMessage(tr("IO Error saving file."));
         break;
-    case AssetIOMessageController::Message::IO_NEW_SUCCESS:
+    case AssetIOMCMessage::IO_NEW_SUCCESS:
         PostStatusBarMessage(tr(""));
         break;
-    case AssetIOMessageController::Message::IO_NEW_ERROR:
+    case AssetIOMCMessage::IO_NEW_ERROR:
         PostStatusBarMessage(tr("IO Error creating new code file."));
         break;
     default:
@@ -519,8 +523,8 @@ void CodeEditorWidget::RequestClose(AssetInstanceHandle handle, QObject* extraDa
 
 
     //send a message to the render thread to close this code safely
-    AssetIOMessageController::Message msg;
-    msg.SetMessageType(AssetIOMessageController::Message::CLOSE_ASSET);
+    AssetIOMCMessage msg;
+    msg.SetMessageType(AssetIOMCMessage::CLOSE_ASSET);
     msg.SetObject(handle);
     SendAssetIoMessage(msg);
 }
@@ -569,8 +573,8 @@ void CodeEditorWidget::CompileCode(AssetInstanceHandle handle)
         mCompilationRequestPending = true;            
         mCompilationRequestMutex->unlock();
         emit(RequestCompilationBegin());
-        SourceIOMessageController::Message msg;
-        msg.SetMessageType(SourceIOMessageController::Message::SET_SOURCE_AND_COMPILE_SOURCE);
+        SourceIOMCMessage msg;
+        msg.SetMessageType(SourceIOMCMessage::SET_SOURCE_AND_COMPILE_SOURCE);
         msg.SetSourceText(mHandleMap[handle]->document->toPlainText());
         msg.SetHandle(handle);
         emit (SendSourceIoMessage(msg));

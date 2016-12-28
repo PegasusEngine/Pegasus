@@ -17,7 +17,9 @@
 #include <QSettings>
 #include <QApplication>
 #include <QMainWindow>
-
+#include "Console/ConsoleDockWidget.h"
+#include "Viewport/ViewportDockWidget.h"
+#include "Timeline/TimelineDockWidget.h"
 
 const QColor Settings::sDefaultSyntaxHighlightColors[Settings::SYNTAX_COUNT] =
 {

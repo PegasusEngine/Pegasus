@@ -17,6 +17,8 @@
 #include "CodeEditor/SourceCodeManagerEventListener.h"
 #include "Timeline/TimelineDockWidget.h"
 #include "Widgets/PegasusDockWidget.h"
+#include "Viewport/ViewportWidget.h"
+#include "Viewport/ViewportDockWidget.h"
 
 #include "Pegasus/Preprocessor.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
@@ -27,6 +29,13 @@
 #include "Pegasus/Window/Shared/IWindowProxy.h"
 #include "Pegasus/AssetLib/Shared/IAssetProxy.h"
 #include "Pegasus/AssetLib/Shared/IAssetLibProxy.h"
+#include "MessageControllers/TimelineIOMessageController.h"
+#include "MessageControllers/GraphIOMessageController.h"
+#include "MessageControllers/WindowIOMessageController.h"
+#include "MessageControllers/ProgramIOMessageController.h"
+#include "MessageControllers/SourceIOMessageController.h"
+#include "MessageControllers/AssetIOMessageController.h"
+#include "MessageControllers/PropertyGridIOMessageController.h"
 
 
 ApplicationInterface::ApplicationInterface(Application * application)
@@ -88,25 +97,28 @@ ApplicationInterface::ApplicationInterface(Application * application)
     {
         PegasusDockWidget* dockWidget = dockWidgets[i];
 
-        connect(dockWidget, SIGNAL(OnSendAssetIoMessage(PegasusDockWidget*, AssetIOMessageController::Message)),
-                this, SLOT(ForwardAssetIoMessage(PegasusDockWidget*, AssetIOMessageController::Message)),
+        connect(dockWidget, SIGNAL(OnSendAssetIoMessage(PegasusDockWidget*, AssetIOMCMessage)),
+                this, SLOT(ForwardAssetIoMessage(PegasusDockWidget*, AssetIOMCMessage)),
                 Qt::QueuedConnection);
     
-        connect(mAssetIoMessageController, SIGNAL(SignalPostMessage(PegasusDockWidget*, AssetIOMessageController::Message::IoResponseMessage)),
-                dockWidget, SLOT(ReceiveAssetIoMessage(PegasusDockWidget*, AssetIOMessageController::Message::IoResponseMessage)),
+        connect(mAssetIoMessageController, SIGNAL(SignalPostMessage(PegasusDockWidget*, AssetIOMCMessage::IoResponseMessage)),
+                dockWidget, SLOT(ReceiveAssetIoMessage(PegasusDockWidget*, AssetIOMCMessage::IoResponseMessage)),
                 Qt::QueuedConnection);
         
-        connect(dockWidget, SIGNAL(OnSendGraphIoMessage(GraphIOMessageController::Message)),
-                this, SLOT(ForwardGraphIoMessage(GraphIOMessageController::Message)),
+        connect(dockWidget, SIGNAL(OnSendGraphIoMessage(GraphIOMCMessage)),
+                this, SLOT(ForwardGraphIoMessage(GraphIOMCMessage)),
                 Qt::QueuedConnection);
 
-        connect(dockWidget, SIGNAL(OnSendPropertyGridIoMessage(PropertyGridIOMessageController::Message)),
-                this,   SLOT(ForwardPropertyGridIoMessage(PropertyGridIOMessageController::Message)),
+        connect(dockWidget, SIGNAL(OnSendPropertyGridIoMessage(PropertyGridIOMCMessage)),
+                this,   SLOT(ForwardPropertyGridIoMessage(PropertyGridIOMCMessage)),
 				Qt::QueuedConnection);
 
-        connect(dockWidget, SIGNAL(OnSendTimelineIoMessage(TimelineIOMessageController::Message)),
-                this,   SLOT(ForwardTimelineIoMessage(TimelineIOMessageController::Message)),
+        connect(dockWidget, SIGNAL(OnSendTimelineIoMessage(TimelineIOMCMessage)),
+                this,   SLOT(ForwardTimelineIoMessage(TimelineIOMCMessage)),
 				Qt::QueuedConnection);
+
+        connect(dockWidget, SIGNAL(OnRequestRedrawAllViewports()),
+                this, SLOT(RedrawAllViewports()));
     }
 
     //connect messages for viewports
@@ -114,12 +126,12 @@ ApplicationInterface::ApplicationInterface(Application * application)
     for (int i = 0; i < viewportWidgets.size(); ++i)
     {
         ViewportWidget* viewportWidget = viewportWidgets[i];
-        connect(viewportWidget, SIGNAL(OnSendWindowIoMessage(WindowIOMessageController::Message)),
-                this, SLOT(ForwardWindowIoMessage(WindowIOMessageController::Message)),
+        connect(viewportWidget, SIGNAL(OnSendWindowIoMessage(WindowIOMCMessage)),
+                this, SLOT(ForwardWindowIoMessage(WindowIOMCMessage)),
                 Qt::QueuedConnection);
 
-        connect(viewportWidget, SIGNAL(OnSendPropertyGridIoMessage(PropertyGridIOMessageController::Message)),
-                this, SLOT(ForwardPropertyGridIoMessage(PropertyGridIOMessageController::Message)),
+        connect(viewportWidget, SIGNAL(OnSendPropertyGridIoMessage(PropertyGridIOMCMessage)),
+                this, SLOT(ForwardPropertyGridIoMessage(PropertyGridIOMCMessage)),
                 Qt::QueuedConnection);
     }
 
@@ -141,8 +153,8 @@ ApplicationInterface::ApplicationInterface(Application * application)
 
     //<------  Source IO Controller -------->//
     //From ui to render
-    connect(codeEditorWidget, SIGNAL(SendSourceIoMessage(SourceIOMessageController::Message)),
-            this, SLOT(ForwardSourceIoMessage(SourceIOMessageController::Message)),
+    connect(codeEditorWidget, SIGNAL(SendSourceIoMessage(SourceIOMCMessage)),
+            this, SLOT(ForwardSourceIoMessage(SourceIOMCMessage)),
             Qt::QueuedConnection);
 
     //from render to ui
@@ -159,8 +171,8 @@ ApplicationInterface::ApplicationInterface(Application * application)
     connect(mProgramIoMessageController, SIGNAL(SignalRedrawViewports()),
             this, SLOT(RedrawAllViewports()),
             Qt::DirectConnection);
-    connect(programEditor, SIGNAL(SendProgramIoMessage(ProgramIOMessageController::Message)),
-            this, SLOT(ForwardProgramIoMessage(ProgramIOMessageController::Message)));
+    connect(programEditor, SIGNAL(SendProgramIoMessage(ProgramIOMCMessage)),
+            this, SLOT(ForwardProgramIoMessage(ProgramIOMCMessage)));
     connect(mProgramIoMessageController, SIGNAL(SignalUpdateProgramView()),
             programEditor, SLOT(SyncUiToProgram()));
 
@@ -352,48 +364,48 @@ void ApplicationInterface::RequestFrameInPlayMode()
 
 //----------------------------------------------------------------------------------------
 
-void ApplicationInterface::ForwardAssetIoMessage(PegasusDockWidget* sender, AssetIOMessageController::Message msg)
+void ApplicationInterface::ForwardAssetIoMessage(PegasusDockWidget* sender, AssetIOMCMessage msg)
 {
     mAssetIoMessageController->OnRenderThreadProcessMessage(sender, msg);
 }
 
 //----------------------------------------------------------------------------------------
 
-void ApplicationInterface::ForwardSourceIoMessage(SourceIOMessageController::Message msg)
+void ApplicationInterface::ForwardSourceIoMessage(SourceIOMCMessage msg)
 {
     mSourceIoMessageController->OnRenderThreadProcessMessage(msg);
 }
 
 //----------------------------------------------------------------------------------------
 
-void ApplicationInterface::ForwardProgramIoMessage(ProgramIOMessageController::Message msg)
+void ApplicationInterface::ForwardProgramIoMessage(ProgramIOMCMessage msg)
 {
     mProgramIoMessageController->OnRenderThreadProcessMessage(msg);
 }
 
 //----------------------------------------------------------------------------------------
 
-void ApplicationInterface::ForwardWindowIoMessage(WindowIOMessageController::Message msg)
+void ApplicationInterface::ForwardWindowIoMessage(WindowIOMCMessage msg)
 {
     mWindowIoMessageController->OnRenderThreadProcessMessage(msg);
 }
 
 //----------------------------------------------------------------------------------------
 
-void ApplicationInterface::ForwardPropertyGridIoMessage(PropertyGridIOMessageController::Message msg)
+void ApplicationInterface::ForwardPropertyGridIoMessage(PropertyGridIOMCMessage msg)
 {
     mPropertyGridMessageController->OnRenderThreadProcessMessage(msg);
 }
 
 //----------------------------------------------------------------------------------------
 
-void ApplicationInterface::ForwardGraphIoMessage(GraphIOMessageController::Message msg)
+void ApplicationInterface::ForwardGraphIoMessage(GraphIOMCMessage msg)
 {
     mGraphMessageController->OnRenderThreadProcessMessage(msg);
 }
 //----------------------------------------------------------------------------------------
 
-void ApplicationInterface::ForwardTimelineIoMessage(TimelineIOMessageController::Message msg)
+void ApplicationInterface::ForwardTimelineIoMessage(TimelineIOMCMessage msg)
 {
     mTimelineMessageController->OnRenderThreadProcessMessage(msg);
 }
