@@ -333,7 +333,7 @@ void TimelineIOMessageController::OnRenderThreadProcessMessage(const TimelineIOM
         OnSetParameter(msg.GetTarget(), msg.GetTimelineHandle(), msg.GetLaneId(), msg.GetParameterName(), msg.GetArg(), msg.GetObserver());
         break;
     case TimelineIOMCMessage::BLOCK_OPERATION:
-        OnBlockOp(msg.GetTimelineHandle(), msg.GetBlockOp(), msg.GetBlockGuid(), msg.GetLaneId(), msg.GetArg(), msg.GetMouseClickId(), msg.GetObserver());
+        OnBlockOp(msg.GetTimelineHandle(), msg.GetBlockOp(), msg.GetBlockGuid(), msg.GetLaneId(), msg.GetArg(), msg.GetMouseClickId(), msg.GetRequiresRefocus(), msg.GetObserver());
         break;
     default:
         break;
@@ -504,7 +504,7 @@ static void ReadFromJsonState(Pegasus::AssetLib::IAssetLibProxy* assetLib, Pegas
     assetLib->UnloadAsset(asset);
 }
 
-static bool CreateAndInsertNewBlock(Pegasus::AssetLib::IAssetLibProxy* assetLib, Pegasus::Timeline::ITimelineProxy* timeline, const QVariant& arg, unsigned newGuid, TimelineIOMCBlockOpResponse& response)
+static bool CreateAndInsertNewBlock(Pegasus::AssetLib::IAssetLibProxy* assetLib, Pegasus::Timeline::ITimelineProxy* timeline, const QVariant& arg, bool requiresRefocus, unsigned newGuid, TimelineIOMCBlockOpResponse& response)
 {
     QVariantMap vp = arg.toMap();
 
@@ -519,7 +519,7 @@ static bool CreateAndInsertNewBlock(Pegasus::AssetLib::IAssetLibProxy* assetLib,
 
     newBlock->OverrideGuid(newGuid);
 
-    //Create and insert new lane
+    //Step 2: Create and insert new lane
     Pegasus::Timeline::ILaneProxy* lane = timeline->GetLane(targetLane);
     //HACK HACK HACK HACK
     //todo: really shitty algorithm to fit a block in. The function InsertBlock must be fixed.
@@ -556,6 +556,7 @@ static bool CreateAndInsertNewBlock(Pegasus::AssetLib::IAssetLibProxy* assetLib,
     response.newLane = targetLane;
     response.newShadowLaneState = newLaneState;
     response.blockGuid = newBlock->GetGuid();
+    response.requiresRefocus = requiresRefocus;
     response.success = true;
     return  true; //always send a response
 }
@@ -672,7 +673,7 @@ static bool AskForNewBlock(Pegasus::Timeline::ITimelineManagerProxy* timelineMgr
 }
            
 
-void TimelineIOMessageController::OnBlockOp(const AssetInstanceHandle& timelineHandle,TimelineIOMCBlockOp blockOp, unsigned blockGuid, unsigned targetLaneId, const QVariant& arg, unsigned mouseClickId, TimelineIOMessageObserver* observer)
+void TimelineIOMessageController::OnBlockOp(const AssetInstanceHandle& timelineHandle,TimelineIOMCBlockOp blockOp, unsigned blockGuid, unsigned targetLaneId, const QVariant& arg, unsigned mouseClickId, bool requiresRefocus, TimelineIOMessageObserver* observer)
 {
     //TODO: this function is out of control, and is pretty gross. 
     // refactor into smaller functions
@@ -689,7 +690,7 @@ void TimelineIOMessageController::OnBlockOp(const AssetInstanceHandle& timelineH
 
         if (blockOp == NEW_BLOCK)
         {
-            sendResponse = CreateAndInsertNewBlock(mApp->GetAssetLibProxy(), timeline, arg, blockGuid, response);
+            sendResponse = CreateAndInsertNewBlock(mApp->GetAssetLibProxy(), timeline, arg, requiresRefocus,  blockGuid, response);
         }
         else if (blockOp == DELETE_BLOCKS)
         {

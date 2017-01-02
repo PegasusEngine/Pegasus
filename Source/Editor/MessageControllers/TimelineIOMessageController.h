@@ -82,7 +82,7 @@ private:
 
     void OnSetParameter(TimelineIOMCTarget targetObject, const AssetInstanceHandle& timelineHandle, unsigned laneId, unsigned parameterName, const QVariant& paramValue, TimelineIOMessageObserver* observer);
 
-    void OnBlockOp(const AssetInstanceHandle& timelineHandle, TimelineIOMCBlockOp blockOp, unsigned blockGuid, unsigned targetLaneId, const QVariant& arg, unsigned mouseClickId, TimelineIOMessageObserver* observer );
+    void OnBlockOp(const AssetInstanceHandle& timelineHandle, TimelineIOMCBlockOp blockOp, unsigned blockGuid, unsigned targetLaneId, const QVariant& arg, unsigned mouseClickId, bool requiresRefocus, TimelineIOMessageObserver* observer );
 
     Pegasus::App::IApplicationProxy* mApp;
 

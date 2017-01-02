@@ -177,6 +177,9 @@ TimelineCreateBlockUndoCommand::TimelineCreateBlockUndoCommand(
     mCreateMessage.SetTimelineHandle(timelineHandle);
     mCreateMessage.SetObserver(messenger->GetObserver());
     mCreateMessage.SetArg(newBlockArgs);
+    //this is so we refocus on the new block created. If we always refocus, means that undoing something will
+    // cause the cursor to jump all over the place on a NEW_BLOCK operation.
+    mCreateMessage.SetRequiresRefocus(true);
 
     QVariantList blockGuidsToDelete;
     blockGuidsToDelete.push_back(targetBlockGuid);

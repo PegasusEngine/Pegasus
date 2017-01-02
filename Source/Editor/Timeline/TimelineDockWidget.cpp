@@ -769,6 +769,7 @@ void TimelineDockWidget::OnCreateNewBlock(int blockTypeId)
 {
     if (blockTypeId >= 0 && blockTypeId < static_cast<int>(mAvailableBlocksNamesCount))
     {
+        unsigned initialBeat = static_cast<unsigned> (mTimelineState.GetCurrBeat() * static_cast<float>(mTimelineState.GetNumTicksPerBeat()));
         QString blockClassTypeName = tr(mAvailableBlocksClassNames[blockTypeId]);
         TimelineIOMCMessage msg(TimelineIOMCMessage::BLOCK_OPERATION);
         msg.SetBlockOp(ASK_NEW_BLOCK);
@@ -776,8 +777,9 @@ void TimelineDockWidget::OnCreateNewBlock(int blockTypeId)
         //these are the message contents for the constructor of a block.
         //These have to match to those expected in TimelineIOMessageController.cpp:CreateAndInsertNewBlock
         QVariantMap newblockArgs;
+
         newblockArgs.insert(tr("className"),blockClassTypeName);
-        newblockArgs.insert(tr("initialBeat"),(unsigned)0);
+        newblockArgs.insert(tr("initialBeat"),(unsigned)initialBeat);
         newblockArgs.insert(tr("initialDuration"),(unsigned)1024);
         newblockArgs.insert(tr("targetLane"),(unsigned)0);
         msg.SetTimelineHandle(mTimelineHandle);
@@ -834,6 +836,10 @@ void TdwObserver::OnBlockOpResponse(const TimelineIOMCBlockOpResponse& r)
         else if (r.op == NEW_BLOCK) 
         {
             mDockWidget->mUi->graphicsView->RefreshLaneFromTimelineLane(r.newLane, r.newShadowLaneState);
+            if (r.requiresRefocus)
+            {
+                mDockWidget->OnFocusBlock(r.blockGuid);
+            }
         }
         else if (r.op == ASK_NEW_BLOCK) 
         {

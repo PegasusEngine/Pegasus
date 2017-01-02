@@ -217,6 +217,8 @@ struct TimelineIOMCBlockOpResponse
     QSet<int> lanesFound;
     QMap<int, ShadowLaneState> lanesFoundState;
     QVariant arg;
+    bool requiresRefocus;
+
     TimelineIOMCBlockOpResponse()
     : success(false)
     , op(INVALID_BLOCK_OP)
@@ -224,6 +226,7 @@ struct TimelineIOMCBlockOpResponse
     , newLane(-1)
     , blockGuid(0)
     , mouseClickId(0)
+    , requiresRefocus(false)
     {
     }
 };
@@ -271,6 +274,7 @@ public:
         mMessageType = INVALID;
         mBlockOp = MOVE_BLOCK;
         mMouseClickId = 0;
+        mRequiresRefocus = false;
     }
 
     //! Setters
@@ -285,6 +289,7 @@ public:
     void SetObserver(TimelineIOMessageObserver* observer) { mObserver = observer; }
     void SetBlockOp(TimelineIOMCBlockOp op) { mBlockOp = op; }
     void SetMouseClickId(unsigned mouseClickId) {mMouseClickId = mouseClickId;}
+    void SetRequiresRefocus(bool requiresRefocus) {mRequiresRefocus = requiresRefocus;}
 
     //! Getters
     MessageType GetMessageType() const { return mMessageType; }
@@ -298,6 +303,7 @@ public:
     TimelineIOMessageObserver* GetObserver() const { return mObserver; }
     TimelineIOMCBlockOp GetBlockOp() const { return mBlockOp; }
     unsigned GetMouseClickId() const { return mMouseClickId; }
+    bool GetRequiresRefocus() const { return mRequiresRefocus; }
 
 private:
     TimelineIOMessageObserver* mObserver;
@@ -306,6 +312,7 @@ private:
     unsigned mLaneId;
     unsigned mParamName;
     unsigned mMouseClickId;
+    bool mRequiresRefocus;
     AssetInstanceHandle mTimelineHandle;
     TimelineIOMCTarget mTarget;
     QVariant mArg;
