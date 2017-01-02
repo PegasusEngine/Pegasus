@@ -67,7 +67,7 @@ TimelineSetBlockPositionUndoCommand::TimelineSetBlockPositionUndoCommand(Timelin
 
     //ask the render thread runtime the best available position for the candidate beat & lane.
     TimelineIOMCMessage undoMsg(TimelineIOMCMessage::BLOCK_OPERATION);
-    undoMsg.SetBlockOp(MOVE);
+    undoMsg.SetBlockOp(MOVE_BLOCK);
     undoMsg.SetTimelineHandle(mMessenger->GetTimelineAssetHandle());
     undoMsg.SetBlockGuid(blockState.GetGuid());
     undoMsg.SetLaneId(blockItem->GetLane());
@@ -76,7 +76,7 @@ TimelineSetBlockPositionUndoCommand::TimelineSetBlockPositionUndoCommand(Timelin
 
     //ask the render thread runtime the best available position for the candidate beat & lane.
     TimelineIOMCMessage redoMsg(TimelineIOMCMessage::BLOCK_OPERATION);
-    redoMsg.SetBlockOp(MOVE);
+    redoMsg.SetBlockOp(MOVE_BLOCK);
     redoMsg.SetTimelineHandle(mMessenger->GetTimelineAssetHandle());
     redoMsg.SetBlockGuid(blockState.GetGuid());
     redoMsg.SetLaneId(newLane);
@@ -160,3 +160,98 @@ bool TimelineSetBlockPositionUndoCommand::mergeWith(const QUndoCommand * command
 
     return true;
 }
+
+//----------------------------------------------------------------------------------------
+
+TimelineCreateBlockUndoCommand::TimelineCreateBlockUndoCommand(
+   const AssetInstanceHandle& timelineHandle,
+   unsigned int targetBlockGuid,
+   TimelineDockWidget* messenger,
+   const QVariant& newBlockArgs,
+   QUndoCommand * parent)
+: QUndoCommand(parent), mMessenger(messenger)
+{
+    mCreateMessage.SetMessageType(TimelineIOMCMessage::BLOCK_OPERATION);
+    mCreateMessage.SetBlockOp(NEW_BLOCK);
+    mCreateMessage.SetBlockGuid(targetBlockGuid);
+    mCreateMessage.SetTimelineHandle(timelineHandle);
+    mCreateMessage.SetObserver(messenger->GetObserver());
+    mCreateMessage.SetArg(newBlockArgs);
+
+    QVariantList blockGuidsToDelete;
+    blockGuidsToDelete.push_back(targetBlockGuid);
+    mDeleteMessage.SetMessageType(TimelineIOMCMessage::BLOCK_OPERATION);
+    mDeleteMessage.SetBlockOp(DELETE_BLOCKS);
+    mDeleteMessage.SetArg(blockGuidsToDelete);
+    mDeleteMessage.SetTimelineHandle(timelineHandle);
+    mDeleteMessage.SetObserver(messenger->GetObserver());
+}
+
+void TimelineCreateBlockUndoCommand::redo()
+{
+    emit mMessenger->SendTimelineIoMessage(mCreateMessage);
+}
+
+void TimelineCreateBlockUndoCommand::undo()
+{
+    emit mMessenger->SendTimelineIoMessage(mDeleteMessage);
+}
+
+TimelineDeleteBlockUndoCommand::TimelineDeleteBlockUndoCommand(
+   const AssetInstanceHandle& timelineHandle,
+   const QVector<const ShadowBlockState*>& shadowBlockStates,
+   const QVector<int>& targetLanes,
+   const QVariantList& jsonStates,
+   TimelineDockWidget* messenger,
+   QUndoCommand * parent
+)
+: QUndoCommand(parent), mMessenger(messenger)
+{
+    //first figure out the deletion portion
+    mDeleteMessage.SetMessageType(TimelineIOMCMessage::BLOCK_OPERATION);
+    mDeleteMessage.SetBlockOp(DELETE_BLOCKS);
+    mDeleteMessage.SetTimelineHandle(timelineHandle);
+    mDeleteMessage.SetObserver(messenger->GetObserver());
+    QVariantList blockGuidsToDelete;
+    foreach (const ShadowBlockState* blockState, shadowBlockStates)
+    {
+        blockGuidsToDelete.push_back(blockState->GetGuid());
+    }
+    mDeleteMessage.SetArg(blockGuidsToDelete);
+
+    TimelineIOMCMessage recreateMessage(TimelineIOMCMessage::BLOCK_OPERATION);
+    recreateMessage.SetBlockOp(NEW_BLOCK);
+    recreateMessage.SetTimelineHandle(timelineHandle);
+    recreateMessage.SetObserver(messenger->GetObserver());
+    for (int i = 0; i < shadowBlockStates.size(); ++i)
+    {
+        const ShadowBlockState* blockState = shadowBlockStates[i];
+        int targetLane = targetLanes[i];
+
+        QVariantMap newblockArgs;
+        newblockArgs.insert(QString("className"),  blockState->GetClassName());
+        newblockArgs.insert(QString("initialBeat"),blockState->GetBeat());
+        newblockArgs.insert(QString("initialDuration"),blockState->GetDuration());
+        newblockArgs.insert(QString("assignedGuid"),blockState->GetGuid());
+        newblockArgs.insert(QString("targetLane"), targetLane);
+        //TODO: drop here initial state of property grid as a json string.
+        newblockArgs.insert(QString("jsonState"), jsonStates[i]);
+        recreateMessage.SetArg(newblockArgs);
+        recreateMessage.SetBlockGuid(blockState->GetGuid());
+        mRecreateMessages.push_back(recreateMessage);
+    }
+}
+
+void TimelineDeleteBlockUndoCommand::redo()
+{
+    emit mMessenger->SendTimelineIoMessage(mDeleteMessage);
+}
+
+void TimelineDeleteBlockUndoCommand::undo()
+{
+    foreach (const TimelineIOMCMessage& recreateMessage, mRecreateMessages)
+    {
+        emit mMessenger->SendTimelineIoMessage(recreateMessage);
+    }
+}
+

@@ -13,8 +13,10 @@
 #define EDITOR_TIMELINEDOCKWIDGET_H
 
 #include <QDockWidget>
+#include <QVector>
 #include "MessageControllers/MsgDefines.h"
 #include "Widgets/PegasusDockWidget.h" 
+#include "Pegasus/Timeline/Shared/TimelineDefs.h"
 #include "PropertyGrid/qtpropertybrowser/qtpropertybrowser.h"
 
 namespace Pegasus {
@@ -36,6 +38,7 @@ class QMenu;
 class Editor;
 class QAction;
 class QGraphicsObject;
+class QSignalMapper;
 class TdwObserver;
 class TimelineIOMessageObserver;
 
@@ -62,7 +65,6 @@ public:
     //! Test if the play mode is currently enabled
     //! \return True if the play button is currently toggled
     bool IsPlaying() const;
-
 
     //! Set the speed of the demo
     //! \note Updates the Pegasus timeline, refreshed the tempo field and updates the graphics view
@@ -92,6 +94,9 @@ public:
     //! Callback, implement here functionality that requires saving of current object
     virtual void OnSaveFocusedObject();
 
+    //! Callback, implement here functionality that would pursue the deletion of whatever this widget has selected internally
+    virtual void OnDeleteFocusedObject();
+
     //! Special Pegasus forwarder function which asserts if this widget has focus
     virtual bool HasFocus() const;
 
@@ -107,6 +112,8 @@ public:
 
     const AssetInstanceHandle& GetTimelineAssetHandle() const { return mTimelineHandle; }
 
+    //! Shadow state of the timeline.
+    const ShadowTimelineState& GetProxy() const { return mTimelineState; }
 signals:
 
     //! Emitted when the play mode button has been enabled or disabled
@@ -139,6 +146,9 @@ public slots:
 
     //! Emitted when a block has been double clicked by the user
     void OnBlockDoubleClicked(QString blockScriptToOpen);
+
+    //! When a new block has been requested
+    void OnCreateNewBlock(int blockTypeId);
 
 private slots:
 
@@ -182,6 +192,7 @@ private slots:
     void RequestChangeScript(QGraphicsObject* sender, unsigned blockGuid); 
     void RequestRemoveScript(QGraphicsObject* sender, unsigned blockGuid); 
     void RequestMoveBlock(QGraphicsObject* sender, QPointF amount);
+    void RequestDeleteSelectedBlocks();
 
     //------------------------------------------------------------------------------------
 
@@ -220,12 +231,27 @@ private:
     //! Menu button for script open / removal
     QMenu* mMasterScriptMenu;
 
+    //! Menu containing all the blockscripts available by the app
+    QMenu* mAppAvailableBlocksMenu;
+
+    //! Contains a list of strings with the name of the available blocks.
+    char mAvailableBlocksClassNames[Pegasus::Timeline::MAX_NUM_REGISTERED_BLOCKS][Pegasus::Timeline::MAX_BLOCK_CLASS_NAME_LENGTH + 1];
+    char mAvailableBlocksEditorNames[Pegasus::Timeline::MAX_NUM_REGISTERED_BLOCKS][Pegasus::Timeline::MAX_BLOCK_EDITOR_STRING_LENGTH + 1];
+    unsigned int mAvailableBlocksNamesCount;
+    QVector<QAction*> mAvailableBlocksActions;
+
+    //! Signal mapper, apping the id of the right context to use for the new block selected.
+    QSignalMapper* mAppAvailableBlocksSignalMapper;
+
     //! True if undo commands can be sent
     bool mEnableUndo;
 
     //! Boolean state that indicates if a timeline is active open, or if there is non open.
     //! This will soon be replaced by a proper active handle once we support multiple timelines edits
     bool mTimelineOpen;
+
+    //If 1 block is selected this will contain its guid. If non, it contains ~0;
+    unsigned mCurrentBlockSelected;
 
     //! Handle of the asset instance
     AssetInstanceHandle mTimelineHandle;

@@ -495,7 +495,7 @@ void PropertyGridObject::WriteToObject(AssetLib::Asset* parentAsset, AssetLib::O
 //----------------------------------------------------------------------------------------
 
 template<class C, int D>
-bool ReadVector(PropertyAccessor& a, const char* name, AssetLib::Object* object)
+bool ReadVector(PropertyAccessor& a, const char* name, const AssetLib::Object* object)
 {
     int index = object->FindArray(name);
     if (index == -1)
@@ -522,7 +522,7 @@ bool ReadVector(PropertyAccessor& a, const char* name, AssetLib::Object* object)
 //----------------------------------------------------------------------------------------
 
 template<class C, int D>
-bool ReadColor(PropertyAccessor& a, const char* name, AssetLib::Object* object)
+bool ReadColor(PropertyAccessor& a, const char* name, const AssetLib::Object* object)
 {
     int index = object->FindArray(name);
     if (index == -1)
@@ -549,7 +549,7 @@ bool ReadColor(PropertyAccessor& a, const char* name, AssetLib::Object* object)
 
 //----------------------------------------------------------------------------------------
 
-static void ReadProperty(AssetLib::Asset* parentAsset, const PropertyRecord& r, PropertyAccessor& a, AssetLib::Object* obj)
+static void ReadProperty(const AssetLib::Asset* parentAsset, const PropertyRecord& r, PropertyAccessor& a, const AssetLib::Object* obj)
 {
         switch(r.type)
         {
@@ -631,7 +631,7 @@ static const char* CopyString(Memory::BlockAllocator& ba, const char* str)
     return newBuffer;
 }
 
-bool PropertyGridObject::ReadFromObject(AssetLib::Asset* parentAsset, AssetLib::Object* obj)
+bool PropertyGridObject::ReadFromObject(const AssetLib::Asset* parentAsset, const AssetLib::Object* obj)
 {
     mStringAllocator.Reset(); //for strings that will be copied.
 

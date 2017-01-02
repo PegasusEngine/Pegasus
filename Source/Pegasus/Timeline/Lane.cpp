@@ -972,7 +972,7 @@ bool Lane::FindBlockAndComputeRelativeBeat(float beat, Block * & block, float & 
 
 //----------------------------------------------------------------------------------------
 
-bool Lane::OnReadObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* owner, AssetLib::Object* root)
+bool Lane::OnReadObject(Pegasus::AssetLib::AssetLib* lib, const AssetLib::Asset* owner, const AssetLib::Object* root)
 {
     int typeId = root->FindString("type");
     if (typeId == -1)
@@ -1014,7 +1014,7 @@ bool Lane::OnReadObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* owner
                     return false;
                 }
                 
-                Block* newBlock = GetTimeline()->GetApplicationContext()->GetTimelineManager()->CreateBlock(e.o->GetString(typeId));
+                Block* newBlock = GetTimeline()->CreateBlock(e.o->GetString(typeId));
                 if (newBlock != nullptr)
                 {                
                     if (newBlock->OnReadObject(lib, owner, e.o))
@@ -1078,6 +1078,32 @@ void Lane::OnWriteObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* owne
     }
 }
 
+#if PEGASUS_ENABLE_PROXIES
+int Lane::FindBlockByGuid(unsigned int blockGuid)
+{
+    int currIndex = mFirstBlockIndex;
+    do
+    {
+        BlockRecord& currRecord = mBlockRecords[currIndex];
+        if (currRecord.mBlock != nullptr && currRecord.mBlock->GetGuid() == blockGuid)
+        {
+            return currIndex;
+        }
+        else
+        {
+            currIndex = currRecord.mNext;
+        }
+    }
+    while (currIndex != mFirstBlockIndex);
+    return INVALID_RECORD_INDEX;
+}
+
+Block* Lane::FindBlockByIndex(int index)
+{
+    return mBlockRecords[index].mBlock;
+}
+
+#endif
 
 }   // namespace Timeline
 }   // namespace Pegasus

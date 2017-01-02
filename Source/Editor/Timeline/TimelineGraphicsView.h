@@ -86,6 +86,9 @@ public:
     //! returns -1 if the lane does not exist. Fills in the block pointer if found in lane.
     int FindLane(unsigned blockGuid, TimelineBlockGraphicsItem*& outBlock) const;
 
+    //! Gets the current beat that the cursor is pointing to.
+    float GetBeatFromCursor() const;
+
     //------------------------------------------------------------------------------------
 
 signals:
@@ -138,6 +141,12 @@ public slots:
 
     //! Action triggered when the horizontal bar moves.
     void OnHorizontalScroll(int amount);
+
+
+    //! Refresh the content of a lane using the data from the application timeline lane
+    //! \param laneIndex Index of the lane to refresh (< mNumLanes)
+    //! \param laneProxy Proxy of the timeline lane to get the data from
+    void RefreshLaneFromTimelineLane(unsigned int laneIndex, const ShadowLaneState& lane);
 
     //------------------------------------------------------------------------------------
 
@@ -210,11 +219,6 @@ private:
     //! Remove existing block graphics items for a lane
     //! \param laneIndex Index of the lane to clear
     void ClearBlockItems(unsigned int laneIndex);
-
-    //! Refresh the content of a lane using the data from the application timeline lane
-    //! \param laneIndex Index of the lane to refresh (< mNumLanes)
-    //! \param laneProxy Proxy of the timeline lane to get the data from
-    void RefreshLaneFromTimelineLane(unsigned int laneIndex, const ShadowLaneState& lane);
 
     //! Sets the lane header positions aligned to the current view of the horizontal scrollbar.
     void ResetLaneHeaderPositions();

@@ -12,6 +12,7 @@
 #ifndef EDITOR_GRAPHEDITORGRAPHICSSCENE_H
 #define EDITOR_GRAPHEDITORGRAPHICSSCENE_H
 
+#include <QAbstractScrollArea>
 #include <QGraphicsScene>
 
 class GraphNodeGraphicsItem;

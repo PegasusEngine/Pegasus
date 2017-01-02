@@ -32,6 +32,11 @@
 namespace Pegasus {
 namespace Timeline {
 
+
+#if PEGASUS_ENABLE_PROXIES
+extern unsigned sNextBlockGuid;
+#endif
+
 //----------------------------------------------------------------------------------------
 
 TimelineManager::TimelineManager(Alloc::IAllocator * allocator, Core::IApplicationContext* appContext)
@@ -167,6 +172,12 @@ unsigned int TimelineManager::GetRegisteredBlockNames(char classNames   [MAX_NUM
     }
 }
 
+
+unsigned TimelineManager::GetNextBlockGuid() const
+{
+    return sNextBlockGuid;
+}
+
 #endif  // PEGASUS_ENABLE_PROXIES
 
 //----------------------------------------------------------------------------------------
@@ -193,6 +204,12 @@ Block * TimelineManager::CreateBlock(const char * className)
 
         return nullptr;
     }
+}
+
+//----------------------------------------------------------------------------------------
+void TimelineManager::DestroyBlock(Block* block)
+{
+    PG_DELETE(mAllocator, block);
 }
 
 //----------------------------------------------------------------------------------------

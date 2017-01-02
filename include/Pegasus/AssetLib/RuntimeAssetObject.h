@@ -75,7 +75,7 @@ public:
     //! callback to implement reading / parsing an asset
     //! \param lib the asset library, in case we need to access another asset reference
     //! \param asset the asset to read from
-    virtual bool OnReadAsset(AssetLib* lib, Asset* asset) = 0;
+    virtual bool OnReadAsset(AssetLib* lib, const Asset* asset) = 0;
 
     //! callback that writes to an asset
     //! \param lib the asset library, in case we need to access another asset reference

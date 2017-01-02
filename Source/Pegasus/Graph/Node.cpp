@@ -341,7 +341,7 @@ void Node::WriteToObject(AssetLib::Asset* parentAsset, AssetLib::Object* obj) co
 
 //----------------------------------------------------------------------------------------
 
-bool Node::ReadFromObject(NodeManager* nodeManager, AssetLib::Asset* parentAsset, AssetLib::Object* obj)
+bool Node::ReadFromObject(NodeManager* nodeManager, const AssetLib::Asset* parentAsset, const AssetLib::Object* obj)
 {
     int strId = obj->FindString("class");
     if (strId == -1 || Utils::Strcmp(obj->GetString(strId), GetClassInstanceName()))

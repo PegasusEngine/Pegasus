@@ -15,8 +15,10 @@
 #include "PropertyGrid/PropertyGridPropertyManagers.h"
 #include "PropertyGrid/PropertyGridEditorFactories.h"
 #include "MessageControllers/MsgDefines.h"
+#include "PropertyTypes.h"
 #include <QWidget>
 #include <QVector>
+#include <QColor>
 
 
 namespace Pegasus {
@@ -67,6 +69,20 @@ public:
 
     //! Call when you want this property to lose references, only when the app closes.
     void Clear();
+
+    //@{
+    //! Gets the corresponding property value from the property structure passed in.
+    bool     GetBoolProperty(QtProperty * property);
+    unsigned GetUintProperty(QtProperty * property);
+    int      GetIntProperty(QtProperty * property);
+    float    GetFloatProperty(QtProperty * property);
+    Vec2Property     GetVec2Property(QtProperty * property);
+    Vec3Property     GetVec3Property(QtProperty * property);
+    Vec4Property     GetVec4Property(QtProperty * property);
+    QString    GetS64Property(QtProperty * property);
+    QColor     GetRgbProperty(QtProperty * property);
+    QColor     GetRgbaProperty(QtProperty * property);
+    //@}
 
 signals:
     void OnPropertyUpdated(QtProperty* property);

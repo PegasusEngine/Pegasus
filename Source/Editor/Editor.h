@@ -335,6 +335,7 @@ private:
     //@{
     //! Actions triggered when an item of the help menu is selected
     QAction * mSaveCurrentAsset;
+    QAction * mDeleteSelectedObjects;
     QAction * mActionHelpIndex;
     QAction * mActionHelpAboutQt;
     QAction * mActionHelpAbout;
@@ -342,6 +343,7 @@ private:
 
 private slots:
     void SaveCurrentAsset();
+    void DeleteSelectedObjects();
 
     //------------------------------------------------------------------------------------
 

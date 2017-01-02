@@ -80,6 +80,19 @@ public:
     //! \return Number of lanes (>= 1)
     virtual unsigned int GetNumLanes() const = 0;
 
+    //! Create a new block. Pass the class name of such block.
+    //! If the block does not exist then this function returns null.
+    //! \param the class name of the new block.
+    //! \param initial beat.
+    //! \param initial duration.
+    //! \return the block proxy to use.
+    virtual IBlockProxy* CreateBlock(const char* className) = 0;
+
+    //! Deletes a block and shuts it down.
+    //! \param blockGuid the block guid to delete.
+    //! \return int indicating the lane it was found. -1 otherwise
+    virtual int DeleteBlock(unsigned int blockGuid) = 0;
+
     //! Get one of the lanes
     //! \param laneIndex Index of the lane (< GetNumLanes())
     //! \return Pointer to the lane proxy, nullptr in case of error

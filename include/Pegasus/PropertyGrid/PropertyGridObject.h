@@ -611,7 +611,7 @@ public:
 
     //! Called when a node is read from an object
     //! \parama obj - the object to read the contents from.
-    virtual bool ReadFromObject(AssetLib::Asset* parentAsset, AssetLib::Object* obj);
+    virtual bool ReadFromObject(const AssetLib::Asset* parentAsset, const AssetLib::Object* obj);
 
     //------------------------------------------------------------------------------------
     

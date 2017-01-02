@@ -85,6 +85,44 @@ Block * Timeline::CreateBlock(const char * className)
 
 //----------------------------------------------------------------------------------------
 
+#if PEGASUS_ENABLE_PROXIES
+int Timeline::DeleteBlock(unsigned int blockGuid)
+{
+    for (unsigned int laneIdx = 0; laneIdx < mNumLanes; ++laneIdx)
+    {
+        Lane* l = mLanes[laneIdx];
+        int foundBlockIdx = l->FindBlockByGuid(blockGuid);
+        if (foundBlockIdx != Lane::INVALID_RECORD_INDEX)
+        {
+            //get target block
+            Block* b = l->FindBlockByIndex(foundBlockIdx);
+
+            //destroy all rendering resources
+            b->Shutdown();
+
+            //remove from timeline
+            l->RemoveBlock(foundBlockIdx);
+
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+            //Remove asset category to prevent a dangling pointer.
+            //TODO: make asset categories an autoref.
+            mAppContext->GetAssetLib()->RemoveAssetCategory(b->GetAssetCategory());
+#endif
+
+            //completely delete memory
+            mAppContext->GetTimelineManager()->DestroyBlock(b);
+
+            //return lane it was found
+            return static_cast<int>(laneIdx);
+        }
+    }
+    return -1;
+}
+
+#endif
+
+//----------------------------------------------------------------------------------------
+
 void Timeline::InternalClear()
 {
     for (unsigned int lane = 0; lane < mNumLanes; ++lane)
@@ -407,10 +445,10 @@ TimelineScriptReturn Timeline::GetScript()
     return mScriptRunner.GetScript();
 }
 
-bool Timeline::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* asset)
+bool Timeline::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, const AssetLib::Asset* asset)
 {
     InternalClear();
-    AssetLib::Object* root = asset->Root();
+    const AssetLib::Object* root = asset->Root();
     if (root == nullptr)
     {
         return false;

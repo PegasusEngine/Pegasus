@@ -15,6 +15,7 @@
 #include "Pegasus/Timeline/Proxy/TimelineProxy.h"
 #include "Pegasus/Timeline/Proxy/LaneProxy.h"
 #include "Pegasus/Timeline/Proxy/BlockProxy.h"
+#include "Pegasus/Timeline/Block.h"
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Timeline/Lane.h"
 #include "Pegasus/Utils/String.h"
@@ -141,6 +142,27 @@ void TimelineProxy::SetPlayMode(PlayMode playMode)
 void TimelineProxy::Update()
 {
     mTimeline->Update();
+}
+
+//----------------------------------------------------------------------------------------
+
+IBlockProxy* TimelineProxy::CreateBlock(const char* className)
+{
+    Block* b = mTimeline->CreateBlock(className);
+
+    if (b != nullptr)
+    {
+        return b->GetProxy();
+    }
+
+    return nullptr;
+}
+
+//----------------------------------------------------------------------------------------
+
+int TimelineProxy::DeleteBlock(unsigned int blockGuid)
+{
+    return mTimeline->DeleteBlock(blockGuid);
 }
 
 //----------------------------------------------------------------------------------------

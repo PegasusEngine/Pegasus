@@ -40,6 +40,10 @@ namespace Utils
         //! Gets the raw buffer
         const void* GetBuffer() const { return mBuffer; }
 
+        //! Removes total ownership of the current buffer (it also resets the state of this object). It assumes somebody else will reference it and destroy it.
+        //! \warning The buffer must be acquired before calling this function. If this function is called and nobody else destroys the buffer, then it will result in a memory leak.
+        void ForgetBuffer();
+
         //! Gets the total internal buffer size
         int GetSize() const { return mBufferSize; }
 

@@ -240,7 +240,7 @@ private:
     //! \param owner the asset containing the root object
     //! \param root the root object of the structured asset
     //! \return true if successful, false otherwise
-    bool OnReadObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* owner, AssetLib::Object* root);
+    bool OnReadObject(Pegasus::AssetLib::AssetLib* lib, const AssetLib::Asset* owner, const AssetLib::Object* root);
 
     //! Callback that reads from an asset root and populates properties / creates objects based on such.
     //! \param lib the asset library.
@@ -248,6 +248,20 @@ private:
     //! \param root the root object of the structured asset
     //! \return true if successful, false otherwise
     void OnWriteObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* owner, AssetLib::Object* root);
+
+#if PEGASUS_ENABLE_PROXIES
+    //! Returns the index of a block by guid.
+    //! \param blockGuid the guid of the block to find
+    //! \return the index found. -1 if not found
+    int FindBlockByGuid(unsigned int blockGuid);
+
+
+    //! Returns the block by an index of its record.
+    //! \param index to get block state from
+    //! \return the block. 
+    //! \note This function will crash if the wrong index is passed.
+    Block* FindBlockByIndex(int index);
+#endif
 
     //------------------------------------------------------------------------------------
 

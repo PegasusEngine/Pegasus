@@ -123,7 +123,7 @@ protected:
     //! override that generates data. This will generate the shader GPU data using the factory
     virtual void GenerateData();
 
-    virtual bool OnReadAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset);
+    virtual bool OnReadAsset(Pegasus::AssetLib::AssetLib* lib, const Pegasus::AssetLib::Asset* asset) override;
 
 private:
     PG_DISABLE_COPY(ShaderStage)

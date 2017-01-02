@@ -76,6 +76,11 @@ void TimelineManagerProxy::RegisterEventListener(Pegasus::Core::CompilerEvents::
     mTimelineManager->RegisterEventListener(eventListener);
 }
 
+unsigned int TimelineManagerProxy::GetNextBlockGuid() const
+{
+    return mTimelineManager->GetNextBlockGuid();
+}
+
 }   // namespace Timeline
 }   // namespace Pegasus
 

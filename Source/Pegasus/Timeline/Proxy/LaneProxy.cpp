@@ -120,6 +120,14 @@ bool LaneProxy::IsBlockFitting(IBlockProxy * block, Beat beat, Duration duration
 
 //----------------------------------------------------------------------------------------
 
+bool LaneProxy::InsertBlock(IBlockProxy * block, unsigned beat, unsigned duration)
+{
+    BlockProxy* blockProxy = static_cast<BlockProxy*>(block);
+    return mLane->InsertBlock(blockProxy->GetBlock(), beat, duration);
+}
+
+//----------------------------------------------------------------------------------------
+
 void LaneProxy::MoveBlockToLane(IBlockProxy * block, ILaneProxy * newLane, Beat beat)
 {
     // Convert the abstract block proxy to a concrete proxy, relying on the fact that

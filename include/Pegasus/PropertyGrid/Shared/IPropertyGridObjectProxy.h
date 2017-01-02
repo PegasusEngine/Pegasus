@@ -18,6 +18,14 @@
 #include "Pegasus/PropertyGrid/Shared/IPropertyGridClassInfoProxy.h"
 #include "Pegasus/PropertyGrid/Shared/PropertyEventDefs.h"
 
+namespace Pegasus
+{
+    namespace AssetLib
+    {
+        class IAssetProxy;
+    }
+}
+
 namespace Pegasus {
 namespace PropertyGrid {
 

@@ -76,6 +76,13 @@ public:
     //! \return Pointer to the created block, nullptr if an error occurred
     Block * CreateBlock(const char * className);
 
+#if PEGASUS_ENABLE_PROXIES
+    //! Deletes a block and shuts it down.
+    //! \param blockGuid the block guid to delete.
+    //! \return int with the lane it was found. -1 otherwise
+    int DeleteBlock(unsigned int blockGuid);
+#endif
+
     //! Clear the entire timeline and create a default lane
     void Clear();
 
@@ -203,12 +210,12 @@ protected:
     //! callback to implement reading / parsing an asset
     //! \param lib the asset library, in case we need to access another asset reference
     //! \param asset the asset to read from
-    virtual bool OnReadAsset(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* asset);
+    virtual bool OnReadAsset(Pegasus::AssetLib::AssetLib* lib, const AssetLib::Asset* asset) override;
 
     //! callback that writes to an asset
     //! \param lib the asset library, in case we need to access another asset reference
     //! \param asset the asset to write to
-    virtual void OnWriteAsset(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* asset);
+    virtual void OnWriteAsset(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* asset) override;
 
     //------------------------------------------------------------------------------------
 

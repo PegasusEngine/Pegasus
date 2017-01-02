@@ -62,6 +62,10 @@ public:
 
     //! Updates the clock of the app based on the timeline state
     virtual void Update() = 0;
+
+    //! Returns the next block's guid. The editor uses this function to predict the next block allocated guids, this is so the undo / redo stack can work properly and preemptively create a delete comand.
+    //! \return the next block's guid
+    virtual unsigned int GetNextBlockGuid() const = 0;
 };
 
 

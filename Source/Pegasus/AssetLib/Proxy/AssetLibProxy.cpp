@@ -14,6 +14,7 @@
 #include "Pegasus/AssetLib/Proxy/AssetLibProxy.h"
 #include "Pegasus/AssetLib/Proxy/AssetProxy.h"
 #include "Pegasus/AssetLib/Proxy/RuntimeAssetObjectProxy.h"
+#include "Pegasus/AssetLib/Proxy/CategoryProxy.h"
 #include "Pegasus/AssetLib/AssetLib.h"
 #include "Pegasus/AssetLib/Asset.h"
 #include "Pegasus/AssetLib/Category.h"
@@ -42,6 +43,12 @@ Io::IoError AssetLibProxy::LoadAsset(const char* path, IAssetProxy** assetProxy)
 IAssetProxy* AssetLibProxy::CreateAsset(const char* path, bool isStructured)
 {
     return mAssetLib->CreateAsset(path, isStructured)->GetProxy();
+}
+
+void AssetLibProxy::UnloadAsset(IAssetProxy* assetProxy)
+{
+    Pegasus::AssetLib::AssetProxy* asset = static_cast<Pegasus::AssetLib::AssetProxy*>(assetProxy);
+    mAssetLib->UnloadAsset(asset->GetObject());
 }
 
 Io::IoError AssetLibProxy::SaveAsset(IAssetProxy* asset)
@@ -125,6 +132,35 @@ void AssetLibProxy::SetEventListener(IAssetEventListener* listener)
 ICategoryProxy* AssetLibProxy::FindTypeCategory(const Pegasus::PegasusAssetTypeDesc* typeDesc)
 {
     return mAssetLib->FindTypeCategory(typeDesc)->GetProxy();
+}
+
+bool AssetLibProxy::DeserializeAsset(IAssetProxy* asset, char* buffer)
+{
+    AssetProxy* assetProxy = static_cast<AssetProxy*>(asset);
+    return mAssetLib->DeserializeAsset(assetProxy->GetObject(), buffer);
+}
+
+char* AssetLibProxy::SerializeAsset(IAssetProxy* asset)
+{
+    AssetProxy* assetProxy = static_cast<AssetProxy*>(asset);
+    return mAssetLib->SerializeAsset(assetProxy->GetObject());
+}
+
+void AssetLibProxy::DestroySerializationString(char* stringToDelete)
+{
+    return mAssetLib->DestroySerializationString(stringToDelete);
+}
+
+
+void AssetLibProxy::BeginCategory(ICategoryProxy* category)
+{
+    CategoryProxy* categoryProxy = static_cast<CategoryProxy*>(category);
+    mAssetLib->BeginCategory(categoryProxy->GetObject());
+}
+    
+void AssetLibProxy::EndCategory()
+{
+    mAssetLib->EndCategory();
 }
 
 #else

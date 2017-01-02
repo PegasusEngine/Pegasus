@@ -238,7 +238,7 @@ Pegasus::Shader::ShaderType Pegasus::Shader::ShaderStage::DeriveShaderType(const
     return Pegasus::Shader::SHADER_STAGE_INVALID;
 }
 
-bool Pegasus::Shader::ShaderStage::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset)
+bool Pegasus::Shader::ShaderStage::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, const Pegasus::AssetLib::Asset* asset)
 {
     Pegasus::Shader::ShaderType targetStage = DeriveShaderType(asset); 
     if (targetStage == Pegasus::Shader::SHADER_STAGE_INVALID)

@@ -110,4 +110,67 @@ private:
     TimelineDockWidget* mMessenger;
 };
 
+//! Undo command for creating a timeline block
+class TimelineCreateBlockUndoCommand : public QUndoCommand
+{
+public:
+
+    //! Constructor
+    //! \param timeline handle to use.
+    //! \param newClassName - class name of the block to delete/ create
+    //! \param targetBlockGuid - this would be the block guid that was used if the new block was created. This handle is computed through another message.
+    //! \param targetLane - initial lane to place block
+    //! \param initialBeatPosition - the initial beat position to place this block
+    //! \param initialBlockLength - the initial length of the current beat
+    //!                     each time the mouse click is released.
+    //! \param parent Optional parent command
+    TimelineCreateBlockUndoCommand(
+                                   const AssetInstanceHandle& timelineHandle,
+                                   unsigned int targetBlockGuid,
+                                   TimelineDockWidget* messenger,
+                                   const QVariant& newBlockArgs,
+                                   QUndoCommand * parent = nullptr);
+
+    //! Undo function, restores the previous position
+    virtual void undo();
+
+    //! Redo function, applies the new position
+    virtual void redo();
+
+private:
+    //! ui control that will actually send the message to rendering.
+    TimelineDockWidget* mMessenger;
+    TimelineIOMCMessage mCreateMessage;
+    TimelineIOMCMessage mDeleteMessage;
+};
+//! Undo command for  deleting a timeline block
+class TimelineDeleteBlockUndoCommand : public QUndoCommand
+{
+public:
+
+    //! Constructor
+    //! \param timeline handle to use.
+    //! \param parent shadowBlockStateList - list of blocks to delete
+    //! \param parent messenger - messenger to use
+    TimelineDeleteBlockUndoCommand(
+                                   const AssetInstanceHandle& timelineHandle,
+                                   const QVector<const ShadowBlockState*>& shadowBlockStates,
+                                   const QVector<int>& targetLanes,
+                                   const QVariantList& blockJsonStates,
+                                   TimelineDockWidget* messenger,
+                                   QUndoCommand * parent = nullptr);
+
+    //! Undo function, restores the previous position
+    virtual void undo();
+
+    //! Redo function, applies the new position
+    virtual void redo();
+
+private:
+    //! ui control that will actually send the message to rendering.
+    TimelineDockWidget* mMessenger;
+    TimelineIOMCMessage mDeleteMessage;
+    QVector<TimelineIOMCMessage> mRecreateMessages;
+};
+
 #endif  // EDITOR_TIMELINEUNDOCOMMANDS_H

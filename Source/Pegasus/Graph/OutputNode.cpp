@@ -143,7 +143,7 @@ void OutputNode::OnRemoveInput(unsigned int index)
 
 //----------------------------------------------------------------------------------------
 
-bool OutputNode::OnReadAsset(AssetLib::AssetLib* lib, AssetLib::Asset* asset)
+bool OutputNode::OnReadAsset(AssetLib::AssetLib* lib, const AssetLib::Asset* asset)
 {
     return ReadFromObject(mNodeManager, asset, asset->Root());
 }

@@ -57,13 +57,18 @@ void ByteStream::Append(const ByteStream* byteStream)
     Append(byteStream->GetBuffer(), byteStream->GetSize());
 }
 
+void ByteStream::ForgetBuffer()
+{
+    mBuffer = nullptr;
+    mTotalCount = 0;
+    mBufferSize = 0;
+}
+
 void ByteStream::Reset()
 {
     if (mBuffer != nullptr)
     {
         PG_DELETE_ARRAY(mAllocator, static_cast<char*>(mBuffer));
-        mBuffer = nullptr;
-        mTotalCount = 0;
-        mBufferSize = 0;
+        ForgetBuffer();
     }
 }

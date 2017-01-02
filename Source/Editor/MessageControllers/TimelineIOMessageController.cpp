@@ -284,8 +284,6 @@ void ShadowBlockState::RemoveScript()
 
 //------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
-
 TimelineIOMessageController::TimelineIOMessageController(Pegasus::App::IApplicationProxy* app)
 : mApp(app)
 {
@@ -400,9 +398,9 @@ void TimelineIOMessageController::OnSetMasterBlockscript(const QString& str)
             success = true;
         }                                                                                                     
         //no need to keep a reference of this in the asset lib.                                               
-        if (isNew)                                                                                            
-        {                                                                                                     
-            assetLib->CloseObject(object);                                                                    
+        if (isNew)
+        {  
+            assetLib->CloseObject(object); 
         }                                                                                                     
     }                                                                                                         
     emit(NotifyMasterScriptState(success, str));
@@ -478,75 +476,241 @@ void TimelineIOMessageController::OnSetParameter(TimelineIOMCTarget targetObject
     }
 }
 
+static QString GetJsonState(Pegasus::AssetLib::IAssetLibProxy* assetLib, Pegasus::Timeline::IBlockProxy* block)
+{
+    //create a fake asset (lives in memory)
+    Pegasus::AssetLib::IAssetProxy* asset = assetLib->CreateAsset("", true);
+    block->DumpToAsset(asset);
+    char* buffer = assetLib->SerializeAsset(asset);
+    QString retVal = buffer;
+    assetLib->UnloadAsset(asset);
+    assetLib->DestroySerializationString(buffer);
+    return retVal;
+}
+
+static void ReadFromJsonState(Pegasus::AssetLib::IAssetLibProxy* assetLib, Pegasus::Timeline::IBlockProxy* block, QString& stringBuffer)
+{
+    QByteArray ba = stringBuffer.toLocal8Bit();
+    char* buffer = ba.data();
+    Pegasus::AssetLib::IAssetProxy* asset = assetLib->CreateAsset("", true);
+    if (assetLib->DeserializeAsset(asset, buffer))
+    {
+        block->LoadFromAsset(asset);
+    }
+    else
+    {
+        ED_FAIL();
+    }
+    assetLib->UnloadAsset(asset);
+}
+
+static bool CreateAndInsertNewBlock(Pegasus::AssetLib::IAssetLibProxy* assetLib, Pegasus::Timeline::ITimelineProxy* timeline, const QVariant& arg, unsigned newGuid, TimelineIOMCBlockOpResponse& response)
+{
+    QVariantMap vp = arg.toMap();
+
+    //Step 1: Parse message
+    QString className = vp[QString("className")].toString();
+    unsigned initialBeat = vp[QString("initialBeat")].toUInt();
+    unsigned initialDuration = vp[QString("initialDuration")].toUInt();
+    unsigned targetLane = vp[QString("targetLane")].toUInt();
+    QByteArray classNameBA = className.toLocal8Bit();
+    const char * classNameCstr = classNameBA.data();
+    Pegasus::Timeline::IBlockProxy* newBlock = timeline->CreateBlock(classNameCstr);
+
+    newBlock->OverrideGuid(newGuid);
+
+    //Create and insert new lane
+    Pegasus::Timeline::ILaneProxy* lane = timeline->GetLane(targetLane);
+    //HACK HACK HACK HACK
+    //todo: really shitty algorithm to fit a block in. The function InsertBlock must be fixed.
+    bool itFits = false;
+    while (!itFits)
+    {
+        itFits = lane->IsBlockFitting(newBlock, initialBeat, initialDuration);
+        if (!itFits)
+        {
+            initialBeat += newBlock->GetDuration();
+        }
+    }
+
+    lane->InsertBlock(newBlock, initialBeat, initialDuration);
+
+    //rerun the asset category code, while the state is read from json
+    assetLib->BeginCategory(newBlock->GetAssetCategory());
+    //HACK END
+    newBlock->Initialize();
+
+    //check if there is a new state set.
+    QVariantMap::iterator newBlockState = vp.find(QString("jsonState"));
+    if (newBlockState != vp.end())
+    {
+        //recover the undo state by reading the raw json back into the block
+        ReadFromJsonState(assetLib, newBlock, newBlockState.value().toString());
+    }
+    assetLib->EndCategory();
+
+
+    //Step 3: Fill in response
+    ShadowLaneState newLaneState;
+    newLaneState.Build(lane);
+    response.newLane = targetLane;
+    response.newShadowLaneState = newLaneState;
+    response.blockGuid = newBlock->GetGuid();
+    response.success = true;
+    return  true; //always send a response
+}
+
+static bool AskOrMoveBlockPosition(Pegasus::Timeline::ITimelineProxy* timeline, TimelineIOMCBlockOp blockOp,const QVariant& arg, unsigned targetLaneId, unsigned blockGuid, TimelineIOMCBlockOpResponse& response)
+{
+    bool performOperationsOnTimeline = false;
+    bool performQuestioningOfTimeline = false;
+    switch (blockOp)
+    {
+    case ASK_BLOCK_POSITION:
+        {
+            performOperationsOnTimeline = false;
+            performQuestioningOfTimeline = true;
+        }
+        break;
+    case MOVE_BLOCK:
+        {
+            performOperationsOnTimeline = true;
+            performQuestioningOfTimeline = true;
+        }
+        break;
+    default:
+        ED_FAIL();
+        break;
+    }
+
+    Pegasus::Timeline::IBlockProxy* block = timeline->FindBlockByGuid(blockGuid);
+    Pegasus::Timeline::ILaneProxy* targetLane = timeline->GetLane(targetLaneId);
+    if (block != nullptr && targetLane != nullptr)
+    {
+        unsigned newBeat = arg.toUInt();
+        Pegasus::Timeline::ILaneProxy* oldLane = block->GetLane();
+        if (targetLane->IsBlockFitting(block, newBeat, block->GetDuration()))
+        {
+            response.success = true;
+            if (oldLane != targetLane)
+            {
+                if (performOperationsOnTimeline)
+                    oldLane->MoveBlockToLane(block, targetLane, newBeat);
+                response.newLane = (int)targetLaneId;
+                response.newBeat = newBeat;
+            }
+            else
+            {
+                if (performOperationsOnTimeline)
+                    targetLane->SetBlockBeat(block, newBeat);
+                response.newBeat = newBeat;
+            }
+        }
+        else 
+        {
+            //try to fit it on the same lane.
+            if (oldLane->IsBlockFitting(block, newBeat, block->GetDuration()))
+            {
+                if (performOperationsOnTimeline)
+                    oldLane->SetBlockBeat(block, newBeat);
+                response.success = true;
+                response.newBeat = newBeat;
+            }
+        }
+        return true;//send response
+    }
+    return false;//dont bother sending response
+}
+
+
+static bool DeleteTargetBlock(Pegasus::Timeline::ITimelineProxy* timeline, const QVariant& arg, TimelineIOMCBlockOpResponse& response)
+{
+    QVariantList blockGuidList = arg.toList();
+    QSet<int> lanesFound;
+    foreach (QVariant el, blockGuidList)
+    {
+        unsigned int blockGuid = el.toUInt();
+        int laneFound = timeline->DeleteBlock(blockGuid);
+        if (laneFound != -1)
+        {
+            ShadowLaneState newLaneState;
+            newLaneState.Build(timeline->GetLane(static_cast<unsigned int>(laneFound)));
+            response.lanesFound.insert(laneFound);
+            response.lanesFoundState[laneFound] = newLaneState;
+        }
+    }
+    response.success = true;
+    return true; //this sends a custom response
+}
+
+static bool AskDeleteTargetBlock(Pegasus::AssetLib::IAssetLibProxy* assetLib, Pegasus::Timeline::ITimelineProxy* timeline, const QVariant& arg, TimelineIOMCBlockOpResponse& response)
+{
+    QVariantList blockGuidList = arg.toList();
+    QVariantList jsonStates;
+    foreach (QVariant blockGuid, blockGuidList)
+    {
+        Pegasus::Timeline::IBlockProxy* block = timeline->FindBlockByGuid(blockGuid.toUInt());
+        Pegasus::PropertyGrid::IPropertyGridObjectProxy* pgrid = block->GetPropertyGridProxy();
+        //TODO: here dump the state of the block property grid to a json string
+        jsonStates.push_back(GetJsonState(assetLib, block));
+    }
+    QVariantMap newArguments;
+    newArguments.insert(QString("guids"), blockGuidList);
+    newArguments.insert(QString("jsonStates"), jsonStates);
+    response.arg = newArguments;
+    response.success = true;
+    return true; //this sends a custom response
+}
+
+static bool AskForNewBlock(Pegasus::Timeline::ITimelineManagerProxy* timelineMgr, const AssetInstanceHandle& timelineHandle, const QVariant& arg, TimelineIOMCBlockOpResponse& response)
+{
+    response.timelineHandle = timelineHandle;
+    response.blockGuid = timelineMgr->GetNextBlockGuid(); //send the prediceted block guid so the undo command knows what to delete before creation.
+    response.arg = arg;
+    response.success = true;
+    return true; // always send a response
+}
+           
 
 void TimelineIOMessageController::OnBlockOp(const AssetInstanceHandle& timelineHandle,TimelineIOMCBlockOp blockOp, unsigned blockGuid, unsigned targetLaneId, const QVariant& arg, unsigned mouseClickId, TimelineIOMessageObserver* observer)
 {
+    //TODO: this function is out of control, and is pretty gross. 
+    // refactor into smaller functions
     Pegasus::Timeline::ITimelineProxy* timeline = ResolveTimeline(timelineHandle);
     if (timeline != nullptr)
     {
-        bool performOperationsOnTimeline = false;
-        bool performQuestioningOfTimeline = false;
         TimelineIOMCBlockOpResponse response;
         response.op = blockOp;
         response.blockGuid = blockGuid;
         response.timelineHandle = timelineHandle;
         response.success = false;
         response.mouseClickId = mouseClickId;
-        switch (blockOp)
+        bool sendResponse = false;
+
+        if (blockOp == NEW_BLOCK)
         {
-        case ASK_POSITION:
-            {
-                performOperationsOnTimeline = false;
-                performQuestioningOfTimeline = true;
-            }
-            break;
-        case MOVE:
-            {
-                performOperationsOnTimeline = true;
-                performQuestioningOfTimeline = true;
-            }
-            break;
-        default:
-            ED_FAIL();
-            break;
+            sendResponse = CreateAndInsertNewBlock(mApp->GetAssetLibProxy(), timeline, arg, blockGuid, response);
+        }
+        else if (blockOp == DELETE_BLOCKS)
+        {
+            sendResponse = DeleteTargetBlock(timeline, arg, response);
+        }
+        else if (blockOp == ASK_DELETE_BLOCKS)
+        {
+            sendResponse = AskDeleteTargetBlock(mApp->GetAssetLibProxy(), timeline, arg, response);
+        }
+        else if (blockOp == ASK_NEW_BLOCK)
+        {
+            Pegasus::Timeline::ITimelineManagerProxy* timelineMgr = mApp->GetTimelineManagerProxy();
+            sendResponse = AskForNewBlock(timelineMgr, timelineHandle, arg, response);
+        }
+        else
+        {
+            sendResponse = AskOrMoveBlockPosition(timeline, blockOp, arg, targetLaneId, blockGuid, response);
         }
 
-        Pegasus::Timeline::IBlockProxy* block = timeline->FindBlockByGuid(blockGuid);
-        Pegasus::Timeline::ILaneProxy* targetLane = timeline->GetLane(targetLaneId);
-        if (block != nullptr && targetLane != nullptr)
+        if (sendResponse)
         {
-            unsigned newBeat = arg.toUInt();
-            Pegasus::Timeline::ILaneProxy* oldLane = block->GetLane();
-            if (targetLane->IsBlockFitting(block, newBeat, block->GetDuration()))
-            {
-                response.success = true;
-                if (oldLane != targetLane)
-                {
-                    if (performOperationsOnTimeline)
-                        oldLane->MoveBlockToLane(block, targetLane, newBeat);
-                    response.newLane = (int)targetLaneId;
-                    response.newBeat = newBeat;
-                }
-                else
-                {
-                    if (performOperationsOnTimeline)
-                        targetLane->SetBlockBeat(block, newBeat);
-                    response.newBeat = newBeat;
-                }
-            }
-            else 
-            {
-                //try to fit it on the same lane.
-                if (oldLane->IsBlockFitting(block, newBeat, block->GetDuration()))
-                {
-                    if (performOperationsOnTimeline)
-                        oldLane->SetBlockBeat(block, newBeat);
-                    response.success = true;
-                    response.newBeat = newBeat;
-                }
-            }
-
-            //send response back to UI
             emit observer->SignalBlockOpResponse(response);
         }
     }

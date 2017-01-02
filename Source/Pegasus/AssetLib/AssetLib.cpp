@@ -140,6 +140,19 @@ Category* Pegasus::AssetLib::AssetLib::FindTypeCategory(const Pegasus::PegasusAs
     PG_FAILSTR("A category was not created for a type! this is a fatal error!");
     return nullptr;
 }
+
+bool Pegasus::AssetLib::AssetLib::RemoveAssetCategory(Category* targetToRemove)
+{
+    for (unsigned i = 0; i < mCategories.GetSize(); ++i)
+    {
+        if (mCategories[i] == targetToRemove)
+        {
+            mCategories.Delete(i);
+            return  true;
+        }
+    }
+    return false;
+}
 #endif
 
 extern void Bison_AssetScriptParse(const Io::FileBuffer* fileBuffer, AssetBuilder* builder);
@@ -494,3 +507,41 @@ Pegasus::AssetLib::AssetRuntimeFactory* Pegasus::AssetLib::AssetLib::FindFactory
     *outDesc = nullptr;
     return nullptr;
 }
+
+#if PEGASUS_ENABLE_PROXIES
+
+bool Pegasus::AssetLib::AssetLib::DeserializeAsset(Asset* asset, char* buffer)
+{
+    unsigned strLen = Utils::Strlen(buffer) + 1;
+    asset->Clear();
+    mBuilder.Reset();
+    mBuilder.BeginCompilation(asset);
+    Io::FileBuffer fb;
+    fb.OwnBuffer(nullptr, buffer, strLen);
+    Bison_AssetScriptParse(&fb, &mBuilder);
+    fb.ForgetBuffer();
+    if (mBuilder.GetErrorCount() == 0)
+    {
+        ResolvePendingChildAssets(asset);
+        return true;
+    }
+    return false;
+}
+
+char* Pegasus::AssetLib::AssetLib::SerializeAsset(Asset* asset)
+{
+    static const char sNull = 0;
+    Utils::ByteStream bs(mAllocator);
+    asset->DumpToStream(bs);
+    bs.Append(&sNull, 1);
+    void* result = bs.GetBuffer();
+    bs.ForgetBuffer();
+    return static_cast<char*>(result);
+}
+
+void Pegasus::AssetLib::AssetLib::DestroySerializationString(char* stringToDelete)
+{
+    PG_DELETE_ARRAY(mAllocator, stringToDelete);
+}
+
+#endif

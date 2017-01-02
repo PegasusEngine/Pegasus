@@ -118,7 +118,25 @@ public:
     //------------------------------------------------------------------------------------
 #if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
     AssetLib::Category* GetAssetCategory() { return &mCategory; } 
+#endif
+
+#if PEGASUS_ENABLE_PROXIES
     unsigned GetGuid() const { return mGuid; }
+
+    //! Overrides a guid for a block. Only to be used for proper behaviour of doing / undoing state.
+    //! \param newGuid the guid to use for this object
+    //! \warning there is no check for duplicate of guids. So make sure the right one is used.
+    void OverrideGuid(unsigned int newGuid);
+
+    //! dumps the contents of a block to a single asset.
+    //! Note- this is only supported for the use case of Undo/Redo, which serializes the entire state of an object as json
+    //! \param assetProxy target asset to dump state into
+    virtual void DumpToAsset(Pegasus::AssetLib::Asset* asset);
+
+    //! loads the contents of a block from a single asset.
+    //! Note- this is only supported for the use case of Undo/Redo, which serializes the entire state of an object as json
+    //! \param assetProxy target asset to load state from
+    virtual void LoadFromAsset(const Pegasus::AssetLib::Asset* asset);
 #endif
 
 protected:
@@ -159,7 +177,7 @@ protected:
     //! \param owner the asset containing the root object
     //! \param root the root object of the structured asset
     //! \return true if successful, false otherwise
-    bool OnReadObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* owner, AssetLib::Object* root);
+    bool OnReadObject(Pegasus::AssetLib::AssetLib* lib, const AssetLib::Asset* owner, const AssetLib::Object* root);
 
     //! Callback that reads from an asset root and populates properties / creates objects based on such.
     //! \param lib the asset library.
@@ -217,6 +235,9 @@ private:
 
 #if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
     AssetLib::Category mCategory; 
+#endif
+
+#if PEGASUS_ENABLE_PROXIES
     unsigned mGuid;
 #endif
 };

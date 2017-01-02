@@ -23,11 +23,16 @@
 namespace Pegasus {
 namespace Timeline {
 
+#if PEGASUS_ENABLE_PROXIES
+unsigned sNextBlockGuid = 0;
+#endif
+
 BEGIN_IMPLEMENT_PROPERTIES(Block)
     IMPLEMENT_PROPERTY(Block, Color)
     IMPLEMENT_PROPERTY(Block, Beat)
     IMPLEMENT_PROPERTY(Block, Duration)
 END_IMPLEMENT_PROPERTIES(Block)
+
 
 Block::Block(Alloc::IAllocator * allocator, Core::IApplicationContext * appContext)
 :   mAllocator(allocator)
@@ -50,9 +55,11 @@ Block::Block(Alloc::IAllocator * allocator, Core::IApplicationContext * appConte
         INIT_PROPERTY(Beat)
         INIT_PROPERTY(Duration)
     END_INIT_PROPERTIES()
+#if PEGASUS_ENABLE_PROXIES
+    mGuid = sNextBlockGuid++;
+#endif
+
 #if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
-    static unsigned sNextGuid = 0;
-    mGuid = sNextGuid++;
     mCategory.SetUserData(mGuid);
 #endif
 }
@@ -106,6 +113,7 @@ void Block::Initialize()
     mScriptRunner.InitializeScript(false);
 }
 
+
 //----------------------------------------------------------------------------------------
 
 void Block::Shutdown()
@@ -125,7 +133,7 @@ void Block::SetLane(Lane * lane)
     mScriptRunner.SetGlobalCache(lane->GetTimeline()->GetGlobalCache());
 }
 
-bool Block::OnReadObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* owner, AssetLib::Object* root) 
+bool Block::OnReadObject(Pegasus::AssetLib::AssetLib* lib, const AssetLib::Asset* owner, const AssetLib::Object* root) 
 {
     int typeId = root->FindString("type");
     if (typeId == -1 || Utils::Strcmp(root->GetString(typeId), GetClassName()))
@@ -171,6 +179,33 @@ void Block::OnWriteObject(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* own
     
     PropertyGrid::PropertyGridObject::WriteToObject(owner, prop);
 }
+
+#if PEGASUS_ENABLE_PROXIES
+
+//NOTE: these functions are used in the process of undo/redo. They dump and load the state of a block from an asset.
+void Block::DumpToAsset(Pegasus::AssetLib::Asset* asset)
+{
+    asset->Clear();
+    asset->SetRootObject(asset->NewObject());
+    OnWriteObject(asset->GetLib(), asset, asset->Root());
+}
+
+void Block::LoadFromAsset(const Pegasus::AssetLib::Asset* asset)
+{
+    OnReadObject(asset->GetLib(), asset, asset->Root());
+}
+
+//----------------------------------------------------------------------------------------
+
+void Block::OverrideGuid(unsigned int newGuid)
+{
+    mGuid = newGuid;
+#if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
+    mCategory.SetUserData(newGuid);
+#endif
+}
+
+#endif
 
 }   // namespace Timeline
 }   // namespace Pegasus

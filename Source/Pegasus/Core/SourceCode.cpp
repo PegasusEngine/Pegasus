@@ -109,7 +109,7 @@ void SourceCode::ClearParents()
     }
 }
 
-bool SourceCode::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset)
+bool SourceCode::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, const Pegasus::AssetLib::Asset* asset)
 {
     if (asset->GetFormat() != Pegasus::AssetLib::Asset::FMT_RAW)
     {
@@ -117,7 +117,7 @@ bool SourceCode::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib
         return false;
     }
 
-    Io::FileBuffer* fb = asset->Raw();
+    const Io::FileBuffer* fb = asset->Raw();
     SetSource(fb->GetBuffer(), fb->GetFileSize());
     return true;
 }

@@ -76,6 +76,13 @@ public:
     //! \return True if the block would fit in the lane, and if there is enough space to store it
     virtual bool IsBlockFitting(IBlockProxy * block, Beat beat, Duration duration) const = 0;
 
+    //! Adds a new block into this particular lane. It will find the best location to add such block.
+    //! \param block - block to be added
+    //! \param beat - block to be added
+    //! \param duration - block to be added
+    //! \return True if it was succcessfully added. False otherwise.
+    virtual bool InsertBlock(IBlockProxy * block, unsigned beat, unsigned duration) = 0;
+
     //! Move a block from this lane into another lane
     //! \warning The block has to belong to the lane
     //! \note If any error happens, nothing changes to preserve the sorted linked lists

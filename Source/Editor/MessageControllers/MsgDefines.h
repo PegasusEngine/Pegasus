@@ -17,6 +17,7 @@
 #include "Pegasus/PropertyGrid/Shared/PropertyDefs.h"
 #include "Pegasus/PegasusAssetTypes.h"
 #include <QVariant>
+#include <QSet>
 
 //forward declarations
 
@@ -86,7 +87,8 @@ public:
         PROP_BLOCK_BEAT,
         PROP_BLOCK_GUID,
         PROP_BLOCK_DURATION,
-        PROP_BLOCK_SCRIPT_PATH
+        PROP_BLOCK_SCRIPT_PATH,
+        BLOCK_PROP_COUNT
     };
 
     ShadowBlockState();
@@ -120,7 +122,8 @@ public:
     {
         PROP_BLOCK_COUNT,
         PROP_BLOCK_LIST,
-        PROP_LANE_NAME
+        PROP_LANE_NAME,
+        LANE_PROP_COUNT
     };
 
     ShadowLaneState();
@@ -184,11 +187,20 @@ enum TimelineIOMCTarget
 };
 
 //type of operation for timeline msg.
+//! Note: only messages such as "Move" and "New" require an ask message.
+//! The reason is that when you move an object, you have to query the render app
+//! wether if this move is valid. New requires an ASK message, since we need to know
+//! the block guid ahead of time. Delete doesnt require an Ask operation
+//! since delete and new are guaranteed to always work.
 enum TimelineIOMCBlockOp
 {
     INVALID_BLOCK_OP,
-    MOVE, //perform an actual move of a block.
-    ASK_POSITION //request validity of the new position of the block.
+    NEW_BLOCK,
+    DELETE_BLOCKS,
+    MOVE_BLOCK, //perform an actual move of a block.
+    ASK_NEW_BLOCK,
+    ASK_DELETE_BLOCKS,
+    ASK_BLOCK_POSITION //request validity of the new position of the block.
 };
 
 // a response from a timeline operation
@@ -201,6 +213,10 @@ struct TimelineIOMCBlockOpResponse
     int newLane;  //-1 means unchanged 
     unsigned blockGuid;
     unsigned mouseClickId;
+    ShadowLaneState newShadowLaneState;
+    QSet<int> lanesFound;
+    QMap<int, ShadowLaneState> lanesFoundState;
+    QVariant arg;
     TimelineIOMCBlockOpResponse()
     : success(false)
     , op(INVALID_BLOCK_OP)
@@ -253,7 +269,7 @@ public:
         mString = "";
         mObserver = nullptr;
         mMessageType = INVALID;
-        mBlockOp = MOVE;
+        mBlockOp = MOVE_BLOCK;
         mMouseClickId = 0;
     }
 

@@ -153,9 +153,9 @@ protected:
     //! \param index callback when input is removed
     virtual void OnRemoveInput(unsigned int index);
 
-    virtual bool OnReadAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset);
+    virtual bool OnReadAsset(Pegasus::AssetLib::AssetLib* lib, const Pegasus::AssetLib::Asset* asset) override;
 
-    virtual void OnWriteAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset);
+    virtual void OnWriteAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset) override;
 
 private:    
     PG_DISABLE_COPY(ProgramLinkage);    

@@ -197,6 +197,7 @@ void TimelineGraphicsView::Initialize()
 
     // Create the default lane
     CreateLanes(0, 1);
+
     CreateBackgroundGraphicsItems(0, mNumBeats);
 
     // Update the scene bounding box for the default lane
@@ -234,6 +235,14 @@ void TimelineGraphicsView::SetCursorFromBeat(float beat)
     {
         ED_FAIL();
     }
+}
+
+//----------------------------------------------------------------------------------------
+
+float TimelineGraphicsView::GetBeatFromCursor() const
+{
+    ED_ASSERT(mCursorItem != nullptr);
+    return mCursorItem->GetBeat();
 }
 
 //----------------------------------------------------------------------------------------
@@ -784,7 +793,7 @@ void TimelineGraphicsView::UpdateBeatVisuals(int newLane, unsigned blockGuid, un
     if (targetGraphicsItem)
     {
         ED_ASSERT(oldLane != -1);
-        if (newLane > 0)
+        if (newLane >= 0)
         {
             targetGraphicsItem->SetLane((unsigned)newLane);
             mBlockItems[oldLane].remove(blockGuid);

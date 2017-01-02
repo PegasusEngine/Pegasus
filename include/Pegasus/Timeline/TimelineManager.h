@@ -135,6 +135,10 @@ public:
     unsigned int GetRegisteredBlockNames(char classNames   [MAX_NUM_REGISTERED_BLOCKS][MAX_BLOCK_CLASS_NAME_LENGTH    + 1],
                                          char editorStrings[MAX_NUM_REGISTERED_BLOCKS][MAX_BLOCK_EDITOR_STRING_LENGTH + 1]) const;
 
+    //! Returns the next block's guid. The editor uses this function to predict the next block allocated guids, this is so the undo / redo stack can work properly and preemptively create a delete comand.
+    //! \return the next block's guid
+    unsigned int GetNextBlockGuid() const;
+
 #else
 
     //! Register a block class, to be called before any timeline block of this type is created
@@ -153,6 +157,10 @@ public:
     //! \param timeline Pointer to timeline owner asset. A block must be owned by a timeline.
     //! \return Pointer to the created block, nullptr if an error occurred
     Block * CreateBlock(const char * className);
+
+    //! Destroys memory of a block
+    //! \param block to destroy
+    void DestroyBlock(Block* blockToDestroy);
 
 #if PEGASUS_USE_EVENTS
     //! Register a compiler event listener for blocks that have scripts and get compiled.

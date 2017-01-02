@@ -138,6 +138,20 @@ public:
 
 #if PEGASUS_ENABLE_PROXIES
     IAssetLibProxy* GetProxy() { return &mProxy; }
+
+    //! Reads pure json from a string buffer. Asset can later be saved / or deleted as the regular API.
+    //! \param asset the asset to populate
+    //! \param buffer the buffer to read json from.
+    //! \return bool if successful, false otherwise.
+    virtual bool DeserializeAsset(Asset* asset, char* buffer);
+
+    //! Converts an asset to a string. It also does an internal allocation on a string. The string must be then deleted using DestorySerializationString otherwise this memory will leak.
+    //! \param asset asset to dump to json
+    virtual char* SerializeAsset(Asset* asset);
+
+    //! Destroys the result from SerializeAsset. Must be called always after SerializeAsset once the string result is not used.
+    //! \param stringToDelete the string to delete
+    virtual void DestroySerializationString(char* stringToDelete);
 #endif
     
 #if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
@@ -152,7 +166,11 @@ public:
 
     //! Returns a set of categories.
     const Utils::Vector<Category*>& GetCategories() const { return mCategories; } 
+
+    //! Attempts to remove an asset category.
+    bool RemoveAssetCategory(Category* targetToRemove);
 #endif
+
 
 private:
     Pegasus::AssetLib::AssetRuntimeFactory* FindFactory(Asset* asset, const char* ext, const PegasusAssetTypeDesc** outDesc) const;

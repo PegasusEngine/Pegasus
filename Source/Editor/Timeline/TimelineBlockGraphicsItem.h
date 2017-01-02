@@ -51,6 +51,11 @@ public:
     //! \return Block proxy associated with the item (!= nullptr)
     inline const ShadowBlockState& GetBlockProxy() const { return mBlockState; }
 
+    //! Get the block shadow state associated with the item for edit. 
+    //! \return Block proxy associated with the item. 
+    inline ShadowBlockState& EditBlockProxy() {
+        return mBlockState;
+    }
 
     //! Set the timeline lane of the block
     //! \param lane Index of the timeline lane the block belongs to
@@ -62,7 +67,7 @@ public:
 
     //! Set the position of the block
     //! \param beat Position of the block, measured in ticks
-    void SetBeat(Pegasus::Timeline::Beat beat);
+    void SetBeat(Pegasus::Timeline::Beat beat, bool updateItem = true);
 
     //! Get the position of the block
     //! \return Position of the block, measured in ticks
@@ -84,11 +89,6 @@ public:
     //! Get the horizontal scale of the block
     //! \return 1.0f for a 1:1 ratio, < 1.0f for a compressed block, > 1.0f for an expanded block
     //inline float GetHorizontalScale() const { return mHorizontalScale; }
-
-    //! Get the block ID, unique to each block, used for merging undo commands
-    //! (so moving a block does not create a new undo command for each pixel moved)
-    //! \return ID unique to the block
-    inline unsigned int GetBlockID() const { return mBlockID; }
 
     //! updates ui shadow state to display the script updated.
     void UIUpdateBlockScript(const QString& script);

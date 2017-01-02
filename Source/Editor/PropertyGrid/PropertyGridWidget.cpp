@@ -338,6 +338,76 @@ void PropertyGridWidget::enumPropertyChanged(QtProperty * property)
     UpdateProxy(el);
     OnPropertyUpdated(property);
 }
+ 
+//----------------------------------------------------------------------------------------
+
+bool     PropertyGridWidget::GetBoolProperty(QtProperty * property)
+{
+    return mBoolManager.value(property);
+}
+
+//----------------------------------------------------------------------------------------
+
+unsigned PropertyGridWidget::GetUintProperty(QtProperty * property)
+{
+    return mUIntManager.value(property);
+}
+
+//----------------------------------------------------------------------------------------
+
+int      PropertyGridWidget::GetIntProperty(QtProperty * property)
+{
+    return mIntManager.value(property);
+}
+
+//----------------------------------------------------------------------------------------
+
+float    PropertyGridWidget::GetFloatProperty(QtProperty * property)
+{
+    return mFloatManager.value(property);
+}
+
+//----------------------------------------------------------------------------------------
+
+Vec2Property     PropertyGridWidget::GetVec2Property(QtProperty * property)
+{
+    return mVec2Manager.value(property);
+}
+
+//----------------------------------------------------------------------------------------
+
+Vec3Property     PropertyGridWidget::GetVec3Property(QtProperty * property)
+{
+    return mVec3Manager.value(property);
+}
+
+//----------------------------------------------------------------------------------------
+
+Vec4Property     PropertyGridWidget::GetVec4Property(QtProperty * property)
+{
+    return mVec4Manager.value(property);
+}
+
+//----------------------------------------------------------------------------------------
+
+QString    PropertyGridWidget::GetS64Property(QtProperty * property)
+{
+    return mString64Manager.value(property);
+}
+
+//----------------------------------------------------------------------------------------
+
+QColor PropertyGridWidget::GetRgbProperty(QtProperty * property)
+{
+    return mColor8RGBManager.value(property);
+}
+
+//----------------------------------------------------------------------------------------
+
+QColor PropertyGridWidget::GetRgbaProperty(QtProperty * property)
+{
+    return mColor8RGBAManager.value(property);
+}
 
 //----------------------------------------------------------------------------------------
 

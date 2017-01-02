@@ -21,12 +21,15 @@ namespace Pegasus {
     namespace Core {
         class ISourceCodeProxy;
     }
-
     namespace PropertyGrid {
         class IPropertyGridObjectProxy;
     }
     namespace Timeline {
         class ILaneProxy;
+    }
+    namespace AssetLib {
+        class IAssetProxy;
+        class ICategoryProxy;
     }
 }
 
@@ -49,6 +52,11 @@ public:
     virtual const PropertyGrid::IPropertyGridObjectProxy * GetPropertyGridProxy() const = 0;
     //@}
 
+    //! initializes all render resources.
+    virtual void Initialize() = 0;
+
+    //! shutsdown all renderr resources.
+    virtual void Shutdown() = 0;
 
     //! Get the position of the block in the lane
     //! \return Position of the block, measured in ticks
@@ -93,6 +101,25 @@ public:
 
     //! Returns the guid of this proxy
     virtual unsigned GetGuid() const = 0;
+
+    //! Overrides a guid for a block. Only to be used for proper behaviour of doing / undoing state.
+    //! \param newGuid the guid to use for this object
+    //! \warning there is no check for duplicate of guids. So make sure the right one is used.
+    virtual void OverrideGuid(unsigned int newGuid) = 0;
+
+    //! dumps the contents of a block to a single asset.
+    //! Note- this is only supported for the use case of Undo/Redo, which serializes the entire state of an object as json
+    //! \param assetProxy target asset to dump state into
+    virtual void DumpToAsset(Pegasus::AssetLib::IAssetProxy* assetProxy) = 0;
+
+    //! loads the contents of a block from a single asset.
+    //! Note- this is only supported for the use case of Undo/Redo, which serializes the entire state of an object as json
+    //! \param assetProxy target asset to load state from
+    virtual void LoadFromAsset(const Pegasus::AssetLib::IAssetProxy* assetProxy) = 0;
+
+    //! Gets the asset category of this block
+    //! \return asset category pointer
+    virtual Pegasus::AssetLib::ICategoryProxy* GetAssetCategory() = 0; 
 };
 
 

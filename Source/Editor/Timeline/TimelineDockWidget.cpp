@@ -30,6 +30,7 @@
 #include <QMessagebox>
 #include <QFileDialog>
 
+#include <QSignalMapper>
 #include <QListWidgetItem>
 #include <QUndoStack>
 #include <QMenu>
@@ -61,7 +62,9 @@ TimelineDockWidget::TimelineDockWidget(QWidget *parent, Editor* editor)
     mEnableUndo(true),
     mApplication(nullptr),
     mIsCursorQueued(false),
-    mUi(nullptr)
+    mUi(nullptr),
+    mAvailableBlocksNamesCount(0),
+    mCurrentBlockSelected(~0)
 {
     mObserver = new TdwObserver(this);
     mUi = new Ui::TimelineDockWidget();
@@ -76,6 +79,11 @@ void TimelineDockWidget::SetupUi()
     mUi->propertyGridWidget->SetMessenger(this);
 
     mUndoStack = new QUndoStack(this);
+    
+    mAppAvailableBlocksMenu = new QMenu();
+    mAppAvailableBlocksSignalMapper = new QSignalMapper();
+    mUi->addNewBlockButton->setMenu(mAppAvailableBlocksMenu);
+    mUi->addNewBlockButton->setPopupMode(QToolButton::InstantPopup);
 
     UpdateUIForAppClosed();
 
@@ -87,10 +95,12 @@ void TimelineDockWidget::SetupUi()
     // Make connections between the UI elements and the child views
     connect(mUi->saveButton, SIGNAL(clicked()),
             this, SLOT(SaveTimeline()));
-    connect(mUi->addButton, SIGNAL(clicked()),
+    connect(mUi->addLaneButton, SIGNAL(clicked()),
             mUi->graphicsView, SLOT(AddLane()));
     connect(mUi->playButton, SIGNAL(toggled(bool)),
             mUi->graphicsView, SLOT(OnPlayModeToggled(bool)));
+    connect(mUi->deleteBlocksButton, SIGNAL(clicked()),
+            this, SLOT(RequestDeleteSelectedBlocks()));
     connect(mUi->bpmSpin, SIGNAL(valueChanged(double)),
             this, SLOT(OnBeatsPerMinuteChanged(double)));
     connect(mUi->snapCombo, SIGNAL(currentIndexChanged(int)),
@@ -122,6 +132,9 @@ void TimelineDockWidget::SetupUi()
 
     connect(mUi->loadMasterScriptButton, SIGNAL(clicked()),
             this, SLOT(RequestMasterTimelineScriptLoad()));
+    connect(
+       mAppAvailableBlocksSignalMapper, SIGNAL(mapped(int)),
+       this, SLOT(OnCreateNewBlock(int)));
 
     mMasterScriptMenu = new QMenu();
     mEditMasterScriptButton = mMasterScriptMenu->addAction(tr("Edit master script."));
@@ -134,6 +147,7 @@ void TimelineDockWidget::SetupUi()
 
     connect(mRemoveMasterScriptButton, SIGNAL(triggered()),
             this, SLOT(RemoveMasterScript()));
+
 }
 
 //----------------------------------------------------------------------------------------
@@ -148,13 +162,52 @@ TimelineDockWidget::~TimelineDockWidget()
 
 void TimelineDockWidget::OnPropertyUpdated(QtProperty* property)
 {
-    if (property->propertyName() == "Name" ||
-        property->propertyName() == "Color"||
-        property->propertyName() == "Beat"||
-        property->propertyName() == "Duration")
+    bool isName = property->propertyName() == "Name";
+    bool isColor = !isName  && property->propertyName() == "Color";
+    bool isBeat =  !isColor && property->propertyName() == "Beat";
+    bool isDuration = !isBeat && property->propertyName() == "Duration";
+
+    bool isVisualProp = isName || isColor || isBeat || isDuration;
+
+    if (isVisualProp)
     {
-        mUi->graphicsView->FlushVisualProperties();
-        mUi->graphicsView->RedrawInternalBlocks();
+        TimelineBlockGraphicsItem* item = nullptr;
+        mUi->graphicsView->FindLane(mCurrentBlockSelected, item);
+        if (item != nullptr)
+        {
+            ShadowBlockState& blockState = item->EditBlockProxy();
+            ShadowBlockState::PropName targetName;
+            QVariant targetValue;
+            if (isName)
+            {
+                targetName = ShadowBlockState::PROP_BLOCK_NAME;
+                targetValue = mUi->propertyGridWidget->GetS64Property(property);
+            }
+            else if (isColor)
+            {
+                targetName = ShadowBlockState::PROP_BLOCK_COLOR;
+                QColor c = mUi->propertyGridWidget->GetRgbProperty(property);
+                int intColVal = (c.red() << 24) | (c.green() << 16) | (c.blue() << 8);
+                targetValue = intColVal;
+            }
+            else if (isBeat)
+            {
+                targetName = ShadowBlockState::PROP_BLOCK_BEAT;
+                targetValue = mUi->propertyGridWidget->GetUintProperty(property);
+            }
+            else if (isDuration)
+            {
+                targetName = ShadowBlockState::PROP_BLOCK_DURATION;
+                targetValue = mUi->propertyGridWidget->GetUintProperty(property);
+            }
+            blockState.GetRootState().insert(ShadowBlockState::Str(targetName), targetValue);
+
+            //redraw and flush visual properties
+            QRectF rect = item->boundingRect();
+            rect.translate(item->pos());
+            mUi->graphicsView->invalidateScene(rect);
+            item->FlushVisualProperties();
+        }
     }
 }
 
@@ -171,8 +224,8 @@ QString TimelineDockWidget::AskForTimelineScript()
 {
     QString rootFolder = mApplication->GetAssetsRoot();
     QDir qd(rootFolder);
-    QString fileExtension = tr("%1 Shader (*.%2)").arg(tr(Pegasus::ASSET_TYPE_BLOCKSCRIPT.mTypeName), tr(Pegasus::ASSET_TYPE_BLOCKSCRIPT.mExtension));
-    QString requestedFile = QFileDialog::getOpenFileName(this, tr("Open shader."), rootFolder, fileExtension);
+    QString fileExtension = tr("%1 BlockScript (*.%2)").arg(tr(Pegasus::ASSET_TYPE_BLOCKSCRIPT.mTypeName), tr(Pegasus::ASSET_TYPE_BLOCKSCRIPT.mExtension));
+    QString requestedFile = QFileDialog::getOpenFileName(this, tr("Open BlockScript."), rootFolder, fileExtension);
     QString filePath = qd.path();
     if (requestedFile.startsWith(filePath))
     {
@@ -242,7 +295,7 @@ void TimelineDockWidget::RequestMoveBlock(QGraphicsObject* sender, QPointF amoun
         TimelineIOMCMessage msg(TimelineIOMCMessage::BLOCK_OPERATION);
         TimelineBlockGraphicsItem* graphicsItem = static_cast<TimelineBlockGraphicsItem*>(sender);
         const ShadowBlockState& blockState = graphicsItem->GetBlockProxy();
-        msg.SetBlockOp(ASK_POSITION);
+        msg.SetBlockOp(ASK_BLOCK_POSITION);
         msg.SetTimelineHandle(mTimelineHandle);
         msg.SetBlockGuid(blockState.GetGuid());
         msg.SetLaneId(graphicsItem->GetLaneFromY(amount.y()));
@@ -251,6 +304,33 @@ void TimelineDockWidget::RequestMoveBlock(QGraphicsObject* sender, QPointF amoun
         msg.SetMouseClickId(TimelineBlockGraphicsItem::sMouseClickID);
         SendTimelineIoMessage(msg);
     }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::OnDeleteFocusedObject()
+{
+    RequestDeleteSelectedBlocks();
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::RequestDeleteSelectedBlocks()
+{
+    QList<QGraphicsItem*> selectedItems = mUi->graphicsView->scene()->selectedItems();
+    QVariantList blockGuids;
+    foreach (QGraphicsItem* i, selectedItems)
+    {
+        TimelineBlockGraphicsItem* blockGraphicsItem = static_cast<TimelineBlockGraphicsItem*>(i);
+        blockGuids.push_back(blockGraphicsItem->GetBlockProxy().GetGuid());
+    }
+
+    TimelineIOMCMessage msg(TimelineIOMCMessage::BLOCK_OPERATION);
+    msg.SetBlockOp(ASK_DELETE_BLOCKS);
+    msg.SetTimelineHandle(mTimelineHandle);
+    msg.SetArg(blockGuids);
+    msg.SetObserver(GetObserver());
+    SendTimelineIoMessage(msg);
 }
 
 //----------------------------------------------------------------------------------------
@@ -445,6 +525,21 @@ void TimelineDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* appli
     SendAssetIoMessage(msg);
     mIsCursorQueued = false;
     mApplication = applicationProxy;
+
+    QIcon blockIcon(tr(":TypeIcons/timelinescript.png"));
+
+    Pegasus::Timeline::ITimelineManagerProxy* t = applicationProxy->GetTimelineManagerProxy();
+    mAvailableBlocksNamesCount = t->GetRegisteredBlockNames(mAvailableBlocksClassNames, mAvailableBlocksEditorNames);
+
+    for (unsigned indx = 0; indx < mAvailableBlocksNamesCount; ++indx)
+    {
+        QAction* a = mAppAvailableBlocksMenu->addAction(blockIcon,mAvailableBlocksEditorNames[indx]);
+        mAppAvailableBlocksSignalMapper->setMapping(a, indx);
+        mAvailableBlocksActions.push_back(a);
+        connect(a, SIGNAL(triggered()),
+            mAppAvailableBlocksSignalMapper, SLOT(map()));
+    }
+
 }
 
 //----------------------------------------------------------------------------------------
@@ -458,9 +553,11 @@ void TimelineDockWidget::OnOpenObject(AssetInstanceHandle object, const QString&
 
         mEnableUndo = false;
 
-        mUi->addButton->setEnabled(true);
-        mUi->removeButton->setEnabled(true);
-        mUi->deleteButton->setEnabled(true);
+        mUi->addLaneButton->setEnabled(true);
+        mUi->deleteLaneButton->setEnabled(true);
+        mUi->loadMasterScriptButton->setEnabled(true);
+        mUi->addNewBlockButton->setEnabled(true);
+        mUi->deleteBlocksButton->setEnabled(true);
 
         mUi->playButton->setEnabled(true);
         mUi->playButton->setChecked(false);
@@ -484,6 +581,7 @@ void TimelineDockWidget::OnOpenObject(AssetInstanceHandle object, const QString&
         }
 
         mUi->graphicsView->SetTimeline(&mTimelineState);
+        //remove the fake lane 0
         // Update the content of the timeline graphics view from the timeline of the app
         mUi->graphicsView->RefreshFromTimeline();
 
@@ -507,13 +605,22 @@ void TimelineDockWidget::OnShowActiveTimelineButton(bool shouldShowActiveScript,
 
 void TimelineDockWidget::OnUIForAppClosed()
 {
+    foreach(QAction* a, mAvailableBlocksActions)
+    {
+        mAppAvailableBlocksSignalMapper->removeMappings(a);
+    }
+    mAppAvailableBlocksMenu->clear();
+    mAvailableBlocksActions.clear();
+    mAvailableBlocksNamesCount  = 0;
+
     mApplication = nullptr;
     mUndoStack->clear();
-    mUi->addButton->setEnabled(false);
-    mUi->removeButton->setEnabled(false);
-    mUi->deleteButton->setEnabled(false);
+    mUi->addLaneButton->setEnabled(false);
+    mUi->deleteLaneButton->setEnabled(false);
     mUi->removeScriptButton->setEnabled(false);
-
+    mUi->loadMasterScriptButton->setEnabled(false);
+    mUi->addNewBlockButton->setEnabled(false);
+    mUi->deleteBlocksButton->setEnabled(false);
     mUi->playButton->setEnabled(false);
     mUi->playButton->setChecked(false);
 
@@ -531,6 +638,7 @@ void TimelineDockWidget::OnUIForAppClosed()
     UpdateUIFromBeat(0.0f);
     mUi->graphicsView->setEnabled(false);
     mUi->graphicsView->SetTimeline(nullptr);
+
     mTimelineHandle = AssetInstanceHandle();
 }
 
@@ -623,6 +731,7 @@ void TimelineDockWidget::SetTimeLabel(unsigned int minutes, unsigned int seconds
 
 void TimelineDockWidget::OnBlockSelected(unsigned blockGuid)
 {
+    mCurrentBlockSelected = blockGuid;
     mUi->propertyGridWidget->SetCurrentTimelineBlock(mTimelineHandle, blockGuid, QString(""));
 }
 
@@ -630,6 +739,7 @@ void TimelineDockWidget::OnBlockSelected(unsigned blockGuid)
 
 void TimelineDockWidget::OnMultiBlocksSelected()
 {
+    mCurrentBlockSelected = ~0;
     mUi->propertyGridWidget->ClearProperties();
 }
 
@@ -637,6 +747,7 @@ void TimelineDockWidget::OnMultiBlocksSelected()
 
 void TimelineDockWidget::OnBlocksDeselected()
 {
+    mCurrentBlockSelected = ~0;
     mUi->propertyGridWidget->SetCurrentProxy(mTimelineHandle);
 }
 
@@ -649,6 +760,30 @@ void TimelineDockWidget::OnBlockDoubleClicked(QString blockScriptToOpen)
         AssetIOMCMessage msg(AssetIOMCMessage::OPEN_ASSET);
         msg.SetString(blockScriptToOpen);
         SendAssetIoMessage(msg);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::OnCreateNewBlock(int blockTypeId)
+{
+    if (blockTypeId >= 0 && blockTypeId < static_cast<int>(mAvailableBlocksNamesCount))
+    {
+        QString blockClassTypeName = tr(mAvailableBlocksClassNames[blockTypeId]);
+        TimelineIOMCMessage msg(TimelineIOMCMessage::BLOCK_OPERATION);
+        msg.SetBlockOp(ASK_NEW_BLOCK);
+
+        //these are the message contents for the constructor of a block.
+        //These have to match to those expected in TimelineIOMessageController.cpp:CreateAndInsertNewBlock
+        QVariantMap newblockArgs;
+        newblockArgs.insert(tr("className"),blockClassTypeName);
+        newblockArgs.insert(tr("initialBeat"),(unsigned)0);
+        newblockArgs.insert(tr("initialDuration"),(unsigned)1024);
+        newblockArgs.insert(tr("targetLane"),(unsigned)0);
+        msg.SetTimelineHandle(mTimelineHandle);
+        msg.SetObserver(mObserver);
+        msg.SetArg(newblockArgs);
+        SendTimelineIoMessage(msg);
     }
 }
 
@@ -678,9 +813,9 @@ void TdwObserver::OnParameterUpdated(const AssetInstanceHandle& timelineHandle, 
 
 void TdwObserver::OnBlockOpResponse(const TimelineIOMCBlockOpResponse& r)
 {
-    if (r.op == ASK_POSITION)
+    if (r.success)
     {
-        if (r.success)
+        if (r.op == ASK_BLOCK_POSITION)
         {
             TimelineBlockGraphicsItem* blockItem = nullptr;
             unsigned oldLane = mDockWidget->mUi->graphicsView->FindLane(r.blockGuid, blockItem);
@@ -692,12 +827,44 @@ void TdwObserver::OnBlockOpResponse(const TimelineIOMCBlockOpResponse& r)
                 mDockWidget->mUndoStack->push(undoCmd);
             }
         }
-    }
-    else if (r.op == MOVE)
-    {
-        if (r.success)
+        else if (r.op == MOVE_BLOCK)
         {
             mDockWidget->mUi->graphicsView->UpdateBeatVisuals(r.newLane,r.blockGuid,r.newBeat);
+        }
+        else if (r.op == NEW_BLOCK) 
+        {
+            mDockWidget->mUi->graphicsView->RefreshLaneFromTimelineLane(r.newLane, r.newShadowLaneState);
+        }
+        else if (r.op == ASK_NEW_BLOCK) 
+        {
+            //now that we have the predicted block guid, we resend this message to ask for a new block.
+            TimelineCreateBlockUndoCommand* createUndoCmd = new TimelineCreateBlockUndoCommand(r.timelineHandle, r.blockGuid, mDockWidget, r.arg);
+            mDockWidget->mUndoStack->push(createUndoCmd);
+        }
+        else if (r.op == ASK_DELETE_BLOCKS)
+        {
+            QVariantMap args = r.arg.toMap();
+            QVariantList blockGuids = args[QString("guids")].toList();
+            QVariantList blockJsonStates = args[QString("jsonStates")].toList();
+            QVector<const ShadowBlockState*> shadowStates;
+            QVector<int> targetLanes;
+            for (int i = 0; i < blockGuids.size(); ++i)
+            {
+                TimelineBlockGraphicsItem* graphicsItem = nullptr;
+                int targetLane = mDockWidget->mUi->graphicsView->FindLane(blockGuids[i].toUInt(), graphicsItem);
+                shadowStates.push_back(&graphicsItem->GetBlockProxy());
+                targetLanes.push_back(targetLane);
+            }
+            TimelineDeleteBlockUndoCommand* deleteUndoCommand = new TimelineDeleteBlockUndoCommand(r.timelineHandle, shadowStates, targetLanes, blockJsonStates, mDockWidget);
+            mDockWidget->mUndoStack->push(deleteUndoCommand);
+        }
+        else if (r.op == DELETE_BLOCKS)
+        {
+            foreach (int lane, r.lanesFound)
+            {
+                ShadowLaneState laneState = r.lanesFoundState[lane];
+                mDockWidget->mUi->graphicsView->RefreshLaneFromTimelineLane(lane, laneState);
+            }
         }
     }
 }

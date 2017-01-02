@@ -21,6 +21,7 @@ PEGASUS_AVOID_EMPTY_FILE_WARNING
 #include "Pegasus/Timeline/Lane.h"
 #include "Pegasus/Timeline/TimelineScript.h"
 #include "Pegasus/AssetLib/Shared/IAssetProxy.h"
+#include "Pegasus/AssetLib/Proxy/AssetProxy.h"
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 #include "Pegasus/Math/Color.h"
 #include "Pegasus/PropertyGrid/Shared/PropertyEventDefs.h"
@@ -74,6 +75,18 @@ PropertyGrid::IPropertyGridObjectProxy * BlockProxy::GetPropertyGridProxy()
 const PropertyGrid::IPropertyGridObjectProxy * BlockProxy::GetPropertyGridProxy() const
 {
     return &mPropertyGridDecorator;
+}
+
+//----------------------------------------------------------------------------------------
+
+void BlockProxy::Initialize()
+{
+    mBlock->Initialize();
+}
+
+void BlockProxy::Shutdown()
+{
+    mBlock->Shutdown();
 }
 
 //----------------------------------------------------------------------------------------
@@ -145,6 +158,13 @@ unsigned BlockProxy::GetGuid() const
 
 //----------------------------------------------------------------------------------------
 
+void BlockProxy::OverrideGuid(unsigned newGuid)
+{
+    return mBlock->OverrideGuid(newGuid);
+}
+
+//----------------------------------------------------------------------------------------
+
 const char * BlockProxy::GetInstanceName() const
 {
     return mBlock->GetName();
@@ -171,6 +191,23 @@ void BlockProxy::AttachScript(Core::ISourceCodeProxy* code)
 void BlockProxy::ClearScript()
 {
     mBlock->ShutdownScript();
+}
+
+void BlockProxy::DumpToAsset(Pegasus::AssetLib::IAssetProxy* assetProxy)
+{
+    Pegasus::AssetLib::AssetProxy* asset = static_cast<Pegasus::AssetLib::AssetProxy*>(assetProxy);
+    mBlock->DumpToAsset(asset->GetObject());
+}
+
+void BlockProxy::LoadFromAsset(const Pegasus::AssetLib::IAssetProxy* assetProxy)
+{
+    const Pegasus::AssetLib::AssetProxy* asset = static_cast<const Pegasus::AssetLib::AssetProxy*>(assetProxy);
+    mBlock->LoadFromAsset(asset->GetObject());
+}
+
+Pegasus::AssetLib::ICategoryProxy* BlockProxy::GetAssetCategory()
+{
+    return mBlock->GetAssetCategory()->GetProxy();
 }
 
 }   // namespace Timeline

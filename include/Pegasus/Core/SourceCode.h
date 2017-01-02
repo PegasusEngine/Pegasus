@@ -82,9 +82,9 @@ protected:
     Alloc::IAllocator* mAllocator;
     Utils::Vector<SourceCode*> mParents; //references to parents
 
-    virtual bool OnReadAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset);
+    virtual bool OnReadAsset(Pegasus::AssetLib::AssetLib* lib, const Pegasus::AssetLib::Asset* asset) override;
 
-    virtual void OnWriteAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset);
+    virtual void OnWriteAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset) override;
 
 private:
 

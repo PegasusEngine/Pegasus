@@ -239,7 +239,7 @@ protected:
 
     //! Called when a node is read from an object
     //! \param obj Object to read the content from
-    virtual bool ReadFromObject(NodeManager* nodeManager, AssetLib::Asset* parentAsset, AssetLib::Object* obj);
+    virtual bool ReadFromObject(NodeManager* nodeManager, const AssetLib::Asset* parentAsset, const AssetLib::Object* obj);
 
 #if PEGASUS_ENABLE_PROXIES
 

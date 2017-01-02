@@ -71,9 +71,6 @@ TimelineBlockGraphicsItem::TimelineBlockGraphicsItem(const ShadowBlockState& blo
     // in front of the grid at least)
     setZValue(TIMELINE_BLOCK_GRAPHICS_ITEM_Z_VALUE);
 
-    //! Assign a unique ID to the block for merging undo commands when moving the block
-    mBlockID = sCurrentBlockID++;
-
     mCtxMenu = new QMenu();
     mChangeScriptAction = mCtxMenu->addAction(tr(""));
 
@@ -97,16 +94,20 @@ TimelineBlockGraphicsItem::TimelineBlockGraphicsItem(const ShadowBlockState& blo
 
 void TimelineBlockGraphicsItem::FlushVisualProperties()
 {
+    // invalidate and redraw
+    update(boundingRect());
+
     // Set the block color
     unsigned col = mBlockState.GetColor();
     mBaseColor = QColor((col >> 24) & 0xFF, (col >> 16) & 0xFF, (col >> 8) & 0xFF);
 
     // Set the initial position and duration, and update the scaled position and length
-    SetDuration(mBlockState.GetDuration());
+    SetDuration(mBlockState.GetDuration(), false);
     SetBeat(mBlockState.GetBeat());
 
     mName = mBlockState.GetName();
     mClassName = mBlockState.GetClassName();
+
 }
 
 //----------------------------------------------------------------------------------------
@@ -134,7 +135,7 @@ void TimelineBlockGraphicsItem::SetLane(unsigned int lane)
 
 //----------------------------------------------------------------------------------------
 
-void TimelineBlockGraphicsItem::SetBeat(Pegasus::Timeline::Beat beat)
+void TimelineBlockGraphicsItem::SetBeat(Pegasus::Timeline::Beat beat, bool updateItem)
 {
     mEnableUndo = false;
 
@@ -144,7 +145,10 @@ void TimelineBlockGraphicsItem::SetBeat(Pegasus::Timeline::Beat beat)
     // Update the scaled position
     SetXFromBeat();
     setPos(mX, mY);
-    update(boundingRect());
+    if (updateItem)
+    {
+        update(boundingRect());
+    }
     mEnableUndo = true;
 }
 
@@ -154,7 +158,7 @@ void TimelineBlockGraphicsItem::SetDuration(Pegasus::Timeline::Duration duration
 {
     if (duration == 0)
     {
-        ED_FAILSTR("Invalid duration (%d) for the timeline graphics item. It should be > 0.", duration);
+        ED_LOG("Invalid duration of 0 for the timeline graphics item. It should be > 0.");
         mDuration = 1;
     }
     else

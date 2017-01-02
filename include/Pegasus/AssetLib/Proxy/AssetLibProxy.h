@@ -60,6 +60,12 @@ public:
     //! \param isStructured wether this asset is structured or not.
     virtual IAssetProxy* CreateAsset(const char* path,  bool isStructured);
 
+
+    //! Destroys the asset called from LoadAsset. Only use this function if LoadAsset is used manually. Calling this
+    //! on a runtimeAssetObjectRef will disconnect the object from an asset and set a reference to this asset to null.
+    //! \param asset the pointer used to unload.
+    virtual void UnloadAsset(IAssetProxy* asset);
+
     //! Loads an object. Internally this function calls LoadAsset. This function also searches for the correct
     //! factory representation and the correct type description for the internal asset loaded.
     //! As a first pass it uses the extension to figure out if its structured or not.
@@ -69,6 +75,20 @@ public:
     //! \param name the file path used to load this object.
     //! \return Null if there was an internal error. Otherwise we return an object
     virtual IRuntimeAssetObjectProxy* LoadObject(const char* path, bool* outIsNew);
+
+    //! Reads pure json from a string buffer. Asset can later be saved / or deleted as the regular API.
+    //! \param asset the asset to populate
+    //! \param buffer the buffer to read json from.
+    //! \return bool if successful, false otherwise.
+    virtual bool DeserializeAsset(IAssetProxy* asset, char* buffer);
+
+    //! Converts an asset to a string. It also does an internal allocation on a string. The string must be then deleted using DestorySerializationString otherwise this memory will leak.
+    //! \param asset asset to dump to json
+    virtual char* SerializeAsset(IAssetProxy* asset);
+
+    //! Destroys the result from SerializeAsset. Must be called always after SerializeAsset once the string result is not used.
+    //! \param stringToDelete the string to delete
+    virtual void DestroySerializationString(char* stringToDelete);
 
     //! Saves a runtime object to disc. The object must have an asset attached to it. This function will fail if
     //! the object does not have an asset attached to it. To attach an asset to an object please use AttachAsset function
@@ -106,6 +126,12 @@ public:
     //! \param the type desc to find for this category, if typeDesc is null, we return the untyped assets.
     //! \return the category proxy found. 
     virtual ICategoryProxy* FindTypeCategory(const Pegasus::PegasusAssetTypeDesc* typeDesc); 
+
+    //! Call in the API to start recording categories during loading.
+    virtual void BeginCategory(ICategoryProxy* category);
+    
+    //! Call in the API to end recording of categories during loading.
+    virtual void EndCategory();
 
 private:
     AssetLib* mAssetLib;

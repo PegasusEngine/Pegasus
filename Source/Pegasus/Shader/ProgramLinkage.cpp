@@ -172,9 +172,9 @@ const char* Pegasus::Shader::ProgramLinkage::GetName() const
 }
 #endif
 
-bool Pegasus::Shader::ProgramLinkage::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset)
+bool Pegasus::Shader::ProgramLinkage::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, const Pegasus::AssetLib::Asset* asset)
 {
-    AssetLib::Object* root = asset->Root();
+    const AssetLib::Object* root = asset->Root();
     int nameId = root->FindString("name");
     int shaders = root->FindArray("shaders");
 

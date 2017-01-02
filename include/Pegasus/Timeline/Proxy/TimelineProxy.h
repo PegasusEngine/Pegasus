@@ -103,6 +103,17 @@ public:
     //! Update the current state of the timeline based on the play mode and the current time
     virtual void Update();
 
+    //! Create a new block. Pass the class name of such block.
+    //! If the block does not exist then this function returns null.
+    //! \param the class name of the new block.
+    //! \return the block proxy to use.
+    virtual IBlockProxy* CreateBlock(const char* className);
+
+    //! Deletes a block and shuts it down.
+    //! \param blockGuid the block guid to delete.
+    //! \return int indicating the lane it was found. -1 otherwise
+    virtual int DeleteBlock(unsigned int blockGuid);
+
     //! Set the current beat of the timeline
     //! \param beat Current beat, measured in ticks, can have fractional part
     virtual void SetCurrentBeat(float beat);

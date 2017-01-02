@@ -86,6 +86,9 @@ public:
     //! Callback, implement here functionality that requires saving of current object
     virtual void OnSaveFocusedObject() {}
 
+    //! Callback, implement here functionality that would pursue the deletion of whatever this widget has selected internally
+    virtual void OnDeleteFocusedObject() {}
+
     //! Switch that holds every pegasus asset type that this dock widget can open for edit.
     //! Asset types that get this type association, will be the ones passed through OnOpenRequest function 
     virtual const Pegasus::PegasusAssetTypeDesc*const* GetTargetAssetTypes() const { return nullptr; }

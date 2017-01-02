@@ -90,6 +90,11 @@ public:
     //! \return Block associated with the proxy (!= nullptr)
     inline Block * GetBlock() const { return mBlock; }
 
+    //! initializes all render resources.
+    virtual void Initialize();
+
+    //! shutsdown all renderr resources.
+    virtual void Shutdown();
 
     //! Get the property grid proxy associated with the block
     //! \return Property grid proxy associated with the block
@@ -136,12 +141,31 @@ public:
     //! Returns the guid of this proxy
     virtual unsigned GetGuid() const;
 
+    //! Overrides a guid for a block. Only to be used for proper behaviour of doing / undoing state.
+    //! \param newGuid the guid to use for this object
+    //! \warning there is no check for duplicate of guids. So make sure the right one is used.
+    virtual void OverrideGuid(unsigned int newGuid);
+
     //! Sets a script proxy as a timeline element.
     //! \param code - the code to attach
     virtual void AttachScript(Core::ISourceCodeProxy* code);
 
     //! Clears blockscript if there is one.
     virtual void ClearScript();
+
+    //! dumps the contents of a block to a single asset.
+    //! Note- this is only supported for the use case of Undo/Redo, which serializes the entire state of an object as json
+    //! \param assetProxy target asset to dump state into
+    virtual void DumpToAsset(Pegasus::AssetLib::IAssetProxy* assetProxy);
+
+    //! loads the contents of a block from a single asset.
+    //! Note- this is only supported for the use case of Undo/Redo, which serializes the entire state of an object as json
+    //! \param assetProxy target asset to load state from
+    virtual void LoadFromAsset(const Pegasus::AssetLib::IAssetProxy* assetProxy);
+
+    //! Gets the asset category of this block
+    //! \return asset category pointer
+    virtual Pegasus::AssetLib::ICategoryProxy* GetAssetCategory(); 
 
     //------------------------------------------------------------------------------------
     

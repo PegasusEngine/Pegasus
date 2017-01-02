@@ -93,6 +93,11 @@ public:
     //! \return the raw buffer of this asset
     Io::FileBuffer* Raw() { PG_ASSERT(mFormat == FMT_RAW); return &mRawAsset; }
 
+    
+    //! Gets the raw buffer of this object
+    //! \return the raw buffer of this asset
+    const Io::FileBuffer* Raw() const { PG_ASSERT(mFormat == FMT_RAW); return &mRawAsset; }
+
     //! Sets the path of this assets file
     //! \param the full path of this asset
     void SetPath(const char* path);

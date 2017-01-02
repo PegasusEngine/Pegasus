@@ -226,12 +226,31 @@ void Editor::SaveCurrentAsset()
 
 //----------------------------------------------------------------------------------------
 
+void Editor::DeleteSelectedObjects()
+{
+    for (int i = 0 ; i < mDockWidgets.size(); ++i)
+    {
+        if (mDockWidgets[i]->HasFocus())
+        {
+            mDockWidgets[i]->OnDeleteFocusedObject();
+            break;
+        }
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 void Editor::CreateActions()
 {
     mSaveCurrentAsset = new QAction(tr("Save Current Asset"),this);
     mSaveCurrentAsset->setShortcut(tr("Ctrl+S"));
     connect(mSaveCurrentAsset, SIGNAL(triggered()),
             this, SLOT(SaveCurrentAsset()));
+
+    mDeleteSelectedObjects = new QAction(tr("Delete selected objeects"),this);
+    mDeleteSelectedObjects->setShortcut(tr("Del"));
+    connect(mDeleteSelectedObjects, SIGNAL(triggered()),
+            this, SLOT(DeleteSelectedObjects()));
 
 	mActionFileOpenApp = new QAction(tr("&Open App..."), this);
 	mActionFileOpenApp->setIcon(QIcon(":/Toolbar/File/OpenApp24.png"));
@@ -385,6 +404,7 @@ void Editor::CreateMenu()
     QMenu * editMenu = menuBar()->addMenu(tr("&Edit"));
     editMenu->addAction(mActionEditUndo);
     editMenu->addAction(mActionEditRedo);
+    fileMenu->addAction(mDeleteSelectedObjects);
     editMenu->addSeparator();
     editMenu->addAction(mActionEditPreferences);
 
