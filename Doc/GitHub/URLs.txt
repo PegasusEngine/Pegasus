@@ -1,0 +1,15 @@
+The team page (has links to all projects):
+https://github.com/PegasusEngine
+
+The master branch:
+https://github.com/PegasusEngine/Pegasus
+
+The wiki:
+https://github.com/PegasusEngine/Pegasus/wiki
+
+The website URL:
+https://pegasusengine.github.io/ 
+
+The website github project:
+https://github.com/PegasusEngine/PegasusEngine.github.io
+
