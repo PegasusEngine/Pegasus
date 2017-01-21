@@ -755,14 +755,7 @@ void Canonizer::Visit(Binop* n)
 void Canonizer::Visit(Unop* unop)
 {
     
-    if (unop->GetOp() != O_IMPLICIT_CAST && unop->GetOp() != O_EXPLICIT_CAST)
-    {
-        unop->GetExp()->Access(this);
-        Unop* newUnop = CANON_NEW Unop(unop->GetOp(), mRebuiltExpression);
-        newUnop->SetTypeDesc(unop->GetTypeDesc());
-        mRebuiltExpression = newUnop;
-    }
-    else
+    if (unop->GetOp() == O_IMPLICIT_CAST || unop->GetOp() == O_EXPLICIT_CAST)
     {      
         const TypeDesc* sourceType = unop->GetExp()->GetTypeDesc();
         const TypeDesc* targetType = unop->GetTypeDesc();
@@ -823,6 +816,37 @@ void Canonizer::Visit(Unop* unop)
         {
             PG_FAILSTR("Unhandled cast exception!");
         }
+    }
+    else if (unop->GetOp() == O_INC || unop->GetOp() == O_DEC)
+    {
+        PG_ASSERT(unop->GetExp()->GetExpType() == Idd::sType);
+        Idd* iddExp = static_cast<Idd*>(unop->GetExp());
+        Variant v;
+        v.i[0] = 1;
+        Imm* oneImm = CANON_NEW Imm(v);
+        oneImm->SetTypeDesc(iddExp->GetTypeDesc());
+        Binop* newBinop = CANON_NEW Binop(iddExp, unop->GetOp() == O_INC ? O_PLUS : O_MINUS, oneImm);
+        newBinop->SetTypeDesc(iddExp->GetTypeDesc());
+        
+        if (unop->IsPost())
+        {
+            Idd* temp = AllocateTemporal(iddExp->GetTypeDesc());
+            PushCanon(CANON_NEW Move(temp, iddExp));
+            PushCanon(CANON_NEW Move(iddExp, newBinop));
+            mRebuiltExpression = temp;
+        }
+        else
+        {
+            PushCanon(CANON_NEW Move(iddExp, newBinop));
+            mRebuiltExpression = iddExp;
+        }
+    }
+    else
+    {
+        unop->GetExp()->Access(this);
+        Unop* newUnop = CANON_NEW Unop(unop->GetOp(), mRebuiltExpression);
+        newUnop->SetTypeDesc(unop->GetTypeDesc());
+        mRebuiltExpression = newUnop;
     }
 }
 
@@ -1037,6 +1061,40 @@ void Canonizer::Visit(StmtWhile* n)
     n->GetStmtList()->Access(this);
     PushCanon( CANON_NEW Jmp( topLabel ) );
     jmp->SetLabel(endLabel);
+    AddBlock(endLabel);
+    mCurrentStackFrame = prevFrame;
+    PushCanon( CANON_NEW PopFrame() );
+}
+
+void Canonizer::Visit(StmtFor* forLoop)
+{
+    int topLabel = CreateBlock();
+    int endLabel = CreateBlock();
+    StackFrameInfo* prevFrame = mCurrentStackFrame;
+    mCurrentStackFrame = forLoop->GetFrame();
+    PushCanon( CANON_NEW PushFrame( forLoop->GetFrame() ) );
+
+    if (forLoop->GetInit() != nullptr)
+    {
+        forLoop->GetInit()->Access(this);
+    }
+    AddBlock(topLabel);
+    if (forLoop->GetCond() != nullptr)
+    {
+        forLoop->GetCond()->Access(this);
+        JmpCond* jmp = CANON_NEW JmpCond(mRebuiltExpression, 0);
+        jmp->SetLabel(endLabel);
+        PushCanon(jmp);
+    }
+
+    forLoop->GetStmtList()->Access(this);
+
+    if (forLoop->GetUpdate() != nullptr)
+    {
+        forLoop->GetUpdate()->Access(this);
+    }
+
+    PushCanon( CANON_NEW Jmp(topLabel) );
     AddBlock(endLabel);
     mCurrentStackFrame = prevFrame;
     PushCanon( CANON_NEW PopFrame() );

@@ -80,8 +80,8 @@
     //***************************************************//
 %}
 
-// expect 130 reduce/shift warnings due to grammar ambiguity
-%expect 130
+// expect 172 reduce/shift warnings due to grammar ambiguity
+%expect 172
 
 %union {
     int    token;
@@ -115,6 +115,7 @@
 %token <token> K_COL
 %token <token> K_RETURN
 %token <token> K_WHILE
+%token <token> K_FOR
 %token <token> K_STRUCT
 %token <token> K_ENUM
 %token <token> K_STATIC_ARRAY
@@ -137,6 +138,8 @@
 %token <token> O_SET
 %token <token> O_DOT
 %token <token> O_ACCESS
+%token <token> O_INC
+%token <token> O_DEC
 %token <token> O_METHOD_CALL
 %token <token> O_IMPLICIT_CAST
 %token <token> O_EXPLICIT_CAST
@@ -147,6 +150,7 @@
 %type <vExp>  exp 
 %type <vExp>  immediate 
 %type <vExp>  ident
+%type <vExp>  optional_exp
 %type <vExpList> exp_list
 %type <vStmtList> stmt_list
 %type <vStmtIfElse>   stmt_else_if_tail
@@ -172,6 +176,7 @@
 %left O_MUL
 %left O_DIV
 %left O_METHOD_CALL
+%left O_DEC O_INC
 %left ACCESS_PREC
 %left NEG CAST
 %left O_DOT
@@ -217,7 +222,14 @@ stmt    : exp K_SEMICOLON { BS_BUILD($$, BuildStmtExp($1)); }
           }
         | K_RETURN exp K_SEMICOLON { BS_BUILD($$, BuildStmtReturn($2)); }
         | fun_declaration fun_stmt_list  {BS_BUILD($$, BindFunImplementation($1, $2));}
-        | while_keyword K_L_PAREN exp K_R_PAREN K_L_BRAC stmt_list K_R_BRAC { BS_BUILD($$, BuildStmtWhile($3, $6));}
+        | while_keyword K_L_PAREN exp K_R_PAREN K_L_BRAC stmt_list K_R_BRAC 
+        { 
+               BS_BUILD($$, BuildStmtWhile($3, $6));
+        } 
+        | for_keyword K_L_PAREN optional_exp K_SEMICOLON optional_exp K_SEMICOLON optional_exp K_R_PAREN K_L_BRAC stmt_list K_R_BRAC 
+        {
+               BS_BUILD($$, BuildStmtFor($3,$5,$7,$10));
+        }
         | struct_keyword IDENTIFIER K_L_BRAC struct_def_list K_R_BRAC K_SEMICOLON { BS_BUILD($$, BuildStmtStructDef($2, $4)); }
         | K_ENUM IDENTIFIER K_L_BRAC enum_list K_R_BRAC K_SEMICOLON 
         { 
@@ -275,6 +287,9 @@ fun_type : type_desc { $$ = $1; if ($$ == nullptr) { BS_parseerror("Syntax error
 
 while_keyword : K_WHILE { BS_GlobalBuilder->StartNewFrame(); }
               ; 
+
+for_keyword : K_FOR { BS_GlobalBuilder->StartNewFrame(); }
+            ;            
 
 stmt_else_if_tail :  stmt_else_if_tail else_if_keyword K_L_PAREN exp if_begin_scope stmt_list K_R_BRAC
                     {
@@ -363,6 +378,8 @@ exp     : ident  { $$ = $1; }
         | K_STATIC_ARRAY O_LT type_desc  O_GT { BS_BUILD($$, BuildStaticArrayDec($3)); }
         | I_STRING { BS_BUILD($$, BuildStrImm($1)); }
         | immediate { $$ = $1; }
+        | O_INC exp { BS_BUILD($$, BuildUnop($1, $2)); }
+        | O_DEC exp { BS_BUILD($$, BuildUnop($1, $2)); }
         | exp O_METHOD_CALL IDENTIFIER K_L_PAREN exp_list K_R_PAREN { BS_BUILD($$, BuildMethodCall($1, $3, $5)); }
         | exp O_METHOD_CALL TYPE_IDENTIFIER K_L_PAREN exp_list K_R_PAREN { BS_BUILD($$, BuildMethodCall($1, $3, $5)); }
         | exp O_SET exp    { BS_BUILD($$, BuildBinop($1, $2, $3)); }
@@ -384,7 +401,13 @@ exp     : ident  { $$ = $1; }
         | O_MINUS exp %prec NEG   { BS_BUILD($$, BuildUnop($1, $2)); }
         | K_L_PAREN type_desc K_R_PAREN exp %prec CAST   { BS_BUILD($$, BuildExplicitCast($4, $2)); }
         | K_L_PAREN exp K_R_PAREN { $$ = $2; }
+        | exp O_INC { BS_BUILD($$, BuildUnopPost($1, $2)); }
+        | exp O_DEC { BS_BUILD($$, BuildUnopPost($1, $2)); }
         ;
+
+optional_exp : { $$ = nullptr; }
+             | exp { $$ = $1; }
+             ;
 
 arg_list : arg_list K_COMMA arg_dec {
                 $$ = $1;

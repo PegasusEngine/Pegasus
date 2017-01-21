@@ -341,8 +341,8 @@ void PrettyPrint::Visit(Idd* n)
     if (n->GetAnnotations() != nullptr)
     {
         n->GetAnnotations()->Access(this);
+        mStr("\n");
     }
-    mStr("\n");
 
     const char * name = n->GetName();
     if (name == nullptr || name[0] == '$') //this is a temp, print its offset instead
@@ -415,10 +415,25 @@ void PrettyPrint::Visit(Unop* n)
     case O_EXPLICIT_CAST:
         mStr("(");mStr(n->GetTypeDesc()->GetName());mStr(")");
         break;
+    case O_INC: 
+    case O_DEC:
+        {
+            if (!n->IsPost())
+            {
+                mStr(n->GetOp() == O_INC ? "++" : "--");
+            }
+        }
     default:
         break;
     }
     n->GetExp()->Access(this);
+    if (n->GetOp() == O_INC || n->GetOp() ==  O_DEC)
+    {
+        if (n->IsPost())
+        {
+           mStr(n->GetOp() == O_INC ? "++" : "--");
+        }
+    }
 }
 void PrettyPrint::Visit(FunCall* n)
 {
@@ -470,6 +485,25 @@ void PrettyPrint::Visit(StmtWhile* n)
     mStr("\n");
     Indent();
     mStr("}\n");
+}
+
+void PrettyPrint::Visit(StmtFor* f)
+{
+    Indent();
+    mStr("for ( ");
+    if (f->GetInit() != nullptr) f->GetInit()->Access(this);
+    mStr("; ");
+    if (f->GetCond() != nullptr) f->GetCond()->Access(this);
+    mStr("; ");
+    if (f->GetUpdate() != nullptr) f->GetUpdate()->Access(this);
+    mStr(") {\n");
+    ++mScope;
+    f->GetStmtList()->Access(this);
+    --mScope;
+    mStr("\n");
+    Indent();
+    mStr("}\n");
+
 }
 
 void PrettyPrint::Visit(StmtFunDec* n)

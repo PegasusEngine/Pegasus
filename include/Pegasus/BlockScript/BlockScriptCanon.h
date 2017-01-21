@@ -117,8 +117,7 @@ class JmpCond : public CanonNode
 public:
     //! constructor
     //! \param exp the expression to evaluate.
-    //! \param labelTrue if true jump to this label
-    //! \param labelFalse if false jump to this label
+    //! \param comparison if equal to this value, jump to the label signaled
     JmpCond(Ast::Exp* exp, int comparison) : mComparison(comparison), mExp(exp), mLabelTrue(-1) {}
 
     //! the destructor

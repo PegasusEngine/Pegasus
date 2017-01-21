@@ -431,6 +431,9 @@ return          { return K_RETURN; }
 struct          { return K_STRUCT; }
 enum            { return K_ENUM;   }
 while           { return K_WHILE;  }
+for             { return K_FOR;    }
+\+\+            { BS_TOKEN(O_INC); }
+\-\-            { BS_TOKEN(O_DEC); }
 static_array    { return K_STATIC_ARRAY; }
 sizeof          { return K_SIZE_OF;      }
 extern          { return K_EXTERN;       }

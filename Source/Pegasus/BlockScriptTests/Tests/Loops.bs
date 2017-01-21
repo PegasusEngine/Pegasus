@@ -1,0 +1,31 @@
+//test pre/post incremment
+int getVal(a : int) 
+{
+    echo(++a);
+}
+
+i = 3;
+++i;
+x = ++i/ 2 + 3;
+getVal(i++);
+echo(i);
+echo(x);
+echo(i);
+echo(i++);
+echo(i);
+echo(" ");
+
+//testing loops
+i = 0;
+while(i++ <= 8)
+{
+    echo(i);echo("|");
+}
+
+for ( j = 0; j < 20; ++j)
+{
+    for (i = 0; i < 4; ++i)
+    {
+        echo(j);echo("<<");echo(i);echo(" ");
+    }
+}

@@ -109,7 +109,8 @@ const struct TestScript { const char* script; const char* output; } gTestScripts
     { "HelloWorld.bs",     "OutputHelloWorld.txt" },
     { "Fibonacci.bs",      "OutputFibonacci.txt" },
     { "Structs.bs",        "OutputStructs.txt" },
-    { "Branching.bs",      "OutputBranching.txt" },
+    { "Branching.bs",      "OutputBranching.txt" },    
+    { "Loops.bs",          "OutputLoops.txt" },
     { "2dArray.bs",        "Output2dArray.txt" },
     { "Math.bs",           "OutputMath.txt" }
 };

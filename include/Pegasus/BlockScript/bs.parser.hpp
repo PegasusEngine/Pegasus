@@ -65,34 +65,37 @@ extern int BS_debug;
      K_COL = 274,
      K_RETURN = 275,
      K_WHILE = 276,
-     K_STRUCT = 277,
-     K_ENUM = 278,
-     K_STATIC_ARRAY = 279,
-     K_SIZE_OF = 280,
-     K_EXTERN = 281,
-     K_A_PAREN = 282,
-     O_PLUS = 283,
-     O_MINUS = 284,
-     O_MUL = 285,
-     O_DIV = 286,
-     O_MOD = 287,
-     O_EQ = 288,
-     O_NEQ = 289,
-     O_GT = 290,
-     O_LT = 291,
-     O_GTE = 292,
-     O_LTE = 293,
-     O_LAND = 294,
-     O_LOR = 295,
-     O_SET = 296,
-     O_DOT = 297,
-     O_ACCESS = 298,
-     O_METHOD_CALL = 299,
-     O_IMPLICIT_CAST = 300,
-     O_EXPLICIT_CAST = 301,
-     ACCESS_PREC = 302,
-     CAST = 303,
-     NEG = 304
+     K_FOR = 277,
+     K_STRUCT = 278,
+     K_ENUM = 279,
+     K_STATIC_ARRAY = 280,
+     K_SIZE_OF = 281,
+     K_EXTERN = 282,
+     K_A_PAREN = 283,
+     O_PLUS = 284,
+     O_MINUS = 285,
+     O_MUL = 286,
+     O_DIV = 287,
+     O_MOD = 288,
+     O_EQ = 289,
+     O_NEQ = 290,
+     O_GT = 291,
+     O_LT = 292,
+     O_GTE = 293,
+     O_LTE = 294,
+     O_LAND = 295,
+     O_LOR = 296,
+     O_SET = 297,
+     O_DOT = 298,
+     O_ACCESS = 299,
+     O_INC = 300,
+     O_DEC = 301,
+     O_METHOD_CALL = 302,
+     O_IMPLICIT_CAST = 303,
+     O_EXPLICIT_CAST = 304,
+     ACCESS_PREC = 305,
+     CAST = 306,
+     NEG = 307
    };
 #endif
 
@@ -116,7 +119,7 @@ typedef union YYSTYPE
 
 
 /* Line 2058 of yacc.c  */
-#line 120 "bs.parser.hpp"
+#line 123 "bs.parser.hpp"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

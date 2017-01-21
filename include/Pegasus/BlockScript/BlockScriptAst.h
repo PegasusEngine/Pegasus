@@ -187,13 +187,18 @@ class Unop : public Exp
 public:
     static const int sType;
 
-    Unop(int op, Exp* exp) : mOp(op), mExp(exp) {}
+    Unop(int op, Exp* exp) : mOp(op), mExp(exp), mIsPost(false) {}
 
     virtual ~Unop() {}
 
     Exp* GetExp() const { return mExp; } 
    
     int GetOp() const { return mOp; }
+
+    //exclusive usage of pre/post increment
+    bool IsPost() const { return mIsPost; }
+
+    void SetIsPost(bool isPost) { mIsPost = isPost; }
 
     VISITOR_ACCESS
 
@@ -203,6 +208,8 @@ private:
     Exp* mExp;
     
     int  mOp;
+
+    bool mIsPost;
 };
 
 //! Array constructor
@@ -526,7 +533,7 @@ class StmtWhile : public Stmt
 {
 public:
     StmtWhile(Exp* exp, StmtList* stmtList) : mExp(exp), mStmtList(stmtList), mFrame(nullptr) {}
-    ~StmtWhile(){}
+    virtual ~StmtWhile(){}
 
     Exp* GetExp() const { return mExp; }
 
@@ -546,6 +553,41 @@ private:
 
     StackFrameInfo* mFrame;
 
+};
+
+class StmtFor : public Stmt
+{
+public:
+    StmtFor(Exp* init, Exp* cond, Exp* update, StmtList* stmtList)
+    : mInit(init), mCond(cond), mUpdate(update), mStmtList(stmtList), mFrame(nullptr)
+    {
+    }
+    virtual ~StmtFor(){}
+    Exp* GetInit() const { return mInit; }
+
+    Exp* GetCond() const { return mCond; }
+
+    Exp* GetUpdate() const { return mUpdate; }
+
+    StackFrameInfo* GetFrame() const { return mFrame; }
+
+    void SetFrame(StackFrameInfo* frame) { mFrame = frame; }
+
+    StmtList* GetStmtList() const { return mStmtList; }
+
+    VISITOR_ACCESS
+
+private:
+
+    Exp* mInit;
+
+    Exp* mCond;
+
+    Exp* mUpdate;
+
+    StmtList* mStmtList;
+
+    StackFrameInfo* mFrame;
 };
 
 //! ifthenelse

@@ -675,6 +675,18 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
 	return output;
 }
 
+Exp* BlockScriptBuilder::BuildUnopPost(Exp* exp, int op)
+{
+    PG_ASSERTSTR(op == O_INC || op == O_DEC, "%d", op);
+    Exp* unop = BuildUnop(op, exp);
+    if (unop != nullptr)
+    {
+        static_cast<Unop*>(unop)->SetIsPost(true); 
+    }
+    return unop;
+}
+
+
 Exp* BlockScriptBuilder::BuildUnop(int op, Exp* exp)
 {
     if (exp->GetTypeDesc() == nullptr)
@@ -702,6 +714,20 @@ Exp* BlockScriptBuilder::BuildUnop(int op, Exp* exp)
             return imm;
         default:
             break;
+        }
+    }
+    else if (op == O_DEC || op == O_INC)
+    {
+        if (exp->GetTypeDesc()->GetAluEngine() != TypeDesc::E_INT)
+        {
+            BS_ErrorDispatcher(this, "Post/Pre increment or decrement only allowed on ints.");
+            return nullptr;
+        }
+
+        if (exp->GetExpType() != Idd::sType)
+        {
+            BS_ErrorDispatcher(this, "Pre inc and post inc only allowed on a variable.");
+            return nullptr;
         }
     }
 
@@ -1028,6 +1054,15 @@ StmtExp* BlockScriptBuilder::BuildStmtExp(Exp* exp)
             return nullptr;
         }
     }
+    else if (exp->GetExpType() == Unop::sType)
+    {
+        Unop* unop = static_cast<Unop*>(exp);
+        if (unop->GetOp() != O_DEC && unop->GetOp() != O_INC)
+        {
+            BS_ErrorDispatcher(this, "Empty unary expressions not allowed, unless is post/pre increment/decrement.");
+            return nullptr;
+        }
+    }
     else if (exp->GetExpType() != FunCall::sType)
     {
         BS_ErrorDispatcher(this, "Empty expressions not allowed! expression must be a function call, did you forget passing parameters ?");
@@ -1123,6 +1158,23 @@ StmtWhile* BlockScriptBuilder::BuildStmtWhile(Exp* exp, StmtList* stmtList)
     PopFrame();
 
     return stmtWhile; 
+}
+
+StmtFor* BlockScriptBuilder::BuildStmtFor(Exp* init, Exp* cond, Exp* update, StmtList* stmtList)
+{
+    if (cond != nullptr && cond->GetTypeDesc() != nullptr && cond->GetTypeDesc()->GetAluEngine() != TypeDesc::E_INT)
+    {
+        BS_ErrorDispatcher(this, "Only allowed to have type int for conditional of for loop.");
+        return nullptr;
+    }
+
+    StmtFor* stmtFor = BS_NEW StmtFor(init, cond, update, stmtList);
+    stmtFor->SetFrame(mCurrentFrame);
+
+    //pop the previous frame
+    PopFrame();
+
+    return stmtFor;
 }
 
 StmtIfElse* BlockScriptBuilder::BuildStmtIfElse(Exp* exp, StmtList* ifBlock, StmtIfElse* tail, StackFrameInfo* frame)

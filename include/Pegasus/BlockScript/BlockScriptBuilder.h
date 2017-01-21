@@ -99,6 +99,7 @@ public:
     Ast::Exp* BuildBinop    (Ast::Exp* lhs, int op, Ast::Exp* rhs);
     Ast::Exp* BuildSetBinop (Ast::Exp* lhs, Ast::Exp* rhs, bool isExtern = false);
     Ast::Exp* BuildUnop  (int op, Ast::Exp* exp);
+    Ast::Exp* BuildUnopPost  (Ast::Exp* exp, int op); //for post increment
     Ast::Exp* BuildExplicitCast  (Ast::Exp* exp, const TypeDesc* type);
     Ast::Exp* BuildFunCall(Ast::ExpList* args, const char * name, bool isMethod = false);
     Ast::Exp* BuildMethodCall(Ast::Exp* caller, const char * name, Ast::ExpList* args);
@@ -110,6 +111,7 @@ public:
     Ast::StmtExp* BuildDeclarationWithAnnotation(Ast::Annotations* ann, Ast::Exp* exp);
     Ast::StmtReturn* BuildStmtReturn(Ast::Exp* exp);
     Ast::StmtWhile*  BuildStmtWhile(Ast::Exp* exp, Ast::StmtList* stmtList);
+    Ast::StmtFor*    BuildStmtFor(Ast::Exp* init, Ast::Exp* cond, Ast::Exp* update, Ast::StmtList* stmtList);
     Ast::StmtFunDec* BuildStmtFunDec(Ast::ArgList* argList, const TypeDesc* returnType, const char * nameIdd);
     Ast::StmtFunDec* BindFunImplementation(Ast::StmtFunDec* funDec, Ast::StmtList* stmts);
     Ast::StmtIfElse* BuildStmtIfElse(Ast::Exp* exp, Ast::StmtList* ifBlock, Ast::StmtIfElse* tail, StackFrameInfo* frame);
