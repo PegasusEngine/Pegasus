@@ -17,12 +17,58 @@
 
 #include <QDockWidget>
 #include <QVariant>
+#include <QThread>
+#include <QSemaphore>
 
+class ViewportDockWidget;
 class ViewportWidget;
+class ViewportUpdaterInterface;
+class ViewportUpdaterThread;
+
 class Editor;
 class QToolBar;
 class QPushButton;
 class QSignalMapper;
+
+//! Helper class to handle threading updates for spin rendering.
+//! Spin rendering: calling Render() indefinitely wihtout calling Update, for a specific window
+class ViewportUpdaterThread : public QThread
+{
+     Q_OBJECT
+public:
+    ViewportUpdaterThread(ViewportDockWidget* parent);
+
+    virtual ~ViewportUpdaterThread();
+
+    virtual void run();
+
+private:
+    QSemaphore mInitializeSemaphore;
+    ViewportDockWidget* mDockWidget;
+    ViewportUpdaterInterface* mInterface;
+};
+
+//! Helper that executes events on a per frame basis for the viewport
+//! This object lives in the ViewportUpdaterThread.
+class ViewportUpdaterInterface : public QObject
+{
+     Q_OBJECT
+public:
+    ViewportUpdaterInterface(ViewportDockWidget* parent);
+
+signals:
+    void RenderLoopSignal();
+    void DrawPegasusWindowSignal();
+
+private slots:
+    void ToggleSpinRenderSlot(bool enabled);
+    void RenderOnceSlot();
+    void RenderLoopSlot();
+
+private:
+    bool mIsSpinning;
+    ViewportDockWidget* mDockWidget;
+};
 
 //! Dock widget containing the viewports
 class ViewportDockWidget : public PegasusDockWidget
@@ -70,13 +116,30 @@ public:
     //! Sets a list of booleans (if match the size) into the button states of the viewport controls.
     void SetButtonStatuses(const QVariantList& inputList);
 
+
+signals:
+    //Signals used on the ViewportUpdaterInterface
+    void ToggleSpinRender(bool enabled);
+
+    //! signal sent to the update thread
+    void RenderOnce();
+
+
 private slots:
     void OnSetButtonProperty(int buttonIdx);
 
     void OnWindowProxyReady();
     
+    void OnToggleSpinRender(bool enabled);
+
+    void OnRenderOnceButton();
+
+    void ReceiveDrawRequest();
 
 private:
+
+    //! Reads ui state and sets the appropiate events to the updater thread.
+    void FlushUiStateToThreadUpdater ();
 
     //! Create the menu of the dock widget
     //! \param mainWidget Main widget of the dock, covering the entire child area
@@ -86,7 +149,6 @@ private:
 
     //! Viewport widget embedded in the dock widget
     ViewportWidget * mViewportWidget;
-
     //! Data for pegasus display functions
     const char* mTitle;
     const char* mObjName;
@@ -101,6 +163,13 @@ private:
 
     QSignalMapper* mButtonMapper;
     QVector<PropertyButton> mButtons;
+
+    //renders every frame
+    bool mSpinRenderEnabled;
+
+    //Thread that triggers a render spin on this viewport. Used for forcing draws on the current viewport.
+    //This is not where the regular render functionality from playing the demo occurs.
+    class ViewportUpdaterThread* mUpdaterThread;
 };
 
 

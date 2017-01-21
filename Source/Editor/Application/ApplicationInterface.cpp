@@ -41,7 +41,6 @@
 ApplicationInterface::ApplicationInterface(Application * application)
 :   QObject(nullptr)
 ,   mApplication(application)
-,   mRedrawAllViewportsForBlockMovedEnqueued(false)
 //,   mAssertionBeingHandled(false)
     //! \todo Seems not useful anymore. Test and remove if possible
 {
@@ -50,25 +49,6 @@ ApplicationInterface::ApplicationInterface(Application * application)
 
     // Connect the timeline widget messages through queued connections
     TimelineDockWidget * timelineDockWidget = Editor::GetInstance().GetTimelineDockWidget();
-    ED_ASSERTSTR(timelineDockWidget != nullptr, "Unable to get the timeline dock widget");
-
-    connect(timelineDockWidget, SIGNAL(PlayModeToggled(bool)),
-            this, SLOT(TogglePlayMode(bool)),
-            Qt::QueuedConnection);
-
-    connect(this, SIGNAL(ViewportRedrawnInPlayMode(float)),
-            application, SLOT(UpdateUIAndRequestFrameInPlayMode(float)),
-            Qt::QueuedConnection);
-
-    connect(application, SIGNAL(FrameRequestedInPlayMode()),
-            this, SLOT(RequestFrameInPlayMode()),
-            Qt::QueuedConnection);
-
-    connect(this, SIGNAL(EnqueuedBlockMoved()),
-            this, SLOT(RedrawAllViewportsForBlockMoved()),
-            Qt::QueuedConnection);
-
-    // Get widgets
     AssetLibraryWidget * assetLibraryWidget = Editor::GetInstance().GetAssetLibraryWidget();
     CodeEditorWidget   * codeEditorWidget = Editor::GetInstance().GetCodeEditorWidget();
     ProgramEditorWidget* programEditor = Editor::GetInstance().GetProgramEditorWidget();
@@ -145,6 +125,8 @@ ApplicationInterface::ApplicationInterface(Application * application)
     connect(mTimelineMessageController, SIGNAL(NotifyRepaintTimeline()),
             this, SLOT(RedrawAllViewports()),
 			Qt::QueuedConnection);
+    connect(mTimelineMessageController, SIGNAL(NotifyRedrawAllViewports()),
+            this, SLOT(RedrawAllViewports()));
     connect(mTimelineMessageController, SIGNAL(NotifyMasterScriptState(bool, QString)),
             timelineDockWidget, SLOT(OnShowActiveTimelineButton(bool, QString)));
     connect(mWindowIoMessageController, SIGNAL(RedrawFrame()),
@@ -155,6 +137,10 @@ ApplicationInterface::ApplicationInterface(Application * application)
     //From ui to render
     connect(codeEditorWidget, SIGNAL(SendSourceIoMessage(SourceIOMCMessage)),
             this, SLOT(ForwardSourceIoMessage(SourceIOMCMessage)),
+            Qt::QueuedConnection);
+
+    connect(timelineDockWidget->GetObserver(), SIGNAL(RequestNewFrameInPlayMode(TimelineIOMessageObserver*, AssetInstanceHandle)),
+            mTimelineMessageController, SLOT(RequestNewFrameInPlayMode(TimelineIOMessageObserver*, AssetInstanceHandle)),
             Qt::QueuedConnection);
 
     //from render to ui
@@ -295,71 +281,6 @@ void ApplicationInterface::RedrawAllViewports()
     mPropertyGridMessageController->FlushAllPendingUpdates();
     mGraphMessageController->FlushAllPendingUpdates();
     mAssetIoMessageController->FlushAllPendingUpdates();
-}
-
-//----------------------------------------------------------------------------------------
-
-void ApplicationInterface::RequestRedrawAllViewportsAfterBlockMoved()
-{
-    if (!mRedrawAllViewportsForBlockMovedEnqueued)
-    {
-        // The first time that function is called, consider the request as enqueued.
-        // All subsequent calls are not calling emit, until the application thread
-        // takes care of the enqueued request
-        mRedrawAllViewportsForBlockMovedEnqueued = true;
-        emit EnqueuedBlockMoved();
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
-void ApplicationInterface::RedrawAllViewportsForBlockMoved()
-{
-    // Since the enqueued redraw has been taken into account, we can now reset the enqueued flag
-    // to allow now requests to be enqueued
-    mRedrawAllViewportsForBlockMovedEnqueued = false;
-
-    RedrawAllViewports();
-}
-
-//----------------------------------------------------------------------------------------
-
-void ApplicationInterface::TogglePlayMode(bool enabled)
-{
-    Pegasus::Timeline::ITimelineManagerProxy * timeline = mApplication->GetTimelineProxy();
-    ED_ASSERT(timeline != nullptr);
-
-    if (enabled)
-    {
-        // When enabling the play mode, switch the timeline play mode to real-time
-        timeline->GetCurrentTimeline()->SetPlayMode(Pegasus::Timeline::PLAYMODE_REALTIME);
-
-        // Request the rendering of the first frame
-        RedrawAllViewports();
-
-        // At this point, the play mode is still enabled, so inform the linked objects
-        // that will request a refresh of the viewports
-        emit ViewportRedrawnInPlayMode(timeline->GetCurrentTimeline()->GetCurrentBeat());
-    }
-    else
-    {
-        // When disabling the play mode, switch the timeline play mode to stopped
-        timeline->GetCurrentTimeline()->SetPlayMode(Pegasus::Timeline::PLAYMODE_STOPPED);
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
-void ApplicationInterface::RequestFrameInPlayMode()
-{
-    Pegasus::Timeline::ITimelineManagerProxy * timeline = mApplication->GetTimelineProxy();
-    ED_ASSERT(timeline != nullptr);
-
-    // Request the rendering of the viewport for the current beat
-    RedrawAllViewports();
-
-    // We are still in play mode, inform the linked objects that will request a refresh of the viewports
-    emit ViewportRedrawnInPlayMode(timeline->GetCurrentTimeline()->GetCurrentBeat());
 }
 
 //----------------------------------------------------------------------------------------

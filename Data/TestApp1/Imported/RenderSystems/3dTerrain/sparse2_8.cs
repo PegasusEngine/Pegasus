@@ -1,16 +1,18 @@
+#include "RenderSystems/3dTerrain/terrainCommon.h"
+
 // Parallel reduction implementation by Kleber Garcia
 // This compute shader takes as an input a voxel with counts.
 // The output is 
 RWTexture3D<uint> OutSparse : register(u0); 
 Texture3D<uint> volumeCount;
 
-#define GROUP_DIM 8
+#define THREAD_COUNT BLOCK_DIM
 
-// the 2 * GROUP_DIM is to double buffer in a cache coherent way. Makes code more confusing, but more efficient
-groupshared uint scratch[GROUP_DIM][GROUP_DIM][2*GROUP_DIM];
-groupshared uint scratch2[GROUP_DIM][2*GROUP_DIM];
+// the 2 * THREAD_COUNT is to double buffer in a cache coherent way. Makes code more confusing, but more efficient
+groupshared uint scratch[THREAD_COUNT][THREAD_COUNT][2*THREAD_COUNT];
+groupshared uint scratch2[THREAD_COUNT][2*THREAD_COUNT];
 
-[numthreads(GROUP_DIM,GROUP_DIM,GROUP_DIM)]
+[numthreads(THREAD_COUNT,THREAD_COUNT,THREAD_COUNT)]
 void main(uint3 dti : SV_DispatchThreadID, uint3 gti : SV_GroupThreadID, uint3 gi : SV_GroupID)
 {
 	uint3 gti2 = gti * 2;
@@ -26,7 +28,7 @@ void main(uint3 dti : SV_DispatchThreadID, uint3 gti : SV_GroupThreadID, uint3 g
 	uint nextTarget = 1;
 	uint offset = 0;
 	[unroll]
-	for (offset = GROUP_DIM / 2; offset >= 1; offset /= 2)
+	for (offset = THREAD_COUNT / 2; offset >= 1; offset /= 2)
 	{
 		uint addition = 0;
 		uint prevTargetOffset = gti2.x + prevTarget;
@@ -44,20 +46,20 @@ void main(uint3 dti : SV_DispatchThreadID, uint3 gti : SV_GroupThreadID, uint3 g
 	uint outputTarget =  prevTarget;
 
 	// Step 3: parallel reduction on y axis
-	if (gti.x == (GROUP_DIM - 1))
+	if (gti.x == (THREAD_COUNT - 1))
 	{
-		scratch2[gti.z][gti2.y+prevTarget] = scratch[gti.z][gti.y][2*(GROUP_DIM - 1)+outputTarget];
+		scratch2[gti.z][gti2.y+prevTarget] = scratch[gti.z][gti.y][2*(THREAD_COUNT - 1)+outputTarget];
 	}
 
 	GroupMemoryBarrierWithGroupSync();
 
 	[unroll]
-	for (offset = GROUP_DIM / 2; offset >= 1; offset /= 2)
+	for (offset = THREAD_COUNT / 2; offset >= 1; offset /= 2)
 	{
 		uint addition = 0;
 		uint prevTargetOffset = gti2.y + prevTarget;
 		uint nextTargetOffset = gti2.y + nextTarget;
-		if (gti.x == (GROUP_DIM - 1))
+		if (gti.x == (THREAD_COUNT - 1))
 		{
 			if (gti.y >= offset)
 			{
@@ -75,20 +77,20 @@ void main(uint3 dti : SV_DispatchThreadID, uint3 gti : SV_GroupThreadID, uint3 g
 	GroupMemoryBarrierWithGroupSync();
 
 	// Step 4: parallel reduction on z axis
-	if (gti.y == (GROUP_DIM -1) && gti.x == (GROUP_DIM - 1))
+	if (gti.y == (THREAD_COUNT -1) && gti.x == (THREAD_COUNT - 1))
 	{
-		scratch2[0][gti2.z + prevTarget] = scratch[gti.z][GROUP_DIM - 1][2*(GROUP_DIM - 1) + outputTarget];
+		scratch2[0][gti2.z + prevTarget] = scratch[gti.z][THREAD_COUNT - 1][2*(THREAD_COUNT - 1) + outputTarget];
 	}
 
 	GroupMemoryBarrierWithGroupSync();
 
 	[unroll]
-	for (offset = GROUP_DIM / 2; offset >= 1; offset /= 2)
+	for (offset = THREAD_COUNT / 2; offset >= 1; offset /= 2)
 	{
 		uint addition = 0;
 		uint prevTargetOffset = gti2.z + prevTarget;
 		uint nextTargetOffset = gti2.z + nextTarget;
-		if (gti.x == (GROUP_DIM - 1) && gti.y == (GROUP_DIM - 1))
+		if (gti.x == (THREAD_COUNT - 1) && gti.y == (THREAD_COUNT - 1))
 		{
 			if (gti.z >= offset)
 			{

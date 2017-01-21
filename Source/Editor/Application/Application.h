@@ -153,9 +153,6 @@ signals:
     //!               Empty string if no message is defined.
     void AssertionSentFromApplication(const QString & testStr, const QString & fileStr, int line, const QString & msgStr);
 
-    //! Emitted when a frame is requested after the previous frame is done rendering
-    //! while being in play mode
-    void FrameRequestedInPlayMode();
 
     //! Emitted when unloading of an application has succeeded
     void ApplicationFinished();
@@ -181,11 +178,6 @@ private slots:
     //! \param msgStr Optional string of a message making the assertion test easier to understand.
     //!               Empty string if no message is defined.
     void AssertionReceivedFromApplication(const QString & testStr, const QString & fileStr, int line, const QString & msgStr);
-
-    //! Update the user interface after a current beat update, and if in play mode,
-    //! request the drawing of a new frame
-    //! \param beat Updated beat, can have fractional part
-    void UpdateUIAndRequestFrameInPlayMode(float beat);
 
     //------------------------------------------------------------------------------------
 

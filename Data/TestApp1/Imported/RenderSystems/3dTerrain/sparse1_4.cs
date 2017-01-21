@@ -1,13 +1,15 @@
+#include "RenderSystems/3dTerrain/terrainCommon.h"
+
 RWTexture3D<uint> OutSparse : register(u0); 
 Texture3D<uint> sparse8;
 
-#define GROUP_DIM 4
+#define THREAD_COUNT (BLOCK_DIM/2)
 
-// the 2 * GROUP_DIM is to double buffer in a cache coherent way. Makes code more confusing, but more efficient
-groupshared uint scratch[GROUP_DIM][GROUP_DIM][2*GROUP_DIM];
-groupshared uint scratch2[GROUP_DIM][2*GROUP_DIM];
+// the 2 * THREAD_COUNT is to double buffer in a cache coherent way. Makes code more confusing, but more efficient
+groupshared uint scratch[THREAD_COUNT][THREAD_COUNT][2*THREAD_COUNT];
+groupshared uint scratch2[THREAD_COUNT][2*THREAD_COUNT];
 
-[numthreads(GROUP_DIM,GROUP_DIM,GROUP_DIM)]
+[numthreads(THREAD_COUNT,THREAD_COUNT,THREAD_COUNT)]
 void main(uint3 gti : SV_GroupThreadID)
 {
 	uint3 gti2 = gti * 2;

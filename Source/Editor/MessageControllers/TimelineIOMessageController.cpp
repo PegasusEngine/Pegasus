@@ -332,6 +332,9 @@ void TimelineIOMessageController::OnRenderThreadProcessMessage(const TimelineIOM
     case TimelineIOMCMessage::SET_PARAMETER:
         OnSetParameter(msg.GetTarget(), msg.GetTimelineHandle(), msg.GetLaneId(), msg.GetParameterName(), msg.GetArg(), msg.GetObserver());
         break;
+    case TimelineIOMCMessage::TOGGLE_PLAY_MODE:
+        OnTogglePlayMode(msg.GetIsPlayMode(), msg.GetObserver(), msg.GetTimelineHandle());
+        break;
     case TimelineIOMCMessage::BLOCK_OPERATION:
         OnBlockOp(msg.GetTimelineHandle(), msg.GetBlockOp(), msg.GetBlockGuid(), msg.GetLaneId(), msg.GetArg(), msg.GetMouseClickId(), msg.GetRequiresRefocus(), msg.GetObserver());
         break;
@@ -672,10 +675,36 @@ static bool AskForNewBlock(Pegasus::Timeline::ITimelineManagerProxy* timelineMgr
     return true; // always send a response
 }
            
+void TimelineIOMessageController::OnTogglePlayMode(bool isPlayMode, TimelineIOMessageObserver* observer, const AssetInstanceHandle& timelineHandle)
+{
+    Pegasus::Timeline::ITimelineProxy* timeline = ResolveTimeline(timelineHandle);
+    if (timeline != nullptr)
+    {
+        if (isPlayMode)
+        {
+            timeline->SetPlayMode(Pegasus::Timeline::PLAYMODE_REALTIME);
+            emit NotifyRedrawAllViewports(); 
+            emit observer->SignalRedrawTimelineBeat(timelineHandle, timeline->GetCurrentBeat());
+        }
+        else
+        {
+            timeline->SetPlayMode(Pegasus::Timeline::PLAYMODE_STOPPED);
+        }
+    }
+}
+
+void  TimelineIOMessageController::RequestNewFrameInPlayMode(TimelineIOMessageObserver* observer, AssetInstanceHandle timelineHandle)
+{
+    Pegasus::Timeline::ITimelineProxy* timeline = ResolveTimeline(timelineHandle);
+    if (timeline != nullptr)
+    {
+        emit NotifyRedrawAllViewports(); 
+        emit observer->SignalRedrawTimelineBeat(timelineHandle, timeline->GetCurrentBeat());
+    }
+}
 
 void TimelineIOMessageController::OnBlockOp(const AssetInstanceHandle& timelineHandle,TimelineIOMCBlockOp blockOp, unsigned blockGuid, unsigned targetLaneId, const QVariant& arg, unsigned mouseClickId, bool requiresRefocus, TimelineIOMessageObserver* observer)
 {
-    //TODO: this function is out of control, and is pretty gross. 
     // refactor into smaller functions
     Pegasus::Timeline::ITimelineProxy* timeline = ResolveTimeline(timelineHandle);
     if (timeline != nullptr)
@@ -725,6 +754,9 @@ TimelineIOMessageObserver::TimelineIOMessageObserver()
     connect(this,SIGNAL(SignalBlockOpResponse(TimelineIOMCBlockOpResponse)),
             this, SLOT(SlotBlockOpResponse(TimelineIOMCBlockOpResponse)),
             Qt::QueuedConnection);
+    connect(this, SIGNAL(SignalRedrawTimelineBeat(AssetInstanceHandle,float)),
+            this, SLOT(SlotRedrawTimelineBeat(AssetInstanceHandle,float)),
+            Qt::QueuedConnection);
 }
 
 void TimelineIOMessageObserver::SlotParameterUpdated(AssetInstanceHandle timelineHandle, unsigned laneId, unsigned parameterTarget, unsigned parameterName, QVariant parameterValue)
@@ -735,6 +767,14 @@ void TimelineIOMessageObserver::SlotParameterUpdated(AssetInstanceHandle timelin
 void TimelineIOMessageObserver::SlotBlockOpResponse(TimelineIOMCBlockOpResponse response)
 {
     OnBlockOpResponse(response);
+}
+
+void TimelineIOMessageObserver::SlotRedrawTimelineBeat(AssetInstanceHandle timelineHandle, float beat)
+{
+    if (OnRedrawTimelineBeat(timelineHandle, beat))
+    {
+        emit RequestNewFrameInPlayMode(this, timelineHandle);
+    }
 }
 
 

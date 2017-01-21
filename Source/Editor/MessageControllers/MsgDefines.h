@@ -243,7 +243,7 @@ public:
         SET_MASTER_BLOCKSCRIPT,
         SET_PARAMETER,
         CLEAR_MASTER_BLOCKSCRIPT,
-
+        TOGGLE_PLAY_MODE,
         //block message operations
         BLOCK_OPERATION
     };
@@ -275,6 +275,7 @@ public:
         mBlockOp = MOVE_BLOCK;
         mMouseClickId = 0;
         mRequiresRefocus = false;
+        mIsPlayMode = false;
     }
 
     //! Setters
@@ -290,6 +291,7 @@ public:
     void SetBlockOp(TimelineIOMCBlockOp op) { mBlockOp = op; }
     void SetMouseClickId(unsigned mouseClickId) {mMouseClickId = mouseClickId;}
     void SetRequiresRefocus(bool requiresRefocus) {mRequiresRefocus = requiresRefocus;}
+    void SetIsPlayMode(bool isPlayMode) { mIsPlayMode = isPlayMode; }
 
     //! Getters
     MessageType GetMessageType() const { return mMessageType; }
@@ -304,6 +306,7 @@ public:
     TimelineIOMCBlockOp GetBlockOp() const { return mBlockOp; }
     unsigned GetMouseClickId() const { return mMouseClickId; }
     bool GetRequiresRefocus() const { return mRequiresRefocus; }
+    bool GetIsPlayMode() const { return mIsPlayMode;  }
 
 private:
     TimelineIOMessageObserver* mObserver;
@@ -313,6 +316,7 @@ private:
     unsigned mParamName;
     unsigned mMouseClickId;
     bool mRequiresRefocus;
+    bool mIsPlayMode;
     AssetInstanceHandle mTimelineHandle;
     TimelineIOMCTarget mTarget;
     QVariant mArg;

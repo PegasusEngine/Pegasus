@@ -1,5 +1,7 @@
 #include "RenderSystems/3dTerrain/terrainCommon.h"
 
+#define DENSITY_MULT (1.0/(float(THREAD_DIM) + 3.0))
+
 cbuffer BlockStateCbuffer
 {
     float4 gWorldOffset;
@@ -16,11 +18,11 @@ RWByteAddressBuffer outVertexBuffer : u1;
 RWByteAddressBuffer outNormalBuffer : u2;
 RWByteAddressBuffer outIndirectBuffer : u3;
 SamplerState densitySampler : s0;
-#define DENSITY_DIMS float3(18,18,18)
 groupshared uint gsmSparse4;
+
 uint getGridVertexOffset(uint3 gridCoord)
 {
-	return dot(uint3(3,3*17,3*17*17), gridCoord);
+	return dot(uint3(3,3*(THREAD_DIM+1),3*(THREAD_DIM+1)*(THREAD_DIM+1)), gridCoord);
 }
 
 float3 ComputeVertexNorm(int3 voxelPos)
@@ -35,15 +37,12 @@ float3 ComputeVertexNorm(int3 voxelPos)
 
 float3 ComputeVertexNormBilinear(float3 voxelPos)
 {
-	float3 voxelUv = (voxelPos)/(DENSITY_DIMS - 1.0);
-
-	//gradient samples
-	float delta = 1.0/16.0;
+	float3 voxelUv = ((voxelPos + float3(1.5,1.5,1.5))*DENSITY_MULT);
+	float delta = DENSITY_MULT * 1;
 	float2 xSamples = float2(densityTexture.SampleLevel(densitySampler,voxelUv - delta*float3(1,0,0), 0).x, densityTexture.SampleLevel(densitySampler,float3(voxelUv + delta*float3(1,0,0)), 0).x);
-	float2 ySamples = float2(densityTexture.SampleLevel(densitySampler,voxelUv - delta*float3(0,1,0), 0).x, densityTexture.SampleLevel(densitySampler,float3(voxelUv + delta*float3(0,1,0)), 0).x);
+	float2 ySamples = float2(densityTexture.SampleLevel(densitySampler,voxelUv + delta*float3(0,1,0), 0).x, densityTexture.SampleLevel(densitySampler,float3(voxelUv - delta*float3(0,1,0)), 0).x);
 	float2 zSamples = float2(densityTexture.SampleLevel(densitySampler,voxelUv + delta*float3(0,0,1), 0).x, densityTexture.SampleLevel(densitySampler,float3(voxelUv - delta*float3(0,0,1)), 0).x);
    	return normalize(-float3(xSamples.x - xSamples.y,ySamples.x - ySamples.y,zSamples.x - zSamples.y));
-
 }
 
 float3 ComputeVertexPos(uint edgeIndex, uint3 voxelPos)
@@ -89,7 +88,7 @@ float3 ComputeVertexPos(uint edgeIndex, uint3 voxelPos)
 
 	int3 sampleCoordA = sampleOffsetA + voxelPos;
 	int3 sampleCoordB = sampleOffsetB + voxelPos;
-	float2 densitySamples = float2(densityTexture[sampleCoordA], densityTexture[sampleCoordB]); 
+	float2 densitySamples = float2(densityTexture[sampleCoordA + uint3(1,1,1)], densityTexture[sampleCoordB + uint3(1,1,1)]); 
 	float3 fCoordA = (float3(sampleOffsetA));
 	float3 fCoordB = (float3(sampleOffsetB));	
 	float midPoint = (MID_POINT - densitySamples.x) / (densitySamples.y - densitySamples.x);
@@ -142,7 +141,7 @@ void WriteVertexes(uint voffset, uint3 voxelPos, uint3 gti, uint countInfo, uint
 	uint byteOffset = voffset * 12; //three 32 bit components. Which is 12 bites. geoInfo.x contains offset in vertex buffer
 	uint edgeOrder[] = {0, 3, 8};
 	int edgeId = 0;
-	uint3 gsmVert = voxelPos % 9;
+
 	[loop]
 	for (edgeId = 0; edgeId < 3; ++edgeId)
 	{
@@ -161,7 +160,6 @@ void WriteNormals(uint voffset, uint3 voxelPos, uint3 gti, uint countInfo, uint 
 	uint byteOffset = voffset * 12; //three 32 bit components. Which is 12 bites. geoInfo.x contains offset in vertex buffer
 	uint edgeOrder[] = {0, 3, 8};
 	int edgeId = 0;
-	uint3 gsmVert = voxelPos % 9;
 
 	[loop] 
 	for (edgeId = 0; edgeId < 3; ++edgeId)
@@ -199,7 +197,7 @@ void BuildNormals(uint3 dti, uint3 gti)
 }
 
 
-[numthreads(9,9,9)]
+[numthreads(BLOCK_DIM+1,BLOCK_DIM+1,BLOCK_DIM+1)]
 void main(uint3 dti : SV_DispatchThreadId, uint3 gti : SV_GroupThreadId, uint3 gi : SV_GroupId)
 {
 
@@ -210,19 +208,19 @@ void main(uint3 dti : SV_DispatchThreadId, uint3 gti : SV_GroupThreadId, uint3 g
 
 	GroupMemoryBarrierWithGroupSync();
 
-	if (all(gti < 8))
+	if (all(gti < BLOCK_DIM))
 	{
 		BuildIndices(gi, gti, dti);
 	}
 
-	if (all(dti < 17))
+	if (all(dti < (THREAD_DIM+1)))
 	{
 		BuildVertexes(dti, gti);
 	}
 
 	GroupMemoryBarrierWithGroupSync();
 
-	if (all(dti < 17))
+	if (all(dti < (THREAD_DIM+1)))
 	{
 		BuildNormals(dti, gti);
 	}
@@ -230,7 +228,7 @@ void main(uint3 dti : SV_DispatchThreadId, uint3 gti : SV_GroupThreadId, uint3 g
 	if (all(gi == 0) && all(gti == 0))
 	{	
 
-		uint totalCountIndices = meshSparse8[uint3(15,15,15)] + meshSparse4[uint3(1,1,1)];
+		uint totalCountIndices = meshSparse8[uint3(THREAD_DIM-1,THREAD_DIM-1,THREAD_DIM-1)] + meshSparse4[uint3(1,1,1)];
 
   		//[in] UINT IndexCountPerInstance
 		outIndirectBuffer.Store(0, totalCountIndices);

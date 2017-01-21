@@ -69,6 +69,11 @@ signals:
 
     void NotifyRepaintTimeline();
 
+    void NotifyRedrawAllViewports();
+
+public slots:
+    void RequestNewFrameInPlayMode(TimelineIOMessageObserver* sender, AssetInstanceHandle timelineHandle);
+
 private:
     Pegasus::Timeline::ITimelineProxy* ResolveTimeline(const AssetInstanceHandle& assetHandle);
 
@@ -79,6 +84,8 @@ private:
     void OnSetMasterBlockscript(const QString& str);
 
     void OnClearMasterBlockscript();
+
+    void OnTogglePlayMode(bool isPlayMode, TimelineIOMessageObserver* observer, const AssetInstanceHandle& hande);
 
     void OnSetParameter(TimelineIOMCTarget targetObject, const AssetInstanceHandle& timelineHandle, unsigned laneId, unsigned parameterName, const QVariant& paramValue, TimelineIOMessageObserver* observer);
 
@@ -100,15 +107,24 @@ public:
 
     virtual void OnBlockOpResponse(const TimelineIOMCBlockOpResponse& response) = 0;
 
+    //! returns true if it needs to request another frame. False otherwise
+    virtual bool OnRedrawTimelineBeat(AssetInstanceHandle timelineHandle, float beat) = 0;
+
 signals:
     void SignalParameterUpdated(AssetInstanceHandle timelineHandle, unsigned laneId, unsigned parameterTarget, unsigned parameterName, QVariant parameterValue);
 
     void SignalBlockOpResponse(TimelineIOMCBlockOpResponse blockOpResponse);
 
+    void SignalRedrawTimelineBeat(AssetInstanceHandle timelineHandle, float beat);
+
+    void RequestNewFrameInPlayMode(TimelineIOMessageObserver* sender, AssetInstanceHandle timelineHandle);
+
 private slots:
     void SlotParameterUpdated(AssetInstanceHandle timelineHandle, unsigned laneId, unsigned parameterTarget, unsigned parameterName, QVariant parameterValue);
 
     void SlotBlockOpResponse(TimelineIOMCBlockOpResponse blockOpResponse);
+
+    void SlotRedrawTimelineBeat(AssetInstanceHandle timelineHandle, float beat);
 };
 
 #endif

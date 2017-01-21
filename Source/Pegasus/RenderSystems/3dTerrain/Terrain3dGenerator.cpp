@@ -94,8 +94,8 @@ void Terrain3dGenerator::CreateComputeTerrainResources()
 
     PG_ASSERTSTR(mIsComputeResourcesAllocated == false, "Internal gpu data is not allocated.");
     MeshDataRef meshData = GetData(); 
-    meshData->AllocateVertexes(g3dTerrainSystemInstance->GetVertexCount());
-    meshData->AllocateIndexes(g3dTerrainSystemInstance->GetIndexCount());
+    meshData->AllocateVertexes(Terrain3dSystem::VERTEX_SIZE);
+    meshData->AllocateIndexes(Terrain3dSystem::INDEX_SIZE);
     
     GetFactory()->GenerateMeshGPUData(meshData);
     mVertexBuffer = Render::GetVertexBuffer(meshData, 0);

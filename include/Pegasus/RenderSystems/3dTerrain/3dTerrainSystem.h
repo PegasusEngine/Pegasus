@@ -60,6 +60,18 @@ public:
         PROGRAM_COUNT
     };
 
+    //!Constants, these constants must match the 
+    //!3d terrain shaders
+    enum Constants {
+        BLOCK_DIM = 8, //number of cases in one dimension.
+        GROUP_DIM = 2, //number of blocks on a single dispatch
+        MAX_TRI_PER_CASE = 5, //cases dont exceed 5 triangles
+        BLOCK_SIZE = BLOCK_DIM * BLOCK_DIM * BLOCK_DIM,
+        THREAD_DIM = BLOCK_DIM * GROUP_DIM,
+        VERTEX_SIZE = (THREAD_DIM+1) * (THREAD_DIM+1) * (THREAD_DIM+1) * 3, //3 roots
+        INDEX_SIZE = GROUP_DIM * GROUP_DIM * GROUP_DIM * BLOCK_SIZE * MAX_TRI_PER_CASE * 3
+    };
+
 
     //! Constructor
     explicit Terrain3dSystem (Alloc::IAllocator* allocator)
@@ -88,12 +100,6 @@ public:
 
     //! use for debugging, get the table with the marching cube patterns/cases.
     const CaseTable* GetCaseTable() const { return &mCaseTable; }
-
-    //! gets the vertex count for a block of terrain.
-    int GetVertexCount() const;
-    
-    //! gets the target index count for a block of terrain.
-    int GetIndexCount() const;
 
     //! creates the resources of the 3d terrain, including internal render targets / vertex buffers required.
     void CreateResources(TerrainResources& resources) const;

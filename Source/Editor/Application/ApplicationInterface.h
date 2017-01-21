@@ -68,17 +68,6 @@ public:
     //! Disconnect the asset event listener
     void DisconnectAssetEventListeners();
 
-signals:
-
-    //! Emitted when a viewport rendering completes while being in play mode
-    //! \param beat Beat used to render the last frame in the viewport, can have fractional part
-    void ViewportRedrawnInPlayMode(float beat);
-
-    //! Signal emitted when \a RequestRedrawAllViewportsAfterBlockMoved() has been called at least once
-    void EnqueuedBlockMoved();
-
-    //------------------------------------------------------------------------------------
-    
 private slots:
 
     //! Request the redraw of the content of the main viewport
@@ -93,19 +82,6 @@ private slots:
     //! Request the redraw of the content of the main and secondary viewports
     //! \note Nothing happens if the dock widgets are closed
     void RedrawAllViewports();
-
-    //! Request a redraw all viewports call in the application thread after a block has been moved on the timeline
-    void RequestRedrawAllViewportsAfterBlockMoved();
-
-    //! Called when a timeline block has been moved, to force a redraw of all viewports
-    void RedrawAllViewportsForBlockMoved();
-
-    //! Enable or disable the play mode of the demo timeline
-    //! \param enabled True if the play mode has just been enabled, false if it has just been disabled
-    void TogglePlayMode(bool enabled);
-
-    //! Request the rendering of a new frame while in play mode
-    void RequestFrameInPlayMode();
 
     //! forwards a message to the asset IO controller so its executed in the render thread
     void ForwardAssetIoMessage(PegasusDockWidget* sender, AssetIOMCMessage msg);
@@ -138,9 +114,6 @@ private:
     //! True while an assertion dialog box is shown to prevent any paint message to reach the application windows
     //! \todo Seems not useful anymore. Test and remove if possible
     //bool mAssertionBeingHandled;
-
-    //! True while a redraw all viewports call has been enqueued (to avoid duplicated calls, reset by the Pegasus thread)
-    bool mRedrawAllViewportsForBlockMovedEnqueued;
 
     //! Controllers, used to process messages from the application to the render thread, and messages back to the UI
     AssetIOMessageController*        mAssetIoMessageController;

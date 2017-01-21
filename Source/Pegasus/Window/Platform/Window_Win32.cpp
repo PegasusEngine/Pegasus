@@ -391,19 +391,26 @@ WindowImpl_Win32::HandleMessageReturn WindowImpl_Win32::HandleMessage(unsigned i
             mHandler->OnMouseEvent(button, isDown, 2.0f*x - 1.0f, 2.0f*y-1.0f); 
             mHandler->RequestRepaintEditorWindow();
         }
+        
+        ret.handled = true; ret.retcode = 0;
         break;
-
+    case WM_SYSKEYUP:
+    case WM_SYSKEYDOWN:
     case WM_KEYDOWN:
     case WM_KEYUP:
         {
             bool isShiftDown = (GetKeyState(VK_LSHIFT) & 0x8000) != 0;
             mHandler->OnKeyEvent(Pegasus::Wnd::KEYS_SHIFT, isShiftDown);
         }
+        
+        ret.handled = true; ret.retcode = 0;
         break;
     case WM_MOUSELEAVE:
         {
             mHandler->OnMouseEvent(IWindowComponent::MouseButton_Cancel, false, 0.0f,0.0f);
         }
+        
+        ret.handled = true; ret.retcode = 0;
         break;
     
 #endif

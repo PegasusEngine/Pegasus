@@ -341,20 +341,6 @@ void Application::AssertionReceivedFromApplication(const QString & testStr, cons
 
 //----------------------------------------------------------------------------------------
 
-void Application::UpdateUIAndRequestFrameInPlayMode(float beat)
-{
-    // Update the timeline UI (beat, cursor)
-    Editor::GetInstance().GetTimelineDockWidget()->UpdateUIFromBeat(beat);
-
-    // If the play mode is still enabled, send a new request to refresh the viewport
-    if (Editor::GetInstance().GetTimelineDockWidget()->IsPlaying())
-    {
-        emit FrameRequestedInPlayMode();
-    }
-}
-
-//----------------------------------------------------------------------------------------
-
 void Application::LogHandler(Pegasus::Core::LogChannel logChannel, const char * msgStr)
 {
     // Static log handler, so it cannot emit any signal.

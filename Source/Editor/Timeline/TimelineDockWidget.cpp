@@ -49,6 +49,8 @@ public:
 
     virtual void OnBlockOpResponse(const TimelineIOMCBlockOpResponse& response);
 
+    virtual bool OnRedrawTimelineBeat(AssetInstanceHandle timelineHandle, float beat);
+
 private:
     TimelineDockWidget* mDockWidget;
 } ;
@@ -125,7 +127,7 @@ void TimelineDockWidget::SetupUi()
             this, SLOT(OnBlockDoubleClicked(QString)));
 
     connect(mUi->playButton, SIGNAL(toggled(bool)),
-            this, SIGNAL(PlayModeToggled(bool)));
+            this, SLOT(OnPlayModeToggled(bool)));
 
     connect(mUi->propertyGridWidget, SIGNAL(OnPropertyUpdated(QtProperty*)),
             this, SLOT(OnPropertyUpdated(QtProperty*)));
@@ -330,6 +332,18 @@ void TimelineDockWidget::RequestDeleteSelectedBlocks()
     msg.SetTimelineHandle(mTimelineHandle);
     msg.SetArg(blockGuids);
     msg.SetObserver(GetObserver());
+    SendTimelineIoMessage(msg);
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::OnPlayModeToggled(bool enabled)
+{
+    mUi->graphicsView->OnPlayModeToggled(enabled);
+    TimelineIOMCMessage msg(TimelineIOMCMessage::TOGGLE_PLAY_MODE);
+    msg.SetObserver(GetObserver());
+    msg.SetTimelineHandle(mTimelineHandle);
+    msg.SetIsPlayMode(enabled);
     SendTimelineIoMessage(msg);
 }
 
@@ -874,5 +888,16 @@ void TdwObserver::OnBlockOpResponse(const TimelineIOMCBlockOpResponse& r)
         }
     }
 }
+
+bool TdwObserver::OnRedrawTimelineBeat(AssetInstanceHandle timelineHandle, float beat)
+{
+    if (timelineHandle == mDockWidget->mTimelineHandle)
+    {
+        mDockWidget->UpdateUIFromBeat(beat);
+        return mDockWidget->IsPlaying();
+    }
+    return false;
+}
+
 
 

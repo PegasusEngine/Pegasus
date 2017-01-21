@@ -20,7 +20,7 @@
 
 
 ViewportDockWidget::ViewportDockWidget(Editor* editor, QWidget * parent, const char* title, const char* objName)
-    :   PegasusDockWidget(parent, editor), mTitle(title), mObjName(objName)
+    :   PegasusDockWidget(parent, editor), mTitle(title), mObjName(objName), mUpdaterThread(nullptr), mSpinRenderEnabled(false)
 {
 }
 
@@ -79,6 +79,12 @@ void ViewportDockWidget::OnWindowProxyReady()
     msg.SetViewportWidget(mViewportWidget);
     msg.SetEnableDraw(true);
     emit mViewportWidget->OnSendWindowIoMessage(msg);
+
+    if (mUpdaterThread == nullptr)
+    {
+        mUpdaterThread = new ViewportUpdaterThread(this);
+        FlushUiStateToThreadUpdater();
+    }
 }
 
 
@@ -87,6 +93,9 @@ void ViewportDockWidget::OnWindowProxyReady()
 void ViewportDockWidget::OnUIForAppClosed()
 {
     mViewportWidget->OnAppUnloaded();
+
+    delete mUpdaterThread;
+    mUpdaterThread = nullptr;
 }
 
 //----------------------------------------------------------------------------------------
@@ -214,10 +223,30 @@ QToolBar * ViewportDockWidget::CreateMenu(QWidget * mainWidget)
     terrainCamCullButton->setToolTip(tr("3d terrain: freeze camera cull of 3d terrain voxels."));
     RegisterPropertyButton(terrainCamCullButton, "EnableDebugCameraCull", Pegasus::App::COMPONENT_TERRAIN3D);
 
+    //special buttons (buttons that deal with systems exclusively on the editor side)
+    QIcon spinButtonIcon(":MiscViews/SpinIcon.png");
+    QPushButton* spinButton = new QPushButton(spinButtonIcon, tr(""), mainWidget);
+    spinButton->setCheckable(true);
+    spinButton->setChecked(false);
+    spinButton->setToolTip(tr("Enable spin render: call render on the timeline to force it to redraw. Warning: gpu and cpu usage will increase."));
+    connect(spinButton, SIGNAL(toggled(bool)), this, SLOT(OnToggleSpinRender(bool)));
+
+    QIcon spinOnceButtonIcon(":MiscViews/SpinOnceIcon.png");
+    QPushButton* spinOnceButton = new QPushButton(spinOnceButtonIcon, tr(""), mainWidget);
+    spinOnceButton->setCheckable(false);
+    spinOnceButton->setChecked(false);
+    spinOnceButton->setToolTip(tr("Render once: call render only once on this window, when this button is pressed."));
+    connect(spinOnceButton, SIGNAL(clicked()), this, SLOT(OnRenderOnceButton()));
+
+
+
     QToolBar* tb = new QToolBar(this);
     tb->addWidget(freeCamera);
     tb->addWidget(resetCamera);
     tb->addWidget(debugCamsButton);
+    tb->addSeparator();
+    tb->addWidget(spinButton);
+    tb->addWidget(spinOnceButton);
     tb->addSeparator();
     tb->addWidget(wireframeButton);
     tb->addWidget(gridButton);
@@ -229,4 +258,110 @@ QToolBar * ViewportDockWidget::CreateMenu(QWidget * mainWidget)
     return tb;
 }
 
+//----------------------------------------------------------------------------------------
 
+void ViewportDockWidget::OnToggleSpinRender(bool enabled)
+{
+    mSpinRenderEnabled = enabled;
+    FlushUiStateToThreadUpdater();
+}
+
+//----------------------------------------------------------------------------------------
+
+void ViewportDockWidget::FlushUiStateToThreadUpdater()
+{
+    if (mUpdaterThread != nullptr)
+    {
+        emit ToggleSpinRender(mSpinRenderEnabled);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+
+void ViewportDockWidget::ReceiveDrawRequest()
+{
+    if (mViewportWidget != nullptr)
+    {
+        mViewportWidget->DrawPegasusWindow();
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void ViewportDockWidget::OnRenderOnceButton()
+{
+    if (mUpdaterThread != nullptr)
+    {
+        emit RenderOnce();
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+ViewportUpdaterThread::ViewportUpdaterThread(ViewportDockWidget* parent)
+: QThread(parent), mDockWidget(parent), mInitializeSemaphore(0)
+{
+    start(QThread::LowestPriority);
+    mInitializeSemaphore.acquire(1); //freeze constructor until Run has initialized events
+}
+
+//----------------------------------------------------------------------------------------
+
+ViewportUpdaterThread::~ViewportUpdaterThread()
+{
+   quit(); 
+   wait();
+}
+
+//----------------------------------------------------------------------------------------
+
+void ViewportUpdaterThread::run()
+{
+    mInterface = new ViewportUpdaterInterface(mDockWidget);
+    mInitializeSemaphore.release(1); //unfreeze the UI thread, let the constructor finish.
+    exec();
+    delete mInterface;
+    mInterface = nullptr;
+}
+
+//----------------------------------------------------------------------------------------
+
+ViewportUpdaterInterface::ViewportUpdaterInterface(ViewportDockWidget* dockWidget) : QObject(nullptr), mIsSpinning(false), mDockWidget(dockWidget)
+{
+    connect(dockWidget, SIGNAL(ToggleSpinRender(bool)), this, SLOT(ToggleSpinRenderSlot(bool)), Qt::QueuedConnection);
+    connect(dockWidget, SIGNAL(RenderOnce()), this, SLOT(RenderOnceSlot()), Qt::QueuedConnection);
+    connect(this, SIGNAL(RenderLoopSignal()), this, SLOT(RenderLoopSlot()), Qt::QueuedConnection);
+    connect(this, SIGNAL(DrawPegasusWindowSignal()), dockWidget, SLOT(ReceiveDrawRequest()), Qt::QueuedConnection);
+
+}
+
+//----------------------------------------------------------------------------------------
+
+void ViewportUpdaterInterface::ToggleSpinRenderSlot(bool enabled)
+{
+    mIsSpinning = enabled;
+    if (mIsSpinning)
+    {
+        emit(RenderLoopSignal());
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void ViewportUpdaterInterface::RenderOnceSlot()
+{
+    emit(DrawPegasusWindowSignal());
+}
+
+//----------------------------------------------------------------------------------------
+
+void ViewportUpdaterInterface::RenderLoopSlot()
+{
+    QThread::msleep(64);
+    if (mIsSpinning)
+    {
+        emit(DrawPegasusWindowSignal());
+        emit(RenderLoopSignal());
+    }
+}

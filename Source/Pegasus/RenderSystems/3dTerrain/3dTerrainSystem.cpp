@@ -103,46 +103,35 @@ void Terrain3dSystem::Load(Core::IApplicationContext* appContext)
 #endif
 }
 
-int Terrain3dSystem::GetVertexCount() const
-{
-    return 17*17*17*3;
-}
-
-int Terrain3dSystem::GetIndexCount() const
-{
-    return 8*8*8*5*3*8;
-}
-
 void Terrain3dSystem::CreateResources(TerrainResources& resources) const
 {
-    const unsigned int BlockSize = 16;
     Render::VolumeTextureConfig volumeTextureConfig;
     
     //the terrain volume encompasses the 8 sample points each voxel has (every corner).
-    // voxel center for this case is considered to be at 0.5 xyz units. Meaning that the left most corner is 0.0, right most being 1.0 per voxel.
-    volumeTextureConfig.mWidth  = BlockSize + 2;
-    volumeTextureConfig.mHeight = BlockSize + 2;
-    volumeTextureConfig.mDepth  = BlockSize + 2;
+    //+2 comes from the 2 extra sample points needed to create a right side thick voxel. The +1 comes from the extra offset starting on the left to just store density, for normal computation.
+    volumeTextureConfig.mWidth  = THREAD_DIM + 3;
+    volumeTextureConfig.mHeight = THREAD_DIM + 3;
+    volumeTextureConfig.mDepth  = THREAD_DIM + 3;
 
     volumeTextureConfig.mFormat = Core::FORMAT_R8_UNORM;
     resources.densityTexture = Render::CreateVolumeTexture(volumeTextureConfig);
 
-    //index count and caseId per voxel, not per corner.
-    volumeTextureConfig.mWidth  = BlockSize + 1;
-    volumeTextureConfig.mHeight = BlockSize + 1;
-    volumeTextureConfig.mDepth  = BlockSize + 1;
+    //index count and caseId per voxel, not per corner. The +1 is for the cap on the right most edge.
+    volumeTextureConfig.mWidth  = THREAD_DIM + 1;
+    volumeTextureConfig.mHeight = THREAD_DIM + 1;
+    volumeTextureConfig.mDepth  = THREAD_DIM + 1;
     volumeTextureConfig.mFormat = Core::FORMAT_R16_UINT;
     resources.geoInfo = Render::CreateVolumeTexture(volumeTextureConfig);
     
-    volumeTextureConfig.mWidth  = BlockSize;
-    volumeTextureConfig.mHeight = BlockSize;
-    volumeTextureConfig.mDepth  = BlockSize;
+    volumeTextureConfig.mWidth  = THREAD_DIM;
+    volumeTextureConfig.mHeight = THREAD_DIM;
+    volumeTextureConfig.mDepth  = THREAD_DIM;
     volumeTextureConfig.mFormat = Core::FORMAT_R16_UINT;
     resources.sparse8 = Render::CreateVolumeTexture(volumeTextureConfig);
 
-    volumeTextureConfig.mWidth  /= 8;
-    volumeTextureConfig.mHeight /= 8;
-    volumeTextureConfig.mDepth  /= 8;
+    volumeTextureConfig.mWidth  = GROUP_DIM;
+    volumeTextureConfig.mHeight = GROUP_DIM;
+    volumeTextureConfig.mDepth  = GROUP_DIM;
     volumeTextureConfig.mFormat = Core::FORMAT_R16_UINT;
     resources.sparse4 = Render::CreateVolumeTexture(volumeTextureConfig);
 }
@@ -157,21 +146,22 @@ void Terrain3dSystem::ComputeTerrainMesh(TerrainResources& resources, Render::Bu
     Render::SetProgram(mPrograms[Terrain3dSystem::DENSITY_CS]);
     Render::SetUniformBuffer(mDensityBlockStateUniform, mDensityInputBuffer);
     Render::SetComputeOutput(resources.densityTexture, 0);    
-    Render::Dispatch(2,2,2);    
+    Render::Dispatch(GROUP_DIM,GROUP_DIM,GROUP_DIM);    
     Render::UnbindComputeOutputs();
+
     // compute geometry information.
     Render::SetProgram(mPrograms[Terrain3dSystem::GEOMETRY_INFO_CS]);
     Render::SetUniformVolume(mGeomInfoDensityInput, resources.densityTexture);
     Render::SetUniformBuffer(mGeomInfoCaseCountInfoInput, mPackedCaseCountInfoBuffer);
     Render::SetComputeOutput(resources.geoInfo , 0);
-    Render::Dispatch(2,2,2);
+    Render::Dispatch(GROUP_DIM,GROUP_DIM,GROUP_DIM);    
     Render::UnbindComputeOutputs();
 
     // compute sparse offsets, on 8x8x8 groups.
     Render::SetProgram(mPrograms[Terrain3dSystem::SPARSE_2_8_CS]);
     Render::SetUniformVolume(mVolumeCountUniform, resources.geoInfo);
     Render::SetComputeOutput(resources.sparse8, 0);
-    Render::Dispatch(2,2,2);
+    Render::Dispatch(GROUP_DIM,GROUP_DIM,GROUP_DIM);    
     Render::UnbindComputeOutputs();
     
     // compute sparse offsets, on 2x2 groups.
@@ -195,7 +185,7 @@ void Terrain3dSystem::ComputeTerrainMesh(TerrainResources& resources, Render::Bu
     Render::SetComputeOutput(vertexNormalBuffer, 2);
     Render::SetComputeOutput(drawIndirectBufferArgs, 3);
     Render::SetComputeSampler(mDensitySampler, 0);
-    Render::Dispatch(2,2,2);
+    Render::Dispatch(GROUP_DIM,GROUP_DIM,GROUP_DIM);
     Render::UnbindComputeResources();
     Render::UnbindComputeOutputs();
 }

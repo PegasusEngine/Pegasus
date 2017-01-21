@@ -116,10 +116,6 @@ public:
     const ShadowTimelineState& GetProxy() const { return mTimelineState; }
 signals:
 
-    //! Emitted when the play mode button has been enabled or disabled
-    //! \param enabled True if the play mode button has just been enabled
-    void PlayModeToggled(bool enabled);
-
 
 public slots:
 
@@ -149,6 +145,9 @@ public slots:
 
     //! When a new block has been requested
     void OnCreateNewBlock(int blockTypeId);
+
+    //! Emitted when the play mode button has been enabled or disabled
+    void OnPlayModeToggled(bool enabled);
 
 private slots:
 
