@@ -31,6 +31,7 @@ namespace Pegasus {
 
     namespace Render {
         class IDevice;
+        class Context;
     }
 
     namespace Shader {
@@ -142,6 +143,7 @@ private:
     
     ApplicationConfig                               mConfig;                 //!< Cached config object
     Render::IDevice*                                mDevice;                 //!< Render device
+    Render::Context*                                mRenderContext;          //!< Rendering context
     AppWindowManager*                               mWindowManager;          //!< Window manager
     Io::IOManager*                                  mIoManager;              //!< IO manager
     Graph::NodeManager*                             mNodeManager;            //!< Graph node manager

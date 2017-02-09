@@ -650,7 +650,7 @@ private:
 
 
     //! Structure defining the properties and value of an object property
-    typedef struct ObjectProperty
+    typedef struct
     {
         //! Specifications of the property, such as the type
         PropertyRecord record;
@@ -658,7 +658,7 @@ private:
         //! Pointer to the variable containing the property value,
         //! dynamically allocated
         unsigned char * valuePtr;
-    };
+    } ObjectProperty;
 
     //! List of object properties, unique to the instance
     Utils::Vector<ObjectProperty> mObjectProperties;

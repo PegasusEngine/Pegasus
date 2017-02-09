@@ -288,12 +288,12 @@ private:
 
 
     //! Record to store one block inside a linked list
-    typedef struct BlockRecord
+    typedef struct
     {
         Block * mBlock;     //!< Pointer to the stored block, nullptr if the record is invalid
         int mNext;          //!< Index of the next record, INVALID_RECORD_INDEX if the record is invalid,
                             //!< mFirstBlockIndex if the last step is reached
-    };
+    } BlockRecord;
 
     //! Invalid index for the block records
     enum { INVALID_RECORD_INDEX = -1 };

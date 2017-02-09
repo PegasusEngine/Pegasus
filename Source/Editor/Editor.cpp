@@ -599,7 +599,7 @@ void Editor::OpenApp()
 #endif
     //! \todo Use a directory that comes from the preferences
     QString fileName = QFileDialog::getOpenFileName(this, "Load application",
-													QString("../../../Bin/VS11/Win32/Dev"), filter);
+													QString("../../../Bin/VS14/Win32/Dev"), filter);
 
 	// Import the file to the current scene
 	if (!fileName.isEmpty())

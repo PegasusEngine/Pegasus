@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Include">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Include\TimelineBlocks">
+      <UniqueIdentifier>{503f32fb-5578-4f5f-84ba-f3d3c6009ae0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\TimelineBlocks">
+      <UniqueIdentifier>{e7841c26-09de-478e-afcd-6bdd3423aa94}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TestApp1.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TimelineBlocks\FractalCubeBlock.cpp">
+      <Filter>Source\TimelineBlocks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TimelineBlocks\FractalCube2Block.cpp">
+      <Filter>Source\TimelineBlocks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TimelineBlocks\TextureTestBlock.cpp">
+      <Filter>Source\TimelineBlocks</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Apps\TestApp1\TimelineBlocks\GeometryTestBlock.cpp">
+      <Filter>Source\TimelineBlocks</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TestApp1.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TimelineBlocks\FractalCubeBlock.h">
+      <Filter>Include\TimelineBlocks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TimelineBlocks\FractalCube2Block.h">
+      <Filter>Include\TimelineBlocks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TimelineBlocks\TextureTestBlock.h">
+      <Filter>Include\TimelineBlocks</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Include\Apps\TestApp1\TimelineBlocks\GeometryTestBlock.h">
+      <Filter>Include\TimelineBlocks</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

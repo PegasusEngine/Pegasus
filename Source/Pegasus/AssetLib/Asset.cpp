@@ -50,7 +50,7 @@ namespace AssetPrivate
     {
         char accum[256];
         //TODO: replace sprintf with own implementation
-        sprintf_s(accum, "%i", i, 256);
+        sprintf_s<256>(accum, "%i", i);
         DumpElementToStream(accum, stream);
     }
 
@@ -58,7 +58,7 @@ namespace AssetPrivate
     {
         char accum[256];
         //TODO: replace sprintf with own implementation
-        sprintf_s(accum, "%f", i, 256);
+        sprintf_s<256>(accum, "%f", i);
         DumpElementToStream(accum, stream);
     }
 

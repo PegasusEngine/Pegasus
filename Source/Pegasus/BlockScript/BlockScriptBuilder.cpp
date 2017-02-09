@@ -583,7 +583,7 @@ Exp* BlockScriptBuilder::BuildBinop (Ast::Exp* lhs, int op, Ast::Exp* rhs)
             Utils::Strcat(newName, tid1->GetChild()->GetName());
             if (swizzleLen >= 2)
             {
-                char str[2] = {(swizzleLen + '0'), '\0'};
+                char str[2] = {((char) swizzleLen + '0'), '\0'};
                 Utils::Strcat(newName, str);
             }
 

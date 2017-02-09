@@ -68,6 +68,18 @@ Application::Application(const ApplicationConfig& config)
     Core::AssertionManager::GetInstance()->RegisterHandler(config.mAssertHandler);
 #endif
 
+    Alloc::IAllocator* renderAlloc = Memory::GetRenderAllocator();
+    Pegasus::Render::DeviceConfig deviceConfig;
+    Pegasus::Render::ContextConfig renderContextConfig;
+    deviceConfig.mModuleHandle = mConfig.mModuleHandle;
+
+    mDevice = Pegasus::Render::IDevice::CreatePlatformDevice(deviceConfig, renderAlloc);
+
+    renderContextConfig.mAllocator = Memory::GetCoreAllocator();
+    renderContextConfig.mDevice = mDevice;
+
+    mRenderContext = PG_NEW(renderAlloc, -1, "AppRenderContext", Alloc::PG_MEM_PERM) Render::Context(renderContextConfig);
+
     //Initialize internal state of render library.
     Pegasus::Render::CleanInternalState();
 
@@ -138,15 +150,10 @@ Application::Application(const ApplicationConfig& config)
     mIoManager = PG_NEW(coreAlloc, -1, "IOManager", Pegasus::Alloc::PG_MEM_PERM) Io::IOManager(rootPath);
     
     mAssetLib->SetIoManager(mIoManager); //TODO: decide here if we use the pakIoManager or the standard file system IOManager
-
-    Alloc::IAllocator* renderAlloc = Memory::GetRenderAllocator();
-    Pegasus::Render::DeviceConfig deviceConfig;
-    deviceConfig.mModuleHandle = mConfig.mModuleHandle;
-
-    mDevice = Pegasus::Render::IDevice::CreatePlatformDevice(deviceConfig, renderAlloc);
-    PG_LOG('APPL', "Startup finished");
     
     mRenderSystemManager = PG_NEW(coreAlloc, -1, "Render System Manager", Alloc::PG_MEM_PERM) RenderSystems::RenderSystemManager(coreAlloc, this);
+
+    PG_LOG('APPL', "Startup finished");
 }
 
 //----------------------------------------------------------------------------------------
@@ -160,18 +167,12 @@ Application::~Application()
     Alloc::IAllocator* coreAlloc  = Memory::GetCoreAllocator();
     Alloc::IAllocator* renderAlloc = Memory::GetRenderAllocator();
 
-    //create a fake context in case we require deletion of a graphics api resource.
-    Render::ContextConfig config;
-    config.mAllocator = Memory::GetCoreAllocator();
-    config.mDevice = mDevice;
-    Render::Context context(config);
-    context.Bind();
+    // bind context in case we require deletion of a graphics api resource.
+    mRenderContext->Bind();
 
     PG_DELETE(windowAlloc, mWindowManager);
 
-    
-
-    // Delete the texture and node managers        
+    // Delete the texture and node managers
     // WARNING: order of destructors is very important.
     PG_DELETE(timelineAlloc, mTimelineManager);
     PG_DELETE(coreAlloc, mRenderSystemManager);
@@ -189,8 +190,10 @@ Application::~Application()
 #endif
     PG_DELETE(coreAlloc, mIoManager);
     
-    //Kill device
-    PG_DELETE(renderAlloc, mDevice);    
+    //Kill device and context
+    PG_DELETE(renderAlloc, mRenderContext);
+    mRenderContext = nullptr;
+    PG_DELETE(renderAlloc, mDevice);
     mDevice = nullptr;
     PG_LOG('APPL', "Device Destroyed");
 
@@ -211,12 +214,8 @@ void Application::Load()
 {
     //Load must be called / should be able to be called, before attaching any window.
     //Therefore, any timeline item doing a load time render pass to anything but the default render target
-    // (since the default render target belongs to the window) should be allowed,by creating a temporary context.
-    Render::ContextConfig config;
-    config.mAllocator = Memory::GetCoreAllocator();
-    config.mDevice = mDevice;
-    Render::Context context(config);
-    context.Bind();
+    // (since the default render target belongs to the window) should use the main application context
+    mRenderContext->Bind();
 
     mRenderSystemManager->AddInternalSystems();
     RegisterCustomRenderSystems(mRenderSystemManager);
@@ -253,33 +252,33 @@ void Application::Load()
     // Initialize all the components for all the windows.
     mWindowManager->LoadAllComponents(this);
 
-    context.Unbind();
-    
+    mRenderContext->Unbind();
 }
 
 //----------------------------------------------------------------------------------------
 
 void Application::Update()
 {
+    // Needed for compute/etc
+    mRenderContext->Bind();
+
     //! update all components, globally for all the windows.
     mWindowManager->UpdateAllComponents(this);
+
+    mRenderContext->Unbind();
 }
 
 //----------------------------------------------------------------------------------------
 
 void Application::Unload()
 {
-    Render::ContextConfig config;
-    config.mAllocator = Memory::GetCoreAllocator();
-    config.mDevice = mDevice;
-    Render::Context context(config);
-    context.Bind();
+    mRenderContext->Bind();
 
     // Initialize all the components for all the windows.
     mWindowManager->UnloadAllComponents(this);
     
     Render::ClearGlobalConstants();
-    context.Unbind();
+    mRenderContext->Unbind();
 
     // Custom shutdown, done in the user application
     ShutdownApp();
