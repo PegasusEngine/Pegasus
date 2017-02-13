@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Dev-Debug|Win32">
       <Configuration>Dev-Debug</Configuration>
@@ -84,42 +84,42 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <WholeProgramOptimization>false</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>false</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <WholeProgramOptimization>false</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Final|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Profile|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>PGInstrument</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Small|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -144,28 +144,28 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
-    <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\..\Build\VS14\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">
-    <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\..\Build\VS14\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Debug|Win32'">
-    <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\..\Build\VS14\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Final|Win32'">
-    <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\..\Build\VS14\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Profile|Win32'">
-    <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\..\Build\VS14\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Small|Win32'">
-    <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\..\Build\VS14\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
     <ClCompile>
@@ -173,7 +173,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUSAPP_DLL;_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_ALLOW_RTCc_IN_STL;_LIB;%(PreprocessorDefinitions);_PEGASUSAPP_DLL;_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_DEBUG</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <SmallerTypeCheck>true</SmallerTypeCheck>
@@ -182,6 +182,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>4577</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -210,6 +211,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>4577</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -230,7 +232,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_REL;_PEGASUS_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_ALLOW_RTCc_IN_STL;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_REL;_PEGASUS_DEBUG</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <SmallerTypeCheck>true</SmallerTypeCheck>
@@ -239,6 +241,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>4577</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -269,6 +272,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>4577</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -301,6 +305,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>4577</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -333,6 +338,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>4577</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

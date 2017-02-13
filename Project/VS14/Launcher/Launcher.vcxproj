@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Dev-Debug|Win32">
       <Configuration>Dev-Debug</Configuration>
@@ -25,13 +25,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>false</WholeProgramOptimization>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -44,13 +44,13 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
-    <OutDir>$(SolutionDir)..\..\Bin\VS11\$(PlatformName)\Dev\</OutDir>
-    <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\..\Bin\VS14\$(PlatformName)\Dev\</OutDir>
+    <IntDir>$(SolutionDir)..\..\Build\VS14\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)-Debug</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">
-    <OutDir>$(SolutionDir)..\..\Bin\VS11\$(PlatformName)\Dev\</OutDir>
-    <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\..\Bin\VS14\$(PlatformName)\Dev\</OutDir>
+    <IntDir>$(SolutionDir)..\..\Build\VS14\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
     <TargetName>$(ProjectName)-Opt</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
@@ -64,6 +64,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>4577</DisableSpecificWarnings>
       <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>
@@ -88,6 +89,7 @@
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>4577</DisableSpecificWarnings>
       <ForcedIncludeFiles>Pegasus/Pegasus.h</ForcedIncludeFiles>
     </ClCompile>
     <Link>

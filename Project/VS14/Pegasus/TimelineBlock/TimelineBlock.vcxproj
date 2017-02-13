@@ -105,28 +105,28 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
-    <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\..\Build\VS14\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">
-    <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\..\Build\VS14\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Debug|Win32'">
-    <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\..\Build\VS14\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Final|Win32'">
-    <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\..\Build\VS14\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Profile|Win32'">
-    <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\..\Build\VS14\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Small|Win32'">
-    <IntDir>$(SolutionDir)..\..\Build\VS11\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS11\$(PlatformName)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\..\Build\VS14\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
     <ClCompile>
@@ -134,7 +134,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_ALLOW_RTCc_IN_STL;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_DEBUG</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <SmallerTypeCheck>true</SmallerTypeCheck>
@@ -143,6 +143,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>4577</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -170,6 +171,7 @@
       <ForcedIncludeFiles>Pegasus/PegasusInternal.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>4577</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -190,7 +192,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_REL;_PEGASUS_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_ALLOW_RTCc_IN_STL;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_REL;_PEGASUS_DEBUG</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <SmallerTypeCheck>true</SmallerTypeCheck>
@@ -199,6 +201,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>4577</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -230,6 +233,7 @@
       <ForcedIncludeFiles>Pegasus/PegasusInternal.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>4577</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -263,6 +267,7 @@
       <ForcedIncludeFiles>Pegasus/PegasusInternal.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>4577</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -296,6 +301,7 @@
       <ForcedIncludeFiles>Pegasus/PegasusInternal.h</ForcedIncludeFiles>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>4577</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
