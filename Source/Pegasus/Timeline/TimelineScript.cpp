@@ -217,12 +217,16 @@ bool TimelineScript::CompileInternal()
 {
     if (mScriptActive == false)
     {
+		#define __Q(x) #x
+        #define STRINGIFY(x) __Q(x)
         static const char* defNames[] = {
             "MAX_WINDOW_COUNT"
         };
         static const char* defValues[] = {
-            "7"
+            STRINGIFY(PEGASUS_MAX_WORLD_WINDOW_COUNT)
         };
+        #undef STRINGIFY
+		#undef __Q
 
         ClearHeaderList();
         ScriptIncluder includer(this, mAppContext->GetTimelineManager());
