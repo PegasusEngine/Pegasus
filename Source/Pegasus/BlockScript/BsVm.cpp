@@ -26,6 +26,10 @@
 #include "Pegasus/BlockScript/ExpressionEngine.h"
 #include "Pegasus/Math/Vector.h"
 
+#ifndef BLOCKSCRIPT_SAFEMODE
+#define BLOCKSCRIPT_SAFEMODE 0
+#endif
+
 #define BS_VM_PAGE_SIZE 512
 
 using namespace Pegasus;
@@ -86,6 +90,19 @@ int GetMemoryOffset(Ast::Exp* mem, BsVmState& state)
 
         Ast::Binop* binop = static_cast<Ast::Binop*>(mem);
         offset = gIntExpEngine.Eval(binop->GetRhs(), state);
+#if BLOCKSCRIPT_SAFEMODE
+        //in safe mode, check if we are trying to access an array out of bounds
+        if (offset >= binop->GetLhs()->GetTypeDesc()->GetByteSize())
+        {
+            if (state.GetRuntimeListener() != nullptr)
+            {
+                CrashInfo crashInfo;
+				state.GetRuntimeListener()->OnCrash(state, crashInfo);
+                state.SetExecutionState(Pegasus::BlockScript::BsVmState::Crashed);
+                return 0;
+            }
+        }
+#endif
         offset = offset + GetIddOffset(static_cast<Ast::Idd*>(binop->GetLhs()), state);
     }
     return offset;
@@ -449,7 +466,8 @@ BsVmState::BsVmState()
     mAllocator(nullptr),
     mStackLevels(-1),
     mUserContext(nullptr),
-    mRuntimeListener(nullptr)
+    mRuntimeListener(nullptr),
+    mExecutionState(BsVmState::Alive)
 {
     Reset();
 }
@@ -461,10 +479,12 @@ void BsVmState::Initialize(Alloc::IAllocator* allocator)
     Grow(BS_VM_PAGE_SIZE); // try to grow 512 bytes initially
     mRamSize = 0; //reset ram, and keep the page open.
     mStackLevels = -1; //-1 means no stack has been set
+    mExecutionState = BsVmState::Alive;
 }
 
 void BsVmState::Reset()
 {
+    mExecutionState = BsVmState::Alive;
     mRamSize = 0;
     mStackLevels = -1; //-1 means no stack has been set
     for (int i = 0; i < static_cast<int>(Canon::R_COUNT); ++i)
@@ -508,16 +528,19 @@ BsVmState::~BsVmState()
 
 void BsVm::Run(const Assembly& assembly, BsVmState& state) const
 {
+    PG_ASSERT(state.GetExecutionState() == BsVmState::Alive);
     state.Reset();
     if (state.GetRuntimeListener() != nullptr)
     {
         state.GetRuntimeListener()->OnRuntimeBegin(state);
     }
-    while (StepExecution(assembly, state));
+    while (StepExecution(assembly, state) && state.GetExecutionState() == BsVmState::Alive);
 }
 
 bool BsVm::StepExecution(const Assembly& assembly, BsVmState& state) const
 {
+    PG_ASSERT(state.GetExecutionState() == BsVmState::Alive);
+
     bool active = true;
     const Container<Canon::Block>& blockList = *assembly.mBlocks;
     const Canon::Block* block = &blockList[state.mR[R_B]];

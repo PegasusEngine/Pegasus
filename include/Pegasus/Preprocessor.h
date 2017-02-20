@@ -330,6 +330,15 @@
 //! Enable size checks in the property grid accessors
 #define PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR       (PEGASUS_DEBUG)
 
+//! Maximum total amount of world windows in dev mode.
+//! A world window is a window that has support for demo visualization and that renders what the timeline showcases.
+#if PEGASUS_DEV
+#define PEGASUS_MAX_WORLD_WINDOW_COUNT 6
+#else
+#define PEGASUS_MAX_WORLD_WINDOW_COUNT 1
+#endif
 
+// Enable blockscript safe mode, where invalid memory access will get reported, at the cost of performance.
+#define BLOCKSCRIPT_SAFEMODE PEGASUS_DEV
 
 #endif  // PEGASUS_PREPROCESSOR_H

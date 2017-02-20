@@ -19,6 +19,7 @@
 #include "Pegasus/AssetLib/Asset.h"
 #include "Pegasus/AssetLib/ASTree.h"
 #include "Pegasus/Utils/String.h"
+#include "Pegasus/Utils/Memset.h"
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/Timeline/Proxy/BlockProxy.h"
@@ -54,6 +55,7 @@ Lane::Lane(Alloc::IAllocator * allocator, Timeline * timeline)
 
 #if PEGASUS_ENABLE_PROXIES
     mName[0] = '\0';
+    Utils::Memset8(mWindowIsInitialized, 0, sizeof(mWindowIsInitialized));
 #endif
 }
 
@@ -335,34 +337,44 @@ void Lane::UninitializeBlocks()
         }
         while (currentIndex != mFirstBlockIndex);
     }
+#if PEGASUS_ENABLE_PROXIES
+    Utils::Memset8(mWindowIsInitialized, 0, sizeof(mWindowIsInitialized));
+#endif
 }
 
 //----------------------------------------------------------------------------------------
-void Lane::Update(float beat)
+void Lane::Update(UpdateInfo& updateInfo)
 {
     //! \todo The current approach is extremely brute force and inefficient.
     //! \todo Cache the current selected block in function of the timeline time.
 
     Block * block = nullptr;
-    float relativeBeat = 0.0f;
-    if (FindBlockAndComputeRelativeBeat(beat, block, relativeBeat))
+    if (FindBlockAndComputeRelativeBeat(updateInfo.beat, block, updateInfo.relativeBeat))
     {
-        block->Update(relativeBeat);
+        block->Update(updateInfo);
     }
 }
 
 //----------------------------------------------------------------------------------------
 
-void Lane::Render(float beat, Wnd::Window * window)
+void Lane::Render(RenderInfo& renderInfo)
 {
     //! \todo The current approach is extremely brute force and inefficient.
     //! \todo Cache the current selected block in function of the timeline time.
 
-    Block * block = nullptr;
-    float relativeBeat = 0.0f;
-    if (FindBlockAndComputeRelativeBeat(beat, block, relativeBeat))
+#if PEGASUS_ENABLE_PROXIES
+        //lazy initialization in case we missed the initial call, because of live editing.
+        //In this context, live editing means the user creating a new timeline from scratch from the editor.
+    if (!mWindowIsInitialized[renderInfo.windowId])
     {
-        block->Render(relativeBeat, window);
+        OnWindowCreated(renderInfo.windowId);
+    }
+#endif
+
+    Block * block = nullptr;
+    if (FindBlockAndComputeRelativeBeat(renderInfo.beat, block, renderInfo.relativeBeat))
+    {
+        block->Render(renderInfo);
     }
 }
 
@@ -968,6 +980,46 @@ bool Lane::FindBlockAndComputeRelativeBeat(float beat, Block * & block, float & 
     }
 
     return false;
+}
+
+//----------------------------------------------------------------------------------------
+
+void Lane::OnWindowCreated(int windowIndex)
+{
+#if PEGASUS_ENABLE_PROXIES
+    mWindowIsInitialized[windowIndex] = true;
+#endif
+    int currIndex = mFirstBlockIndex;
+    do
+    {
+        BlockRecord& currRecord = mBlockRecords[currIndex];
+        if (currRecord.mBlock != nullptr )
+        {
+            currRecord.mBlock->OnWindowCreated(windowIndex);
+            currIndex = currRecord.mNext;
+        }
+    }
+    while (currIndex != mFirstBlockIndex);
+}
+
+//----------------------------------------------------------------------------------------
+
+void Lane::OnWindowDestroyed(int windowIndex)
+{
+#if PEGASUS_ENABLE_PROXIES
+    mWindowIsInitialized[windowIndex] = false;
+#endif
+    int currIndex = mFirstBlockIndex;
+    do
+    {
+        BlockRecord& currRecord = mBlockRecords[currIndex];
+        if (currRecord.mBlock != nullptr )
+        {
+            currRecord.mBlock->OnWindowDestroyed(windowIndex);
+            currIndex = currRecord.mNext;
+        }
+    }
+    while (currIndex != mFirstBlockIndex);
 }
 
 //----------------------------------------------------------------------------------------

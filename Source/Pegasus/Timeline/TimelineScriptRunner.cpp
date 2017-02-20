@@ -11,10 +11,12 @@
 
 #include "Pegasus/Core/Assertion.h"
 #include "Pegasus/AssetLib/AssetLib.h"
+#include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Timeline/TimelineScriptRunner.h"
 #include "Pegasus/PropertyGrid/PropertyGridObject.h"
 #include "Pegasus/PropertyGrid/Shared/PropertyEventDefs.h"
 #include "Pegasus/Application/RenderCollection.h"
+#include "Pegasus/Utils/Memset.h"
 
 #if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
 #include "Pegasus/AssetLib/Category.h"
@@ -44,6 +46,9 @@ namespace Timeline
     , mCategory(category)
 #endif
     {
+#if PEGASUS_ENABLE_PROXIES
+        Utils::Memset8(mWindowIsInitialized, 0, sizeof(mWindowIsInitialized));
+#endif
     }
 
     TimelineScriptRunner::~TimelineScriptRunner()
@@ -105,6 +110,7 @@ namespace Timeline
         script->RegisterObserver(&mBlockScriptObserver);
 #endif
         mScriptVersion = -1;  
+
         mRuntimeListener.Initialize(mPropertyGrid, mTimelineScript->GetBlockScript());
     }
 
@@ -190,6 +196,10 @@ namespace Timeline
         {
             mGlobalCache->Clear();
         }
+
+        #if PEGASUS_ENABLE_PROXIES
+        Utils::Memset8(mWindowIsInitialized, 0, sizeof(mWindowIsInitialized));
+#endif
     }
 
     void TimelineScriptRunner::NotifyInternalObjectPropertyUpdated(unsigned int index)
@@ -205,7 +215,7 @@ namespace Timeline
         }
     }
 
-    void TimelineScriptRunner::CallUpdate(float beat)
+    void TimelineScriptRunner::CallUpdate(const UpdateInfo& updateInfo)
     {
         if (mTimelineScript != nullptr)
         {
@@ -214,22 +224,51 @@ namespace Timeline
 #if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
             nodeContainer->SetPermissions(Application::PERMISSIONS_DEFAULT);
 #endif
-            nodeContainer->SetWindow(nullptr);
-            mTimelineScript->CallUpdate(beat, mVmState);
+            mTimelineScript->CallUpdate(updateInfo, mVmState);
             nodeContainer->UpdateAll();
         }
     }
 
-    void TimelineScriptRunner::CallRender(float beat, Wnd::Window * window)
+    void TimelineScriptRunner::CallRender(const RenderInfo& renderInfo)
     {
         if (mTimelineScript != nullptr)
         {
+#if PEGASUS_ENABLE_PROXIES
+            if (!mWindowIsInitialized[renderInfo.windowId])
+            {
+                CallWindowCreated(renderInfo.windowId);
+            }
+#endif
             Application::RenderCollection* nodeContainer = static_cast<Application::RenderCollection*>(mVmState->GetUserContext());
-            nodeContainer->SetWindow(window);
+
 #if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
             nodeContainer->SetPermissions(Application::PERMISSIONS_RENDER_API_CALL);
 #endif
-            mTimelineScript->CallRender(beat, mVmState);
+            nodeContainer->SetRenderInfo(&renderInfo);
+            mTimelineScript->CallRender(renderInfo, mVmState);
+            nodeContainer->SetRenderInfo(nullptr);
+        }
+    }
+
+    void TimelineScriptRunner::CallWindowCreated(int windowIndex)
+    {
+#if PEGASUS_ENABLE_PROXIES
+        mWindowIsInitialized[windowIndex] = true;
+#endif
+        if (mTimelineScript != nullptr)
+        {
+            mTimelineScript->CallWindowCreated(windowIndex, mVmState);
+        }
+    }
+
+    void TimelineScriptRunner::CallWindowDestroyed(int windowIndex)
+    {
+#if PEGASUS_ENABLE_PROXIES
+        mWindowIsInitialized[windowIndex] = false;
+#endif
+        if (mTimelineScript != nullptr)
+        {
+            mTimelineScript->CallWindowDestroyed(windowIndex, mVmState);
         }
     }
 

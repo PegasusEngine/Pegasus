@@ -231,7 +231,7 @@ FunBindPoint GetFunctionBindPoint(
     const BlockScriptBuilder* builder, 
     const Assembly& assembly,
     const char* funName,
-    const char** argTypes,
+    const char*const* argTypes,
     int argumentListCount
 );
 
@@ -253,7 +253,7 @@ bool ExecuteFunction(
     const Assembly& assembly,
     BsVmState& state,
     BsVm& vm,
-    void* inputBuffer,
+    const void* inputBuffer,
     int   inputBufferSize,
     void* outputBuffer,
     int   outputBufferSize

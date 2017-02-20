@@ -16,6 +16,7 @@
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Core/Shared/CompilerEvents.h"
 #include "Pegasus/Utils/String.h"
+#include "Pegasus/Utils/Memset.h"
 #include "Pegasus/AssetLib/AssetLib.h"
 #include "Pegasus/AssetLib/Asset.h"
 #include "Pegasus/AssetLib/ASTree.h"
@@ -57,6 +58,7 @@ Block::Block(Alloc::IAllocator * allocator, Core::IApplicationContext * appConte
     END_INIT_PROPERTIES()
 #if PEGASUS_ENABLE_PROXIES
     mGuid = sNextBlockGuid++;
+    Utils::Memset8(mWindowIsInitialized, 0, sizeof(mWindowIsInitialized));
 #endif
 
 #if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
@@ -93,16 +95,23 @@ TimelineScriptReturn Block::GetScript()
 
 //----------------------------------------------------------------------------------------
 
-void Block::Update(float beat)
+void Block::Update(const UpdateInfo& updateInfo)
 {
-    mScriptRunner.CallUpdate(beat);
+    mScriptRunner.CallUpdate(updateInfo);
 }
 
 //----------------------------------------------------------------------------------------
 
-void Block::Render(float beat, Wnd::Window * window)
+void Block::Render(const RenderInfo& renderInfo)
 {
-    mScriptRunner.CallRender(beat, window);
+#if PEGASUS_ENABLE_PROXIES
+    if (!mWindowIsInitialized[renderInfo.windowId])
+    {
+        OnWindowCreated(renderInfo.windowId);
+    }
+#endif
+    mScriptRunner.CallRender(renderInfo);
+
 }
 
 //----------------------------------------------------------------------------------------
@@ -119,6 +128,9 @@ void Block::Initialize()
 void Block::Shutdown()
 {
     mScriptRunner.ShutdownScript();
+#if PEGASUS_ENABLE_PROXIES
+    Utils::Memset8(mWindowIsInitialized, 0, sizeof(mWindowIsInitialized));
+#endif
 }
 
 //----------------------------------------------------------------------------------------
@@ -131,6 +143,22 @@ void Block::SetLane(Lane * lane)
 
     //link the script runner with the proper global cache from the timeline
     mScriptRunner.SetGlobalCache(lane->GetTimeline()->GetGlobalCache());
+}
+
+void Block::OnWindowCreated(int windowIndex)
+{
+#if PEGASUS_ENABLE_PROXIES
+    mWindowIsInitialized[windowIndex] = true;
+#endif
+    mScriptRunner.CallWindowCreated(windowIndex);
+}
+
+void Block::OnWindowDestroyed(int windowIndex)
+{
+#if PEGASUS_ENABLE_PROXIES
+    mWindowIsInitialized[windowIndex] = false;
+#endif
+    mScriptRunner.CallWindowDestroyed(windowIndex);
 }
 
 bool Block::OnReadObject(Pegasus::AssetLib::AssetLib* lib, const AssetLib::Asset* owner, const AssetLib::Object* root) 

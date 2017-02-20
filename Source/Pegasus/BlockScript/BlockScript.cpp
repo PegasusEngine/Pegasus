@@ -50,6 +50,11 @@ bool BlockScript::BlockScript::Compile(const Io::FileBuffer* fb)
 
 void BlockScript::BlockScript::Run(BsVmState* vmState) 
 { 
+    if (vmState->GetExecutionState() != BsVmState::Alive)
+    {
+        return;
+    }
+
     // rrrrrrrrun!! boy
     mVm.Run(GetAsm(), *vmState);
 }
@@ -57,7 +62,7 @@ void BlockScript::BlockScript::Run(BsVmState* vmState)
 bool BlockScript::BlockScript::ExecuteFunction(
     BsVmState* vmState,
     FunBindPoint functionBindPoint,
-    void* inputBuffer,
+    const void* inputBuffer,
     int   inputBufferSize,
     void* outputBuffer,
     int   outputBufferSize

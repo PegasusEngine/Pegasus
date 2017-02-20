@@ -2686,12 +2686,21 @@ yyreturn:
 extern void BS_restart(FILE* f);
 
 
-void Bison_BlockScriptParse(const FileBuffer* fileBuffer, BlockScriptBuilder* builder, IFileIncluder* fileIncluder) 
+void Bison_BlockScriptParse(const FileBuffer* fileBuffer, BlockScriptBuilder* builder, IFileIncluder* fileIncluder, Container<Preprocessor::Definition>* defList) 
 {          
     CompilerState compilerState(builder->GetAllocator());
     compilerState.mBuilder = builder;
     compilerState.mFileBuffer = fileBuffer;
     compilerState.GetPreprocessor().SetFileIncluder(fileIncluder);
+
+    //add definitions pre-added
+    if (defList != nullptr)
+    {
+        for (int i = 0; i < defList->Size(); ++i)
+        {
+            compilerState.GetPreprocessor().InsertDefinition((*defList)[i]);
+        }
+    }
 
     yyscan_t scanner;
     BS_lex_init_extra(&compilerState, &scanner);

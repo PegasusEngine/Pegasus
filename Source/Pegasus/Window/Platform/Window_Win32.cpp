@@ -48,7 +48,7 @@ WindowImpl_Win32::WindowImpl_Win32(const WindowConfig& config, IWindowMessageHan
     // Register window class if need be
     if (gPegasusWinClassReferences == 0)
     {
-        PG_ASSERT(!WindowImpl_Win32::IsWindowClassRegistered(mModule));
+        PG_ASSERT(!WindowImpl_Win32::IsWindowClassRegistered(mModule) || !mModule);
         WindowImpl_Win32::RegisterWindowClass(mModule);
     }
 
@@ -68,11 +68,11 @@ WindowImpl_Win32::~WindowImpl_Win32()
         // Unregister window class if need be
     if (gPegasusWinClassReferences == 0)
     {
-        PG_ASSERT(WindowImpl_Win32::IsWindowClassRegistered(mModule));
+        PG_ASSERT(WindowImpl_Win32::IsWindowClassRegistered(mModule) || !mModule);
 
         WindowImpl_Win32::UnregisterWindowClass(mModule);
 
-        PG_ASSERT(!WindowImpl_Win32::IsWindowClassRegistered(mModule));
+        PG_ASSERT(!WindowImpl_Win32::IsWindowClassRegistered(mModule) || !mModule);
     }
 
 }

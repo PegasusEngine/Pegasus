@@ -263,16 +263,6 @@ Pegasus::Core::AssertReturnCode Application::EmitAssertionFromApplication(const 
                                                                           int line,
                                                                           const QString & msgStr)
 {
-    if (mApplicationInterface != nullptr)
-    {
-        // Stop the forced redraw of the window content
-        //! \todo Make sure the play mode is blocked when throwing an assertion
-
-        // Tell the app windows to not render anything
-        //! \todo Seems not useful anymore. Test and remove if possible
-        //mApplicationInterface->SetAssertionBeingHandled(true);
-    }
-
     // Emit the assertion error through a non-blocking enqueued connection to the editor thread
     emit AssertionSentFromApplication(testStr, fileStr, line, msgStr);
 
@@ -280,6 +270,13 @@ Pegasus::Core::AssertReturnCode Application::EmitAssertionFromApplication(const 
     // Stop the loop once we have an available assertion return code.
     mAssertionReturnCode = AssertionManager::ASSERTION_INVALID;
     QEventLoop * eventLoop = new QEventLoop(nullptr);
+
+    if (mApplicationInterface != nullptr)
+    {
+        //notify the app that an assertion is being handled. This will prevent any more updates / render requests in the process loop below.
+        mApplicationInterface->SetAssertionBeingHandled(true);
+    }
+
     while (mAssertionReturnCode == AssertionManager::ASSERTION_INVALID)
     {
         eventLoop->processEvents(QEventLoop::AllEvents);
@@ -314,10 +311,7 @@ Pegasus::Core::AssertReturnCode Application::EmitAssertionFromApplication(const 
     if (mApplicationInterface != nullptr)
     {
         // Allow the app windows to render their content 
-        //! \todo Seems not useful anymore. Test and remove if possible
-        //mApplicationInterface->SetAssertionBeingHandled(false);
-
-        //! \todo Make sure play mode still works after an assertion error
+        mApplicationInterface->SetAssertionBeingHandled(false);
     }
 
     return returnCode;

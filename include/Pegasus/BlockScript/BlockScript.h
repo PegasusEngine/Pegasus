@@ -60,7 +60,7 @@ public:
     bool ExecuteFunction(
         BsVmState*   vmState,
         FunBindPoint functionBindPoint,
-        void* inputBuffer,
+        const void* inputBuffer,
         int   inputBufferSize,
         void* outputBuffer,
         int   outputBufferSize

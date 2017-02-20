@@ -19,6 +19,7 @@
 #include "Pegasus/Memory/MemoryManager.h"
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/BlockScript/BsVm.h"
+#include "Pegasus/Timeline/Timeline.h"
 
 
 using namespace Pegasus;
@@ -311,9 +312,9 @@ static void Generate_Callback(BlockScript::FunCallbackContext& context)
     if (thisHandle != RenderCollection::INVALID_HANDLE)
     {
         Terrain3d* theTerrain = static_cast<Terrain3d*>(RenderCollection::GetResource<GenericResource>(collection, thisHandle));
-        if (collection->GetWindow() != nullptr)
+        if (collection->GetRenderInfo() != nullptr)
         {
-            theTerrain->Generate(collection->GetWindow()->GetWidth(), collection->GetWindow()->GetHeight());
+            theTerrain->Generate(collection->GetRenderInfo()->viewportWidth, collection->GetRenderInfo()->viewportHeight);
         }
         else
         {

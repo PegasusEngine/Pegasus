@@ -260,7 +260,7 @@ namespace Application
       mContext(context),
       mFactory(factory),
       mIsUsingGlobalCache(false),
-      mCurrentWindow(nullptr),
+      mCurrentRenderInfo(nullptr),
       mGlobalCache(nullptr),
       mGlobalCacheListener(nullptr)
 #if PEGASUS_ENABLE_SCRIPT_PERMISSIONS

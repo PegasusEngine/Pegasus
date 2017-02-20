@@ -175,13 +175,13 @@ Application::~Application()
     // Delete the texture and node managers
     // WARNING: order of destructors is very important.
     PG_DELETE(timelineAlloc, mTimelineManager);
-    PG_DELETE(coreAlloc, mRenderSystemManager);
     PG_DELETE(nodeAlloc, mAssetLib);    
     PG_DELETE(nodeAlloc, mMeshManager);
     PG_DELETE(nodeAlloc, mTextureManager);
     PG_DELETE(nodeAlloc, mShaderManager);
     PG_DELETE(nodeAlloc, mNodeManager);
     PG_DELETE(nodeAlloc, mRenderCollectionFactory);
+    PG_DELETE(coreAlloc, mRenderSystemManager);
 
     mBlockScriptManager->DestroyBlockLib(mRenderApiScript);
     PG_DELETE(timelineAlloc, mBlockScriptManager);

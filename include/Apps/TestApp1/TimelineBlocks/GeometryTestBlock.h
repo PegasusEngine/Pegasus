@@ -18,6 +18,12 @@
 
 
 // timeline block for GeometryTestBlock
+namespace Pegasus {
+    namespace Timeline {
+        struct UpdateInfo;
+        struct RenderInfo;
+    }
+}
 
 #define MAX_SPHERES 4
 
@@ -41,18 +47,8 @@ public:
     //! Deallocate the data used by the block
     virtual void Shutdown();
 
-    //! Update the content of the block, called once at the beginning of each rendered frame
-    //! \param beat Current beat relative to the beginning of the block,
-    //!             can have fractional part (>= 0.0f)
-    //! \todo That dependency is ugly. Find a way to remove that dependency
-    virtual void Update(float beat);
-
-    //! Render the content of the block
-    //! \param beat Current beat relative to the beginning of the block,
-    //!             can have fractional part (>= 0.0f)
-    //! \param window Window in which the lane is being rendered
-    //! \todo That dependency is ugly. Find a way to remove that dependency
-    virtual void Render(float beat, Pegasus::Wnd::Window * window);
+    virtual void Update(const Pegasus::Timeline::UpdateInfo& updateInfo) override;
+    virtual void Render(const Pegasus::Timeline::RenderInfo& renderInfo) override;
     
 private:
     

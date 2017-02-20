@@ -43,7 +43,7 @@ class WorldComponentState : public Wnd::WindowComponentState
     END_DECLARE_PROPERTIES()
 
 public:
-    WorldComponentState(Alloc::IAllocator* allocator);
+    WorldComponentState(Alloc::IAllocator* allocator, int windowIndex);
     virtual ~WorldComponentState() {}
 
 #if RENDER_SYSTEM_CONFIG_ENABLE_CAMERA
@@ -51,11 +51,14 @@ public:
     void ResetFreeCamPos();
 #endif
 
+    int GetWindowIndex() const { return mWindowIndex; }
+
 private:
 #if RENDER_SYSTEM_CONFIG_ENABLE_CAMERA
     Camera::CameraRef mFreeCam;
 #endif
     Alloc::IAllocator* mAllocator;
+    int mWindowIndex;
 };
 
 class WorldComponent : public Wnd::IWindowComponent
@@ -104,6 +107,7 @@ public:
 
 private:
     Alloc::IAllocator* mAlloc;
+    unsigned int mWindowIndexCount;
     
 #if PEGASUS_ENABLE_PROXIES
     enum Cmd{

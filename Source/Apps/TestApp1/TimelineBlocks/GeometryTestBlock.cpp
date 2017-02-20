@@ -17,12 +17,15 @@
 #include "Pegasus/Mesh/Generator/IcosphereGenerator.h"
 #include "Pegasus/Shader/ShaderManager.h"
 
+#include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Timeline/TimelineScript.h"
 #include "Pegasus/BlockScript/BlockScript.h"
 #include "Pegasus/BlockScript/BlockScriptManager.h"
 #include "Pegasus/BlockScript/BlockLib.h"
 #include "Pegasus/BlockScript/FunCallback.h"
-#include "Pegasus/Window/Window.h"
+#include "Pegasus/Timeline/Timeline.h"
+
+using namespace Pegasus;
 
 GeometryTestBlock::GeometryTestBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Core::IApplicationContext* appContext)
     : Pegasus::Timeline::Block(allocator, appContext)
@@ -158,20 +161,20 @@ void GeometryTestBlock::Shutdown()
 
 //----------------------------------------------------------------------------------------
 
-void GeometryTestBlock::Update(float beat)
+void GeometryTestBlock::Update(const Timeline::UpdateInfo& updateInfo)
 {
-    Block::Update(beat);
+    Block::Update(updateInfo);
 }
 
 //----------------------------------------------------------------------------------------
 
-void GeometryTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
+void GeometryTestBlock::Render(const Timeline::RenderInfo& renderInfo)
 {
-    Block::Render(beat, window);
+    Block::Render(renderInfo);
     //figure out aspect ratio
-    const unsigned int viewportWidth = window->GetWidth();
-    const unsigned int viewportHeight = window->GetHeight();
-    const float aspect = window->GetRatio();
+    const unsigned int viewportWidth = renderInfo.viewportWidth;
+    const unsigned int viewportHeight = renderInfo.viewportHeight;
+    const float aspect = renderInfo.aspect;
 
     ///////////////////////////////////////////////
     //******** PASS 1: texture of box ***********//
@@ -183,7 +186,7 @@ void GeometryTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
     Pegasus::Render::SetProgram(mDiscoSpeaker); // dispatch the shader
     Pegasus::Render::SetMesh(mQuad); // screen space
 
-    mSpeakerState.time = beat;
+    mSpeakerState.time = renderInfo.beat;
     Pegasus::Render::SetBuffer(mSpeakerStateBuffer, &mSpeakerState);
     Pegasus::Render::SetUniformBuffer(mSpeakerUniformBlock, mSpeakerStateBuffer);
 
@@ -198,7 +201,7 @@ void GeometryTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
     Pegasus::Render::SetProgram(mBlockProgram);
 
     Pegasus::Math::Vec3 rotAxis(0.3f, 0.4f, 0.01f);
-    Pegasus::Math::SetRotation(mState.mRotation, rotAxis, (float)beat * 0.92f);
+    Pegasus::Math::SetRotation(mState.mRotation, rotAxis, (float)renderInfo.beat * 0.92f);
 
     // do aspect ratio correctness on y axis
     mState.mRotation.m21 *= aspect;
@@ -224,8 +227,8 @@ void GeometryTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
         for (int j = 0; j < maxDepth; ++j)
         {
             float fj = 2.0f * ((float)j / (float)maxDepth) - 1.0f; 
-            float ox = 2.7f*Pegasus::Math::Cos(beat * 0.6f + 4.7f*fj * fi);
-            float oy = 2.7f*Pegasus::Math::Sin(beat * 0.6f - 6.0f*fj + 3.0f*fi);
+            float ox = 2.7f*Pegasus::Math::Cos(renderInfo.beat * 0.6f + 4.7f*fj * fi);
+            float oy = 2.7f*Pegasus::Math::Sin(renderInfo.beat * 0.6f - 6.0f*fj + 3.0f*fi);
             mState.mRotation.m14 = 6.0f * fi + ox;
             mState.mRotation.m24 = 6.0f * fj + oy;
             mState.mRotation.m34 = 0.5;

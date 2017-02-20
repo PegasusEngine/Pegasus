@@ -23,8 +23,9 @@ namespace Pegasus {
         class IBlockProxy;
     }
 
-    namespace Wnd {
-        class Window;
+    namespace Timeline {
+        struct RenderInfo;
+        struct UpdateInfo;
     }
 
     namespace AssetLib {
@@ -121,15 +122,12 @@ public:
     void UninitializeBlocks();
 
     //! Update the content of the lane for the given window (done once per frame if active)
-    //! \param beat Current beat, measured in ticks, can have fractional part
-    //! \todo That dependency is ugly. Find a way to remove that dependency
-    void Update(float beat);
+    //! \param update information.
+    void Update(UpdateInfo& updateInfo);
 
     //! Render the content of the lane for the given window
-    //! \param beat Current beat, measured in ticks, can have fractional part
-    //! \param window Window in which the lane is being rendered
-    //! \todo That dependency is ugly. Find a way to remove that dependency
-    void Render(float beat, Wnd::Window * window);
+    //! \param render information
+    void Render(RenderInfo& renderInfo);
 
 
 #if PEGASUS_ENABLE_PROXIES
@@ -265,6 +263,12 @@ private:
 
     //------------------------------------------------------------------------------------
 
+    //! Callback for when a window is created.
+    void OnWindowCreated(int windowIndex);
+
+    //! Callback for when a window is destroyed.
+    void OnWindowDestroyed(int windowIndex);
+
 private:
 
     // Lanes cannot be copied
@@ -318,6 +322,7 @@ private:
     //! Name of the lane, can be empty or nullptr, but no longer than MAX_NAME_LENGTH
     char mName[MAX_NAME_LENGTH + 1];
 
+    bool mWindowIsInitialized[PEGASUS_MAX_WORLD_WINDOW_COUNT];
 #endif  // PEGASUS_ENABLE_PROXIES
 };
 

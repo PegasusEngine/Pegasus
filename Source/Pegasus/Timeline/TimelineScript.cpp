@@ -10,14 +10,22 @@
 //! \brief	Script helper for scripting callbacks
 #include "Pegasus/Timeline/TimelineManager.h"
 #include "Pegasus/Timeline/TimelineScript.h"
+#include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/Core/Assertion.h"
+#include "Pegasus/BlockScript/BlockLib.h"
+#include "Pegasus/BlockScript/FunCallback.h"
 #include "Pegasus/BlockScript/BlockScriptManager.h"
 #include "Pegasus/BlockScript/IFileIncluder.h"
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/Memset.h"
 #include "Pegasus/Utils/Vector.h"
 #include "Pegasus/Core/Log.h"
+
+#if PEGASUS_ENABLE_PROXIES
+#include "Pegasus/BlockScript/SymbolTable.h"
+#include "Pegasus/BlockScript/TypeDesc.h"
+#endif
 
 using namespace Pegasus;
 using namespace Pegasus::Timeline;
@@ -80,15 +88,38 @@ static int Pegasus_PrintFloat(float f)
     return 0;
 }
 
+void TimelineScript::RegisterTypes(Pegasus::BlockScript::BlockLib* lib)
+{
+    const Pegasus::BlockScript::StructDeclarationDesc descriptionList[] = {
+        {
+            "UpdateInfo",
+            {"float", "float", nullptr},
+            {"beat", "relativeBeat", nullptr}
+        },
+        {
+            "RenderInfo",
+            {"float", "float",        "int",      "int",           "int",            "float",          "float",           "float", "float", nullptr},
+            {"beat",  "relativeBeat", "windowId", "viewportWidth", "viewportHeight", "viewportWidthF", "viewportHeightF", "aspect", "aspectInv", nullptr}
+        }
+    };
+
+    lib->CreateStructTypes(descriptionList, sizeof(descriptionList)/sizeof(descriptionList[0]));
+#if PEGASUS_ENABLE_PROXIES
+
+    //Sanity check, that the programmer has not forgotten to update the blockscript meta types
+    const Pegasus::BlockScript::TypeDesc* updateTypeDesc = lib->GetSymbolTable()->GetTypeTable()->GetTypeByName("UpdateInfo");
+    const Pegasus::BlockScript::TypeDesc* renderTypeDesc = lib->GetSymbolTable()->GetTypeTable()->GetTypeByName("RenderInfo");
+    PG_ASSERT(updateTypeDesc != nullptr && updateTypeDesc->GetByteSize() == sizeof(UpdateInfo));
+    PG_ASSERT(renderTypeDesc != nullptr && renderTypeDesc->GetByteSize() == sizeof(RenderInfo));
+#endif
+}
+
 TimelineScript::TimelineScript(IAllocator* allocator, Core::IApplicationContext* appContext)
     :
     TimelineSource(allocator),
     mSerialVersion(0),
     mScript(nullptr),
     mIsDirty(true),
-    mUpdateBindPoint(Pegasus::BlockScript::FUN_INVALID_BIND_POINT),
-    mRenderBindPoint(Pegasus::BlockScript::FUN_INVALID_BIND_POINT),
-    mDestroyBindPoint(Pegasus::BlockScript::FUN_INVALID_BIND_POINT),
     mScriptActive(false),
     mAppContext(appContext),
     mHeaders(allocator)
@@ -98,6 +129,8 @@ TimelineScript::TimelineScript(IAllocator* allocator, Core::IApplicationContext*
 {
 
     PG_ASSERT(allocator != nullptr);
+
+    ClearBindPoints();
 
     //setup the global system callbacks, if not initialized
     if (Pegasus::BlockScript::SystemCallbacks::gPrintStrCallback == nullptr)
@@ -120,14 +153,23 @@ TimelineScript::TimelineScript(IAllocator* allocator, Core::IApplicationContext*
     {
         mScript->IncludeLib(libs[i]);
     }
+    mScript->IncludeLib(appContext->GetTimelineManager()->GetTimelineLib());
     mScript->AddCompilerEventListener(this);
+}
+
+void TimelineScript::ClearBindPoints()
+{
+    //Initialize all bind points to invalid
+    for (unsigned int i = 0; i < BIND_POINT_COUNT; ++i)
+    {
+        mBindPoints[i] = Pegasus::BlockScript::FUN_INVALID_BIND_POINT;
+    }
 }
 
 void TimelineScript::Shutdown()
 {
     mScript->Reset();
-    mUpdateBindPoint = BlockScript::FUN_INVALID_BIND_POINT;
-    mRenderBindPoint = BlockScript::FUN_INVALID_BIND_POINT;
+    ClearBindPoints();
     mScriptActive = false;
 
 }
@@ -158,10 +200,10 @@ void TimelineScript::CallGlobalScopeInit(BsVmState* state)
 
 void TimelineScript::CallGlobalScopeDestroy(BsVmState* state)
 {
-    if (mDestroyBindPoint != BlockScript::FUN_INVALID_BIND_POINT)
+    if (IsValidBindPoint(BIND_POINT_DESTROY))
     {
        int output = -1; //the dummy output
-       bool res = mScript->ExecuteFunction(state, mDestroyBindPoint, nullptr, 0, &output, sizeof(output));
+       bool res = mScript->ExecuteFunction(state, mBindPoints[BIND_POINT_DESTROY], nullptr, 0, &output, sizeof(output));
        if (!res)
        {
     #if PEGASUS_ENABLE_PROXIES
@@ -175,32 +217,46 @@ bool TimelineScript::CompileInternal()
 {
     if (mScriptActive == false)
     {
+        static const char* defNames[] = {
+            "MAX_WINDOW_COUNT"
+        };
+        static const char* defValues[] = {
+            "7"
+        };
+
         ClearHeaderList();
         ScriptIncluder includer(this, mAppContext->GetTimelineManager());
         mScript->SetFileIncluder(&includer);
+        mScript->RegisterDefinitions(defNames, defValues, sizeof(defNames)/sizeof(defNames[0]));
         mScriptActive = mScript->Compile(&mFileBuffer);
         mScript->SetFileIncluder(nullptr);
         const char* types[] = { "float" }; //the only type of this functions is the beat
 
+        const struct BindPointDesc {
+            const char* functionName;
+            const char* types[10];
+            int typesCount;
+        } bindPointDescs[BIND_POINT_COUNT] = {
+            /***********************************************************************************/
+            /**/// Function name                |  parameter list     | parameter list count /**/
+            /***********************************************************************************/
+            /**/{ "Timeline_OnWindowCreated",   {"int"        },        1},                  /**/
+            /**/{ "Timeline_OnWindowDestroyed", {"int"        },        1},                  /**/
+            /**/{ "Timeline_Update",            {"UpdateInfo" },        1},                  /**/
+            /**/{ "Timeline_Render",            {"RenderInfo" },        1},                  /**/
+            /**/{ "Timeline_PostRender",        {"RenderInfo" },        1},                  /**/
+            /**/{ "Timeline_Destroy",           {/*empty*/},            0}                   /**/
+            /***********************************************************************************/
+        };
+
         if (mScriptActive)
         {
-            mUpdateBindPoint = mScript->GetFunctionBindPoint(
-                "Timeline_Update",
-                types,
-                1
-            );
-
-            mRenderBindPoint = mScript->GetFunctionBindPoint(
-                "Timeline_Render",
-                types,
-                1
-            );
-    
-            mDestroyBindPoint = mScript->GetFunctionBindPoint(
-                "Timeline_Destroy",
-                nullptr,
-                0
-            );
+            
+            for (unsigned int bp = 0; bp < BIND_POINT_COUNT; ++bp)
+            {
+                const BindPointDesc& desc = bindPointDescs[bp];
+                mBindPoints[bp] = mScript->GetFunctionBindPoint(desc.functionName, desc.types, desc.typesCount);
+           }
         
             ++mSerialVersion;
         }
@@ -238,38 +294,42 @@ void TimelineScript::Compile()
 #endif
 }
 
-void TimelineScript::CallUpdate(float beat, BsVmState* state)
+void TimelineScript::CallFunction(BsVmState* state, TimelineScript::BindPoint funct, const void* inputBuffer, unsigned inputBufferSz, void* outputBuffer, unsigned outputBufferSz)
 {
-
-    if (mScriptActive)
+    if (IsValidBindPoint(funct))
     {
-        if (mUpdateBindPoint != BlockScript::FUN_INVALID_BIND_POINT)
-        {
-            int output = -1; //the dummy output
-            bool res = mScript->ExecuteFunction(state, mUpdateBindPoint, &beat, sizeof(beat), &output, sizeof(output));
-            if (!res)
-            {
+        bool res = mScript->ExecuteFunction(state, mBindPoints[funct], inputBuffer, inputBufferSz, &outputBuffer, outputBufferSz);
+        if (!res)
+       {
 #if PEGASUS_ENABLE_PROXIES
-                PG_LOG('ERR_', "Error executing Update function of script %s.", GetDisplayName());
+            PG_LOG('ERR_', "Error executing function %d of script %s.", funct, GetDisplayName());
 #endif
-            }
-        }
+       }
     }
 }
 
-void TimelineScript::CallRender(float beat, BsVmState* state)
+void TimelineScript::CallUpdate(const UpdateInfo& updateInfo, BsVmState* state)
 {
-    if (mScriptActive && mRenderBindPoint != BlockScript::FUN_INVALID_BIND_POINT)
-    {
-        int output = -1; //the dummy output
-        bool res = mScript->ExecuteFunction(state, mRenderBindPoint, &beat, sizeof(beat), &output, sizeof(output));
-        if (!res)
-        {
-#if PEGASUS_ENABLE_PROXIES
-            PG_LOG('ERR_', "Error executing Render function of script %s.", GetDisplayName());
-#endif
-        }
-    }
+    int output = -1;
+    CallFunction(state, BIND_POINT_UPDATE, &updateInfo, sizeof(updateInfo), &output, sizeof(output));
+}
+
+void TimelineScript::CallRender(const RenderInfo& renderInfo, BsVmState* state)
+{
+    int output = -1;
+    CallFunction(state, BIND_POINT_RENDER, &renderInfo, sizeof(renderInfo), &output, sizeof(output));
+}
+
+void TimelineScript::CallWindowCreated(int windowIndex, BsVmState* state)
+{
+    int output = -1;
+    CallFunction(state, BIND_POINT_WINDOW_CREATED, &windowIndex, sizeof(windowIndex), &output, sizeof(output));
+}
+
+void TimelineScript::CallWindowDestroyed(int windowIndex, BsVmState* state)
+{
+    int output = -1;
+    CallFunction(state, BIND_POINT_WINDOW_DESTROYED, &windowIndex, sizeof(windowIndex), &output, sizeof(output));
 }
 
 TimelineScript::~TimelineScript()

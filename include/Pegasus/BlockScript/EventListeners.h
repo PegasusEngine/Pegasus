@@ -54,13 +54,11 @@ public:
     virtual void OnCompilationEnd(bool success) = 0;
 };
 
-//! Empty Structure for now
-//! /* TODO: Implement Crash logic */
+//! Crash information in case the vm crashes
 struct CrashInfo
 {
-public:
-    CrashInfo() : unused(0) {}
-    int unused;
+    CrashInfo() : lineNumber(0) {}
+    int lineNumber;
 };
 
 // runtime listener. This class has callbacks on the runtime, when certain events have been triggered

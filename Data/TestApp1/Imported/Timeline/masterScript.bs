@@ -30,16 +30,16 @@ marchingCubeProgram = LoadProgram("Programs/MarchingCubeProgram.pas");
 
 rs=CreateRasterizerState(RasterizerConfig(NONE_CM,LESSER_DF));
 
-int Timeline_Update(beat : float)
+int Timeline_Update(info : UpdateInfo)
 {
-	cam.Position = CamPos + beat*float3(0.5,0.0,0.5);
+	cam.Position = CamPos + info.beat*float3(0.5,0.0,0.5);
 	cam.Dir = CamDir;
 	cam.Fov = Fov;
 	BindCamera(cam, CAM_WORLD_CONTEXT);
 	meshGenerator.TerrainSeed = 1;
 }
 
-int Timeline_Render(beat: float)
+int Timeline_Render(info: RenderInfo)
 {
 
 	t->Generate();

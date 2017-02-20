@@ -21,6 +21,8 @@
 #include "Pegasus/Utils/String.h"
 #include "Pegasus/Utils/Memcpy.h"
 #include "Pegasus/Core/IApplicationContext.h"
+#include "Pegasus/Window/Window.h"
+#include "Pegasus/Utils/Memset.h"
 
 namespace Pegasus {
 namespace Timeline {
@@ -130,6 +132,10 @@ void Timeline::InternalClear()
         PG_DELETE(mAllocator, mLanes[lane]);
     }
     mNumLanes = 0;
+
+#if PEGASUS_ENABLE_PROXIES
+    Utils::Memset8(mWindowIsInitialized, 0, sizeof(mWindowIsInitialized));
+#endif
 }
 
 //----------------------------------------------------------------------------------------
@@ -340,14 +346,18 @@ void Timeline::Update(unsigned int musicPosition)
 
         }
 
-        mScriptRunner.CallUpdate(mCurrentBeat);
+        UpdateInfo updateInfo(mCurrentBeat);
+
+        updateInfo.relativeBeat = updateInfo.beat;
+
+        mScriptRunner.CallUpdate(updateInfo);
         // Update the content of each lane from top to bottom
         for (unsigned int l = 0; l < mNumLanes; ++l)
         {
             Lane * lane = GetLane(l);
             if (lane != nullptr)
             {
-                lane->Update(mCurrentBeat);
+                lane->Update(updateInfo);
             }
         }
 
@@ -356,13 +366,32 @@ void Timeline::Update(unsigned int musicPosition)
 
 //----------------------------------------------------------------------------------------
 
-void Timeline::Render(Wnd::Window * window)
+void Timeline::Render(int windowIndex, Wnd::Window* window)
 {
     if (window != nullptr)
     {
-        
+#if PEGASUS_ENABLE_PROXIES
+        //lazy initialization in case we missed the initial call, because of live editing.
+        //In this context, live editing means the user creating a new timeline from scratch from the editor.
+        if (!mWindowIsInitialized[windowIndex])
+        {
+            OnWindowCreated(windowIndex);
+        }
+#endif
+        RenderInfo renderInfo(
+           mCurrentBeat
+          ,windowIndex
+          ,static_cast<int>(window->GetWidth())
+          ,static_cast<int>(window->GetHeight())
+          ,static_cast<float>(window->GetWidth())
+          ,static_cast<float>(window->GetHeight())
+          ,window->GetRatio()
+          ,window->GetRatioInv()
+        );
+
+        renderInfo.relativeBeat = renderInfo.beat;
         // Render the content of each lane from top to bottom
-        mScriptRunner.CallRender(mCurrentBeat, window);
+        mScriptRunner.CallRender(renderInfo);
 
         //! \todo Add support for render passes
         for (unsigned int l = 0; l < mNumLanes; ++l)
@@ -370,7 +399,7 @@ void Timeline::Render(Wnd::Window * window)
             Lane * lane = GetLane(l);
             if (lane != nullptr)
             {
-                lane->Render(mCurrentBeat, window);
+                lane->Render(renderInfo);
             }
         }
     }
@@ -443,6 +472,36 @@ void Timeline::ShutdownScript()
 TimelineScriptReturn Timeline::GetScript()
 {
     return mScriptRunner.GetScript();
+}
+
+void Timeline::OnWindowCreated(int windowIndex)
+{
+#if PEGASUS_ENABLE_PROXIES
+    mWindowIsInitialized[windowIndex] = true;
+#endif
+    for (unsigned int l = 0; l < mNumLanes; ++l)
+    {
+        Lane * lane = GetLane(l);
+        if (lane != nullptr)
+        {
+            lane->OnWindowCreated(windowIndex);
+        }
+    }
+}
+
+void Timeline::OnWindowDestroyed(int windowIndex)
+{
+#if PEGASUS_ENABLE_PROXIES
+    mWindowIsInitialized[windowIndex] = false;
+#endif
+    for (unsigned int l = 0; l < mNumLanes; ++l)
+    {
+        Lane * lane = GetLane(l);
+        if (lane != nullptr)
+        {
+            lane->OnWindowCreated(windowIndex);
+        }
+    }
 }
 
 bool Timeline::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, const AssetLib::Asset* asset)

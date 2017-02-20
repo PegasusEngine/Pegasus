@@ -56,9 +56,6 @@ static void RegisterFunctions    (BlockLib* lib);
 
 static Application::RenderCollection* GetContainer(BsVmState* state);
 
-////Utility methods//////////////////////////////////////////
-void Util_GetWidthHeightAspect(FunCallbackContext& context);
-
 ////Program Methods//////////////////////////////////////////
 void Program_SetShaderStage(FunCallbackContext& context);
 
@@ -661,14 +658,6 @@ static void RegisterTypes(BlockLib* lib, Core::IApplicationContext* context)
 static void RegisterFunctions(BlockLib* lib)
 {
     const FunctionDeclarationDesc funDeclarations[] = {
-        //Misc utils
-        {
-            "GetWidthHeightAspect",
-            "float4",
-            { nullptr },
-            { nullptr },
-            Util_GetWidthHeightAspect
-        },
         {
             "LoadProgram",
             "ProgramLinkage",
@@ -968,30 +957,6 @@ static Application::RenderCollection* GetContainer(BsVmState* state)
     Application::RenderCollection* container = static_cast<Application::RenderCollection*>(state->GetUserContext());
     PG_ASSERT(container != nullptr);
     return container;
-}
-
-////Utility methods//////////////////////////////////////////
-void Util_GetWidthHeightAspect(FunCallbackContext& context)
-{
-    Application::RenderCollection* container = GetContainer(context.GetVmState());
-    Wnd::Window* w = container->GetWindow();
-    float* widthheightaspect = static_cast<float*>(context.GetRawOutputBuffer());
-    if (w != nullptr)
-    {
-        PG_ASSERT(context.GetOutputBufferSize() == sizeof(float) * 4);
-       
-        widthheightaspect[0] = static_cast<float>(w->GetWidth());
-        widthheightaspect[1] = static_cast<float>(w->GetHeight());
-        widthheightaspect[2] = w->GetRatio();
-        widthheightaspect[3] = w->GetRatioInv();
-    }
-    else
-    {
-        widthheightaspect[0] = 0.0f;
-        widthheightaspect[1] = 0.0f;
-        widthheightaspect[2] = 0.0f;
-        widthheightaspect[3] = 0.0f;
-    }
 }
 
 /////////////////////////////////////////////////////////////

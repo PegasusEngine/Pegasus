@@ -70,7 +70,8 @@ enum CanonTypes
     T_CAST,
     T_READ_OBJ_PROP,
     T_WRITE_OBJ_PROP,
-    T_EXIT
+    T_EXIT,
+    T_CHECK_MEM_ACESS,
 };
 
 // basic canonical node structure

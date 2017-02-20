@@ -13,7 +13,7 @@
 
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Mesh/MeshManager.h"
-#include "Pegasus/Window/Window.h"
+#include "Pegasus/Timeline/Timeline.h"
 
 //----------------------------------------------------------------------------------------
 
@@ -63,7 +63,7 @@ void FractalCube2Block::Shutdown()
 
 //----------------------------------------------------------------------------------------
 
-void FractalCube2Block::Update(float beat)
+void FractalCube2Block::Update(const Pegasus::Timeline::UpdateInfo& updateInfo)
 {
     // Update the graph of all textures and meshes, in case they have dynamic data
     mQuad->Update();
@@ -71,7 +71,7 @@ void FractalCube2Block::Update(float beat)
 
 //----------------------------------------------------------------------------------------
 
-void FractalCube2Block::Render(float beat, Pegasus::Wnd::Window * window)
+void FractalCube2Block::Render(const Pegasus::Timeline::RenderInfo& renderInfo)
 {
     Pegasus::Render::SetProgram(mProgram);
     Pegasus::Render::SetMesh(mQuad);
@@ -80,8 +80,8 @@ void FractalCube2Block::Render(float beat, Pegasus::Wnd::Window * window)
     Pegasus::Render::SetBlendingState(mCurrentBlockBlendingState);
 
     // Set up uniforms
-    mState.ratio = window->GetRatio();
-    mState.time = beat;
+    mState.ratio = renderInfo.aspect;
+    mState.time = renderInfo.beat;
     Pegasus::Render::SetBuffer(mStateBuffer, &mState);
     Pegasus::Render::SetUniformBuffer(mStateBufferUniform, mStateBuffer);
     

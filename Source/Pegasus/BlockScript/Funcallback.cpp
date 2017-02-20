@@ -54,7 +54,7 @@ FunBindPoint Pegasus::BlockScript::GetFunctionBindPoint(
     const BlockScriptBuilder* builder, 
     const Assembly& assembly,
     const char* funName,
-    const char** argTypes,
+    const char*const* argTypes,
     int argumentListCount
 )
 {
@@ -124,13 +124,13 @@ bool Pegasus::BlockScript::ExecuteFunction(
     const Assembly& assembly,
     BsVmState& state,
     BsVm& vm,
-    void* inputBuffer,
+    const void* inputBuffer,
     int   inputBufferSize,
     void* outputBuffer,
     int   outputBufferSize
 )
 {
-    if (bindPoint == FUN_INVALID_BIND_POINT)
+    if (bindPoint == FUN_INVALID_BIND_POINT || state.GetExecutionState() != BsVmState::Alive)
     {
         return false;
     }

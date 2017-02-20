@@ -77,6 +77,9 @@ public:
     //! \return the component factory
     AppWindowComponentFactory* GetComponentFactory() { return mComponentFactory; }
 
+    //! \return the number of windows that have the world component active.
+    int GetWorldWindowsCount() const { return mWorldWindowsCount; }
+
 private:
     // No copies allowed
     PG_DISABLE_COPY(AppWindowManager);

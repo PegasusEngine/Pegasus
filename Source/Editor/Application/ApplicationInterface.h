@@ -54,8 +54,7 @@ public:
 
     //! Set the state indicating if an assertion error is currently being handled
     //! \param state True if an assertion is currently being handled
-    //! \todo Seems not useful anymore. Test and remove if possible
-    //inline void SetAssertionBeingHandled(bool state) { mAssertionBeingHandled = state; }
+    inline void SetAssertionBeingHandled(bool state) { mAssertionBeingHandled = state; }
 
     //------------------------------------------------------------------------------------
 
@@ -113,7 +112,7 @@ private:
 
     //! True while an assertion dialog box is shown to prevent any paint message to reach the application windows
     //! \todo Seems not useful anymore. Test and remove if possible
-    //bool mAssertionBeingHandled;
+    bool mAssertionBeingHandled;
 
     //! Controllers, used to process messages from the application to the render thread, and messages back to the UI
     AssetIOMessageController*        mAssetIoMessageController;

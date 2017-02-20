@@ -95,6 +95,9 @@ public:
     //! get the number of defines 
     int GetDefinitionCount() const { return mDefinitions.GetSize(); }
 
+    //! insert a definition
+    void InsertDefinition(const Definition& d) { mDefinitions.PushEmpty() = d; }
+
     //! get a definition by string name
     const Definition* FindDefinitionByName(const char* name) const;
 

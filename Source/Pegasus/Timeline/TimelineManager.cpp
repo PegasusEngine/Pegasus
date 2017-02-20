@@ -25,6 +25,7 @@
 #include "Pegasus/AssetLib/Asset.h"
 #include "Pegasus/AssetLib/RuntimeAssetObject.h"
 #include "Pegasus/Core/IApplicationContext.h"
+#include "Pegasus/BlockScript/BlockScriptManager.h"
 
 
 #include <string.h>
@@ -57,6 +58,10 @@ TimelineManager::TimelineManager(Alloc::IAllocator * allocator, Core::IApplicati
     // register the most basic block.
     TimelineManager* timelineManager = this;
     REGISTER_BASE_TIMELINE_BLOCK(Block);
+
+    //creating blockscript lib for render/update callbacks type containers
+    mTimelineLib = appContext->GetBlockScriptManager()->CreateBlockLib("Timeline");
+    TimelineScript::RegisterTypes(mTimelineLib);
 }
 
 //----------------------------------------------------------------------------------------
@@ -64,6 +69,7 @@ TimelineManager::TimelineManager(Alloc::IAllocator * allocator, Core::IApplicati
 TimelineManager::~TimelineManager()
 {
     mCurrentTimeline = nullptr;
+    mAppContext->GetBlockScriptManager()->DestroyBlockLib(mTimelineLib);
 }
 
 //----------------------------------------------------------------------------------------
@@ -368,6 +374,24 @@ const PegasusAssetTypeDesc*const* TimelineManager::GetAssetTypes() const
     };
 
     return gDescs;
+}
+
+void TimelineManager::OnWindowCreated(int windowIndex)
+{
+    //TODO: this function should iterate over all timelines and call OnWindowCreated.
+    if (mCurrentTimeline != nullptr)
+    {
+        mCurrentTimeline->OnWindowCreated(windowIndex);
+    }
+}
+
+void TimelineManager::OnWindowDestroyed(int windowIndex)
+{
+    //TODO: this function should iterate over all timelines and call OnWindowDestroyed.
+    if (mCurrentTimeline != nullptr)
+    {
+        mCurrentTimeline->OnWindowDestroyed(windowIndex);
+    }
 }
 
 }   // namespace Timeline

@@ -192,6 +192,7 @@ Window::Window(const WindowConfig& config)
 
 Window::~Window()
 {
+    RemoveComponents();
     // Destroy platform stuff
     IWindowImpl::DestroyImpl(mPrivateImpl, mAllocator);
     PG_DELETE(mAllocator, mMessageHandler);
@@ -250,7 +251,7 @@ void Window::Draw()
         RenderSystems::RenderSystemManager* renderSystemManager = mWindowContext->GetRenderSystemManager();
         for (unsigned i = 0; i < renderSystemManager->GetSystemCount(); ++i)
         {
-            renderSystemManager->GetSystem(i)->WindowUpdate(this);
+            renderSystemManager->GetSystem(i)->WindowUpdate(GetWidth(), GetHeight());
         }
 
         //call Update for all components.

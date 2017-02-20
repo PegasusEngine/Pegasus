@@ -19,7 +19,7 @@
 #include "Pegasus/BlockScript/BlockLib.h"
 #include "Pegasus/BlockScript/FunCallback.h"
 #include "Pegasus/BlockScript/BsVm.h"
-
+#include "Pegasus/Timeline/Timeline.h"
 
 namespace Pegasus {
 namespace Camera {
@@ -60,18 +60,20 @@ static void Camera_BindCamera(BlockScript::FunCallbackContext& context)
 {
     BlockScript::FunParamStream stream(context);
     Application::RenderCollection* collection = static_cast<Application::RenderCollection*>(context.GetVmState()->GetUserContext());
-    Application::RenderCollection::CollectionHandle handle = stream.NextArgument<Application::RenderCollection::CollectionHandle>();    
+    Application::RenderCollection::CollectionHandle handle = stream.NextArgument<Application::RenderCollection::CollectionHandle>();
     CameraContext enumContextType(stream.NextArgument<int>());
 
     if (handle != Application::RenderCollection::INVALID_HANDLE)
     {
         Camera* cam = static_cast<Camera*>(Application::RenderCollection::GetResource<Application::GenericResource>(collection, handle));
-        gCameraSystem->BindCamera(cam);
-
+      
+        gCameraSystem->BindCamera(cam, enumContextType);
+        
         //if bind camera is called within render, flush the camera into a cbuffer (means a new camera has been set).
-        if (collection->GetWindow() != nullptr)
+        if (collection->GetRenderInfo() != nullptr)
         {
-            gCameraSystem->WindowUpdate(collection->GetWindow());
+            const Timeline::RenderInfo* renderInfo = collection->GetRenderInfo();
+            gCameraSystem->WindowUpdate(renderInfo->viewportWidth, renderInfo->viewportHeight);
         }
     }
     else
@@ -90,9 +92,10 @@ static void Camera_UseCamContext(BlockScript::FunCallbackContext& context)
         gCameraSystem->UseCameraContext(enumContextType);
         
         //if bind camera is called within render, flush the camera into a cbuffer (means a new camera has been set).
-        if (collection->GetWindow() != nullptr)
+        if (collection->GetRenderInfo() != nullptr)
         {
-            gCameraSystem->WindowUpdate(collection->GetWindow());
+            const Timeline::RenderInfo* renderInfo = collection->GetRenderInfo();
+            gCameraSystem->WindowUpdate(renderInfo->viewportWidth, renderInfo->viewportHeight);
         }
 
     }
@@ -172,17 +175,13 @@ void CameraSystem::OnRegisterShaderGlobalConstants(Utils::Vector<ShaderGlobalCon
     desc.buffer = mCameraBuffer;
 }
 
-void CameraSystem::WindowUpdate(Wnd::Window* window)
+void CameraSystem::WindowUpdate(unsigned int width, unsigned int height)
 {
-    CameraRef currentCamera;
-    if (mCurrentContext == CAM_WORLD_CONTEXT)
-    {
-        currentCamera = mFreeCam != nullptr || mCameras[mCurrentContext.GetValue()] == nullptr ? mFreeCam : mCameras[mCurrentContext.GetValue()];
-    }
+    CameraRef currentCamera = (mFreeCam != nullptr && mCurrentContext == CAM_WORLD_CONTEXT) || mCameras[mCurrentContext.GetValue()] == nullptr ? mFreeCam : mCameras[mCurrentContext.GetValue()];
 
     if (currentCamera != nullptr)
     {
-        bool mustUpdate = currentCamera->WindowUpdate(window->GetWidth(), window->GetHeight());
+        bool mustUpdate = currentCamera->WindowUpdate(width, height);
         if (mustUpdate || mCamStateDirty)
         {
             Pegasus::Render::SetBuffer(mCameraBuffer, &currentCamera->GetGpuData(), sizeof(Camera::GpuCamData));

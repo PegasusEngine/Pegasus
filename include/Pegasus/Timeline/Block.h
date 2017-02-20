@@ -34,6 +34,8 @@ namespace Pegasus {
     namespace Timeline {
         class Lane;
         class Timeline;
+        struct UpdateInfo;
+        struct RenderInfo;
     }
 
     namespace Wnd {
@@ -100,17 +102,20 @@ public:
     TimelineScriptReturn GetScript();
 
     //! Update the content of the block, called once at the beginning of each rendered frame
-    //! \param beat Current beat relative to the beginning of the block,
+    //! \param updateInfo Current beat relative to the beginning of the block,
     //!             can have fractional part (>= 0.0f)
-    //! \todo That dependency is ugly. Find a way to remove that dependency
-    virtual void Update(float beat);
+    virtual void Update(const UpdateInfo& updateInfo);
 
     //! Render the content of the block
-    //! \param beat Current beat relative to the beginning of the block,
+    //! \param renderInfo - beat Current beat relative to the beginning of the block,
     //!             can have fractional part (>= 0.0f)
-    //! \param window Window in which the lane is being rendered
-    //! \todo That dependency is ugly. Find a way to remove that dependency
-    virtual void Render(float beat, Wnd::Window * window);
+    virtual void Render(const RenderInfo& renderInfo);
+
+    //! Callback for when a window is created.
+    virtual void OnWindowCreated(int windowIndex);
+
+    //! Callback for when a window is destroyed.
+    virtual void OnWindowDestroyed(int windowIndex);
 
     //! Gets the internal script runner of this block.
     TimelineScriptRunner& GetScriptRunner() { return mScriptRunner; }
@@ -239,6 +244,7 @@ private:
 
 #if PEGASUS_ENABLE_PROXIES
     unsigned mGuid;
+    bool mWindowIsInitialized[PEGASUS_MAX_WORLD_WINDOW_COUNT];
 #endif
 };
 

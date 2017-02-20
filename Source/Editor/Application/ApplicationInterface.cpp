@@ -41,8 +41,7 @@
 ApplicationInterface::ApplicationInterface(Application * application)
 :   QObject(nullptr)
 ,   mApplication(application)
-//,   mAssertionBeingHandled(false)
-    //! \todo Seems not useful anymore. Test and remove if possible
+,   mAssertionBeingHandled(false)
 {
     ED_ASSERTSTR(application != nullptr, "Invalid application object given to the application interface");
 
@@ -237,6 +236,9 @@ ApplicationInterface::~ApplicationInterface()
 
 void ApplicationInterface::RedrawMainViewport()
 {
+    if (mAssertionBeingHandled)
+        return;
+
     if (Editor::GetInstance().GetMainViewportDockWidget()->isVisible())
     {
         Pegasus::Wnd::IWindowProxy* w = Editor::GetInstance().GetMainViewportDockWidget()->GetViewportWidget()->GetWindowProxy();
@@ -251,6 +253,9 @@ void ApplicationInterface::RedrawMainViewport()
 
 void ApplicationInterface::RedrawSecondaryViewport()
 {
+    if (mAssertionBeingHandled)
+        return;
+
     if (Editor::GetInstance().GetSecondaryViewportDockWidget()->isVisible())
     {
         Pegasus::Wnd::IWindowProxy* w = Editor::GetInstance().GetSecondaryViewportDockWidget()->GetViewportWidget()->GetWindowProxy();
@@ -265,6 +270,9 @@ void ApplicationInterface::RedrawSecondaryViewport()
 
 void ApplicationInterface::RedrawAllViewports()
 {
+    if (mAssertionBeingHandled)
+        return;
+
     // Sim & Sound - update application.
     mApplication->GetApplicationProxy()->Update();
 

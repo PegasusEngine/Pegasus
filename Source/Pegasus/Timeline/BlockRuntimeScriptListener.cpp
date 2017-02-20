@@ -365,7 +365,9 @@ void BlockRuntimeScriptListener::OnRuntimeExit(Pegasus::BlockScript::BsVmState& 
 
 void BlockRuntimeScriptListener::OnCrash(Pegasus::BlockScript::BsVmState& state, const Pegasus::BlockScript::CrashInfo& crashInfo)
 {
-    /*TODO: handle this*/
+    //TODO: display more info about crashes
+    PG_FAILSTR("Script has crashed! For more information set a breakpoint and analyze the culprit byte code.");
+    PG_LOG('ERR_', "Script has crashed! Check memory accesses / array bounds.")
 }
 
 BlockRuntimeScriptListener::UpdateType BlockRuntimeScriptListener::FlushProperty(Pegasus::BlockScript::BsVmState& state, unsigned int index)

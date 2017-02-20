@@ -35,6 +35,14 @@ class BsVmState
     friend class BsVm;
 public:
     
+    //all possible execution stages of virtual machine
+    enum ExecutionState
+    {
+        Crashed, //application has terminated due to an error. 
+                 //To capture the error add a runtime listener and listen to the function OnCrash. Vm will not perform any operations any further along
+        Alive  //VM is alive, and can receive requests to ExecutionFunction, StepExecution or Run.
+    };
+
     // Constructor
     BsVmState();
 
@@ -102,7 +110,12 @@ public:
 
     void DecStackLevels() { --mStackLevels; }
 
+    ExecutionState GetExecutionState() const { return mExecutionState; }
+
+    void SetExecutionState(ExecutionState execState) { mExecutionState = execState; }
 private:
+
+    ExecutionState mExecutionState;
 
     // the user context
     void* mUserContext;

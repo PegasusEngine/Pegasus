@@ -801,7 +801,8 @@ void Canonizer::Visit(Unop* unop)
             }
             else if (targetType->GetAluEngine() == sourceType->GetAluEngine() || targetType->GetModifier() == TypeDesc::M_ENUM)
             {                         
-                mRebuiltExpression = unop->GetExp();
+                //let the internal expression be the next mRebuildExpression
+                unop->GetExp()->Access(this);               
             }            
             else
             {

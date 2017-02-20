@@ -106,7 +106,7 @@ tempTarget3 = CreateRenderTarget( tmpConfig );
 gState = StateStruct();
 gSpeakerState = SpeakerStateStruct();
 
-int Timeline_Update(beat : float)
+int Timeline_Update(info : UpdateInfo)
 {
  //TODO: add function for identity
 	gState.transform = float4x4(
@@ -116,17 +116,16 @@ int Timeline_Update(beat : float)
 	0.0, 0.0, 0.0, 1.0
 	);
 
-	gSpeakerState.time = beat;
+	gSpeakerState.time = info.beat;
 	gSpeakerState.glitterIntensity = Material_GlitterIntensity;
 	gSpeakerState.glitterRepetition = Material_GlitterRepetition;
 }
 
-int Timeline_Render(beat : float)
+int Timeline_Render(info : RenderInfo)
 {
-	wha = GetWidthHeightAspect();
-    viewportWidth = (int)wha .x ;
-    viewportHeight = (int)wha .y;
-    aspect = wha.w; //w contains inverted aspect ratio.
+    viewportWidth = info.viewportWidth; 
+    viewportHeight = info.viewportHeight;
+    aspect = info.aspect; //w contains inverted aspect ratio.
 
 
     ///////////////////////////////////////////////
@@ -157,7 +156,7 @@ int Timeline_Render(beat : float)
     rotAxis = CubeRotAxis;
 
 	
-    gState.transform = GetRotation(rotAxis, (float)beat * 0.92);
+    gState.transform = GetRotation(rotAxis,  info.beat * 0.92);
 	gState.transform[2][3] = -10;
 
 
@@ -181,8 +180,8 @@ int Timeline_Render(beat : float)
         j = 0; while(j < maxDepth)
         {
             fj = 2.0 * ((float)j / (float)maxDepth) - 1.0; 
-            ox = 2.7*cos(beat * 0.6 + 4.7*fj * fi);
-            oy = sin(beat * 0.6 - 6.0*fj + 3.0*fi);
+            ox = 2.7*cos(info.beat * 0.6 + 4.7*fj * fi);
+            oy = sin(info.beat * 0.6 - 6.0*fj + 3.0*fi);
             gState.transform[0][3] = 6.0 * fi + ox;
             gState.transform[1][3] = 6.0 * fj + oy;
             gState.transform[2][3] = -10.5;
@@ -227,3 +226,4 @@ int Timeline_Render(beat : float)
 
 	UnbindPixelResources();
 }
+

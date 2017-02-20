@@ -34,10 +34,6 @@ namespace Pegasus {
         class Lane;
     }
 
-    namespace Wnd {
-        class Window;
-    }
-    
     namespace AssetLib {
         class Asset;
     }
@@ -238,6 +234,14 @@ public:
     //! Return list of extra libs used for timeline scripts
     Utils::Vector<BlockScript::BlockLib*>& GetLibs() { return mExtraLibs; }
 
+    BlockScript::BlockLib* GetTimelineLib() { return mTimelineLib; }
+
+    //! Callback for when a window is created.
+    void OnWindowCreated(int windowIndex);
+
+    //! Callback for when a window is destroyed.
+    void OnWindowDestroyed(int windowIndex);
+
 
     //------------------------------------------------------------------------------------
 
@@ -294,6 +298,8 @@ private:
 
     //! Lists of extra libs that the timeline might use
     Utils::Vector<BlockScript::BlockLib*> mExtraLibs;
+
+    BlockScript::BlockLib* mTimelineLib;
     
 };
 

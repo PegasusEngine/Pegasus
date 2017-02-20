@@ -94,7 +94,9 @@ public:
     virtual void OnRegisterShaderGlobalConstants(Utils::Vector<ShaderGlobalConstantDesc>& outConstants) {}
 
     //! Use this call to perform window specific computations.
-    virtual void WindowUpdate(Wnd::Window* window) {}
+    //! width - the window's width
+    //! height - the window's height
+    virtual void WindowUpdate(unsigned int width, unsigned int height) {}
 
     //! Gets the id of a render system.
     int GetId() const { return mId; }

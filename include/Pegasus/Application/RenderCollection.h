@@ -46,6 +46,9 @@ namespace Mesh {
     class MeshGenerator;
     //class MeshOperator; TODO: implement any mesh operator! yet to be done :)
 }
+namespace Timeline {
+    struct RenderInfo;
+}
 
 namespace Application {    
     class RenderCollectionImpl;
@@ -224,13 +227,13 @@ namespace Application
         //! Cleans / Deletes all references to the shaders/nodes/meshes/rendertargets/blendingstates/rasterstates being used
         void Clean();
 
-        //! Set the window for this set of draw calls
+        //! Set render info of the current draw call
         //! \param Window the window
-        void SetWindow(Wnd::Window* wnd) { mCurrentWindow = wnd; }
+        void SetRenderInfo(const Timeline::RenderInfo* renderInfo) { mCurrentRenderInfo = renderInfo; }
 
-        //! Get the current window
+        //! Gets the render info of the current draw call
         //! \return the current window
-        Wnd::Window* GetWindow() const { return mCurrentWindow; }
+        const Timeline::RenderInfo* GetRenderInfo() const { return mCurrentRenderInfo; }
 
         //! Gets the factory
         RenderCollectionFactory* GetFactory() { return mFactory; }
@@ -285,7 +288,7 @@ namespace Application
         RenderCollectionFactory* mFactory;
 
         //! The current window
-        Wnd::Window* mCurrentWindow;
+        const Timeline::RenderInfo* mCurrentRenderInfo;
 
         //! Reference to the global cache
         Application::GlobalCache* mGlobalCache;

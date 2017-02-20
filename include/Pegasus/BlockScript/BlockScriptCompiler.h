@@ -17,7 +17,9 @@
 #include "Pegasus/BlockScript/BlockScriptCanon.h"
 #include "Pegasus/BlockScript/FunCallback.h"
 #include "Pegasus/BlockScript/Container.h"
-#include "Pegasus/BlockScript/Canonizer.h"
+#include "Pegasus/BlockScript/Preprocessor.h"
+#include "Pegasus/Memory/BlockAllocator.h"
+
 
 //forward declarations begin
 namespace Pegasus {
@@ -73,6 +75,10 @@ public:
     //! Resets all memory. Call this if Compile is going to be called again
     void Reset();
 
+    //! Adds a set of definitions to keep around. These defs act as #defines within blockscript.
+    //! The strings in question will get copied.
+    void RegisterDefinitions(const char* definitionNames[], const char* definitionValues[], int definitionCounts);
+
     //! Gets the abstract syntax tree constructed from Compile
     //! \return the abstract syntax tree
     Ast::Program* GetAst() { return mAst; }
@@ -93,7 +99,7 @@ public:
     //! \return FUN_INVALID_BIND_POINT if the function does not exist, otherwise a valid bind point.
     FunBindPoint GetFunctionBindPoint(
         const char* funName,
-        const char** argTypes,
+        const char*const* argTypes,
         int argumentListCount
     ) const;
 
@@ -119,10 +125,11 @@ protected:
 
 private:
     Alloc::IAllocator*       mAllocator;
+    Memory::BlockAllocator   mStrAllocator;
     Ast::Program*            mAst;
     Assembly                 mAsm;
-    IFileIncluder*            mFileIncluder;
-
+    IFileIncluder*           mFileIncluder;
+    Container<Preprocessor::Definition>   mDefinitionList;
 };
 
 }

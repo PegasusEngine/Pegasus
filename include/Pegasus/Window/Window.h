@@ -46,6 +46,7 @@ class Window
 {
 public:
     //! Constructor
+    //! \param windowIndex, the index of this window.
     //! \param config Config structure for this window.
     Window(const WindowConfig& config);
 

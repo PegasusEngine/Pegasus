@@ -13,8 +13,7 @@
 #include "Pegasus/Render/Render.h"
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Mesh/MeshManager.h"
-#include "Pegasus/Window/Window.h"
-
+#include "Pegasus/Timeline/Timeline.h"
 //----------------------------------------------------------------------------------------
 
 FractalCubeBlock::FractalCubeBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Core::IApplicationContext* appContext)
@@ -58,7 +57,7 @@ void FractalCubeBlock::Shutdown()
 
 //----------------------------------------------------------------------------------------
 
-void FractalCubeBlock::Update(float beat)
+void FractalCubeBlock::Update(const Pegasus::Timeline::UpdateInfo& updateInfo)
 {
     // Update the graph of all textures and meshes, in case they have dynamic data
     mQuad->Update();
@@ -66,14 +65,14 @@ void FractalCubeBlock::Update(float beat)
 
 //----------------------------------------------------------------------------------------
 
-void FractalCubeBlock::Render(float beat, Pegasus::Wnd::Window * window)
+void FractalCubeBlock::Render(const Pegasus::Timeline::RenderInfo& renderInfo)
 {
     Pegasus::Render::SetProgram(mProgram);
     Pegasus::Render::SetMesh(mQuad);
 
     // Set up uniforms
-    mState.ratio = window->GetRatio();
-    mState.time = beat;
+    mState.ratio = renderInfo.aspect;
+    mState.time = renderInfo.beat;
     Pegasus::Render::SetBuffer(mStateBuffer, &mState);
     Pegasus::Render::SetUniformBuffer(mStateBufferUniform, mStateBuffer);
     

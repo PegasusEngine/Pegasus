@@ -20,6 +20,12 @@
 #include "Pegasus/Render/Render.h"
 
 namespace Pegasus {
+    namespace Timeline {
+        struct RenderInfo;
+    }
+}
+
+namespace Pegasus {
 namespace Camera {
 
 //! Camera manager, storing the global cameras
@@ -48,7 +54,7 @@ public:
 
     virtual void OnRegisterShaderGlobalConstants(Utils::Vector<RenderSystem::ShaderGlobalConstantDesc>& outConstants);
 
-    virtual void WindowUpdate(Wnd::Window* window);
+    virtual void WindowUpdate(unsigned int width, unsigned int height);
 
     //API functions
     

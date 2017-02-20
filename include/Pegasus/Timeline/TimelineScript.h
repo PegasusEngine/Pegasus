@@ -38,6 +38,14 @@ namespace Pegasus {
         class IApplicationContext;
     }
 
+    namespace BlockScript {
+        class BlockLib;
+    }
+    namespace Timeline {
+        struct UpdateInfo;
+        struct RenderInfo;
+    }
+
 }
 
 namespace Pegasus {
@@ -88,14 +96,28 @@ public:
     //! Calls update on the script, If script does not implement Update, then this is a NOP
     //! the version parameter will be checked, if mismatched, it will call init globals and will 
     //! set the version to a new one.
-    void CallUpdate(float beat, BlockScript::BsVmState* state);
+    //! \param update information.
+    //! \param state virtual machine state.
+    void CallUpdate(const UpdateInfo& updateInfo, BlockScript::BsVmState* state);
 
     //! Call before update, this will reveal if the internal asset has changed. If so, the script gets recompiled, and
     //! the serial version is incremented.
     virtual void Compile();
 
     //! Calls render on the script. If scripts does not implement Render, then this is a NOP
-    void CallRender(float beat, BlockScript::BsVmState* state);
+    //! \param render information used.
+    //! \param state the virtual machine state.
+    void CallRender(const RenderInfo& renderInfo, BlockScript::BsVmState* state);
+
+    //! Calls window created on a script.
+    //! \param windowIndex - the index of the window being created
+    //! \param state - the vs vm state
+    void CallWindowCreated(int windowIndex, BlockScript::BsVmState* state);
+
+    //! Calls window destroyed on a script.
+    //! \param windowIndex - the index of the window being destroyed
+    //! \param state - the vs vm state
+    void CallWindowDestroyed(int windowIndex, BlockScript::BsVmState* state);
 
     //! Returns true of the script is active. False if it is not
     bool IsScriptActive() const { return mScriptActive; }
@@ -137,14 +159,20 @@ public:
     void UnregisterObserver(ITimelineObserver* observer);
 #endif
 
+    //! Register types on a library for blockscript
+    static void RegisterTypes(Pegasus::BlockScript::BlockLib* targetLib);
+
 private:
 
     // Nodes cannot be copied, only references to them
     PG_DISABLE_COPY(TimelineScript)
 
+
     //! Attempts compilation of the opened file.
     //! \return true if successful, false otherwise
     bool CompileInternal();
+
+    void ClearBindPoints();
 
     //! internal script structure
     BlockScript::BlockScript* mScript;
@@ -152,14 +180,26 @@ private:
     //! status of last IO operation
     Io::IoError mIoStatus;
 
-    //! update callback bind point for script
-    BlockScript::FunBindPoint mUpdateBindPoint;
+    //@{
+    //! bind points for script 
+    enum BindPoint
+    {
+        BIND_POINT_WINDOW_CREATED,
+        BIND_POINT_WINDOW_DESTROYED,
+        BIND_POINT_UPDATE,
+        BIND_POINT_RENDER,
+        BIND_POINT_POSTRENDER,
+        BIND_POINT_DESTROY,
+        BIND_POINT_COUNT
+    };
+    //@}
 
-    //! render callback bind point for script
-    BlockScript::FunBindPoint mRenderBindPoint; 
-    
-    //! render callback for script destruction
-    BlockScript::FunBindPoint mDestroyBindPoint; 
+    void CallFunction(BlockScript::BsVmState* state, BindPoint funct, const void* inputBuffer, unsigned inputBufferSz, void* outputBuffer, unsigned outputBufferSz);
+    bool IsValidBindPoint(BindPoint bp) const { return mScriptActive && mBindPoints[bp] != Pegasus::BlockScript::FUN_INVALID_BIND_POINT; }
+
+    //! Set that contains bind points
+    BlockScript::FunBindPoint mBindPoints[BIND_POINT_COUNT];
+
 
     //! state of current script
     bool mScriptActive;

@@ -37,10 +37,9 @@ cullConfig.DepthFunc = LESSER_DF;
 cullState = CreateRasterizerState(cullConfig);
 
 
-int SetupState(beat : float)
+int SetupState(info : RenderInfo)
 {
-	wha = GetWidthHeightAspect();
-	aspect = wha.w;
+	aspect = info.aspect;
 	//SETUP CAMERA
 	gMarbleState.uProj = GetProjection(1.2,aspect,0.01,500.0);
 	//SETUP SPHERE WORLD
@@ -52,21 +51,21 @@ int SetupState(beat : float)
 	);
 	gMarbleState.uWorld = worldMat;
 	
-	gPixelState.uCameraPos_beat = float4(float3(0.0,0.0,0.0),beat);
+	gPixelState.uCameraPos_beat = float4(float3(0.0,0.0,0.0),info.beat);
 	gPixelState.uCenterPos_unused = float4(SphereCenter, 1.0);
 	speed = 0.5;
-	gPixelState.uLightPosition = float4(1.0*sin(beat*speed*3.14),1.0*sin(1.0-beat),1.0*cos(beat*speed*3.14),0.0);
+	gPixelState.uLightPosition = float4(1.0*sin(info.beat*speed*3.14),1.0*sin(1.0-info.beat),1.0*cos(info.beat*speed*3.14),0.0);
 }
 
-int Timeline_Update(beat : float)
+int Timeline_Update(info : UpdateInfo)
 {
 }
 
 
-int Timeline_Render(beat : float)
+int Timeline_Render(info : RenderInfo)
 {
 
-	SetupState(beat);
+	SetupState(info);
 	/// RENDER MARBLE
 	Clear(1,0,0);
 	SetClearColorValue(float4(0,0,0,1));

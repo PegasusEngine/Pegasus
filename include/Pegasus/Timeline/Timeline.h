@@ -52,6 +52,54 @@ namespace Pegasus {
 namespace Pegasus {
 namespace Timeline {
 
+//! Structure describing an update tick.
+struct UpdateInfo
+{
+    float beat; // the beat number this update requested is
+    float relativeBeat;
+
+    UpdateInfo(float pBeat)
+    : beat(pBeat)
+    , relativeBeat(0.0f) //compute as we pass it down to blocks to recycle memory
+    {
+    }
+};
+
+//! Structure describing
+struct RenderInfo
+{
+    float beat;           // the beat this render request is
+    float relativeBeat;   // beat relative to the beginning of this block.
+    int windowId;         //the windows id requested
+    int viewportWidth;    //the viewport width as an int
+    int viewportHeight;   //the viewport height as an int
+    float viewportWidthF; //the viewport width as a float
+    float viewportHeightF;//the viewport height as a float
+    float aspect;         //the aspect ratio (height / width)
+    float aspectInv;      // the inverse aspect ratio
+
+    RenderInfo(
+        float pBeat
+       ,int pWindowId
+       ,int pViewportWidth
+       ,int pViewportHeight
+       ,float pViewportWidthF
+       ,float pViewportHeightF
+       ,float pAspect
+       ,float pAspectInv
+       )
+     : beat(pBeat)
+     ,windowId(pWindowId)
+     ,viewportWidth(pViewportWidth)
+     ,viewportHeight(pViewportHeight)
+     ,viewportWidthF(pViewportWidthF)
+     ,viewportHeightF(pViewportHeightF)
+     ,aspect(pAspect)
+     ,aspectInv(pAspectInv)
+     ,relativeBeat(0.0f) //compute as we pass it down to blocks to recycle memory
+    {
+    }
+};
 
 //----------------------------------------------------------------------------------------
 
@@ -149,9 +197,9 @@ public:
     void Update(unsigned int musicPosition = 0);
 
     //! Render the content of the timeline for the given window
-    //! \param window Window in which the timeline is being rendered
-    //! \todo That dependency is ugly. Find a way to remove that dependency
-    void Render(Wnd::Window * window);
+    //! \param enumeration of the window index bound for rendering.
+    //! \param window - window used to render
+    void Render(int windowIndex, Wnd::Window* window);
 
     //! Set the current beat of the timeline
     //! \param beat Current beat, in number of ticks, can have fractional part
@@ -201,6 +249,12 @@ public:
     
     //! \return the global cache containing resources of this timeline
     Application::GlobalCache* GetGlobalCache() { return &mGlobalCache; }
+
+    //! Callback for when a window is created.
+    void OnWindowCreated(int windowIndex);
+
+    //! Callback for when a window is destroyed.
+    void OnWindowDestroyed(int windowIndex);
 
     //------------------------------------------------------------------------------------
 
@@ -294,6 +348,12 @@ private:
     AssetLib::Category mCategory;
 #endif
 
+    //! We keep track of which windows were initialized and which ones werent.
+    //! This is to support lazy initialization in case of live editing (for example, if we create a new
+    //! timeline, this timeline needs to have calls to OnWindowCreated recorded.
+#if PEGASUS_ENABLE_PROXIES
+    bool mWindowIsInitialized[PEGASUS_MAX_WORLD_WINDOW_COUNT];
+#endif
 };
 
 typedef Pegasus::Core::Ref<Timeline> TimelineRef;

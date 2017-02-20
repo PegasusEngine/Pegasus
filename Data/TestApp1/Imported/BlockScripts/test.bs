@@ -24,13 +24,14 @@ int echoF(ab: float2)
 	echo(ab.x);
 	echo(ab.y);
 }
-int Timeline_Update(beat : float)
+int Timeline_Update(info : UpdateInfo)
 {
 	quadGenerator.QuadExtends = float2(1.0,1.0);
 }
 
-int Timeline_Render(beat : float)
+int Timeline_Render(info : RenderInfo)
 {
+    beat = info.beat;
 	beadsState.screenRatio = beat * 400.0 / 350.0;
 	beadsState.time = 5.0 * beat;
 

@@ -40,8 +40,8 @@ BEGIN_IMPLEMENT_PROPERTIES(WorldComponentState)
     IMPLEMENT_PROPERTY(WorldComponentState, ResetFreeCam)
 END_IMPLEMENT_PROPERTIES(WorldComponentState)
 
-WorldComponentState::WorldComponentState(Alloc::IAllocator* allocator)
-: mAllocator(allocator)
+WorldComponentState::WorldComponentState(Alloc::IAllocator* allocator, int windowIndex)
+: mAllocator(allocator), mWindowIndex(windowIndex)
 {
     BEGIN_INIT_PROPERTIES(WorldComponentState)
         INIT_PROPERTY(IsWireframe)
@@ -71,7 +71,7 @@ void WorldComponentState::ResetFreeCamPos() {
 #endif
 
 WorldComponent::WorldComponent(Alloc::IAllocator *allocator)
-   : mAlloc(allocator) {
+   : mAlloc(allocator), mWindowIndexCount(0) {
     Sound::Initialize();
 }
 
@@ -79,12 +79,26 @@ WorldComponent::~WorldComponent() {
     Sound::Release();
 }
 
-WindowComponentState* WorldComponent::CreateState(const ComponentContext& context) {
-    return PG_NEW(mAlloc, -1, "WorldComponent", Pegasus::Alloc::PG_MEM_PERM) WorldComponentState(mAlloc); //no state per window.
+WindowComponentState* WorldComponent::CreateState(const ComponentContext& context)
+{
+    PG_ASSERTSTR(mWindowIndexCount < PEGASUS_MAX_WORLD_WINDOW_COUNT, 
+              "Exceeding maximum number of world windows allowed! This will cause undefined behaviour"
+              "/memory trashing. Increase this counter, too many world windows will cause performance"
+              " issues. Requested %i, max is %i", (mWindowIndexCount + 1), PEGASUS_MAX_WORLD_WINDOW_COUNT);
+    unsigned int windowIndex = mWindowIndexCount++;
+
+    WindowComponentState* newComponentState = PG_NEW(mAlloc, -1, "WorldComponent", Pegasus::Alloc::PG_MEM_PERM) WorldComponentState(mAlloc, windowIndex);
+    context.mAppContext->GetTimelineManager()->OnWindowCreated(windowIndex);
+    return newComponentState;
 }
 
-void WorldComponent::DestroyState(const ComponentContext& context, WindowComponentState *state) {
-    PG_DELETE(mAlloc, state);
+void WorldComponent::DestroyState(const ComponentContext& context, WindowComponentState *state)
+{
+    PG_ASSERT(mWindowIndexCount > 0);
+    --mWindowIndexCount;
+    WorldComponentState* worldState = static_cast<WorldComponentState*>(state);
+    context.mAppContext->GetTimelineManager()->OnWindowDestroyed(worldState->GetWindowIndex());
+    PG_DELETE(mAlloc, worldState);
 }
 
 void WorldComponent::Load(Core::IApplicationContext *appContext) {
@@ -113,7 +127,8 @@ void WorldComponent::WindowUpdate(const ComponentContext& context, Wnd::WindowCo
 {
 }
 
-void WorldComponent::Render(const ComponentContext& context, Wnd::WindowComponentState *state) {
+void WorldComponent::Render(const ComponentContext& context, Wnd::WindowComponentState *state) 
+{
     // Set up rendering
     unsigned int viewportWidth = 0;
     unsigned int viewportHeight = 0;
@@ -134,7 +149,7 @@ void WorldComponent::Render(const ComponentContext& context, Wnd::WindowComponen
         worldState->ResetFreeCamPos();
     }
 
-    gCameraSystem->WindowUpdate(context.mTargetWindow);
+    gCameraSystem->WindowUpdate(context.mTargetWindow->GetWidth(), context.mTargetWindow->GetHeight());
 #endif
 
     // set default render target
@@ -163,7 +178,7 @@ void WorldComponent::Render(const ComponentContext& context, Wnd::WindowComponen
         {
             Pegasus::Render::SetPrimitiveMode(Pegasus::Render::PRIMITIVE_AUTOMATIC);
         }
-        timeline->Render(context.mTargetWindow);
+        timeline->Render(worldState->GetWindowIndex(), context.mTargetWindow);
         Pegasus::Render::SetPrimitiveMode(Pegasus::Render::PRIMITIVE_AUTOMATIC);
     }
 }

@@ -21,9 +21,7 @@
 #include "Pegasus/Math/Color.h"
 #include "Pegasus/Shader/ShaderManager.h"
 #include "Pegasus/Mesh/MeshManager.h"
-#include "Pegasus/Window/Window.h"
-
-#include "Apps/TestApp1/TestApp1.h"
+#include "Pegasus/Timeline/Timeline.h"
 
 //----------------------------------------------------------------------------------------
     
@@ -98,7 +96,7 @@ void TextureTestBlock::Shutdown()
 
 //----------------------------------------------------------------------------------------
 
-void TextureTestBlock::Update(float beat)
+void TextureTestBlock::Update(const Pegasus::Timeline::UpdateInfo& updateInfo)
 {
     // Update the graph of all textures and meshes, in case they have dynamic data
     mTexture1->Update();
@@ -112,41 +110,41 @@ void TextureTestBlock::Update(float beat)
 
 //----------------------------------------------------------------------------------------
 
-void TextureTestBlock::Render(float beat, Pegasus::Wnd::Window * window)
+void TextureTestBlock::Render(const Pegasus::Timeline::RenderInfo& renderInfo)
 {
     // Test dynamic data for the first gradient and the pixels generator
     Pegasus::Render::SetPixelSampler(mSampler, 0);
     Pegasus::Texture::GradientGenerator * gradientGenerator1 = static_cast<Pegasus::Texture::GradientGenerator *>(mTextureGradientGenerator1);
     Pegasus::Math::Vec3 & point0 = gradientGenerator1->GetPoint0();
-    point0.y = Pegasus::Math::Sin(beat * 2.0f) * 0.5f + 0.5f;
+    point0.y = Pegasus::Math::Sin(renderInfo.beat * 2.0f) * 0.5f + 0.5f;
     gradientGenerator1->SetPoint0(point0);
     Pegasus::Texture::PixelsGenerator * pixelsGenerator1 = static_cast<Pegasus::Texture::PixelsGenerator *>(mTexturePixelsGenerator1);
-    pixelsGenerator1->SetNumPixels((unsigned int)(Pegasus::Math::Saturate((beat - 12.0f) / 3.0f) * 16384.0f));
+    pixelsGenerator1->SetNumPixels((unsigned int)(Pegasus::Math::Saturate((renderInfo.beat - 12.0f) / 3.0f) * 16384.0f));
 
     Pegasus::Render::SetProgram(mProgram);
     Pegasus::Render::SetMesh(mQuad);
 
-	mState.screenRatio = window->GetRatio();
+    mState.screenRatio = renderInfo.aspect;
     Pegasus::Render::SetBuffer(mUniformBuffer, &mState);
     Pegasus::Render::SetUniformBuffer(mUniformState, mUniformBuffer);
 
-    if (beat < 3.0f)
+    if (renderInfo.beat < 3.0f)
     {
         Pegasus::Render::SetUniformTexture(mTextureUniform, mTexture1);
     }
-    else if (beat < 6.0f)
+    else if (renderInfo.beat < 6.0f)
     {
         Pegasus::Render::SetUniformTexture(mTextureUniform, mTexture2);
     }
-    else if (beat < 9.0f)
+    else if (renderInfo.beat < 9.0f)
     {
         Pegasus::Render::SetUniformTexture(mTextureUniform, mTextureGradient1);
     }
-    else if (beat < 12.0f)
+    else if (renderInfo.beat < 12.0f)
     {
         Pegasus::Render::SetUniformTexture(mTextureUniform, mTextureGradient2);
     }
-    else if (beat < 15.0f)
+    else if (renderInfo.beat < 15.0f)
     {
         Pegasus::Render::SetUniformTexture(mTextureUniform, mTextureAdd1);
     }
