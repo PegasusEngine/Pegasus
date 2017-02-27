@@ -1,7 +1,7 @@
 ## About Pegasus
-![](https://pegasusengine.github.io/wiki/editor.png)
+![](https://github.com/PegasusEngine/Pegasus/raw/master/Doc/GitHub/wiki//editor.png)
 
-Pegasus is a realtime computer generated graphics engine developed by an enthusiastic group of graphics programmers. Original developers are Karolyn Boulanger, Kleber Garcia and David Worsham. These guys are current professionals in the realtime CG industry.
+Pegasus is a realtime computer generated graphics engine developed by an enthusiastic group of graphics programmers. Original developers are Karolyn Boulanger, Kleber Garcia and David Worsham.
 
 We decided to create Pegasus as an expression of our talent, experimentation and as a greater learning experience. The engine has evolved into something truly beautiful and we would like to share this technology (and its source) with the world.
 
@@ -10,10 +10,9 @@ Pegasus does not impose a rendering pipeline to the programmer, instead provides
 Pegasus is currently implemented leveraging dx11, however this layer is abstracted already and there are opportunities to support other graphics APIs. The openGL 4 api implementation is a current WIP. Vulcan and dx12 would be desired.
 Pegasus offers low level access (vertex / texures / shaders / compute) through a high level interface/language (BlockScript).
 
-**Note: We are very close into having version 1.0 of the engine. On the meantime feel free to email us with any questions.**
-
-
 ## Documentation topics
+
+* [Programmer's Guide] (ProgrammersGuide)
 * [Editor Overview](Editor)
 * [BlockScript](BlockScript)
 * [Timeline](Timeline)
@@ -24,5 +23,3 @@ Pegasus offers low level access (vertex / texures / shaders / compute) through a
 * [Textures](Textures)
 * [Render API] (RenderApi)
 * [RenderSystems](RenderSystems)
-* [Programmer's Guide] (ProgrammersGuide)
-
