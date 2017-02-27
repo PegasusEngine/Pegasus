@@ -8,3 +8,4 @@ bin/*/Win32/*/*.pdb
 bin/*/Win32/*/*.pgd
 Project/*/Editor/GeneratedFiles/*
 bin/*/Win32/*/Applications/*
+*.swp
