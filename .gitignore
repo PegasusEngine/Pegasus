@@ -7,5 +7,6 @@ bin/*/Win32/*/*.exe
 bin/*/Win32/*/*.ilk
 bin/*/Win32/*/*.pdb
 bin/*/Win32/*/*.pgd
-Project/*/Editor/GeneratedFiles/*
 bin/*/Win32/*/Applications/*
+Project/*/Build/*
+Project/*/Editor/GeneratedFiles/*
