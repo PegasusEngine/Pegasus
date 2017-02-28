@@ -1,6 +1,7 @@
 *.swp
 *.VC.db
 *.VC.opendb
+include/tags
 fmod.log
 Build/VS14/*
 Lib/Pegasus/*
