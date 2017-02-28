@@ -1,6 +1,7 @@
 *.swp
 *.VC.db
 *.VC.opendb
+fmod.log
 Build/VS14/*
 Lib/Pegasus/*
 bin/*/Win32/*/*.exe
@@ -10,3 +11,4 @@ bin/*/Win32/*/*.pgd
 bin/*/Win32/*/Applications/*
 Project/*/Build/*
 Project/*/Editor/GeneratedFiles/*
+
