@@ -36,7 +36,8 @@ public:
         PP_CMD_NONE, //no command
         PP_CMD_INCLUDE, // include command
         PP_CMD_DEFINE, //define command
-        PP_CMD_IF, //ifdef command
+        PP_CMD_IF_DEF, //ifdef command
+        PP_CMD_IF_N_DEF, //ifndef command
         PP_CMD_ELSEIF, //elif command
         PP_CMD_ELSE, //else command
         PP_CMD_ENDIF //endif command
@@ -65,8 +66,11 @@ public:
     //! Push define command
     void DefineCmd();
 
-    //! Push if command
-    void IfCmd();
+    //! Push ifdef command
+    void IfDefCmd();
+
+    //! Push ifndef command
+    void IfNDefCmd();
 
     //! Push elseif command
     void ElseIfCmd();

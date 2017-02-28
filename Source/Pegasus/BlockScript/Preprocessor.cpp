@@ -93,9 +93,15 @@ void Preprocessor::PushString(const char* str)
 {
     Top().mStringArg = str;
 }
-void Preprocessor::IfCmd()
+
+void Preprocessor::IfDefCmd()
 {
-    Top().mCommand = Preprocessor::PP_CMD_IF;
+    Top().mCommand = Preprocessor::PP_CMD_IF_DEF;
+}
+
+void Preprocessor::IfNDefCmd()
+{
+    Top().mCommand = Preprocessor::PP_CMD_IF_N_DEF;
 }
 
 void Preprocessor::ElseIfCmd()
@@ -180,18 +186,20 @@ bool Preprocessor::FlushCommand(const char** errString)
             break;
         }
     case Preprocessor::PP_CMD_DEFINE:
+    {
+        if (IsIfActive())
         {
             if (Top().mStringArg == nullptr)
             {
-                result = false;
-                *errString = "define must have a name passed!";
+            	result = false;
+            	*errString = "define must have a name passed!";
             }
             else if (FindDefinitionByName(Top().mStringArg) != nullptr)
             {
-                result = false;
-                *errString = "Definition already exists";
+            	result = false;
+            	*errString = "Definition already exists";
             }
-            else if (IsIfActive())
+            else
             {
                 Preprocessor::Definition& newDef = mDefinitions.PushEmpty();
                 newDef.mName = Top().mStringArg;
@@ -199,13 +207,14 @@ bool Preprocessor::FlushCommand(const char** errString)
                 newDef.mIsInclude = false;
                 newDef.mBufferSize = newDef.mValue == nullptr ? 0 : Utils::Strlen(newDef.mValue) + 1;
                 result = true;
-            }
-            else
-            {
-                result = true;
-            }
-            break;
+			}
         }
+        else
+        {
+		    result = true;
+        }		
+        break;
+    }
     default:
         break;
     }

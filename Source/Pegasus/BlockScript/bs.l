@@ -201,17 +201,20 @@
                      pp.DefineCmd(); 
                  }
            }
-"ifdef"    {
+ifn?def    {
                 Pegasus::BlockScript::Preprocessor& pp = yyextra->GetPreprocessor();
                 if (pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_NONE)
                 {
-                    BS_ErrorDispatcher(yyextra->mBuilder, "Can't queue preprocessor command 'ifdef' "); yyterminate();
+                    BS_ErrorDispatcher(yyextra->mBuilder, "Can't queue preprocessor command 'if[n]def' "); yyterminate();
                 }
                 else
                 {
                     bool ifActive = pp.IsIfActive();
                     pp.NewState();
-                    pp.IfCmd();
+                    if (yytext[2] == 'd')
+                        pp.IfDefCmd();
+                    else
+                        pp.IfNDefCmd();
                     pp.SetChosePath(false);
                     pp.SetIfActive(ifActive);
                 }
@@ -291,9 +294,12 @@
 \n         { 
                 yyextra->mBuilder->IncrementLine(); 
                 Pegasus::BlockScript::Preprocessor& pp = yyextra->GetPreprocessor();
-                if (pp.GetCmd() == Pegasus::BlockScript::Preprocessor::PP_CMD_IF || pp.GetCmd() == Pegasus::BlockScript::Preprocessor::PP_CMD_ELSEIF)
+                if (pp.GetCmd() == Pegasus::BlockScript::Preprocessor::PP_CMD_IF_DEF 
+                 || pp.GetCmd() == Pegasus::BlockScript::Preprocessor::PP_CMD_IF_N_DEF 
+                 || pp.GetCmd() == Pegasus::BlockScript::Preprocessor::PP_CMD_ELSEIF)
                 {
                    
+					Pegasus::BlockScript::Preprocessor::Cmd cmd = pp.GetCmd();
                     const char* preprocessorDefine = pp.GetStringArg();
                     pp.NoneCmd();
 
@@ -304,8 +310,10 @@
                 
                     if (pp.IsIfActive() && !pp.ChosePath())
                     {
+                        bool shouldNegate = cmd == Pegasus::BlockScript::Preprocessor::PP_CMD_IF_N_DEF;
                         bool isDefined = pp.FindDefinitionByName( preprocessorDefine ) != nullptr;
-                        if (isDefined)
+                        bool shouldChoosePath = (!shouldNegate && isDefined) || (shouldNegate && !isDefined);
+                        if (shouldChoosePath)
                         {
                             pp.SetChosePath(true);
                             BEGIN(yyextra->PopLexerState());
@@ -389,7 +397,8 @@
                     Pegasus::BlockScript::Preprocessor& pp = yyextra->GetPreprocessor();
                     if (
                             pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_DEFINE &&
-                            pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_IF     &&
+                            pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_IF_DEF     &&
+                            pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_IF_N_DEF   &&
                             pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_ELSEIF 
                        )
                     {
@@ -403,8 +412,7 @@
                         Pegasus::Utils::Strcat(str, yytext);
                         pp.PushString(yyextra->mBuilder->AllocStrImm(yytext));
                         
-                        if (pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_IF &&
-                            pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_ELSEIF)
+                        if (pp.GetCmd() == Pegasus::BlockScript::Preprocessor::PP_CMD_DEFINE)
                         {
                             yyextra->mStringAccumulatorPos = 0;
                             yyextra->mStringAccumulator[yyextra->mStringAccumulatorPos] = '\0';

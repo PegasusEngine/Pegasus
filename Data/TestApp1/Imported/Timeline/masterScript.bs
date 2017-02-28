@@ -1,3 +1,12 @@
+//define master script for Frame.bsh
+#define MASTERSCRIPT_DEFINED 1
+
+#ifndef MAX_WINDOW_COUNT
+#define MAX_WINDOW_COUNT 1
+#endif
+
+#include "Scripts/Frame/Frame.bsh"
+
 extern signature = 1;
 tmpConfig = RenderTargetConfig(500, 50, FORMAT_RGBA_8_UNORM);
 tempTarget1 = CreateRenderTarget( tmpConfig );
@@ -29,7 +38,7 @@ testMesh->SetGeneratorInput(meshGenerator);
 marchingCubeProgram = LoadProgram("Programs/MarchingCubeProgram.pas");
 
 rs=CreateRasterizerState(RasterizerConfig(NONE_CM,LESSER_DF));
-
+/*
 int Timeline_Update(info : UpdateInfo)
 {
 	cam.Position = CamPos + info.beat*float3(0.5,0.0,0.5);
@@ -49,3 +58,4 @@ int Timeline_Render(info: RenderInfo)
 	UnbindMesh();
 
 }
+*/

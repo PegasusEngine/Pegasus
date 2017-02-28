@@ -1,0 +1,64 @@
+/******* Test app demo 1 frame core file *********/
+struct ViewState
+{
+    hdrSceneFb        : RenderTarget;
+    frameDepthBuffer  : DepthStencilTarget;
+    ldrSceneFb        : RenderTarget;
+};
+
+struct FrameState
+{
+    
+};
+
+#include "Scripts/Core/Core.bsh"
+
+#ifdef MASTERSCRIPT_DEFINED
+
+ViewState CreateViewState(windowId : int)
+{
+    newViewState = ViewState();
+
+    //hdr frame buffer
+    newViewState.hdrSceneFb       = CreateRenderTarget(RenderTargetConfig(FRAME_WIDTH, FRAME_HEIGHT, FORMAT_RGBA_16_FLOAT));
+    GlobalRegisterRenderTarget("hdrSceneFb", windowId, newViewState.hdrSceneFb);
+    //depth buffer
+  /*  newViewState.frameDepthBuffer = CreateDepthStencilTarget(RenderTargetConfig(FRAME_WIDTH, FRAME_HEIGHT, FORMAT_D32_FLOAT));
+    GlobalRegisterDepthStencilTarget("frameDepthBuffer", newViewState.frameDepthBuffer, windowId);*/
+
+    //ldr frame buffer
+    newViewState.ldrSceneFb       = CreateRenderTarget(RenderTargetConfig(FRAME_WIDTH, FRAME_HEIGHT, FORMAT_RGBA_8_UNORM));
+    GlobalRegisterRenderTarget("ldrSceneFb", windowId, newViewState.ldrSceneFb);
+
+    return newViewState;
+}
+#else
+ViewState ReadViewState(windowId : int)
+{
+    newViewState = ViewState();
+
+    //hdr frame buffer
+    newViewState.hdrSceneFb  = GlobalFindRenderTarget("hdrSceneFb", windowId);
+
+    //depth buffer
+ //   newViewState.frameDepthBuffer = GlobalFindDepthStencilTarget("frameDepthBuffer", windowId);
+
+    //ldr frame buffer
+    newViewState.ldrSceneFb = GlobalFindRenderTarget("ldrSceneFb", windowId);
+	return newViewState;
+}
+#endif
+
+#ifdef MASTERSCRIPT_DEFINED
+FrameState CreateFrameState()
+{
+    newFrameState = FrameState();
+    return newFrameState;
+}
+#else
+FrameState ReadFrameState()
+{
+    newFrameState = FrameState();
+    return newFrameState;
+}
+#endif

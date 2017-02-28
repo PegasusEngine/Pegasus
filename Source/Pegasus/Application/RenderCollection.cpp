@@ -418,7 +418,7 @@ namespace Application
     template<typename T>
     struct GlobalCacheSlot
     {
-        GlobalCacheSlot() : mName(0) {}
+        GlobalCacheSlot() {}
         GlobalCache::CacheName mName;
         Core::Ref<T> mObj;
     }; 
