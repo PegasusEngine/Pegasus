@@ -5,3 +5,4 @@ Pegasus is a realtime computer generated graphics engine developed by an enthusi
 
 
 Make sure to check the wiki for further documentation: [Pegasus wiki](https://github.com/PegasusEngine/Pegasus/wiki)
+
