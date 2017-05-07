@@ -50,8 +50,9 @@ public:
         int         mBufferSize;
         const char* mValue;
         bool        mIsInclude;
+        const char* mIncludePathName;
     public:
-        Definition() : mName(nullptr), mValue(nullptr), mIsInclude(false), mBufferSize(0) {}
+        Definition() : mName(nullptr), mValue(nullptr), mIncludePathName(nullptr), mIsInclude(false), mBufferSize(0) {}
     };
 
     //! Constructor
@@ -128,6 +129,9 @@ public:
     
     //!  returns the String argument pushed
     const char* GetStringArg() const { return Top().mStringArg; }
+
+    //!  returns the Code argument pushed
+    const char* GetCodeArg() const { return Top().mCodeArg; }
 
     //! sets the file includer handler
     void SetFileIncluder(IFileIncluder* fileIncluder) { mFileIncluder = fileIncluder; }

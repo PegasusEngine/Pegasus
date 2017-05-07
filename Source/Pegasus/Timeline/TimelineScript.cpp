@@ -21,6 +21,7 @@
 #include "Pegasus/Utils/Memset.h"
 #include "Pegasus/Utils/Vector.h"
 #include "Pegasus/Core/Log.h"
+#include "Pegasus/AssetLib/Asset.h"
 
 #if PEGASUS_ENABLE_PROXIES
 #include "Pegasus/BlockScript/SymbolTable.h"
@@ -230,6 +231,9 @@ bool TimelineScript::CompileInternal()
 
         ClearHeaderList();
         ScriptIncluder includer(this, mAppContext->GetTimelineManager());
+        mScript->SetTitle(
+           GetOwnerAsset() != nullptr ? GetOwnerAsset()->GetName() : "<Untilted>"
+        );
         mScript->SetFileIncluder(&includer);
         mScript->RegisterDefinitions(defNames, defValues, sizeof(defNames)/sizeof(defNames[0]));
         mScriptActive = mScript->Compile(&mFileBuffer);
@@ -353,20 +357,22 @@ void TimelineScript::OnCompilationBegin()
         CompilerEvents::CompilationNotification, 
         // Event specific arguments:
         CompilerEvents::CompilationNotification::COMPILATION_BEGIN, 
+        "", // unused
         0, // unused
         "" // unused
     );
 }
 
-void TimelineScript::OnCompilationError(int line, const char* errorMessage, const char* token)
+void TimelineScript::OnCompilationError(const char* compilationUnitTitle, int line, const char* errorMessage, const char* token)
 {
-    PG_LOG('CERR', "Compilation error, line %d, %s. Around token %s", line, errorMessage, token);
+    PG_LOG('CERR', "[%s:%d]: %s. Around token %s", compilationUnitTitle, line, errorMessage, token);
 
     PEGASUS_EVENT_DISPATCH(
         this,
         CompilerEvents::CompilationNotification,
         // Shader Event specific arguments
         CompilerEvents::CompilationNotification::COMPILATION_ERROR,
+        compilationUnitTitle,
         line,
         errorMessage
     );

@@ -6,8 +6,6 @@
 // - ViewState CreateViewState() - which creates a view state from scratch
 // - ViewState ReadViewState(windowId : int) - which reads a view state
 
-
-
 #ifndef FRAME_WIDTH
 #define FRAME_WIDTH  1920
 #endif

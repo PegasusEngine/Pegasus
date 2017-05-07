@@ -31,9 +31,9 @@ public:
     virtual void OnCompilationBegin()
     {}
     
-    virtual void OnCompilationError(int line, const char* errorMessage, const char* token)
+    virtual void OnCompilationError(const char* compilationUnitTitle, int line, const char* errorMessage, const char* token)
     {
-        printf("%d: '%s'\n", line ,errorMessage);
+        printf("[%s:%d]: '%s'\n", compilationUnitTitle, line ,errorMessage);
     }
     
     virtual void OnCompilationEnd(bool success)

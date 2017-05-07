@@ -1338,6 +1338,7 @@ YY_RULE_SETUP
                             int bufferSize = 0;
                             yyextra->PushDefineStack(YY_CURRENT_BUFFER, pp.GetIncludeDefinition());
                             BS_push_buffer_state(BS__create_buffer(NULL,YY_BUF_SIZE,yyscanner),yyscanner);
+                            yyextra->mBuilder->PushFile(pp.GetIncludeDefinition()->mIncludePathName);
                         }
 
                         if (pp.IsIfActive())
@@ -1354,12 +1355,12 @@ YY_RULE_SETUP
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 395 "bs.l"
+#line 396 "bs.l"
 ;
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 396 "bs.l"
+#line 397 "bs.l"
 {
                     Pegasus::BlockScript::Preprocessor& pp = yyextra->GetPreprocessor();
                     if (
@@ -1391,7 +1392,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 424 "bs.l"
+#line 425 "bs.l"
 { BS_ErrorDispatcher( yyextra->mBuilder, "Invalid token for preprocessor."); yyterminate(); }
 	YY_BREAK
 
@@ -1399,118 +1400,118 @@ YY_RULE_SETUP
 
 case 26:
 YY_RULE_SETUP
-#line 429 "bs.l"
+#line 430 "bs.l"
 { yyextra->PushLexerState(YYSTATE); BEGIN(PREPROCESSOR);}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 430 "bs.l"
+#line 431 "bs.l"
 { yyextra->PushLexerState(YYSTATE);BEGIN(IN_LINE_COMMENT);}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 431 "bs.l"
+#line 432 "bs.l"
 { yyextra->PushLexerState(YYSTATE);BEGIN(MULTI_COMMENT);  }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 432 "bs.l"
+#line 433 "bs.l"
 { yyextra->mStringAccumulatorPos = 0; yyextra->PushLexerState(YYSTATE);BEGIN(STRING_BLOCK); }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 433 "bs.l"
+#line 434 "bs.l"
 ;
 	YY_BREAK
 case 31:
 /* rule 31 can match eol */
 YY_RULE_SETUP
-#line 434 "bs.l"
+#line 435 "bs.l"
 { yyextra->mBuilder->IncrementLine();       }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 435 "bs.l"
+#line 436 "bs.l"
 { return K_IF;     }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 436 "bs.l"
+#line 437 "bs.l"
 { return K_ELSE_IF;}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 437 "bs.l"
+#line 438 "bs.l"
 { return K_ELSE;   }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 438 "bs.l"
+#line 439 "bs.l"
 { return K_RETURN; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 439 "bs.l"
+#line 440 "bs.l"
 { return K_STRUCT; }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 440 "bs.l"
+#line 441 "bs.l"
 { return K_ENUM;   }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 441 "bs.l"
+#line 442 "bs.l"
 { return K_WHILE;  }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 442 "bs.l"
+#line 443 "bs.l"
 { return K_FOR;    }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 443 "bs.l"
+#line 444 "bs.l"
 { BS_TOKEN(O_INC); }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 444 "bs.l"
+#line 445 "bs.l"
 { BS_TOKEN(O_DEC); }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 445 "bs.l"
+#line 446 "bs.l"
 { return K_STATIC_ARRAY; }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 446 "bs.l"
+#line 447 "bs.l"
 { return K_SIZE_OF;      }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 447 "bs.l"
+#line 448 "bs.l"
 { return K_EXTERN;       }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 448 "bs.l"
+#line 449 "bs.l"
 { BS_FLOAT(I_FLOAT);     }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 449 "bs.l"
+#line 450 "bs.l"
 { BS_INT(I_INT);         }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 450 "bs.l"
+#line 451 "bs.l"
 { BS_TOKEN(K_SEMICOLON); }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 451 "bs.l"
+#line 452 "bs.l"
 { 
                     bool isTypeString = false;
                     int strLen = Pegasus::Utils::Strlen(yytext) + 1;
@@ -1540,132 +1541,132 @@ YY_RULE_SETUP
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 477 "bs.l"
+#line 478 "bs.l"
 { BS_TOKEN(O_PLUS);  }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 478 "bs.l"
+#line 479 "bs.l"
 { BS_TOKEN(O_MINUS); }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 479 "bs.l"
+#line 480 "bs.l"
 { BS_TOKEN(O_MUL);   }
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 480 "bs.l"
+#line 481 "bs.l"
 { BS_TOKEN(O_DIV);   }
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 481 "bs.l"
+#line 482 "bs.l"
 { BS_TOKEN(O_MOD);   }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 482 "bs.l"
+#line 483 "bs.l"
 { BS_TOKEN(O_EQ);    }
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 483 "bs.l"
+#line 484 "bs.l"
 { BS_TOKEN(O_NEQ);    }
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 484 "bs.l"
+#line 485 "bs.l"
 { BS_TOKEN(O_GT);    }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 485 "bs.l"
+#line 486 "bs.l"
 { BS_TOKEN(O_LT);    }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 486 "bs.l"
+#line 487 "bs.l"
 { BS_TOKEN(O_GTE);   }
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 487 "bs.l"
+#line 488 "bs.l"
 { BS_TOKEN(O_LTE);   }
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 488 "bs.l"
+#line 489 "bs.l"
 { BS_TOKEN(O_LAND); }
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 489 "bs.l"
+#line 490 "bs.l"
 { BS_TOKEN(O_LOR);  }
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 490 "bs.l"
+#line 491 "bs.l"
 { BS_TOKEN(O_SET);  }
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 491 "bs.l"
+#line 492 "bs.l"
 { BS_TOKEN(O_METHOD_CALL); }
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 492 "bs.l"
+#line 493 "bs.l"
 { BS_TOKEN(O_DOT); }
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 493 "bs.l"
+#line 494 "bs.l"
 { return K_A_PAREN;  }
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 494 "bs.l"
+#line 495 "bs.l"
 { return K_L_PAREN; }
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 495 "bs.l"
+#line 496 "bs.l"
 { return K_R_PAREN; }
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 496 "bs.l"
+#line 497 "bs.l"
 { return K_L_BRAC;  }
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 497 "bs.l"
+#line 498 "bs.l"
 { return K_R_BRAC;  }
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
-#line 498 "bs.l"
+#line 499 "bs.l"
 { return K_L_LACE;  }
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 499 "bs.l"
+#line 500 "bs.l"
 { return K_R_LACE;  }
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 500 "bs.l"
+#line 501 "bs.l"
 { return K_COMMA;   }
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 501 "bs.l"
+#line 502 "bs.l"
 { return K_COL;     }
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 502 "bs.l"
+#line 503 "bs.l"
 ;
 	YY_BREAK
 
@@ -1676,10 +1677,15 @@ case YY_STATE_EOF(STRING_BLOCK):
 case YY_STATE_EOF(PREPROCESSOR):
 case YY_STATE_EOF(PREPROCESSOR_DEFINE_CAPTURE):
 case YY_STATE_EOF(PREPROCESSOR_IGNORE_CODE):
-#line 505 "bs.l"
+#line 506 "bs.l"
 {
                     if (yyextra->GetDefineStackCount() > 0)
                     {
+                        //only if the current stack of string stream is a file
+                        if (yyextra->GetDefineStackTop()->mDef && yyextra->GetDefineStackTop()->mDef->mIsInclude)
+                        {
+                            yyextra->mBuilder->PopFile();
+                        }
                         BS__delete_buffer(YY_CURRENT_BUFFER,yyscanner); 
                         BS__switch_to_buffer((YY_BUFFER_STATE)yyextra->PopDefineStack(),yyscanner);
                     }
@@ -1691,10 +1697,10 @@ case YY_STATE_EOF(PREPROCESSOR_IGNORE_CODE):
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 516 "bs.l"
+#line 522 "bs.l"
 ECHO;
 	YY_BREAK
-#line 1698 "bs.lexer.cpp"
+#line 1704 "bs.lexer.cpp"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2856,7 +2862,7 @@ void BS_free (void * ptr , yyscan_t yyscanner)
 
 #define YYTABLES_NAME "yytables"
 
-#line 515 "bs.l"
+#line 521 "bs.l"
 
 
 
