@@ -371,6 +371,7 @@
                             int bufferSize = 0;
                             yyextra->PushDefineStack(YY_CURRENT_BUFFER, pp.GetIncludeDefinition());
                             yypush_buffer_state(yy_create_buffer(NULL, YY_BUF_SIZE, yyscanner), yyscanner);
+                            yyextra->mBuilder->PushFile(pp.GetIncludeDefinition()->mIncludePathName);
                         }
 
                         if (pp.IsIfActive())
@@ -497,6 +498,11 @@ extern          { return K_EXTERN;       }
 <<EOF>>         {
                     if (yyextra->GetDefineStackCount() > 0)
                     {
+                        //only if the current stack of string stream is a file
+                        if (yyextra->GetDefineStackTop()->mDef && yyextra->GetDefineStackTop()->mDef->mIsInclude)
+                        {
+                            yyextra->mBuilder->PopFile();
+                        }
                         yy_delete_buffer(YY_CURRENT_BUFFER, yyscanner); 
                         yy_switch_to_buffer((YY_BUFFER_STATE)yyextra->PopDefineStack(), yyscanner);
                     }

@@ -63,7 +63,6 @@ public:
         : mCurrentFrame(nullptr)
         , mErrorCount(0)
         , mInFunBody(false)
-        , mCurrentLineNumber(0)
         , mReturnTypeContext(nullptr)
         , mCurrAnnotations(nullptr)
         , mScanner(nullptr) {}
@@ -78,7 +77,7 @@ public:
     ~BlockScriptBuilder(){}
 
     //! Begins construction of abstract syntax tree
-    void BeginBuild();
+    void BeginBuild(const char* title);
 
     //! Ends construction of abstract syntax tree
     void EndBuild  (CompilationResult& r);
@@ -137,9 +136,15 @@ public:
 
     char* AllocateBigString(int size);
 
-    int GetCurrentLine() const { return mCurrentLineNumber; }
+    int GetCurrentLine() const;
 
-    void IncrementLine() { ++mCurrentLineNumber; }
+    const char* GetCurrentCompilationUnitTitle() const;
+
+    void PushFile(const char* newFileTitle);
+
+    void PopFile();
+
+    void IncrementLine(); 
 
     void AddEventListener(IBlockScriptCompilerListener* eventListener) { mEventListeners.PushEmpty() = eventListener; }
 
@@ -228,7 +233,6 @@ private:
     void* mScanner;
     StackFrameInfo*    mCurrentFrame;
     int                mErrorCount;
-    int                mCurrentLineNumber;
 
     Canonizer mCanonizer;
 
@@ -239,6 +243,22 @@ private:
     Ast::Annotations* mCurrAnnotations;
 
     bool mInFunBody;
+
+    struct FileState
+    {
+        const char* compilationUnitTitle;
+        int lineNumber;
+
+        FileState()
+            : compilationUnitTitle("No-Title"), lineNumber(0)
+        {
+        }
+    };
+
+    Container<FileState> mFileStates;
+
+
+
 };
 
 }

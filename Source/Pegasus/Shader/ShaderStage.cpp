@@ -187,6 +187,7 @@ void Pegasus::Shader::ShaderStage::GenerateData()
         CompilerEvents::CompilationNotification, 
         // Event specific arguments:
         CompilerEvents::CompilationNotification::COMPILATION_BEGIN, 
+        "", // unused
         0, // unused
         "" // unused
     );

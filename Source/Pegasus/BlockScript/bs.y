@@ -68,7 +68,7 @@
         Container<IBlockScriptCompilerListener*>& listeners = builder->GetEventListeners();
         for (int i = 0; i < listeners.Size(); ++i)
         {
-            listeners[i]->OnCompilationError(builder->GetCurrentLine(), message, BS_get_text(scanner));
+            listeners[i]->OnCompilationError(builder->GetCurrentCompilationUnitTitle(), builder->GetCurrentLine(), message, BS_get_text(scanner));
         }
     }
 

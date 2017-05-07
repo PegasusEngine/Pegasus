@@ -39,9 +39,10 @@ public:
     virtual void OnCompilationBegin() = 0;
 
     //! Triggered when there is a compilation error
+    //! \param compilation unit title
     //! \param line the actual
     //! \param errorMessage the actual error message
-    virtual void OnCompilationError(int line, const char* errorMessage, const char* token) = 0;
+    virtual void OnCompilationError(const char* compilationUnitTitle, int line, const char* errorMessage, const char* token) = 0;
 
     //! Triggered at compile time on a function call. Use this function to evaluate at compile time
     //! any function calls.

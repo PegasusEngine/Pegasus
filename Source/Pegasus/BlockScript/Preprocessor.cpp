@@ -159,6 +159,7 @@ bool Preprocessor::FlushCommand(const char** errString)
                     mNextIncludeDefinition->mName = nullptr;
                     mNextIncludeDefinition->mValue = nullptr;
                     mNextIncludeDefinition->mBufferSize = 0;                    
+                    mNextIncludeDefinition->mIncludePathName = Top().mCodeArg;
                     mNextIncludeDefinition->mIsInclude = true;
                     
                     result = mFileIncluder->Open(Top().mCodeArg, &mNextIncludeDefinition->mValue, mNextIncludeDefinition->mBufferSize);

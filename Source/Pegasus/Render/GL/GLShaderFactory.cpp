@@ -133,6 +133,7 @@ static int ProcessErrorLog(Pegasus::Shader::ShaderStage * shaderNode, const char
                 CompilerEvents::CompilationNotification,
                 // Shader Event specific arguments
                 CompilerEvents::CompilationNotification::COMPILATION_ERROR,
+                "<shader-file>", //TODO: put here the shader source file causing compilation error.
                 line,
                 descriptionError
             );

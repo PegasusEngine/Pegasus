@@ -515,7 +515,7 @@ public:
 
     virtual void OnCompilationBegin() { }
 
-    virtual void OnCompilationError(int line, const char* errorMessage, const char* token) {  }
+    virtual void OnCompilationError(const char* compilationUnitError, int line, const char* errorMessage, const char* token) {  }
 
     virtual void OnCompilationEnd(bool success) { }
 
