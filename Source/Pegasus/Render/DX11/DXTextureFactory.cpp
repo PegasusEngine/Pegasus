@@ -41,6 +41,10 @@ public:
 
     void InternalDestroyRenderTarget(Pegasus::Render::RenderTarget& renderTarget);
 
+    void InternalCreateDepthStencil(const Pegasus::Render::DepthStencilConfig* config, Pegasus::Render::DepthStencil& depthStencil);
+    
+    void InternalDestroyDepthStencil(Pegasus::Render::DepthStencil& depthStencil);
+
     void InternalCreateCubeMap(const Pegasus::Render::CubeMapConfig& config, Pegasus::Render::CubeMap& cubeMap);
 
     void InternalCreateVolumeTexture(const Pegasus::Render::VolumeTextureConfig& config, Pegasus::Render::VolumeTexture& volTexture);
@@ -338,6 +342,14 @@ void DXTextureFactory::InternalDestroyRenderTarget(Pegasus::Render::RenderTarget
     renderTarget.SetInternalData(nullptr);
 }
 
+void DXTextureFactory::InternalCreateDepthStencil(const Pegasus::Render::DepthStencilConfig* config, Pegasus::Render::DepthStencil& depthStencil)
+{
+}
+
+void DXTextureFactory::InternalDestroyDepthStencil(Pegasus::Render::DepthStencil& depthStencil)
+{
+}
+
 void DXTextureFactory::InternalCreateCubeMap(const Pegasus::Render::CubeMapConfig& config, Pegasus::Render::CubeMap& cubeMap)
 {
     ID3D11DeviceContext * context;
@@ -476,6 +488,13 @@ Pegasus::Render::RenderTargetRef Pegasus::Render::CreateRenderTarget(Pegasus::Re
     return rt;
 }
 
+Pegasus::Render::DepthStencilRef Pegasus::Render::CreateDepthStencil(const Pegasus::Render::DepthStencilConfig& config)
+{
+    DepthStencil* ds = PG_NEW(Pegasus::Memory::GetRenderAllocator(), -1, "DepthStencil", Pegasus::Alloc::PG_MEM_PERM) DepthStencil(Pegasus::Memory::GetRenderAllocator());
+    Pegasus::Render::gTextureFactory.InternalCreateDepthStencil(&config, *ds);    
+    return ds;
+}
+
 Pegasus::Render::RenderTargetRef Pegasus::Render::CreateRenderTargetFromCubeMap(Pegasus::Render::CubeFace targetFace, Pegasus::Render::CubeMapRef& cubeMap)
 {
     RenderTarget* rt = PG_NEW(Pegasus::Memory::GetRenderAllocator(), -1, "RenderTarget", Pegasus::Alloc::PG_MEM_PERM) RenderTarget(Pegasus::Memory::GetRenderAllocator());
@@ -512,6 +531,12 @@ template<>
 Pegasus::Render::BasicResource<Pegasus::Render::RenderTargetConfig>::~BasicResource()
 {
     Pegasus::Render::gTextureFactory.InternalDestroyRenderTarget(*this);
+}
+
+template<>
+Pegasus::Render::BasicResource<Pegasus::Render::DepthStencilConfig>::~BasicResource()
+{
+    Pegasus::Render::gTextureFactory.InternalDestroyDepthStencil(*this);
 }
 
 template<>

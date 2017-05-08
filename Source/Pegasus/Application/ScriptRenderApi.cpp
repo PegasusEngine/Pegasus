@@ -109,6 +109,7 @@ void Render_SetBlendingState(FunCallbackContext& context);
 void Render_SetDepthClearValue(FunCallbackContext& context);
 void Render_Draw(FunCallbackContext& context);
 void Render_CreateRenderTarget(FunCallbackContext& context);
+void Render_CreateDepthStencil(FunCallbackContext& context);
 void Render_CreateRasterizerState(FunCallbackContext& context);
 void Render_CreateBlendingState(FunCallbackContext& context);
 
@@ -405,6 +406,11 @@ static void RegisterRenderStructs(BlockLib* lib)
             {"Width", "Height", "format",  nullptr }
         },
         {
+            "DepthStencilConfig",
+            {"int"  , "int"   , "int", nullptr },
+            {"Width", "Height", "HasStencil",  nullptr }
+        },
+        {
             "Viewport",
             {"int"    , "int"    , "int"  , "int"   , nullptr },
             {"XOffset", "YOffset", "Width", "Height", nullptr }
@@ -542,7 +548,7 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
             {}, 0, nullptr, 0, nullptr
         },
         {
-            "DepthStencilTarget",
+            "DepthStencil",
             {}, 0, nullptr, 0, nullptr
         },
         {
@@ -851,7 +857,7 @@ static void RegisterFunctions(BlockLib* lib)
         {
             "SetViewport",
             "int",
-            { "DepthStencilTarget", nullptr },
+            { "DepthStencil", nullptr },
             { "vp", nullptr },
             Render_SetViewport3
         },
@@ -865,14 +871,14 @@ static void RegisterFunctions(BlockLib* lib)
         {
             "SetRenderTarget",
             "int",
-            { "RenderTarget", "DepthStencilTarget", nullptr },
+            { "RenderTarget", "DepthStencil", nullptr },
             { "renderTarget", "depthStencilTarget", nullptr },
             Render_SetRenderTarget2
         },
         {
             "SetRenderTargets",
             "int",
-            { "int"               , "*"              , "DepthStencilTarget", nullptr },
+            { "int"               , "*"              , "DepthStencil", nullptr },
             { "renderTargetCounts", "renderTargets[]", "depthStencilTarget", nullptr },
             Render_SetRenderTargets
         },
@@ -945,6 +951,13 @@ static void RegisterFunctions(BlockLib* lib)
             { "RenderTargetConfig", nullptr },
             { "config", nullptr },
             Render_CreateRenderTarget
+        },
+        {
+            "CreateDepthStencil",
+            "DepthStencil",
+            { "DepthStencilConfig", nullptr },
+            { "config", nullptr },
+            Render_CreateDepthStencil
         },
         {
             "CreateRasterizerState",
@@ -1651,6 +1664,17 @@ void Render_CreateRenderTarget(FunCallbackContext& context)
     Render::RenderTargetConfig& config = stream.NextArgument<Render::RenderTargetConfig>();
     Render::RenderTargetRef rt = Render::CreateRenderTarget(config);
     stream.SubmitReturn( RenderCollection::AddResource<Render::RenderTarget>( renderCollection, rt));
+}
+
+void Render_CreateDepthStencil(FunCallbackContext& context)
+{
+    FunParamStream stream(context);
+    BsVmState* vmState = context.GetVmState();
+    Application::RenderCollection* renderCollection = GetContainer(vmState);
+    CHECK_PERMISSIONS(renderCollection, "CreateDepthStencil", PERMISSIONS_RENDER_API_CALL);
+    Render::DepthStencilConfig& config = stream.NextArgument<Render::DepthStencilConfig>();
+    Render::DepthStencilRef rt = Render::CreateDepthStencil(config);
+    stream.SubmitReturn( RenderCollection::AddResource<Render::DepthStencil>(renderCollection, rt));
 }
 
 void Render_CreateRasterizerState(FunCallbackContext& context)

@@ -1,9 +1,9 @@
 /******* Test app demo 1 frame core file *********/
 struct ViewState
 {
-    hdrSceneFb        : RenderTarget;
-    frameDepthBuffer  : DepthStencilTarget;
-    ldrSceneFb        : RenderTarget;
+    hdrSurface       : RenderTarget;
+    ldrSurface       : RenderTarget;
+    depthSurface     : DepthStencil;
 };
 
 struct FrameState
@@ -20,15 +20,16 @@ ViewState CreateViewState(windowId : int)
     newViewState = ViewState();
 
     //hdr frame buffer
-    newViewState.hdrSceneFb       = CreateRenderTarget(RenderTargetConfig(FRAME_WIDTH, FRAME_HEIGHT, FORMAT_RGBA_16_FLOAT));
-    GlobalRegisterRenderTarget("hdrSceneFb", windowId, newViewState.hdrSceneFb);
+    newViewState.hdrSurface       = CreateRenderTarget(RenderTargetConfig(FRAME_WIDTH, FRAME_HEIGHT, FORMAT_RGBA_16_FLOAT));
+    GlobalRegisterRenderTarget("hdrSurface", windowId, newViewState.hdrSurface);
+
     //depth buffer
-  /*  newViewState.frameDepthBuffer = CreateDepthStencilTarget(RenderTargetConfig(FRAME_WIDTH, FRAME_HEIGHT, FORMAT_D32_FLOAT));
-    GlobalRegisterDepthStencilTarget("frameDepthBuffer", newViewState.frameDepthBuffer, windowId);*/
+    newViewState.depthSurface = CreateDepthStencil(DepthStencilConfig(FRAME_WIDTH, FRAME_HEIGHT, 1));
+    GlobalRegisterDepthStencil("depthSurface", windowId, newViewState.depthSurface);
 
     //ldr frame buffer
-    newViewState.ldrSceneFb       = CreateRenderTarget(RenderTargetConfig(FRAME_WIDTH, FRAME_HEIGHT, FORMAT_RGBA_8_UNORM));
-    GlobalRegisterRenderTarget("ldrSceneFb", windowId, newViewState.ldrSceneFb);
+    newViewState.ldrSurface       = CreateRenderTarget(RenderTargetConfig(FRAME_WIDTH, FRAME_HEIGHT, FORMAT_RGBA_8_UNORM));
+    GlobalRegisterRenderTarget("ldrSurface", windowId, newViewState.ldrSurface);
 
     return newViewState;
 }
@@ -38,13 +39,14 @@ ViewState ReadViewState(windowId : int)
     newViewState = ViewState();
 
     //hdr frame buffer
-    newViewState.hdrSceneFb  = GlobalFindRenderTarget("hdrSceneFb", windowId);
+    newViewState.hdrSurface  = GlobalFindRenderTarget("hdrSurface", windowId);
 
     //depth buffer
- //   newViewState.frameDepthBuffer = GlobalFindDepthStencilTarget("frameDepthBuffer", windowId);
+    newViewState.depthSurface = GlobalFindDepthStencilTarget("depthSurface", windowId);
 
     //ldr frame buffer
-    newViewState.ldrSceneFb = GlobalFindRenderTarget("ldrSceneFb", windowId);
+    newViewState.ldrSurface = GlobalFindRenderTarget("ldrSurface", windowId);
+
 	return newViewState;
 }
 #endif
