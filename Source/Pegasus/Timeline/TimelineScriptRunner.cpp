@@ -27,6 +27,31 @@ namespace Pegasus
 namespace Timeline
 {
 
+#if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
+    static Application::ScriptPermissions GetWindowCreationPermissions(bool controlGlobalCache)
+    {
+        unsigned int permissions = (Application::ScriptPermissions)((unsigned)Application::PERMISSIONS_RENDER_API_CALL | (unsigned)Application::PERMISSIONS_RENDER_GLOBAL_CACHE_READ);
+        if (controlGlobalCache)
+        { 
+            permissions |= (unsigned)Application::PERMISSIONS_RENDER_GLOBAL_CACHE_WRITE;
+        }
+        return (Application::ScriptPermissions)permissions;
+    }
+
+    static Application::ScriptPermissions GetGlobalScopePermissions(bool controlGlobalCache)
+    {
+        unsigned permissions = Application::PERMISSIONS_RENDER_API_CALL | Application::PERMISSIONS_ASSET_LOAD;
+        if (controlGlobalCache)
+        {
+            permissions |= Application::PERMISSIONS_RENDER_GLOBAL_CACHE_WRITE;
+        }
+        else
+        {
+            permissions |= Application::PERMISSIONS_RENDER_GLOBAL_CACHE_READ;
+        }
+        return (Application::ScriptPermissions)permissions;
+    }
+#endif
 
     TimelineScriptRunner::TimelineScriptRunner(Alloc::IAllocator * allocator, Core::IApplicationContext* appContext, PropertyGrid::PropertyGridObject* propGrid
 #if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
@@ -159,16 +184,8 @@ namespace Timeline
 #endif
 
 #if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
-            unsigned permissions = Application::PERMISSIONS_RENDER_API_CALL | Application::PERMISSIONS_ASSET_LOAD;
-            if (mControlGlobalCacheReset)
-            {
-                permissions |= Application::PERMISSIONS_RENDER_GLOBAL_CACHE_WRITE;
-            }
-            else
-            {
-                permissions |= Application::PERMISSIONS_RENDER_GLOBAL_CACHE_READ;
-            }
-            static_cast<Application::RenderCollection*>(mVmState->GetUserContext())->SetPermissions((Application::ScriptPermissions)permissions);
+            
+            static_cast<Application::RenderCollection*>(mVmState->GetUserContext())->SetPermissions(GetGlobalScopePermissions(mControlGlobalCacheReset));
 #endif
             mTimelineScript->CallGlobalScopeInit(mVmState); 
 
@@ -257,6 +274,12 @@ namespace Timeline
 #endif
         if (mTimelineScript != nullptr)
         {
+
+#if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
+            Application::RenderCollection* nodeContainer = static_cast<Application::RenderCollection*>(mVmState->GetUserContext());
+            nodeContainer->SetPermissions(GetWindowCreationPermissions(mControlGlobalCacheReset));
+#endif
+
             mTimelineScript->CallWindowCreated(windowIndex, mVmState);
         }
     }
@@ -268,6 +291,10 @@ namespace Timeline
 #endif
         if (mTimelineScript != nullptr)
         {
+#if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
+            Application::RenderCollection* nodeContainer = static_cast<Application::RenderCollection*>(mVmState->GetUserContext());
+            nodeContainer->SetPermissions(GetWindowCreationPermissions(mControlGlobalCacheReset));
+#endif
             mTimelineScript->CallWindowDestroyed(windowIndex, mVmState);
         }
     }

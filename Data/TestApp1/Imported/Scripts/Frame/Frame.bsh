@@ -10,7 +10,7 @@ struct FrameState
 {
     
 };
-
+ 
 #include "Scripts/Core/Core.bsh"
 
 #ifdef MASTERSCRIPT_DEFINED
