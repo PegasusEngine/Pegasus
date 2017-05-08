@@ -81,8 +81,8 @@ namespace CompilerEvents
         };
 
         //! constructor
-        CompilationNotification(Type t, int row, const char * description)
-        : mType(t), mRow(row), mDescription(description)
+        CompilationNotification(Type t, const char* compilationUnitTitle, int row, const char * description)
+        : mCompilationUnitTitle(compilationUnitTitle), mType(t), mRow(row), mDescription(description)
         {}
 
         //! destructor
@@ -97,11 +97,16 @@ namespace CompilerEvents
 
         //! text with description
         const char * GetDescription() const { return mDescription; }
+
+        //! get the compilation unit title
+        const char* GetCompilationUnitTitle() const { return mCompilationUnitTitle; }
+
     private:
         Type mType;
         int mColumn;
         int mRow;
         const char * mDescription;
+        const char* mCompilationUnitTitle;
     
     };
 

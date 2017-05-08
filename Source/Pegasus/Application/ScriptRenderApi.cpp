@@ -124,17 +124,19 @@ void Render_CreateBlendingState(FunCallbackContext& context);
 #endif
 
 /////Global cache Functions////////////////////////////////////
-template<typename T> void GlobalCache_Register(FunCallbackContext& context);
-template<typename T> void GlobalCache_Find(FunCallbackContext& context);
+template<typename T, bool isWindowIdUsed=false> void GlobalCache_Register(FunCallbackContext& context);
+template<typename T, bool isWindowIdUsed=false> void GlobalCache_Find(FunCallbackContext& context);
 
-void GlobalCache_PrototypeRegisterGenericResource(FunCallbackContext& context)
+template<bool isWindowIdUsed=false>
+void Templated_GlobalCache_PrototypeRegisterGenericResource(FunCallbackContext& context)
 {
-    GlobalCache_Register<Application::GenericResource>(context);
+    GlobalCache_Register<Application::GenericResource,isWindowIdUsed>(context);
 }
 
-void GlobalCache_PrototypeFindGenericResource(FunCallbackContext& context)
+template<bool isWindowIdUsed=false>
+void Templated_GlobalCache_PrototypeFindGenericResource(FunCallbackContext& context)
 {
-    GlobalCache_Find<Application::GenericResource>(context);
+    GlobalCache_Find<Application::GenericResource,isWindowIdUsed>(context);
     Application::RenderCollection* collection = GetContainer(context.GetVmState());
     //check if the types are correct, if not error out and submit an invalid handle.
     PG_ASSERT(sizeof(RenderCollection::CollectionHandle) == context.GetOutputBufferSize());
@@ -150,6 +152,26 @@ void GlobalCache_PrototypeFindGenericResource(FunCallbackContext& context)
             *requestedReturn = RenderCollection::INVALID_HANDLE; // set as invalid handle and bail!
         }
     }
+}
+
+void GlobalCache_PrototypeRegisterGenericResource(FunCallbackContext& context)
+{
+    Templated_GlobalCache_PrototypeRegisterGenericResource<false>(context);
+}
+
+void GlobalCache_PrototypeRegisterGenericResourceWindowId(FunCallbackContext& context)
+{
+    Templated_GlobalCache_PrototypeRegisterGenericResource<true>(context);
+}
+
+void GlobalCache_PrototypeFindGenericResource(FunCallbackContext& context)
+{
+    Templated_GlobalCache_PrototypeFindGenericResource<false>(context);
+}
+
+void GlobalCache_PrototypeFindGenericResourceWindowId(FunCallbackContext& context)
+{
+    Templated_GlobalCache_PrototypeFindGenericResource<true>(context);
 }
 
 // property callback functions
@@ -524,6 +546,14 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
             {}, 0, nullptr, 0, nullptr
         },
         {
+            "VolumeTexture",
+            {}, 0, nullptr, 0, nullptr
+        },
+        {
+            "CubeMap",
+            {}, 0, nullptr, 0, nullptr
+        },
+        {
             "BlendingState",
             {}, 0, nullptr, 0, nullptr
         },
@@ -581,7 +611,11 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
             },
             2,
             nullptr, 0, nullptr
-        }
+        },
+        {
+            "GenericResource",
+            {}, 0, nullptr, 0, nullptr
+        },
     };
 
     const int nodeDefsSize = sizeof(nodeDefs)/sizeof(nodeDefs[0]);
@@ -925,25 +959,47 @@ static void RegisterFunctions(BlockLib* lib)
             { "BlendingConfig", nullptr },
             { "config", nullptr },
             Render_CreateBlendingState
-        },
-        {
-            "GlobalRegisterRenderTarget",
-            "int",
-            { "string", "RenderTarget", nullptr },
-            { "Name", "renderTarget", nullptr },
-            GlobalCache_Register<Render::RenderTarget>
-        },
-        {
-            "GlobalFindRenderTarget",
-            "RenderTarget",
-            { "string", nullptr },
-            { "Name", nullptr },
-            GlobalCache_Find<Render::RenderTarget> 
         }
     };
 
     lib->CreateIntrinsicFunctions(funDeclarations, sizeof(funDeclarations) / sizeof(funDeclarations[0]));
     
+#define RES_PROCESS(resourceType, memberName, typeName, hasProperties, canUpdate) \
+        {\
+            "GlobalRegister" typeName,\
+            "int",\
+            { "string", typeName, nullptr },\
+            { "Name", typeName, nullptr },\
+            GlobalCache_Register<resourceType,false>\
+        },\
+        {\
+            "GlobalRegister" typeName,\
+            "int",\
+            { "string", "int", typeName, nullptr },\
+            { "Name", "windowId", typeName, nullptr },\
+            GlobalCache_Register<resourceType,true>\
+        },\
+        {\
+            "GlobalFind" typeName,\
+            typeName,\
+            { "string", nullptr },\
+            { "Name", nullptr },\
+            GlobalCache_Find<resourceType,false> \
+        },\
+        {\
+            "GlobalFind" typeName,\
+            typeName,\
+            { "string", "int", nullptr },\
+            { "Name", "windowId", nullptr },\
+            GlobalCache_Find<resourceType,true> \
+        },\
+
+    const FunctionDeclarationDesc resourceFuncDecl[] = {
+#include "..\Source\Pegasus\Application\RenderResources.inl"
+    };
+#undef RES_PROCESS
+
+    lib->CreateIntrinsicFunctions(resourceFuncDecl, sizeof(resourceFuncDecl) / sizeof(resourceFuncDecl[0]));
 }
 
 
@@ -1674,8 +1730,15 @@ bool TemplatePropertyCallback   (const Pegasus::BlockScript::PropertyCallbackCon
     return PropertyGridPropertyCallback(accessor, context);
 }
 
+GlobalCache::CacheName CreateHash(const char* name, int windowId)
+{
+    GlobalCache::CacheName outHash;
+    outHash.s.lowDword   = Pegasus::Utils::HashStr(name);
+    outHash.s.highDword = static_cast<unsigned int>(windowId);
+    return outHash;
+}
 
-template<typename T>
+template<typename T, bool isWindowIdUsed>
 void GlobalCache_Register<T>(FunCallbackContext& context)
 {
     FunParamStream stream(context);
@@ -1685,13 +1748,19 @@ void GlobalCache_Register<T>(FunCallbackContext& context)
     const char* name = stream.NextBsStringArgument();
     RenderCollection::CollectionHandle handle = stream.NextArgument<RenderCollection::CollectionHandle>();
     bool isSuccess = false;
+    int windowId = -1;
+    if (isWindowIdUsed)
+    {
+        windowId = stream.NextArgument<int>();
+    }
+
     if (handle != RenderCollection::INVALID_HANDLE)
     {
-        unsigned int strHash = Pegasus::Utils::HashStr(name);
+        GlobalCache::CacheName hash = CreateHash(name, windowId);
         T* resource = RenderCollection::GetResource<T>(renderCollection, handle);
         GlobalCache* gc = renderCollection->GetGlobalCache();
         PG_ASSERT(gc != nullptr);
-        GlobalCache::Register<T>(gc, strHash, resource);
+        GlobalCache::Register<T>(gc, hash, resource);
     }
     else
     {
@@ -1700,7 +1769,7 @@ void GlobalCache_Register<T>(FunCallbackContext& context)
     stream.SubmitReturn<int>(isSuccess ? 1 : 0);
 }
 
-template<typename T>
+template<typename T, bool isWindowIdUsed>
 void GlobalCache_Find<T>(FunCallbackContext& context)
 {
     FunParamStream stream(context);
@@ -1710,8 +1779,14 @@ void GlobalCache_Find<T>(FunCallbackContext& context)
     GlobalCache* gc = renderCollection->GetGlobalCache();
     PG_ASSERT(gc != nullptr);
     const char* name = stream.NextBsStringArgument();
-    unsigned int strHash = Pegasus::Utils::HashStr(name);
-    RenderCollection::CollectionHandle collectionHandle = RenderCollection::ResolveResourceFromGlobalCache<T>(renderCollection, strHash);
+    int windowId = -1;
+    if (isWindowIdUsed)
+    {
+        windowId = stream.NextArgument<int>();
+    }
+
+    GlobalCache::CacheName hash = CreateHash(name, windowId);
+    RenderCollection::CollectionHandle collectionHandle = RenderCollection::ResolveResourceFromGlobalCache<T>(renderCollection, hash);
     if (collectionHandle == RenderCollection::INVALID_HANDLE)
     {
         PG_LOG('ERR_', "No global resource found, with the name of %s. Make sure is registered from the master timeline script.", name);

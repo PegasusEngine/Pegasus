@@ -56,14 +56,15 @@ void BlockScriptBuilder::Initialize(Pegasus::Alloc::IAllocator* allocator)
     mSymbolTable.Initialize(allocator);
     mGlobalsMap.Initialize(allocator);
     mGlobalsMetaData.Initialize(allocator);
+    mFileStates.Initialize(allocator);
     Reset();
 }
 
-void BlockScriptBuilder::BeginBuild()
+void BlockScriptBuilder::BeginBuild(const char* initialTitle)
 {
     PG_ASSERTSTR(
         mErrorCount == 0 &&
-        mCurrentLineNumber == 1 &&
+        mFileStates.Size() == 0 &&
         mActiveResult.mAst == nullptr &&
         mActiveResult.mAsm.mBlocks == nullptr &&
         mInFunBody == false,
@@ -73,6 +74,56 @@ void BlockScriptBuilder::BeginBuild()
     for (int i = 0; i < mEventListeners.Size(); ++i)
     {
         mEventListeners[i]->OnCompilationBegin();
+    }
+
+    PushFile(initialTitle);
+}
+
+void BlockScriptBuilder::PushFile(const char* newTitle)
+{
+    //initialize the file line stack
+    FileState& fs = mFileStates.PushEmpty();
+    fs.compilationUnitTitle = newTitle;
+    fs.lineNumber = 0;
+}
+
+void BlockScriptBuilder::PopFile()
+{
+    mFileStates.Pop();
+}
+
+int BlockScriptBuilder::GetCurrentLine() const
+{
+    if (mFileStates.Size() > 0)
+    {
+        return mFileStates[mFileStates.Size() - 1].lineNumber;
+    }
+    else
+    {
+        PG_FAILSTR("Requesting a line number without an active file state.");
+        return -1;
+    }
+}
+
+
+const char* BlockScriptBuilder::GetCurrentCompilationUnitTitle() const
+{
+    if (mFileStates.Size() > 0)
+    {
+        return mFileStates[mFileStates.Size() - 1].compilationUnitTitle;
+    }
+    else
+    {
+        PG_FAILSTR("Requesting a compilation unit name without an active file state.");
+        return "<UnknownCompilationUnitTitle>";
+    }
+}
+
+void BlockScriptBuilder::IncrementLine()
+{
+    if (mFileStates.Size() > 0)
+    {
+        ++mFileStates[mFileStates.Size() - 1].lineNumber;
     }
 }
 
@@ -124,7 +175,6 @@ void BlockScriptBuilder::Reset()
 {
     //initialize compilation state variables
     mErrorCount = 0;
-    mCurrentLineNumber = 1;
     mActiveResult.mAst = nullptr;
     mActiveResult.mAsm.mBlocks = nullptr;
     mCurrAnnotations = nullptr;
@@ -142,6 +192,7 @@ void BlockScriptBuilder::Reset()
     mCanonizer.Reset();
     mGlobalsMap.Reset();
     mGlobalsMetaData.Reset();
+    mFileStates.Reset();
 
     mStrPool.Clear();
 

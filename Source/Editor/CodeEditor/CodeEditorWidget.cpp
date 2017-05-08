@@ -277,7 +277,10 @@ void CodeEditorWidget::SignalCompilationError(AssetInstanceHandle handle, int li
 {
     if (handle.IsValid())
     {
-        SourceState* ss = mHandleMap[handle];
+		QMap<AssetInstanceHandle, SourceState*>::iterator it = mHandleMap.find(handle);
+		if (it == mHandleMap.end())
+			return;
+        SourceState* ss = *it;
         if (ss == nullptr) return;
 
         ss->errorLines.insert(line);

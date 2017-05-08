@@ -36,7 +36,8 @@ public:
         PP_CMD_NONE, //no command
         PP_CMD_INCLUDE, // include command
         PP_CMD_DEFINE, //define command
-        PP_CMD_IF, //ifdef command
+        PP_CMD_IF_DEF, //ifdef command
+        PP_CMD_IF_N_DEF, //ifndef command
         PP_CMD_ELSEIF, //elif command
         PP_CMD_ELSE, //else command
         PP_CMD_ENDIF //endif command
@@ -49,8 +50,9 @@ public:
         int         mBufferSize;
         const char* mValue;
         bool        mIsInclude;
+        const char* mIncludePathName;
     public:
-        Definition() : mName(nullptr), mValue(nullptr), mIsInclude(false), mBufferSize(0) {}
+        Definition() : mName(nullptr), mValue(nullptr), mIncludePathName(nullptr), mIsInclude(false), mBufferSize(0) {}
     };
 
     //! Constructor
@@ -65,8 +67,11 @@ public:
     //! Push define command
     void DefineCmd();
 
-    //! Push if command
-    void IfCmd();
+    //! Push ifdef command
+    void IfDefCmd();
+
+    //! Push ifndef command
+    void IfNDefCmd();
 
     //! Push elseif command
     void ElseIfCmd();
@@ -124,6 +129,9 @@ public:
     
     //!  returns the String argument pushed
     const char* GetStringArg() const { return Top().mStringArg; }
+
+    //!  returns the Code argument pushed
+    const char* GetCodeArg() const { return Top().mCodeArg; }
 
     //! sets the file includer handler
     void SetFileIncluder(IFileIncluder* fileIncluder) { mFileIncluder = fileIncluder; }

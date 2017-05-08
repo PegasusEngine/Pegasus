@@ -201,17 +201,20 @@
                      pp.DefineCmd(); 
                  }
            }
-"ifdef"    {
+ifn?def    {
                 Pegasus::BlockScript::Preprocessor& pp = yyextra->GetPreprocessor();
                 if (pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_NONE)
                 {
-                    BS_ErrorDispatcher(yyextra->mBuilder, "Can't queue preprocessor command 'ifdef' "); yyterminate();
+                    BS_ErrorDispatcher(yyextra->mBuilder, "Can't queue preprocessor command 'if[n]def' "); yyterminate();
                 }
                 else
                 {
                     bool ifActive = pp.IsIfActive();
                     pp.NewState();
-                    pp.IfCmd();
+                    if (yytext[2] == 'd')
+                        pp.IfDefCmd();
+                    else
+                        pp.IfNDefCmd();
                     pp.SetChosePath(false);
                     pp.SetIfActive(ifActive);
                 }
@@ -291,9 +294,12 @@
 \n         { 
                 yyextra->mBuilder->IncrementLine(); 
                 Pegasus::BlockScript::Preprocessor& pp = yyextra->GetPreprocessor();
-                if (pp.GetCmd() == Pegasus::BlockScript::Preprocessor::PP_CMD_IF || pp.GetCmd() == Pegasus::BlockScript::Preprocessor::PP_CMD_ELSEIF)
+                if (pp.GetCmd() == Pegasus::BlockScript::Preprocessor::PP_CMD_IF_DEF 
+                 || pp.GetCmd() == Pegasus::BlockScript::Preprocessor::PP_CMD_IF_N_DEF 
+                 || pp.GetCmd() == Pegasus::BlockScript::Preprocessor::PP_CMD_ELSEIF)
                 {
                    
+					Pegasus::BlockScript::Preprocessor::Cmd cmd = pp.GetCmd();
                     const char* preprocessorDefine = pp.GetStringArg();
                     pp.NoneCmd();
 
@@ -304,8 +310,10 @@
                 
                     if (pp.IsIfActive() && !pp.ChosePath())
                     {
+                        bool shouldNegate = cmd == Pegasus::BlockScript::Preprocessor::PP_CMD_IF_N_DEF;
                         bool isDefined = pp.FindDefinitionByName( preprocessorDefine ) != nullptr;
-                        if (isDefined)
+                        bool shouldChoosePath = (!shouldNegate && isDefined) || (shouldNegate && !isDefined);
+                        if (shouldChoosePath)
                         {
                             pp.SetChosePath(true);
                             BEGIN(yyextra->PopLexerState());
@@ -371,6 +379,7 @@
                             int bufferSize = 0;
                             yyextra->PushDefineStack(YY_CURRENT_BUFFER, pp.GetIncludeDefinition());
                             yypush_buffer_state(yy_create_buffer(NULL, YY_BUF_SIZE, yyscanner), yyscanner);
+                            yyextra->mBuilder->PushFile(pp.GetIncludeDefinition()->mIncludePathName);
                         }
 
                         if (pp.IsIfActive())
@@ -389,7 +398,8 @@
                     Pegasus::BlockScript::Preprocessor& pp = yyextra->GetPreprocessor();
                     if (
                             pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_DEFINE &&
-                            pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_IF     &&
+                            pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_IF_DEF     &&
+                            pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_IF_N_DEF   &&
                             pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_ELSEIF 
                        )
                     {
@@ -403,8 +413,7 @@
                         Pegasus::Utils::Strcat(str, yytext);
                         pp.PushString(yyextra->mBuilder->AllocStrImm(yytext));
                         
-                        if (pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_IF &&
-                            pp.GetCmd() != Pegasus::BlockScript::Preprocessor::PP_CMD_ELSEIF)
+                        if (pp.GetCmd() == Pegasus::BlockScript::Preprocessor::PP_CMD_DEFINE)
                         {
                             yyextra->mStringAccumulatorPos = 0;
                             yyextra->mStringAccumulator[yyextra->mStringAccumulatorPos] = '\0';
@@ -497,6 +506,11 @@ extern          { return K_EXTERN;       }
 <<EOF>>         {
                     if (yyextra->GetDefineStackCount() > 0)
                     {
+                        //only if the current stack of string stream is a file
+                        if (yyextra->GetDefineStackTop()->mDef && yyextra->GetDefineStackTop()->mDef->mIsInclude)
+                        {
+                            yyextra->mBuilder->PopFile();
+                        }
                         yy_delete_buffer(YY_CURRENT_BUFFER, yyscanner); 
                         yy_switch_to_buffer((YY_BUFFER_STATE)yyextra->PopDefineStack(), yyscanner);
                     }

@@ -79,6 +79,12 @@ public:
     //! The strings in question will get copied.
     void RegisterDefinitions(const char* definitionNames[], const char* definitionValues[], int definitionCounts);
 
+    //! Sets the title of this file. The string must be kept alive externally throughout compilation time.
+    void SetTitle(const char* title) { mTitle = title; }
+
+    //! Gets the title of this file
+    const char* GetTitle() const { return mTitle; }
+
     //! Gets the abstract syntax tree constructed from Compile
     //! \return the abstract syntax tree
     Ast::Program* GetAst() { return mAst; }
@@ -130,6 +136,7 @@ private:
     Assembly                 mAsm;
     IFileIncluder*           mFileIncluder;
     Container<Preprocessor::Definition>   mDefinitionList;
+    const char* mTitle;
 };
 
 }

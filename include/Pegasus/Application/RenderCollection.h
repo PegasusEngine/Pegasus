@@ -90,7 +90,27 @@ namespace Application
         ~GlobalCache();
 
         //! string hash containing cache name
-        typedef unsigned int CacheName;
+        union CacheName
+        {
+            struct {
+                unsigned int lowDword;
+                unsigned int highDword;
+            } s;
+
+            unsigned long long v;
+
+            CacheName() : v(0) {}
+
+            bool operator==(const CacheName& other) const
+            {
+                return v == other.v;
+            }
+
+            bool operator!=(const CacheName& other) const
+            { 
+                return v != other.v;
+            }
+        };
         
         //! Registers an element of type T into global cache.
         //! If the name already exists, it will get replaced.

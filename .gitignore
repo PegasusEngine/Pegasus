@@ -1,6 +1,15 @@
 *.swp
 *.VC.db
 *.VC.opendb
+include/tags
+Source/tags
+*.vpj
+*.vpw
+*.vpwhist
+*.vtg
+tags
+.vs
+fmod.log
 Build/VS14/*
 Lib/Pegasus/*
 bin/*/Win32/*/*.exe
@@ -8,4 +17,6 @@ bin/*/Win32/*/*.ilk
 bin/*/Win32/*/*.pdb
 bin/*/Win32/*/*.pgd
 Project/*/Editor/GeneratedFiles/*
+Project/*/.vs/*
+Project/VS14/Build/*
 bin/*/Win32/*/Applications/*

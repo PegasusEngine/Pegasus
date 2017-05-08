@@ -130,9 +130,10 @@ public:
     virtual void OnCompilationBegin();
 
     //! Triggered when there is a compilation error
+    //! \param compilationUnitTitle
     //! \param line the actual
     //! \param errorMessage the actual error message
-    virtual void OnCompilationError(int line, const char* errorMessage, const char* token);
+    virtual void OnCompilationError(const char* compilationUnitTitle, int line, const char* errorMessage, const char* token);
 
     //! Called at the end of a compilation
     //! \param success true if it was successful, false otherwise
