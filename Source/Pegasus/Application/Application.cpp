@@ -231,6 +231,8 @@ void Application::Load()
     {
         mBsReflectionInfo->RegisterLib(mRenderSystemManager->GetLibs()[i]);
     }
+    //register the timeline lib
+    mBsReflectionInfo->RegisterLib(mTimelineManager->GetTimelineLib());
 #endif
 
     //register per system shader constants to shader factory
