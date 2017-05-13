@@ -106,6 +106,14 @@ namespace Render
 
     struct DepthStencilConfig
     {
+        int mWidth;
+        int mHeight;
+        int mUseStencil;
+    public:
+        DepthStencilConfig()
+        : mWidth(-1), mHeight(-1), mUseStencil(0)
+        {
+        }
     };
 
     //! Structure containing configuration for rasterizer state
@@ -443,6 +451,11 @@ namespace Render
     //! \param configuration of the render target
     //! \return output render target to fill / create
     RenderTargetRef CreateRenderTarget(RenderTargetConfig& config);
+    
+    //! Creates a depth stencil with the assigned texture configuration
+    //! \param configuration of the depthstencil
+    //! \return output depthstencil
+    DepthStencilRef CreateDepthStencil(const DepthStencilConfig& config);
 
     //! Creates a render target from a cube map
     //! \param CubeFace the face of the cube map to set this target to

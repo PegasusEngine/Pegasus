@@ -1,61 +1,33 @@
 //define master script for Frame.bsh
 #define MASTERSCRIPT_DEFINED 1
-
 #ifndef MAX_WINDOW_COUNT
 #define MAX_WINDOW_COUNT 1
-#endif
+#endif 
 
 #include "Scripts/Frame/Frame.bsh"
 
-extern signature = 1;
-tmpConfig = RenderTargetConfig(500, 50, FORMAT_RGBA_8_UNORM);
-tempTarget1 = CreateRenderTarget( tmpConfig );
-GlobalRegisterRenderTarget("temp1", tempTarget1);
-cam = CreateCamera();
-cam.Far = 1000.0;
-
-t = CreateTerrain3d(0,0);
-t.BlockLod0Threshold = 2;
-t.BlockLod1Threshold = 4;
-t.BlockLod2Threshold = 8;
-t.BlockHeight = 4;
-t->SetCullCamera(cam);
-
 extern CamPos = float3(0.0,1.0,0.0);
 extern Fov = 0.5;
-
-enum TT
-{
-	A, B, C
-};
 extern CamDir = float3(0.0,0.0,-1.0);
 
-meshGenerator = CreateMeshGenerator("Terrain3dGenerator");
-//meshGenerator = CreateMeshGenerator("MarchingCubeMeshGenerator");
-//meshGenerator.CaseNumber = 1;
-testMesh = CreateMesh();
-testMesh->SetGeneratorInput(meshGenerator);
-marchingCubeProgram = LoadProgram("Programs/MarchingCubeProgram.pas");
+gWorldCam = CreateCamera();
+gWorldCam.Far = 1000.0;
 
-rs=CreateRasterizerState(RasterizerConfig(NONE_CM,LESSER_DF));
-/*
+
 int Timeline_Update(info : UpdateInfo)
 {
-	cam.Position = CamPos + info.beat*float3(0.5,0.0,0.5);
-	cam.Dir = CamDir;
-	cam.Fov = Fov;
-	BindCamera(cam, CAM_WORLD_CONTEXT);
-	meshGenerator.TerrainSeed = 1;
+	gWorldCam.Position = CamPos + info.beat*float3(0.5,0.0,0.5);
+	gWorldCam.Dir = CamDir;
+	gWorldCam.Fov = Fov;
+	BindCamera(gWorldCam, CAM_WORLD_CONTEXT);
+
 }
 
 int Timeline_Render(info: RenderInfo)
 {
-
-	t->Generate();
-	SetProgram(marchingCubeProgram);
-	SetRasterizerState(rs);
-	t->Draw();
-	UnbindMesh();
-
+	//* Some demo ideas!!!
+	//* Create a kickass sky / sun with directional.
+	//* Add pyramid with normal map generated procedurally
+	//* 3d empty Terrain
+	//* add hdr pipeline
 }
-*/
