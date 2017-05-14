@@ -199,9 +199,28 @@ struct DXRenderTargetGPUData
     CComPtr<ID3D11RenderTargetView> mRenderTarget;
 };
 
+struct DXDepthStencilGPUData
+{
+    PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(DXDepthStencilGPUData, 0x8);
+
+    bool mUseStencil;
+
+    D3D11_TEXTURE2D_DESC mTextureDesc;
+    CComPtr<ID3D11Texture2D> mTexture;
+
+    D3D11_SHADER_RESOURCE_VIEW_DESC mSrvDepthDesc;
+    CComPtr<ID3D11ShaderResourceView> mSrvDepth;
+
+    D3D11_SHADER_RESOURCE_VIEW_DESC mSrvStencilDesc;
+    CComPtr<ID3D11ShaderResourceView> mSrvStencil;
+    
+    D3D11_DEPTH_STENCIL_VIEW_DESC mDepthViewDesc;
+    CComPtr<ID3D11DepthStencilView> mDepthView;
+};
+
 struct DXSampler
 {
-    PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(DXSampler, 0x8);
+    PEGASUS_GRAPH_REGISTER_GPUDATA_RTTI(DXSampler, 0x9);
     
     D3D11_SAMPLER_DESC mDesc;
     CComPtr<ID3D11SamplerState> mSampler;
