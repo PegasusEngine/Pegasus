@@ -63,7 +63,10 @@ verticalInput = GetUniformLocation(compositeProgram,   "inputTexture");
 
 //// SETUP MESHES ////
 cubeMesh = CreateMesh();
-cubeMesh->SetGeneratorInput(CreateMeshGenerator("BoxGenerator"));
+boxGenerator = CreateMeshGenerator("BoxGenerator");
+boxGenerator.CubeExtends = float3(3.0,2.0,0.50);
+boxGenerator.FaceSubdivision = 8;
+cubeMesh->SetGeneratorInput(boxGenerator);
 
 quad = CreateMesh();
 quad->SetGeneratorInput(CreateMeshGenerator("QuadGenerator"));

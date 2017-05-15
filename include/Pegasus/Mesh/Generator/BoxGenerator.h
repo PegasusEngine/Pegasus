@@ -29,6 +29,7 @@ class BoxGenerator : public MeshGenerator
     //! Property declarations
     BEGIN_DECLARE_PROPERTIES(BoxGenerator, MeshGenerator)
         DECLARE_PROPERTY(Math::Vec3, CubeExtends, Math::Vec3(1.0f, 1.0f, 1.0f))
+        DECLARE_PROPERTY(int, FaceSubdivision, 1)
     END_DECLARE_PROPERTIES()
 
 public:
@@ -45,6 +46,9 @@ protected:
 
     //! Generate the content of the data associated with the texture generator
     virtual void GenerateData();
+
+private:
+    int mVertsPerFace;
 };
 }
 

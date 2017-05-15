@@ -60,9 +60,6 @@ IcosphereGenerator::IcosphereGenerator(Pegasus::Alloc::IAllocator * nodeAllocato
         INIT_PROPERTY(Radius)
     END_INIT_PROPERTIES()
 
-    mConfiguration.SetIsIndexed(true);
-    mConfiguration.SetMeshPrimitiveType(MeshConfiguration::TRIANGLE);
-
     mConfiguration.GetInputLayout()->GenerateEditorLayout(MeshInputLayout::USE_POSITION | MeshInputLayout::USE_UV | MeshInputLayout::USE_NORMAL);
 
 }
