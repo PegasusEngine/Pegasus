@@ -105,13 +105,14 @@ protected:
 
     //------------------------------------------------------------------------------------
 
+    //! Configuration of the operator, such as the resolution and pixel format
+    MeshConfiguration mConfiguration;
+
 private:
 
     // Nodes cannot be copied, only references to them
     PG_DISABLE_COPY(MeshOperator)
 
-    //! Configuration of the operator, such as the resolution and pixel format
-    MeshConfiguration mConfiguration;
 
     //! Pointer to GPU Mesh factory
     IMeshFactory * mFactory;
