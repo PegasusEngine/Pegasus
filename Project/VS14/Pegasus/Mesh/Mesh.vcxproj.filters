@@ -86,6 +86,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\Generator\CustomGenerator.h">
       <Filter>Include\Generator</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\Mesh\Operator\CombineTransformOperator.h">
+      <Filter>Include\Operator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Mesh.cpp">
@@ -126,6 +129,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Generator\CustomGenerator.cpp">
       <Filter>Source\Generator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Operator\CombineTransformOperator.cpp">
+      <Filter>Source\Operator</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
