@@ -30,7 +30,7 @@ class IMeshFactory;
 //!                     so the operator node can be instantiated
 class MeshOperator : public Graph::OperatorNode
 {
-    BEGIN_DECLARE_PROPERTIES_BASE(MeshOperator)
+    BEGIN_DECLARE_PROPERTIES(MeshOperator, OperatorNode)
     END_DECLARE_PROPERTIES()
 
     PEGASUS_EVENT_DECLARE_DISPATCHER(IMeshEventListener);

@@ -586,6 +586,12 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
             TemplatePropertyCallback<Mesh::MeshGenerator>
         },
         {
+            "MeshOperator",
+            {},0,
+            nullptr, 0, 
+            TemplatePropertyCallback<Mesh::MeshOperator>
+        },
+        {
             "Mesh",
             {
                 { "SetGeneratorInput", "int", {"Mesh", "MeshGenerator", nullptr}, {"this", "meshGenerator", nullptr}, Mesh_SetGeneratorInput }

@@ -11,6 +11,7 @@
 
 #include "Pegasus/PegasusAssetTypes.h"
 #include "Pegasus/Mesh/MeshManager.h"
+#include "Pegasus/Mesh/Operator/CombineTransformOperator.h"
 #include "Pegasus/Mesh/Generator/QuadGenerator.h"
 #include "Pegasus/Mesh/Generator/BoxGenerator.h"
 #include "Pegasus/Mesh/Generator/IcosphereGenerator.h"
@@ -146,6 +147,7 @@ void MeshManager::RegisterAllMeshNodes()
     // Register the generator nodes
     // IMPORTANT! Add here every mesh generator node that is created,
     //            and update the list of #includes above
+    REGISTER_MESH_NODE(CombineTransformOperator);
     REGISTER_MESH_NODE(QuadGenerator);
     REGISTER_MESH_NODE(BoxGenerator);
     REGISTER_MESH_NODE(IcosphereGenerator);
