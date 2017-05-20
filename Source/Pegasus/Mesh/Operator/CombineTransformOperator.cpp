@@ -77,7 +77,7 @@ static void TransformAppendMesh(const Vertex* input, Vertex* outputDest, int cou
         float len = Math::Length(outputDest[v].normal);
         if (Math::Abs(len) > PFLOAT_EPSILON)
         {
-            Math::Normalize(outputDest[v].normal);
+            outputDest[v].normal /= len;
         }
         
         outputDest[v].uv = input[v].uv;
