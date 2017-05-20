@@ -17,6 +17,7 @@
 #include "Pegasus/Mesh/Shared/MeshEvent.h"
 #include "Pegasus/Mesh/MeshConfiguration.h"
 #include "Pegasus/Mesh/MeshData.h"
+#include "Pegasus/Mesh/MeshGenerator.h"
 #include "Pegasus/Mesh/MeshDeclaration.h"
 #include "Pegasus/PropertyGrid/PropertyGridObject.h"
 
@@ -73,6 +74,12 @@ public:
     //!       to not have the dirty flag turned on.
     //!       Redefine this function in derived classes to change its behavior
     //virtual NodeDataReturn GetUpdatedData(bool & updated);
+
+    //! Append a mesh generator node to the list of input nodes
+    virtual void AddGeneratorInput(MeshGeneratorIn gen);
+
+    //! Append a mesh operator node to the list of input nodes
+    virtual void AddOperatorInput(const Pegasus::Core::Ref<MeshOperator>& op);
 
     //------------------------------------------------------------------------------------
 

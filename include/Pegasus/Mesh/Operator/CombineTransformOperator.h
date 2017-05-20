@@ -54,7 +54,7 @@ public:
 
     virtual ~CombineTransformOperator();
 
-    virtual unsigned int GetMinNumInputNodes() const override { return 2; }
+    virtual unsigned int GetMinNumInputNodes() const override { return 1; }
 
     virtual unsigned int GetMaxNumInputNodes() const override { return MaxCombineTransformInputs; }
 

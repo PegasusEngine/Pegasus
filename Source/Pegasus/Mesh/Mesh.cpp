@@ -56,6 +56,7 @@ void Mesh::SetOperatorInput(MeshOperatorIn meshOperator)
 {
     RemoveAllInputs();
     AddInput(meshOperator);
+    SetConfiguration(meshOperator->GetConfiguration());
 }
 
 //----------------------------------------------------------------------------------------

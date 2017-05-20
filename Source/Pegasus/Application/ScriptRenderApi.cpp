@@ -60,15 +60,16 @@ static Application::RenderCollection* GetContainer(BsVmState* state);
 void Program_SetShaderStage(FunCallbackContext& context);
 
 ////Mesh Methods/////////////////////////////////////////////
+void MeshOperator_AddOperatorInput(FunCallbackContext& context);
+void MeshOperator_AddGeneratorInput(FunCallbackContext& context);
 void Mesh_SetGeneratorInput(FunCallbackContext& context);
+void Mesh_SetOperatorInput(FunCallbackContext& context);
 
 /////Texture Methods/////////////////////////////////////////
-void TextureGenerator_AddOperatorInput(FunCallbackContext& context);
-void TextureGenerator_AddGeneratorInput(FunCallbackContext& context);
 void TextureOperator_AddOperatorInput(FunCallbackContext& context);
 void TextureOperator_AddGeneratorInput(FunCallbackContext& context);
-void Texture_SetOperatorInput(FunCallbackContext& context);
 void Texture_SetGeneratorInput(FunCallbackContext& context);
+void Texture_SetOperatorInput(FunCallbackContext& context);
 
 /////Node Manager Methods////////////////////////////////////
 void Node_LoadProgram(FunCallbackContext& context);
@@ -77,6 +78,7 @@ void Node_CreateTextureGenerator(FunCallbackContext& context);
 void Node_CreateTextureOperator(FunCallbackContext& context);
 void Node_CreateMesh(FunCallbackContext& context);
 void Node_CreateMeshGenerator(FunCallbackContext& context);
+void Node_CreateMeshOperator(FunCallbackContext& context);
 
 /////Render API Functions////////////////////////////////////
 void Render_CreateUniformBuffer(FunCallbackContext& context);
@@ -587,16 +589,21 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
         },
         {
             "MeshOperator",
-            {},0,
+            {
+                { "AddGeneratorInput", "int", { "MeshOperator", "MeshGenerator", nullptr }, { "this", "meshGenerator", nullptr }, MeshOperator_AddGeneratorInput },
+                { "AddOperatorInput",  "int", { "MeshOperator", "MeshOperator", nullptr },  { "this", "meshOperator", nullptr },  MeshOperator_AddOperatorInput  }
+            },
+            2,
             nullptr, 0, 
             TemplatePropertyCallback<Mesh::MeshOperator>
         },
         {
             "Mesh",
             {
-                { "SetGeneratorInput", "int", {"Mesh", "MeshGenerator", nullptr}, {"this", "meshGenerator", nullptr}, Mesh_SetGeneratorInput }
+                { "SetGeneratorInput", "int", {"Mesh", "MeshGenerator", nullptr}, {"this", "meshGenerator", nullptr}, Mesh_SetGeneratorInput },
+                { "SetOperatorInput", "int", {"Mesh", "MeshOperator", nullptr}, {"this", "meshOperator", nullptr}, Mesh_SetOperatorInput }
             },
-            1,
+            2,
             nullptr, 0, nullptr
         },
         {
@@ -619,7 +626,7 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
             "Texture",
             {
                 { "SetGeneratorInput", "int", { "Texture", "TextureGenerator", nullptr }, { "this", "texGenerator", nullptr }, Texture_SetGeneratorInput },
-                { "SetOperatorInput",  "int", { "Texture", "TextureOperator", nullptr },  { "this", "texOperator", nullptr }, Texture_SetOperatorInput }
+                { "SetOperatorInput", "int", { "Texture", "TextureOperator", nullptr }, { "this", "texOperator", nullptr }, Texture_SetOperatorInput },
             },
             2,
             nullptr, 0, nullptr
@@ -746,7 +753,13 @@ static void RegisterFunctions(BlockLib* lib)
             { "typeId", nullptr },
             Node_CreateMeshGenerator
         },
-
+        {
+            "CreateMeshOperator",
+            "MeshOperator",
+            { "string", nullptr },
+            { "typeId", nullptr },
+            Node_CreateMeshOperator
+        },
         // Render API registration
         {
             "CreateUniformBuffer",
@@ -1065,6 +1078,69 @@ void Program_SetShaderStage(FunCallbackContext& context)
 /////////////////////////////////////////////////////////////
 //!> Mesh Node functions
 /////////////////////////////////////////////////////////////
+void MeshOperator_AddOperatorInput(FunCallbackContext& context)
+{
+    BsVmState* state = context.GetVmState();    
+    RenderCollection* collection = GetContainer(state);
+    FunParamStream stream(context);
+    
+    RenderCollection::CollectionHandle& meshOpHandle = stream.NextArgument<RenderCollection::CollectionHandle>();
+    RenderCollection::CollectionHandle& opToAddHandle  = stream.NextArgument<RenderCollection::CollectionHandle>();
+
+    if ( meshOpHandle != RenderCollection::INVALID_HANDLE && opToAddHandle != RenderCollection::INVALID_HANDLE)
+    {
+        Mesh::MeshOperatorRef srcMesh = RenderCollection::GetResource<Mesh::MeshOperator>(collection, meshOpHandle);
+        Mesh::MeshOperatorRef dstMesh = RenderCollection::GetResource<Mesh::MeshOperator>(collection, opToAddHandle);
+        srcMesh->AddOperatorInput(dstMesh);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Invalid meshes being set in ->AddOperatorInput");
+    }
+}
+
+void MeshOperator_AddGeneratorInput(FunCallbackContext& context)
+{
+    BsVmState* state = context.GetVmState();    
+    RenderCollection* collection = GetContainer(state);
+    FunParamStream stream(context);
+    
+    RenderCollection::CollectionHandle& meshOpHandle = stream.NextArgument<RenderCollection::CollectionHandle>();
+    RenderCollection::CollectionHandle& opToAddHandle  = stream.NextArgument<RenderCollection::CollectionHandle>();
+
+    if ( meshOpHandle != RenderCollection::INVALID_HANDLE && opToAddHandle != RenderCollection::INVALID_HANDLE)
+    {
+        Mesh::MeshOperatorRef srcMesh = RenderCollection::GetResource<Mesh::MeshOperator>(collection, meshOpHandle);
+        Mesh::MeshGeneratorRef meshGeneratorRef = RenderCollection::GetResource<Mesh::MeshGenerator>(collection, opToAddHandle);
+        srcMesh->AddGeneratorInput(meshGeneratorRef);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Invalid meshes being set in ->AddGeneratorInput");
+    }
+}
+
+void Mesh_SetOperatorInput(FunCallbackContext& context)
+{
+    BsVmState* state = context.GetVmState();    
+    RenderCollection* collection = GetContainer(state);
+    FunParamStream stream(context);
+    
+    RenderCollection::CollectionHandle& meshHandle = stream.NextArgument<RenderCollection::CollectionHandle>();
+    RenderCollection::CollectionHandle& opHandle  = stream.NextArgument<RenderCollection::CollectionHandle>();
+
+    if ( meshHandle != RenderCollection::INVALID_HANDLE && opHandle != RenderCollection::INVALID_HANDLE)
+    {
+        Mesh::MeshRef mesh = RenderCollection::GetResource<Mesh::Mesh>(collection, meshHandle);
+        Mesh::MeshOperatorRef meshOpRef = RenderCollection::GetResource<Mesh::MeshOperator>(collection, opHandle);
+        mesh->SetOperatorInput(meshOpRef);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Invalid meshes being set in ->SetOperatorInput");
+    }
+}
+
 void Mesh_SetGeneratorInput(FunCallbackContext& context)
 {
     BsVmState* state = context.GetVmState();    
@@ -1089,13 +1165,6 @@ void Mesh_SetGeneratorInput(FunCallbackContext& context)
 /////////////////////////////////////////////////////////////
 //!> Texture Node functions
 /////////////////////////////////////////////////////////////
-void TextureGenerator_AddOperatorInput(FunCallbackContext& context)
-{
-}
-
-void TextureGenerator_AddGeneratorInput(FunCallbackContext& context)
-{
-}
 
 void TextureOperator_AddOperatorInput(FunCallbackContext& context)
 {
@@ -1229,6 +1298,25 @@ void Node_CreateMeshGenerator(FunCallbackContext& context)
     stream.SubmitReturn(handle);
     
 }
+
+void Node_CreateMeshOperator(FunCallbackContext& context)
+{
+    FunParamStream stream(context);
+    BsVmState* state = context.GetVmState();
+    RenderCollection* collection = GetContainer(state);
+    Core::IApplicationContext* appCtx = collection->GetAppContext();
+    Mesh::MeshManager* meshManager = appCtx->GetMeshManager();
+
+    //get the input
+    const char* name = stream.NextBsStringArgument();
+
+    //create new mesh generator
+    Mesh::MeshOperatorRef meshOperator = meshManager->CreateMeshOperatorNode(name);
+    RenderCollection::CollectionHandle handle = RenderCollection::AddResource<Mesh::MeshOperator>(collection, meshOperator);
+    stream.SubmitReturn(handle);
+    
+}
+
 
 /////////////////////////////////////////////////////////////
 //!> Render functions

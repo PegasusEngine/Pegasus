@@ -154,20 +154,20 @@ void CombineTransformOperator::GenerateMatrices(Math::Mat44* matrices, Math::Mat
 
     for (int i = 0; i < MaxCombineTransformInputs; ++i)
     {
-        PG_ASSERT(GetClassPropertyRecord(accessorIdx).type == PropertyGrid::PROPERTYTYPE_VEC3);
-        transAccessors[i] = GetClassReadPropertyAccessor(accessorIdx++);
+        PG_ASSERT(GetDerivedClassPropertyRecord(accessorIdx).type == PropertyGrid::PROPERTYTYPE_VEC3);
+        transAccessors[i] = GetDerivedClassReadPropertyAccessor(accessorIdx++);
     }
 
     for (int i = 0; i < MaxCombineTransformInputs; ++i)
     {
-        PG_ASSERT(GetClassPropertyRecord(accessorIdx).type == PropertyGrid::PROPERTYTYPE_VEC3);
-        scaleAccessors[i] = GetClassReadPropertyAccessor(accessorIdx++);
+        PG_ASSERT(GetDerivedClassPropertyRecord(accessorIdx).type == PropertyGrid::PROPERTYTYPE_VEC3);
+        scaleAccessors[i] = GetDerivedClassReadPropertyAccessor(accessorIdx++);
     }
 
     for (int i = 0; i < MaxCombineTransformInputs; ++i)
     {
-        PG_ASSERT(GetClassPropertyRecord(accessorIdx).type == PropertyGrid::PROPERTYTYPE_VEC4);
-        rotAccessors[i] = GetClassReadPropertyAccessor(accessorIdx++);
+        PG_ASSERT(GetDerivedClassPropertyRecord(accessorIdx).type == PropertyGrid::PROPERTYTYPE_VEC4);
+        rotAccessors[i] = GetDerivedClassReadPropertyAccessor(accessorIdx++);
     }
 
     for (int i = 0; i < MaxCombineTransformInputs; ++i)

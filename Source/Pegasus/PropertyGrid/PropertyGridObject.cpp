@@ -125,6 +125,40 @@ PropertyAccessor PropertyGridObject::GetDerivedClassPropertyAccessor(unsigned in
 
 //----------------------------------------------------------------------------------------
 
+const PropertyReadAccessor PropertyGridObject::GetDerivedClassReadPropertyAccessor(unsigned int index) const
+{
+    if (index < GetNumDerivedClassProperties())
+    {
+        const unsigned int absoluteIndex = GetNumClassProperties() - GetNumDerivedClassProperties() + index;
+        return PropertyReadAccessor(  this
+                                , mClassPropertyPointers[absoluteIndex]
+#if PEGASUS_USE_EVENTS
+                                ,  PROPERTYCATEGORY_CLASS
+                                ,  absoluteIndex
+#endif
+#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
+                                , mClassPropertySizes[absoluteIndex]
+#endif
+                               );
+    }
+    else
+    {
+        PG_FAILSTR("Trying to access property %u but it has to be < %u", index, GetNumDerivedClassProperties());
+        return PropertyReadAccessor(  this
+                                , nullptr
+#if PEGASUS_USE_EVENTS
+                                ,  PROPERTYCATEGORY_INVALID
+                                ,  -1
+#endif
+#if PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR
+                                , 0
+#endif
+                               );
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 PropertyAccessor PropertyGridObject::GetClassPropertyAccessor(unsigned int index)
 {
     if (index < GetNumClassProperties())

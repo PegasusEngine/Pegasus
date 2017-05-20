@@ -70,8 +70,7 @@ public:
     //! \param className Name of the mesh operator node class to instantiate
     //! \param configuration Configuration of the mesh
     //! \return Reference to the created node, null reference if an error occurred
-    MeshOperatorReturn CreateMeshOperatorNode(const char * className,
-                                                    const MeshConfiguration & configuration);
+    MeshOperatorReturn CreateMeshOperatorNode(const char * className);
 
     //! Returns a null terminated list of asset descriptions this runtime factory will accept.
     //! \return a null terminated list of asset descriptions

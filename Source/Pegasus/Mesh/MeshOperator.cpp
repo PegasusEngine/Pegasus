@@ -84,6 +84,7 @@ void MeshOperator::ReleaseDataAndPropagate()
 
     Graph::Node::ReleaseDataAndPropagate();
 }
+
 //----------------------------------------------------------------------------------------
 
 Graph::NodeData * MeshOperator::AllocateData() const
@@ -92,6 +93,21 @@ Graph::NodeData * MeshOperator::AllocateData() const
                     MeshData(mConfiguration, GetMode(), GetNodeDataAllocator());
 }
 
+//----------------------------------------------------------------------------------------
+
+void MeshOperator::AddGeneratorInput(MeshGeneratorIn meshGenerator)
+{
+    //TODO: handle incompatible mesh
+    AddInput(meshGenerator);
+}
+
+//----------------------------------------------------------------------------------------
+
+void MeshOperator::AddOperatorInput(MeshOperatorIn meshOperator)
+{
+    //TODO: handle incompatible mesh
+    AddInput(meshOperator);
+}
 
 }   // namespace Mesh
 }   // namespace Pegasus

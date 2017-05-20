@@ -112,15 +112,13 @@ MeshGeneratorReturn MeshManager::CreateMeshGeneratorNode(const char * className)
 
 //----------------------------------------------------------------------------------------
 
-MeshOperatorReturn MeshManager::CreateMeshOperatorNode(const char * className,
-                                                                const MeshConfiguration & configuration)
+MeshOperatorReturn MeshManager::CreateMeshOperatorNode(const char * className)
 {
     if (mNodeManager != nullptr)
     {
         //! \todo Check that the class corresponds to an operator mesh
 
         MeshOperatorRef meshOperator = mNodeManager->CreateNode(className);
-        meshOperator->SetConfiguration(configuration);
 #if PEGASUS_USE_EVENTS
         //propagate event listener
         meshOperator->SetEventListener(mEventListener);

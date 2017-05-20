@@ -9,7 +9,6 @@ extern CubeRotAxis = float3(0.3, 0.4, 0.01);
 extern SphereLayerCount = 4;
 extern Material_GlitterIntensity = 0.07;
 extern Material_GlitterRepetition = float2( 20.1, 20.1 );
-
 /// extern input block end
 #define MAX_SPHERES 10
 
@@ -61,12 +60,24 @@ verticalInput = GetUniformLocation(compositeProgram,   "inputTexture");
 
 ////---------------------------------------------------------------------
 
+extern CombTranslation = float3(0.0,0.0,0.0);
+extern CombRotation = float4(0.0,0.0,0.0,0.0);
+extern CombScale = float3(1.0,1.0,1.0);
+
 //// SETUP MESHES ////
 cubeMesh = CreateMesh();
+
+
 boxGenerator = CreateMeshGenerator("BoxGenerator");
 boxGenerator.CubeExtends = float3(3.0,2.0,0.50);
 boxGenerator.FaceSubdivision = 8;
-cubeMesh->SetGeneratorInput(boxGenerator);
+boxGenerator2 = CreateMeshGenerator("BoxGenerator");
+boxGenerator2.CubeExtends = float3(3.0,2.0,0.50);
+boxGenerator2.FaceSubdivision = 8;
+combineOperator = CreateMeshOperator("CombineTransformOperator");
+combineOperator->AddGeneratorInput(boxGenerator);
+combineOperator->AddGeneratorInput(boxGenerator2);
+cubeMesh->SetOperatorInput(combineOperator);
 
 quad = CreateMesh();
 quad->SetGeneratorInput(CreateMeshGenerator("QuadGenerator"));
@@ -111,6 +122,8 @@ gSpeakerState = SpeakerStateStruct();
 
 int Timeline_Update(info : UpdateInfo)
 {
+	combineOperator.Translation0 = CombTranslation;
+	combineOperator.QuaternionRot0 = CombRotation;
  //TODO: add function for identity
 	gState.transform = float4x4(
 	1.0, 0.0, 0.0, 0.0,

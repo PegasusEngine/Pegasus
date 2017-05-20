@@ -503,6 +503,11 @@ public:
     //! \return Accessor for the property
     PropertyAccessor GetDerivedClassPropertyAccessor(unsigned int index);
 
+    //! Get an accessor to a property, only of derived class 
+    //! \param index Index of the property (0 <= index < GetNumDerivedClassProperties())
+    //! \return Accessor for the property
+    const PropertyReadAccessor GetDerivedClassReadPropertyAccessor(unsigned int index) const;
+
     //! Get the number of registered class properties, including parent classes (but not classes deriving from the current class)
     //! \return Number of successfully registered class properties
     inline unsigned int GetNumClassProperties() const
