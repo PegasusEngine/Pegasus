@@ -74,6 +74,13 @@ static void TransformAppendMesh(const Vertex* input, Vertex* outputDest, int cou
     {
         Math::Mult44_41(outputDest[v].position, targetTransform, input[v].position);
         Math::Mult33_31(outputDest[v].normal, targetNormalTransform, input[v].normal);
+        float len = Math::Length(outputDest[v].normal);
+        if (Math::Abs(len) > PFLOAT_EPSILON)
+        {
+            Math::Normalize(outputDest[v].normal);
+        }
+        
+        outputDest[v].uv = input[v].uv;
     }
 }
 

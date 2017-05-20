@@ -120,6 +120,7 @@ tempTarget3 = CreateRenderTarget( tmpConfig );
 gState = StateStruct();
 gSpeakerState = SpeakerStateStruct();
 
+
 int Timeline_Update(info : UpdateInfo)
 {
 	combineOperator.Translation0 = CombTranslation;

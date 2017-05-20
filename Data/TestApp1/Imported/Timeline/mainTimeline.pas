@@ -107,10 +107,13 @@
                             Material_GlitterIntensity : 0.070000,
                             CubeRotAxis : [0.300000, 0.400000, 0.010000],
                             Material_GlitterRepetition : [20.100000, 20.100000],
+                            CombTranslation : [0.000000, 0.000000, 0.000000],
+                            CombRotation : [1.000000, 0.000000, 0.000000, 0.000000],
+                            CombScale : [1.000000, 1.000000, 1.000000],
                             __schema__ : {
-                                sizetypes : [196612, 327692, 65540, 196612, 262152],
-                                names : [SphereRadius, CubeRotAxis, SphereLayerCount, Material_GlitterIntensity, Material_GlitterRepetition],
-                                typeNames : [float, float3, int, float, float2]
+                                sizetypes : [196612, 327692, 65540, 196612, 262152, 327692, 393232, 327692],
+                                names : [SphereRadius, CubeRotAxis, SphereLayerCount, Material_GlitterIntensity, Material_GlitterRepetition, CombTranslation, CombRotation, CombScale],
+                                typeNames : [float, float3, int, float, float2, float3, float4, float3]
                             }
                         },
                         script : {@BlockScripts/geometrytestblock.bs}
