@@ -16,6 +16,12 @@
 namespace Pegasus {
 namespace Mesh {
 
+//TODO: put this on its own header file.
+struct Vertex {
+    Math::Vec4 position; 
+    Math::Vec3 normal;        
+    Math::Vec2 uv; 
+};
 
 //! Property implementations
 BEGIN_IMPLEMENT_PROPERTIES(CombineTransformOperator)
@@ -62,6 +68,23 @@ CombineTransformOperator::~CombineTransformOperator()
 {
 }
 
+static void TransformAppendMesh(const Vertex* input, Vertex* outputDest, int count, const Math::Mat44& targetTransform, const Math::Mat33& targetNormalTransform)
+{
+    for (int v = 0; v < count; ++v)
+    {
+        Math::Mult44_41(outputDest[v].position, targetTransform, input[v].position);
+        Math::Mult33_31(outputDest[v].normal, targetNormalTransform, input[v].normal);
+    }
+}
+
+static void AppendIndices(const unsigned short* inputIndices, unsigned short* outputIndices, int count, short newOffset)
+{
+    for (int i = 0; i < count; ++i)
+    {
+        outputIndices[i] = inputIndices[i] + newOffset;
+    }
+}
+
 void CombineTransformOperator::GenerateData()
 {
     PEGASUS_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::BEGIN);
@@ -70,12 +93,58 @@ void CombineTransformOperator::GenerateData()
     PG_ASSERT(meshData != nullptr); 
 
     Math::Mat44 matrices[MaxCombineTransformInputs];
-    GenerateMatrices(matrices);
+    Math::Mat33 normalMatrices[MaxCombineTransformInputs];
+    GenerateMatrices(matrices, normalMatrices);
+
+    unsigned int indexSummedCounts[MaxCombineTransformInputs];//holds counts of everything before
+    unsigned int vertexSummedCounts[MaxCombineTransformInputs]; //holds counts of everything before
+    unsigned int currentIndexCount = 0;
+    unsigned int currentVertexCount = 0;
+
+    //go for every single active child mesh and get all the counts.
+    for (unsigned i = 0; i < GetNumInputs(); ++i)
+    {
+        bool updated = false;
+        MeshData* inputData = static_cast<MeshData *>(&(*GetInput(i)->GetUpdatedData(updated)));
+        //TODO: Work on checking compatible format when combining.
+        if (inputData != nullptr)
+        {
+            indexSummedCounts[i] = currentIndexCount;
+            vertexSummedCounts[i] = currentVertexCount;
+            currentIndexCount += inputData->GetIndexCount();
+            currentVertexCount += inputData->GetVertexCount();
+        }
+    }
+
+    meshData->AllocateIndexes(currentIndexCount);
+    meshData->AllocateVertexes(currentVertexCount);
+
+    Vertex* outputVertData = meshData->GetStream<Vertex>(0);
+    unsigned short* outputIndices = meshData->GetIndexBuffer();
+
+    //go for every single active child mesh and get all the counts.
+    for (unsigned i = 0; i < GetNumInputs(); ++i)
+    {
+        bool updated = false;
+        MeshData* inputData = static_cast<MeshData *>(&(*GetInput(i)->GetUpdatedData(updated)));
+        Math::Mat44& targetTransform = matrices[i];
+        Math::Mat33& targetNormalTransform = normalMatrices[i];
+        if (inputData != nullptr)
+        {
+            const Vertex* inputVertData = inputData->GetStream<Vertex>(0);
+            Vertex* currentMeshOutput = outputVertData + vertexSummedCounts[i];
+            TransformAppendMesh(inputVertData, currentMeshOutput, inputData->GetVertexCount(), targetTransform, targetNormalTransform);
+            
+            const unsigned short* inputIndices = inputData->GetIndexBuffer();
+            unsigned short* currentIndexOutput = outputIndices + indexSummedCounts[i];
+            AppendIndices(inputIndices, currentIndexOutput, inputData->GetIndexCount(), vertexSummedCounts[i]);
+        }
+    }
 
     PEGASUS_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::END_SUCCESS);
 }
 
-void CombineTransformOperator::GenerateMatrices(Math::Mat44* matrices) const
+void CombineTransformOperator::GenerateMatrices(Math::Mat44* matrices, Math::Mat33* normalMatrices) const
 {
     PropertyGrid::PropertyReadAccessor transAccessors[MaxCombineTransformInputs];
     PropertyGrid::PropertyReadAccessor scaleAccessors[MaxCombineTransformInputs];
@@ -117,9 +186,24 @@ void CombineTransformOperator::GenerateMatrices(Math::Mat44* matrices) const
         targetMat.m34 = t.z;
         targetMat.m44 = 1.0f;
 
+        Math::Mat33& targetNormalmat = normalMatrices[i];
+        targetNormalmat.m11 = targetMat.m11;
+        targetNormalmat.m12 = targetMat.m12;
+        targetNormalmat.m13 = targetMat.m13;
+        targetNormalmat.m21 = targetMat.m11;
+        targetNormalmat.m22 = targetMat.m12;
+        targetNormalmat.m23 = targetMat.m13;
+        targetNormalmat.m31 = targetMat.m11;
+        targetNormalmat.m32 = targetMat.m12;
+        targetNormalmat.m33 = targetMat.m13;
+
+        //apply all scales
         targetMat.m11 *= s.x;
         targetMat.m22 *= s.y;
         targetMat.m33 *= s.z;
+        targetNormalmat.m11 /= s.x;
+        targetNormalmat.m22 /= s.y;
+        targetNormalmat.m33 /= s.z;
     }
 
 }

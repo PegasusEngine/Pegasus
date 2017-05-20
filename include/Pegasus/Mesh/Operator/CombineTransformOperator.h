@@ -64,7 +64,7 @@ protected:
     virtual void GenerateData();
 
 private:
-    void GenerateMatrices(Math::Mat44* matrices) const;
+    void GenerateMatrices(Math::Mat44* matrices, Math::Mat33* normalMatrices) const;
 
 };
 }

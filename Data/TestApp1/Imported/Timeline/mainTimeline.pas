@@ -99,27 +99,6 @@
                     props : {
                         Beat : 0,
                         Duration : 1024,
-                        Name : Test,
-                        Color : [228, 207, 245],
-                        _o_p_ : {
-                            StripThickness : 55.000000,
-                            StripAA : 6.000000,
-                            Light1 : [2.000000, 0.400000, 0.500000, 1.000000],
-                            Light2 : [2.000000, 0.400000, 0.900000, 1.000000],
-                            Light3 : [20.000000, 4.400000, 10.300000, 1.000000],
-                            __schema__ : {
-                                sizetypes : [393232, 393232, 393232, 196612, 196612],
-                                names : [Light1, Light2, Light3, StripThickness, StripAA],
-                                typeNames : [float4, float4, float4, float, float]
-                            }
-                        },
-                        script : {@BlockScripts/basketball.bs}
-                    }
-                }, {
-                    type : Block,
-                    props : {
-                        Beat : 2048,
-                        Duration : 1024,
                         Name : Test2,
                         Color : [0, 100, 100],
                         _o_p_ : {
@@ -135,6 +114,27 @@
                             }
                         },
                         script : {@BlockScripts/geometrytestblock.bs}
+                    }
+                }, {
+                    type : Block,
+                    props : {
+                        Beat : 1860,
+                        Duration : 1024,
+                        Name : Test,
+                        Color : [228, 207, 245],
+                        _o_p_ : {
+                            StripThickness : 55.000000,
+                            StripAA : 6.000000,
+                            Light1 : [2.000000, 0.400000, 0.500000, 1.000000],
+                            Light2 : [2.000000, 0.400000, 0.900000, 1.000000],
+                            Light3 : [20.000000, 4.400000, 10.300000, 1.000000],
+                            __schema__ : {
+                                sizetypes : [393232, 393232, 393232, 196612, 196612],
+                                names : [Light1, Light2, Light3, StripThickness, StripAA],
+                                typeNames : [float4, float4, float4, float, float]
+                            }
+                        },
+                        script : {@BlockScripts/basketball.bs}
                     }
                 }]
         }, {
@@ -162,7 +162,7 @@
             Blocks : [{
                     type : Block,
                     props : {
-                        Beat : 1010,
+                        Beat : 1206,
                         Duration : 1024,
                         Name : BlockSegment,
                         Color : [144, 244, 123],
@@ -189,14 +189,13 @@
     properties : {
         Name : "",
         _o_p_ : {
-            signature : 1,
             Fov : 2.500000,
             CamPos : [0.000000, 12.000000, 0.000000],
             CamDir : [0.000000, -0.100000, 1.000000],
             __schema__ : {
-                sizetypes : [65540, 327692, 327692, 196612],
-                names : [signature, CamPos, CamDir, Fov],
-                typeNames : [int, float3, float3, float]
+                sizetypes : [327692, 327692, 196612],
+                names : [CamPos, CamDir, Fov],
+                typeNames : [float3, float3, float]
             }
         }
     },
