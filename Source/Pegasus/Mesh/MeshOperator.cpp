@@ -89,7 +89,7 @@ void MeshOperator::ReleaseDataAndPropagate()
 
 Graph::NodeData * MeshOperator::AllocateData() const
 {
-    return PG_NEW(GetNodeAllocator(), -1, "MeshOperator::MeshData", Pegasus::Alloc::PG_MEM_TEMP)
+    return PG_NEW(GetNodeDataAllocator(), -1, "MeshOperator::MeshData", Pegasus::Alloc::PG_MEM_TEMP)
                     MeshData(mConfiguration, GetMode(), GetNodeDataAllocator());
 }
 
