@@ -105,6 +105,9 @@ public:
     //! Gets the count of attributes this mesh is holding 
     const int GetAttributeCount() const { return mAttributeCount; }
 
+    //! Resets input layout state.
+    void Reset() { mAttributeCount = 0; }
+
     //! Assignment operator
     //! \param other Other configuration to copy from
     MeshInputLayout & operator=(const MeshInputLayout & other);

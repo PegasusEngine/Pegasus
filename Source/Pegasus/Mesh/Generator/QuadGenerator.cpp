@@ -30,17 +30,6 @@ QuadGenerator::QuadGenerator(Pegasus::Alloc::IAllocator* nodeAllocator,
     BEGIN_INIT_PROPERTIES(QuadGenerator)
         INIT_PROPERTY(QuadExtends)
     END_INIT_PROPERTIES()
-
-    //setting up the basic format of node data
-
-    //set not indexed
-    mConfiguration.SetIsIndexed(false);
-
-    //quad rendering
-    mConfiguration.SetMeshPrimitiveType(MeshConfiguration::TRIANGLE);
-
-    //this mesh only contains position and uvs
-    mConfiguration.GetInputLayout()->GenerateEditorLayout(MeshInputLayout::USE_POSITION | MeshInputLayout::USE_UV);
 }
 
 //----------------------------------------------------------------------------
@@ -61,10 +50,12 @@ void QuadGenerator::GenerateData()
     PG_ASSERT(meshData != nullptr);
 
     meshData->AllocateVertexes(6);
+    meshData->AllocateIndexes(6);
 
     struct Vertex
     {
         Vec4 position; 
+        Vec3 normal;
         Vec2 uv; 
     };
 
@@ -80,9 +71,14 @@ void QuadGenerator::GenerateData()
         stream[i].position.x = quadcoords[i*2] * GetQuadExtends().x;
         stream[i].position.y = quadcoords[i*2 + 1]* GetQuadExtends().y;
         stream[i].position.z = stream[0].position.w = 0;
+        stream[i].normal = Math::Vec3(0.0, 0.0, 1.0);
         stream[i].uv.s = stream[i].position.x * 0.5f + 0.5f;
         stream[i].uv.t = stream[i].position.y * 0.5f + 0.5f;
     }
+
+    //make compatible with other nodes for now.
+    unsigned short* indices = meshData->GetIndexBuffer();
+    for (int i = 0; i < 6; ++i) indices[i] = i;
 
     PEGASUS_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::END_SUCCESS);
 }

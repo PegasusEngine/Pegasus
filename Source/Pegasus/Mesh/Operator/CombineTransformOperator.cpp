@@ -59,9 +59,6 @@ CombineTransformOperator::CombineTransformOperator(Pegasus::Alloc::IAllocator* n
         INIT_PROPERTY(QuaternionRot2)
         INIT_PROPERTY(QuaternionRot3)
     END_INIT_PROPERTIES()
-
-    //this mesh only contains position UVs and normals
-    mConfiguration.GetInputLayout()->GenerateEditorLayout(MeshInputLayout::USE_POSITION | MeshInputLayout::USE_UV | MeshInputLayout::USE_NORMAL);
 }
 
 CombineTransformOperator::~CombineTransformOperator()

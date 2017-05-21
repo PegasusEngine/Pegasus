@@ -32,9 +32,6 @@ BoxGenerator::BoxGenerator(Pegasus::Alloc::IAllocator* nodeAllocator,
         INIT_PROPERTY(CubeExtends)
         INIT_PROPERTY(FaceSubdivision)
     END_INIT_PROPERTIES()
-
-    //this mesh only contains position UVs and normals
-    mConfiguration.GetInputLayout()->GenerateEditorLayout(MeshInputLayout::USE_POSITION | MeshInputLayout::USE_UV | MeshInputLayout::USE_NORMAL);
 }
 
 //----------------------------------------------------------------------------------------

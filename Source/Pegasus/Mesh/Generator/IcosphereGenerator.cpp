@@ -53,15 +53,11 @@ IcosphereGenerator::IcosphereGenerator(Pegasus::Alloc::IAllocator * nodeAllocato
 : MeshGenerator(nodeAllocator, nodeDataAllocator),
   mIdxCache(nodeAllocator, sizeof(unsigned short))
 {
-    
     //INIT properties
     BEGIN_INIT_PROPERTIES(IcosphereGenerator)
         INIT_PROPERTY(Degree)
         INIT_PROPERTY(Radius)
     END_INIT_PROPERTIES()
-
-    mConfiguration.GetInputLayout()->GenerateEditorLayout(MeshInputLayout::USE_POSITION | MeshInputLayout::USE_UV | MeshInputLayout::USE_NORMAL);
-
 }
 
 //----------------------------------------------------------------------------------------

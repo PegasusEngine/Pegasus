@@ -31,6 +31,9 @@ MeshGenerator::MeshGenerator(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator
 
     // Initialize event user data
     PEGASUS_EVENT_INIT_DISPATCHER
+
+    //default mesh editor layout.
+    mConfiguration.GetInputLayout()->GenerateEditorLayout(MeshInputLayout::USE_POSITION | MeshInputLayout::USE_UV | MeshInputLayout::USE_NORMAL);
 }
 
 //----------------------------------------------------------------------------------------

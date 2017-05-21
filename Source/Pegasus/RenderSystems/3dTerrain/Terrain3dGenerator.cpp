@@ -34,7 +34,8 @@ Terrain3dGenerator::Terrain3dGenerator(Pegasus::Alloc::IAllocator* nodeAllocator
     mConfiguration.SetMeshPrimitiveType(MeshConfiguration::TRIANGLE);
 
     Mesh::MeshInputLayout* inputLayout = mConfiguration.GetInputLayout();
-    
+    inputLayout->Reset();
+
     Mesh::MeshInputLayout::AttrDesc posDesc;
     posDesc.mSemantic = Mesh::MeshInputLayout::POSITION;
     posDesc.mType = Pegasus::Core::FORMAT_RGB_32_FLOAT;
