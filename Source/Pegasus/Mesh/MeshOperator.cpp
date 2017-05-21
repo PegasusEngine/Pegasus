@@ -33,7 +33,9 @@ MeshOperator::MeshOperator(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* 
     PEGASUS_EVENT_INIT_DISPATCHER
 
     //default mesh editor layout.
-    mConfiguration.GetInputLayout()->GenerateEditorLayout(MeshInputLayout::USE_POSITION | MeshInputLayout::USE_UV | MeshInputLayout::USE_NORMAL);
+    MeshInputLayout editorIL;
+    editorIL.GenerateEditorLayout(MeshInputLayout::USE_POSITION | MeshInputLayout::USE_UV | MeshInputLayout::USE_NORMAL);
+    mConfiguration.SetInputLayout(editorIL);
 }
 
 //----------------------------------------------------------------------------------------

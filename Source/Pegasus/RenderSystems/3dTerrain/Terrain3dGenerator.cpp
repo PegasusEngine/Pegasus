@@ -33,8 +33,7 @@ Terrain3dGenerator::Terrain3dGenerator(Pegasus::Alloc::IAllocator* nodeAllocator
     mConfiguration.SetIsDrawIndirect(true);//draw parameters are filled by internal compute shaders.
     mConfiguration.SetMeshPrimitiveType(MeshConfiguration::TRIANGLE);
 
-    Mesh::MeshInputLayout* inputLayout = mConfiguration.GetInputLayout();
-    inputLayout->Reset();
+    Mesh::MeshInputLayout inputLayout;
 
     Mesh::MeshInputLayout::AttrDesc posDesc;
     posDesc.mSemantic = Mesh::MeshInputLayout::POSITION;
@@ -43,7 +42,7 @@ Terrain3dGenerator::Terrain3dGenerator(Pegasus::Alloc::IAllocator* nodeAllocator
     posDesc.mByteOffset = 0;
     posDesc.mSemanticIndex = 0;
     posDesc.mStreamIndex = 0;
-    inputLayout->RegisterAttribute(posDesc);
+    inputLayout.RegisterAttribute(posDesc);
 
     Mesh::MeshInputLayout::AttrDesc normDesc;
     normDesc.mSemantic = Mesh::MeshInputLayout::NORMAL;
@@ -52,8 +51,9 @@ Terrain3dGenerator::Terrain3dGenerator(Pegasus::Alloc::IAllocator* nodeAllocator
     normDesc.mByteOffset = 0;
     normDesc.mSemanticIndex = 0;
     normDesc.mStreamIndex = 1;
-    inputLayout->RegisterAttribute(normDesc);
+    inputLayout.RegisterAttribute(normDesc);
 
+    mConfiguration.SetInputLayout(inputLayout);
     
     Utils::Memset32(mProgramVersions, 0x0, sizeof(mProgramVersions));
 }

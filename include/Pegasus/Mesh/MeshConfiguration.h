@@ -51,13 +51,13 @@ public:
     //! \param other Other configuration to copy from
     MeshConfiguration & operator=(const MeshConfiguration & other);
 
-    //! Get the input layout. Use this function also to alter the input layout
-    //! \return the input layout to use or to edit
-    MeshInputLayout * GetInputLayout() { return &mInputLayout; }
-    
-    //! Get the input layout. Use this function ato get a read reference of an input layout
-    //! \return the input layout to use or to edit
-    const MeshInputLayout * GetInputLayout() const { return &mInputLayout; }
+    //! Get the input layout.
+    //! \return the input layout.
+    const MeshInputLayout&  GetInputLayout() const { return mInputLayout; }
+
+    //! Set the input layout.
+    //! \param the input layout.
+    void  SetInputLayout(const MeshInputLayout& il) { mInputLayout = il; }
 
     //! Gets wether this mesh is indexed
     bool    GetIsIndexed() const { return mIsIndexed; }

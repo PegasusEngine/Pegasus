@@ -37,10 +37,6 @@ MarchingCubeMeshGenerator::MarchingCubeMeshGenerator(Pegasus::Alloc::IAllocator*
         INIT_PROPERTY(CaseNumber)
     END_INIT_PROPERTIES()
 
-    mConfiguration.SetIsIndexed(true);
-    mConfiguration.SetMeshPrimitiveType(MeshConfiguration::TRIANGLE);
-
-    mConfiguration.GetInputLayout()->GenerateEditorLayout(MeshInputLayout::USE_POSITION | MeshInputLayout::USE_NORMAL);
     mConfiguration.SetIsDynamic(true);
 }
 
@@ -60,6 +56,7 @@ void MarchingCubeMeshGenerator::GenerateData()
     {
         Vec4 position;
         Vec3 normal;
+        Vec2 uv;
     }; 
 
     const float* edgeCoords = caseTable->GetEdgeCoordinates();
@@ -99,6 +96,7 @@ void MarchingCubeMeshGenerator::GenerateData()
         }
         if (found) Normalize(normal);
         stream[i].normal = normal;
+        stream[i].uv = Math::Vec2(0.0f,0.0f);
     }
     
     PEGASUS_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::END_SUCCESS);
