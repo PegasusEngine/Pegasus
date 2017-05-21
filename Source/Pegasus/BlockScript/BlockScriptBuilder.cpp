@@ -1230,6 +1230,11 @@ StmtFor* BlockScriptBuilder::BuildStmtFor(Exp* init, Exp* cond, Exp* update, Stm
 
 StmtIfElse* BlockScriptBuilder::BuildStmtIfElse(Exp* exp, StmtList* ifBlock, StmtIfElse* tail, StackFrameInfo* frame)
 {
+    if (exp->GetTypeDesc() == nullptr)
+    {
+        BS_ErrorDispatcher(this, "Expression inside if statement not defined.");
+        return nullptr;
+    }
     StmtIfElse* stmtIfElse = BS_NEW StmtIfElse(exp, ifBlock, tail, frame);
 
     mCurrentFrame->SetCreatorCategory(StackFrameInfo::IF_STMT);

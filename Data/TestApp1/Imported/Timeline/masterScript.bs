@@ -6,28 +6,46 @@
 
 #include "Scripts/Frame/Frame.bsh"
 
+@(EditorType=EDITOR_TYPE_CHECKBOX)
+extern EnableTerrain = 0;
 extern CamPos = float3(0.0,1.0,0.0);
 extern Fov = 0.5;
 extern CamDir = float3(0.0,0.0,-1.0);
 
+
 gWorldCam = CreateCamera();
 gWorldCam.Far = 1000.0;
-
+terrainShader = LoadProgram("Programs/MarchingCubeProgram.pas");
+3dTerrain = CreateTerrain3d(20,20);
+3dTerrain.BlockHeight = 2;
+3dTerrain.BlockLod0Threshold = 4;
+3dTerrain.BlockLod1Threshold = 8;
+3dTerrain.BlockLod2Threshold = 8;
+3dTerrain.Visible = 1;
 
 int Timeline_Update(info : UpdateInfo)
 {
+	3dTerrain->SetCullCamera(gWorldCam);
 	gWorldCam.Position = CamPos + info.beat*float3(0.5,0.0,0.5);
 	gWorldCam.Dir = CamDir;
 	gWorldCam.Fov = Fov;
 	BindCamera(gWorldCam, CAM_WORLD_CONTEXT);
-
 }
 
 int Timeline_Render(info: RenderInfo)
 {
+	if (EnableTerrain)
+	{
+		SetDefaultRenderTarget();
+		3dTerrain->Generate();	
+		SetProgram(terrainShader);
+		3dTerrain->Draw();
+	}
 	//* Some demo ideas!!!
 	//* Create a kickass sky / sun with directional.
 	//* Add pyramid with normal map generated procedurally
 	//* 3d empty Terrain
 	//* add hdr pipeline
+
+
 }
