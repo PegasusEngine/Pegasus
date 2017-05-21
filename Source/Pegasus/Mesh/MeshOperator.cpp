@@ -102,16 +102,28 @@ Graph::NodeData * MeshOperator::AllocateData() const
 
 void MeshOperator::AddGeneratorInput(MeshGeneratorIn meshGenerator)
 {
-    //TODO: handle incompatible mesh
-    AddInput(meshGenerator);
+    if (meshGenerator->GetConfiguration() == GetConfiguration())
+    {
+        AddInput(meshGenerator);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Cannot connect mesh generator to mesh operator since configurations vary.");
+    }
 }
 
 //----------------------------------------------------------------------------------------
 
 void MeshOperator::AddOperatorInput(MeshOperatorIn meshOperator)
 {
-    //TODO: handle incompatible mesh
-    AddInput(meshOperator);
+    if (meshOperator->GetConfiguration() == GetConfiguration())
+    {
+        AddInput(meshOperator);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Cannot connect mesh operator to mesh operator since configurations vary.");
+    }
 }
 
 }   // namespace Mesh

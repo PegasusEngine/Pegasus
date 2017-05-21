@@ -77,6 +77,11 @@ public:
         int           mByteOffset; //! the offset position of the particular stream
         int           mSemanticIndex      : 8;  //! the index followed by the semantic. For example "p0" or "p1", would be semantic POSITION, with semanticIndex 0 and semanticIndex 1
         int           mStreamIndex        : 8 ; //! the stream index where this attribute belongs to.
+        bool operator==(const AttrDesc& other) const;
+        bool operator!=(const AttrDesc& other) const
+        {
+            return !(*this == other);
+        }
     };
 
     //! Default constructor
@@ -111,6 +116,13 @@ public:
     //! Assignment operator
     //! \param other Other configuration to copy from
     MeshInputLayout & operator=(const MeshInputLayout & other);
+
+    //! Checks compatibility of input layouts
+    bool operator==(const MeshInputLayout& otherIl) const;
+    bool operator!=(const MeshInputLayout& otherIl) const
+    {
+        return (*this == otherIl);
+    }
 
     //! Tests if the incoming mesh type can be absorbed, meaning that the output mesh is at least a sub
     

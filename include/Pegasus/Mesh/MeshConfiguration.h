@@ -84,6 +84,15 @@ public:
     //! Sets the primitive type for this mesh
     void    SetMeshPrimitiveType(MeshPrim primitiveType) { mPrimitiveType = primitiveType; }
 
+    //! Compares this with another mesh configuration for equality
+    bool operator==(const MeshConfiguration& other) const;
+
+    //! Compares this with another mesh configuration for inequality
+    bool operator!=(const MeshConfiguration& other) const
+    {
+        return !(*this == other);
+    }
+
 private:
     //! boolean that determines if this mesh is indexed or not
     bool     mIsIndexed;
