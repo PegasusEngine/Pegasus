@@ -232,12 +232,14 @@ bool TimelineScript::CompileInternal()
         //Compilation speed optimization!
         //So, if we keep a reference of the headers before clearing the header list, it will speed up compilation since it will keep a copy of the file in memory. Otherwise it will have to re-open and parse the file underneath, which slows down compilation significantly.
         Utils::Vector<TimelineSourceRef> headersCopy = mHeaders;
-
         ClearHeaderList();
         ScriptIncluder includer(this, mAppContext->GetTimelineManager());
+
+#if PEGASUS_ENABLE_PROXIES
         mScript->SetTitle(
            GetOwnerAsset() != nullptr ? GetOwnerAsset()->GetName() : "<Untilted>"
         );
+#endif
         mScript->SetFileIncluder(&includer);
         mScript->RegisterDefinitions(defNames, defValues, sizeof(defNames)/sizeof(defNames[0]));
         mScriptActive = mScript->Compile(&mFileBuffer);

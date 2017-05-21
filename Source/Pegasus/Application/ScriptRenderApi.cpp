@@ -1294,9 +1294,12 @@ void Node_CreateMeshGenerator(FunCallbackContext& context)
 
     //create new mesh generator
     Mesh::MeshGeneratorRef meshGenerator = meshManager->CreateMeshGeneratorNode(name);
-    RenderCollection::CollectionHandle handle = RenderCollection::AddResource<Mesh::MeshGenerator>(collection, meshGenerator);
+    RenderCollection::CollectionHandle handle = RenderCollection::INVALID_HANDLE;
+    if (meshGenerator != nullptr)
+    {
+        handle = RenderCollection::AddResource<Mesh::MeshGenerator>(collection, meshGenerator);
+    }
     stream.SubmitReturn(handle);
-    
 }
 
 void Node_CreateMeshOperator(FunCallbackContext& context)
@@ -1312,7 +1315,11 @@ void Node_CreateMeshOperator(FunCallbackContext& context)
 
     //create new mesh generator
     Mesh::MeshOperatorRef meshOperator = meshManager->CreateMeshOperatorNode(name);
-    RenderCollection::CollectionHandle handle = RenderCollection::AddResource<Mesh::MeshOperator>(collection, meshOperator);
+    RenderCollection::CollectionHandle handle = RenderCollection::INVALID_HANDLE;
+    if (meshOperator != nullptr)
+    {
+        handle = RenderCollection::AddResource<Mesh::MeshOperator>(collection, meshOperator);
+    }
     stream.SubmitReturn(handle);
     
 }

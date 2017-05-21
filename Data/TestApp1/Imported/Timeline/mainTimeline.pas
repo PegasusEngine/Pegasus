@@ -192,13 +192,14 @@
     properties : {
         Name : "",
         _o_p_ : {
+            EnableTerrain : 0,
             Fov : 2.500000,
-            CamPos : [0.000000, 12.000000, 0.000000],
+            CamPos : [0.000000, -1.000000, -16.000000],
             CamDir : [0.000000, -0.100000, 1.000000],
             __schema__ : {
-                sizetypes : [327692, 327692, 196612],
-                names : [CamPos, CamDir, Fov],
-                typeNames : [float3, float3, float]
+                sizetypes : [327692, 327692, 196612, 1],
+                names : [CamPos, CamDir, Fov, EnableTerrain],
+                typeNames : [float3, float3, float, bool]
             }
         }
     },
