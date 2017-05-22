@@ -74,9 +74,15 @@ boxGenerator.FaceSubdivision = 8;
 boxGenerator2 = CreateMeshGenerator("BoxGenerator");
 boxGenerator2.CubeExtends = float3(3.0,2.0,0.50);
 boxGenerator2.FaceSubdivision = 8;
+multiCopy = CreateMeshOperator("MultiCopyOperator");
+multiCopy->AddGeneratorInput(boxGenerator2);
+multiCopy.MultiCopyFactor = 16;
+multiCopy.TranslationOffset = float3(1.0,8.0,0.0);
+multiCopy.ScaleOffset = float3(0.7,0.7,0.7);
+multiCopy.QuaternionRotOffset = float4(8.0,1.0,0.0,2.0);
 combineOperator = CreateMeshOperator("CombineTransformOperator");
 combineOperator->AddGeneratorInput(boxGenerator);
-combineOperator->AddGeneratorInput(boxGenerator2);
+combineOperator->AddOperatorInput(multiCopy);
 cubeMesh->SetOperatorInput(combineOperator);
 
 quad = CreateMesh();
