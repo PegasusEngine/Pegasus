@@ -81,14 +81,7 @@ void BoxGenerator::GenerateData()
     }
     meshData->AllocateVertexes(6 /*sides*/ * (mVertsPerFace));
 
-    struct Vertex
-    {
-        Vec4 position; 
-        Vec3 normal;        
-        Vec2 uv; 
-    };
-
-    Vertex * stream = meshData->GetStream<Vertex>(0);
+    StdVertex * stream = meshData->GetStream<StdVertex>(0);
 
     static const int sFaceSwizzles[][3] =
     { /*x  y  z */

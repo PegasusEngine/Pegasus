@@ -52,14 +52,7 @@ void QuadGenerator::GenerateData()
     meshData->AllocateVertexes(6);
     meshData->AllocateIndexes(6);
 
-    struct Vertex
-    {
-        Vec4 position; 
-        Vec3 normal;
-        Vec2 uv; 
-    };
-
-    Vertex * stream = meshData->GetStream<Vertex>(0);
+    StdVertex * stream = meshData->GetStream<StdVertex>(0);
     PG_ASSERT(stream);
     
     //two triangles, 2 coordinates each, 12 coords

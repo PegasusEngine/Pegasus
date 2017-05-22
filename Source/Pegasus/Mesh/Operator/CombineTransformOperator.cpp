@@ -16,13 +16,6 @@
 namespace Pegasus {
 namespace Mesh {
 
-//TODO: put this on its own header file.
-struct Vertex {
-    Math::Vec4 position; 
-    Math::Vec3 normal;        
-    Math::Vec2 uv; 
-};
-
 //! Property implementations
 BEGIN_IMPLEMENT_PROPERTIES(CombineTransformOperator)
     IMPLEMENT_PROPERTY(CombineTransformOperator, Translation0)
@@ -65,7 +58,7 @@ CombineTransformOperator::~CombineTransformOperator()
 {
 }
 
-static void TransformAppendMesh(const Vertex* input, Vertex* outputDest, int count, const Math::Mat44& targetTransform, const Math::Mat33& targetNormalTransform)
+static void TransformAppendMesh(const StdVertex* input, StdVertex* outputDest, int count, const Math::Mat44& targetTransform, const Math::Mat33& targetNormalTransform)
 {
     for (int v = 0; v < count; ++v)
     {
@@ -123,7 +116,7 @@ void CombineTransformOperator::GenerateData()
     meshData->AllocateIndexes(currentIndexCount);
     meshData->AllocateVertexes(currentVertexCount);
 
-    Vertex* outputVertData = meshData->GetStream<Vertex>(0);
+    StdVertex* outputVertData = meshData->GetStream<StdVertex>(0);
     unsigned short* outputIndices = meshData->GetIndexBuffer();
 
     //go for every single active child mesh and get all the counts.
@@ -135,8 +128,8 @@ void CombineTransformOperator::GenerateData()
         Math::Mat33& targetNormalTransform = normalMatrices[i];
         if (inputData != nullptr)
         {
-            const Vertex* inputVertData = inputData->GetStream<Vertex>(0);
-            Vertex* currentMeshOutput = outputVertData + vertexSummedCounts[i];
+            const StdVertex* inputVertData = inputData->GetStream<StdVertex>(0);
+            StdVertex* currentMeshOutput = outputVertData + vertexSummedCounts[i];
             TransformAppendMesh(inputVertData, currentMeshOutput, inputData->GetVertexCount(), targetTransform, targetNormalTransform);
             
             const unsigned short* inputIndices = inputData->GetIndexBuffer();

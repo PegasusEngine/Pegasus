@@ -14,12 +14,6 @@
 namespace Pegasus {
 namespace Mesh {
 
-//TODO: put this on its own header file.
-struct Vertex {
-    Math::Vec4 position; 
-    Math::Vec3 normal;        
-    Math::Vec2 uv; 
-};
 
 //! Property implementations
 BEGIN_IMPLEMENT_PROPERTIES(MultiCopyOperator)
@@ -63,14 +57,14 @@ void MultiCopyOperator::GenerateData()
     }
     bool updated = false;
     MeshDataRef inputMesh = static_cast<MeshData *>(&(*GetInput(0)->GetUpdatedData(updated)));
-    const Vertex* inputVertex = inputMesh->GetStream<Vertex>(0);
+    const StdVertex* inputVertex = inputMesh->GetStream<StdVertex>(0);
     const unsigned short* inputIndexes = inputMesh->GetIndexBuffer();
 
     MeshDataRef meshData = GetData();
     PG_ASSERT(meshData != nullptr); 
     meshData->AllocateVertexes(inputMesh->GetVertexCount() * iterCount);
     meshData->AllocateIndexes(inputMesh->GetIndexCount() * iterCount);
-    Vertex* outputVertex = meshData->GetStream<Vertex>(0);
+    StdVertex* outputVertex = meshData->GetStream<StdVertex>(0);
     unsigned short* outputIndexes = meshData->GetIndexBuffer();
 
     for (int i = 0; i < iterCount; ++i)
