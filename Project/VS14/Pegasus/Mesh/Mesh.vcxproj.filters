@@ -92,6 +92,9 @@
     <ClInclude Include="..\..\..\..\include\Pegasus\Mesh\Operator\MultiCopyOperator.h">
       <Filter>Include\Operator</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\Mesh\Operator\WaveFieldOperator.h">
+      <Filter>Include\Operator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Mesh.cpp">
@@ -137,6 +140,9 @@
       <Filter>Source\Operator</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Operator\MultiCopyOperator.cpp">
+      <Filter>Source\Operator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Operator\WaveFieldOperator.cpp">
       <Filter>Source\Operator</Filter>
     </ClCompile>
   </ItemGroup>

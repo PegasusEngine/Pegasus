@@ -13,6 +13,7 @@
 #include "Pegasus/Mesh/MeshManager.h"
 #include "Pegasus/Mesh/Operator/CombineTransformOperator.h"
 #include "Pegasus/Mesh/Operator/MultiCopyOperator.h"
+#include "Pegasus/Mesh/Operator/WaveFieldOperator.h"
 #include "Pegasus/Mesh/Generator/QuadGenerator.h"
 #include "Pegasus/Mesh/Generator/BoxGenerator.h"
 #include "Pegasus/Mesh/Generator/IcosphereGenerator.h"
@@ -210,6 +211,7 @@ void MeshManager::RegisterAllMeshNodes()
     // Register the operator nodes
     REGISTER_MESH_NODE_OPERATOR(CombineTransformOperator);
     REGISTER_MESH_NODE_OPERATOR(MultiCopyOperator);
+    REGISTER_MESH_NODE_OPERATOR(WaveFieldOperator);
 
     // Register the generator nodes
     REGISTER_MESH_NODE_GENERATOR(QuadGenerator);
