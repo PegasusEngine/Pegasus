@@ -94,9 +94,9 @@ combineOperator->AddOperatorInput(multiCopy);
 
 cylinder = CreateMeshGenerator("CylinderGenerator");
 cylinder.CylinderCapRadius = 2.0;
-cylinder.CylinderHeight = 2.0;
-cylinder.CylinderRingCuts = 7;
-cylinder.CylinderFaceCount = 24;
+cylinder.CylinderHeight = 8.0;
+cylinder.CylinderRingCuts = 10;
+cylinder.CylinderFaceCount = 56;
 cubeMesh->SetGeneratorInput(cylinder);
 //cubeMesh->SetOperatorInput(combineOperator);
 

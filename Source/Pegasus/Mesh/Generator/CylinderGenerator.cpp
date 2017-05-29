@@ -73,9 +73,10 @@ void CylinderGenerator::GenerateData()
     ringCuts += 2; //we consider the first two caps as ring cuts for simplicity sake
 
     //figure out sizes
-    const int capVertexCount = faceCount + 1;
+    const int ringVertexCount = faceCount + 1;//an extra vertex to close the seem.
+    const int capVertexCount = faceCount + 1; 
     const int capIndexCount = 3*faceCount; //1 triangle per face
-    const int ringVertexCounts = ringCuts*faceCount; //2 extra because we consider the top and bottom cap
+    const int ringVertexCounts = ringCuts*ringVertexCount; //2 extra because we consider the top and bottom cap
     const int tubeIndexCounts = faceCount * (ringCuts - 1) * 3 * 2; 
     const float halfHeight = GetCylinderHeight() * 0.5f;
 
@@ -122,9 +123,9 @@ void CylinderGenerator::GenerateData()
             for (int f = 0; f < faceCount; ++f)
             {
                 int a = currVertexOffset + f;
-                int b = currVertexOffset + ((f + 1) % faceCount);
-                int c = a + faceCount;
-                int d = b + faceCount;
+                int b = currVertexOffset + (f + 1);
+                int c = a + ringVertexCount;
+                int d = b + ringVertexCount;
                 indexBuffer[nextIndex++] = a;
                 indexBuffer[nextIndex++] = c;
                 indexBuffer[nextIndex++] = d;
@@ -134,7 +135,7 @@ void CylinderGenerator::GenerateData()
             }
         }
 
-        currVertexOffset += faceCount;
+        currVertexOffset += ringVertexCount;
     }
     
     PEGASUS_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::END_SUCCESS);
@@ -154,8 +155,8 @@ void CylinderGenerator::CreateRing(
 {
     float angleDelta = Math::P_2_PI / static_cast<float>(faceCount);
     Math::Vec3 capNormal(0.0f,0.0f,zVal > 0.0f ? 1.0f : -1.0f);
-    float vertUvSpacing = 1.0f/((float)faceCount);
-    for (int f = 0; f < faceCount; ++f)
+    float vertUvSpacing = 1.0f/((float)faceCount + 1);
+    for (int f = 0; f < faceCount + (isCap ? 0 : 1); ++f)
     {
         float currAngle = static_cast<float>(f)*angleDelta;
         Math::Vec2 cosSin(Math::Cos(currAngle), Math::Sin(currAngle));
