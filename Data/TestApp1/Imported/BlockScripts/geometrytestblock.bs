@@ -72,33 +72,29 @@ boxGenerator = CreateMeshGenerator("BoxGenerator");
 boxGenerator.CubeExtends = float3(10.0,10.0,40.50);
 boxGenerator.FaceSubdivision = 45;
 
-waveOperator = CreateMeshOperator("WaveFieldOperator");
-waveOperator.WFFreqAmpOffset0 = float3(3.0,0.8,0.0);
-waveOperator.WFFreqAmpOffset1 = float3(1.0,2.0,0.0);
-waveOperator.WFFreqAmpOffset2 = float3(2.0,0.1,0.0);
-waveOperator.WFFreqAmpOffset3 = float3(0.7,2.0,0.0);
-waveOperator->AddGeneratorInput(boxGenerator);
-
-boxGenerator2 = CreateMeshGenerator("BoxGenerator");
-boxGenerator2.CubeExtends = float3(3.0,2.0,0.50);
-boxGenerator2.FaceSubdivision = 8;
-multiCopy = CreateMeshOperator("MultiCopyOperator");
-multiCopy->AddGeneratorInput(boxGenerator2);
-multiCopy.MultiCopyFactor = 16;
-multiCopy.TranslationOffset = float3(1.0,8.0,0.0);
-multiCopy.ScaleOffset = float3(0.7,0.7,0.7);
-multiCopy.QuaternionRotOffset = float4(8.0,1.0,0.0,2.0);
-combineOperator = CreateMeshOperator("CombineTransformOperator");
-combineOperator->AddOperatorInput(waveOperator);
-combineOperator->AddOperatorInput(multiCopy);
-
 cylinder = CreateMeshGenerator("CylinderGenerator");
 cylinder.CylinderCapRadius = 2.0;
-cylinder.CylinderHeight = 8.0;
-cylinder.CylinderRingCuts = 10;
-cylinder.CylinderFaceCount = 56;
-cubeMesh->SetGeneratorInput(cylinder);
-//cubeMesh->SetOperatorInput(combineOperator);
+cylinder.CylinderHeight = 16.0;
+cylinder.CylinderRingCuts = 25;
+cylinder.CylinderFaceCount = 25;
+
+waveOperator = CreateMeshOperator("WaveFieldOperator");
+waveOperator.WFFreqAmpOffset0 = float3(3.0,0.3,0.0);
+waveOperator.WFFreqAmpOffset1 = float3(0.1,5.2,-0.9);
+waveOperator.WFFreqAmpOffset2 = float3(5.2,0.1,0.0);
+waveOperator.WFFreqAmpOffset2 = float3(0.5,1.8,3.0);
+waveOperator.WFIsRadial = 1;
+waveOperator->AddGeneratorInput(cylinder);
+
+
+waveOperator2 = CreateMeshOperator("WaveFieldOperator");
+waveOperator2.WFFreqAmpOffset0 = float3(3.0,0.3,0.0);
+waveOperator2.WFFreqAmpOffset1 = float3(4.1,5.2,-0.9);
+//waveOperator2.WFIsRadial = 1;
+waveOperator2->AddOperatorInput(waveOperator);
+
+
+cubeMesh->SetOperatorInput(waveOperator2);
 
 quad = CreateMesh();
 quad->SetGeneratorInput(CreateMeshGenerator("QuadGenerator"));
@@ -144,8 +140,6 @@ gSpeakerState = SpeakerStateStruct();
 
 int Timeline_Update(info : UpdateInfo)
 {
-	combineOperator.Translation0 = CombTranslation;
-	combineOperator.QuaternionRot0 = CombRotation;
  //TODO: add function for identity
 	gState.transform = float4x4(
 	1.0, 0.0, 0.0, 0.0,

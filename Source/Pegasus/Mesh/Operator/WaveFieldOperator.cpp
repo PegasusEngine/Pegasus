@@ -22,6 +22,7 @@ BEGIN_IMPLEMENT_PROPERTIES(WaveFieldOperator)
     IMPLEMENT_PROPERTY(WaveFieldOperator, WFFreqAmpOffset1)
     IMPLEMENT_PROPERTY(WaveFieldOperator, WFFreqAmpOffset2)
     IMPLEMENT_PROPERTY(WaveFieldOperator, WFFreqAmpOffset3)
+    IMPLEMENT_PROPERTY(WaveFieldOperator, WFIsRadial)
 END_IMPLEMENT_PROPERTIES(WaveFieldOperator)
 
 
@@ -36,6 +37,7 @@ WaveFieldOperator::WaveFieldOperator(Pegasus::Alloc::IAllocator* nodeAllocator,
         INIT_PROPERTY(WFFreqAmpOffset1)
         INIT_PROPERTY(WFFreqAmpOffset2)
         INIT_PROPERTY(WFFreqAmpOffset3)
+        INIT_PROPERTY(WFIsRadial)
     END_INIT_PROPERTIES()
 }
 
@@ -76,6 +78,7 @@ void WaveFieldOperator::GenerateData()
     waveParams[2] = GetWFFreqAmpOffset2();
     waveParams[3] = GetWFFreqAmpOffset3();
 
+    bool isRadial = GetWFIsRadial() > 0;
     for (int v = 0; v < meshData->GetVertexCount(); ++v)
     {
         const Math::Vec4& p4 = inputVertex[v].position;
@@ -90,7 +93,22 @@ void WaveFieldOperator::GenerateData()
             d += wave.y*(Math::Sin(t*wave.x + wave.z));
         }
 
-        outputVertex[v].position = inputVertex[v].position + Math::Vec4(d*displacementDir,0.0f);
+        Math::Vec3 waveDispDir = displacementDir;
+        if (isRadial)
+        { 
+            Math::Vec3 radialDisp = p3-t*timeDir;
+            float radialDispLen = Math::Length(radialDisp);
+            if (radialDispLen > PFLOAT_EPSILON)
+            {
+                radialDisp /= radialDispLen;
+            }
+            else
+            {
+                radialDisp = Math::Vec3(0.0f,0.0f,0.0f);
+            }
+            waveDispDir = radialDisp;
+        }
+        outputVertex[v].position = inputVertex[v].position + Math::Vec4(d*waveDispDir,0.0f);
 
         //todo, reconstruct normals
         outputVertex[v].normal = inputVertex[v].normal;

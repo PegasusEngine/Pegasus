@@ -34,6 +34,7 @@ class WaveFieldOperator : public MeshOperator
         DECLARE_PROPERTY(Math::Vec3, WFFreqAmpOffset1, Math::Vec3(1.0f, 0.0f, 0.0f))
         DECLARE_PROPERTY(Math::Vec3, WFFreqAmpOffset2, Math::Vec3(1.0f, 0.0f, 0.0f))
         DECLARE_PROPERTY(Math::Vec3, WFFreqAmpOffset3, Math::Vec3(1.0f, 0.0f, 0.0f))
+        DECLARE_PROPERTY(int,        WFIsRadial, 0)
     END_DECLARE_PROPERTIES()
 
 public:
