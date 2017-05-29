@@ -18,6 +18,7 @@
 #include "Pegasus/Mesh/Generator/BoxGenerator.h"
 #include "Pegasus/Mesh/Generator/IcosphereGenerator.h"
 #include "Pegasus/Mesh/Generator/CustomGenerator.h"
+#include "Pegasus/Mesh/Generator/CylinderGenerator.h"
 #include "Pegasus/Mesh/IMeshFactory.h"
 #include "Pegasus/Graph/NodeManager.h"
 #include "Pegasus/Utils/String.h"
@@ -218,6 +219,7 @@ void MeshManager::RegisterAllMeshNodes()
     REGISTER_MESH_NODE_GENERATOR(BoxGenerator);
     REGISTER_MESH_NODE_GENERATOR(IcosphereGenerator);
     REGISTER_MESH_NODE_GENERATOR(CustomGenerator);
+    REGISTER_MESH_NODE_GENERATOR(CylinderGenerator);
 
 }
 

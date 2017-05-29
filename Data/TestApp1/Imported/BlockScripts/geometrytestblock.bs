@@ -91,7 +91,14 @@ multiCopy.QuaternionRotOffset = float4(8.0,1.0,0.0,2.0);
 combineOperator = CreateMeshOperator("CombineTransformOperator");
 combineOperator->AddOperatorInput(waveOperator);
 combineOperator->AddOperatorInput(multiCopy);
-cubeMesh->SetOperatorInput(combineOperator);
+
+cylinder = CreateMeshGenerator("CylinderGenerator");
+cylinder.CylinderCapRadius = 2.0;
+cylinder.CylinderHeight = 2.0;
+cylinder.CylinderRingCuts = 7;
+cylinder.CylinderFaceCount = 24;
+cubeMesh->SetGeneratorInput(cylinder);
+//cubeMesh->SetOperatorInput(combineOperator);
 
 quad = CreateMesh();
 quad->SetGeneratorInput(CreateMeshGenerator("QuadGenerator"));
