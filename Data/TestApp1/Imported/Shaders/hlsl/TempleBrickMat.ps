@@ -1,0 +1,25 @@
+
+#define LIGHT_POS0 float3(-8.0,8.0,8.0)
+#define LIGHT_POS1 float3(8.0,8.0,8.0)
+
+float3 computeLight(float3 p, float3 n, float3 lp)
+{
+	float dist = distance(p,lp);
+	float3 dir = (lp - p)/dist;
+	return dist*dist*0.005*saturate(dot(n,dir));
+}
+
+void main(
+	in float4 p : POSITION0,
+	in float3 normal : NORMAL0,
+	in float2 t : TEXTURE0,
+	out float4 color : SV_Target
+)
+{
+	float3 nNormal = normalize(normal);
+	float3 diff = computeLight(p.xyz, nNormal, LIGHT_POS0);
+	diff += computeLight(p.xyz, nNormal, LIGHT_POS1);
+	diff += saturate(float3(0.0,0.0,0.4*-nNormal.y+0.2));
+	color = float4(diff, 1.0);
+
+}

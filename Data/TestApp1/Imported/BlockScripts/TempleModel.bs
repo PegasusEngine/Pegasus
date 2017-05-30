@@ -1,0 +1,53 @@
+//externs
+extern modelPosition = float3(0.0,0.0,0.0);
+extern modelQuaternion = float4(0.0,0.0,1.0,0.0);
+extern modelScale = float3(1.0,1.0,1.0);
+
+//materials
+templeBrickMat = LoadProgram("Programs/TempleBrickMat.pas");
+struct ModelState
+{
+	worldTransform : float4x4;
+	normTransform : float4x4;
+};
+gModelState = ModelState();
+modelStateUniform = GetUniformLocation(templeBrickMat,"uniformState");
+modelStateBuffer = CreateUniformBuffer(sizeof(ModelState));
+
+//meshes
+box0 = CreateMeshGenerator("BoxGenerator");
+templeMesh = CreateMesh();
+templeMesh->SetGeneratorInput(box0);
+
+float4x4 makeScale(scaleVec : float3)
+{
+	return float4x4(
+		scaleVec.x, 0.0, 0.0, 0.0,
+		0.0, scaleVec.y, 0.0, 0.0,
+		0.0, 0.0, scaleVec.z, 0.0,
+		0.0, 0.0, 0.0, 1.0
+	);
+}
+
+int Timeline_Update(info : UpdateInfo)
+{
+	rotMat = GetRotation(modelQuaternion.xyz, modelQuaternion.w);
+	rotMat[0][3] = modelPosition.x;
+	rotMat[1][3] = modelPosition.y;
+	rotMat[2][3] = modelPosition.z;
+	scaleMat = makeScale(modelScale);
+	scaleInvMat = makeScale(1.0/modelScale);
+	gModelState.worldTransform = mul(rotMat,scaleMat);
+	gModelState.normTransform = mul(rotMat, scaleInvMat);
+}
+
+int Timeline_Render(info : RenderInfo)
+{
+	SetDefaultRenderTarget();
+	SetProgram(templeBrickMat);
+	SetBuffer(modelStateBuffer, gModelState);
+	SetUniformBuffer(modelStateUniform, modelStateBuffer);
+	SetMesh(templeMesh);
+	Draw();
+}
+

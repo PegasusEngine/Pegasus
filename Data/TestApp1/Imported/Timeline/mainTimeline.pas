@@ -8,7 +8,26 @@
     lanes : [{
             type : Lane,
             name : "",
-            Blocks : []
+            Blocks : [{
+                    type : Block,
+                    props : {
+                        Beat : 0,
+                        Duration : 1024,
+                        Name : TempleModel,
+                        Color : [128, 128, 128],
+                        _o_p_ : {
+                            modelPosition : [0.000000, 0.000000, 0.000000],
+                            modelQuaternion : [0.000000, 0.000000, 1.000000, 0.000000],
+                            modelScale : [1.000000, 1.000000, 1.000000],
+                            __schema__ : {
+                                sizetypes : [327692, 393232, 327692],
+                                names : [modelPosition, modelQuaternion, modelScale],
+                                typeNames : [float3, float4, float3]
+                            }
+                        },
+                        script : {@BlockScripts/TempleModel.bs}
+                    }
+                }]
         }, {
             type : Lane,
             name : "",
@@ -59,7 +78,7 @@
             Blocks : [{
                     type : TextureTestBlock,
                     props : {
-                        Beat : 2708,
+                        Beat : 3381,
                         Duration : 2304,
                         Name : "",
                         Color : [29, 99, 10],
@@ -78,7 +97,7 @@
             Blocks : [{
                     type : FractalCube2Block,
                     props : {
-                        Beat : 4172,
+                        Beat : 4845,
                         Duration : 1024,
                         Name : "",
                         Color : [58, 140, 249],
@@ -97,7 +116,7 @@
             Blocks : [{
                     type : Block,
                     props : {
-                        Beat : 0,
+                        Beat : 1323,
                         Duration : 1024,
                         Name : Test2,
                         Color : [0, 100, 100],
@@ -121,7 +140,7 @@
                 }, {
                     type : Block,
                     props : {
-                        Beat : 1860,
+                        Beat : 2533,
                         Duration : 1024,
                         Name : Test,
                         Color : [228, 207, 245],
@@ -146,7 +165,7 @@
             Blocks : [{
                     type : FractalCubeBlock,
                     props : {
-                        Beat : 4098,
+                        Beat : 4771,
                         Duration : 768,
                         Name : "",
                         Color : [239, 248, 111],
@@ -165,7 +184,7 @@
             Blocks : [{
                     type : Block,
                     props : {
-                        Beat : 1206,
+                        Beat : 1879,
                         Duration : 1024,
                         Name : BlockSegment,
                         Color : [144, 244, 123],
