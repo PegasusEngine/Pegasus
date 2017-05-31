@@ -111,24 +111,30 @@ stairHandle = CreateMeshGenerator("BoxGenerator");
 
 stairRepeat = CreateMeshOperator("MultiCopyOperator");
 stairRepeat->AddGeneratorInput(stairBox);
-stairRepeat.MultiCopyFactor = 34;
+stairRepeat.MultiCopyFactor = 31;
 stairRepeat.TranslationOffset = float3(0.0,-2.0*stairsHeight,1.8);
 
-handleOffset = float3(stairsWidth,16.0,16.0);
-stairObject = CreateMeshOperator("CombineTransformOperator");
-stairObject->AddOperatorInput(stairRepeat);
-stairObject->AddGeneratorInput(stairHandle);
-stairObject.Translation1 = handleOffset;
-stairObject.Scale1 = float3(0.6,16.0,16.0);
-stairObject.QuaternionRot1 = float4(1.0,0.0,0.0,3.141516*0.25);
-stairObject->AddGeneratorInput(stairHandle);
-stairObject.Scale2 = stairObject.Scale1;
-stairObject.Translation2 = handleOffset*float3(-1.0,1.0,1.0);
+handleOffset = float3(stairsWidth,-25.0,24.0);
+handleScale = float3(0.6,8.0,36.0);
+
+stairObjectPart = CreateMeshOperator("CombineTransformOperator");
+stairObjectPart->AddOperatorInput(stairRepeat);
+stairObjectPart->AddGeneratorInput(stairHandle);
+stairObjectPart.Translation1 = handleOffset;
+stairObjectPart.Scale1 = handleScale;
+stairObjectPart.QuaternionRot1 = float4(1.0,0.0,0.0,3.141516*0.21);
+stairObjectPart->AddGeneratorInput(stairHandle);
+stairObjectPart.Scale2 = stairObjectPart.Scale1;
+stairObjectPart.Translation2 = handleOffset*float3(-1.0,1.0,1.0);
+stairObjectPart.QuaternionRot2 = stairObjectPart.QuaternionRot1;
+
+
+
 
 pyramidPart = CreateMeshOperator("CombineTransformOperator");
 pyramidPart->AddOperatorInput(pyramidMultiCopy);
 pyramidPart.Translation0 = float3(0.0,-baseHeight-pyramidSeedHeight,0.0);
-pyramidPart->AddOperatorInput(stairObject);
+pyramidPart->AddOperatorInput(stairObjectPart);
 pyramidPart.Translation1 = float3(0.0,-baseHeight-pyramidSeedHeight,1.2*bottomExtends.y);
 
 
