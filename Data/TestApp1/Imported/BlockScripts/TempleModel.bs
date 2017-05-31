@@ -15,9 +15,29 @@ modelStateUniform = GetUniformLocation(templeBrickMat,"uniformState");
 modelStateBuffer = CreateUniformBuffer(sizeof(ModelState));
 
 //meshes
+
+//base
+topExtends = float2(14.0,14.0);
+baseHeight = 0.1;
+
 box0 = CreateMeshGenerator("BoxGenerator");
+box0.EnableFace5 = 1;
+box0.CubeExtends = float3(topExtends.x,baseHeight,topExtends.y);
+
+box1 = CreateMeshGenerator("BoxGenerator");
+box1.CubeExtends = float3(4.0,3.0,4.0);
+box1.EnableFace4 = 0;
+box1.EnableFace5 = 0;
+
+combineBase = CreateMeshOperator("CombineTransformOperator");
+combineBase->AddGeneratorInput(box0);
+combineBase->AddGeneratorInput(box1);
+combineBase.Scale0 = float3(1.0,1.0,1.0);
+combineBase.Scale1 = float3(1.0,1.0,1.0);
+
 templeMesh = CreateMesh();
-templeMesh->SetGeneratorInput(box0);
+templeMesh->SetOperatorInput(combineBase);
+//templeMesh->SetGeneratorInput(box1);
 
 float4x4 makeScale(scaleVec : float3)
 {

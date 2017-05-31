@@ -19,7 +19,8 @@ void main(
 	float3 nNormal = normalize(normal);
 	float3 diff = computeLight(p.xyz, nNormal, LIGHT_POS0);
 	diff += computeLight(p.xyz, nNormal, LIGHT_POS1);
-	diff += saturate(float3(0.0,0.0,0.4*-nNormal.y+0.2));
+	diff += saturate(float3(0.0,0.0,0.4*-nNormal.y+0.4));
+	color = float4(p.xyz,1.0);// float4(diff, 1.0);
 	color = float4(diff, 1.0);
 
 }

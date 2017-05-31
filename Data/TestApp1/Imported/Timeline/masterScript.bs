@@ -23,6 +23,8 @@ terrainShader = LoadProgram("Programs/MarchingCubeProgram.pas");
 3dTerrain.BlockLod2Threshold = 8;
 3dTerrain.Visible = 1;
 
+defaultRasterState = CreateRasterizerState(RasterizerConfig(CW_CM,LESSER_EQUAL_DF));
+
 int Timeline_Update(info : UpdateInfo)
 {
 	3dTerrain->SetCullCamera(gWorldCam);
@@ -41,6 +43,7 @@ int Timeline_Render(info: RenderInfo)
 		SetProgram(terrainShader);
 		3dTerrain->Draw();
 	}
+	SetRasterizerState(defaultRasterState);
 	//* Some demo ideas!!!
 	//* Create a kickass sky / sun with directional.
 	//* Add pyramid with normal map generated procedurally

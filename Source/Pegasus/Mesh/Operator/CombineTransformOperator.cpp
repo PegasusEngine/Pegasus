@@ -187,12 +187,12 @@ void CombineTransformOperator::GenerateMatrices(Math::Mat44* matrices, Math::Mat
         targetNormalmat.m11 = targetMat.m11;
         targetNormalmat.m12 = targetMat.m12;
         targetNormalmat.m13 = targetMat.m13;
-        targetNormalmat.m21 = targetMat.m11;
-        targetNormalmat.m22 = targetMat.m12;
-        targetNormalmat.m23 = targetMat.m13;
-        targetNormalmat.m31 = targetMat.m11;
-        targetNormalmat.m32 = targetMat.m12;
-        targetNormalmat.m33 = targetMat.m13;
+        targetNormalmat.m21 = targetMat.m21;
+        targetNormalmat.m22 = targetMat.m22;
+        targetNormalmat.m23 = targetMat.m23;
+        targetNormalmat.m31 = targetMat.m31;
+        targetNormalmat.m32 = targetMat.m32;
+        targetNormalmat.m33 = targetMat.m33;
 
         //apply all scales
         targetMat.m11 *= s.x;
