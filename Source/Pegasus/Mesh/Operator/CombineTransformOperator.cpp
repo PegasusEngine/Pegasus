@@ -195,12 +195,17 @@ void CombineTransformOperator::GenerateMatrices(Math::Mat44* matrices, Math::Mat
         targetNormalmat.m33 = targetMat.m33;
 
         //apply all scales
-        targetMat.m11 *= s.x;
-        targetMat.m22 *= s.y;
-        targetMat.m33 *= s.z;
-        targetNormalmat.m11 /= s.x;
-        targetNormalmat.m22 /= s.y;
-        targetNormalmat.m33 /= s.z;
+        Math::Mat44 scaleMat4 = Math::MAT44_IDENTITY;
+        Math::Mat33 scaleMat3 = Math::MAT33_IDENTITY;
+        scaleMat4.m11 = s.x;
+        scaleMat4.m22 = s.y;
+        scaleMat4.m33 = s.z;
+        scaleMat3.m11 = 1.0f / s.x;
+        scaleMat3.m12 = 1.0f / s.y;
+        scaleMat3.m13 = 1.0f / s.z;
+        
+        Math::Mult44_44(targetMat, targetMat, scaleMat4);
+        Math::Mult33_33(targetNormalmat, targetNormalmat, scaleMat3);
     }
 
 }

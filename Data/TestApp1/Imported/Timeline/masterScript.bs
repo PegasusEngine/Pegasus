@@ -24,6 +24,7 @@ terrainShader = LoadProgram("Programs/MarchingCubeProgram.pas");
 3dTerrain.Visible = 1;
 
 defaultRasterState = CreateRasterizerState(RasterizerConfig(CW_CM,LESSER_EQUAL_DF));
+hackedCCWMode = CreateRasterizerState(RasterizerConfig(CCW_CM,LESSER_EQUAL_DF));
 
 int Timeline_Update(info : UpdateInfo)
 {
@@ -36,6 +37,8 @@ int Timeline_Update(info : UpdateInfo)
 
 int Timeline_Render(info: RenderInfo)
 {
+
+	SetRasterizerState(hackedCCWMode);
 	if (EnableTerrain)
 	{
 		SetDefaultRenderTarget();
