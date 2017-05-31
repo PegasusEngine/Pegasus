@@ -53,18 +53,11 @@ IcosphereGenerator::IcosphereGenerator(Pegasus::Alloc::IAllocator * nodeAllocato
 : MeshGenerator(nodeAllocator, nodeDataAllocator),
   mIdxCache(nodeAllocator, sizeof(unsigned short))
 {
-    
     //INIT properties
     BEGIN_INIT_PROPERTIES(IcosphereGenerator)
         INIT_PROPERTY(Degree)
         INIT_PROPERTY(Radius)
     END_INIT_PROPERTIES()
-
-    mConfiguration.SetIsIndexed(true);
-    mConfiguration.SetMeshPrimitiveType(MeshConfiguration::TRIANGLE);
-
-    mConfiguration.GetInputLayout()->GenerateEditorLayout(MeshInputLayout::USE_POSITION | MeshInputLayout::USE_UV | MeshInputLayout::USE_NORMAL);
-
 }
 
 //----------------------------------------------------------------------------------------
@@ -84,11 +77,11 @@ unsigned short IcosphereGenerator::GenChild(MeshData * meshData, unsigned short 
     //mIdxCache represents an infinite table with values initialized to 0
     if (r == 0) //no index generated yet, lets go and generate the child, which is the midpoint
     {
-        Vertex * stream = meshData->GetStream<Vertex>(0);  
-        Vertex * v1 = &stream[p1];
-        Vertex * v2 = &stream[p2];
+        StdVertex * stream = meshData->GetStream<StdVertex>(0);
+        StdVertex * v1 = &stream[p1];
+        StdVertex * v2 = &stream[p2];
         
-        Vertex newVert;
+        StdVertex newVert;
         //generate midpoint 
         newVert.position =  (v1->position + v2->position) * 0.5;
         Vec3 normalizedP = newVert.position.xyz;

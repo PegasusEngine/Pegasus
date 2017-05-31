@@ -7,6 +7,8 @@ Source/tags
 *.vpw
 *.vpwhist
 *.vtg
+*.suo
+*.sdf
 tags
 .vs
 fmod.log

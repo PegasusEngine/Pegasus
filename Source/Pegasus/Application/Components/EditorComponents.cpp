@@ -290,6 +290,7 @@ void GridComponent::Load(Core::IApplicationContext* appContext)
 
     CustomGenerator* customGenerator = static_cast<CustomGenerator*>(&(*mGridGenerator));
     MeshConfiguration meshConfig;
+    MeshInputLayout il;
     meshConfig.SetIsIndexed(true);
     meshConfig.SetIsDynamic(false);
     meshConfig.SetMeshPrimitiveType(MeshConfiguration::LINE);
@@ -300,15 +301,16 @@ void GridComponent::Load(Core::IApplicationContext* appContext)
     posDesc.mStreamIndex = 0;
     posDesc.mType = Pegasus::Core::FORMAT_RGBA_32_FLOAT;
     posDesc.mByteSize = 16;
-    meshConfig.GetInputLayout()->RegisterAttribute(posDesc);
+    il.RegisterAttribute(posDesc);
 
     MeshInputLayout::AttrDesc colDesc = posDesc;    
     colDesc.mType = Pegasus::Core::FORMAT_RGBA_8_UNORM;
     colDesc.mByteSize = 4;
     colDesc.mByteOffset = posDesc.mByteOffset + posDesc.mByteSize;
     colDesc.mSemantic = MeshInputLayout::COLOR;
-    meshConfig.GetInputLayout()->RegisterAttribute(colDesc);
+    il.RegisterAttribute(colDesc);
 
+    meshConfig.SetInputLayout(il);
 
     customGenerator->SetConfiguration(meshConfig);
 
@@ -476,7 +478,9 @@ void CameraDebugComponent::Load(Core::IApplicationContext* appContext)
     meshConfig.SetIsIndexed(true);
     meshConfig.SetIsDynamic(false);
     meshConfig.SetMeshPrimitiveType(MeshConfiguration::LINE);
-    meshConfig.GetInputLayout()->GenerateEditorLayout(MeshInputLayout::USE_POSITION);
+    MeshInputLayout camIl;
+    camIl.GenerateEditorLayout(MeshInputLayout::USE_POSITION);
+    meshConfig.SetInputLayout(camIl);
     customGen->SetConfiguration(meshConfig);
     MeshDataRef meshData = customGen->EditMeshData();
     meshData->PushVertex(Vec4(-1.0f,  1.0f, 0.0f, 1.0f),0);

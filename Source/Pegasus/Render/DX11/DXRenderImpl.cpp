@@ -209,7 +209,13 @@ void Pegasus::Render::SetMesh (Pegasus::Mesh::MeshInOut mesh)
     ID3D11DeviceContext * context;
     ID3D11Device * device;
     Pegasus::Render::GetDeviceAndContext(&device, &context);
-    Pegasus::Mesh::MeshData * meshData = &(*mesh->GetUpdatedMeshData());
+    Pegasus::Mesh::MeshDataRef meshData = mesh->GetUpdatedMeshData();
+    if (meshData == nullptr)
+    {
+        PG_LOG('ERR_',"Attempting to set invalid node data.");
+        return;
+    }
+
     Pegasus::Graph::NodeGPUData * nodeGpuData = meshData->GetNodeGPUData();
     Pegasus::Render::DXMeshGPUData * meshGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXMeshGPUData, nodeGpuData);
     Pegasus::Render::DXProgramGPUData * programGpuData = gDXState.mDispatchedShader;

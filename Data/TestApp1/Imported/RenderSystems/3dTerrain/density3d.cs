@@ -8,7 +8,7 @@ cbuffer BlockStateCbuffer
     float4 gWorldScale;
 };
 
-#define T 4
+#define T 0
 
 float ComputeTerrainDensity(float3 samplePoint)
 {

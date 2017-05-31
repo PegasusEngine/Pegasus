@@ -35,6 +35,17 @@ MeshConfiguration::MeshConfiguration(const MeshConfiguration & other)
 
 //----------------------------------------------------------------------------------------
 
+bool MeshConfiguration::operator==(const MeshConfiguration& other) const
+{
+    return    mIsIndexed == other.mIsIndexed
+           && mIsDynamic == other.mIsDynamic
+           && mIsDrawIndirect == other.mIsDrawIndirect
+           && mPrimitiveType == other.mPrimitiveType
+           && mInputLayout == other.mInputLayout;
+}
+
+//----------------------------------------------------------------------------------------
+
 MeshConfiguration & MeshConfiguration::operator=(const MeshConfiguration & other)
 {
     Pegasus::Utils::Memcpy(this, &other, sizeof(MeshConfiguration));

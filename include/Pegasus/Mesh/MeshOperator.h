@@ -17,6 +17,7 @@
 #include "Pegasus/Mesh/Shared/MeshEvent.h"
 #include "Pegasus/Mesh/MeshConfiguration.h"
 #include "Pegasus/Mesh/MeshData.h"
+#include "Pegasus/Mesh/MeshGenerator.h"
 #include "Pegasus/Mesh/MeshDeclaration.h"
 #include "Pegasus/PropertyGrid/PropertyGridObject.h"
 
@@ -30,7 +31,7 @@ class IMeshFactory;
 //!                     so the operator node can be instantiated
 class MeshOperator : public Graph::OperatorNode
 {
-    BEGIN_DECLARE_PROPERTIES_BASE(MeshOperator)
+    BEGIN_DECLARE_PROPERTIES(MeshOperator, OperatorNode)
     END_DECLARE_PROPERTIES()
 
     PEGASUS_EVENT_DECLARE_DISPATCHER(IMeshEventListener);
@@ -74,6 +75,12 @@ public:
     //!       Redefine this function in derived classes to change its behavior
     //virtual NodeDataReturn GetUpdatedData(bool & updated);
 
+    //! Append a mesh generator node to the list of input nodes
+    virtual void AddGeneratorInput(MeshGeneratorIn gen);
+
+    //! Append a mesh operator node to the list of input nodes
+    virtual void AddOperatorInput(const Pegasus::Core::Ref<MeshOperator>& op);
+
     //------------------------------------------------------------------------------------
 
 protected:
@@ -105,13 +112,14 @@ protected:
 
     //------------------------------------------------------------------------------------
 
+    //! Configuration of the operator, such as the resolution and pixel format
+    MeshConfiguration mConfiguration;
+
 private:
 
     // Nodes cannot be copied, only references to them
     PG_DISABLE_COPY(MeshOperator)
 
-    //! Configuration of the operator, such as the resolution and pixel format
-    MeshConfiguration mConfiguration;
 
     //! Pointer to GPU Mesh factory
     IMeshFactory * mFactory;

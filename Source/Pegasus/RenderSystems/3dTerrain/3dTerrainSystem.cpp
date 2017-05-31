@@ -315,7 +315,7 @@ void Terrain3dSystem::LoadDebugObjects(Core::IApplicationContext* appContext)
         meshConfig.SetIsIndexed(true);
         meshConfig.SetIsDynamic(false);
         meshConfig.SetMeshPrimitiveType(Pegasus::Mesh::MeshConfiguration::LINE);
-        MeshInputLayout* il = meshConfig.GetInputLayout();
+        MeshInputLayout il;
         MeshInputLayout::AttrDesc posDesc;
         posDesc.mSemantic = MeshInputLayout::POSITION;
         posDesc.mType = Pegasus::Core::FORMAT_RGB_32_FLOAT;
@@ -323,7 +323,8 @@ void Terrain3dSystem::LoadDebugObjects(Core::IApplicationContext* appContext)
         posDesc.mByteOffset = 0;
         posDesc.mSemanticIndex = 0;
         posDesc.mStreamIndex = 0;
-        il->RegisterAttribute(posDesc);
+        il.RegisterAttribute(posDesc);
+        meshConfig.SetInputLayout(il);
         customGenerator->SetConfiguration(meshConfig);
         MeshDataRef meshData = customGenerator->EditMeshData();
         
@@ -376,7 +377,7 @@ void Terrain3dSystem::LoadDebugObjects(Core::IApplicationContext* appContext)
         meshConfig.SetIsIndexed(true);
         meshConfig.SetIsDynamic(false);
         meshConfig.SetMeshPrimitiveType(Pegasus::Mesh::MeshConfiguration::LINE);
-        MeshInputLayout* il = meshConfig.GetInputLayout();
+        MeshInputLayout il;
         MeshInputLayout::AttrDesc posDesc;
         posDesc.mSemantic = MeshInputLayout::POSITION;
         posDesc.mType = Pegasus::Core::FORMAT_RGBA_32_FLOAT;
@@ -384,7 +385,8 @@ void Terrain3dSystem::LoadDebugObjects(Core::IApplicationContext* appContext)
         posDesc.mByteOffset = 0;
         posDesc.mSemanticIndex = 0;
         posDesc.mStreamIndex = 0;
-        il->RegisterAttribute(posDesc);
+        il.RegisterAttribute(posDesc);
+        meshConfig.SetInputLayout(il);
         customGenerator->SetConfiguration(meshConfig);
 
         MeshDataRef meshData = customGenerator->EditMeshData();

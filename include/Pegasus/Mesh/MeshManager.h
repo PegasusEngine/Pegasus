@@ -51,10 +51,11 @@ public:
     //! Register a mesh node class, to be called before any node of this type is created
     //! \param className String of the node class (maximum length NodeManager::MAX_CLASS_NAME_LENGTH)
     //! \param createNodeFunc Pointer to the mesh node member function that instantiates the node
+    //! \param isOperator - true if this mesh node is an operator (has children). False otherwise.
     //! \warning If the number of registered node classes reaches NodeManager::MAX_NUM_REGISTERED_NODES,
     //!          an assertion is thrown and the class does not get registered.
     //!          If that happens, increase the value of NodeManager::MAX_NUM_REGISTERED_NODES
-    void RegisterMeshNode(const char * className, Graph::Node::CreateNodeFunc createNodeFunc);
+    void RegisterMeshNode(const char * className, Graph::Node::CreateNodeFunc createNodeFunc, bool isOperator = false);
 
     //! Create a mesh node
     //! \param configuration Configuration of the mesh
@@ -70,8 +71,7 @@ public:
     //! \param className Name of the mesh operator node class to instantiate
     //! \param configuration Configuration of the mesh
     //! \return Reference to the created node, null reference if an error occurred
-    MeshOperatorReturn CreateMeshOperatorNode(const char * className,
-                                                    const MeshConfiguration & configuration);
+    MeshOperatorReturn CreateMeshOperatorNode(const char * className);
 
     //! Returns a null terminated list of asset descriptions this runtime factory will accept.
     //! \return a null terminated list of asset descriptions
@@ -116,9 +116,15 @@ private:
 #if PEGASUS_USE_EVENTS
     IMeshEventListener * mEventListener;
 #endif
+
 #if PEGASUS_ENABLE_PROXIES
     MeshManagerProxy mProxy;
+
+    //! utility functions / members for extra safety and verification on proxy mode.
+    Utils::Vector<unsigned int> mGeneratorTypeNameHashes;
+    Utils::Vector<unsigned int> mOperatorTypeNameHashes;
 #endif
+
 };
 
 

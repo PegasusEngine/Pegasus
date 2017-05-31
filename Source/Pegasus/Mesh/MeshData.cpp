@@ -25,10 +25,10 @@ MeshData::MeshData(const MeshConfiguration & configuration, Graph::Node::Mode mo
 {
     
     //fill in stream strides
-    const MeshInputLayout * inputLayout = configuration.GetInputLayout();
-    for (int i = 0; i < inputLayout->GetAttributeCount(); ++i)
+    const MeshInputLayout& inputLayout = configuration.GetInputLayout();
+    for (int i = 0; i < inputLayout.GetAttributeCount(); ++i)
     {
-        const MeshInputLayout::AttrDesc& desc = inputLayout->GetAttributeDesc(i);
+        const MeshInputLayout::AttrDesc& desc = inputLayout.GetAttributeDesc(i);
         int size = desc.mByteSize;
         int prevStride = mVertexStreams[desc.mStreamIndex].GetStride();
         mVertexStreams[desc.mStreamIndex].SetStride(prevStride + size);

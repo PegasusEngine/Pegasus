@@ -16,10 +16,18 @@
 #include "Pegasus/Graph/NodeData.h"
 #include "Pegasus/Graph/Node.h"
 #include "Pegasus/Mesh/MeshConfiguration.h"
+#include "Pegasus/Math/Vector.h"
 
 namespace Pegasus {
 namespace Mesh {
 
+
+//Standard default vertex definition, for editor meshes.
+struct StdVertex {
+    Math::Vec4 position; 
+    Math::Vec3 normal;        
+    Math::Vec2 uv; 
+};
 
 //! Mesh node data, used by all mesh nodes, including generators and operators
 class MeshData : public Graph::NodeData

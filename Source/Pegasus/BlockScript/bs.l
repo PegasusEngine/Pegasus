@@ -393,7 +393,7 @@ ifn?def    {
                     }
                 }
            }
-[ \t]      ;
+[ \t\r]      ;
 [_a-zA-Z0-9]+  {
                     Pegasus::BlockScript::Preprocessor& pp = yyextra->GetPreprocessor();
                     if (

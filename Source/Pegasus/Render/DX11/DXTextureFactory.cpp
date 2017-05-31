@@ -41,6 +41,10 @@ public:
 
     void InternalDestroyRenderTarget(Pegasus::Render::RenderTarget& renderTarget);
 
+    void InternalCreateDepthStencil(const Pegasus::Render::DepthStencilConfig* config, Pegasus::Render::DepthStencil& depthStencil);
+    
+    void InternalDestroyDepthStencil(Pegasus::Render::DepthStencil& depthStencil);
+
     void InternalCreateCubeMap(const Pegasus::Render::CubeMapConfig& config, Pegasus::Render::CubeMap& cubeMap);
 
     void InternalCreateVolumeTexture(const Pegasus::Render::VolumeTextureConfig& config, Pegasus::Render::VolumeTexture& volTexture);
@@ -338,6 +342,90 @@ void DXTextureFactory::InternalDestroyRenderTarget(Pegasus::Render::RenderTarget
     renderTarget.SetInternalData(nullptr);
 }
 
+void DXTextureFactory::InternalCreateDepthStencil(const Pegasus::Render::DepthStencilConfig* config, Pegasus::Render::DepthStencil& depthStencil)
+{
+    ID3D11DeviceContext * context;
+    ID3D11Device * device;
+    Pegasus::Render::GetDeviceAndContext(&device, &context);
+
+    Pegasus::Render::DXDepthStencilGPUData* depthStencilGpuData = PG_NEW (
+        mAllocator,
+        -1,
+        "DXDepthStencilGPUData",
+        Pegasus::Alloc::PG_MEM_PERM
+    ) Pegasus::Render::DXDepthStencilGPUData; 
+
+    depthStencilGpuData->mUseStencil = config->mUseStencil > 0;
+
+    Utils::Memset8(&depthStencilGpuData->mTextureDesc, 0, sizeof(depthStencilGpuData->mTextureDesc));
+    Utils::Memset8(&depthStencilGpuData->mSrvDepthDesc, 0, sizeof(depthStencilGpuData->mSrvDepthDesc));
+    Utils::Memset8(&depthStencilGpuData->mSrvStencilDesc, 0, sizeof(depthStencilGpuData->mSrvStencilDesc));
+    Utils::Memset8(&depthStencilGpuData->mDepthViewDesc, 0, sizeof(depthStencilGpuData->mDepthViewDesc));
+
+    //Create core texture with the depth definitions.
+    D3D11_TEXTURE2D_DESC& texDesc = depthStencilGpuData->mTextureDesc;
+    texDesc.Width = static_cast<unsigned int>(config->mWidth);
+    texDesc.Height = static_cast<unsigned int>(config->mHeight);
+    texDesc.MipLevels = 1;
+    texDesc.ArraySize = 1;
+    texDesc.Format = depthStencilGpuData->mUseStencil ? DXGI_FORMAT_R24G8_TYPELESS : DXGI_FORMAT_R32_TYPELESS;
+    texDesc.SampleDesc.Count = 1;
+    texDesc.SampleDesc.Quality = 0;
+    texDesc.Usage = D3D11_USAGE_DEFAULT;
+    texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL;
+    texDesc.CPUAccessFlags = 0;
+    texDesc.MiscFlags = 0;
+    VALID_DECLARE(device->CreateTexture2D(&texDesc, nullptr, &depthStencilGpuData->mTexture));
+
+
+    // Create SRV for depth
+    {
+        D3D11_SHADER_RESOURCE_VIEW_DESC& srvDepthDesc = depthStencilGpuData->mSrvDepthDesc;
+        srvDepthDesc.Format = depthStencilGpuData->mUseStencil ? DXGI_FORMAT_R24_UNORM_X8_TYPELESS : DXGI_FORMAT_R32_FLOAT;
+        srvDepthDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        srvDepthDesc.Texture2D.MostDetailedMip = 0;
+        srvDepthDesc.Texture2D.MipLevels = texDesc.MipLevels;
+        VALID(device->CreateShaderResourceView(depthStencilGpuData->mTexture, &srvDepthDesc, &depthStencilGpuData->mSrvDepth));
+    }
+
+    // Create SRV for stencil if stencil is enabled
+    if (depthStencilGpuData->mUseStencil)
+    {
+        D3D11_SHADER_RESOURCE_VIEW_DESC& srvStencilDesc = depthStencilGpuData->mSrvDepthDesc;
+        srvStencilDesc.Format = DXGI_FORMAT_X24_TYPELESS_G8_UINT;
+        srvStencilDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        srvStencilDesc.Texture2D.MostDetailedMip = 0;
+        srvStencilDesc.Texture2D.MipLevels = texDesc.MipLevels;
+
+        VALID(device->CreateShaderResourceView(depthStencilGpuData->mTexture, &srvStencilDesc, &depthStencilGpuData->mSrvStencil));
+    }
+
+    // Create depth stencil view
+    D3D11_DEPTH_STENCIL_VIEW_DESC& depthViewDesc = depthStencilGpuData->mDepthViewDesc;
+    depthViewDesc.Format = depthStencilGpuData->mUseStencil ? DXGI_FORMAT_D24_UNORM_S8_UINT : DXGI_FORMAT_D32_FLOAT;
+    depthViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    depthViewDesc.Flags = 0;
+    depthViewDesc.Texture2D.MipSlice = 0;
+
+    VALID(device->CreateDepthStencilView(depthStencilGpuData->mTexture, &depthViewDesc, &depthStencilGpuData->mDepthView));
+
+    depthStencil.SetConfig(*config);
+    depthStencil.SetInternalData(static_cast<void*>(depthStencilGpuData));
+}
+
+void DXTextureFactory::InternalDestroyDepthStencil(Pegasus::Render::DepthStencil& depthStencil)
+{
+    PG_ASSERT(depthStencil.GetInternalData() != nullptr);
+    Pegasus::Render::DXDepthStencilGPUData * depthStencilGPUData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXDepthStencilGPUData, depthStencil.GetInternalData());
+    depthStencilGPUData->mDepthView = nullptr;
+    depthStencilGPUData->mSrvDepth = nullptr;
+    depthStencilGPUData->mSrvStencil = nullptr;
+    depthStencilGPUData->mTexture = nullptr;
+    
+    PG_DELETE(mAllocator, depthStencilGPUData);
+    depthStencil.SetInternalData(nullptr);
+}
+
 void DXTextureFactory::InternalCreateCubeMap(const Pegasus::Render::CubeMapConfig& config, Pegasus::Render::CubeMap& cubeMap)
 {
     ID3D11DeviceContext * context;
@@ -476,6 +564,13 @@ Pegasus::Render::RenderTargetRef Pegasus::Render::CreateRenderTarget(Pegasus::Re
     return rt;
 }
 
+Pegasus::Render::DepthStencilRef Pegasus::Render::CreateDepthStencil(const Pegasus::Render::DepthStencilConfig& config)
+{
+    DepthStencil* ds = PG_NEW(Pegasus::Memory::GetRenderAllocator(), -1, "DepthStencil", Pegasus::Alloc::PG_MEM_PERM) DepthStencil(Pegasus::Memory::GetRenderAllocator());
+    Pegasus::Render::gTextureFactory.InternalCreateDepthStencil(&config, *ds);    
+    return ds;
+}
+
 Pegasus::Render::RenderTargetRef Pegasus::Render::CreateRenderTargetFromCubeMap(Pegasus::Render::CubeFace targetFace, Pegasus::Render::CubeMapRef& cubeMap)
 {
     RenderTarget* rt = PG_NEW(Pegasus::Memory::GetRenderAllocator(), -1, "RenderTarget", Pegasus::Alloc::PG_MEM_PERM) RenderTarget(Pegasus::Memory::GetRenderAllocator());
@@ -512,6 +607,12 @@ template<>
 Pegasus::Render::BasicResource<Pegasus::Render::RenderTargetConfig>::~BasicResource()
 {
     Pegasus::Render::gTextureFactory.InternalDestroyRenderTarget(*this);
+}
+
+template<>
+Pegasus::Render::BasicResource<Pegasus::Render::DepthStencilConfig>::~BasicResource()
+{
+    Pegasus::Render::gTextureFactory.InternalDestroyDepthStencil(*this);
 }
 
 template<>

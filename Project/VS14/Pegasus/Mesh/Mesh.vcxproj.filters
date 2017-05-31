@@ -86,6 +86,18 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Mesh\Generator\CustomGenerator.h">
       <Filter>Include\Generator</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\Mesh\Operator\CombineTransformOperator.h">
+      <Filter>Include\Operator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\Mesh\Operator\MultiCopyOperator.h">
+      <Filter>Include\Operator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\Mesh\Operator\WaveFieldOperator.h">
+      <Filter>Include\Operator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\Mesh\Generator\CylinderGenerator.h">
+      <Filter>Include\Generator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Mesh.cpp">
@@ -125,6 +137,18 @@
       <Filter>Source\Proxy</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Generator\CustomGenerator.cpp">
+      <Filter>Source\Generator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Operator\CombineTransformOperator.cpp">
+      <Filter>Source\Operator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Operator\MultiCopyOperator.cpp">
+      <Filter>Source\Operator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Operator\WaveFieldOperator.cpp">
+      <Filter>Source\Operator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Mesh\Generator\CylinderGenerator.cpp">
       <Filter>Source\Generator</Filter>
     </ClCompile>
   </ItemGroup>

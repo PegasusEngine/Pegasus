@@ -1,0 +1,34 @@
+
+#define LIGHT_POS0 float3(-18.0,58.0,18.0)
+#define LIGHT_POS1 float3(18.0,-58.0,18.0)
+#define LIGHT_POS2 float3(54.0,0.2,34)
+#define LIGHT_POS3 float3(-54.0,-0.2,-54)
+#define LIGHT_POS4 float3(54.0,0.2,-54)
+#define LIGHT_POS5 float3(-54.0,-0.2,54)
+
+float3 computeLight(float3 p, float3 n, float3 lp)
+{
+	float dist = distance(p,lp);
+	float3 dir = (lp - p)/dist;
+	return 0.6*(1.0/dist*dist)*saturate(dot(n,dir));
+}
+
+void main(
+	in float4 p : POSITION0,
+	in float3 normal : NORMAL0,
+	in float2 t : TEXTURE0,
+	out float4 color : SV_Target
+)
+{
+	float3 nNormal = normalize(normal);
+	float3 diff = computeLight(p.xyz, nNormal, LIGHT_POS0);
+	diff += float3(0.5,0.9,0.1)*computeLight(p.xyz, nNormal, LIGHT_POS1);
+	diff += float3(0.8,0.1,0.6)*computeLight(p.xyz, nNormal, LIGHT_POS2);
+	diff += float3(0.5,0.7,0.8)*computeLight(p.xyz, nNormal, LIGHT_POS3);
+	diff += float3(0.5,0.7,0.8)*computeLight(p.xyz, nNormal, LIGHT_POS4);
+	diff += float3(0.5,0.7,0.8)*computeLight(p.xyz, nNormal, LIGHT_POS5);
+	diff += saturate(float3(0.0,0.0,0.1*-nNormal.y+0.1));
+	color = float4(p.xyz,1.0);// float4(diff, 1.0);
+	color = float4(diff, 1.0);
+
+}

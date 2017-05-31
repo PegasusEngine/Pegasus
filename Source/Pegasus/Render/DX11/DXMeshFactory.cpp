@@ -136,7 +136,7 @@ void DXMeshFactory::GenerateMeshGPUData(Pegasus::Mesh::MeshData * nodeData)
     ID3D11Device * device;
     Pegasus::Render::GetDeviceAndContext(&device, &context);
     const Pegasus::Mesh::MeshConfiguration& configuration = nodeData->GetConfiguration();
-    const Pegasus::Mesh::MeshInputLayout*   meshInputLayout = configuration.GetInputLayout();
+    const Pegasus::Mesh::MeshInputLayout&   meshInputLayout = configuration.GetInputLayout();
     Pegasus::Render::DXMeshGPUData*   meshGpuData = GetOrAllocateGPUData(nodeData);
     meshGpuData->mIsIndexed = configuration.GetIsIndexed();
     meshGpuData->mIsIndirect = configuration.GetIsDrawIndirect();
@@ -275,7 +275,7 @@ void DXMeshFactory::GenerateMeshGPUData(Pegasus::Mesh::MeshData * nodeData)
     meshGpuData->mInputLayoutTableCount = 0;
 
     //translate mesh configuration into input layout structure
-    int attributeCount = meshInputLayout->GetAttributeCount();
+    int attributeCount = meshInputLayout.GetAttributeCount();
     PG_ASSERTSTR(attributeCount < Pegasus::Render::DXMeshGPUData::MAX_INPUT_ELEMENTS_DESC, "Exceeding the maximum number of input layout elements. Truncating the rest");
     //sanity check for attribute count
     attributeCount = attributeCount < Pegasus::Render::DXMeshGPUData::MAX_INPUT_ELEMENTS_DESC ? attributeCount : Pegasus::Render::DXMeshGPUData::MAX_INPUT_ELEMENTS_DESC - 1;
@@ -284,7 +284,7 @@ void DXMeshFactory::GenerateMeshGPUData(Pegasus::Mesh::MeshData * nodeData)
     meshGpuData->mInputElementsCount = 0;
     for (int i = 0; i < attributeCount; ++i)
     {
-        const Pegasus::Mesh::MeshInputLayout::AttrDesc& attr = meshInputLayout->GetAttributeDesc(i);
+        const Pegasus::Mesh::MeshInputLayout::AttrDesc& attr = meshInputLayout.GetAttributeDesc(i);
         PG_ASSERT(
             attr.mType < Pegasus::Core::FORMAT_MAX_COUNT &&
             attr.mSemanticIndex < Pegasus::Mesh::MeshInputLayout::SEMANTIC_COUNT

@@ -113,5 +113,39 @@ void MeshInputLayout::RegisterAttribute(AttrDesc& attribute)
     mAttributeDescs[mAttributeCount++] = attribute;
 }
 
+//----------------------------------------------------------------------------------------
+
+bool MeshInputLayout::operator == (const MeshInputLayout& other) const
+{
+    if (mAttributeCount != other.mAttributeCount)
+    {
+        return false;
+    }
+
+    for (int i = 0; i < mAttributeCount; ++i)
+    {
+        if (mAttributeDescs[i] != other.mAttributeDescs[i])
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+//----------------------------------------------------------------------------------------
+
+bool MeshInputLayout::AttrDesc::operator==(const MeshInputLayout::AttrDesc& other) const
+{
+    return    mSemantic == other.mSemantic
+           && mType == other.mType 
+           && mByteSize == other.mByteSize 
+           && mByteOffset == other.mByteOffset 
+           && mSemanticIndex == other.mSemanticIndex 
+           && mStreamIndex == other.mStreamIndex
+           ;
+}
+
+
 }   // namespace Mesh
 }   // namespace Pegasus

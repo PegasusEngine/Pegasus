@@ -31,6 +31,11 @@ MeshOperator::MeshOperator(Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* 
 
     //initialize event user data
     PEGASUS_EVENT_INIT_DISPATCHER
+
+    //default mesh editor layout.
+    MeshInputLayout editorIL;
+    editorIL.GenerateEditorLayout(MeshInputLayout::USE_POSITION | MeshInputLayout::USE_UV | MeshInputLayout::USE_NORMAL);
+    mConfiguration.SetInputLayout(editorIL);
 }
 
 //----------------------------------------------------------------------------------------
@@ -84,14 +89,42 @@ void MeshOperator::ReleaseDataAndPropagate()
 
     Graph::Node::ReleaseDataAndPropagate();
 }
+
 //----------------------------------------------------------------------------------------
 
 Graph::NodeData * MeshOperator::AllocateData() const
 {
-    return PG_NEW(GetNodeAllocator(), -1, "MeshOperator::MeshData", Pegasus::Alloc::PG_MEM_TEMP)
+    return PG_NEW(GetNodeDataAllocator(), -1, "MeshOperator::MeshData", Pegasus::Alloc::PG_MEM_TEMP)
                     MeshData(mConfiguration, GetMode(), GetNodeDataAllocator());
 }
 
+//----------------------------------------------------------------------------------------
+
+void MeshOperator::AddGeneratorInput(MeshGeneratorIn meshGenerator)
+{
+    if (meshGenerator->GetConfiguration() == GetConfiguration())
+    {
+        AddInput(meshGenerator);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Cannot connect mesh generator to mesh operator since configurations vary.");
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void MeshOperator::AddOperatorInput(MeshOperatorIn meshOperator)
+{
+    if (meshOperator->GetConfiguration() == GetConfiguration())
+    {
+        AddInput(meshOperator);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Cannot connect mesh operator to mesh operator since configurations vary.");
+    }
+}
 
 }   // namespace Mesh
 }   // namespace Pegasus

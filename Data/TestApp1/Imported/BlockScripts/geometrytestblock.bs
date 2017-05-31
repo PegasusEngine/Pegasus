@@ -9,7 +9,6 @@ extern CubeRotAxis = float3(0.3, 0.4, 0.01);
 extern SphereLayerCount = 4;
 extern Material_GlitterIntensity = 0.07;
 extern Material_GlitterRepetition = float2( 20.1, 20.1 );
-
 /// extern input block end
 #define MAX_SPHERES 10
 
@@ -61,9 +60,41 @@ verticalInput = GetUniformLocation(compositeProgram,   "inputTexture");
 
 ////---------------------------------------------------------------------
 
+extern CombTranslation = float3(0.0,0.0,0.0);
+extern CombRotation = float4(0.0,0.0,0.0,0.0);
+extern CombScale = float3(1.0,1.0,1.0);
+
 //// SETUP MESHES ////
 cubeMesh = CreateMesh();
-cubeMesh->SetGeneratorInput(CreateMeshGenerator("BoxGenerator"));
+
+
+boxGenerator = CreateMeshGenerator("BoxGenerator");
+boxGenerator.CubeExtends = float3(10.0,10.0,40.50);
+boxGenerator.FaceSubdivision = 45;
+
+cylinder = CreateMeshGenerator("CylinderGenerator");
+cylinder.CylinderCapRadius = 2.0;
+cylinder.CylinderHeight = 16.0;
+cylinder.CylinderRingCuts = 25;
+cylinder.CylinderFaceCount = 25;
+
+waveOperator = CreateMeshOperator("WaveFieldOperator");
+waveOperator.WFFreqAmpOffset0 = float3(3.0,0.3,0.0);
+waveOperator.WFFreqAmpOffset1 = float3(0.1,5.2,-0.9);
+waveOperator.WFFreqAmpOffset2 = float3(5.2,0.1,0.0);
+waveOperator.WFFreqAmpOffset2 = float3(0.5,1.8,3.0);
+waveOperator.WFIsRadial = 1;
+waveOperator->AddGeneratorInput(cylinder);
+
+
+waveOperator2 = CreateMeshOperator("WaveFieldOperator");
+waveOperator2.WFFreqAmpOffset0 = float3(3.0,0.3,0.0);
+waveOperator2.WFFreqAmpOffset1 = float3(4.1,5.2,-0.9);
+//waveOperator2.WFIsRadial = 1;
+waveOperator2->AddOperatorInput(waveOperator);
+
+
+cubeMesh->SetOperatorInput(waveOperator2);
 
 quad = CreateMesh();
 quad->SetGeneratorInput(CreateMeshGenerator("QuadGenerator"));
@@ -105,6 +136,7 @@ tempTarget3 = CreateRenderTarget( tmpConfig );
 ////---------------------------------------------------------------------
 gState = StateStruct();
 gSpeakerState = SpeakerStateStruct();
+
 
 int Timeline_Update(info : UpdateInfo)
 {

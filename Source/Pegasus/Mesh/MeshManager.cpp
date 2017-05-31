@@ -11,21 +11,64 @@
 
 #include "Pegasus/PegasusAssetTypes.h"
 #include "Pegasus/Mesh/MeshManager.h"
+#include "Pegasus/Mesh/Operator/CombineTransformOperator.h"
+#include "Pegasus/Mesh/Operator/MultiCopyOperator.h"
+#include "Pegasus/Mesh/Operator/WaveFieldOperator.h"
 #include "Pegasus/Mesh/Generator/QuadGenerator.h"
 #include "Pegasus/Mesh/Generator/BoxGenerator.h"
 #include "Pegasus/Mesh/Generator/IcosphereGenerator.h"
 #include "Pegasus/Mesh/Generator/CustomGenerator.h"
+#include "Pegasus/Mesh/Generator/CylinderGenerator.h"
 #include "Pegasus/Mesh/IMeshFactory.h"
 #include "Pegasus/Graph/NodeManager.h"
+#include "Pegasus/Utils/String.h"
 
 namespace Pegasus {
 namespace Mesh {
 
+#if PEGASUS_ENABLE_PROXIES
+#define REGISTER_MESH_TYPE_NAME(className, bucket)  RegisterInNameSet(className, bucket)
+#else
+#define REGISTER_MESH_TYPE_NAME(className, bucket) 
+#endif
 
 //! Macro to register a mesh node, used only in the \a RegisterAllMeshNodes() function
 //! \param className Class name of the mesh node to register
 #define REGISTER_MESH_NODE(className) mNodeManager->RegisterNode(#className, className::CreateNode)
 
+#define REGISTER_MESH_NODE_GENERATOR(className) mNodeManager->RegisterNode(#className, className::CreateNode);REGISTER_MESH_TYPE_NAME(#className,mGeneratorTypeNameHashes)
+
+#define REGISTER_MESH_NODE_OPERATOR(className) mNodeManager->RegisterNode(#className, className::CreateNode);REGISTER_MESH_TYPE_NAME(#className,mOperatorTypeNameHashes)
+
+//----------------------------------------------------------------------------------------
+
+#if PEGASUS_ENABLE_PROXIES
+bool ExistsInNameSet(const char* name, const Utils::Vector<unsigned int>& nameSet)
+{
+    unsigned int nameHash = Utils::HashStr(name);
+    for (unsigned i = 0; i < nameSet.GetSize(); ++i)
+    {
+        if (nameHash == nameSet[i])
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+//----------------------------------------------------------------------------------------
+
+void RegisterInNameSet(const char* name, Utils::Vector<unsigned int>& nameSet)
+{
+    unsigned int nameHash = Utils::HashStr(name);
+    bool exists = ExistsInNameSet(name, nameSet);
+    PG_ASSERTSTR(!exists, "Node %s already exists in registered node type pool.", name);
+    nameSet.PushEmpty() = nameHash;
+}
+#endif
+
+//----------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------
     
 MeshManager::MeshManager(Graph::NodeManager * nodeManager, IMeshFactory * factory)
@@ -57,11 +100,21 @@ MeshManager::~MeshManager()
 
 //----------------------------------------------------------------------------------------
 
-void MeshManager::RegisterMeshNode(const char * className, Graph::Node::CreateNodeFunc createNodeFunc)
+void MeshManager::RegisterMeshNode(const char * className, Graph::Node::CreateNodeFunc createNodeFunc, bool isOperator)
 {
     if (mNodeManager != nullptr)
     {
         mNodeManager->RegisterNode(className, createNodeFunc);
+#if PEGASUS_ENABLE_PROXIES
+        if (isOperator)
+        {
+            RegisterInNameSet(className, mOperatorTypeNameHashes);
+        }
+        else
+        {
+            RegisterInNameSet(className, mGeneratorTypeNameHashes);
+        }
+#endif
     }
     else
     {
@@ -94,6 +147,13 @@ MeshGeneratorReturn MeshManager::CreateMeshGeneratorNode(const char * className)
     {
         //! \todo Check that the class corresponds to a generator mesh
 
+#if PEGASUS_ENABLE_PROXIES
+        if (!ExistsInNameSet(className, mGeneratorTypeNameHashes))
+        {
+            PG_LOG('ERR_', "Attempting to create an invalid mesh opertor node %s.", className);
+            return nullptr;
+        }
+#endif
         MeshGeneratorRef meshGenerator = mNodeManager->CreateNode(className);
 #if PEGASUS_USE_EVENTS
         //propagate event listener
@@ -111,15 +171,20 @@ MeshGeneratorReturn MeshManager::CreateMeshGeneratorNode(const char * className)
 
 //----------------------------------------------------------------------------------------
 
-MeshOperatorReturn MeshManager::CreateMeshOperatorNode(const char * className,
-                                                                const MeshConfiguration & configuration)
+MeshOperatorReturn MeshManager::CreateMeshOperatorNode(const char * className)
 {
     if (mNodeManager != nullptr)
     {
-        //! \todo Check that the class corresponds to an operator mesh
 
+#if PEGASUS_ENABLE_PROXIES
+        if (!ExistsInNameSet(className, mOperatorTypeNameHashes))
+        {
+            PG_LOG('ERR_', "Attempting to create an invalid mesh opertor node %s.", className);
+            return nullptr;
+        }
+#endif
         MeshOperatorRef meshOperator = mNodeManager->CreateNode(className);
-        meshOperator->SetConfiguration(configuration);
+
 #if PEGASUS_USE_EVENTS
         //propagate event listener
         meshOperator->SetEventListener(mEventListener);
@@ -136,6 +201,7 @@ MeshOperatorReturn MeshManager::CreateMeshOperatorNode(const char * className,
 
 //----------------------------------------------------------------------------------------
 
+
 void MeshManager::RegisterAllMeshNodes()
 {
     PG_ASSERTSTR(mNodeManager != nullptr, "Enable to register the mesh nodes because the mesh manager is not linke to the node manager");
@@ -143,13 +209,17 @@ void MeshManager::RegisterAllMeshNodes()
     // Register the output mesh node
     REGISTER_MESH_NODE(Mesh);
 
+    // Register the operator nodes
+    REGISTER_MESH_NODE_OPERATOR(CombineTransformOperator);
+    REGISTER_MESH_NODE_OPERATOR(MultiCopyOperator);
+    REGISTER_MESH_NODE_OPERATOR(WaveFieldOperator);
+
     // Register the generator nodes
-    // IMPORTANT! Add here every mesh generator node that is created,
-    //            and update the list of #includes above
-    REGISTER_MESH_NODE(QuadGenerator);
-    REGISTER_MESH_NODE(BoxGenerator);
-    REGISTER_MESH_NODE(IcosphereGenerator);
-    REGISTER_MESH_NODE(CustomGenerator);
+    REGISTER_MESH_NODE_GENERATOR(QuadGenerator);
+    REGISTER_MESH_NODE_GENERATOR(BoxGenerator);
+    REGISTER_MESH_NODE_GENERATOR(IcosphereGenerator);
+    REGISTER_MESH_NODE_GENERATOR(CustomGenerator);
+    REGISTER_MESH_NODE_GENERATOR(CylinderGenerator);
 
 }
 

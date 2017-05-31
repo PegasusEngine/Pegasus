@@ -56,6 +56,7 @@ void Mesh::SetOperatorInput(MeshOperatorIn meshOperator)
 {
     RemoveAllInputs();
     AddInput(meshOperator);
+    SetConfiguration(meshOperator->GetConfiguration());
 }
 
 //----------------------------------------------------------------------------------------
@@ -65,7 +66,7 @@ MeshDataReturn Mesh::GetUpdatedMeshData()
     PG_ASSERT(mFactory);
     bool updated = false;
     MeshDataRef meshData = Graph::OutputNode::GetUpdatedData(updated);
-    if (meshData->IsGPUDataDirty())
+    if (meshData != nullptr && meshData->IsGPUDataDirty())
     {
 #if PEGASUS_ENABLE_DETAILED_LOG
 #if PEGASUS_ENABLE_PROXIES

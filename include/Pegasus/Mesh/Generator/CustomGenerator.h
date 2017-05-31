@@ -9,8 +9,8 @@
 //! \date	September 7th 2016
 //! \brief	Custom generator
 
-#ifndef PEGASUS_GRID_GENERATOR_H
-#define PEGASUS_GRID_GENERATOR_H
+#ifndef PEGASUS_GRID_CUSTOM_GENERATOR_H
+#define PEGASUS_GRID_CUSTOM_GENERATOR_H
 
 #include "Pegasus/Mesh/MeshGenerator.h"
 

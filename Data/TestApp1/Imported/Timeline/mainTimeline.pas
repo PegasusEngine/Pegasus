@@ -8,7 +8,26 @@
     lanes : [{
             type : Lane,
             name : "",
-            Blocks : []
+            Blocks : [{
+                    type : Block,
+                    props : {
+                        Beat : 0,
+                        Duration : 1024,
+                        Name : TempleModel,
+                        Color : [128, 128, 128],
+                        _o_p_ : {
+                            modelPosition : [0.000000, 0.000000, 0.000000],
+                            modelQuaternion : [0.000000, 0.000000, 1.000000, 0.000000],
+                            modelScale : [1.000000, 1.000000, 1.000000],
+                            __schema__ : {
+                                sizetypes : [327692, 393232, 327692],
+                                names : [modelPosition, modelQuaternion, modelScale],
+                                typeNames : [float3, float4, float3]
+                            }
+                        },
+                        script : {@BlockScripts/TempleModel.bs}
+                    }
+                }]
         }, {
             type : Lane,
             name : "",
@@ -59,7 +78,7 @@
             Blocks : [{
                     type : TextureTestBlock,
                     props : {
-                        Beat : 2708,
+                        Beat : 3381,
                         Duration : 2304,
                         Name : "",
                         Color : [29, 99, 10],
@@ -78,7 +97,7 @@
             Blocks : [{
                     type : FractalCube2Block,
                     props : {
-                        Beat : 4172,
+                        Beat : 4845,
                         Duration : 1024,
                         Name : "",
                         Color : [58, 140, 249],
@@ -97,7 +116,31 @@
             Blocks : [{
                     type : Block,
                     props : {
-                        Beat : 0,
+                        Beat : 1323,
+                        Duration : 1024,
+                        Name : Test2,
+                        Color : [0, 100, 100],
+                        _o_p_ : {
+                            SphereLayerCount : 4,
+                            SphereRadius : 0.450000,
+                            Material_GlitterIntensity : 0.070000,
+                            CubeRotAxis : [0.300000, 0.400000, 0.010000],
+                            Material_GlitterRepetition : [20.100000, 20.100000],
+                            CombTranslation : [0.000000, 0.000000, 0.000000],
+                            CombRotation : [1.000000, 0.000000, 0.000000, 0.000000],
+                            CombScale : [1.000000, 1.000000, 1.000000],
+                            __schema__ : {
+                                sizetypes : [196612, 327692, 65540, 196612, 262152, 327692, 393232, 327692],
+                                names : [SphereRadius, CubeRotAxis, SphereLayerCount, Material_GlitterIntensity, Material_GlitterRepetition, CombTranslation, CombRotation, CombScale],
+                                typeNames : [float, float3, int, float, float2, float3, float4, float3]
+                            }
+                        },
+                        script : {@BlockScripts/geometrytestblock.bs}
+                    }
+                }, {
+                    type : Block,
+                    props : {
+                        Beat : 2533,
                         Duration : 1024,
                         Name : Test,
                         Color : [228, 207, 245],
@@ -115,27 +158,6 @@
                         },
                         script : {@BlockScripts/basketball.bs}
                     }
-                }, {
-                    type : Block,
-                    props : {
-                        Beat : 2048,
-                        Duration : 1024,
-                        Name : Test2,
-                        Color : [0, 100, 100],
-                        _o_p_ : {
-                            SphereLayerCount : 4,
-                            SphereRadius : 0.450000,
-                            Material_GlitterIntensity : 0.070000,
-                            CubeRotAxis : [0.300000, 0.400000, 0.010000],
-                            Material_GlitterRepetition : [20.100000, 20.100000],
-                            __schema__ : {
-                                sizetypes : [196612, 327692, 65540, 196612, 262152],
-                                names : [SphereRadius, CubeRotAxis, SphereLayerCount, Material_GlitterIntensity, Material_GlitterRepetition],
-                                typeNames : [float, float3, int, float, float2]
-                            }
-                        },
-                        script : {@BlockScripts/geometrytestblock.bs}
-                    }
                 }]
         }, {
             type : Lane,
@@ -143,7 +165,7 @@
             Blocks : [{
                     type : FractalCubeBlock,
                     props : {
-                        Beat : 4098,
+                        Beat : 4771,
                         Duration : 768,
                         Name : "",
                         Color : [239, 248, 111],
@@ -162,7 +184,7 @@
             Blocks : [{
                     type : Block,
                     props : {
-                        Beat : 1010,
+                        Beat : 1879,
                         Duration : 1024,
                         Name : BlockSegment,
                         Color : [144, 244, 123],
@@ -189,14 +211,14 @@
     properties : {
         Name : "",
         _o_p_ : {
-            signature : 1,
+            EnableTerrain : 0,
             Fov : 2.500000,
-            CamPos : [0.000000, 12.000000, 0.000000],
+            CamPos : [0.000000, -1.000000, -16.000000],
             CamDir : [0.000000, -0.100000, 1.000000],
             __schema__ : {
-                sizetypes : [65540, 327692, 327692, 196612],
-                names : [signature, CamPos, CamDir, Fov],
-                typeNames : [int, float3, float3, float]
+                sizetypes : [327692, 327692, 196612, 1],
+                names : [CamPos, CamDir, Fov, EnableTerrain],
+                typeNames : [float3, float3, float, bool]
             }
         }
     },

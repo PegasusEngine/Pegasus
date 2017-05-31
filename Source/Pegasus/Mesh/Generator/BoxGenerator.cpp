@@ -18,25 +18,32 @@ namespace Mesh {
 //! Property implementations
 BEGIN_IMPLEMENT_PROPERTIES(BoxGenerator)
     IMPLEMENT_PROPERTY(BoxGenerator, CubeExtends)
+    IMPLEMENT_PROPERTY(BoxGenerator, FaceSubdivision)
+    IMPLEMENT_PROPERTY(BoxGenerator, EnableFace0)
+    IMPLEMENT_PROPERTY(BoxGenerator, EnableFace1)
+    IMPLEMENT_PROPERTY(BoxGenerator, EnableFace2)
+    IMPLEMENT_PROPERTY(BoxGenerator, EnableFace3)
+    IMPLEMENT_PROPERTY(BoxGenerator, EnableFace4)
+    IMPLEMENT_PROPERTY(BoxGenerator, EnableFace5)
 END_IMPLEMENT_PROPERTIES(BoxGenerator)
 
 //----------------------------------------------------------------------------------------
 
 BoxGenerator::BoxGenerator(Pegasus::Alloc::IAllocator* nodeAllocator, 
               Pegasus::Alloc::IAllocator* nodeDataAllocator) 
-: MeshGenerator(nodeAllocator, nodeDataAllocator)
+: MeshGenerator(nodeAllocator, nodeDataAllocator), mVertsPerFace(0)
 {
     //INIT properties
     BEGIN_INIT_PROPERTIES(BoxGenerator)
         INIT_PROPERTY(CubeExtends)
+        INIT_PROPERTY(FaceSubdivision)
+        INIT_PROPERTY(EnableFace0)
+        INIT_PROPERTY(EnableFace1)
+        INIT_PROPERTY(EnableFace2)
+        INIT_PROPERTY(EnableFace3)
+        INIT_PROPERTY(EnableFace4)
+        INIT_PROPERTY(EnableFace5)
     END_INIT_PROPERTIES()
-
-    mConfiguration.SetIsIndexed(true);
-
-    mConfiguration.SetMeshPrimitiveType(MeshConfiguration::TRIANGLE);
-
-    //this mesh only contains position UVs and normals
-    mConfiguration.GetInputLayout()->GenerateEditorLayout(MeshInputLayout::USE_POSITION | MeshInputLayout::USE_UV | MeshInputLayout::USE_NORMAL);
 }
 
 //----------------------------------------------------------------------------------------
@@ -51,72 +58,116 @@ void BoxGenerator::GenerateData()
 {
     using namespace Pegasus::Math;
     
-   PEGASUS_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::BEGIN);
+    PEGASUS_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::BEGIN);
+
+    unsigned int faceEnableMask =
+                     (GetEnableFace0() ? 1 : 0) 
+                   |((GetEnableFace1() ? 1 : 0) << 1)
+                   |((GetEnableFace2() ? 1 : 0) << 2)
+                   |((GetEnableFace3() ? 1 : 0) << 3)
+                   |((GetEnableFace4() ? 1 : 0) << 4)
+                   |((GetEnableFace5() ? 1 : 0) << 5)
+    ;
     
     MeshDataRef meshData = GetData();
     PG_ASSERT(meshData != nullptr); 
-    meshData->AllocateVertexes(24);
-
-    struct Vertex
+    mVertsPerFace = 4;
+    int subdivisionCount = 1;
+    if (GetFaceSubdivision() >= 1)
     {
-        Vec4 position; 
-        Vec3 normal;        
-        Vec2 uv; 
+        mVertsPerFace = GetFaceSubdivision() + 1;
+        mVertsPerFace *= mVertsPerFace;
+        subdivisionCount = GetFaceSubdivision();
+    }
+    meshData->AllocateVertexes(6 /*sides*/ * (mVertsPerFace));
+
+    StdVertex * stream = meshData->GetStream<StdVertex>(0);
+
+    static const int sFaceSwizzles[][3] =
+    { /*x  y  z */
+        { 0, 1, 2 },
+        { 0, 1, 2 },
+        { 2, 0, 1 },
+        { 2, 0, 1 },
+        { 1, 2, 0 },
+        { 1, 2, 0 }
     };
 
-    Vertex * stream = meshData->GetStream<Vertex>(0);
-
-    //use bits to count the permutation of axis coordinates that change.
-	// generate a cube based on this
-    for (int i = 0; i < 24; ++i)
+    //generate front face (XY,Z=1)
+    int vertCountInt = subdivisionCount + 1;
+    float vertCountFloat = static_cast<float>(vertCountInt);
+    float len = static_cast<float>(subdivisionCount);
+    float halfLen = 0.5f*len;
+    float invHalfLen = 1.0f / halfLen;
+    int currIdx = 0;
+    int faceOffsets[6];
+    for (int face = 0; face < 6; ++face)
     {
-		// 2 coordinates change, and one remains constant (the face)
-        float v1 = (float) ((i & 1) << 1) - 1;
-        float v2 = (float)  (i & 2) - 1;
-        float face = (float)  (((i & 4) - 2) >> 1);
-
-		//precompute conditional gates
-        int g8 = (i >= 8) ? 1 : 0;
-        int ng8 = g8 ^ 1;
-        int b8a16 = (i >= 8 && i < 16) ? 1 : 0;
-        int nb8a16 = b8a16 ^ 1;
-        int g16 = (i >= 16) ? 1 : 0;
-        int ng16 = g16 ^ 1;
-
-		//combine
-        float z =  v2*g8 + face*ng8;
-        float y =  v2 * ng8 + v1 * g16 - (face * b8a16); //use a negative face here to invert the logic.
-        float x = face * g16 + v1 * ng16;
-        stream[i].position = Vec4(x,y,z,1); 
-        stream[i].normal = Vec3 (face * g16, -face * b8a16, face * ng8);
-		
-		//set the uvs by broadening the area that each face can cover the most
-        stream[i].uv = Vec2(
-             (v1 + 1.0f)*0.5f + (i / 8), 
-             (v2 + 1.0f)*0.5f + (face + 1.0f)*0.5f
-        ) / 3.0f;
+        if (!((faceEnableMask >> face) & 1))
+        {
+            continue;
+        }
+        faceOffsets[face] = currIdx;
+        int i = 0;
+        float sign = (face % 2) == 0 ? 1.0f : -1.0f;
+        for (float r = 0.0f; r < vertCountFloat; r += 1.0f, ++i)
+        {
+            int j = 0;
+            for (float c = 0.0f; c < vertCountFloat; c += 1.0f, ++j)
+            {
+                float x = invHalfLen*(c - halfLen);
+                float y = -invHalfLen*(r - halfLen);
+                Vec4 pos(x,y,1.0f,1.0f);
+                Vec3 norm(0.0f,0.0f,1.0f);
+                stream[currIdx].position = Vec4(sign*Vec3(pos.v[sFaceSwizzles[face][0]], pos.v[sFaceSwizzles[face][1]], pos.v[sFaceSwizzles[face][2]]) * GetCubeExtends(),1.0f);
+                stream[currIdx].normal = sign*Vec3(norm.v[sFaceSwizzles[face][0]], norm.v[sFaceSwizzles[face][1]], norm.v[sFaceSwizzles[face][2]]);
+                stream[currIdx].uv = Vec2(x,y)*0.5f + 0.5f;
+                currIdx++;
+            }
+        }
     }
 
 	//set the index data
-    meshData->AllocateIndexes(36);
+    const short indexesPerFace = 6;
+    meshData->AllocateIndexes(indexesPerFace * subdivisionCount * subdivisionCount * 6/*faces*/);
     unsigned short * idx = meshData->GetIndexBuffer();
-    for (unsigned short f = 0; f < 6; ++f)
+    int indexOffset = 0;
+    for (unsigned short face = 0; face < 6; ++face)
     {
-        unsigned short a = f * 4;
-        unsigned short b = a + 1;
-        unsigned short c = b + 1;
-        unsigned short d = c + 1;
-
-		//flip depending on the face (if its positive or negative)
-		//faces are stored as negative, positive etc
-        idx[f*6]     = a;
-        idx[f*6 + 1] = f % 2 ? b : c;
-        idx[f*6 + 2] = f % 2 ? c : b;
-        
-        idx[f*6 + 3] = b;
-        idx[f*6 + 4] = f % 2 ? d : c;
-        idx[f*6 + 5] = f % 2 ? c : d;
-
+        if (!((faceEnableMask >> face) & 1))
+        {
+            continue;
+        }
+        for (int j = 0; j < subdivisionCount; ++j)
+        {
+            for (int i = 0; i < subdivisionCount; ++i)
+            {
+                int offset = faceOffsets[face] + i * vertCountInt + j;
+                const unsigned short offsetS = (unsigned short)offset;
+                const unsigned short a = offsetS;
+                const unsigned short b = a + 1;
+                const unsigned short c = a + (unsigned short)vertCountInt;
+                const unsigned short d = c + 1;
+                if ((face % 2) == 0)
+                {
+                    idx[indexOffset++] = a;
+                    idx[indexOffset++] = c;
+                    idx[indexOffset++] = d;
+                    idx[indexOffset++] = d;
+                    idx[indexOffset++] = b;
+                    idx[indexOffset++] = a;
+                }
+                else
+                {
+                    idx[indexOffset++] = a;
+                    idx[indexOffset++] = b;
+                    idx[indexOffset++] = d;
+                    idx[indexOffset++] = d;
+                    idx[indexOffset++] = c;
+                    idx[indexOffset++] = a;
+                }
+            }
+        }
     }
 
     PEGASUS_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::END_SUCCESS);
