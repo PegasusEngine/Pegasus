@@ -8,6 +8,14 @@
     lanes : [{
             type : Lane,
             name : "",
+            Blocks : []
+        }, {
+            type : Lane,
+            name : "",
+            Blocks : []
+        }, {
+            type : Lane,
+            name : "",
             Blocks : [{
                     type : Block,
                     props : {
@@ -28,14 +36,6 @@
                         script : {@BlockScripts/TempleModel.bs}
                     }
                 }]
-        }, {
-            type : Lane,
-            name : "",
-            Blocks : []
-        }, {
-            type : Lane,
-            name : "",
-            Blocks : []
         }, {
             type : Lane,
             name : "",
@@ -213,7 +213,7 @@
         _o_p_ : {
             EnableTerrain : 0,
             Fov : 2.500000,
-            CamPos : [0.000000, -1.000000, -16.000000],
+            CamPos : [-5.000000, 29.000000, -122.000000],
             CamDir : [0.000000, -0.100000, 1.000000],
             __schema__ : {
                 sizetypes : [327692, 327692, 196612, 1],

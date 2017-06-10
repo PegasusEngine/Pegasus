@@ -15,145 +15,151 @@ modelStateUniform = GetUniformLocation(templeBrickMat,"uniformState");
 modelStateBuffer = CreateUniformBuffer(sizeof(ModelState));
 
 //meshes
-
-//base
-topExtends1 = float2(12.0,12.0);
-topExtends2 = float2(11.2,11.2);
-bottomExtends = float2(14.0,14.0);
-baseHeight = 0.1;
-wallsHeight = 2.3;
-wallsWidth = 4.0;
-wallsSpacing = wallsWidth * 1.7;
-roofPartHeight1 = 1.0;
-
-
-/**** Base ****/
-/************************************/
-box0 = CreateMeshGenerator("BoxGenerator");
-box0.EnableFace5 = 0;
-box0.CubeExtends = float3(bottomExtends.x,baseHeight,bottomExtends.y);
-/************************************/
-/************************************/
-
-/**** Body ****/
-/************************************/
-box1 = CreateMeshGenerator("BoxGenerator");
-box1.CubeExtends = float3(wallsWidth,wallsHeight,wallsWidth);
-box1.EnableFace4 = 0;
-box1.EnableFace5 = 0;
-
-combineCorners = CreateMeshOperator("CombineTransformOperator");
-combineCorners->AddGeneratorInput(box1);
-combineCorners->AddGeneratorInput(box1);
-combineCorners->AddGeneratorInput(box1);
-combineCorners->AddGeneratorInput(box1);
-combineCorners.Translation0 = float3(wallsSpacing,wallsHeight+baseHeight,wallsSpacing);
-combineCorners.Translation1 = float3(wallsSpacing,wallsHeight+baseHeight,-wallsSpacing);
-combineCorners.Translation2 = float3(-wallsSpacing,wallsHeight+baseHeight,wallsSpacing);
-combineCorners.Translation3 = float3(-wallsSpacing,wallsHeight+baseHeight,-wallsSpacing);
-/************************************/
-/************************************/
-
-/**** Roof ****/
-/************************************/
-roofBox1 = CreateMeshGenerator("BoxGenerator");
-roofBox1.CubeExtends = float3(topExtends1.x, roofPartHeight1, topExtends1.y);
-
-roofBox2 = CreateMeshGenerator("BoxGenerator");
-roofBox2.CubeExtends = float3(topExtends2.x, roofPartHeight1, topExtends2.y);
-roofBox2.EnableFace4 = 0;
-roofBox2.EnableFace5 = 0;
-
-roofBox1YOffset = baseHeight+roofPartHeight1+2.0*wallsHeight;
-roofBox2YOffset = roofBox1YOffset+2.0*roofPartHeight1;
-combineRoof = CreateMeshOperator("CombineTransformOperator");
-combineRoof->AddGeneratorInput(roofBox1);
-combineRoof.Translation0 = float3(0.0,roofBox1YOffset,0.0);
-combineRoof->AddGeneratorInput(roofBox2);
-combineRoof.Translation1 = float3(0.0,roofBox2YOffset,0.0);
-combineRoof->AddGeneratorInput(roofBox1);
-combineRoof.Translation2 = float3(0.0,roofBox2YOffset+2.0*roofPartHeight1,0.0);
-
-/************************************/
-/************************************/
-
-/**** Pyramid ****/
-/************************************/
-
-pyramidSeedHeight = 2.0;
-pyramidSeed = CreateMeshGenerator("BoxGenerator");
-pyramidSeed.CubeExtends = float3(16.0,pyramidSeedHeight,16.0);
-pyramidSeed.FaceSubdivision = 8;
-pyramidSeed.EnableFace5 = 0;
-
-pyramidSeedDeformed = CreateMeshOperator("WaveFieldOperator");
-pyramidSeedDeformed.WFFreqFieldQuaternion = float4(1.0,0.0,0.0,3.151416*0.5);
-pyramidSeedDeformed.WFIsRadial = 1;
-pyramidSeedDeformed.WFFreqAmpOffset0 = float3(0.1,8.0,0.0);
-pyramidSeedDeformed->AddGeneratorInput(pyramidSeed);
-
-pyramidMultiCopy = CreateMeshOperator("MultiCopyOperator");
-pyramidMultiCopy->AddOperatorInput(pyramidSeedDeformed);
-pyramidMultiCopy.MultiCopyFactor = 8;
-pyramidMultiCopy.TranslationOffset = float3(0.0,-3.0,0.0);
-pyramidMultiCopy.ScaleOffset = float3(1.2,1.2,1.2);
-
-stairsHeight = 0.7;
-stairsWidth = 8.0;
-stairBox = CreateMeshGenerator("BoxGenerator");
-stairBox.EnableFace1 = 0;
-stairBox.EnableFace2 = 0;
-stairBox.EnableFace3 = 0;
-stairBox.EnableFace5 = 0;
-stairBox.CubeExtends = float3(stairsWidth,stairsHeight,2.0);
-
-stairHandle = CreateMeshGenerator("BoxGenerator");
-
-stairRepeat = CreateMeshOperator("MultiCopyOperator");
-stairRepeat->AddGeneratorInput(stairBox);
-stairRepeat.MultiCopyFactor = 31;
-stairRepeat.TranslationOffset = float3(0.0,-2.0*stairsHeight,1.8);
-
-handleOffset = float3(stairsWidth,-25.0,24.0);
-handleScale = float3(0.6,8.0,36.0);
-
-stairObjectPart = CreateMeshOperator("CombineTransformOperator");
-stairObjectPart->AddOperatorInput(stairRepeat);
-stairObjectPart->AddGeneratorInput(stairHandle);
-stairObjectPart.Translation1 = handleOffset;
-stairObjectPart.Scale1 = handleScale;
-stairObjectPart.QuaternionRot1 = float4(1.0,0.0,0.0,3.141516*0.21);
-stairObjectPart->AddGeneratorInput(stairHandle);
-stairObjectPart.Scale2 = stairObjectPart.Scale1;
-stairObjectPart.Translation2 = handleOffset*float3(-1.0,1.0,1.0);
-stairObjectPart.QuaternionRot2 = stairObjectPart.QuaternionRot1;
+Mesh CreateTempleMesh()
+{
+	//base
+	verticalOffset = 48.0;
+	topExtends1 = float2(12.0,12.0);
+	topExtends2 = float2(11.2,11.2);
+	bottomExtends = float2(14.0,14.0);
+	baseHeight = 0.1;
+	wallsHeight = 2.3;
+	wallsWidth = 4.0;
+	wallsSpacing = wallsWidth * 1.7;
+	roofPartHeight1 = 1.0;
 
 
+	/**** Base ****/
+	/************************************/
+	box0Seed = CreateMeshGenerator("BoxGenerator");
+	box0Seed.EnableFace5 = 0;
+	box0Seed.CubeExtends = float3(bottomExtends.x,baseHeight,bottomExtends.y);
+	box0 = CreateMeshOperator("CombineTransformOperator");
+	box0.Translation0 = float3(0.0,verticalOffset,0.0);
+	box0->AddGeneratorInput(box0Seed);
+	/************************************/
+	/************************************/
 
+	/**** Body ****/
+	/************************************/
+	box1 = CreateMeshGenerator("BoxGenerator");
+	box1.CubeExtends = float3(wallsWidth,wallsHeight,wallsWidth);
+	box1.EnableFace4 = 0;
+	box1.EnableFace5 = 0;
 
-pyramidPart = CreateMeshOperator("CombineTransformOperator");
-pyramidPart->AddOperatorInput(pyramidMultiCopy);
-pyramidPart.Translation0 = float3(0.0,-baseHeight-pyramidSeedHeight,0.0);
-pyramidPart->AddOperatorInput(stairObjectPart);
-pyramidPart.Translation1 = float3(0.0,-baseHeight-pyramidSeedHeight,1.2*bottomExtends.y);
+	combineCorners = CreateMeshOperator("CombineTransformOperator");
+	combineCorners->AddGeneratorInput(box1);
+	combineCorners->AddGeneratorInput(box1);
+	combineCorners->AddGeneratorInput(box1);
+	combineCorners->AddGeneratorInput(box1);
+	combineCorners.Translation0 = float3(wallsSpacing,verticalOffset+wallsHeight+baseHeight,wallsSpacing);
+	combineCorners.Translation1 = float3(wallsSpacing,verticalOffset+wallsHeight+baseHeight,-wallsSpacing);
+	combineCorners.Translation2 = float3(-wallsSpacing,verticalOffset+wallsHeight+baseHeight,wallsSpacing);
+	combineCorners.Translation3 = float3(-wallsSpacing,verticalOffset+wallsHeight+baseHeight,-wallsSpacing);
+	/************************************/
+	/************************************/
 
+	/**** Roof ****/
+	/************************************/
+	roofBox1 = CreateMeshGenerator("BoxGenerator");
+	roofBox1.CubeExtends = float3(topExtends1.x, roofPartHeight1, topExtends1.y);
 
-/************************************/
-/************************************/
+	roofBox2 = CreateMeshGenerator("BoxGenerator");
+	roofBox2.CubeExtends = float3(topExtends2.x, roofPartHeight1, topExtends2.y);
+	roofBox2.EnableFace4 = 0;
+	roofBox2.EnableFace5 = 0;
 
+	roofBox1YOffset = verticalOffset+baseHeight+roofPartHeight1+2.0*wallsHeight;
+	roofBox2YOffset = roofBox1YOffset+2.0*roofPartHeight1;
+	combineRoof = CreateMeshOperator("CombineTransformOperator");
+	combineRoof->AddGeneratorInput(roofBox1);
+	combineRoof.Translation0 = float3(0.0,roofBox1YOffset,0.0);
+	combineRoof->AddGeneratorInput(roofBox2);
+	combineRoof.Translation1 = float3(0.0,roofBox2YOffset,0.0);
+	combineRoof->AddGeneratorInput(roofBox1);
+	combineRoof.Translation2 = float3(0.0,roofBox2YOffset+2.0*roofPartHeight1,0.0);
 
-/**** Combine ****/
-/************************************/
-combineBase = CreateMeshOperator("CombineTransformOperator");
-combineBase->AddGeneratorInput(box0);
-combineBase->AddOperatorInput(combineCorners);
-combineBase->AddOperatorInput(combineRoof);
-combineBase->AddOperatorInput(pyramidPart);
+	/************************************/
+	/************************************/
 
-templeMesh = CreateMesh();
-templeMesh->SetOperatorInput(combineBase);
-/************************************/
-//templeMesh->SetGeneratorInput(box1);
+	/**** Pyramid ****/
+	/************************************/
+
+	pyramidSeedHeight = 2.0;
+	pyramidSeed = CreateMeshGenerator("BoxGenerator");
+	pyramidSeed.CubeExtends = float3(16.0,pyramidSeedHeight,16.0);
+	pyramidSeed.FaceSubdivision = 8;
+	pyramidSeed.EnableFace5 = 0;
+
+	pyramidSeedDeformed = CreateMeshOperator("WaveFieldOperator");
+	pyramidSeedDeformed.WFFreqFieldQuaternion = float4(1.0,0.0,0.0,3.151416*0.5);
+	pyramidSeedDeformed.WFIsRadial = 1;
+	pyramidSeedDeformed.WFFreqAmpOffset0 = float3(0.1,8.0,0.0);
+	pyramidSeedDeformed->AddGeneratorInput(pyramidSeed);
+
+	pyramidMultiCopy = CreateMeshOperator("MultiCopyOperator");
+	pyramidMultiCopy->AddOperatorInput(pyramidSeedDeformed);
+	pyramidMultiCopy.MultiCopyFactor = 8;
+	pyramidMultiCopy.TranslationOffset = float3(0.0,-3.0,0.0);
+	pyramidMultiCopy.ScaleOffset = float3(1.2,1.2,1.2);
+
+	stairsHeight = 0.7;
+	stairsWidth = 8.0;
+	stairBox = CreateMeshGenerator("BoxGenerator");
+	stairBox.EnableFace1 = 0;
+	stairBox.EnableFace2 = 0;
+	stairBox.EnableFace3 = 0;
+	stairBox.EnableFace5 = 0;
+	stairBox.CubeExtends = float3(stairsWidth,stairsHeight,2.0);
+
+	stairHandle = CreateMeshGenerator("BoxGenerator");
+
+	stairRepeat = CreateMeshOperator("MultiCopyOperator");
+	stairRepeat->AddGeneratorInput(stairBox);
+	stairRepeat.MultiCopyFactor = 31;
+	stairRepeat.TranslationOffset = float3(0.0,-2.0*stairsHeight,1.8);
+
+	handleOffset = float3(stairsWidth,verticalOffset-25.0,24.0);
+	handleScale = float3(0.6,8.0,36.0);
+
+	stairObjectPart = CreateMeshOperator("CombineTransformOperator");
+    stairObjectPart->AddOperatorInput(stairRepeat);
+    stairObjectPart.Translation0 = float3(0.0,verticalOffset,0.0);
+    stairObjectPart->AddGeneratorInput(stairHandle);
+    stairObjectPart.Translation1 = handleOffset;
+    stairObjectPart.Scale1 = handleScale;
+    stairObjectPart.QuaternionRot1 = float4(1.0,0.0,0.0,3.141516*0.21);
+    stairObjectPart->AddGeneratorInput(stairHandle);
+    stairObjectPart.Scale2 = stairObjectPart.Scale1;
+    stairObjectPart.Translation2 = handleOffset*float3(-1.0,1.0,1.0);
+    stairObjectPart.QuaternionRot2 = stairObjectPart.QuaternionRot1;
+    
+    
+    pyramidPart = CreateMeshOperator("CombineTransformOperator");
+    pyramidPart->AddOperatorInput(pyramidMultiCopy);
+    pyramidPart.Translation0 = float3(0.0,verticalOffset-baseHeight-pyramidSeedHeight,0.0);
+    pyramidPart->AddOperatorInput(stairObjectPart);
+    pyramidPart.Translation1 = float3(0.0,-baseHeight-pyramidSeedHeight,1.2*bottomExtends.y);
+    
+    
+    /************************************/
+    /************************************/
+    
+    
+    /**** Combine ****/
+    /************************************/
+    combineBase = CreateMeshOperator("CombineTransformOperator");
+    combineBase->AddOperatorInput(box0);
+    combineBase->AddOperatorInput(combineCorners);
+    combineBase->AddOperatorInput(combineRoof);
+    combineBase->AddOperatorInput(pyramidPart);
+    /************************************/
+    
+    newMesh = CreateMesh();
+    newMesh->SetOperatorInput(combineBase);
+}
+
+templeMesh = CreateTempleMesh();
 
 float4x4 makeScale(scaleVec : float3)
 {
