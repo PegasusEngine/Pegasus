@@ -32,6 +32,7 @@ int Timeline_Update(info : UpdateInfo)
 	gWorldCam.Position = CamPos + info.beat*float3(0.5,0.0,0.5);
 	gWorldCam.Dir = CamDir;
 	gWorldCam.Fov = Fov;
+
 	BindCamera(gWorldCam, CAM_WORLD_CONTEXT);
 }
 

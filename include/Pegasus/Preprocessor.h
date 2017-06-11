@@ -330,6 +330,12 @@
 //! Enable size checks in the property grid accessors
 #define PEGASUS_ENABLE_PROPERTYGRID_SAFE_ACCESSOR       (PEGASUS_DEBUG)
 
+#if PEGASUS_FINAL
+#define PEGASUS_GPU_DEBUG 0
+#else
+#define PEGASUS_GPU_DEBUG 1
+#endif
+
 //! Maximum total amount of world windows in dev mode.
 //! A world window is a window that has support for demo visualization and that renders what the timeline showcases.
 #if PEGASUS_DEV

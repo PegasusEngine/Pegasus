@@ -597,6 +597,13 @@ namespace Render
     //! \param y the number of threadgroups in y
     //! \param z the number of threadgroups in z
     void Dispatch(unsigned int x, unsigned int y, unsigned int z);
+
+    //! Starts a new marker for gpu debugging.
+    //! \param marker - the marker string, null terminated.
+    void BeginMarker(const char* marker);
+
+    //! Ends a maker for gpu debugging.
+    void EndMarker();
 }
 }
 

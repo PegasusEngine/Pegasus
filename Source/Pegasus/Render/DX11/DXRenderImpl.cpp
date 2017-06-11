@@ -1242,6 +1242,28 @@ void Pegasus::Render::CleanInternalState()
     gDXState.mComputeOutputsDirty = false;
 }
 
+void Pegasus::Render::BeginMarker(const char* marker)
+{
+#if PEGASUS_GPU_DEBUG
+    Pegasus::Render::DXRenderContext* bindedContext = Pegasus::Render::DXRenderContext::GetBindedContext();
+    if (bindedContext != nullptr)
+    {
+        bindedContext->BeginMarker(marker);
+    }
+#endif
+}
+
+void Pegasus::Render::EndMarker()
+{
+#if PEGASUS_GPU_DEBUG
+    Pegasus::Render::DXRenderContext* bindedContext = Pegasus::Render::DXRenderContext::GetBindedContext();
+    if (bindedContext != nullptr)
+    {
+        bindedContext->EndMarker();
+    }
+#endif
+}
+
 #else
 PEGASUS_AVOID_EMPTY_FILE_WARNING
 #endif

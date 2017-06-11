@@ -1,9 +1,15 @@
 /******* Test app demo 1 frame core file *********/
 struct ViewState
 {
-    hdrSurface       : RenderTarget;
-    ldrSurface       : RenderTarget;
-    depthSurface     : DepthStencil;
+	//Deferred render resources
+	gbuffer0		    : RenderTarget; //colorR,colorG,colorB,smoothness
+	gbuffer1		    : RenderTarget; //normalX,normalY,normalZ,(reflectance|metalMask)
+
+	//Final lighting resources
+	
+    hdrSurface          : RenderTarget;
+    ldrSurface          : RenderTarget;
+    depthSurface        : DepthStencil;
 };
 
 struct FrameState
@@ -17,19 +23,27 @@ struct FrameState
 
 ViewState CreateViewState(windowId : int)
 {
+	w = GetFrameWidth();
+	h = GetFrameHeight();
     newViewState = ViewState();
 
     //hdr frame buffer
-    newViewState.hdrSurface       = CreateRenderTarget(RenderTargetConfig(FRAME_WIDTH, FRAME_HEIGHT, FORMAT_RGBA_16_FLOAT));
+    newViewState.hdrSurface       = CreateRenderTarget(RenderTargetConfig(w, h, FORMAT_RGBA_16_FLOAT));
     GlobalRegisterRenderTarget("hdrSurface", windowId, newViewState.hdrSurface);
 
     //depth buffer
-    newViewState.depthSurface = CreateDepthStencil(DepthStencilConfig(FRAME_WIDTH, FRAME_HEIGHT, 1));
+    newViewState.depthSurface = CreateDepthStencil(DepthStencilConfig(w, h, 1));
     GlobalRegisterDepthStencil("depthSurface", windowId, newViewState.depthSurface);
 
     //ldr frame buffer
-    newViewState.ldrSurface       = CreateRenderTarget(RenderTargetConfig(FRAME_WIDTH, FRAME_HEIGHT, FORMAT_RGBA_8_UNORM));
+    newViewState.ldrSurface       = CreateRenderTarget(RenderTargetConfig(w, h, FORMAT_RGBA_8_UNORM));
     GlobalRegisterRenderTarget("ldrSurface", windowId, newViewState.ldrSurface);
+
+	newViewState.gbuffer0 = CreateRenderTarget(RenderTargetConfig(w,h,FORMAT_RGBA_8_UNORM));
+    GlobalRegisterRenderTarget("gbuffer0", windowId, newViewState.gbuffer0);
+
+	newViewState.gbuffer1 = CreateRenderTarget(RenderTargetConfig(w,h,FORMAT_RGBA_16_FLOAT));
+    GlobalRegisterRenderTarget("gbuffer1", windowId, newViewState.gbuffer1);
 
     return newViewState;
 }
@@ -46,6 +60,11 @@ ViewState ReadViewState(windowId : int)
 
     //ldr frame buffer
     newViewState.ldrSurface = GlobalFindRenderTarget("ldrSurface", windowId);
+
+	//deferred resources
+	newViewState.gbuffer0 = GlobalFindRenderTarget("gbuffer0", windowId);
+
+	newViewState.gbuffer1 =  GlobalFindRenderTarget("gbuffer1", windowId);
 
 	return newViewState;
 }

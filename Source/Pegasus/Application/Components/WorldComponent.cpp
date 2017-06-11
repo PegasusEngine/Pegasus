@@ -129,6 +129,7 @@ void WorldComponent::WindowUpdate(const ComponentContext& context, Wnd::WindowCo
 
 void WorldComponent::Render(const ComponentContext& context, Wnd::WindowComponentState *state) 
 {
+    Pegasus::Render::BeginMarker("Scene");
     // Set up rendering
     unsigned int viewportWidth = 0;
     unsigned int viewportHeight = 0;
@@ -181,6 +182,7 @@ void WorldComponent::Render(const ComponentContext& context, Wnd::WindowComponen
         timeline->Render(worldState->GetWindowIndex(), context.mTargetWindow);
         Pegasus::Render::SetPrimitiveMode(Pegasus::Render::PRIMITIVE_AUTOMATIC);
     }
+    Pegasus::Render::EndMarker();
 }
 
 void WorldComponent::Unload(Core::IApplicationContext* appContext)

@@ -35,7 +35,7 @@ DXDevice::DXDevice(const DeviceConfig& config, Alloc::IAllocator * allocator)
         NULL, // no software rasterizer handle
 
         D3D11_CREATE_DEVICE_SINGLETHREADED 
-#if PEGASUS_DEBUG
+#if PEGASUS_GPU_DEBUG
         | D3D11_CREATE_DEVICE_DEBUG //enable debug flag on debug builds.
 #endif
         ,

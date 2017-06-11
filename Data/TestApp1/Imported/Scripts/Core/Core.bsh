@@ -14,6 +14,21 @@
 #define FRAME_HEIGHT 1080
 #endif
 
+int GetFrameWidth()
+{
+	return FRAME_WIDTH;
+}
+
+int GetFrameHeight()
+{
+	return FRAME_HEIGHT;
+}
+
+float2 GetFrameSize()
+{
+	return float2((float)FRAME_WIDTH, (float)FRAME_HEIGHT);
+}
+
 struct GlobalFrameState
 {
     viewData  : ViewState[MAX_WINDOW_COUNT];
