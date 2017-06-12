@@ -4,7 +4,7 @@
 #define MAX_WINDOW_COUNT 1
 #endif 
 
-#include "Scripts/Frame/Frame.bsh"
+#include "RenderSystems/Frame/Frame.bsh"
 
 @(EditorType=EDITOR_TYPE_CHECKBOX)
 extern EnableTerrain = 0;
