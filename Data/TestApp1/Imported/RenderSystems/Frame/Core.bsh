@@ -1,5 +1,3 @@
-/******* Blockscript Core.bsh file *********/
-
 // assume only 1 window if not defined by the runtime
 // This file must have the following pre-defined:
 // - ViewState struct

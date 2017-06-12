@@ -1,4 +1,4 @@
-/******* Test app demo 1 frame core file *********/
+// Declaration of state data
 struct ViewState
 {
 	//Deferred render resources
@@ -16,8 +16,8 @@ struct FrameState
 {
     
 };
- 
-#include "Scripts/Core/Core.bsh"
+
+#include "RenderSystems/Frame/Core.bsh"
 
 #ifdef MASTERSCRIPT_DEFINED
 
