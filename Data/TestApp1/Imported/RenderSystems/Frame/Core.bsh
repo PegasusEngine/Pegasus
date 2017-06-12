@@ -1,8 +1,11 @@
+//*******  Core Utility file of frame     *******//
+//Contains Core renderer definitions and utlity functions//
+//*******************************************************//
 // assume only 1 window if not defined by the runtime
 // This file must have the following pre-defined:
-// - ViewState struct
-// - ViewState CreateViewState() - which creates a view state from scratch
-// - ViewState ReadViewState(windowId : int) - which reads a view state
+// - ViewState struct - a structure with the viewState for this frame
+// - ViewState CreateViewState() - Constructor of ViewState
+// - ViewState ReadViewState(windowId : int) - Loader of ViewState from other blocks
 
 #ifndef FRAME_WIDTH
 #define FRAME_WIDTH  1920
@@ -35,32 +38,17 @@ struct GlobalFrameState
 
 __frameData = GlobalFrameState();
 
-#ifdef MASTERSCRIPT_DEFINED
-ViewState CreateViewState(windowId : int);
-FrameState CreateFrameState();
-#else
 ViewState ReadViewState(windowId : int);
 FrameState ReadFrameState();
-#endif
 
 int Timeline_OnWindowCreated(windowId : int)
 {
-#ifdef MASTERSCRIPT_DEFINED
-    newViewState = CreateViewState(windowId);
-#else
     newViewState = ReadViewState(windowId);
-#endif
-
     __frameData.viewData[windowId] = newViewState;
 }
 
 ViewState GetViewState(windowId : int) { return __frameData.viewData[windowId]; } 
 FrameState GetFrameState() { return __frameData.frameState; }
 
-//Execution:
-
-#ifdef MASTERSCRIPT_DEFINED
-__frameData.frameState = CreateFrameState();
-#else
 __frameData.frameState = ReadFrameState();
-#endif
+

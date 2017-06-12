@@ -1,0 +1,34 @@
+//*******  Deferred Renderer Utility file *******//
+// Use this file to access deferred render system//
+//***********************************************//
+
+struct DeferredRenderState
+{
+	depthBuffer : DepthStencil;
+	gbuffer0 : RenderTarget;//8  bit RGB-color, A- smoothness
+	gbuffer1 : RenderTarget;//16 bit XYZ-normal,A-reflectance/metalmask
+};
+
+DeferredRenderState ReadDeferredRenderState(windowId : int, width : int, height : int, depthBuffer : DepthStencil)
+{
+	newState = DeferredRenderState();
+	newState.depthBuffer = depthBuffer;
+
+
+#ifdef MASTERSCRIPT_DEFINED
+	newState.gbuffer0 = CreateRenderTarget(RenderTargetConfig(width,height,FORMAT_RGBA_8_UNORM));
+    GlobalRegisterRenderTarget("gbuffer0", windowId, newState.gbuffer0);
+
+	newState.gbuffer1 = CreateRenderTarget(RenderTargetConfig(width,height,FORMAT_RGBA_16_FLOAT));
+    GlobalRegisterRenderTarget("gbuffer1", windowId, newState.gbuffer1);
+#else
+
+	newState.gbuffer0 = GlobalFindRenderTarget("gbuffer0", windowId);
+
+	newState.gbuffer1 =  GlobalFindRenderTarget("gbuffer1", windowId);
+
+#endif
+
+
+	return newState;
+}

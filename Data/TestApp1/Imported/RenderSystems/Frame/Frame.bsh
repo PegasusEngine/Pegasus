@@ -1,12 +1,16 @@
+//*******  Frame System Utility file *******//
+// Contains gpu render state of this frame. //
+//******************************************//
+
+#include "RenderSystems/DeferredRenderer/DeferredRenderer.bsh"
+
 // Declaration of state data
 struct ViewState
 {
 	//Deferred render resources
-	gbuffer0		    : RenderTarget; //colorR,colorG,colorB,smoothness
-	gbuffer1		    : RenderTarget; //normalX,normalY,normalZ,(reflectance|metalMask)
+	deferredRenderState		    : DeferredRenderState;
 
-	//Final lighting resources
-	
+	//Final lighting resources	
     hdrSurface          : RenderTarget;
     ldrSurface          : RenderTarget;
     depthSurface        : DepthStencil;
@@ -19,14 +23,15 @@ struct FrameState
 
 #include "RenderSystems/Frame/Core.bsh"
 
-#ifdef MASTERSCRIPT_DEFINED
-
-ViewState CreateViewState(windowId : int)
+//When in master script it will create the resources, otherwise resources are loaded. Lifetimes are owned by master script.
+ViewState ReadViewState(windowId : int)
 {
-	w = GetFrameWidth();
-	h = GetFrameHeight();
     newViewState = ViewState();
 
+	w = GetFrameWidth();
+	h = GetFrameHeight();
+
+#ifdef MASTERSCRIPT_DEFINED
     //hdr frame buffer
     newViewState.hdrSurface       = CreateRenderTarget(RenderTargetConfig(w, h, FORMAT_RGBA_16_FLOAT));
     GlobalRegisterRenderTarget("hdrSurface", windowId, newViewState.hdrSurface);
@@ -39,19 +44,7 @@ ViewState CreateViewState(windowId : int)
     newViewState.ldrSurface       = CreateRenderTarget(RenderTargetConfig(w, h, FORMAT_RGBA_8_UNORM));
     GlobalRegisterRenderTarget("ldrSurface", windowId, newViewState.ldrSurface);
 
-	newViewState.gbuffer0 = CreateRenderTarget(RenderTargetConfig(w,h,FORMAT_RGBA_8_UNORM));
-    GlobalRegisterRenderTarget("gbuffer0", windowId, newViewState.gbuffer0);
-
-	newViewState.gbuffer1 = CreateRenderTarget(RenderTargetConfig(w,h,FORMAT_RGBA_16_FLOAT));
-    GlobalRegisterRenderTarget("gbuffer1", windowId, newViewState.gbuffer1);
-
-    return newViewState;
-}
 #else
-ViewState ReadViewState(windowId : int)
-{
-    newViewState = ViewState();
-
     //hdr frame buffer
     newViewState.hdrSurface  = GlobalFindRenderTarget("hdrSurface", windowId);
 
@@ -61,25 +54,15 @@ ViewState ReadViewState(windowId : int)
     //ldr frame buffer
     newViewState.ldrSurface = GlobalFindRenderTarget("ldrSurface", windowId);
 
-	//deferred resources
-	newViewState.gbuffer0 = GlobalFindRenderTarget("gbuffer0", windowId);
+#endif
 
-	newViewState.gbuffer1 =  GlobalFindRenderTarget("gbuffer1", windowId);
+	newViewState.deferredRenderState = ReadDeferredRenderState(windowId, w, h, newViewState.depthSurface);
 
 	return newViewState;
 }
-#endif
 
-#ifdef MASTERSCRIPT_DEFINED
-FrameState CreateFrameState()
-{
-    newFrameState = FrameState();
-    return newFrameState;
-}
-#else
 FrameState ReadFrameState()
 {
     newFrameState = FrameState();
     return newFrameState;
 }
-#endif
