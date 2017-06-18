@@ -499,6 +499,17 @@ void Pegasus::Render::SetComputeOutput(VolumeTextureRef buffer, int slot)
     gDXState.mComputeOutputsDirty = true;
 }
 
+void Pegasus::Render::SetComputeOutput(RenderTargetRef renderTarget, int slot)
+{
+    DXRenderContext * ctx = DXRenderContext::GetBindedContext();
+    ID3D11DeviceContext * deviceContext = ctx->GetD3D();
+    PG_ASSERT(slot < MAX_UAV_SLOT_COUNT);
+    Pegasus::Render::DXRenderTargetGPUData* texData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXRenderTargetGPUData, renderTarget->GetInternalData());
+    if (gDXState.mComputeOutputs[slot] == nullptr) ++gDXState.mComputeOutputsCount;
+    gDXState.mComputeOutputs[slot] = texData->mTextureView.mUav;
+    gDXState.mComputeOutputsDirty = true;
+}
+
 void Pegasus::Render::UnbindComputeOutputs()
 {
     DXRenderContext * ctx = DXRenderContext::GetBindedContext();

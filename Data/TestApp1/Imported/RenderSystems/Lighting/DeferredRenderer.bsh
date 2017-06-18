@@ -1,0 +1,75 @@
+//*******  Deferred Renderer Utility file *******//
+// Use this file to access deferred render system//
+//***********************************************//
+
+struct DeferredRenderState
+{
+	outputDepthBuffer : DepthStencil;
+	outputHdrBuffer : RenderTarget;
+	
+
+	gbuffer0 : RenderTarget;//8  bit RGB-color, A- smoothness
+	gbuffer1 : RenderTarget;//16 bit XYZ-normal,A-reflectance/metalmask
+};
+
+DeferredRenderState ReadDeferredRenderState(windowId : int, width : int, height : int, depthBuffer : DepthStencil)
+{
+	newState = DeferredRenderState();
+	newState.depthBuffer = depthBuffer;
+
+#ifdef MASTERSCRIPT_DEFINED
+	newState.gbuffer0 = CreateRenderTarget(RenderTargetConfig(width,height,FORMAT_RGBA_8_UNORM));
+    GlobalRegisterRenderTarget("gbuffer0", windowId, newState.gbuffer0);
+
+	newState.gbuffer1 = CreateRenderTarget(RenderTargetConfig(width,height,FORMAT_RGBA_16_FLOAT));
+    GlobalRegisterRenderTarget("gbuffer1", windowId, newState.gbuffer1);
+#else
+
+	newState.gbuffer0 = GlobalFindRenderTarget("gbuffer0", windowId);
+
+	newState.gbuffer1 =  GlobalFindRenderTarget("gbuffer1", windowId);
+
+#endif
+
+
+	return newState;
+}
+
+struct DeferredRendererResources
+{
+	applyLightsCs : ProgramLinkage;
+	applyLightsConstantBuffer : Buffer;
+	applyLightsConstantUniform : Uniform;
+	applyLightsGbuffer0Uniform : Uniform;
+	applyLightsGbuffer1Uniform : Uniform;
+};
+
+struct DeferredApplyLightsConstants
+{
+	targetWidth : int;
+	targetHeight : int;
+};
+
+DeferredRendererResources CreateDeferredResources()
+{
+	rs = DeferredRendererResources();
+	rs.applyLightsCs = LoadProgram("RenderSystems/Lighting/DeferredApplyLights.cs");
+	rs.applyLightsConstantBuffer = CreateUniformBuffer(sizeof(DeferredApplyLightsConstants));
+	rs.applyLightsConstantUniform = GetUniformLocation(rs.applyLightsCs, "Constants");
+	rs.applyLightsGbuffer0Uniform = GetUniformLocation(rs.applyLightsCs, "Gbuffer0Texture");
+	rs.applyLightsGbuffer1Uniform = GetUniformLocation(rs.applyLightsCs, "Gbuffer1Texture");
+	return rs;
+}
+
+int CallDeferredApplyLights(targetWidth : int, targetHeight : int, deferredState: DeferredRenderState, resources: DeferredRendererResources)
+{
+	constants = DeferredApplyLightsConstants();
+	constants.targetWidth = targetWidth;
+	constants.targetHeight = targetHeight;
+	SetBuffer(resources.applyLightsConstantBuffer, constants);
+	SetProgram(resources.applyLightsCs);
+	SetUniformBuffer(resources.applyLightsConstantUniform,resources.applyLightsConstantBuffer);
+	SetComputeOutput(deferredState.outputHdrBuffer, 0);
+	UnbindComputeResources();
+	UnbindComputeOutputs();
+}

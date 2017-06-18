@@ -1,4 +1,6 @@
-// GBuffer utilities
+//*******  GBUFFER UTILITY                *******//
+// Utilities for gbuffer                         //
+//***********************************************//
 
 #ifndef GBUFFER_H
 #define GBUFFER_H
@@ -14,8 +16,8 @@ struct MaterialInfo
 
 struct GBuffer
 {
-	float4 gbuffer0;
-	float4 gbuffer1;
+	float4 gbuffer0 : SV_Target0;
+	float4 gbuffer1 : SV_Target1;
 };
 
 GBuffer WriteToGBuffers(in MaterialInfo info)

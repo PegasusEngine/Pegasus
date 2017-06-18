@@ -580,6 +580,11 @@ namespace Render
     //! \param slot the slot id as an output for compute
     void SetComputeOutput(VolumeTextureRef buffer, int slot);
 
+    //! Sets a compute output, in the given slot
+    //! \param volume texture to set as an output for compute
+    //! \param slot the slot id as an output for compute
+    void SetComputeOutput(RenderTargetRef target, int slot);
+
     //! Unsets all the state of the buffer outputs.
     void UnbindComputeOutputs();
 

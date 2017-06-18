@@ -2,7 +2,7 @@
 // Contains gpu render state of this frame. //
 //******************************************//
 
-#include "RenderSystems/DeferredRenderer/DeferredRenderer.bsh"
+#include "RenderSystems/Lighting/DeferredRenderer.bsh"
 
 // Declaration of state data
 struct ViewState

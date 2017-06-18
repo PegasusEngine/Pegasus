@@ -114,6 +114,8 @@ void Render_CreateRenderTarget(FunCallbackContext& context);
 void Render_CreateDepthStencil(FunCallbackContext& context);
 void Render_CreateRasterizerState(FunCallbackContext& context);
 void Render_CreateBlendingState(FunCallbackContext& context);
+template<class T>
+void Render_SetComputeOutputs(FunCallbackContext& context);
 
 #if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
 #define CHECK_PERMISSIONS(_renderCollection, funcall, perms) \
@@ -398,9 +400,9 @@ static void RegisterRenderStructs(BlockLib* lib)
 
     const StructDeclarationDesc structDefs[] = {
        {  
-            "Uniform",  // the size of this struct will be patched bellow, since pegasus api still
-            { nullptr },// does not support registration of static array members
-            { nullptr }
+            "Uniform",  
+            {   "float4",    "float4",     "float4",     "float4", "int", "int", "int", nullptr },
+            {  "namebytes0", "namebytes1", "namebytes2", "namebytes3", "mInternalIndex", "mInternalOwner" , "mInternalVersion", nullptr }
         }, 
         {
             "RenderTargetConfig",
@@ -431,11 +433,6 @@ static void RegisterRenderStructs(BlockLib* lib)
 
     const int structDefSize = sizeof(structDefs) / sizeof(structDefs[0]);
     lib->CreateStructTypes(structDefs, structDefSize);
-
-    //patch uniform type size
-    TypeDesc* uniformType = lib->GetSymbolTable()->GetTypeForPatching("Uniform");
-    PG_ASSERT(uniformType != nullptr);
-    uniformType->SetByteSize(sizeof(Render::Uniform));
 }
 
 const PropertyGrid::PropertyGridClassInfo* GetNodeDefRegisteredClass(
@@ -991,6 +988,27 @@ static void RegisterFunctions(BlockLib* lib)
             { "BlendingConfig", nullptr },
             { "config", nullptr },
             Render_CreateBlendingState
+        },
+        {
+            "SetComputeOutput",
+            "int",
+            {"RenderTarget", "int", nullptr},
+            {"resource", "slot", nullptr},
+            Render_SetComputeOutputs<Render::RenderTarget>
+        },
+        {
+            "SetComputeOutput",
+            "int",
+            { "Buffer", "int", nullptr },
+            { "resource", "slot", nullptr },
+            Render_SetComputeOutputs<Render::Buffer>
+        },
+        {
+            "SetComputeOutput",
+            "int",
+            { "VolumeTexture", "int", nullptr },
+            { "resource", "slot", nullptr },
+            Render_SetComputeOutputs<Render::VolumeTexture>
         }
     };
 
@@ -1917,4 +1935,26 @@ void GlobalCache_Find<T>(FunCallbackContext& context)
         PG_LOG('ERR_', "No global resource found, with the name of %s. Make sure is registered from the master timeline script.", name);
     }
     stream.SubmitReturn<RenderCollection::CollectionHandle>(collectionHandle);
+}
+
+template<class T>
+void Render_SetComputeOutputs(FunCallbackContext& context)
+{
+    FunParamStream stream(context);
+    BsVmState* vmState = context.GetVmState();
+    Application::RenderCollection* renderCollection = GetContainer(vmState);
+    CHECK_PERMISSIONS(renderCollection, "SetComputeOutputs", PERMISSIONS_RENDER_API_CALL);
+
+    RenderCollection::CollectionHandle resourceHandle = stream.NextArgument<RenderCollection::CollectionHandle>();
+    int slotId = stream.NextArgument<int>();
+
+    if (resourceHandle == RenderCollection::INVALID_HANDLE)
+    {
+        PG_LOG('ERR_', "No resource found in call of SetComputeOutputs");
+    }
+    else
+    {
+        T* resource = RenderCollection::GetResource<T>(renderCollection, resourceHandle);
+        Render::SetComputeOutput(resource, slotId);
+    }
 }
