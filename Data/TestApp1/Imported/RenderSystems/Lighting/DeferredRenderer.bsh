@@ -4,18 +4,18 @@
 
 struct DeferredRenderState
 {
-	outputDepthBuffer : DepthStencil;
-	outputHdrBuffer : RenderTarget;
-	
+	outHdrBuffer : RenderTarget;	
+	outDepthBuffer : DepthStencil;// depth buffer
 
 	gbuffer0 : RenderTarget;//8  bit RGB-color, A- smoothness
 	gbuffer1 : RenderTarget;//16 bit XYZ-normal,A-reflectance/metalmask
 };
 
-DeferredRenderState ReadDeferredRenderState(windowId : int, width : int, height : int, depthBuffer : DepthStencil)
+DeferredRenderState ReadDeferredRenderState(windowId : int, width : int, height : int, hdrBuffer : RenderTarget, depthBuffer : DepthStencil)
 {
 	newState = DeferredRenderState();
-	newState.depthBuffer = depthBuffer;
+	newState.outDepthBuffer = depthBuffer;
+	newState.outHdrBuffer = hdrBuffer;
 
 #ifdef MASTERSCRIPT_DEFINED
 	newState.gbuffer0 = CreateRenderTarget(RenderTargetConfig(width,height,FORMAT_RGBA_8_UNORM));
@@ -69,7 +69,7 @@ int CallDeferredApplyLights(targetWidth : int, targetHeight : int, deferredState
 	SetBuffer(resources.applyLightsConstantBuffer, constants);
 	SetProgram(resources.applyLightsCs);
 	SetUniformBuffer(resources.applyLightsConstantUniform,resources.applyLightsConstantBuffer);
-	SetComputeOutput(deferredState.outputHdrBuffer, 0);
+	SetComputeOutput(deferredState.outHdrBuffer, 0);
 	UnbindComputeResources();
 	UnbindComputeOutputs();
 }

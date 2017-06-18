@@ -39,14 +39,14 @@ int Timeline_Update(info : UpdateInfo)
 int Timeline_Render(info: RenderInfo)
 {
 
-	SetRasterizerState(hackedCCWMode);
-	if (EnableTerrain)
+	//SetRasterizerState(hackedCCWMode);
+	/*if (EnableTerrain)
 	{
 		SetDefaultRenderTarget();
 		3dTerrain->Generate();	
 		SetProgram(terrainShader);
 		3dTerrain->Draw();
-	}
+	}*/
 	SetRasterizerState(defaultRasterState);
 	//* Some demo ideas!!!
 	//* Create a kickass sky / sun with directional.

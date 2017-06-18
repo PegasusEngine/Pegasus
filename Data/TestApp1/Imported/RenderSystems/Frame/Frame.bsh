@@ -56,7 +56,7 @@ ViewState ReadViewState(windowId : int)
 
 #endif
 
-	newViewState.deferredRenderState = ReadDeferredRenderState(windowId, w, h, newViewState.depthSurface);
+	newViewState.deferredRenderState = ReadDeferredRenderState(windowId, w, h, newViewState.hdrSurface, newViewState.depthSurface);
 
 	return newViewState;
 }
