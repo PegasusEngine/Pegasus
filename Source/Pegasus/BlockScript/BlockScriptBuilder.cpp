@@ -1230,7 +1230,7 @@ StmtFor* BlockScriptBuilder::BuildStmtFor(Exp* init, Exp* cond, Exp* update, Stm
 
 StmtIfElse* BlockScriptBuilder::BuildStmtIfElse(Exp* exp, StmtList* ifBlock, StmtIfElse* tail, StackFrameInfo* frame)
 {
-    if (exp->GetTypeDesc() == nullptr)
+    if (exp != nullptr && exp->GetTypeDesc() == nullptr)//else statement does not have an exp*
     {
         BS_ErrorDispatcher(this, "Expression inside if statement not defined.");
         return nullptr;

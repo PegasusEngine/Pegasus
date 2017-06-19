@@ -13,63 +13,27 @@ struct DeferredRenderState
 
 DeferredRenderState ReadDeferredRenderState(windowId : int, width : int, height : int, hdrBuffer : RenderTarget, depthBuffer : DepthStencil)
 {
+
+
+#ifdef MASTERSCRIPT_DEFINED
+	echo("Creating gbuffer targets begin");
+	gbuffer0 = CreateRenderTarget(RenderTargetConfig(width,height,FORMAT_RGBA_8_UNORM));
+    GlobalRegisterRenderTarget("gbuffer0", windowId, gbuffer0);
+
+	gbuffer1 = CreateRenderTarget(RenderTargetConfig(width,height,FORMAT_RGBA_16_FLOAT));
+    GlobalRegisterRenderTarget("gbuffer1", windowId, gbuffer1);
+	echo("Creating gbuffer targets end");
+#else
+	echo("Reading gbuffer targets begin");
+	gbuffer0 = GlobalFindRenderTarget("gbuffer0", windowId);
+	gbuffer1 =  GlobalFindRenderTarget("gbuffer1", windowId);
+	echo("Reading gbuffer targets end");
+#endif
 	newState = DeferredRenderState();
 	newState.outDepthBuffer = depthBuffer;
 	newState.outHdrBuffer = hdrBuffer;
-
-#ifdef MASTERSCRIPT_DEFINED
-	newState.gbuffer0 = CreateRenderTarget(RenderTargetConfig(width,height,FORMAT_RGBA_8_UNORM));
-    GlobalRegisterRenderTarget("gbuffer0", windowId, newState.gbuffer0);
-
-	newState.gbuffer1 = CreateRenderTarget(RenderTargetConfig(width,height,FORMAT_RGBA_16_FLOAT));
-    GlobalRegisterRenderTarget("gbuffer1", windowId, newState.gbuffer1);
-#else
-
-	newState.gbuffer0 = GlobalFindRenderTarget("gbuffer0", windowId);
-
-	newState.gbuffer1 =  GlobalFindRenderTarget("gbuffer1", windowId);
-
-#endif
-
+	newState.gbuffer0 = gbuffer0;
+	newState.gbuffer1 = gbuffer1;
 
 	return newState;
-}
-
-struct DeferredRendererResources
-{
-	applyLightsCs : ProgramLinkage;
-	applyLightsConstantBuffer : Buffer;
-	applyLightsConstantUniform : Uniform;
-	applyLightsGbuffer0Uniform : Uniform;
-	applyLightsGbuffer1Uniform : Uniform;
-};
-
-struct DeferredApplyLightsConstants
-{
-	targetWidth : int;
-	targetHeight : int;
-};
-
-DeferredRendererResources CreateDeferredResources()
-{
-	rs = DeferredRendererResources();
-	rs.applyLightsCs = LoadProgram("RenderSystems/Lighting/DeferredApplyLights.cs");
-	rs.applyLightsConstantBuffer = CreateUniformBuffer(sizeof(DeferredApplyLightsConstants));
-	rs.applyLightsConstantUniform = GetUniformLocation(rs.applyLightsCs, "Constants");
-	rs.applyLightsGbuffer0Uniform = GetUniformLocation(rs.applyLightsCs, "Gbuffer0Texture");
-	rs.applyLightsGbuffer1Uniform = GetUniformLocation(rs.applyLightsCs, "Gbuffer1Texture");
-	return rs;
-}
-
-int CallDeferredApplyLights(targetWidth : int, targetHeight : int, deferredState: DeferredRenderState, resources: DeferredRendererResources)
-{
-	constants = DeferredApplyLightsConstants();
-	constants.targetWidth = targetWidth;
-	constants.targetHeight = targetHeight;
-	SetBuffer(resources.applyLightsConstantBuffer, constants);
-	SetProgram(resources.applyLightsCs);
-	SetUniformBuffer(resources.applyLightsConstantUniform,resources.applyLightsConstantBuffer);
-	SetComputeOutput(deferredState.outHdrBuffer, 0);
-	UnbindComputeResources();
-	UnbindComputeOutputs();
 }

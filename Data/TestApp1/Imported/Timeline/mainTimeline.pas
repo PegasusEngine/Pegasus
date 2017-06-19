@@ -19,7 +19,7 @@
             Blocks : [{
                     type : Block,
                     props : {
-                        Beat : 0,
+                        Beat : 8,
                         Duration : 1024,
                         Name : TempleModel,
                         Color : [128, 128, 128],
@@ -202,7 +202,23 @@
         }, {
             type : Lane,
             name : "",
-            Blocks : []
+            Blocks : [{
+                    type : Block,
+                    props : {
+                        Beat : 0,
+                        Duration : 5000000,
+                        Name : DeferredLighting,
+                        Color : [240, 179, 148],
+                        _o_p_ : {
+                            __schema__ : {
+                                sizetypes : [],
+                                names : [],
+                                typeNames : []
+                            }
+                        },
+                        script : {@RenderSystems/Lighting/DeferredPassBlock.bs}
+                    }
+                }]
         }, {
             type : Lane,
             name : "",

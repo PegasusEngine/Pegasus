@@ -1216,6 +1216,22 @@ bool Pegasus::Render::SetUniformTextureRenderTarget(Pegasus::Render::Uniform& u,
 
 // ---------------------------------------------------------------------------
 
+bool Pegasus::Render::SetUniformDepth(Pegasus::Render::Uniform& u, const DepthStencilRef& depth)
+{
+    Pegasus::Render::DXDepthStencilGPUData * depthGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXDepthStencilGPUData, depth->GetInternalData());
+    return InternalSetShaderResource(u, depthGpuData->mSrvDepth);
+}
+
+// ---------------------------------------------------------------------------
+
+bool Pegasus::Render::SetUniformStencil(Pegasus::Render::Uniform& u, const DepthStencilRef& stencil)
+{
+    Pegasus::Render::DXDepthStencilGPUData * stencilGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXDepthStencilGPUData, stencil->GetInternalData());
+    return InternalSetShaderResource(u, stencilGpuData->mSrvStencil);
+}
+
+// ---------------------------------------------------------------------------
+
 bool Pegasus::Render::SetUniformBufferResource(Pegasus::Render::Uniform& u, const BufferRef& buffer)
 {
     Pegasus::Render::DXBufferGPUData * bufferGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXBufferGPUData, buffer->GetInternalData());

@@ -10,11 +10,13 @@
 cbuffer Constants
 {
     uint2 gTargetDimensions;
+	float2 padding;
 };
 
 
-Texture2D<float4> Gbuffer0Texture;
-Texture2D<float4> Gbuffer1Texture;
+Texture2D<float4> GBuffer0Texture;
+Texture2D<float4> GBuffer1Texture;
+Texture2D<float> DepthTexture;
 
 RWTexture2D<float4> OutputBuffer;
 

@@ -87,6 +87,8 @@ void Render_GetUniformLocation(FunCallbackContext& context);
 void Render_SetUniformBuffer(FunCallbackContext& context);
 void Render_SetUniformTexture(FunCallbackContext& context);
 void Render_SetUniformTextureRenderTarget(FunCallbackContext& context);
+void Render_SetUniformStencil(FunCallbackContext& context);
+void Render_SetUniformDepth(FunCallbackContext& context);
 void Render_SetProgram(FunCallbackContext& context);
 void Render_SetMesh(FunCallbackContext& context);
 void Render_UnbindMesh(FunCallbackContext& context);
@@ -110,10 +112,14 @@ void Render_SetRasterizerState(FunCallbackContext& context);
 void Render_SetBlendingState(FunCallbackContext& context);
 void Render_SetDepthClearValue(FunCallbackContext& context);
 void Render_Draw(FunCallbackContext& context);
+void Render_Dispatch(FunCallbackContext& context);
 void Render_CreateRenderTarget(FunCallbackContext& context);
 void Render_CreateDepthStencil(FunCallbackContext& context);
 void Render_CreateRasterizerState(FunCallbackContext& context);
 void Render_CreateBlendingState(FunCallbackContext& context);
+void Render_BeginMarker(FunCallbackContext& context);
+void Render_EndMarker(FunCallbackContext& context);
+
 template<class T>
 void Render_SetComputeOutputs(FunCallbackContext& context);
 
@@ -801,6 +807,20 @@ static void RegisterFunctions(BlockLib* lib)
             Render_SetUniformTextureRenderTarget
         },
         {
+            "SetUniformDepth",
+            "int",
+            { "Uniform", "DepthStencil", nullptr },
+            { "uniform", "depth", nullptr },
+            Render_SetUniformDepth
+        },
+        {
+            "SetUniformStencil",
+            "int",
+            { "Uniform", "DepthStencil", nullptr },
+            { "uniform", "stencil", nullptr },
+            Render_SetUniformStencil
+        },
+        {
             "SetProgram",
             "int",
             { "ProgramLinkage", nullptr },
@@ -962,6 +982,13 @@ static void RegisterFunctions(BlockLib* lib)
             Render_Draw
         },
         {
+            "Dispatch",
+            "int",
+            { "int", "int", "int", nullptr },
+            { "x", "y", "z", nullptr },
+            Render_Dispatch
+        },
+        {
             "CreateRenderTarget",
             "RenderTarget",
             { "RenderTargetConfig", nullptr },
@@ -1009,6 +1036,20 @@ static void RegisterFunctions(BlockLib* lib)
             { "VolumeTexture", "int", nullptr },
             { "resource", "slot", nullptr },
             Render_SetComputeOutputs<Render::VolumeTexture>
+        },
+        {
+            "BeginMarker",
+            "int",
+            { "string", nullptr },
+            { "marker", nullptr },
+            Render_BeginMarker
+        },
+        {
+            "EndMarker",
+            "int",
+            { nullptr },
+            { nullptr },
+            Render_EndMarker
         }
     };
 
@@ -1487,6 +1528,46 @@ void Render_SetUniformTextureRenderTarget(FunCallbackContext& context)
     
 }
 
+void Render_SetUniformDepth(FunCallbackContext& context)
+{
+    FunParamStream stream(context);
+    BsVmState * state = context.GetVmState();
+    Application::RenderCollection* renderCollection = GetContainer(state);
+    Render::Uniform& uniform = stream.NextArgument<Render::Uniform>();
+    RenderCollection::CollectionHandle& renderTargetId = stream.NextArgument<RenderCollection::CollectionHandle>();
+
+    CHECK_PERMISSIONS(renderCollection, "SetUniformDepth", PERMISSIONS_RENDER_API_CALL);
+    if (renderTargetId != Application::RenderCollection::INVALID_HANDLE)
+    {
+        Render::DepthStencilRef depth = RenderCollection::GetResource<Render::DepthStencil>(renderCollection, renderTargetId);
+        Render::SetUniformDepth(uniform, depth);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Can't set an invalid depth");
+    }
+}
+
+void Render_SetUniformStencil(FunCallbackContext& context)
+{
+    FunParamStream stream(context);
+    BsVmState * state = context.GetVmState();
+    Application::RenderCollection* renderCollection = GetContainer(state);
+    Render::Uniform& uniform = stream.NextArgument<Render::Uniform>();
+    RenderCollection::CollectionHandle& renderTargetId = stream.NextArgument<RenderCollection::CollectionHandle>();
+
+    CHECK_PERMISSIONS(renderCollection, "SetUniformStencil", PERMISSIONS_RENDER_API_CALL);
+    if (renderTargetId != Application::RenderCollection::INVALID_HANDLE)
+    {
+        Render::DepthStencilRef stencil = RenderCollection::GetResource<Render::DepthStencil>(renderCollection, renderTargetId);
+        Render::SetUniformStencil(uniform, stencil);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Can't set an invalid render target");
+    }
+}
+
 void Render_SetProgram(FunCallbackContext& context)
 {
     FunParamStream stream(context);
@@ -1774,6 +1855,22 @@ void Render_Draw(FunCallbackContext& context)
     Render::Draw();
 }
 
+void Render_Dispatch(FunCallbackContext& context)
+{
+#if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
+    RenderCollection* renderCollection = GetContainer(context.GetVmState());
+    CHECK_PERMISSIONS(renderCollection, "Dispatch", PERMISSIONS_RENDER_API_CALL);
+#endif
+    FunParamStream stream(context);
+    int x = stream.NextArgument<int>();
+    int y = stream.NextArgument<int>();
+    int z = stream.NextArgument<int>();
+    Render::Dispatch(
+       static_cast<unsigned int>(x),
+       static_cast<unsigned int>(y),
+       static_cast<unsigned int>(z));
+}
+
 void Render_CreateRenderTarget(FunCallbackContext& context)
 {
     FunParamStream stream(context);
@@ -1889,7 +1986,6 @@ void GlobalCache_Register<T>(FunCallbackContext& context)
     Application::RenderCollection* renderCollection = GetContainer(vmState);
     CHECK_PERMISSIONS(renderCollection, "GlobalCache_Register", PERMISSIONS_RENDER_GLOBAL_CACHE_WRITE);
     const char* name = stream.NextBsStringArgument();
-    RenderCollection::CollectionHandle handle = stream.NextArgument<RenderCollection::CollectionHandle>();
     bool isSuccess = false;
     int windowId = -1;
     if (isWindowIdUsed)
@@ -1897,6 +1993,7 @@ void GlobalCache_Register<T>(FunCallbackContext& context)
         windowId = stream.NextArgument<int>();
     }
 
+    RenderCollection::CollectionHandle handle = stream.NextArgument<RenderCollection::CollectionHandle>();
     if (handle != RenderCollection::INVALID_HANDLE)
     {
         GlobalCache::CacheName hash = CreateHash(name, windowId);
@@ -1957,4 +2054,16 @@ void Render_SetComputeOutputs(FunCallbackContext& context)
         T* resource = RenderCollection::GetResource<T>(renderCollection, resourceHandle);
         Render::SetComputeOutput(resource, slotId);
     }
+}
+
+void Render_BeginMarker(FunCallbackContext& context)
+{
+    FunParamStream stream(context);
+    const char* markerName = stream.NextBsStringArgument();
+    Render::BeginMarker(markerName);
+}
+
+void Render_EndMarker(FunCallbackContext& context)
+{
+    Render::EndMarker();
 }

@@ -532,9 +532,20 @@ namespace Render
     //! Sets the render target as a texture view in the specified uniform location 
     //! \param u uniform parameter to set the value
     //! \param renderTarget render target to set as a texture view
-    //! \param index of the render target to set
     //! \return boolean, true on success, false on error
     bool SetUniformTextureRenderTarget(Uniform& u, const RenderTargetRef& renderTarget);
+
+    //! Sets the render target depths as a texture view in the specified uniform location 
+    //! \param u uniform parameter to set the value
+    //! \param depth render target to set as a texture view
+    //! \return boolean, true on success, false on error
+    bool SetUniformDepth(Uniform& u, const DepthStencilRef& depth);
+
+    //! Sets the render target stencil as a texture view in the specified uniform location 
+    //! \param u uniform parameter to set the value
+    //! \param stencil render target to set as a texture view
+    //! \return boolean, true on success, false on error
+    bool SetUniformStencil(Uniform& u, const DepthStencilRef& stencil);
 
     //! Sets a cube map as a view
     //! \param u uniform parameter to set the value

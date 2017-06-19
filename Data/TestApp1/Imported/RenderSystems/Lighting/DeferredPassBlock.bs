@@ -1,0 +1,81 @@
+//*******  Deferred Renderer Passes file *******//
+// Use this file to access deferred render system//
+//***********************************************//
+
+#include "RenderSystems/Frame/Frame.bsh"
+
+/// Definitions 
+struct DeferredPassRendererResources
+{
+	applyLightsCs : ProgramLinkage;
+	applyLightsConstantBuffer : Buffer;
+	applyLightsConstantUniform : Uniform;
+	applyLightsGbuffer0Uniform : Uniform;
+	applyLightsGbuffer1Uniform : Uniform;
+	applyLightsDepthBuffer : Uniform;
+};
+struct DeferredApplyLightsConstants
+{
+	targetWidth : int;
+	targetHeight : int;
+	padding : float2;
+};
+
+int divUp(a : int, b : int)
+{
+	m = a % b;
+	d = a / b;
+	if (m == 0)
+	{
+		return d;
+	}
+	else 
+	{
+		return d + 1;
+	}
+}
+
+DeferredPassRendererResources CreateDeferredPassResources()
+{
+	rs = DeferredPassRendererResources();
+	rs.applyLightsCs = LoadProgram("RenderSystems/Lighting/DeferredApplyLights.pas");
+	rs.applyLightsConstantBuffer = CreateUniformBuffer(sizeof(DeferredApplyLightsConstants));
+	rs.applyLightsConstantUniform = GetUniformLocation(rs.applyLightsCs, "Constants");
+	rs.applyLightsGbuffer0Uniform = GetUniformLocation(rs.applyLightsCs, "GBuffer0Texture");
+	rs.applyLightsGbuffer1Uniform = GetUniformLocation(rs.applyLightsCs, "GBuffer1Texture");
+	rs.applyLightsDepthBuffer = GetUniformLocation(rs.applyLightsCs, "DepthTexture");
+	return rs;
+}
+
+int CallDeferredApplyLights(constants : DeferredApplyLightsConstants, deferredState: DeferredRenderState, resources: DeferredPassRendererResources)
+{
+
+	SetBuffer(resources.applyLightsConstantBuffer, constants);
+	SetProgram(resources.applyLightsCs);
+	SetUniformBuffer(resources.applyLightsConstantUniform,resources.applyLightsConstantBuffer);
+	SetUniformTextureRenderTarget(resources.applyLightsGbuffer0Uniform, deferredState.gbuffer0);
+	SetUniformTextureRenderTarget(resources.applyLightsGbuffer1Uniform, deferredState.gbuffer1);
+	SetUniformDepth(resources.applyLightsDepthBuffer,     deferredState.outDepthBuffer);
+	SetComputeOutput(deferredState.outHdrBuffer, 0);
+	Dispatch(divUp(constants.targetWidth,32),divUp(constants.targetHeight,32),1);
+	UnbindComputeResources();
+	UnbindComputeOutputs();
+
+}
+
+gPassResources = CreateDeferredPassResources();
+
+int Timeline_Update(info : UpdateInfo)
+{
+}
+
+int Timeline_Render(info: RenderInfo)
+{
+	BeginMarker("DeferredLighting");
+	viewState = GetViewState(info.windowId);
+	constants =	DeferredApplyLightsConstants();
+	constants.targetWidth = GetFrameWidth();
+	constants.targetHeight = GetFrameHeight();
+	CallDeferredApplyLights(constants, viewState.deferredRenderState, gPassResources);
+	EndMarker();
+}

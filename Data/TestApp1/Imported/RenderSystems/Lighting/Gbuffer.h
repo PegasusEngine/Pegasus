@@ -27,7 +27,7 @@ GBuffer WriteToGBuffers(in MaterialInfo info)
 	
 	uint reflectanceUInt = uint(info.reflectance * 255);
 	uint metalMaskUInt = uint(info.metalMask * 255);	
-	gbuffer.gbuffer1 = float4(info.worldNormal.xyz, asfloat( (reflectanceUInt << 8) | ( metalMaskUint ) ));
+	gbuffer.gbuffer1 = float4(info.worldNormal.xyz, asfloat( (reflectanceUInt << 8) | ( metalMaskUInt ) ));
 
 	return gbuffer;
 }
