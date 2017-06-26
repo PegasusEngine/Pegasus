@@ -18,12 +18,18 @@
 #if RENDER_SYSTEM_CONFIG_ENABLE_LIGHTING
 
 using namespace Pegasus;
+using namespace Pegasus::RenderSystems;
+using namespace Pegasus::Lighting;
 
 void LightRig_CreateLightRig(BlockScript::FunCallbackContext& context)
 {
 }
 
 void LightRig_SetActiveLightRig(BlockScript::FunCallbackContext& context)
+{
+}
+
+void LightRig_GetCulledLightBuffer(BlockScript::FunCallbackContext& context)
 {
 }
 
@@ -38,7 +44,7 @@ void RenderSystems::LightingSystem::WindowUpdate(unsigned int width, unsigned in
 
 void RenderSystems::LightingSystem::OnRegisterBlockscriptApi(BlockScript::BlockLib* blocklib, Core::IApplicationContext* appContext)
 {
-    Application::GenericResource::RegisterGenericResourceType(Pegasus::Lighting::LightRig::GetStaticClassInfo(), blockLib);
+    Application::GenericResource::RegisterGenericResourceType(Pegasus::Lighting::LightRig::GetStaticClassInfo(), blocklib);
 
     BlockScript::FunctionDeclarationDesc extraFuns[3];
 

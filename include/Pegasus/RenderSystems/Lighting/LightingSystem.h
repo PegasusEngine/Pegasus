@@ -41,6 +41,8 @@ public:
 
     virtual void OnRegisterBlockscriptApi(BlockScript::BlockLib* blocklib, Core::IApplicationContext* appContext);
 
+    virtual void WindowUpdate(unsigned int width, unsigned int height);
+
 private:
     bool mIsLightBufferDirty;
     Render::BufferRef mLightBuffer;
