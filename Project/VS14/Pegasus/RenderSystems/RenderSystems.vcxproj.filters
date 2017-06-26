@@ -27,9 +27,6 @@
     <Filter Include="Include\2dTerrain">
       <UniqueIdentifier>{06a90c2e-c9f8-4000-a1da-cd091ddf9b6c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Include\DeferredRenderer">
-      <UniqueIdentifier>{33d079f4-6b06-4e4e-9e84-f7a642107a9a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Grass">
       <UniqueIdentifier>{4692e508-ca36-436e-9746-fa023489cb73}</UniqueIdentifier>
     </Filter>
@@ -39,14 +36,17 @@
     <Filter Include="Source\2dTerrain">
       <UniqueIdentifier>{c5ae3b52-5788-49f0-b76e-241249a3c61c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\DeferredRenderer">
-      <UniqueIdentifier>{06be7b02-9adc-49e6-9988-8a66011ac58d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Include\Camera">
       <UniqueIdentifier>{bafc41de-3ed5-4d91-8026-38573b4c0fae}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Camera">
       <UniqueIdentifier>{e82a0454-96e0-4b2b-ae6c-d5e31bd50022}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Lighting">
+      <UniqueIdentifier>{06be7b02-9adc-49e6-9988-8a66011ac58d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Lighting">
+      <UniqueIdentifier>{33d079f4-6b06-4e4e-9e84-f7a642107a9a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -58,9 +58,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\2dTerrain\2dTerrainSystem.h">
       <Filter>Include\2dTerrain</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\DeferredRenderer\DeferredRendererSystem.h">
-      <Filter>Include\DeferredRenderer</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\System\RenderSystemManager.h">
       <Filter>Include\System</Filter>
@@ -89,6 +86,12 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\Camera\CameraSystem.h">
       <Filter>Include\Camera</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Lighting\LightingSystem.h">
+      <Filter>Include\Lighting</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Lighting\LightRig.h">
+      <Filter>Include\Lighting</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Grass\GrassSystem.cpp">
@@ -99,9 +102,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\2dTerrain\2dTerrainSystem.cpp">
       <Filter>Source\2dTerrain</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\DeferredRenderer\DeferredRendererSystem.cpp">
-      <Filter>Source\DeferredRenderer</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\System\RenderSystemManager.cpp">
       <Filter>Source\System</Filter>
@@ -123,6 +123,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Camera\CameraSystem.cpp">
       <Filter>Source\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Lighting\LightingSystem.cpp">
+      <Filter>Source\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Lighting\LightRig.cpp">
+      <Filter>Source\Lighting</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -442,6 +442,11 @@ namespace Render
     //! \note for now, compute buffers are static, and inaccessible for the cpu.
     BufferRef CreateComputeBuffer(int bufferSize, int elementCount, bool makeUniformBuffer);
 
+    //! Creates a buffer that the cpu can only copy data to, and that is readable as a structured buffer.
+    //! \param buffer size
+    //! \param elementCount the number of elements holding
+    BufferRef CreateStructuredReadBuffer(int bufferSize, int elementCount);
+
     //! Creates a sampler state to be set.
     //! \param config the config
     //! \return the sampler state to get returned.
