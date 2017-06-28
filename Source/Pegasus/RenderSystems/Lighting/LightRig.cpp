@@ -18,7 +18,7 @@ BEGIN_IMPLEMENT_PROPERTIES(LightRig)
 END_IMPLEMENT_PROPERTIES(LightRig)
 
 LightRig::LightRig(Alloc::IAllocator* allocator)
-: Pegasus::Application::GenericResource(allocator), mAllocator(allocator), mLightListCount(0),mIsLightBufferDirty(false), mGpuLightCount(0)
+: Pegasus::Application::GenericResource(allocator), mAllocator(allocator), mLightListCount(0),mIsLightBufferDirty(false), mGpuLightCount(0), mLightBufferVersion(1)
 {
 
 }
@@ -58,6 +58,7 @@ void LightRig::Update()
             }
         }
         mIsLightBufferDirty = false;
+        ++mLightBufferVersion;
     }
 }
 
@@ -69,7 +70,7 @@ LightHandle LightRig::AddLight(const Light& light)
         return  InvalidLightHandle;
     }
     LightHandle h = mLightListCount;
-    mLightList[mLightListCount++];
+    mLightList[mLightListCount++] = light;
     mIsLightBufferDirty = true;
     return h;
 }
@@ -93,9 +94,9 @@ void LightRig::UpdateLight(LightHandle handle, const Light& state)
     }
 }
 
-const LightRig::GpuLightBuffer& LightRig::GetGpuBuffer(unsigned int& lightCount, unsigned int& bufferByteSize) const
+const LightRig::GpuLightBuffer& LightRig::GetGpuBuffer(unsigned int& bufferByteSize, int& version) const
 {
-    lightCount = mGpuLightCount;
     bufferByteSize = mGpuLightCount * sizeof(GpuLight);
+    version = mLightBufferVersion;
     return mLightBuffer;
 }

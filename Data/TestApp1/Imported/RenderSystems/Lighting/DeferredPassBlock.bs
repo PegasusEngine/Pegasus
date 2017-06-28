@@ -11,16 +11,20 @@ struct DeferredPassRendererResources
 {
 	applyLightsCs : ProgramLinkage;
 	applyLightsConstantBuffer : Buffer;
+	applyLightsSourceLightBuffer : Buffer;
 	applyLightsConstantUniform : Uniform;
 	applyLightsGbuffer0Uniform : Uniform;
 	applyLightsGbuffer1Uniform : Uniform;
+	applyLightsInputBufferUniform : Uniform;
 	applyLightsDepthBuffer : Uniform;
 };
+
 struct DeferredApplyLightsConstants
 {
 	targetWidth : int;
 	targetHeight : int;
-	padding : float2;
+	activeLightCount : int;
+	padding : int;
 };
 
 int divUp(a : int, b : int)
@@ -45,18 +49,19 @@ DeferredPassRendererResources CreateDeferredPassResources()
 	rs.applyLightsConstantUniform = GetUniformLocation(rs.applyLightsCs, "Constants");
 	rs.applyLightsGbuffer0Uniform = GetUniformLocation(rs.applyLightsCs, "GBuffer0Texture");
 	rs.applyLightsGbuffer1Uniform = GetUniformLocation(rs.applyLightsCs, "GBuffer1Texture");
+	rs.applyLightsInputBufferUniform = GetUniformLocation(rs.applyLightsCs, "LightInputBuffer");
 	rs.applyLightsDepthBuffer     = GetUniformLocation(rs.applyLightsCs, "DepthTexture");
 	return rs;
 }
 
 int CallDeferredApplyLights(constants : DeferredApplyLightsConstants, deferredState: DeferredRenderState, resources: DeferredPassRendererResources)
 {
-
 	SetBuffer(resources.applyLightsConstantBuffer, constants);
 	SetProgram(resources.applyLightsCs);
 	SetUniformBuffer(resources.applyLightsConstantUniform,resources.applyLightsConstantBuffer);
 	SetUniformTextureRenderTarget(resources.applyLightsGbuffer0Uniform, deferredState.gbuffer0);
 	SetUniformTextureRenderTarget(resources.applyLightsGbuffer1Uniform, deferredState.gbuffer1);
+	SetUniformBufferResource(resources.applyLightsInputBufferUniform,resources.applyLightsSourceLightBuffer);
 	SetUniformDepth(resources.applyLightsDepthBuffer,     deferredState.outDepthBuffer);
 	SetComputeOutput(deferredState.outHdrBuffer, 0);
 	Dispatch(divUp(constants.targetWidth,gLightTileSize),divUp(constants.targetHeight,gLightTileSize),1);
@@ -66,6 +71,7 @@ int CallDeferredApplyLights(constants : DeferredApplyLightsConstants, deferredSt
 }
 
 gPassResources = CreateDeferredPassResources();
+gPassResources.applyLightsSourceLightBuffer = LoadCulledLightBuffer();
 
 int Timeline_Update(info : UpdateInfo)
 {
@@ -78,6 +84,7 @@ int Timeline_Render(info: RenderInfo)
 	constants =	DeferredApplyLightsConstants();
 	constants.targetWidth = GetFrameWidth();
 	constants.targetHeight = GetFrameHeight();
+	constants.activeLightCount = GetActiveLightCount();
 	CallDeferredApplyLights(constants, viewState.deferredRenderState, gPassResources);
 	EndMarker();
 }

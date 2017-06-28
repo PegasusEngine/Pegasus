@@ -85,6 +85,7 @@ void Render_CreateUniformBuffer(FunCallbackContext& context);
 void Render_SetBuffer(FunCallbackContext& context);
 void Render_GetUniformLocation(FunCallbackContext& context);
 void Render_SetUniformBuffer(FunCallbackContext& context);
+void Render_SetUniformBufferResource(FunCallbackContext& context);
 void Render_SetUniformTexture(FunCallbackContext& context);
 void Render_SetUniformTextureRenderTarget(FunCallbackContext& context);
 void Render_SetUniformStencil(FunCallbackContext& context);
@@ -793,6 +794,13 @@ static void RegisterFunctions(BlockLib* lib)
             Render_SetUniformBuffer
         },
         {
+            "SetUniformBufferResource",
+            "int",
+            { "Uniform","Buffer", nullptr },
+            { "uniform","buffer", nullptr },
+            Render_SetUniformBufferResource
+        },
+        {
             "SetUniformTexture",
             "int",
             { "Uniform","Texture", nullptr },
@@ -1475,6 +1483,32 @@ void Render_SetUniformBuffer(FunCallbackContext& context)
         if (!res)
         {
             PG_LOG('ERR_', "Error setting uniform. Check that uniform exists and that program is set.");
+        }
+    }
+    else
+    {
+        PG_LOG('ERR_', "Can't set an invalid buffer");
+    }
+}
+
+void Render_SetUniformBufferResource(FunCallbackContext& context)
+{
+    PG_ASSERT(context.GetInputBufferSize() == (sizeof(Render::Uniform) + sizeof(int)));
+    
+    FunParamStream stream(context);
+    BsVmState * state = context.GetVmState();
+    Render::Uniform& uniform  = stream.NextArgument<Render::Uniform>(); 
+    int& bufferHandle = stream.NextArgument<int>();
+    Application::RenderCollection* renderCollection = GetContainer(state);
+    CHECK_PERMISSIONS(renderCollection, "SetUniformBufferResource", PERMISSIONS_RENDER_API_CALL);
+
+    if (bufferHandle != Application::RenderCollection::INVALID_HANDLE)
+    {
+        Render::BufferRef buffer = RenderCollection::GetResource<Render::Buffer>(renderCollection, bufferHandle);
+        bool res = Render::SetUniformBufferResource(uniform, buffer);
+        if (!res)
+        {
+            PG_LOG('ERR_', "Error setting uniform buffer resource. Check that uniform exists and that program is set.");
         }
     }
     else

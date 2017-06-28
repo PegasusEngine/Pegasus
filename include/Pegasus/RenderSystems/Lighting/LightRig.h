@@ -77,6 +77,18 @@ public:
         LightType type;
         LightState state;
         Light() : type(SPHERE) {}
+
+        void SetState(SphereLight& sl)
+        {
+            type = SPHERE;
+            state.sphere = sl;
+        }
+
+        void SetState(SpotLight& sl)
+        {
+            type = SPOT;
+            state.spot = sl;
+        }
     };
 
     //! Constructor
@@ -113,12 +125,13 @@ public:
         GpuLight gpuLights[MaxLightsCount];
     };
 
-    const GpuLightBuffer& GetGpuBuffer(unsigned int& lightCount, unsigned int& bufferByteSize) const;
-
+    const GpuLightBuffer& GetGpuBuffer(unsigned int& bufferByteSize, int& version) const;
+    
 private:
     Alloc::IAllocator* mAllocator;
     Light mLightList[MaxLightsCount];
     int mLightListCount;
+    int mLightBufferVersion;
 
     GpuLightBuffer mLightBuffer;
     bool mIsLightBufferDirty;

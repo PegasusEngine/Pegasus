@@ -12,14 +12,30 @@
         }, {
             type : Lane,
             name : "",
-            Blocks : []
+            Blocks : [{
+                    type : Block,
+                    props : {
+                        Beat : 0,
+                        Duration : 1024,
+                        Name : TempleLights,
+                        Color : [203, 231, 18],
+                        _o_p_ : {
+                            __schema__ : {
+                                sizetypes : [],
+                                names : [],
+                                typeNames : []
+                            }
+                        },
+                        script : {@BlockScripts/TempleSceneLights.bs}
+                    }
+                }]
         }, {
             type : Lane,
             name : "",
             Blocks : [{
                     type : Block,
                     props : {
-                        Beat : 8,
+                        Beat : 0,
                         Duration : 1024,
                         Name : TempleModel,
                         Color : [128, 128, 128],

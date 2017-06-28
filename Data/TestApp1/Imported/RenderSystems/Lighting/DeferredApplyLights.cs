@@ -13,11 +13,18 @@ cbuffer Constants
 	float2 padding;
 };
 
+struct LightInfo 
+{
+	float4 attr0;
+	float4 attr1;
+	float4 attr2;
+	int2   attr3;
+};
 
 Texture2D<float4> GBuffer0Texture;
 Texture2D<float4> GBuffer1Texture;
 Texture2D<float> DepthTexture;
-
+StructuredBuffer<LightInfo> LightInputBuffer;
 RWTexture2D<float4> OutputBuffer;
 
 [numthreads(THREADS_X,THREADS_Y,1)]
@@ -35,7 +42,9 @@ void main(uint3 dti : SV_DispatchThreadId)
         //TODO: perform light tile sampling and perform computation:
         {
             float3 finalLighting = matInfo.color * dot(normalize(-float3(0.7,0.7,0.7)), matInfo.worldNormal) + matInfo.smoothness;
-            OutputBuffer[coords] = float4(finalLighting, 1.0);
+			LightInfo inf = LightInputBuffer[1];
+			
+            OutputBuffer[coords] = float4(finalLighting + inf.attr0.x*0.001, 1.0);
         }
     }
 }

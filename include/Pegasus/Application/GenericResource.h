@@ -63,7 +63,7 @@ public:
     static void RegisterGenericResourceType(
         const PropertyGrid::PropertyGridClassInfo* propertyGridClass,
         BlockScript::BlockLib* lib,
-        BlockScript::FunctionDeclarationDesc* extraMethods = nullptr,
+        const BlockScript::FunctionDeclarationDesc* extraMethods = nullptr,
         unsigned int extraMethodsSize = 0);
 
 };

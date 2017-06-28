@@ -1090,13 +1090,11 @@ void Pegasus::Render::SetBuffer(Pegasus::Render::BufferRef& dstBuffer, const voi
     size = size == -1 ? dstBuffer->GetConfig().mSize : size;
     int actualSize = size + offset;
     PG_ASSERT(d3dBuffer != nullptr);
-    PG_ASSERT(actualSize == dstBuffer->GetConfig().mSize);
+    PG_ASSERT(actualSize <= dstBuffer->GetConfig().mSize);
     
     ID3D11DeviceContext * context;
     ID3D11Device * device;
     Pegasus::Render::GetDeviceAndContext(&device, &context);
-    
-
 
     D3D11_MAPPED_SUBRESOURCE srd;
     if (context->Map(d3dBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &srd) == S_OK)
