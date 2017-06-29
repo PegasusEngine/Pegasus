@@ -8,6 +8,14 @@
 
 #include "RenderSystems/Lighting/GBuffer.h"
 
+struct LightInfo 
+{
+	float4 attr0;
+	float4 attr1;
+	float4 attr2;
+	int2   attr3;
+};
+
 #if USE_DEFERRED_RENDERER
 #define LightingOutput GBuffer
 #else

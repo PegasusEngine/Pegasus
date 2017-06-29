@@ -369,10 +369,16 @@ private:
     Mesh::MeshRef mLocatorMesh;
     Shader::ProgramLinkageRef mLocatorProgram;
     Render::Uniform mLocatorConstantUniform;
+    Render::Uniform mLightBufferUniform;
     Render::BufferRef mLocatorConstantBuffer;
     struct LocatorConstants
     {
-        Math::Mat44 billboardProj;
+        Math::Mat44 billboard;
+        Math::Mat44 viewProj;
+        float scale;
+        float scaleInv;
+        float pad0;
+        float pad1;
     };
 
     Render::RasterizerStateRef mRasterState;

@@ -238,6 +238,12 @@ QToolBar * ViewportDockWidget::CreateMenu(QWidget * mainWidget)
     spinOnceButton->setToolTip(tr("Render once: call render only once on this window, when this button is pressed."));
     connect(spinOnceButton, SIGNAL(clicked()), this, SLOT(OnRenderOnceButton()));
 
+    QIcon lightDebugIcon(":MiscViews/lightDebug.png");
+    QPushButton* lightDebugButton = new QPushButton(lightDebugIcon,tr(""),mainWidget);
+    lightDebugButton->setCheckable(true);
+    lightDebugButton->setChecked(false);
+    lightDebugButton->setToolTip(tr("Enable light debug (visualizes light locators)."));
+    RegisterPropertyButton(lightDebugButton, "DrawLightLocators", Pegasus::App::COMPONENT_LIGHTING_DEBUG);
 
 
     QToolBar* tb = new QToolBar(this);
@@ -254,6 +260,8 @@ QToolBar * ViewportDockWidget::CreateMenu(QWidget * mainWidget)
     tb->addSeparator();
     tb->addWidget(terrainButton);
     tb->addWidget(terrainCamCullButton);
+    tb->addSeparator();
+    tb->addWidget(lightDebugButton);
 
     return tb;
 }

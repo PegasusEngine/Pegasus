@@ -74,5 +74,6 @@
         <file>MiscViews/terrain3dCamCullDebug.png</file>
         <file>MiscViews/SpinIcon.png</file>
         <file>MiscViews/SpinOnceIcon.png</file>
+        <file>MiscViews/lightDebug.png</file>
     </qresource>
 </RCC>

@@ -5,7 +5,7 @@
 #define THREADS_X 32
 #define THREADS_Y 32
 
-#include "RenderSystems/Lighting/GBuffer.h"
+#include "RenderSystems/Lighting/LightingCore.h"
 
 cbuffer Constants
 {
@@ -13,13 +13,6 @@ cbuffer Constants
 	float2 padding;
 };
 
-struct LightInfo 
-{
-	float4 attr0;
-	float4 attr1;
-	float4 attr2;
-	int2   attr3;
-};
 
 Texture2D<float4> GBuffer0Texture;
 Texture2D<float4> GBuffer1Texture;

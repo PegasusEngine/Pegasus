@@ -24,6 +24,7 @@
 #include "Pegasus/Math/Vector.h"
 #include "Pegasus/Math/Matrix.h"
 #include "Pegasus/RenderSystems/Camera/Camera.h"
+#include "Pegasus/RenderSystems/Lighting/LightingSystem.h"
 
 #if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
 #include "Pegasus/RenderSystems/3dTerrain/3dTerrainSystem.h"
@@ -618,6 +619,7 @@ void Terrain3dDebugComponent::WindowUpdate(const Wnd::ComponentContext& context,
 
 #if RENDER_SYSTEM_CONFIG_ENABLE_LIGHTING
 
+extern Pegasus::RenderSystems::LightingSystem* gLightingSystemInstance;
 BEGIN_IMPLEMENT_PROPERTIES(LightingDebugComponentState)
     IMPLEMENT_PROPERTY(LightingDebugComponentState, DrawLightLocators)
     IMPLEMENT_PROPERTY(LightingDebugComponentState, DrawLightInfluences)
@@ -646,11 +648,15 @@ void LightingDebugComponent::Load(Core::IApplicationContext* appContext)
     //locator program
     {
         const char locatorVsShader[] =
-            "cbuffer locatorConstants { float4x4 gBillboardProj; }"
-            "void main(in float4 p0 : POSITION0, out float4 outPos : SV_Position)\n"
+            "#include \"RenderSystems/Lighting/LightingCore.h\"\n"
+            "StructuredBuffer<LightInfo> LightInputBuffer;\n"
+            "cbuffer locatorConstants { float4x4 gBillboard; float4x4 gViewProj; float4 scales; }"
+            "void main(in float4 p0 : POSITION0, in uint instanceId : SV_InstanceID, out float4 outPos : SV_Position)\n"
             "{\n"
-            "   float4 screenPos = mul(p0,gBillboardProj);\n"
-            "   outPos = screenPos;\n"
+            "   LightInfo info = LightInputBuffer[instanceId];\n"
+            "   float3 offset = info.attr1.xyz;\n"
+            "   float4 billboarded = mul(p0,gBillboard) + float4(offset,0.0);\n"            
+            "   outPos = mul(billboarded,gViewProj);\n"
             "}\n";
 
         const char locatorPsShader[] =
@@ -671,6 +677,8 @@ void LightingDebugComponent::Load(Core::IApplicationContext* appContext)
 
         Render::GetUniformLocation(mLocatorProgram, "locatorConstants", mLocatorConstantUniform);
         mLocatorConstantBuffer = Render::CreateUniformBuffer(sizeof(LocatorConstants));
+
+        Render::GetUniformLocation(mLocatorProgram, "LightInputBuffer", mLightBufferUniform);
     }
 
     //this is the mesh config used by all procedurally generated debug lines.
@@ -756,32 +764,42 @@ void LightingDebugComponent::WindowUpdate(const Wnd::ComponentContext& context, 
 
 void LightingDebugComponent::Render(const Wnd::ComponentContext& context, Wnd::WindowComponentState* state)
 {
-    DispatchDefaultRenderTarget();
-    SetRasterizerState(mRasterState);
-    SetBlendingState(mBlendState);
+    LightingDebugComponentState* lightDebugState = static_cast<LightingDebugComponentState*>(state);
+    if (lightDebugState->GetDrawLightLocators())
+    {
+        DispatchDefaultRenderTarget();
+        int lightCount = gLightingSystemInstance->GetActiveLightCount();
+        if (lightCount > 0)
+        {
+            SetRasterizerState(mRasterState);
+            SetBlendingState(mBlendState);
 
-    //setup state
-    LocatorConstants lc;
+            //setup state
+            LocatorConstants lc;
 
-    CameraRef dispatchedCam = gCameraSystem->GetCurrentCamera();
-    const Camera::Camera::GpuCamData& camGpuData = dispatchedCam->GetGpuData();
-    const Mat44& view = camGpuData.view;
-    float billboardScale = -view.m34*dispatchedCam->GetFov()*0.32f;
-    Mat44 viewNoRotation(
-       billboardScale, 0.0f, 0.0f, view.m14,
-       0.0f, billboardScale, 0.0f, view.m24,
-       0.0f, 0.0f, billboardScale, view.m34,
-       0.0f, 0.0f, 0.0f, 1.0f
-    ); 
-    
-    Math::Mult44_44(lc.billboardProj, camGpuData.proj, viewNoRotation);
+            CameraRef dispatchedCam = gCameraSystem->GetCurrentCamera();
+            const Camera::Camera::GpuCamData& camGpuData = dispatchedCam->GetGpuData();
+            float bbScale = -camGpuData.view.m34*dispatchedCam->GetFov()*0.15f;
+            Mat44 scale = MAT44_IDENTITY*bbScale;       
+            Mat44 billboard = camGpuData.invView;
+            billboard.m14 = 0.0f;
+            billboard.m24 = 0.0f;
+            billboard.m34 = 0.0f;    
+            Mult44_44(lc.billboard,billboard,scale);
+            lc.viewProj = camGpuData.viewProj;
 
-    SetBuffer(mLocatorConstantBuffer, &lc);
+            lc.scale = 1.0f;
+            lc.scaleInv = 1.0f;
+            SetBuffer(mLocatorConstantBuffer, &lc);
 
-    SetProgram(mLocatorProgram);
-    SetUniformBuffer(mLocatorConstantUniform, mLocatorConstantBuffer);
-    SetMesh(mLocatorMesh);
-    Draw();
+            SetProgram(mLocatorProgram);
+            SetUniformBuffer(mLocatorConstantUniform, mLocatorConstantBuffer);
+            SetUniformBufferResource(mLightBufferUniform, gLightingSystemInstance->GetCulledLightBuffer());
+
+            SetMesh(mLocatorMesh);
+            DrawInstanced(lightCount);
+        }
+    }
 }
 
 void LightingDebugComponent::Unload(Core::IApplicationContext* appContext)

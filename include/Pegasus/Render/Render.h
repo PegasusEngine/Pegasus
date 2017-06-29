@@ -422,6 +422,12 @@ namespace Render
     //!                 -Mesh to be dispatched
     void Draw();
 
+    //! Draws geometry utilizing hardware instancing.
+    //! \param instanceCount - instance count to use. If instance count is 0 this will be skipped.
+    //! \note Requires: -Shader to be dispatched
+    //!                 -Mesh to be dispatched
+    void DrawInstanced(unsigned int instanceCount);
+
     //! Fills a uniform reference by name
     //! \param program, the program containing the uniform to get
     //! \param outputUniform, the empty uniform structure to be filled containing the metadata required

@@ -648,12 +648,11 @@ void Pegasus::Render::SetPrimitiveMode(Pegasus::Render::PrimitiveMode mode)
 /////////////   DRAW FUNCTION IMPLEMENTATION      /////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-void Pegasus::Render::Draw()
+static void DrawInternal(unsigned int instanceCount)
 {
     ID3D11DeviceContext * context;
     ID3D11Device * device;
     Pegasus::Render::GetDeviceAndContext(&device, &context);
-    
     if (gDXState.mDispatchedMeshGpuData == nullptr)
     {
         PG_LOG('ERR_', "A mesh must be set properly before calling draw!.");
@@ -661,7 +660,7 @@ void Pegasus::Render::Draw()
     }
     Pegasus::Render::DXMeshGPUData* mesh = gDXState.mDispatchedMeshGpuData;
 
-    if (gDXState.mPrimitiveMode == PRIMITIVE_AUTOMATIC)
+    if (gDXState.mPrimitiveMode == Pegasus::Render::PRIMITIVE_AUTOMATIC)
     {        
         context->IASetPrimitiveTopology(mesh->mTopology);
     }
@@ -682,20 +681,58 @@ void Pegasus::Render::Draw()
         }   
         else
         {
-            context->DrawIndexed(
-                mesh->mIndexCount,
-                0,
-                0
-            );
+            if (instanceCount > 0)
+            {
+                context->DrawIndexedInstanced(
+                    mesh->mIndexCount,
+                    instanceCount,
+                    0,
+                    0,
+                    0
+                );
+            }
+            else
+            {
+                context->DrawIndexed(
+                    mesh->mIndexCount,
+                    0,
+                    0
+                );
+            }
         }
     }
     else
     {
         PG_ASSERTSTR(!mesh->mIsIndexed, "Pegasus only supports indirect draw indexed. Setting a mesh as indirect, but not making it indexed.");
-        context->Draw(
-            mesh->mVertexCount,
-            0
-        );
+        if (instanceCount > 0)
+        {
+            context->DrawInstanced(
+                mesh->mVertexCount,
+                instanceCount,
+                0,
+                0
+            );
+        }
+        else
+        {
+            context->Draw(
+                mesh->mVertexCount,
+                0
+            );
+        }
+    }
+}
+
+void Pegasus::Render::Draw()
+{
+    DrawInternal(0);
+}
+
+void Pegasus::Render::DrawInstanced(unsigned int instanceCount)
+{
+    if (instanceCount > 0)
+    {
+        DrawInternal(instanceCount);
     }
 }
 

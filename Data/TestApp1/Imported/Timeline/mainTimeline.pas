@@ -20,10 +20,11 @@
                         Name : TempleLights,
                         Color : [203, 231, 18],
                         _o_p_ : {
+                            spotLightPos1 : [11.000000, 49.000000, 37.000000],
                             __schema__ : {
-                                sizetypes : [],
-                                names : [],
-                                typeNames : []
+                                sizetypes : [327692],
+                                names : [spotLightPos1],
+                                typeNames : [float3]
                             }
                         },
                         script : {@BlockScripts/TempleSceneLights.bs}
