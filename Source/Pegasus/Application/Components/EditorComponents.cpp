@@ -19,12 +19,19 @@
 #include "Pegasus/Mesh/MeshManager.h"
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/Mesh/Generator/CustomGenerator.h"
+#include "Pegasus/Math/Constants.h"
+#include "Pegasus/Math/Scalar.h"
 #include "Pegasus/Math/Vector.h"
 #include "Pegasus/Math/Matrix.h"
 #include "Pegasus/RenderSystems/Camera/Camera.h"
+#include "Pegasus/RenderSystems/Lighting/LightingSystem.h"
 
 #if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
 #include "Pegasus/RenderSystems/3dTerrain/3dTerrainSystem.h"
+#endif
+
+#if RENDER_SYSTEM_CONFIG_ENABLE_CAMERA
+#include "Pegasus/RenderSystems/Camera/CameraSystem.h"
 #endif
 
 
@@ -416,6 +423,16 @@ void GridComponent::Unload(Core::IApplicationContext* appContext)
 
 #if RENDER_SYSTEM_CONFIG_ENABLE_CAMERA
 
+namespace Pegasus
+{
+#if RENDER_SYSTEM_CONFIG_ENABLE_CAMERA
+    namespace Camera
+    {
+        extern CameraSystem* gCameraSystem;
+    }
+#endif
+}
+
 BEGIN_IMPLEMENT_PROPERTIES(CameraDebugComponentState)
     IMPLEMENT_PROPERTY(CameraDebugComponentState, EnableDebug)
 END_IMPLEMENT_PROPERTIES(CameraDebugComponentState)
@@ -600,6 +617,196 @@ void Terrain3dDebugComponent::WindowUpdate(const Wnd::ComponentContext& context,
 }
 #endif
 
+#if RENDER_SYSTEM_CONFIG_ENABLE_LIGHTING
+
+extern Pegasus::RenderSystems::LightingSystem* gLightingSystemInstance;
+BEGIN_IMPLEMENT_PROPERTIES(LightingDebugComponentState)
+    IMPLEMENT_PROPERTY(LightingDebugComponentState, DrawLightLocators)
+    IMPLEMENT_PROPERTY(LightingDebugComponentState, DrawLightInfluences)
+END_IMPLEMENT_PROPERTIES(LightingDebugComponentState)
+
+LightingDebugComponentState::LightingDebugComponentState()
+{
+    BEGIN_INIT_PROPERTIES(LightingDebugComponentState)
+        INIT_PROPERTY(DrawLightLocators)
+        INIT_PROPERTY(DrawLightInfluences)
+    END_INIT_PROPERTIES()
+}
+
+Wnd::WindowComponentState* LightingDebugComponent::CreateState(const Wnd::ComponentContext& context)
+{
+    return PG_NEW(mAlloc, -1, "LightingDebugComponentState", Pegasus::Alloc::PG_MEM_PERM) LightingDebugComponentState();
+}
+
+void LightingDebugComponent::DestroyState(const Wnd::ComponentContext& context, Wnd::WindowComponentState* state)
+{
+    PG_DELETE(mAlloc, state);
+}
+
+void LightingDebugComponent::Load(Core::IApplicationContext* appContext)
+{
+    //locator program
+    {
+        const char locatorVsShader[] =
+            "#include \"RenderSystems/Lighting/LightingCore.h\"\n"
+            "StructuredBuffer<LightInfo> LightInputBuffer;\n"
+            "cbuffer locatorConstants { float4x4 gBillboard; float4x4 gViewProj; float4 scales; }"
+            "void main(in float4 p0 : POSITION0, in uint instanceId : SV_InstanceID, out float4 outPos : SV_Position)\n"
+            "{\n"
+            "   LightInfo info = LightInputBuffer[instanceId];\n"
+            "   float3 offset = info.attr1.xyz;\n"
+            "   float4 billboarded = mul(p0,gBillboard) + float4(offset,0.0);\n"            
+            "   outPos = mul(billboarded,gViewProj);\n"
+            "}\n";
+
+        const char locatorPsShader[] =
+            "float4 main() : SV_Target\n"
+            "{\n"
+            "   return float4(0.1,1.0,0.1,1.0);\n"
+            "}\n";
+
+        Shader::ShaderStageRef vs = appContext->GetShaderManager()->CreateShader();
+        vs->SetSource(Pegasus::Shader::VERTEX, locatorVsShader, sizeof(locatorVsShader));
+
+        Shader::ShaderStageRef ps = appContext->GetShaderManager()->CreateShader();
+        ps->SetSource(Pegasus::Shader::FRAGMENT, locatorPsShader, sizeof(locatorPsShader));
+
+        mLocatorProgram = appContext->GetShaderManager()->CreateProgram();
+        mLocatorProgram->SetShaderStage(vs);
+        mLocatorProgram->SetShaderStage(ps);
+
+        Render::GetUniformLocation(mLocatorProgram, "locatorConstants", mLocatorConstantUniform);
+        mLocatorConstantBuffer = Render::CreateUniformBuffer(sizeof(LocatorConstants));
+
+        Render::GetUniformLocation(mLocatorProgram, "LightInputBuffer", mLightBufferUniform);
+    }
+
+    //this is the mesh config used by all procedurally generated debug lines.
+    MeshConfiguration meshConfig;
+    meshConfig.SetIsIndexed(true);
+    meshConfig.SetIsDynamic(false);
+    meshConfig.SetMeshPrimitiveType(MeshConfiguration::LINE);
+    MeshInputLayout il;
+    il.GenerateEditorLayout(MeshInputLayout::USE_POSITION);
+    meshConfig.SetInputLayout(il);
+
+    MeshManager* mm = appContext->GetMeshManager();
+    mLocatorMesh = mm->CreateMeshNode();
+    {
+        //procedurally create a little light bulb mesh.
+        MeshGeneratorRef generator = mm->CreateMeshGeneratorNode("CustomGenerator");
+        CustomGenerator* customGenerator = static_cast<CustomGenerator*>(&(*generator));
+        customGenerator->SetConfiguration(meshConfig);
+        MeshDataRef meshData = customGenerator->EditMeshData();
+
+        //generate vertices
+        const float radii = 0.04f;
+        const float angleIncrement = Math::P_2_PI / 8.0f;
+        short bulbVertexCount = 8;
+        Vec4 leftVertex;
+        Vec4 rightVertex;
+        for (int i = 0; i < bulbVertexCount; ++i)
+        {
+            float fi = static_cast<float>(i);
+            float angle = angleIncrement * fi;
+            Vec4 vert = Vec4(radii*Vec3(Math::Sin(angle),-Math::Cos(angle),0.0f),1.0f);
+            meshData->PushVertex(vert,0);
+            if (i > 0 && i < bulbVertexCount-1)
+            {
+                meshData->PushIndex(i);
+                meshData->PushIndex(i+1);
+            }
+
+            if (i == 1)
+            {
+                leftVertex = vert;
+            }
+            else if (i == bulbVertexCount - 1)
+            {
+                rightVertex = vert;
+            }
+        }
+        short firstIndex = 1;
+        short lastIndex = bulbVertexCount - 1;
+        float bulbBottomOffset = 0.8f*radii;
+        meshData->PushVertex(Vec4(leftVertex.x,leftVertex.y-bulbBottomOffset,leftVertex.z,1.0), 0);
+        meshData->PushVertex(Vec4(rightVertex.x,rightVertex.y-bulbBottomOffset,rightVertex.z,1.0), 0);
+
+        meshData->PushIndex(firstIndex);
+        meshData->PushIndex(lastIndex+1);
+
+        meshData->PushIndex(lastIndex);
+        meshData->PushIndex(lastIndex+2);
+        meshData->PushIndex(lastIndex + 1);
+        meshData->PushIndex(lastIndex + 2);
+
+        mLocatorMesh->SetGeneratorInput(generator);
+    }
+
+    //default raster / blend states
+    RasterizerConfig rasterConfig;
+    rasterConfig.mCullMode = RasterizerConfig::NONE_CM;
+    rasterConfig.mDepthFunc = RasterizerConfig::NONE_DF;
+    mRasterState =  CreateRasterizerState(rasterConfig);
+
+    BlendingConfig blendConfig;
+    blendConfig.mBlendingOperator = BlendingConfig::NONE_BO;
+    mBlendState = CreateBlendingState(blendConfig);
+}
+
+void LightingDebugComponent::Update(Core::IApplicationContext* appContext)
+{
+}
+
+void LightingDebugComponent::WindowUpdate(const Wnd::ComponentContext& context, Wnd::WindowComponentState* state)
+{
+}
+
+void LightingDebugComponent::Render(const Wnd::ComponentContext& context, Wnd::WindowComponentState* state)
+{
+    LightingDebugComponentState* lightDebugState = static_cast<LightingDebugComponentState*>(state);
+    if (lightDebugState->GetDrawLightLocators())
+    {
+        DispatchDefaultRenderTarget();
+        int lightCount = gLightingSystemInstance->GetActiveLightCount();
+        if (lightCount > 0)
+        {
+            SetRasterizerState(mRasterState);
+            SetBlendingState(mBlendState);
+
+            //setup state
+            LocatorConstants lc;
+
+            CameraRef dispatchedCam = gCameraSystem->GetCurrentCamera();
+            const Camera::Camera::GpuCamData& camGpuData = dispatchedCam->GetGpuData();
+            float bbScale = -camGpuData.view.m34*dispatchedCam->GetFov()*0.15f;
+            Mat44 scale = MAT44_IDENTITY*bbScale;       
+            Mat44 billboard = camGpuData.invView;
+            billboard.m14 = 0.0f;
+            billboard.m24 = 0.0f;
+            billboard.m34 = 0.0f;    
+            Mult44_44(lc.billboard,billboard,scale);
+            lc.viewProj = camGpuData.viewProj;
+
+            lc.scale = 1.0f;
+            lc.scaleInv = 1.0f;
+            SetBuffer(mLocatorConstantBuffer, &lc);
+
+            SetProgram(mLocatorProgram);
+            SetUniformBuffer(mLocatorConstantUniform, mLocatorConstantBuffer);
+            SetUniformBufferResource(mLightBufferUniform, gLightingSystemInstance->GetCulledLightBuffer());
+
+            SetMesh(mLocatorMesh);
+            DrawInstanced(lightCount);
+        }
+    }
+}
+
+void LightingDebugComponent::Unload(Core::IApplicationContext* appContext)
+{
+}
+
+#endif
 #else
     PEGASUS_AVOID_EMPTY_FILE_WARNING
 #endif

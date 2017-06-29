@@ -13,7 +13,8 @@
 #define PEGASUS_DX_CONTEXT_H
 
 #include "Pegasus/Render/RenderContextConfig.h"
-#include <d3d11.h>
+
+#include <d3d11_1.h>
 #include <dxgi1_2.h>
 
 #if PEGASUS_ENABLE_ASSERT
@@ -62,6 +63,12 @@ public:
     //! callback when the window has resized
     void Resize(int width, int height);
 
+#if PEGASUS_GPU_DEBUG
+    void BeginMarker(const char* marker);
+
+    void EndMarker();
+#endif
+
     //! get the device
     DXDevice* GetDevice() const { return mDevice; }
 
@@ -84,6 +91,11 @@ private:
 
     //! d3d elements
     ID3D11DeviceContext* mCachedD3DContext;
+
+#if PEGASUS_GPU_DEBUG
+    //! d3d user defined annotation manager for markers
+    ID3DUserDefinedAnnotation* mUserDefinedAnnotation;
+#endif
 
     //! the swap chain
     IDXGISwapChain1*     mSwapChain;

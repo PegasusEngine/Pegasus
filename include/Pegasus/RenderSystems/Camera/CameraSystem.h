@@ -76,6 +76,10 @@ public:
     //! \param reference to the free cam for modifications.
     CameraRef GetFreeCam() { return mFreeCam; }
 
+    //! Gets a camera from the specified context.
+    //! \param reference to the free cam for modifications.
+    CameraRef GetCurrentCamera();
+
 private:
 
     //! Allocator used for all camera allocations

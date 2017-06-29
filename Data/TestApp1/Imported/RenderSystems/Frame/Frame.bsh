@@ -1,0 +1,67 @@
+//*******  Frame System Utility file *******//
+// Contains gpu render state of this frame. //
+//******************************************//
+
+#include "RenderSystems/Lighting/DeferredRenderer.bsh"
+
+// Declaration of state data
+struct ViewState
+{
+	//Deferred render resources
+	deferredRenderState		    : DeferredRenderState;
+
+	//Final lighting resources	
+    hdrSurface          : RenderTarget;
+    ldrSurface          : RenderTarget;
+    depthSurface        : DepthStencil;
+};
+
+struct FrameState
+{
+    
+};
+
+#include "RenderSystems/Frame/Core.bsh"
+
+//When in master script it will create the resources, otherwise resources are loaded. Lifetimes are owned by master script.
+ViewState ReadViewState(windowId : int)
+{
+
+
+	w = GetFrameWidth();
+	h = GetFrameHeight();
+
+#ifdef MASTERSCRIPT_DEFINED
+	echo("Creating targets begin");
+    hdrSurface       = CreateRenderTarget(RenderTargetConfig(w, h, FORMAT_RGBA_16_FLOAT));
+    GlobalRegisterRenderTarget("hdrSurface", windowId, hdrSurface);
+
+    depthSurface = CreateDepthStencil(DepthStencilConfig(w, h, 1));
+    GlobalRegisterDepthStencil("depthSurface", windowId, depthSurface);
+
+    ldrSurface       = CreateRenderTarget(RenderTargetConfig(w, h, FORMAT_RGBA_8_UNORM));
+    GlobalRegisterRenderTarget("ldrSurface", windowId, ldrSurface);
+	echo("Creating targets end");
+#else
+	echo("Reading targets begin");
+    hdrSurface  = GlobalFindRenderTarget("hdrSurface", windowId);
+    depthSurface = GlobalFindDepthStencil("depthSurface", windowId);
+    ldrSurface = GlobalFindRenderTarget("ldrSurface", windowId);
+	echo("Reading targets end");
+	
+#endif
+
+    newViewState = ViewState();
+    newViewState.hdrSurface  = hdrSurface;
+    newViewState.depthSurface = depthSurface;
+    newViewState.ldrSurface = ldrSurface;
+	newViewState.deferredRenderState = ReadDeferredRenderState(windowId, w, h, newViewState.hdrSurface, newViewState.depthSurface);
+
+	return newViewState;
+}
+
+FrameState ReadFrameState()
+{
+    newFrameState = FrameState();
+    return newFrameState;
+}

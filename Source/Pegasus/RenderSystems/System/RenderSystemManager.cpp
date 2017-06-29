@@ -21,7 +21,7 @@
 #include "Pegasus/RenderSystems/Grass/GrassSystem.h"
 #include "Pegasus/RenderSystems/2dTerrain/2dTerrainSystem.h"
 #include "Pegasus/RenderSystems/3dTerrain/3dTerrainSystem.h"
-#include "Pegasus/RenderSystems/DeferredRenderer/DeferredRendererSystem.h"
+#include "Pegasus/RenderSystems/Lighting/LightingSystem.h"
 #include "Pegasus/RenderSystems/Camera/CameraSystem.h"
 #include "Pegasus/Allocator/Alloc.h"
 
@@ -54,8 +54,8 @@ void RenderSystemManager::AddInternalSystems()
     RegisterSystem(mAllocator, PG_NEW(mAllocator, -1, "3d Terrain System", Alloc::PG_MEM_PERM) Terrain3dSystem(mAllocator));
 #endif
 
-#if RENDER_SYSTEM_CONFIG_ENABLE_DEFERREDRENDERER
-    RegisterSystem(mAllocator, PG_NEW(mAllocator, -1, "Deferred Renderer System", Alloc::PG_MEM_PERM) DeferredRendererSystem(mAllocator));
+#if RENDER_SYSTEM_CONFIG_ENABLE_LIGHTING
+    RegisterSystem(mAllocator, PG_NEW(mAllocator, -1, "Deferred Renderer System", Alloc::PG_MEM_PERM) LightingSystem(mAllocator));
 #endif
 }
 

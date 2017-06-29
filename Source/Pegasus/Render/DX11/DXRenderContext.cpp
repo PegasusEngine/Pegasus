@@ -50,6 +50,9 @@ DXRenderContext::DXRenderContext()
  :
   mDevice(nullptr),
   mCachedD3DContext(nullptr),
+#if PEGASUS_GPU_DEBUG
+  mUserDefinedAnnotation(nullptr),
+#endif
   mSwapChain(nullptr),
   mFrameBuffer(nullptr),
   mFrameBufferDepthStencil(nullptr),
@@ -73,6 +76,12 @@ DXRenderContext::~DXRenderContext()
     {
         mFrameBufferDepthStencil->Release();
     }
+#if PEGASUS_GPU_DEBUG
+    if (mUserDefinedAnnotation != nullptr)
+    {
+        mUserDefinedAnnotation->Release();
+    }
+#endif
 }
 
 void DXRenderContext::Present()
@@ -146,6 +155,10 @@ bool DXRenderContext::Initialize(const ContextConfig& config)
             InitializeFrame();
         }
 
+#if PEGASUS_GPU_DEBUG
+       VALID(mCachedD3DContext->QueryInterface( __uuidof(mUserDefinedAnnotation), reinterpret_cast<void**>(&mUserDefinedAnnotation)));
+#endif
+
         return mSwapChain != nullptr;
     }
     else
@@ -187,6 +200,33 @@ void DXRenderContext::InitializeFrame()
     backBuffer->Release();
     depthStencilTexture->Release();
 }
+
+#if PEGASUS_GPU_DEBUG
+void DXRenderContext::BeginMarker(const char* marker)
+{
+    const int convertedSz = 256;
+    wchar_t convertedDest[convertedSz];
+    const wchar_t* targetMarker = L"<FAIL_STR>";
+    int retVal = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, marker, -1, convertedDest, convertedSz);
+    if (retVal > 0)
+    {
+        targetMarker = convertedDest;
+    }
+
+    if (mUserDefinedAnnotation != nullptr)
+    {
+        mUserDefinedAnnotation->BeginEvent(targetMarker);
+    }
+}
+
+void DXRenderContext::EndMarker()
+{
+    if (mUserDefinedAnnotation != nullptr)
+    {
+        mUserDefinedAnnotation->EndEvent();
+    }
+}
+#endif
 
 void DXRenderContext::Resize(int width, int height)
 {

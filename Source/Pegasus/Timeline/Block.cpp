@@ -111,7 +111,6 @@ void Block::Render(const RenderInfo& renderInfo)
     }
 #endif
     mScriptRunner.CallRender(renderInfo);
-
 }
 
 //----------------------------------------------------------------------------------------

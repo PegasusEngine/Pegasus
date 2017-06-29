@@ -4,7 +4,7 @@
 #define MAX_WINDOW_COUNT 1
 #endif 
 
-#include "Scripts/Frame/Frame.bsh"
+#include "RenderSystems/Frame/Frame.bsh"
 
 @(EditorType=EDITOR_TYPE_CHECKBOX)
 extern EnableTerrain = 0;
@@ -16,8 +16,8 @@ extern CamDir = float3(0.0,0.0,-1.0);
 gWorldCam = CreateCamera();
 gWorldCam.Far = 1000.0;
 terrainShader = LoadProgram("Programs/MarchingCubeProgram.pas");
-3dTerrain = CreateTerrain3d(20,20);
-3dTerrain.BlockHeight = 2;
+3dTerrain = CreateTerrain3d(10,10);
+3dTerrain.BlockHeight = 1;
 3dTerrain.BlockLod0Threshold = 4;
 3dTerrain.BlockLod1Threshold = 8;
 3dTerrain.BlockLod2Threshold = 8;
@@ -32,20 +32,21 @@ int Timeline_Update(info : UpdateInfo)
 	gWorldCam.Position = CamPos + info.beat*float3(0.5,0.0,0.5);
 	gWorldCam.Dir = CamDir;
 	gWorldCam.Fov = Fov;
+
 	BindCamera(gWorldCam, CAM_WORLD_CONTEXT);
 }
 
 int Timeline_Render(info: RenderInfo)
 {
 
-	SetRasterizerState(hackedCCWMode);
-	if (EnableTerrain)
+	//SetRasterizerState(hackedCCWMode);
+	/*if (EnableTerrain)
 	{
 		SetDefaultRenderTarget();
 		3dTerrain->Generate();	
 		SetProgram(terrainShader);
 		3dTerrain->Draw();
-	}
+	}*/
 	SetRasterizerState(defaultRasterState);
 	//* Some demo ideas!!!
 	//* Create a kickass sky / sun with directional.

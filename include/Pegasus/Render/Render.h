@@ -422,6 +422,12 @@ namespace Render
     //!                 -Mesh to be dispatched
     void Draw();
 
+    //! Draws geometry utilizing hardware instancing.
+    //! \param instanceCount - instance count to use. If instance count is 0 this will be skipped.
+    //! \note Requires: -Shader to be dispatched
+    //!                 -Mesh to be dispatched
+    void DrawInstanced(unsigned int instanceCount);
+
     //! Fills a uniform reference by name
     //! \param program, the program containing the uniform to get
     //! \param outputUniform, the empty uniform structure to be filled containing the metadata required
@@ -441,6 +447,11 @@ namespace Render
     //! \param true if this buffer can be binded as a uniform. If false, it will only be able to get binded as a read buffer.
     //! \note for now, compute buffers are static, and inaccessible for the cpu.
     BufferRef CreateComputeBuffer(int bufferSize, int elementCount, bool makeUniformBuffer);
+
+    //! Creates a buffer that the cpu can only copy data to, and that is readable as a structured buffer.
+    //! \param buffer size
+    //! \param elementCount the number of elements holding
+    BufferRef CreateStructuredReadBuffer(int bufferSize, int elementCount);
 
     //! Creates a sampler state to be set.
     //! \param config the config
@@ -532,9 +543,20 @@ namespace Render
     //! Sets the render target as a texture view in the specified uniform location 
     //! \param u uniform parameter to set the value
     //! \param renderTarget render target to set as a texture view
-    //! \param index of the render target to set
     //! \return boolean, true on success, false on error
     bool SetUniformTextureRenderTarget(Uniform& u, const RenderTargetRef& renderTarget);
+
+    //! Sets the render target depths as a texture view in the specified uniform location 
+    //! \param u uniform parameter to set the value
+    //! \param depth render target to set as a texture view
+    //! \return boolean, true on success, false on error
+    bool SetUniformDepth(Uniform& u, const DepthStencilRef& depth);
+
+    //! Sets the render target stencil as a texture view in the specified uniform location 
+    //! \param u uniform parameter to set the value
+    //! \param stencil render target to set as a texture view
+    //! \return boolean, true on success, false on error
+    bool SetUniformStencil(Uniform& u, const DepthStencilRef& stencil);
 
     //! Sets a cube map as a view
     //! \param u uniform parameter to set the value
@@ -580,6 +602,11 @@ namespace Render
     //! \param slot the slot id as an output for compute
     void SetComputeOutput(VolumeTextureRef buffer, int slot);
 
+    //! Sets a compute output, in the given slot
+    //! \param volume texture to set as an output for compute
+    //! \param slot the slot id as an output for compute
+    void SetComputeOutput(RenderTargetRef target, int slot);
+
     //! Unsets all the state of the buffer outputs.
     void UnbindComputeOutputs();
 
@@ -597,6 +624,13 @@ namespace Render
     //! \param y the number of threadgroups in y
     //! \param z the number of threadgroups in z
     void Dispatch(unsigned int x, unsigned int y, unsigned int z);
+
+    //! Starts a new marker for gpu debugging.
+    //! \param marker - the marker string, null terminated.
+    void BeginMarker(const char* marker);
+
+    //! Ends a maker for gpu debugging.
+    void EndMarker();
 }
 }
 

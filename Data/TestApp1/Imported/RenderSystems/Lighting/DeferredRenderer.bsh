@@ -1,0 +1,39 @@
+//*******  Deferred Renderer Utility file *******//
+// Use this file to access deferred render system//
+//***********************************************//
+
+struct DeferredRenderState
+{
+	outHdrBuffer : RenderTarget;	
+	outDepthBuffer : DepthStencil;// depth buffer
+
+	gbuffer0 : RenderTarget;//8  bit RGB-color, A- smoothness
+	gbuffer1 : RenderTarget;//16 bit XYZ-normal,A-reflectance/metalmask
+};
+
+DeferredRenderState ReadDeferredRenderState(windowId : int, width : int, height : int, hdrBuffer : RenderTarget, depthBuffer : DepthStencil)
+{
+
+
+#ifdef MASTERSCRIPT_DEFINED
+	echo("Creating gbuffer targets begin");
+	gbuffer0 = CreateRenderTarget(RenderTargetConfig(width,height,FORMAT_RGBA_8_UNORM));
+    GlobalRegisterRenderTarget("gbuffer0", windowId, gbuffer0);
+
+	gbuffer1 = CreateRenderTarget(RenderTargetConfig(width,height,FORMAT_RGBA_16_FLOAT));
+    GlobalRegisterRenderTarget("gbuffer1", windowId, gbuffer1);
+	echo("Creating gbuffer targets end");
+#else
+	echo("Reading gbuffer targets begin");
+	gbuffer0 = GlobalFindRenderTarget("gbuffer0", windowId);
+	gbuffer1 =  GlobalFindRenderTarget("gbuffer1", windowId);
+	echo("Reading gbuffer targets end");
+#endif
+	newState = DeferredRenderState();
+	newState.outDepthBuffer = depthBuffer;
+	newState.outHdrBuffer = hdrBuffer;
+	newState.gbuffer0 = gbuffer0;
+	newState.gbuffer1 = gbuffer1;
+
+	return newState;
+}

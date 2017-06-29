@@ -370,6 +370,7 @@ void Timeline::Render(int windowIndex, Wnd::Window* window)
 {
     if (window != nullptr)
     {
+        Render::BeginMarker("Timeline");
 #if PEGASUS_ENABLE_PROXIES
         //lazy initialization in case we missed the initial call, because of live editing.
         //In this context, live editing means the user creating a new timeline from scratch from the editor.
@@ -389,9 +390,11 @@ void Timeline::Render(int windowIndex, Wnd::Window* window)
           ,window->GetRatioInv()
         );
 
+        Render::BeginMarker("MasterScript");
         renderInfo.relativeBeat = renderInfo.beat;
         // Render the content of each lane from top to bottom
         mScriptRunner.CallRender(renderInfo);
+        Render::EndMarker();
 
         //! \todo Add support for render passes
         for (unsigned int l = 0; l < mNumLanes; ++l)
@@ -402,6 +405,7 @@ void Timeline::Render(int windowIndex, Wnd::Window* window)
                 lane->Render(renderInfo);
             }
         }
+        Render::EndMarker();
     }
     else
     {
@@ -479,6 +483,8 @@ void Timeline::OnWindowCreated(int windowIndex)
 #if PEGASUS_ENABLE_PROXIES
     mWindowIsInitialized[windowIndex] = true;
 #endif
+    mScriptRunner.CallWindowCreated(windowIndex);
+
     for (unsigned int l = 0; l < mNumLanes; ++l)
     {
         Lane * lane = GetLane(l);
@@ -491,9 +497,6 @@ void Timeline::OnWindowCreated(int windowIndex)
 
 void Timeline::OnWindowDestroyed(int windowIndex)
 {
-#if PEGASUS_ENABLE_PROXIES
-    mWindowIsInitialized[windowIndex] = false;
-#endif
     for (unsigned int l = 0; l < mNumLanes; ++l)
     {
         Lane * lane = GetLane(l);
@@ -502,6 +505,10 @@ void Timeline::OnWindowDestroyed(int windowIndex)
             lane->OnWindowCreated(windowIndex);
         }
     }
+    mScriptRunner.CallWindowDestroyed(windowIndex);
+#if PEGASUS_ENABLE_PROXIES
+    mWindowIsInitialized[windowIndex] = false;
+#endif
 }
 
 bool Timeline::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, const AssetLib::Asset* asset)

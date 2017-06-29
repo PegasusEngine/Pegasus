@@ -90,7 +90,7 @@ bool Update_PropertyAccessCallback(const PropertyCallbackContext& context)
 void GenericResource::RegisterGenericResourceType(
     const PropertyGrid::PropertyGridClassInfo* propertyGridClass,
     BlockScript::BlockLib* lib,
-    BlockScript::FunctionDeclarationDesc* extraMethods,
+    const BlockScript::FunctionDeclarationDesc* extraMethods,
     unsigned int extraMethodsSize)
 {
     BlockScript::ClassTypeDesc nodeDef;

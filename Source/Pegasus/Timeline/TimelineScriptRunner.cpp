@@ -195,6 +195,11 @@ namespace Timeline
 
             // remove the listener. No need to listen for more events.
             mVmState->SetRuntimeListener(nullptr);
+
+            //restart initialization of all windows
+#if PEGASUS_ENABLE_PROXIES
+            Utils::Memset8(mWindowIsInitialized, 0, sizeof(mWindowIsInitialized));
+#endif
         }
     }
 
@@ -214,7 +219,7 @@ namespace Timeline
             mGlobalCache->Clear();
         }
 
-        #if PEGASUS_ENABLE_PROXIES
+#if PEGASUS_ENABLE_PROXIES
         Utils::Memset8(mWindowIsInitialized, 0, sizeof(mWindowIsInitialized));
 #endif
     }

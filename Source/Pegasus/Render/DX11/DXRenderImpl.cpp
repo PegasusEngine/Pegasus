@@ -499,6 +499,17 @@ void Pegasus::Render::SetComputeOutput(VolumeTextureRef buffer, int slot)
     gDXState.mComputeOutputsDirty = true;
 }
 
+void Pegasus::Render::SetComputeOutput(RenderTargetRef renderTarget, int slot)
+{
+    DXRenderContext * ctx = DXRenderContext::GetBindedContext();
+    ID3D11DeviceContext * deviceContext = ctx->GetD3D();
+    PG_ASSERT(slot < MAX_UAV_SLOT_COUNT);
+    Pegasus::Render::DXRenderTargetGPUData* texData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXRenderTargetGPUData, renderTarget->GetInternalData());
+    if (gDXState.mComputeOutputs[slot] == nullptr) ++gDXState.mComputeOutputsCount;
+    gDXState.mComputeOutputs[slot] = texData->mTextureView.mUav;
+    gDXState.mComputeOutputsDirty = true;
+}
+
 void Pegasus::Render::UnbindComputeOutputs()
 {
     DXRenderContext * ctx = DXRenderContext::GetBindedContext();
@@ -637,12 +648,11 @@ void Pegasus::Render::SetPrimitiveMode(Pegasus::Render::PrimitiveMode mode)
 /////////////   DRAW FUNCTION IMPLEMENTATION      /////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-void Pegasus::Render::Draw()
+static void DrawInternal(unsigned int instanceCount)
 {
     ID3D11DeviceContext * context;
     ID3D11Device * device;
     Pegasus::Render::GetDeviceAndContext(&device, &context);
-    
     if (gDXState.mDispatchedMeshGpuData == nullptr)
     {
         PG_LOG('ERR_', "A mesh must be set properly before calling draw!.");
@@ -650,7 +660,7 @@ void Pegasus::Render::Draw()
     }
     Pegasus::Render::DXMeshGPUData* mesh = gDXState.mDispatchedMeshGpuData;
 
-    if (gDXState.mPrimitiveMode == PRIMITIVE_AUTOMATIC)
+    if (gDXState.mPrimitiveMode == Pegasus::Render::PRIMITIVE_AUTOMATIC)
     {        
         context->IASetPrimitiveTopology(mesh->mTopology);
     }
@@ -671,20 +681,58 @@ void Pegasus::Render::Draw()
         }   
         else
         {
-            context->DrawIndexed(
-                mesh->mIndexCount,
-                0,
-                0
-            );
+            if (instanceCount > 0)
+            {
+                context->DrawIndexedInstanced(
+                    mesh->mIndexCount,
+                    instanceCount,
+                    0,
+                    0,
+                    0
+                );
+            }
+            else
+            {
+                context->DrawIndexed(
+                    mesh->mIndexCount,
+                    0,
+                    0
+                );
+            }
         }
     }
     else
     {
         PG_ASSERTSTR(!mesh->mIsIndexed, "Pegasus only supports indirect draw indexed. Setting a mesh as indirect, but not making it indexed.");
-        context->Draw(
-            mesh->mVertexCount,
-            0
-        );
+        if (instanceCount > 0)
+        {
+            context->DrawInstanced(
+                mesh->mVertexCount,
+                instanceCount,
+                0,
+                0
+            );
+        }
+        else
+        {
+            context->Draw(
+                mesh->mVertexCount,
+                0
+            );
+        }
+    }
+}
+
+void Pegasus::Render::Draw()
+{
+    DrawInternal(0);
+}
+
+void Pegasus::Render::DrawInstanced(unsigned int instanceCount)
+{
+    if (instanceCount > 0)
+    {
+        DrawInternal(instanceCount);
     }
 }
 
@@ -776,8 +824,11 @@ void Pegasus::Render::DXCreateBuffer(
     UINT extraMiscFlags)
 {
     
-    bool isCompute = (bindFlags & D3D11_BIND_UNORDERED_ACCESS) != 0;
-    bool isIndex = (bindFlags & D3D11_BIND_INDEX_BUFFER) != 0;
+    const bool isCompute = (bindFlags & D3D11_BIND_UNORDERED_ACCESS) != 0;
+    const bool isIndex = (bindFlags & D3D11_BIND_INDEX_BUFFER) != 0;
+    const bool isStructured = (extraMiscFlags & D3D11_RESOURCE_MISC_BUFFER_STRUCTURED) != 0;
+    PG_ASSERTSTR((isStructured && ((bufferSize % elementCount) == 0)) || !isStructured, "Structured buffer byte size is not a multiple of its stride.");
+
     D3D11_BUFFER_DESC& desc = outBuffer.mDesc;
     desc.Usage = isDynamic ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_DEFAULT;
     desc.ByteWidth = bufferSize;
@@ -785,7 +836,7 @@ void Pegasus::Render::DXCreateBuffer(
 
     desc.CPUAccessFlags = isDynamic ? D3D11_CPU_ACCESS_WRITE : 0;
     desc.MiscFlags = ((isCompute && !isIndex) ? D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS : 0) | extraMiscFlags;
-    desc.StructureByteStride = 0;
+    desc.StructureByteStride = isStructured ? (bufferSize / elementCount) : 0;
 
     D3D11_SUBRESOURCE_DATA srd;
     srd.pSysMem = initData;
@@ -810,11 +861,28 @@ void Pegasus::Render::DXCreateBuffer(
     if (isSrv && outBuffer.mBuffer != nullptr)
     {
         D3D11_SHADER_RESOURCE_VIEW_DESC& srvDesc = outBuffer.mSrvDesc;
-        srvDesc.Format = isIndex ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_TYPELESS;;
-        srvDesc.ViewDimension = D3D_SRV_DIMENSION_BUFFEREX;
-        srvDesc.BufferEx.FirstElement = 0;
-        srvDesc.BufferEx.NumElements = (UINT)desc.ByteWidth/4;
-        srvDesc.BufferEx.Flags =  isIndex ? 0 : D3D11_BUFFER_UAV_FLAG_RAW;
+        if (isIndex)
+        {
+            srvDesc.Format = DXGI_FORMAT_R16_UINT;
+            srvDesc.ViewDimension = D3D_SRV_DIMENSION_BUFFEREX;
+            srvDesc.BufferEx.FirstElement = 0;
+            srvDesc.BufferEx.NumElements = (UINT)desc.ByteWidth/2;
+            srvDesc.BufferEx.Flags = 0;
+        }
+        else if (isStructured)
+        {
+            srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+            srvDesc.ViewDimension = D3D_SRV_DIMENSION_BUFFER;
+            srvDesc.Buffer.ElementWidth = elementCount;
+        }
+        else
+        {
+            srvDesc.Format = DXGI_FORMAT_R32_TYPELESS;;
+            srvDesc.ViewDimension = D3D_SRV_DIMENSION_BUFFEREX;
+            srvDesc.BufferEx.FirstElement = 0;
+            srvDesc.BufferEx.NumElements = (UINT)desc.ByteWidth/4;
+            srvDesc.BufferEx.Flags = D3D11_BUFFER_UAV_FLAG_RAW;
+        }
         VALID_DECLARE(device->CreateShaderResourceView(outBuffer.mBuffer, &srvDesc, &outBuffer.mSrv));
     }
 }
@@ -863,6 +931,33 @@ Pegasus::Render::BufferRef Pegasus::Render::CreateComputeBuffer(int bufferSize, 
         nullptr, /*init data*/
         (D3D11_BIND_FLAG)((makeUniformBuffer ? D3D11_BIND_CONSTANT_BUFFER : 0) | (D3D11_BIND_UNORDERED_ACCESS) | (D3D11_BIND_SHADER_RESOURCE)),
         *bufferGpuData);
+
+    BufferConfig bc;
+    bc.mSize = bufferSize;
+    b->SetConfig(bc);
+    b->SetInternalData(bufferGpuData);
+    return b;
+}
+
+Pegasus::Render::BufferRef Pegasus::Render::CreateStructuredReadBuffer(int bufferSize, int elementCount)
+{
+    Pegasus::Render::Buffer* b = RENDER_NEW(Pegasus::Render::Buffer);
+    ID3D11DeviceContext * context;
+    ID3D11Device * device;
+    Pegasus::Render::GetDeviceAndContext(&device, &context);
+
+    Pegasus::Render::DXBufferGPUData* bufferGpuData = RENDER_NEW_GPU_DATA(Pegasus::Render::DXBufferGPUData);
+    Pegasus::Render::DXInitBufferData(*bufferGpuData);
+
+    Pegasus::Render::DXCreateBuffer(
+        device,
+        bufferSize,
+        elementCount, /*not at array, so no need for element count*/
+        true, /*isDynamic*/
+        nullptr, /*init data*/
+        (D3D11_BIND_FLAG)D3D11_BIND_SHADER_RESOURCE,
+        *bufferGpuData,
+        D3D11_RESOURCE_MISC_BUFFER_STRUCTURED);
 
     BufferConfig bc;
     bc.mSize = bufferSize;
@@ -1032,13 +1127,11 @@ void Pegasus::Render::SetBuffer(Pegasus::Render::BufferRef& dstBuffer, const voi
     size = size == -1 ? dstBuffer->GetConfig().mSize : size;
     int actualSize = size + offset;
     PG_ASSERT(d3dBuffer != nullptr);
-    PG_ASSERT(actualSize == dstBuffer->GetConfig().mSize);
+    PG_ASSERT(actualSize <= dstBuffer->GetConfig().mSize);
     
     ID3D11DeviceContext * context;
     ID3D11Device * device;
     Pegasus::Render::GetDeviceAndContext(&device, &context);
-    
-
 
     D3D11_MAPPED_SUBRESOURCE srd;
     if (context->Map(d3dBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &srd) == S_OK)
@@ -1205,6 +1298,22 @@ bool Pegasus::Render::SetUniformTextureRenderTarget(Pegasus::Render::Uniform& u,
 
 // ---------------------------------------------------------------------------
 
+bool Pegasus::Render::SetUniformDepth(Pegasus::Render::Uniform& u, const DepthStencilRef& depth)
+{
+    Pegasus::Render::DXDepthStencilGPUData * depthGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXDepthStencilGPUData, depth->GetInternalData());
+    return InternalSetShaderResource(u, depthGpuData->mSrvDepth);
+}
+
+// ---------------------------------------------------------------------------
+
+bool Pegasus::Render::SetUniformStencil(Pegasus::Render::Uniform& u, const DepthStencilRef& stencil)
+{
+    Pegasus::Render::DXDepthStencilGPUData * stencilGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXDepthStencilGPUData, stencil->GetInternalData());
+    return InternalSetShaderResource(u, stencilGpuData->mSrvStencil);
+}
+
+// ---------------------------------------------------------------------------
+
 bool Pegasus::Render::SetUniformBufferResource(Pegasus::Render::Uniform& u, const BufferRef& buffer)
 {
     Pegasus::Render::DXBufferGPUData * bufferGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXBufferGPUData, buffer->GetInternalData());
@@ -1240,6 +1349,28 @@ void Pegasus::Render::CleanInternalState()
     Utils::Memset32(gDXState.mComputeOutputs, 0, sizeof(gDXState.mComputeOutputs));
     gDXState.mComputeOutputsCount = 0;
     gDXState.mComputeOutputsDirty = false;
+}
+
+void Pegasus::Render::BeginMarker(const char* marker)
+{
+#if PEGASUS_GPU_DEBUG
+    Pegasus::Render::DXRenderContext* bindedContext = Pegasus::Render::DXRenderContext::GetBindedContext();
+    if (bindedContext != nullptr)
+    {
+        bindedContext->BeginMarker(marker);
+    }
+#endif
+}
+
+void Pegasus::Render::EndMarker()
+{
+#if PEGASUS_GPU_DEBUG
+    Pegasus::Render::DXRenderContext* bindedContext = Pegasus::Render::DXRenderContext::GetBindedContext();
+    if (bindedContext != nullptr)
+    {
+        bindedContext->EndMarker();
+    }
+#endif
 }
 
 #else
