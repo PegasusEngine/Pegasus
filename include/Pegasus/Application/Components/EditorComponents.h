@@ -24,6 +24,7 @@
 #include "Pegasus/Mesh/MeshGenerator.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/RenderSystems/Config.h"
+#include "Pegasus/Math/Matrix.h"
 
 //!Forward declarations
 namespace Pegasus {
@@ -255,7 +256,7 @@ private:
 #endif
 
 #if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
-// Camera debug component
+// Terrain debug component
 class Terrain3dDebugComponentState : public Wnd::WindowComponentState
 {
     BEGIN_DECLARE_PROPERTIES(Terrain3dDebugComponentState, WindowComponentState)
@@ -307,6 +308,76 @@ public:
 
 private:
     Alloc::IAllocator* mAlloc;
+};
+#endif
+
+#if RENDER_SYSTEM_CONFIG_ENABLE_LIGHTING
+
+// Terrain debug component
+class LightingDebugComponentState : public Wnd::WindowComponentState
+{
+    BEGIN_DECLARE_PROPERTIES(LightingDebugComponentState, WindowComponentState)
+        DECLARE_PROPERTY(bool, DrawLightLocators, false)
+        DECLARE_PROPERTY(bool, DrawLightInfluences, false)
+    END_DECLARE_PROPERTIES()
+
+public:
+    LightingDebugComponentState();
+    virtual ~LightingDebugComponentState() {}
+};
+
+class LightingDebugComponent : public Wnd::IWindowComponent
+{
+
+public:
+    //! Constructor
+    explicit LightingDebugComponent(Alloc::IAllocator* allocator) : mAlloc(allocator) {}
+
+    //! Destructor
+    virtual ~LightingDebugComponent() {}
+
+    //! Creation of a component state related to a window.
+    virtual Wnd::WindowComponentState* CreateState(const Wnd::ComponentContext& context);
+
+    //! Destruction of a component state related to a window.
+    virtual void DestroyState(const Wnd::ComponentContext& context, Wnd::WindowComponentState* state);
+
+    //! Load / create any rendering specific elements. Do not draw anything on the screen.
+    virtual void Load(Core::IApplicationContext* appContext);
+
+    //! Called once every tick by the app. Do any simulation operation on this function that is independant from a window.
+    //! The order of layers will determine the order of execution of Update.
+    virtual void Update(Core::IApplicationContext* appContext);
+
+    //! Update on the window. Called once per window. Use this to update the internal state.
+    //! \param context - context containing current window and app context
+    //! \param state - state related to the window that is being updated.
+    virtual void WindowUpdate(const Wnd::ComponentContext& context, Wnd::WindowComponentState* state);
+
+    //! Called once for every window. 
+    virtual void Render(const Wnd::ComponentContext& context, Wnd::WindowComponentState* state);
+
+    //! Shutdown the component. Destroy anything that was created in Load()
+    virtual void Unload(Core::IApplicationContext* appContext);
+
+    //! unique id
+    virtual unsigned int GetUniqueId() const { return COMPONENT_LIGHTING_DEBUG; }
+
+private:
+    Alloc::IAllocator* mAlloc;
+
+    Mesh::MeshRef mLocatorMesh;
+    Shader::ProgramLinkageRef mLocatorProgram;
+    Render::Uniform mLocatorConstantUniform;
+    Render::BufferRef mLocatorConstantBuffer;
+    struct LocatorConstants
+    {
+        Math::Mat44 billboardProj;
+    };
+
+    Render::RasterizerStateRef mRasterState;
+    Render::BlendingStateRef mBlendState;
+
 };
 #endif
 }

@@ -175,9 +175,15 @@ void CameraSystem::OnRegisterShaderGlobalConstants(Utils::Vector<ShaderGlobalCon
     desc.buffer = mCameraBuffer;
 }
 
-void CameraSystem::WindowUpdate(unsigned int width, unsigned int height)
+CameraRef CameraSystem::GetCurrentCamera()
 {
     CameraRef currentCamera = (mFreeCam != nullptr && mCurrentContext == CAM_WORLD_CONTEXT) || mCameras[mCurrentContext.GetValue()] == nullptr ? mFreeCam : mCameras[mCurrentContext.GetValue()];
+    return currentCamera;
+}
+
+void CameraSystem::WindowUpdate(unsigned int width, unsigned int height)
+{
+    CameraRef currentCamera = GetCurrentCamera();
 
     if (currentCamera != nullptr)
     {
