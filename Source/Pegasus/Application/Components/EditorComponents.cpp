@@ -714,6 +714,49 @@ void LightingDebugComponent::Load(Core::IApplicationContext* appContext)
         Render::GetUniformLocation(mSphereLightProgram, "LightInputBuffer", mSphereProgramLightBufferUniform);
     }
 
+    mSpotLightProgram = appContext->GetShaderManager()->CreateProgram();
+    {
+        const char spotVsShader[] =
+            "#include \"RenderSystems/Lighting/LightingCore.h\"\n"
+            "#include \"RenderSystems/Camera/Common.h\"\n"
+            "StructuredBuffer<LightInfo> LightInputBuffer;\n"
+            "void main(\n"
+            "in float4 p0 : POSITION0,\n"
+            "in uint vertexId   : SV_VertexID,\n"
+            "in uint instanceId : SV_InstanceID,\n"
+            " out float4 outPos : SV_Position)\n"
+            "{\n"
+            "   LightInfo info = LightInputBuffer[instanceId];\n"
+            "   float4 offsetScale = info.attr1;\n"
+            "   float4 dirAndSpeed = info.attr2;\n"
+            "   float3 scaledPos = p0.xyz*offsetScale.w;\n"
+            "   if (vertexId > 0)\n"
+            "   {\n"
+            "       p0.xy *= offsetScale.w;\n"
+            "       p0.z  = dirAndSpeed.w;\n"
+            "   }\n"
+            "   p0.xyz += offsetScale.xyz;\n"
+            "   outPos = mul(p0, gViewProj);\n"
+            "}\n";
+
+        const char spotPsShader[] =
+            "float4 main() : SV_Target\n"
+            "{\n"
+            "   return float4(0.3,1.0,0.1,1.0);\n"
+            "}\n";
+
+        Shader::ShaderStageRef vs = appContext->GetShaderManager()->CreateShader();
+        vs->SetSource(Pegasus::Shader::VERTEX, spotVsShader, sizeof(spotVsShader));
+
+        Shader::ShaderStageRef ps = appContext->GetShaderManager()->CreateShader();
+        ps->SetSource(Pegasus::Shader::FRAGMENT, spotPsShader, sizeof(spotPsShader));
+
+        mSpotLightProgram->SetShaderStage(vs);
+        mSpotLightProgram->SetShaderStage(ps);
+
+        Render::GetUniformLocation(mSpotLightProgram, "LightInputBuffer", mSpotLightProgramBufferUniform);
+    }
+
     //this is the mesh config used by all procedurally generated debug lines.
     MeshConfiguration meshConfig;
     meshConfig.SetIsIndexed(true);
@@ -910,10 +953,15 @@ void LightingDebugComponent::Render(const Wnd::ComponentContext& context, Wnd::W
 
             SetMesh(mLocatorMesh);
             DrawInstanced(lightCount);
-
+            /*
             SetProgram(mSphereLightProgram);
             SetUniformBufferResource(mSphereProgramLightBufferUniform, gLightingSystemInstance->GetCulledLightBuffer());
             SetMesh(mSphereLightMesh);            
+            DrawInstanced(lightCount);
+            */
+            SetProgram(mSpotLightProgram);
+            SetUniformBufferResource(mSpotLightProgramBufferUniform, gLightingSystemInstance->GetCulledLightBuffer());
+            SetMesh(mSpotLightMesh);            
             DrawInstanced(lightCount);
         }
     }

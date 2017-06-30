@@ -390,8 +390,10 @@ private:
     Shader::ProgramLinkageRef mSphereLightProgram;
     Render::Uniform mSphereProgramLightBufferUniform;
 
-
     Mesh::MeshRef mSpotLightMesh;
+    Shader::ProgramLinkageRef mSpotLightProgram;
+    Render::Uniform mSpotLightProgramBufferUniform;
+
 
 };
 #endif
