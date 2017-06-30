@@ -646,16 +646,18 @@ void LightingDebugComponent::DestroyState(const Wnd::ComponentContext& context, 
 void LightingDebugComponent::Load(Core::IApplicationContext* appContext)
 {
     //locator program
+    mLocatorProgram = appContext->GetShaderManager()->CreateProgram();
     {
         const char locatorVsShader[] =
             "#include \"RenderSystems/Lighting/LightingCore.h\"\n"
             "StructuredBuffer<LightInfo> LightInputBuffer;\n"
-            "cbuffer locatorConstants { float4x4 gBillboard; float4x4 gViewProj; float4 scales; }"
+            "cbuffer locatorConstants { float4x4 gBillboard; float4x4 gViewProj; float4 eye;}"
             "void main(in float4 p0 : POSITION0, in uint instanceId : SV_InstanceID, out float4 outPos : SV_Position)\n"
             "{\n"
             "   LightInfo info = LightInputBuffer[instanceId];\n"
             "   float3 offset = info.attr1.xyz;\n"
-            "   float4 billboarded = mul(p0,gBillboard) + float4(offset,0.0);\n"            
+            "   float scale = distance(eye.xyz, offset);\n"
+            "   float4 billboarded = mul(float4(p0.xyz*scale,1.0),gBillboard) + float4(offset,0.0);\n"            
             "   outPos = mul(billboarded,gViewProj);\n"
             "}\n";
 
@@ -671,7 +673,6 @@ void LightingDebugComponent::Load(Core::IApplicationContext* appContext)
         Shader::ShaderStageRef ps = appContext->GetShaderManager()->CreateShader();
         ps->SetSource(Pegasus::Shader::FRAGMENT, locatorPsShader, sizeof(locatorPsShader));
 
-        mLocatorProgram = appContext->GetShaderManager()->CreateProgram();
         mLocatorProgram->SetShaderStage(vs);
         mLocatorProgram->SetShaderStage(ps);
 
@@ -679,6 +680,38 @@ void LightingDebugComponent::Load(Core::IApplicationContext* appContext)
         mLocatorConstantBuffer = Render::CreateUniformBuffer(sizeof(LocatorConstants));
 
         Render::GetUniformLocation(mLocatorProgram, "LightInputBuffer", mLightBufferUniform);
+    }
+
+    mSphereLightProgram = appContext->GetShaderManager()->CreateProgram();
+    {
+        const char sphereVsShader[] =
+            "#include \"RenderSystems/Lighting/LightingCore.h\"\n"
+            "#include \"RenderSystems/Camera/Common.h\"\n"
+            "StructuredBuffer<LightInfo> LightInputBuffer;\n"
+            "void main(in float4 p0 : POSITION0, in uint instanceId : SV_InstanceID, out float4 outPos : SV_Position)\n"
+            "{\n"
+            "   LightInfo info = LightInputBuffer[instanceId];\n"
+            "   float4 offsetScale = info.attr1;\n"
+            "   float3 scaledPos = p0.xyz*offsetScale.w;\n"
+            "   outPos = mul(float4(scaledPos + offsetScale.xyz,1.0),gViewProj);\n"
+            "}\n";
+
+        const char spherePsShader[] =
+            "float4 main() : SV_Target\n"
+            "{\n"
+            "   return float4(0.3,1.0,0.1,1.0);\n"
+            "}\n";
+
+        Shader::ShaderStageRef vs = appContext->GetShaderManager()->CreateShader();
+        vs->SetSource(Pegasus::Shader::VERTEX, sphereVsShader, sizeof(sphereVsShader));
+
+        Shader::ShaderStageRef ps = appContext->GetShaderManager()->CreateShader();
+        ps->SetSource(Pegasus::Shader::FRAGMENT, spherePsShader, sizeof(spherePsShader));
+
+        mSphereLightProgram->SetShaderStage(vs);
+        mSphereLightProgram->SetShaderStage(ps);
+
+        Render::GetUniformLocation(mSphereLightProgram, "LightInputBuffer", mSphereProgramLightBufferUniform);
     }
 
     //this is the mesh config used by all procedurally generated debug lines.
@@ -743,6 +776,84 @@ void LightingDebugComponent::Load(Core::IApplicationContext* appContext)
         mLocatorMesh->SetGeneratorInput(generator);
     }
 
+
+    mSphereLightMesh = mm->CreateMeshNode();
+    {
+        //procedurally create a little light bulb mesh.
+        MeshGeneratorRef generator = mm->CreateMeshGeneratorNode("CustomGenerator");
+        CustomGenerator* customGenerator = static_cast<CustomGenerator*>(&(*generator));
+        customGenerator->SetConfiguration(meshConfig);
+        MeshDataRef meshData = customGenerator->EditMeshData();
+        const int arcVertCount = 15;
+        const float arcVertCountF = (float)arcVertCount;
+        const float arcPartAngle = Math::P_2_PI / arcVertCountF;
+        short arcVertIndex = 0;
+        for (int axis = 0; axis < 3; ++axis)
+        {
+            for (int i = 0; i < arcVertCount; ++i)
+            {
+                float angle = arcPartAngle * (float)i;
+                float s = Math::Sin(angle);
+                float c = Math::Cos(angle);
+                Vec4 v;
+                if (axis == 0)
+                {
+                    v = Vec4(s,0.0f,c,1.0f);
+                }
+                else if (axis == 1)
+                {
+                    v = Vec4(s,c,0.0f,1.0f);
+                }
+                else
+                {
+                    v = Vec4(0.0f,s,c,1.0f);
+                }
+                meshData->PushVertex(v,0);
+                if (i < arcVertCount - 1)
+                {
+                    meshData->PushIndex(arcVertIndex);
+                    meshData->PushIndex(arcVertIndex + 1);
+                }
+                else
+                {
+                    meshData->PushIndex(arcVertIndex);
+                    meshData->PushIndex(arcVertIndex-i);
+                }
+                arcVertIndex++;
+            }
+        }
+        mSphereLightMesh->SetGeneratorInput(generator);
+    }
+
+
+    mSpotLightMesh = mm->CreateMeshNode();
+    {
+        //procedurally create a little light bulb mesh.
+        MeshGeneratorRef generator = mm->CreateMeshGeneratorNode("CustomGenerator");
+        CustomGenerator* customGenerator = static_cast<CustomGenerator*>(&(*generator));
+        customGenerator->SetConfiguration(meshConfig);
+        MeshDataRef meshData = customGenerator->EditMeshData();
+        const int arcVertCount = 14;
+        const float arcVertCountF = (float)arcVertCount;
+        const float vertAngle = Math::P_2_PI / arcVertCountF;
+        meshData->PushVertex(Vec4(0.0f,0.0f,0.0f,1.0f),0);
+        for (int i = 0 ; i < arcVertCount; ++i)
+        {
+            float angle = (float)i * vertAngle;
+            float s = Math::Sin(angle);
+            float c = Math::Cos(angle);
+            meshData->PushVertex(Vec4(s,c,1.0f,1.0f), 0);
+            meshData->PushIndex((short)i+1);
+            meshData->PushIndex((i < arcVertCount - 1) ? (short)i+2 : 1);
+        }
+        for (int i = 0; i < arcVertCount; ++i)
+        {
+            meshData->PushIndex(0);
+            meshData->PushIndex((short)i+1);
+        }
+        mSpotLightMesh->SetGeneratorInput(generator);
+    }
+
     //default raster / blend states
     RasterizerConfig rasterConfig;
     rasterConfig.mCullMode = RasterizerConfig::NONE_CM;
@@ -779,7 +890,7 @@ void LightingDebugComponent::Render(const Wnd::ComponentContext& context, Wnd::W
 
             CameraRef dispatchedCam = gCameraSystem->GetCurrentCamera();
             const Camera::Camera::GpuCamData& camGpuData = dispatchedCam->GetGpuData();
-            float bbScale = -camGpuData.view.m34*dispatchedCam->GetFov()*0.15f;
+            float bbScale = dispatchedCam->GetFov()*0.15f;
             Mat44 scale = MAT44_IDENTITY*bbScale;       
             Mat44 billboard = camGpuData.invView;
             billboard.m14 = 0.0f;
@@ -787,9 +898,10 @@ void LightingDebugComponent::Render(const Wnd::ComponentContext& context, Wnd::W
             billboard.m34 = 0.0f;    
             Mult44_44(lc.billboard,billboard,scale);
             lc.viewProj = camGpuData.viewProj;
-
-            lc.scale = 1.0f;
-            lc.scaleInv = 1.0f;
+            lc.eyeX = camGpuData.invView.m14;
+            lc.eyeY = camGpuData.invView.m24;
+            lc.eyeZ = camGpuData.invView.m34;
+            lc.eyeW = 1.0f;
             SetBuffer(mLocatorConstantBuffer, &lc);
 
             SetProgram(mLocatorProgram);
@@ -797,6 +909,11 @@ void LightingDebugComponent::Render(const Wnd::ComponentContext& context, Wnd::W
             SetUniformBufferResource(mLightBufferUniform, gLightingSystemInstance->GetCulledLightBuffer());
 
             SetMesh(mLocatorMesh);
+            DrawInstanced(lightCount);
+
+            SetProgram(mSphereLightProgram);
+            SetUniformBufferResource(mSphereProgramLightBufferUniform, gLightingSystemInstance->GetCulledLightBuffer());
+            SetMesh(mSphereLightMesh);            
             DrawInstanced(lightCount);
         }
     }

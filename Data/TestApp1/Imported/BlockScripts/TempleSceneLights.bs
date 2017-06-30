@@ -13,11 +13,11 @@ spotLight.posAndRadius = float4(-2.0,3.9,-4.0,2.0);
 spotLight.dirAndSpread = float4(1.0,-1.0,2.0,0.5);
 l2 = templeLightRig->AddLight(spotLight);
 
-extern spotLightPos1 = float3(-2.0,3.9,-4.0);
+extern spotLightPos1 = float4(-2.0,3.9,-4.0,1.0);
 
 int Timeline_Update(info : UpdateInfo)
 {
-	spotLight.posAndRadius = float4(spotLightPos1,0.8);
+	spotLight.posAndRadius = spotLightPos1;
 	templeLightRig->UpdateLight(l2, spotLight);
 	SetActiveLightRig(templeLightRig);
 }

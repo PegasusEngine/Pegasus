@@ -366,6 +366,7 @@ public:
 private:
     Alloc::IAllocator* mAlloc;
 
+    //light locator
     Mesh::MeshRef mLocatorMesh;
     Shader::ProgramLinkageRef mLocatorProgram;
     Render::Uniform mLocatorConstantUniform;
@@ -375,14 +376,22 @@ private:
     {
         Math::Mat44 billboard;
         Math::Mat44 viewProj;
-        float scale;
-        float scaleInv;
-        float pad0;
-        float pad1;
+        float eyeX;
+        float eyeY;
+        float eyeZ;
+        float eyeW;
     };
 
     Render::RasterizerStateRef mRasterState;
     Render::BlendingStateRef mBlendState;
+
+
+    Mesh::MeshRef mSphereLightMesh;
+    Shader::ProgramLinkageRef mSphereLightProgram;
+    Render::Uniform mSphereProgramLightBufferUniform;
+
+
+    Mesh::MeshRef mSpotLightMesh;
 
 };
 #endif

@@ -8,10 +8,6 @@
     lanes : [{
             type : Lane,
             name : "",
-            Blocks : []
-        }, {
-            type : Lane,
-            name : "",
             Blocks : [{
                     type : Block,
                     props : {
@@ -20,11 +16,11 @@
                         Name : TempleLights,
                         Color : [203, 231, 18],
                         _o_p_ : {
-                            spotLightPos1 : [11.000000, 49.000000, 37.000000],
+                            spotLightPos1 : [44.000000, 29.900000, -4.000000, 12.000000],
                             __schema__ : {
-                                sizetypes : [327692],
+                                sizetypes : [393232],
                                 names : [spotLightPos1],
-                                typeNames : [float3]
+                                typeNames : [float4]
                             }
                         },
                         script : {@BlockScripts/TempleSceneLights.bs}
@@ -53,6 +49,10 @@
                         script : {@BlockScripts/TempleModel.bs}
                     }
                 }]
+        }, {
+            type : Lane,
+            name : "",
+            Blocks : []
         }, {
             type : Lane,
             name : "",

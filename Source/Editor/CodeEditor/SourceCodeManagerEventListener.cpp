@@ -47,14 +47,20 @@ void SourceCodeManagerEventListener::OnEvent(Pegasus::Core::IEventUserData * use
         emit( OnCompilationEnd(e.GetLogString()) );
         if (previousVal != e.IsSuccess())
         {
-            QString assetName;
+            QString assetName = tr("[NoAsset]");
             if (codeUserData->IsProgram())
             {
-                assetName = codeUserData->GetProgram()->GetOwnerAsset()->GetPath();
+                if (codeUserData->GetProgram()->GetOwnerAsset() != nullptr)
+                {
+                    assetName = codeUserData->GetProgram()->GetOwnerAsset()->GetPath();
+                }
             }
             else
             {
-                assetName = codeUserData->GetSourceCode()->GetOwnerAsset()->GetPath();
+                if (codeUserData->GetSourceCode()->GetOwnerAsset() != nullptr)
+                {
+                    assetName = codeUserData->GetSourceCode()->GetOwnerAsset()->GetPath();
+                }
             }
             emit(OnTagValidity(assetName, e.IsSuccess()));
         }

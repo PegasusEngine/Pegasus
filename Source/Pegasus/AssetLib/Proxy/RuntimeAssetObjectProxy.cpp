@@ -24,6 +24,7 @@ RuntimeAssetObjectProxy::~RuntimeAssetObjectProxy()
 
 IAssetProxy* RuntimeAssetObjectProxy::GetOwnerAsset() const
 {
+    if (mObject->GetOwnerAsset() == nullptr) return nullptr;
     return mObject->GetOwnerAsset()->GetProxy();
 }
 
