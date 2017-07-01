@@ -7,17 +7,19 @@ sphereLight.colorAndIntensity = float4(0.5,0.7,0.2,0.5);
 sphereLight.posAndRadius = float4(0.5,0.5,0.5,4.0);
 l1 = templeLightRig->AddLight(sphereLight);
 
+extern spotLight1PosRad = float4(-2.0,3.9,-4.0,1.0);
+extern spotLight1DirSpread = float4(0.0,0.0,1.0,3.0);
+
 spotLight = SpotLight();
 spotLight.colorAndIntensity = float4(0.8,0.9,0.4,0.8);
-spotLight.posAndRadius = float4(-2.0,3.9,-6.0,0.0);
-spotLight.dirAndSpread = float4(1.0,-1.0,2.0,8.0);
+spotLight.posAndRadius = spotLight1PosRad;
+spotLight.dirAndSpread = spotLight1DirSpread;
 l2 = templeLightRig->AddLight(spotLight);
-
-extern spotLightPos1 = float4(-2.0,3.9,-4.0,1.0);
 
 int Timeline_Update(info : UpdateInfo)
 {
-	spotLight.posAndRadius = spotLightPos1;
+	spotLight.posAndRadius = spotLight1PosRad;
+	spotLight.dirAndSpread = spotLight1DirSpread;
 	templeLightRig->UpdateLight(l2, spotLight);
 	SetActiveLightRig(templeLightRig);
 }

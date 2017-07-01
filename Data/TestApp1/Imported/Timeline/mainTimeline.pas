@@ -16,11 +16,12 @@
                         Name : TempleLights,
                         Color : [203, 231, 18],
                         _o_p_ : {
-                            spotLightPos1 : [44.000000, 29.900000, -4.000000, 12.000000],
+                            spotLight1PosRad : [-2.000000, 3.900000, -4.000000, 5.000000],
+                            spotLight1DirSpread : [1.000000, 0.000000, 0.000000, 9.000000],
                             __schema__ : {
-                                sizetypes : [393232],
-                                names : [spotLightPos1],
-                                typeNames : [float4]
+                                sizetypes : [393232, 393232],
+                                names : [spotLight1PosRad, spotLight1DirSpread],
+                                typeNames : [float4, float4]
                             }
                         },
                         script : {@BlockScripts/TempleSceneLights.bs}
