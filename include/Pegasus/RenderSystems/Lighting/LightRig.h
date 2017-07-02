@@ -33,6 +33,8 @@ class LightRig : public Application::GenericResource
     END_DECLARE_PROPERTIES()
 
 public:
+
+    // Must match definitions in shader header LightingCore.h
     enum LightType
     {
         LIGHT_TYPE_BEGIN = 0,

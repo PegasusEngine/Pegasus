@@ -75,5 +75,6 @@
         <file>MiscViews/SpinIcon.png</file>
         <file>MiscViews/SpinOnceIcon.png</file>
         <file>MiscViews/lightDebug.png</file>
+        <file>MiscViews/lightDebugInfluence.png</file>
     </qresource>
 </RCC>

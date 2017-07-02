@@ -245,6 +245,12 @@ QToolBar * ViewportDockWidget::CreateMenu(QWidget * mainWidget)
     lightDebugButton->setToolTip(tr("Enable light debug (visualizes light locators)."));
     RegisterPropertyButton(lightDebugButton, "DrawLightLocators", Pegasus::App::COMPONENT_LIGHTING_DEBUG);
 
+    QIcon lightDebugInfluenceIcon(":MiscViews/lightDebugInfluence.png");
+    QPushButton* lightDebugInfluenceButton = new QPushButton(lightDebugInfluenceIcon,tr(""),mainWidget);
+    lightDebugInfluenceButton->setCheckable(true);
+    lightDebugInfluenceButton->setChecked(true);
+    lightDebugInfluenceButton->setToolTip(tr("Enable light influence debug (visualizes light influences)."));
+    RegisterPropertyButton(lightDebugInfluenceButton, "DrawLightInfluences", Pegasus::App::COMPONENT_LIGHTING_DEBUG);
 
     QToolBar* tb = new QToolBar(this);
     tb->addWidget(freeCamera);
@@ -262,6 +268,7 @@ QToolBar * ViewportDockWidget::CreateMenu(QWidget * mainWidget)
     tb->addWidget(terrainCamCullButton);
     tb->addSeparator();
     tb->addWidget(lightDebugButton);
+    tb->addWidget(lightDebugInfluenceButton);
 
     return tb;
 }

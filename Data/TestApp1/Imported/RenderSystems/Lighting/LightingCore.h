@@ -16,6 +16,10 @@ struct LightInfo
 	int2   attr3;
 };
 
+// Light type definitions that must match C++'s LightRig.h LightType enum
+#define LIGHTTYPE_SPHERE 0
+#define LIGHTTYPE_SPOT 1
+ 
 #if USE_DEFERRED_RENDERER
 #define LightingOutput GBuffer
 #else

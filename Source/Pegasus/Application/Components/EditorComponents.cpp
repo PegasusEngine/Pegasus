@@ -395,24 +395,29 @@ void GridComponent::WindowUpdate(const Wnd::ComponentContext& context, Wnd::Wind
 
 void GridComponent::Render(const Wnd::ComponentContext& context, Wnd::WindowComponentState* state)
 {
+
     GridComponentState* gridState = static_cast<GridComponentState*>(state);
     DispatchDefaultRenderTarget();
     
     if (gridState->GetEnableGrid())
     {
+        Render::BeginMarker("GridComponentGrid");
         SetProgram(mGridProgram);
         SetRasterizerState(mRasterState);    
         SetMesh(mGrid);
         Draw();
+        Render::EndMarker();
     }
 
     
     if (gridState->GetEnableReticle())
     {
+        Render::BeginMarker("GridComponentAxisReticle");
         SetProgram(mReticleProgram);
         SetRasterizerState(mReticleRasterState);
         SetMesh(mReticle); 
         Draw();
+        Render::EndMarker();
     }
 
 }
@@ -561,6 +566,7 @@ void CameraDebugComponent::Render(const Wnd::ComponentContext& context, Wnd::Win
     CameraDebugComponentState* camState = static_cast<CameraDebugComponentState*>(state);
     if (camState->GetEnableDebug())
     {
+        Render::BeginMarker("CameraDebugComponent");
         for (unsigned i = 0; i < Camera::Camera::GetCameraCount(); ++i)
         {
             Camera::Camera* debugCam = Camera::Camera::GetCameraInstance(i);
@@ -579,6 +585,7 @@ void CameraDebugComponent::Render(const Wnd::ComponentContext& context, Wnd::Win
                 Draw();
             }
         }
+        Render::EndMarker();
     }
 }
 #endif
@@ -691,6 +698,7 @@ void LightingDebugComponent::Load(Core::IApplicationContext* appContext)
             "void main(in float4 p0 : POSITION0, in uint instanceId : SV_InstanceID, out float4 outPos : SV_Position)\n"
             "{\n"
             "   LightInfo info = LightInputBuffer[instanceId];\n"
+            "   if (info.attr3.x != LIGHTTYPE_SPHERE) { outPos = float4(2.0,2.0,2.0,1.0); return;}\n"
             "   float4 offsetScale = info.attr1;\n"
             "   float3 scaledPos = p0.xyz*offsetScale.w;\n"
             "   outPos = mul(float4(scaledPos + offsetScale.xyz,1.0),gViewProj);\n"
@@ -730,6 +738,7 @@ void LightingDebugComponent::Load(Core::IApplicationContext* appContext)
             "   float4 offsetScale = info.attr1;\n"
             "   float4 dirAndSpeed = info.attr2;\n"
             "   float3 scaledPos = p0.xyz*offsetScale.w;\n"
+            "   if (info.attr3.x != LIGHTTYPE_SPOT) { outPos = float4(2.0,2.0,2.0,1.0); return;}\n"
             "   if (vertexId > 0)\n"
             "   {\n"
             "       p0.xy *= dirAndSpeed.w;\n"
@@ -923,14 +932,16 @@ void LightingDebugComponent::WindowUpdate(const Wnd::ComponentContext& context, 
 }
 
 void LightingDebugComponent::Render(const Wnd::ComponentContext& context, Wnd::WindowComponentState* state)
-{
+{    
     LightingDebugComponentState* lightDebugState = static_cast<LightingDebugComponentState*>(state);
     if (lightDebugState->GetDrawLightLocators())
     {
+        Render::BeginMarker("LightDebugComponent");
         DispatchDefaultRenderTarget();
         int lightCount = gLightingSystemInstance->GetActiveLightCount();
         if (lightCount > 0)
         {
+            Render::BeginMarker("DrawDebugLocators");
             SetRasterizerState(mRasterState);
             SetBlendingState(mBlendState);
 
@@ -959,16 +970,22 @@ void LightingDebugComponent::Render(const Wnd::ComponentContext& context, Wnd::W
 
             SetMesh(mLocatorMesh);
             DrawInstanced(lightCount);
-            /*
-            SetProgram(mSphereLightProgram);
-            SetUniformBufferResource(mSphereProgramLightBufferUniform, gLightingSystemInstance->GetCulledLightBuffer());
-            SetMesh(mSphereLightMesh);            
-            DrawInstanced(lightCount);
-            */
-            SetProgram(mSpotLightProgram);
-            SetUniformBufferResource(mSpotLightProgramBufferUniform, gLightingSystemInstance->GetCulledLightBuffer());
-            SetMesh(mSpotLightMesh);            
-            DrawInstanced(lightCount);
+            Render::EndMarker();
+            if (lightDebugState->GetDrawLightInfluences())
+            {
+                Render::BeginMarker("DrawDebugInfluences");
+                SetProgram(mSphereLightProgram);
+                SetUniformBufferResource(mSphereProgramLightBufferUniform, gLightingSystemInstance->GetCulledLightBuffer());
+                SetMesh(mSphereLightMesh);
+                DrawInstanced(lightCount);
+
+                SetProgram(mSpotLightProgram);
+                SetUniformBufferResource(mSpotLightProgramBufferUniform, gLightingSystemInstance->GetCulledLightBuffer());
+                SetMesh(mSpotLightMesh);
+                DrawInstanced(lightCount);
+                Render::EndMarker();
+            }
+            Render::EndMarker();
         }
     }
 }
