@@ -170,6 +170,12 @@ void Pegasus::Shader::ShaderStage::ClearChildrenIncludes()
 
 void Pegasus::Shader::ShaderStage::GenerateData()
 {
+#if PEGASUS_ENABLE_PROXIES
+    //optimization: keep references of the include, to speed up compilation.
+    //Why? if we recompile, and the includes dont change, we wont destroy / reload the file
+    //of the include. Not doing this will cause massive slow down in shader compilation because of disk IO
+    Utils::Vector<ShaderSourceRef> oldIncludeList = mIncludeReferences; 
+#endif
     ClearChildrenIncludes();
 
     PG_ASSERT(GetData() != nullptr);
