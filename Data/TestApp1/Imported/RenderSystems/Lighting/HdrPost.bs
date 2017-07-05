@@ -1,0 +1,11 @@
+//*******************************************************//
+//*******  Hdr Post  - resolves into tone mapping *******//
+//*******************************************************//
+
+
+hdrPostProgram = LoadProgram("RenderSystems/Lighting/HdrPost.pas");
+
+int Timeline_Render(info: RenderInfo)
+{
+
+}

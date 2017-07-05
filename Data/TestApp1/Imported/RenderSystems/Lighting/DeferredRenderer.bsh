@@ -1,7 +1,7 @@
 //*******  Deferred Renderer Utility file *******//
 // Use this file to access deferred render system//
 //***********************************************//
-
+#define GBUFFER_COUNT 2
 struct DeferredRenderState
 {
 	outHdrBuffer : RenderTarget;	

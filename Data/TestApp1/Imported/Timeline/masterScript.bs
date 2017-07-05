@@ -38,6 +38,14 @@ int Timeline_Update(info : UpdateInfo)
 
 int Timeline_Render(info: RenderInfo)
 {
+	viewState = GetViewState(info.windowId);
+	SetClearColorValue(float4(0.0,0.0,0.0,0.0));
+	SetDepthClearValue(1.0);
+	SetRasterizerState(defaultRasterState);
+	//clear depth stencil
+	SetRenderTarget(viewState.ldrSurface,viewState.depthSurface);
+	Clear(1,1,1);
+	UnbindRenderTargets();
 
 	//SetRasterizerState(hackedCCWMode);
 	/*if (EnableTerrain)
@@ -47,7 +55,6 @@ int Timeline_Render(info: RenderInfo)
 		SetProgram(terrainShader);
 		3dTerrain->Draw();
 	}*/
-	SetRasterizerState(defaultRasterState);
 	//* Some demo ideas!!!
 	//* Create a kickass sky / sun with directional.
 	//* Add pyramid with normal map generated procedurally

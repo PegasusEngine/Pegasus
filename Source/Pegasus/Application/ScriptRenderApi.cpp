@@ -245,8 +245,8 @@ static void RegisterRenderEnums(BlockLib* lib)
             "BlendOperator",
             {
                 { "NONE_BO", BlendingConfig::NONE_BO },
-                { "ADD_BO", BlendingConfig::NONE_BO },
-                { "SUB_BO", BlendingConfig::NONE_BO }
+                { "ADD_BO", BlendingConfig::ADD_BO },
+                { "SUB_BO", BlendingConfig::SUB_BO }
             },
             BlendingConfig::COUNT_BO
         },
@@ -1716,8 +1716,22 @@ void Render_SetRenderTarget(FunCallbackContext& context)
 }
 void Render_SetRenderTarget2(FunCallbackContext& context) 
 { 
-    //TODO: implement depth render targets
-    PG_LOG('ERR_', "Unimplemented.");
+    FunParamStream stream(context);
+    BsVmState* state = context.GetVmState();
+    RenderCollection* renderCollection = GetContainer(state);
+    CHECK_PERMISSIONS(renderCollection, "SetRenderTarget2", PERMISSIONS_RENDER_API_CALL);
+    RenderCollection::CollectionHandle& rtHandle = stream.NextArgument<RenderCollection::CollectionHandle>();
+    RenderCollection::CollectionHandle& dtHandle = stream.NextArgument<RenderCollection::CollectionHandle>();
+    if (rtHandle != RenderCollection::INVALID_HANDLE && dtHandle != RenderCollection::INVALID_HANDLE)
+    {
+        Render::RenderTargetRef rt = RenderCollection::GetResource<Render::RenderTarget>(renderCollection,rtHandle);
+        Render::DepthStencilRef dt = RenderCollection::GetResource<Render::DepthStencil>(renderCollection,dtHandle);
+        Render::SetRenderTarget(rt,dt);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Invalid render target /depth target being set");
+    }
 }
 
 void Render_SetRenderTargets(FunCallbackContext& context)
@@ -1736,6 +1750,11 @@ void Render_SetRenderTargets(FunCallbackContext& context)
     }
 
     //check the type here of the unknown pointer passed as the second parameter
+    /*
+    //Really sad: but this awesome type check cant happen because of const correctness violation due to the type system of blockscript. 
+    // forward computation due to late type insertion during struct computation is the main culprit. 
+    // Fix it in bs.y and then this stuff is possible. 
+     
     const TypeDesc* unknownType = context.GetArgExps()->GetTail()->GetExp()->GetTypeDesc();
     if (unknownType->GetModifier() != TypeDesc::M_ARRAY || 
         Utils::Strcmp(unknownType->GetChild()->GetName(), "RenderTarget")) //quick check, we should use Equals 
@@ -1745,6 +1764,7 @@ void Render_SetRenderTargets(FunCallbackContext& context)
         PG_LOG('ERR_', "Second argument passed on SetRenderTargets must be an array of RenderTarget. Function failed.");
         return;
     }
+    */
 
     
     PG_ASSERT(targetsOffset < state->GetRamSize());
@@ -1755,7 +1775,7 @@ void Render_SetRenderTargets(FunCallbackContext& context)
     Pegasus::Render::RenderTargetRef targets[Pegasus::Render::Constants::MAX_RENDER_TARGETS];
     for (int i = 0; i < targetCounts; ++i)
     {
-        if (handles[i] != RenderCollection::INVALID_HANDLE)
+        if (handles[i] == RenderCollection::INVALID_HANDLE)
         {
             PG_LOG('ERR_', "Trying to set incorrect handle in SetRenderTargets!");
             return;
@@ -1763,6 +1783,12 @@ void Render_SetRenderTargets(FunCallbackContext& context)
         else
         {
             targets[i] = RenderCollection::GetResource<Render::RenderTarget>(renderCollection, handles[i]);
+            //relly on valid target for this function to work.
+            if (targets[i]==nullptr)
+            {
+                PG_LOG('ERR_', "Invalid target bound on * type of SetRenderTargets! Make sure you pass a static array of RenderTarget");
+                return;
+            }
         }
     }
 
@@ -1945,7 +1971,7 @@ void Render_CreateBlendingState(FunCallbackContext& context)
     RenderCollection* collection = GetContainer(state);
     CHECK_PERMISSIONS(collection, "CreateBlendingState", PERMISSIONS_RENDER_API_CALL);
     
-    Render::BlendingConfig* blendConfig = static_cast<Render::BlendingConfig*>(context.GetRawOutputBuffer());
+    Render::BlendingConfig* blendConfig = static_cast<Render::BlendingConfig*>(context.GetRawInputBuffer());
     Render::BlendingStateRef blendState = Render::CreateBlendingState(*blendConfig);
     stream.SubmitReturn( RenderCollection::AddResource<Render::BlendingState>(collection, blendState) );
 }

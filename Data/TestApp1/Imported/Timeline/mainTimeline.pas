@@ -16,16 +16,44 @@
                         Name : TempleLights,
                         Color : [203, 231, 18],
                         _o_p_ : {
+                            sphereLight1Intensity : 2.000000,
+                            spotLight1Intensity : 2.000000,
                             spotLight1PosRad : [-48.000000, 66.900002, 46.000000, 62.000000],
                             spotLight1DirSpread : [1.000000, -1.500000, -1.000000, 54.000000],
                             sphereLight1PosRad : [62.500000, 33.500000, 6.500000, 32.000000],
+                            sphereLight1Col : [255, 226, 61],
+                            spotLight1Col : [75, 69, 255],
                             __schema__ : {
-                                sizetypes : [393232, 393232, 393232],
-                                names : [spotLight1PosRad, spotLight1DirSpread, sphereLight1PosRad],
-                                typeNames : [float4, float4, float4]
+                                sizetypes : [393232, 393232, 393232, 458755, 458755, 196612, 196612],
+                                names : [spotLight1PosRad, spotLight1DirSpread, sphereLight1PosRad, sphereLight1Col, spotLight1Col, sphereLight1Intensity, spotLight1Intensity],
+                                typeNames : [float4, float4, float4, ubyte3, ubyte3, float, float]
                             }
                         },
                         script : {@BlockScripts/TempleSceneLights.bs}
+                    }
+                }]
+        }, {
+            type : Lane,
+            name : "",
+            Blocks : []
+        }, {
+            type : Lane,
+            name : "",
+            Blocks : [{
+                    type : Block,
+                    props : {
+                        Beat : 0,
+                        Duration : 2048,
+                        Name : DeferredLightingBegin,
+                        Color : [240, 179, 148],
+                        _o_p_ : {
+                            __schema__ : {
+                                sizetypes : [],
+                                names : [],
+                                typeNames : []
+                            }
+                        },
+                        script : {@RenderSystems/Lighting/DeferredPassBeginBlock.bs}
                     }
                 }]
         }, {
@@ -51,14 +79,6 @@
                         script : {@BlockScripts/TempleModel.bs}
                     }
                 }]
-        }, {
-            type : Lane,
-            name : "",
-            Blocks : []
-        }, {
-            type : Lane,
-            name : "",
-            Blocks : []
         }, {
             type : Lane,
             name : "",
@@ -135,7 +155,7 @@
             Blocks : [{
                     type : Block,
                     props : {
-                        Beat : 1323,
+                        Beat : 2443,
                         Duration : 1024,
                         Name : Test2,
                         Color : [0, 100, 100],
@@ -159,7 +179,7 @@
                 }, {
                     type : Block,
                     props : {
-                        Beat : 2533,
+                        Beat : 3653,
                         Duration : 1024,
                         Name : Test,
                         Color : [228, 207, 245],
@@ -203,7 +223,7 @@
             Blocks : [{
                     type : Block,
                     props : {
-                        Beat : 1879,
+                        Beat : 2999,
                         Duration : 1024,
                         Name : BlockSegment,
                         Color : [144, 244, 123],
@@ -225,7 +245,7 @@
                     type : Block,
                     props : {
                         Beat : 0,
-                        Duration : 5000000,
+                        Duration : 2048,
                         Name : DeferredLighting,
                         Color : [240, 179, 148],
                         _o_p_ : {
@@ -241,7 +261,22 @@
         }, {
             type : Lane,
             name : "",
-            Blocks : []
+            Blocks : [{
+                    type : Block,
+                    props : {
+                        Beat : 4,
+                        Duration : 2048,
+                        Name : HdrPos,
+                        Color : [240, 179, 148],
+                        _o_p_ : {
+                            __schema__ : {
+                                sizetypes : [],
+                                names : [],
+                                typeNames : []
+                            }
+                        }
+                    }
+                }]
         }],
     properties : {
         Name : "",

@@ -185,7 +185,6 @@ int Timeline_Update(info : UpdateInfo)
 
 int Timeline_Render(info : RenderInfo)
 {
-	SetDefaultRenderTarget();
 	SetProgram(templeBrickMat);
 	SetBuffer(modelStateBuffer, gModelState);
 	SetUniformBuffer(modelStateUniform, modelStateBuffer);
