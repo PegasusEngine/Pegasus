@@ -27,20 +27,6 @@ struct DeferredApplyLightsConstants
 	padding : int;
 };
 
-int divUp(a : int, b : int)
-{
-	m = a % b;
-	d = a / b;
-	if (m == 0)
-	{
-		return d;
-	}
-	else 
-	{
-		return d + 1;
-	}
-}
-
 DeferredPassRendererResources CreateDeferredPassResources()
 {
 	rs = DeferredPassRendererResources();
@@ -77,6 +63,7 @@ gPassResources.applyLightsSourceLightBuffer = LoadCulledLightBuffer();
 
 int Timeline_Render(info: RenderInfo)
 {
+	UnbindRenderTargets();
 	BeginMarker("DeferredLighting");
 	viewState = GetViewState(info.windowId);
 	constants =	DeferredApplyLightsConstants();

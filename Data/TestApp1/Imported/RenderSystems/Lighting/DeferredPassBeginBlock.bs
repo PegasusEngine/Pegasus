@@ -5,7 +5,7 @@
 #include "RenderSystems/Frame/Frame.bsh"
 
 
-depthComparisonState = CreateRasterizerState(RasterizerConfig(CW_CM,LESSER_EQUAL_DF));
+depthComparisonState = CreateRasterizerState(RasterizerConfig(CW_CM,LESSER_DF));
 blendingState = CreateBlendingState(BlendingConfig(NONE_BO,ZERO_M,ZERO_M));
 
 int Timeline_Render(info: RenderInfo)
@@ -19,4 +19,5 @@ int Timeline_Render(info: RenderInfo)
 	gbuffers[0]=viewState.deferredRenderState.gbuffer0;
 	gbuffers[1]=viewState.deferredRenderState.gbuffer1;
 	SetRenderTargets(GBUFFER_COUNT,gbuffers,viewState.depthSurface);
+	SetViewport(gbuffers[0]);
 }

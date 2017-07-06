@@ -365,6 +365,20 @@ namespace Private_Math
         
     }
 
+    void DivUp(FunCallbackContext& context)
+    {
+        FunParamStream stream(context);
+        PG_ASSERT(context.GetInputBufferSize() == 2*sizeof(int));
+        PG_ASSERT(context.GetOutputBufferSize() == sizeof(int));
+
+        int a = stream.NextArgument<int>();
+        int b = stream.NextArgument<int>();
+        int m = a % b;
+        int d = a / b;
+        int r = d + (m > 0 ? 1 : 0);
+        stream.SubmitReturn<int>(r);
+    }
+
 }
 
 // Intrinsic functions for math
@@ -500,6 +514,7 @@ void Pegasus::BlockScript::RegisterIntrinsics(BlockLib* lib)
         ///////////////////////////////////////////TRIG///////////////////////////////////////////////////////////////
         { "sin", "float", { "float", nullptr}, {"v", nullptr}, Private_Math::Sin},
         { "cos", "float", { "float", nullptr}, {"v", nullptr}, Private_Math::Cos},
+        { "divUp", "int", { "int", "int", nullptr}, {"a", "b", nullptr}, Private_Math::DivUp},
         { "GetRotation",   "float4x4", { "float3", "float", nullptr}, {"axis", "amount", nullptr}, Private_Math::Mat44_Rotation},
         { "GetProjection", "float4x4", { "float", "float", "float", "float", "float", "float", nullptr}, { "l", "r", "t", "b", "n", "f", nullptr}, Private_Math::Mat44_Proj1},
         { "GetProjection", "float4x4", { "float", "float", "float", "float", nullptr }, { "fov", "aspect", "n", "f", nullptr },  Private_Math::Mat44_Proj2},

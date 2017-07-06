@@ -18,7 +18,7 @@ Texture2D<float4> GBuffer0Texture;
 Texture2D<float4> GBuffer1Texture;
 Texture2D<float> DepthTexture;
 StructuredBuffer<LightInfo> LightInputBuffer;
-RWTexture2D<float4> OutputBuffer;
+RWTexture2D<float4> OutputBuffer : register(u0);
 
 [numthreads(THREADS_X,THREADS_Y,1)]
 void main(uint3 dti : SV_DispatchThreadId)
@@ -65,7 +65,8 @@ void main(uint3 dti : SV_DispatchThreadId)
 					break;
 				}
 			} 
-            OutputBuffer[coords] = float4(matInfo.color*diffuse + specular,1.0);
+           // OutputBuffer[coords] = float4(matInfo.color*diffuse + specular,1.0);
+            OutputBuffer[coords] = gbuffers.gbuffer0.xxxx;
         }
     }
 }

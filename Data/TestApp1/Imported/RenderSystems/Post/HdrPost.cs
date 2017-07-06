@@ -4,7 +4,7 @@
 
 
 Texture2D<float4> HdrSceneIn;
-RWTexture2D<float4> OutputLdrTarget;
+RWTexture2D<float4> OutputLdrTarget : register(u0);
 
 cbuffer Constants
 {
@@ -15,7 +15,7 @@ cbuffer Constants
 float4 ToneMap(float4 hdrColor)
 {
 	//todo: implement tone mapping, for now just linearizing
-	return hdrColor / 4.0;
+	return hdrColor/4.0;
 }
 
 #define TILE_SIZE 32

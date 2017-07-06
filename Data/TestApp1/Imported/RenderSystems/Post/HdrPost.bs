@@ -1,0 +1,37 @@
+//*************************************************************************//
+//*******  Hdr Post  - resolves into tone mapping / hdr compositing *******//
+//*************************************************************************//
+#include "RenderSystems/Frame/Frame.bsh"
+
+struct HdrPostConstants
+{
+	width : int;
+	height : int;
+	pad0 :  int;
+	pad1 : int;
+};
+
+gHdrPostTileSize = 32;
+
+hdrPostProgram = LoadProgram("RenderSystems/Post/HdrPost.pas");
+hdrPostProgramUniform  = GetUniformLocation(hdrPostProgram, "Constants");
+hdrPostHdrSceneInUniform = GetUniformLocation(hdrPostProgram, "HdrSceneIn");
+hdrPostProgramUniformBuffer = CreateUniformBuffer(sizeof(HdrPostConstants));
+
+
+int Timeline_Render(info: RenderInfo)
+{
+
+	BeginMarker("HdrPost");
+	viewState = GetViewState(info.windowId);
+	hdrPostConstants = HdrPostConstants(GetFrameWidth(), GetFrameHeight(),0,0);
+	SetBuffer(hdrPostProgramUniformBuffer,hdrPostConstants);
+	SetProgram(hdrPostProgram);
+	SetUniformBuffer(hdrPostProgramUniform,hdrPostProgramUniformBuffer);
+	SetUniformTextureRenderTarget(hdrPostHdrSceneInUniform,viewState.hdrSurface);
+	SetComputeOutput(viewState.ldrSurface,0);
+	Dispatch(divUp(hdrPostConstants.width,gHdrPostTileSize),divUp(hdrPostConstants.height,gHdrPostTileSize),1);
+	UnbindComputeResources();
+	UnbindComputeOutputs();
+	EndMarker();
+}

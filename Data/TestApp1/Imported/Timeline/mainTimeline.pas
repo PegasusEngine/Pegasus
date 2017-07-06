@@ -12,7 +12,7 @@
                     type : Block,
                     props : {
                         Beat : 0,
-                        Duration : 1024,
+                        Duration : 2048,
                         Name : TempleLights,
                         Color : [203, 231, 18],
                         _o_p_ : {
@@ -63,7 +63,7 @@
                     type : Block,
                     props : {
                         Beat : 0,
-                        Duration : 1024,
+                        Duration : 2048,
                         Name : TempleModel,
                         Color : [128, 128, 128],
                         _o_p_ : {
@@ -223,6 +223,22 @@
             Blocks : [{
                     type : Block,
                     props : {
+                        Beat : 0,
+                        Duration : 2048,
+                        Name : DeferredLighting,
+                        Color : [240, 179, 148],
+                        _o_p_ : {
+                            __schema__ : {
+                                sizetypes : [],
+                                names : [],
+                                typeNames : []
+                            }
+                        },
+                        script : {@RenderSystems/Lighting/DeferredPassBlock.bs}
+                    }
+                }, {
+                    type : Block,
+                    props : {
                         Beat : 2999,
                         Duration : 1024,
                         Name : BlockSegment,
@@ -246,7 +262,7 @@
                     props : {
                         Beat : 0,
                         Duration : 2048,
-                        Name : DeferredLighting,
+                        Name : HdrPos,
                         Color : [240, 179, 148],
                         _o_p_ : {
                             __schema__ : {
@@ -255,7 +271,7 @@
                                 typeNames : []
                             }
                         },
-                        script : {@RenderSystems/Lighting/DeferredPassBlock.bs}
+                        script : {@RenderSystems/Post/HdrPost.bs}
                     }
                 }]
         }, {
@@ -264,10 +280,26 @@
             Blocks : [{
                     type : Block,
                     props : {
-                        Beat : 4,
+                        Beat : 0,
                         Duration : 2048,
-                        Name : HdrPos,
-                        Color : [240, 179, 148],
+                        Name : FinalCombine,
+                        Color : [152, 144, 209],
+                        _o_p_ : {
+                            __schema__ : {
+                                sizetypes : [],
+                                names : [],
+                                typeNames : []
+                            }
+                        },
+                        script : {@RenderSystems/Post/FinalCombine.bs}
+                    }
+                }, {
+                    type : Block,
+                    props : {
+                        Beat : 2311,
+                        Duration : 1024,
+                        Name : "",
+                        Color : [128, 128, 128],
                         _o_p_ : {
                             __schema__ : {
                                 sizetypes : [],
