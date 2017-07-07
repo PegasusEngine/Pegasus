@@ -50,6 +50,7 @@ int Timeline_Render(info: RenderInfo)
 	SetRenderTarget(viewState.deferredRenderState.gbuffer1);
 	Clear(1,0,0);
 	UnbindRenderTargets();
+	SetDefaultRenderTarget();
 
 	//SetRasterizerState(hackedCCWMode);
 	/*if (EnableTerrain)

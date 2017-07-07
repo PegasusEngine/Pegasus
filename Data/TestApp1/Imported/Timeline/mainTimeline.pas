@@ -93,69 +93,7 @@
             Blocks : [{
                     type : Block,
                     props : {
-                        Beat : 3578,
-                        Duration : 2048,
-                        Name : PsyBeads,
-                        Color : [128, 0, 56],
-                        _o_p_ : {
-                            __schema__ : {
-                                sizetypes : [],
-                                names : [],
-                                typeNames : []
-                            }
-                        },
-                        script : {@BlockScripts/test.bs}
-                    }
-                }]
-        }, {
-            type : Lane,
-            name : "",
-            Blocks : []
-        }, {
-            type : Lane,
-            name : "",
-            Blocks : [{
-                    type : TextureTestBlock,
-                    props : {
-                        Beat : 3381,
-                        Duration : 2304,
-                        Name : "",
-                        Color : [29, 99, 10],
-                        _o_p_ : {
-                            __schema__ : {
-                                sizetypes : [],
-                                names : [],
-                                typeNames : []
-                            }
-                        }
-                    }
-                }]
-        }, {
-            type : Lane,
-            name : Camera,
-            Blocks : [{
-                    type : FractalCube2Block,
-                    props : {
-                        Beat : 4845,
-                        Duration : 1024,
-                        Name : "",
-                        Color : [58, 140, 249],
-                        _o_p_ : {
-                            __schema__ : {
-                                sizetypes : [],
-                                names : [],
-                                typeNames : []
-                            }
-                        }
-                    }
-                }]
-        }, {
-            type : Lane,
-            name : Beads,
-            Blocks : [{
-                    type : Block,
-                    props : {
-                        Beat : 2443,
+                        Beat : 2051,
                         Duration : 1024,
                         Name : Test2,
                         Color : [0, 100, 100],
@@ -179,7 +117,7 @@
                 }, {
                     type : Block,
                     props : {
-                        Beat : 3653,
+                        Beat : 3081,
                         Duration : 1024,
                         Name : Test,
                         Color : [228, 207, 245],
@@ -197,14 +135,49 @@
                         },
                         script : {@BlockScripts/basketball.bs}
                     }
+                }, {
+                    type : Block,
+                    props : {
+                        Beat : 4106,
+                        Duration : 2048,
+                        Name : PsyBeads,
+                        Color : [128, 0, 56],
+                        _o_p_ : {
+                            __schema__ : {
+                                sizetypes : [],
+                                names : [],
+                                typeNames : []
+                            }
+                        },
+                        script : {@BlockScripts/test.bs}
+                    }
                 }]
         }, {
             type : Lane,
-            name : Fractal,
+            name : "",
+            Blocks : [{
+                    type : FractalCube2Block,
+                    props : {
+                        Beat : 5941,
+                        Duration : 1024,
+                        Name : "",
+                        Color : [58, 140, 249],
+                        _o_p_ : {
+                            __schema__ : {
+                                sizetypes : [],
+                                names : [],
+                                typeNames : []
+                            }
+                        }
+                    }
+                }]
+        }, {
+            type : Lane,
+            name : "",
             Blocks : [{
                     type : FractalCubeBlock,
                     props : {
-                        Beat : 4771,
+                        Beat : 6951,
                         Duration : 768,
                         Name : "",
                         Color : [239, 248, 111],
@@ -217,6 +190,18 @@
                         }
                     }
                 }]
+        }, {
+            type : Lane,
+            name : Camera,
+            Blocks : []
+        }, {
+            type : Lane,
+            name : Beads,
+            Blocks : []
+        }, {
+            type : Lane,
+            name : Fractal,
+            Blocks : []
         }, {
             type : Lane,
             name : Blob,
@@ -235,23 +220,6 @@
                             }
                         },
                         script : {@RenderSystems/Lighting/DeferredPassBlock.bs}
-                    }
-                }, {
-                    type : Block,
-                    props : {
-                        Beat : 2999,
-                        Duration : 1024,
-                        Name : BlockSegment,
-                        Color : [144, 244, 123],
-                        _o_p_ : {
-                            SphereCenter : [0.000000, 0.000000, -4.000000],
-                            __schema__ : {
-                                sizetypes : [327692],
-                                names : [SphereCenter],
-                                typeNames : [float3]
-                            }
-                        },
-                        script : {@BlockScripts/partydemo.bs}
                     }
                 }]
         }, {
@@ -293,34 +261,19 @@
                         },
                         script : {@RenderSystems/Post/FinalCombine.bs}
                     }
-                }, {
-                    type : Block,
-                    props : {
-                        Beat : 2311,
-                        Duration : 1024,
-                        Name : "",
-                        Color : [128, 128, 128],
-                        _o_p_ : {
-                            __schema__ : {
-                                sizetypes : [],
-                                names : [],
-                                typeNames : []
-                            }
-                        }
-                    }
                 }]
         }],
     properties : {
         Name : "",
         _o_p_ : {
             EnableTerrain : 0,
-            Fov : 2.500000,
-            CamPos : [-5.000000, 29.000000, -122.000000],
-            CamDir : [0.000000, -0.100000, 1.000000],
+            Fov : 0.500000,
+            CamPos : [0.000000, 46.000000, 250.000000],
+            CamDir : [0.000000, -0.100000, -1.000000],
             __schema__ : {
-                sizetypes : [327692, 327692, 196612, 1],
-                names : [CamPos, CamDir, Fov, EnableTerrain],
-                typeNames : [float3, float3, float, bool]
+                sizetypes : [1, 327692, 196612, 327692],
+                names : [EnableTerrain, CamPos, Fov, CamDir],
+                typeNames : [bool, float3, float, float3]
             }
         }
     },
