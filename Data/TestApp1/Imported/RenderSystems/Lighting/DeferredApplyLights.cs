@@ -27,7 +27,8 @@ void main(uint3 dti : SV_DispatchThreadId)
 
     if (all(coords < gTargetDimensions))
     {
-		float2 clipSpaceCoords = ((float2)dti.xy) / ((float2)gTargetDimensions) * 0.5 + 0.5;
+		float2 clipSpaceCoords = ((float2)dti.xy) / ((float2)gTargetDimensions)*2.0 - 1.0;
+		clipSpaceCoords.y = -clipSpaceCoords.y;
         GBuffer gbuffers;
         gbuffers.gbuffer0 = GBuffer0Texture[coords];
         gbuffers.gbuffer1 = GBuffer1Texture[coords];
@@ -65,8 +66,10 @@ void main(uint3 dti : SV_DispatchThreadId)
 					break;
 				}
 			} 
-           // OutputBuffer[coords] = float4(matInfo.color*diffuse + specular,1.0);
-            OutputBuffer[coords] = gbuffers.gbuffer0.xxxx;
+            /*WorldNormal debug*////OutputBuffer[coords] = float4(matInfo.worldNormal*0.5 + 0.5,1.0);
+			/*WorldPos debug*///OutputBuffer[coords] = float4(worldPos.xyz*0.01, 1.0);
+			/*Color debug*///OutputBuffer[coords] = float4(matInfo.color, 1.0);
+           	OutputBuffer[coords] = float4(8.0*diffuse.xyz,1.0);//float4(matInfo.color*diffuse + specular,1.0);
         }
     }
 }

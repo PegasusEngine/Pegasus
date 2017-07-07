@@ -15,7 +15,7 @@ cbuffer Constants
 float4 ToneMap(float4 hdrColor)
 {
 	//todo: implement tone mapping, for now just linearizing
-	return hdrColor/4.0;
+	return hdrColor/1.0;
 }
 
 #define TILE_SIZE 32

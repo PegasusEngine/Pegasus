@@ -54,7 +54,7 @@ void GetSpotLight(in LightInfo info, out SpotLight light)
 
 float LightDistanceAttenuation(float distanceToLight, float lightRadius)
 {
-	float normalizedDistance = distanceToLight/min(lightRadius,0.00001);
+	float normalizedDistance = distanceToLight/max(lightRadius,0.00001);
 	return saturate(1.0 / (normalizedDistance*normalizedDistance+0.00001));
 }
 
@@ -68,7 +68,7 @@ void ApplySphereLight(in float3 worldPos, in MaterialInfo material, in SphereLig
 
 	float irradiance = saturate(dot(material.worldNormal,L));
  
-	diffuse += irradiance * intensity;
+	diffuse += irradiance*intensity;
 	specular += 0.0;
 }
 
@@ -77,14 +77,14 @@ void ApplySpotLight(in float3 worldPos, in MaterialInfo material, in SpotLight l
 	float3 L = light.posAndRadius.xyz-worldPos;
 	float distanceToLight = length(L);
 	L /= distanceToLight;
-	float3 intensity = light.colorAndIntensity.rgb*LightDistanceAttenuation(distanceToLight, light.posAndRadius.w);
+	float3 intensity = light.colorAndIntensity.rgb*light.colorAndIntensity.w*LightDistanceAttenuation(distanceToLight, light.posAndRadius.w);
 	float irradiance = saturate(dot(material.worldNormal,L));
 
 	float angleDot = dot(L,light.dirAndAngle.xyz);
 
 	//TODO: precompute the max angle in the cpu
 	float h = sqrt(light.posAndRadius.w*light.posAndRadius.w+light.dirAndAngle.w*light.dirAndAngle.w);
-	float maxAngle = light.posAndRadius.w/h;
+	float maxAngle = light.dirAndAngle.w/h;
 
 	irradiance *= (maxAngle-angleDot)/maxAngle;
 
