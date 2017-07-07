@@ -281,6 +281,9 @@ Context::Context(const ContextConfig& config)
 
 Context::~Context()
 {
+    DXRenderContext * context = static_cast<DXRenderContext*>(mPrivateData);
+    if (context == RenderPrivate::gBindedContext)
+        Unbind();
     PG_DELETE(mAllocator, static_cast<DXRenderContext*>(mPrivateData));
 }
 
