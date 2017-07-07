@@ -80,15 +80,16 @@ void ApplySpotLight(in float3 worldPos, in MaterialInfo material, in SpotLight l
 	float3 intensity = light.colorAndIntensity.rgb*light.colorAndIntensity.w*LightDistanceAttenuation(distanceToLight, light.posAndRadius.w);
 	float irradiance = saturate(dot(material.worldNormal,L));
 
-	float angleDot = dot(L,light.dirAndAngle.xyz);
+	float angleDot = saturate(dot(L,-normalize(light.dirAndAngle.xyz)));
 
 	//TODO: precompute the max angle in the cpu
 	float h = sqrt(light.posAndRadius.w*light.posAndRadius.w+light.dirAndAngle.w*light.dirAndAngle.w);
-	float maxAngle = light.dirAndAngle.w/h;
+	float maxAngle = light.posAndRadius.w/h;
+	float angleDiff = max(1.0-maxAngle,0.0001);
+	float angleAttenuation = 1.0-(1.0-angleDot)/angleDiff ;//(maxAngle-angleDot)/maxAngle;
+	irradiance *= angleAttenuation;
 
-	irradiance *= (maxAngle-angleDot)/maxAngle;
-
-	diffuse += irradiance * intensity;
+	diffuse += irradiance*intensity;
 	specular += 0.0;
 
 }

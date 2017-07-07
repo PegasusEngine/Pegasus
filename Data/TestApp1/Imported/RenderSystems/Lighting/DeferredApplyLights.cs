@@ -69,7 +69,7 @@ void main(uint3 dti : SV_DispatchThreadId)
             /*WorldNormal debug*////OutputBuffer[coords] = float4(matInfo.worldNormal*0.5 + 0.5,1.0);
 			/*WorldPos debug*///OutputBuffer[coords] = float4(worldPos.xyz*0.01, 1.0);
 			/*Color debug*///OutputBuffer[coords] = float4(matInfo.color, 1.0);
-           	OutputBuffer[coords] = float4(8.0*diffuse.xyz,1.0);//float4(matInfo.color*diffuse + specular,1.0);
+           	OutputBuffer[coords] = float4(diffuse.xyz,1.0);//float4(matInfo.color*diffuse + specular,1.0);
         }
     }
 }
