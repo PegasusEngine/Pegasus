@@ -1,5 +1,5 @@
+//***********************************************//
 //*******  Deferred Renderer Passes file *******//
-// Use this file to access deferred render system//
 //***********************************************//
 
 #include "RenderSystems/Frame/Frame.bsh"
@@ -27,20 +27,6 @@ struct DeferredApplyLightsConstants
 	padding : int;
 };
 
-int divUp(a : int, b : int)
-{
-	m = a % b;
-	d = a / b;
-	if (m == 0)
-	{
-		return d;
-	}
-	else 
-	{
-		return d + 1;
-	}
-}
-
 DeferredPassRendererResources CreateDeferredPassResources()
 {
 	rs = DeferredPassRendererResources();
@@ -56,6 +42,7 @@ DeferredPassRendererResources CreateDeferredPassResources()
 
 int CallDeferredApplyLights(constants : DeferredApplyLightsConstants, deferredState: DeferredRenderState, resources: DeferredPassRendererResources)
 {
+	UnbindRenderTargets();
 	SetBuffer(resources.applyLightsConstantBuffer, constants);
 	SetProgram(resources.applyLightsCs);
 	SetUniformBuffer(resources.applyLightsConstantUniform,resources.applyLightsConstantBuffer);
@@ -73,12 +60,10 @@ int CallDeferredApplyLights(constants : DeferredApplyLightsConstants, deferredSt
 gPassResources = CreateDeferredPassResources();
 gPassResources.applyLightsSourceLightBuffer = LoadCulledLightBuffer();
 
-int Timeline_Update(info : UpdateInfo)
-{
-}
 
 int Timeline_Render(info: RenderInfo)
 {
+	UnbindRenderTargets();
 	BeginMarker("DeferredLighting");
 	viewState = GetViewState(info.windowId);
 	constants =	DeferredApplyLightsConstants();

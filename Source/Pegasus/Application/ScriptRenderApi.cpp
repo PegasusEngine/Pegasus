@@ -111,6 +111,9 @@ void Render_Clear(FunCallbackContext& context);
 void Render_SetClearColorValue(FunCallbackContext& context);
 void Render_SetRasterizerState(FunCallbackContext& context);
 void Render_SetBlendingState(FunCallbackContext& context);
+void Render_SetComputeSampler(FunCallbackContext& context);
+void Render_SetPixelSampler(FunCallbackContext& context);
+void Render_SetVertexSampler(FunCallbackContext& context);
 void Render_SetDepthClearValue(FunCallbackContext& context);
 void Render_Draw(FunCallbackContext& context);
 void Render_Dispatch(FunCallbackContext& context);
@@ -118,6 +121,7 @@ void Render_CreateRenderTarget(FunCallbackContext& context);
 void Render_CreateDepthStencil(FunCallbackContext& context);
 void Render_CreateRasterizerState(FunCallbackContext& context);
 void Render_CreateBlendingState(FunCallbackContext& context);
+void Render_CreateSamplerState(FunCallbackContext& context);
 void Render_BeginMarker(FunCallbackContext& context);
 void Render_EndMarker(FunCallbackContext& context);
 
@@ -245,8 +249,8 @@ static void RegisterRenderEnums(BlockLib* lib)
             "BlendOperator",
             {
                 { "NONE_BO", BlendingConfig::NONE_BO },
-                { "ADD_BO", BlendingConfig::NONE_BO },
-                { "SUB_BO", BlendingConfig::NONE_BO }
+                { "ADD_BO", BlendingConfig::ADD_BO },
+                { "SUB_BO", BlendingConfig::SUB_BO }
             },
             BlendingConfig::COUNT_BO
         },
@@ -273,6 +277,25 @@ static void RegisterRenderEnums(BlockLib* lib)
                 { "PRIMITIVE_AUTOMATIC",     Pegasus::Render::PRIMITIVE_AUTOMATIC     }
             },
             Pegasus::Render::PRIMITIVE_COUNT //this includes automatic
+        },
+        {
+            "Filter",
+            {
+                { "FILTER_POINT", Pegasus::Render::SamplerStateConfig::POINT },
+                { "BILINEAR", Pegasus::Render::SamplerStateConfig::BILINEAR },
+                { "ANISO", Pegasus::Render::SamplerStateConfig::ANISO }
+            },
+            3
+        },
+        {
+            "CoordMode",
+            {
+                { "WARP", Pegasus::Render::SamplerStateConfig::WARP },
+                { "MIRROR", Pegasus::Render::SamplerStateConfig::MIRROR },
+                { "CLAMP", Pegasus::Render::SamplerStateConfig::CLAMP },
+                { "BORDER", Pegasus::Render::SamplerStateConfig::BORDER }
+            },
+            4
         },
         {
             "Format",
@@ -435,6 +458,11 @@ static void RegisterRenderStructs(BlockLib* lib)
             "BlendingConfig",
             {"BlendOperator"   , "Multiplicator", "Multiplicator", nullptr },
             {"BlendingOperator", "Source"       , "Dest"         , nullptr }
+        },
+        {
+            "SamplerStateConfig",
+            {"Filter", "CoordMode", "CoordMode", "CoordMode", "int", "int", "int", "int", "float4", nullptr },
+            {"FilterType", "UCoord", "VCoord", "WCoord", "MipBias", "MinMip", "MaxMip", "MaxAniso", "BorderColor", nullptr }
         }
     };
 
@@ -571,6 +599,10 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
         },
         {
             "RasterizerState",
+            {}, 0, nullptr, 0, nullptr
+        },
+        {
+            "SamplerState",
             {}, 0, nullptr, 0, nullptr
         },
         {
@@ -976,6 +1008,27 @@ static void RegisterFunctions(BlockLib* lib)
             Render_SetBlendingState
         },
         {
+            "SetComputeSampler",
+            "int",
+            { "SamplerState", "int", nullptr },
+            { "state", "slot", nullptr },
+            Render_SetComputeSampler
+        },
+        {
+            "SetPixelSampler",
+            "int",
+            { "SamplerState", "int", nullptr },
+            { "state", "slot", nullptr },
+            Render_SetPixelSampler
+        },
+        {
+            "SetVertexSampler",
+            "int",
+            { "SamplerState", "int", nullptr },
+            { "state", "slot", nullptr },
+            Render_SetVertexSampler
+        },
+        {
             "SetDepthClearValue",
             "int",
             { "float", nullptr },
@@ -1023,6 +1076,13 @@ static void RegisterFunctions(BlockLib* lib)
             { "BlendingConfig", nullptr },
             { "config", nullptr },
             Render_CreateBlendingState
+        },
+        {
+            "CreateSamplerState",
+            "SamplerState",
+            { "SamplerStateConfig", nullptr },
+            { "config", nullptr },
+            Render_CreateSamplerState
         },
         {
             "SetComputeOutput",
@@ -1716,8 +1776,22 @@ void Render_SetRenderTarget(FunCallbackContext& context)
 }
 void Render_SetRenderTarget2(FunCallbackContext& context) 
 { 
-    //TODO: implement depth render targets
-    PG_LOG('ERR_', "Unimplemented.");
+    FunParamStream stream(context);
+    BsVmState* state = context.GetVmState();
+    RenderCollection* renderCollection = GetContainer(state);
+    CHECK_PERMISSIONS(renderCollection, "SetRenderTarget2", PERMISSIONS_RENDER_API_CALL);
+    RenderCollection::CollectionHandle& rtHandle = stream.NextArgument<RenderCollection::CollectionHandle>();
+    RenderCollection::CollectionHandle& dtHandle = stream.NextArgument<RenderCollection::CollectionHandle>();
+    if (rtHandle != RenderCollection::INVALID_HANDLE && dtHandle != RenderCollection::INVALID_HANDLE)
+    {
+        Render::RenderTargetRef rt = RenderCollection::GetResource<Render::RenderTarget>(renderCollection,rtHandle);
+        Render::DepthStencilRef dt = RenderCollection::GetResource<Render::DepthStencil>(renderCollection,dtHandle);
+        Render::SetRenderTarget(rt,dt);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Invalid render target /depth target being set");
+    }
 }
 
 void Render_SetRenderTargets(FunCallbackContext& context)
@@ -1728,6 +1802,7 @@ void Render_SetRenderTargets(FunCallbackContext& context)
     CHECK_PERMISSIONS(renderCollection, "SetRenderTarget", PERMISSIONS_RENDER_API_CALL);
     int targetCounts = stream.NextArgument<int>();
     int targetsOffset = stream.NextArgument<int>();
+    RenderCollection::CollectionHandle depthHandle = stream.NextArgument<RenderCollection::CollectionHandle>();
     
     if (targetCounts >= Pegasus::Render::Constants::MAX_RENDER_TARGETS)
     {
@@ -1736,6 +1811,11 @@ void Render_SetRenderTargets(FunCallbackContext& context)
     }
 
     //check the type here of the unknown pointer passed as the second parameter
+    /*
+    //Really sad: but this awesome type check cant happen because of const correctness violation due to the type system of blockscript. 
+    // forward computation due to late type insertion during struct computation is the main culprit. 
+    // Fix it in bs.y and then this stuff is possible. 
+     
     const TypeDesc* unknownType = context.GetArgExps()->GetTail()->GetExp()->GetTypeDesc();
     if (unknownType->GetModifier() != TypeDesc::M_ARRAY || 
         Utils::Strcmp(unknownType->GetChild()->GetName(), "RenderTarget")) //quick check, we should use Equals 
@@ -1745,6 +1825,7 @@ void Render_SetRenderTargets(FunCallbackContext& context)
         PG_LOG('ERR_', "Second argument passed on SetRenderTargets must be an array of RenderTarget. Function failed.");
         return;
     }
+    */
 
     
     PG_ASSERT(targetsOffset < state->GetRamSize());
@@ -1755,7 +1836,7 @@ void Render_SetRenderTargets(FunCallbackContext& context)
     Pegasus::Render::RenderTargetRef targets[Pegasus::Render::Constants::MAX_RENDER_TARGETS];
     for (int i = 0; i < targetCounts; ++i)
     {
-        if (handles[i] != RenderCollection::INVALID_HANDLE)
+        if (handles[i] == RenderCollection::INVALID_HANDLE)
         {
             PG_LOG('ERR_', "Trying to set incorrect handle in SetRenderTargets!");
             return;
@@ -1763,29 +1844,28 @@ void Render_SetRenderTargets(FunCallbackContext& context)
         else
         {
             targets[i] = RenderCollection::GetResource<Render::RenderTarget>(renderCollection, handles[i]);
+            //relly on valid target for this function to work.
+            if (targets[i]==nullptr)
+            {
+                PG_LOG('ERR_', "Invalid target bound on * type of SetRenderTargets! Make sure you pass a static array of RenderTarget");
+                return;
+            }
         }
     }
 
-    Pegasus::Render::SetRenderTargets(targetCounts, targets);
+    if (depthHandle == RenderCollection::INVALID_HANDLE)
+    {
+        PG_LOG('ERR_',"Invalid depth passed in SetRenderTargets");
+        return;
+    }
+    Render::DepthStencilRef depthStencil = RenderCollection::GetResource<Render::DepthStencil>(renderCollection,depthHandle);
+    PG_ASSERT(depthStencil != nullptr);
+    Pegasus::Render::SetRenderTargets(targetCounts, targets, depthStencil);
 }
 
 void Render_SetRenderTargets2(FunCallbackContext& context)
 {
-    FunParamStream stream(context);
-    BsVmState* state = context.GetVmState();
-    RenderCollection* renderCollection = GetContainer(state);
-    CHECK_PERMISSIONS(renderCollection, "SetRenderTargets", PERMISSIONS_RENDER_API_CALL);
-    int targetCounts = stream.NextArgument<int>();
-    int targetsOffset = stream.NextArgument<int>(); 
-    
-    if (targetCounts >= Pegasus::Render::Constants::MAX_RENDER_TARGETS)
-    {
-        PG_LOG('ERR_', "Can't set %i number of targets. Target number must be from 0 to %i", targetCounts, Pegasus::Render::Constants::MAX_RENDER_TARGETS);
-        return;
-    }
-
-    //check the type here
-    //TODO - implement functions
+    PG_LOG('ERR_', "Unimplemented");
 }
 
 void Render_SetDefaultRenderTarget(FunCallbackContext& context)
@@ -1869,6 +1949,63 @@ void Render_SetBlendingState(FunCallbackContext& context)
     }
 }
 
+void Render_SetComputeSampler(FunCallbackContext& context)
+{
+    FunParamStream stream(context);
+    BsVmState* state = context.GetVmState();
+    RenderCollection* collection = GetContainer(state);
+    CHECK_PERMISSIONS(collection, "SetBlendingState", PERMISSIONS_RENDER_API_CALL);
+    RenderCollection::CollectionHandle& handle = stream.NextArgument<RenderCollection::CollectionHandle>();
+    if (handle != RenderCollection::INVALID_HANDLE)
+    {
+        int slot = stream.NextArgument<int>();
+        Render::SamplerStateRef samplerState = RenderCollection::GetResource<Render::SamplerState>(collection, handle);
+        Render::SetComputeSampler(samplerState, slot);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Attempting to set Invalid Compute sampler state.");
+    }
+}
+
+void Render_SetPixelSampler(FunCallbackContext& context)
+{
+    FunParamStream stream(context);
+    BsVmState* state = context.GetVmState();
+    RenderCollection* collection = GetContainer(state);
+    CHECK_PERMISSIONS(collection, "SetBlendingState", PERMISSIONS_RENDER_API_CALL);
+    RenderCollection::CollectionHandle& handle = stream.NextArgument<RenderCollection::CollectionHandle>();
+    if (handle != RenderCollection::INVALID_HANDLE)
+    {
+        int slot = stream.NextArgument<int>();
+        Render::SamplerStateRef samplerState = RenderCollection::GetResource<Render::SamplerState>(collection, handle);
+        Render::SetPixelSampler(samplerState, slot);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Attempting to set Invalid Pixel sampler state.");
+    }
+}
+
+void Render_SetVertexSampler(FunCallbackContext& context)
+{
+    FunParamStream stream(context);
+    BsVmState* state = context.GetVmState();
+    RenderCollection* collection = GetContainer(state);
+    CHECK_PERMISSIONS(collection, "SetBlendingState", PERMISSIONS_RENDER_API_CALL);
+    RenderCollection::CollectionHandle& handle = stream.NextArgument<RenderCollection::CollectionHandle>();
+    if (handle != RenderCollection::INVALID_HANDLE)
+    {
+        int slot = stream.NextArgument<int>();
+        Render::SamplerStateRef samplerState = RenderCollection::GetResource<Render::SamplerState>(collection, handle);
+        Render::SetVertexSampler(samplerState,slot);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Attempting to set Invalid Vertex sampler state.");
+    }
+}
+
 void Render_SetDepthClearValue(FunCallbackContext& context)
 {
     FunParamStream stream(context);
@@ -1945,9 +2082,21 @@ void Render_CreateBlendingState(FunCallbackContext& context)
     RenderCollection* collection = GetContainer(state);
     CHECK_PERMISSIONS(collection, "CreateBlendingState", PERMISSIONS_RENDER_API_CALL);
     
-    Render::BlendingConfig* blendConfig = static_cast<Render::BlendingConfig*>(context.GetRawOutputBuffer());
+    Render::BlendingConfig* blendConfig = static_cast<Render::BlendingConfig*>(context.GetRawInputBuffer());
     Render::BlendingStateRef blendState = Render::CreateBlendingState(*blendConfig);
     stream.SubmitReturn( RenderCollection::AddResource<Render::BlendingState>(collection, blendState) );
+}
+
+void Render_CreateSamplerState(FunCallbackContext& context)
+{
+    FunParamStream stream(context);
+    BsVmState* state = context.GetVmState();
+    RenderCollection* collection = GetContainer(state);
+    CHECK_PERMISSIONS(collection, "CreateSamplerState", PERMISSIONS_RENDER_API_CALL);
+    
+    Render::SamplerStateConfig* cfg = static_cast<Render::SamplerStateConfig*>(context.GetRawInputBuffer());
+    Render::SamplerStateRef samplerState = Render::CreateSamplerState(*cfg);
+    stream.SubmitReturn( RenderCollection::AddResource<Render::SamplerState>(collection, samplerState) );
 }
 
 

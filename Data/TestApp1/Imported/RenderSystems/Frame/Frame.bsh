@@ -32,7 +32,7 @@ ViewState ReadViewState(windowId : int)
 	h = GetFrameHeight();
 
 #ifdef MASTERSCRIPT_DEFINED
-	echo("Creating targets begin");
+	
     hdrSurface       = CreateRenderTarget(RenderTargetConfig(w, h, FORMAT_RGBA_16_FLOAT));
     GlobalRegisterRenderTarget("hdrSurface", windowId, hdrSurface);
 
@@ -41,14 +41,11 @@ ViewState ReadViewState(windowId : int)
 
     ldrSurface       = CreateRenderTarget(RenderTargetConfig(w, h, FORMAT_RGBA_8_UNORM));
     GlobalRegisterRenderTarget("ldrSurface", windowId, ldrSurface);
-	echo("Creating targets end");
+	
 #else
-	echo("Reading targets begin");
     hdrSurface  = GlobalFindRenderTarget("hdrSurface", windowId);
     depthSurface = GlobalFindDepthStencil("depthSurface", windowId);
-    ldrSurface = GlobalFindRenderTarget("ldrSurface", windowId);
-	echo("Reading targets end");
-	
+    ldrSurface = GlobalFindRenderTarget("ldrSurface", windowId);	
 #endif
 
     newViewState = ViewState();

@@ -254,7 +254,6 @@ void Application::Load()
     // Initialize all the components for all the windows.
     mWindowManager->LoadAllComponents(this);
 
-    mRenderContext->Unbind();
 }
 
 //----------------------------------------------------------------------------------------
@@ -266,8 +265,6 @@ void Application::Update()
 
     //! update all components, globally for all the windows.
     mWindowManager->UpdateAllComponents(this);
-
-    mRenderContext->Unbind();
 }
 
 //----------------------------------------------------------------------------------------
@@ -280,7 +277,6 @@ void Application::Unload()
     mWindowManager->UnloadAllComponents(this);
     
     Render::ClearGlobalConstants();
-    mRenderContext->Unbind();
 
     // Custom shutdown, done in the user application
     ShutdownApp();

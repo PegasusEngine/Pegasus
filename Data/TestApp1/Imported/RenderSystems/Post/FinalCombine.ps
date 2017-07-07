@@ -1,0 +1,15 @@
+//*************************************************************************//
+//                        Final combine. 
+//*************************************************************************//
+
+SamplerState billinearSampler : register(s0);
+
+Texture2D<float>  depthIn;
+Texture2D<float4> colorIn;
+
+
+void main(out float4 color : SV_Target, out float depth : SV_Depth,  float2 texCoords : TEXCOORD0)
+{
+	depth = depthIn.Sample(billinearSampler,texCoords);
+	color = colorIn.Sample(billinearSampler,texCoords); 
+}

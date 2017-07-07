@@ -1,0 +1,33 @@
+//*************************************************************************//
+//*******  Final combine, resolves ldr target to the window target. *******//
+//*************************************************************************//
+#include "RenderSystems/Frame/Frame.bsh"
+
+finalCombineShader = LoadProgram("RenderSystems/Post/FinalCombine.pas");
+finalCombineRasterState = CreateRasterizerState(RasterizerConfig(NONE_CM,LESSER_EQUAL_DF));
+finalCombineBlendState = CreateBlendingState(BlendingConfig(NONE_BO,ZERO_M,ZERO_M));
+depthUniform = GetUniformLocation(finalCombineShader, "depthIn");
+colorUniform = GetUniformLocation(finalCombineShader, "colorIn");
+bilinearConfig = SamplerStateConfig();
+bilinearSampler = CreateSamplerState(bilinearConfig);
+quad = CreateMesh();
+quadGenerator = CreateMeshGenerator("QuadGenerator");
+quad->SetGeneratorInput(quadGenerator);
+
+int Timeline_Render(info: RenderInfo)
+{
+	BeginMarker("FinalCombine");
+	viewState = GetViewState(info.windowId);
+	SetDefaultRenderTarget();
+	SetViewport(Viewport(0,0,info.viewportWidth,info.viewportHeight));
+	SetRasterizerState(finalCombineRasterState);
+	SetBlendingState(finalCombineBlendState);
+	SetProgram(finalCombineShader);
+	SetMesh(quad);
+	SetUniformDepth(depthUniform,viewState.depthSurface);
+	SetUniformTextureRenderTarget(colorUniform,viewState.ldrSurface);
+	SetPixelSampler(bilinearSampler,0);
+	Draw();
+	EndMarker();
+	UnbindPixelResources();
+}

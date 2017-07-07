@@ -27,8 +27,6 @@ Mesh CreateTempleMesh()
 	wallsWidth = 4.0;
 	wallsSpacing = wallsWidth * 1.7;
 	roofPartHeight1 = 1.0;
-
-
 	/**** Base ****/
 	/************************************/
 	box0Seed = CreateMeshGenerator("BoxGenerator");
@@ -37,9 +35,9 @@ Mesh CreateTempleMesh()
 	box0 = CreateMeshOperator("CombineTransformOperator");
 	box0.Translation0 = float3(0.0,verticalOffset,0.0);
 	box0->AddGeneratorInput(box0Seed);
-	/************************************/
-	/************************************/
 
+	/************************************/
+	/************************************/
 	/**** Body ****/
 	/************************************/
 	box1 = CreateMeshGenerator("BoxGenerator");
@@ -157,6 +155,7 @@ Mesh CreateTempleMesh()
     
     newMesh = CreateMesh();
     newMesh->SetOperatorInput(combineBase);
+	return newMesh;
 }
 
 templeMesh = CreateTempleMesh();
@@ -185,7 +184,6 @@ int Timeline_Update(info : UpdateInfo)
 
 int Timeline_Render(info : RenderInfo)
 {
-	SetDefaultRenderTarget();
 	SetProgram(templeBrickMat);
 	SetBuffer(modelStateBuffer, gModelState);
 	SetUniformBuffer(modelStateUniform, modelStateBuffer);

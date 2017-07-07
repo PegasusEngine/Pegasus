@@ -1,7 +1,7 @@
 //*******  Deferred Renderer Utility file *******//
 // Use this file to access deferred render system//
 //***********************************************//
-
+#define GBUFFER_COUNT 2
 struct DeferredRenderState
 {
 	outHdrBuffer : RenderTarget;	
@@ -16,18 +16,14 @@ DeferredRenderState ReadDeferredRenderState(windowId : int, width : int, height 
 
 
 #ifdef MASTERSCRIPT_DEFINED
-	echo("Creating gbuffer targets begin");
 	gbuffer0 = CreateRenderTarget(RenderTargetConfig(width,height,FORMAT_RGBA_8_UNORM));
     GlobalRegisterRenderTarget("gbuffer0", windowId, gbuffer0);
 
 	gbuffer1 = CreateRenderTarget(RenderTargetConfig(width,height,FORMAT_RGBA_16_FLOAT));
     GlobalRegisterRenderTarget("gbuffer1", windowId, gbuffer1);
-	echo("Creating gbuffer targets end");
 #else
-	echo("Reading gbuffer targets begin");
 	gbuffer0 = GlobalFindRenderTarget("gbuffer0", windowId);
 	gbuffer1 =  GlobalFindRenderTarget("gbuffer1", windowId);
-	echo("Reading gbuffer targets end");
 #endif
 	newState = DeferredRenderState();
 	newState.outDepthBuffer = depthBuffer;

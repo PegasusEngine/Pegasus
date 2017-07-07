@@ -95,8 +95,8 @@ void MultiCopyOperator::GenerateData()
         scaleMat4.m22 = s.y;
         scaleMat4.m33 = s.z;
         scaleMat3.m11 = 1.0f/s.x;
-        scaleMat3.m12 = 1.0f/s.y;
-        scaleMat3.m13 = 1.0f/s.z;
+        scaleMat3.m22 = 1.0f/s.y;
+        scaleMat3.m33 = 1.0f/s.z;
         
 
         Math::Vec3 t = GetTranslationOffset();

@@ -57,6 +57,7 @@ struct DXState
     int mTargetsCount;    
     float mDepthClearVal;
     ID3D11RenderTargetView* mDispatchedTargets[Pegasus::Render::Constants::MAX_RENDER_TARGETS];
+    ID3D11DepthStencilView* mDispatchedDepth;
     ID3D11UnorderedAccessView* mComputeOutputs[MAX_UAV_SLOT_COUNT];
     bool mComputeOutputsDirty;
     int  mComputeOutputsCount;
@@ -459,7 +460,6 @@ void Pegasus::Render::SetRenderTargets (int renderTargetNum, Pegasus::Render::Re
     ID3D11DeviceContext * deviceContext = ctx->GetD3D();
 
     PG_ASSERT(renderTargetNum >= 0 && renderTargetNum < Pegasus::Render::Constants::MAX_RENDER_TARGETS);
-    ID3D11DepthStencilView* d3dDepthStencil = nullptr;    
     Pegasus::Utils::Memset32(gDXState.mDispatchedTargets, 0, sizeof(gDXState.mDispatchedTargets));
 
     gDXState.mTargetsCount = renderTargetNum;
@@ -470,6 +470,15 @@ void Pegasus::Render::SetRenderTargets (int renderTargetNum, Pegasus::Render::Re
         gDXState.mDispatchedTargets[i] = rtGpuData->mRenderTarget;
         
     }
+    ID3D11DepthStencilView* d3dDepthStencil = nullptr;
+
+    if (depthStencil != nullptr)
+    {
+        Pegasus::Render::DXDepthStencilGPUData* depthStencilGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXDepthStencilGPUData, depthStencil->GetInternalData());
+        d3dDepthStencil = depthStencilGpuData->mDepthView;
+    }
+
+    gDXState.mDispatchedDepth = d3dDepthStencil;
     deviceContext->OMSetRenderTargets(
         renderTargetNum,
         gDXState.mDispatchedTargets,
@@ -550,6 +559,7 @@ void Pegasus::Render::DispatchDefaultRenderTarget()
     );
 
 	gDXState.mDispatchedTargets[0] = rt;
+	gDXState.mDispatchedDepth = depthStencil;
     gDXState.mTargetsCount = 1;
 }
 
@@ -579,7 +589,7 @@ void Pegasus::Render::Clear(bool color, bool depth, bool stencil)
 	if (depth)
 	{
         deviceContext->ClearDepthStencilView(
-            dsc,
+            gDXState.mDispatchedDepth ? gDXState.mDispatchedDepth : dsc,
             D3D11_CLEAR_DEPTH,
             gDXState.mDepthClearVal,
             0
@@ -1349,6 +1359,9 @@ void Pegasus::Render::CleanInternalState()
     Utils::Memset32(gDXState.mComputeOutputs, 0, sizeof(gDXState.mComputeOutputs));
     gDXState.mComputeOutputsCount = 0;
     gDXState.mComputeOutputsDirty = false;
+
+    Utils::Memset32(gDXState.mDispatchedTargets, 0, sizeof(gDXState.mDispatchedTargets));
+    gDXState.mDispatchedDepth = nullptr;
 }
 
 void Pegasus::Render::BeginMarker(const char* marker)

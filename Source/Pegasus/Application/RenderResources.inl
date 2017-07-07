@@ -11,6 +11,7 @@ RES_PROCESS(Pegasus::Texture::TextureOperator, mTextureOperators, "TextureOperat
 RES_PROCESS(Pegasus::Render::Buffer, mBuffers, "Buffer", false, false)
 RES_PROCESS(Pegasus::Render::RasterizerState, mRasterizers, "RasterizerState", false, false)
 RES_PROCESS(Pegasus::Render::BlendingState, mBlendingStates, "BlendingState", false, false)
+RES_PROCESS(Pegasus::Render::SamplerState, mSamplerStates, "SamplerState", false, false)
 RES_PROCESS(Pegasus::Render::RenderTarget, mRenderTargets, "RenderTarget", false, false)
 RES_PROCESS(Pegasus::Render::VolumeTexture, mVolumeTextures, "VolumeTexture", false, false)
 RES_PROCESS(Pegasus::Render::CubeMap, mCubeMaps, "CubeMap", false, false)

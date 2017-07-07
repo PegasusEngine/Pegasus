@@ -1,23 +1,38 @@
 
 templeLightRig = CreateLightRig();
 
+@(EditorType=EDITOR_TYPE_COLOR)
+extern sphereLight1Col = float3(1.0,1.0,1.0);
+extern sphereLight1Intensity = 2.0;
+extern sphereLight1PosRad = float4(0.5,0.5,0.5,4.0);
 
 sphereLight = SphereLight();
-sphereLight.colorAndIntensity = float4(0.5,0.7,0.2,0.5);
-sphereLight.posAndRadius = float4(0.5,0.5,0.5,4.0);
+sphereLight.colorAndIntensity = float4(sphereLight1Col,sphereLight1Intensity);
+sphereLight.posAndRadius = sphereLight1PosRad;
 l1 = templeLightRig->AddLight(sphereLight);
 
-spotLight = SpotLight();
-spotLight.colorAndIntensity = float4(0.8,0.9,0.4,0.8);
-spotLight.posAndRadius = float4(-2.0,3.9,-4.0,2.0);
-spotLight.dirAndSpread = float4(1.0,-1.0,2.0,0.5);
-l2 = templeLightRig->AddLight(spotLight);
+@(EditorType=EDITOR_TYPE_COLOR)
+extern spotLight1Col = float3(1.0,1.0,1.0);
+extern spotLight1Intensity = 2.0;
+extern spotLight1PosRad = float4(-2.0,3.9,-4.0,1.0);
+extern spotLight1DirSpread = float4(0.0,0.0,1.0,3.0);
 
-extern spotLightPos1 = float3(-2.0,3.9,-4.0);
+spotLight = SpotLight();
+spotLight.colorAndIntensity = float4(spotLight1Col,spotLight1Intensity);
+spotLight.posAndRadius = spotLight1PosRad;
+spotLight.dirAndSpread = spotLight1DirSpread;
+l2 = templeLightRig->AddLight(spotLight);
 
 int Timeline_Update(info : UpdateInfo)
 {
-	spotLight.posAndRadius = float4(spotLightPos1,0.8);
+
+	sphereLight.posAndRadius = sphereLight1PosRad;
+	templeLightRig->UpdateLight(l1, sphereLight);
+
+	spotLight.posAndRadius = spotLight1PosRad;
+	spotLight.dirAndSpread = spotLight1DirSpread;
 	templeLightRig->UpdateLight(l2, spotLight);
+
+
 	SetActiveLightRig(templeLightRig);
 }
