@@ -7,6 +7,7 @@
 #endif
 
 #include "RenderSystems/Lighting/GBuffer.h"
+#include "RenderSystems/Lighting/Brdf.h"
 
 //basic light information
 struct LightInfo 
@@ -58,7 +59,7 @@ float LightDistanceAttenuation(float distanceToLight, float lightRadius)
 	return saturate(1.0 / (normalizedDistance*normalizedDistance+0.00001));
 }
 
-void ApplySphereLight(in float3 worldPos, in MaterialInfo material, in SphereLight light, in out float3 diffuse, in out float3 specular)
+void ApplySphereLight(in float3 worldPos, in MaterialInfo material, in float3 viewVector, in SphereLight light, in out float3 diffuse, in out float3 specular)
 {
 	float3 L = light.posAndRadius.xyz-worldPos;
 	float distanceToLight = length(L);
@@ -67,30 +68,36 @@ void ApplySphereLight(in float3 worldPos, in MaterialInfo material, in SphereLig
 	intensity *= light.colorAndIntensity.xyz*light.colorAndIntensity.w;
 
 	float irradiance = saturate(dot(material.worldNormal,L));
- 
+  
 	diffuse += irradiance*intensity;
-	specular += 0.0;
+
+	BrdfInfo brdfInfo;
+	GetBrdfInfo(brdfInfo, viewVector, L, material.worldNormal, material.smoothness, material.reflectance);
+	specular += irradiance*ComputeSpecular(intensity,brdfInfo);
 }
 
-void ApplySpotLight(in float3 worldPos, in MaterialInfo material, in SpotLight light, in out float3 diffuse, in out float3 specular)
+void ApplySpotLight(in float3 worldPos, in MaterialInfo material, in float3 viewVector, in SpotLight light, in out float3 diffuse, in out float3 specular)
 {
 	float3 L = light.posAndRadius.xyz-worldPos;
 	float distanceToLight = length(L);
 	L /= distanceToLight;
 	float3 intensity = light.colorAndIntensity.rgb*light.colorAndIntensity.w*LightDistanceAttenuation(distanceToLight, light.posAndRadius.w);
-	float irradiance = saturate(dot(material.worldNormal,L));
+	float NdL = saturate(dot(material.worldNormal,L));
+	float irradiance = NdL;
 
 	float angleDot = saturate(dot(L,-normalize(light.dirAndAngle.xyz)));
-
+ 
 	//TODO: precompute the max angle in the cpu
 	float h = sqrt(light.posAndRadius.w*light.posAndRadius.w+light.dirAndAngle.w*light.dirAndAngle.w);
 	float maxAngle = light.posAndRadius.w/h;
 	float angleDiff = max(1.0-maxAngle,0.0001);
-	float angleAttenuation = 1.0-(1.0-angleDot)/angleDiff ;//(maxAngle-angleDot)/maxAngle;
-	irradiance *= angleAttenuation;
+	float angleAttenuation = saturate(1.0-(1.0-angleDot)/angleDiff);
+ 	irradiance *= angleAttenuation;
 
 	diffuse += irradiance*intensity;
-	specular += 0.0;
+	BrdfInfo brdfInfo;
+	GetBrdfInfo(brdfInfo, viewVector, L, material.worldNormal, material.smoothness, material.reflectance);
+	specular += irradiance*ComputeSpecular(intensity,brdfInfo);
 
 }
 
