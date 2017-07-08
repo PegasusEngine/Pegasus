@@ -25,9 +25,9 @@ GBuffer WriteToGBuffers(in MaterialInfo info)
 	GBuffer gbuffer;
 	gbuffer.gbuffer0 = float4(info.color.rgb,info.smoothness);
 	
-	uint reflectanceUInt = uint(info.reflectance * 255);
-	uint metalMaskUInt = uint(info.metalMask * 255);	
-	gbuffer.gbuffer1 = float4(info.worldNormal.xyz, asfloat( (reflectanceUInt << 8) | ( metalMaskUInt ) ));
+	float reflectanceRange = floor(saturate(info.reflectance) * 255.0);
+	float metalMaskRange = floor(saturate(info.metalMask) * 255.0) * 0.001;	
+	gbuffer.gbuffer1 = float4(info.worldNormal.xyz, reflectanceRange+metalMaskRange);
 
 	return gbuffer;
 }
@@ -38,11 +38,9 @@ MaterialInfo ReadFromGbuffers(in GBuffer gbuffer)
 
 	info.color = gbuffer.gbuffer0.rgb;
 	info.smoothness = gbuffer.gbuffer0.a;
-	info.worldNormal = gbuffer.gbuffer1.xyz;
-	
-	uint alphaAsUint = asuint(gbuffer.gbuffer1.a);
-	info.metalMask = float(alphaAsUint & 0xFF)/255;
-	info.reflectance = float((alphaAsUint >> 8) & 0xFF)/255;
+	info.worldNormal = gbuffer.gbuffer1.xyz;	
+	info.metalMask = frac(gbuffer.gbuffer1.a)*1000.0/255.0;
+	info.reflectance = floor(gbuffer.gbuffer1.a)/255.0;
 
 	return info;
 }

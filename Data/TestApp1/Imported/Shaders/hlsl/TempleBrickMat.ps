@@ -12,9 +12,9 @@ void main(
 	MaterialInfo material;
 	material.color = float3(0.4,0.2,0.5);
 	material.worldNormal = nNormal;
-	material.smoothness = 0.5;
+	material.smoothness = 0.6;
 	material.reflectance = 0.5;
-	material.metalMask = 0.5;
+	material.metalMask = 0.0;
 	lightingOut = ApplyLighting(material);
 
 }

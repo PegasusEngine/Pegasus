@@ -29,15 +29,15 @@ void main(uint3 dti : SV_DispatchThreadId)
     {
 		float2 clipSpaceCoords = ((float2)dti.xy) / ((float2)gTargetDimensions)*2.0 - 1.0;
 		clipSpaceCoords.y = -clipSpaceCoords.y;
-        GBuffer gbuffers;
+        GBuffer gbuffers; 
         gbuffers.gbuffer0 = GBuffer0Texture[coords];
         gbuffers.gbuffer1 = GBuffer1Texture[coords];
 
-        MaterialInfo matInfo = ReadFromGbuffers(gbuffers);
-
+        MaterialInfo matInfo = ReadFromGbuffers(gbuffers);		
 		float clipSpaceDepth = DepthTexture[coords];
 		float4 homogeneousWorldPos = mul(float4(clipSpaceCoords,clipSpaceDepth,1.0),gInvViewProj);
 		float3 worldPos = homogeneousWorldPos.xyz/homogeneousWorldPos.w;
+		float3 viewVector = normalize(gEyePos.xyz-worldPos);
         //TODO: perform light tile sampling and perform computation:
         {
 			float3 diffuse = float3(0.0,0.0,0.0);
@@ -53,7 +53,7 @@ void main(uint3 dti : SV_DispatchThreadId)
 					{
 						SphereLight l;
 						GetSphereLight(lightInfo,l);
-						ApplySphereLight(worldPos,matInfo,l,diffuse,specular);
+						ApplySphereLight(worldPos,matInfo,viewVector,l,diffuse,specular);
 					}
 					break;
 				case LIGHTTYPE_SPOT:
@@ -61,15 +61,15 @@ void main(uint3 dti : SV_DispatchThreadId)
 					{
 						SpotLight l;
 						GetSpotLight(lightInfo,l);
-						ApplySpotLight(worldPos,matInfo,l,diffuse,specular);
+						ApplySpotLight(worldPos,matInfo,viewVector,l,diffuse,specular);
 					}
-					break;
+					break; 
 				}
 			} 
             /*WorldNormal debug*////OutputBuffer[coords] = float4(matInfo.worldNormal*0.5 + 0.5,1.0);
 			/*WorldPos debug*///OutputBuffer[coords] = float4(worldPos.xyz*0.01, 1.0);
-			/*Color debug*///OutputBuffer[coords] = float4(matInfo.color, 1.0);
-           	OutputBuffer[coords] = float4(diffuse.xyz,1.0);//float4(matInfo.color*diffuse + specular,1.0);
+			/*Color debug*///OutputBuffer[coords] = float4(matInfo.color, 1.0);			
+           	OutputBuffer[coords] = float4(matInfo.color*diffuse.xyz+specular,1.0);//float4(matInfo.color*diffuse + specular,1.0);
         }
     }
 }
