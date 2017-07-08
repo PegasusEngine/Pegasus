@@ -1,5 +1,36 @@
 #include "RenderSystems/Lighting/LightingCore.h"
 
+float hash(float3 p)
+{
+    p  = frac( p*0.3183099+.1 );
+	p *= 17.0;
+    return frac( p.x*p.y*p.z*(p.x+p.y+p.z) );
+}
+
+float noise( float3 x )
+{
+    float3 p = floor(x);
+    float3 f = frac(x);
+    f = f*f*(3.0-2.0*f);
+	
+    return lerp(lerp(lerp( hash(p+float3(0,0,0)), 
+                        hash(p+float3(1,0,0)),f.x),
+                   lerp( hash(p+float3(0,1,0)), 
+                        hash(p+float3(1,1,0)),f.x),f.y),
+               lerp(lerp( hash(p+float3(0,0,1)), 
+                        hash(p+float3(1,0,1)),f.x),
+                   lerp( hash(p+float3(0,1,1)), 
+                        hash(p+float3(1,1,1)),f.x),f.y),f.z);
+}
+
+float proceduralConcrete(float3 p)
+{
+	float o1 = noise(p);
+	float o2 = noise(p*2.0)*0.7;
+	float o3 = noise(p*4.0)*0.4;
+	float s = saturate(0.4*(o1 + o2 + o3));
+	return pow(s,1);
+}
 
 void main(
 	in float4 p : POSITION0,
@@ -10,9 +41,9 @@ void main(
 {
 	float3 nNormal = normalize(normal);
 	MaterialInfo material;
-	material.color = float3(0.4,0.2,0.5);
+	material.color = float3(0.4,0.4,0.4);
 	material.worldNormal = nNormal;
-	material.smoothness = 0.6;
+	material.smoothness = proceduralConcrete(p.xyz);
 	material.reflectance = 0.5;
 	material.metalMask = 0.0;
 	lightingOut = ApplyLighting(material);

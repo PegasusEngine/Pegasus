@@ -17,12 +17,12 @@
                         Color : [203, 231, 18],
                         _o_p_ : {
                             sphereLight1Intensity : 1.000000,
-                            spotLight1Intensity : 1.100000,
-                            spotLight1PosRad : [-48.000000, 66.900002, 46.000000, 62.000000],
-                            spotLight1DirSpread : [1.000000, -1.500000, -1.000000, 54.000000],
-                            sphereLight1PosRad : [62.500000, 33.500000, 6.500000, 32.000000],
-                            sphereLight1Col : [255, 226, 61],
-                            spotLight1Col : [75, 69, 255],
+                            spotLight1Intensity : 3.000000,
+                            spotLight1PosRad : [-57.000000, 48.000000, -33.000000, 39.000000],
+                            spotLight1DirSpread : [10.000000, -8.000000, 5.000000, 43.000000],
+                            sphereLight1PosRad : [0.000000, 59.500000, 0.000000, 32.000000],
+                            sphereLight1Col : [255, 240, 230],
+                            spotLight1Col : [255, 243, 239],
                             __schema__ : {
                                 sizetypes : [393232, 393232, 393232, 458755, 458755, 196612, 196612],
                                 names : [spotLight1PosRad, spotLight1DirSpread, sphereLight1PosRad, sphereLight1Col, spotLight1Col, sphereLight1Intensity, spotLight1Intensity],
@@ -268,8 +268,8 @@
         _o_p_ : {
             EnableTerrain : 0,
             Fov : 0.500000,
-            CamPos : [0.000000, 46.000000, 250.000000],
-            CamDir : [0.000000, -0.100000, -1.000000],
+            CamPos : [0.000000, 146.000000, -250.000000],
+            CamDir : [0.000000, -0.500000, 1.000000],
             __schema__ : {
                 sizetypes : [1, 327692, 196612, 327692],
                 names : [EnableTerrain, CamPos, Fov, CamDir],
