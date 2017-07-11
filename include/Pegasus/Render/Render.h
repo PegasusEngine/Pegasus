@@ -119,15 +119,29 @@ namespace Render
     //! Structure containing configuration for rasterizer state
     struct RasterizerConfig
     {
-        enum PegasusDepthFunc
+        enum PegasusRasterFunc
         {
             NONE_DF,
+            NEVER_DF,
+            ALWAYS_DF,
             GREATER_DF,
             LESSER_DF,
             GREATER_EQUAL_DF,
             LESSER_EQUAL_DF,
             EQUAL_DF,
+            NOT_EQUAL_DF,
             COUNT_DF
+        };
+
+        enum PegasusStencilOp
+        {
+            ZERO_SO,
+            KEEP_SO,
+            REPLACE_SO,
+            INVERT_SO,
+            INCR_SO,
+            DECR_SO,
+            COUNT_SO
         };
 
         enum PegasusCullMode
@@ -140,14 +154,24 @@ namespace Render
 
         RasterizerConfig ()
         :    mCullMode(NONE_CM),
-             mDepthFunc(NONE_DF)
+             mDepthFunc(NONE_DF),
+             mStencilReadMask(0),
+             mStencilWriteMask(0),
+             mStencilFunc(NONE_DF),
+             mStencilFailOp(KEEP_SO),
+             mStencilDepthFailOp(KEEP_SO),
+             mStencilPassOp(KEEP_SO)
         { 
         }    
 
         PegasusCullMode  mCullMode;
-        PegasusDepthFunc mDepthFunc;
-
-       
+        PegasusRasterFunc mDepthFunc;
+        PegasusRasterFunc mStencilFunc;
+        unsigned int mStencilReadMask;
+        unsigned int mStencilWriteMask;
+        PegasusStencilOp mStencilFailOp;
+        PegasusStencilOp mStencilDepthFailOp;
+        PegasusStencilOp mStencilPassOp;
     };
 
 

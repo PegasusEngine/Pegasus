@@ -16,8 +16,8 @@
                         Name : TempleLights,
                         Color : [203, 231, 18],
                         _o_p_ : {
-                            sphereLight1Intensity : 1.000000,
-                            spotLight1Intensity : 3.000000,
+                            sphereLight1Intensity : 20.000000,
+                            spotLight1Intensity : 8.000000,
                             spotLight1PosRad : [-57.000000, 48.000000, -33.000000, 39.000000],
                             spotLight1DirSpread : [10.000000, -8.000000, 5.000000, 43.000000],
                             sphereLight1PosRad : [0.000000, 59.500000, 0.000000, 32.000000],

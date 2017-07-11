@@ -124,6 +124,7 @@ void Render_CreateBlendingState(FunCallbackContext& context);
 void Render_CreateSamplerState(FunCallbackContext& context);
 void Render_BeginMarker(FunCallbackContext& context);
 void Render_EndMarker(FunCallbackContext& context);
+void Render_CreateSimpleRasterConfig(FunCallbackContext& context);
 
 template<class T>
 void Render_SetComputeOutputs(FunCallbackContext& context);
@@ -225,16 +226,31 @@ static void RegisterRenderEnums(BlockLib* lib)
 
     const EnumDeclarationDesc enumDefs[] = {
         {
-            "PegasusDepthFunc",
+            "PegasusRasterFunc",
             { 
                 { "NONE_DF",RasterizerConfig::NONE_DF },
+                { "NEVER_DF",RasterizerConfig::NEVER_DF },
+                { "ALWAYS_DF",RasterizerConfig::ALWAYS_DF },
                 { "GREATER_DF",RasterizerConfig::GREATER_DF },
                 { "LESSER_DF",RasterizerConfig::LESSER_DF },
                 { "GREATER_EQUAL_DF",RasterizerConfig::GREATER_EQUAL_DF },
                 { "LESSER_EQUAL_DF",RasterizerConfig::LESSER_EQUAL_DF },
-                { "EQUAL_DF",RasterizerConfig::EQUAL_DF }
+                { "EQUAL_DF",RasterizerConfig::EQUAL_DF },
+                { "NOT_EQUAL_DF", RasterizerConfig::NOT_EQUAL_DF }
             },
             RasterizerConfig::COUNT_DF //COUNT
+        },
+        {
+            "PegasusStencilOp",
+            {
+                { "ZERO_SO", RasterizerConfig::ZERO_SO },
+                { "KEEP_SO", RasterizerConfig::KEEP_SO },
+                { "REPLACE_SO", RasterizerConfig::REPLACE_SO },
+                { "INVERT_SO", RasterizerConfig::INVERT_SO },
+                { "INCR_SO", RasterizerConfig::INCR_SO },
+                { "DECR_SO", RasterizerConfig::DECR_SO }
+            },
+            RasterizerConfig::COUNT_SO
         },
         {
             "PegasusCullMode",
@@ -355,7 +371,8 @@ static void RegisterRenderEnums(BlockLib* lib)
     //Sanity checks:
 #if PEGASUS_ENABLE_ASSERT
     const char* assertstr = "Make sure to register the proper enumeration manually in blockscript.";
-    PG_ASSERTSTR(RasterizerConfig::COUNT_DF == 6, assertstr);
+    PG_ASSERTSTR(RasterizerConfig::COUNT_DF == 9, assertstr);
+    PG_ASSERTSTR(RasterizerConfig::COUNT_SO == 6, assertstr);
     PG_ASSERTSTR(RasterizerConfig::COUNT_CM == 3,assertstr);
     PG_ASSERTSTR(BlendingConfig::COUNT_BO   == 3,assertstr);
     PG_ASSERTSTR(BlendingConfig::COUNT_M    == 6,assertstr);
@@ -451,8 +468,8 @@ static void RegisterRenderStructs(BlockLib* lib)
         },
         {
             "RasterizerConfig",
-            {"PegasusCullMode", "PegasusDepthFunc", nullptr },
-            {"CullMode"       , "DepthFunc"       , nullptr }
+            {"PegasusCullMode", "PegasusRasterFunc", "PegasusRasterFunc", "int"            ,  "int"            , "PegasusStencilOp", "PegasusStencilOp",  "PegasusStencilOp",  nullptr },
+            {"CullMode"       , "DepthFunc"       ,  "StencilFunc",       "StencilReadMask", "StencilWriteMask", "StencilFailOp",    "StencilDepthFailOp","StencilPassOp",  nullptr }
         },
         {
             "BlendingConfig",
@@ -1118,6 +1135,13 @@ static void RegisterFunctions(BlockLib* lib)
             { nullptr },
             { nullptr },
             Render_EndMarker
+        },
+        {
+            "RasterizerConfig",
+            "RasterizerConfig",
+            { "PegasusCullMode", "PegasusRasterFunc", nullptr },
+            { "CullMode", "StencilFunc", nullptr },
+            Render_CreateSimpleRasterConfig
         }
     };
 
@@ -2249,4 +2273,13 @@ void Render_BeginMarker(FunCallbackContext& context)
 void Render_EndMarker(FunCallbackContext& context)
 {
     Render::EndMarker();
+}
+
+void Render_CreateSimpleRasterConfig(FunCallbackContext& context)
+{
+    FunParamStream stream(context);
+    PG_ASSERT(sizeof(Render::RasterizerConfig) == context.GetOutputBufferSize());
+    Render::RasterizerConfig* outputConfig = reinterpret_cast<Render::RasterizerConfig*>(context.GetRawOutputBuffer());
+    outputConfig->mCullMode = stream.NextArgument<Render::RasterizerConfig::PegasusCullMode>();
+    outputConfig->mDepthFunc = stream.NextArgument<Render::RasterizerConfig::PegasusRasterFunc>();
 }

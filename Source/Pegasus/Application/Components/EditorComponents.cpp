@@ -322,7 +322,7 @@ void GridComponent::Load(Core::IApplicationContext* appContext)
     customGenerator->SetConfiguration(meshConfig);
 
     MeshDataRef meshData = customGenerator->EditMeshData();
-    static const int GRID_EXTENDS = 100;
+    static const int GRID_EXTENDS = 200;
     int vertexCount = 4*(GRID_EXTENDS + 1);
     meshData->AllocateVertexes(vertexCount);
     meshData->AllocateIndexes(vertexCount);
@@ -842,7 +842,7 @@ void LightingDebugComponent::Load(Core::IApplicationContext* appContext)
         CustomGenerator* customGenerator = static_cast<CustomGenerator*>(&(*generator));
         customGenerator->SetConfiguration(meshConfig);
         MeshDataRef meshData = customGenerator->EditMeshData();
-        const int arcVertCount = 15;
+        const int arcVertCount = 32;
         const float arcVertCountF = (float)arcVertCount;
         const float arcPartAngle = Math::P_2_PI / arcVertCountF;
         short arcVertIndex = 0;

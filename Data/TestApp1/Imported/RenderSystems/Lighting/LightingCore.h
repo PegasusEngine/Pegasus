@@ -92,7 +92,7 @@ void ApplySpotLight(in float3 worldPos, in MaterialInfo material, in float3 view
 	float maxAngle = light.posAndRadius.w/h;
 	float angleDiff = max(1.0-maxAngle,0.0001);
 	float angleAttenuation = saturate(1.0-(1.0-angleDot)/angleDiff);
- 	irradiance *= angleAttenuation;
+ 	irradiance *= angleAttenuation*angleAttenuation;
 
 	diffuse += irradiance*intensity;
 	BrdfInfo brdfInfo;
