@@ -45,10 +45,6 @@ int Timeline_Render(info: RenderInfo)
 	//clear depth stencil
 	SetRenderTarget(viewState.ldrSurface,viewState.depthSurface);
 	Clear(1,1,1);
-	SetRenderTarget(viewState.deferredRenderState.gbuffer0);
-	Clear(1,0,0);
-	SetRenderTarget(viewState.deferredRenderState.gbuffer1);
-	Clear(1,0,0);
 	UnbindRenderTargets();
 	SetDefaultRenderTarget();
 

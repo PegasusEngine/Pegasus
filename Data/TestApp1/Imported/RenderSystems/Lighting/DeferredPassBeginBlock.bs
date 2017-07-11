@@ -4,15 +4,24 @@
 
 #include "RenderSystems/Frame/Frame.bsh"
 
-
-depthComparisonState = CreateRasterizerState(RasterizerConfig(CW_CM,LESSER_DF));
+deferredRasterStateConfig = RasterizerConfig(
+	CW_CM,
+	LESSER_DF,
+	ALWAYS_DF,
+	0,
+	1,
+	KEEP_SO,
+	KEEP_SO,
+	REPLACE_SO
+);
+deferredRasterState = CreateRasterizerState(deferredRasterStateConfig);
 blendingState = CreateBlendingState(BlendingConfig(NONE_BO,ZERO_M,ZERO_M));
 
 int Timeline_Render(info: RenderInfo)
 {
 	viewState = GetViewState(info.windowId);
 	
-	SetRasterizerState(depthComparisonState);
+	SetRasterizerState(deferredRasterState);
 	SetBlendingState(blendingState);
 
 	gbuffers = static_array<RenderTarget[GBUFFER_COUNT]>;

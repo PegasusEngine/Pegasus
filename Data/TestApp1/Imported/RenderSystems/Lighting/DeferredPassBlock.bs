@@ -17,6 +17,7 @@ struct DeferredPassRendererResources
 	applyLightsGbuffer1Uniform : Uniform;
 	applyLightsInputBufferUniform : Uniform;
 	applyLightsDepthBuffer : Uniform;
+	applyLightsStencilBuffer : Uniform;
 };
 
 struct DeferredApplyLightsConstants
@@ -37,6 +38,7 @@ DeferredPassRendererResources CreateDeferredPassResources()
 	rs.applyLightsGbuffer1Uniform = GetUniformLocation(rs.applyLightsCs, "GBuffer1Texture");
 	rs.applyLightsInputBufferUniform = GetUniformLocation(rs.applyLightsCs, "LightInputBuffer");
 	rs.applyLightsDepthBuffer     = GetUniformLocation(rs.applyLightsCs, "DepthTexture");
+	rs.applyLightsStencilBuffer   = GetUniformLocation(rs.applyLightsCs, "StencilTexture");
 	return rs;
 }
 
@@ -50,6 +52,7 @@ int CallDeferredApplyLights(constants : DeferredApplyLightsConstants, deferredSt
 	SetUniformTextureRenderTarget(resources.applyLightsGbuffer1Uniform, deferredState.gbuffer1);
 	SetUniformBufferResource(resources.applyLightsInputBufferUniform,resources.applyLightsSourceLightBuffer);
 	SetUniformDepth(resources.applyLightsDepthBuffer,     deferredState.outDepthBuffer);
+	SetUniformStencil(resources.applyLightsStencilBuffer,     deferredState.outDepthBuffer);
 	SetComputeOutput(deferredState.outHdrBuffer, 0);
 	Dispatch(divUp(constants.targetWidth,gLightTileSize),divUp(constants.targetHeight,gLightTileSize),1);
 	UnbindComputeResources();

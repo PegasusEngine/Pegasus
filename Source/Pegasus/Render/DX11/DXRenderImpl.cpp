@@ -586,11 +586,11 @@ void Pegasus::Render::Clear(bool color, bool depth, bool stencil)
         }
     }
 
-	if (depth)
+	if (depth || stencil)
 	{
         deviceContext->ClearDepthStencilView(
             gDXState.mDispatchedDepth ? gDXState.mDispatchedDepth : dsc,
-            D3D11_CLEAR_DEPTH,
+            (depth ? D3D11_CLEAR_DEPTH : 0) | (stencil ? D3D11_CLEAR_STENCIL : 0),
             gDXState.mDepthClearVal,
             0
         );
@@ -615,7 +615,7 @@ void Pegasus::Render::SetRasterizerState(const RasterizerStateRef& state)
     ID3D11RasterizerState* r = static_cast<ID3D11RasterizerState*>(state->GetInternalData());
     ID3D11DepthStencilState * d = static_cast<ID3D11DepthStencilState*>(state->GetInternalDataAux());
     context->RSSetState(r);
-    context->OMSetDepthStencilState(d, 0);
+    context->OMSetDepthStencilState(d, 0xffffffff);
 
     
 }
@@ -1023,30 +1023,41 @@ Pegasus::Render::RasterizerStateRef Pegasus::Render::CreateRasterizerState(const
     VALID_DECLARE(device->CreateRasterizerState(&rasterDesc, &rasterState));
     rasterizerState->SetInternalData(static_cast<void*>(rasterState));
 
-    static const D3D11_COMPARISON_FUNC depthFunTranslation[] = {
+    static const D3D11_COMPARISON_FUNC cmpFunTranslation[] = {
+        D3D11_COMPARISON_ALWAYS,
+        D3D11_COMPARISON_NEVER,
         D3D11_COMPARISON_ALWAYS,
         D3D11_COMPARISON_GREATER, 
         D3D11_COMPARISON_LESS, 
         D3D11_COMPARISON_GREATER_EQUAL, 
         D3D11_COMPARISON_LESS_EQUAL, 
-        D3D11_COMPARISON_EQUAL
+        D3D11_COMPARISON_EQUAL,
+        D3D11_COMPARISON_NOT_EQUAL
+    };
+
+    static const D3D11_STENCIL_OP stencilOpTranslation[] = {
+        D3D11_STENCIL_OP_ZERO,
+        D3D11_STENCIL_OP_KEEP,
+        D3D11_STENCIL_OP_REPLACE,
+        D3D11_STENCIL_OP_INVERT,
+        D3D11_STENCIL_OP_INCR,
+        D3D11_STENCIL_OP_DECR
     };
     
     D3D11_DEPTH_STENCILOP_DESC depthStencilOp = {
-        D3D11_STENCIL_OP_KEEP,
-        D3D11_STENCIL_OP_KEEP,
-        D3D11_STENCIL_OP_KEEP,
-        D3D11_COMPARISON_ALWAYS
+        stencilOpTranslation[config.mStencilFailOp],
+        stencilOpTranslation[config.mStencilDepthFailOp],
+        stencilOpTranslation[config.mStencilPassOp],
+        cmpFunTranslation[config.mStencilFunc]
     };
-    
     
     D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {
         config.mDepthFunc != Pegasus::Render::RasterizerConfig::NONE_DF,
         D3D11_DEPTH_WRITE_MASK_ALL,
-        depthFunTranslation[config.mDepthFunc],
-        false, //stencil disabled
-        0xff, //full stencil read mask
-        0xff, //full stencil write mask
+        cmpFunTranslation[config.mDepthFunc],
+        config.mStencilFunc != Pegasus::Render::RasterizerConfig::NONE_DF, //stencil disabled
+        (UINT8)config.mStencilReadMask, //full stencil read mask
+        (UINT8)config.mStencilWriteMask, //full stencil write mask
         depthStencilOp, //stencil ops
         depthStencilOp //stencil ops
     };
