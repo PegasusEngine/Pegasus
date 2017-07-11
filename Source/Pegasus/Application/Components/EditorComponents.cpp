@@ -322,7 +322,7 @@ void GridComponent::Load(Core::IApplicationContext* appContext)
     customGenerator->SetConfiguration(meshConfig);
 
     MeshDataRef meshData = customGenerator->EditMeshData();
-    static const int GRID_EXTENDS = 500;
+    static const int GRID_EXTENDS = 200;
     int vertexCount = 4*(GRID_EXTENDS + 1);
     meshData->AllocateVertexes(vertexCount);
     meshData->AllocateIndexes(vertexCount);
