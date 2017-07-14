@@ -49,6 +49,7 @@ void LightRig::Update()
                     break;
                 case SPHERE:
                     destination.attr1 = source.state.sphere.posAndRadius;
+                    destination.attr2 = Math::Vec4(source.state.sphere.innerRadius, 0.0f,0.0f,0.0f);
                     break;
                 }
             }

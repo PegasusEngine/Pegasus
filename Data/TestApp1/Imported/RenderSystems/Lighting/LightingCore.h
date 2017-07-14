@@ -28,6 +28,7 @@ struct SphereLight
 {
 	float4 colorAndIntensity;
 	float4 posAndRadius;
+	float innerRadius;
 };
 
 struct SpotLight
@@ -42,6 +43,7 @@ void GetSphereLight(in LightInfo info, out SphereLight light)
 {
 	light.colorAndIntensity = info.attr0;
 	light.posAndRadius = info.attr1;
+	light.innerRadius = info.attr2.x;
 }
 
 void GetSpotLight(in LightInfo info, out SpotLight light)
@@ -52,49 +54,53 @@ void GetSpotLight(in LightInfo info, out SpotLight light)
 }
 
 //application of lights
-
-float LightDistanceAttenuation(float distanceToLight, float lightRadius)
+float LightDistanceAttenuation(float distToLightSquared, float lightRadius)
 {
-	float normalizedDistance = distanceToLight/max(lightRadius,0.00001);
-	return saturate(1.0 / (normalizedDistance*normalizedDistance+0.00001));
+	float distAttenuation = saturate(1.0 / max(distToLightSquared,0.001));
+	float smoothRadialAttenuation = 1.0 - saturate(distToLightSquared/(lightRadius*lightRadius));
+	return distAttenuation*smoothRadialAttenuation*smoothRadialAttenuation ;
 }
 
 void ApplySphereLight(in float3 worldPos, in MaterialInfo material, in float3 viewVector, in SphereLight light, in out float3 diffuse, in out float3 specular)
 {
-	float3 L = light.posAndRadius.xyz-worldPos;
-	float distanceToLight = length(L);
-	L /= distanceToLight;
-	float3 intensity = light.colorAndIntensity.rgb*LightDistanceAttenuation(distanceToLight, light.posAndRadius.w);
-	intensity *= light.colorAndIntensity.xyz*light.colorAndIntensity.w;
+	const float MAX_SPHERE_LIGHT_DIST = 10000000.0;
+	float3 uL = light.posAndRadius.xyz-worldPos;
+	float distL = clamp(length(uL)-light.innerRadius,0.01,MAX_SPHERE_LIGHT_DIST);
+	float distSqrd = distL*distL;
+	float3 L = uL/distL;
+	float newLightRadius = clamp(light.posAndRadius.w-light.innerRadius,0.0,MAX_SPHERE_LIGHT_DIST);
 
+	float3 intensity = light.colorAndIntensity.rgb*light.colorAndIntensity.w*LightDistanceAttenuation(distSqrd,newLightRadius);
 	float irradiance = saturate(dot(material.worldNormal,L));
   
 	diffuse += irradiance*intensity;
 
-	BrdfInfo brdfInfo;
+	BrdfInfo brdfInfo; 
 	GetBrdfInfo(brdfInfo, viewVector, L, material.worldNormal, material.smoothness, material.reflectance);
 	specular += irradiance*ComputeSpecular(intensity,brdfInfo);
 }
 
 void ApplySpotLight(in float3 worldPos, in MaterialInfo material, in float3 viewVector, in SpotLight light, in out float3 diffuse, in out float3 specular)
 {
-	float3 L = light.posAndRadius.xyz-worldPos;
-	float distanceToLight = length(L);
-	L /= distanceToLight;
-	float3 intensity = light.colorAndIntensity.rgb*light.colorAndIntensity.w*LightDistanceAttenuation(distanceToLight, light.posAndRadius.w);
-	float NdL = saturate(dot(material.worldNormal,L));
-	float irradiance = NdL;
+	const float MAX_SPOT_LIGHT_DIST = 10000000.0;
+	float3 uL = light.posAndRadius.xyz-worldPos;
+	float distL = length(uL);
+	float distSqrd = distL*distL;
+	float3 L = uL/distL;
 
-	float angleDot = saturate(dot(L,-normalize(light.dirAndAngle.xyz)));
- 
+	float3 intensity = light.colorAndIntensity.rgb*light.colorAndIntensity.w*LightDistanceAttenuation(distSqrd,light.posAndRadius.w);
+	float irradiance = saturate(dot(material.worldNormal,L));
+
+	float angleDot = saturate(dot(L,-normalize(light.dirAndAngle.xyz))); 
 	//TODO: precompute the max angle in the cpu
 	float h = sqrt(light.posAndRadius.w*light.posAndRadius.w+light.dirAndAngle.w*light.dirAndAngle.w);
 	float maxAngle = light.posAndRadius.w/h;
 	float angleDiff = max(1.0-maxAngle,0.0001);
-	float angleAttenuation = saturate(1.0-(1.0-angleDot)/angleDiff);
- 	irradiance *= angleAttenuation*angleAttenuation;
-
+	float invAngleAttenuation = (1.0-angleDot)/angleDiff;
+	float angleAttenuation = saturate(1.0-invAngleAttenuation*invAngleAttenuation);
+ 	irradiance *= angleAttenuation;
 	diffuse += irradiance*intensity;
+
 	BrdfInfo brdfInfo;
 	GetBrdfInfo(brdfInfo, viewVector, L, material.worldNormal, material.smoothness, material.reflectance);
 	specular += irradiance*ComputeSpecular(intensity,brdfInfo);
