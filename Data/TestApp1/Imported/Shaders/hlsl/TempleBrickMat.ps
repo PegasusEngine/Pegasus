@@ -39,11 +39,12 @@ void main(
 	out LightingOutput lightingOut
 )
 {
-	float3 nNormal = normalize(normal);
+	float concreteNoise = proceduralConcrete(1.0*p.xyz);
+	float3 nNormal = normalize(normal+0.21*float3(0.0,1.0,0.0)*concreteNoise);
 	MaterialInfo material;
 	material.color = float3(0.4,0.4,0.4);
 	material.worldNormal = nNormal;
-	material.smoothness = proceduralConcrete(p.xyz);
+	material.smoothness = concreteNoise;
 	material.reflectance = 0.5;
 	material.metalMask = 0.0;
 	lightingOut = ApplyLighting(material);

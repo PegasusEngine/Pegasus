@@ -29,7 +29,8 @@ mChild(nullptr),
 mStructDef(nullptr),
 mEnumNode(nullptr),
 mPropertyNode(nullptr),
-mPropertyCallback(nullptr)
+mPropertyCallback(nullptr),
+mByteSize(0)
 {
     mName[0] = '\0';
 }

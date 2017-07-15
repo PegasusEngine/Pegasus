@@ -19,9 +19,9 @@
                             sphereLight1Intensity : 5000.000000,
                             spotLight1Intensity : 90000.000000,
                             sphereLightInnerRadius : 0.000000,
-                            spotLight1PosRad : [-80.000000, 84.500000, -1.000000, 98.000000],
+                            spotLight1PosRad : [-79.000000, 84.500000, -1.000000, 98.000000],
                             spotLight1DirSpread : [1.000000, -1.000000, 0.000000, 82.000000],
-                            sphereLight1PosRad : [31.000000, 62.500000, 14.000000, 145.000000],
+                            sphereLight1PosRad : [40.000000, 56.500000, 40.000000, 145.000000],
                             sphereLight1Col : [255, 240, 230],
                             spotLight1Col : [255, 240, 230],
                             __schema__ : {
@@ -33,10 +33,6 @@
                         script : {@BlockScripts/TempleSceneLights.bs}
                     }
                 }]
-        }, {
-            type : Lane,
-            name : "",
-            Blocks : []
         }, {
             type : Lane,
             name : "",
@@ -87,14 +83,10 @@
         }, {
             type : Lane,
             name : "",
-            Blocks : []
-        }, {
-            type : Lane,
-            name : "",
             Blocks : [{
                     type : Block,
                     props : {
-                        Beat : 2051,
+                        Beat : 2136,
                         Duration : 1024,
                         Name : Test2,
                         Color : [0, 100, 100],
@@ -115,7 +107,15 @@
                         },
                         script : {@BlockScripts/geometrytestblock.bs}
                     }
-                }, {
+                }]
+        }, {
+            type : Lane,
+            name : "",
+            Blocks : []
+        }, {
+            type : Lane,
+            name : "",
+            Blocks : [{
                     type : Block,
                     props : {
                         Beat : 3081,
@@ -198,14 +198,6 @@
         }, {
             type : Lane,
             name : Beads,
-            Blocks : []
-        }, {
-            type : Lane,
-            name : Fractal,
-            Blocks : []
-        }, {
-            type : Lane,
-            name : Blob,
             Blocks : [{
                     type : Block,
                     props : {
@@ -225,6 +217,14 @@
                 }]
         }, {
             type : Lane,
+            name : Fractal,
+            Blocks : []
+        }, {
+            type : Lane,
+            name : Blob,
+            Blocks : []
+        }, {
+            type : Lane,
             name : "",
             Blocks : [{
                     type : Block,
@@ -234,10 +234,11 @@
                         Name : HdrPos,
                         Color : [240, 179, 148],
                         _o_p_ : {
+                            exposureValue : 0.400000,
                             __schema__ : {
-                                sizetypes : [],
-                                names : [],
-                                typeNames : []
+                                sizetypes : [196612],
+                                names : [exposureValue],
+                                typeNames : [float]
                             }
                         },
                         script : {@RenderSystems/Post/HdrPost.bs}

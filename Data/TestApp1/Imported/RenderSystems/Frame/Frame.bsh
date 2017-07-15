@@ -18,7 +18,7 @@ struct ViewState
 
 struct FrameState
 {
-    
+    dummy : int; //this is so we dont have a struct of size 0, otherwise we can alias stuff.
 };
 
 #include "RenderSystems/Frame/Core.bsh"
