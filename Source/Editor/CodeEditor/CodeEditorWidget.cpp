@@ -209,8 +209,14 @@ void CodeEditorWidget::SetupUi()
     findPrev->setText(tr("Prev"));
     QToolButton* closeSearch = new QToolButton(mUi.mFindTextWidget);
     closeSearch->setIcon(closeIcon);
+
+    connect(findNext, SIGNAL(clicked()),
+            this, SLOT(FindNextSearch()));
+    connect(findPrev, SIGNAL(clicked()),
+            this, SLOT(FindPrevSearch()));
     connect(closeSearch, SIGNAL(clicked()),
             this, SLOT(CloseSearch()));
+
     QCheckBox* caseSense = new QCheckBox(mUi.mFindTextWidget); 
     caseSense->setText(tr("Case Sensitive"));
 
@@ -267,6 +273,38 @@ void CodeEditorWidget::FocusSearch()
     mUi.mFindTextWidget->show();
     mUi.mSearchWindowLineEdit->setFocus();
 }
+
+void CodeEditorWidget::FindNextSearch()
+{
+    QString txt = mUi.mSearchWindowLineEdit->text();
+    int idx = mUi.mTabWidget->GetCurrentIndex();
+    if (idx >= 0)
+    {
+        AssetInstanceHandle handle = mUi.mTabWidget->GetTabObject(idx);
+        SourceStateMap::iterator it = mHandleMap.find(handle);
+        if (it != mHandleMap.end())
+        {
+            SourceState* ss = it.value();
+            QTextDocument* doc = ss->document;
+            if (doc != nullptr)
+            {
+
+                CodeTextEditorWidget* editor = mUi.mTreeEditor->FindCodeInEditors(ss);
+                if (editor != nullptr)
+                {
+                    QTextCursor c = editor->textCursor();
+                    c = doc->find(txt, c.position());
+                    editor->setTextCursor(c);
+                }
+            }
+        }
+    }
+}
+
+void CodeEditorWidget::FindPrevSearch()
+{
+}
+
 
 void CodeEditorWidget::CloseSearch()
 {

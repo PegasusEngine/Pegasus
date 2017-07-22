@@ -180,6 +180,13 @@ private slots:
     //! Enables search mode.
     void FocusSearch();
 
+    //! finds the next text and scrolls to such text in the documents
+    void FindNextSearch();
+
+    //! finds the previous element in the search
+    void FindPrevSearch();
+
+
     //! Closes search mode.
     void CloseSearch();
 
