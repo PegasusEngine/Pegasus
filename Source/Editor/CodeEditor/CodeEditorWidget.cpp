@@ -219,6 +219,7 @@ void CodeEditorWidget::SetupUi()
 
     QCheckBox* caseSense = new QCheckBox(mUi.mFindTextWidget); 
     caseSense->setText(tr("Case Sensitive"));
+    mUi.mFindIsCaseSensitive = caseSense;
 
     mUi.mFindTextWidget->setLayout(findBoxLayout);
     findBoxLayout->addWidget(findTextLabel);
@@ -277,6 +278,17 @@ void CodeEditorWidget::FocusSearch()
 void CodeEditorWidget::FindNextSearch()
 {
     QString txt = mUi.mSearchWindowLineEdit->text();
+    FindTextInDocument(txt, true);
+}
+
+void CodeEditorWidget::FindPrevSearch()
+{
+    QString txt = mUi.mSearchWindowLineEdit->text();
+    FindTextInDocument(txt, false);
+}
+
+void CodeEditorWidget::FindTextInDocument(const QString& text, bool isForwardSearch)
+{
     int idx = mUi.mTabWidget->GetCurrentIndex();
     if (idx >= 0)
     {
@@ -288,23 +300,27 @@ void CodeEditorWidget::FindNextSearch()
             QTextDocument* doc = ss->document;
             if (doc != nullptr)
             {
-
                 CodeTextEditorWidget* editor = mUi.mTreeEditor->FindCodeInEditors(ss);
                 if (editor != nullptr)
                 {
                     QTextCursor c = editor->textCursor();
-                    c = doc->find(txt, c.position());
-                    editor->setTextCursor(c);
+                    QTextDocument::FindFlags flags;
+                    if (!isForwardSearch)
+                        flags = flags | QTextDocument::FindBackward;
+                    if (mUi.mFindIsCaseSensitive->checkState() == Qt::Checked)
+                        flags = flags | QTextDocument::FindCaseSensitively;
+                    if (!isForwardSearch)
+                        c.movePosition(QTextCursor::PreviousCharacter);
+                    c = doc->find(text, c, flags);
+                    if (!c.isNull())
+                    {
+                        editor->setTextCursor(c);
+                    }
                 }
             }
         }
     }
 }
-
-void CodeEditorWidget::FindPrevSearch()
-{
-}
-
 
 void CodeEditorWidget::CloseSearch()
 {
