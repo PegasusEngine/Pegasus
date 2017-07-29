@@ -42,15 +42,19 @@ static const int OUTPUT_ESTIMATED_LATENCY = 100;
 //! FMOD system global object
 static FMOD::System * gSystem = nullptr;
 
-//! FMOD music object, created by \a LoadMusic()
-static FMOD::Sound * gMusic = nullptr;
-
-//! FMOD channel object, created by \a LoadMusic() and used in PlayMusic() to start reading
-static FMOD::Channel * gChannel = nullptr;
+struct InternalState
+{
+    FMOD::Sound * music;
+    FMOD::Channel * channel;
+    InternalState()
+    : music(nullptr), channel(nullptr)
+    {
+    }
+};
 
 //----------------------------------------------------------------------------------------
 
-void Initialize()
+void InitializeSystem()
 {
     PG_LOG('SOUN', "Initializing sound system using FMOD");
     PG_ASSERTSTR(gSystem == nullptr, "Trying to initialize FMOD twice");
@@ -98,44 +102,68 @@ void Initialize()
 
 //----------------------------------------------------------------------------------------
 
-void LoadMusic(const char * fileName)
+void Update()
 {
     if (gSystem != nullptr)
     {
-        PG_LOG('MUSC', "Loading music file %s", fileName);
-
-        // Load the sound file, with or without streaming
-#if PEGASUS_SOUND_STREAM_MUSIC
-        FMOD_RESULT result = gSystem->createSound(fileName, FMOD_LOOP_OFF | FMOD_2D | FMOD_CREATESTREAM, 0, &gMusic);
-#else
-        FMOD_RESULT result = gSystem->createSound(fileName, FMOD_LOOP_OFF | FMOD_2D, 0, &gMusic);
-#endif
-        if (result != FMOD_OK)
-        {
-            PG_LOG('MUSC', "Unable to load the music file (%s)", fileName);
-            return;
-        }
-
-        // Preload the music by filling the initial buffer and set the channel to pause
-        result = gSystem->playSound(gMusic, 0, true, &gChannel);
-        if (result != FMOD_OK)
-        {
-            PG_LOG('MUSC', "Unable to play the loaded music file (%s)", fileName);
-            gChannel = nullptr;
-            return;
-        }
+        gSystem->update();
     }
 }
 
 //----------------------------------------------------------------------------------------
 
-void PlayMusic()
+void ReleaseSystem()
 {
-    if (gChannel != nullptr)
+    if (gSystem != nullptr)
+    {
+        gSystem->release();
+        gSystem = nullptr;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+Sound::Sound(Alloc::IAllocator* allocator, Io::IOManager* ioManager, const char * fileName)
+:   mAllocator(allocator),
+    mIoManager(ioManager)
+
+{
+    PG_ASSERT(gSystem != nullptr)
+    PG_LOG('MUSC', "Loading music file %s", fileName);
+
+    mState = PG_NEW(mAllocator, -1, "SoundTrack", Alloc::PG_MEM_PERM) InternalState;
+
+    // Load the sound file, with or without streaming
+#if PEGASUS_SOUND_STREAM_MUSIC
+    FMOD_RESULT result = gSystem->createSound(fileName, FMOD_LOOP_OFF | FMOD_2D | FMOD_CREATESTREAM, 0, &mState->music);
+#else
+    FMOD_RESULT result = gSystem->createSound(fileName, FMOD_LOOP_OFF | FMOD_2D, 0, &mState->music);
+#endif
+    if (result != FMOD_OK)
+    {
+        PG_LOG('MUSC', "Unable to load the music file (%s)", fileName);
+        return;
+    }
+
+    // Preload the music by filling the initial buffer and set the channel to pause
+    result = gSystem->playSound(mState->music, 0, true, &mState->channel);
+    if (result != FMOD_OK)
+    {
+        PG_LOG('MUSC', "Unable to play the loaded music file (%s)", fileName);
+        mState->channel = nullptr;
+        return;
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void Sound::Play(double sampleLength)
+{
+    if (mState->channel != nullptr)
     {
         PG_LOG('MUSC', "Starting playing the music file");
 
-        FMOD_RESULT result = gChannel->setPaused(false);
+        FMOD_RESULT result = mState->channel->setPaused(false);
         if (result != FMOD_OK)
         {
             PG_LOG('MUSC', "Unable to play the music file, the channel cannot be unpaused");
@@ -146,12 +174,29 @@ void PlayMusic()
 
 //----------------------------------------------------------------------------------------
 
-bool IsPlayingMusic()
+void Sound::Pause()
 {
-    if (gChannel != nullptr)
+    if (mState->channel != nullptr)
+    {
+        PG_LOG('MUSC', "Pausing the music.");
+
+        FMOD_RESULT result = mState->channel->setPaused(true);
+        if (result != FMOD_OK)
+        {
+            PG_LOG('MUSC', "Unable to pause the music file, the channel cannot be paused");
+            return;
+        }
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+bool Sound::IsPlayingMusic()
+{
+    if (mState->channel != nullptr)
     {
         bool paused = false;
-        FMOD_RESULT result = gChannel->getPaused(&paused);
+        FMOD_RESULT result = mState->channel->getPaused(&paused);
         return (result == FMOD_OK) && !paused;
     }
     else
@@ -162,12 +207,12 @@ bool IsPlayingMusic()
 
 //----------------------------------------------------------------------------------------
 
-unsigned int GetMusicPosition()
+unsigned int Sound::GetPosition()
 {
-    if (gChannel != nullptr)
+    if (mState->channel != nullptr)
     {
         unsigned int musicPosition = 0;
-        FMOD_RESULT result = gChannel->getPosition(&musicPosition, FMOD_TIMEUNIT_MS);
+        FMOD_RESULT result = mState->channel->getPosition(&musicPosition, FMOD_TIMEUNIT_MS);
         if (result == FMOD_OK)
         {
             if (musicPosition > OUTPUT_ESTIMATED_LATENCY)
@@ -180,38 +225,25 @@ unsigned int GetMusicPosition()
     return 0;
 }
 
-//----------------------------------------------------------------------------------------
-
-void Update()
+Sound::~Sound()
 {
-    if (gSystem != nullptr)
+    if (mState->channel != nullptr)
     {
-        gSystem->update();
+        mState->channel->stop();
+        mState->channel = nullptr;
     }
+
+    if (mState->music != nullptr)
+    {
+        mState->music->release();
+        mState->music = nullptr;
+    }
+
+
+    PG_DELETE(mAllocator, mState);
+
 }
 
-//----------------------------------------------------------------------------------------
-
-void Release()
-{
-    if (gSystem != nullptr)
-    {
-        if (gChannel != nullptr)
-        {
-            gChannel->stop();
-            gChannel = nullptr;
-        }
-
-        if (gMusic != nullptr)
-        {
-            gMusic->release();
-            gMusic = nullptr;
-        }
-
-        gSystem->release();
-        gSystem = nullptr;
-    }
-}
 
 }   // namespace Sound
 }   // namespace Pegasus

@@ -72,11 +72,11 @@ void WorldComponentState::ResetFreeCamPos() {
 
 WorldComponent::WorldComponent(Alloc::IAllocator *allocator)
    : mAlloc(allocator), mWindowIndexCount(0) {
-    Sound::Initialize();
+    Sound::InitializeSystem();
 }
 
 WorldComponent::~WorldComponent() {
-    Sound::Release();
+    Sound::ReleaseSystem();
 }
 
 WindowComponentState* WorldComponent::CreateState(const ComponentContext& context)
@@ -112,10 +112,7 @@ void WorldComponent::Load(Core::IApplicationContext *appContext) {
 }
 
 void WorldComponent::Update(Core::IApplicationContext *appContext) {
-    //! \todo Update the sound system once per frame, not per window. Same thing for the timeline above.
-    if (!Sound::IsPlayingMusic()) {
-        Sound::PlayMusic();
-    }
+
     Sound::Update();
 
     const unsigned int musicPosition = Sound::GetMusicPosition();
