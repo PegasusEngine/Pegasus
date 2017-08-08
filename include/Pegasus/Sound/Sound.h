@@ -40,7 +40,7 @@ public:
    ~Sound();
 
    //! plays the sound for a given amount of time. If sampleLength is negative, it will play indefinitely.
-   //! \param sampleLength the amount of time to play. It will pause then automatically. If negative then plays indefinitely.
+   //! \param sampleLength the amount of time to play. It will pause then automatically. If negative then plays indefinitely. It assumes the file being played is at 44khz.
    void Play(double sampleLength = -1.0);
 
    //! Pauses the current sound playing

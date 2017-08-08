@@ -11,6 +11,8 @@
 
 #include "Pegasus/Sound/Sound.h"
 #include "Pegasus/Libs/FMOD/fmod.hpp"
+#include "Pegasus/Utils/String.h"
+#include "Pegasus/Core/Io.h"
 
 #if PEGASUS_COMPILER_MSVC
 #if PEGASUS_DEV
@@ -133,12 +135,27 @@ Sound::Sound(Alloc::IAllocator* allocator, Io::IOManager* ioManager, const char 
 
     mState = PG_NEW(mAllocator, -1, "SoundTrack", Alloc::PG_MEM_PERM) InternalState;
 
+    char soundStr[256];
+    soundStr[0] = '\0';
+    Pegasus::Utils::Strcat(soundStr, ioManager->GetRoot());
+    Pegasus::Utils::Strcat(soundStr, fileName);
+
     // Load the sound file, with or without streaming
-#if PEGASUS_SOUND_STREAM_MUSIC
-    FMOD_RESULT result = gSystem->createSound(fileName, FMOD_LOOP_OFF | FMOD_2D | FMOD_CREATESTREAM, 0, &mState->music);
+    unsigned int fmodFlags = 0;
+    fmodFlags |= FMOD_2D;
+
+#if PEGASUS_DEV
+    fmodFlags |= FMOD_LOOP_NORMAL;
 #else
-    FMOD_RESULT result = gSystem->createSound(fileName, FMOD_LOOP_OFF | FMOD_2D, 0, &mState->music);
+    fmodFlags |= FMOD_LOOP_OFF;
 #endif
+
+#if PEGASUS_SOUND_STREAM_MUSIC
+    fmodFlags |= FMOD_CREATESTREAM;
+#endif
+
+    FMOD_RESULT result = gSystem->createSound(soundStr, fmodFlags, 0, &mState->music);
+
     if (result != FMOD_OK)
     {
         PG_LOG('MUSC', "Unable to load the music file (%s)", fileName);
@@ -164,6 +181,17 @@ void Sound::Play(double sampleLength)
         PG_LOG('MUSC', "Starting playing the music file");
 
         FMOD_RESULT result = mState->channel->setPaused(false);
+        unsigned long long dspClock = 0;
+        unsigned long long parentDspClock = 0;
+        if (sampleLength > 0)
+        {
+            mState->channel->getDSPClock(&dspClock,&parentDspClock);
+            float channelFreq = 0.0f;
+            mState->channel->getFrequency(&channelFreq);
+            parentDspClock += (unsigned long long)(sampleLength * channelFreq);
+        }
+        mState->channel->setDelay(0,parentDspClock,false);
+        Update();
         if (result != FMOD_OK)
         {
             PG_LOG('MUSC', "Unable to play the music file, the channel cannot be unpaused");
@@ -181,6 +209,7 @@ void Sound::Pause()
         PG_LOG('MUSC', "Pausing the music.");
 
         FMOD_RESULT result = mState->channel->setPaused(true);
+        Update();
         if (result != FMOD_OK)
         {
             PG_LOG('MUSC', "Unable to pause the music file, the channel cannot be paused");
@@ -191,7 +220,7 @@ void Sound::Pause()
 
 //----------------------------------------------------------------------------------------
 
-bool Sound::IsPlayingMusic()
+bool Sound::IsPlayingMusic() const
 {
     if (mState->channel != nullptr)
     {
@@ -223,6 +252,15 @@ unsigned int Sound::GetPosition()
     }
 
     return 0;
+}
+
+void Sound::SetPosition(unsigned int position)
+{
+    if (mState->channel != nullptr)
+    {
+        unsigned int musicPosition = 0;
+        mState->channel->setPosition(position, FMOD_TIMEUNIT_MS);
+    }
 }
 
 Sound::~Sound()

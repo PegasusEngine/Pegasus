@@ -47,6 +47,10 @@ namespace Pegasus {
     namespace PropertyGrid{
         class PropertyGridObject;
     }
+
+    namespace Sound {
+        class Sound;
+    }
 }
 
 namespace Pegasus {
@@ -193,8 +197,7 @@ public:
     void SetPlayMode(PlayMode playMode);
 
     //! Update the current state of the timeline based on the play mode and the current time
-    //! \param musicPosition Currently heard position of the music (in milliseconds), 0 if unknown
-    void Update(unsigned int musicPosition = 0);
+    void Update();
 
     //! Render the content of the timeline for the given window
     //! \param enumeration of the window index bound for rendering.
@@ -219,6 +222,12 @@ public:
 
     //! Attempts to shutdown a script if it has been opened
     void ShutdownScript();
+
+    //! Attempts to create a music track
+    void LoadMusic(const char* path);
+
+    //! Removes a music track.
+    void UnloadMusic();
 
     //! Returns the script of this block, null if none is attached.
     //! \return the script object, null if not attached
@@ -347,6 +356,8 @@ private:
 #if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
     AssetLib::Category mCategory;
 #endif
+
+    Pegasus::Sound::Sound* mMusic;
 
     //! We keep track of which windows were initialized and which ones werent.
     //! This is to support lazy initialization in case of live editing (for example, if we create a new

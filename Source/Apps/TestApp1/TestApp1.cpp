@@ -205,15 +205,12 @@ void TestApp1::InitializeApp()
 
     // load the timeline. For now gets unloaded at destruction of timeline manager.
     Pegasus::Timeline::TimelineManager * const timelineManager = GetTimelineManager();
-    timelineManager->LoadTimeline("Timeline/mainTimeline.pas");
+    Pegasus::Timeline::TimelineRef timeline = timelineManager->LoadTimeline("Timeline/mainTimeline.pas");
+    if (timeline != nullptr)
+    {
+        timeline->LoadMusic("Music/Test.mp3");
+    }
 
-    //setup proper music path
-    const char* musicAsset = "Music\\Test.mp3";
-    char soundStr[256];
-    soundStr[0] = '\0';
-    Pegasus::Utils::Strcat(soundStr, GetIOManager()->GetRoot());
-    Pegasus::Utils::Strcat(soundStr, musicAsset);
-    Pegasus::Sound::LoadMusic(soundStr);
 }
 
 //----------------------------------------------------------------------------------------

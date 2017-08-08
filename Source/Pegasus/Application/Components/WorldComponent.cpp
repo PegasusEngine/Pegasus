@@ -114,9 +114,7 @@ void WorldComponent::Load(Core::IApplicationContext *appContext) {
 void WorldComponent::Update(Core::IApplicationContext *appContext) {
 
     Sound::Update();
-
-    const unsigned int musicPosition = Sound::GetMusicPosition();
-    appContext->GetTimelineManager()->Update(musicPosition);
+    appContext->GetTimelineManager()->Update();
 
 }
 

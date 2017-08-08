@@ -220,11 +220,11 @@ void TimelineManager::DestroyBlock(Block* block)
 
 //----------------------------------------------------------------------------------------
 
-void TimelineManager::Update(unsigned int musicPosition)
+void TimelineManager::Update()
 {
     if (mCurrentTimeline != nullptr)
     {
-        mCurrentTimeline->Update(musicPosition);
+        mCurrentTimeline->Update();
     }
 }
 
