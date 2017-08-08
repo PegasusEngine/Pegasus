@@ -9,7 +9,8 @@ RWTexture2D<float4> OutputLdrTarget : register(u0);
 cbuffer Constants
 {
     uint2 gTargetDimensions;
-	float2 padding;
+	float gExposureVal;
+	float pad0;
 };
 
 float3 ACESFilm( float3 x )
@@ -25,7 +26,7 @@ float3 ACESFilm( float3 x )
 float4 ToneMap(float4 hdrColor)
 {
 	//todo: implement tone mapping, for now just linearizing
-	return float4(ACESFilm(0.1*hdrColor.rgb),hdrColor.a);
+	return float4(ACESFilm(gExposureVal*hdrColor.rgb),hdrColor.a);
 }
 
 #define TILE_SIZE 32

@@ -48,6 +48,7 @@ public:
         MaxLightsCount = 256
     };
 
+
     struct LightBase
     {
         Math::Vec4 colorAndIntensity;
@@ -57,11 +58,13 @@ public:
     struct SphereLight : public LightBase
     {
         Math::Vec4 posAndRadius;
-        SphereLight() : posAndRadius(Math::Vec4(0.0f, 0.0f, 0.0f, 1.0f)) {}
+        float innerRadius;
+        SphereLight() : posAndRadius(Math::Vec4(0.0f, 0.0f, 0.0f, 1.0f)), innerRadius(0) {}
     };
 
-    struct SpotLight : public SphereLight
+    struct SpotLight : public LightBase 
     {
+        Math::Vec4 posAndRadius;
         Math::Vec4 dirAndSpread;
         SpotLight() : dirAndSpread(Math::Vec4(0.0f, 1.0f, 0.0f, 0.5)) {}
     };

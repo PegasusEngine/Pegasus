@@ -697,10 +697,13 @@ void LightingDebugComponent::Load(Core::IApplicationContext* appContext)
             "StructuredBuffer<LightInfo> LightInputBuffer;\n"
             "void main(in float4 p0 : POSITION0, in uint instanceId : SV_InstanceID, out float4 outPos : SV_Position)\n"
             "{\n"
-            "   LightInfo info = LightInputBuffer[instanceId];\n"
+            "   uint lightId = instanceId / 2;"
+            "   bool isInnerSphere = (instanceId % 2) == 0;"
+            "   LightInfo info = LightInputBuffer[lightId];\n"
             "   if (info.attr3.x != LIGHTTYPE_SPHERE) { outPos = float4(2.0,2.0,2.0,1.0); return;}\n"
             "   float4 offsetScale = info.attr1;\n"
-            "   float3 scaledPos = p0.xyz*offsetScale.w;\n"
+            "   float  innerSphereScale = info.attr2.x;\n"
+            "   float3 scaledPos = p0.xyz*(isInnerSphere ? innerSphereScale : offsetScale.w);\n"
             "   outPos = mul(float4(scaledPos + offsetScale.xyz,1.0),gViewProj);\n"
             "}\n";
 
@@ -977,7 +980,7 @@ void LightingDebugComponent::Render(const Wnd::ComponentContext& context, Wnd::W
                 SetProgram(mSphereLightProgram);
                 SetUniformBufferResource(mSphereProgramLightBufferUniform, gLightingSystemInstance->GetCulledLightBuffer());
                 SetMesh(mSphereLightMesh);
-                DrawInstanced(lightCount);
+                DrawInstanced(lightCount*2);//even instances are inner sphere, odd instances are outer sphere
 
                 SetProgram(mSpotLightProgram);
                 SetUniformBufferResource(mSpotLightProgramBufferUniform, gLightingSystemInstance->GetCulledLightBuffer());

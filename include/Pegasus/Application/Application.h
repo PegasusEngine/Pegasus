@@ -106,6 +106,8 @@ public:
     //! \param wnd The window to detach.
     void DetachWindow(Wnd::Window* wnd);
 
+    //! Gets the application config.
+    const ApplicationConfig& GetConfig() const { return mConfig; }
 
     // IWindowContext interface
     virtual Io::IOManager*                                  GetIOManager()               const { return mIoManager;               }

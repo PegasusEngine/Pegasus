@@ -167,8 +167,8 @@ void LightingSystem::OnRegisterBlockscriptApi(BlockScript::BlockLib* blocklib, C
     const BlockScript::StructDeclarationDesc lightStructDescs[] = {
         {
             "SphereLight",
-            {"float4",           "float4",       "float4",  nullptr},
-            {"colorAndIntensity", "posAndRadius", "unused1", nullptr}
+            {"float4",           "float4",       "float",  nullptr},
+            {"colorAndIntensity", "posAndRadius", "innerRadius", nullptr}
         },
         {
             "SpotLight",

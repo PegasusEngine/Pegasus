@@ -16,26 +16,23 @@
                         Name : TempleLights,
                         Color : [203, 231, 18],
                         _o_p_ : {
-                            sphereLight1Intensity : 20.000000,
-                            spotLight1Intensity : 8.000000,
-                            spotLight1PosRad : [-57.000000, 48.000000, -33.000000, 39.000000],
-                            spotLight1DirSpread : [10.000000, -8.000000, 5.000000, 43.000000],
-                            sphereLight1PosRad : [0.000000, 59.500000, 0.000000, 32.000000],
+                            sphereLight1Intensity : 5000.000000,
+                            spotLight1Intensity : 90000.000000,
+                            sphereLightInnerRadius : 0.000000,
+                            spotLight1PosRad : [-79.000000, 84.500000, -1.000000, 98.000000],
+                            spotLight1DirSpread : [1.000000, -1.000000, 0.000000, 82.000000],
+                            sphereLight1PosRad : [40.000000, 56.500000, 40.000000, 145.000000],
                             sphereLight1Col : [255, 240, 230],
-                            spotLight1Col : [255, 243, 239],
+                            spotLight1Col : [255, 240, 230],
                             __schema__ : {
-                                sizetypes : [393232, 393232, 393232, 458755, 458755, 196612, 196612],
-                                names : [spotLight1PosRad, spotLight1DirSpread, sphereLight1PosRad, sphereLight1Col, spotLight1Col, sphereLight1Intensity, spotLight1Intensity],
-                                typeNames : [float4, float4, float4, ubyte3, ubyte3, float, float]
+                                sizetypes : [393232, 393232, 393232, 458755, 458755, 196612, 196612, 196612],
+                                names : [spotLight1PosRad, spotLight1DirSpread, sphereLight1PosRad, sphereLight1Col, spotLight1Col, sphereLight1Intensity, spotLight1Intensity, sphereLightInnerRadius],
+                                typeNames : [float4, float4, float4, ubyte3, ubyte3, float, float, float]
                             }
                         },
                         script : {@BlockScripts/TempleSceneLights.bs}
                     }
                 }]
-        }, {
-            type : Lane,
-            name : "",
-            Blocks : []
         }, {
             type : Lane,
             name : "",
@@ -86,14 +83,10 @@
         }, {
             type : Lane,
             name : "",
-            Blocks : []
-        }, {
-            type : Lane,
-            name : "",
             Blocks : [{
                     type : Block,
                     props : {
-                        Beat : 2051,
+                        Beat : 2136,
                         Duration : 1024,
                         Name : Test2,
                         Color : [0, 100, 100],
@@ -114,7 +107,15 @@
                         },
                         script : {@BlockScripts/geometrytestblock.bs}
                     }
-                }, {
+                }]
+        }, {
+            type : Lane,
+            name : "",
+            Blocks : []
+        }, {
+            type : Lane,
+            name : "",
+            Blocks : [{
                     type : Block,
                     props : {
                         Beat : 3081,
@@ -197,14 +198,6 @@
         }, {
             type : Lane,
             name : Beads,
-            Blocks : []
-        }, {
-            type : Lane,
-            name : Fractal,
-            Blocks : []
-        }, {
-            type : Lane,
-            name : Blob,
             Blocks : [{
                     type : Block,
                     props : {
@@ -224,6 +217,14 @@
                 }]
         }, {
             type : Lane,
+            name : Fractal,
+            Blocks : []
+        }, {
+            type : Lane,
+            name : Blob,
+            Blocks : []
+        }, {
+            type : Lane,
             name : "",
             Blocks : [{
                     type : Block,
@@ -233,10 +234,11 @@
                         Name : HdrPos,
                         Color : [240, 179, 148],
                         _o_p_ : {
+                            exposureValue : 0.400000,
                             __schema__ : {
-                                sizetypes : [],
-                                names : [],
-                                typeNames : []
+                                sizetypes : [196612],
+                                names : [exposureValue],
+                                typeNames : [float]
                             }
                         },
                         script : {@RenderSystems/Post/HdrPost.bs}

@@ -35,6 +35,7 @@ class CodeTextEditorWidget;
 class NodeFileTabBar;
 class QUndoStack;
 class QLineEdit;
+class QCheckBox;
 
 namespace Pegasus
 {
@@ -180,10 +181,19 @@ private slots:
     //! Enables search mode.
     void FocusSearch();
 
+    //! finds the next text and scrolls to such text in the documents
+    void FindNextSearch();
+
+    //! finds the previous element in the search
+    void FindPrevSearch();
+
     //! Closes search mode.
     void CloseSearch();
 
 private:
+
+    //! Finds text in the current highlighted document.
+    void FindTextInDocument(const QString& text, bool isForwardSearch);
 
     //! request a syntax highlight update for a particular line
     //! \param the id of the text editor
@@ -213,6 +223,7 @@ private:
         QString       mStatusBarMessage;
         QStatusBar  * mStatusBar; 
         QWidget     * mFindTextWidget;
+        QCheckBox   * mFindIsCaseSensitive;
         QLineEdit   * mSearchWindowLineEdit;
         QVBoxLayout * mMainLayout; //! the main layout of the text editor
         NodeFileTabBar           * mTabWidget;

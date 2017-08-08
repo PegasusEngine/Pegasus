@@ -23,6 +23,7 @@
 #include "Pegasus/Timeline/TimelineManager.h"
 #include "Pegasus/Timeline/Timeline.h"
 #include "Pegasus/Timeline/Lane.h"
+#include "Pegasus/Utils/String.h"
 
 #include "Pegasus/Sound/Sound.h"
 
@@ -204,8 +205,12 @@ void TestApp1::InitializeApp()
 
     // load the timeline. For now gets unloaded at destruction of timeline manager.
     Pegasus::Timeline::TimelineManager * const timelineManager = GetTimelineManager();
-    timelineManager->LoadTimeline("Timeline/mainTimeline.pas");
-    Pegasus::Sound::LoadMusic("Imported\\Music\\Test.mp3");
+    Pegasus::Timeline::TimelineRef timeline = timelineManager->LoadTimeline("Timeline/mainTimeline.pas");
+    if (timeline != nullptr)
+    {
+        timeline->LoadMusic("Music/Test.mp3");
+    }
+
 }
 
 //----------------------------------------------------------------------------------------

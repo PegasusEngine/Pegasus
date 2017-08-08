@@ -3,15 +3,18 @@
 //*************************************************************************//
 #include "RenderSystems/Frame/Frame.bsh"
 
+#define HDR_POST_TILE_SIZE 32
+
+extern exposureValue = 0.99;
+
+
 struct HdrPostConstants
 {
 	width : int;
 	height : int;
-	pad0 :  int;
-	pad1 : int;
+	exposureVal : float;
+	pad0 : int;
 };
-
-gHdrPostTileSize = 32;
 
 hdrPostProgram = LoadProgram("RenderSystems/Post/HdrPost.pas");
 hdrPostProgramUniform  = GetUniformLocation(hdrPostProgram, "Constants");
@@ -24,13 +27,13 @@ int Timeline_Render(info: RenderInfo)
 
 	BeginMarker("HdrPost");
 	viewState = GetViewState(info.windowId);
-	hdrPostConstants = HdrPostConstants(GetFrameWidth(), GetFrameHeight(),0,0);
+	hdrPostConstants = HdrPostConstants(GetFrameWidth(), GetFrameHeight(),exposureValue,0);
 	SetBuffer(hdrPostProgramUniformBuffer,hdrPostConstants);
 	SetProgram(hdrPostProgram);
 	SetUniformBuffer(hdrPostProgramUniform,hdrPostProgramUniformBuffer);
 	SetUniformTextureRenderTarget(hdrPostHdrSceneInUniform,viewState.hdrSurface);
 	SetComputeOutput(viewState.ldrSurface,0);
-	Dispatch(divUp(hdrPostConstants.width,gHdrPostTileSize),divUp(hdrPostConstants.height,gHdrPostTileSize),1);
+	Dispatch(divUp(hdrPostConstants.width,HDR_POST_TILE_SIZE),divUp(hdrPostConstants.height,HDR_POST_TILE_SIZE),1);
 	UnbindComputeResources();
 	UnbindComputeOutputs();
 	EndMarker();

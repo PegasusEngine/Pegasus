@@ -170,7 +170,7 @@ public:
 
     //! Update the current state of the timeline based on the play mode and the current time
     //! \param musicPosition Currently heard position of the music (in milliseconds), 0 if unknown
-    void Update(unsigned int musicPosition = 0);
+    void Update();
 
     //! Loads a script from a file
     //! \param the file of the script name

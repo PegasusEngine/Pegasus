@@ -23,6 +23,7 @@
 #include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/Utils/Memset.h"
+#include "Pegasus/Sound/Sound.h"
 
 namespace Pegasus {
 namespace Timeline {
@@ -48,6 +49,7 @@ Timeline::Timeline(Alloc::IAllocator * allocator, Core::IApplicationContext* app
 ,   mCurrentBeat(0.0)
 ,   mStartPegasusTime(0.0)
 ,   mSyncedToMusic(false)
+,   mMusic(nullptr)
 ,   mGlobalCache(allocator)
 ,   mScriptRunner(allocator, appContext, &mPropertyGrid
 #if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
@@ -289,8 +291,13 @@ void Timeline::ShutdownBlocks()
 
 //----------------------------------------------------------------------------------------
     
-void Timeline::Update(unsigned int musicPosition)
+void Timeline::Update()
 {
+    unsigned int musicPosition = 0;
+    if (mMusic != nullptr)
+    {
+        musicPosition = mMusic->GetPosition();
+    }
     if ((mCurrentBeat == INVALID_BEAT) || (mCurrentBeat < 0.0f))
     {
         mCurrentBeat = 0.0f;
@@ -301,6 +308,10 @@ void Timeline::Update(unsigned int musicPosition)
     {
         if (mPlayMode == PLAYMODE_REALTIME)
         {
+            if (mMusic != nullptr && !mMusic->IsPlayingMusic())
+            {
+                mMusic->Play();
+            }
             // Update the internal clock for the next frame
             Core::UpdatePegasusTime();
 
@@ -427,10 +438,18 @@ void Timeline::SetPlayMode(PlayMode playMode)
                 // The Pegasus start time needs to be recomputed to avoid the cursor jumping all over the place
                 mRequiresStartTimeComputation = true;
 #endif 
+                if (mMusic != nullptr)
+                {
+                    mMusic->Play();
+                }
                 break;
 
             case PLAYMODE_STOPPED:
                 PG_LOG('TMLN', "Switched to stopped mode for the timeline");
+                if (mMusic != nullptr)
+                {
+                    mMusic->Pause();
+                }
                 break;
 
             default:
@@ -454,6 +473,15 @@ void Timeline::SetCurrentBeat(float beat)
 
     PG_LOG('TMLN', "Set the current beat of the timeline to %f", mCurrentBeat);
 
+    if (mMusic != nullptr)
+    {
+        float musicPosition = beat /(mBeatsPerMinute * 1.0f/60.0f);
+        //compute new time
+        unsigned int requiredcurrenttime = static_cast<unsigned int>(musicPosition* 1000.0);
+        mMusic->SetPosition(requiredcurrenttime);
+        mMusic->Play(mPlayMode == PLAYMODE_REALTIME ? -1.0 : 0.2);
+        Sound::Update();
+    }
 #if PEGASUS_ENABLE_PROXIES
     // If the play mode is real-time, the Pegasus start time needs to be recomputed
     if (mPlayMode == PLAYMODE_REALTIME)
@@ -461,6 +489,7 @@ void Timeline::SetCurrentBeat(float beat)
         mRequiresStartTimeComputation = true;
     }
 #endif  // PEGASUS_ENABLE_PROXIES
+
 }
 
 void Timeline::AttachScript(TimelineScriptInOut script)
@@ -476,6 +505,19 @@ void Timeline::ShutdownScript()
 TimelineScriptReturn Timeline::GetScript()
 {
     return mScriptRunner.GetScript();
+}
+
+void Timeline::LoadMusic(const char* path)
+{
+    mMusic = PG_NEW(mAllocator, -1, "TimelineSound", Alloc::PG_MEM_PERM) Pegasus::Sound::Sound(
+       mAllocator, mAppContext->GetIOManager(), path
+    );
+}
+
+void Timeline::UnloadMusic()
+{
+    PG_DELETE(mAllocator, mMusic);
+    mMusic = nullptr;
 }
 
 void Timeline::OnWindowCreated(int windowIndex)
