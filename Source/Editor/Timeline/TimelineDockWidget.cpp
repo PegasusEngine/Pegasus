@@ -86,7 +86,7 @@ void TimelineDockWidget::SetupUi()
     mAppAvailableBlocksSignalMapper = new QSignalMapper();
     mUi->addNewBlockButton->setMenu(mAppAvailableBlocksMenu);
     mUi->addNewBlockButton->setPopupMode(QToolButton::InstantPopup);
-
+    
     UpdateUIForAppClosed();
 
 	setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
@@ -132,17 +132,19 @@ void TimelineDockWidget::SetupUi()
     connect(mUi->propertyGridWidget, SIGNAL(OnPropertyUpdated(QtProperty*)),
             this, SLOT(OnPropertyUpdated(QtProperty*)));
 
-    connect(mUi->loadMasterScriptButton, SIGNAL(clicked()),
-            this, SLOT(RequestMasterTimelineScriptLoad()));
     connect(
        mAppAvailableBlocksSignalMapper, SIGNAL(mapped(int)),
        this, SLOT(OnCreateNewBlock(int)));
 
     mMasterScriptMenu = new QMenu();
-    mEditMasterScriptButton = mMasterScriptMenu->addAction(tr("Edit master script."));
+    mOpenMasterScriptButton   = mMasterScriptMenu->addAction(tr("Open/Replace new master script."));
     mRemoveMasterScriptButton = mMasterScriptMenu->addAction(tr("Remove master script."));
-    mUi->removeScriptButton->setMenu(mMasterScriptMenu);
-    mUi->removeScriptButton->setPopupMode(QToolButton::InstantPopup);
+    mEditMasterScriptButton   = mMasterScriptMenu->addAction(tr("Edit master script."));
+    mUi->scriptOptionsButton->setMenu(mMasterScriptMenu);
+    mUi->scriptOptionsButton->setPopupMode(QToolButton::InstantPopup);
+
+    connect(mOpenMasterScriptButton, SIGNAL(triggered()),
+            this, SLOT(RequestMasterTimelineScriptLoad()));
 
     connect(mEditMasterScriptButton, SIGNAL(triggered()),
             this, SLOT(EditMasterScript()));
@@ -150,6 +152,21 @@ void TimelineDockWidget::SetupUi()
     connect(mRemoveMasterScriptButton, SIGNAL(triggered()),
             this, SLOT(RemoveMasterScript()));
 
+    //! Menu button for script open / removal
+    mMusicOptionsMenu = new QMenu();
+    mOpenNewMusicFile = mMusicOptionsMenu->addAction(tr("Open/Replace new music file."));
+    mRemoveMusicFile  = mMusicOptionsMenu->addAction(tr("Remove music file."));
+    mUi->musicOptionsButton->setMenu(mMusicOptionsMenu);
+    mUi->musicOptionsButton->setPopupMode(QToolButton::InstantPopup);
+
+    connect(mOpenNewMusicFile, SIGNAL(triggered()),
+            this, SLOT(OpenMusicFile()));
+
+    connect(mRemoveMusicFile, SIGNAL(triggered()),
+            this, SLOT(RemoveMusicFile()));
+
+    connect(mUi->muteUnmuteButton, SIGNAL(clicked(bool)),
+            this, SLOT(MuteUnmuteToggle(bool)));
 }
 
 //----------------------------------------------------------------------------------------
@@ -384,6 +401,24 @@ void TimelineDockWidget::RemoveMasterScript()
 
 //----------------------------------------------------------------------------------------
 
+void TimelineDockWidget::OpenMusicFile()
+{
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::RemoveMusicFile()
+{
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::MuteUnmuteToggle(bool isNotMuted)
+{
+}
+
+//----------------------------------------------------------------------------------------
+
 void TimelineDockWidget::EditMasterScript()
 {
     if (mApplication != nullptr && mLoadedScript != "")
@@ -569,7 +604,6 @@ void TimelineDockWidget::OnOpenObject(AssetInstanceHandle object, const QString&
 
         mUi->addLaneButton->setEnabled(true);
         mUi->deleteLaneButton->setEnabled(true);
-        mUi->loadMasterScriptButton->setEnabled(true);
         mUi->addNewBlockButton->setEnabled(true);
         mUi->deleteBlocksButton->setEnabled(true);
 
@@ -577,17 +611,22 @@ void TimelineDockWidget::OnOpenObject(AssetInstanceHandle object, const QString&
         mUi->playButton->setChecked(false);
         mUi->graphicsView->OnPlayModeToggled(false);
 
+        mUi->musicOptionsButton->setEnabled(true);
+
         mUi->snapCombo->setEnabled(true);
         mUi->snapCombo->setCurrentIndex(0);
         mSnapNumTicks = 1;
         UpdateUIFromBeat(0.0f);
         mUi->graphicsView->setEnabled(true);
+        mUi->muteUnmuteButton->setEnabled(true);
 
         mUi->propertyGridWidget->SetApplicationProxy(GetEditor()->GetApplicationManager().GetApplication()->GetApplicationProxy());
         mUi->propertyGridWidget->SetCurrentProxy(mTimelineHandle);
 
         mUi->bpmSpin->setValue(static_cast<double>(mTimelineState.GetBeatsPerMinute()));
         mUi->bpmSpin->setEnabled(true);
+
+        mUi->scriptOptionsButton->setEnabled(true);
 
         if (mTimelineState.HasMasterScript())
         {
@@ -611,7 +650,8 @@ void TimelineDockWidget::OnOpenObject(AssetInstanceHandle object, const QString&
 
 void TimelineDockWidget::OnShowActiveTimelineButton(bool shouldShowActiveScript, QString script)
 {
-    mUi->removeScriptButton->setEnabled(shouldShowActiveScript);
+    mEditMasterScriptButton->setEnabled(shouldShowActiveScript);
+    mRemoveMasterScriptButton->setEnabled(shouldShowActiveScript);
     mLoadedScript = script; //cache the name so we can reopen it easily
 }
 
@@ -631,12 +671,13 @@ void TimelineDockWidget::OnUIForAppClosed()
     mUndoStack->clear();
     mUi->addLaneButton->setEnabled(false);
     mUi->deleteLaneButton->setEnabled(false);
-    mUi->removeScriptButton->setEnabled(false);
-    mUi->loadMasterScriptButton->setEnabled(false);
+    mUi->scriptOptionsButton->setEnabled(false);
     mUi->addNewBlockButton->setEnabled(false);
     mUi->deleteBlocksButton->setEnabled(false);
     mUi->playButton->setEnabled(false);
     mUi->playButton->setChecked(false);
+    mUi->musicOptionsButton->setEnabled(false);
+    mUi->muteUnmuteButton->setEnabled(false);
 
     mUi->propertyGridWidget->ClearProperties();
 

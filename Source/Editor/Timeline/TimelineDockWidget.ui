@@ -56,27 +56,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QToolButton" name="loadMasterScriptButton">
-        <property name="toolTip">
-         <string>Open/Set master blockscript.</string>
-        </property>
-        <property name="statusTip">
-         <string>Open/Set master blockscript.</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="../Resources/Resources.qrc">
-          <normaloff>:/TypeIcons/timeline.png</normaloff>:/TypeIcons/timeline.png</iconset>
-        </property>
-        <property name="autoRaise">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="removeScriptButton">
+       <widget class="QToolButton" name="scriptOptionsButton">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -118,6 +98,54 @@
        </spacer>
       </item>
       <item>
+       <widget class="Line" name="line_4">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="musicOptionsButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../Resources/Resources.qrc">
+          <normaloff>:/TimelineToolbar/MusicIcon.png</normaloff>:/TimelineToolbar/MusicIcon.png</iconset>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="muteUnmuteButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="../Resources/Resources.qrc">
+          <normaloff>:/TimelineToolbar/SpeakerOff.png</normaloff>
+          <normalon>:/TimelineToolbar/SpeakerOn.png</normalon>:/TimelineToolbar/SpeakerOff.png</iconset>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="Line" name="line_2">
         <property name="orientation">
          <enum>Qt::Vertical</enum>
@@ -139,6 +167,13 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="Line" name="line_5">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QToolButton" name="addNewBlockButton">

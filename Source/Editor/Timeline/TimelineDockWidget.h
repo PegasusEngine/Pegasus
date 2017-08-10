@@ -149,6 +149,15 @@ public slots:
     //! Emitted when the play mode button has been enabled or disabled
     void OnPlayModeToggled(bool enabled);
 
+    //When clicked requests adding a new music file.
+    void OpenMusicFile();
+
+    //When clicked removes the current musci file.
+    void RemoveMusicFile();
+
+    //Toggle for mute/unmute button
+    void MuteUnmuteToggle(bool isNotMuted);
+
 private slots:
 
     //! Called when the tempo has changed value
@@ -230,6 +239,9 @@ private:
     //! Menu button for script open / removal
     QMenu* mMasterScriptMenu;
 
+    //! Menu for music options
+    QMenu* mMusicOptionsMenu;
+
     //! Menu containing all the blockscripts available by the app
     QMenu* mAppAvailableBlocksMenu;
 
@@ -263,7 +275,12 @@ private:
 
     //! actions for removing / editing master script
     QAction* mEditMasterScriptButton;
+    QAction* mOpenMasterScriptButton;
     QAction* mRemoveMasterScriptButton;
+
+    //! actions for removing / editing music
+    QAction* mOpenNewMusicFile;
+    QAction* mRemoveMusicFile;
 
     //boolean avoids sending too many messages on setting beat.
     bool mIsCursorQueued;

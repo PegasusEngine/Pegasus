@@ -15,6 +15,9 @@
         <file>TimelineToolbar/Play16.png</file>
         <file>TimelineToolbar/Remove16.png</file>
         <file>TimelineToolbar/Pause16.png</file>
+        <file>TimelineToolbar/SpeakerOn.png</file>
+        <file>TimelineToolbar/SpeakerOff.png</file>
+        <file>TimelineToolbar/MusicIcon.png</file>
         <file>SettingsDialog/Console.png</file>
         <file>Toolbar/File/refresh-512.png</file>
         <file>SettingsDialog/DarkStyle.qss</file>
