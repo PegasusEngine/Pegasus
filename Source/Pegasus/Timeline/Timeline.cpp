@@ -561,6 +561,10 @@ void Timeline::OnWindowDestroyed(int windowIndex)
 #if PEGASUS_ENABLE_PROXIES
 void Timeline::DebugEnableSound(bool enableSound)
 {
+    if (mMusic != nullptr)
+    {
+        mMusic->SetMute(!enableSound);
+    }
 }
 #endif
 
@@ -577,12 +581,29 @@ bool Timeline::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, const AssetLib::Ass
     int tpbId = root->FindInt("ticks-per-beat");
     int pbmId = root->FindInt("beats-per-minute-bin");
     int lanesId = root->FindArray("lanes");
+    int musicTrackId = root->FindString("music-track");
+    int musicTrackVolumeId = root->FindFloat("music-track-vol");
 
     if (beatsId == -1 || tpbId == -1 || pbmId == -1)
     {
         return false;
     }
     
+    if (musicTrackId != -1)
+    {
+        const char* musicTrackPath = root->GetString(musicTrackId);
+        LoadMusic(musicTrackPath);
+    }
+
+    if (musicTrackVolumeId != -1)
+    {
+        float musicVolume = root->GetFloat(musicTrackVolumeId);
+        if (mMusic != nullptr)
+        {
+            mMusic->SetVolume(musicVolume);
+        }
+    }
+
     mNumBeats = root->GetInt(beatsId);
     
     SetNumTicksPerBeat( root->GetInt(tpbId) );
