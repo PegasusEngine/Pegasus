@@ -225,7 +225,13 @@ private:
     virtual void OnReceiveAssetIoMessage(AssetIOMCMessage::IoResponseMessage msg);
 
     //! Launch loader window to find timeline script
+    QString AskForFile(const QString& title, const QString& extensionFormat);
+
+    //! Launch loader window to find timeline script
     QString AskForTimelineScript();
+
+    //! Launch loader window to find music file 
+    QString AskForMusicFile();
 
     //! Current snapping mode (in number of ticks per snap)
     unsigned int mSnapNumTicks;

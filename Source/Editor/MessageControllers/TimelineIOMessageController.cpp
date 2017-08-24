@@ -329,6 +329,15 @@ void TimelineIOMessageController::OnRenderThreadProcessMessage(const TimelineIOM
     case TimelineIOMCMessage::CLEAR_MASTER_BLOCKSCRIPT:
         OnClearMasterBlockscript();
         break;
+    case TimelineIOMCMessage::SET_MUSIC_FILE:
+        OnSetMusicFile(msg.GetString());
+        break;
+    case TimelineIOMCMessage::CLEAR_MUSIC_FILE:
+        OnClearMusicFile();
+        break;
+    case TimelineIOMCMessage::SET_DEBUG_ENABLE_MUSIC:
+        OnDebugEnableMusic(msg.GetIsPlayMode());
+        break;
     case TimelineIOMCMessage::SET_PARAMETER:
         OnSetParameter(msg.GetTarget(), msg.GetTimelineHandle(), msg.GetLaneId(), msg.GetParameterName(), msg.GetArg(), msg.GetObserver());
         break;
@@ -408,6 +417,25 @@ void TimelineIOMessageController::OnSetMasterBlockscript(const QString& str)
     }                                                                                                         
     emit(NotifyMasterScriptState(success, str));
         
+}
+
+void TimelineIOMessageController::OnSetMusicFile(const QString& file)
+{
+    ITimelineProxy* timeline = mApp->GetTimelineManagerProxy()->GetCurrentTimeline();
+    QByteArray arr = file.toLocal8Bit();
+    timeline->LoadMusic(arr.data());
+}
+
+void TimelineIOMessageController::OnClearMusicFile()
+{
+    ITimelineProxy* timeline = mApp->GetTimelineManagerProxy()->GetCurrentTimeline();
+    timeline->UnloadMusic();
+}
+
+void TimelineIOMessageController::OnDebugEnableMusic(bool enableMusic)
+{
+    ITimelineProxy* timeline = mApp->GetTimelineManagerProxy()->GetCurrentTimeline();
+    timeline->DebugEnableSound(enableMusic);
 }
 
 void TimelineIOMessageController::OnClearMasterBlockscript()

@@ -509,6 +509,11 @@ TimelineScriptReturn Timeline::GetScript()
 
 void Timeline::LoadMusic(const char* path)
 {
+    if (mMusic != nullptr)
+    {
+        UnloadMusic();
+    }
+
     mMusic = PG_NEW(mAllocator, -1, "TimelineSound", Alloc::PG_MEM_PERM) Pegasus::Sound::Sound(
        mAllocator, mAppContext->GetIOManager(), path
     );
@@ -552,6 +557,12 @@ void Timeline::OnWindowDestroyed(int windowIndex)
     mWindowIsInitialized[windowIndex] = false;
 #endif
 }
+
+#if PEGASUS_ENABLE_PROXIES
+void Timeline::DebugEnableSound(bool enableSound)
+{
+}
+#endif
 
 bool Timeline::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, const AssetLib::Asset* asset)
 {

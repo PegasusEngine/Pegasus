@@ -242,6 +242,27 @@ void TimelineProxy::AttachScript(Core::ISourceCodeProxy* code)
     }
 }
 
+//----------------------------------------------------------------------------------------
+
+void TimelineProxy::LoadMusic(const char* musicFileName)
+{
+    mTimeline->LoadMusic(musicFileName);
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineProxy::UnloadMusic()
+{
+    mTimeline->UnloadMusic();
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineProxy::DebugEnableSound(bool enableSound)
+{
+    mTimeline->DebugEnableSound(enableSound);
+}
+
 }   // namespace Timeline
 }   // namespace Pegasus
 

@@ -129,6 +129,17 @@ public:
     //! \param blockGuid the guid to query this block from
     //! \return the block proxy if found, nullptr otherwise
     virtual IBlockProxy* FindBlockByGuid(unsigned blockGuid) = 0;
+
+    //! Sets a music file, were the string is the path.
+    //! \param musicFileName - the path
+    virtual void LoadMusic(const char* musicFileName) = 0;
+
+    //! Removes any sound / music file.
+    virtual void UnloadMusic() = 0;
+
+    //! true if you want to unmute.
+    //! \param enableSound - true if sound wants to get enabled.
+    virtual void DebugEnableSound(bool enableSound) = 0;
 };
 
 

@@ -241,9 +241,12 @@ public:
         SET_BLOCKSCRIPT,
         CLEAR_BLOCKSCRIPT,
         SET_MASTER_BLOCKSCRIPT,
+        SET_MUSIC_FILE,
         SET_PARAMETER,
         CLEAR_MASTER_BLOCKSCRIPT,
+        CLEAR_MUSIC_FILE,
         TOGGLE_PLAY_MODE,
+        SET_DEBUG_ENABLE_MUSIC,
         //block message operations
         BLOCK_OPERATION
     };
