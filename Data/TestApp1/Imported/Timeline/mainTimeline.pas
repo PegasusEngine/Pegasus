@@ -3,8 +3,10 @@
     num-beats : 128,
     ticks-per-beat : 128,
     beats-per-minute-bin : 1124728832,
+    music-track-vol : 1.000000,
     beats-per-minute-float : 138.000000,
     typename : Timeline,
+    music-track : Music/9940_73Degrees.mp3,
     lanes : [{
             type : Lane,
             name : "",

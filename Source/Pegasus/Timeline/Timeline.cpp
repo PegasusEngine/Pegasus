@@ -685,6 +685,12 @@ void Timeline::OnWriteAsset(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* a
     
     root->AddInt("ticks-per-beat", mNumTicksPerBeat);
 
+    if (mMusic != nullptr)
+    {
+        root->AddString("music-track", mMusic->GetSoundName());
+        root->AddFloat("music-track-vol", mMusic->GetVolume());
+    }
+
     union fi{
         int i;
         float f;
