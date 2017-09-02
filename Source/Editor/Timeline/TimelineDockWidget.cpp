@@ -158,6 +158,7 @@ void TimelineDockWidget::SetupUi()
     mRemoveMusicFile  = mMusicOptionsMenu->addAction(tr("Remove music file."));
     mUi->musicOptionsButton->setMenu(mMusicOptionsMenu);
     mUi->musicOptionsButton->setPopupMode(QToolButton::InstantPopup);
+    mUi->volumeSlider->
 
     connect(mOpenNewMusicFile, SIGNAL(triggered()),
             this, SLOT(OpenMusicFile()));
@@ -167,6 +168,9 @@ void TimelineDockWidget::SetupUi()
 
     connect(mUi->muteUnmuteButton, SIGNAL(clicked(bool)),
             this, SLOT(MuteUnmuteToggle(bool)));
+
+    connect(mUi->volumeSlider, SIGNAL(valueChanged(int)),
+            this, SLOT(OnVolumeChanged(int)));
 }
 
 //----------------------------------------------------------------------------------------
@@ -469,6 +473,23 @@ void TimelineDockWidget::EditMasterScript()
 
 //----------------------------------------------------------------------------------------
 
+void TimelineDockWidget::OnVolumeChanged(int volume)
+{
+    if (mTimelineHandle.IsValid())
+    {
+        QVariant floatVolume(float(volume)/100.0f);
+        TimelineIOMCMessage msg(TimelineIOMCMessage::SET_PARAMETER);
+        msg.SetTimelineHandle(mTimelineHandle);
+        msg.SetParameterName((unsigned)ShadowTimelineState::PROP_VOLUME);
+        msg.SetArg(floatVolume);
+        msg.SetTarget(TIMELINE_OBJECT);
+        msg.SetObserver(mObserver);
+        SendTimelineIoMessage(msg);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
 const Pegasus::PegasusAssetTypeDesc*const* TimelineDockWidget::GetTargetAssetTypes() const
 {
     static const Pegasus::PegasusAssetTypeDesc* sAssetTypes[] =  { &Pegasus::ASSET_TYPE_TIMELINE, nullptr };
@@ -665,6 +686,7 @@ void TimelineDockWidget::OnOpenObject(AssetInstanceHandle object, const QString&
         mUi->bpmSpin->setEnabled(true);
 
         mUi->scriptOptionsButton->setEnabled(true);
+        mUi->volumeSlider->setSliderPosition((mTimelineState.GetVolume() * 100.0));
 
         if (mTimelineState.HasMasterScript())
         {

@@ -525,6 +525,26 @@ void Timeline::UnloadMusic()
     mMusic = nullptr;
 }
 
+float Timeline::GetVolume() const
+{
+    if (mMusic != nullptr)
+    {
+        return mMusic->GetVolume();
+    }
+    else
+    {
+        return 1.0f;
+    }
+}
+
+void Timeline::SetVolume(float volume)
+{
+    if (mMusic != nullptr)
+    {
+        mMusic->SetVolume(volume);
+    }
+}
+
 void Timeline::OnWindowCreated(int windowIndex)
 {
 #if PEGASUS_ENABLE_PROXIES
@@ -595,7 +615,7 @@ bool Timeline::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, const AssetLib::Ass
         LoadMusic(musicTrackPath);
     }
 
-    if (musicTrackVolumeId != -1)
+    if (musicTrackVolumeId != -1 && mMusic != nullptr)
     {
         float musicVolume = root->GetFloat(musicTrackVolumeId);
         if (mMusic != nullptr)

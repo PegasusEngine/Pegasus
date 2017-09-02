@@ -158,6 +158,9 @@ public slots:
     //Toggle for mute/unmute button
     void MuteUnmuteToggle(bool isNotMuted);
 
+    //Called when slider volume changes.
+    void OnVolumeChanged(int volume);
+
 private slots:
 
     //! Called when the tempo has changed value

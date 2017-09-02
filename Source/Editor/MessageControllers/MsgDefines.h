@@ -154,6 +154,7 @@ public:
         PROP_SCRIPT_PATH,
         PROP_LANE_COUNT,
         PROP_LANES,
+        PROP_VOLUME,
         PROP_COUNT
     };
     ShadowTimelineState();
@@ -163,6 +164,7 @@ public:
     unsigned GetNumTicksPerBeat() const;
     float GetBeatsPerMinute() const;
     float GetCurrBeat() const;
+    float GetVolume() const;
 
     QString GetMasterScriptPath() const;
     bool HasMasterScript() const;

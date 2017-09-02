@@ -258,6 +258,20 @@ void TimelineProxy::UnloadMusic()
 
 //----------------------------------------------------------------------------------------
 
+float TimelineProxy::GetVolume() const
+{
+    return mTimeline->GetVolume();
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineProxy::SetVolume(float volume)
+{
+    mTimeline->SetVolume(volume);
+}
+
+//----------------------------------------------------------------------------------------
+
 void TimelineProxy::DebugEnableSound(bool enableSound)
 {
     mTimeline->DebugEnableSound(enableSound);

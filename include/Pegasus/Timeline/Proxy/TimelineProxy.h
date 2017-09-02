@@ -145,6 +145,14 @@ public:
     //! Removes any sound / music file.
     virtual void UnloadMusic();
 
+    //! Returns volume scale (0.0 to Max scale).
+    //! \returns volume scale
+    virtual float GetVolume() const;
+
+    //! Gets volume scale 
+    //! \param volume scale
+    virtual void SetVolume(float volume);
+
     //! true if you want to unmute.
     //! \param enableSound - true if sound wants to get enabled.
     virtual void DebugEnableSound(bool enableSound);
