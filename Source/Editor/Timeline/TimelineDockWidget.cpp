@@ -158,6 +158,7 @@ void TimelineDockWidget::SetupUi()
     mRemoveMusicFile  = mMusicOptionsMenu->addAction(tr("Remove music file."));
     mUi->musicOptionsButton->setMenu(mMusicOptionsMenu);
     mUi->musicOptionsButton->setPopupMode(QToolButton::InstantPopup);
+    mUi->volumeSlider->
 
     connect(mOpenNewMusicFile, SIGNAL(triggered()),
             this, SLOT(OpenMusicFile()));
@@ -167,6 +168,9 @@ void TimelineDockWidget::SetupUi()
 
     connect(mUi->muteUnmuteButton, SIGNAL(clicked(bool)),
             this, SLOT(MuteUnmuteToggle(bool)));
+
+    connect(mUi->volumeSlider, SIGNAL(valueChanged(int)),
+            this, SLOT(OnVolumeChanged(int)));
 }
 
 //----------------------------------------------------------------------------------------
@@ -239,12 +243,11 @@ void TimelineDockWidget::OnRepaintTimeline()
 
 //----------------------------------------------------------------------------------------
 
-QString TimelineDockWidget::AskForTimelineScript()
+QString TimelineDockWidget::AskForFile(const QString& title, const QString& extensionFormat)
 {
     QString rootFolder = mApplication->GetAssetsRoot();
     QDir qd(rootFolder);
-    QString fileExtension = tr("%1 BlockScript (*.%2)").arg(tr(Pegasus::ASSET_TYPE_BLOCKSCRIPT.mTypeName), tr(Pegasus::ASSET_TYPE_BLOCKSCRIPT.mExtension));
-    QString requestedFile = QFileDialog::getOpenFileName(this, tr("Open BlockScript."), rootFolder, fileExtension);
+    QString requestedFile = QFileDialog::getOpenFileName(this, title, rootFolder, extensionFormat);
     QString filePath = qd.path();
     if (requestedFile.startsWith(filePath))
     {
@@ -258,6 +261,24 @@ QString TimelineDockWidget::AskForTimelineScript()
     }
 
     return tr("");
+}
+
+//----------------------------------------------------------------------------------------
+
+QString TimelineDockWidget::AskForTimelineScript()
+{
+    QString windowTitle = tr("Open BlockScript.");
+    QString fileExtension = tr("%1 BlockScript (*.%2)").arg(tr(Pegasus::ASSET_TYPE_BLOCKSCRIPT.mTypeName), tr(Pegasus::ASSET_TYPE_BLOCKSCRIPT.mExtension));
+    return AskForFile(windowTitle, fileExtension);
+}
+
+//----------------------------------------------------------------------------------------
+
+QString TimelineDockWidget::AskForMusicFile()
+{
+    QString windowTitle = tr("Open Music File.");
+    QString fileExtension = tr("Music File (*.mp3;*.wav;*.ogg)");
+    return AskForFile(windowTitle, fileExtension);
 }
 
 //----------------------------------------------------------------------------------------
@@ -403,18 +424,39 @@ void TimelineDockWidget::RemoveMasterScript()
 
 void TimelineDockWidget::OpenMusicFile()
 {
+    if (mApplication != nullptr)
+    {
+        QString requestedFile = AskForMusicFile();
+        if (requestedFile != "")
+        {
+            TimelineIOMCMessage msg(TimelineIOMCMessage::SET_MUSIC_FILE);
+            msg.SetString(requestedFile);
+            SendTimelineIoMessage(msg);
+        }
+    }
 }
 
 //----------------------------------------------------------------------------------------
 
 void TimelineDockWidget::RemoveMusicFile()
 {
+    if (mApplication != nullptr)
+    {
+        TimelineIOMCMessage msg(TimelineIOMCMessage::CLEAR_MUSIC_FILE);
+        SendTimelineIoMessage(msg);
+    }
 }
 
 //----------------------------------------------------------------------------------------
 
 void TimelineDockWidget::MuteUnmuteToggle(bool isNotMuted)
 {
+    if (mApplication != nullptr)
+    {
+        TimelineIOMCMessage msg(TimelineIOMCMessage::SET_DEBUG_ENABLE_MUSIC);
+        msg.SetIsPlayMode(isNotMuted);//just recyling this bool
+        SendTimelineIoMessage(msg);
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -426,6 +468,23 @@ void TimelineDockWidget::EditMasterScript()
         AssetIOMCMessage msg(AssetIOMCMessage::OPEN_ASSET);
         msg.SetString(mLoadedScript);
         SendAssetIoMessage(msg);
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+void TimelineDockWidget::OnVolumeChanged(int volume)
+{
+    if (mTimelineHandle.IsValid())
+    {
+        QVariant floatVolume(float(volume)/100.0f);
+        TimelineIOMCMessage msg(TimelineIOMCMessage::SET_PARAMETER);
+        msg.SetTimelineHandle(mTimelineHandle);
+        msg.SetParameterName((unsigned)ShadowTimelineState::PROP_VOLUME);
+        msg.SetArg(floatVolume);
+        msg.SetTarget(TIMELINE_OBJECT);
+        msg.SetObserver(mObserver);
+        SendTimelineIoMessage(msg);
     }
 }
 
@@ -627,6 +686,7 @@ void TimelineDockWidget::OnOpenObject(AssetInstanceHandle object, const QString&
         mUi->bpmSpin->setEnabled(true);
 
         mUi->scriptOptionsButton->setEnabled(true);
+        mUi->volumeSlider->setSliderPosition((mTimelineState.GetVolume() * 100.0));
 
         if (mTimelineState.HasMasterScript())
         {

@@ -509,6 +509,11 @@ TimelineScriptReturn Timeline::GetScript()
 
 void Timeline::LoadMusic(const char* path)
 {
+    if (mMusic != nullptr)
+    {
+        UnloadMusic();
+    }
+
     mMusic = PG_NEW(mAllocator, -1, "TimelineSound", Alloc::PG_MEM_PERM) Pegasus::Sound::Sound(
        mAllocator, mAppContext->GetIOManager(), path
     );
@@ -518,6 +523,26 @@ void Timeline::UnloadMusic()
 {
     PG_DELETE(mAllocator, mMusic);
     mMusic = nullptr;
+}
+
+float Timeline::GetVolume() const
+{
+    if (mMusic != nullptr)
+    {
+        return mMusic->GetVolume();
+    }
+    else
+    {
+        return 1.0f;
+    }
+}
+
+void Timeline::SetVolume(float volume)
+{
+    if (mMusic != nullptr)
+    {
+        mMusic->SetVolume(volume);
+    }
 }
 
 void Timeline::OnWindowCreated(int windowIndex)
@@ -553,6 +578,16 @@ void Timeline::OnWindowDestroyed(int windowIndex)
 #endif
 }
 
+#if PEGASUS_ENABLE_PROXIES
+void Timeline::DebugEnableSound(bool enableSound)
+{
+    if (mMusic != nullptr)
+    {
+        mMusic->SetMute(!enableSound);
+    }
+}
+#endif
+
 bool Timeline::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, const AssetLib::Asset* asset)
 {
     InternalClear();
@@ -566,12 +601,29 @@ bool Timeline::OnReadAsset(Pegasus::AssetLib::AssetLib* lib, const AssetLib::Ass
     int tpbId = root->FindInt("ticks-per-beat");
     int pbmId = root->FindInt("beats-per-minute-bin");
     int lanesId = root->FindArray("lanes");
+    int musicTrackId = root->FindString("music-track");
+    int musicTrackVolumeId = root->FindFloat("music-track-vol");
 
     if (beatsId == -1 || tpbId == -1 || pbmId == -1)
     {
         return false;
     }
     
+    if (musicTrackId != -1)
+    {
+        const char* musicTrackPath = root->GetString(musicTrackId);
+        LoadMusic(musicTrackPath);
+    }
+
+    if (musicTrackVolumeId != -1 && mMusic != nullptr)
+    {
+        float musicVolume = root->GetFloat(musicTrackVolumeId);
+        if (mMusic != nullptr)
+        {
+            mMusic->SetVolume(musicVolume);
+        }
+    }
+
     mNumBeats = root->GetInt(beatsId);
     
     SetNumTicksPerBeat( root->GetInt(tpbId) );
@@ -652,6 +704,12 @@ void Timeline::OnWriteAsset(Pegasus::AssetLib::AssetLib* lib, AssetLib::Asset* a
     root->AddInt("num-beats", mNumBeats);
     
     root->AddInt("ticks-per-beat", mNumTicksPerBeat);
+
+    if (mMusic != nullptr)
+    {
+        root->AddString("music-track", mMusic->GetSoundName());
+        root->AddFloat("music-track-vol", mMusic->GetVolume());
+    }
 
     union fi{
         int i;

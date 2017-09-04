@@ -57,7 +57,29 @@ public:
    //! \return true if the music is playing, false otherwise
    bool IsPlayingMusic() const;
 
+   //! \return the file name that holds this music file.
+   const char* GetSoundName() const {
+       return mTargetSoundFileName;
+   }
+
+   //! Sets the volume of this music. Acts as a scale of the wave amplitude.
+   void SetVolume(float musicVolume);
+
+   //! Returns the volume amount.
+   // \return volume amount
+   float GetVolume() const;
+
+   #if PEGASUS_ENABLE_PROXIES
+   //! Sets the volume to mute.
+   //! \param mute true if sound is disabled. False otherwise.
+   void SetMute(bool mute);
+   #endif
+
 private:
+    enum {
+        MAX_SOUND_STR = 256
+    };
+    char mTargetSoundFileName[MAX_SOUND_STR];
     Alloc::IAllocator* mAllocator;
     Io::IOManager* mIoManager;
     struct InternalState* mState;
