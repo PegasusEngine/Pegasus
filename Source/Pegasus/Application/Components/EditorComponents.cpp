@@ -595,16 +595,7 @@ void CameraDebugComponent::Render(const Wnd::ComponentContext& context, Wnd::Win
 }
 #endif
 
-#if RENDER_SYSTEM_CONFIG_ENABLE_ATMOS
-
-extern Pegasus::RenderSystems::AtmosSystem* gAtmosSystemInstance;
-
-
-#endif
-
-
 #if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
-
 
 extern Pegasus::RenderSystems::Terrain3dSystem* g3dTerrainSystemInstance;
 
@@ -1012,6 +1003,47 @@ void LightingDebugComponent::Unload(Core::IApplicationContext* appContext)
 }
 
 #endif
+
+
+#if RENDER_SYSTEM_CONFIG_ENABLE_ATMOS
+
+extern Pegasus::RenderSystems::AtmosSystem* gAtmosSystemInstance;
+
+
+BEGIN_IMPLEMENT_PROPERTIES(AtmosDebugComponentState)
+IMPLEMENT_PROPERTY(AtmosDebugComponentState, EnableDebugGeometry)
+IMPLEMENT_PROPERTY(AtmosDebugComponentState, EnableDebugCameraCull)
+END_IMPLEMENT_PROPERTIES(AtmosDebugComponentState)
+
+AtmosDebugComponentState::AtmosDebugComponentState()
+{
+	BEGIN_INIT_PROPERTIES(AtmosDebugComponentState)
+		INIT_PROPERTY(EnableDebugGeometry)
+		INIT_PROPERTY(EnableDebugCameraCull)
+		END_INIT_PROPERTIES()
+}
+
+Wnd::WindowComponentState* AtmosDebugComponent::CreateState(const Wnd::ComponentContext& context)
+{
+	return PG_NEW(mAlloc, -1, "AtmosDebugComponentState", Pegasus::Alloc::PG_MEM_PERM) AtmosDebugComponentState();
+}
+
+void AtmosDebugComponent::DestroyState(const Wnd::ComponentContext& context, Wnd::WindowComponentState* state)
+{
+	PG_DELETE(mAlloc, state);
+}
+
+void AtmosDebugComponent::WindowUpdate(const Wnd::ComponentContext& context, Wnd::WindowComponentState* state)
+{
+	AtmosDebugComponentState* atmosState = static_cast<AtmosDebugComponentState*>(state);
+	gAtmosSystemInstance->UpdateDebugState(atmosState->GetEnableDebugGeometry(), atmosState->GetEnableDebugCameraCull());
+}
+
+
+#endif
+
+
+
 #else
     PEGASUS_AVOID_EMPTY_FILE_WARNING
 #endif
