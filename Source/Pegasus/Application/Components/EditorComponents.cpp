@@ -26,6 +26,11 @@
 #include "Pegasus/RenderSystems/Camera/Camera.h"
 #include "Pegasus/RenderSystems/Lighting/LightingSystem.h"
 
+#if RENDER_SYSTEM_CONFIG_ENABLE_ATMOS
+#include "Pegasus/RenderSystems/Atmos/AtmosSystem.h"
+#endif
+
+
 #if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
 #include "Pegasus/RenderSystems/3dTerrain/3dTerrainSystem.h"
 #endif
@@ -590,7 +595,16 @@ void CameraDebugComponent::Render(const Wnd::ComponentContext& context, Wnd::Win
 }
 #endif
 
+#if RENDER_SYSTEM_CONFIG_ENABLE_ATMOS
+
+extern Pegasus::RenderSystems::AtmosSystem* gAtmosSystemInstance;
+
+
+#endif
+
+
 #if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
+
 
 extern Pegasus::RenderSystems::Terrain3dSystem* g3dTerrainSystemInstance;
 
