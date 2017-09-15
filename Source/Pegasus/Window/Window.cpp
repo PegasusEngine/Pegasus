@@ -112,6 +112,7 @@ void WindowMessageHandler::OnDestroy()
 {
      // Destroy context
     PG_DELETE(mParent->mRenderAllocator, mParent->mRenderContext);
+    mParent->mRenderContext = nullptr;
     mParent->mContextCreated = false;
 }
 
