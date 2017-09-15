@@ -446,7 +446,7 @@ void Settings::SetWidgetStyleName(const QString & name)
         if (useDarkStyle)
         {
             // Load the dark theme stylesheet
-            QFile styleFile( ":/SettingsDialog/DarkStyle.qss");
+            QFile styleFile( ":/qdarkstyle/style.qss");
             styleFile.open(QFile::ReadOnly);
             QString style(styleFile.readAll());
             mEditor->GetQtApplication()->setStyleSheet(style);

@@ -23,6 +23,7 @@
 #include "Pegasus/RenderSystems/3dTerrain/3dTerrainSystem.h"
 #include "Pegasus/RenderSystems/Lighting/LightingSystem.h"
 #include "Pegasus/RenderSystems/Camera/CameraSystem.h"
+#include "Pegasus/RenderSystems/Atmos/AtmosSystem.h"
 #include "Pegasus/Allocator/Alloc.h"
 
 using namespace Pegasus;
@@ -56,6 +57,10 @@ void RenderSystemManager::AddInternalSystems()
 
 #if RENDER_SYSTEM_CONFIG_ENABLE_LIGHTING
     RegisterSystem(mAllocator, PG_NEW(mAllocator, -1, "Deferred Renderer System", Alloc::PG_MEM_PERM) LightingSystem(mAllocator));
+#endif
+
+#if RENDER_SYSTEM_CONFIG_ENABLE_ATMOS
+	RegisterSystem(mAllocator, PG_NEW(mAllocator, -1, "Atmospherics System", Alloc::PG_MEM_PERM) AtmosSystem(mAllocator));
 #endif
 }
 

@@ -19,6 +19,7 @@ bin/*/Win32/*/*.ilk
 bin/*/Win32/*/*.pdb
 bin/*/Win32/*/*.pgd
 Project/*/Editor/GeneratedFiles/*
+Editor.vcxproj.user
 Project/*/.vs/*
 Project/VS14/Build/*
 bin/*/Win32/*/Applications/*

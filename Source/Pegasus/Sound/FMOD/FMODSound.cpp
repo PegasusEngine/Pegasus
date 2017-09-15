@@ -135,7 +135,10 @@ Sound::Sound(Alloc::IAllocator* allocator, Io::IOManager* ioManager, const char 
 
     mState = PG_NEW(mAllocator, -1, "SoundTrack", Alloc::PG_MEM_PERM) InternalState;
 
-    char soundStr[256];
+    PG_ASSERT(Pegasus::Utils::Strlen(fileName)+1 < MAX_SOUND_STR);
+    mTargetSoundFileName[0] = '\0';
+    Pegasus::Utils::Strcat(mTargetSoundFileName, fileName);
+    char soundStr[MAX_SOUND_STR];
     soundStr[0] = '\0';
     Pegasus::Utils::Strcat(soundStr, ioManager->GetRoot());
     Pegasus::Utils::Strcat(soundStr, fileName);
@@ -217,6 +220,57 @@ void Sound::Pause()
         }
     }
 }
+
+//----------------------------------------------------------------------------------------
+
+void Sound::SetVolume(float volume)
+{
+    if (mState->channel != nullptr)
+    {
+        FMOD_RESULT result = mState->channel->setVolume(volume);
+        Update();
+        if (result != FMOD_OK)
+        {
+            PG_LOG('MUSC', "Unable to set the volume of the music file.");
+            return;
+        }
+    }
+}
+
+//----------------------------------------------------------------------------------------
+
+float Sound::GetVolume() const
+{
+    float volume = 0.0f;
+    if (mState->channel != nullptr)
+    {
+        FMOD_RESULT result = mState->channel->getVolume(&volume);
+        Update();
+        if (result != FMOD_OK)
+        {
+            PG_LOG('MUSC', "Unable to get the volume of the music file.");
+        }
+    }
+    return volume;
+}
+
+//----------------------------------------------------------------------------------------
+
+#if PEGASUS_ENABLE_PROXIES
+void Sound::SetMute(bool mute)
+{
+    if (mState->channel != nullptr)
+    {
+        FMOD_RESULT result = mState->channel->setMute(mute);
+        Update();
+        if (result != FMOD_OK)
+        {
+            PG_LOG('MUSC', "Unable to mute the music.");
+            return;
+        }
+    }
+}
+#endif
 
 //----------------------------------------------------------------------------------------
 
