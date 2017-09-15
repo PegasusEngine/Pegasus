@@ -3,8 +3,10 @@
     num-beats : 128,
     ticks-per-beat : 128,
     beats-per-minute-bin : 1124728832,
+    music-track-vol : 0.750000,
     beats-per-minute-float : 138.000000,
     typename : Timeline,
+    music-track : Music/9940_73Degrees.mp3,
     lanes : [{
             type : Lane,
             name : "",
@@ -16,12 +18,12 @@
                         Name : TempleLights,
                         Color : [203, 231, 18],
                         _o_p_ : {
-                            sphereLight1Intensity : 5000.000000,
-                            spotLight1Intensity : 90000.000000,
+                            sphereLight1Intensity : 50.000000,
+                            spotLight1Intensity : 100000.000000,
                             sphereLightInnerRadius : 0.000000,
                             spotLight1PosRad : [-79.000000, 84.500000, -1.000000, 98.000000],
                             spotLight1DirSpread : [1.000000, -1.000000, 0.000000, 82.000000],
-                            sphereLight1PosRad : [40.000000, 56.500000, 40.000000, 145.000000],
+                            sphereLight1PosRad : [0.000000, 63.000000, 0.000000, 47.000000],
                             sphereLight1Col : [255, 240, 230],
                             spotLight1Col : [255, 240, 230],
                             __schema__ : {

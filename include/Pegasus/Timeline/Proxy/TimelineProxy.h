@@ -138,6 +138,25 @@ public:
     //! Clears blockscript if there is one.
     virtual void ClearScript();
 
+    //! Sets a music file, were the string is the path.
+    //! \param musicFileName - the path
+    virtual void LoadMusic(const char* musicFileName);
+
+    //! Removes any sound / music file.
+    virtual void UnloadMusic();
+
+    //! Returns volume scale (0.0 to Max scale).
+    //! \returns volume scale
+    virtual float GetVolume() const;
+
+    //! Gets volume scale 
+    //! \param volume scale
+    virtual void SetVolume(float volume);
+
+    //! true if you want to unmute.
+    //! \param enableSound - true if sound wants to get enabled.
+    virtual void DebugEnableSound(bool enableSound);
+
     //! If this asset runtime object has a property attached, the return it.
     //! \return the property grid object of this proxy. If it doesn't exist then it returns null.
     virtual PropertyGrid::IPropertyGridObjectProxy* GetPropertyGrid() { return &mPropertyGridDecorator; }

@@ -47,6 +47,7 @@ QString ShadowTimelineState::Str(ShadowTimelineState::PropName nm)
     E2S(PROP_SCRIPT_PATH)
     E2S(PROP_LANE_COUNT)
     E2S(PROP_LANES)
+    E2S(PROP_VOLUME)
     E2S(PROP_COUNT)
     E2S_END()
 }
@@ -76,6 +77,11 @@ float ShadowTimelineState::GetCurrBeat() const
     return mRootState[Str(PROP_CURR_BEAT)].toFloat();
 }
 
+float ShadowTimelineState::GetVolume() const
+{
+    return mRootState[Str(PROP_VOLUME)].toFloat();
+}
+
 bool ShadowTimelineState::HasMasterScript() const
 {
     return mRootState.find(Str(PROP_SCRIPT_PATH)) != mRootState.end();
@@ -94,6 +100,7 @@ void ShadowTimelineState::Build(const ITimelineProxy* proxy)
     mRootState.insert(Str(PROP_BEATS_PER_MIN), proxy->GetBeatsPerMinute() );
     mRootState.insert(Str(PROP_CURR_BEAT), proxy->GetCurrentBeat() );
     mRootState.insert(Str(PROP_TICKS_PER_BEAT), proxy->GetNumTicksPerBeat() );
+    mRootState.insert(Str(PROP_VOLUME), proxy->GetVolume() );
 
     bool scriptIsLoaded = proxy->GetScript() != nullptr;
     if (scriptIsLoaded)
@@ -127,6 +134,9 @@ void ShadowTimelineState::FlushProp(ShadowTimelineState::PropName name, const QV
         break;
     case PROP_CURR_BEAT:
         dest->SetCurrentBeat(val.toFloat());
+        break;
+    case PROP_VOLUME:
+        dest->SetVolume(val.toFloat());
         break;
     default:
         ED_FAILSTR("Unable to flush property from shadow state.");
@@ -329,6 +339,15 @@ void TimelineIOMessageController::OnRenderThreadProcessMessage(const TimelineIOM
     case TimelineIOMCMessage::CLEAR_MASTER_BLOCKSCRIPT:
         OnClearMasterBlockscript();
         break;
+    case TimelineIOMCMessage::SET_MUSIC_FILE:
+        OnSetMusicFile(msg.GetString());
+        break;
+    case TimelineIOMCMessage::CLEAR_MUSIC_FILE:
+        OnClearMusicFile();
+        break;
+    case TimelineIOMCMessage::SET_DEBUG_ENABLE_MUSIC:
+        OnDebugEnableMusic(msg.GetIsPlayMode());
+        break;
     case TimelineIOMCMessage::SET_PARAMETER:
         OnSetParameter(msg.GetTarget(), msg.GetTimelineHandle(), msg.GetLaneId(), msg.GetParameterName(), msg.GetArg(), msg.GetObserver());
         break;
@@ -408,6 +427,25 @@ void TimelineIOMessageController::OnSetMasterBlockscript(const QString& str)
     }                                                                                                         
     emit(NotifyMasterScriptState(success, str));
         
+}
+
+void TimelineIOMessageController::OnSetMusicFile(const QString& file)
+{
+    ITimelineProxy* timeline = mApp->GetTimelineManagerProxy()->GetCurrentTimeline();
+    QByteArray arr = file.toLocal8Bit();
+    timeline->LoadMusic(arr.data());
+}
+
+void TimelineIOMessageController::OnClearMusicFile()
+{
+    ITimelineProxy* timeline = mApp->GetTimelineManagerProxy()->GetCurrentTimeline();
+    timeline->UnloadMusic();
+}
+
+void TimelineIOMessageController::OnDebugEnableMusic(bool enableMusic)
+{
+    ITimelineProxy* timeline = mApp->GetTimelineManagerProxy()->GetCurrentTimeline();
+    timeline->DebugEnableSound(enableMusic);
 }
 
 void TimelineIOMessageController::OnClearMasterBlockscript()

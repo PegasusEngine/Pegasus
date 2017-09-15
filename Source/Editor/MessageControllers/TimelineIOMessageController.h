@@ -85,7 +85,13 @@ private:
 
     void OnClearMasterBlockscript();
 
+    void OnSetMusicFile(const QString& file);
+
+    void OnClearMusicFile();
+
     void OnTogglePlayMode(bool isPlayMode, TimelineIOMessageObserver* observer, const AssetInstanceHandle& hande);
+
+    void OnDebugEnableMusic(bool enableMusic);
 
     void OnSetParameter(TimelineIOMCTarget targetObject, const AssetInstanceHandle& timelineHandle, unsigned laneId, unsigned parameterName, const QVariant& paramValue, TimelineIOMessageObserver* observer);
 

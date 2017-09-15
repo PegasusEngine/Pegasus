@@ -579,7 +579,7 @@ Global
 		{765509B9-C3BC-4983-8813-D397D1340231} = {F99F748E-94E2-4095-936C-60C7EE6B5B24}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		Qt5Version = msvc2015
+		Qt5Version = Qt5.87
 	EndGlobalSection
 	GlobalSection(PerforceSourceControlProviderSolutionProperties) = preSolution
 		SolutionIsControlled = True

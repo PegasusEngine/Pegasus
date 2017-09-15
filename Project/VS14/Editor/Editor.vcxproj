@@ -548,6 +548,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_style.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">
+      </PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Editor.rc" />
@@ -1234,6 +1240,162 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\branch_closed-on.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\branch_closed.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\branch_open-on.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\branch_open.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_checked.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_checked_disabled.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_checked_focus.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_indeterminate.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_indeterminate_focus.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_unchecked.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_unchecked_disabled.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_unchecked_focus.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\close-hover.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\close-pressed.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\close.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\down_arrow.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\down_arrow_disabled.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\Hmovetoolbar.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\Hsepartoolbar.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\left_arrow.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\left_arrow_disabled.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\radio_checked.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\radio_checked_disabled.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\radio_checked_focus.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\radio_unchecked.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\radio_unchecked_disabled.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\radio_unchecked_focus.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\right_arrow.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\right_arrow_disabled.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\sizegrip.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\stylesheet-branch-end.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\stylesheet-branch-more.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\stylesheet-vline.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\transparent.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\undock.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\up_arrow.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\up_arrow_disabled.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\Vmovetoolbar.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\Vsepartoolbar.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </Image>
     <Image Include="..\..\..\Source\Editor\PropertyGrid\qtpropertybrowser\images\cursor-arrow.png">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
@@ -1384,12 +1546,30 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">"$(QTDIR)\bin\uic.exe" -o ".\GeneratedFiles\ui_%(Filename).h" "%(FullPath)"</Command>
     </CustomBuild>
   </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\style.qrc">
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">%(FullPath);..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\up_arrow_disabled.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\Hmovetoolbar.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\stylesheet-branch-end.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\branch_closed-on.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\stylesheet-vline.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\branch_closed.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\branch_open-on.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\transparent.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\right_arrow_disabled.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\sizegrip.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\close.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\close-hover.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\close-pressed.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\down_arrow.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\Vmovetoolbar.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\left_arrow.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\stylesheet-branch-more.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\up_arrow.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\right_arrow.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\left_arrow_disabled.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\Hsepartoolbar.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\branch_open.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\Vsepartoolbar.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\down_arrow_disabled.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\undock.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_checked_disabled.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_checked_focus.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_checked.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_indeterminate.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_indeterminate_focus.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_unchecked_disabled.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_unchecked_focus.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_unchecked.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\radio_checked_disabled.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\radio_checked_focus.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\radio_checked.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\radio_unchecked_disabled.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\radio_unchecked_focus.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\radio_unchecked.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\style.qss;%(AdditionalInputs)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">Rcc%27ing %(Identity)...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">.\GeneratedFiles\qrc_%(Filename).cpp;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">"$(QTDIR)\bin\rcc.exe" -name "%(Filename)" -no-compress "%(FullPath)" -o .\GeneratedFiles\qrc_%(Filename).cpp</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">%(FullPath);..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\up_arrow_disabled.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\Hmovetoolbar.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\stylesheet-branch-end.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\branch_closed-on.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\stylesheet-vline.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\branch_closed.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\branch_open-on.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\transparent.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\right_arrow_disabled.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\sizegrip.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\close.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\close-hover.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\close-pressed.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\down_arrow.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\Vmovetoolbar.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\left_arrow.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\stylesheet-branch-more.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\up_arrow.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\right_arrow.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\left_arrow_disabled.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\Hsepartoolbar.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\branch_open.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\Vsepartoolbar.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\down_arrow_disabled.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\undock.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_checked_disabled.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_checked_focus.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_checked.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_indeterminate.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_indeterminate_focus.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_unchecked_disabled.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_unchecked_focus.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\checkbox_unchecked.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\radio_checked_disabled.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\radio_checked_focus.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\radio_checked.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\radio_unchecked_disabled.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\radio_unchecked_focus.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\rc\radio_unchecked.png;..\..\..\Source\Editor\CustomStyles\qdarkstyle\style.qss;%(AdditionalInputs)</AdditionalInputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">Rcc%27ing %(Identity)...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">.\GeneratedFiles\qrc_%(Filename).cpp;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">"$(QTDIR)\bin\rcc.exe" -name "%(Filename)" -no-compress "%(FullPath)" -o .\GeneratedFiles\qrc_%(Filename).cpp</Command>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Source\Editor\CustomStyles\qdarkstyle\style.qss">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">true</ExcludedFromBuild>
+    </None>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties MocDir=".\GeneratedFiles\$(ConfigurationName)" UicDir=".\GeneratedFiles" RccDir=".\GeneratedFiles" lupdateOptions="" lupdateOnBuild="0" lreleaseOptions="" Qt5Version_x0020_Win32="msvc2015" MocOptions="" />
+      <UserProperties MocDir=".\GeneratedFiles\$(ConfigurationName)" UicDir=".\GeneratedFiles" RccDir=".\GeneratedFiles" lupdateOptions="" lupdateOnBuild="0" lreleaseOptions="" Qt5Version_x0020_Win32="Qt5.87" MocOptions="" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
