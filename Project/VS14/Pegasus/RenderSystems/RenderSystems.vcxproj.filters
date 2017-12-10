@@ -48,6 +48,12 @@
     <Filter Include="Include\Lighting">
       <UniqueIdentifier>{33d079f4-6b06-4e4e-9e84-f7a642107a9a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Include\Atmos">
+      <UniqueIdentifier>{bb48c51f-81ce-48d8-be64-d85e50894ccb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Atmos">
+      <UniqueIdentifier>{5afe085a-79a9-48fe-913e-87a632545a8a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\Grass\GrassSystem.h">
@@ -92,6 +98,27 @@
     <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Lighting\LightRig.h">
       <Filter>Include\Lighting</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\AtmosClouds.h">
+      <Filter>Include\Atmos</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\AtmosLookUpGenerator.h">
+      <Filter>Include\Atmos</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\AtmosLookUpTable.h">
+      <Filter>Include\Atmos</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\Atmosphere.h">
+      <Filter>Include\Atmos</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\AtmosSystem.h">
+      <Filter>Include\Atmos</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\AtmosVolumes.h">
+      <Filter>Include\Atmos</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\MarchingCubeMeshGenerator.h">
+      <Filter>Include\Atmos</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Grass\GrassSystem.cpp">
@@ -129,6 +156,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Lighting\LightRig.cpp">
       <Filter>Source\Lighting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Atmos\AtmosSystem.cpp">
+      <Filter>Source\Atmos</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -1,0 +1,14 @@
+QT.core_private.VERSION = 5.8.0
+QT.core_private.MAJOR_VERSION = 5
+QT.core_private.MINOR_VERSION = 8
+QT.core_private.PATCH_VERSION = 0
+QT.core_private.name = QtCore
+QT.core_private.module =
+QT.core_private.libs = $$QT_MODULE_LIB_BASE
+QT.core_private.includes = $$QT_MODULE_INCLUDE_BASE/QtCore/5.8.0 $$QT_MODULE_INCLUDE_BASE/QtCore/5.8.0/QtCore
+QT.core_private.frameworks =
+QT.core_private.depends = core
+QT.core_private.uses =
+QT.core_private.module_config = v2 internal_module
+QT.core_private.enabled_features = doubleconversion sha3-fast
+QT.core_private.disabled_features = clock-gettime glib gnu-libiconv icu posix-libiconv iconv inotify libatomic system-doubleconversion system-pcre

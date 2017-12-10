@@ -145,7 +145,6 @@ bool WindowImpl_Win32::IsWindowClassRegistered(HINSTANCE handle)
 void WindowImpl_Win32::Internal_CreateWindow(const WindowConfig& config)
 {
     HWND windowHandle;
-    HHOOK hCBTHook;
     DWORD windowStyle;
 
     // Compute window style
@@ -180,14 +179,6 @@ void WindowImpl_Win32::Internal_CreateWindow(const WindowConfig& config)
         windowWidth = rect.right - rect.left;
         windowHeight = rect.bottom - rect.top;
     }
-
-    // Create window
-    hCBTHook = SetWindowsHookEx(WH_CBT, WindowImpl_Win32::CBTProc, 0, GetCurrentThreadId());
-    if (hCBTHook == NULL)
-    {
-        PG_FAILSTR("Unable to register CBT hook!");
-        return;
-    }
     windowHandle = CreateWindowEx(0,
                                   PEGASUS_WND_CLASSNAME,
                                   PEGASUS_WND_WNDNAME,
@@ -207,46 +198,9 @@ void WindowImpl_Win32::Internal_CreateWindow(const WindowConfig& config)
     {
         PG_LOG('WNDW', "Window handle accquired");
     }
-    if (!UnhookWindowsHookEx(hCBTHook))
-    {
-        PG_FAILSTR("Unable to unregister CBT hook!");
-        return;
-    }
 }
 
-//----------------------------------------------------------------------------------------
 
-//! CBT callback for hooking window-specific data
-//! Called before the window is created, to provide its address for the WndProc later.
-//! \param nCode Message code.
-//! \param wParam Message params high.
-//! \param lParam Message params low.
-//! \return Result status. 
-LRESULT CALLBACK WindowImpl_Win32::CBTProc(int nCode, WPARAM wParam, LPARAM lParam)
-{
-    // Hook the window before any messages are sent to it
-    if (nCode == HCBT_CREATEWND)
-    {
-        LPCREATESTRUCT windowCreateStruct;
-        WindowImpl_Win32* pThis = NULL;
-
-        // Get the create params
-        windowCreateStruct = ((CBT_CREATEWND*) lParam)->lpcs;
-        pThis = (WindowImpl_Win32*) windowCreateStruct->lpCreateParams;
-
-        // Some other bogus messages can pass NULL here
-        if (pThis != NULL)
-        {
-            // Set up the window handle
-            pThis->mHWND = (HWND) wParam;
-            SetWindowLongPtr(pThis->mHWND, GWL_USERDATA, (LONG_PTR) pThis);
-
-            PG_LOG('WNDW', "Firing CBT Hook");
-        }
-    }
-
-    return 0;
-}
 
 //----------------------------------------------------------------------------------------
 
@@ -259,16 +213,34 @@ LRESULT CALLBACK WindowImpl_Win32::CBTProc(int nCode, WPARAM wParam, LPARAM lPar
 //! \return Result status.
 LRESULT CALLBACK WindowImpl_Win32::WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    WindowImpl_Win32* pWnd = (WindowImpl_Win32*) GetWindowLongPtr(hwnd, GWL_USERDATA);
     WindowImpl_Win32::HandleMessageReturn wndProcReturn;
+    if (message == WM_CREATE)
+    {
+        WindowImpl_Win32* pThis = static_cast<WindowImpl_Win32*>(((LPCREATESTRUCT)lParam)->lpCreateParams);
+        // Some other bogus messages can pass NULL here
+        if (pThis != NULL)
+        {
+            // Set up the window handle
+            pThis->mHWND = (HWND)hwnd;
+            SetWindowLongPtr(pThis->mHWND, GWL_USERDATA, (LONG_PTR)pThis);
 
-    PG_ASSERTSTR(pWnd != nullptr, "Window pointer is null in WndProc, this is bad!");
+            PG_LOG('WNDW', "Firing CBT Hook");
+        }
+    }
 
-    // Call 
-    wndProcReturn = pWnd->HandleMessage(message, (unsigned int*) wParam, (unsigned long*) lParam);
+    WindowImpl_Win32* pWnd = (WindowImpl_Win32*)GetWindowLongPtr(hwnd, GWL_USERDATA);
+    if (pWnd != nullptr)
+    {
+        // Call 
+        wndProcReturn = pWnd->HandleMessage(message, (unsigned int*)wParam, (unsigned long*)lParam);
 
-    // Fall back to OS default if needed
-    if (!wndProcReturn.handled)
+        // Fall back to OS default if needed
+        if (!wndProcReturn.handled)
+        {
+            return (DefWindowProc(hwnd, message, wParam, lParam));
+        }
+    }
+    else
     {
         return (DefWindowProc(hwnd, message, wParam, lParam));
     }

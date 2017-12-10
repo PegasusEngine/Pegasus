@@ -229,6 +229,19 @@ public:
     //! Removes a music track.
     void UnloadMusic();
 
+    //! Returns volume scale (0.0 to Max scale).
+    //! \returns volume scale
+    float GetVolume() const;
+
+    //! Gets volume scale 
+    //! \param volume scale
+    void SetVolume(float volume);
+
+#if PEGASUS_ENABLE_PROXIES
+    //! Enable sound. For mute & unmute.
+    void DebugEnableSound(bool enableSound);
+#endif
+
     //! Returns the script of this block, null if none is attached.
     //! \return the script object, null if not attached
     TimelineScriptReturn GetScript();

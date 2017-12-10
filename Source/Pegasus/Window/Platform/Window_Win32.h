@@ -74,14 +74,6 @@ private:
     //! \param config Configuration structure used to create this window.
     void WindowImpl_Win32::Internal_CreateWindow(const WindowConfig& config);
 
-    //! CBT callback for hooking window-specific data
-    //! Called before the window is created, to provide its address for the WndProc later.
-    //! \param nCode Message code.
-    //! \param wParam Message params high.
-    //! \param lParam Message params low.
-    //! \return Result status. 
-    static LRESULT CALLBACK CBTProc(int nCode, WPARAM wParam, LPARAM lParam);
-
     //! Windows callback for a Pegasus window
     //! Fired every time a message is delivered to the window.
     //! \param hwnd Handle to the window.
