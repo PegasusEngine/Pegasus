@@ -9,11 +9,11 @@
 //! \date   July 2nd, 2016
 //! \brief  Marching cube geneator of meshes.
 
-#include "Pegasus/RenderSystems/3dTerrain/MarchingCubeMeshGenerator.h"
+#include "Pegasus/RenderSystems/Volumes/MarchingCubeMeshGenerator.h"
 
-#if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
+#if RENDER_SYSTEM_CONFIG_ENABLE_VOLUMES
 
-#include "Pegasus/RenderSystems/3dTerrain/3dTerrainSystem.h"
+#include "Pegasus/RenderSystems/Volumes/VolumesSystem.h"
 #include "Pegasus/Mesh/Shared/MeshEvent.h"
 #include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/Math/Vector.h"
@@ -23,7 +23,7 @@ using namespace Pegasus::Mesh;
 using namespace Pegasus::RenderSystems;
 using namespace Pegasus::Math;
 
-extern RenderSystems::Terrain3dSystem* g3dTerrainSystemInstance;
+extern RenderSystems::VolumesSystem* gVolumesSystem;
 
 
 BEGIN_IMPLEMENT_PROPERTIES(MarchingCubeMeshGenerator)
@@ -48,7 +48,7 @@ void MarchingCubeMeshGenerator::GenerateData()
 {
     PEGASUS_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::BEGIN);
     unsigned int caseSignature = (unsigned int)(GetCaseNumber() < 0 ? 0 : (GetCaseNumber() > 256 ? 255 : GetCaseNumber() ));
-    const CaseTable* caseTable = g3dTerrainSystemInstance->GetCaseTable();
+    const CaseTable* caseTable = gVolumesSystem->GetCaseTable();
     
     MeshDataRef meshData = GetData(); 
     meshData->AllocateVertexes(caseTable->GetEdgeCount());

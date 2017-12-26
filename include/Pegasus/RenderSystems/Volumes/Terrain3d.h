@@ -14,7 +14,7 @@
 #include "Pegasus/RenderSystems/Config.h"
 #include "Pegasus/Mesh/Mesh.h"
 #include "Pegasus/Mesh/MeshManager.h"
-#if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
+#if RENDER_SYSTEM_CONFIG_ENABLE_VOLUMES
 
 
 

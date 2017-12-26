@@ -13,10 +13,10 @@
 #define PEGASUS_TERRAIN_3D_MESH_GENERATOR
 
 #include "Pegasus/RenderSystems/Config.h"
-#if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
+#if RENDER_SYSTEM_CONFIG_ENABLE_VOLUMES
 
 #include "Pegasus/Mesh/MeshGenerator.h"
-#include "Pegasus/RenderSystems/3dTerrain/3dTerrainSystem.h"
+#include "Pegasus/RenderSystems/Volumes/VolumesSystem.h"
 #include "Pegasus/Render/Render.h"
 #include "Pegasus/Math/Vector.h"
 
@@ -72,8 +72,8 @@ private:
     Render::BufferRef mNormalBuffer;
     Render::BufferRef mDrawIndirectBuffer;
 
-    RenderSystems::Terrain3dSystem::TerrainResources mResources;
-    int mProgramVersions[Terrain3dSystem::PROGRAM_COUNT];
+    RenderSystems::VolumesSystem::VolumesResources mResources;
+    int mProgramVersions[VolumesSystem::PROGRAM_COUNT];
 };
 
 

@@ -1,5 +1,5 @@
-#ifndef TERRAIN_COMMON_SH
-#define TERRAIN_COMMON_SH
+#ifndef VOLUMES_COMMON_SH
+#define VOLUMES_COMMON_SH
 
 #define MID_POINT 0.5
 

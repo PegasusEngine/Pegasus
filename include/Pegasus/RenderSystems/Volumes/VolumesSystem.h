@@ -4,18 +4,19 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   3dTerrainSystem.h
+//! \file   VolumesSystem.h
 //! \author Kleber Garcia
 //! \date   June 23rd, 2016
-//! \brief  3dTerrain system definition file
+//! \brief  Volumes system definition file
 
-#ifndef PEGASUS_RENDER_SYSTEM_3DTERRAIN_H
-#define PEGASUS_RENDER_SYSTEM_3DTERRAIN_H
+#ifndef PEGASUS_RENDER_SYSTEM_VOLUMES_H
+#define PEGASUS_RENDER_SYSTEM_VOLUMES_H
 #include "Pegasus\RenderSystems\Config.h"
-#if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
+
+#if RENDER_SYSTEM_CONFIG_ENABLE_VOLUMES
 
 #include "Pegasus/RenderSystems/System/RenderSystem.h"
-#include "Pegasus/RenderSystems/3dTerrain/CaseTable.h"
+#include "Pegasus/RenderSystems/Volumes/CaseTable.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Render/Render.h"
 #include "Pegasus/Math/Vector.h"
@@ -28,10 +29,10 @@ namespace RenderSystems
 class Terrain3d;
 
 //! Deferred renderer system implementation. Adds a blockscript library.
-class Terrain3dSystem : public RenderSystem
+class VolumesSystem : public RenderSystem
 {
 public:
-    struct TerrainResources
+    struct VolumesResources
     {
         Render::VolumeTextureRef densityTexture;
         Render::VolumeTextureRef geoInfo;
@@ -43,7 +44,7 @@ public:
             Math::Vec4 worldScale; //only x component used.
         } blockState;
 
-        TerrainResources()
+        VolumesResources()
         {
             blockState.worldOffset = Math::Vec4(0.0f,0.0f,0.0f,0.0f);
             blockState.worldScale = Math::Vec4(1.0f,0.0f,0.0f,0.0f);
@@ -74,7 +75,7 @@ public:
 
 
     //! Constructor
-    explicit Terrain3dSystem (Alloc::IAllocator* allocator)
+    explicit VolumesSystem (Alloc::IAllocator* allocator)
         : RenderSystem(allocator)
 #if PEGASUS_ENABLE_PROXIES 
         , mEnableCamCullDebug(false)
@@ -84,13 +85,13 @@ public:
     }
 
     //! destructor
-    virtual ~Terrain3dSystem () {}
+    virtual ~VolumesSystem () {}
 
     virtual void Load(Core::IApplicationContext* appContext);
 
     virtual bool CanCreateBlockScriptApi() const { return true; }
 
-    virtual const char* GetSystemName() const { return "3dTerrainSystem"; } 
+    virtual const char* GetSystemName() const { return "VolumesSystem"; } 
 
     virtual void OnRegisterBlockscriptApi(BlockScript::BlockLib* blocklib, Core::IApplicationContext* appContext);
 
@@ -102,10 +103,10 @@ public:
     const CaseTable* GetCaseTable() const { return &mCaseTable; }
 
     //! creates the resources of the 3d terrain, including internal render targets / vertex buffers required.
-    void CreateResources(TerrainResources& resources) const;
+    void CreateResources(VolumesResources& resources) const;
 
     //! renders and processes using the resources struct, outputs a vertex / index and normal buffer.
-    void ComputeTerrainMesh(TerrainResources& resources, Render::BufferRef indexBuffer, Render::BufferRef vertexPosBuffer, Render::BufferRef vertexNormalBuffer, Render::BufferRef drawIndirectBufferArgs);
+    void ComputeTerrainMesh(VolumesResources& resources, Render::BufferRef indexBuffer, Render::BufferRef vertexPosBuffer, Render::BufferRef vertexNormalBuffer, Render::BufferRef drawIndirectBufferArgs);
 
 #if PEGASUS_ENABLE_PROXIES
     //! Updates debug state.

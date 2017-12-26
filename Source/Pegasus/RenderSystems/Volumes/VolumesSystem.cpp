@@ -4,18 +4,18 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   3dTerrainSystem.cpp
+//! \file   VolumesSystem.cpp
 //! \author Kleber Garcia
 //! \date   June 23rd, 2016
 //! \brief  
 
-#include "Pegasus/RenderSystems/3dTerrain/3dTerrainSystem.h"
-#include "Pegasus/RenderSystems/3dTerrain/Terrain3d.h"
+#include "Pegasus/RenderSystems/Volumes/VolumesSystem.h"
+#include "Pegasus/RenderSystems/Volumes/Terrain3d.h"
 #include "Pegasus/RenderSystems/System/RenderSystemManager.h"
 #include "Pegasus/Mesh/MeshManager.h"
-#include "Pegasus/RenderSystems/3dTerrain/MarchingCubeMeshGenerator.h"
-#include "Pegasus/RenderSystems/3dTerrain/Terrain3dGenerator.h"
-#include "Pegasus/RenderSystems/3dTerrain/Terrain3d.h"
+#include "Pegasus/RenderSystems/Volumes/MarchingCubeMeshGenerator.h"
+#include "Pegasus/RenderSystems/Volumes/Terrain3dGenerator.h"
+#include "Pegasus/RenderSystems/Volumes/Terrain3d.h"
 #include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/Core/Formats.h"
 #include "Pegasus/Shader/ShaderManager.h"
@@ -25,7 +25,7 @@
 #include "Pegasus/BlockScript/SymbolTable.h"
 #include "Pegasus/Math/Vector.h"
 
-#if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
+#if RENDER_SYSTEM_CONFIG_ENABLE_VOLUMES
 
 using namespace Pegasus;
 using namespace Pegasus::Shader;
@@ -34,26 +34,26 @@ using namespace Pegasus::Mesh;
 using namespace Pegasus::Math;
 using namespace Pegasus::RenderSystems;
 
-Terrain3dSystem* g3dTerrainSystemInstance = nullptr;
-#define TERRAIN3D_PATH "RenderSystems/3dTerrain/"
+VolumesSystem* gVolumesSystem = nullptr;
+#define VOLUMES_PATH "RenderSystems/Volumes/"
 
 
 //list of assets
-static const char* sPrograms[Terrain3dSystem::PROGRAM_COUNT] = 
+static const char* sPrograms[VolumesSystem::PROGRAM_COUNT] = 
 {
-    TERRAIN3D_PATH "density3d.cs",
-    TERRAIN3D_PATH "sparse2_8.cs",
-    TERRAIN3D_PATH "sparse1_4.cs",
-    TERRAIN3D_PATH "geomInfo.cs",    
-    TERRAIN3D_PATH "meshProducer.cs"
+    VOLUMES_PATH "density3d.cs",
+    VOLUMES_PATH "sparse2_8.cs",
+    VOLUMES_PATH "sparse1_4.cs",
+    VOLUMES_PATH "geomInfo.cs",    
+    VOLUMES_PATH "meshProducer.cs"
 };
 
 
-void Terrain3dSystem::Load(Core::IApplicationContext* appContext)
+void VolumesSystem::Load(Core::IApplicationContext* appContext)
 {
     mCaseTable.Initialize();
-    PG_ASSERTSTR(g3dTerrainSystemInstance == nullptr, "Can only have 1 instance of the 3d terrain system.");
-    g3dTerrainSystemInstance = this;
+    PG_ASSERTSTR(gVolumesSystem == nullptr, "Can only have 1 instance of the 3d terrain system.");
+    gVolumesSystem = this;
 
     for (unsigned int i = 0; i < PROGRAM_COUNT; ++i)
     {
@@ -72,24 +72,24 @@ void Terrain3dSystem::Load(Core::IApplicationContext* appContext)
     Render::SetBuffer(mPackedIndexCasesBuffer, mCaseTable.GetPackedIndexCases());
 
     //mesh density inputs
-    Render::GetUniformLocation(mPrograms[Terrain3dSystem::DENSITY_CS], "BlockStateCbuffer", mDensityBlockStateUniform);
+    Render::GetUniformLocation(mPrograms[VolumesSystem::DENSITY_CS], "BlockStateCbuffer", mDensityBlockStateUniform);
 
     //compute  count / caseId inputs
-    Render::GetUniformLocation(mPrograms[Terrain3dSystem::GEOMETRY_INFO_CS], "densityTexture", mGeomInfoDensityInput);
-    Render::GetUniformLocation(mPrograms[Terrain3dSystem::GEOMETRY_INFO_CS], "countInfoCbuffer", mGeomInfoCaseCountInfoInput);
+    Render::GetUniformLocation(mPrograms[VolumesSystem::GEOMETRY_INFO_CS], "densityTexture", mGeomInfoDensityInput);
+    Render::GetUniformLocation(mPrograms[VolumesSystem::GEOMETRY_INFO_CS], "countInfoCbuffer", mGeomInfoCaseCountInfoInput);
 
     //compute sparse inputs
-    Render::GetUniformLocation(mPrograms[Terrain3dSystem::SPARSE_2_8_CS], "volumeCount", mVolumeCountUniform);
-    Render::GetUniformLocation(mPrograms[Terrain3dSystem::SPARSE_1_4_CS], "sparse8", mSparse8Uniform);
+    Render::GetUniformLocation(mPrograms[VolumesSystem::SPARSE_2_8_CS], "volumeCount", mVolumeCountUniform);
+    Render::GetUniformLocation(mPrograms[VolumesSystem::SPARSE_1_4_CS], "sparse8", mSparse8Uniform);
 
     //mesh prod inputs
-    Render::GetUniformLocation(mPrograms[Terrain3dSystem::MESH_PRODUCER_CS], "BlockStateCbuffer", mMeshBlockStateUniform);
-    Render::GetUniformLocation(mPrograms[Terrain3dSystem::MESH_PRODUCER_CS], "densityTexture", mMeshDensity);
-    Render::GetUniformLocation(mPrograms[Terrain3dSystem::MESH_PRODUCER_CS], "meshCounts",  mMeshCounts);
-    Render::GetUniformLocation(mPrograms[Terrain3dSystem::MESH_PRODUCER_CS], "meshSparse8", mMeshSparse8);
-    Render::GetUniformLocation(mPrograms[Terrain3dSystem::MESH_PRODUCER_CS], "meshSparse4", mMeshSparse4);
-    Render::GetUniformLocation(mPrograms[Terrain3dSystem::MESH_PRODUCER_CS], "countInfoCbuffer", mMeshInfoCaseCountInfoInput);
-    Render::GetUniformLocation(mPrograms[Terrain3dSystem::MESH_PRODUCER_CS], "indexInfoCbuffer", mMeshInfoCaseIndices);
+    Render::GetUniformLocation(mPrograms[VolumesSystem::MESH_PRODUCER_CS], "BlockStateCbuffer", mMeshBlockStateUniform);
+    Render::GetUniformLocation(mPrograms[VolumesSystem::MESH_PRODUCER_CS], "densityTexture", mMeshDensity);
+    Render::GetUniformLocation(mPrograms[VolumesSystem::MESH_PRODUCER_CS], "meshCounts",  mMeshCounts);
+    Render::GetUniformLocation(mPrograms[VolumesSystem::MESH_PRODUCER_CS], "meshSparse8", mMeshSparse8);
+    Render::GetUniformLocation(mPrograms[VolumesSystem::MESH_PRODUCER_CS], "meshSparse4", mMeshSparse4);
+    Render::GetUniformLocation(mPrograms[VolumesSystem::MESH_PRODUCER_CS], "countInfoCbuffer", mMeshInfoCaseCountInfoInput);
+    Render::GetUniformLocation(mPrograms[VolumesSystem::MESH_PRODUCER_CS], "indexInfoCbuffer", mMeshInfoCaseIndices);
     
     mDensityInputBuffer = Render::CreateUniformBuffer(sizeof(Math::Vec4)*2);
     Render::SamplerStateConfig samplerConfig;
@@ -103,7 +103,7 @@ void Terrain3dSystem::Load(Core::IApplicationContext* appContext)
 #endif
 }
 
-void Terrain3dSystem::CreateResources(TerrainResources& resources) const
+void VolumesSystem::CreateResources(VolumesResources& resources) const
 {
     Render::VolumeTextureConfig volumeTextureConfig;
     
@@ -136,21 +136,21 @@ void Terrain3dSystem::CreateResources(TerrainResources& resources) const
     resources.sparse4 = Render::CreateVolumeTexture(volumeTextureConfig);
 }
 
-void Terrain3dSystem::ComputeTerrainMesh(TerrainResources& resources, Render::BufferRef indexBuffer, Render::BufferRef vertexPosBuffer, Render::BufferRef vertexNormalBuffer, Render::BufferRef drawIndirectBufferArgs)
+void VolumesSystem::ComputeTerrainMesh(VolumesResources& resources, Render::BufferRef indexBuffer, Render::BufferRef vertexPosBuffer, Render::BufferRef vertexNormalBuffer, Render::BufferRef drawIndirectBufferArgs)
 {
     //Set all constant buffers
 
     Render::SetBuffer(mDensityInputBuffer, &resources.blockState, sizeof(resources.blockState));
 
     // Generate terrain density
-    Render::SetProgram(mPrograms[Terrain3dSystem::DENSITY_CS]);
+    Render::SetProgram(mPrograms[VolumesSystem::DENSITY_CS]);
     Render::SetUniformBuffer(mDensityBlockStateUniform, mDensityInputBuffer);
     Render::SetComputeOutput(resources.densityTexture, 0);    
     Render::Dispatch(GROUP_DIM,GROUP_DIM,GROUP_DIM);    
     Render::UnbindComputeOutputs();
 
     // compute geometry information.
-    Render::SetProgram(mPrograms[Terrain3dSystem::GEOMETRY_INFO_CS]);
+    Render::SetProgram(mPrograms[VolumesSystem::GEOMETRY_INFO_CS]);
     Render::SetUniformVolume(mGeomInfoDensityInput, resources.densityTexture);
     Render::SetUniformBuffer(mGeomInfoCaseCountInfoInput, mPackedCaseCountInfoBuffer);
     Render::SetComputeOutput(resources.geoInfo , 0);
@@ -158,21 +158,21 @@ void Terrain3dSystem::ComputeTerrainMesh(TerrainResources& resources, Render::Bu
     Render::UnbindComputeOutputs();
 
     // compute sparse offsets, on 8x8x8 groups.
-    Render::SetProgram(mPrograms[Terrain3dSystem::SPARSE_2_8_CS]);
+    Render::SetProgram(mPrograms[VolumesSystem::SPARSE_2_8_CS]);
     Render::SetUniformVolume(mVolumeCountUniform, resources.geoInfo);
     Render::SetComputeOutput(resources.sparse8, 0);
     Render::Dispatch(GROUP_DIM,GROUP_DIM,GROUP_DIM);    
     Render::UnbindComputeOutputs();
     
     // compute sparse offsets, on 2x2 groups.
-    Render::SetProgram(mPrograms[Terrain3dSystem::SPARSE_1_4_CS]);
+    Render::SetProgram(mPrograms[VolumesSystem::SPARSE_1_4_CS]);
     Render::SetUniformVolume(mSparse8Uniform, resources.sparse8);    
     Render::SetComputeOutput(resources.sparse4, 0);
     Render::Dispatch(1,1,1);
     Render::UnbindComputeOutputs();
 
     // compute pass, write off mesh
-    Render::SetProgram(mPrograms[Terrain3dSystem::MESH_PRODUCER_CS]);
+    Render::SetProgram(mPrograms[VolumesSystem::MESH_PRODUCER_CS]);
     Render::SetUniformVolume(mMeshDensity, resources.densityTexture);
     Render::SetUniformVolume(mMeshCounts, resources.geoInfo);
     Render::SetUniformVolume(mMeshSparse8, resources.sparse8);
@@ -190,7 +190,7 @@ void Terrain3dSystem::ComputeTerrainMesh(TerrainResources& resources, Render::Bu
     Render::UnbindComputeOutputs();
 }
 
-void Terrain3dSystem::OnRegisterBlockscriptApi(BlockScript::BlockLib* blocklib, Core::IApplicationContext* appContext)
+void VolumesSystem::OnRegisterBlockscriptApi(BlockScript::BlockLib* blocklib, Core::IApplicationContext* appContext)
 {
     Utils::Vector<BlockScript::FunctionDeclarationDesc> methods;
     Utils::Vector<BlockScript::FunctionDeclarationDesc> functions;
@@ -212,14 +212,14 @@ void Terrain3dSystem::OnRegisterBlockscriptApi(BlockScript::BlockLib* blocklib, 
 
 }
 
-void Terrain3dSystem::OnRegisterCustomMeshNodes(Pegasus::Mesh::MeshManager* meshManager)
+void VolumesSystem::OnRegisterCustomMeshNodes(Pegasus::Mesh::MeshManager* meshManager)
 {
     meshManager->RegisterMeshNode("MarchingCubeMeshGenerator", MarchingCubeMeshGenerator::CreateNode);
     meshManager->RegisterMeshNode("Terrain3dGenerator", Terrain3dGenerator::CreateNode);
 }
 
 #if PEGASUS_ENABLE_PROXIES
-void Terrain3dSystem::RenderDebugBox(const Math::Vec3& minAabb, const Math::Vec3& maxAabb, const Math::Vec4& color)
+void VolumesSystem::RenderDebugBox(const Math::Vec3& minAabb, const Math::Vec3& maxAabb, const Math::Vec4& color)
 {
     Vec3 offset = (maxAabb + minAabb) * 0.5f;
     Vec3 scale =  (maxAabb - minAabb) * 0.5f;
@@ -238,7 +238,7 @@ void Terrain3dSystem::RenderDebugBox(const Math::Vec3& minAabb, const Math::Vec3
     Render::Draw();
 }
 
-void Terrain3dSystem::LoadDebugObjects(Core::IApplicationContext* appContext)
+void VolumesSystem::LoadDebugObjects(Core::IApplicationContext* appContext)
 {
     const char debugGridVsShader[] =
         "#include \"RenderSystems/Camera/Common.h\"\n"
@@ -458,7 +458,7 @@ void Terrain3dSystem::LoadDebugObjects(Core::IApplicationContext* appContext)
     
 }
 
-void Terrain3dSystem::DrawDebugTerrain(Terrain3d* terrain)
+void VolumesSystem::DrawDebugTerrain(Terrain3d* terrain)
 {
     struct GridState
     {

@@ -1,4 +1,5 @@
-#include "RenderSystems/3dTerrain/terrainCommon.h"
+#include "RenderSystems/Volumes/VolumesCommon.h"
+
 
 #define DENSITY_MULT (1.0/(float(THREAD_DIM) + 3.0))
 

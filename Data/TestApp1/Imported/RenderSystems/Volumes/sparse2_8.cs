@@ -1,4 +1,4 @@
-#include "RenderSystems/3dTerrain/terrainCommon.h"
+#include "RenderSystems/Volumes/VolumesCommon.h"
 
 // Parallel reduction implementation by Kleber Garcia
 // This compute shader takes as an input a voxel with counts.

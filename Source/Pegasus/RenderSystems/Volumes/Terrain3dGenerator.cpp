@@ -1,5 +1,6 @@
-#include "Pegasus/RenderSystems/3dTerrain/Terrain3dGenerator.h"
-#if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
+#include "Pegasus/RenderSystems/Volumes/Terrain3dGenerator.h"
+
+#if RENDER_SYSTEM_CONFIG_ENABLE_VOLUMES
 
 #define PEGASUS_TERRAIN_3D_MESH_GENERATOR
 
@@ -14,7 +15,7 @@ using namespace Pegasus::Mesh;
 using namespace Pegasus::RenderSystems;
 using namespace Pegasus::Math;
 
-extern RenderSystems::Terrain3dSystem* g3dTerrainSystemInstance;
+extern RenderSystems::VolumesSystem* gVolumesSystem;
 
 
 BEGIN_IMPLEMENT_PROPERTIES(Terrain3dGenerator)
@@ -64,9 +65,9 @@ bool Terrain3dGenerator::Update()
 
     if (!updated)
     {
-        for (unsigned int i = 0; i < Terrain3dSystem::PROGRAM_COUNT; ++i)
+        for (unsigned int i = 0; i < VolumesSystem::PROGRAM_COUNT; ++i)
         {
-            int newVersion = Render::GetProgramVersion(g3dTerrainSystemInstance->GetProgram(static_cast<Terrain3dSystem::Programs>(i)));
+            int newVersion = Render::GetProgramVersion(gVolumesSystem->GetProgram(static_cast<VolumesSystem::Programs>(i)));
             if (newVersion != mProgramVersions[i])
             {
                 mProgramVersions[i] = newVersion;
@@ -95,8 +96,8 @@ void Terrain3dGenerator::CreateComputeTerrainResources()
 
     PG_ASSERTSTR(mIsComputeResourcesAllocated == false, "Internal gpu data is not allocated.");
     MeshDataRef meshData = GetData(); 
-    meshData->AllocateVertexes(Terrain3dSystem::VERTEX_SIZE);
-    meshData->AllocateIndexes(Terrain3dSystem::INDEX_SIZE);
+    meshData->AllocateVertexes(VolumesSystem::VERTEX_SIZE);
+    meshData->AllocateIndexes(VolumesSystem::INDEX_SIZE);
     
     GetFactory()->GenerateMeshGPUData(meshData);
     mVertexBuffer = Render::GetVertexBuffer(meshData, 0);
@@ -104,7 +105,7 @@ void Terrain3dGenerator::CreateComputeTerrainResources()
     mIndexBuffer = Render::GetIndexBuffer(meshData);
     mDrawIndirectBuffer = Render::GetDrawIndirectBuffer(meshData);
 
-    g3dTerrainSystemInstance->CreateResources(mResources);
+    gVolumesSystem->CreateResources(mResources);
 
     mIsComputeResourcesAllocated = true;
 }
@@ -122,7 +123,7 @@ void Terrain3dGenerator::GenerateData()
         //this is so Mesh does not call GenerateMeshGpuData again
         meshData->ValidateGPUData();
     }
-    g3dTerrainSystemInstance->ComputeTerrainMesh(mResources, mIndexBuffer, mVertexBuffer, mNormalBuffer, mDrawIndirectBuffer);
+    gVolumesSystem->ComputeTerrainMesh(mResources, mIndexBuffer, mVertexBuffer, mNormalBuffer, mDrawIndirectBuffer);
     
     PEGASUS_EVENT_DISPATCH(this, MeshOperationEvent, MeshOperationEvent::END_SUCCESS);
 }

@@ -1,4 +1,4 @@
-#include "RenderSystems/3dTerrain/terrainCommon.h"
+#include "RenderSystems/Volumes/VolumesCommon.h"
 
 RWTexture3D<uint> OutVolumeInfo : register(u0);
 Texture3D<float> densityTexture : register(t0);

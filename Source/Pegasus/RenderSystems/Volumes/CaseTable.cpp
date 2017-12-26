@@ -10,12 +10,12 @@
 //! \brief  Lookup table of all the case patterns (each case means how a set of densities intersects
 //!         a box.
 
-#include "Pegasus/RenderSystems/3dTerrain/CaseTable.h"
+#include "Pegasus/RenderSystems/Volumes/CaseTable.h"
 #include "Pegasus/Utils/Memset.h"
 #include "Pegasus/Math/Vector.h"
 #include "Pegasus/Utils/Memcpy.h"
 
-#if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
+#if RENDER_SYSTEM_CONFIG_ENABLE_VOLUMES
 
 using namespace Pegasus;
 using namespace Pegasus::RenderSystems;

@@ -10,10 +10,10 @@
 //! \brief  3d Terrain class.
 
 #include "Pegasus/Core/IApplicationContext.h"
-#include "Pegasus/RenderSystems/3dTerrain/Terrain3d.h"
-#include "Pegasus/RenderSystems/3dTerrain/3dTerrainSystem.h"
-#include "Pegasus/RenderSystems/3dTerrain/Terrain3dGenerator.h"
-#if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
+#include "Pegasus/RenderSystems/Volumes/Terrain3d.h"
+#include "Pegasus/RenderSystems/Volumes/VolumesSystem.h"
+#include "Pegasus/RenderSystems/Volumes/Terrain3dGenerator.h"
+#if RENDER_SYSTEM_CONFIG_ENABLE_VOLUMES
 
 #include "Pegasus/Application/RenderCollection.h"
 #include "Pegasus/Memory/MemoryManager.h"
@@ -27,7 +27,7 @@ using namespace Pegasus::Application;
 using namespace Pegasus::Camera;
 using namespace Pegasus::Math;
 
-extern Pegasus::RenderSystems::Terrain3dSystem* g3dTerrainSystemInstance;
+extern Pegasus::RenderSystems::VolumesSystem* gVolumesSystem;
 
 
 
@@ -161,7 +161,7 @@ void Terrain3d::GenerateCullingData(unsigned int windowWidth, unsigned int windo
     {
         mCamera->WindowUpdate(windowWidth, windowHeight);
 #if PEGASUS_ENABLE_PROXIES
-        if (g3dTerrainSystemInstance->CamCullDebugEnable())
+        if (gVolumesSystem->CamCullDebugEnable())
             return;
 #endif
 
@@ -384,7 +384,7 @@ void Terrain3d::Draw()
     }
 
 #if PEGASUS_ENABLE_PROXIES
-    g3dTerrainSystemInstance->DrawDebugTerrain(this);
+    gVolumesSystem->DrawDebugTerrain(this);
 #endif
 }
 

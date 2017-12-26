@@ -15,7 +15,7 @@
 
 #include "Pegasus/RenderSystems/Config.h"
 
-#if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
+#if RENDER_SYSTEM_CONFIG_ENABLE_VOLUMES
 
 namespace Pegasus
 {
