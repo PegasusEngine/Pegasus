@@ -11,6 +11,7 @@ extern EnableTerrain = 0;
 extern CamPos = float3(0.0,1.0,0.0);
 extern Fov = 0.5;
 extern CamDir = float3(0.0,0.0,-1.0);
+extern NearPlane = 0.05;
 
 
 gWorldCam = CreateCamera();
@@ -32,7 +33,7 @@ int Timeline_Update(info : UpdateInfo)
 	gWorldCam.Position = CamPos + info.beat*float3(0.5,0.0,0.5);
 	gWorldCam.Dir = CamDir;
 	gWorldCam.Fov = Fov;
-
+	gWorldCam.Near = NearPlane;
 	BindCamera(gWorldCam, CAM_WORLD_CONTEXT);
 }
 
