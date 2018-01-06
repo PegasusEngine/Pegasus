@@ -119,6 +119,8 @@ void Render_Draw(FunCallbackContext& context);
 void Render_Dispatch(FunCallbackContext& context);
 void Render_CreateRenderTarget(FunCallbackContext& context);
 void Render_CreateDepthStencil(FunCallbackContext& context);
+void Render_CreateCubeMap(FunCallbackContext& context);
+void Render_CreateRenderTargetFromCubeMap(FunCallbackContext& context);
 void Render_CreateRasterizerState(FunCallbackContext& context);
 void Render_CreateBlendingState(FunCallbackContext& context);
 void Render_CreateSamplerState(FunCallbackContext& context);
@@ -314,6 +316,18 @@ static void RegisterRenderEnums(BlockLib* lib)
             4
         },
         {
+            "CubeFace", 
+            {
+                { "FACE_X" , Pegasus::Render::X  }, 
+                { "FACE_NX", Pegasus::Render::NX }, 
+                { "FACE_Y" , Pegasus::Render::Y  }, 
+                { "FACE_NY", Pegasus::Render::NY }, 
+                { "FACE_Z" , Pegasus::Render::Z  }, 
+                { "FACE_NZ", Pegasus::Render::NZ }
+            },
+            6
+        },
+        {
             "Format",
             {
                 { "FORMAT_RGBA_32_FLOAT" , Pegasus::Core::FORMAT_RGBA_32_FLOAT },
@@ -377,6 +391,8 @@ static void RegisterRenderEnums(BlockLib* lib)
     PG_ASSERTSTR(BlendingConfig::COUNT_BO   == 3,assertstr);
     PG_ASSERTSTR(BlendingConfig::COUNT_M    == 6,assertstr);
     PG_ASSERTSTR(Pegasus::Render::PRIMITIVE_COUNT == 6,assertstr);
+    PG_ASSERTSTR(Pegasus::Render::X == 0, assertstr);
+    PG_ASSERTSTR(Pegasus::Render::NZ == 5, assertstr);
 #endif
     lib->CreateEnumTypes(enumDefs, sizeof(enumDefs)/sizeof(enumDefs[0]));
 
@@ -455,6 +471,11 @@ static void RegisterRenderStructs(BlockLib* lib)
             "RenderTargetConfig",
             {"int"  , "int"   , "Format", nullptr },
             {"Width", "Height", "format",  nullptr }
+        },
+        {
+            "CubeMapConfig",
+            {"int", "int", "Format" },
+            {"Width", "Height", "format" }
         },
         {
             "DepthStencilConfig",
@@ -1079,6 +1100,20 @@ static void RegisterFunctions(BlockLib* lib)
             { "DepthStencilConfig", nullptr },
             { "config", nullptr },
             Render_CreateDepthStencil
+        },
+        {
+            "CreateCubeMap",
+            "CubeMap",
+            { "CubeMapConfig", nullptr },
+            { "config", nullptr },
+            Render_CreateCubeMap
+        },
+        {
+            "CreateRenderTargetFromCubeMap",
+            "RenderTarget",
+            { "CubeFace", "CubeMap", nullptr },
+            { "face", "cubemap", nullptr },
+            Render_CreateRenderTargetFromCubeMap
         },
         {
             "CreateRasterizerState",
@@ -2086,6 +2121,40 @@ void Render_CreateDepthStencil(FunCallbackContext& context)
     Render::DepthStencilConfig& config = stream.NextArgument<Render::DepthStencilConfig>();
     Render::DepthStencilRef rt = Render::CreateDepthStencil(config);
     stream.SubmitReturn( RenderCollection::AddResource<Render::DepthStencil>(renderCollection, rt));
+}
+
+void Render_CreateCubeMap(FunCallbackContext& context)
+{
+    FunParamStream stream(context);
+    BsVmState* vmState = context.GetVmState();
+    Application::RenderCollection* renderCollection = GetContainer(vmState);
+    CHECK_PERMISSIONS(renderCollection, "CreateCubeMap", PERMISSIONS_RENDER_API_CALL);
+    Render::CubeMapConfig& config = stream.NextArgument<Render::CubeMapConfig>();
+    Render::CubeMapRef cm = Render::CreateCubeMap(config);
+    stream.SubmitReturn( RenderCollection::AddResource<Render::CubeMap>(renderCollection, cm));
+}
+
+void Render_CreateRenderTargetFromCubeMap(FunCallbackContext& context)
+{
+    FunParamStream stream(context);
+    BsVmState* vmState = context.GetVmState();
+    Application::RenderCollection* renderCollection = GetContainer(vmState);
+    CHECK_PERMISSIONS(renderCollection, "CreateRenderTargetFromCubeMap", PERMISSIONS_RENDER_API_CALL);
+    Render::CubeFace targetFace = stream.NextArgument<Render::CubeFace>();
+    RenderCollection::CollectionHandle cubeMapHandle = stream.NextArgument<RenderCollection::CollectionHandle>();
+    RenderCollection::CollectionHandle returnHandle = RenderCollection::INVALID_HANDLE;
+    if (cubeMapHandle != RenderCollection::INVALID_HANDLE)
+    {
+        Render::CubeMapRef cm = RenderCollection::GetResource<Render::CubeMap>(renderCollection, cubeMapHandle);
+        PG_ASSERT(cm != nullptr);
+        Render::RenderTargetRef rt = Render::CreateRenderTargetFromCubeMap(targetFace, cm);
+        returnHandle = RenderCollection::AddResource<Render::RenderTarget>(renderCollection, rt);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Invalid cube map resource passed on CreateRenderTargetFromCubeMap");
+    }
+    stream.SubmitReturn(returnHandle);
 }
 
 void Render_CreateRasterizerState(FunCallbackContext& context)

@@ -48,7 +48,6 @@ static const char* sPrograms[VolumesSystem::PROGRAM_COUNT] =
     VOLUMES_PATH "meshProducer.cs"
 };
 
-
 void VolumesSystem::Load(Core::IApplicationContext* appContext)
 {
     mCaseTable.Initialize();

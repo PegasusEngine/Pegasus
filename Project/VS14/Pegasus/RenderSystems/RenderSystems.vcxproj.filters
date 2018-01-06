@@ -83,25 +83,7 @@
     <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Lighting\LightRig.h">
       <Filter>Include\Lighting</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\AtmosClouds.h">
-      <Filter>Include\Atmos</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\AtmosLookUpGenerator.h">
-      <Filter>Include\Atmos</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\AtmosLookUpTable.h">
-      <Filter>Include\Atmos</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\Atmosphere.h">
-      <Filter>Include\Atmos</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\AtmosSystem.h">
-      <Filter>Include\Atmos</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\AtmosVolumes.h">
-      <Filter>Include\Atmos</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\MarchingCubeMeshGenerator.h">
       <Filter>Include\Atmos</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Volumes\CaseTable.h">
@@ -118,6 +100,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Volumes\VolumesSystem.h">
       <Filter>Include\Volumes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\BasicSky.h">
+      <Filter>Include\Atmos</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -159,6 +144,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Volumes\VolumesSystem.cpp">
       <Filter>Source\Volumes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Atmos\BasicSky.cpp">
+      <Filter>Source\Atmos</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

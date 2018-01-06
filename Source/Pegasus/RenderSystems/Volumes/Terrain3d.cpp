@@ -29,8 +29,6 @@ using namespace Pegasus::Math;
 
 extern Pegasus::RenderSystems::VolumesSystem* gVolumesSystem;
 
-
-
 namespace Pegasus
 {
 namespace RenderSystems

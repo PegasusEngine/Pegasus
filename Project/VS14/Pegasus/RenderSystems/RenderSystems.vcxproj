@@ -28,13 +28,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\2dTerrain\2dTerrainSystem.h" />
-    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\AtmosClouds.h" />
-    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\AtmosLookUpGenerator.h" />
-    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\AtmosLookUpTable.h" />
-    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\Atmosphere.h" />
     <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\AtmosSystem.h" />
-    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\AtmosVolumes.h" />
-    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\MarchingCubeMeshGenerator.h" />
+    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\BasicSky.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\Camera\Camera.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\Camera\CameraSystem.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\Config.h" />
@@ -52,6 +47,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\2dTerrain\2dTerrainSystem.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Atmos\AtmosSystem.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Atmos\BasicSky.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Camera\Camera.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Camera\CameraSystem.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Grass\GrassSystem.cpp" />

@@ -181,7 +181,9 @@ unsigned int TextureConfiguration::GetNumBytesPerPixel() const
 {
     switch (mPixelFormat)
     {
-        case Core::FORMAT_RGBA_8_UNORM:         return 4;
+        case Core::FORMAT_R32_FLOAT:     
+        case Core::FORMAT_RGBA_8_UNORM:        
+            return 4;
 
         default:
             PG_FAILSTR("Invalid texture pixel format (%d), it should be less than %d", mPixelFormat, Core::FORMAT_RGBA_8_UNORM);

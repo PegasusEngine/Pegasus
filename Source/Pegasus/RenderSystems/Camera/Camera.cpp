@@ -198,7 +198,7 @@ bool Camera::WindowUpdate(unsigned int width, unsigned int height)
             p.y = pointOut.y;
             p.z = pointOut.z;
         }
-    
+#if 0
         //plane normal computation, using triangles in correct order
         static const PointId sNormalOrder[MAX_PLANE_COUNT][3] = {
             {N_L_B, N_R_B, N_R_T}, //NEAR             
@@ -218,8 +218,9 @@ bool Camera::WindowUpdate(unsigned int width, unsigned int height)
             plane.SetNormal(normVec);
             plane.SetOriginDistanceWithPoint(mFrustum.points[sNormalOrder[p][0]]);
         }
-        
+#endif        
         mProjDirty = false;
+
         return true;
     }
     return false;

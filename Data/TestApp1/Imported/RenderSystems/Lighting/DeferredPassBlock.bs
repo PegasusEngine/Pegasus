@@ -4,6 +4,11 @@
 
 #include "RenderSystems/Frame/Frame.bsh"
 
+//Options:
+@(EditorType=EDITOR_TYPE_CHECKBOX)
+extern DrawSky = 0;
+
+
 gLightTileSize = 32;
 
 /// Definitions 
@@ -27,6 +32,8 @@ struct DeferredApplyLightsConstants
 	activeLightCount : int;
 	padding : int;
 };
+
+skyObject = CreateBasicSky();
 
 DeferredPassRendererResources CreateDeferredPassResources()
 {
@@ -63,6 +70,10 @@ int CallDeferredApplyLights(constants : DeferredApplyLightsConstants, deferredSt
 gPassResources = CreateDeferredPassResources();
 gPassResources.applyLightsSourceLightBuffer = LoadCulledLightBuffer();
 
+int Timeline_Update(info: UpdateInfo)
+{
+	skyObject.Visible = DrawSky;
+}
 
 int Timeline_Render(info: RenderInfo)
 {
@@ -74,5 +85,14 @@ int Timeline_Render(info: RenderInfo)
 	constants.targetHeight = GetFrameHeight();
 	constants.activeLightCount = GetActiveLightCount();
 	CallDeferredApplyLights(constants, viewState.deferredRenderState, gPassResources);
+	UnbindComputeResources();
+	UnbindComputeOutputs();
+
+	SetRenderTarget(viewState.deferredRenderState.outHdrBuffer, viewState.deferredRenderState.outDepthBuffer);	
+	skyObject->Draw();
+	UnbindRenderTargets();
+
 	EndMarker();
+
+	
 }

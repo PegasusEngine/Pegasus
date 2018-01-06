@@ -196,10 +196,6 @@
         }, {
             type : Lane,
             name : Camera,
-            Blocks : []
-        }, {
-            type : Lane,
-            name : Beads,
             Blocks : [{
                     type : Block,
                     props : {
@@ -208,15 +204,20 @@
                         Name : DeferredLighting,
                         Color : [240, 179, 148],
                         _o_p_ : {
+                            DrawSky : 1,
                             __schema__ : {
-                                sizetypes : [],
-                                names : [],
-                                typeNames : []
+                                sizetypes : [1],
+                                names : [DrawSky],
+                                typeNames : [bool]
                             }
                         },
                         script : {@RenderSystems/Lighting/DeferredPassBlock.bs}
                     }
                 }]
+        }, {
+            type : Lane,
+            name : Beads,
+            Blocks : []
         }, {
             type : Lane,
             name : Fractal,
@@ -271,13 +272,14 @@
         Name : "",
         _o_p_ : {
             EnableTerrain : 0,
-            Fov : 0.500000,
+            Fov : 1.500000,
+            NearPlane : 3.000000,
             CamPos : [0.000000, 146.000000, -250.000000],
-            CamDir : [0.000000, -0.500000, 1.000000],
+            CamDir : [0.000000, 6.800000, 1.000000],
             __schema__ : {
-                sizetypes : [1, 327692, 196612, 327692],
-                names : [EnableTerrain, CamPos, Fov, CamDir],
-                typeNames : [bool, float3, float, float3]
+                sizetypes : [1, 327692, 196612, 327692, 196612],
+                names : [EnableTerrain, CamPos, Fov, CamDir, NearPlane],
+                typeNames : [bool, float3, float, float3, float]
             }
         }
     },

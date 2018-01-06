@@ -236,6 +236,8 @@ void DXTextureFactory::InternalCreateRenderTarget(
     Utils::Memset8(&renderTargetGpuData->mTextureView, 0, sizeof(renderTargetGpuData->mTextureView));
     Utils::Memset8(&renderTargetGpuData->mTextureView3d, 0, sizeof(renderTargetGpuData->mTextureView3d));
 
+    Pegasus::Render::RenderTargetConfig outputConfig;
+
     D3D11_TEXTURE2D_DESC& texDesc = renderTargetGpuData->mTextureView.mDesc;
     if (config != nullptr)
     {
@@ -266,6 +268,7 @@ void DXTextureFactory::InternalCreateRenderTarget(
         uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
         uavDesc.Texture2D.MipSlice = 0;
 
+        outputConfig = *config;
         VALID(device->CreateUnorderedAccessView(renderTargetGpuData->mTextureView.mTexture, &uavDesc, &renderTargetGpuData->mTextureView.mUav));
 
     }
@@ -278,16 +281,25 @@ void DXTextureFactory::InternalCreateRenderTarget(
         renderTargetGpuData->mTextureView.mSrvDesc = texGpuData->mSrvDesc;
         renderTargetGpuData->mTextureView.mSrv = texGpuData->mSrv;
         Utils::Memset8(&renderTargetGpuData->mTextureView.mUavDesc, 0 , sizeof(renderTargetGpuData->mTextureView.mUavDesc));
+
+        const Pegasus::Render::CubeMapConfig& cubeConfig = cubeMap->GetConfig();
+        outputConfig.mWidth  = cubeConfig.mWidth;
+        outputConfig.mHeight = cubeConfig.mHeight;
+        outputConfig.mFormat = cubeConfig.mFormat;
     }
     else
     {
         renderTargetGpuData->mDim = DXRenderTargetGPUData::Dim_3d;
         PG_ASSERT(volumeTexture != nullptr);        
-        const Pegasus::Render::DXTextureGPUData3d* texGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXTextureGPUData3d, cubeMap->GetInternalData());
+        const Pegasus::Render::DXTextureGPUData3d* texGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXTextureGPUData3d, volumeTexture->GetInternalData());
         renderTargetGpuData->mTextureView3d.mDesc = texGpuData->mDesc;
         renderTargetGpuData->mTextureView3d.mTexture = texGpuData->mTexture;
         renderTargetGpuData->mTextureView3d.mSrvDesc = texGpuData->mSrvDesc;
         renderTargetGpuData->mTextureView3d.mSrv = texGpuData->mSrv;
+        const Pegasus::Render::VolumeTextureConfig& volumeConfig = volumeTexture->GetConfig();
+        outputConfig.mWidth  = volumeConfig.mWidth;
+        outputConfig.mHeight = volumeConfig.mHeight;
+        outputConfig.mFormat = volumeConfig.mFormat;
     }
 
     D3D11_RENDER_TARGET_VIEW_DESC& rtDesc = renderTargetGpuData->mDesc;
@@ -327,7 +339,7 @@ void DXTextureFactory::InternalCreateRenderTarget(
 
     VALID_DECLARE(device->CreateRenderTargetView(resource, &rtDesc, &renderTargetGpuData->mRenderTarget));
 
-    renderTarget.SetConfig(*config);
+    renderTarget.SetConfig(outputConfig);
     renderTarget.SetInternalData(static_cast<void*>(renderTargetGpuData));
 }
 

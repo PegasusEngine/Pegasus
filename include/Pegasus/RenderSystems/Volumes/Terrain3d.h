@@ -24,7 +24,6 @@
 #include "Pegasus/BlockScript/FunCallback.h"
 #include "Pegasus/Utils/Vector.h"
 #include "Pegasus/RenderSystems/Camera/Camera.h"
-#include "Pegasus/Utils/Vector.h"
 
 namespace Pegasus
 {
