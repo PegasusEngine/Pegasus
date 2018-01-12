@@ -704,7 +704,8 @@ void SetProjection(
     const PFloat32& t,
     const PFloat32& b,
     const PFloat32& n,
-    const PFloat32& f
+    const PFloat32& f,
+    bool isOrtho
     )
 {
     const PFloat32 two_n = 2.0f*n;
@@ -713,14 +714,28 @@ void SetProjection(
     const PFloat32 f_m_n = f - n;
     mat.m11 =  (two_n)/(r_m_l); mat.m12 = 0.0f;              mat.m13 = (r+l)/(r_m_l);  mat.m14=0.0f; 
     mat.m21 =  0.0f;            mat.m22 = (two_n)/(t_m_b);   mat.m23 = (t+b)/(t_m_b);  mat.m24=0.0f;
+    if (isOrtho)
+    {
 #if PEGASUS_GAPI_DX
     //domain goes from 0 to 1 on Z
-    mat.m31 =  0.0f;            mat.m32 = 0.0f;              mat.m33 = -(f)/(f_m_n); mat.m34=-(n*f)/(f_m_n);
+        mat.m31 =  0.0f;            mat.m32 = 0.0f;              mat.m33 = -1.0f/(f_m_n); mat.m34=-n/(f_m_n);
 #else
     //domain goes from -1 to 1 on Z
-    mat.m31 =  0.0f;            mat.m32 = 0.0f;              mat.m33 = -(f+n)/(f_m_n); mat.m34=-(two_n*f)/(f_m_n);
+        mat.m31 =  0.0f;            mat.m32 = 0.0f;              mat.m33 = -2.0f/(f_m_n); mat.m34=-(f+n)/(f_m_n);
 #endif
-    mat.m41 =  0.0f;            mat.m42 = 0.0f;              mat.m43 = -1.0f;          mat.m44=0.0f;
+        mat.m41 =  0.0f;            mat.m42 = 0.0f;              mat.m43 = 0.0f;          mat.m44=1.0f;
+    }
+    else
+    {
+#if PEGASUS_GAPI_DX
+    //domain goes from 0 to 1 on Z
+        mat.m31 =  0.0f;            mat.m32 = 0.0f;              mat.m33 = -(f)/(f_m_n); mat.m34=-(n*f)/(f_m_n);
+#else
+    //domain goes from -1 to 1 on Z
+        mat.m31 =  0.0f;            mat.m32 = 0.0f;              mat.m33 = -(f+n)/(f_m_n); mat.m34=-(two_n*f)/(f_m_n);
+#endif
+        mat.m41 =  0.0f;            mat.m42 = 0.0f;              mat.m43 = -1.0f;          mat.m44=0.0f;
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -735,7 +750,7 @@ void SetProjection(
 {
     const PFloat32 r = n*Tan(0.5f*fov);
     const PFloat32 t = aspect * r;
-    SetProjection(mat,-r,r,t,-t,n,f);
+    SetProjection(mat,-r,r,t,-t,n,f,/*not ortho*/false);
 }
 
 //----------------------------------------------------------------------------------------

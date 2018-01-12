@@ -64,6 +64,8 @@ class Camera : public Application::GenericResource
         DECLARE_PROPERTY(float, Aspect, -1.0f)
         //! If true, Position and Dir are calculated from the Target values.
         DECLARE_PROPERTY(int, EnableTarget, 0)
+        //! If true, this becomes an orthographic matrix.
+        DECLARE_PROPERTY(int, EnableOrtho, 0)
     END_DECLARE_PROPERTIES()
 
     //------------------------------------------------------------------------------------

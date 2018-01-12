@@ -451,7 +451,8 @@ void SetProjection(
     const PFloat32& t,
     const PFloat32& b,
     const PFloat32& n,
-    const PFloat32& f
+    const PFloat32& f,
+    bool isOrtho
 );
 
 //! Set a 4x4 representing a frustum projection
@@ -460,6 +461,7 @@ void SetProjection(
 //! \param aspect, aspect ratio, y units / x units
 //! \param n, near plane distance in camera units
 //! \param f, far plane distance in camera units
+//! \param isOrtho, if true sets an orthographical projection matrix
 void SetProjection(
     Mat44InOut& mat,
     const PFloat32& fov,
