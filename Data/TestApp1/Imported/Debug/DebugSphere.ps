@@ -1,0 +1,19 @@
+#include "RenderSystems/Lighting/LightingCore.h"
+
+void main(
+	in float4 p : POSITION0,
+	in float3 normal : NORMAL0,
+	in float2 t : TEXTURE0,
+	out LightingOutput lightingOut
+)
+{
+	float3 nNormal = normalize(normal);
+	MaterialInfo material;
+	material.color = float3(0.3,0.3,0.3);
+	material.worldNormal = nNormal;
+	material.smoothness = 0.5;
+	material.reflectance = 1.0;
+	material.metalMask = 1.0;
+	lightingOut = ApplyLighting(material);
+
+}

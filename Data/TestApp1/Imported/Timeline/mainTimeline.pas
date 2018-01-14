@@ -58,6 +58,10 @@
         }, {
             type : Lane,
             name : "",
+            Blocks : []
+        }, {
+            type : Lane,
+            name : "",
             Blocks : [{
                     type : Block,
                     props : {
@@ -81,11 +85,25 @@
         }, {
             type : Lane,
             name : "",
-            Blocks : []
-        }, {
-            type : Lane,
-            name : "",
             Blocks : [{
+                    type : Block,
+                    props : {
+                        Beat : 0,
+                        Duration : 2048,
+                        Name : DebugSphere1,
+                        Color : [128, 128, 128],
+                        _o_p_ : {
+                            Translation : [0.000000, 70.000000, 0.000000],
+                            Scale : [5.000000, 5.000000, 5.000000],
+                            __schema__ : {
+                                sizetypes : [327692, 327692],
+                                names : [Translation, Scale],
+                                typeNames : [float3, float3]
+                            }
+                        },
+                        script : {@Debug/TestSphere.bs}
+                    }
+                }, {
                     type : Block,
                     props : {
                         Beat : 2136,

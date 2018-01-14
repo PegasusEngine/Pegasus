@@ -18,6 +18,7 @@
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Texture/Texture.h"
 #include "Pegasus/Render/Render.h"
+#include "Pegasus/RenderSystems/Camera/Camera.h"
 #include "Pegasus/Math/Vector.h"
 
 namespace Pegasus
@@ -57,7 +58,9 @@ public:
 
     virtual void OnRegisterBlockscriptApi(BlockScript::BlockLib* blocklib, Core::IApplicationContext* appContext);
 
-    void DrawBasicSky(BasicSky* basicSky);
+    void DrawBasicSky(BasicSky* basicSky, bool enableStencil);
+
+    Camera::CameraRef GetCubeCam(Render::CubeFace face) { return mCubeCams[face]; }
 
 private:
 
@@ -68,12 +71,15 @@ private:
     };
 
     void GenerateAcosLut(Pegasus::Texture::TextureManager* textureManager);
+    void GenerateCubeCams();
 
     Mesh::MeshRef mQuadMesh;
     Shader::ProgramLinkageRef mPrograms[PROGRAMS_COUNT];
     Render::RasterizerStateRef mSkyRasterState;
+    Render::RasterizerStateRef mSkyRasterStateNoStencil;
     Texture::TextureRef mAcosLut;
     Render::SamplerStateRef mBilinearFilter;
+    Camera::CameraRef mCubeCams[Render::CUBE_FACE_COUNT];
 
     //Basic sky resources
     struct BasicSkyCbuffer {

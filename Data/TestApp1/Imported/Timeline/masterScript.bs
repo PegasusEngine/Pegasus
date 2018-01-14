@@ -28,6 +28,7 @@ terrainShader = LoadProgram("Programs/MarchingCubeProgram.pas");
 defaultRasterState = CreateRasterizerState(RasterizerConfig(CW_CM,LESSER_EQUAL_DF));
 hackedCCWMode = CreateRasterizerState(RasterizerConfig(CCW_CM,LESSER_EQUAL_DF));
 
+
 int Timeline_Update(info : UpdateInfo)
 {
 	3dTerrain->SetCullCamera(gWorldCam);

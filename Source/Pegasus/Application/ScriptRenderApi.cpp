@@ -90,6 +90,7 @@ void Render_SetUniformTexture(FunCallbackContext& context);
 void Render_SetUniformTextureRenderTarget(FunCallbackContext& context);
 void Render_SetUniformStencil(FunCallbackContext& context);
 void Render_SetUniformDepth(FunCallbackContext& context);
+void Render_SetUniformCubeMap(FunCallbackContext& context);
 void Render_SetProgram(FunCallbackContext& context);
 void Render_SetMesh(FunCallbackContext& context);
 void Render_UnbindMesh(FunCallbackContext& context);
@@ -897,6 +898,13 @@ static void RegisterFunctions(BlockLib* lib)
             { "Uniform", "DepthStencil", nullptr },
             { "uniform", "stencil", nullptr },
             Render_SetUniformStencil
+        },
+        {
+            "SetUniformCubeMap",
+            "int",
+            { "Uniform", "CubeMap", nullptr },
+            { "uniform", "cubeMap", nullptr },
+            Render_SetUniformCubeMap
         },
         {
             "SetProgram",
@@ -1721,6 +1729,26 @@ void Render_SetUniformStencil(FunCallbackContext& context)
     }
 }
 
+void Render_SetUniformCubeMap(FunCallbackContext& context)
+{
+    FunParamStream stream(context);
+    BsVmState * state = context.GetVmState();
+    Application::RenderCollection* renderCollection = GetContainer(state);
+    Render::Uniform& uniform = stream.NextArgument<Render::Uniform>();
+    RenderCollection::CollectionHandle& cmId = stream.NextArgument<RenderCollection::CollectionHandle>();
+
+    CHECK_PERMISSIONS(renderCollection, "SetUniformCubeMap", PERMISSIONS_RENDER_API_CALL);
+    if (cmId != Application::RenderCollection::INVALID_HANDLE)
+    {
+        Render::CubeMapRef cm = RenderCollection::GetResource<Render::CubeMap>(renderCollection, cmId);
+        Render::SetUniformCubeMap(uniform, cm);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Can't set an invalid cube map for this uniform");
+    }
+}
+
 void Render_SetProgram(FunCallbackContext& context)
 {
     FunParamStream stream(context);
@@ -2349,6 +2377,7 @@ void Render_CreateSimpleRasterConfig(FunCallbackContext& context)
     FunParamStream stream(context);
     PG_ASSERT(sizeof(Render::RasterizerConfig) == context.GetOutputBufferSize());
     Render::RasterizerConfig* outputConfig = reinterpret_cast<Render::RasterizerConfig*>(context.GetRawOutputBuffer());
+    *outputConfig = Render::RasterizerConfig();//default initialize
     outputConfig->mCullMode = stream.NextArgument<Render::RasterizerConfig::PegasusCullMode>();
     outputConfig->mDepthFunc = stream.NextArgument<Render::RasterizerConfig::PegasusRasterFunc>();
 }

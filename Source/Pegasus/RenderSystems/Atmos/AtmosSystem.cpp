@@ -22,6 +22,7 @@
 #include "Pegasus/BlockScript/BlockLib.h"
 #include "Pegasus/BlockScript/SymbolTable.h"
 #include "Pegasus/Math/Vector.h"
+#include "Pegasus/Memory/MemoryManager.h"
 
 #if RENDER_SYSTEM_CONFIG_ENABLE_ATMOS
 
@@ -65,6 +66,9 @@ void AtmosSystem::Load(Core::IApplicationContext* appContext)
     skyRasterConfig.mStencilReadMask = 0x1;
     mSkyRasterState = CreateRasterizerState(skyRasterConfig);
 
+    skyRasterConfig.mStencilFunc = RasterizerConfig::NONE_DF;
+    mSkyRasterStateNoStencil = CreateRasterizerState(skyRasterConfig);
+
     //Basic Sky Resource loading
     GetUniformLocation(mPrograms[BASIC_SKY], "Inputs", mBasicSkyCbufferUniform);
     GetUniformLocation(mPrograms[BASIC_SKY], "acosLutTex", mBasicSkyAcosLutUniform);
@@ -75,6 +79,8 @@ void AtmosSystem::Load(Core::IApplicationContext* appContext)
     SamplerStateConfig bilinearFilterConfig;
     bilinearFilterConfig.mFilter = SamplerStateConfig::BILINEAR;
     mBilinearFilter = CreateSamplerState(bilinearFilterConfig);
+
+    GenerateCubeCams();
 }
 
 void AtmosSystem::GenerateAcosLut(Pegasus::Texture::TextureManager* textureManager)
@@ -97,6 +103,29 @@ void AtmosSystem::GenerateAcosLut(Pegasus::Texture::TextureManager* textureManag
 
 }
 
+void AtmosSystem::GenerateCubeCams()
+{
+    static const Vec3 camDirs[] = {
+        Vec3(1.0f, 0.0f ,0.0f),
+        Vec3(-1.0f, 0.0f, 0.0f),
+        Vec3(0.0f, 1.0f, 0.0f),
+        Vec3(0.0f, -1.0f, 0.0f),
+        Vec3(0.0f, 0.0f, 1.0f),
+        Vec3(0.0f, 0.0f, -1.0f)
+    };
+    for (unsigned i = 0; i < Render::CUBE_FACE_COUNT; ++i)
+    {
+        Pegasus::Camera::CameraRef faceCam = PG_NEW(Pegasus::Memory::GetRenderAllocator(), -1, "Camera alloc", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Camera::Camera(Pegasus::Memory::GetRenderAllocator());
+        faceCam->SetDir(camDirs[i]);
+        faceCam->SetNear(0.01f);
+        faceCam->SetFar(10000.0f);
+        faceCam->SetEnableOrtho(1);
+        faceCam->Update();
+        faceCam->WindowUpdate(512,512);
+        mCubeCams[i] = faceCam;
+    }
+}
+
 void AtmosSystem::OnRegisterBlockscriptApi(BlockScript::BlockLib* blocklib, Core::IApplicationContext* appContext)
 {
     Utils::Vector<BlockScript::FunctionDeclarationDesc> methods;
@@ -106,7 +135,7 @@ void AtmosSystem::OnRegisterBlockscriptApi(BlockScript::BlockLib* blocklib, Core
     blocklib->CreateIntrinsicFunctions(functions.Data(), functions.GetSize());
 }
 
-void AtmosSystem::DrawBasicSky(BasicSky* basicSky)
+void AtmosSystem::DrawBasicSky(BasicSky* basicSky, bool enableStencil)
 {
     BeginMarker("BasicSky");
     SetProgram(mPrograms[BASIC_SKY]);
@@ -117,7 +146,7 @@ void AtmosSystem::DrawBasicSky(BasicSky* basicSky)
     SetUniformBuffer(mBasicSkyCbufferUniform, mBasicSkyCbuffer);
     SetUniformTexture(mBasicSkyAcosLutUniform,mAcosLut);
     SetPixelSampler(mBilinearFilter, 0);
-    SetRasterizerState(mSkyRasterState, 0x0);
+    SetRasterizerState(enableStencil ? mSkyRasterState : mSkyRasterStateNoStencil, 0x0);
     Draw();
     EndMarker();
 }

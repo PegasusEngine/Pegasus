@@ -18,8 +18,12 @@ Texture2D<float4> GBuffer0Texture;
 Texture2D<float4> GBuffer1Texture;
 Texture2D<float> DepthTexture;
 Texture2D<uint2> StencilTexture;
+TextureCube<float4> SkyCube;
+
 StructuredBuffer<LightInfo> LightInputBuffer;
 RWTexture2D<float4> OutputBuffer : register(u0);
+
+SamplerState bilinearSampler : register(s0);
 
 [numthreads(THREADS_X,THREADS_Y,1)]
 void main(uint3 dti : SV_DispatchThreadId)
@@ -69,11 +73,16 @@ void main(uint3 dti : SV_DispatchThreadId)
 						}
 						break; 
 					}
-				} 
+				}  
             /*WorldNormal debug*///float4(matInfo.worldNormal*0.5 + 0.5,1.0);
 			/*WorldPos debug*///OutputBuffer[coords] = float4(worldPos.xyz*0.01, 1.0);
 			/*Color debug*///OutputBuffer[coords] = float4(matInfo.color, 1.0);			
-           	hdrOutput = float4(matInfo.color*diffuse.xyz+specular,1.0);//float4(matInfo.color*diffuse + specular,1.0);			 
+			if (matInfo.reflectance > 0.99)
+			{
+				specular += 100.0*SkyCube.SampleLevel(bilinearSampler, matInfo.worldNormal, 0).rgb;
+			}
+           	hdrOutput = float4(matInfo.color*diffuse.xyz+specular,1.0);//float4(matInfo.color*diffuse + specular,1.0);
+	
         } 
 
 		//for now write on all texels, but make sure to bail if stencil is not set.

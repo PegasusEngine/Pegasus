@@ -16,6 +16,7 @@
 #include "Pegasus/Mesh/Mesh.h"
 #include "Pegasus/Render/Render.h"
 #include "Pegasus/RenderSystems/Atmos/AtmosSystem.h"
+#include "Pegasus/RenderSystems/Camera/CameraSystem.h"
 #include "Pegasus/BlockScript/FunCallback.h"
 #include "Pegasus/BlockScript/BsVm.h"
 #include "Pegasus/Application/RenderCollection.h"
@@ -27,6 +28,12 @@ using namespace Pegasus::Render;
 using namespace Pegasus::Mesh;
 using namespace Pegasus::Math;
 using namespace Pegasus::RenderSystems;
+
+namespace Pegasus {
+namespace Camera {
+extern CameraSystem* gCameraSystem;
+}
+}
 
 extern AtmosSystem* gAtmosSystemInstance;
 
@@ -40,7 +47,7 @@ BEGIN_IMPLEMENT_PROPERTIES(BasicSky)
     IMPLEMENT_PROPERTY(BasicSky, Distance)
     IMPLEMENT_PROPERTY(BasicSky, CubeMapEnable)
     IMPLEMENT_PROPERTY(BasicSky, CubeMapResolution)
-    IMPLEMENT_PROPERTY(BasicSky, CubeMapVersion)
+    IMPLEMENT_PROPERTY(BasicSky, CubeMapAlwaysDirty)
 END_IMPLEMENT_PROPERTIES(BasicSky)
 
 BasicSky::BasicSky(Alloc::IAllocator* allocator)
@@ -51,15 +58,16 @@ BasicSky::BasicSky(Alloc::IAllocator* allocator)
         INIT_PROPERTY(Distance)
         INIT_PROPERTY(CubeMapEnable)
         INIT_PROPERTY(CubeMapResolution)
-        INIT_PROPERTY(CubeMapVersion)
+        INIT_PROPERTY(CubeMapAlwaysDirty)
     END_INIT_PROPERTIES()
+
+    mEnableStencil = true;
 
     CubeMapConfig cmConfig;
     cmConfig.mWidth = GetCubeMapResolution();
     cmConfig.mHeight = GetCubeMapResolution();
     cmConfig.mFormat = Core::FORMAT_RGBA_16_FLOAT;
     mSkyCubeMap = CreateCubeMap(cmConfig);
-    mEnvmapCachedVersion = 0;
     for (unsigned int i = 0; i < Render::CUBE_FACE_COUNT; ++i)
     {
         mSkyCubeTargets[i] = CreateRenderTargetFromCubeMap(static_cast<Render::CubeFace>(i), mSkyCubeMap);
@@ -117,11 +125,28 @@ void BasicSky::Update()
 
 void BasicSky::DrawUpdate()
 {
-    //Predraw cube map
-    if (GetCubeMapVersion() != mEnvmapCachedVersion)
+    bool performCubeRendering = GetCubeMapAlwaysDirty() || IsPropertyGridDirty();
+    if (IsPropertyGridDirty())
     {
-    
-        mEnvmapCachedVersion = GetCubeMapVersion();
+        ValidatePropertyGrid();
+    }
+
+    if (performCubeRendering)
+    {
+        Pegasus::Camera::gCameraSystem->UseCameraContext(Pegasus::Camera::CAM_OFFSCREEN_CONTEXT);
+        for (unsigned int i = 0; i < Render::CUBE_FACE_COUNT; ++i)
+        {
+            Render::CubeFace face = static_cast<Render::CubeFace>(i);
+            Camera::CameraRef cubeCam = gAtmosSystemInstance->GetCubeCam(face); 
+            Pegasus::Camera::gCameraSystem->BindCamera(&(*cubeCam), Pegasus::Camera::CAM_OFFSCREEN_CONTEXT);
+            Render::SetRenderTarget(mSkyCubeTargets[i]);
+            mEnableStencil = false;
+            Draw();
+            mEnableStencil = true;
+        }
+        Pegasus::Camera::gCameraSystem->BindCamera(nullptr, Pegasus::Camera::CAM_OFFSCREEN_CONTEXT);
+        Pegasus::Camera::gCameraSystem->UseCameraContext(Pegasus::Camera::CAM_WORLD_CONTEXT);
+        ValidatePropertyGrid();
     }
 }
 
@@ -129,7 +154,7 @@ void BasicSky::Draw()
 {
     if (GetVisible())
     {
-        gAtmosSystemInstance->DrawBasicSky(this);
+        gAtmosSystemInstance->DrawBasicSky(this, mEnableStencil);
     }
 }
 

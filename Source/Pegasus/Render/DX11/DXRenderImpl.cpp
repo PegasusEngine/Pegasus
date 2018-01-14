@@ -1354,7 +1354,7 @@ bool Pegasus::Render::SetUniformVolume(Pegasus::Render::Uniform& u, const Volume
 
 bool Pegasus::Render::SetUniformCubeMap(Pegasus::Render::Uniform& u, CubeMapRef& cubeMap)
 {
-    //todo: implement
+    PG_FAILSTR("Implement this function");
     return false;
 }
 

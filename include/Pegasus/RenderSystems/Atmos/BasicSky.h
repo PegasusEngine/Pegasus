@@ -34,8 +34,7 @@ class BasicSky : public Application::GenericResource
         DECLARE_PROPERTY(float, Distance, 2500)
         DECLARE_PROPERTY(int, CubeMapEnable, true)
         DECLARE_PROPERTY(int, CubeMapResolution, 256)
-        DECLARE_PROPERTY(int, CubeMapVersion, 1)
-        //DECLARE_PROPERTY(int, EnvMapMipCount, 7)
+        DECLARE_PROPERTY(int, CubeMapAlwaysDirty, 0)
     END_DECLARE_PROPERTIES()
 
 public:
@@ -51,8 +50,7 @@ private:
     void DrawUpdate();
     Render::CubeMapRef mSkyCubeMap;    
     Render::RenderTargetRef mSkyCubeTargets[Render::CUBE_FACE_COUNT];    
-    unsigned int mEnvmapCachedVersion;
-
+    bool mEnableStencil;
 };
 
 }

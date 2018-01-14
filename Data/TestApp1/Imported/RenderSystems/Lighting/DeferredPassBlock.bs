@@ -21,8 +21,10 @@ struct DeferredPassRendererResources
 	applyLightsGbuffer0Uniform : Uniform;
 	applyLightsGbuffer1Uniform : Uniform;
 	applyLightsInputBufferUniform : Uniform;
+	applyLightsSkyCubeMapUniform : Uniform;
 	applyLightsDepthBuffer : Uniform;
 	applyLightsStencilBuffer : Uniform;
+	applyLightsBilinearSampler : SamplerState;
 };
 
 struct DeferredApplyLightsConstants
@@ -33,7 +35,10 @@ struct DeferredApplyLightsConstants
 	padding : int;
 };
 
+
 skyObject = CreateBasicSky();
+skyObject.CubeMapAlwaysDirty = 0;
+skyCubeMap = skyObject->LoadSkyCubeMap();
 
 DeferredPassRendererResources CreateDeferredPassResources()
 {
@@ -44,8 +49,10 @@ DeferredPassRendererResources CreateDeferredPassResources()
 	rs.applyLightsGbuffer0Uniform = GetUniformLocation(rs.applyLightsCs, "GBuffer0Texture");
 	rs.applyLightsGbuffer1Uniform = GetUniformLocation(rs.applyLightsCs, "GBuffer1Texture");
 	rs.applyLightsInputBufferUniform = GetUniformLocation(rs.applyLightsCs, "LightInputBuffer");
+	rs.applyLightsSkyCubeMapUniform = GetUniformLocation(rs.applyLightsCs, "SkyCube");
 	rs.applyLightsDepthBuffer     = GetUniformLocation(rs.applyLightsCs, "DepthTexture");
 	rs.applyLightsStencilBuffer   = GetUniformLocation(rs.applyLightsCs, "StencilTexture");
+	rs.applyLightsBilinearSampler = CreateSamplerState(SamplerStateConfig(BILINEAR,CLAMP,CLAMP,CLAMP,0,0,0,0,float4(0.0,0.0,0.0,0.0)));
 	return rs;
 }
 
@@ -58,8 +65,10 @@ int CallDeferredApplyLights(constants : DeferredApplyLightsConstants, deferredSt
 	SetUniformTextureRenderTarget(resources.applyLightsGbuffer0Uniform, deferredState.gbuffer0);
 	SetUniformTextureRenderTarget(resources.applyLightsGbuffer1Uniform, deferredState.gbuffer1);
 	SetUniformBufferResource(resources.applyLightsInputBufferUniform,resources.applyLightsSourceLightBuffer);
+	SetUniformCubeMap(resources.applyLightsSkyCubeMapUniform, skyCubeMap);
 	SetUniformDepth(resources.applyLightsDepthBuffer,     deferredState.outDepthBuffer);
 	SetUniformStencil(resources.applyLightsStencilBuffer,     deferredState.outDepthBuffer);
+	SetComputeSampler(resources.applyLightsBilinearSampler, 0);
 	SetComputeOutput(deferredState.outHdrBuffer, 0);
 	Dispatch(divUp(constants.targetWidth,gLightTileSize),divUp(constants.targetHeight,gLightTileSize),1);
 	UnbindComputeResources();
