@@ -708,12 +708,12 @@ void SetProjection(
     bool isOrtho
     )
 {
-    const PFloat32 two_n = 2.0f*n;
+    const PFloat32 projNum = isOrtho ? 2.0f : 2.0f*n;
     const PFloat32 r_m_l = r - l;
     const PFloat32 t_m_b = t - b;
     const PFloat32 f_m_n = f - n;
-    mat.m11 =  (two_n)/(r_m_l); mat.m12 = 0.0f;              mat.m13 = (r+l)/(r_m_l);  mat.m14=0.0f; 
-    mat.m21 =  0.0f;            mat.m22 = (two_n)/(t_m_b);   mat.m23 = (t+b)/(t_m_b);  mat.m24=0.0f;
+    mat.m11 =  (projNum)/(r_m_l); mat.m12 = 0.0f;              mat.m13 = (r+l)/(r_m_l);  mat.m14=0.0f;
+    mat.m21 =  0.0f;            mat.m22 = (projNum)/(t_m_b);   mat.m23 = (t+b)/(t_m_b);  mat.m24=0.0f;
     if (isOrtho)
     {
 #if PEGASUS_GAPI_DX

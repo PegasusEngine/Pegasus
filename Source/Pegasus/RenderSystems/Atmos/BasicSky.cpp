@@ -120,7 +120,7 @@ static void LoadSkyCubeMap_Callback(BlockScript::FunCallbackContext& context)
 
 void BasicSky::Update()
 {
-    DrawUpdate();
+   DrawUpdate();
 }
 
 void BasicSky::DrawUpdate()
@@ -138,7 +138,12 @@ void BasicSky::DrawUpdate()
         {
             Render::CubeFace face = static_cast<Render::CubeFace>(i);
             Camera::CameraRef cubeCam = gAtmosSystemInstance->GetCubeCam(face); 
+            cubeCam->SetNear(float(GetCubeMapResolution())*0.5f);
+            cubeCam->SetFar(float(GetCubeMapResolution()));
+            cubeCam->Update();
             Pegasus::Camera::gCameraSystem->BindCamera(&(*cubeCam), Pegasus::Camera::CAM_OFFSCREEN_CONTEXT);
+            Pegasus::Camera::gCameraSystem->WindowUpdate(GetCubeMapResolution(), GetCubeMapResolution());
+            Render::SetViewport(mSkyCubeTargets[i]);
             Render::SetRenderTarget(mSkyCubeTargets[i]);
             mEnableStencil = false;
             Draw();

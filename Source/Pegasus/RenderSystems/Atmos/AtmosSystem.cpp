@@ -106,8 +106,8 @@ void AtmosSystem::GenerateAcosLut(Pegasus::Texture::TextureManager* textureManag
 void AtmosSystem::GenerateCubeCams()
 {
     static const Vec3 camDirs[] = {
-        Vec3(1.0f, 0.0f ,0.0f),
-        Vec3(-1.0f, 0.0f, 0.0f),
+        Vec3(-1.0f, 0.0f ,0.0f),
+        Vec3(1.0f, 0.0f, 0.0f),
         Vec3(0.0f, 1.0f, 0.0f),
         Vec3(0.0f, -1.0f, 0.0f),
         Vec3(0.0f, 0.0f, 1.0f),
@@ -117,11 +117,11 @@ void AtmosSystem::GenerateCubeCams()
     {
         Pegasus::Camera::CameraRef faceCam = PG_NEW(Pegasus::Memory::GetRenderAllocator(), -1, "Camera alloc", Pegasus::Alloc::PG_MEM_TEMP) Pegasus::Camera::Camera(Pegasus::Memory::GetRenderAllocator());
         faceCam->SetDir(camDirs[i]);
-        faceCam->SetNear(0.01f);
-        faceCam->SetFar(10000.0f);
+        faceCam->SetNear(256);
+        faceCam->SetFar(512);
+        faceCam->SetAspect(1.0f);
         faceCam->SetEnableOrtho(1);
         faceCam->Update();
-        faceCam->WindowUpdate(512,512);
         mCubeCams[i] = faceCam;
     }
 }

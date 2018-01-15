@@ -16,7 +16,7 @@ extern NearPlane = 0.05;
 
 gWorldCam = CreateCamera();
 gWorldCam.Far = 1000.0;
-gWorldCam.EnableOrtho = 0;
+gWorldCam.EnableOrtho = 1;
 terrainShader = LoadProgram("Programs/MarchingCubeProgram.pas");
 3dTerrain = CreateTerrain3d(15,15);
 3dTerrain.BlockHeight = 1;

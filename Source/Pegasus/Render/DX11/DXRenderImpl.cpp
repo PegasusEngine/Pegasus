@@ -1354,8 +1354,8 @@ bool Pegasus::Render::SetUniformVolume(Pegasus::Render::Uniform& u, const Volume
 
 bool Pegasus::Render::SetUniformCubeMap(Pegasus::Render::Uniform& u, CubeMapRef& cubeMap)
 {
-    PG_FAILSTR("Implement this function");
-    return false;
+    Pegasus::Render::DXTextureGPUData * cubeMapGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXTextureGPUData, cubeMap->GetInternalData());
+    return InternalSetShaderResource(u, cubeMapGpuData->mSrv);
 }
 
 // ---------------------------------------------------------------------------
