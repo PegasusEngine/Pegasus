@@ -12,6 +12,7 @@
 #include "Pegasus/RenderSystems/Atmos/AtmosSystem.h"
 #include "Pegasus/RenderSystems/Atmos/BasicSky.h"
 #include "Pegasus/RenderSystems/System/RenderSystemManager.h"
+#include "Pegasus/RenderSystems/System/LutLib.h"
 #include "Pegasus/Mesh/MeshManager.h"
 #include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/Core/Formats.h"
@@ -81,27 +82,10 @@ void AtmosSystem::Load(Core::IApplicationContext* appContext)
     mBilinearFilter = CreateSamplerState(bilinearFilterConfig);
 
     GenerateCubeCams();
+
+    mAcosLut = appContext->GetRenderSystemManager()->GetLutLib()->GetLut(LutLib::ACOS);
 }
 
-void AtmosSystem::GenerateAcosLut(Pegasus::Texture::TextureManager* textureManager)
-{
-    unsigned lutResolution = 512;
-    TextureConfiguration acosLutFmt(TextureConfiguration::TYPE_2D, FORMAT_R32_FLOAT, lutResolution, 1, 1, 1);
-    Pegasus::Texture::TextureGeneratorRef generatorRef = textureManager->CreateTextureGeneratorNode("TexCustomGenerator", acosLutFmt);
-    Pegasus::Texture::TexCustomGenerator* acosLutGenerator = (Pegasus::Texture::TexCustomGenerator*)&(*generatorRef);
-    TextureDataRef texData = acosLutGenerator->EditTextureData();
-    unsigned char* imgDataRaw = texData->GetLayerImageData(0);
-    float* imgData = reinterpret_cast<float*>(imgDataRaw);
-    for (unsigned i = 0; i < lutResolution; ++i)
-    {
-        float cosAlpha = (float(i) / float(lutResolution - 1)) * 2.0f - 1.0f;
-        imgData[i] = Math::Acos(cosAlpha);
-    }
-    mAcosLut = textureManager->CreateTextureNode(acosLutFmt);
-    mAcosLut->SetGeneratorInput(acosLutGenerator);
-    mAcosLut->GetUpdatedTextureData(); //uploat to gpu
-
-}
 
 void AtmosSystem::GenerateCubeCams()
 {

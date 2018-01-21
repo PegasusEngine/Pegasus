@@ -11,6 +11,7 @@
 
 #include "Pegasus/RenderSystems/System/RenderSystemManager.h"
 #include "Pegasus/RenderSystems/System/RenderSystem.h"
+#include "Pegasus/RenderSystems/System/LutLib.h"
 #include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/BlockScript/BlockScriptManager.h"
 #include "Pegasus/BlockScript/BlockLib.h"
@@ -62,6 +63,8 @@ void RenderSystemManager::AddInternalSystems()
 #if RENDER_SYSTEM_CONFIG_ENABLE_ATMOS
 	RegisterSystem(mAllocator, PG_NEW(mAllocator, -1, "Atmospherics System", Alloc::PG_MEM_PERM) AtmosSystem(mAllocator));
 #endif
+
+    mLutLib = PG_NEW(mAllocator, -1, "LutLib", Alloc::PG_MEM_PERM) LutLib(mAllocator);
 }
 
 void RenderSystemManager::RegisterSystem(Alloc::IAllocator* alloc, RenderSystem* system)
@@ -116,10 +119,14 @@ void RenderSystemManager::InitializeSystems(Core::IApplicationContext* appContex
         container.system->OnRegisterCustomMeshNodes(mAppContext->GetMeshManager());
         container.system->OnRegisterCustomTextureNodes(mAppContext->GetTextureManager());
     }
+
+    mLutLib->Load(appContext);
 }
 
 void RenderSystemManager::DestroyAllSystems()
 {
+    PG_DELETE(mAllocator, mLutLib);
+
     for (unsigned int i = 0; i < mSystems.GetSize(); ++i)
     {
         RenderSystemManager::RenderSystemContainer& container = mSystems[i];

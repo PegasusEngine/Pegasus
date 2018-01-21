@@ -73,11 +73,12 @@ private:
     void GenerateAcosLut(Pegasus::Texture::TextureManager* textureManager);
     void GenerateCubeCams();
 
+    Texture::TextureRef mAcosLut;
+
     Mesh::MeshRef mQuadMesh;
     Shader::ProgramLinkageRef mPrograms[PROGRAMS_COUNT];
     Render::RasterizerStateRef mSkyRasterState;
     Render::RasterizerStateRef mSkyRasterStateNoStencil;
-    Texture::TextureRef mAcosLut;
     Render::SamplerStateRef mBilinearFilter;
     Camera::CameraRef mCubeCams[Render::CUBE_FACE_COUNT];
 
