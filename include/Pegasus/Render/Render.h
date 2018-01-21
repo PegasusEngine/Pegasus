@@ -91,15 +91,17 @@ namespace Render
     {
         int mWidth;
         int mHeight;
+        int mMipCount;
+        int mMipStart;
         Core::Format mFormat;
     public:
         RenderTargetConfig()
-        : mWidth(-1), mHeight(-1), mFormat(Core::FORMAT_RGBA_8_UNORM)
+        : mWidth(-1), mHeight(-1), mFormat(Core::FORMAT_RGBA_8_UNORM), mMipCount(1), mMipStart(0)
         {
         }
 
         RenderTargetConfig(int width, int height)
-        : mWidth(width), mHeight(height)
+        : mWidth(width), mHeight(height), mFormat(Core::FORMAT_RGBA_8_UNORM), mMipCount(1)
         {
         }
     };
@@ -180,8 +182,9 @@ namespace Render
     {
         int mWidth;
         int mHeight;
+        int mMipCount;
         Core::Format mFormat;
-        CubeMapConfig() : mWidth(-1), mHeight(-1), mFormat(Core::FORMAT_RGBA_8_UNORM) {}
+        CubeMapConfig() : mWidth(-1), mHeight(-1), mFormat(Core::FORMAT_RGBA_8_UNORM), mMipCount(1) {}
     };
 
     //! Structure handle wtih the respective 3d texture configurations
@@ -519,6 +522,14 @@ namespace Render
     //! \param the slice in z to use as a render target
     //! \return the render target reference
     RenderTargetRef CreateRenderTargetFromVolumeTexture(int slice, VolumeTextureRef& volumeTexture);
+
+    //! Generates mips for render target
+    //! \param renderTarget
+    void GenerateMips(RenderTargetRef& renderTarget);
+
+    //! Generates mips for cube map
+    //! \param cubeMap
+    void GenerateMips(CubeMapRef& renderTarget);
 
     //! Creates a rasterizer state given a configuration.
     //! \param config the configuration structure

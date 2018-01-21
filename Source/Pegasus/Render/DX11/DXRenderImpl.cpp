@@ -993,6 +993,41 @@ Pegasus::Render::BasicResource<Pegasus::Render::BufferConfig>::~BasicResource()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+/////////////   GENERIC MIP GENERATION                  ///////////////////////
+///////////////////////////////////////////////////////////////////////////////
+void Pegasus::Render::GenerateMips(Pegasus::Render::RenderTargetRef& renderTarget)
+{
+    ID3D11DeviceContext * context;
+    ID3D11Device * device;
+    Pegasus::Render::GetDeviceAndContext(&device, &context);
+    Pegasus::Render::DXRenderTargetGPUData * gpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXRenderTargetGPUData, renderTarget->GetInternalData());
+    if (gpuData->mTextureView.mSrv)
+    {
+        context->GenerateMips(gpuData->mTextureView.mSrv);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Cannot call GenerateMips on render target resource.");
+    }
+}
+
+void Pegasus::Render::GenerateMips(Pegasus::Render::CubeMapRef& cubeMap)
+{
+    ID3D11DeviceContext * context;
+    ID3D11Device * device;
+    Pegasus::Render::GetDeviceAndContext(&device, &context);
+    Pegasus::Render::DXTextureGPUData * gpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXTextureGPUData, cubeMap->GetInternalData());
+    if (gpuData->mSrv)
+    {
+        context->GenerateMips(gpuData->mSrv);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Cannot call GenerateMips on cube map resource.");
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 /////////////   CREATERASTERSTATE IMPLEMENTATION      ///////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 

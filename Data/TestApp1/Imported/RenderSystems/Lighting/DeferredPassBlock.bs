@@ -52,7 +52,7 @@ DeferredPassRendererResources CreateDeferredPassResources()
 	rs.applyLightsSkyCubeMapUniform = GetUniformLocation(rs.applyLightsCs, "SkyCube");
 	rs.applyLightsDepthBuffer     = GetUniformLocation(rs.applyLightsCs, "DepthTexture");
 	rs.applyLightsStencilBuffer   = GetUniformLocation(rs.applyLightsCs, "StencilTexture");
-	rs.applyLightsBilinearSampler = CreateSamplerState(SamplerStateConfig(BILINEAR,CLAMP,CLAMP,CLAMP,0,0,0,0,float4(0.0,0.0,0.0,0.0)));
+	rs.applyLightsBilinearSampler = CreateSamplerState(SamplerStateConfig(BILINEAR,CLAMP,CLAMP,CLAMP,0,0,10,0,float4(0.0,0.0,0.0,0.0)));
 	return rs;
 }
 

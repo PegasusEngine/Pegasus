@@ -67,6 +67,7 @@ BasicSky::BasicSky(Alloc::IAllocator* allocator)
     cmConfig.mWidth = GetCubeMapResolution();
     cmConfig.mHeight = GetCubeMapResolution();
     cmConfig.mFormat = Core::FORMAT_RGBA_16_FLOAT;
+    cmConfig.mMipCount = Math::Log2((Pegasus::Math::PUInt32)GetCubeMapResolution()) + 1;
     mSkyCubeMap = CreateCubeMap(cmConfig);
     for (unsigned int i = 0; i < Render::CUBE_FACE_COUNT; ++i)
     {
@@ -149,6 +150,9 @@ void BasicSky::DrawUpdate()
             Draw();
             mEnableStencil = true;
         }
+
+        GenerateMips(mSkyCubeMap);
+
         Pegasus::Camera::gCameraSystem->BindCamera(nullptr, Pegasus::Camera::CAM_OFFSCREEN_CONTEXT);
         Pegasus::Camera::gCameraSystem->UseCameraContext(Pegasus::Camera::CAM_WORLD_CONTEXT);
         ValidatePropertyGrid();

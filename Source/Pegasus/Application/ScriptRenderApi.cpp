@@ -125,9 +125,12 @@ void Render_CreateRenderTargetFromCubeMap(FunCallbackContext& context);
 void Render_CreateRasterizerState(FunCallbackContext& context);
 void Render_CreateBlendingState(FunCallbackContext& context);
 void Render_CreateSamplerState(FunCallbackContext& context);
+void Render_GenerateMipsRT(FunCallbackContext& context);
+void Render_GenerateMipsCM(FunCallbackContext& context);
 void Render_BeginMarker(FunCallbackContext& context);
 void Render_EndMarker(FunCallbackContext& context);
 void Render_CreateSimpleRasterConfig(FunCallbackContext& context);
+void Render_CreateSimpleRenderTargetConfig(FunCallbackContext& context);
 
 template<class T>
 void Render_SetComputeOutputs(FunCallbackContext& context);
@@ -470,13 +473,13 @@ static void RegisterRenderStructs(BlockLib* lib)
         }, 
         {
             "RenderTargetConfig",
-            {"int"  , "int"   , "Format", nullptr },
-            {"Width", "Height", "format",  nullptr }
+            {"int"  , "int"   ,  "int", "int", "Format", nullptr },
+            {"Width", "Height",  "mipCount", "mipStart", "format", nullptr }
         },
         {
             "CubeMapConfig",
-            {"int", "int", "Format" },
-            {"Width", "Height", "format" }
+            {"int", "int", "int", "Format" },
+            {"Width", "Height", "mipCount", "format" }
         },
         {
             "DepthStencilConfig",
@@ -1145,6 +1148,20 @@ static void RegisterFunctions(BlockLib* lib)
             Render_CreateSamplerState
         },
         {
+            "GenerateMips",
+            "int",
+            { "RenderTarget", nullptr },
+            { "rt", nullptr },
+            Render_GenerateMipsRT
+        },
+        {
+            "GenerateMips",
+            "int",
+            { "CubeMap", nullptr },
+            { "cm", nullptr },
+            Render_GenerateMipsCM
+        },
+        {
             "SetComputeOutput",
             "int",
             {"RenderTarget", "int", nullptr},
@@ -1185,6 +1202,13 @@ static void RegisterFunctions(BlockLib* lib)
             { "PegasusCullMode", "PegasusRasterFunc", nullptr },
             { "CullMode", "StencilFunc", nullptr },
             Render_CreateSimpleRasterConfig
+        },
+        {
+            "RenderTargetConfig",
+            "RenderTargetConfig",
+            { "int", "int", "Format", nullptr },
+            { "width", "height", "format", nullptr },
+            Render_CreateSimpleRenderTargetConfig
         }
     };
 
@@ -2220,6 +2244,41 @@ void Render_CreateSamplerState(FunCallbackContext& context)
     stream.SubmitReturn( RenderCollection::AddResource<Render::SamplerState>(collection, samplerState) );
 }
 
+void Render_GenerateMipsRT(FunCallbackContext& context)
+{
+    FunParamStream stream(context);
+    BsVmState* state = context.GetVmState();
+    RenderCollection* collection = GetContainer(state);
+    CHECK_PERMISSIONS(collection, "GenerateMips", PERMISSIONS_RENDER_API_CALL);
+    RenderCollection::CollectionHandle rtHandle = stream.NextArgument<RenderCollection::CollectionHandle>();
+    if (rtHandle != RenderCollection::INVALID_HANDLE)
+    {
+        Render::RenderTargetRef rt = RenderCollection::GetResource<Render::RenderTarget>(collection, rtHandle);
+        Render::GenerateMips(rt);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Trying to generate mips in invalid resource");
+    }
+}
+
+void Render_GenerateMipsCM(FunCallbackContext& context)
+{
+    FunParamStream stream(context);
+    BsVmState* state = context.GetVmState();
+    RenderCollection* collection = GetContainer(state);
+    CHECK_PERMISSIONS(collection, "GenerateMips", PERMISSIONS_RENDER_API_CALL);
+    RenderCollection::CollectionHandle cmHandle = stream.NextArgument<RenderCollection::CollectionHandle>();
+    if (cmHandle != RenderCollection::INVALID_HANDLE)
+    {
+        Render::CubeMapRef cm = RenderCollection::GetResource<Render::CubeMap>(collection, cmHandle);
+        Render::GenerateMips(cm);
+    }
+    else
+    {
+        PG_LOG('ERR_', "Trying to generate mips in invalid resource");
+    }
+}
 
 bool PropertyGridPropertyCallback(const PropertyGrid::PropertyAccessor* accessor, const Pegasus::BlockScript::PropertyCallbackContext& context)
 {
@@ -2380,4 +2439,15 @@ void Render_CreateSimpleRasterConfig(FunCallbackContext& context)
     *outputConfig = Render::RasterizerConfig();//default initialize
     outputConfig->mCullMode = stream.NextArgument<Render::RasterizerConfig::PegasusCullMode>();
     outputConfig->mDepthFunc = stream.NextArgument<Render::RasterizerConfig::PegasusRasterFunc>();
+}
+
+void Render_CreateSimpleRenderTargetConfig(FunCallbackContext& context)
+{
+    FunParamStream stream(context);
+    PG_ASSERT(sizeof(Render::RenderTargetConfig) == context.GetOutputBufferSize());
+    Render::RenderTargetConfig* outputConfig = reinterpret_cast<Render::RenderTargetConfig*>(context.GetRawOutputBuffer());
+    *outputConfig = Render::RenderTargetConfig();//default initialize
+    outputConfig->mWidth = stream.NextArgument<int>();
+    outputConfig->mHeight = stream.NextArgument<int>();
+    outputConfig->mFormat = stream.NextArgument<Core::Format>();
 }
