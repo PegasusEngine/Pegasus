@@ -77,7 +77,7 @@ void main(uint3 dti : SV_DispatchThreadId)
             /*WorldNormal debug*///float4(matInfo.worldNormal*0.5 + 0.5,1.0);
 			/*WorldPos debug*///OutputBuffer[coords] = float4(worldPos.xyz*0.01, 1.0);
 			/*Color debug*///OutputBuffer[coords] = float4(matInfo.color, 1.0);	
-			specular += 0.5*matInfo.smoothness*SkyCube.SampleLevel(bilinearSampler, reflect(gEyeDir.xyz,matInfo.worldNormal), 0).rgb;			
+			specular += matInfo.reflectance*SkyCube.SampleLevel(bilinearSampler, reflect(gEyeDir.xyz,matInfo.worldNormal), 0).rgb;			
 		
            	hdrOutput = float4(matInfo.color*diffuse.xyz+specular,1.0);//float4(matInfo.color*diffuse + specular,1.0);
 	

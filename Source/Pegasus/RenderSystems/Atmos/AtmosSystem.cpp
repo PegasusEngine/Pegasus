@@ -122,6 +122,9 @@ void AtmosSystem::GenerateCubeCams()
         faceCam->SetAspect(1.0f);
         faceCam->SetEnableOrtho(1);
         faceCam->Update();
+#if PEGASUS_ENABLE_PROXIES
+        faceCam->SetShowCameraOnDebugMode(false);
+#endif
         mCubeCams[i] = faceCam;
     }
 }
