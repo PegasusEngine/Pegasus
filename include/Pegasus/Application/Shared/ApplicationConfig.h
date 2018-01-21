@@ -29,7 +29,7 @@ enum ComponentType
     COMPONENT_GRID                     ,//! Renders an xyz grid reticle.                       
     COMPONENT_DEBUG_CAMERA             ,//! Renders debug boxes for cameras.                       
     COMPONENT_TEXTURE_VIEW             ,//! Renders 2d texture view.                       
-    COMPONENT_TERRAIN3D                ,//! Debug rendering of 3d terrain.     
+    COMPONENT_VOLUMES                  ,//! Debug rendering of volumes.     
     COMPONENT_LIGHTING_DEBUG           ,//! Debug rendering of lighting.     
     COMPONENT_TRANSLATION_SELECTION    ,//! Renders the icon / UI controller for translation    
     COMPONENT_ROTATION_SELECTION       ,//! Renders the icon / UI controller for rotation.      
@@ -45,7 +45,7 @@ const ComponentTypeFlags  COMPONENT_FLAG_WORLD                = 1 << COMPONENT_W
 const ComponentTypeFlags  COMPONENT_FLAG_GRID                 = 1 << COMPONENT_GRID;//! Renders an xyz grid reticle.                       
 const ComponentTypeFlags  COMPONENT_FLAG_DEBUG_CAMERA         = 1 << COMPONENT_DEBUG_CAMERA;//! Renders debug camera boxes.                       
 const ComponentTypeFlags  COMPONENT_FLAG_TEXTURE_VIEW         = 1 << COMPONENT_TEXTURE_VIEW;//! Renders a 2d texture view.                       
-const ComponentTypeFlags  COMPONENT_FLAG_TERRAIN3D            = 1 << COMPONENT_TERRAIN3D;//! Renders a box around a selection on the screen.     
+const ComponentTypeFlags  COMPONENT_FLAG_VOLUMES              = 1 << COMPONENT_VOLUMES;//! Renders a box around a selection on the screen.     
 const ComponentTypeFlags  COMPONENT_FLAG_LIGHTING_DEBUG       = 1 << COMPONENT_LIGHTING_DEBUG;//! Renders debug lights into the scene.     
 const ComponentTypeFlags  COMPONENT_FLAG_TRANSLATION_SELECTION= 1 << COMPONENT_TRANSLATION_SELECTION;//! Renders the icon / UI controller for translation    
 const ComponentTypeFlags  COMPONENT_FLAG_ROTATION_SELECTION   = 1 << COMPONENT_ROTATION_SELECTION;//! Renders the icon / UI controller for rotation.      

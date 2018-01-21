@@ -40,6 +40,7 @@ BEGIN_IMPLEMENT_PROPERTIES(Camera)
     IMPLEMENT_PROPERTY(Camera, Fov)
     IMPLEMENT_PROPERTY(Camera, Aspect)
     IMPLEMENT_PROPERTY(Camera, EnableTarget)
+    IMPLEMENT_PROPERTY(Camera, EnableOrtho)
 END_IMPLEMENT_PROPERTIES(Camera)
 
 //----------------------------------------------------------------------------------------
@@ -58,6 +59,7 @@ Camera::Camera(Alloc::IAllocator* allocator)
         INIT_PROPERTY(Fov)
         INIT_PROPERTY(Aspect)
         INIT_PROPERTY(EnableTarget)
+        INIT_PROPERTY(EnableOrtho)
     END_INIT_PROPERTIES()
 #if PEGASUS_ENABLE_PROXIES
     sCameraInstances.PushEmpty() = this;
@@ -172,7 +174,18 @@ bool Camera::WindowUpdate(unsigned int width, unsigned int height)
     if (Math::Abs(requestedAspect - mViewportAspect) > 0.001f || mProjDirty)
     {
         mViewportAspect = requestedAspect;
-        Math::SetProjection(mGpuData.proj, GetFov(), mViewportAspect, GetNear(), GetFar());
+        if (!GetEnableOrtho())
+        {
+            Math::SetProjection(mGpuData.proj, GetFov(), mViewportAspect, GetNear(), GetFar());
+        }
+        else
+        {
+            float aspectHeight = mViewportAspect * (float)width;
+            float hHeight = 0.5f * (float)aspectHeight;
+            float hWidth = 0.5f*(float)height;
+            Math::SetProjection(mGpuData.proj, -hWidth, hWidth, hHeight, -hHeight, GetNear(), GetFar(), /*Ortho*/true);
+        }
+
         Math::Mult44_44(mGpuData.viewProj, mGpuData.proj, mGpuData.view);
         Math::Inverse(mGpuData.invViewProj, mGpuData.viewProj);
 
@@ -198,7 +211,6 @@ bool Camera::WindowUpdate(unsigned int width, unsigned int height)
             p.y = pointOut.y;
             p.z = pointOut.z;
         }
-    
         //plane normal computation, using triangles in correct order
         static const PointId sNormalOrder[MAX_PLANE_COUNT][3] = {
             {N_L_B, N_R_B, N_R_T}, //NEAR             
@@ -218,8 +230,8 @@ bool Camera::WindowUpdate(unsigned int width, unsigned int height)
             plane.SetNormal(normVec);
             plane.SetOriginDistanceWithPoint(mFrustum.points[sNormalOrder[p][0]]);
         }
-        
         mProjDirty = false;
+
         return true;
     }
     return false;

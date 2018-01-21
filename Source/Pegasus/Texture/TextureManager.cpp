@@ -15,6 +15,7 @@
 #include "Pegasus/Texture/Generator/ConstantColorGenerator.h"
 #include "Pegasus/Texture/Generator/GradientGenerator.h"
 #include "Pegasus/Texture/Generator/PixelsGenerator.h"
+#include "Pegasus/Texture/Generator/TexCustomGenerator.h"
 
 #include "Pegasus/Texture/Operator/AddOperator.h"
 
@@ -157,6 +158,7 @@ void TextureManager::RegisterAllTextureNodes()
     REGISTER_TEXTURE_NODE(ConstantColorGenerator);
     REGISTER_TEXTURE_NODE(GradientGenerator);
     REGISTER_TEXTURE_NODE(PixelsGenerator);
+    REGISTER_TEXTURE_NODE(TexCustomGenerator);
 
     // Register the operator nodes
     // IMPORTANT! Add here every texture operator node that is created

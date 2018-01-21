@@ -383,12 +383,34 @@ PFloat32 Determinant(Mat33In mat)
            + mat.m13 * (mat.m21 * mat.m32 - mat.m31 * mat.m22);
 }
 
+template <unsigned N, class T> void GenericMinor(unsigned row, unsigned column, const T* M, T* result)
+{
+    unsigned tr = 0;
+    for (unsigned i = 0; i < N; ++i)
+    {
+        unsigned tc = 0;
+        if (i == row) continue;
+        for (unsigned j = 0; j < N; ++j)
+        {
+            if (j == column) continue;
+            result[tr*(N-1) + tc++] = M[i*N + j];
+        }
+        ++tr;
+    }
+}
+
 PFloat32 Determinant(Mat44In mat)
 {
-    //! \todo Implement the determinant of a 4x4 matrix
-    /***********/
-    //N3D_TODO
-    /****/return 0.0f;
+    PFloat32 det = 0.0f;
+    for (unsigned i = 0; i < 4; ++i)
+    {
+        PFloat32 sign = (i % 2) == 0 ? 1.0f : -1.0f;
+        PFloat32 v = sign * mat.m[i];
+        Mat33 tmp;
+        GenericMinor<4, PFloat32>(0, i, mat.m, tmp.m);
+        det += Determinant(tmp) * v;
+    }    
+    return det;
 }
 
 //----------------------------------------------------------------------------------------
@@ -420,6 +442,7 @@ void InverseHomogeneous(Mat44InOut dst, Mat44In mat)
 
 //----------------------------------------------------------------------------------------
 //-- generic template matrix multiplication
+
 template <unsigned N, class T> void GenericAddRow(int row, T * r1, T * r2, int resultRows)
 {
     for (int i = 0 ; i < N; ++i)
@@ -453,58 +476,34 @@ template<unsigned N, class T> void GenericSwapRow(T * M ,int i, int j)
     }
 }
 
-template <unsigned N, class T> void GenericInverse(T * M, T * result)
+template <unsigned N, class T, class M, class NextM> void GenericInverse(const M& input, M& result)
 {
-    for (int i = 0; i < N; ++i)
-    {
-        for (int j = 0; j < N; ++j) result[N*i + j] = i == j ? static_cast<T>(1) : static_cast<T>(0);
-    }
-    for (int i = 0; i < N; ++i)
-    {
-        //find max row
-        for (int k = i+1; k < N; ++k)
-        {
-            if (Abs(M[N*i + i]) < Abs(M[N*k + i]))
-            {
-                GenericSwapRow<N,T>(M,i,k);
-                GenericSwapRow<N,T>(result,i,k);
-            } 
-        }
-        //zero out columns
-        for (int j = i + 1; j < N; ++j)
-        {
-            T d = M[N*i + i];
-            if (Abs(M[N*j + i]) < 0.00001f)continue;
-            T factor = -d / M[N*j + i];
-            GenericMulRow<N,T>(M,result,j,factor);
-            GenericAddRow<N,T>(i,M,result,j);
-        }
-    }
+    NextM tmp;
+    T inputDet = Determinant(input);
 
-    for (int i = 0; i < N; ++i)
+    for (unsigned i = 0; i < N; ++i)
     {
-        for (int j = i + 1; j < N; ++j)
+        for (unsigned j = 0; j < N; ++j)
         {
-            if (Abs(M[N*i + j]) < 0.00001f) continue;
-            T factor = -M[N*i + j] / M[N*j + j];
-            GenericMulRow<N,T>(M,result,j,factor);
-            GenericAddRow<N,T>(j,M,result,i);
-        } 
-        GenericMulRow<N,T>(M,result,i,1.0f/M[N*i + i]);
+            GenericMinor<N, T>(i, j, input.m, tmp.m);
+            T d = Determinant(tmp);
+            float sign = !( (j + (i % 2)) % 2 ) ? 1.0f : -1.0f;
+            result.m[N*j + i] = sign * d / inputDet;
+        }
     }
 }
 
 void Inverse(Mat44InOut dst, Mat44In mat)
 {
     Mat44 tmp = mat;
-    GenericInverse<4, PFloat32>(tmp.m,dst.m);
+    GenericInverse<4, PFloat32, Mat44, Mat33>(tmp,dst);
 }
 
 
 void Inverse(Mat33InOut dst, Mat33In mat)
 {
     Mat33 tmp = mat;
-    GenericInverse<3, PFloat32>(tmp.m,dst.m);
+    GenericInverse<3, PFloat32, Mat33, Mat22>(tmp,dst);
 }
 
 //----------------------------------------------------------------------------------------
@@ -705,17 +704,38 @@ void SetProjection(
     const PFloat32& t,
     const PFloat32& b,
     const PFloat32& n,
-    const PFloat32& f
+    const PFloat32& f,
+    bool isOrtho
     )
 {
-    const PFloat32 two_n = 2.0f*n;
+    const PFloat32 projNum = isOrtho ? 2.0f : 2.0f*n;
     const PFloat32 r_m_l = r - l;
     const PFloat32 t_m_b = t - b;
     const PFloat32 f_m_n = f - n;
-    mat.m11 =  (two_n)/(r_m_l); mat.m12 = 0.0f;              mat.m13 = (r+l)/(r_m_l);  mat.m14=0.0f; 
-    mat.m21 =  0.0f;            mat.m22 = (two_n)/(t_m_b);   mat.m23 = (t+b)/(t_m_b);  mat.m24=0.0f;
-    mat.m31 =  0.0f;            mat.m32 = 0.0f;              mat.m33 = -(f+n)/(f_m_n); mat.m34=-(two_n*f)/(f_m_n);
-    mat.m41 =  0.0f;            mat.m42 = 0.0f;              mat.m43 = -1.0f;          mat.m44=0.0f;
+    mat.m11 =  (projNum)/(r_m_l); mat.m12 = 0.0f;              mat.m13 = (r+l)/(r_m_l);  mat.m14=0.0f;
+    mat.m21 =  0.0f;            mat.m22 = (projNum)/(t_m_b);   mat.m23 = (t+b)/(t_m_b);  mat.m24=0.0f;
+    if (isOrtho)
+    {
+#if PEGASUS_GAPI_DX
+    //domain goes from 0 to 1 on Z
+        mat.m31 =  0.0f;            mat.m32 = 0.0f;              mat.m33 = -1.0f/(f_m_n); mat.m34=-n/(f_m_n);
+#else
+    //domain goes from -1 to 1 on Z
+        mat.m31 =  0.0f;            mat.m32 = 0.0f;              mat.m33 = -2.0f/(f_m_n); mat.m34=-(f+n)/(f_m_n);
+#endif
+        mat.m41 =  0.0f;            mat.m42 = 0.0f;              mat.m43 = 0.0f;          mat.m44=1.0f;
+    }
+    else
+    {
+#if PEGASUS_GAPI_DX
+    //domain goes from 0 to 1 on Z
+        mat.m31 =  0.0f;            mat.m32 = 0.0f;              mat.m33 = -(f)/(f_m_n); mat.m34=-(n*f)/(f_m_n);
+#else
+    //domain goes from -1 to 1 on Z
+        mat.m31 =  0.0f;            mat.m32 = 0.0f;              mat.m33 = -(f+n)/(f_m_n); mat.m34=-(two_n*f)/(f_m_n);
+#endif
+        mat.m41 =  0.0f;            mat.m42 = 0.0f;              mat.m43 = -1.0f;          mat.m44=0.0f;
+    }
 }
 
 //----------------------------------------------------------------------------------------
@@ -730,7 +750,7 @@ void SetProjection(
 {
     const PFloat32 r = n*Tan(0.5f*fov);
     const PFloat32 t = aspect * r;
-    SetProjection(mat,-r,r,t,-t,n,f);
+    SetProjection(mat,-r,r,t,-t,n,f,/*not ortho*/false);
 }
 
 //----------------------------------------------------------------------------------------

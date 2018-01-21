@@ -92,6 +92,9 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Shared\TextureEventDefs.h">
       <Filter>Include\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\Texture\Generator\TexCustomGenerator.h">
+      <Filter>Include\Generator</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Texture.cpp">
@@ -132,6 +135,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Proxy\TextureNodeProxy.cpp">
       <Filter>Source\Proxy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Generator\TexCustomGenerator.cpp">
+      <Filter>Source\Generator</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

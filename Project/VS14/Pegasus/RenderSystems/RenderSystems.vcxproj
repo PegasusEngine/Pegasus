@@ -28,18 +28,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\2dTerrain\2dTerrainSystem.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\3dTerrain\3dTerrainSystem.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\3dTerrain\CaseTable.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\3dTerrain\MarchingCubeMeshGenerator.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\3dTerrain\Terrain3d.h" />
-    <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\3dTerrain\Terrain3dGenerator.h" />
-    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\AtmosClouds.h" />
-    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\AtmosLookUpGenerator.h" />
-    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\AtmosLookUpTable.h" />
-    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\Atmosphere.h" />
     <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\AtmosSystem.h" />
-    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\AtmosVolumes.h" />
-    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\MarchingCubeMeshGenerator.h" />
+    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\BasicSky.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\Camera\Camera.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\Camera\CameraSystem.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\Config.h" />
@@ -48,21 +38,27 @@
     <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Lighting\LightRig.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\System\RenderSystem.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\System\RenderSystemManager.h" />
+    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Volumes\CaseTable.h" />
+    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Volumes\MarchingCubeMeshGenerator.h" />
+    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Volumes\Terrain3d.h" />
+    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Volumes\Terrain3dGenerator.h" />
+    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Volumes\VolumesSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\2dTerrain\2dTerrainSystem.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\3dTerrain\3dTerrainSystem.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\3dTerrain\CaseTable.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\3dTerrain\MarchingCubeMeshGenerator.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\3dTerrain\Terrain3d.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\3dTerrain\Terrain3dGenerator.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Atmos\AtmosSystem.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Atmos\BasicSky.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Camera\Camera.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Camera\CameraSystem.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Grass\GrassSystem.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Lighting\LightingSystem.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Lighting\LightRig.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\System\RenderSystemManager.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Volumes\CaseTable.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Volumes\MarchingCubeMeshGenerator.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Volumes\Terrain3d.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Volumes\Terrain3dGenerator.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Volumes\VolumesSystem.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{765509B9-C3BC-4983-8813-D397D1340231}</ProjectGuid>

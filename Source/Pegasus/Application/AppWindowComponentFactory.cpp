@@ -34,8 +34,8 @@ AppWindowComponentFactory::AppWindowComponentFactory(Alloc::IAllocator* allocato
     #if RENDER_SYSTEM_CONFIG_ENABLE_CAMERA
         mComponentInstances[COMPONENT_DEBUG_CAMERA] = PG_NEW(allocator, -1, "DebugCameraComponent", Pegasus::Alloc::PG_MEM_PERM) CameraDebugComponent(allocator);
     #endif
-    #if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
-        mComponentInstances[COMPONENT_TERRAIN3D] = PG_NEW(allocator, -1, "Terrain3dDebugComponent", Pegasus::Alloc::PG_MEM_PERM) Terrain3dDebugComponent(allocator);
+    #if RENDER_SYSTEM_CONFIG_ENABLE_VOLUMES
+        mComponentInstances[COMPONENT_VOLUMES] = PG_NEW(allocator, -1, "Terrain3dDebugComponent", Pegasus::Alloc::PG_MEM_PERM) Terrain3dDebugComponent(allocator);
     #endif
     #if RENDER_SYSTEM_CONFIG_ENABLE_LIGHTING
         mComponentInstances[COMPONENT_LIGHTING_DEBUG] = PG_NEW(allocator, -1, "LightingDebug", Pegasus::Alloc::PG_MEM_PERM) LightingDebugComponent(allocator);

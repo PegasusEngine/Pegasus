@@ -49,7 +49,7 @@ void ViewportDockWidget::SetupUi()
     QToolBar * menuBar = CreateMenu(mainWidget);
 
     // Create the viewport widget that will contain the renderer
-    mViewportWidget = new ViewportWidget(mainWidget, Pegasus::App::COMPONENT_FLAG_GRID | Pegasus::App::COMPONENT_FLAG_WORLD | Pegasus::App::COMPONENT_FLAG_DEBUG_CAMERA | Pegasus::App::COMPONENT_FLAG_TERRAIN3D | Pegasus::App::COMPONENT_FLAG_LIGHTING_DEBUG);
+    mViewportWidget = new ViewportWidget(mainWidget, Pegasus::App::COMPONENT_FLAG_GRID | Pegasus::App::COMPONENT_FLAG_WORLD | Pegasus::App::COMPONENT_FLAG_DEBUG_CAMERA | Pegasus::App::COMPONENT_FLAG_VOLUMES | Pegasus::App::COMPONENT_FLAG_LIGHTING_DEBUG);
     connect(mViewportWidget, SIGNAL(OnWindowProxyReady()), this, SLOT(OnWindowProxyReady()));
 
     // Set the elements of the layout
@@ -214,14 +214,14 @@ QToolBar * ViewportDockWidget::CreateMenu(QWidget * mainWidget)
     terrainButton->setCheckable(true);
     terrainButton->setChecked(false);
     terrainButton->setToolTip(tr("3d terrain: debug geometry of terrain. Visualizes marching cube grid and density as dots in the corners."));
-    RegisterPropertyButton(terrainButton, "EnableDebugGeometry", Pegasus::App::COMPONENT_TERRAIN3D);
+    RegisterPropertyButton(terrainButton, "EnableDebugGeometry", Pegasus::App::COMPONENT_VOLUMES);
 
     QIcon terrainCamCullDebugIcon(":MiscViews/terrain3dCamCullDebug.png");
     QPushButton* terrainCamCullButton = new QPushButton(terrainCamCullDebugIcon,tr(""),mainWidget);
     terrainCamCullButton->setCheckable(true);
     terrainCamCullButton->setChecked(false);
     terrainCamCullButton->setToolTip(tr("3d terrain: freeze camera cull of 3d terrain voxels."));
-    RegisterPropertyButton(terrainCamCullButton, "EnableDebugCameraCull", Pegasus::App::COMPONENT_TERRAIN3D);
+    RegisterPropertyButton(terrainCamCullButton, "EnableDebugCameraCull", Pegasus::App::COMPONENT_VOLUMES);
 
     //special buttons (buttons that deal with systems exclusively on the editor side)
     QIcon spinButtonIcon(":MiscViews/SpinIcon.png");

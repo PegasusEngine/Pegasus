@@ -607,6 +607,11 @@ void Pegasus::Render::SetClearColorValue(const Pegasus::Math::ColorRGBA& color)
 ///////////////////////////////////////////////////////////////////////////////
 void Pegasus::Render::SetRasterizerState(const RasterizerStateRef& state)
 {
+    SetRasterizerState(state, 0xffffffff);
+}
+
+void Pegasus::Render::SetRasterizerState(const RasterizerStateRef& state, unsigned int stencilRefValue)
+{
     ID3D11DeviceContext * context;
     ID3D11Device * device;
     Pegasus::Render::GetDeviceAndContext(&device, &context);
@@ -615,9 +620,7 @@ void Pegasus::Render::SetRasterizerState(const RasterizerStateRef& state)
     ID3D11RasterizerState* r = static_cast<ID3D11RasterizerState*>(state->GetInternalData());
     ID3D11DepthStencilState * d = static_cast<ID3D11DepthStencilState*>(state->GetInternalDataAux());
     context->RSSetState(r);
-    context->OMSetDepthStencilState(d, 0xffffffff);
-
-    
+    context->OMSetDepthStencilState(d, stencilRefValue);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1351,8 +1354,8 @@ bool Pegasus::Render::SetUniformVolume(Pegasus::Render::Uniform& u, const Volume
 
 bool Pegasus::Render::SetUniformCubeMap(Pegasus::Render::Uniform& u, CubeMapRef& cubeMap)
 {
-    //todo: implement
-    return false;
+    Pegasus::Render::DXTextureGPUData * cubeMapGpuData = PEGASUS_GRAPH_GPUDATA_SAFECAST(Pegasus::Render::DXTextureGPUData, cubeMap->GetInternalData());
+    return InternalSetShaderResource(u, cubeMapGpuData->mSrv);
 }
 
 // ---------------------------------------------------------------------------

@@ -30,6 +30,7 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Generator\ConstantColorGenerator.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Generator\GradientGenerator.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Generator\PixelsGenerator.h" />
+    <ClInclude Include="..\..\..\..\include\Pegasus\Texture\Generator\TexCustomGenerator.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\ITextureFactory.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Operator\AddOperator.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Texture\Proxy\TextureConfigurationProxy.h" />
@@ -51,6 +52,7 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Generator\ConstantColorGenerator.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Generator\GradientGenerator.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Generator\PixelsGenerator.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Generator\TexCustomGenerator.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Operator\AddOperator.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Proxy\TextureConfigurationProxy.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Texture\Proxy\TextureManagerProxy.cpp" />

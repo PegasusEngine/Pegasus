@@ -20,7 +20,7 @@
 #include "Pegasus/Allocator/IAllocator.h"
 #include "Pegasus/RenderSystems/Grass/GrassSystem.h"
 #include "Pegasus/RenderSystems/2dTerrain/2dTerrainSystem.h"
-#include "Pegasus/RenderSystems/3dTerrain/3dTerrainSystem.h"
+#include "Pegasus/RenderSystems/Volumes/VolumesSystem.h"
 #include "Pegasus/RenderSystems/Lighting/LightingSystem.h"
 #include "Pegasus/RenderSystems/Camera/CameraSystem.h"
 #include "Pegasus/RenderSystems/Atmos/AtmosSystem.h"
@@ -51,8 +51,8 @@ void RenderSystemManager::AddInternalSystems()
     //RegisterSystem(mAllocator, PG_NEW(mAllocator, -1, "2d Terrain System", Alloc::PG_MEM_PERM) 2dTerrainSystem(mAllocator));
 #endif
     
-#if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
-    RegisterSystem(mAllocator, PG_NEW(mAllocator, -1, "3d Terrain System", Alloc::PG_MEM_PERM) Terrain3dSystem(mAllocator));
+#if RENDER_SYSTEM_CONFIG_ENABLE_VOLUMES
+    RegisterSystem(mAllocator, PG_NEW(mAllocator, -1, "3d Terrain System", Alloc::PG_MEM_PERM) VolumesSystem(mAllocator));
 #endif
 
 #if RENDER_SYSTEM_CONFIG_ENABLE_LIGHTING

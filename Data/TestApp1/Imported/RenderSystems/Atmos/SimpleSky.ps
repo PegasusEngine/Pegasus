@@ -1,0 +1,26 @@
+#include "RenderSystems/Math.h"
+#include "RenderSystems/Camera/Common.h"
+#include "RenderSystems/Atmos/BaseCommon.h"
+
+SamplerState bilinearSampler : s0;
+Texture2D<float> acosLutTex;
+
+float acosLut(float x)
+{
+	return acosLutTex.SampleLevel(bilinearSampler, x * 0.5 + 0.5, 0);
+}
+
+float3 skyGrad(float angle)
+{
+	float3 tipColor = 9.0*float3(0.1,0.2,0.7);
+	float3 horizonColor = 7.0*float3(0.8,0.8,0.9);
+	return lerp(tipColor, horizonColor, angle*angle*angle);
+}
+void main(out float4 outCol : SV_Target, in BaseSkyV2P v2p)
+{
+	float3 worldRayDir = normalize(v2p.worldRayDir);
+	float angle = saturate(acosLut(worldRayDir.y)/C_H_PI);
+	float horizon = (atan2(worldRayDir.x,worldRayDir.z)/C_PI)*0.5 + 0.5;
+
+	outCol = float4(skyGrad(angle),1);
+}

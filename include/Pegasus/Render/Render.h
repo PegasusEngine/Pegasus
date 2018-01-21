@@ -65,7 +65,7 @@ namespace Render
     //! Enumeration representing the cube map face to set in a render target
     enum CubeFace
     {
-        X, NX, Y, NY, Z, NZ
+        X, NX, Y, NY, Z, NZ, CUBE_FACE_COUNT
     };
 
     // primitive mode
@@ -427,13 +427,19 @@ namespace Render
 
     //! Sets the rasterizer state
     //! \param rasterState
+    //! \note stencilRefValue defaults to 0xffffffff
     void SetRasterizerState(const RasterizerStateRef& rasterState);
+
+    //! Sets the rasterizer state
+    //! \param rasterState
+    //! \param stencilRefValue
+    void SetRasterizerState(const RasterizerStateRef& rasterState, unsigned int stencilRefValue);
 
     //! Sets the blending state
     //! \param blendingState
     void SetBlendingState(const BlendingStateRef blendignState);
-
     //! Sets the depth clear value
+
     //! \param the depth scalar value to clear to
     //! \note the value must be from 0 to 1
     void SetDepthClearValue(float d);

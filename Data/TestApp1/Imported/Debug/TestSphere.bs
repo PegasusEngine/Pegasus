@@ -1,0 +1,47 @@
+
+extern Translation = float3(0.0,0.0,0.0);
+extern Scale = float3(1.0,1.0,1.0);
+
+struct ModelState
+{
+	worldTransform : float4x4;
+	normTransform : float4x4;
+};
+gModelState = ModelState();
+
+sphereGenerator = CreateMeshGenerator("IcosphereGenerator");
+sphere = CreateMesh();
+sphere->SetGeneratorInput(sphereGenerator);
+
+debugSphereMat = LoadProgram("Debug/DebugSphere.pas");
+stateUniform = GetUniformLocation(debugSphereMat, "uniformState");
+modelStateBuffer = CreateUniformBuffer(sizeof(ModelState));
+defaultRasterState = CreateRasterizerState(RasterizerConfig(CW_CM,LESSER_EQUAL_DF));
+
+int Timeline_Update(info: UpdateInfo)
+{
+	translationMat = float4x4(
+	1.0, 0.0, 0.0, Translation.x,
+	0.0, 1.0, 0.0, Translation.y,
+	0.0, 0.0, 1.0, Translation.z,
+	0.0, 0.0, 0.0, 1.0
+	);
+
+	scaleMat = float4x4(
+	Scale.x, 0.0, 0.0, 0.0,
+	0.0, Scale.y, 0.0, 0.0,
+	0.0, 0.0, Scale.z, 0.0,
+	0.0, 0.0, 0.0, 1.0
+	);
+	gModelState.worldTransform = mul(translationMat,scaleMat);
+	gModelState.normTransform = translationMat;
+}
+
+int Timeline_Render(info : RenderInfo)
+{
+	SetProgram(debugSphereMat);
+	SetBuffer(modelStateBuffer, gModelState);
+	SetUniformBuffer(stateUniform, modelStateBuffer);
+	SetMesh(sphere);
+	Draw();
+}

@@ -255,7 +255,7 @@ private:
 };
 #endif
 
-#if RENDER_SYSTEM_CONFIG_ENABLE_3DTERRAIN
+#if RENDER_SYSTEM_CONFIG_ENABLE_VOLUMES
 // Terrain debug component
 class Terrain3dDebugComponentState : public Wnd::WindowComponentState
 {
@@ -304,7 +304,7 @@ public:
     virtual void Unload(Core::IApplicationContext* appContext) {}
 
     //! unique id
-    virtual unsigned int GetUniqueId() const { return COMPONENT_TERRAIN3D; }
+    virtual unsigned int GetUniqueId() const { return COMPONENT_VOLUMES; }
 
 private:
     Alloc::IAllocator* mAlloc;
@@ -397,63 +397,6 @@ private:
 
 };
 #endif
-
-#if RENDER_SYSTEM_CONFIG_ENABLE_ATMOS
-// Terrain debug component
-class AtmosDebugComponentState : public Wnd::WindowComponentState
-{
-	BEGIN_DECLARE_PROPERTIES(AtmosDebugComponentState, WindowComponentState)
-		DECLARE_PROPERTY(bool, EnableDebugGeometry, false)
-	DECLARE_PROPERTY(bool, EnableDebugCameraCull, false)
-	END_DECLARE_PROPERTIES()
-
-public:
-	AtmosDebugComponentState();
-	virtual ~AtmosDebugComponentState() {}
-};
-
-class AtmosDebugComponent : public Wnd::IWindowComponent
-{
-
-public:
-	//! Constructor
-	explicit AtmosDebugComponent(Alloc::IAllocator* allocator) : mAlloc(allocator) {}
-
-	//! Destructor
-	virtual ~AtmosDebugComponent() {}
-
-	//! Creation of a component state related to a window.
-	virtual Wnd::WindowComponentState* CreateState(const Wnd::ComponentContext& context);
-
-	//! Destruction of a component state related to a window.
-	virtual void DestroyState(const Wnd::ComponentContext& context, Wnd::WindowComponentState* state);
-
-	//! Load / create any rendering specific elements. Do not draw anything on the screen.
-	virtual void Load(Core::IApplicationContext* appContext) {}
-
-	//! Called once every tick by the app. Do any simulation operation on this function that is independant from a window.
-	//! The order of layers will determine the order of execution of Update.
-	virtual void Update(Core::IApplicationContext* appContext) {}
-
-	//! Update on the window. Called once per window. Use this to update the internal state.
-	//! \param context - context containing current window and app context
-	//! \param state - state related to the window that is being updated.
-	virtual void WindowUpdate(const Wnd::ComponentContext& context, Wnd::WindowComponentState* state);
-
-	//! Called once for every window. 
-	virtual void Render(const Wnd::ComponentContext& context, Wnd::WindowComponentState* state) {}
-
-	//! Shutdown the component. Destroy anything that was created in Load()
-	virtual void Unload(Core::IApplicationContext* appContext) {}
-
-	//! unique id
-	virtual unsigned int GetUniqueId() const { return COMPONENT_TERRAIN3D; }
-
-private:
-	Alloc::IAllocator* mAlloc;
-};
-#endif
-
 
 }
 }

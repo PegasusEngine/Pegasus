@@ -345,7 +345,7 @@ namespace Private_Math
         float f = stream.NextArgument<float>();
         Math::SetProjection(
             res,
-            l,r,t,b,n,f
+            l,r,t,b,n,f,false
         );
     }
 
