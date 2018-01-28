@@ -37,7 +37,7 @@ struct DeferredApplyLightsConstants
 
 
 skyObject = CreateBasicSky();
-skyObject.CubeMapAlwaysDirty = 1;
+//skyObject.CubeMapAlwaysDirty = 1;
 skyCubeMap = skyObject->LoadSkyCubeMap();
 
 DeferredPassRendererResources CreateDeferredPassResources()

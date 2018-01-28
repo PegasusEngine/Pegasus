@@ -2,9 +2,9 @@
     __type_guid__ : 1414086995,
     num-beats : 128,
     ticks-per-beat : 128,
-    beats-per-minute-bin : 1124728832,
+    beats-per-minute-bin : 1110441984,
     music-track-vol : 0.750000,
-    beats-per-minute-float : 138.000000,
+    beats-per-minute-float : 44.000000,
     typename : Timeline,
     music-track : Music/9940_73Degrees.mp3,
     lanes : [{
@@ -21,9 +21,9 @@
                             sphereLight1Intensity : 50.000000,
                             spotLight1Intensity : 100000.000000,
                             sphereLightInnerRadius : 0.000000,
-                            spotLight1PosRad : [-79.000000, 84.500000, -1.000000, 98.000000],
-                            spotLight1DirSpread : [1.000000, -1.000000, 0.000000, 82.000000],
-                            sphereLight1PosRad : [0.000000, 63.000000, 0.000000, 47.000000],
+                            spotLight1PosRad : [-27.000000, 19.500000, -1.000000, 182.000000],
+                            spotLight1DirSpread : [0.000000, -1.000000, 0.000000, 82.000000],
+                            sphereLight1PosRad : [8.000000, 3.000000, 7.000000, 19.000000],
                             sphereLight1Col : [255, 240, 230],
                             spotLight1Col : [255, 240, 230],
                             __schema__ : {
@@ -70,7 +70,7 @@
                         Name : TempleModel,
                         Color : [128, 128, 128],
                         _o_p_ : {
-                            modelPosition : [0.000000, 0.000000, 0.000000],
+                            modelPosition : [135.000000, -9.000000, 0.000000],
                             modelQuaternion : [0.000000, 0.000000, 1.000000, 0.000000],
                             modelScale : [1.000000, 1.000000, 1.000000],
                             __schema__ : {
@@ -93,12 +93,16 @@
                         Name : DebugSphere1,
                         Color : [128, 128, 128],
                         _o_p_ : {
-                            Translation : [0.000000, 70.000000, 0.000000],
-                            Scale : [5.000000, 5.000000, 5.000000],
+                            xGridCount : 8,
+                            yGridCount : 8,
+                            SphereRadius : 1.000000,
+                            SphereSpacing : 0.500000,
+                            Translation : [0.000000, 1.000000, 0.000000],
+                            Scale : [1.000000, 1.000000, 1.000000],
                             __schema__ : {
-                                sizetypes : [327692, 327692],
-                                names : [Translation, Scale],
-                                typeNames : [float3, float3]
+                                sizetypes : [327692, 327692, 65540, 65540, 196612, 196612],
+                                names : [Translation, Scale, xGridCount, yGridCount, SphereRadius, SphereSpacing],
+                                typeNames : [float3, float3, int, int, float, float]
                             }
                         },
                         script : {@Debug/TestSphere.bs}
@@ -255,7 +259,7 @@
                         Name : HdrPos,
                         Color : [240, 179, 148],
                         _o_p_ : {
-                            exposureValue : 0.400000,
+                            exposureValue : 0.200000,
                             __schema__ : {
                                 sizetypes : [196612],
                                 names : [exposureValue],

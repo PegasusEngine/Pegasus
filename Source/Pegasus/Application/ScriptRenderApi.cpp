@@ -82,6 +82,7 @@ void Node_CreateMeshOperator(FunCallbackContext& context);
 
 /////Render API Functions////////////////////////////////////
 void Render_CreateUniformBuffer(FunCallbackContext& context);
+void Render_CreateStructuredReadBuffer(FunCallbackContext& context);
 void Render_SetBuffer(FunCallbackContext& context);
 void Render_GetUniformLocation(FunCallbackContext& context);
 void Render_SetUniformBuffer(FunCallbackContext& context);
@@ -117,6 +118,7 @@ void Render_SetPixelSampler(FunCallbackContext& context);
 void Render_SetVertexSampler(FunCallbackContext& context);
 void Render_SetDepthClearValue(FunCallbackContext& context);
 void Render_Draw(FunCallbackContext& context);
+void Render_DrawInstanced(FunCallbackContext& context);
 void Render_Dispatch(FunCallbackContext& context);
 void Render_CreateRenderTarget(FunCallbackContext& context);
 void Render_CreateDepthStencil(FunCallbackContext& context);
@@ -847,6 +849,13 @@ static void RegisterFunctions(BlockLib* lib)
             Render_CreateUniformBuffer
         },
         {
+            "CreateStructuredReadBuffer",
+            "Buffer",
+            { "int", "int",        nullptr },
+            { "bufferSize", "elementCount", nullptr },
+            Render_CreateStructuredReadBuffer
+        },
+        {
             "SetBuffer",
             "int",
             { "Buffer", "*" },
@@ -1090,6 +1099,13 @@ static void RegisterFunctions(BlockLib* lib)
             { nullptr },
             { nullptr },
             Render_Draw
+        },
+        {
+            "DrawInstanced",
+            "int",
+            { "int", nullptr },
+            { "instanceCount", nullptr },
+            Render_DrawInstanced
         },
         {
             "Dispatch",
@@ -1563,6 +1579,29 @@ void Render_CreateUniformBuffer(FunCallbackContext& context)
     else
     {
         Render::BufferRef buffer = Render::CreateUniformBuffer(bufferSize);
+        stream.SubmitReturn( RenderCollection::AddResource<Render::Buffer>(renderCollection, buffer));
+
+    }
+}
+
+void Render_CreateStructuredReadBuffer(FunCallbackContext& context)
+{
+    FunParamStream stream(context);
+    BsVmState* state = context.GetVmState();
+    Application::RenderCollection* renderCollection = GetContainer(state);
+    CHECK_PERMISSIONS(renderCollection, "CreateStructuredReadBuffer", PERMISSIONS_RENDER_API_CALL);
+
+    int& bufferSize = stream.NextArgument<int>();
+    int& elementCount = stream.NextArgument<int>();
+
+    if ((bufferSize & 15) != 0)
+    {
+        PG_LOG('ERR_', "Error: cannot create buffer with unaligend size. Size must be 16 byte aligned.");
+        stream.SubmitReturn( RenderCollection::INVALID_HANDLE ); 
+    }
+    else
+    {
+        Render::BufferRef buffer = Render::CreateStructuredReadBuffer(bufferSize, elementCount);
         stream.SubmitReturn( RenderCollection::AddResource<Render::Buffer>(renderCollection, buffer));
 
     }
@@ -2135,6 +2174,17 @@ void Render_Draw(FunCallbackContext& context)
     CHECK_PERMISSIONS(renderCollection, "Draw", PERMISSIONS_RENDER_API_CALL);
 #endif
     Render::Draw();
+}
+
+void Render_DrawInstanced(FunCallbackContext& context)
+{
+#if PEGASUS_ENABLE_SCRIPT_PERMISSIONS
+    RenderCollection* renderCollection = GetContainer(context.GetVmState());
+    CHECK_PERMISSIONS(renderCollection, "Draw", PERMISSIONS_RENDER_API_CALL);
+#endif
+    FunParamStream stream(context);
+    int instanceCount = stream.NextArgument<int>();
+    Render::DrawInstanced((unsigned int)instanceCount);
 }
 
 void Render_Dispatch(FunCallbackContext& context)

@@ -75,8 +75,6 @@ void AtmosSystem::Load(Core::IApplicationContext* appContext)
     GetUniformLocation(mPrograms[BASIC_SKY], "acosLutTex", mBasicSkyAcosLutUniform);
     mBasicSkyCbuffer = CreateUniformBuffer(sizeof(BasicSkyCbuffer));
 
-    GenerateAcosLut(appContext->GetTextureManager());
-
     SamplerStateConfig bilinearFilterConfig;
     bilinearFilterConfig.mFilter = SamplerStateConfig::BILINEAR;
     mBilinearFilter = CreateSamplerState(bilinearFilterConfig);

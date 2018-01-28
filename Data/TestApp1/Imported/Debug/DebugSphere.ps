@@ -4,6 +4,7 @@ void main(
 	in float4 p : POSITION0,
 	in float3 normal : NORMAL0,
 	in float2 t : TEXTURE0,
+	in float2 matInfo : TEXTURE1,
 	out LightingOutput lightingOut
 )
 {
@@ -11,9 +12,9 @@ void main(
 	MaterialInfo material;
 	material.color = float3(0.3,0.3,0.3);
 	material.worldNormal = nNormal;
-	material.smoothness = 0.5;
-	material.reflectance = 1.0;
-	material.metalMask = 1.0;
+	material.smoothness = matInfo.y;
+	material.reflectance = matInfo.x;
+	material.metalMask = 0.0;
 	lightingOut = ApplyLighting(material);
 
 }

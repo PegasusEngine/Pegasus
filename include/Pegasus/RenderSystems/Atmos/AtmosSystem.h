@@ -70,7 +70,6 @@ private:
         PROGRAMS_COUNT
     };
 
-    void GenerateAcosLut(Pegasus::Texture::TextureManager* textureManager);
     void GenerateCubeCams();
 
     Texture::TextureRef mAcosLut;

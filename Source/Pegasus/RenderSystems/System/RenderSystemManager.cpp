@@ -100,6 +100,8 @@ const RenderSystemManager::RenderSystemContainer* RenderSystemManager::FindSyste
 
 void RenderSystemManager::InitializeSystems(Core::IApplicationContext* appContext)
 {
+    mLutLib->Load(appContext);
+
     for (unsigned int i = 0; i < mSystems.GetSize(); ++i)
     {
         RenderSystemManager::RenderSystemContainer& container = mSystems[i];
@@ -120,7 +122,6 @@ void RenderSystemManager::InitializeSystems(Core::IApplicationContext* appContex
         container.system->OnRegisterCustomTextureNodes(mAppContext->GetTextureManager());
     }
 
-    mLutLib->Load(appContext);
 }
 
 void RenderSystemManager::DestroyAllSystems()
