@@ -217,13 +217,29 @@ void Application::Load()
     // (since the default render target belongs to the window) should use the main application context
     mRenderContext->Bind();
 
+
     mRenderSystemManager->AddInternalSystems();
     RegisterCustomRenderSystems(mRenderSystemManager);
+    
+    //register per system shader constants to shader factory
+    Pegasus::Shader::IShaderFactory * shaderFactory = Pegasus::Render::GetRenderShaderFactory();
+    for (unsigned int i = 0; i < mRenderSystemManager->GetSystemCount(); ++i)
+    {
+        Utils::Vector<RenderSystems::RenderSystem::ShaderGlobalConstantDesc> descs;
+        mRenderSystemManager->GetSystem(i)->OnRegisterShaderGlobalConstants(descs);
+        for (unsigned int j = 0; j < descs.GetSize(); ++j)
+        {
+            RenderSystems::RenderSystem::ShaderGlobalConstantDesc& desc = descs[j];
+            Render::RegisterGlobalConstant(desc.constantName, desc.buffer);
+        }
+    }
+
     mRenderSystemManager->InitializeSystems(this);
     if (mRenderSystemManager->GetLibs().GetSize() != 0)
     {
         mTimelineManager->RegisterExtraLibs(mRenderSystemManager->GetLibs());
     }
+
 
     mTimelineManager->GetLibs().PushEmpty() = mRenderApiScript;
 #if PEGASUS_ENABLE_BS_REFLECTION_INFO
@@ -235,18 +251,6 @@ void Application::Load()
     mBsReflectionInfo->RegisterLib(mTimelineManager->GetTimelineLib());
 #endif
 
-    //register per system shader constants to shader factory
-    Pegasus::Shader::IShaderFactory * shaderFactory = Pegasus::Render::GetRenderShaderFactory();
-    for (unsigned int i = 0; i < mRenderSystemManager->GetSystemCount(); ++i) 
-    {
-        Utils::Vector<RenderSystems::RenderSystem::ShaderGlobalConstantDesc> descs;
-        mRenderSystemManager->GetSystem(i)->OnRegisterShaderGlobalConstants(descs);
-        for (unsigned int j = 0; j < descs.GetSize(); ++j)
-        {
-            RenderSystems::RenderSystem::ShaderGlobalConstantDesc& desc = descs[j];
-            Render::RegisterGlobalConstant(desc.constantName, desc.buffer);
-        }
-    }
     
     //! Call custom initialize here
     InitializeApp();
