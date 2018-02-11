@@ -8,7 +8,6 @@
 @(EditorType=EDITOR_TYPE_CHECKBOX)
 extern DrawSky = 0;
 
-
 gLightTileSize = 32;
 
 /// Definitions 
@@ -37,6 +36,8 @@ struct DeferredApplyLightsConstants
 
 
 skyObject = CreateBasicSky();
+skyObject.Visible = 1;
+gSkyVersion = skyObject->GetVersion();
 //skyObject.CubeMapAlwaysDirty = 1;
 skyCubeMap = skyObject->LoadSkyCubeMap();
 
@@ -81,11 +82,18 @@ gPassResources.applyLightsSourceLightBuffer = LoadCulledLightBuffer();
 
 int Timeline_Update(info: UpdateInfo)
 {
-	skyObject.Visible = DrawSky;
+	if (skyObject.Visible != DrawSky)
+	{
+		skyObject.Visible = DrawSky;
+	}
 }
 
 int Timeline_Render(info: RenderInfo)
 {
+	if (gSkyVersion != skyObject->GetVersion())
+	{
+		gSkyVersion = skyObject->GetVersion();
+	}
 	UnbindRenderTargets();
 	BeginMarker("DeferredLighting");
 	viewState = GetViewState(info.windowId);

@@ -200,6 +200,23 @@
             type : Lane,
             name : "",
             Blocks : [{
+                    type : Block,
+                    props : {
+                        Beat : 0,
+                        Duration : 2048,
+                        Name : DeferredLighting,
+                        Color : [240, 179, 148],
+                        _o_p_ : {
+                            DrawSky : 1,
+                            __schema__ : {
+                                sizetypes : [1],
+                                names : [DrawSky],
+                                typeNames : [bool]
+                            }
+                        },
+                        script : {@RenderSystems/Lighting/DeferredPassBlock.bs}
+                    }
+                }, {
                     type : FractalCubeBlock,
                     props : {
                         Beat : 6951,
@@ -218,24 +235,7 @@
         }, {
             type : Lane,
             name : Camera,
-            Blocks : [{
-                    type : Block,
-                    props : {
-                        Beat : 0,
-                        Duration : 2048,
-                        Name : DeferredLighting,
-                        Color : [240, 179, 148],
-                        _o_p_ : {
-                            DrawSky : 1,
-                            __schema__ : {
-                                sizetypes : [1],
-                                names : [DrawSky],
-                                typeNames : [bool]
-                            }
-                        },
-                        script : {@RenderSystems/Lighting/DeferredPassBlock.bs}
-                    }
-                }]
+            Blocks : []
         }, {
             type : Lane,
             name : Beads,
