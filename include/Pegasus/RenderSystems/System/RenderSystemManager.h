@@ -20,6 +20,7 @@ namespace Pegasus {
 
     namespace RenderSystems {
         class RenderSystem;
+        class LutLib;
     }
 
     namespace Core {
@@ -41,6 +42,7 @@ namespace Pegasus {
     namespace Texture {
         class TextureManager;
     }
+
 }
 
 namespace Pegasus
@@ -65,7 +67,7 @@ public:
     };
 
     //! Constructor.
-    RenderSystemManager(Alloc::IAllocator* allocator, Core::IApplicationContext* appContext) : mAllocator(allocator), mAppContext(appContext), mSystems(allocator) {}
+    RenderSystemManager(Alloc::IAllocator* allocator, Core::IApplicationContext* appContext) : mAllocator(allocator), mAppContext(appContext), mSystems(allocator), mLutLib(nullptr) {}
 
     //! Destructor.
     ~RenderSystemManager();
@@ -100,12 +102,17 @@ public:
     //! Gets the list of exported libs
     Utils::Vector<BlockScript::BlockLib*>& GetLibs() { return mLibs; }
 
+    //! Gets a lut lib
+    LutLib* GetLutLib() { return mLutLib; }
+
 private:
     Alloc::IAllocator* mAllocator;
     Core::IApplicationContext* mAppContext;
 
     Utils::Vector<RenderSystemContainer> mSystems;
     Utils::Vector<BlockScript::BlockLib*> mLibs;
+
+    LutLib* mLutLib;
 
 };
 

@@ -244,7 +244,7 @@ void DXTextureFactory::InternalCreateRenderTarget(
         renderTargetGpuData->mDim = DXRenderTargetGPUData::Dim_2d;
         texDesc.Width = static_cast<unsigned int>(config->mWidth);
         texDesc.Height = static_cast<unsigned int>(config->mHeight);
-        texDesc.MipLevels = 1;
+        texDesc.MipLevels = static_cast<unsigned int>(config->mMipCount);
         texDesc.ArraySize = 1;
         texDesc.Format = GetDxFormat(config->mFormat);
         texDesc.SampleDesc.Count = 1;
@@ -252,7 +252,7 @@ void DXTextureFactory::InternalCreateRenderTarget(
         texDesc.Usage = D3D11_USAGE_DEFAULT;
         texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS;
         texDesc.CPUAccessFlags = 0;
-        texDesc.MiscFlags = 0;
+        texDesc.MiscFlags = (texDesc.MipLevels > 1 ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0);
 
         VALID_DECLARE(device->CreateTexture2D(&texDesc, nullptr, &renderTargetGpuData->mTextureView.mTexture));
         D3D11_SHADER_RESOURCE_VIEW_DESC& srvDesc = renderTargetGpuData->mTextureView.mSrvDesc;
@@ -334,7 +334,7 @@ void DXTextureFactory::InternalCreateRenderTarget(
     {
         resource = renderTargetGpuData->mTextureView.mTexture;
         rtDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-        rtDesc.Texture2D.MipSlice = 0;
+        rtDesc.Texture2D.MipSlice = static_cast<unsigned int>(outputConfig.mMipStart);
     }
 
     VALID_DECLARE(device->CreateRenderTargetView(resource, &rtDesc, &renderTargetGpuData->mRenderTarget));
@@ -454,7 +454,7 @@ void DXTextureFactory::InternalCreateCubeMap(const Pegasus::Render::CubeMapConfi
     D3D11_TEXTURE2D_DESC& texDesc = texGpuData->mDesc;
     texDesc.Width = static_cast<unsigned int>(config.mWidth);
     texDesc.Height = static_cast<unsigned int>(config.mHeight);
-    texDesc.MipLevels = 1;
+    texDesc.MipLevels = config.mMipCount;
     texDesc.ArraySize = 6;
     texDesc.Format = GetDxFormat(config.mFormat);
     texDesc.SampleDesc.Count = 1;
@@ -462,7 +462,7 @@ void DXTextureFactory::InternalCreateCubeMap(const Pegasus::Render::CubeMapConfi
     texDesc.Usage = D3D11_USAGE_DEFAULT;
     texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS;
     texDesc.CPUAccessFlags = 0;
-    texDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+    texDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE | (texDesc.MipLevels > 1 ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0);
 
     VALID_DECLARE(device->CreateTexture2D(&texDesc, nullptr, &texGpuData->mTexture));
 

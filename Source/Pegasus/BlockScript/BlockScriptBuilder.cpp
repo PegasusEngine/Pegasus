@@ -56,7 +56,6 @@ void BlockScriptBuilder::Initialize(Pegasus::Alloc::IAllocator* allocator)
     mSymbolTable.Initialize(allocator);
     mGlobalsMap.Initialize(allocator);
     mGlobalsMetaData.Initialize(allocator);
-    mFileStates.Initialize(allocator);
     Reset();
 }
 
@@ -64,7 +63,7 @@ void BlockScriptBuilder::BeginBuild(const char* initialTitle)
 {
     PG_ASSERTSTR(
         mErrorCount == 0 &&
-        mFileStates.Size() == 0 &&
+        mFileStates.GetSize() == 0 &&
         mActiveResult.mAst == nullptr &&
         mActiveResult.mAsm.mBlocks == nullptr &&
         mInFunBody == false,
@@ -94,9 +93,9 @@ void BlockScriptBuilder::PopFile()
 
 int BlockScriptBuilder::GetCurrentLine() const
 {
-    if (mFileStates.Size() > 0)
+    if (mFileStates.GetSize() > 0)
     {
-        return mFileStates[mFileStates.Size() - 1].lineNumber;
+        return mFileStates[mFileStates.GetSize() - 1].lineNumber;
     }
     else
     {
@@ -108,9 +107,9 @@ int BlockScriptBuilder::GetCurrentLine() const
 
 const char* BlockScriptBuilder::GetCurrentCompilationUnitTitle() const
 {
-    if (mFileStates.Size() > 0)
+    if (mFileStates.GetSize() > 0)
     {
-        return mFileStates[mFileStates.Size() - 1].compilationUnitTitle;
+        return mFileStates[mFileStates.GetSize() - 1].compilationUnitTitle;
     }
     else
     {
@@ -121,9 +120,9 @@ const char* BlockScriptBuilder::GetCurrentCompilationUnitTitle() const
 
 void BlockScriptBuilder::IncrementLine()
 {
-    if (mFileStates.Size() > 0)
+    if (mFileStates.GetSize() > 0)
     {
-        ++mFileStates[mFileStates.Size() - 1].lineNumber;
+        ++mFileStates[mFileStates.GetSize() - 1].lineNumber;
     }
 }
 
@@ -192,7 +191,7 @@ void BlockScriptBuilder::Reset()
     mCanonizer.Reset();
     mGlobalsMap.Reset();
     mGlobalsMetaData.Reset();
-    mFileStates.Reset();
+    mFileStates.Clear();
 
     mStrPool.Clear();
 

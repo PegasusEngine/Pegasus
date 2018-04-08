@@ -36,6 +36,8 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\Grass\GrassSystem.h" />
     <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Lighting\LightingSystem.h" />
     <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Lighting\LightRig.h" />
+    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\System\CubeRenderer.h" />
+    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\System\LutLib.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\System\RenderSystem.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\RenderSystems\System\RenderSystemManager.h" />
     <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Volumes\CaseTable.h" />
@@ -53,6 +55,8 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Grass\GrassSystem.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Lighting\LightingSystem.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Lighting\LightRig.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\System\CubeRenderer.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\System\LutLib.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\System\RenderSystemManager.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Volumes\CaseTable.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Volumes\MarchingCubeMeshGenerator.cpp" />

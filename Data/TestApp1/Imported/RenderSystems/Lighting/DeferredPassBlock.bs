@@ -3,11 +3,11 @@
 //***********************************************//
 
 #include "RenderSystems/Frame/Frame.bsh"
+#include "RenderSystems/Lighting/ShUtil.bsh"
 
 //Options:
 @(EditorType=EDITOR_TYPE_CHECKBOX)
 extern DrawSky = 0;
-
 
 gLightTileSize = 32;
 
@@ -37,7 +37,9 @@ struct DeferredApplyLightsConstants
 
 
 skyObject = CreateBasicSky();
-skyObject.CubeMapAlwaysDirty = 1;
+skyObject.Visible = 1;
+gSkyVersion = skyObject->GetVersion();
+//skyObject.CubeMapAlwaysDirty = 1;
 skyCubeMap = skyObject->LoadSkyCubeMap();
 
 DeferredPassRendererResources CreateDeferredPassResources()
@@ -52,7 +54,7 @@ DeferredPassRendererResources CreateDeferredPassResources()
 	rs.applyLightsSkyCubeMapUniform = GetUniformLocation(rs.applyLightsCs, "SkyCube");
 	rs.applyLightsDepthBuffer     = GetUniformLocation(rs.applyLightsCs, "DepthTexture");
 	rs.applyLightsStencilBuffer   = GetUniformLocation(rs.applyLightsCs, "StencilTexture");
-	rs.applyLightsBilinearSampler = CreateSamplerState(SamplerStateConfig(BILINEAR,CLAMP,CLAMP,CLAMP,0,0,0,0,float4(0.0,0.0,0.0,0.0)));
+	rs.applyLightsBilinearSampler = CreateSamplerState(SamplerStateConfig(BILINEAR,CLAMP,CLAMP,CLAMP,0,0,10,0,float4(0.0,0.0,0.0,0.0)));
 	return rs;
 }
 
@@ -81,11 +83,18 @@ gPassResources.applyLightsSourceLightBuffer = LoadCulledLightBuffer();
 
 int Timeline_Update(info: UpdateInfo)
 {
-	skyObject.Visible = DrawSky;
+	if (skyObject.Visible != DrawSky)
+	{
+		skyObject.Visible = DrawSky;
+	}
 }
 
 int Timeline_Render(info: RenderInfo)
 {
+	if (gSkyVersion != skyObject->GetVersion())
+	{
+		gSkyVersion = skyObject->GetVersion();
+	}
 	UnbindRenderTargets();
 	BeginMarker("DeferredLighting");
 	viewState = GetViewState(info.windowId);

@@ -1,6 +1,40 @@
 
 extern Translation = float3(0.0,0.0,0.0);
 extern Scale = float3(1.0,1.0,1.0);
+extern xGridCount = 2;
+extern yGridCount = 2;
+extern SphereRadius = 1.0;
+extern SphereSpacing = 1.0;
+
+#define MAX_SPHERES 512
+
+struct InstanceData
+{
+	translation : float3;
+	reflectanceSmoothness : float2;
+};
+
+gInstanceData = static_array<InstanceData[MAX_SPHERES]>;
+for (y = 0; y < yGridCount; ++y)
+{
+	for (x = 0; x < xGridCount; ++x)
+	{
+		idx = y * xGridCount + x;
+		if (idx < MAX_SPHERES)
+		{
+
+			xCoord = (float)x * (Scale.x*SphereRadius*2.0 + SphereSpacing);
+			yCoord = (float)y * (Scale.y*SphereRadius*2.0 + SphereSpacing);
+			reflectance = ((float)(x+1))/((float)(xGridCount));
+			smoothness = lerp(0.001,0.937,((float)(y+1))/((float)(yGridCount)));
+			gInstanceData[idx] = InstanceData(float3(xCoord,0.0,yCoord), float2(reflectance, smoothness));
+
+		}
+	}
+}
+
+instanceDataBuffer = CreateStructuredReadBuffer(sizeof(InstanceData)*MAX_SPHERES,MAX_SPHERES);
+SetBuffer(instanceDataBuffer, gInstanceData);
 
 struct ModelState
 {
@@ -10,10 +44,12 @@ struct ModelState
 gModelState = ModelState();
 
 sphereGenerator = CreateMeshGenerator("IcosphereGenerator");
+sphereGenerator.Radius = SphereRadius;
 sphere = CreateMesh();
 sphere->SetGeneratorInput(sphereGenerator);
 
 debugSphereMat = LoadProgram("Debug/DebugSphere.pas");
+debugSphereInstanceDataUniform = GetUniformLocation(debugSphereMat, "instanceDataBuffer");
 stateUniform = GetUniformLocation(debugSphereMat, "uniformState");
 modelStateBuffer = CreateUniformBuffer(sizeof(ModelState));
 defaultRasterState = CreateRasterizerState(RasterizerConfig(CW_CM,LESSER_EQUAL_DF));
@@ -42,6 +78,7 @@ int Timeline_Render(info : RenderInfo)
 	SetProgram(debugSphereMat);
 	SetBuffer(modelStateBuffer, gModelState);
 	SetUniformBuffer(stateUniform, modelStateBuffer);
+	SetUniformBufferResource(debugSphereInstanceDataUniform, instanceDataBuffer);
 	SetMesh(sphere);
-	Draw();
+	DrawInstanced(xGridCount*yGridCount);
 }

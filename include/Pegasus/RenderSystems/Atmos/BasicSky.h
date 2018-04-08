@@ -45,11 +45,13 @@ public:
     virtual void Update();
     void Draw();
     Render::CubeMapRef GetSkyCubeMap() { return mSkyCubeMap; }
+    int GetVersion();
 
 private:
     void DrawUpdate();
     Render::CubeMapRef mSkyCubeMap;    
     Render::RenderTargetRef mSkyCubeTargets[Render::CUBE_FACE_COUNT];    
+    int mVersion;
     bool mEnableStencil;
 };
 

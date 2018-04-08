@@ -104,6 +104,12 @@
     <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\Atmos\BasicSky.h">
       <Filter>Include\Atmos</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\System\CubeRenderer.h">
+      <Filter>Include\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\RenderSystems\System\LutLib.h">
+      <Filter>Include\System</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Grass\GrassSystem.cpp">
@@ -147,6 +153,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\Atmos\BasicSky.cpp">
       <Filter>Source\Atmos</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\System\CubeRenderer.cpp">
+      <Filter>Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\RenderSystems\System\LutLib.cpp">
+      <Filter>Source\System</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

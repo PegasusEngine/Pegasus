@@ -129,7 +129,6 @@ void CameraSystem::UseCameraContext(const CameraContext& context)
 
 void CameraSystem::Load(Core::IApplicationContext* appContext)
 {
-    mCameraBuffer = Render::CreateUniformBuffer(sizeof(Camera::GpuCamData));
 }
 
 void CameraSystem::OnRegisterBlockscriptApi(BlockScript::BlockLib* blocklib, Core::IApplicationContext* appContext)
@@ -170,9 +169,13 @@ void CameraSystem::OnRegisterBlockscriptApi(BlockScript::BlockLib* blocklib, Cor
 
 void CameraSystem::OnRegisterShaderGlobalConstants(Utils::Vector<ShaderGlobalConstantDesc>& outConstants)
 {
+    if (mCameraBuffer == nullptr)
+        mCameraBuffer = Render::CreateUniformBuffer(sizeof(Camera::GpuCamData));
+
     RenderSystem::ShaderGlobalConstantDesc& desc = outConstants.PushEmpty();
     desc.constantName = "__camera_cbuffer";
     desc.buffer = mCameraBuffer;
+
 }
 
 CameraRef CameraSystem::GetCurrentCamera()

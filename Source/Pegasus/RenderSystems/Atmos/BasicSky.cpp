@@ -51,7 +51,7 @@ BEGIN_IMPLEMENT_PROPERTIES(BasicSky)
 END_IMPLEMENT_PROPERTIES(BasicSky)
 
 BasicSky::BasicSky(Alloc::IAllocator* allocator)
-: Application::GenericResource(allocator)
+: Application::GenericResource(allocator), mVersion(1)
 {
     BEGIN_INIT_PROPERTIES(BasicSky)
         INIT_PROPERTY(Visible)
@@ -67,11 +67,14 @@ BasicSky::BasicSky(Alloc::IAllocator* allocator)
     cmConfig.mWidth = GetCubeMapResolution();
     cmConfig.mHeight = GetCubeMapResolution();
     cmConfig.mFormat = Core::FORMAT_RGBA_16_FLOAT;
+    cmConfig.mMipCount = Math::Log2((Pegasus::Math::PUInt32)GetCubeMapResolution()) + 1;
     mSkyCubeMap = CreateCubeMap(cmConfig);
     for (unsigned int i = 0; i < Render::CUBE_FACE_COUNT; ++i)
     {
         mSkyCubeTargets[i] = CreateRenderTargetFromCubeMap(static_cast<Render::CubeFace>(i), mSkyCubeMap);
     }
+
+    InvalidatePropertyGrid();
 }
 
 static void CreateBasicSky_Callback(BlockScript::FunCallbackContext& context)
@@ -81,6 +84,25 @@ static void CreateBasicSky_Callback(BlockScript::FunCallbackContext& context)
     BasicSky* newSky = PG_NEW(Memory::GetCoreAllocator(), -1, "BasicSky", Pegasus::Alloc::PG_MEM_TEMP) BasicSky(Memory::GetCoreAllocator());
     RenderCollection::CollectionHandle handle = RenderCollection::AddResource<GenericResource>(collection, newSky);
     stream.SubmitReturn<RenderCollection::CollectionHandle>(handle);
+}
+
+static void GetVersionBasicSky_Callback(BlockScript::FunCallbackContext& context)
+{
+    BlockScript::FunParamStream stream(context);
+    RenderCollection* collection = static_cast<RenderCollection*>(context.GetVmState()->GetUserContext());
+    RenderCollection::CollectionHandle thisHandle = stream.NextArgument<RenderCollection::CollectionHandle>();
+    int version = 0;
+    if (thisHandle != RenderCollection::INVALID_HANDLE)
+    {
+        BasicSky* basicSky = static_cast<BasicSky*>(RenderCollection::GetResource<GenericResource>(collection, thisHandle));
+        version = basicSky->GetVersion();
+    }
+    else
+    {
+
+        PG_LOG('ERR_', "Error: attempting to draw an invalid sky.");
+    }
+    stream.SubmitReturn<int>(version);
 }
 
 static void DrawBasicSky_Callback(BlockScript::FunCallbackContext& context)
@@ -128,6 +150,7 @@ void BasicSky::DrawUpdate()
     bool performCubeRendering = GetCubeMapAlwaysDirty() || IsPropertyGridDirty();
     if (IsPropertyGridDirty())
     {
+        ++mVersion;
         ValidatePropertyGrid();
     }
 
@@ -149,10 +172,18 @@ void BasicSky::DrawUpdate()
             Draw();
             mEnableStencil = true;
         }
+
+        GenerateMips(mSkyCubeMap);
+
         Pegasus::Camera::gCameraSystem->BindCamera(nullptr, Pegasus::Camera::CAM_OFFSCREEN_CONTEXT);
         Pegasus::Camera::gCameraSystem->UseCameraContext(Pegasus::Camera::CAM_WORLD_CONTEXT);
         ValidatePropertyGrid();
     }
+}
+
+int BasicSky::GetVersion()
+{
+    return mVersion;
 }
 
 void BasicSky::Draw()
@@ -185,6 +216,11 @@ void BasicSky::GetBlockScriptApi(Utils::Vector<BlockScript::FunctionDeclarationD
     desc.functionName = "LoadSkyCubeMap";
     desc.returnType = "CubeMap";
     desc.callback = LoadSkyCubeMap_Callback;
+    methods.PushEmpty() = desc;
+
+    desc.functionName = "GetVersion";
+    desc.returnType = "int";
+    desc.callback = GetVersionBasicSky_Callback;
     methods.PushEmpty() = desc;
 }
 
