@@ -4,6 +4,7 @@
 #define C_PI 3.14159265359
 #define C_H_PI (0.5*C_PI)
 #define C_2_PI (2.0*C_PI)
+#define C_SQRT_PI (sqrt(C_PI))
 
 float fast_acos(float x)
 {

@@ -3,6 +3,7 @@
 //***********************************************//
 
 #include "RenderSystems/Frame/Frame.bsh"
+#include "RenderSystems/Lighting/ShUtil.bsh"
 
 //Options:
 @(EditorType=EDITOR_TYPE_CHECKBOX)

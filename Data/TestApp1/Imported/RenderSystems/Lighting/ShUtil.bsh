@@ -1,0 +1,16 @@
+//spherical harmonics utility blockscript header file
+#ifndef SH_UTIL_H
+#define SH_UTIL_H
+
+struct ShL1
+{
+	v : float[4];
+};
+
+struct ShL2
+{
+	v : float[9];
+	pad : float;
+};
+
+#endif

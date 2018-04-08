@@ -22,6 +22,7 @@
 #include "Pegasus/BlockScript/IddStrPool.h"
 #include "Pegasus/BlockScript/BlockScriptCanon.h"
 #include "Pegasus/Memory/BlockAllocator.h"
+#include "Pegasus/Utils/Vector.h"
 
 namespace Pegasus
 {
@@ -255,7 +256,7 @@ private:
         }
     };
 
-    Container<FileState> mFileStates;
+    Utils::Vector<FileState> mFileStates;
 
 
 
