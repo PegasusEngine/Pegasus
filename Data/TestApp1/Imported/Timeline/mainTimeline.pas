@@ -294,10 +294,10 @@
         Name : "",
         _o_p_ : {
             EnableTerrain : 0,
-            Fov : 1.500000,
+            Fov : 0.500000,
             NearPlane : 3.000000,
             CamPos : [0.000000, 146.000000, -250.000000],
-            CamDir : [0.000000, 6.800000, 1.000000],
+            CamDir : [0.500000, -1.100000, 2.000000],
             __schema__ : {
                 sizetypes : [1, 327692, 196612, 327692, 196612],
                 names : [EnableTerrain, CamPos, Fov, CamDir, NearPlane],
