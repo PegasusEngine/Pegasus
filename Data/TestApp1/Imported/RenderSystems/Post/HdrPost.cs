@@ -4,7 +4,7 @@
 
 
 Texture2D<float4> HdrSceneIn;
-RWTexture2D<float4> OutputLdrTarget : register(u0);
+RWTexture2D<unorm float4> OutputLdrTarget : register(u0);
 
 cbuffer Constants
 {

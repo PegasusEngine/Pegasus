@@ -7,6 +7,7 @@
 
 #include "RenderSystems/Camera/Common.h"
 #include "RenderSystems/Lighting/LightingCore.h"
+#include "RenderSystems/Lighting/ShUtil.h"
 
 cbuffer Constants
 {
@@ -19,8 +20,10 @@ Texture2D<float4> GBuffer1Texture;
 Texture2D<float> DepthTexture;
 Texture2D<uint2> StencilTexture;
 TextureCube<float4> SkyCube;
+StructuredBuffer<ShL2> SkyShDiffuse;
 
 StructuredBuffer<LightInfo> LightInputBuffer;
+
 RWTexture2D<float4> OutputBuffer : register(u0);
 
 SamplerState bilinearSampler : register(s0);
@@ -77,8 +80,8 @@ void main(uint3 dti : SV_DispatchThreadId)
             /*WorldNormal debug*///float4(matInfo.worldNormal*0.5 + 0.5,1.0);
 			/*WorldPos debug*///OutputBuffer[coords] = float4(worldPos.xyz*0.01, 1.0);
 			/*Color debug*///OutputBuffer[coords] = float4(matInfo.color, 1.0);	
-			specular += matInfo.reflectance*SkyCube.SampleLevel(bilinearSampler, reflect(-viewVector,matInfo.worldNormal), (1.0-matInfo.smoothness)*10).rgb;			
-		
+			specular += matInfo.reflectance*SkyCube.SampleLevel(bilinearSampler, reflect(-viewVector,matInfo.worldNormal), (1.0-matInfo.smoothness)*10).rgb;
+			//diffuse += evaluateSh(SkyShDiffuse[0], matInfo.worldNormal).zzz;
            	hdrOutput = float4(matInfo.color*diffuse.xyz+specular,1.0);//float4(matInfo.color*diffuse + specular,1.0);
 	
         } 

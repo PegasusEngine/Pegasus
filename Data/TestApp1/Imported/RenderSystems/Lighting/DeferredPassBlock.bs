@@ -3,7 +3,7 @@
 //***********************************************//
 
 #include "RenderSystems/Frame/Frame.bsh"
-#include "RenderSystems/Lighting/ShUtil.bsh"
+#include "RenderSystems/Lighting/ShBaker.bsh"
 
 //Options:
 @(EditorType=EDITOR_TYPE_CHECKBOX)
@@ -22,6 +22,7 @@ struct DeferredPassRendererResources
 	applyLightsGbuffer1Uniform : Uniform;
 	applyLightsInputBufferUniform : Uniform;
 	applyLightsSkyCubeMapUniform : Uniform;
+	applyLightsSkyDiffuseShUniform : Uniform;
 	applyLightsDepthBuffer : Uniform;
 	applyLightsStencilBuffer : Uniform;
 	applyLightsBilinearSampler : SamplerState;
@@ -41,6 +42,8 @@ skyObject.Visible = 1;
 gSkyVersion = skyObject->GetVersion();
 //skyObject.CubeMapAlwaysDirty = 1;
 skyCubeMap = skyObject->LoadSkyCubeMap();
+shBaker = createShBaker();
+skyShDiffuseBuffer = CreateComputeBuffer(sizeof(ShL2), 1, 0, 1);
 
 DeferredPassRendererResources CreateDeferredPassResources()
 {
@@ -52,6 +55,7 @@ DeferredPassRendererResources CreateDeferredPassResources()
 	rs.applyLightsGbuffer1Uniform = GetUniformLocation(rs.applyLightsCs, "GBuffer1Texture");
 	rs.applyLightsInputBufferUniform = GetUniformLocation(rs.applyLightsCs, "LightInputBuffer");
 	rs.applyLightsSkyCubeMapUniform = GetUniformLocation(rs.applyLightsCs, "SkyCube");
+	rs.applyLightsSkyDiffuseShUniform = GetUniformLocation(rs.applyLightsCs, "SkyShDiffuse");
 	rs.applyLightsDepthBuffer     = GetUniformLocation(rs.applyLightsCs, "DepthTexture");
 	rs.applyLightsStencilBuffer   = GetUniformLocation(rs.applyLightsCs, "StencilTexture");
 	rs.applyLightsBilinearSampler = CreateSamplerState(SamplerStateConfig(BILINEAR,CLAMP,CLAMP,CLAMP,0,0,10,0,float4(0.0,0.0,0.0,0.0)));
@@ -68,6 +72,7 @@ int CallDeferredApplyLights(constants : DeferredApplyLightsConstants, deferredSt
 	SetUniformTextureRenderTarget(resources.applyLightsGbuffer1Uniform, deferredState.gbuffer1);
 	SetUniformBufferResource(resources.applyLightsInputBufferUniform,resources.applyLightsSourceLightBuffer);
 	SetUniformCubeMap(resources.applyLightsSkyCubeMapUniform, skyCubeMap);
+	SetUniformBufferResource(resources.applyLightsSkyDiffuseShUniform, skyShDiffuseBuffer);
 	SetUniformDepth(resources.applyLightsDepthBuffer,     deferredState.outDepthBuffer);
 	SetUniformStencil(resources.applyLightsStencilBuffer,     deferredState.outDepthBuffer);
 	SetComputeSampler(resources.applyLightsBilinearSampler, 0);
@@ -91,10 +96,11 @@ int Timeline_Update(info: UpdateInfo)
 
 int Timeline_Render(info: RenderInfo)
 {
-	if (gSkyVersion != skyObject->GetVersion())
-	{
+	//if (gSkyVersion != skyObject->GetVersion())
+	//{
+		bakeShFromCube(skyCubeMap, skyShDiffuseBuffer, 5, shBaker);
 		gSkyVersion = skyObject->GetVersion();
-	}
+	//}
 	UnbindRenderTargets();
 	BeginMarker("DeferredLighting");
 	viewState = GetViewState(info.windowId);

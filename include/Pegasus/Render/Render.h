@@ -460,7 +460,6 @@ namespace Render
     //! \note Requires: -Shader to be dispatched
     //!                 -Mesh to be dispatched
     void DrawInstanced(unsigned int instanceCount);
-
     //! Fills a uniform reference by name
     //! \param program, the program containing the uniform to get
     //! \param outputUniform, the empty uniform structure to be filled containing the metadata required
@@ -478,8 +477,9 @@ namespace Render
     //! \param the size of the buffer
     //! \param elementCount - the number of elements this buffer contains. Must be non 0, so it can be treated as an Array when set as an UAV
     //! \param true if this buffer can be binded as a uniform. If false, it will only be able to get binded as a read buffer.
+    //! \param makeStructured - true if this can be a structured buffer. False otherwise
     //! \note for now, compute buffers are static, and inaccessible for the cpu.
-    BufferRef CreateComputeBuffer(int bufferSize, int elementCount, bool makeUniformBuffer);
+    BufferRef CreateComputeBuffer(int bufferSize, int elementCount, bool makeUniformBuffer, bool makeStructured);
 
     //! Creates a buffer that the cpu can only copy data to, and that is readable as a structured buffer.
     //! \param buffer size

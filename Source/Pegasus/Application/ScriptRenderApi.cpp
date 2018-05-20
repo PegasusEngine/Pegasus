@@ -83,6 +83,7 @@ void Node_CreateMeshOperator(FunCallbackContext& context);
 /////Render API Functions////////////////////////////////////
 void Render_CreateUniformBuffer(FunCallbackContext& context);
 void Render_CreateStructuredReadBuffer(FunCallbackContext& context);
+void Render_CreateComputeBuffer(FunCallbackContext& context);
 void Render_SetBuffer(FunCallbackContext& context);
 void Render_GetUniformLocation(FunCallbackContext& context);
 void Render_SetUniformBuffer(FunCallbackContext& context);
@@ -856,6 +857,13 @@ static void RegisterFunctions(BlockLib* lib)
             Render_CreateStructuredReadBuffer
         },
         {
+            "CreateComputeBuffer",
+            "Buffer",
+            { "int", "int", "int", "int", nullptr },
+            { "bufferSize", "elementCount", "makeUniform", "makeStructured", nullptr },
+            Render_CreateComputeBuffer
+        },
+        {
             "SetBuffer",
             "int",
             { "Buffer", "*" },
@@ -1605,6 +1613,22 @@ void Render_CreateStructuredReadBuffer(FunCallbackContext& context)
         stream.SubmitReturn( RenderCollection::AddResource<Render::Buffer>(renderCollection, buffer));
 
     }
+}
+
+void Render_CreateComputeBuffer(FunCallbackContext& context)
+{
+    FunParamStream stream(context);
+    BsVmState* state = context.GetVmState();
+    Application::RenderCollection* renderCollection = GetContainer(state);
+    CHECK_PERMISSIONS(renderCollection, "CreateComputeBuffer", PERMISSIONS_RENDER_API_CALL);
+
+    int& bufferSize = stream.NextArgument<int>();
+    int& elementCount = stream.NextArgument<int>();
+    bool makeUniform = stream.NextArgument<int>() ? true : false;
+    bool makeStructured = stream.NextArgument<int>() ? true : false;
+
+    Render::BufferRef buffer = Render::CreateComputeBuffer(bufferSize, elementCount, makeUniform, makeStructured);
+    stream.SubmitReturn( RenderCollection::AddResource<Render::Buffer>(renderCollection, buffer));
 }
 
 void Render_SetBuffer(FunCallbackContext& context)

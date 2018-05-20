@@ -4,13 +4,12 @@
 
 struct ShL1
 {
-	v : float[4];
+	v : float4[4];
 };
 
 struct ShL2
 {
-	v : float[9];
-	pad : float;
+	v : float4[9];
 };
 
 #endif

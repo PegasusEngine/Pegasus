@@ -9,6 +9,7 @@ finalCombineBlendState = CreateBlendingState(BlendingConfig(NONE_BO,ZERO_M,ZERO_
 depthUniform = GetUniformLocation(finalCombineShader, "depthIn");
 colorUniform = GetUniformLocation(finalCombineShader, "colorIn");
 bilinearConfig = SamplerStateConfig();
+bilinearConfig.FilterType = BILINEAR;
 bilinearSampler = CreateSamplerState(bilinearConfig);
 quad = CreateMesh();
 quadGenerator = CreateMeshGenerator("QuadGenerator");

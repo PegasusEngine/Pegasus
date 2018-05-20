@@ -840,6 +840,7 @@ void Pegasus::Render::DXCreateBuffer(
     const bool isCompute = (bindFlags & D3D11_BIND_UNORDERED_ACCESS) != 0;
     const bool isIndex = (bindFlags & D3D11_BIND_INDEX_BUFFER) != 0;
     const bool isStructured = (extraMiscFlags & D3D11_RESOURCE_MISC_BUFFER_STRUCTURED) != 0;
+	const bool isRaw = isCompute && !isIndex && !isStructured;
     PG_ASSERTSTR((isStructured && ((bufferSize % elementCount) == 0)) || !isStructured, "Structured buffer byte size is not a multiple of its stride.");
 
     D3D11_BUFFER_DESC& desc = outBuffer.mDesc;
@@ -848,7 +849,7 @@ void Pegasus::Render::DXCreateBuffer(
     desc.BindFlags |= bindFlags;
 
     desc.CPUAccessFlags = isDynamic ? D3D11_CPU_ACCESS_WRITE : 0;
-    desc.MiscFlags = ((isCompute && !isIndex) ? D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS : 0) | extraMiscFlags;
+    desc.MiscFlags = (isRaw ? D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS : 0) | extraMiscFlags;
     desc.StructureByteStride = isStructured ? (bufferSize / elementCount) : 0;
 
     D3D11_SUBRESOURCE_DATA srd;
@@ -861,11 +862,11 @@ void Pegasus::Render::DXCreateBuffer(
     if (isCompute && outBuffer.mBuffer != nullptr)
     {
         D3D11_UNORDERED_ACCESS_VIEW_DESC& uavDesc = outBuffer.mUavDesc;
-        uavDesc.Format =  isIndex ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_TYPELESS;
+        uavDesc.Format =  isIndex ? DXGI_FORMAT_R16_UINT : isRaw ? DXGI_FORMAT_R32_TYPELESS : DXGI_FORMAT_UNKNOWN;
         uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
         uavDesc.Buffer.FirstElement = 0;
-        uavDesc.Buffer.NumElements = (UINT)desc.ByteWidth/4;
-        uavDesc.Buffer.Flags = isIndex ? 0 : D3D11_BUFFER_UAV_FLAG_RAW;
+        uavDesc.Buffer.NumElements = isRaw ? (UINT)desc.ByteWidth/4 : elementCount;
+        uavDesc.Buffer.Flags = isRaw ? D3D11_BUFFER_UAV_FLAG_RAW : 0;
         VALID_DECLARE(device->CreateUnorderedAccessView(outBuffer.mBuffer, &uavDesc, &outBuffer.mUav));
         
     }
@@ -926,7 +927,7 @@ Pegasus::Render::BufferRef Pegasus::Render::CreateUniformBuffer(int size)
     return b;
 }
 
-Pegasus::Render::BufferRef Pegasus::Render::CreateComputeBuffer(int bufferSize, int elementCount, bool makeUniformBuffer)
+Pegasus::Render::BufferRef Pegasus::Render::CreateComputeBuffer(int bufferSize, int elementCount, bool makeUniformBuffer, bool makeStructured)
 {
     Pegasus::Render::Buffer* b = RENDER_NEW(Pegasus::Render::Buffer);
     ID3D11DeviceContext * context;
@@ -943,7 +944,8 @@ Pegasus::Render::BufferRef Pegasus::Render::CreateComputeBuffer(int bufferSize, 
         false, /*isDynamic*/
         nullptr, /*init data*/
         (D3D11_BIND_FLAG)((makeUniformBuffer ? D3D11_BIND_CONSTANT_BUFFER : 0) | (D3D11_BIND_UNORDERED_ACCESS) | (D3D11_BIND_SHADER_RESOURCE)),
-        *bufferGpuData);
+        *bufferGpuData,
+	(makeStructured ? D3D11_RESOURCE_MISC_BUFFER_STRUCTURED : 0));
 
     BufferConfig bc;
     bc.mSize = bufferSize;

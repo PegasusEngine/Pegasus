@@ -1,0 +1,53 @@
+// Utility blockscript header to bind resources / bake stuff into SH.
+#ifndef SH_BAKER_H
+#define SH_BAKER_H
+
+#include "RenderSystems/Lighting/ShUtil.bsh"
+
+
+struct ShBakerResources
+{
+	shBakerProgram : ProgramLinkage;
+	shBakerProgramInput : Uniform;
+	constantsLocation : Uniform;
+	shBakerCubeSampler : SamplerState;
+	shBakerConstants : Buffer;
+};
+
+struct InternalShBakerConstants
+{
+	numSamples : int;
+	padding : float3;
+};
+
+ShBakerResources createShBaker()
+{
+	resources = ShBakerResources();
+	resources.shBakerProgram = LoadProgram("RenderSystems/Lighting/ShBaker.pas");
+	resources.shBakerProgramInput = GetUniformLocation(resources.shBakerProgram, "InputCube");	
+	resources.constantsLocation = GetUniformLocation(resources.shBakerProgram, "Constants");	
+	bilinearConfig  = SamplerStateConfig();
+	bilinearConfig.FilterType = BILINEAR;
+	resources.shBakerCubeSampler = CreateSamplerState(bilinearConfig);
+	shBakerConstants = CreateUniformBuffer(sizeof(InternalShBakerConstants));
+	return resources;
+}
+
+int bakeShFromCube(inputCube : CubeMap, shOutputBuffer : Buffer, numSamples : int, resources : ShBakerResources)
+{
+	BeginMarker("BakeShFromCube");
+	internalConstants = InternalShBakerConstants();
+	internalConstants.numSamples = numSamples;
+	SetBuffer(resources.shBakerConstants, internalConstants);
+	SetProgram(resources.shBakerProgram);
+	SetUniformCubeMap(resources.shBakerProgramInput,inputCube);
+	SetUniformBuffer(resources.constantsLocation, resources.shBakerConstants);
+	SetComputeSampler(resources.shBakerCubeSampler,0);
+	SetComputeOutput(shOutputBuffer, 0);
+	Dispatch(1,1,1);
+	UnbindComputeResources();
+	UnbindComputeOutputs();
+	EndMarker();
+}
+
+#endif
