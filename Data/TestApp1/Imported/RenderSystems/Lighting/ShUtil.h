@@ -15,11 +15,11 @@ struct ShL2
 };
 
 #define L0_M0(_n)  (1.0/C_SQRT_PI)
-#define L1_M_1(_n) (-(sqrt(3.0)*_n.y)/(2.0*C_SQRT_PI))
+#define L1_M_1(_n) ((sqrt(3.0)*_n.y)/(2.0*C_SQRT_PI))
 #define L1_M0(_n)  ( (sqrt(3.0)*_n.z)/(2.0*C_SQRT_PI))
 #define L1_M1(_n)  ( (sqrt(3.0)*_n.x)/(2.0*C_SQRT_PI))
-#define L2_M_2(_n) ( (sqrt(15.0)*_n.y*_n.x)/(2.0*C_SQRT_PI))
-#define L2_M_1(_n) (-(sqrt(15.0)*_n.y*_n.z)/(2.0*C_SQRT_PI))
+#define L2_M_2(_n) (-(sqrt(15.0)*_n.y*_n.x)/(2.0*C_SQRT_PI))
+#define L2_M_1(_n) ( (sqrt(15.0)*_n.y*_n.z)/(2.0*C_SQRT_PI))
 #define L2_M0(_n)  ((sqrt(5.0)*(3.0*_n.z*_n.z-1.0))/(4.0*C_SQRT_PI))
 #define L2_M1(_n)  (-(sqrt(15.0)*_n.x*_n.z)/(2.0*C_SQRT_PI))
 #define L2_M2(_n)  ((sqrt(15.0)*(_n.x*_n.x-_n.y*_n.y))/(4.0*C_SQRT_PI))
@@ -77,18 +77,18 @@ void shAdd(inout ShL2 v, in ShL2 a)
 		v.v[i] += a.v[i];
 }
 
-void shMultiply(inout ShL1 v, in float3 value)
+void shMultiply(inout ShL1 v, in float4 value)
 {
 	[unroll]
 	for (uint i = 0; i < 4; ++i)
-		v.v[i] += value;
+		v.v[i] *= value;
 }
 
-void shMultiply(inout ShL2 v, in float3 value)
+void shMultiply(inout ShL2 v, in float4 value)
 {
 	[unroll]
 	for (uint i = 0; i < 9; ++i)
-		v.v[i] += value;
+		v.v[i] *= value;
 }
 
 
@@ -99,7 +99,6 @@ float3 evaluateSh(in ShL2 sh, float3 n)
 	float c3 = 0.743125f;
 	float c4 = 0.886227f;
 	float c5 = 0.247708f;
-		
 	// l = 0, m = 0
 	float3 L00 = sh.v[0].xyz;
  

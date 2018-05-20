@@ -27,8 +27,8 @@ void main()
 		ShL2 b = L2Basis(normal);
 		float4 L = InputCube.SampleLevel(CubeSampler, normal, 0);
 		shMultiply(b, L);
-		shAdd(shResult, b);		
+		shAdd(shResult, b);
 	} 
-	shMultiply(shResult, (1.0/float(numSamples)).xxxx);
+	shMultiply(shResult, (4.0/float(numSamples)).xxxx);
 	output[0] = shResult; 
 }

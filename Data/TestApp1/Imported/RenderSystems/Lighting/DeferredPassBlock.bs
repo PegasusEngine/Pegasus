@@ -96,11 +96,11 @@ int Timeline_Update(info: UpdateInfo)
 
 int Timeline_Render(info: RenderInfo)
 {
-	//if (gSkyVersion != skyObject->GetVersion())
-	//{
-		bakeShFromCube(skyCubeMap, skyShDiffuseBuffer, 5, shBaker);
+	if (gSkyVersion != skyObject->GetVersion())
+	{
+		bakeShFromCube(skyCubeMap, skyShDiffuseBuffer, 25, shBaker);
 		gSkyVersion = skyObject->GetVersion();
-	//}
+	}
 	UnbindRenderTargets();
 	BeginMarker("DeferredLighting");
 	viewState = GetViewState(info.windowId);

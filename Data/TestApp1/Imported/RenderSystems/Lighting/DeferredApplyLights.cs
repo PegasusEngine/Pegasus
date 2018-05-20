@@ -81,8 +81,8 @@ void main(uint3 dti : SV_DispatchThreadId)
 			/*WorldPos debug*///OutputBuffer[coords] = float4(worldPos.xyz*0.01, 1.0);
 			/*Color debug*///OutputBuffer[coords] = float4(matInfo.color, 1.0);	
 			specular += matInfo.reflectance*SkyCube.SampleLevel(bilinearSampler, reflect(-viewVector,matInfo.worldNormal), (1.0-matInfo.smoothness)*10).rgb;
-			//diffuse += evaluateSh(SkyShDiffuse[0], matInfo.worldNormal).zzz;
-           	hdrOutput = float4(matInfo.color*diffuse.xyz+specular,1.0);//float4(matInfo.color*diffuse + specular,1.0);
+			diffuse += evaluateSh(SkyShDiffuse[0], matInfo.worldNormal).xyz;
+           	hdrOutput = float4(matInfo.color*diffuse.rgb+specular,1.0);
 	
         } 
 
