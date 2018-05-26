@@ -9,7 +9,7 @@
 //! \date   17th of July 2014
 //! \brief  Class that implements the platform specific / render api specific device
 
-#if PEGASUS_GAPI_DX
+#if PEGASUS_GAPI_DX11
 
 #pragma comment(lib, "d3d11")
 

@@ -9,7 +9,7 @@
 //! \date   15th July of 2014
 //! \brief  DirectX implementation of render context
 
-#if PEGASUS_GAPI_DX
+#if PEGASUS_GAPI_DX11
 
 
 

@@ -97,6 +97,7 @@ Application::Application(const ApplicationConfig& config)
     // Set up node managers
     mNodeManager = PG_NEW(nodeAlloc, -1, "NodeManager", Alloc::PG_MEM_PERM) Graph::NodeManager(nodeAlloc, nodeDataAlloc);
 
+#if PEGASUS_ENABLE_RENDER_API
     Pegasus::Shader::IShaderFactory * shaderFactory = Pegasus::Render::GetRenderShaderFactory();
     Pegasus::Mesh::IMeshFactory * meshFactory = Pegasus::Render::GetRenderMeshFactory();
     Pegasus::Texture::ITextureFactory * textureFactory = Pegasus::Render::GetRenderTextureFactory();
@@ -105,6 +106,7 @@ Application::Application(const ApplicationConfig& config)
     shaderFactory->Initialize(nodeDataAlloc);
     meshFactory->Initialize(nodeDataAlloc);
     textureFactory->Initialize(nodeDataAlloc);
+#endif
 
     
     // Set up asset library

@@ -9,7 +9,7 @@
 //! \date   15th July of 2014
 //! \brief  DirectX 11 mesh factory implementation
 
-#if PEGASUS_GAPI_DX
+#if PEGASUS_GAPI_DX11
 
 #include "Pegasus/Render/MeshFactory.h"
 #include "Pegasus/Mesh/MeshData.h"

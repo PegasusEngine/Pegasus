@@ -57,7 +57,9 @@ static void RegisterFunctions    (BlockLib* lib);
 static Application::RenderCollection* GetContainer(BsVmState* state);
 
 ////Program Methods//////////////////////////////////////////
+#if PEGASUS_ENABLE_RENDER_API
 void Program_SetShaderStage(FunCallbackContext& context);
+#endif
 
 ////Mesh Methods/////////////////////////////////////////////
 void MeshOperator_AddOperatorInput(FunCallbackContext& context);
@@ -81,6 +83,7 @@ void Node_CreateMeshGenerator(FunCallbackContext& context);
 void Node_CreateMeshOperator(FunCallbackContext& context);
 
 /////Render API Functions////////////////////////////////////
+#if PEGASUS_ENABLE_RENDER_API
 void Render_CreateUniformBuffer(FunCallbackContext& context);
 void Render_CreateStructuredReadBuffer(FunCallbackContext& context);
 void Render_CreateComputeBuffer(FunCallbackContext& context);
@@ -134,6 +137,7 @@ void Render_BeginMarker(FunCallbackContext& context);
 void Render_EndMarker(FunCallbackContext& context);
 void Render_CreateSimpleRasterConfig(FunCallbackContext& context);
 void Render_CreateSimpleRenderTargetConfig(FunCallbackContext& context);
+#endif
 
 template<class T>
 void Render_SetComputeOutputs(FunCallbackContext& context);
@@ -229,6 +233,7 @@ void Pegasus::Application::RegisterRenderApi(BlockScript::BlockLib* rtLib, Core:
     RegisterFunctions(rtLib);
 }
 
+#if PEGASUS_ENABLE_RENDER_API
 static void RegisterRenderEnums(BlockLib* lib)
 {
     using namespace Pegasus::Render;
@@ -404,6 +409,7 @@ static void RegisterRenderEnums(BlockLib* lib)
     lib->CreateEnumTypes(enumDefs, sizeof(enumDefs)/sizeof(enumDefs[0]));
 
 }
+#endif
 
 static void RegisterPropertyGridEnums(BlockLib* lib, Core::IApplicationContext* context)
 {
@@ -457,6 +463,7 @@ static void RegisterPropertyGridEnums(BlockLib* lib, Core::IApplicationContext* 
     lib->CreateEnumTypes(blockscriptEnumRegistration.Data(), blockscriptEnumRegistration.GetSize());
 }
 
+#if PEGASUS_ENABLE_RENDER_API
 static void RegisterRenderStructs(BlockLib* lib)
 {
     //creating an internal render pointer size (in case of 64 bit)
@@ -514,6 +521,7 @@ static void RegisterRenderStructs(BlockLib* lib)
     const int structDefSize = sizeof(structDefs) / sizeof(structDefs[0]);
     lib->CreateStructTypes(structDefs, structDefSize);
 }
+#endif
 
 const PropertyGrid::PropertyGridClassInfo* GetNodeDefRegisteredClass(
     const PropertyGrid::PropertyGridClassInfo* candidate, 
@@ -618,6 +626,7 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
     Application::RenderCollectionFactory* renderCollectionFactory = context->GetRenderCollectionFactory();
 
     ClassTypeDesc nodeDefs[] = {
+#if PEGASUS_ENABLE_RENDER_API
         {
             "Buffer",
             {}, 0, nullptr, 0, nullptr 
@@ -662,6 +671,7 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
             1,
             nullptr, 0, nullptr
         },
+#endif
         {
             "MeshGenerator",
             {},0,
@@ -783,8 +793,10 @@ static void RegisterNodes(BlockLib* lib, Core::IApplicationContext* context)
 
 static void RegisterTypes(BlockLib* lib, Core::IApplicationContext* context)
 {
+#if PEGASUS_ENABLE_RENDER_API
     RegisterRenderEnums(lib);
     RegisterRenderStructs(lib);
+#endif
     RegisterPropertyGridEnums(lib, context);
     RegisterNodes(lib, context);
 }
@@ -840,9 +852,10 @@ static void RegisterFunctions(BlockLib* lib)
             { "string", nullptr },
             { "typeId", nullptr },
             Node_CreateMeshOperator
-        },
+        }
         // Render API registration
-        {
+#if PEGASUS_ENABLE_RENDER_API
+        ,{
             "CreateUniformBuffer",
             "Buffer",
             { "int",        nullptr },
@@ -1234,6 +1247,7 @@ static void RegisterFunctions(BlockLib* lib)
             { "width", "height", "format", nullptr },
             Render_CreateSimpleRenderTargetConfig
         }
+#endif
     };
 
     lib->CreateIntrinsicFunctions(funDeclarations, sizeof(funDeclarations) / sizeof(funDeclarations[0]));
@@ -1289,6 +1303,7 @@ static Application::RenderCollection* GetContainer(BsVmState* state)
     return container;
 }
 
+#if PEGASUS_ENABLE_RENDER_API
 /////////////////////////////////////////////////////////////
 //!> Program Node functions
 /////////////////////////////////////////////////////////////
@@ -1316,6 +1331,7 @@ void Program_SetShaderStage(FunCallbackContext& context)
     }
     stream.SubmitReturn(retVal);
 }
+#endif
 
 /////////////////////////////////////////////////////////////
 //!> Mesh Node functions
@@ -1570,6 +1586,7 @@ void Node_CreateMeshOperator(FunCallbackContext& context)
 /////////////////////////////////////////////////////////////
 //!> Render functions
 /////////////////////////////////////////////////////////////
+#if PEGASUS_ENABLE_RENDER_API
 void Render_CreateUniformBuffer(FunCallbackContext& context)
 {
     FunParamStream stream(context);
@@ -2525,3 +2542,4 @@ void Render_CreateSimpleRenderTargetConfig(FunCallbackContext& context)
     outputConfig->mHeight = stream.NextArgument<int>();
     outputConfig->mFormat = stream.NextArgument<Core::Format>();
 }
+#endif

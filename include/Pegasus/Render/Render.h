@@ -34,6 +34,8 @@ namespace Pegasus
 
 namespace Pegasus
 {
+
+#if PEGASUS_ENABLE_RENDER_API
 namespace Render
 {
 
@@ -673,6 +675,14 @@ namespace Render
     //! Ends a maker for gpu debugging.
     void EndMarker();
 }
+#endif
+
+#if PEGASUS_ENABLE_RENDER_API2
+namespace Render2
+{
+}
+#endif
+
 }
 
 #endif

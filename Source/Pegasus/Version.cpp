@@ -36,7 +36,11 @@ void Internal_GetEngineDesc(Pegasus::PegasusDesc& engineDesc)
     engineDesc.mGapiVersion = 4;
 #elif PEGASUS_GAPI_DX
     engineDesc.mGapiType = Pegasus::PegasusDesc::DIRECT_3D;
+#if PEGASUS_GAPI_DX11
     engineDesc.mGapiVersion = 11; 
+#elif PEGASUS_GAPI_DX12
+    engineDesc.mGapiVersion = 12; 
+#endif
 #elif PEGASUS_GAPI_GLES
     #error Unsupported Pegasus GAPI GLES
 #else
