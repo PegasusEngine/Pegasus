@@ -539,4 +539,3 @@ namespace Application
     #undef RES_PROCESS
 }
 }
-

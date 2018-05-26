@@ -9,7 +9,7 @@
 //! \date   15th July of 2014
 //! \brief  DirectX 11 shader factory implementation
 
-#if PEGASUS_GAPI_DX
+#if PEGASUS_GAPI_DX11
 
 
 #pragma comment(lib, "d3dcompiler")
