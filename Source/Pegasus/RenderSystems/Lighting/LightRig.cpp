@@ -11,6 +11,8 @@
 
 #include "Pegasus/RenderSystems/Lighting/LightRig.h"
 
+#if RENDER_SYSTEM_CONFIG_ENABLE_LIGHTING
+
 using namespace Pegasus;
 using namespace Pegasus::Lighting;
 
@@ -101,3 +103,7 @@ const LightRig::GpuLightBuffer& LightRig::GetGpuBuffer(unsigned int& bufferByteS
     version = mLightBufferVersion;
     return mLightBuffer;
 }
+
+#else
+PEGASUS_AVOID_EMPTY_FILE_WARNING
+#endif

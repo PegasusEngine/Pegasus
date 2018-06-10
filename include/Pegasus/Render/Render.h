@@ -35,7 +35,6 @@ namespace Pegasus
 namespace Pegasus
 {
 
-#if PEGASUS_ENABLE_RENDER_API
 namespace Render
 {
 
@@ -64,6 +63,7 @@ namespace Render
         ConfigType mConfig;
     };
 
+#if PEGASUS_ENABLE_RENDER_API
     //! Enumeration representing the cube map face to set in a render target
     enum CubeFace
     {
@@ -674,12 +674,29 @@ namespace Render
 
     //! Ends a maker for gpu debugging.
     void EndMarker();
-}
 #endif
+}
 
 #if PEGASUS_ENABLE_RENDER_API2
-namespace Render2
+namespace Render
 {
+    struct BufferConfig
+    {
+    };
+
+    typedef BasicResource<BufferConfig>  Buffer;
+    typedef Core::Ref<Buffer> BufferRef;
+
+    //! Starts a new marker for gpu debugging.
+    //! \param marker - the marker string, null terminated.
+    inline void BeginMarker(const char* marker) {}
+
+    //! Ends a maker for gpu debugging.
+    inline void EndMarker() {}
+
+    //! function that internally cleans any dispatched programs / shaders / meshes
+    //! from the global state.
+    inline void CleanInternalState() {}
 }
 #endif
 

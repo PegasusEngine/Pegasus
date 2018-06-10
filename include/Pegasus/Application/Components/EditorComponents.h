@@ -116,9 +116,12 @@ private:
     Alloc::IAllocator* mAlloc;
     Pegasus::Shader::ProgramLinkageRef mTextureRenderProgram;
     Pegasus::Mesh::MeshRef mQuad;
+
+#if PEGASUS_ENABLE_RENDER_API
     Pegasus::Render::Uniform mTargetTexUniform;
     Pegasus::Render::RasterizerStateRef mRasterState;
     Pegasus::Render::BlendingStateRef mBlendState;
+#endif
 };
 
 //3d Grid component
@@ -185,8 +188,10 @@ private:
     Pegasus::Mesh::MeshRef mReticle;
     Pegasus::Shader::ProgramLinkageRef mReticleProgram;
     Pegasus::Mesh::MeshGeneratorRef mReticleGenerator;
+#if PEGASUS_ENABLE_RENDER_API
     Pegasus::Render::RasterizerStateRef mRasterState;
     Pegasus::Render::RasterizerStateRef mReticleRasterState;
+#endif
 };
 
 #if RENDER_SYSTEM_CONFIG_ENABLE_CAMERA

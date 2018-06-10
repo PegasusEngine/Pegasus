@@ -25,7 +25,7 @@ namespace Pegasus {
     }
 }
 
-
+#if PEGASUS_ENABLE_RENDER_API
 //! Timeline block for the TextureTest effect (texture viewer)
 //! \todo Use protected inheritance? In that case, give access to SetPosition() and SetLength()
 class TextureTestBlock : public Pegasus::Timeline::Block
@@ -86,6 +86,6 @@ private:
     Pegasus::Texture::TextureRef mTexture1, mTexture2, mTextureGradient1, mTextureGradient2, mTextureAdd1, mTextureAdd2;
     //GLuint mTextureSampler;
 };
-
+#endif
 
 #endif  // TESTAPP1_TEXTURETEST_BLOCK_H

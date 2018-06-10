@@ -25,6 +25,8 @@ namespace Pegasus {
     }
 }
 
+#if PEGASUS_ENABLE_RENDER_API
+
 //! Timeline block for the FractalCube effect (grayscale fractal with no shadow)
 //! \todo Use protected inheritance? In that case, give access to SetPosition() and SetLength()
 class FractalCubeBlock : public Pegasus::Timeline::Block
@@ -72,5 +74,5 @@ private:
     PEGASUS_ALIGN_END(16);
 };
 
-
+#endif
 #endif  // TESTAPP1_FRACTALCUBE_BLOCK_H

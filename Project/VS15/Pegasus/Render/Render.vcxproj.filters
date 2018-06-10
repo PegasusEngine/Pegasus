@@ -15,6 +15,9 @@
     <Filter Include="Source\DX11">
       <UniqueIdentifier>{501c8e72-289b-4d34-8656-1302362ff7dd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\DX12">
+      <UniqueIdentifier>{c73199e5-8868-44a8-bc0c-82f1006ddbb7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\RenderContext.h">
@@ -62,6 +65,9 @@
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX11\DXRenderContext.h">
       <Filter>Source\DX11</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12Device.h">
+      <Filter>Source\DX12</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.cpp">
@@ -108,6 +114,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX11\DXTextureFactory.cpp">
       <Filter>Source\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12Device.cpp">
+      <Filter>Source\DX12</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

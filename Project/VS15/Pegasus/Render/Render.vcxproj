@@ -37,6 +37,7 @@
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX11\DXDevice.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX11\DXGpuDataDefs.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX11\DXRenderContext.h" />
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12Device.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLDeviceWin32.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLGpuDataDefs.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLEWStaticInclude.h" />
@@ -50,6 +51,7 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX11\DXRenderImpl.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX11\DXShaderFactory.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX11\DXTextureFactory.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12Device.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLDeviceWin32.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLEWStaticInclude.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.cpp" />

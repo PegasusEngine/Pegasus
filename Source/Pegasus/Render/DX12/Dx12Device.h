@@ -4,16 +4,15 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   DXDevice.h
+//! \file   Dx12Device.h
 //! \author Kleber Garcia
-//! \date   17th of July 2014
-//! \brief  Class that implements the platform specific / render api specific device
+//! \date   May 25th 2018
+//! \brief  Class that implements the dx12 device
 
-#ifndef PEGASUS_DXDEVICE_H
-#define PEGASUS_DXDEVICE_H
-#if PEGASUS_GAPI_DX11
+#ifndef PEGASUS_DX12DEVICE_H
+#define PEGASUS_DX12DEVICE_H
 
-#include <D3D11.h>
+#include <D3D12.h>
 #include "Pegasus/Render/IDevice.h"
 
 
@@ -23,27 +22,18 @@ namespace Render
 {
 
 //! Windows specific device for open gl graphics api
-class DXDevice : public IDevice
+class Dx12Device : public IDevice
 {
 public:
     //! Constructor
     //! \param config the configuration needed
     //! \param render allocator for internal allocations
-    DXDevice(const DeviceConfig& config, Alloc::IAllocator * allocator);
-    virtual ~DXDevice();
-    
-    ID3D11Device * GetD3D() const { return mD3D11Device; }
-    ID3D11DeviceContext * GetD3DImmContext() const { return mD3D11ImmContext; }
-    
-private:
-    ID3D11Device * mD3D11Device;
-    ID3D11DeviceContext * mD3D11ImmContext;
-    
-    
+    Dx12Device(const DeviceConfig& config, Alloc::IAllocator * allocator);
+    virtual ~Dx12Device();
 };
 
 }
 }
 
-#endif
+
 #endif

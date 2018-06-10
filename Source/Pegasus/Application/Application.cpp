@@ -106,6 +106,11 @@ Application::Application(const ApplicationConfig& config)
     shaderFactory->Initialize(nodeDataAlloc);
     meshFactory->Initialize(nodeDataAlloc);
     textureFactory->Initialize(nodeDataAlloc);
+#else
+    Pegasus::Shader::IShaderFactory * shaderFactory = nullptr;
+    Pegasus::Mesh::IMeshFactory * meshFactory = nullptr;
+    Pegasus::Texture::ITextureFactory * textureFactory = nullptr;
+
 #endif
 
     
@@ -128,8 +133,10 @@ Application::Application(const ApplicationConfig& config)
     mBsReflectionInfo = PG_NEW(nodeAlloc, -1, "Bs Reflection Info", Alloc::PG_MEM_PERM) App::AppBsReflectionInfo(nodeAlloc);
 #endif
 
+#if PEGASUS_ENABLE_RENDER_API
     //register shader manager into factory, so factory can handle includes
     shaderFactory->RegisterShaderManager(mShaderManager);
+#endif
 
     // Register the entire render api
     mRenderApiScript = mBlockScriptManager->CreateBlockLib("RenderApi");
@@ -232,7 +239,9 @@ void Application::Load()
         for (unsigned int j = 0; j < descs.GetSize(); ++j)
         {
             RenderSystems::RenderSystem::ShaderGlobalConstantDesc& desc = descs[j];
+#if PEGASUS_ENABLE_RENDER_API
             Render::RegisterGlobalConstant(desc.constantName, desc.buffer);
+#endif
         }
     }
 
@@ -282,7 +291,9 @@ void Application::Unload()
     // Initialize all the components for all the windows.
     mWindowManager->UnloadAllComponents(this);
     
+#if PEGASUS_ENABLE_RENDER_API
     Render::ClearGlobalConstants();
+#endif
 
     // Custom shutdown, done in the user application
     ShutdownApp();
