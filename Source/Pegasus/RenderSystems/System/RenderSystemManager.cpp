@@ -100,7 +100,9 @@ const RenderSystemManager::RenderSystemContainer* RenderSystemManager::FindSyste
 
 void RenderSystemManager::InitializeSystems(Core::IApplicationContext* appContext)
 {
+#if PEGASUS_ENABLE_RENDER_API
     mLutLib->Load(appContext);
+#endif
 
     for (unsigned int i = 0; i < mSystems.GetSize(); ++i)
     {

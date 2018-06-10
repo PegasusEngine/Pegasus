@@ -804,6 +804,7 @@ static void RegisterTypes(BlockLib* lib, Core::IApplicationContext* context)
 static void RegisterFunctions(BlockLib* lib)
 {
     const FunctionDeclarationDesc funDeclarations[] = {
+#if PEGASUS_ENABLE_RENDER_API
         {
             "LoadProgram",
             "ProgramLinkage",
@@ -811,6 +812,7 @@ static void RegisterFunctions(BlockLib* lib)
             { "path", nullptr },
             Node_LoadProgram
         },
+#endif
         {
             "CreateTexture",
             "Texture",
@@ -1252,6 +1254,7 @@ static void RegisterFunctions(BlockLib* lib)
 
     lib->CreateIntrinsicFunctions(funDeclarations, sizeof(funDeclarations) / sizeof(funDeclarations[0]));
     
+#if PEGASUS_ENABLE_RENDER_API
 #define RES_PROCESS(resourceType, memberName, typeName, hasProperties, canUpdate) \
         {\
             "GlobalRegister" typeName,\
@@ -1288,6 +1291,8 @@ static void RegisterFunctions(BlockLib* lib)
 #undef RES_PROCESS
 
     lib->CreateIntrinsicFunctions(resourceFuncDecl, sizeof(resourceFuncDecl) / sizeof(resourceFuncDecl[0]));
+#endif
+
 }
 
 
@@ -2370,6 +2375,7 @@ void Render_GenerateMipsCM(FunCallbackContext& context)
         PG_LOG('ERR_', "Trying to generate mips in invalid resource");
     }
 }
+#endif
 
 bool PropertyGridPropertyCallback(const PropertyGrid::PropertyAccessor* accessor, const Pegasus::BlockScript::PropertyCallbackContext& context)
 {
@@ -2488,6 +2494,7 @@ void GlobalCache_Find<T>(FunCallbackContext& context)
     stream.SubmitReturn<RenderCollection::CollectionHandle>(collectionHandle);
 }
 
+#if PEGASUS_ENABLE_RENDER_API
 template<class T>
 void Render_SetComputeOutputs(FunCallbackContext& context)
 {
