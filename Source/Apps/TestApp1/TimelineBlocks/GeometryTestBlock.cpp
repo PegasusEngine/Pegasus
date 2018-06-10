@@ -26,7 +26,7 @@
 #include "Pegasus/Timeline/Timeline.h"
 
 using namespace Pegasus;
-
+#if PEGASUS_ENABLE_RENDER_API
 GeometryTestBlock::GeometryTestBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Core::IApplicationContext* appContext)
     : Pegasus::Timeline::Block(allocator, appContext)
 
@@ -271,3 +271,6 @@ void GeometryTestBlock::Render(const Timeline::RenderInfo& renderInfo)
     Pegasus::Render::SetRasterizerState(mDefaultRasterState);
 
 }
+#else
+PEGASUS_AVOID_EMPTY_FILE_WARNING
+#endif

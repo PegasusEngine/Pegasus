@@ -15,6 +15,7 @@
 #include "Pegasus/Mesh/MeshManager.h"
 #include "Pegasus/Timeline/Timeline.h"
 //----------------------------------------------------------------------------------------
+#if PEGASUS_ENABLE_RENDER_API
 
 FractalCubeBlock::FractalCubeBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Core::IApplicationContext* appContext)
 :   Pegasus::Timeline::Block(allocator, appContext)
@@ -78,3 +79,6 @@ void FractalCubeBlock::Render(const Pegasus::Timeline::RenderInfo& renderInfo)
     
     Pegasus::Render::Draw();
 }
+#else
+PEGASUS_AVOID_EMPTY_FILE_WARNING
+#endif
