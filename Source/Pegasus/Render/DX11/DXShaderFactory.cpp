@@ -9,15 +9,15 @@
 //! \date   15th July of 2014
 //! \brief  DirectX 11 shader factory implementation
 
-#if PEGASUS_GAPI_DX11
+#include "Pegasus/Core/Shared/CompilerEvents.h"
+#include "Pegasus/Render/ShaderFactory.h"
+#include "Pegasus/Render/Render.h"
 
+#if PEGASUS_GAPI_DX11
 
 #pragma comment(lib, "d3dcompiler")
 #pragma comment(lib, "dxguid")
 
-
-#include "Pegasus/Core/Shared/CompilerEvents.h"
-#include "Pegasus/Render/ShaderFactory.h"
 #include "Pegasus/Graph/NodeData.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Shader/ShaderStage.h"
@@ -696,5 +696,22 @@ void ClearGlobalConstants()
 }
 
 #else
-PEGASUS_AVOID_EMPTY_FILE_WARNING
+namespace Pegasus {
+namespace Render {
+
+Shader::IShaderFactory * GetRenderShaderFactory()
+{
+	return nullptr;
+}
+
+void RegisterGlobalConstant(const char* name, Render::BufferRef& buffer)
+{
+}
+
+void ClearGlobalConstants()
+{
+}
+
+}
+}
 #endif

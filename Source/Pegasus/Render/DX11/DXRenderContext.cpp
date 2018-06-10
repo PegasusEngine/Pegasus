@@ -9,9 +9,9 @@
 //! \date   15th July of 2014
 //! \brief  DirectX implementation of render context
 
+#include "Pegasus/Render/RenderContext.h"
+
 #if PEGASUS_GAPI_DX11
-
-
 
 #include "Pegasus/Render/RenderContext.h"
 #include "../Source/Pegasus/Render/DX11/DXRenderContext.h"
@@ -317,6 +317,42 @@ void Context::Resize(int width, int height)
 }//namespace Pegasus
 #else
 
-PEGASUS_AVOID_EMPTY_FILE_WARNING
+namespace Pegasus {
+namespace Render {
+
+
+Context::Context(const ContextConfig& config)
+    : mAllocator(config.mAllocator),
+      mParentDevice(config.mDevice),
+      mPrivateData(nullptr)
+{
+}
+
+
+Context::~Context()
+{
+}
+
+
+void Context::Bind() const
+{
+}
+
+
+void Context::Unbind() const
+{ 
+}
+
+
+void Context::Swap() const
+{
+}
+
+void Context::Resize(int width, int height)
+{
+}
+
+}
+}
 
 #endif

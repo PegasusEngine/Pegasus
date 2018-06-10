@@ -24,7 +24,8 @@
 #include "Pegasus/Timeline/Timeline.h"
 
 //----------------------------------------------------------------------------------------
-    
+#if PEGASUS_ENABLE_RENDER_API
+
 TextureTestBlock::TextureTestBlock(Pegasus::Alloc::IAllocator * allocator, Pegasus::Core::IApplicationContext* appContext)
 :   Pegasus::Timeline::Block(allocator, appContext)
 {
@@ -339,3 +340,7 @@ void TextureTestBlock::CreateTextureAdd2()
     mTextureAdd2->SetName("Add2");
 #endif
 }
+
+#else
+PEGASUS_AVOID_EMPTY_FILE_WARNING
+#endif

@@ -197,12 +197,13 @@ TestApp1::~TestApp1()
     
 void TestApp1::InitializeApp()
 {
+#if PEGASUS_ENABLE_RENDER_API
     // initialize timeline blocks. required to load the timeline.
     REGISTER_TIMELINE_BLOCK(FractalCubeBlock);
     REGISTER_TIMELINE_BLOCK(FractalCube2Block);
     REGISTER_TIMELINE_BLOCK(TextureTestBlock);
     REGISTER_TIMELINE_BLOCK(GeometryTestBlock);
-
+#endif
     // load the timeline. For now gets unloaded at destruction of timeline manager.
     Pegasus::Timeline::TimelineManager * const timelineManager = GetTimelineManager();
     Pegasus::Timeline::TimelineRef timeline = timelineManager->LoadTimeline("Timeline/mainTimeline.pas");
