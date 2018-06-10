@@ -16,6 +16,7 @@
 #include "Pegasus/Timeline/Timeline.h"
 
 //----------------------------------------------------------------------------------------
+#if PEGASUS_ENABLE_RENDER_API
 
 FractalCube2Block::FractalCube2Block(Pegasus::Alloc::IAllocator * allocator, Pegasus::Core::IApplicationContext* appContext)
 :   Pegasus::Timeline::Block(allocator, appContext)
@@ -89,3 +90,6 @@ void FractalCube2Block::Render(const Pegasus::Timeline::RenderInfo& renderInfo)
     
     Pegasus::Render::SetBlendingState(mDefaultBlendingState);
 }
+#else
+PEGASUS_AVOID_EMPTY_FILE_WARNING
+#endif

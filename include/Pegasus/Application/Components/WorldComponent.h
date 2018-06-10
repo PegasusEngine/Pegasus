@@ -132,7 +132,9 @@ private:
     FreeCamState mFreeCamState;
 #endif 
 
+#if PEGASUS_ENABLE_RENDER_API
     Render::RasterizerStateRef mDefaultRasterState;
+#endif
 };
 
 }

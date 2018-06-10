@@ -103,11 +103,12 @@ void WorldComponent::DestroyState(const ComponentContext& context, WindowCompone
 
 void WorldComponent::Load(Core::IApplicationContext *appContext) {
     PG_ASSERTSTR(appContext->GetTimelineManager() != nullptr, "Invalid timeline for the application");
-
+#if PEGASUS_ENABLE_RENDER_API
     Pegasus::Render::RasterizerConfig rasterConfig;
     rasterConfig.mDepthFunc = Pegasus::Render::RasterizerConfig::NONE_DF;
     rasterConfig.mCullMode = Pegasus::Render::RasterizerConfig::CW_CM;
     mDefaultRasterState = Pegasus::Render::CreateRasterizerState(rasterConfig);
+#endif
     appContext->GetTimelineManager()->InitializeAllTimelines();
 }
 
@@ -148,6 +149,7 @@ void WorldComponent::Render(const ComponentContext& context, Wnd::WindowComponen
     gCameraSystem->WindowUpdate(context.mTargetWindow->GetWidth(), context.mTargetWindow->GetHeight());
 #endif
 
+#if PEGASUS_ENABLE_RENDER_API
     // set default render target
     Pegasus::Render::SetViewport(Pegasus::Render::Viewport(viewportWidth, viewportHeight));
     Pegasus::Render::DispatchDefaultRenderTarget();
@@ -161,11 +163,12 @@ void WorldComponent::Render(const ComponentContext& context, Wnd::WindowComponen
     
     // clear buffers
     Pegasus::Render::Clear(/*color*/true, /*depth*/ true, /*stencil*/false);
-
+#endif
     // Render the content of the timeline
     Pegasus::Timeline::Timeline* timeline = context.mAppContext->GetTimelineManager()->GetCurrentTimeline();
     if (timeline != nullptr)
     {
+#if PEGASUS_ENABLE_RENDER_API
         if (static_cast<WorldComponentState*>(state)->GetIsWireframe())
         {
             Pegasus::Render::SetPrimitiveMode(Pegasus::Render::PRIMITIVE_LINE_STRIP);
@@ -174,8 +177,11 @@ void WorldComponent::Render(const ComponentContext& context, Wnd::WindowComponen
         {
             Pegasus::Render::SetPrimitiveMode(Pegasus::Render::PRIMITIVE_AUTOMATIC);
         }
+#endif
         timeline->Render(worldState->GetWindowIndex(), context.mTargetWindow);
+#if PEGASUS_ENABLE_RENDER_API
         Pegasus::Render::SetPrimitiveMode(Pegasus::Render::PRIMITIVE_AUTOMATIC);
+#endif
     }
     Pegasus::Render::EndMarker();
 }

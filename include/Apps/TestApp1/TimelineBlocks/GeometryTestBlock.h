@@ -27,6 +27,7 @@ namespace Pegasus {
 
 #define MAX_SPHERES 4
 
+#if PEGASUS_ENABLE_RENDER_API
 class GeometryTestBlock : public Pegasus::Timeline::Block
 {
 
@@ -106,4 +107,4 @@ private:
     PEGASUS_ALIGN_END(16);
 
 };
-
+#endif

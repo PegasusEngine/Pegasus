@@ -86,6 +86,7 @@ void TextureViewComponent::DestroyState(const Wnd::ComponentContext& context, Wn
 
 void TextureViewComponent::Load(Core::IApplicationContext* appContext)
 {
+#if PEGASUS_ENABLE_RENDER_API
     //! Shader declarations
     const char textureVsShader[] = 
         "void main(in float3 p0 : POSITION0,"
@@ -135,6 +136,7 @@ void TextureViewComponent::Load(Core::IApplicationContext* appContext)
     BlendingConfig blendConfig;
     blendConfig.mBlendingOperator = BlendingConfig::NONE_BO;
     mBlendState = CreateBlendingState(blendConfig);
+#endif
 }
 
 void TextureViewComponent::Update(Core::IApplicationContext* appContext)
@@ -147,6 +149,7 @@ void TextureViewComponent::WindowUpdate(const Wnd::ComponentContext& context, Wn
 
 void TextureViewComponent::Render(const Wnd::ComponentContext& context, Wnd::WindowComponentState* state)
 {
+#if PEGASUS_ENABLE_RENDER_API
     TextureViewComponentState* textureViewState = static_cast<TextureViewComponentState*>(state); 
     if (textureViewState->mTargetTexture != nullptr)
     {
@@ -162,6 +165,7 @@ void TextureViewComponent::Render(const Wnd::ComponentContext& context, Wnd::Win
         SetUniformTexture(mTargetTexUniform, textureViewState->mTargetTexture);
         Draw();
     }
+#endif
 }
 
 void TextureViewComponent::Unload(Core::IApplicationContext* appContext)
@@ -217,7 +221,7 @@ void GridComponent::DestroyState(const Wnd::ComponentContext& context, Wnd::Wind
 
 void GridComponent::Load(Core::IApplicationContext* appContext)
 {
-
+#if PEGASUS_ENABLE_RENDER_API
     //! Shader declarations
     const char gridVsShader[] = 
         "#include \"RenderSystems/Camera/Common.h\"\n"
@@ -382,7 +386,7 @@ void GridComponent::Load(Core::IApplicationContext* appContext)
     for (unsigned short i = 0; i < 6; ++i) reticleMeshData->PushIndex(i);
 
     mReticle->SetGeneratorInput(mReticleGenerator);
-
+#endif
 }
 
 void GridComponent::Update(Core::IApplicationContext* appContext)
@@ -395,7 +399,7 @@ void GridComponent::WindowUpdate(const Wnd::ComponentContext& context, Wnd::Wind
 
 void GridComponent::Render(const Wnd::ComponentContext& context, Wnd::WindowComponentState* state)
 {
-
+#if PEGASUS_ENABLE_RENDER_API
     GridComponentState* gridState = static_cast<GridComponentState*>(state);
     DispatchDefaultRenderTarget();
     
@@ -419,7 +423,7 @@ void GridComponent::Render(const Wnd::ComponentContext& context, Wnd::WindowComp
         Draw();
         Render::EndMarker();
     }
-
+#endif
 }
 
 void GridComponent::Unload(Core::IApplicationContext* appContext)
