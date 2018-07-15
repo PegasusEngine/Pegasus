@@ -49,6 +49,7 @@ public:
     //! Global function that creats the device specific to a platform
     static IDevice * CreatePlatformDevice(const DeviceConfig& config, Alloc::IAllocator * allocator);
 
+
 protected:
     //! constructor, which creates the device
     //! \param config configuration stored

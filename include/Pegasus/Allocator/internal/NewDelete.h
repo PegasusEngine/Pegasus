@@ -13,7 +13,7 @@
 #define PEGASUS_ALLOC_NEWDELETE_H
 
 #include "Pegasus/Allocator/IAllocator.h"
-
+/*
 //! Naked new operator
 //! \param Size in bytes to alloc
 void* operator new(size_t size);
@@ -21,6 +21,7 @@ void* operator new(size_t size);
 //! Naked new operator
 //! \param Size in bytes to alloc
 void* operator new[](size_t size);
+*/
 
 //! Pegasus new operator
 //! \param size Size in bytes to alloc
@@ -68,11 +69,12 @@ void* operator new[] (size_t size, Pegasus::Alloc::IAllocator* allocator, Pegasu
 //! \warning Never call this, it will force a crash.  Use PG_NEW_ARRAY instead
 void* operator new[] (size_t size, Pegasus::Alloc::IAllocator* allocator, Pegasus::Alloc::Alignment align, Pegasus::Alloc::Flags flags, Pegasus::Alloc::Category cat, const char * debugText, const char * file, int line);
 
-
+/*
 //! Pegasus delete operator
 //! \param pointer Address of memory to delete
 //! \todo Make sure this function is called properly in a unit test
 void operator delete(void* pointer);
+*/
 
 //! Pegasus delete operator
 //! \param pointer Address of memory to delete
