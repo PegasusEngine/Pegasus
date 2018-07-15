@@ -47,13 +47,13 @@ public:
     virtual ~Dx12Device();
 
     GraphicsCardInfos* GetGraphicsCardInfos() const { return sCardInfos; }
-    ID3D12Device* GetD3D() { return m_device; }
+    ID3D12Device* GetD3D() { return mDevice; }
 
 private:
 
     static int sDeviceRefCounts;
     static GraphicsCardInfos* sCardInfos;
-    ID3D12Device2* m_device;
+    ID3D12Device2* mDevice;
 
 };
 

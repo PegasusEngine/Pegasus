@@ -28,8 +28,8 @@ struct DisplayConfig
 {
     Os::ModuleHandle moduleHandle; //! handle to the HINSTANCE if windows, handle to the proc if linux
     IDevice* device;
-    int width;
-    int height;
+    unsigned int width;
+    unsigned int height;
 };
 
 class IDisplay
@@ -44,7 +44,7 @@ public:
     virtual void EndFrame() = 0;
     
     // New width, new height.
-    virtual void Resize(int width, int height) = 0;
+    virtual void Resize(unsigned int width, unsigned int height) = 0;
 
     // Gets the config of this display
     const DisplayConfig& GetConfig() const { return mConfig; }

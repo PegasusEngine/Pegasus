@@ -1,14 +1,8 @@
 #include "Dx12Display.h"
 #include "Dx12Device.h"
+#include "Dx12Defs.h"
+#include <dxgi1_6.h>
 #include <Pegasus/Allocator/IAllocator.h>
-
-#if PEGASUS_ENABLE_ASSERT
-#define VALID_DECLARE(exp) HRESULT hr = exp;PG_ASSERT(hr==S_OK)
-#define VALID(exp) hr = exp;PG_ASSERT(hr == S_OK)
-#else
-#define VALID_DECLARE(exp) exp
-#define VALID(exp) exp
-#endif
 
 namespace Pegasus
 {
@@ -17,7 +11,7 @@ namespace Render
 
 
 Dx12Display::Dx12Display(const DisplayConfig& config, Alloc::IAllocator* alloc) 
-: IDisplay(config, alloc)
+: IDisplay(config, alloc), mSwapChain(nullptr)
 {
     PG_ASSERT(config.device);
     PG_ASSERT(config.moduleHandle != NULL);
@@ -58,14 +52,16 @@ Dx12Display::Dx12Display(const DisplayConfig& config, Alloc::IAllocator* alloc)
         //swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
         swapChainDesc.Flags = 0;
 
-        //VALID(dXGIFactory->CreateSwapChainForHwnd(
-        //    mDevice->GetD3D(),
-        //    (HWND)config.mOwnerWindowHandle,
-        //    &swapChainDesc,
-        //    NULL, //no fullscreen desc
-        //    NULL,
-        //    &mSwapChain
-        //));
+#if 0
+        DX_VALID_DECLARE(dXGIFactory->CreateSwapChainForHwnd(
+            mDevice->GetD3D(),
+            (HWND)config.moduleHandle,
+            &swapChainDesc,
+            NULL, //no fullscreen desc
+            NULL,
+            &mSwapChain
+        ));
+#endif
     }
     
 }
@@ -86,7 +82,7 @@ void Dx12Display::EndFrame()
 {
 }
 
-void Dx12Display::Resize(int width, int height)
+void Dx12Display::Resize(unsigned int width, unsigned int height)
 {
     if (width != mWidth || height != mHeight)
     {

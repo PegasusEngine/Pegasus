@@ -10,7 +10,7 @@
 //! \brief  Class for a single window in a Pegasus application.
 
 #include "Pegasus/Window/Window.h"
-#include "Pegasus/Render/RenderContext.h"
+#include "Pegasus/Render/IDisplay.h"
 #include "Pegasus/Core/IApplicationContext.h"
 #include "../Source/Pegasus/Window/IWindowImpl.h"
 #include "Pegasus/Sound/Sound.h"
@@ -82,14 +82,13 @@ WindowMessageHandler::~WindowMessageHandler()
 
 void WindowMessageHandler::OnCreate(Os::WindowHandle handle)
 {
-    Render::ContextConfig contextConfig;
+    Render::DisplayConfig displayConfig;
 
     // Create context
-    contextConfig.mAllocator = mParent->mRenderAllocator;
-    contextConfig.mOwnerWindowHandle = handle;
-    contextConfig.mDevice = mParent->GetRenderDevice();
-    mParent->GetDimensions(contextConfig.mWidth, contextConfig.mHeight);
-    mParent->mRenderContext = PG_NEW(mParent->mRenderAllocator, -1, "Render::Context", Pegasus::Alloc::PG_MEM_PERM) Render::Context(contextConfig);
+    displayConfig.moduleHandle = handle;
+    displayConfig.device = mParent->GetRenderDevice();
+    mParent->GetDimensions(displayConfig.width, displayConfig.height);
+    mParent->mDisplay = Render::IDisplay::CreatePlatformDisplay(displayConfig, mParent->mRenderAllocator);
     mParent->mContextCreated = true;
 }
 
@@ -111,8 +110,8 @@ void WindowMessageHandler::RequestRepaintEditorWindow()
 void WindowMessageHandler::OnDestroy()
 {
      // Destroy context
-    PG_DELETE(mParent->mRenderAllocator, mParent->mRenderContext);
-    mParent->mRenderContext = nullptr;
+    PG_DELETE(mParent->mRenderAllocator, mParent->mDisplay);
+    mParent->mDisplay = nullptr;
     mParent->mContextCreated = false;
 }
 
@@ -133,7 +132,7 @@ void WindowMessageHandler::OnResize(unsigned int width, unsigned int height)
     mParent->mWidth = width;
     mParent->mHeight = height;
     mParent->mRatio = (height > 0 ? static_cast<float>(width) / static_cast<float>(height) : 1.0f);
-    mParent->mRenderContext->Resize(width, height);
+    mParent->mDisplay->Resize(width, height);
 }
 
 #if PEGASUS_ENABLE_PROXIES
@@ -165,7 +164,7 @@ Window::Window(const WindowConfig& config)
     mRenderAllocator(config.mRenderAllocator),
     mDevice(config.mDevice),
     mWindowContext(config.mWindowContext),
-    mRenderContext(nullptr),
+    mDisplay(nullptr),
     mContextCreated(false),
     mWidth(config.mWidth),
     mHeight(config.mHeight),
@@ -242,10 +241,10 @@ void Window::Draw()
 #if PEGASUS_ENABLE_PROXIES
     if (!mEnableDraw) return;
 #endif
-    if (mRenderContext != nullptr)
+    if (mDisplay != nullptr)
     {
         //Use this context on this thread.
-        mRenderContext->Bind();
+        mDisplay->BeginFrame();
         
         ComponentContext ctx = { mWindowContext, this };
 
@@ -276,7 +275,7 @@ void Window::Draw()
         }
 
         //Double buffer / end frame update.
-        mRenderContext->Swap();
+        mDisplay->EndFrame();
     }
     else
     {
