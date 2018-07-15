@@ -206,7 +206,8 @@ void TestApp1::InitializeApp()
 #endif
     // load the timeline. For now gets unloaded at destruction of timeline manager.
     Pegasus::Timeline::TimelineManager * const timelineManager = GetTimelineManager();
-    Pegasus::Timeline::TimelineRef timeline = timelineManager->LoadTimeline("Timeline/mainTimeline.pas");
+    //Pegasus::Timeline::TimelineRef timeline = timelineManager->LoadTimeline("Timeline/mainTimeline.pas");
+	Pegasus::Timeline::TimelineRef timeline = timelineManager->LoadTimeline("Timeline/mainTimelineDx12.pas");
 }
 
 //----------------------------------------------------------------------------------------

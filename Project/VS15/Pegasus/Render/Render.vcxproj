@@ -28,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\IDevice.h" />
+    <ClInclude Include="..\..\..\..\include\Pegasus\Render\IDisplay.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\MeshFactory.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\Render.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\RenderContext.h" />
@@ -37,7 +38,9 @@
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX11\DXDevice.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX11\DXGpuDataDefs.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX11\DXRenderContext.h" />
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12Defs.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12Device.h" />
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12Display.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLDeviceWin32.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLGpuDataDefs.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLEWStaticInclude.h" />
@@ -52,6 +55,7 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX11\DXShaderFactory.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX11\DXTextureFactory.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12Device.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12Display.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLDeviceWin32.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLEWStaticInclude.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.cpp" />
@@ -179,7 +183,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_ALLOW_RTCc_IN_STL;_LIB;%(PreprocessorDefinitions);_PEGASUSAPP_DLL;_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_ALLOW_RTCc_IN_STL;_LIB;%(PreprocessorDefinitions);_PEGASUSAPP_DLL;_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_DEBUG;_HAS_EXCEPTIONS=0;</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <SmallerTypeCheck>true</SmallerTypeCheck>
@@ -189,6 +193,8 @@
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
       <DisableSpecificWarnings>4577</DisableSpecificWarnings>
+      <UndefinePreprocessorDefinitions>
+      </UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -211,7 +217,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUSAPP_DLL;_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_OPT</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUSAPP_DLL;_PEGASUS_ENGINE;_PEGASUS_DEV;_PEGASUS_OPT;_HAS_EXCEPTIONS=0;</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <ExceptionHandling>false</ExceptionHandling>
@@ -219,6 +225,8 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
       <DisableSpecificWarnings>4577</DisableSpecificWarnings>
+      <UndefinePreprocessorDefinitions>
+      </UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -241,7 +249,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_ALLOW_RTCc_IN_STL;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_REL;_PEGASUS_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_ALLOW_RTCc_IN_STL;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_REL;_PEGASUS_DEBUG;_HAS_EXCEPTIONS=0;</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <SmallerTypeCheck>true</SmallerTypeCheck>
@@ -251,6 +259,8 @@
       <MinimalRebuild>false</MinimalRebuild>
       <TreatWarningAsError>true</TreatWarningAsError>
       <DisableSpecificWarnings>4577</DisableSpecificWarnings>
+      <UndefinePreprocessorDefinitions>
+      </UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -277,7 +287,7 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_REL;_PEGASUS_FINAL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_REL;_PEGASUS_FINAL;_HAS_EXCEPTIONS=0;</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <ExceptionHandling>false</ExceptionHandling>
@@ -287,6 +297,8 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
       <DisableSpecificWarnings>4577</DisableSpecificWarnings>
+      <UndefinePreprocessorDefinitions>
+      </UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -313,7 +325,7 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_REL;_PEGASUS_PROFILE</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_REL;_PEGASUS_PROFILE;_HAS_EXCEPTIONS=0;</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <ExceptionHandling>false</ExceptionHandling>
@@ -323,6 +335,8 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
       <DisableSpecificWarnings>4577</DisableSpecificWarnings>
+      <UndefinePreprocessorDefinitions>
+      </UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -351,7 +365,7 @@
       <Optimization>MinSpace</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>false</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_REL;_PEGASUS_SMALL</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions);_PEGASUS_ENGINE;_PEGASUS_REL;_PEGASUS_SMALL;_HAS_EXCEPTIONS=0;</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)..\..\..\..\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <ExceptionHandling>false</ExceptionHandling>
@@ -361,6 +375,8 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
       <DisableSpecificWarnings>4577</DisableSpecificWarnings>
+      <UndefinePreprocessorDefinitions>
+      </UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

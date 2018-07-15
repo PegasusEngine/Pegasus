@@ -20,7 +20,7 @@ static inline void ForceCrash()
 }
 
 //----------------------------------------------------------------------------------------
-
+/*
 void* operator new(size_t size)
 {
     // Force crash
@@ -40,7 +40,7 @@ void* operator new[](size_t size)
 
     return nullptr;
 }
-
+*/
 //----------------------------------------------------------------------------------------
 
 // PG_NEW
@@ -80,13 +80,14 @@ void* operator new[](size_t size, Pegasus::Alloc::IAllocator* allocator, Pegasus
 }
 
 //----------------------------------------------------------------------------------------
-
+/*
 void operator delete(void* pointer)
 {
     // Force crash
     // Don't use this, use PG_DELETE instead
     ForceCrash();
 }
+*/
 
 //----------------------------------------------------------------------------------------
 
