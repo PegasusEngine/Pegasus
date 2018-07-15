@@ -26,7 +26,7 @@ namespace Pegasus {
     }
     namespace Render {
         class IDevice;
-        class Context;
+        class IDisplay;
     }
     namespace Wnd {
         class IWindowImpl;
@@ -61,10 +61,6 @@ public:
     //! Gets the device assigned to this window
     //! \return IDevice interface
     inline Render::IDevice* GetRenderDevice() const { return mDevice; }
-
-    //! Gets the render context used by this window
-    //! \return Render context.
-    inline Render::Context* GetRenderContext() const { return mRenderContext; };
 
     //! Gets the dimensions of this window
     //! \param width Width outParam.
@@ -167,7 +163,7 @@ private:
     IWindowMessageHandler* mMessageHandler; //!< Message handler object
     Core::IApplicationContext* mWindowContext; //!< Context for this window to operate in
     Render::IDevice * mDevice;
-    Render::Context* mRenderContext; //!< Rendering context
+    Render::IDisplay* mDisplay; //!< Display/Swap chain
     bool mContextCreated; //!< Window created flag
     unsigned int mWidth; //!< Current width
     unsigned int mHeight; //!< Current height

@@ -25,9 +25,9 @@ public:
     Dx12Display(const DisplayConfig& config, Alloc::IAllocator* alloc);
     virtual ~Dx12Display();
 
-    virtual void BeginFrame();
-    virtual void EndFrame();
-    virtual void Resize(int width, int height);
+    virtual void BeginFrame() override;
+    virtual void EndFrame() override;
+    virtual void Resize(unsigned int width, unsigned int height) override;
 
 private:
 
@@ -38,8 +38,8 @@ private:
     Dx12Device* mDevice;
 
     //! target frame buffer width/height
-    int mWidth;
-    int mHeight;
+    unsigned int mWidth;
+    unsigned int mHeight;
     
 
 };

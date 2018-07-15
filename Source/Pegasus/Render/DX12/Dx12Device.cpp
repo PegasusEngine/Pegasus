@@ -33,7 +33,7 @@ int Dx12Device::sDeviceRefCounts = 0;
 GraphicsCardInfos* Dx12Device::sCardInfos = nullptr;
 
 Dx12Device::Dx12Device(const DeviceConfig& config, Alloc::IAllocator * allocator)
-: IDevice(config, allocator), m_device(nullptr)
+: IDevice(config, allocator), mDevice(nullptr)
 {
     
     if (sDeviceRefCounts == 0)
@@ -78,7 +78,7 @@ Dx12Device::Dx12Device(const DeviceConfig& config, Alloc::IAllocator * allocator
 
         DX_VALID_DECLARE(D3D12CreateDevice(
             selectedCard->adapter4,
-            D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device2), &((void*)m_device)));
+            D3D_FEATURE_LEVEL_11_0, __uuidof(ID3D12Device2), &((void*)mDevice)));
     }
 
     ++sDeviceRefCounts;
@@ -88,9 +88,9 @@ Dx12Device::~Dx12Device()
 {
     --sDeviceRefCounts;
 
-    if (m_device)
+    if (mDevice)
     {
-        m_device->Release();
+        mDevice->Release();
     }
 
     if (sDeviceRefCounts == 0 && sCardInfos)
