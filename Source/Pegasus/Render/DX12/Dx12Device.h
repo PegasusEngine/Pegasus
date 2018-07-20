@@ -22,6 +22,11 @@ struct IDXGIAdapter4;
 
 namespace Pegasus
 {
+namespace Alloc
+{
+    class IAllocator;
+}
+
 namespace Render
 {
 
@@ -36,6 +41,8 @@ struct GraphicsCardInfos
     int usedIndex = 0;
 };
 
+class Dx12QueueManager;
+
 //! Windows specific device for open gl graphics api
 class Dx12Device : public IDevice
 {
@@ -47,13 +54,16 @@ public:
     virtual ~Dx12Device();
 
     GraphicsCardInfos* GetGraphicsCardInfos() const { return sCardInfos; }
-    ID3D12Device* GetD3D() { return mDevice; }
+    ID3D12Device2* GetD3D() { return mDevice; }
+    Dx12QueueManager* GetQueueManager() { return mQueueManager; }
 
 private:
 
     static int sDeviceRefCounts;
     static GraphicsCardInfos* sCardInfos;
+    Dx12QueueManager* mQueueManager;
     ID3D12Device2* mDevice;
+    Alloc::IAllocator* mAllocator;
 
 };
 

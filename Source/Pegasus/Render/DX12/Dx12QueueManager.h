@@ -4,37 +4,43 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   Dx12Fence.h
+//! \file   Dx12QueueManager.h
 //! \author Kleber Garcia
-//! \date   July 18th 2018
-//! \brief  Implementation of fences
+//! \date   July 19th 2018
+//! \brief  Implementation of command queue shenanigans
 
-#include <windows.h>
+#pragma once
 
-struct ID3D12Fence;
 struct ID3D12CommandQueue;
+struct ID3D12Device2;
+
 
 namespace Pegasus
 {
+namespace Alloc
+{
+    class IAllocator;
+}
+
 namespace Render
 {
 
 class Dx12Device;
+class Dx12Fence;
 
-class Dx12Fence
+class Dx12QueueManager
 {
 public:
-    Dx12Fence(Dx12Device* device, ID3D12CommandQueue* ownerQueue);
-    ~Dx12Fence();
-
-    void Signal(ID3D12CommandQueue* queue);
-    void Wait();
+    Dx12QueueManager(Alloc::IAllocator* allocator, Dx12Device* device);
+    ~Dx12QueueManager();
+    
+    ID3D12CommandQueue* GetDirect() { return mDirectQueue; }
 
 private:
-    ID3D12Fence* m_fence;
-    ID3D12CommandQueue* m_ownerQueue;
-    HANDLE m_event;
-    UINT64 m_fenceValue;
+    Alloc::IAllocator* mAllocator;
+    ID3D12CommandQueue* mDirectQueue;
+    Dx12Fence* mDirectQueueFence;
+    ID3D12Device2* mDevice;
 };
 
 }

@@ -80,6 +80,9 @@
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12Fence.h">
       <Filter>Source\DX12</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12QueueManager.h">
+      <Filter>Source\DX12</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.cpp">
@@ -134,6 +137,9 @@
       <Filter>Source\DX12</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12Fence.cpp">
+      <Filter>Source\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12QueueManager.cpp">
       <Filter>Source\DX12</Filter>
     </ClCompile>
   </ItemGroup>
