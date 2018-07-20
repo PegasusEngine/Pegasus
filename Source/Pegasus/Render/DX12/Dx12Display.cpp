@@ -1,6 +1,7 @@
 #include "Dx12Display.h"
 #include "Dx12Device.h"
 #include "Dx12Defs.h"
+#include "Dx12QueueManager.h"
 #include <dxgi1_6.h>
 #include <Pegasus/Allocator/IAllocator.h>
 
@@ -41,27 +42,27 @@ Dx12Display::Dx12Display(const DisplayConfig& config, Alloc::IAllocator* alloc)
         swapChainDesc.SampleDesc.Count = 1;
         swapChainDesc.SampleDesc.Quality = 0;
         swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        swapChainDesc.BufferCount = 1;
+        swapChainDesc.BufferCount = 2;
         swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
         swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
         
         // Discard the back buffer contents after presenting.
-        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+        swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
         // Don't set the advanced flags.
         //swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
         swapChainDesc.Flags = 0;
 
-#if 0
+
         DX_VALID_DECLARE(dXGIFactory->CreateSwapChainForHwnd(
-            mDevice->GetD3D(),
+            mDevice->GetQueueManager()->GetDirect(),
             (HWND)config.moduleHandle,
             &swapChainDesc,
             NULL, //no fullscreen desc
             NULL,
             &mSwapChain
         ));
-#endif
+
     }
     
 }

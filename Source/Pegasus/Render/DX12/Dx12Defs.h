@@ -18,3 +18,6 @@
 #define DX_VALID_DECLARE(exp) exp
 #define DX_VALID(exp) exp
 #endif
+
+#define D12_NEW(allocator, debugString) PG_NEW(allocator, -1, debugString, Pegasus::Alloc::PG_MEM_PERM)
+#define D12_DELETE PG_DELETE
