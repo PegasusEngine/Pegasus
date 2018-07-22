@@ -11,6 +11,7 @@
 
 #include <Pegasus/Render/IDisplay.h>
 #include <dxgi1_2.h>
+#include "Dx12MemMgr.h"
 
 namespace Pegasus
 {
@@ -22,14 +23,21 @@ class Dx12Device;
 class Dx12Display : public IDisplay
 {
 public:
+
     Dx12Display(const DisplayConfig& config, Alloc::IAllocator* alloc);
     virtual ~Dx12Display();
 
     virtual void BeginFrame() override;
     virtual void EndFrame() override;
     virtual void Resize(unsigned int width, unsigned int height) override;
+    UINT GetBuffering() const { return Buffering; }
 
 private:
+
+    enum
+    {
+        Buffering = 2 //double buffered
+    };
 
     //! the swap chain
     IDXGISwapChain1*     mSwapChain;
@@ -37,10 +45,12 @@ private:
     //cached dx12 device
     Dx12Device* mDevice;
 
+    Dx12MemMgr::Handle mRtvBuffers[Buffering];
+    CComPtr<ID3D12Resource> mColorResources[Buffering];
+
     //! target frame buffer width/height
     unsigned int mWidth;
     unsigned int mHeight;
-    
 
 };
 }

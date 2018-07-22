@@ -42,7 +42,7 @@ Dx12Display::Dx12Display(const DisplayConfig& config, Alloc::IAllocator* alloc)
         swapChainDesc.SampleDesc.Count = 1;
         swapChainDesc.SampleDesc.Quality = 0;
         swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        swapChainDesc.BufferCount = 2;
+        swapChainDesc.BufferCount = GetBuffering();
         swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
         swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
         
@@ -63,12 +63,25 @@ Dx12Display::Dx12Display(const DisplayConfig& config, Alloc::IAllocator* alloc)
             &mSwapChain
         ));
 
+        for (int i = 0; i < (int)GetBuffering(); ++i)
+        {
+            //Record RTVs
+            DX_VALID(mSwapChain->GetBuffer(i, __uuidof(ID3D12Resource), reinterpret_cast<void**>(&mColorResources[i])));
+            
+            mRtvBuffers[i] = mDevice->GetMemMgr()->AllocateRenderTarget();
+            mDevice->GetD3D()->CreateRenderTargetView(mColorResources[i], nullptr, mRtvBuffers[i].handle);
+        }
     }
     
 }
 
 Dx12Display::~Dx12Display()
 {
+    for (int i = 0; i < (int)GetBuffering(); ++i)
+    {
+        mDevice->GetMemMgr()->Delete(mRtvBuffers[i]);
+    } 
+
     if (mSwapChain)
     {
         mSwapChain->Release();

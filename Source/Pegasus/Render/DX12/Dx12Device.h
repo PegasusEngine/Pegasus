@@ -42,6 +42,7 @@ struct GraphicsCardInfos
 };
 
 class Dx12QueueManager;
+class Dx12MemMgr;
 
 //! Windows specific device for open gl graphics api
 class Dx12Device : public IDevice
@@ -56,12 +57,15 @@ public:
     GraphicsCardInfos* GetGraphicsCardInfos() const { return sCardInfos; }
     ID3D12Device2* GetD3D() { return mDevice; }
     Dx12QueueManager* GetQueueManager() { return mQueueManager; }
+    Dx12MemMgr* GetMemMgr() { return mMemMgr; }
 
 private:
 
     static int sDeviceRefCounts;
     static GraphicsCardInfos* sCardInfos;
     Dx12QueueManager* mQueueManager;
+    Dx12MemMgr* mMemMgr;
+
     ID3D12Device2* mDevice;
     Alloc::IAllocator* mAllocator;
 
