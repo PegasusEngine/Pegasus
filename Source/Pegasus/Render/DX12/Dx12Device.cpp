@@ -17,6 +17,7 @@
 #include "Dx12Device.h"
 #include "Dx12Defs.h"
 #include "Dx12QueueManager.h"
+#include "Dx12MemMgr.h"
 #include <dxgi1_6.h>
 #include <atlbase.h>
 #include <Pegasus/Allocator/IAllocator.h>
@@ -92,11 +93,13 @@ Dx12Device::Dx12Device(const DeviceConfig& config, Alloc::IAllocator * allocator
 	}
 
     mQueueManager = D12_NEW(allocator, "dx12QueueManager") Dx12QueueManager(allocator, this);
+    mMemMgr = D12_NEW(allocator, "dx12MemMgr") Dx12MemMgr(this);
     ++sDeviceRefCounts;
 }
 
 Dx12Device::~Dx12Device()
 {
+    D12_DELETE(mAllocator, mMemMgr);
     D12_DELETE(mAllocator, mQueueManager);
     --sDeviceRefCounts;
 
