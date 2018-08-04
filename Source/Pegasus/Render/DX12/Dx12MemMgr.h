@@ -29,7 +29,7 @@ public:
     {
         D3D12_DESCRIPTOR_HEAP_TYPE type;
         D3D12_CPU_DESCRIPTOR_HANDLE handle;
-        UINT heapIdx;
+        UINT index;
     };
 
     Dx12MemMgr(Dx12Device* device);
@@ -46,24 +46,16 @@ private:
 
     struct HeapContainer
     {
-        UINT activeAllocs = 0;
+        UINT incrSize = 0;
+        UINT lastIndex = 0;
         D3D12_DESCRIPTOR_HEAP_DESC desc;
         CComPtr<ID3D12DescriptorHeap> heap;
+        std::vector<UINT> freeSpots;
     };
 
-    struct FreeSpot
-    {
-        UINT heapIndex;
-        D3D12_CPU_DESCRIPTOR_HANDLE handle;
-    };
-   
     typedef std::vector<HeapContainer> HeapList;
-    typedef std::vector<FreeSpot> FreeList;
 
-    UINT mDHeapsIncrSz[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
-    UINT mDHeapsPoolSz[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
-    HeapList mDHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
-    FreeList mDHeapsFree[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
+    HeapContainer mHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
 
 };
 

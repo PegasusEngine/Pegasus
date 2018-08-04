@@ -10,7 +10,7 @@
 //! \brief  dx12 swap chain implementation.
 
 #include <Pegasus/Render/IDisplay.h>
-#include <dxgi1_2.h>
+#include <dxgi1_5.h>
 #include "Dx12MemMgr.h"
 
 namespace Pegasus
@@ -31,6 +31,7 @@ public:
     virtual void EndFrame() override;
     virtual void Resize(unsigned int width, unsigned int height) override;
     UINT GetBuffering() const { return Buffering; }
+    void Flush();
 
 private:
 
@@ -40,13 +41,20 @@ private:
     };
 
     //! the swap chain
-    IDXGISwapChain1*     mSwapChain;
+    IDXGISwapChain4*     mSwapChain;
 
     //cached dx12 device
     Dx12Device* mDevice;
 
     Dx12MemMgr::Handle mRtvBuffers[Buffering];
     CComPtr<ID3D12Resource> mColorResources[Buffering];
+ 
+    CComPtr<ID3D12CommandAllocator> mCmdListsAllocator[Buffering];
+    UINT64 mFenceValues[Buffering];
+
+    UINT mBackBufferIdx;
+
+    CComPtr<ID3D12GraphicsCommandList> mCmdList;
 
     //! target frame buffer width/height
     unsigned int mWidth;

@@ -27,8 +27,10 @@ public:
     Dx12Fence(Dx12Device* device, ID3D12CommandQueue* ownerQueue);
     ~Dx12Fence();
 
-    void Signal(ID3D12CommandQueue* queue);
-    void Wait();
+    UINT64 Signal();
+    void WaitOnCpu(UINT64 valueToWait);
+    void WaitOnGpu(UINT64 valueToWait, ID3D12CommandQueue* externalQueue = nullptr);
+    ID3D12Fence* GetD3D() { return m_fence; }
 
 private:
     ID3D12Fence* m_fence;

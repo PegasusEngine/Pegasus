@@ -35,7 +35,6 @@ Dx12QueueManager::Dx12QueueManager(Alloc::IAllocator* allocator, Dx12Device* dev
         };
 
         DX_VALID_DECLARE(mDevice->CreateCommandQueue(&qDesc, __uuidof(mDirectQueue), &((void*)mDirectQueue)));
-
         mDirectQueueFence = D12_NEW(mAllocator, "Dx12Fence") Dx12Fence(device, mDirectQueue);
     }
 }
