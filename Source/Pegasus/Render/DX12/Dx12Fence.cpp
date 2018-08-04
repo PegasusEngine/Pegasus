@@ -23,19 +23,26 @@ Dx12Fence::~Dx12Fence()
     CloseHandle(m_event);
 }
 
-void Dx12Fence::Signal(ID3D12CommandQueue* queue)
+UINT64 Dx12Fence::Signal()
 {
     ++m_fenceValue;
     m_ownerQueue->Signal(m_fence, m_fenceValue);
+    return m_fenceValue;
 }
 
-void Dx12Fence::Wait()
+void Dx12Fence::WaitOnCpu(UINT64 valueToWait)
 {
-    if (m_fence->GetCompletedValue() < m_fenceValue)
+    if (m_fence->GetCompletedValue() < valueToWait)
     {
-        DX_VALID_DECLARE(m_fence->SetEventOnCompletion(m_fenceValue, m_event));
+        DX_VALID_DECLARE(m_fence->SetEventOnCompletion(valueToWait, m_event));
         WaitForSingleObject(m_event, INFINITE);
     }
+}
+
+void Dx12Fence::WaitOnGpu(UINT64 valueToWait, ID3D12CommandQueue* externalQueue)
+{
+    auto* targetQueue = externalQueue != nullptr ? externalQueue : m_ownerQueue;
+    DX_VALID_DECLARE(targetQueue->Wait(m_fence, valueToWait));
 }
 
 }

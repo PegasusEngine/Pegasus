@@ -22,15 +22,33 @@ namespace Render
 Dx12MemMgr::Dx12MemMgr(Dx12Device* device)
 : mDevice(device)
 {
-    Utils::Memset32(&mDHeapsPoolSz, 0, sizeof(mDHeapsPoolSz));
-    Utils::Memset32(&mDHeapsIncrSz, 0, sizeof(mDHeapsIncrSz));
-    mDHeapsPoolSz[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV] = 64;
-    mDHeapsPoolSz[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER] = 64;
-    mDHeapsPoolSz[D3D12_DESCRIPTOR_HEAP_TYPE_RTV] = 64;
-    mDHeapsPoolSz[D3D12_DESCRIPTOR_HEAP_TYPE_DSV] = 64;
     for (UINT i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
     {
-        mDHeapsIncrSz[i] = device->GetD3D()->GetDescriptorHandleIncrementSize((D3D12_DESCRIPTOR_HEAP_TYPE)i);
+        HeapContainer& container = mHeaps[i];
+        auto& desc = container.desc;
+        desc.Type = (D3D12_DESCRIPTOR_HEAP_TYPE)i;
+        desc.NodeMask = 0;
+        desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+
+        switch(desc.Type)
+        {
+        case D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV:
+            desc.NumDescriptors = 1024;
+            break;
+        case D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER:
+            desc.NumDescriptors = 1024;
+            break;
+        case D3D12_DESCRIPTOR_HEAP_TYPE_RTV:
+            desc.NumDescriptors = 1024;
+            break;
+        case D3D12_DESCRIPTOR_HEAP_TYPE_DSV:
+            desc.NumDescriptors = 1024;
+            break;
+        default:
+            break;
+        }
+        container.incrSize = device->GetD3D()->GetDescriptorHandleIncrementSize(desc.Type);
+        DX_VALID_DECLARE(device->GetD3D()->CreateDescriptorHeap(&desc, __uuidof(ID3D12DescriptorHeap),reinterpret_cast<void**>(&container.heap)));
     }
 }
 
@@ -46,47 +64,32 @@ Dx12MemMgr::Handle Dx12MemMgr::AllocateRenderTarget()
 void Dx12MemMgr::Delete(Dx12MemMgr::Handle h)
 {
     PG_ASSERT(h.type < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES);
-	mDHeapsFree[h.type].emplace_back(FreeSpot{ h.heapIdx, h.handle });
+    auto& container = mHeaps[h.type];
+    container.freeSpots.push_back(h.index);
 }
 
 Dx12MemMgr::Handle Dx12MemMgr::AllocInternal(D3D12_DESCRIPTOR_HEAP_TYPE type)
 {
     PG_ASSERT(type < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES);
-    //first, check if theres a free available
-    auto& freeList = mDHeapsFree[type];
-    if (!freeList.empty())
+    auto& container = mHeaps[type];
+    auto& freeList = container.freeSpots;
+    auto& desc = container.desc;
+    UINT cpuRequestedIndex = 0;
+    if (freeList.empty())
     {
-        Dx12MemMgr::FreeSpot& freeSpot = freeList.back();
-        freeList.pop_back();
-        PG_ASSERT(!mDHeaps[type].empty());
-        auto& heapContainer = mDHeaps[type][freeSpot.heapIndex];
-        ++heapContainer.activeAllocs;
-        PG_ASSERT(heapContainer.activeAllocs <= heapContainer.desc.NumDescriptors);
-		return Dx12MemMgr::Handle{ type, freeSpot.handle, freeSpot.heapIndex };
+        if (container.lastIndex >= desc.NumDescriptors)
+            PG_FAILSTR("Not enough dx12 descriptors!");
+        cpuRequestedIndex = container.lastIndex++;
     }
     else
     {
-        auto& heapList = mDHeaps[type];
-        UINT newHeapIdx = (UINT)heapList.size();
-        heapList.emplace_back();
-        HeapContainer& newContainer = heapList.back();
-        newContainer.desc.Type = type;
-        newContainer.desc.NumDescriptors = mDHeapsPoolSz[type];
-        newContainer.desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-        newContainer.desc.NodeMask = 0;
-        DX_VALID_DECLARE(mDevice->GetD3D()->CreateDescriptorHeap(&newContainer.desc, __uuidof(newContainer.heap), reinterpret_cast<void**>(&newContainer.heap)));
-        Dx12MemMgr::Handle newHandle = { type, newContainer.heap->GetCPUDescriptorHandleForHeapStart(), newHeapIdx};
-        //register free spots
-
-        for (UINT i = 1; i < mDHeapsPoolSz[type]; ++i)
-        {
-            UINT invIdx = mDHeapsPoolSz[type] - i - 1u;
-            D3D12_CPU_DESCRIPTOR_HANDLE newFreeHandle =  { newHandle.handle.ptr + invIdx * mDHeapsIncrSz[type] };
-			mDHeapsFree[type].emplace_back(FreeSpot{ newHeapIdx, newFreeHandle });
-        }
-
-		return newHandle;
+        cpuRequestedIndex = freeList.back();
+        freeList.pop_back();
     }
+
+    D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = container.heap->GetCPUDescriptorHandleForHeapStart();
+    cpuHandle.ptr += container.incrSize * cpuRequestedIndex;
+    return Dx12MemMgr::Handle { desc.Type, cpuHandle, cpuRequestedIndex };
 }
 
 }
