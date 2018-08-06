@@ -50,7 +50,7 @@ namespace App {
 
 //----------------------------------------------------------------------------------------
 
-Application::Application(const ApplicationConfig& config)
+Application::Application(const ApplicationConfig& config) : mConfig(config)
 {
     Alloc::IAllocator* coreAlloc = Memory::GetCoreAllocator();
     Alloc::IAllocator* windowAlloc = Memory::GetWindowAllocator();
@@ -68,9 +68,16 @@ Application::Application(const ApplicationConfig& config)
     Core::AssertionManager::GetInstance()->RegisterHandler(config.mAssertHandler);
 #endif
 
+	// Set up IO manager
+	// This must be done here because of the GetAppName virtual
+	char rootPath[Io::IOManager::MAX_FILEPATH_LENGTH];
+	sprintf_s(rootPath, Io::IOManager::MAX_FILEPATH_LENGTH - 1, "%s\\Imported\\", mConfig.mBasePath); // Hardcode imported for now
+	mIoManager = PG_NEW(coreAlloc, -1, "IOManager", Pegasus::Alloc::PG_MEM_PERM) Io::IOManager(rootPath);
+
     Alloc::IAllocator* renderAlloc = Memory::GetRenderAllocator();
     Pegasus::Render::DeviceConfig deviceConfig;
     Pegasus::Render::ContextConfig renderContextConfig;
+    deviceConfig.mIOManager = mIoManager;
     deviceConfig.mModuleHandle = mConfig.mModuleHandle;
 
     mDevice = Pegasus::Render::IDevice::CreatePlatformDevice(deviceConfig, renderAlloc);
@@ -147,17 +154,9 @@ Application::Application(const ApplicationConfig& config)
     mBsReflectionInfo->RegisterLib(mRenderApiScript);
 #endif
     
-    // Cache config
-    mConfig = config;
 
     Wnd::Window* startupWindow = nullptr;
 
-    // Set up IO manager
-    // This must be done here because of the GetAppName virtual
-    char rootPath[Io::IOManager::MAX_FILEPATH_LENGTH];
-    sprintf_s(rootPath, Io::IOManager::MAX_FILEPATH_LENGTH - 1, "%s\\Imported\\", mConfig.mBasePath); // Hardcode imported for now
-    mIoManager = PG_NEW(coreAlloc, -1, "IOManager", Pegasus::Alloc::PG_MEM_PERM) Io::IOManager(rootPath);
-    
     mAssetLib->SetIoManager(mIoManager); //TODO: decide here if we use the pakIoManager or the standard file system IOManager
     
     mRenderSystemManager = PG_NEW(coreAlloc, -1, "Render System Manager", Alloc::PG_MEM_PERM) RenderSystems::RenderSystemManager(coreAlloc, this);
