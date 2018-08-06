@@ -58,6 +58,8 @@ public:
     ID3D12Device2* GetD3D() { return mDevice; }
     Dx12QueueManager* GetQueueManager() { return mQueueManager; }
     Dx12MemMgr* GetMemMgr() { return mMemMgr; }
+    Io::IOManager* GetIOMgr() { return mIOManager; }
+    Alloc::IAllocator* GetAllocator() { return mAllocator; }
 
 private:
 
@@ -68,6 +70,7 @@ private:
 
     ID3D12Device2* mDevice;
     Alloc::IAllocator* mAllocator;
+    Io::IOManager* mIOManager;
 
 };
 

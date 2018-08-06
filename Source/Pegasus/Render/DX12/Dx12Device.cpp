@@ -37,6 +37,7 @@ GraphicsCardInfos* Dx12Device::sCardInfos = nullptr;
 Dx12Device::Dx12Device(const DeviceConfig& config, Alloc::IAllocator * allocator)
 	: IDevice(config, allocator), mDevice(nullptr), mAllocator(allocator)
 {
+    mIOManager = config.mIOManager;
 
 	if (sDeviceRefCounts == 0)
 	{

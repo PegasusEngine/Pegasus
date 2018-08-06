@@ -18,6 +18,7 @@ namespace Pegasus
 namespace Render
 {
 
+class Dx12GpuProgram;
 class Dx12Device;
 
 class Dx12Display : public IDisplay
@@ -60,6 +61,8 @@ private:
     unsigned int mWidth;
     unsigned int mHeight;
 
+    //Hack test state:
+    Dx12GpuProgram* mTestProgram;
 };
 }
 }

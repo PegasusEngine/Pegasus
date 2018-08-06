@@ -21,6 +21,11 @@ namespace Pegasus
     {
         class IAllocator;
     }
+
+    namespace Io
+    {
+        class IOManager;
+    }
 }
 
 namespace Pegasus
@@ -31,6 +36,7 @@ namespace Render
 //! Device configuration. Might vary per OS
 struct DeviceConfig
 {
+    Io::IOManager* mIOManager;
     Os::ModuleHandle mModuleHandle; //! handle to the HINSTANCE if windows, handle to the proc if linux
 };
 

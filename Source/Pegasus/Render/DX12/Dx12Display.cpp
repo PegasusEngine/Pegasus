@@ -3,6 +3,7 @@
 #include "Dx12Defs.h"
 #include "Dx12QueueManager.h"
 #include "Dx12Fence.h"
+#include "Dx12GpuProgram.h"
 #include <dxgi1_6.h>
 #include <Pegasus/Allocator/IAllocator.h>
 
@@ -97,6 +98,9 @@ Dx12Display::Dx12Display(const DisplayConfig& config, Alloc::IAllocator* alloc)
 		DX_VALID(mCmdList->Close());
     }
     
+    //Creating hack test Gpu program
+    mTestProgram = PG_NEW(GetAllocator(), -1, "TestGpuProgram", Pegasus::Alloc::PG_MEM_PERM) Dx12GpuProgram(mDevice);
+    mTestProgram->Compile();
 }
 
 void Dx12Display::Flush()
@@ -122,6 +126,8 @@ Dx12Display::~Dx12Display()
     {
         mSwapChain->Release();
     }
+
+    PG_DELETE(GetAllocator(), mTestProgram);
 }
 
 void Dx12Display::BeginFrame()

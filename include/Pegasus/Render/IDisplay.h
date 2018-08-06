@@ -46,6 +46,8 @@ public:
     // New width, new height.
     virtual void Resize(unsigned int width, unsigned int height) = 0;
 
+    Alloc::IAllocator* GetAllocator() { return mAllocator; }
+
     // Gets the config of this display
     const DisplayConfig& GetConfig() const { return mConfig; }
 
