@@ -66,10 +66,17 @@ struct Dx12ShaderBlob
     CComPtr<ID3D12ShaderReflection> reflectionInfo;
 };
 
-struct Dx12ShaderSrvParam
+struct Dx12ShaderParam
 {
     D3D12_SHADER_INPUT_BIND_DESC desc;
-    D3D12_SHADER_VISIBILITY visMask;
+    D3D12_SHADER_VISIBILITY visibility;
+};
+
+struct Dx12ParamRange
+{
+    D3D12_SHADER_VISIBILITY rangeVisibility = D3D12_SHADER_VISIBILITY_ALL;
+    int idx = 0;
+    int count = 0;
 };
 
 static bool isSrv(D3D_SHADER_INPUT_TYPE t)
@@ -93,8 +100,9 @@ static bool isSampler(D3D_SHADER_INPUT_TYPE t)
 		return t == D3D_SIT_SAMPLER;
 }
 
-typedef std::vector<Dx12ShaderSrvParam> Dx12ShaderBindParamList;
+typedef std::vector<Dx12ShaderParam> Dx12ShaderBindParamList;
 typedef std::vector<Dx12ShaderBlob> Dx12ShaderBlobList;
+typedef std::vector<Dx12ParamRange> Dx12ParamRangeList;
 
 struct Dx12GpuProgramParams
 {
@@ -102,11 +110,16 @@ struct Dx12GpuProgramParams
     Dx12ShaderBindParamList uavs; 
     Dx12ShaderBindParamList cbvs; 
     Dx12ShaderBindParamList samplers; 
+ 
+    Dx12ParamRangeList srvRanges;
+    Dx12ParamRangeList uavRanges;
+    Dx12ParamRangeList cbvRanges;
+    Dx12ParamRangeList samplerRanges;
 };
 
 void gatherSortedGpuParameters(const Dx12ShaderBlobList& inputShaders, Dx12GpuProgramParams& outParams)
 {
-    typedef std::map<std::string, Dx12ShaderSrvParam> ParamSet;
+    typedef std::map<std::string, Dx12ShaderParam> ParamSet;
     ParamSet srvParamSet;
 	ParamSet uavParamSet;
 	ParamSet cbvParamSet;
@@ -149,21 +162,21 @@ void gatherSortedGpuParameters(const Dx12ShaderBlobList& inputShaders, Dx12GpuPr
             auto it = targetParamSet->find(resName);
             if (it == targetParamSet->end())
             {
-				(*targetParamSet)[resName] = Dx12ShaderSrvParam { outResDesc, pipelineToVis(shaderBlob.pipelineType) };
+				(*targetParamSet)[resName] = Dx12ShaderParam { outResDesc, pipelineToVis(shaderBlob.pipelineType) };
             }
             else
             {
                 D3D12_SHADER_VISIBILITY newVis = pipelineToVis(shaderBlob.pipelineType);
-                if (it->second.visMask != D3D12_SHADER_VISIBILITY_ALL && it->second.visMask != newVis)
+                if (it->second.visibility != D3D12_SHADER_VISIBILITY_ALL && it->second.visibility != newVis)
                 {
-                    it->second.visMask = D3D12_SHADER_VISIBILITY_ALL;
+                    it->second.visibility = D3D12_SHADER_VISIBILITY_ALL;
                 }
                 PG_ASSERT(it->second.desc.BindPoint == outResDesc.BindPoint && it->second.desc.BindCount == outResDesc.BindCount);
             }
         }
     }
 
-    auto sorterFn = [](const Dx12ShaderSrvParam& a, const Dx12ShaderSrvParam& b)
+    auto sorterFn = [](const Dx12ShaderParam& a, const Dx12ShaderParam& b)
     {
         return a.desc.BindPoint < b.desc.BindPoint;
     };
@@ -177,10 +190,41 @@ void gatherSortedGpuParameters(const Dx12ShaderBlobList& inputShaders, Dx12GpuPr
         std::sort(outList.begin(), outList.end(), sorterFn);
     };
 
+    auto convertToRange = [](const Dx12ShaderBindParamList& inList, Dx12ParamRangeList& rangeList)
+    {
+        if (!inList.empty())
+        {
+            UINT expectedRegister = 0;
+            Dx12ParamRange currRange;
+            for (int i = 0; i < (int)inList.size(); ++i)
+            {
+                if (i == 0 || currRange.rangeVisibility != inList[i].visibility || (inList[i].desc.BindPoint) != expectedRegister)
+                {
+                    Dx12ParamRange newRange = currRange;
+                    newRange.idx = inList[i].desc.BindPoint;
+                    newRange.count = inList[i].desc.BindCount;
+                    newRange.rangeVisibility = inList[i].visibility;
+                    rangeList.push_back(newRange);
+                    currRange = newRange;
+                }
+                else
+                {
+                    rangeList.back().count += inList[i].desc.BindCount;
+                    currRange = rangeList.back();
+                }
+                expectedRegister = currRange.idx + currRange.count;
+            }
+        }
+    };
+
     populateList(srvParamSet, outParams.srvs);
     populateList(uavParamSet, outParams.uavs);
     populateList(cbvParamSet, outParams.cbvs);
     populateList(samplerParamSet, outParams.samplers);
+	convertToRange(outParams.srvs, outParams.srvRanges);
+	convertToRange(outParams.uavs, outParams.uavRanges);
+	convertToRange(outParams.cbvs, outParams.cbvRanges);
+	convertToRange(outParams.samplers, outParams.samplerRanges);
 }
 
 Dx12GpuProgram::Dx12GpuProgram(Dx12Device* device)
@@ -215,7 +259,7 @@ void Dx12GpuProgram::Compile()
             NULL, //No include handler
             mainFn,
             pipelineToModel(pipelineType),
-            D3DCOMPILE_IEEE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL0 | D3DCOMPILE_WARNINGS_ARE_ERRORS | D3DCOMPILE_ENABLE_STRICTNESS,
+            D3DCOMPILE_IEEE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL0 | D3DCOMPILE_WARNINGS_ARE_ERRORS | D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_ENABLE_UNBOUNDED_DESCRIPTOR_TABLES,
             0,
             &blob.byteCode,
             &errBlob
