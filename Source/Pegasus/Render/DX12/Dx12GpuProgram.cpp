@@ -9,6 +9,7 @@
 //! \date   August 5th 2018
 //! \brief  The so feared encapsulation of PSOs, shader state, shader source.
 #include <Pegasus/Core/Io.h>
+#include <Pegasus/Utils/Memcpy.h>
 #include "Dx12GpuProgram.h"
 #include "Dx12Defs.h"
 #include <D3DCompiler.h>
@@ -24,14 +25,6 @@ namespace Pegasus
 {
 namespace Render
 {
-
-enum Dx12PipelineType
-{
-    Dx12_Vertex,
-    Dx12_Pixel,
-    Dx12_PipelineMax = Dx12_Pixel,
-    Dx12_Unknown
-};
 
 const char* pipelineToModel(Dx12PipelineType type)
 {
@@ -66,11 +59,40 @@ struct Dx12ShaderBlob
     CComPtr<ID3D12ShaderReflection> reflectionInfo;
 };
 
+
+enum Dx12ResType : unsigned
+{
+    Dx12_ResSrv,
+    Dx12_ResCbv,
+    Dx12_ResUav,
+    Dx12_ResSampler,
+    Dx12_ResCount,
+    Dx12_ResInvalid
+};
+
 struct Dx12ShaderParam
 {
+    Dx12ResType resType;
     D3D12_SHADER_INPUT_BIND_DESC desc;
     D3D12_SHADER_VISIBILITY visibility;
 };
+
+D3D12_DESCRIPTOR_RANGE_TYPE toD3dRangeType(Dx12ResType resType)
+{
+    switch(resType)
+    {
+    case Dx12_ResSrv:
+        return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    case Dx12_ResCbv:
+        return D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
+    case Dx12_ResUav:
+        return D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+    case Dx12_ResSampler:
+        return D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER;
+    }
+    
+    return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+}
 
 struct Dx12ParamRange
 {
@@ -100,30 +122,65 @@ static bool isSampler(D3D_SHADER_INPUT_TYPE t)
 		return t == D3D_SIT_SAMPLER;
 }
 
+Dx12ResType getResType(D3D_SHADER_INPUT_TYPE t)
+{
+    if (isSrv(t))
+    {
+        return Dx12_ResSrv;
+    }
+    else if (isCbv(t))
+    {
+        return Dx12_ResCbv;
+    }
+    else if (isUav(t))
+    {
+        return Dx12_ResUav;
+    }
+    else if (isSampler(t))
+    {
+        return Dx12_ResSampler;
+    }
+    else return Dx12_ResInvalid;
+
+}
+
+
 typedef std::vector<Dx12ShaderParam> Dx12ShaderBindParamList;
 typedef std::vector<Dx12ShaderBlob> Dx12ShaderBlobList;
 typedef std::vector<Dx12ParamRange> Dx12ParamRangeList;
+typedef std::map<int, int> Dx12BindPoint2ResIdx;
 
 struct Dx12GpuProgramParams
 {
-    Dx12ShaderBindParamList srvs; 
-    Dx12ShaderBindParamList uavs; 
-    Dx12ShaderBindParamList cbvs; 
-    Dx12ShaderBindParamList samplers; 
- 
-    Dx12ParamRangeList srvRanges;
-    Dx12ParamRangeList uavRanges;
-    Dx12ParamRangeList cbvRanges;
-    Dx12ParamRangeList samplerRanges;
+    //reflection data
+    Dx12ShaderBindParamList res[Dx12_ResCount]; 
+    Dx12BindPoint2ResIdx b2Res[Dx12_ResCount];
+
+    //resource table layout computed from desc and reflection data
+    std::vector<D3D12_ROOT_PARAMETER> tables;
+    
+    //supporting memory for auto-generated descriptor ranges.
+    std::vector<D3D12_DESCRIPTOR_RANGE*> supportingRanges;
+
+    ~Dx12GpuProgramParams()
+    {
+        for (auto& ranges : supportingRanges)
+        {
+            delete ranges;
+        }
+    }
 };
 
-void gatherSortedGpuParameters(const Dx12ShaderBlobList& inputShaders, Dx12GpuProgramParams& outParams)
+struct Dx12GpuProgramData
 {
+    Dx12ShaderBlobList blobs;
+};
+
+void Dx12GpuProgram::fillInReflectionData()
+{
+    const Dx12ShaderBlobList& inputShaders = mData->blobs;
     typedef std::map<std::string, Dx12ShaderParam> ParamSet;
-    ParamSet srvParamSet;
-	ParamSet uavParamSet;
-	ParamSet cbvParamSet;
-	ParamSet samplerParamSet;
+    ParamSet paramSets[Dx12_ResCount];
 
     for (const auto& shaderBlob : inputShaders)
     {
@@ -134,27 +191,13 @@ void gatherSortedGpuParameters(const Dx12ShaderBlobList& inputShaders, Dx12GpuPr
             D3D12_SHADER_INPUT_BIND_DESC outResDesc;
             DX_VALID(shaderBlob.reflectionInfo->GetResourceBindingDesc(resIdx, &outResDesc));
             std::string resName = outResDesc.Name;
-			ParamSet* targetParamSet = nullptr;
-            if (isSrv(outResDesc.Type))
-            {
-                targetParamSet = &srvParamSet;
-            }
-            else if (isUav(outResDesc.Type))
-            {
-                targetParamSet = &uavParamSet;
-            }
-            else if (isCbv(outResDesc.Type))
-            {
-                targetParamSet = &cbvParamSet;
-            }
-            else if (isSampler(outResDesc.Type))
-            {
-                targetParamSet = &samplerParamSet;
-            }
-            else
-            {
+            Dx12ResType resType = getResType(outResDesc.Type);
+
+            
+            if (resType == Dx12_ResInvalid)
                 PG_FAILSTR("Cannot recognize input type of %s.", outResDesc.Name);
-            }
+
+			ParamSet* targetParamSet = &paramSets[resType];
 
 			if (outResDesc.uFlags & D3D_SIF_UNUSED)
 				continue;
@@ -162,7 +205,7 @@ void gatherSortedGpuParameters(const Dx12ShaderBlobList& inputShaders, Dx12GpuPr
             auto it = targetParamSet->find(resName);
             if (it == targetParamSet->end())
             {
-				(*targetParamSet)[resName] = Dx12ShaderParam { outResDesc, pipelineToVis(shaderBlob.pipelineType) };
+				(*targetParamSet)[resName] = Dx12ShaderParam { resType, outResDesc, pipelineToVis(shaderBlob.pipelineType) };
             }
             else
             {
@@ -181,54 +224,139 @@ void gatherSortedGpuParameters(const Dx12ShaderBlobList& inputShaders, Dx12GpuPr
         return a.desc.BindPoint < b.desc.BindPoint;
     };
 
-    auto populateList = [&](const ParamSet& inputMap, Dx12ShaderBindParamList& outList)
+    auto populateList = [&](const ParamSet& inputMap, Dx12ShaderBindParamList& outList, Dx12BindPoint2ResIdx& b2r)
     {
         for (auto& keyValPair : inputMap)
         {
             outList.push_back(keyValPair.second);
         }
         std::sort(outList.begin(), outList.end(), sorterFn);
+        unsigned i = 0;
+        for (auto& val : outList)
+        {
+            b2r[val.desc.BindPoint] = i++;
+        }
     };
 
-    auto convertToRange = [](const Dx12ShaderBindParamList& inList, Dx12ParamRangeList& rangeList)
+    for (unsigned i = 0; i < Dx12_ResCount; ++i)
+        populateList(paramSets[i], mParams->res[i], mParams->b2Res[i]);
+}
+
+void Dx12GpuProgram::fillInResourceTableLayouts()
+{
+    auto userRangesToShaderParams = [&](const std::vector<Dx12TableLayout::Range>& registerRanges, std::vector<Dx12ShaderParam>& outShaderParams)
     {
-        if (!inList.empty())
+        for (const auto& inputRange : registerRanges)
         {
-            UINT expectedRegister = 0;
-            Dx12ParamRange currRange;
-            for (int i = 0; i < (int)inList.size(); ++i)
+            for (unsigned regIdx = inputRange.baseRegister; regIdx < inputRange.baseRegister + inputRange.count; ++regIdx)
             {
-                if (i == 0 || currRange.rangeVisibility != inList[i].visibility || (inList[i].desc.BindPoint) != expectedRegister)
+                for (unsigned resTypeIdx = 0; resTypeIdx < Dx12_ResCount; ++resTypeIdx)
                 {
-                    Dx12ParamRange newRange = currRange;
-                    newRange.idx = inList[i].desc.BindPoint;
-                    newRange.count = inList[i].desc.BindCount;
-                    newRange.rangeVisibility = inList[i].visibility;
-                    rangeList.push_back(newRange);
-                    currRange = newRange;
+                    auto& it = mParams->b2Res[resTypeIdx].find(regIdx);
+                    if (it != mParams->b2Res[resTypeIdx].end())
+                    {
+                        outShaderParams.push_back(mParams->res[resTypeIdx][it->second]);
+                    }
                 }
-                else
-                {
-                    rangeList.back().count += inList[i].desc.BindCount;
-                    currRange = rangeList.back();
-                }
-                expectedRegister = currRange.idx + currRange.count;
             }
         }
     };
 
-    populateList(srvParamSet, outParams.srvs);
-    populateList(uavParamSet, outParams.uavs);
-    populateList(cbvParamSet, outParams.cbvs);
-    populateList(samplerParamSet, outParams.samplers);
-	convertToRange(outParams.srvs, outParams.srvRanges);
-	convertToRange(outParams.uavs, outParams.uavRanges);
-	convertToRange(outParams.cbvs, outParams.cbvRanges);
-	convertToRange(outParams.samplers, outParams.samplerRanges);
+    auto initRange = [](const Dx12ShaderParam* param)
+    {
+        return D3D12_DESCRIPTOR_RANGE {
+            toD3dRangeType(param->resType),
+            param->desc.BindCount, param->desc.BindPoint,
+            0u, /*No support for reg spaces for now*/
+            D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND
+        };
+	};
+    
+    auto shaderParamsToD3d12DescriptorRanges = [&](const Dx12ShaderBindParamList& shaderParams, std::vector<D3D12_DESCRIPTOR_RANGE>& ranges, D3D12_SHADER_VISIBILITY& rangesVis)
+    {
+        if (!shaderParams.empty())
+        {
+            const Dx12ShaderParam* lastParam = &shaderParams[0];
+            rangesVis = lastParam->visibility;
+
+            bool pendingRange = true;
+            D3D12_DESCRIPTOR_RANGE currRange = initRange(lastParam);
+
+            unsigned expectedRegister = currRange.BaseShaderRegister + currRange.NumDescriptors;
+
+            for (unsigned i = 1; i < shaderParams.size(); ++i)
+            {
+                pendingRange = true;
+                const Dx12ShaderParam* newParam = &shaderParams[i]; 
+                if (newParam->desc.BindPoint != expectedRegister || newParam->resType != lastParam->resType)
+                {
+                    pendingRange = false;
+                    ranges.push_back(currRange);
+                    currRange = initRange(newParam);
+                }
+                else
+                {
+                    currRange.NumDescriptors += newParam->desc.BindCount;
+                }
+
+                if (rangesVis != newParam->visibility)
+                    rangesVis = D3D12_SHADER_VISIBILITY_ALL;
+
+                lastParam = newParam;
+            }
+            
+            if (pendingRange)
+                ranges.push_back(currRange);
+        }
+    };
+
+    auto createTable = [&](const std::vector<D3D12_DESCRIPTOR_RANGE>& ranges, D3D12_SHADER_VISIBILITY visibility)
+    {
+        D3D12_ROOT_PARAMETER rootTableParameter; 
+        D3D12_ROOT_DESCRIPTOR_TABLE& descTable = rootTableParameter.DescriptorTable;
+        D3D12_DESCRIPTOR_RANGE* supportMem = new D3D12_DESCRIPTOR_RANGE[ranges.size()];
+        Utils::Memcpy(supportMem, ranges.data(), (unsigned)ranges.size() * sizeof(D3D12_DESCRIPTOR_RANGE));
+        descTable.pDescriptorRanges = supportMem;
+        descTable.NumDescriptorRanges = (unsigned)ranges.size();
+		rootTableParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		rootTableParameter.ShaderVisibility = visibility;
+        mParams->supportingRanges.push_back(supportMem);
+        mParams->tables.push_back(rootTableParameter);
+    };
+
+    const std::vector<Dx12TableLayout>& tableLayouts = mDesc.tableLayouts;
+    if (tableLayouts.empty())
+    {
+        //if the user did not defined anything, we create a massive table. 
+
+        D3D12_SHADER_VISIBILITY rangesVis = D3D12_SHADER_VISIBILITY_ALL;
+        std::vector<D3D12_DESCRIPTOR_RANGE> ranges;
+        for (unsigned resType = 0; resType < Dx12_ResCount; ++resType)
+            shaderParamsToD3d12DescriptorRanges(mParams->res[resType], ranges, rangesVis);
+
+        createTable(ranges, rangesVis);
+        mAutoTableLayout = true;
+    }
+    else
+    {
+        //Lets use dx12 and optimally group params like the user wants!
+        for (const Dx12TableLayout& layout : tableLayouts)
+        {
+            std::vector<Dx12ShaderParam> shaderParams;
+            userRangesToShaderParams(layout.registerRanges, shaderParams);
+            
+            D3D12_SHADER_VISIBILITY rangesVis = D3D12_SHADER_VISIBILITY_ALL;
+            std::vector<D3D12_DESCRIPTOR_RANGE> ranges;
+            shaderParamsToD3d12DescriptorRanges(shaderParams, ranges, rangesVis);
+
+            createTable(ranges, rangesVis);
+        }
+        mAutoTableLayout = false;
+    }
 }
 
 Dx12GpuProgram::Dx12GpuProgram(Dx12Device* device)
-    : mDevice(device), mParams(nullptr)
+    : mDevice(device), mParams(nullptr), mData(nullptr), mAutoTableLayout(false)
 {
 }
 
@@ -238,10 +366,17 @@ Dx12GpuProgram::~Dx12GpuProgram()
     {
         delete mParams;
     }
+
+    if (mData != nullptr)
+    {
+        delete mData;
+    }
 }
 
-void Dx12GpuProgram::Compile()
+void Dx12GpuProgram::Compile(const Dx12ProgramDesc& desc)
 {
+    mDesc = desc;
+
     auto* ioManager = mDevice->GetIOMgr();
     const char* testShaderPath = "Shaders/hlsl/Dx12Test.hlsl";
     Io::FileBuffer shaderBuffer;
@@ -251,6 +386,9 @@ void Dx12GpuProgram::Compile()
     auto compileShader = [](Dx12ShaderBlob& blob, const char* src, int srcSize, const char* mainFn, Dx12PipelineType pipelineType)
     {
         ID3DBlob* errBlob = nullptr;
+
+        bool success = true;
+
         HRESULT result = D3DCompile(
             (LPCVOID)src,
             (SIZE_T)srcSize,
@@ -267,6 +405,7 @@ void Dx12GpuProgram::Compile()
         if (result != S_OK)
         {
             PG_FAILSTR("Failed compiling test shader: %s", errBlob->GetBufferPointer());
+            success = false;
         }
         else
         {
@@ -277,16 +416,40 @@ void Dx12GpuProgram::Compile()
 
         if (errBlob != nullptr)
 	    	errBlob->Release();
+    
+        return success;
     };
 
-    Dx12ShaderBlob psBlob; 
-    Dx12ShaderBlob vsBlob; 
-    compileShader(psBlob, shaderBuffer.GetBuffer(), shaderBuffer.GetFileSize(), "psMain", Dx12_Pixel);
-    compileShader(vsBlob, shaderBuffer.GetBuffer(), shaderBuffer.GetFileSize(), "vsMain", Dx12_Vertex);
-    
-    Dx12ShaderBlobList shaderLinkages = { psBlob, vsBlob };
+    if (mParams != nullptr)
+    {
+        delete mParams;
+    }
+    if (mData != nullptr)
+    {
+        delete mData;
+    }
+
     mParams = new Dx12GpuProgramParams();
-    gatherSortedGpuParameters(shaderLinkages, *mParams);
+    mData = new Dx12GpuProgramData();
+
+    for (unsigned pipelineIdx = 0; pipelineIdx < Dx12_PipelineMax; ++pipelineIdx)
+    {
+        if (desc.mainNames[pipelineIdx] != nullptr)
+        {
+            Dx12ShaderBlob shaderblob; 
+            bool result = compileShader(
+                shaderblob, shaderBuffer.GetBuffer(),
+                shaderBuffer.GetFileSize(), desc.mainNames[pipelineIdx],
+                (Dx12PipelineType)pipelineIdx);
+            if (result)
+            {
+                mData->blobs.push_back(shaderblob);
+            }
+        }
+    }
+
+    fillInReflectionData();
+    fillInResourceTableLayouts();
 }
 
 }
