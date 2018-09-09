@@ -74,6 +74,7 @@ private:
 
     void fillInReflectionData();
     void fillInResourceTableLayouts();
+    void createRootSignature();
     bool mAutoTableLayout;
     Dx12ProgramDesc mDesc;
     Dx12Device* mDevice;

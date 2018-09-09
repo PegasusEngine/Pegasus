@@ -163,6 +163,8 @@ struct Dx12GpuProgramParams
 struct Dx12GpuProgramData
 {
     Dx12ShaderBlobList blobs;
+    CComPtr<ID3DBlob> rootSignatureBlob;
+    CComPtr<ID3D12RootSignature> rootSignature;
 };
 
 void Dx12GpuProgram::fillInReflectionData()
@@ -231,6 +233,23 @@ void Dx12GpuProgram::fillInReflectionData()
         populateList(paramSets[i], mParams->res[i], mParams->b2Res[i]);
 }
 
+void Dx12GpuProgram::createRootSignature()
+{
+    CComPtr<ID3DBlob> errorBlob;
+    D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc;
+    rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+    rootSignatureDesc.NumParameters = (unsigned)mParams->tables.size();
+    rootSignatureDesc.pParameters = mParams->tables.data();
+    rootSignatureDesc.NumStaticSamplers = 0u;
+    rootSignatureDesc.pStaticSamplers = nullptr;
+    HRESULT result = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &mData->rootSignatureBlob, &errorBlob);
+    if (result != S_OK)
+    {
+        mData->rootSignatureBlob = nullptr;
+        PG_FAILSTR("Failed creating root signature for shader. Error: %s", errorBlob->GetBufferPointer());
+    }
+}
+
 void Dx12GpuProgram::fillInResourceTableLayouts()
 {
     auto userRangesToShaderParams = [&](const Dx12TableLayout& userLayout, std::vector<Dx12ShaderParam>& outShaderParams)
@@ -254,9 +273,10 @@ void Dx12GpuProgram::fillInResourceTableLayouts()
 
     auto initRange = [](const Dx12ShaderParam* param)
     {
+		bool isBindless = param->desc.BindCount == 0;
         return D3D12_DESCRIPTOR_RANGE {
             toD3dRangeType(param->resType),
-            param->desc.BindCount, param->desc.BindPoint,
+			isBindless ? UINT_MAX : param->desc.BindCount, param->desc.BindPoint,
             0u, /*No support for reg spaces for now*/
             D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND
         };
@@ -269,18 +289,15 @@ void Dx12GpuProgram::fillInResourceTableLayouts()
             const Dx12ShaderParam* lastParam = &shaderParams[0];
             rangesVis = lastParam->visibility;
 
-            bool pendingRange = true;
             D3D12_DESCRIPTOR_RANGE currRange = initRange(lastParam);
 
             unsigned expectedRegister = currRange.BaseShaderRegister + currRange.NumDescriptors;
 
             for (unsigned i = 1; i < shaderParams.size(); ++i)
             {
-                pendingRange = true;
                 const Dx12ShaderParam* newParam = &shaderParams[i]; 
                 if (newParam->desc.BindPoint != expectedRegister || newParam->resType != lastParam->resType)
                 {
-                    pendingRange = false;
                     ranges.push_back(currRange);
                     currRange = initRange(newParam);
                 }
@@ -289,14 +306,15 @@ void Dx12GpuProgram::fillInResourceTableLayouts()
                     currRange.NumDescriptors += newParam->desc.BindCount;
                 }
 
+				expectedRegister += newParam->desc.BindCount;
+
                 if (rangesVis != newParam->visibility)
                     rangesVis = D3D12_SHADER_VISIBILITY_ALL;
 
                 lastParam = newParam;
             }
             
-            if (pendingRange)
-                ranges.push_back(currRange);
+            ranges.push_back(currRange);
         }
     };
 
@@ -440,6 +458,8 @@ void Dx12GpuProgram::Compile(const Dx12ProgramDesc& desc)
 
     fillInReflectionData();
     fillInResourceTableLayouts();
+    createRootSignature();
+
 }
 
 }
