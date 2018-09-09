@@ -59,17 +59,6 @@ struct Dx12ShaderBlob
     CComPtr<ID3D12ShaderReflection> reflectionInfo;
 };
 
-
-enum Dx12ResType : unsigned
-{
-    Dx12_ResSrv,
-    Dx12_ResCbv,
-    Dx12_ResUav,
-    Dx12_ResSampler,
-    Dx12_ResCount,
-    Dx12_ResInvalid
-};
-
 struct Dx12ShaderParam
 {
     Dx12ResType resType;
@@ -244,18 +233,19 @@ void Dx12GpuProgram::fillInReflectionData()
 
 void Dx12GpuProgram::fillInResourceTableLayouts()
 {
-    auto userRangesToShaderParams = [&](const std::vector<Dx12TableLayout::Range>& registerRanges, std::vector<Dx12ShaderParam>& outShaderParams)
+    auto userRangesToShaderParams = [&](const Dx12TableLayout& userLayout, std::vector<Dx12ShaderParam>& outShaderParams)
     {
-        for (const auto& inputRange : registerRanges)
+        for (const auto& inputRange : userLayout.registerRanges)
         {
-            for (unsigned regIdx = inputRange.baseRegister; regIdx < inputRange.baseRegister + inputRange.count; ++regIdx)
+            PG_ASSERT(inputRange.tableType >= Dx12_ResTypeBegin && inputRange.tableType < Dx12_ResCount);
+            if (inputRange.tableType >= Dx12_ResTypeBegin && inputRange.tableType < Dx12_ResCount)
             {
-                for (unsigned resTypeIdx = 0; resTypeIdx < Dx12_ResCount; ++resTypeIdx)
+                for (unsigned regIdx = inputRange.baseRegister; regIdx < inputRange.baseRegister + inputRange.count; ++regIdx)
                 {
-                    auto& it = mParams->b2Res[resTypeIdx].find(regIdx);
-                    if (it != mParams->b2Res[resTypeIdx].end())
+                    auto& it = mParams->b2Res[inputRange.tableType].find(regIdx);
+                    if (it != mParams->b2Res[inputRange.tableType].end())
                     {
-                        outShaderParams.push_back(mParams->res[resTypeIdx][it->second]);
+                        outShaderParams.push_back(mParams->res[inputRange.tableType][it->second]);
                     }
                 }
             }
@@ -343,7 +333,7 @@ void Dx12GpuProgram::fillInResourceTableLayouts()
         for (const Dx12TableLayout& layout : tableLayouts)
         {
             std::vector<Dx12ShaderParam> shaderParams;
-            userRangesToShaderParams(layout.registerRanges, shaderParams);
+            userRangesToShaderParams(layout, shaderParams);
             
             D3D12_SHADER_VISIBILITY rangesVis = D3D12_SHADER_VISIBILITY_ALL;
             std::vector<D3D12_DESCRIPTOR_RANGE> ranges;

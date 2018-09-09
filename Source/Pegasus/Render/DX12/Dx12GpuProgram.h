@@ -20,14 +20,26 @@ enum Dx12PipelineType : unsigned
 {
     Dx12_Vertex,
     Dx12_Pixel,
-    Dx12_PipelineMax = Dx12_Pixel,
+    Dx12_PipelineMax,
     Dx12_Unknown
+};
+
+enum Dx12ResType : unsigned
+{
+    Dx12_ResTypeBegin,
+    Dx12_ResSrv = Dx12_ResTypeBegin,
+    Dx12_ResCbv,
+    Dx12_ResUav,
+    Dx12_ResSampler,
+    Dx12_ResCount,
+    Dx12_ResInvalid
 };
 
 struct Dx12TableLayout
 {
     struct Range
     {
+        Dx12ResType tableType;
 		unsigned baseRegister;
 		unsigned count;
     };
