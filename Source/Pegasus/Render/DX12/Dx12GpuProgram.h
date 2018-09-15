@@ -9,6 +9,10 @@
 //! \date   August 5th 2018
 //! \brief  The so feared encapsulation of PSOs, shader state, shader source.
 #include "Dx12Device.h"
+#include <Pegasus/Core/RefCounted.h>
+#include <Pegasus/Core/Ref.h>
+#include <Pegasus/Core/Shared/EventDefs.h>
+#include <Pegasus/Core/Shared/CompilerEvents.h>
 #include <vector>
 
 namespace Pegasus
@@ -62,15 +66,19 @@ struct Dx12ProgramDesc
 struct Dx12GpuProgramParams;
 struct Dx12GpuProgramData;
 
-class Dx12GpuProgram
+class Dx12GpuProgram : public Core::RefCounted
 {
+	PEGASUS_EVENT_DECLARE_DISPATCHER(Pegasus::Core::CompilerEvents::ICompilerEventListener)
+
 public:
     Dx12GpuProgram(Dx12Device* device);
-    ~Dx12GpuProgram();
+    virtual ~Dx12GpuProgram();
 
     void Compile(const Dx12ProgramDesc& programDesc);
 
 private:
+
+	inline void InvalidateData() {}
 
     void fillInReflectionData();
     void fillInResourceTableLayouts();
@@ -81,6 +89,8 @@ private:
     Dx12GpuProgramParams* mParams;
     Dx12GpuProgramData* mData;
 };
+
+typedef Pegasus::Core::Ref<Dx12GpuProgram> Dx12GpuProgramRef;
 
 }
 }

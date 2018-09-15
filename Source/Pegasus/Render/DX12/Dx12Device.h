@@ -55,7 +55,7 @@ public:
     virtual ~Dx12Device();
 
     GraphicsCardInfos* GetGraphicsCardInfos() const { return sCardInfos; }
-    ID3D12Device2* GetD3D() { return mDevice; }
+    inline ID3D12Device2* GetD3D() { return mDevice; }
     Dx12QueueManager* GetQueueManager() { return mQueueManager; }
     Dx12MemMgr* GetMemMgr() { return mMemMgr; }
     Io::IOManager* GetIOMgr() { return mIOManager; }
