@@ -107,11 +107,12 @@ Dx12Display::Dx12Display(const DisplayConfig& config, Alloc::IAllocator* alloc)
         progDesc.mainNames[Dx12_Pixel] = "psMain";
         progDesc.mainNames[Dx12_Vertex] = "vsMain";
         progDesc.tableLayouts = {
-			{ { {Dx12_ResSrv, 0u, 5u} ,
-			    {Dx12_ResSampler, 0u, 1u} } }
+			{ { {Dx12_ResSrv, 0u, 5u} } },
+			{ { {Dx12_ResSampler, 0u, 1u} } }
         };
         mTestProgram->Compile(progDesc);
     }
+
 }
 
 void Dx12Display::Flush()

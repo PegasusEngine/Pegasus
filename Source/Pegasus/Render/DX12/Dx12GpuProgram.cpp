@@ -133,7 +133,6 @@ Dx12ResType getResType(D3D_SHADER_INPUT_TYPE t)
 
 }
 
-
 typedef std::vector<Dx12ShaderParam> Dx12ShaderBindParamList;
 typedef std::vector<Dx12ShaderBlob> Dx12ShaderBlobList;
 typedef std::vector<Dx12ParamRange> Dx12ParamRangeList;
@@ -246,7 +245,19 @@ void Dx12GpuProgram::createRootSignature()
     if (result != S_OK)
     {
         mData->rootSignatureBlob = nullptr;
-        PG_FAILSTR("Failed creating root signature for shader. Error: %s", errorBlob->GetBufferPointer());
+
+		PEGASUS_EVENT_DISPATCH(
+			this, Core::CompilerEvents::CompilationEvent,
+			false, (const char*)errorBlob->GetBufferPointer()
+		);
+    }
+    else
+    {
+        result = mDevice->GetD3D()->CreateRootSignature(0u, mData->rootSignatureBlob->GetBufferPointer(), mData->rootSignatureBlob->GetBufferSize(), __uuidof(ID3D12RootSignature), reinterpret_cast<void**>(&mData->rootSignature));
+		PEGASUS_EVENT_DISPATCH(
+			this, Core::CompilerEvents::CompilationEvent,
+			result == S_OK, result == S_OK ? "Success" : "Error creating root signature"
+		);
     }
 }
 
@@ -364,8 +375,12 @@ void Dx12GpuProgram::fillInResourceTableLayouts()
 }
 
 Dx12GpuProgram::Dx12GpuProgram(Dx12Device* device)
-    : mDevice(device), mParams(nullptr), mData(nullptr), mAutoTableLayout(false)
+    : RefCounted(device->GetAllocator()), mDevice(device), mParams(nullptr), mData(nullptr), mAutoTableLayout(false)
 {
+#if PEGASUS_USE_EVENTS
+	SetEventUserData(nullptr);
+	SetEventListener(nullptr);
+#endif
 }
 
 Dx12GpuProgram::~Dx12GpuProgram()
@@ -386,12 +401,11 @@ void Dx12GpuProgram::Compile(const Dx12ProgramDesc& desc)
     mDesc = desc;
 
     auto* ioManager = mDevice->GetIOMgr();
-    const char* testShaderPath = "Shaders/hlsl/Dx12Test.hlsl";
     Io::FileBuffer shaderBuffer;
-    Io::IoError err = ioManager->OpenFileToBuffer(testShaderPath, shaderBuffer, true, mDevice->GetAllocator());
-    PG_ASSERTSTR(err == Io::ERR_NONE, "Error opening test shader \"%s\". Error Code: %d", testShaderPath, err);
+    Io::IoError err = ioManager->OpenFileToBuffer(desc.filename, shaderBuffer, true, mDevice->GetAllocator());
+    PG_ASSERTSTR(err == Io::ERR_NONE, "Error opening test shader \"%s\". Error Code: %d", desc.filename, err);
 
-    auto compileShader = [](Dx12ShaderBlob& blob, const char* src, int srcSize, const char* mainFn, Dx12PipelineType pipelineType)
+    auto compileShader = [&](Dx12ShaderBlob& blob, const char* src, int srcSize, const char* mainFn, Dx12PipelineType pipelineType)
     {
         ID3DBlob* errBlob = nullptr;
 
@@ -412,14 +426,26 @@ void Dx12GpuProgram::Compile(const Dx12ProgramDesc& desc)
         );
         if (result != S_OK)
         {
-            PG_FAILSTR("Failed compiling test shader: %s", errBlob->GetBufferPointer());
+            //PG_FAILSTR("Failed compiling test shader: %s", errBlob->GetBufferPointer());
+			PEGASUS_EVENT_DISPATCH(
+				this, Core::CompilerEvents::CompilationNotification,
+				Core::CompilerEvents::CompilationNotification::COMPILATION_ERROR,
+				"", 0u, ""
+			);
             success = false;
         }
         else
         {
             result = D3DReflect(blob.byteCode->GetBufferPointer(), blob.byteCode->GetBufferSize(), __uuidof(ID3D12ShaderReflection), reinterpret_cast<void**>(&blob.reflectionInfo));
             blob.pipelineType = pipelineType;
-            PG_ASSERTSTR(result == S_OK, "Failed generating reflection info for shader.");
+			if (result != S_OK)
+			{
+				PEGASUS_EVENT_DISPATCH(
+					this, Core::CompilerEvents::CompilationNotification,
+					Core::CompilerEvents::CompilationNotification::COMPILATION_ERROR,
+					"", 0u, "Failed generating reflection for shader"
+				);
+			}
         }
 
         if (errBlob != nullptr)
@@ -459,7 +485,6 @@ void Dx12GpuProgram::Compile(const Dx12ProgramDesc& desc)
     fillInReflectionData();
     fillInResourceTableLayouts();
     createRootSignature();
-
 }
 
 }
