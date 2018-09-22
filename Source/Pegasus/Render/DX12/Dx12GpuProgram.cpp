@@ -232,7 +232,7 @@ void Dx12GpuProgram::fillInReflectionData()
         populateList(paramSets[i], mParams->res[i], mParams->b2Res[i]);
 }
 
-void Dx12GpuProgram::createRootSignature()
+bool Dx12GpuProgram::createRootSignature()
 {
     CComPtr<ID3DBlob> errorBlob;
     D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc;
@@ -250,6 +250,7 @@ void Dx12GpuProgram::createRootSignature()
 			this, Core::CompilerEvents::CompilationEvent,
 			false, (const char*)errorBlob->GetBufferPointer()
 		);
+        return false;
     }
     else
     {
@@ -258,6 +259,7 @@ void Dx12GpuProgram::createRootSignature()
 			this, Core::CompilerEvents::CompilationEvent,
 			result == S_OK, result == S_OK ? "Success" : "Error creating root signature"
 		);
+        return true;
     }
 }
 
@@ -396,7 +398,12 @@ Dx12GpuProgram::~Dx12GpuProgram()
     }
 }
 
-void Dx12GpuProgram::Compile(const Dx12ProgramDesc& desc)
+bool Dx12GpuProgram::IsValid() const
+{
+    return mData != nullptr && mData->rootSignature != nullptr;
+}
+
+bool Dx12GpuProgram::Compile(const Dx12ProgramDesc& desc)
 {
     mDesc = desc;
 
@@ -479,12 +486,16 @@ void Dx12GpuProgram::Compile(const Dx12ProgramDesc& desc)
             {
                 mData->blobs.push_back(shaderblob);
             }
+            else
+            {
+                return false;
+            }
         }
     }
 
     fillInReflectionData();
     fillInResourceTableLayouts();
-    createRootSignature();
+    return createRootSignature();
 }
 
 }

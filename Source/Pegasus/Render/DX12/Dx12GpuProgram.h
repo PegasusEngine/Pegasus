@@ -74,7 +74,8 @@ public:
     Dx12GpuProgram(Dx12Device* device);
     virtual ~Dx12GpuProgram();
 
-    void Compile(const Dx12ProgramDesc& programDesc);
+    bool Compile(const Dx12ProgramDesc& programDesc);
+    bool IsValid() const;
 
 private:
 
@@ -82,7 +83,7 @@ private:
 
     void fillInReflectionData();
     void fillInResourceTableLayouts();
-    void createRootSignature();
+    bool createRootSignature();
     bool mAutoTableLayout;
     Dx12ProgramDesc mDesc;
     Dx12Device* mDevice;

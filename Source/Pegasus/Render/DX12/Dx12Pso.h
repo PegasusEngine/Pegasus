@@ -13,6 +13,8 @@
 #include "Pegasus/Core/Ref.h"
 #include "Dx12GpuProgram.h"
 
+interface ID3D12PipelineState;
+
 namespace Pegasus
 {
 namespace Render
@@ -32,9 +34,11 @@ public:
     Dx12Pso(Dx12Device* device);
     ~Dx12Pso();
 
-    void Compile(const Dx12PsoDesc& desc);
+    bool IsValid() const { return mPso != nullptr; }
+    bool Compile(const Dx12PsoDesc& desc);
 
 private:
+    ID3D12PipelineState* mPso;
     Dx12PsoDesc mDesc;
     Dx12Device* mDevice;
 };
