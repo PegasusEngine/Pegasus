@@ -15,6 +15,8 @@
 #include <Pegasus/Core/Shared/CompilerEvents.h>
 #include <vector>
 
+interface ID3D12RootSignature;
+
 namespace Pegasus
 {
 namespace Render
@@ -74,6 +76,7 @@ public:
     Dx12GpuProgram(Dx12Device* device);
     virtual ~Dx12GpuProgram();
 
+    ID3D12RootSignature* GetRootSignature();
     bool Compile(const Dx12ProgramDesc& programDesc);
     bool IsValid() const;
 

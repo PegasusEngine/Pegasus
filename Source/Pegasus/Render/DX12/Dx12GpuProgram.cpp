@@ -263,6 +263,12 @@ bool Dx12GpuProgram::createRootSignature()
     }
 }
 
+ID3D12RootSignature* Dx12GpuProgram::GetRootSignature()
+{
+    PG_ASSERT(mData != nullptr);
+    return &(*mData->rootSignature);
+}
+
 void Dx12GpuProgram::fillInResourceTableLayouts()
 {
     auto userRangesToShaderParams = [&](const Dx12TableLayout& userLayout, std::vector<Dx12ShaderParam>& outShaderParams)
