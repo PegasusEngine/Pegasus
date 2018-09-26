@@ -32,6 +32,8 @@ bool Dx12Pso::Compile(const Dx12PsoDesc& desc)
 
     if (desc.program == nullptr || !desc.program->IsValid())
         return nullptr;
+
+    psoGraphicsDesc.pRootSignature = desc.program->GetRootSignature();
     
     HRESULT result = mDevice->GetD3D()->CreateGraphicsPipelineState(&psoDesc, __uiidof(ID3D12PipelineState), reinterpret_cast<void**>(&mPso));
     if (result != S_OK)
