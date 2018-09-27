@@ -9,6 +9,8 @@
 //! \date   July 8th 2018
 //! \brief  dx12 swap chain implementation.
 
+#pragma once
+
 #include <Pegasus/Render/IDisplay.h>
 #include <dxgi1_5.h>
 #include "Dx12MemMgr.h"

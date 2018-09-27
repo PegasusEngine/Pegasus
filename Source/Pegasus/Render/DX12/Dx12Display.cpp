@@ -4,6 +4,7 @@
 #include "Dx12QueueManager.h"
 #include "Dx12Fence.h"
 #include "Dx12GpuProgram.h"
+#include "Dx12Pso.h"
 #include <dxgi1_6.h>
 #include <Pegasus/Allocator/IAllocator.h>
 
@@ -110,7 +111,12 @@ Dx12Display::Dx12Display(const DisplayConfig& config, Alloc::IAllocator* alloc)
 			{ { {Dx12_ResSrv, 0u, 5u} } },
 			{ { {Dx12_ResSampler, 0u, 1u} } }
         };
-        mTestProgram->Compile(progDesc);
+		if (mTestProgram->Compile(progDesc))
+		{
+			Dx12PsoDesc psoDesc;
+			Dx12Pso* newPso = PG_NEW(GetAllocator(), -1, "TestGpuProgram", Pegasus::Alloc::PG_MEM_PERM) Dx12Pso(mDevice);
+			newPso->Compile(psoDesc, mTestProgram);
+		}
     }
 
 }
@@ -139,7 +145,7 @@ Dx12Display::~Dx12Display()
         mSwapChain->Release();
     }
 
-    PG_DELETE(GetAllocator(), mTestProgram);
+	mTestProgram->Release();
 }
 
 void Dx12Display::BeginFrame()
