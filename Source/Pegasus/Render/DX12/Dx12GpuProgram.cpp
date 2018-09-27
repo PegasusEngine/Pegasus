@@ -166,6 +166,33 @@ struct Dx12GpuProgramData
     CComPtr<ID3D12RootSignature> rootSignature;
 };
 
+CComPtr<ID3DBlob> Dx12GpuProgram::GetShaderByteCode(Dx12PipelineType type)
+{
+    if (mData)
+    {
+        for (Dx12ShaderBlob& blob : mData->blobs)
+        {
+            if (blob.pipelineType == type)
+                return blob.byteCode;
+        }
+    }
+
+    return nullptr;
+}
+
+unsigned int Dx12GpuProgram::GetShaderByteCodeCounts() const
+{
+    return mData ? (unsigned int) mData->blobs.size() : 0u;
+}
+
+CComPtr<ID3DBlob> Dx12GpuProgram::GetShaderByteCodeByIndex(unsigned int index, Dx12PipelineType& outType)
+{
+    PG_ASSERT(mData);
+    PG_ASSERT(index < (unsigned int)mData->blobs.size());
+    outType = mData->blobs[index].pipelineType;
+    return mData->blobs[index].byteCode;
+}
+
 void Dx12GpuProgram::fillInReflectionData()
 {
     const Dx12ShaderBlobList& inputShaders = mData->blobs;
@@ -439,7 +466,7 @@ bool Dx12GpuProgram::Compile(const Dx12ProgramDesc& desc)
         );
         if (result != S_OK)
         {
-            //PG_FAILSTR("Failed compiling test shader: %s", errBlob->GetBufferPointer());
+            PG_FAILSTR("Failed compiling test shader: %s", errBlob->GetBufferPointer());
 			PEGASUS_EVENT_DISPATCH(
 				this, Core::CompilerEvents::CompilationNotification,
 				Core::CompilerEvents::CompilationNotification::COMPILATION_ERROR,

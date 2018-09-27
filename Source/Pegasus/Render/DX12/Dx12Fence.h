@@ -9,6 +9,8 @@
 //! \date   July 18th 2018
 //! \brief  Implementation of fences
 
+#pragma once
+
 #include <windows.h>
 
 struct ID3D12Fence;

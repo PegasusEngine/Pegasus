@@ -9,6 +9,8 @@
 //! \date   September 15th 2018
 //! \brief  Convenience class to create PSOs
 
+#pragma once
+
 #include "Pegasus/Core/RefCounted.h"
 #include "Pegasus/Core/Ref.h"
 #include "Dx12GpuProgram.h"
@@ -25,7 +27,7 @@ class Dx12Program;
 
 struct Dx12PsoDesc
 {
-    Dx12GpuProgramRef program;
+    
 };
 
 class Dx12Pso : public Core::RefCounted
@@ -35,11 +37,19 @@ public:
     ~Dx12Pso();
 
     bool IsValid() const { return mPso != nullptr; }
-    bool Compile(const Dx12PsoDesc& desc);
+    bool Compile(const Dx12PsoDesc& desc, Dx12GpuProgramRef program);
 
 private:
+    enum Type
+    {
+        PsoGraphics,
+        PsoCompute
+    };
+
     ID3D12PipelineState* mPso;
     Dx12PsoDesc mDesc;
+    Dx12GpuProgramRef mProgram;
+    Type mType;
     Dx12Device* mDevice;
 };
 

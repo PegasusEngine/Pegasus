@@ -9,11 +9,11 @@
 //! \date   July 20th 2018
 //! \brief  Heaps / allocations etc mem mgr
 
+#pragma once
+
 #include <vector>
 #include <d3d12.h>
 #include <atlbase.h>
-
-#pragma once
 
 namespace Pegasus
 {
