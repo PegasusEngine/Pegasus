@@ -35,8 +35,22 @@ public:
 
     enum TableType
     {
-        TableTypeSrv, TableTypeUav, TableTypeCbv
+        TableTypeSrvCbvUav, TableTypeSampler, TableTypeRtv, TableTypeMax, TableTypeInvalid
     };
+
+    static inline TableType GetTableType(D3D12_DESCRIPTOR_HEAP_TYPE heapType) 
+    {
+        switch(heapType)
+        {
+        case D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV:
+            return TableTypeSrvCbvUav;
+        case D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER:
+            return TableTypeSampler;
+        case D3D12_DESCRIPTOR_HEAP_TYPE_RTV:
+            return TableTypeRtv;
+        }
+        return TableTypeInvalid;
+    }
 
     struct Table
     {
@@ -45,6 +59,10 @@ public:
         TableType tableType = TableTypeSrv;
         UINT baseIdx = 0;   
         UINT count = 0;
+    };
+
+    struct FrameHandle
+    {
     };
 
     Dx12MemMgr(Dx12Device* device);
@@ -58,6 +76,9 @@ public:
 
     void Delete(const Table& t);
     void Delete(Handle h);
+
+    FrameHandle nextFrame();
+    D3D12_GPU_DESCRIPTOR_HANDLE uploadTable(const Table& t);
 
 private:
 
@@ -75,27 +96,30 @@ private:
         std::vector<UINT> freeSpots;
     };
 
-    struct GpuHeapContainer
+    struct TableHeapContainer
     {
         UINT incrSize = 0;
         UINT lastIndex = 0;
         D3D12_DESCRIPTOR_HEAP_DESC desc;
         CComPtr<ID3D12DescriptorHeap> heap;
         std::vector<Table> freeSpots;
+
+        D3D12_DESCRIPTOR_HEAP_DESC linearHeapDesc;
+        CComPtr<ID3D12DescriptorHeap> gpuLinearHeap;
     };
 
-    enum GpuHeapTypes
+    struct FrameState
     {
-        GpuHeapCbv,
-        GpuHeapSrv,
-        GpuHeapUav,
-        MaxGpuHeapTypes
+        UINT handlesPerFrames;
+        UINT maxFrames;
+        UINT currFrame;
     };
 
     typedef std::vector<HeapContainer> HeapList;
 
+    FrameState mFrameState;
     HeapContainer mHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
-	GpuHeapContainer mGpuHeap;
+	TableHeapContainer mTableHeaps[TableTypeMax];
 };
 
 }
