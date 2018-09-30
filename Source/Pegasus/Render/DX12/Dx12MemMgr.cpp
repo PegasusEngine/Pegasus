@@ -22,6 +22,10 @@ namespace Render
 Dx12MemMgr::Dx12MemMgr(Dx12Device* device)
 : mDevice(device)
 {
+    mFrameState.handlesPerFrames = 1024u;
+    mFrameState.maxFrames = 8u;
+    mFrameState.currFrame = mFrameState.maxFrames;
+
     for (UINT i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
     {
         HeapContainer& container = mHeaps[i];
@@ -29,36 +33,55 @@ Dx12MemMgr::Dx12MemMgr(Dx12Device* device)
         desc.Type = (D3D12_DESCRIPTOR_HEAP_TYPE)i;
         desc.NodeMask = 0;
         desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+        UINT tableTypeCounts = 0;
 
         switch(desc.Type)
         {
         case D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV:
             desc.NumDescriptors = 1024;
+            tableTypeCounts = 20000;
             break;
         case D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER:
             desc.NumDescriptors = 1024;
+            tableTypeCounts = 1024;
             break;
         case D3D12_DESCRIPTOR_HEAP_TYPE_RTV:
             desc.NumDescriptors = 1024;
+            tableTypeCounts = 300;
             break;
         case D3D12_DESCRIPTOR_HEAP_TYPE_DSV:
             desc.NumDescriptors = 1024;
+            tableTypeCounts = 0;
             break;
         default:
             break;
         }
         container.incrSize = device->GetD3D()->GetDescriptorHandleIncrementSize(desc.Type);
         DX_VALID_DECLARE(device->GetD3D()->CreateDescriptorHeap(&desc, __uuidof(ID3D12DescriptorHeap),reinterpret_cast<void**>(&container.heap)));
+        
+        TableType tableType = GetTableType(desc.Type);
+        if (tableType != TableTypeInvalid)
+        {
+            mTableHeaps[tableType].desc.Type = desc.Type;
+            mTableHeaps[tableType].desc.NumDescriptors = tableTypeCounts;
+            mTableHeaps[tableType].desc.NodeMask = 0;
+            //mTableHeaps[tableType].desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+            mTableHeaps[tableType].lastIndex = 0;
+            mTableHeaps[tableType].incrSize = device->GetD3D()->GetDescriptorHandleIncrementSize(mTableHeaps[tableType].desc.Type);
+            DX_VALID_DECLARE(device->GetD3D()->CreateDescriptorHeap(&mTableHeaps[tableType].desc, __uuidof(ID3D12DescriptorHeap),reinterpret_cast<void**>(&mTableHeaps[tableType].heap)));
+
+            mTableHeaps[tableType].gpuHeapDesc = {};
+        
+            if (tableType != TableTypeRtv)
+            {
+                mTableHeaps[tableType].gpuHeapDesc = mTableHeaps[tableType].desc;
+                mTableHeaps[tableType].gpuHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+                mTableHeaps[tableType].NumDescriptors = mFrameState.handlesPerFrames * mFrameState.maxFrames;
+            }
+            
+        }
     }
 
-    //Create a single Heap for SRV/UAV/Cbv
-    mGpuHeap.desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-    mGpuHeap.desc.NumDescriptors = 20000;
-    mGpuHeap.desc.NodeMask = 0;
-    mGpuHeap.desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-    mGpuHeap.lastIndex = 0;
-    mGpuHeap.incrSize = device->GetD3D()->GetDescriptorHandleIncrementSize(mGpuHeap.desc.Type);
-    DX_VALID_DECLARE(device->GetD3D()->CreateDescriptorHeap(&mGpuHeap.desc, __uuidof(ID3D12DescriptorHeap),reinterpret_cast<void**>(&mGpuHeap.heap)));
 }
 
 Dx12MemMgr::~Dx12MemMgr()
@@ -71,29 +94,29 @@ Dx12MemMgr::Table Dx12MemMgr::AllocEmptyTable(UINT count, Dx12MemMgr::TableType 
     Table resultTable;
 
     //for now linearly find a heap that fits
-    for (int i = 0; i < (int)mGpuHeap.freeSpots.size(); ++i)
+    for (int i = 0; i < (int)mTableHeaps[tableType].freeSpots.size(); ++i)
     {
-        auto& freeTable = mGpuHeap.freeSpots[i];
+        auto& freeTable = mTableHeaps[tableType].freeSpots[i];
         if (count == freeTable.count)
         {
             resultTable = freeTable;
             resultTable.tableType = tableType;
-            mGpuHeap.freeSpots[i] = mGpuHeap.freeSpots[mGpuHeap.freeSpots.size() - 1];
-            mGpuHeap.freeSpots.pop_back();
+            mTableHeaps[tableType].freeSpots[i] = mTableHeaps[tableType].freeSpots[mTableHeaps[tableType].freeSpots.size() - 1];
+            mTableHeaps[tableType].freeSpots.pop_back();
             return resultTable;
         }
     }
 
     //if not check if theres enough size
-    PG_ASSERTSTR(count <= (mGpuHeap.desc.NumDescriptors - mGpuHeap.lastIndex), "Not enough memory remaining for descriptors!");
+    PG_ASSERTSTR(count <= (mTableHeaps[tableType].desc.NumDescriptors - mTableHeaps[tableType].lastIndex), "Not enough memory remaining for descriptors!");
     resultTable.tableType = tableType;
     resultTable.count = count;
     resultTable.baseIdx = count;
-    resultTable.baseHandle = mGpuHeap.heap->GetCPUDescriptorHandleForHeapStart();
-    resultTable.baseHandleGpu = mGpuHeap.heap->GetGPUDescriptorHandleForHeapStart();
-    resultTable.baseHandle.ptr += mGpuHeap.incrSize * mGpuHeap.lastIndex;
-    resultTable.baseHandleGpu.ptr += mGpuHeap.incrSize * mGpuHeap.lastIndex;
-    mGpuHeap.lastIndex += count;
+    resultTable.baseHandle = mTableHeaps[tableType].heap->GetCPUDescriptorHandleForHeapStart();
+    resultTable.baseHandleGpu = mTableHeaps[tableType].heap->GetGPUDescriptorHandleForHeapStart();
+    resultTable.baseHandle.ptr += mTableHeaps[tableType].incrSize * mTableHeaps[tableType].lastIndex;
+    resultTable.baseHandleGpu.ptr += mTableHeaps[tableType].incrSize * mTableHeaps[tableType].lastIndex;
+    mTableHeaps[tableType].lastIndex += count;
 	return resultTable;
 }
 
@@ -103,7 +126,7 @@ Dx12MemMgr::Table Dx12MemMgr::AllocateTable(Dx12MemMgr::TableType tableType, con
     for (UINT i = 0; i < cpuHandlesCount; ++i)
     {
         D3D12_CPU_DESCRIPTOR_HANDLE tableDescriptor = resultTable.baseHandle;
-        tableDescriptor.ptr += i * mGpuHeap.incrSize;
+        tableDescriptor.ptr += i * mTableHeaps[tableType].incrSize;
         mDevice->GetD3D()->CopyDescriptorsSimple(1, tableDescriptor, cpuHandles[i].handle, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     }
     return resultTable;
@@ -118,7 +141,8 @@ Dx12MemMgr::Table Dx12MemMgr::AllocateTableCopy(const Table& srcTable)
 
 void Dx12MemMgr::Delete(const Dx12MemMgr::Table& t)
 {
-    mGpuHeap.freeSpots.push_back(t);
+    PG_ASSERT((UINT)t.tableType >= 0 && t.tableType < TableTypeMax);
+    mTableHeaps[t.tableType].freeSpots.push_back(t);
 }
 
 void Dx12MemMgr::Delete(Dx12MemMgr::Handle h)

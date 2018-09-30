@@ -98,27 +98,6 @@ Dx12Display::Dx12Display(const DisplayConfig& config, Alloc::IAllocator* alloc)
 
 		DX_VALID(mCmdList->Close());
     }
-    
-    //Creating hack test Gpu program
-    mTestProgram = PG_NEW(GetAllocator(), -1, "TestGpuProgram", Pegasus::Alloc::PG_MEM_PERM) Dx12GpuProgram(mDevice);
-
-    {
-        Dx12ProgramDesc progDesc;
-        progDesc.filename = "Shaders/hlsl/Dx12Test.hlsl";
-        progDesc.mainNames[Dx12_Pixel] = "psMain";
-        progDesc.mainNames[Dx12_Vertex] = "vsMain";
-        progDesc.tableLayouts = {
-			{ { {Dx12_ResSrv, 0u, 5u} } },
-			{ { {Dx12_ResSampler, 0u, 1u} } }
-        };
-		if (mTestProgram->Compile(progDesc))
-		{
-			Dx12PsoDesc psoDesc;
-			Dx12Pso* newPso = PG_NEW(GetAllocator(), -1, "TestGpuProgram", Pegasus::Alloc::PG_MEM_PERM) Dx12Pso(mDevice);
-			newPso->Compile(psoDesc, mTestProgram);
-		}
-    }
-
 }
 
 void Dx12Display::Flush()
