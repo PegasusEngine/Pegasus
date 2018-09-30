@@ -21,6 +21,7 @@ namespace Render
 {
 
 class Dx12Device;
+class Dx12Fence;
 
 class Dx12MemMgr
 {
@@ -52,17 +53,27 @@ public:
         return TableTypeInvalid;
     }
 
+    static inline D3D12_DESCRIPTOR_HEAP_TYPE GetHeapType(TableType tt)
+    {
+        switch(tt)
+        {
+        case TableTypeSrvCbvUav:
+            return D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+        case TableTypeSampler:
+            return D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
+        case TableTypeRtv:
+            return D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+        }
+        return D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
+    }
+
     struct Table
     {
         D3D12_CPU_DESCRIPTOR_HANDLE baseHandle;
         D3D12_GPU_DESCRIPTOR_HANDLE baseHandleGpu;
-        TableType tableType = TableTypeSrv;
+        TableType tableType = TableTypeSrvCbvUav;
         UINT baseIdx = 0;   
         UINT count = 0;
-    };
-
-    struct FrameHandle
-    {
     };
 
     Dx12MemMgr(Dx12Device* device);
@@ -77,13 +88,13 @@ public:
     void Delete(const Table& t);
     void Delete(Handle h);
 
-    FrameHandle nextFrame();
     D3D12_GPU_DESCRIPTOR_HANDLE uploadTable(const Table& t);
 
 private:
-
     Handle AllocInternal(D3D12_DESCRIPTOR_HEAP_TYPE type);
     Table AllocEmptyTable(UINT count, TableType tableType);
+
+    void AllocGpuHeapPage(TableType tableType);
 
     Dx12Device* mDevice;
 
@@ -96,6 +107,16 @@ private:
         std::vector<UINT> freeSpots;
     };
 
+    struct CircularHeapState
+    {
+        UINT allocCount = 0u;
+        UINT handlesPerPage = 0u;
+        UINT maxPages = 0u;
+        UINT currPage = 0u;
+        UINT64* fenceValues = nullptr;
+        Dx12Fence* fence = nullptr;
+    };
+
     struct TableHeapContainer
     {
         UINT incrSize = 0;
@@ -104,20 +125,13 @@ private:
         CComPtr<ID3D12DescriptorHeap> heap;
         std::vector<Table> freeSpots;
 
-        D3D12_DESCRIPTOR_HEAP_DESC linearHeapDesc;
+        D3D12_DESCRIPTOR_HEAP_DESC gpuLinearHeapDesc;
         CComPtr<ID3D12DescriptorHeap> gpuLinearHeap;
-    };
-
-    struct FrameState
-    {
-        UINT handlesPerFrames;
-        UINT maxFrames;
-        UINT currFrame;
+        CircularHeapState gpuLinearHeapState;
     };
 
     typedef std::vector<HeapContainer> HeapList;
 
-    FrameState mFrameState;
     HeapContainer mHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
 	TableHeapContainer mTableHeaps[TableTypeMax];
 };

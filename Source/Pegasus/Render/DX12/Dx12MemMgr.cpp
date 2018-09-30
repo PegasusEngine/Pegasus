@@ -12,7 +12,10 @@
 #include "Dx12MemMgr.h"
 #include "Dx12Device.h"
 #include "Dx12Defs.h"
+#include "Dx12Fence.h"
+#include "Dx12QueueManager.h"
 #include <Pegasus/Utils/Memset.h>
+
 
 namespace Pegasus
 {
@@ -22,10 +25,6 @@ namespace Render
 Dx12MemMgr::Dx12MemMgr(Dx12Device* device)
 : mDevice(device)
 {
-    mFrameState.handlesPerFrames = 1024u;
-    mFrameState.maxFrames = 8u;
-    mFrameState.currFrame = mFrameState.maxFrames;
-
     for (UINT i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
     {
         HeapContainer& container = mHeaps[i];
@@ -56,36 +55,71 @@ Dx12MemMgr::Dx12MemMgr(Dx12Device* device)
         default:
             break;
         }
+
         container.incrSize = device->GetD3D()->GetDescriptorHandleIncrementSize(desc.Type);
         DX_VALID_DECLARE(device->GetD3D()->CreateDescriptorHeap(&desc, __uuidof(ID3D12DescriptorHeap),reinterpret_cast<void**>(&container.heap)));
         
         TableType tableType = GetTableType(desc.Type);
         if (tableType != TableTypeInvalid)
         {
+			mTableHeaps[tableType].desc = {};
             mTableHeaps[tableType].desc.Type = desc.Type;
             mTableHeaps[tableType].desc.NumDescriptors = tableTypeCounts;
             mTableHeaps[tableType].desc.NodeMask = 0;
-            //mTableHeaps[tableType].desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
             mTableHeaps[tableType].lastIndex = 0;
             mTableHeaps[tableType].incrSize = device->GetD3D()->GetDescriptorHandleIncrementSize(mTableHeaps[tableType].desc.Type);
-            DX_VALID_DECLARE(device->GetD3D()->CreateDescriptorHeap(&mTableHeaps[tableType].desc, __uuidof(ID3D12DescriptorHeap),reinterpret_cast<void**>(&mTableHeaps[tableType].heap)));
+            DX_VALID_DECLARE(device->GetD3D()->CreateDescriptorHeap(
+                &mTableHeaps[tableType].desc,
+                __uuidof(ID3D12DescriptorHeap),
+                reinterpret_cast<void**>(&mTableHeaps[tableType].heap)));
 
-            mTableHeaps[tableType].gpuHeapDesc = {};
+            mTableHeaps[tableType].gpuLinearHeapDesc = {};
         
             if (tableType != TableTypeRtv)
             {
-                mTableHeaps[tableType].gpuHeapDesc = mTableHeaps[tableType].desc;
-                mTableHeaps[tableType].gpuHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-                mTableHeaps[tableType].NumDescriptors = mFrameState.handlesPerFrames * mFrameState.maxFrames;
+
+                auto& linearHeapState = mTableHeaps[tableType].gpuLinearHeapState;
+                linearHeapState.handlesPerPage = 256u;
+                linearHeapState.maxPages = 4u;
+                linearHeapState.currPage = linearHeapState.maxPages;
+                linearHeapState.allocCount = 0u;
+                linearHeapState.fenceValues = new UINT64[linearHeapState.maxPages];
+                Utils::Memset32(linearHeapState.fenceValues, 0u, sizeof(UINT64)*linearHeapState.maxPages);
+                linearHeapState.fence = new Dx12Fence(device, device->GetQueueManager()->GetDirect());
+
+                mTableHeaps[tableType].gpuLinearHeapDesc = mTableHeaps[tableType].desc;
+                mTableHeaps[tableType].gpuLinearHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+                mTableHeaps[tableType].gpuLinearHeapDesc.NumDescriptors = linearHeapState.handlesPerPage * linearHeapState.maxPages;
+                DX_VALID_DECLARE(device->GetD3D()->CreateDescriptorHeap(
+                    &mTableHeaps[tableType].gpuLinearHeapDesc,
+                    __uuidof(ID3D12DescriptorHeap),
+                    reinterpret_cast<void**>(&mTableHeaps[tableType].gpuLinearHeap)));
             }
-            
         }
     }
-
 }
 
 Dx12MemMgr::~Dx12MemMgr()
 {
+    //Wait on everything to finish
+    for (UINT tableType = 0; tableType < TableTypeMax; ++tableType)
+    {
+        auto& linearHeapState = mTableHeaps[tableType].gpuLinearHeapState;
+        if (linearHeapState.fence)
+        {
+            //Signal the current page in use so we can wait on this.
+            linearHeapState.fenceValues[linearHeapState.currPage % linearHeapState.maxPages] = linearHeapState.fence->Signal();
+
+            for (UINT i = 0; i < linearHeapState.maxPages; ++i)
+            {
+                linearHeapState.fence->WaitOnCpu(linearHeapState.fenceValues[i]);
+            }
+
+            delete linearHeapState.fence;
+            delete [] linearHeapState.fenceValues;
+        }
+    }
+
 }
 
 Dx12MemMgr::Table Dx12MemMgr::AllocEmptyTable(UINT count, Dx12MemMgr::TableType tableType)
@@ -117,7 +151,7 @@ Dx12MemMgr::Table Dx12MemMgr::AllocEmptyTable(UINT count, Dx12MemMgr::TableType 
     resultTable.baseHandle.ptr += mTableHeaps[tableType].incrSize * mTableHeaps[tableType].lastIndex;
     resultTable.baseHandleGpu.ptr += mTableHeaps[tableType].incrSize * mTableHeaps[tableType].lastIndex;
     mTableHeaps[tableType].lastIndex += count;
-	return resultTable;
+    return resultTable;
 }
 
 Dx12MemMgr::Table Dx12MemMgr::AllocateTable(Dx12MemMgr::TableType tableType, const Dx12MemMgr::Handle* cpuHandles, UINT cpuHandlesCount)
@@ -161,8 +195,10 @@ Dx12MemMgr::Handle Dx12MemMgr::AllocInternal(D3D12_DESCRIPTOR_HEAP_TYPE type)
     UINT cpuRequestedIndex = 0;
     if (freeList.empty())
     {
+#if PEGASUS_DEBUG
         if (container.lastIndex >= desc.NumDescriptors)
             PG_FAILSTR("Not enough dx12 descriptors!");
+#endif
         cpuRequestedIndex = container.lastIndex++;
     }
     else
@@ -174,6 +210,57 @@ Dx12MemMgr::Handle Dx12MemMgr::AllocInternal(D3D12_DESCRIPTOR_HEAP_TYPE type)
     D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = container.heap->GetCPUDescriptorHandleForHeapStart();
     cpuHandle.ptr += container.incrSize * cpuRequestedIndex;
     return Dx12MemMgr::Handle { desc.Type, cpuHandle, cpuRequestedIndex };
+}
+
+void Dx12MemMgr::AllocGpuHeapPage(TableType tableType)
+{
+    auto& linearHeapState = mTableHeaps[tableType].gpuLinearHeapState;
+    if (linearHeapState.fence)
+    {
+        //Close previous frame.
+        UINT prevIdx = linearHeapState.currPage % linearHeapState.maxPages;
+        linearHeapState.fenceValues[prevIdx] = linearHeapState.fence->Signal();
+        linearHeapState.currPage++;
+        linearHeapState.allocCount = 0u;
+
+        UINT currIdx = linearHeapState.currPage % linearHeapState.maxPages;
+        //Wait till new frame is ready if not ready.
+        linearHeapState.fence->WaitOnCpu(linearHeapState.fenceValues[currIdx]);
+    }
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE Dx12MemMgr::uploadTable(const Table& t)
+{
+    auto& linearHeapState = mTableHeaps[t.tableType].gpuLinearHeapState;
+    PG_ASSERTSTR(t.count <= linearHeapState.handlesPerPage, "Cannot allocate more handles than what a page of gpu heap can have."
+                            " Max handles (resources) in a table is bounded by: %d", linearHeapState.handlesPerPage);
+
+    if (t.tableType == TableTypeRtv || t.tableType == TableTypeInvalid)
+    {
+        PG_LOG('ERR_', "Cant upload an RTV or DSV table to gpu.");
+    }
+
+    if (linearHeapState.allocCount + t.count > linearHeapState.handlesPerPage)
+    {
+        AllocGpuHeapPage(t.tableType);
+    }
+
+    UINT64 destMemoryOffset = ((linearHeapState.currPage %  linearHeapState.maxPages) * linearHeapState.handlesPerPage + linearHeapState.allocCount) * mTableHeaps[t.tableType].incrSize;
+	D3D12_GPU_DESCRIPTOR_HANDLE destGpuHandle = mTableHeaps[t.tableType].gpuLinearHeap->GetGPUDescriptorHandleForHeapStart();
+    D3D12_CPU_DESCRIPTOR_HANDLE destCpuHandle = mTableHeaps[t.tableType].gpuLinearHeap->GetCPUDescriptorHandleForHeapStart();
+    destGpuHandle.ptr += destMemoryOffset;
+    destCpuHandle.ptr += (SIZE_T)destMemoryOffset;
+
+	linearHeapState.allocCount += t.count;
+
+    mDevice->GetD3D()->CopyDescriptorsSimple(
+        t.count,
+        t.baseHandle,
+        destCpuHandle,
+        GetHeapType(t.tableType)        
+    );
+
+	return destGpuHandle;
 }
 
 }
