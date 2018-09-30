@@ -211,8 +211,10 @@ void Dx12GpuProgram::fillInReflectionData()
             Dx12ResType resType = getResType(outResDesc.Type);
 
             
+#if PEGASUS_DEBUG
             if (resType == Dx12_ResInvalid)
                 PG_FAILSTR("Cannot recognize input type of %s.", outResDesc.Name);
+#endif
 
 			ParamSet* targetParamSet = &paramSets[resType];
 

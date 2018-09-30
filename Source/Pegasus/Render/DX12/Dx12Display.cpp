@@ -123,8 +123,6 @@ Dx12Display::~Dx12Display()
     {
         mSwapChain->Release();
     }
-
-	mTestProgram->Release();
 }
 
 void Dx12Display::BeginFrame()

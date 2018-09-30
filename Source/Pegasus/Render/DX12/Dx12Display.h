@@ -62,9 +62,6 @@ private:
     //! target frame buffer width/height
     unsigned int mWidth;
     unsigned int mHeight;
-
-    //Hack test state:
-    Dx12GpuProgram* mTestProgram;
 };
 }
 }
