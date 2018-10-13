@@ -7,6 +7,7 @@
 #include "Dx12Pso.h"
 #include <dxgi1_6.h>
 #include <Pegasus/Allocator/IAllocator.h>
+#include <Pegasus/Core/Formats.h>
 
 namespace Pegasus
 {
@@ -122,7 +123,7 @@ Dx12Display::~Dx12Display()
     if (mSwapChain)
     {
         mSwapChain->Release();
-    }
+    }	
 }
 
 void Dx12Display::BeginFrame()
@@ -154,6 +155,33 @@ void Dx12Display::BeginFrame()
     FLOAT clearColor[] = { 0.0f, 0.0f, 1.0f, 1.0f };
     mCmdList->ClearRenderTargetView(mRtvBuffers[mBackBufferIdx].handle, clearColor, 0, nullptr);
     
+
+    if (mTestTexture == nullptr)
+    {
+        TextureDesc desc;
+        desc.name = "TestTexture";
+        desc.type = TextureType_2d;
+        desc.width = 256;
+        desc.height = 256;
+        desc.depth = 1;
+        desc.mipLevels = 1;
+        desc.format = Core::FORMAT_RGBA_8_UNORM;
+        desc.bindFlags = BindFlags_Srv | BindFlags_Rt | BindFlags_Uav;
+        desc.usage = ResourceUsage_Static;
+        mTestTexture = mDevice->CreateTexture(desc);
+    }
+
+    if (mTestBuffer == nullptr)
+    {
+        BufferDesc desc;
+        desc.name = "TestBuffer";
+        desc.stride = sizeof(int);
+        desc.elementCount = 34;
+		desc.bindFlags = BindFlags_Srv;
+        desc.bufferType = BufferType_Default;
+		desc.usage = ResourceUsage_Static;
+        mTestBuffer = mDevice->CreateBuffer(desc);
+    }
 }
 
 void Dx12Display::EndFrame()

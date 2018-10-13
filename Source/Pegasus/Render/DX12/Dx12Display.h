@@ -14,6 +14,7 @@
 #include <Pegasus/Render/IDisplay.h>
 #include <dxgi1_5.h>
 #include "Dx12MemMgr.h"
+#include "Dx12Resources.h"
 
 namespace Pegasus
 {
@@ -62,6 +63,9 @@ private:
     //! target frame buffer width/height
     unsigned int mWidth;
     unsigned int mHeight;
+
+    Dx12TextureRef mTestTexture;
+    Dx12BufferRef mTestBuffer;
 };
 }
 }
