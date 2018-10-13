@@ -79,7 +79,7 @@ Dx12Resource::Dx12Resource(const ResourceDesc& desc, Dx12Device* device)
 : mDesc(desc), mDevice(device), Core::RefCounted(device->GetAllocator())
 {
     {
-        mData.viewDesc = {};
+        mData.srvDesc = {};
         mData.resDesc = {};
         mData.resDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 		mData.heapFlags = D3D12_HEAP_FLAG_NONE;
@@ -89,22 +89,18 @@ Dx12Resource::Dx12Resource(const ResourceDesc& desc, Dx12Device* device)
         if (!!(mDesc.bindFlags & BindFlags_Srv)
         ||  !!(mDesc.bindFlags & BindFlags_Uav))
         {
-            mViewData.handle = mDevice->GetMemMgr()->AllocateSrvOrUavOrCbv();
+            if (!!(mDesc.bindFlags & BindFlags_Srv))
+                mSrvHandle = mDevice->GetMemMgr()->AllocateSrvOrUavOrCbv();
+
             if (!!(mDesc.bindFlags & BindFlags_Uav))
+            {
+                mUavHandle = mDevice->GetMemMgr()->AllocateSrvOrUavOrCbv();
                 mData.resDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+            }
         }
         else
         {
                 mData.resDesc.Flags |= D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
-        }
-
-        if (!!(mDesc.bindFlags & BindFlags_Rt) || !!(mDesc.bindFlags & BindFlags_Ds))
-        {
-            if (!!(mDesc.bindFlags & BindFlags_Rt))
-                mData.resDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-
-            if (!!(mDesc.bindFlags & BindFlags_Ds))
-                mData.resDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
         }
     }
 
@@ -119,10 +115,14 @@ Dx12Resource::Dx12Resource(const ResourceDesc& desc, Dx12Device* device)
 
 Dx12Resource::~Dx12Resource()
 {
-    if (!!(mDesc.bindFlags & BindFlags_Srv)
-    ||  !!(mDesc.bindFlags & BindFlags_Uav))
+    if (!!(mDesc.bindFlags & BindFlags_Srv))
     {
-        mDevice->GetMemMgr()->Delete(mViewData.handle);
+        mDevice->GetMemMgr()->Delete(mSrvHandle);
+    }
+
+    if (!!(mDesc.bindFlags & BindFlags_Uav))
+    {
+        mDevice->GetMemMgr()->Delete(mUavHandle);
     }
 
     if (mData.resource != nullptr)
@@ -144,13 +144,20 @@ void Dx12Resource::init()
     if (!!(mDesc.bindFlags & BindFlags_Srv))
     {
 		mDevice->GetD3D()->CreateShaderResourceView(
-			mData.resource, &mData.viewDesc, mViewData.handle.handle);
+			mData.resource, &mData.srvDesc, mSrvHandle.handle);
+    }
+
+    if (!!(mDesc.bindFlags & BindFlags_Uav))
+    {
+		mDevice->GetD3D()->CreateUnorderedAccessView(
+			mData.resource, nullptr, &mData.uavDesc, mUavHandle.handle);
     }
 }
 
 Dx12Texture::Dx12Texture(const TextureDesc& desc, Dx12Device* device)
 : mDesc(desc), Dx12Resource(desc, device)
 {
+
     D3D12_RESOURCE_DIMENSION dim = D3D12_RESOURCE_DIMENSION_UNKNOWN;
     if (mDesc.type == TextureType_1d)
         dim = D3D12_RESOURCE_DIMENSION_TEXTURE1D;
@@ -163,7 +170,7 @@ Dx12Texture::Dx12Texture(const TextureDesc& desc, Dx12Device* device)
     auto dxFormat = GetDxFormat(desc.format);
     if (!!(mDesc.bindFlags & BindFlags_Srv))
     {
-        auto& srvDesc = mData.viewDesc;
+        auto& srvDesc = mData.srvDesc;
         srvDesc.Format = dxFormat;
         srvDesc.ViewDimension = D3D12_SRV_DIMENSION_UNKNOWN;
         srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -191,6 +198,76 @@ Dx12Texture::Dx12Texture(const TextureDesc& desc, Dx12Device* device)
         }
     }
 
+    if (!!(mDesc.bindFlags & BindFlags_Uav))
+    {
+        auto& uavDesc = mData.uavDesc;
+        uavDesc.Format = dxFormat;
+        uavDesc.ViewDimension = D3D12_UAV_DIMENSION_UNKNOWN;
+        if (mDesc.type == TextureType_1d)
+        {
+            uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE1D;
+            uavDesc.Texture1D.MipSlice = 0u;
+        }
+        else if (mDesc.type == TextureType_2d)
+        {
+            uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+            uavDesc.Texture2D.MipSlice = 0u;
+            uavDesc.Texture2D.PlaneSlice = 0u;
+        }
+        else if (mDesc.type == TextureType_3d)
+        {
+            uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
+            uavDesc.Texture3D.MipSlice = 0u;
+            uavDesc.Texture3D.FirstWSlice = 0u;
+            uavDesc.Texture3D.WSize = -1;
+        }
+    }
+
+    mRtDesc = {};
+    if (!!(mDesc.bindFlags & BindFlags_Rt))
+    {
+        mRtvHandle = mDevice->GetMemMgr()->AllocateRenderTarget();
+        mRtDesc.Format = dxFormat;
+        mRtDesc.ViewDimension = D3D12_RTV_DIMENSION_UNKNOWN;
+        if (mDesc.type == TextureType_1d)
+        {
+            mRtDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE1D;
+            mRtDesc.Texture1D.MipSlice = 0u;
+        }
+        else if (mDesc.type == TextureType_2d)
+        {
+            mRtDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+            mRtDesc.Texture2D.MipSlice = 0u;
+            mRtDesc.Texture2D.PlaneSlice = 0u;
+        }
+        else if (mDesc.type == TextureType_3d)
+        {
+            mRtDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE3D;
+            mRtDesc.Texture3D.MipSlice = 0u;
+            mRtDesc.Texture3D.FirstWSlice = 0u;
+            mRtDesc.Texture3D.WSize = -1;
+        }
+    }
+
+    mDsDesc = {};
+    if (!!(mDesc.bindFlags & BindFlags_Ds))
+    {
+        mDsHandle = mDevice->GetMemMgr()->AllocateRenderTarget();
+        mDsDesc.Format = dxFormat;
+        mDsDesc.Flags = D3D12_DSV_FLAG_NONE;
+        mDsDesc.ViewDimension = D3D12_DSV_DIMENSION_UNKNOWN;
+        if (mDesc.type == TextureType_1d)
+        {
+            mDsDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE1D;
+            mDsDesc.Texture1D.MipSlice = 0u;
+        }
+        else if (mDesc.type == TextureType_2d)
+        {
+            mDsDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+            mDsDesc.Texture2D.MipSlice = 0u;
+        }
+    }
+
     mData.heapFlags |= D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES;
     mData.resDesc.Format = dxFormat;
     mData.resDesc.Dimension = dim;
@@ -203,15 +280,41 @@ Dx12Texture::Dx12Texture(const TextureDesc& desc, Dx12Device* device)
     //mData.resDesc.Flags = check Dx12Resource constructor;
     mData.resDesc.SampleDesc.Count = 1u;
     mData.resDesc.SampleDesc.Quality = 0u;
+    if (!!(mDesc.bindFlags & BindFlags_Rt) || !!(mDesc.bindFlags & BindFlags_Ds))
+    {
+        if (!!(mDesc.bindFlags & BindFlags_Rt))
+            mData.resDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+
+        if (!!(mDesc.bindFlags & BindFlags_Ds))
+            mData.resDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+    }
 }
 
 Dx12Texture::~Dx12Texture()
 {
+    if (!!(mDesc.bindFlags & BindFlags_Rt))
+    {
+        mDevice->GetMemMgr()->Delete(mRtvHandle);
+    }
+    if (!!(mDesc.bindFlags & BindFlags_Ds))
+    {
+        mDevice->GetMemMgr()->Delete(mDsHandle);
+    }
 }
 
 void Dx12Texture::init()
 {
     Dx12Resource::init();
+
+    if (!!(mDesc.bindFlags & BindFlags_Rt))
+    {
+        mDevice->GetD3D()->CreateRenderTargetView(mData.resource, &mRtDesc, mRtvHandle.handle);
+    }
+
+    if (!!(mDesc.bindFlags & BindFlags_Ds))
+    {
+        mDevice->GetD3D()->CreateDepthStencilView(mData.resource, &mDsDesc, mDsHandle.handle);
+    }
 }
 
 Dx12Buffer::Dx12Buffer(const BufferDesc& desc, Dx12Device* device)
@@ -219,14 +322,26 @@ Dx12Buffer::Dx12Buffer(const BufferDesc& desc, Dx12Device* device)
 {
     if (!!(mDesc.bindFlags & BindFlags_Srv))
     {
-        auto& viewDesc = mData.viewDesc;
-        viewDesc.Format = desc.bufferType == BufferType_Raw ? DXGI_FORMAT_R32_TYPELESS : desc.bufferType == BufferType_Structured ? DXGI_FORMAT_UNKNOWN : GetDxFormat(desc.format);
-        viewDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-        viewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-        viewDesc.Buffer.FirstElement = 0u;
-        viewDesc.Buffer.NumElements = desc.elementCount;
-        viewDesc.Buffer.StructureByteStride = desc.bufferType == BufferType_Structured ? desc.stride : 0;
-        viewDesc.Buffer.Flags = desc.bufferType == BufferType_Raw ? D3D12_BUFFER_SRV_FLAG_RAW : D3D12_BUFFER_SRV_FLAG_NONE;
+        auto& srvDesc = mData.srvDesc;
+        srvDesc.Format = desc.bufferType == BufferType_Raw ? DXGI_FORMAT_R32_TYPELESS : desc.bufferType == BufferType_Structured ? DXGI_FORMAT_UNKNOWN : GetDxFormat(desc.format);
+        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srvDesc.Buffer.FirstElement = 0u;
+        srvDesc.Buffer.NumElements = desc.elementCount;
+        srvDesc.Buffer.StructureByteStride = desc.bufferType == BufferType_Structured ? desc.stride : 0;
+        srvDesc.Buffer.Flags = desc.bufferType == BufferType_Raw ? D3D12_BUFFER_SRV_FLAG_RAW : D3D12_BUFFER_SRV_FLAG_NONE;
+    }
+
+    if (!!(mDesc.bindFlags & BindFlags_Uav))
+    {
+        auto& uavDesc = mData.uavDesc;
+        uavDesc.Format = desc.bufferType == BufferType_Raw ? DXGI_FORMAT_R32_TYPELESS : desc.bufferType == BufferType_Structured ? DXGI_FORMAT_UNKNOWN : GetDxFormat(desc.format);
+        uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+        uavDesc.Buffer.FirstElement = 0u;
+        uavDesc.Buffer.NumElements = desc.elementCount;
+        uavDesc.Buffer.StructureByteStride = desc.bufferType == BufferType_Structured ? desc.stride : 0;
+        uavDesc.Buffer.CounterOffsetInBytes = 0u;
+        uavDesc.Buffer.Flags = desc.bufferType == BufferType_Raw ? D3D12_BUFFER_UAV_FLAG_RAW : D3D12_BUFFER_UAV_FLAG_NONE;
     }
 
     mData.resDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
