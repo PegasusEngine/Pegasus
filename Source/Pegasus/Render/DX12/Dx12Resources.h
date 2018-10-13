@@ -106,6 +106,7 @@ protected:
     {
         D3D12_HEAP_PROPERTIES heapProps;
         D3D12_RESOURCE_DESC resDesc;
+        D3D12_SHADER_RESOURCE_VIEW_DESC viewDesc;
         D3D12_HEAP_FLAGS heapFlags;
         ID3D12Resource* resource;
     } mData;
