@@ -15,6 +15,7 @@
 #include <D3D12.h>
 #include <string>
 #include "Pegasus/Render/IDevice.h"
+#include <Pegasus/Core/Ref.h>
 
 
 struct IDXGIFactory4;
@@ -43,6 +44,10 @@ struct GraphicsCardInfos
 
 class Dx12QueueManager;
 class Dx12MemMgr;
+class Dx12Texture;
+class Dx12Buffer;
+struct BufferDesc;
+struct TextureDesc;
 
 //! Windows specific device for open gl graphics api
 class Dx12Device : public IDevice
@@ -61,6 +66,9 @@ public:
     Io::IOManager* GetIOMgr() { return mIOManager; }
     Alloc::IAllocator* GetAllocator() { return mAllocator; }
 
+    Core::Ref<Dx12Texture> CreateTexture(const TextureDesc& desc);
+	Core::Ref<Dx12Buffer> CreateBuffer(const BufferDesc& desc);
+
 private:
 
     static int sDeviceRefCounts;
@@ -71,6 +79,9 @@ private:
     ID3D12Device2* mDevice;
     Alloc::IAllocator* mAllocator;
     Io::IOManager* mIOManager;
+#if PEGASUS_DEBUG
+	ID3D12Debug* mDebugLayer;
+#endif
 
 };
 

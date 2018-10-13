@@ -14,15 +14,21 @@
 #pragma comment(lib, "d3d12")
 #pragma comment(lib, "dxgi")
 
+#include <Pegasus/Allocator/IAllocator.h>
 #include "Dx12Device.h"
 #include "Dx12Defs.h"
 #include "Dx12QueueManager.h"
 #include "Dx12MemMgr.h"
+#include "Dx12Resources.h"
 #include <dxgi1_6.h>
 #include <atlbase.h>
-#include <Pegasus/Allocator/IAllocator.h>
 #include <vector>
 #include <string>
+
+#if PEGASUS_DEBUG
+#include <dxgidebug.h>
+#pragma comment(lib, "dxguid")
+#endif
 
 using namespace std;
 
@@ -77,10 +83,8 @@ Dx12Device::Dx12Device(const DeviceConfig& config, Alloc::IAllocator * allocator
 
 #if PEGASUS_DEBUG
 	{
-		ID3D12Debug* debugInterface;
-		DX_VALID_DECLARE(D3D12GetDebugInterface(__uuidof(ID3D12Debug), &((void*)debugInterface)));
-		debugInterface->EnableDebugLayer();
-		debugInterface->Release();
+		DX_VALID_DECLARE(D3D12GetDebugInterface(__uuidof(ID3D12Debug), &((void*)mDebugLayer)));
+		mDebugLayer->EnableDebugLayer();
 	}
 #endif
 
@@ -121,6 +125,38 @@ Dx12Device::~Dx12Device()
         delete sCardInfos;
         sCardInfos = nullptr;
     }
+
+#if PEGASUS_DEBUG
+	{
+		IDXGIDebug* dxgiDebugLayer = nullptr;
+		HMODULE dxgidebuglib = LoadLibraryEx("dxgidebug.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+		if (dxgidebuglib)
+		{
+			typedef HRESULT(WINAPI * LPDXGIGETDEBUGINTERFACE)(REFIID, void **);
+			auto dxgiGetDebugInterface = reinterpret_cast<LPDXGIGETDEBUGINTERFACE>(
+				reinterpret_cast<void*>(GetProcAddress(dxgidebuglib, "DXGIGetDebugInterface")));
+
+			DX_VALID_DECLARE(dxgiGetDebugInterface(__uuidof(IDXGIDebug), &((void*)dxgiDebugLayer)));
+			DX_VALID(dxgiDebugLayer->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL));
+			dxgiDebugLayer->Release();
+		}
+	}
+	mDebugLayer->Release();
+#endif
+}
+
+Dx12TextureRef Dx12Device::CreateTexture(const TextureDesc& desc)
+{
+	Dx12TextureRef texRef =  D12_NEW(mAllocator, "Dx12Texture") Dx12Texture(desc, this);
+	texRef->init();
+	return texRef;
+}
+
+Dx12BufferRef Dx12Device::CreateBuffer(const BufferDesc& desc)
+{
+	Dx12BufferRef buff = D12_NEW(mAllocator, "Dx12Buffer") Dx12Buffer(desc, this);
+	buff->init();
+	return buff;
 }
 
 //! platform implementation of device
