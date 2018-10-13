@@ -79,6 +79,7 @@ Dx12Resource::Dx12Resource(const ResourceDesc& desc, Dx12Device* device)
 : mDesc(desc), mDevice(device), Core::RefCounted(device->GetAllocator())
 {
     {
+        mData.viewDesc = {};
         mData.resDesc = {};
         mData.resDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 		mData.heapFlags = D3D12_HEAP_FLAG_NONE;
@@ -139,6 +140,12 @@ void Dx12Resource::init()
         __uuidof(ID3D12Resource),
         reinterpret_cast<void**>(&mData.resource)
     ));
+
+    if (!!(mDesc.bindFlags & BindFlags_Srv))
+    {
+		mDevice->GetD3D()->CreateShaderResourceView(
+			mData.resource, &mData.viewDesc, mViewData.handle.handle);
+    }
 }
 
 Dx12Texture::Dx12Texture(const TextureDesc& desc, Dx12Device* device)
@@ -153,8 +160,39 @@ Dx12Texture::Dx12Texture(const TextureDesc& desc, Dx12Device* device)
         dim = D3D12_RESOURCE_DIMENSION_TEXTURE3D;
     PG_ASSERTSTR(mDesc.type != TextureType_CubeMap, "Cube map not yet supported.");
 
+    auto dxFormat = GetDxFormat(desc.format);
+    if (!!(mDesc.bindFlags & BindFlags_Srv))
+    {
+        auto& srvDesc = mData.viewDesc;
+        srvDesc.Format = dxFormat;
+        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_UNKNOWN;
+        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        if (mDesc.type == TextureType_1d)
+        {
+            srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE1D;
+            srvDesc.Texture1D.MostDetailedMip = 0u;
+            srvDesc.Texture1D.MipLevels = desc.mipLevels;
+            srvDesc.Texture1D.ResourceMinLODClamp = 0u;
+        }
+        else if (mDesc.type == TextureType_2d)
+        {
+            srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+            srvDesc.Texture2D.MostDetailedMip = 0u;
+            srvDesc.Texture2D.MipLevels = desc.mipLevels;
+            srvDesc.Texture2D.ResourceMinLODClamp = 0u;
+            srvDesc.Texture2D.PlaneSlice = 0u;
+        }
+        else if (mDesc.type == TextureType_3d)
+        {
+            srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
+            srvDesc.Texture3D.MostDetailedMip = 0u;
+            srvDesc.Texture3D.MipLevels = desc.mipLevels;
+            srvDesc.Texture3D.ResourceMinLODClamp = 0u;
+        }
+    }
+
     mData.heapFlags |= D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES;
-    mData.resDesc.Format = GetDxFormat(desc.format);
+    mData.resDesc.Format = dxFormat;
     mData.resDesc.Dimension = dim;
     mData.resDesc.Alignment = 0u;
     mData.resDesc.Width = desc.width;
@@ -179,6 +217,18 @@ void Dx12Texture::init()
 Dx12Buffer::Dx12Buffer(const BufferDesc& desc, Dx12Device* device)
 : mDesc(desc), Dx12Resource(desc, device)
 {
+    if (!!(mDesc.bindFlags & BindFlags_Srv))
+    {
+        auto& viewDesc = mData.viewDesc;
+        viewDesc.Format = desc.bufferType == BufferType_Raw ? DXGI_FORMAT_R32_TYPELESS : desc.bufferType == BufferType_Structured ? DXGI_FORMAT_UNKNOWN : GetDxFormat(desc.format);
+        viewDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+        viewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        viewDesc.Buffer.FirstElement = 0u;
+        viewDesc.Buffer.NumElements = desc.elementCount;
+        viewDesc.Buffer.StructureByteStride = desc.bufferType == BufferType_Structured ? desc.stride : 0;
+        viewDesc.Buffer.Flags = desc.bufferType == BufferType_Raw ? D3D12_BUFFER_SRV_FLAG_RAW : D3D12_BUFFER_SRV_FLAG_NONE;
+    }
+
     mData.resDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
     mData.resDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
     mData.resDesc.Width = desc.stride*desc.elementCount;

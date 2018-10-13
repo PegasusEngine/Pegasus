@@ -175,11 +175,12 @@ void Dx12Display::BeginFrame()
     {
         BufferDesc desc;
         desc.name = "TestBuffer";
-        desc.stride = sizeof(int);
+        desc.stride = sizeof(float);
         desc.elementCount = 34;
 		desc.bindFlags = BindFlags_Srv;
         desc.bufferType = BufferType_Default;
 		desc.usage = ResourceUsage_Static;
+		desc.format = Core::FORMAT_R32_FLOAT;
         mTestBuffer = mDevice->CreateBuffer(desc);
     }
 }
