@@ -13,6 +13,7 @@
 #include "Dx12MemMgr.h"
 #include "Dx12Defs.h"
 
+
 namespace Pegasus
 {
 namespace Render
@@ -152,6 +153,22 @@ void Dx12Resource::init()
 		mDevice->GetD3D()->CreateUnorderedAccessView(
 			mData.resource, nullptr, &mData.uavDesc, mUavHandle.handle);
     }
+
+#if PEGASUS_DEBUG
+	std::wstring wname;
+	if (!mDesc.name.empty())
+	{
+		// determine required length of new string
+		size_t reqLength = ::MultiByteToWideChar(CP_UTF8, 0, mDesc.name.c_str(), (int)mDesc.name.length(), 0, 0);
+
+		// construct new string of required length
+		wname = std::wstring(reqLength, L'\0');
+
+		// convert old string to new string
+		::MultiByteToWideChar(CP_UTF8, 0, mDesc.name.c_str(), (int)mDesc.name.length(), &wname[0], (int)wname.length());
+	}
+	mData.resource->SetName(wname.c_str());
+#endif
 }
 
 Dx12Texture::Dx12Texture(const TextureDesc& desc, Dx12Device* device)
@@ -315,6 +332,8 @@ void Dx12Texture::init()
     {
         mDevice->GetD3D()->CreateDepthStencilView(mData.resource, &mDsDesc, mDsHandle.handle);
     }
+
+
 }
 
 Dx12Buffer::Dx12Buffer(const BufferDesc& desc, Dx12Device* device)
