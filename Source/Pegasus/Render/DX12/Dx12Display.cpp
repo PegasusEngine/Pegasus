@@ -166,7 +166,7 @@ void Dx12Display::BeginFrame()
         desc.depth = 1;
         desc.mipLevels = 1;
         desc.format = Core::FORMAT_RGBA_8_UNORM;
-        desc.bindFlags = BindFlags_Srv | BindFlags_Rt | BindFlags_Uav;
+        desc.bindFlags = BindFlags_Srv | BindFlags_Rt | BindFlags_Uav | BindFlags_Ds;
         desc.usage = ResourceUsage_Static;
         mTestTexture = mDevice->CreateTexture(desc);
     }
@@ -177,7 +177,7 @@ void Dx12Display::BeginFrame()
         desc.name = "TestBuffer";
         desc.stride = sizeof(float);
         desc.elementCount = 34;
-		desc.bindFlags = BindFlags_Srv;
+		desc.bindFlags = BindFlags_Srv | BindFlags_Uav;
         desc.bufferType = BufferType_Default;
 		desc.usage = ResourceUsage_Static;
 		desc.format = Core::FORMAT_R32_FLOAT;

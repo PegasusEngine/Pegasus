@@ -97,16 +97,15 @@ private:
     ResourceDesc mDesc;
 
 protected:
-    struct DescriptorData 
-    { 
-        Dx12MemMgr::Handle handle;
-    } mViewData;
+    Dx12MemMgr::Handle mSrvHandle;
+    Dx12MemMgr::Handle mUavHandle;
 
     struct ResourceData
     {
         D3D12_HEAP_PROPERTIES heapProps;
         D3D12_RESOURCE_DESC resDesc;
-        D3D12_SHADER_RESOURCE_VIEW_DESC viewDesc;
+        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
+        D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc;
         D3D12_HEAP_FLAGS heapFlags;
         ID3D12Resource* resource;
     } mData;
@@ -122,6 +121,10 @@ public:
     const TextureDesc& getTexDesc() const { return mDesc; }
     virtual void init();
 private:
+    Dx12MemMgr::Handle mRtvHandle;
+    Dx12MemMgr::Handle mDsHandle;
+    D3D12_RENDER_TARGET_VIEW_DESC mRtDesc;
+    D3D12_DEPTH_STENCIL_VIEW_DESC mDsDesc;
     TextureDesc mDesc;
 };
 
