@@ -75,7 +75,7 @@ Dx12Display::Dx12Display(const DisplayConfig& config, Alloc::IAllocator* alloc)
             //Record RTVs
             DX_VALID(mSwapChain->GetBuffer(i, __uuidof(ID3D12Resource), reinterpret_cast<void**>(&mColorResources[i])));
             
-            mRtvBuffers[i] = mDevice->GetMemMgr()->AllocateRenderTarget();
+            mRtvBuffers[i] = mDevice->GetRDMgr()->AllocateRenderTarget();
             mDevice->GetD3D()->CreateRenderTargetView(mColorResources[i], nullptr, mRtvBuffers[i].handle);
             mFenceValues[i] = 0u;
 
@@ -117,7 +117,7 @@ Dx12Display::~Dx12Display()
 
     for (int i = 0; i < (int)GetBuffering(); ++i)
     {
-        mDevice->GetMemMgr()->Delete(mRtvBuffers[i]);
+        mDevice->GetRDMgr()->Delete(mRtvBuffers[i]);
     } 
 
     if (mSwapChain)

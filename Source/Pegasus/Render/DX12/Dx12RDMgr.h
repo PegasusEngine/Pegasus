@@ -4,10 +4,10 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   Dx12MemMgr.h
+//! \file   Dx12RDMgr.h
 //! \author Kleber Garcia
 //! \date   July 20th 2018
-//! \brief  Heaps / allocations etc mem mgr
+//! \brief  Resource descriptor manager.
 
 #pragma once
 
@@ -23,7 +23,7 @@ namespace Render
 class Dx12Device;
 class Dx12Fence;
 
-class Dx12MemMgr
+class Dx12RDMgr
 {
 public:
 
@@ -76,8 +76,8 @@ public:
         UINT count = 0;
     };
 
-    Dx12MemMgr(Dx12Device* device);
-    ~Dx12MemMgr();
+    Dx12RDMgr(Dx12Device* device);
+    ~Dx12RDMgr();
     
     inline Handle AllocateRenderTarget() { return AllocInternal(D3D12_DESCRIPTOR_HEAP_TYPE_RTV); }
     inline Handle AllocateSrvOrUavOrCbv() { return AllocInternal(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV); }

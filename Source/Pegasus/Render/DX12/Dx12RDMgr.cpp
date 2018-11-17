@@ -4,12 +4,12 @@
 /*                                                                                      */
 /****************************************************************************************/
 
-//! \file   Dx12MemMgr.cpp
+//! \file   Dx12RDMgr.cpp
 //! \author Kleber Garcia
 //! \date   July 20th 2018
-//! \brief  Heaps / allocations etc mem mgr
+//! \brief  Resource descriptor manager
 
-#include "Dx12MemMgr.h"
+#include "Dx12RDMgr.h"
 #include "Dx12Device.h"
 #include "Dx12Defs.h"
 #include "Dx12Fence.h"
@@ -22,7 +22,7 @@ namespace Pegasus
 namespace Render
 {
 
-Dx12MemMgr::Dx12MemMgr(Dx12Device* device)
+Dx12RDMgr::Dx12RDMgr(Dx12Device* device)
 : mDevice(device)
 {
     for (UINT i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
@@ -99,7 +99,7 @@ Dx12MemMgr::Dx12MemMgr(Dx12Device* device)
     }
 }
 
-Dx12MemMgr::~Dx12MemMgr()
+Dx12RDMgr::~Dx12RDMgr()
 {
     //Wait on everything to finish
     for (UINT tableType = 0; tableType < TableTypeMax; ++tableType)
@@ -122,7 +122,7 @@ Dx12MemMgr::~Dx12MemMgr()
 
 }
 
-Dx12MemMgr::Table Dx12MemMgr::AllocEmptyTable(UINT count, Dx12MemMgr::TableType tableType)
+Dx12RDMgr::Table Dx12RDMgr::AllocEmptyTable(UINT count, Dx12RDMgr::TableType tableType)
 {
     PG_ASSERT(count > 0);
     Table resultTable;
@@ -154,9 +154,9 @@ Dx12MemMgr::Table Dx12MemMgr::AllocEmptyTable(UINT count, Dx12MemMgr::TableType 
     return resultTable;
 }
 
-Dx12MemMgr::Table Dx12MemMgr::AllocateTable(Dx12MemMgr::TableType tableType, const Dx12MemMgr::Handle* cpuHandles, UINT cpuHandlesCount)
+Dx12RDMgr::Table Dx12RDMgr::AllocateTable(Dx12RDMgr::TableType tableType, const Dx12RDMgr::Handle* cpuHandles, UINT cpuHandlesCount)
 {
-    Dx12MemMgr::Table resultTable = AllocEmptyTable(cpuHandlesCount, tableType);
+    Dx12RDMgr::Table resultTable = AllocEmptyTable(cpuHandlesCount, tableType);
     for (UINT i = 0; i < cpuHandlesCount; ++i)
     {
         D3D12_CPU_DESCRIPTOR_HANDLE tableDescriptor = resultTable.baseHandle;
@@ -166,27 +166,27 @@ Dx12MemMgr::Table Dx12MemMgr::AllocateTable(Dx12MemMgr::TableType tableType, con
     return resultTable;
 }
 
-Dx12MemMgr::Table Dx12MemMgr::AllocateTableCopy(const Table& srcTable)
+Dx12RDMgr::Table Dx12RDMgr::AllocateTableCopy(const Table& srcTable)
 {
-    Dx12MemMgr::Table resultTable = AllocEmptyTable(srcTable.count, srcTable.tableType);
+    Dx12RDMgr::Table resultTable = AllocEmptyTable(srcTable.count, srcTable.tableType);
     mDevice->GetD3D()->CopyDescriptorsSimple(srcTable.count, resultTable.baseHandle, srcTable.baseHandle, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     return resultTable;
 }
 
-void Dx12MemMgr::Delete(const Dx12MemMgr::Table& t)
+void Dx12RDMgr::Delete(const Dx12RDMgr::Table& t)
 {
     PG_ASSERT((UINT)t.tableType >= 0 && t.tableType < TableTypeMax);
     mTableHeaps[t.tableType].freeSpots.push_back(t);
 }
 
-void Dx12MemMgr::Delete(Dx12MemMgr::Handle h)
+void Dx12RDMgr::Delete(Dx12RDMgr::Handle h)
 {
     PG_ASSERT(h.type < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES);
     auto& container = mHeaps[h.type];
     container.freeSpots.push_back(h.index);
 }
 
-Dx12MemMgr::Handle Dx12MemMgr::AllocInternal(D3D12_DESCRIPTOR_HEAP_TYPE type)
+Dx12RDMgr::Handle Dx12RDMgr::AllocInternal(D3D12_DESCRIPTOR_HEAP_TYPE type)
 {
     PG_ASSERT(type < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES);
     auto& container = mHeaps[type];
@@ -209,10 +209,10 @@ Dx12MemMgr::Handle Dx12MemMgr::AllocInternal(D3D12_DESCRIPTOR_HEAP_TYPE type)
 
     D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = container.heap->GetCPUDescriptorHandleForHeapStart();
     cpuHandle.ptr += container.incrSize * cpuRequestedIndex;
-    return Dx12MemMgr::Handle { desc.Type, cpuHandle, cpuRequestedIndex };
+    return Dx12RDMgr::Handle { desc.Type, cpuHandle, cpuRequestedIndex };
 }
 
-void Dx12MemMgr::AllocGpuHeapPage(TableType tableType)
+void Dx12RDMgr::AllocGpuHeapPage(TableType tableType)
 {
     auto& linearHeapState = mTableHeaps[tableType].gpuLinearHeapState;
     if (linearHeapState.fence)
@@ -229,7 +229,7 @@ void Dx12MemMgr::AllocGpuHeapPage(TableType tableType)
     }
 }
 
-D3D12_GPU_DESCRIPTOR_HANDLE Dx12MemMgr::uploadTable(const Table& t)
+D3D12_GPU_DESCRIPTOR_HANDLE Dx12RDMgr::uploadTable(const Table& t)
 {
     auto& linearHeapState = mTableHeaps[t.tableType].gpuLinearHeapState;
     PG_ASSERTSTR(t.count <= linearHeapState.handlesPerPage, "Cannot allocate more handles than what a page of gpu heap can have."
