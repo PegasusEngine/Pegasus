@@ -43,7 +43,7 @@ struct GraphicsCardInfos
 };
 
 class Dx12QueueManager;
-class Dx12MemMgr;
+class Dx12RDMgr;
 class Dx12Texture;
 class Dx12Buffer;
 struct BufferDesc;
@@ -62,7 +62,7 @@ public:
     GraphicsCardInfos* GetGraphicsCardInfos() const { return sCardInfos; }
     inline ID3D12Device2* GetD3D() { return mDevice; }
     Dx12QueueManager* GetQueueManager() { return mQueueManager; }
-    Dx12MemMgr* GetMemMgr() { return mMemMgr; }
+    Dx12RDMgr* GetRDMgr() { return mRDMgr; }
     Io::IOManager* GetIOMgr() { return mIOManager; }
     Alloc::IAllocator* GetAllocator() { return mAllocator; }
 
@@ -74,7 +74,7 @@ private:
     static int sDeviceRefCounts;
     static GraphicsCardInfos* sCardInfos;
     Dx12QueueManager* mQueueManager;
-    Dx12MemMgr* mMemMgr;
+    Dx12RDMgr* mRDMgr;
 
     ID3D12Device2* mDevice;
     Alloc::IAllocator* mAllocator;

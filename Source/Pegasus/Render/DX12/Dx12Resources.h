@@ -15,7 +15,7 @@
 #include <Pegasus/Core/RefCounted.h>
 #include <Pegasus/Core/Ref.h>
 #include "Dx12Device.h"
-#include "Dx12MemMgr.h"
+#include "Dx12RDMgr.h"
 #include <vector>
 #include <d3d12.h>
 #include <atlbase.h>
@@ -97,8 +97,8 @@ private:
     ResourceDesc mDesc;
 
 protected:
-    Dx12MemMgr::Handle mSrvHandle;
-    Dx12MemMgr::Handle mUavHandle;
+    Dx12RDMgr::Handle mSrvHandle;
+    Dx12RDMgr::Handle mUavHandle;
 
     struct ResourceData
     {
@@ -121,8 +121,8 @@ public:
     const TextureDesc& getTexDesc() const { return mDesc; }
     virtual void init();
 private:
-    Dx12MemMgr::Handle mRtvHandle;
-    Dx12MemMgr::Handle mDsHandle;
+    Dx12RDMgr::Handle mRtvHandle;
+    Dx12RDMgr::Handle mDsHandle;
     D3D12_RENDER_TARGET_VIEW_DESC mRtDesc;
     D3D12_DEPTH_STENCIL_VIEW_DESC mDsDesc;
     TextureDesc mDesc;

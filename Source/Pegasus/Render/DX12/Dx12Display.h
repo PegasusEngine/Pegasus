@@ -13,7 +13,7 @@
 
 #include <Pegasus/Render/IDisplay.h>
 #include <dxgi1_5.h>
-#include "Dx12MemMgr.h"
+#include "Dx12RDMgr.h"
 #include "Dx12Resources.h"
 
 namespace Pegasus
@@ -50,7 +50,7 @@ private:
     //cached dx12 device
     Dx12Device* mDevice;
 
-    Dx12MemMgr::Handle mRtvBuffers[Buffering];
+    Dx12RDMgr::Handle mRtvBuffers[Buffering];
     CComPtr<ID3D12Resource> mColorResources[Buffering];
  
     CComPtr<ID3D12CommandAllocator> mCmdListsAllocator[Buffering];

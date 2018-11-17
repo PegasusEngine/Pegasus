@@ -83,9 +83,6 @@
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12QueueManager.h">
       <Filter>Source\DX12</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12MemMgr.h">
-      <Filter>Source\DX12</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12GpuProgram.h">
       <Filter>Source\DX12</Filter>
     </ClInclude>
@@ -93,6 +90,9 @@
       <Filter>Source\DX12</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12Resources.h">
+      <Filter>Source\DX12</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12RDMgr.h">
       <Filter>Source\DX12</Filter>
     </ClInclude>
   </ItemGroup>
@@ -154,9 +154,6 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12QueueManager.cpp">
       <Filter>Source\DX12</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12MemMgr.cpp">
-      <Filter>Source\DX12</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12GpuProgram.cpp">
       <Filter>Source\DX12</Filter>
     </ClCompile>
@@ -164,6 +161,9 @@
       <Filter>Source\DX12</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12Resources.cpp">
+      <Filter>Source\DX12</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12RDMgr.cpp">
       <Filter>Source\DX12</Filter>
     </ClCompile>
   </ItemGroup>

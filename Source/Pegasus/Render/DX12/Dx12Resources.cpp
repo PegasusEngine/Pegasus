@@ -10,7 +10,7 @@
 //! \brief  Gpu Resources. And their views.
 
 #include "Dx12Resources.h"
-#include "Dx12MemMgr.h"
+#include "Dx12RDMgr.h"
 #include "Dx12Defs.h"
 
 
@@ -91,11 +91,11 @@ Dx12Resource::Dx12Resource(const ResourceDesc& desc, Dx12Device* device)
         ||  !!(mDesc.bindFlags & BindFlags_Uav))
         {
             if (!!(mDesc.bindFlags & BindFlags_Srv))
-                mSrvHandle = mDevice->GetMemMgr()->AllocateSrvOrUavOrCbv();
+                mSrvHandle = mDevice->GetRDMgr()->AllocateSrvOrUavOrCbv();
 
             if (!!(mDesc.bindFlags & BindFlags_Uav))
             {
-                mUavHandle = mDevice->GetMemMgr()->AllocateSrvOrUavOrCbv();
+                mUavHandle = mDevice->GetRDMgr()->AllocateSrvOrUavOrCbv();
                 mData.resDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
             }
         }
@@ -118,12 +118,12 @@ Dx12Resource::~Dx12Resource()
 {
     if (!!(mDesc.bindFlags & BindFlags_Srv))
     {
-        mDevice->GetMemMgr()->Delete(mSrvHandle);
+        mDevice->GetRDMgr()->Delete(mSrvHandle);
     }
 
     if (!!(mDesc.bindFlags & BindFlags_Uav))
     {
-        mDevice->GetMemMgr()->Delete(mUavHandle);
+        mDevice->GetRDMgr()->Delete(mUavHandle);
     }
 
     if (mData.resource != nullptr)
@@ -243,7 +243,7 @@ Dx12Texture::Dx12Texture(const TextureDesc& desc, Dx12Device* device)
     mRtDesc = {};
     if (!!(mDesc.bindFlags & BindFlags_Rt))
     {
-        mRtvHandle = mDevice->GetMemMgr()->AllocateRenderTarget();
+        mRtvHandle = mDevice->GetRDMgr()->AllocateRenderTarget();
         mRtDesc.Format = dxFormat;
         mRtDesc.ViewDimension = D3D12_RTV_DIMENSION_UNKNOWN;
         if (mDesc.type == TextureType_1d)
@@ -269,7 +269,7 @@ Dx12Texture::Dx12Texture(const TextureDesc& desc, Dx12Device* device)
     mDsDesc = {};
     if (!!(mDesc.bindFlags & BindFlags_Ds))
     {
-        mDsHandle = mDevice->GetMemMgr()->AllocateRenderTarget();
+        mDsHandle = mDevice->GetRDMgr()->AllocateRenderTarget();
         mDsDesc.Format = dxFormat;
         mDsDesc.Flags = D3D12_DSV_FLAG_NONE;
         mDsDesc.ViewDimension = D3D12_DSV_DIMENSION_UNKNOWN;
@@ -311,11 +311,11 @@ Dx12Texture::~Dx12Texture()
 {
     if (!!(mDesc.bindFlags & BindFlags_Rt))
     {
-        mDevice->GetMemMgr()->Delete(mRtvHandle);
+        mDevice->GetRDMgr()->Delete(mRtvHandle);
     }
     if (!!(mDesc.bindFlags & BindFlags_Ds))
     {
-        mDevice->GetMemMgr()->Delete(mDsHandle);
+        mDevice->GetRDMgr()->Delete(mDsHandle);
     }
 }
 
