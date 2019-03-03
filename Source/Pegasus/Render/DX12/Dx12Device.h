@@ -45,9 +45,11 @@ struct GraphicsCardInfos
 class Dx12QueueManager;
 class Dx12RDMgr;
 class Dx12Texture;
+class Dx12GpuProgram;
 class Dx12Buffer;
 struct BufferDesc;
 struct TextureDesc;
+struct Dx12ProgramDesc;
 
 //! Windows specific device for open gl graphics api
 class Dx12Device : public IDevice
@@ -68,6 +70,7 @@ public:
 
     Core::Ref<Dx12Texture> CreateTexture(const TextureDesc& desc);
 	Core::Ref<Dx12Buffer> CreateBuffer(const BufferDesc& desc);
+	Core::Ref<Dx12GpuProgram> CreateGpuProgram();
 
 private:
 

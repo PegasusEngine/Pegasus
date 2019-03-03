@@ -26,6 +26,17 @@ namespace Pegasus
 namespace Render
 {
 
+enum Dx12ResType : unsigned
+{
+    Dx12_ResTypeBegin,
+    Dx12_ResSrv = Dx12_ResTypeBegin,
+    Dx12_ResCbv,
+    Dx12_ResUav,
+    Dx12_ResSampler,
+    Dx12_ResTypeCount,
+    Dx12_ResInvalid
+};
+
 const char* pipelineToModel(Dx12PipelineType type)
 {
     switch(type)
@@ -47,6 +58,12 @@ D3D12_SHADER_VISIBILITY pipelineToVis(Dx12PipelineType type)
         return D3D12_SHADER_VISIBILITY_PIXEL;
     case Dx12_Vertex:
         return D3D12_SHADER_VISIBILITY_VERTEX;
+    case Dx12_Hull:            
+        return D3D12_SHADER_VISIBILITY_HULL;
+    case Dx12_Domain:
+        return D3D12_SHADER_VISIBILITY_DOMAIN;
+    case Dx12_Geometry:
+        return D3D12_SHADER_VISIBILITY_GEOMETRY;
     }
 
     return D3D12_SHADER_VISIBILITY_ALL;
@@ -83,13 +100,6 @@ D3D12_DESCRIPTOR_RANGE_TYPE toD3dRangeType(Dx12ResType resType)
     return D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 }
 
-struct Dx12ParamRange
-{
-    D3D12_SHADER_VISIBILITY rangeVisibility = D3D12_SHADER_VISIBILITY_ALL;
-    int idx = 0;
-    int count = 0;
-};
-
 static bool isSrv(D3D_SHADER_INPUT_TYPE t)
 {
     return t == D3D_SIT_TBUFFER || t == D3D_SIT_TEXTURE || t == D3D_SIT_STRUCTURED || t == D3D_SIT_BYTEADDRESS;
@@ -108,7 +118,7 @@ static bool isUav(D3D_SHADER_INPUT_TYPE t)
 
 static bool isSampler(D3D_SHADER_INPUT_TYPE t)
 {
-		return t == D3D_SIT_SAMPLER;
+        return t == D3D_SIT_SAMPLER;
 }
 
 Dx12ResType getResType(D3D_SHADER_INPUT_TYPE t)
@@ -135,20 +145,17 @@ Dx12ResType getResType(D3D_SHADER_INPUT_TYPE t)
 
 typedef std::vector<Dx12ShaderParam> Dx12ShaderBindParamList;
 typedef std::vector<Dx12ShaderBlob> Dx12ShaderBlobList;
-typedef std::vector<Dx12ParamRange> Dx12ParamRangeList;
-typedef std::map<int, int> Dx12BindPoint2ResIdx;
 
 struct Dx12GpuProgramParams
 {
-    //reflection data
-    Dx12ShaderBindParamList res[Dx12_ResCount]; 
-    Dx12BindPoint2ResIdx b2Res[Dx12_ResCount];
-
     //resource table layout computed from desc and reflection data
     std::vector<D3D12_ROOT_PARAMETER> tables;
     
     //supporting memory for auto-generated descriptor ranges.
     std::vector<D3D12_DESCRIPTOR_RANGE*> supportingRanges;
+
+    //Lookup used to find the right table id
+    std::vector<int> lookup[Dx12_ResTypeCount];
 
     ~Dx12GpuProgramParams()
     {
@@ -193,11 +200,12 @@ CComPtr<ID3DBlob> Dx12GpuProgram::GetShaderByteCodeByIndex(unsigned int index, D
     return mData->blobs[index].byteCode;
 }
 
-void Dx12GpuProgram::fillInReflectionData()
+void Dx12GpuProgram::fillInInternalData()
 {
     const Dx12ShaderBlobList& inputShaders = mData->blobs;
-    typedef std::map<std::string, Dx12ShaderParam> ParamSet;
-    ParamSet paramSets[Dx12_ResCount];
+    typedef std::map<std::string, Dx12ShaderParam> StrToParamMap;
+    typedef std::map<UINT, StrToParamMap> ParamSpaceSet;
+    ParamSpaceSet paramSpaceSetsTypes[Dx12_ResTypeCount];
 
     for (const auto& shaderBlob : inputShaders)
     {
@@ -216,15 +224,22 @@ void Dx12GpuProgram::fillInReflectionData()
                 PG_FAILSTR("Cannot recognize input type of %s.", outResDesc.Name);
 #endif
 
-			ParamSet* targetParamSet = &paramSets[resType];
+            ParamSpaceSet& targetParamSpaceSet = paramSpaceSetsTypes[resType];
 
-			if (outResDesc.uFlags & D3D_SIF_UNUSED)
-				continue;
+            if (outResDesc.uFlags & D3D_SIF_UNUSED)
+                continue;
 
-            auto it = targetParamSet->find(resName);
-            if (it == targetParamSet->end())
+            auto itSpace = targetParamSpaceSet.find(outResDesc.Space);
+            if (itSpace == targetParamSpaceSet.end())
             {
-				(*targetParamSet)[resName] = Dx12ShaderParam { resType, outResDesc, pipelineToVis(shaderBlob.pipelineType) };
+                targetParamSpaceSet[outResDesc.Space] = StrToParamMap();
+                itSpace = targetParamSpaceSet.find(outResDesc.Space);
+            }
+
+            auto it = itSpace->second.find(resName);
+            if (it == itSpace->second.end())
+            {
+                itSpace->second[resName] = Dx12ShaderParam { resType, outResDesc, pipelineToVis(shaderBlob.pipelineType) };
             }
             else
             {
@@ -234,31 +249,74 @@ void Dx12GpuProgram::fillInReflectionData()
                     it->second.visibility = D3D12_SHADER_VISIBILITY_ALL;
                 }
                 PG_ASSERT(it->second.desc.BindPoint == outResDesc.BindPoint && it->second.desc.BindCount == outResDesc.BindCount);
+                PG_ASSERT(it->second.desc.Space == outResDesc.Space);
             }
         }
     }
 
-    auto sorterFn = [](const Dx12ShaderParam& a, const Dx12ShaderParam& b)
+    auto shaderParamsToD3d12DescriptorRanges = [&](UINT space, const Dx12ShaderBindParamList& shaderParams, D3D12_SHADER_VISIBILITY& rangesVis)
     {
-        return a.desc.BindPoint < b.desc.BindPoint;
+            UINT maxRegister = 0;
+            rangesVis = shaderParams[0].visibility;
+            for (const auto& shaderParam : shaderParams)
+            {
+                bool isBindless = shaderParam.desc.BindCount == 0;
+                UINT currRegister = isBindless ? UINT_MAX : shaderParam.desc.BindPoint + shaderParam.desc.BindCount;
+                maxRegister = currRegister > maxRegister ? currRegister : maxRegister;
+                if (rangesVis != shaderParam.visibility)
+                    rangesVis = D3D12_SHADER_VISIBILITY_ALL;
+            }
+
+            return D3D12_DESCRIPTOR_RANGE {
+                toD3dRangeType(shaderParams[0].resType),
+                maxRegister, 0u, space, D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND
+            };
     };
 
-    auto populateList = [&](const ParamSet& inputMap, Dx12ShaderBindParamList& outList, Dx12BindPoint2ResIdx& b2r)
+    auto createTable = [&](D3D12_DESCRIPTOR_RANGE& range, D3D12_SHADER_VISIBILITY visibility)
     {
-        for (auto& keyValPair : inputMap)
-        {
-            outList.push_back(keyValPair.second);
-        }
-        std::sort(outList.begin(), outList.end(), sorterFn);
-        unsigned i = 0;
-        for (auto& val : outList)
-        {
-            b2r[val.desc.BindPoint] = i++;
-        }
+        D3D12_ROOT_PARAMETER rootTableParameter; 
+        rootTableParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+        rootTableParameter.ShaderVisibility = visibility;
+        D3D12_ROOT_DESCRIPTOR_TABLE& descTable = rootTableParameter.DescriptorTable;
+
+        D3D12_DESCRIPTOR_RANGE* supportMem = new D3D12_DESCRIPTOR_RANGE;
+        Utils::Memcpy(supportMem, &range, sizeof(D3D12_DESCRIPTOR_RANGE));
+        descTable.pDescriptorRanges = supportMem;
+        descTable.NumDescriptorRanges = 1;
+        mParams->supportingRanges.push_back(supportMem);
+        mParams->tables.push_back(rootTableParameter);
     };
 
-    for (unsigned i = 0; i < Dx12_ResCount; ++i)
-        populateList(paramSets[i], mParams->res[i], mParams->b2Res[i]);
+    PG_ASSERT(mParams->supportingRanges.empty());
+    PG_ASSERT(mParams->tables.empty());
+
+    UINT resourceType = 0;
+    for (const ParamSpaceSet& paramTypeBag : paramSpaceSetsTypes)
+    {        
+        for (const auto& paramSpace : paramTypeBag)
+        {
+			UINT space = paramSpace.first;
+			const auto& strToParamMap = paramSpace.second;
+
+            Dx12ShaderBindParamList bindList;
+            for (auto paramStrValPair : strToParamMap)
+                bindList.emplace_back(paramStrValPair.second);
+
+            if (bindList.empty())
+                continue;
+            
+            D3D12_SHADER_VISIBILITY rangeVis;
+			D3D12_DESCRIPTOR_RANGE range = shaderParamsToD3d12DescriptorRanges(space, bindList, rangeVis);
+			int tableId = (int)mParams->tables.size();
+            createTable(range, rangeVis);
+            auto& spaceLookupList = mParams->lookup[resourceType];
+            if (space >= (int)spaceLookupList.size())
+                spaceLookupList.resize(space + 1, -1);
+            spaceLookupList[space] = tableId;
+        }
+        resourceType++;
+    }
 }
 
 bool Dx12GpuProgram::createRootSignature()
@@ -275,19 +333,19 @@ bool Dx12GpuProgram::createRootSignature()
     {
         mData->rootSignatureBlob = nullptr;
 
-		PEGASUS_EVENT_DISPATCH(
-			this, Core::CompilerEvents::CompilationEvent,
-			false, (const char*)errorBlob->GetBufferPointer()
-		);
+        PEGASUS_EVENT_DISPATCH(
+            this, Core::CompilerEvents::CompilationEvent,
+            false, (const char*)errorBlob->GetBufferPointer()
+        );
         return false;
     }
     else
     {
         result = mDevice->GetD3D()->CreateRootSignature(0u, mData->rootSignatureBlob->GetBufferPointer(), mData->rootSignatureBlob->GetBufferSize(), __uuidof(ID3D12RootSignature), reinterpret_cast<void**>(&mData->rootSignature));
-		PEGASUS_EVENT_DISPATCH(
-			this, Core::CompilerEvents::CompilationEvent,
-			result == S_OK, result == S_OK ? "Success" : "Error creating root signature"
-		);
+        PEGASUS_EVENT_DISPATCH(
+            this, Core::CompilerEvents::CompilationEvent,
+            result == S_OK, result == S_OK ? "Success" : "Error creating root signature"
+        );
         return true;
     }
 }
@@ -298,125 +356,12 @@ ID3D12RootSignature* Dx12GpuProgram::GetRootSignature()
     return &(*mData->rootSignature);
 }
 
-void Dx12GpuProgram::fillInResourceTableLayouts()
-{
-    auto userRangesToShaderParams = [&](const Dx12TableLayout& userLayout, std::vector<Dx12ShaderParam>& outShaderParams)
-    {
-        for (const auto& inputRange : userLayout.registerRanges)
-        {
-            PG_ASSERT(inputRange.tableType >= Dx12_ResTypeBegin && inputRange.tableType < Dx12_ResCount);
-            if (inputRange.tableType >= Dx12_ResTypeBegin && inputRange.tableType < Dx12_ResCount)
-            {
-                for (unsigned regIdx = inputRange.baseRegister; regIdx < inputRange.baseRegister + inputRange.count; ++regIdx)
-                {
-                    auto& it = mParams->b2Res[inputRange.tableType].find(regIdx);
-                    if (it != mParams->b2Res[inputRange.tableType].end())
-                    {
-                        outShaderParams.push_back(mParams->res[inputRange.tableType][it->second]);
-                    }
-                }
-            }
-        }
-    };
-
-    auto initRange = [](const Dx12ShaderParam* param)
-    {
-		bool isBindless = param->desc.BindCount == 0;
-        return D3D12_DESCRIPTOR_RANGE {
-            toD3dRangeType(param->resType),
-			isBindless ? UINT_MAX : param->desc.BindCount, param->desc.BindPoint,
-            0u, /*No support for reg spaces for now*/
-            D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND
-        };
-	};
-    
-    auto shaderParamsToD3d12DescriptorRanges = [&](const Dx12ShaderBindParamList& shaderParams, std::vector<D3D12_DESCRIPTOR_RANGE>& ranges, D3D12_SHADER_VISIBILITY& rangesVis)
-    {
-        if (!shaderParams.empty())
-        {
-            const Dx12ShaderParam* lastParam = &shaderParams[0];
-            rangesVis = lastParam->visibility;
-
-            D3D12_DESCRIPTOR_RANGE currRange = initRange(lastParam);
-
-            unsigned expectedRegister = currRange.BaseShaderRegister + currRange.NumDescriptors;
-
-            for (unsigned i = 1; i < shaderParams.size(); ++i)
-            {
-                const Dx12ShaderParam* newParam = &shaderParams[i]; 
-                if (newParam->desc.BindPoint != expectedRegister || newParam->resType != lastParam->resType)
-                {
-                    ranges.push_back(currRange);
-                    currRange = initRange(newParam);
-                }
-                else
-                {
-                    currRange.NumDescriptors += newParam->desc.BindCount;
-                }
-
-				expectedRegister += newParam->desc.BindCount;
-
-                if (rangesVis != newParam->visibility)
-                    rangesVis = D3D12_SHADER_VISIBILITY_ALL;
-
-                lastParam = newParam;
-            }
-            
-            ranges.push_back(currRange);
-        }
-    };
-
-    auto createTable = [&](const std::vector<D3D12_DESCRIPTOR_RANGE>& ranges, D3D12_SHADER_VISIBILITY visibility)
-    {
-        D3D12_ROOT_PARAMETER rootTableParameter; 
-        D3D12_ROOT_DESCRIPTOR_TABLE& descTable = rootTableParameter.DescriptorTable;
-        D3D12_DESCRIPTOR_RANGE* supportMem = new D3D12_DESCRIPTOR_RANGE[ranges.size()];
-        Utils::Memcpy(supportMem, ranges.data(), (unsigned)ranges.size() * sizeof(D3D12_DESCRIPTOR_RANGE));
-        descTable.pDescriptorRanges = supportMem;
-        descTable.NumDescriptorRanges = (unsigned)ranges.size();
-		rootTableParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-		rootTableParameter.ShaderVisibility = visibility;
-        mParams->supportingRanges.push_back(supportMem);
-        mParams->tables.push_back(rootTableParameter);
-    };
-
-    const std::vector<Dx12TableLayout>& tableLayouts = mDesc.tableLayouts;
-    if (tableLayouts.empty())
-    {
-        //if the user did not defined anything, we create a massive table. 
-
-        D3D12_SHADER_VISIBILITY rangesVis = D3D12_SHADER_VISIBILITY_ALL;
-        std::vector<D3D12_DESCRIPTOR_RANGE> ranges;
-        for (unsigned resType = 0; resType < Dx12_ResCount; ++resType)
-            shaderParamsToD3d12DescriptorRanges(mParams->res[resType], ranges, rangesVis);
-
-        createTable(ranges, rangesVis);
-        mAutoTableLayout = true;
-    }
-    else
-    {
-        //Lets use dx12 and optimally group params like the user wants!
-        for (const Dx12TableLayout& layout : tableLayouts)
-        {
-            std::vector<Dx12ShaderParam> shaderParams;
-            userRangesToShaderParams(layout, shaderParams);
-            
-            D3D12_SHADER_VISIBILITY rangesVis = D3D12_SHADER_VISIBILITY_ALL;
-            std::vector<D3D12_DESCRIPTOR_RANGE> ranges;
-            shaderParamsToD3d12DescriptorRanges(shaderParams, ranges, rangesVis);
-
-            createTable(ranges, rangesVis);
-        }
-        mAutoTableLayout = false;
-    }
-}
-
 Dx12GpuProgram::Dx12GpuProgram(Dx12Device* device)
-    : RefCounted(device->GetAllocator()), mDevice(device), mParams(nullptr), mData(nullptr), mAutoTableLayout(false)
+    : RefCounted(device->GetAllocator()), mDevice(device), mParams(nullptr), mData(nullptr)
 {
 #if PEGASUS_USE_EVENTS
-	SetEventUserData(nullptr);
-	SetEventListener(nullptr);
+    SetEventUserData(nullptr);
+    SetEventListener(nullptr);
 #endif
 }
 
@@ -444,8 +389,8 @@ bool Dx12GpuProgram::Compile(const Dx12ProgramDesc& desc)
 
     auto* ioManager = mDevice->GetIOMgr();
     Io::FileBuffer shaderBuffer;
-    Io::IoError err = ioManager->OpenFileToBuffer(desc.filename, shaderBuffer, true, mDevice->GetAllocator());
-    PG_ASSERTSTR(err == Io::ERR_NONE, "Error opening test shader \"%s\". Error Code: %d", desc.filename, err);
+    Io::IoError err = ioManager->OpenFileToBuffer(desc.filename.c_str(), shaderBuffer, true, mDevice->GetAllocator());
+    PG_ASSERTSTR(err == Io::ERR_NONE, "Error opening test shader \"%s\". Error Code: %d", desc.filename.c_str(), err);
 
     auto compileShader = [&](Dx12ShaderBlob& blob, const char* src, int srcSize, const char* mainFn, Dx12PipelineType pipelineType)
     {
@@ -461,7 +406,7 @@ bool Dx12GpuProgram::Compile(const Dx12ProgramDesc& desc)
             NULL, //No include handler
             mainFn,
             pipelineToModel(pipelineType),
-            D3DCOMPILE_IEEE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL0 | D3DCOMPILE_WARNINGS_ARE_ERRORS | D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_ENABLE_UNBOUNDED_DESCRIPTOR_TABLES,
+            D3DCOMPILE_IEEE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL3 | D3DCOMPILE_WARNINGS_ARE_ERRORS | D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_ENABLE_UNBOUNDED_DESCRIPTOR_TABLES,
             0,
             &blob.byteCode,
             &errBlob
@@ -469,29 +414,29 @@ bool Dx12GpuProgram::Compile(const Dx12ProgramDesc& desc)
         if (result != S_OK)
         {
             PG_FAILSTR("Failed compiling test shader: %s", errBlob->GetBufferPointer());
-			PEGASUS_EVENT_DISPATCH(
-				this, Core::CompilerEvents::CompilationNotification,
-				Core::CompilerEvents::CompilationNotification::COMPILATION_ERROR,
-				"", 0u, ""
-			);
+            PEGASUS_EVENT_DISPATCH(
+                this, Core::CompilerEvents::CompilationNotification,
+                Core::CompilerEvents::CompilationNotification::COMPILATION_ERROR,
+                "", 0u, ""
+            );
             success = false;
         }
         else
         {
             result = D3DReflect(blob.byteCode->GetBufferPointer(), blob.byteCode->GetBufferSize(), __uuidof(ID3D12ShaderReflection), reinterpret_cast<void**>(&blob.reflectionInfo));
             blob.pipelineType = pipelineType;
-			if (result != S_OK)
-			{
-				PEGASUS_EVENT_DISPATCH(
-					this, Core::CompilerEvents::CompilationNotification,
-					Core::CompilerEvents::CompilationNotification::COMPILATION_ERROR,
-					"", 0u, "Failed generating reflection for shader"
-				);
-			}
+            if (result != S_OK)
+            {
+                PEGASUS_EVENT_DISPATCH(
+                    this, Core::CompilerEvents::CompilationNotification,
+                    Core::CompilerEvents::CompilationNotification::COMPILATION_ERROR,
+                    "", 0u, "Failed generating reflection for shader"
+                );
+            }
         }
 
         if (errBlob != nullptr)
-	    	errBlob->Release();
+            errBlob->Release();
     
         return success;
     };
@@ -510,12 +455,12 @@ bool Dx12GpuProgram::Compile(const Dx12ProgramDesc& desc)
 
     for (unsigned pipelineIdx = 0; pipelineIdx < Dx12_PipelineMax; ++pipelineIdx)
     {
-        if (desc.mainNames[pipelineIdx] != nullptr)
+        if (!desc.mainNames[pipelineIdx].empty())
         {
             Dx12ShaderBlob shaderblob; 
             bool result = compileShader(
                 shaderblob, shaderBuffer.GetBuffer(),
-                shaderBuffer.GetFileSize(), desc.mainNames[pipelineIdx],
+                shaderBuffer.GetFileSize(), desc.mainNames[pipelineIdx].c_str(),
                 (Dx12PipelineType)pipelineIdx);
             if (result)
             {
@@ -528,8 +473,7 @@ bool Dx12GpuProgram::Compile(const Dx12ProgramDesc& desc)
         }
     }
 
-    fillInReflectionData();
-    fillInResourceTableLayouts();
+    fillInInternalData();
     return createRootSignature();
 }
 

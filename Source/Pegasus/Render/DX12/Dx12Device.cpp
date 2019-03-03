@@ -20,6 +20,7 @@
 #include "Dx12QueueManager.h"
 #include "Dx12RDMgr.h"
 #include "Dx12Resources.h"
+#include "Dx12GpuProgram.h"
 #include <dxgi1_6.h>
 #include <atlbase.h>
 #include <vector>
@@ -157,6 +158,12 @@ Dx12BufferRef Dx12Device::CreateBuffer(const BufferDesc& desc)
 	Dx12BufferRef buff = D12_NEW(mAllocator, "Dx12Buffer") Dx12Buffer(desc, this);
 	buff->init();
 	return buff;
+}
+
+Dx12GpuProgramRef Dx12Device::CreateGpuProgram()
+{
+	Dx12GpuProgramRef prog = D12_NEW(mAllocator, "Dx12GpuProgram") Dx12GpuProgram(this);
+	return prog;
 }
 
 //! platform implementation of device
