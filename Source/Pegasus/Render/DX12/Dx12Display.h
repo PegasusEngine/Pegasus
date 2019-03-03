@@ -15,6 +15,7 @@
 #include <dxgi1_5.h>
 #include "Dx12RDMgr.h"
 #include "Dx12Resources.h"
+#include "Dx12GpuProgram.h"
 
 namespace Pegasus
 {
@@ -66,6 +67,7 @@ private:
 
     Dx12TextureRef mTestTexture;
     Dx12BufferRef mTestBuffer;
+    Dx12GpuProgramRef mProgramTest;
 };
 }
 }

@@ -155,7 +155,17 @@ void Dx12Display::BeginFrame()
     FLOAT clearColor[] = { 0.0f, 0.0f, 1.0f, 1.0f };
     mCmdList->ClearRenderTargetView(mRtvBuffers[mBackBufferIdx].handle, clearColor, 0, nullptr);
     
-
+#if 0
+    if (mProgramTest == nullptr)
+    {
+        Dx12ProgramDesc desc;
+        desc.filename = "Shaders/hlsl/Dx12Test.hlsl";
+        desc.mainNames[Dx12_Vertex] = "vsMain";
+        desc.mainNames[Dx12_Pixel] = "psMain";
+        mProgramTest = mDevice->CreateGpuProgram();
+		mProgramTest->Compile(desc);
+    }
+	
     if (mTestTexture == nullptr)
     {
         TextureDesc desc;
@@ -183,6 +193,8 @@ void Dx12Display::BeginFrame()
 		desc.format = Core::FORMAT_R32_FLOAT;
         mTestBuffer = mDevice->CreateBuffer(desc);
     }
+#endif
+
 }
 
 void Dx12Display::EndFrame()

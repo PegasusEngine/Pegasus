@@ -19,6 +19,7 @@
 #include <vector>
 #include <d3d12.h>
 #include <atlbase.h>
+#include <string>
 
 namespace Pegasus
 {
@@ -37,38 +38,14 @@ enum Dx12PipelineType : unsigned
     Dx12_Unknown
 };
 
-enum Dx12ResType : unsigned
-{
-    Dx12_ResTypeBegin,
-    Dx12_ResSrv = Dx12_ResTypeBegin,
-    Dx12_ResCbv,
-    Dx12_ResUav,
-    Dx12_ResSampler,
-    Dx12_ResCount,
-    Dx12_ResInvalid
-};
-
-struct Dx12TableLayout
-{
-    struct Range
-    {
-        Dx12ResType tableType;
-		unsigned baseRegister;
-		unsigned count;
-    };
-
-    std::vector<Range> registerRanges;
-};
-
 struct Dx12ProgramDesc
 {
-    const char* filename;
-    const char* mainNames[Dx12_PipelineMax];
-    std::vector<Dx12TableLayout> tableLayouts;
+    std::string filename;
+    std::string mainNames[Dx12_PipelineMax];
     Dx12ProgramDesc()
     {
-        filename = nullptr;
-        for (unsigned i = 0; i < Dx12_PipelineMax; ++i) mainNames[i] = nullptr;
+        filename = "";
+        for (unsigned i = 0; i < Dx12_PipelineMax; ++i) mainNames[i] = "";
     }
 };
 
@@ -77,7 +54,7 @@ struct Dx12GpuProgramData;
 
 class Dx12GpuProgram : public Core::RefCounted
 {
-	PEGASUS_EVENT_DECLARE_DISPATCHER(Pegasus::Core::CompilerEvents::ICompilerEventListener)
+    PEGASUS_EVENT_DECLARE_DISPATCHER(Pegasus::Core::CompilerEvents::ICompilerEventListener)
 
 public:
     Dx12GpuProgram(Dx12Device* device);
@@ -94,12 +71,10 @@ public:
 
 private:
 
-	inline void InvalidateData() {}
+    inline void InvalidateData() {}
 
-    void fillInReflectionData();
-    void fillInResourceTableLayouts();
+    void fillInInternalData();
     bool createRootSignature();
-    bool mAutoTableLayout;
     Dx12ProgramDesc mDesc;
     Dx12Device* mDevice;
     Dx12GpuProgramParams* mParams;
