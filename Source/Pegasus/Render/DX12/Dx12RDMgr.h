@@ -88,13 +88,9 @@ public:
     void Delete(const Table& t);
     void Delete(Handle h);
 
-    D3D12_GPU_DESCRIPTOR_HANDLE uploadTable(const Table& t);
-
 private:
     Handle AllocInternal(D3D12_DESCRIPTOR_HEAP_TYPE type);
     Table AllocEmptyTable(UINT count, TableType tableType);
-
-    void AllocGpuHeapPage(TableType tableType);
 
     Dx12Device* mDevice;
 
@@ -107,16 +103,6 @@ private:
         std::vector<UINT> freeSpots;
     };
 
-    struct CircularHeapState
-    {
-        UINT allocCount = 0u;
-        UINT handlesPerPage = 0u;
-        UINT maxPages = 0u;
-        UINT currPage = 0u;
-        UINT64* fenceValues = nullptr;
-        Dx12Fence* fence = nullptr;
-    };
-
     struct TableHeapContainer
     {
         UINT incrSize = 0;
@@ -127,10 +113,7 @@ private:
 
         D3D12_DESCRIPTOR_HEAP_DESC gpuLinearHeapDesc;
         CComPtr<ID3D12DescriptorHeap> gpuLinearHeap;
-        CircularHeapState gpuLinearHeapState;
     };
-
-    typedef std::vector<HeapContainer> HeapList;
 
     HeapContainer mHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
 	TableHeapContainer mTableHeaps[TableTypeMax];

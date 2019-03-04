@@ -22,6 +22,7 @@ namespace Pegasus
 namespace Render
 {
 
+class Dx12RenderContext;
 class Dx12GpuProgram;
 class Dx12Device;
 
@@ -54,9 +55,6 @@ private:
     Dx12RDMgr::Handle mRtvBuffers[Buffering];
     CComPtr<ID3D12Resource> mColorResources[Buffering];
  
-    CComPtr<ID3D12CommandAllocator> mCmdListsAllocator[Buffering];
-    UINT64 mFenceValues[Buffering];
-
     UINT mBackBufferIdx;
 
     CComPtr<ID3D12GraphicsCommandList> mCmdList;
@@ -68,6 +66,7 @@ private:
     Dx12TextureRef mTestTexture;
     Dx12BufferRef mTestBuffer;
     Dx12GpuProgramRef mProgramTest;
+    Dx12RenderContext* mRenderContext;
 };
 }
 }

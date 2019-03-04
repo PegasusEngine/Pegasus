@@ -5,6 +5,7 @@
 #include "Dx12Fence.h"
 #include "Dx12GpuProgram.h"
 #include "Dx12Pso.h"
+#include "Dx12RenderContext.h"
 #include <dxgi1_6.h>
 #include <Pegasus/Allocator/IAllocator.h>
 #include <Pegasus/Core/Formats.h>
@@ -22,6 +23,8 @@ Dx12Display::Dx12Display(const DisplayConfig& config, Alloc::IAllocator* alloc)
     PG_ASSERT(config.moduleHandle != NULL);
 
     mDevice = static_cast<Dx12Device*>(config.device);
+    mRenderContext = D12_NEW(mDevice->GetAllocator(), "Dx12RenderContext") Dx12RenderContext(mDevice, Buffering, mDevice->GetQueueManager()->GetDirect());
+    mCmdList = mRenderContext->GetCmdList();
     mWidth = config.width;
     mHeight = config.height;
     
@@ -77,38 +80,16 @@ Dx12Display::Dx12Display(const DisplayConfig& config, Alloc::IAllocator* alloc)
             
             mRtvBuffers[i] = mDevice->GetRDMgr()->AllocateRenderTarget();
             mDevice->GetD3D()->CreateRenderTargetView(mColorResources[i], nullptr, mRtvBuffers[i].handle);
-            mFenceValues[i] = 0u;
-
-            //Create command list allocator
-            DX_VALID(
-                mDevice->GetD3D()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT,
-                __uuidof(ID3D12CommandAllocator), reinterpret_cast<void**>(&mCmdListsAllocator[i])));
 
         }
 
         mBackBufferIdx = mSwapChain->GetCurrentBackBufferIndex();
-
-        //Create command list
-        DX_VALID(
-            mDevice->GetD3D()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT,
-            mCmdListsAllocator[mBackBufferIdx],
-            nullptr, //Null PSO
-            __uuidof(ID3D12GraphicsCommandList),
-            reinterpret_cast<void**>(&mCmdList))
-        );
-
-		DX_VALID(mCmdList->Close());
     }
 }
 
 void Dx12Display::Flush()
 {
-    Dx12QueueManager* qManager = mDevice->GetQueueManager();
-    Dx12Fence* directQueueFence = qManager->GetDirectFence();
-    for (int i = 0; i < (int)GetBuffering(); ++i)
-    {
-        directQueueFence->WaitOnCpu(mFenceValues[i]);
-    }
+    mRenderContext->Flush();
 }
 
 Dx12Display::~Dx12Display()
@@ -124,23 +105,22 @@ Dx12Display::~Dx12Display()
     {
         mSwapChain->Release();
     }	
+    
+    D12_DELETE(mDevice->GetAllocator(), mRenderContext);
 }
 
 void Dx12Display::BeginFrame()
 {
+    //update to next frame
+    mRenderContext->BeginFrame();
+
     Dx12QueueManager* qManager = mDevice->GetQueueManager();
     ID3D12CommandQueue* directQueue = qManager->GetDirect();
-    Dx12Fence* directQueueFence = qManager->GetDirectFence();
     
-    //update to next frame
-    mBackBufferIdx = mSwapChain->GetCurrentBackBufferIndex();
-    
-    //Wait till this back buffer has finished its fence
-    directQueueFence->WaitOnCpu(mFenceValues[mBackBufferIdx]);
 
-    //We are done! now we can proceed to render! lets acquire the current draw list
-    DX_VALID_DECLARE(mCmdListsAllocator[mBackBufferIdx]->Reset());
-    DX_VALID(mCmdList->Reset(mCmdListsAllocator[mBackBufferIdx], nullptr));
+	mBackBufferIdx = mSwapChain->GetCurrentBackBufferIndex();
+    PG_ASSERT(mBackBufferIdx == mRenderContext->GetFrameId());
+
 
     D3D12_RESOURCE_BARRIER barrierDesc;
     barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -201,7 +181,6 @@ void Dx12Display::EndFrame()
 {
     Dx12QueueManager* qManager = mDevice->GetQueueManager();
     ID3D12CommandQueue* directQueue = qManager->GetDirect();
-    Dx12Fence* directQueueFence = qManager->GetDirectFence();
 
     D3D12_RESOURCE_BARRIER barrierDesc;
     barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -211,13 +190,16 @@ void Dx12Display::EndFrame()
     barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
     barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
     mCmdList->ResourceBarrier(1, &barrierDesc);
-	DX_VALID_DECLARE(mCmdList->Close());
+
+	mCmdList->Close();
 
 	ID3D12CommandList* lists[] = { mCmdList };
     directQueue->ExecuteCommandLists(1, lists);
-    DX_VALID(mSwapChain->Present(1u, 0u));
+    DX_VALID_DECLARE(mSwapChain->Present(1u, 0u));
 
-    mFenceValues[mBackBufferIdx] = directQueueFence->Signal();
+	mRenderContext->EndFrame();
+
+
 
 }
 
