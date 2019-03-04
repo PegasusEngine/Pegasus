@@ -35,12 +35,10 @@ public:
     ~Dx12QueueManager();
     
     ID3D12CommandQueue* GetDirect() { return mDirectQueue; }
-    Dx12Fence* GetDirectFence() { return mDirectQueueFence; }
 
 private:
     Alloc::IAllocator* mAllocator;
     ID3D12CommandQueue* mDirectQueue;
-    Dx12Fence* mDirectQueueFence;
     ID3D12Device2* mDevice;
 };
 

@@ -12,7 +12,6 @@
 #include "Dx12QueueManager.h"
 #include "Dx12Device.h"
 #include "Dx12Defs.h"
-#include "Dx12Fence.h"
 
 #include <Pegasus/Allocator/IAllocator.h>
 
@@ -35,7 +34,6 @@ Dx12QueueManager::Dx12QueueManager(Alloc::IAllocator* allocator, Dx12Device* dev
         };
 
         DX_VALID_DECLARE(mDevice->CreateCommandQueue(&qDesc, __uuidof(mDirectQueue), &((void*)mDirectQueue)));
-        mDirectQueueFence = D12_NEW(mAllocator, "Dx12Fence") Dx12Fence(device, mDirectQueue);
     }
 }
 
@@ -43,7 +41,6 @@ Dx12QueueManager::~Dx12QueueManager()
 {
     mDirectQueue->Release();
     mDevice->Release();
-    D12_DELETE(mAllocator, mDirectQueueFence);
 }
 
 }
