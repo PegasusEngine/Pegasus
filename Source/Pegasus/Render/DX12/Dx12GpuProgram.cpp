@@ -26,17 +26,6 @@ namespace Pegasus
 namespace Render
 {
 
-enum Dx12ResType : unsigned
-{
-    Dx12_ResTypeBegin,
-    Dx12_ResSrv = Dx12_ResTypeBegin,
-    Dx12_ResCbv,
-    Dx12_ResUav,
-    Dx12_ResSampler,
-    Dx12_ResTypeCount,
-    Dx12_ResInvalid
-};
-
 const char* pipelineToModel(Dx12PipelineType type)
 {
     switch(type)
@@ -350,10 +339,23 @@ bool Dx12GpuProgram::createRootSignature()
     }
 }
 
-ID3D12RootSignature* Dx12GpuProgram::GetRootSignature()
+ID3D12RootSignature* Dx12GpuProgram::GetRootSignature() const
 {
     PG_ASSERT(mData != nullptr);
     return &(*mData->rootSignature);
+}
+
+bool Dx12GpuProgram::SpaceToTableId(UINT space, Dx12ResType resType, UINT& outTableId) const
+{
+    if (mParams == nullptr)
+        return false;
+    
+    PG_ASSERT(resType < Dx12_ResTypeCount);
+    if (space >= mParams->lookup[resType].size())
+        return false;
+
+    outTableId = mParams->lookup[resType][space];
+    return true;
 }
 
 Dx12GpuProgram::Dx12GpuProgram(Dx12Device* device)

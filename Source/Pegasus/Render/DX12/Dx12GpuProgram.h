@@ -12,6 +12,7 @@
 #pragma once
 
 #include "Dx12Device.h"
+#include "Dx12Defs.h"
 #include <Pegasus/Core/RefCounted.h>
 #include <Pegasus/Core/Ref.h>
 #include <Pegasus/Core/Shared/EventDefs.h>
@@ -25,18 +26,6 @@ namespace Pegasus
 {
 namespace Render
 {
-
-enum Dx12PipelineType : unsigned
-{
-    Dx12_Vertex,
-    Dx12_Pixel,
-    Dx12_Domain,
-    Dx12_Hull,
-    Dx12_Geometry,
-    Dx12_Compute,
-    Dx12_PipelineMax,
-    Dx12_Unknown
-};
 
 struct Dx12ProgramDesc
 {
@@ -60,14 +49,14 @@ public:
     Dx12GpuProgram(Dx12Device* device);
     virtual ~Dx12GpuProgram();
 
-    ID3D12RootSignature* GetRootSignature();
+    ID3D12RootSignature* GetRootSignature() const;
     bool Compile(const Dx12ProgramDesc& programDesc);
     bool IsValid() const;
     const Dx12ProgramDesc& GetDesc() const { return mDesc; }
     CComPtr<ID3DBlob> GetShaderByteCode(Dx12PipelineType type);
     unsigned int GetShaderByteCodeCounts() const;
     CComPtr<ID3DBlob> GetShaderByteCodeByIndex(unsigned int index, Dx12PipelineType& outType);
-    
+    bool SpaceToTableId(UINT space, Dx12ResType resType, UINT& outTableId) const;
 
 private:
 
