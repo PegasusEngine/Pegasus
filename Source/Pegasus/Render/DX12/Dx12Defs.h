@@ -21,3 +21,34 @@
 
 #define D12_NEW(allocator, debugString) PG_NEW(allocator, -1, debugString, Pegasus::Alloc::PG_MEM_PERM)
 #define D12_DELETE PG_DELETE
+
+namespace Pegasus
+{
+namespace Render
+{
+
+enum Dx12ResType : unsigned
+{
+    Dx12_ResTypeBegin,
+    Dx12_ResSrv = Dx12_ResTypeBegin,
+    Dx12_ResCbv,
+    Dx12_ResUav,
+    Dx12_ResSampler,
+    Dx12_ResTypeCount,
+    Dx12_ResInvalid
+};
+
+enum Dx12PipelineType : unsigned
+{
+    Dx12_Vertex,
+    Dx12_Pixel,
+    Dx12_Domain,
+    Dx12_Hull,
+    Dx12_Geometry,
+    Dx12_Compute,
+    Dx12_PipelineMax,
+    Dx12_Unknown
+};
+
+}
+}

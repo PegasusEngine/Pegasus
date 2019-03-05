@@ -70,9 +70,8 @@ public:
     struct Table
     {
         D3D12_CPU_DESCRIPTOR_HANDLE baseHandle;
-        D3D12_GPU_DESCRIPTOR_HANDLE baseHandleGpu;
         TableType tableType = TableTypeSrvCbvUav;
-        UINT baseIdx = 0;   
+        UINT guid = 0;
         UINT count = 0;
     };
 
@@ -115,6 +114,7 @@ private:
         CComPtr<ID3D12DescriptorHeap> gpuLinearHeap;
     };
 
+    UINT mNextTableGuid;
     HeapContainer mHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES];
 	TableHeapContainer mTableHeaps[TableTypeMax];
 };

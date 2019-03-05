@@ -23,7 +23,7 @@ namespace Render
 {
 
 Dx12RDMgr::Dx12RDMgr(Dx12Device* device)
-: mDevice(device)
+: mDevice(device), mNextTableGuid(1)
 {
     for (UINT i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
     {
@@ -103,11 +103,9 @@ Dx12RDMgr::Table Dx12RDMgr::AllocEmptyTable(UINT count, Dx12RDMgr::TableType tab
     PG_ASSERTSTR(count <= (mTableHeaps[tableType].desc.NumDescriptors - mTableHeaps[tableType].lastIndex), "Not enough memory remaining for descriptors!");
     resultTable.tableType = tableType;
     resultTable.count = count;
-    resultTable.baseIdx = count;
     resultTable.baseHandle = mTableHeaps[tableType].heap->GetCPUDescriptorHandleForHeapStart();
-    resultTable.baseHandleGpu = mTableHeaps[tableType].heap->GetGPUDescriptorHandleForHeapStart();
     resultTable.baseHandle.ptr += mTableHeaps[tableType].incrSize * mTableHeaps[tableType].lastIndex;
-    resultTable.baseHandleGpu.ptr += mTableHeaps[tableType].incrSize * mTableHeaps[tableType].lastIndex;
+    resultTable.guid = mNextTableGuid++;
     mTableHeaps[tableType].lastIndex += count;
     return resultTable;
 }
@@ -119,7 +117,7 @@ Dx12RDMgr::Table Dx12RDMgr::AllocateTable(Dx12RDMgr::TableType tableType, const 
     {
         D3D12_CPU_DESCRIPTOR_HANDLE tableDescriptor = resultTable.baseHandle;
         tableDescriptor.ptr += i * mTableHeaps[tableType].incrSize;
-        mDevice->GetD3D()->CopyDescriptorsSimple(1, tableDescriptor, cpuHandles[i].handle, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        mDevice->GetD3D()->CopyDescriptorsSimple(1, tableDescriptor, cpuHandles[i].handle, GetHeapType(tableType));
     }
     return resultTable;
 }
@@ -127,7 +125,7 @@ Dx12RDMgr::Table Dx12RDMgr::AllocateTable(Dx12RDMgr::TableType tableType, const 
 Dx12RDMgr::Table Dx12RDMgr::AllocateTableCopy(const Table& srcTable)
 {
     Dx12RDMgr::Table resultTable = AllocEmptyTable(srcTable.count, srcTable.tableType);
-    mDevice->GetD3D()->CopyDescriptorsSimple(srcTable.count, resultTable.baseHandle, srcTable.baseHandle, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    mDevice->GetD3D()->CopyDescriptorsSimple(srcTable.count, resultTable.baseHandle, srcTable.baseHandle, GetHeapType(srcTable.tableType));
     return resultTable;
 }
 

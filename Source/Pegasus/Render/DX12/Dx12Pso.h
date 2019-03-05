@@ -38,6 +38,10 @@ public:
 
     bool IsValid() const { return mPso != nullptr; }
     bool Compile(const Dx12PsoDesc& desc, Dx12GpuProgramRef program);
+    bool SpaceToTableId(UINT space, Dx12ResType resType, UINT& outTableId);
+
+    ID3D12RootSignature* GetD3DRootSignature() const;
+    ID3D12PipelineState* GetD3DPso() const { return mPso; }
 
 private:
     enum Type

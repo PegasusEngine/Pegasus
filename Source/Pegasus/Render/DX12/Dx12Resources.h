@@ -14,6 +14,7 @@
 #include <Pegasus/Core/Formats.h>
 #include <Pegasus/Core/RefCounted.h>
 #include <Pegasus/Core/Ref.h>
+#include "Dx12Defs.h"
 #include "Dx12Device.h"
 #include "Dx12RDMgr.h"
 #include <vector>
@@ -27,6 +28,7 @@ namespace Render
 {
 
 class Dx12Device;
+class Dx12Resource;
 
 enum BindFlags : unsigned int
 {
@@ -85,12 +87,22 @@ struct BufferDesc : public ResourceDesc
     BufferType bufferType;
 };
 
+struct ResourceTableDesc
+{
+    Dx12ResType type = Dx12_ResSrv;
+    std::vector<Core::Ref<Dx12Resource>> resources;
+};
+
 class Dx12Resource : public Core::RefCounted
 {
+    friend class Dx12ResourceTable;
 public:
     Dx12Resource(const ResourceDesc& desc, Dx12Device* device);
     virtual ~Dx12Resource();
-    const ResourceDesc& getResDesc() const { return mDesc; }
+    ID3D12Resource* GetD3D() { return mData.resource; }
+    const ResourceDesc& GetDesc() const { return mDesc; }
+    D3D12_RESOURCE_STATES GetState (UINT subresourceIdx) const;
+    void SetState(UINT subresourceIdx, D3D12_RESOURCE_STATES state);
     virtual void init();
 
 private:
@@ -111,6 +123,7 @@ protected:
     } mData;
 
     Dx12Device* mDevice;
+    std::vector<D3D12_RESOURCE_STATES> mStates;
 };
 
 class Dx12Texture : public Dx12Resource
@@ -139,9 +152,25 @@ private:
     BufferDesc mDesc;
 };
 
+class Dx12ResourceTable : public Core::RefCounted
+{
+public:
+    friend class Dx12RenderContext;
+    Dx12ResourceTable(const ResourceTableDesc& desc, Dx12Device* device);
+    ~Dx12ResourceTable();
+    const ResourceTableDesc& GetDesc() const { return mDesc; }
+    std::vector<Core::Ref<Dx12Resource>>& GetResources() { return mDesc.resources; }
+
+private:
+    Dx12RDMgr::Table mTable;   
+	ResourceTableDesc mDesc;
+    Dx12RDMgr* mRdMgr;
+};
+
 typedef Core::Ref<Dx12Texture> Dx12TextureRef;
 typedef Core::Ref<Dx12Buffer> Dx12BufferRef;
 typedef Core::Ref<Dx12Resource> Dx12ResourceRef;
+typedef Core::Ref<Dx12ResourceTable> Dx12ResourceTableRef;
 
 }
 }

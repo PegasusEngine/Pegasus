@@ -21,6 +21,11 @@ Dx12Pso::~Dx12Pso()
     }
 }
 
+ID3D12RootSignature* Dx12Pso::GetD3DRootSignature() const
+{
+    return mProgram->GetRootSignature();
+}
+
 bool Dx12Pso::Compile(const Dx12PsoDesc& desc, Dx12GpuProgramRef program)
 {
     mDesc = desc;
@@ -98,6 +103,17 @@ bool Dx12Pso::Compile(const Dx12PsoDesc& desc, Dx12GpuProgramRef program)
     {
         return false;
     }
+}
+
+bool Dx12Pso::SpaceToTableId(UINT space, Dx12ResType resType, UINT& outTableId)
+{
+    if (mProgram == nullptr)
+        return false;
+
+    if (mPso == nullptr)
+        return false;
+    
+    return mProgram->SpaceToTableId(space, resType, outTableId);
 }
 
 }

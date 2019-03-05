@@ -142,6 +142,8 @@ void Dx12Resource::init()
         reinterpret_cast<void**>(&mData.resource)
     ));
 
+    mStates.resize(mData.resDesc.DepthOrArraySize * mData.resDesc.MipLevels, D3D12_RESOURCE_STATE_COMMON);
+
     if (!!(mDesc.bindFlags & BindFlags_Srv))
     {
 		mDevice->GetD3D()->CreateShaderResourceView(
@@ -169,6 +171,18 @@ void Dx12Resource::init()
 	}
 	mData.resource->SetName(wname.c_str());
 #endif
+}
+
+D3D12_RESOURCE_STATES Dx12Resource::GetState(UINT subresourceIdx) const
+{
+    PG_ASSERT(subresourceIdx < mStates.size());
+    return mStates[subresourceIdx];
+}
+
+void Dx12Resource::SetState(UINT subresourceIdx, D3D12_RESOURCE_STATES state)
+{
+    PG_ASSERT(subresourceIdx < mStates.size());
+    mStates[subresourceIdx] = state;
 }
 
 Dx12Texture::Dx12Texture(const TextureDesc& desc, Dx12Device* device)
@@ -383,6 +397,29 @@ Dx12Buffer::~Dx12Buffer()
 void Dx12Buffer::init()
 {
     Dx12Resource::init();
+}
+
+Dx12ResourceTable::Dx12ResourceTable(const ResourceTableDesc& desc, Dx12Device* device)
+: Core::RefCounted(device->GetAllocator())
+{
+    PG_ASSERT(desc.type == Dx12_ResSrv || desc.type == Dx12_ResUav);
+    mRdMgr = device->GetRDMgr();
+    mDesc = desc;
+    std::vector<Dx12RDMgr::Handle> handles;
+    handles.reserve(desc.resources.size());
+    for (const auto& resource : desc.resources)
+    {
+        PG_ASSERT(desc.type != Dx12_ResSrv || (resource->mDesc.bindFlags & BindFlags_Srv) != 0);
+        PG_ASSERT(desc.type != Dx12_ResUav || (resource->mDesc.bindFlags & BindFlags_Uav) != 0);
+        handles.push_back(desc.type == Dx12_ResUav ? resource->mUavHandle : resource->mSrvHandle);
+    }
+
+    mTable = mRdMgr->AllocateTable(Dx12RDMgr::TableTypeSrvCbvUav, handles.data(), (UINT)handles.size());
+}
+
+Dx12ResourceTable::~Dx12ResourceTable()
+{
+    mRdMgr->Delete(mTable);
 }
 
 }
