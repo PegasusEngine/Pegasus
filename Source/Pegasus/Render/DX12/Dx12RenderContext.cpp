@@ -1,3 +1,14 @@
+/****************************************************************************************/
+/*                                                                                      */
+/*                                       Pegasus                                        */
+/*                                                                                      */
+/****************************************************************************************/
+
+//! \file   Dx12RenderContext.h
+//! \author Kleber Garcia
+//! \date   March 4 2019
+//! \brief  Implementation of render context
+
 #include "Dx12RenderContext.h"
 #include "Dx12Fence.h"
 #include "Dx12Defs.h"
