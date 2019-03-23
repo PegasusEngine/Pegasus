@@ -25,17 +25,6 @@ namespace Render
 
 class Dx12Device;
 
-template<typename T>
-struct Dx12BufferPoolGenericHandle
-{
-	T index;
-	Dx12BufferPoolGenericHandle() { index = 0xffffffff; }
-	Dx12BufferPoolGenericHandle(T idx) { index = idx; }
-	bool operator==(const Dx12BufferPoolGenericHandle& other) { return other.index == index; }
-	operator T() const { return index; }
-	bool isValid() const { return index == 0xffffffff; }
-};
-
 struct Dx12BufferPoolDesc
 {
 	enum Usage 
@@ -46,6 +35,7 @@ struct Dx12BufferPoolDesc
 	};
 
 	D3D12_HEAP_TYPE heapType = D3D12_HEAP_TYPE_DEFAULT;
+    UINT frameCount = 0;
 	Usage usage = BufferUsage;
 	UINT64 initialSize = 1024 * 1024 * 2; //2MB
 	float growthFactor = 0.5;//next buffer increments by a factor of (1.0f+N*growthFactor)*initialSize 
@@ -55,28 +45,26 @@ struct Dx12BufferPoolDesc
 class Dx12BufferPool
 {
 public:
-	struct AllocHandle : Dx12BufferPoolGenericHandle<UINT> {
-		AllocHandle(){} 
-		AllocHandle(UINT index) : Dx12BufferPoolGenericHandle<UINT>(index) {}
-	};
-
-	struct SubAllocHandle : Dx12BufferPoolGenericHandle<UINT> { 
-		SubAllocHandle(){}
-		SubAllocHandle(UINT index) : Dx12BufferPoolGenericHandle<UINT>(index) {}
+	struct AllocHandle 
+    {
+	    UINT index;
+	    AllocHandle() { index = 0xffffffff; }
+		AllocHandle(INT idx) { index = idx; }
+	    bool operator==(const AllocHandle& other) { return other.index == index; }
+	    operator UINT() const { return index; }
+	    bool isValid() const { return index == 0xffffffff; }
 	};
 
 	Dx12BufferPool(Dx12Device* device, const Dx12BufferPoolDesc& desc);
 	~Dx12BufferPool();
-	AllocHandle Create();
-	void Reset(const AllocHandle& handle);
-	void Delete(const AllocHandle& handle);
+    UINT CurrFrame() const { return mCurrFrameIndex; }
+    void NextFrame();
+	AllocHandle Allocate(UINT size);
+	void* GetMem(const AllocHandle& subHandle);
 	void GarbageCollect();
 
-	SubAllocHandle SubAllocate(const AllocHandle& handle, UINT size);
-	void* GetMem(const SubAllocHandle& subHandle);
-
 private:
-	void CreateNextBuffer();
+	UINT CreateNextBuffer(UINT64 allocation);
 
 	struct BufferSlot
 	{
@@ -89,29 +77,32 @@ private:
 		UINT8* mappedMem = nullptr;
 	};
 
-	struct SubAllocInfo
-	{
-		bool valid = false;
-		AllocHandle parent;
-	};
-
 	struct AllocInfo
 	{
 		bool valid = false;
-		std::vector<SubAllocHandle> children;
+		UINT parentFrame = 0;
+        UINT bufferSlot = 0;
+        UINT64 offset = 0;
+        UINT64 size = 0;
 	};
+   
+    struct FrameContainer
+    {
+        std::vector<AllocHandle> children;
+        UINT memUsed = 0u;
+    };
 
 	Dx12Device* mDevice;
 	Dx12BufferPoolDesc mDesc;
 	std::vector<AllocInfo> mAllocs;
-	std::vector<SubAllocInfo> mSubAllocs;
 	std::vector<AllocHandle> mFreeAllocs;
-	std::vector<SubAllocHandle> mFreeSubAllocs;
 	std::vector<BufferSlot> mBufferSlots;
-	std::vector<UINT> mFreeBufferSlots;
+    std::vector<UINT> mFreeBufferSlots;
 	UINT64 mAllocAlignment;
 	UINT mNextBufferIndex;
+    UINT mCurrFrameIndex;
 	SIZE_T mTotalMemory;
+    std::vector<FrameContainer> mFrames;
 };
 
 }

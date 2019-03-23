@@ -20,9 +20,9 @@ namespace Render
 {
 
 Dx12BufferPool::Dx12BufferPool(Dx12Device* device, const Dx12BufferPoolDesc& desc)
-: mDevice(device), mDesc(desc), mNextBufferIndex(0), mTotalMemory(0)
+: mDevice(device), mDesc(desc), mNextBufferIndex(0), mTotalMemory(0), mCurrFrameIndex(0)
 {
-	CreateNextBuffer();
+	CreateNextBuffer(mDesc.initialSize);
 	if (desc.usage == Dx12BufferPoolDesc::ConstantBufferUsage)
 	{
 		mAllocAlignment = D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
@@ -35,14 +35,17 @@ Dx12BufferPool::Dx12BufferPool(Dx12Device* device, const Dx12BufferPoolDesc& des
 	{
 		mAllocAlignment = D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT;
 	}
+
+    mFrames.resize(mDesc.frameCount);
 }
 
 Dx12BufferPool::~Dx12BufferPool()
 {
 }
 
-void Dx12BufferPool::CreateNextBuffer()
+UINT Dx12BufferPool::CreateNextBuffer(UINT64 allocation)
 {
+    
 	D3D12_HEAP_PROPERTIES heapProps;
 	heapProps.Type = mDesc.heapType;
 	heapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
@@ -53,7 +56,7 @@ void Dx12BufferPool::CreateNextBuffer()
 	D3D12_RESOURCE_DESC resourceDesc;
 	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
 	resourceDesc.Alignment = 0u;
-	resourceDesc.Width = (UINT)((1.0f + (float)mNextBufferIndex * mDesc.growthFactor) * mDesc.initialSize + 0.5);
+	resourceDesc.Width = allocation;
 	resourceDesc.Height = 1;
 	resourceDesc.DepthOrArraySize = 1;
 	resourceDesc.MipLevels = 1;
@@ -100,9 +103,24 @@ void Dx12BufferPool::CreateNextBuffer()
 	newSlot.bufferSizeLeft = newSlot.bufferSize = resourceDesc.Width;
 
 	++mNextBufferIndex;
+    return bufferSlotIdx;
 }
 
-Dx12BufferPool::AllocHandle Dx12BufferPool::Create()
+void Dx12BufferPool::NextFrame()
+{
+    mCurrFrameIndex = (mCurrFrameIndex + 1) % mDesc.frameCount;
+    for (AllocHandle h : mFrames[mCurrFrameIndex].children)
+    {
+        auto& allocInfo = mAllocs[h];
+        auto& bufferSlot = mBufferSlots[allocInfo.bufferSlot];
+        bufferSlot.bufferSizeLeft += allocInfo.size;
+        allocInfo.valid = false;
+        mFreeAllocs.push_back(h);
+    }
+    mFrames[mCurrFrameIndex].memUsed = 0;
+}
+
+Dx12BufferPool::AllocHandle Dx12BufferPool::Allocate(UINT size)
 {
 	AllocHandle newHandle;
 	if (mFreeAllocs.empty())
@@ -114,67 +132,73 @@ Dx12BufferPool::AllocHandle Dx12BufferPool::Create()
 	{
 		newHandle = mFreeAllocs.back();
 		mFreeAllocs.pop_back();
-		PG_ASSERT((UINT)newHandle < (UINT)mAllocs.size());
 	}
 
-	auto& newInfo = mAllocs[(UINT)newHandle];
-	PG_ASSERT(newInfo.valid == false);
-	newInfo.valid = true;
+	auto& newAllocInfo = mAllocs[(UINT)newHandle];
+	PG_ASSERT(newAllocInfo.valid == false);
+	newAllocInfo.valid = true;
+	newAllocInfo.parentFrame = mCurrFrameIndex;
+
+    auto tryAlloc = [&](UINT slotId)
+    {
+        BufferSlot& currSlot = mBufferSlots[slotId];
+        if (currSlot.resource == nullptr)
+            return false;
+
+        if (size <= currSlot.bufferSizeLeft)
+        {
+            UINT64 bytesLeftToEnd = currSlot.bufferSize - currSlot.curr;
+            if (size > bytesLeftToEnd)
+            {
+                currSlot.curr = (currSlot.curr + bytesLeftToEnd) % currSlot.bufferSize;
+                currSlot.bufferSizeLeft -= bytesLeftToEnd;
+            }
+        }
+
+        if (size <= currSlot.bufferSizeLeft)
+        {
+            newAllocInfo.parentFrame = mCurrFrameIndex;
+			newAllocInfo.bufferSlot = slotId;
+            newAllocInfo.offset = currSlot.curr;
+            newAllocInfo.size = size;
+            currSlot.curr = (currSlot.curr + size) % currSlot.bufferSize;
+            currSlot.bufferSizeLeft -= size;
+            mFrames[mCurrFrameIndex].memUsed += size;
+            return true;
+        }
+
+        return false;
+    };
+
+    bool allocated = false;
+    for (UINT slotId = 0; slotId < mBufferSlots.size() - 1; ++slotId)
+    {
+        if (tryAlloc(slotId))
+        {
+            allocated = true;
+            break;
+        }
+    }
+
+
+    if (!allocated)
+    {
+		UINT64 nextSuggestedSize = (UINT)((1.0f + (float)mNextBufferIndex * mDesc.growthFactor) * mDesc.initialSize + 0.5);
+        if (nextSuggestedSize <= size)
+        {
+            nextSuggestedSize += (UINT)((1.0f + mDesc.growthFactor)*size + 0.5); //heuristic ?
+        }
+
+        UINT newSlot = CreateNextBuffer(nextSuggestedSize);
+        bool allocSuccess = tryAlloc(newSlot);
+        PG_ASSERTSTR(allocSuccess, "Allocation did not succeed? this is no good!");
+    }
+    
+    mFrames[mCurrFrameIndex].children.push_back(newHandle);
 	return newHandle;
 }
 
-void Dx12BufferPool::Reset(const Dx12BufferPool::AllocHandle& handle)
-{
-	PG_ASSERT(handle.isValid());
-	PG_ASSERT((UINT)handle < (UINT)mAllocs.size());
-	auto& oldAlloc = mAllocs[(UINT)handle];
-	for (auto& subAllocHandle : oldAlloc.children)
-	{
-		auto& oldChild = mSubAllocs[(UINT)subAllocHandle];
-		PG_ASSERT(oldChild.parent == handle);
-		PG_ASSERT(oldChild.valid == true);
-		oldChild.valid = false;
-		mFreeSubAllocs.push_back(subAllocHandle);
-	}
-	oldAlloc.children.clear();
-}
-
-void Dx12BufferPool::Delete(const Dx12BufferPool::AllocHandle& handle)
-{
-	PG_ASSERT(handle.isValid());
-	PG_ASSERT((UINT)handle < (UINT)mAllocs.size());
-	Reset(handle);
-	auto& oldAlloc = mAllocs[(UINT)handle];
-	oldAlloc.valid = false;
-	mFreeAllocs.push_back(handle);
-}
-
-Dx12BufferPool::SubAllocHandle Dx12BufferPool::SubAllocate(const AllocHandle& handle, UINT size)
-{
-	PG_ASSERT(handle.isValid());
-	PG_ASSERT((UINT)handle < (UINT)mAllocs.size());
-	auto& allocInfo = mAllocs[(UINT)handle];
-
-	SubAllocHandle newHandle;
-	if (mFreeSubAllocs.empty())
-	{
-		newHandle = SubAllocHandle((UINT)mSubAllocs.size());
-		mSubAllocs.emplace_back();
-	}
-	else
-	{
-		newHandle = mFreeSubAllocs.back();
-		mFreeSubAllocs.pop_back();
-	}
-
-	auto& newSubAllocInfo = mSubAllocs[(UINT)newHandle];
-	PG_ASSERT(newSubAllocInfo.valid == false);
-	newSubAllocInfo.valid = true;
-	newSubAllocInfo.parent = handle;
-	return newHandle;
-}
-
-void* Dx12BufferPool::GetMem(const Dx12BufferPool::SubAllocHandle& subHandle)
+void* Dx12BufferPool::GetMem(const Dx12BufferPool::AllocHandle& subHandle)
 {
 	return nullptr;
 }
