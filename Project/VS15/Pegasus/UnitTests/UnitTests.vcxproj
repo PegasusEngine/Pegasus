@@ -28,9 +28,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\UnitTests\main.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\UnitTests\RenderTests.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\UnitTests\UtilsTests.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\include\Pegasus\UnitTests\RenderTests.h" />
+    <ClInclude Include="..\..\..\..\include\Pegasus\UnitTests\UnitTests.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\UnitTests\UtilsTests.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

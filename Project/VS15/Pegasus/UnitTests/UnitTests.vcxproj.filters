@@ -15,9 +15,18 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\UnitTests\UtilsTests.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\UnitTests\RenderTests.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\UnitTests\UtilsTests.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\UnitTests\RenderTests.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\UnitTests\UnitTests.h">
       <Filter>Include</Filter>
     </ClInclude>
   </ItemGroup>
