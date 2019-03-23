@@ -11,36 +11,29 @@
 //!         any data structure. To run, edit Utils project to generate an executable, and run
 
 #include "Pegasus/UnitTests/UtilsTests.h"
-#include <stdio.h>
+#include <vector>
+#include <string>
+#include <set>
 
-typedef bool (*TestFunc)(void);
+#define RUN_TEST(name) RunTests(UNIT_TEST_##name, #name, context)
 
-
-//! Utility function, presents and runs unit tests to tty
-bool RunTests(TestFunc func, const char * testTitle, int& outSucceses, int& outTotals)
+struct TestContext
 {
-    printf("***********************\n");
-    printf("RUNNING TEST: %s\n", testTitle);
-    printf("***********************\n");
-    bool result = func();
-    outSucceses += result ? 1 : 0;
-    ++outTotals;
-    printf("Result: %s", result ? "SUCCESS" : "FAIL");
-    printf("\n-------------------------\n\n");
-    return result;
-}
+    int successCount = 0;
+    int totals = 0;
+};
 
-int main()
+
+typedef bool(*TestFunc)(void);
+
+bool RunTests(TestFunc func, const char * testTitle, TestContext& context);
+
+void runUtilitySuite(TestContext& context)
 {
-    int successes = 0;
-    int total = 0;
-
-#define RUN_TEST(name) RunTests(UNIT_TEST_##name, #name, successes, total)
-    
     ///////////////////////////////////////////////////////////////////
     // UNIT TESTS - add here your UTILS package unit tests executions//
     ///////////////////////////////////////////////////////////////////
-    
+
     //memcpy
     RUN_TEST(Memcpy1);
     RUN_TEST(Memcpy2);
@@ -115,6 +108,152 @@ int main()
     RUN_TEST(ByteStream3);    
 
     ///////////////////////////////////////////////////////////
+}
 
-    printf("Final Results: %d out of %d succeeded\n", successes, total);
+void runRenderSuite(TestContext& context)
+{
+    ///////////////////////////////////////////////////////////////////
+    // UNIT TESTS - add here your RENDER package unit tests executions//
+    ///////////////////////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////////////
+}
+//! Utility function, presents and runs unit tests to tty
+bool RunTests(TestFunc func, const char * testTitle, TestContext& context)
+{
+    printf("***********************\n");
+    printf("RUNNING TEST: %s\n", testTitle);
+    printf("***********************\n");
+    bool result = func();
+    context.successCount += result ? 1 : 0;
+    ++context.totals;
+    printf("Result: %s", result ? "SUCCESS" : "FAIL");
+    printf("\n-------------------------\n\n");
+    return result;
+}
+
+
+typedef void (*TestSuiteFn)(TestContext& context);
+struct TestSuite
+{
+	const char* name;
+	TestSuiteFn fn;
+};
+
+const TestSuite gSuites[] = {
+	{"Utilities", runUtilitySuite},
+	{"Rendering", runRenderSuite},
+};
+
+struct CmdLineSettings
+{
+    bool printTests = false;
+	bool printHelp = false;
+    std::vector<int> suites;
+};
+
+bool parseCmdLine(int argc, char* argv[], CmdLineSettings& outSettings)
+{
+    std::set<std::string> suiteNames;
+
+    for (int i = 1; i < argc; ++i)
+    {
+        std::string arg = argv[i];
+        if (arg == "-t")
+        {
+            ++i;
+            if (i > argc)
+                return false;
+            suiteNames.insert(argv[i]);
+        }
+        else if (arg == "-i")
+        {
+            outSettings.printTests = true;
+            return true;
+        }
+		else if (arg == "-h")
+		{
+			outSettings.printHelp = true;
+			return true;
+		}
+    }
+
+    //Add all
+    if (suiteNames.empty())
+    {
+        for (int i = 0; i < sizeof(gSuites)/sizeof(gSuites[0]); ++i)
+            outSettings.suites.push_back(i);
+    }
+    else
+    {
+        for (std::string name : suiteNames)
+        {
+            int testIndex = -1;
+            for (int sIdx = 0; sIdx < sizeof(gSuites)/sizeof(gSuites[0]); ++sIdx)
+            { 
+                if (gSuites[sIdx].name == name)
+                {
+                    testIndex = sIdx;
+                    break;
+                }
+            }
+
+            if (testIndex == -1)
+                return false;
+
+            outSettings.suites.push_back(testIndex);
+        }
+    }
+
+	return true;
+}
+
+
+void printInfo()
+{
+    printf("*****************************\n");
+    printf("Pegasus Unit Test Program V0.1\n");
+    printf("*****************************\n\n");
+    printf("Args:\n");
+    printf("-t <testName>\n");
+	printf("    For unique tests names just put the desired test name there.\n");
+	printf("    If we want multiple, use another - t arg.\n");
+    printf("-i\n");
+    printf("    prints lists of available tests.\n");
+	printf("-h\n");
+	printf("    prints help panel.\n");
+}
+
+int main(int argc, char* argv[])
+{
+    int successes = 0;
+    int total = 0;
+    CmdLineSettings settings;
+    bool result = parseCmdLine(argc, argv, settings);
+    if (!result || settings.printHelp)
+    {
+		if (!result)
+			printf("Invalid argument passed!\n");
+        printInfo();
+        return 0;
+    }
+
+    if (settings.printTests)
+    {
+        printf("Available tests: \n");
+        for (const auto& suite : gSuites)
+        {
+            printf("%s\n", suite.name);
+        }
+        return 0;
+    }
+
+    TestContext context;
+    for (int suiteIndex : settings.suites)
+    {
+        gSuites[suiteIndex].fn(context);
+    }
+    
+    printf("Final Results: %d out of %d succeeded\n", context.successCount, context.totals);
+    return 0;
 }
