@@ -91,7 +91,7 @@ bool runCreateDevice(TestHarness* harness)
 bool runCreateShader(TestHarness* harness)
 {
     RenderHarness* rh = static_cast<RenderHarness*>(harness);
-    
+	return false;
 }
 
 bool runDestroyDevice(TestHarness* harness)
