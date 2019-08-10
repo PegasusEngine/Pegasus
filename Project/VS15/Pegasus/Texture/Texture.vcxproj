@@ -68,7 +68,7 @@
     <ProjectGuid>{7E315CA4-D7D2-441F-8569-2523ECF83075}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Texture</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'" Label="Configuration">

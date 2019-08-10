@@ -73,7 +73,7 @@
     <ProjectGuid>{BA2E1F5A-9319-4976-B043-B762D7E074E9}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Mesh</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'" Label="Configuration">

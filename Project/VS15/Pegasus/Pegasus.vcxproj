@@ -45,7 +45,7 @@
     <ProjectGuid>{98BF1395-48CE-4C98-8921-7890B74889AD}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Pegasus</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'" Label="Configuration">
