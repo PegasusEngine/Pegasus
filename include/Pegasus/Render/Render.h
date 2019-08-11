@@ -38,28 +38,33 @@ namespace Pegasus
 namespace Render
 {
 
+    class IResource : public Core::RefCounted
+    {
+    public:
+        void* GetInternalData() const { return mInternalData; }
+        void* GetInternalDataAux() const { return mInternalDataAux; }
+        void SetInternalData(void* internalData) { mInternalData = internalData; }
+        void SetInternalDataAux(void* internalDataAux) { mInternalDataAux = internalDataAux; }
+    private:
+        void* mInternalData;
+        void* mInternalDataAux;
+    };
+
     //!basic template type
     template<typename ConfigType>
-    class BasicResource : public Core::RefCounted
+    class BasicResource : public IResource
     {
     public:
         explicit BasicResource(Pegasus::Alloc::IAllocator* allocator) 
             : RefCounted(allocator), mInternalData(nullptr), mInternalDataAux(nullptr)
         {
         }
-        void* GetInternalData() const { return mInternalData; }
-        void* GetInternalDataAux() const { return mInternalDataAux; }
-        void SetInternalData(void* internalData) { mInternalData = internalData; }
-        void SetInternalDataAux(void* internalDataAux) { mInternalDataAux = internalDataAux; }
-        const ConfigType& GetConfig() const { return mConfig; }
-        void SetConfig(const ConfigType& config) { mConfig = config; }
 
         //implemented by the internal API implementation
-        ~BasicResource();
+        virtual ~BasicResource();
 
+        void SetConfig(const ConfigType& config) { mConfig = config; }
     private:
-        void* mInternalData;
-        void* mInternalDataAux;
         ConfigType mConfig;
     };
 
@@ -680,12 +685,40 @@ namespace Render
 #if PEGASUS_ENABLE_RENDER_API2
 namespace Render
 {
+	class IDevice;
+
     struct BufferConfig
     {
     };
 
+    struct TextureConfig
+    {
+    };
+
+    struct ResourceTableConfig
+    {
+    };
+
+    struct GpuPipelineConfig
+    {
+    };
+
+    struct RenderTargetConfig
+    {
+    };
+
     typedef BasicResource<BufferConfig>  Buffer;
+    typedef BasicResource<TextureConfig>  Texture;
+    typedef BasicResource<ResourceTableConfig>  ResourceTable;
+	typedef BasicResource<RenderTargetConfig> RenderTarget;
+    typedef BasicResource<GpuPipelineConfig>  GpuPipeline;
+    
+    typedef Core::Ref<IResource> IResourceRef;
     typedef Core::Ref<Buffer> BufferRef;
+    typedef Core::Ref<Texture> TextureRef;
+	typedef Core::Ref<RenderTarget> RenderTargetRef;
+    typedef Core::Ref<ResourceTable> ResourceTableRef;
+    typedef Core::Ref<GpuPipeline> GpuPipelineRef;
 
     //! Starts a new marker for gpu debugging.
     //! \param marker - the marker string, null terminated.
@@ -694,9 +727,74 @@ namespace Render
     //! Ends a maker for gpu debugging.
     inline void EndMarker() {}
 
-    //! function that internally cleans any dispatched programs / shaders / meshes
-    //! from the global state.
-    inline void CleanInternalState() {}
+    typedef int InternalJobHandle;
+    const InternalJobHandle InvalidJobHandle = -1;
+    class InternalJobBuilder;
+
+    struct ResourceStateId
+    {
+        int versionId = -1;
+        int index = -1;
+    };
+
+    const ResourceStateId InvalidResourceStateId = { -1, -1 };
+
+    class GpuJob
+    {
+    public:
+        GpuJob(InternalJobHandle h, InternalJobBuilder* parent) : mParent(parent) {}
+        void SetGpuPipeline(GpuPipelineRef gpuPipeline);
+        void SetResourceTable(int spaceRegister, ResourceTableRef resourceTable);
+        void DependsOn(const GpuJob& otherJob);
+        InternalJobHandle GetInternalJobHandle() const { return mJobHandle; }
+
+    protected:
+        InternalJobBuilder* mParent;
+        InternalJobHandle mJobHandle;
+    };
+
+    class JobOutput 
+    {
+    public:
+        JobOutput(InternalJobHandle h, InternalJobBuilder* parent) : mParent(parent), mHandle(h){}
+        ResourceStateId ReadOutputIndex(int idx);
+        ResourceStateId ReadDepthOuput();
+
+    private:
+        InternalJobHandle mHandle;
+        InternalJobBuilder* mParent;
+    };
+
+    class DrawJob : public GpuJob
+    {
+    public:
+        DrawJob(InternalJobHandle h, InternalJobBuilder* parent) : GpuJob(h, parent) {}
+        void SetRenderTarget(RenderTargetRef renderTargets);
+        JobOutput Draw();
+    };
+
+    class ComputeJob : public GpuJob
+    {
+    public:
+        ComputeJob(InternalJobHandle h, InternalJobBuilder* parent) : GpuJob(h, parent) {}
+        virtual void SetUavTable(int spaceRegister, ResourceTableRef uavTable);
+        JobOutput Dispatch(unsigned x, unsigned y, unsigned z);
+    };
+
+	class JobBuilder
+	{
+	public:
+        JobBuilder(IDevice* device);
+		ResourceStateId Import(IResourceRef resourceRef);
+        GpuJob RootJob();
+        void SubmitRootJob();
+		ComputeJob CreateComputeJob();
+		DrawJob CreateDrawJob();
+
+    private:
+        InternalJobBuilder* mImpl;
+        IDevice* mDevice;
+	};
 }
 #endif
 

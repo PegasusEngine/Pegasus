@@ -87,9 +87,6 @@ Application::Application(const ApplicationConfig& config) : mConfig(config)
 
     mRenderContext = PG_NEW(renderAlloc, -1, "AppRenderContext", Alloc::PG_MEM_PERM) Render::Context(renderContextConfig);
 
-    //Initialize internal state of render library.
-    Pegasus::Render::CleanInternalState();
-
     // Set up the hierarchy of property grid class metadata gathered at compile time
     PropertyGrid::PropertyGridManager::GetInstance().ResolveInternalClassHierarchy();
     mPropertyGridManager = &PropertyGrid::PropertyGridManager::GetInstance();

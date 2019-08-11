@@ -250,9 +250,6 @@ namespace Application
         #define RES_PROCESS(type, instance, metaname, hasProperties, canUpdate) instance.Clear();
         #include "../Source/Pegasus/Application/RenderResources.inl"
         #undef RES_PROCESS
-
-        //remove any references if they exist of shaders / programs and meshes internally
-        Render::CleanInternalState();
     }
 
     RenderCollection::RenderCollection(Alloc::IAllocator* alloc, RenderCollectionFactory* factory, Core::IApplicationContext* context)

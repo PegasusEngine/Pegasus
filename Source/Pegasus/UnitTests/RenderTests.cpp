@@ -31,7 +31,7 @@ const char* testVs = R"(
 	}
 )";
 
-const char testPs = R"(
+const char* testPs = R"(
 	void psMain(in float3 n : TEXCOORD0, out float4 c : SV_Target0)
 	{
 		c = float4(n, 1.0);
@@ -118,8 +118,6 @@ bool runCreateDevice(TestHarness* harness)
 bool runCreateShader(TestHarness* harness)
 {
     RenderHarness* rh = static_cast<RenderHarness*>(harness);
-	Dx12ProgramDesc programDesc;
-	programDesc.
 	return false;
 }
 

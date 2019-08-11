@@ -42,6 +42,7 @@ struct GraphicsCardInfos
     int usedIndex = 0;
 };
 
+class Dx12GpuJobBuilder;
 class Dx12QueueManager;
 class Dx12RDMgr;
 class Dx12Texture;

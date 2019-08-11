@@ -178,6 +178,9 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12BufferPool.cpp">
       <Filter>Source\DX12</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\JobBuilder.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\Source\Pegasus\Render\DX11\DXPegasusFormat.inl">
