@@ -59,9 +59,8 @@ public:
 	~Dx12BufferPool();
     UINT CurrFrame() const { return mCurrFrameIndex; }
     void NextFrame();
-	AllocHandle Allocate(UINT size);
+	AllocHandle Allocate(UINT64 size);
 	void* GetMem(const AllocHandle& subHandle);
-	void GarbageCollect();
 
 private:
 	UINT CreateNextBuffer(UINT64 allocation);
@@ -84,12 +83,13 @@ private:
         UINT bufferSlot = 0;
         UINT64 offset = 0;
         UINT64 size = 0;
+		UINT64 alignedSize = 0;
 	};
    
     struct FrameContainer
     {
         std::vector<AllocHandle> children;
-        UINT memUsed = 0u;
+        UINT64 memUsed = 0u;
     };
 
 	Dx12Device* mDevice;

@@ -10,6 +10,33 @@
 #include "../Source/Pegasus/Render/DX12/Dx12Device.h"
 #include "../Source/Pegasus/Render/DX12/Dx12Defs.h"
 
+using namespace Pegasus::Render;
+
+const char* testVs = R"(
+	struct VsIn
+	{
+		float4 pos : POSITION0;
+		float3 n : NORMAL0;
+	};
+
+	cbuffer Constants : b0
+	{
+		float4x4 g_viewProjTransform;
+	};
+
+	void main(VsIn vsIn, out float4 p : SV_Position, out float3 normal : TEXCOORD0)
+	{
+		p = vsIn.pos * g_viewProjTransform;
+		normal = vsIn.n;
+	}
+)";
+
+const char testPs = R"(
+	void psMain(in float3 n : TEXCOORD0, out float4 c : SV_Target0)
+	{
+		c = float4(n, 1.0);
+	}
+)";
 
 using namespace Pegasus::Render;
 
@@ -91,6 +118,8 @@ bool runCreateDevice(TestHarness* harness)
 bool runCreateShader(TestHarness* harness)
 {
     RenderHarness* rh = static_cast<RenderHarness*>(harness);
+	Dx12ProgramDesc programDesc;
+	programDesc.
 	return false;
 }
 

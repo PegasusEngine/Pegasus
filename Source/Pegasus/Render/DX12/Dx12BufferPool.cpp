@@ -29,7 +29,7 @@ Dx12BufferPool::Dx12BufferPool(Dx12Device* device, const Dx12BufferPoolDesc& des
 	}
 	else if (desc.usage == Dx12BufferPoolDesc::BufferUsage)
 	{
-		mAllocAlignment = 0u;
+		mAllocAlignment = 1u;
 	}
 	else if (desc.usage == Dx12BufferPoolDesc::TextureUsage)
 	{
@@ -113,14 +113,15 @@ void Dx12BufferPool::NextFrame()
     {
         auto& allocInfo = mAllocs[h];
         auto& bufferSlot = mBufferSlots[allocInfo.bufferSlot];
-        bufferSlot.bufferSizeLeft += allocInfo.size;
+        bufferSlot.bufferSizeLeft += allocInfo.alignedSize;
         allocInfo.valid = false;
         mFreeAllocs.push_back(h);
     }
+	mFrames[mCurrFrameIndex].children.clear();
     mFrames[mCurrFrameIndex].memUsed = 0;
 }
 
-Dx12BufferPool::AllocHandle Dx12BufferPool::Allocate(UINT size)
+Dx12BufferPool::AllocHandle Dx12BufferPool::Allocate(UINT64 size)
 {
 	AllocHandle newHandle;
 	if (mFreeAllocs.empty())
@@ -134,6 +135,7 @@ Dx12BufferPool::AllocHandle Dx12BufferPool::Allocate(UINT size)
 		mFreeAllocs.pop_back();
 	}
 
+	UINT64 alignedSize = AlignByte(size, mAllocAlignment);
 	auto& newAllocInfo = mAllocs[(UINT)newHandle];
 	PG_ASSERT(newAllocInfo.valid == false);
 	newAllocInfo.valid = true;
@@ -145,25 +147,28 @@ Dx12BufferPool::AllocHandle Dx12BufferPool::Allocate(UINT size)
         if (currSlot.resource == nullptr)
             return false;
 
-        if (size <= currSlot.bufferSizeLeft)
+		UINT64 padding = 0u;
+        if (alignedSize <= currSlot.bufferSizeLeft)
         {
             UINT64 bytesLeftToEnd = currSlot.bufferSize - currSlot.curr;
-            if (size > bytesLeftToEnd)
+            if (alignedSize > bytesLeftToEnd)
             {
                 currSlot.curr = (currSlot.curr + bytesLeftToEnd) % currSlot.bufferSize;
                 currSlot.bufferSizeLeft -= bytesLeftToEnd;
+				padding = bytesLeftToEnd;
             }
         }
 
-        if (size <= currSlot.bufferSizeLeft)
+        if (alignedSize <= currSlot.bufferSizeLeft)
         {
             newAllocInfo.parentFrame = mCurrFrameIndex;
 			newAllocInfo.bufferSlot = slotId;
             newAllocInfo.offset = currSlot.curr;
-            newAllocInfo.size = size;
-            currSlot.curr = (currSlot.curr + size) % currSlot.bufferSize;
-            currSlot.bufferSizeLeft -= size;
-            mFrames[mCurrFrameIndex].memUsed += size;
+            newAllocInfo.size = size + padding;
+			newAllocInfo.alignedSize = alignedSize + padding;
+            currSlot.curr = (currSlot.curr + alignedSize) % currSlot.bufferSize;
+            currSlot.bufferSizeLeft -= alignedSize;
+            mFrames[mCurrFrameIndex].memUsed += alignedSize;
             return true;
         }
 
@@ -186,7 +191,7 @@ Dx12BufferPool::AllocHandle Dx12BufferPool::Allocate(UINT size)
 		UINT64 nextSuggestedSize = (UINT)((1.0f + (float)mNextBufferIndex * mDesc.growthFactor) * mDesc.initialSize + 0.5);
         if (nextSuggestedSize <= size)
         {
-            nextSuggestedSize += (UINT)((1.0f + mDesc.growthFactor)*size + 0.5); //heuristic ?
+            nextSuggestedSize += (UINT)((1.0f + mDesc.growthFactor)*size + 0.5f); //heuristic ?
         }
 
         UINT newSlot = CreateNextBuffer(nextSuggestedSize);

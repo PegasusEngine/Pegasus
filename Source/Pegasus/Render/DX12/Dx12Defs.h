@@ -50,5 +50,11 @@ enum Dx12PipelineType : unsigned
     Dx12_Unknown
 };
 
+template<class T>
+T AlignByte(T offset, T alignment)
+{
+	return (offset + (alignment - 1)) & ~(alignment - 1);
+}
+
 }
 }
