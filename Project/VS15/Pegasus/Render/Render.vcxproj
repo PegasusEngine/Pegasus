@@ -54,6 +54,7 @@
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLEWStaticInclude.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLShaderReflect.h" />
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\JobBuilder.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX11\DXDevice.cpp" />

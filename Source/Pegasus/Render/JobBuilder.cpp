@@ -1,51 +1,13 @@
 #include <Pegasus/Render/Render.h>
-#include <vector>
-#include <variant>
-#include <map>
-#include <set>
+#include <Pegasus/Render/IDevice.h>
+#include <Pegasus/Allocator/IAllocator.h>
+#include "JobBuilder.h"
+#include <queue>
 
 namespace Pegasus
 {
 namespace Render
 {
-
-struct ComputeCmdData
-{
-    std::vector<ResourceTableRef> uavTables;
-};
-
-struct DrawCmdData
-{
-    RenderTargetRef rt;
-};
-
-typedef std::variant<DrawCmdData, ComputeCmdData> VariantData;
-
-struct JobInstance
-{
-    InternalJobHandle handle;
-
-    std::set<InternalJobHandle> dependenciesSet;
-    std::vector<InternalJobHandle> dependenciesSorted;
-    std::vector<InternalJobHandle> childrenJobs;
-
-    GpuPipelineRef pso;
-    std::vector<ResourceTableRef> resTables;
-    VariantData data;
-};
-
-class ResourceStates
-{
-public:
-    ResourceStateId AddRootResource(IResourceRef res);
-
-private:
-    struct StateContainer
-    {
-        IResourceRef resource;
-    };
-    std::vector<StateContainer> mResStateMap;
-};
 
 ResourceStateId ResourceStates::AddRootResource(IResourceRef res)
 {
@@ -58,59 +20,39 @@ ResourceStateId ResourceStates::AddRootResource(IResourceRef res)
     return newStateId;
 }
 
-class InternalJobBuilder
-{
-public:
-
-    ComputeJob CreateComputeJob()
-    {
-        JobInstance newInstance;
-        auto outJob = NewXJob<ComputeJob>(newInstance);
-        newInstance.data = ComputeCmdData();
-        return outJob;
-    }
-
-    DrawJob CreateDrawJob()
-    {
-        JobInstance newInstance;
-        auto outJob = NewXJob<DrawJob>(newInstance);
-        newInstance.data = DrawCmdData();
-        return outJob;
-    }
-
-    ResourceStateId Import(IResourceRef resourceRef);
-
-    std::vector<JobInstance> jobTable;
-
-    ResourceStates mResStates;
-
-private:
-
-	template<class JobType>
-    JobType NewXJob(JobInstance& outInstance)
-    {
-        InternalJobHandle newHandle = InvalidJobHandle;
-        
-        if (mFreeJobs.empty())
-        {
-            newHandle = (InternalJobHandle)jobTable.size();
-            jobTable.emplace_back();
-        }
-        else
-        {
-            newHandle = mFreeJobs.back();
-            mFreeJobs.pop_back();
-        }
-        outInstance = jobTable[newHandle];
-        return JobType(newHandle, this);
-    }
-
-    std::vector<InternalJobHandle> mFreeJobs;
-};
-
 ResourceStateId InternalJobBuilder::Import(IResourceRef resourceRef)
 {
     return mResStates.AddRootResource(resourceRef);
+}
+
+void InternalJobBuilder::SubmitRootJob()
+{
+    if (jobTable.empty())
+        return;
+
+    struct NodeState
+    {
+        InternalJobHandle handle;
+    };
+
+    std::queue<NodeState> processQueue;
+    processQueue.push(NodeState{ 0u });
+
+    while (!processQueue.empty())
+    {
+        auto& state = processQueue.front();
+        processQueue.pop();
+
+        auto& jobInstance = jobTable[state.handle];
+        if (state.handle != 0)
+        {
+            //TODO: do something with hardware queue
+        }
+
+        //push children into queue
+        for (auto pHandle : jobInstance.parentJobs)
+            processQueue.push(NodeState { pHandle });
+    }
 }
 
 void GpuJob::SetGpuPipeline(GpuPipelineRef gpuPipeline)
@@ -143,7 +85,7 @@ void GpuJob::DependsOn(const GpuJob& other)
         jobInstance.dependenciesSorted.push_back(other.mJobHandle);
         PG_ASSERT(other.mJobHandle < (InternalJobHandle)mParent->jobTable.size());
         auto& parentJobInstance = mParent->jobTable[other.mJobHandle];
-        parentJobInstance.childrenJobs.push_back(other.mJobHandle);
+        parentJobInstance.parentJobs.push_back(other.mJobHandle);
     }
 }
 
@@ -191,6 +133,41 @@ ResourceStateId JobOutput::ReadOutputIndex(int idx)
 ResourceStateId JobOutput::ReadDepthOuput()
 {
     return InvalidResourceStateId;
+}
+
+JobBuilder::JobBuilder(IDevice* device)
+: mDevice(device)
+{
+    mImpl = PG_NEW(device->GetAllocator(), -1, "JobBuilderImpl", Pegasus::Alloc::PG_MEM_PERM)
+        InternalJobBuilder(device);
+}
+
+ResourceStateId JobBuilder::Import(IResourceRef resourceRef)
+{
+    return mImpl->Import(resourceRef);
+}
+
+GpuJob JobBuilder::RootJob()
+{
+    if (mImpl->jobTable.empty())
+        mImpl->jobTable.emplace_back();
+
+    return GpuJob(0u, mImpl);
+}
+
+void JobBuilder::SubmitRootJob()
+{
+    mImpl->SubmitRootJob();
+}
+
+ComputeJob JobBuilder::CreateComputeJob()
+{
+    return mImpl->CreateComputeJob();
+}
+
+DrawJob JobBuilder::CreateDrawJob()
+{
+    return mImpl->CreateDrawJob();
 }
 
 }
