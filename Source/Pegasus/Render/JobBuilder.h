@@ -27,15 +27,21 @@ typedef std::variant<DrawCmdData, ComputeCmdData> VariantData;
 
 struct JobInstance
 {
-    InternalJobHandle handle;
+    InternalJobHandle handle = InvalidJobHandle;
 
     std::set<InternalJobHandle> dependenciesSet;
     std::vector<InternalJobHandle> dependenciesSorted;
     std::vector<InternalJobHandle> parentJobs;
 
     GpuPipelineRef pso;
-    std::vector<ResourceTableRef> resTables;
+    std::vector<ItnernalTableHandle> resTables;
     VariantData data;
+};
+
+struct ResourceTableInstance
+{
+    InternalTableHandle handle = InvalidTableHandle;
+    std::vector<ResourceStateId> resources;
 };
 
 class ResourceStates
@@ -58,50 +64,32 @@ public:
 
     ComputeJob CreateComputeJob()
     {
-        JobInstance newInstance;
-        auto outJob = NewXJob<ComputeJob>(newInstance);
-        newInstance.data = ComputeCmdData();
-        return outJob;
+        InternalJobHandle h = CreateJobInstance();
+        jobTable[h].data = ComputeCmdData();
+        return ComputeJob(h, this);
     }
 
     DrawJob CreateDrawJob()
     {
-        JobInstance newInstance;
-        auto outJob = NewXJob<DrawJob>(newInstance);
-        newInstance.data = DrawCmdData();
-        return outJob;
+        InternalJobHandle h = CreateJobInstance();
+        jobTable[h].data = DrawCmdData();
+        return DrawJob(h, this);
     }
 
     ResourceStateId Import(IResourceRef resourceRef);
 
+    InternalTableHandle CreateResourceTable();
+    InternalJobHandle CreateJobInstance();
+
     void SubmitRootJob();
 
     std::vector<JobInstance> jobTable;
+    std::vector<ResourceTableInstance> resourceTables;
 
     ResourceStates mResStates;
 
 private:
 
-	template<class JobType>
-    JobType NewXJob(JobInstance& outInstance)
-    {
-        InternalJobHandle newHandle = InvalidJobHandle;
-        
-        if (mFreeJobs.empty())
-        {
-            newHandle = (InternalJobHandle)jobTable.size();
-            jobTable.emplace_back();
-        }
-        else
-        {
-            newHandle = mFreeJobs.back();
-            mFreeJobs.pop_back();
-        }
-        outInstance = jobTable[newHandle];
-        return JobType(newHandle, this);
-    }
-
-    std::vector<InternalJobHandle> mFreeJobs;
     IDevice* mDevice;
 };
 

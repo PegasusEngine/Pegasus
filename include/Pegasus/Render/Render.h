@@ -731,20 +731,37 @@ namespace Render
     const InternalJobHandle InvalidJobHandle = -1;
     class InternalJobBuilder;
 
+    typedef int InternalTableHandle;
+    const InternalTableHandle InvalidTableHandle = -1;
+
+    typedef int InternalResourceStateHandle;
+    const InternalResourceStateHandle InvalidResourceStateHandle = -1;
+
     struct ResourceStateId
     {
         int versionId = -1;
-        int index = -1;
+        InternalResourceStateHandle stateHandle = InvalidResourceStateHandle;
     };
 
     const ResourceStateId InvalidResourceStateId = { -1, -1 };
+
+    class ResourceTable
+    {
+    public:
+        ResourceTable(InternalTableHandle h, InternalJobHandle parentJob, InternalJobBuilder* parent)
+        : mParent(parent), mHandle(h), mParentJob(parentJob) {}
+        void SetResource(unsigned registerId, ResourceStateId resourceState);
+    private:
+        InternalJobBuilder* mParent;
+        InternalJobHandle mParentJob;
+        InternalTableHandle mHandle;
+    };
 
     class GpuJob
     {
     public:
         GpuJob(InternalJobHandle h, InternalJobBuilder* parent) : mParent(parent) {}
-        void SetGpuPipeline(GpuPipelineRef gpuPipeline);
-        void SetResourceTable(int spaceRegister, ResourceTableRef resourceTable);
+        ResourceTable GetResourceTable(unsigned spaceRegister);
         void DependsOn(const GpuJob& otherJob);
         InternalJobHandle GetInternalJobHandle() const { return mJobHandle; }
 

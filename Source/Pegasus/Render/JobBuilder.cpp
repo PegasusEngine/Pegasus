@@ -25,6 +25,22 @@ ResourceStateId InternalJobBuilder::Import(IResourceRef resourceRef)
     return mResStates.AddRootResource(resourceRef);
 }
 
+InternalJobHandle InternalJobBuilder::CreateJobInstance()
+{
+    InternalJobHandle newHandle = (InternalJobHandle)jobTable.size();
+    jobTable.emplace_back();
+    jobTable[newHandle].handle = newHandle;
+    return newHandle;
+}
+
+InternalTableHandle InternalJobBuilder::CreateResourceTable()
+{
+    InternalTableHandle newHandle = (InternalTableHandle)resourceTables.size();
+    resourceTables.emplace_back();
+    resourceTables[newHandle].handle = newHandle;
+    return newHandle;
+}
+
 void InternalJobBuilder::SubmitRootJob()
 {
     if (jobTable.empty())
@@ -55,6 +71,16 @@ void InternalJobBuilder::SubmitRootJob()
     }
 }
 
+void ResourceTable::SetResource(unsigned resourceRegister, ResourceStateId resourceState)
+{
+    PG_ASSERT(mHandle < (InternalJobHandle)mParent->resourceTables.size());
+    auto& tableInstance = mParent->resourceTables[mHandle];
+    if (resourceRegister >= (unsigned)tableInstance.resources.size())
+        tableInstance.resources.resize(resourceRegister + 1, InvalidResourceStateId);
+
+    tableInstance.resources[resourceRegister] = resourceState;
+}
+
 void GpuJob::SetGpuPipeline(GpuPipelineRef gpuPipeline)
 {
     PG_ASSERT(mJobHandle < (InternalJobHandle)mParent->jobTable.size());
@@ -62,16 +88,22 @@ void GpuJob::SetGpuPipeline(GpuPipelineRef gpuPipeline)
     jobInstance.pso = gpuPipeline;
 }
 
-void GpuJob::SetResourceTable(int registerSpace, ResourceTableRef resourceTable)
+ResourceTable GpuJob::GetResourceTable(unsigned registerSpace)
 {
     PG_ASSERT(mJobHandle < (InternalJobHandle)mParent->jobTable.size());
     auto& jobInstance = mParent->jobTable[mJobHandle];
-    if (registerSpace >= (int)jobInstance.resTables.size())
+    if (registerSpace >= (unsigned)jobInstance.resTables.size())
     {
-        jobInstance.resTables.resize(registerSpace + 1, nullptr);
+        jobInstance.resTables.resize(registerSpace + 1, InvalidTableHandle);
     }
 
-    jobInstance.resTables[registerSpace] = resourceTable;
+    InternalTableHandle tableHandle = jobInstance.resTables[registerSpace];
+    if (tableHandle == InvalidTableHandle)
+    {
+        tableHandle = mParent->CreateResourceTable();
+    }
+
+    return ResourceTable(tableHandle, mJobHandle, mParent);
 }
 
 void GpuJob::DependsOn(const GpuJob& other)
