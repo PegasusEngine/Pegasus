@@ -35,6 +35,7 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\RenderContextConfig.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\ShaderFactory.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\TextureFactory.h" />
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\Common\InternalJobBuilder.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX11\DXDevice.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX11\DXGpuDataDefs.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX11\DXRenderContext.h" />
@@ -57,6 +58,7 @@
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\JobBuilder.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Common\InternalJobBuilder.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX11\DXDevice.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX11\DXMeshFactory.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX11\DXRenderContext.cpp" />
@@ -82,7 +84,7 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLShaderFactory.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLShaderReflect.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLTextureFactory.cpp" />
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\JobBuilder.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Common\JobBuilder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\Source\Pegasus\Render\DX11\DXPegasusFormat.inl" />

@@ -1,17 +1,22 @@
+/****************************************************************************************/
+/*                                                                                      */
+/*                                       Pegasus                                        */
+/*                                                                                      */
+/****************************************************************************************/
+
+//! \file   InternalJobBuilder.h
+//! \author Kleber Garcia
+//! \date   August 24th, 2019
+//! \brief  Internal common platform API for job builder
+
 #pragma once
 
-#include <Pegasus/Render/Render.h>
-#include <vector>
-#include <variant>
-#include <map>
-#include <set>
+#include <Pegasus/Render/JobBuilder.h>
 
 namespace Pegasus
 {
 namespace Render
 {
-
-class IDevice;
 
 struct ComputeCmdData
 {
@@ -34,27 +39,7 @@ struct JobInstance
     std::vector<InternalJobHandle> parentJobs;
 
     GpuPipelineRef pso;
-    std::vector<ItnernalTableHandle> resTables;
     VariantData data;
-};
-
-struct ResourceTableInstance
-{
-    InternalTableHandle handle = InvalidTableHandle;
-    std::vector<ResourceStateId> resources;
-};
-
-class ResourceStates
-{
-public:
-    ResourceStateId AddRootResource(IResourceRef res);
-
-private:
-    struct StateContainer
-    {
-        IResourceRef resource;
-    };
-    std::vector<StateContainer> mResStateMap;
 };
 
 class InternalJobBuilder
@@ -76,17 +61,11 @@ public:
         return DrawJob(h, this);
     }
 
-    ResourceStateId Import(IResourceRef resourceRef);
-
-    InternalTableHandle CreateResourceTable();
     InternalJobHandle CreateJobInstance();
 
     void SubmitRootJob();
 
     std::vector<JobInstance> jobTable;
-    std::vector<ResourceTableInstance> resourceTables;
-
-    ResourceStates mResStates;
 
 private:
 

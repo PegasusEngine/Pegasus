@@ -18,6 +18,9 @@
     <Filter Include="Source\DX12">
       <UniqueIdentifier>{c73199e5-8868-44a8-bc0c-82f1006ddbb7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\Common">
+      <UniqueIdentifier>{31138dbf-5685-4a1e-bafa-f54198121a70}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\RenderContext.h">
@@ -102,7 +105,10 @@
       <Filter>Source\DX12</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\JobBuilder.h">
-      <Filter>Source</Filter>
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\Common\InternalJobBuilder.h">
+      <Filter>Source\Common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -181,8 +187,11 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12BufferPool.cpp">
       <Filter>Source\DX12</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\JobBuilder.cpp">
-      <Filter>Source</Filter>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Common\InternalJobBuilder.cpp">
+      <Filter>Source\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Common\JobBuilder.cpp">
+      <Filter>Source\Common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
