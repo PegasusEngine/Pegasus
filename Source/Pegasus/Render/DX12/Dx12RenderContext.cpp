@@ -215,7 +215,7 @@ void Dx12RenderContext::flushDrawState()
     {
         auto& table = state->tables[spaceId];
         UINT tableId;
-        if (!state->pso->SpaceToTableId(spaceId, table->GetDesc().type, tableId))
+        if (!state->pso->SpaceToTableId(spaceId, table->GetConfig().type == ResourceTableType_Srv ? Dx12_ResSrv : Dx12_ResUav, tableId))
         {
             PG_LOG('ERR_', "No space id found %d.", spaceId);
             continue;
@@ -234,7 +234,7 @@ void Dx12RenderContext::flushDrawState()
 				D3D12_RESOURCE_BARRIER barrier;
                 barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
                 barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-                barrier.Transition.pResource = dx12Resource->GetD3D();
+                barrier.Transition.pResource = const_cast<Dx12Resource*>(dx12Resource)->GetD3D();
                 barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
                 barrier.Transition.StateBefore = dx12Resource->GetState(0u);
                 barrier.Transition.StateAfter = targetState;

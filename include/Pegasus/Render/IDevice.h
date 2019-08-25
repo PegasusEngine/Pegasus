@@ -61,7 +61,7 @@ public:
     ResourceTableRef CreateResourceTable(const ResourceTableConfig& config);
     GpuPipelineRef CreateGpuPipeline(const GpuPipelineConfig& config);
 
-    const ResourceLookupTable* GetResourceTable() const { return mResourceLookupTable; }
+    ResourceLookupTable* GetResourceTable() const { return mResourceLookupTable; }
 
 protected:
     //! constructor, which creates the device
@@ -70,11 +70,11 @@ protected:
     IDevice(const DeviceConfig& config, Alloc::IAllocator * allocator);
     virtual ~IDevice();
 
-    virtual BufferRef InternalCreateBuffer(ResourceLookupTable* rlt, const BufferConfig& config) = 0;
-    virtual TextureRef InternalCreateTexture(ResourceLookupTable* rlt, const TextureConfig& config) = 0;
-    virtual RenderTargetRef InternalCreateRenderTarget(ResourceLookupTable* rlt, const RenderTargetConfig& config) = 0;
-    virtual ResourceTableRef InternalCreateResourceTable(ResourceLookupTable* rlt, const ResourceTableConfig& config) = 0;
-    virtual GpuPipelineRef InternalCreateGpuPipeline(ResourceLookupTable* rlt, const GpuPipelineConfig& config) = 0;
+    virtual BufferRef InternalCreateBuffer(const BufferConfig& config) = 0;
+    virtual TextureRef InternalCreateTexture(const TextureConfig& config) = 0;
+    virtual RenderTargetRef InternalCreateRenderTarget(const RenderTargetConfig& config) = 0;
+    virtual ResourceTableRef InternalCreateResourceTable(const ResourceTableConfig& config) = 0;
+    virtual GpuPipelineRef InternalCreateGpuPipeline(const GpuPipelineConfig& config) = 0;
 
 private:
     Alloc::IAllocator * mAllocator;

@@ -146,47 +146,39 @@ Dx12Device::~Dx12Device()
 #endif
 }
 
-Dx12TextureRef Dx12Device::CreateTexture(const TextureDesc& desc)
-{
-	Dx12TextureRef texRef =  D12_NEW(mAllocator, "Dx12Texture") Dx12Texture(desc, this);
-	texRef->init();
-	return texRef;
-}
-
-Dx12BufferRef Dx12Device::CreateBuffer(const BufferDesc& desc)
-{
-	Dx12BufferRef buff = D12_NEW(mAllocator, "Dx12Buffer") Dx12Buffer(desc, this);
-	buff->init();
-	return buff;
-}
-
 Dx12GpuProgramRef Dx12Device::CreateGpuProgram()
 {
 	Dx12GpuProgramRef prog = D12_NEW(mAllocator, "Dx12GpuProgram") Dx12GpuProgram(this);
 	return prog;
 }
 
-BufferRef Dx12Device::InternalCreateBuffer(ResourceLookupTable* rlt, const BufferConfig& config)
+BufferRef Dx12Device::InternalCreateBuffer(const BufferConfig& config)
 {
+	Dx12BufferRef buff = D12_NEW(mAllocator, "Dx12Buffer") Dx12Buffer(config, this);
+	buff->init();
+	return buff;
+}
+
+TextureRef Dx12Device::InternalCreateTexture(const TextureConfig& config)
+{
+	Dx12TextureRef texRef =  D12_NEW(mAllocator, "Dx12Texture") Dx12Texture(config, this);
+	texRef->init();
+	return texRef;
+}
+
+RenderTargetRef Dx12Device::InternalCreateRenderTarget(const RenderTargetConfig& config)
+{
+    Dx12RenderTargetRef rtRef = D12_NEW(mAllocator, "Dx12RenderTarget") Dx12RenderTarget(config, this);
     return nullptr;
 }
 
-TextureRef Dx12Device::InternalCreateTexture(ResourceLookupTable* rlt, const TextureConfig& config)
+ResourceTableRef Dx12Device::InternalCreateResourceTable(const ResourceTableConfig& config)
 {
-    return nullptr;
+	Dx12ResourceTableRef resTable =  D12_NEW(mAllocator, "Dx12Texture") Dx12ResourceTable(config, this);
+	return resTable;
 }
 
-RenderTargetRef Dx12Device::InternalCreateRenderTarget(ResourceLookupTable* rlt, const RenderTargetConfig& config)
-{
-    return nullptr;
-}
-
-ResourceTableRef Dx12Device::InternalCreateResourceTable(ResourceLookupTable* rlt, const ResourceTableConfig& config)
-{
-    return nullptr;
-}
-
-GpuPipelineRef Dx12Device::InternalCreateGpuPipeline(ResourceLookupTable* rlt, const GpuPipelineConfig& config)
+GpuPipelineRef Dx12Device::InternalCreateGpuPipeline(const GpuPipelineConfig& config)
 {
     return nullptr;
 }

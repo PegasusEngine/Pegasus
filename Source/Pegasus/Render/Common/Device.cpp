@@ -24,31 +24,34 @@ IDevice::IDevice(const DeviceConfig& config, Alloc::IAllocator* allocator)
 
 BufferRef IDevice::CreateBuffer(const BufferConfig& config)
 {
-    return InternalCreateBuffer(mResourceLookupTable, config);
+    return InternalCreateBuffer(config);
 }
 
 TextureRef IDevice::CreateTexture(const TextureConfig& config)
 {
-    return InternalCreateTexture(mResourceLookupTable, config);
+    return InternalCreateTexture(config);
 }
 
 RenderTargetRef IDevice::CreateRenderTarget(const RenderTargetConfig& config)
 {
-    return InternalCreateRenderTarget(mResourceLookupTable, config);
+    return InternalCreateRenderTarget(config);
 }
 
 ResourceTableRef IDevice::CreateResourceTable(const ResourceTableConfig& config)
 {
-    return InternalCreateResourceTable(mResourceLookupTable, config);
+    return InternalCreateResourceTable(config);
 }
 
 GpuPipelineRef IDevice::CreateGpuPipeline(const GpuPipelineConfig& config)
 {
-    return InternalCreateGpuPipeline(mResourceLookupTable, config);
+    return InternalCreateGpuPipeline(config);
 }
 
-IResource::IResource(Alloc::IAllocator* allocator, ResourceType resourceType, ResourceLookupTable* rlt)
-: mResourceLookupTable(rlt), mAllocator(allocator), mResourceType(resourceType), RefCounted(allocator)
+IResource::IResource(IDevice* device, ResourceType resourceType)
+: mResourceLookupTable(device->GetResourceTable()),
+  mAllocator(device->GetAllocator()),
+  mResourceType(resourceType),
+  RefCounted(device->GetAllocator())
 {
 }
 

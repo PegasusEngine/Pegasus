@@ -69,16 +69,13 @@ public:
     Io::IOManager* GetIOMgr() { return mIOManager; }
     Alloc::IAllocator* GetAllocator() { return mAllocator; }
 
-    Core::Ref<Dx12Texture> CreateTexture(const TextureDesc& desc);
-	Core::Ref<Dx12Buffer> CreateBuffer(const BufferDesc& desc);
 	Core::Ref<Dx12GpuProgram> CreateGpuProgram();
 
-public:
-    virtual BufferRef InternalCreateBuffer(ResourceLookupTable* rlt, const BufferConfig& config);
-    virtual TextureRef InternalCreateTexture(ResourceLookupTable* rlt, const TextureConfig& config);
-    virtual RenderTargetRef InternalCreateRenderTarget(ResourceLookupTable* rlt, const RenderTargetConfig& config);
-    virtual ResourceTableRef InternalCreateResourceTable(ResourceLookupTable* rlt, const ResourceTableConfig& config);
-    virtual GpuPipelineRef InternalCreateGpuPipeline(ResourceLookupTable* rlt, const GpuPipelineConfig& config);
+    virtual BufferRef InternalCreateBuffer(const BufferConfig& config);
+    virtual TextureRef InternalCreateTexture(const TextureConfig& config);
+    virtual RenderTargetRef InternalCreateRenderTarget(const RenderTargetConfig& config);
+    virtual ResourceTableRef InternalCreateResourceTable(const ResourceTableConfig& config);
+    virtual GpuPipelineRef InternalCreateGpuPipeline(const GpuPipelineConfig& config);
 
 private:
 
