@@ -11,6 +11,7 @@
 
 #pragma once
 
+#include <Pegasus/Render/Render.h>
 #include <Pegasus/Core/Formats.h>
 #include <Pegasus/Core/RefCounted.h>
 #include <Pegasus/Core/Ref.h>
@@ -90,10 +91,10 @@ struct BufferDesc : public ResourceDesc
 struct ResourceTableDesc
 {
     Dx12ResType type = Dx12_ResSrv;
-    std::vector<Core::Ref<Dx12Resource>> resources;
+    std::vector< Core::Ref<IResource> > resources;
 };
 
-class Dx12Resource : public Core::RefCounted
+class Dx12Resource
 {
     friend class Dx12ResourceTable;
 public:
@@ -104,6 +105,9 @@ public:
     D3D12_RESOURCE_STATES GetState (UINT subresourceIdx) const;
     void SetState(UINT subresourceIdx, D3D12_RESOURCE_STATES state);
     virtual void init();
+
+    static Dx12Resource* GetDx12Resource(IResource* res);
+    static const Dx12Resource* GetDx12Resource(const IResource* res);
 
 private:
     ResourceDesc mDesc;
@@ -126,7 +130,7 @@ protected:
     std::vector<D3D12_RESOURCE_STATES> mStates;
 };
 
-class Dx12Texture : public Dx12Resource
+class Dx12Texture : public Dx12Resource, public Pegasus::Render::Texture
 {
 public:
     Dx12Texture(const TextureDesc& desc, Dx12Device* device);
@@ -141,7 +145,7 @@ private:
     TextureDesc mDesc;
 };
 
-class Dx12Buffer : public Dx12Resource
+class Dx12Buffer : public Dx12Resource, public Pegasus::Render::Buffer
 {
 public:
     Dx12Buffer(const BufferDesc& desc, Dx12Device* device);
@@ -152,14 +156,14 @@ private:
     BufferDesc mDesc;
 };
 
-class Dx12ResourceTable : public Core::RefCounted
+class Dx12ResourceTable : public Pegasus::Render::ResourceTable
 {
 public:
     friend class Dx12RenderContext;
     Dx12ResourceTable(const ResourceTableDesc& desc, Dx12Device* device);
     ~Dx12ResourceTable();
     const ResourceTableDesc& GetDesc() const { return mDesc; }
-    std::vector<Core::Ref<Dx12Resource>>& GetResources() { return mDesc.resources; }
+    std::vector< Core::Ref<IResource> >& GetResources() { return mDesc.resources; }
 
 private:
     Dx12RDMgr::Table mTable;   
@@ -169,7 +173,7 @@ private:
 
 typedef Core::Ref<Dx12Texture> Dx12TextureRef;
 typedef Core::Ref<Dx12Buffer> Dx12BufferRef;
-typedef Core::Ref<Dx12Resource> Dx12ResourceRef;
+typedef Core::Ref<IResourceRef> Dx12ResourceRef;
 typedef Core::Ref<Dx12ResourceTable> Dx12ResourceTableRef;
 
 }

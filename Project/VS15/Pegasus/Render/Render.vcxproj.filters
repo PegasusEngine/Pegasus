@@ -193,6 +193,9 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Common\JobBuilder.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Common\Device.cpp">
+      <Filter>Source\Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\Source\Pegasus\Render\DX11\DXPegasusFormat.inl">

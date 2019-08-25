@@ -58,6 +58,7 @@
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\JobBuilder.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Common\Device.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Common\InternalJobBuilder.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX11\DXDevice.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX11\DXMeshFactory.cpp" />

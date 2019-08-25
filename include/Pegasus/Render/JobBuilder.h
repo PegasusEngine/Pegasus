@@ -24,6 +24,11 @@ namespace Render
 {
 
 class IDevice;
+class InternalJobBuilder;
+
+typedef int InternalJobHandle;
+const InternalJobHandle InvalidJobHandle = -1;
+class InternalJobBuilder;
 
 class GpuJob
 {
@@ -51,7 +56,7 @@ class ComputeJob : public GpuJob
 {
 public:
     ComputeJob(InternalJobHandle h, InternalJobBuilder* parent) : GpuJob(h, parent) {}
-    virtual void SetUavTable(int spaceRegister, ResourceTableRef uavTable);
+    virtual void SetUavTable(unsigned spaceRegister, ResourceTableRef uavTable);
     void Dispatch(unsigned x, unsigned y, unsigned z);
 };
 

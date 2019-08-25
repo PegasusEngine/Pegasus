@@ -228,14 +228,15 @@ void Dx12RenderContext::flushDrawState()
         for (auto& res : table->GetResources())
         {
             const auto targetState = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE |  D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-            if (res->GetState(0u) != targetState)
+            auto* dx12Resource = Dx12Resource::GetDx12Resource(&(*res));
+            if (dx12Resource->GetState(0u) != targetState)
             {
 				D3D12_RESOURCE_BARRIER barrier;
                 barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
                 barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-                barrier.Transition.pResource = res->GetD3D();
+                barrier.Transition.pResource = dx12Resource->GetD3D();
                 barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-                barrier.Transition.StateBefore = res->GetState(0u);
+                barrier.Transition.StateBefore = dx12Resource->GetState(0u);
                 barrier.Transition.StateAfter = targetState;
 				barriers.push_back(barrier);
             }

@@ -43,17 +43,28 @@ void GpuJob::DependsOn(const GpuJob& other)
     }
 }
 
-void ComputeJob::SetUavTable(int registerSpace, ResourceTableRef uavTable)
+void GpuJob::SetResourceTable(unsigned spaceRegister, ResourceTableRef resourceTable)
+{
+    PG_ASSERT(mJobHandle < (InternalJobHandle)mParent->jobTable.size());
+    auto& jobInstance = mParent->jobTable[mJobHandle];
+    if (spaceRegister >= (unsigned)jobInstance.srvTables.size())
+    {
+        jobInstance.srvTables.resize(spaceRegister + 1, nullptr);
+    }
+    
+}
+
+void ComputeJob::SetUavTable(unsigned spaceRegister, ResourceTableRef uavTable)
 {
     PG_ASSERT(mJobHandle < (InternalJobHandle)mParent->jobTable.size());
     auto& jobInstance = mParent->jobTable[mJobHandle];
     if (auto* data = std::get_if<ComputeCmdData>(&jobInstance.data))
     {
-        if (registerSpace >= (int)data->uavTables.size())
+        if (spaceRegister >= (unsigned)data->uavTables.size())
         {
-            data->uavTables.resize(registerSpace + 1, nullptr);
+            data->uavTables.resize(spaceRegister + 1, nullptr);
         }
-        data->uavTables[registerSpace] = uavTable;
+        data->uavTables[spaceRegister] = uavTable;
     }
 }
 

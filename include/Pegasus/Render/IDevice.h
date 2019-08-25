@@ -10,6 +10,7 @@
 //! \brief  Class that encapsulates a drawing device
 
 #include "Pegasus/Core/Shared/OsDefs.h"
+#include <Pegasus/Render/Render.h>
 
 #ifndef PEGASUS_RENDER_DEVICE
 #define PEGASUS_RENDER_DEVICE
@@ -33,6 +34,8 @@ namespace Pegasus
 namespace Render
 {
 
+class ResourceLookupTable;
+
 //! Device configuration. Might vary per OS
 struct DeviceConfig
 {
@@ -43,9 +46,6 @@ struct DeviceConfig
 class IDevice
 {
 public:
-    //! destructor
-    virtual ~IDevice(){}
-
     //! Gets the config of this device
     const DeviceConfig& GetConfig() const { return mConfig; }
     
@@ -55,17 +55,31 @@ public:
     //! Global function that creats the device specific to a platform
     static IDevice * CreatePlatformDevice(const DeviceConfig& config, Alloc::IAllocator * allocator);
 
+    BufferRef CreateBuffer(const BufferConfig& config);
+    TextureRef CreateTexture(const TextureConfig& config);
+    RenderTargetRef CreateRenderTarget(const RenderTargetConfig& config);
+    ResourceTableRef CreateResourceTable(const ResourceTableConfig& config);
+    GpuPipelineRef CreateGpuPipeline(const GpuPipelineConfig& config);
+
+    const ResourceLookupTable* GetResourceTable() const { return mResourceLookupTable; }
 
 protected:
     //! constructor, which creates the device
     //! \param config configuration stored
     //! \param allocator the allocator for internal use
-    IDevice(const DeviceConfig& config, Alloc::IAllocator * allocator) 
-    : mConfig(config), mAllocator(allocator) {}
+    IDevice(const DeviceConfig& config, Alloc::IAllocator * allocator);
+    virtual ~IDevice();
+
+    virtual BufferRef InternalCreateBuffer(ResourceLookupTable* rlt, const BufferConfig& config) = 0;
+    virtual TextureRef InternalCreateTexture(ResourceLookupTable* rlt, const TextureConfig& config) = 0;
+    virtual RenderTargetRef InternalCreateRenderTarget(ResourceLookupTable* rlt, const RenderTargetConfig& config) = 0;
+    virtual ResourceTableRef InternalCreateResourceTable(ResourceLookupTable* rlt, const ResourceTableConfig& config) = 0;
+    virtual GpuPipelineRef InternalCreateGpuPipeline(ResourceLookupTable* rlt, const GpuPipelineConfig& config) = 0;
 
 private:
     Alloc::IAllocator * mAllocator;
     DeviceConfig mConfig;
+    ResourceLookupTable* mResourceLookupTable;
 };
 
 }

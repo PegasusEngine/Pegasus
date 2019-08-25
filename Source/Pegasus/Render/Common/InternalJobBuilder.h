@@ -34,6 +34,8 @@ struct JobInstance
 {
     InternalJobHandle handle = InvalidJobHandle;
 
+    std::vector<ResourceTableRef> srvTables;
+
     std::set<InternalJobHandle> dependenciesSet;
     std::vector<InternalJobHandle> dependenciesSorted;
     std::vector<InternalJobHandle> parentJobs;

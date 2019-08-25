@@ -166,6 +166,32 @@ Dx12GpuProgramRef Dx12Device::CreateGpuProgram()
 	return prog;
 }
 
+BufferRef Dx12Device::InternalCreateBuffer(ResourceLookupTable* rlt, const BufferConfig& config)
+{
+    return nullptr;
+}
+
+TextureRef Dx12Device::InternalCreateTexture(ResourceLookupTable* rlt, const TextureConfig& config)
+{
+    return nullptr;
+}
+
+RenderTargetRef Dx12Device::InternalCreateRenderTarget(ResourceLookupTable* rlt, const RenderTargetConfig& config)
+{
+    return nullptr;
+}
+
+ResourceTableRef Dx12Device::InternalCreateResourceTable(ResourceLookupTable* rlt, const ResourceTableConfig& config)
+{
+    return nullptr;
+}
+
+GpuPipelineRef Dx12Device::InternalCreateGpuPipeline(ResourceLookupTable* rlt, const GpuPipelineConfig& config)
+{
+    return nullptr;
+}
+
+
 //! platform implementation of device
 IDevice * IDevice::CreatePlatformDevice(const DeviceConfig& config, Alloc::IAllocator * allocator)
 {

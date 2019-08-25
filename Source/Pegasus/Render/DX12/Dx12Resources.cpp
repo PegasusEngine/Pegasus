@@ -77,7 +77,7 @@ DXGI_FORMAT GetDxFormat(Pegasus::Core::Format format)
 };
 
 Dx12Resource::Dx12Resource(const ResourceDesc& desc, Dx12Device* device)
-: mDesc(desc), mDevice(device), Core::RefCounted(device->GetAllocator())
+: mDesc(desc), mDevice(device)
 {
     {
         mData.srvDesc = {};
@@ -185,8 +185,48 @@ void Dx12Resource::SetState(UINT subresourceIdx, D3D12_RESOURCE_STATES state)
     mStates[subresourceIdx] = state;
 }
 
+Dx12Resource* Dx12Resource::GetDx12Resource(IResource* res)
+{
+    for (int resId = 0; resId < (int)ResourceType::Count; ++resId)
+    {
+        if ((int)res->GetType() == resId)
+        {
+            switch(resId)
+            {
+            case ResourceType::Texture:
+                return static_cast<Dx12Texture*>(res);
+            case ResourceType::Buffer:
+                return static_cast<Dx12Buffer*>(res);
+            }
+        }
+    }
+
+    PG_FAILSTR("Cant convert incoming IResource to Dx12Resource");
+    return nullptr;
+}
+
+const Dx12Resource* Dx12Resource::GetDx12Resource(const IResource* res)
+{
+    for (int resId = 0; resId < (int)ResourceType::Count; ++resId)
+    {
+        if ((int)res->GetType() == resId)
+        {
+            switch(resId)
+            {
+            case ResourceType::Texture:
+                return static_cast<const Dx12Texture*>(res);
+            case ResourceType::Buffer:
+                return static_cast<const Dx12Buffer*>(res);
+            }
+        }
+    }
+
+    PG_FAILSTR("Cant convert incoming const IResource to const Dx12Resource");
+    return nullptr;
+}
+
 Dx12Texture::Dx12Texture(const TextureDesc& desc, Dx12Device* device)
-: mDesc(desc), Dx12Resource(desc, device)
+: mDesc(desc), Texture(nullptr, device->GetAllocator()), Dx12Resource(desc, device)
 {
 
     D3D12_RESOURCE_DIMENSION dim = D3D12_RESOURCE_DIMENSION_UNKNOWN;
@@ -351,7 +391,7 @@ void Dx12Texture::init()
 }
 
 Dx12Buffer::Dx12Buffer(const BufferDesc& desc, Dx12Device* device)
-: mDesc(desc), Dx12Resource(desc, device)
+: mDesc(desc), Buffer(nullptr, device->GetAllocator()), Dx12Resource(desc, device)
 {
     if (!!(mDesc.bindFlags & BindFlags_Srv))
     {
@@ -400,7 +440,7 @@ void Dx12Buffer::init()
 }
 
 Dx12ResourceTable::Dx12ResourceTable(const ResourceTableDesc& desc, Dx12Device* device)
-: Core::RefCounted(device->GetAllocator())
+: ResourceTable(nullptr, device->GetAllocator())
 {
     PG_ASSERT(desc.type == Dx12_ResSrv || desc.type == Dx12_ResUav);
     mRdMgr = device->GetRDMgr();
@@ -409,9 +449,10 @@ Dx12ResourceTable::Dx12ResourceTable(const ResourceTableDesc& desc, Dx12Device* 
     handles.reserve(desc.resources.size());
     for (const auto& resource : desc.resources)
     {
-        PG_ASSERT(desc.type != Dx12_ResSrv || (resource->mDesc.bindFlags & BindFlags_Srv) != 0);
-        PG_ASSERT(desc.type != Dx12_ResUav || (resource->mDesc.bindFlags & BindFlags_Uav) != 0);
-        handles.push_back(desc.type == Dx12_ResUav ? resource->mUavHandle : resource->mSrvHandle);
+        auto* dx12Resource = Dx12Resource::GetDx12Resource(&(*resource));
+        PG_ASSERT(desc.type != Dx12_ResSrv || (dx12Resource->mDesc.bindFlags & BindFlags_Srv) != 0);
+        PG_ASSERT(desc.type != Dx12_ResUav || (dx12Resource->mDesc.bindFlags & BindFlags_Uav) != 0);
+        handles.push_back(desc.type == Dx12_ResUav ? dx12Resource->mUavHandle : dx12Resource->mSrvHandle);
     }
 
     mTable = mRdMgr->AllocateTable(Dx12RDMgr::TableTypeSrvCbvUav, handles.data(), (UINT)handles.size());

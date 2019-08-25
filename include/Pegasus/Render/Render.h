@@ -37,81 +37,104 @@ namespace Pegasus
 namespace Render
 {
 
-    class IResource : public Core::RefCounted
+enum class ResourceType : int
+{
+    Texture,
+    Buffer,
+    ResourceTable,
+    RenderTarget,
+    GpuPipeline,
+    Count
+};
+
+class ResourceLookupTable;
+
+class IResource : public Core::RefCounted
+{
+public:
+    unsigned GetOpaqueId() const { return m_opaqueId; }
+    virtual ~IResource();
+
+    ResourceType GetType() const { return mResourceType; }
+
+protected:
+    IResource(Alloc::IAllocator* allocator, ResourceType resType, ResourceLookupTable* resourceLookupTable);
+
+private:
+    unsigned m_opaqueId;
+    const ResourceType mResourceType;
+    ResourceLookupTable* mResourceLookupTable;
+    Alloc::IAllocator* mAllocator;
+};
+
+template<typename T>
+ResourceType GetResourceType();
+
+//!basic template type
+template<typename ConfigType>
+class BasicResource : public IResource
+{
+public:
+    virtual ~BasicResource() {}
+    void SetConfig(const ConfigType& config) { mConfig = config; }
+
+protected:
+    BasicResource(ResourceLookupTable* parentTable, Pegasus::Alloc::IAllocator* allocator)
+        : IResource(allocator, GetResourceType<ConfigType>(), parentTable)
     {
-    public:
-        void* GetInternalData() const { return mInternalData; }
-        void* GetInternalDataAux() const { return mInternalDataAux; }
-        void SetInternalData(void* internalData) { mInternalData = internalData; }
-        void SetInternalDataAux(void* internalDataAux) { mInternalDataAux = internalDataAux; }
-    private:
-        void* mInternalData;
-        void* mInternalDataAux;
-    };
+    }
 
-    //!basic template type
-    template<typename ConfigType>
-    class BasicResource : public IResource
-    {
-    public:
-        explicit BasicResource(Pegasus::Alloc::IAllocator* allocator) 
-            : RefCounted(allocator), mInternalData(nullptr), mInternalDataAux(nullptr)
-        {
-        }
+private:
+    ConfigType mConfig;
+};
 
-        //implemented by the internal API implementation
-        virtual ~BasicResource();
+class IDevice;
 
-        void SetConfig(const ConfigType& config) { mConfig = config; }
-    private:
-        ConfigType mConfig;
-    };
+struct BufferConfig
+{
+};
 
-	class IDevice;
+struct TextureConfig
+{
+};
 
-    struct BufferConfig
-    {
-    };
+struct ResourceTableConfig
+{
+};
 
-    struct TextureConfig
-    {
-    };
+struct GpuPipelineConfig
+{
+};
 
-    struct ResourceTableConfig
-    {
-    };
+struct RenderTargetConfig
+{
+};
 
-    struct GpuPipelineConfig
-    {
-    };
+template<> inline ResourceType GetResourceType<BufferConfig>() { return ResourceType::Buffer; }
+template<> inline ResourceType GetResourceType<TextureConfig>() { return ResourceType::Texture; }
+template<> inline ResourceType GetResourceType<ResourceTableConfig>() { return ResourceType::ResourceTable; }
+template<> inline ResourceType GetResourceType<GpuPipelineConfig>() { return ResourceType::GpuPipeline; }
+template<> inline ResourceType GetResourceType<RenderTargetConfig>() { return ResourceType::RenderTarget; }
 
-    struct RenderTargetConfig
-    {
-    };
+typedef BasicResource<BufferConfig>  Buffer;
+typedef BasicResource<TextureConfig>  Texture;
+typedef BasicResource<ResourceTableConfig>  ResourceTable;
+typedef BasicResource<RenderTargetConfig> RenderTarget;
+typedef BasicResource<GpuPipelineConfig>  GpuPipeline;
 
-    typedef BasicResource<BufferConfig>  Buffer;
-    typedef BasicResource<TextureConfig>  Texture;
-    typedef BasicResource<ResourceTableConfig>  ResourceTable;
-	typedef BasicResource<RenderTargetConfig> RenderTarget;
-    typedef BasicResource<GpuPipelineConfig>  GpuPipeline;
-    
-    typedef Core::Ref<IResource> IResourceRef;
-    typedef Core::Ref<Buffer> BufferRef;
-    typedef Core::Ref<Texture> TextureRef;
-	typedef Core::Ref<RenderTarget> RenderTargetRef;
-    typedef Core::Ref<ResourceTable> ResourceTableRef;
-    typedef Core::Ref<GpuPipeline> GpuPipelineRef;
+typedef Core::Ref<IResource> IResourceRef;
+typedef Core::Ref<Buffer> BufferRef;
+typedef Core::Ref<Texture> TextureRef;
+typedef Core::Ref<RenderTarget> RenderTargetRef;
+typedef Core::Ref<ResourceTable> ResourceTableRef;
+typedef Core::Ref<GpuPipeline> GpuPipelineRef;
 
-    //! Starts a new marker for gpu debugging.
-    //! \param marker - the marker string, null terminated.
-    inline void BeginMarker(const char* marker) {}
+//! Starts a new marker for gpu debugging.
+//! \param marker - the marker string, null terminated.
+inline void BeginMarker(const char* marker) {}
 
-    //! Ends a maker for gpu debugging.
-    inline void EndMarker() {}
-
-    typedef int InternalJobHandle;
-    const InternalJobHandle InvalidJobHandle = -1;
-    class InternalJobBuilder;
+//! Ends a maker for gpu debugging.
+inline void EndMarker() {}
 
 }
 
