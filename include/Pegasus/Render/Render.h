@@ -20,6 +20,8 @@
 #include "Pegasus/Core/RefCounted.h"
 #include "Pegasus/Core/Ref.h"
 #include "Pegasus/Core/Formats.h"
+#include "Pegasus/Core/Io.h"
+#include "Pegasus/Core/Shared/EventDefs.h"
 
 #include <string>
 #include <vector>
@@ -133,6 +135,18 @@ enum ResourceTableType
     ResourceTableType_Uav
 };
 
+enum PipelineType : unsigned
+{
+    Pipeline_Vertex,
+    Pipeline_Pixel,
+    Pipeline_Domain,
+    Pipeline_Hull,
+    Pipeline_Geometry,
+    Pipeline_Compute,
+    Pipeline_Max,
+    Pipeline_Unknown
+};
+
 struct ResourceConfig
 {
     std::string name;
@@ -165,6 +179,7 @@ struct ResourceTableConfig
 
 struct GpuPipelineConfig
 {
+    Core::Ref<IProgram> program;
 };
 
 
@@ -195,6 +210,29 @@ struct RenderTargetConfig
 typedef BasicResource<RenderTargetConfig> RenderTarget;
 template<> inline ResourceType GetResourceType<RenderTargetConfig>() { return ResourceType::RenderTarget; }
 typedef Core::Ref<RenderTarget> RenderTargetRef;
+
+struct ProgramDesc
+{
+    Io::FileBuffer fileBuffer;
+    std::string mainNames[Pipeline_Max];
+};
+
+class IProgram : public RefCounted
+{
+public:
+    PEGASUS_EVENT_DECLARE_DISPATCHER(Pegasus::Core::CompilerEvents::ICompilerEventListener)
+
+    virtual bool Compile(const ProgramDesc& shaderDesc) = 0;
+    virtual const ProgramDesc& GetDesc() const = 0;
+    virtual bool IsValid() = 0;
+
+protected:
+    virtual void InvalidateData() = 0;
+
+    IProgram(IDevice* device);
+    virtual ~IProgram();
+    IDevice* mDevice;
+};
 
 //! Starts a new marker for gpu debugging.
 //! \param marker - the marker string, null terminated.
