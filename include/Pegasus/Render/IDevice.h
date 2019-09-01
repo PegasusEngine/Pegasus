@@ -34,7 +34,7 @@ namespace Pegasus
 namespace Render
 {
 
-class ResourceLookupTable;
+class ResourceStateTable;
 
 //! Device configuration. Might vary per OS
 struct DeviceConfig
@@ -60,8 +60,9 @@ public:
     RenderTargetRef CreateRenderTarget(const RenderTargetConfig& config);
     ResourceTableRef CreateResourceTable(const ResourceTableConfig& config);
     GpuPipelineRef CreateGpuPipeline(const GpuPipelineConfig& config);
+    ProgramRef CreateProgram();
 
-    ResourceLookupTable* GetResourceTable() const { return mResourceLookupTable; }
+    ResourceStateTable* GetResourceStateTable() const { return mResourceStateTable; }
 
 protected:
     //! constructor, which creates the device
@@ -75,11 +76,12 @@ protected:
     virtual RenderTargetRef InternalCreateRenderTarget(const RenderTargetConfig& config) = 0;
     virtual ResourceTableRef InternalCreateResourceTable(const ResourceTableConfig& config) = 0;
     virtual GpuPipelineRef InternalCreateGpuPipeline(const GpuPipelineConfig& config) = 0;
+    virtual ProgramRef InternalCreateProgram(const GpuPipelineConfig& config) = 0;
 
 private:
     Alloc::IAllocator * mAllocator;
     DeviceConfig mConfig;
-    ResourceLookupTable* mResourceLookupTable;
+    ResourceStateTable* mResourceStateTable;
 };
 
 }

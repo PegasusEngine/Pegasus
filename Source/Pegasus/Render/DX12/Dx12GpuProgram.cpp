@@ -385,15 +385,8 @@ bool Dx12GpuProgram::IsValid() const
     return mData != nullptr && mData->rootSignature != nullptr;
 }
 
-bool Dx12GpuProgram::Compile(const Dx12ProgramDesc& desc)
+bool Dx12GpuProgram::Compile(const ProgramDesc& desc)
 {
-    mDesc = desc;
-
-    auto* ioManager = mDevice->GetIOMgr();
-    Io::FileBuffer shaderBuffer;
-    Io::IoError err = ioManager->OpenFileToBuffer(desc.filename.c_str(), shaderBuffer, true, mDevice->GetAllocator());
-    PG_ASSERTSTR(err == Io::ERR_NONE, "Error opening test shader \"%s\". Error Code: %d", desc.filename.c_str(), err);
-
     auto compileShader = [&](Dx12ShaderBlob& blob, const char* src, int srcSize, const char* mainFn, Dx12PipelineType pipelineType)
     {
         ID3DBlob* errBlob = nullptr;
@@ -461,8 +454,8 @@ bool Dx12GpuProgram::Compile(const Dx12ProgramDesc& desc)
         {
             Dx12ShaderBlob shaderblob; 
             bool result = compileShader(
-                shaderblob, shaderBuffer.GetBuffer(),
-                shaderBuffer.GetFileSize(), desc.mainNames[pipelineIdx].c_str(),
+                shaderblob, desc.fileBuffer.GetBuffer(),
+                desc.fileBuffer.GetFileSize(), desc.mainNames[pipelineIdx].c_str(),
                 (Dx12PipelineType)pipelineIdx);
             if (result)
             {

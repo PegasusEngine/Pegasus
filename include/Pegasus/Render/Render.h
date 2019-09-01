@@ -42,7 +42,7 @@ namespace Pegasus
 namespace Render
 {
 
-class ResourceLookupTable;
+class ResourceStateTable;
 class IDevice;
 
 enum class ResourceType : int
@@ -58,7 +58,9 @@ enum class ResourceType : int
 class IResource : public Core::RefCounted
 {
 public:
-    unsigned GetOpaqueId() const { return m_opaqueId; }
+    friend IDevice;
+
+    unsigned GetStateId() const { return mStateId; }
     virtual ~IResource();
 
     ResourceType GetType() const { return mResourceType; }
@@ -67,9 +69,9 @@ protected:
     IResource(IDevice* device, ResourceType resType);
 
 private:
-    unsigned m_opaqueId;
+    unsigned mStateId;
     const ResourceType mResourceType;
-    ResourceLookupTable* mResourceLookupTable;
+    ResourceStateTable* mResourceStateTable;
     Alloc::IAllocator* mAllocator;
 };
 
@@ -223,16 +225,18 @@ public:
     PEGASUS_EVENT_DECLARE_DISPATCHER(Pegasus::Core::CompilerEvents::ICompilerEventListener)
 
     virtual bool Compile(const ProgramDesc& shaderDesc) = 0;
-    virtual const ProgramDesc& GetDesc() const = 0;
-    virtual bool IsValid() = 0;
+    virtual bool IsValid() const = 0;
 
 protected:
     virtual void InvalidateData() = 0;
 
     IProgram(IDevice* device);
     virtual ~IProgram();
+
     IDevice* mDevice;
 };
+
+typedef Pegasus::Core::Ref<IProgram> IProgramRef;
 
 //! Starts a new marker for gpu debugging.
 //! \param marker - the marker string, null terminated.

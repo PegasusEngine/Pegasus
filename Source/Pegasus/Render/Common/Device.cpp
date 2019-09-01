@@ -18,7 +18,7 @@ namespace Render
 {
 
 IDevice::IDevice(const DeviceConfig& config, Alloc::IAllocator* allocator)
-: mAllocator(allocator), mConfig(config), mResourceLookupTable(nullptr)
+: mAllocator(allocator), mConfig(config), mResourceStateTable(nullptr)
 {
 }
 
@@ -48,10 +48,11 @@ GpuPipelineRef IDevice::CreateGpuPipeline(const GpuPipelineConfig& config)
 }
 
 IResource::IResource(IDevice* device, ResourceType resourceType)
-: mResourceLookupTable(device->GetResourceTable()),
+: mResourceStateTable(device->GetResourceStateTable()),
   mAllocator(device->GetAllocator()),
   mResourceType(resourceType),
-  RefCounted(device->GetAllocator())
+  RefCounted(device->GetAllocator()),
+  mStateId(0u)
 {
 }
 
