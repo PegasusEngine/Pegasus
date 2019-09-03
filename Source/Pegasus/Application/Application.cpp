@@ -77,7 +77,7 @@ Application::Application(const ApplicationConfig& config) : mConfig(config)
     Alloc::IAllocator* renderAlloc = Memory::GetRenderAllocator();
     Pegasus::Render::DeviceConfig deviceConfig;
     Pegasus::Render::ContextConfig renderContextConfig;
-    deviceConfig.platform = DevicePlat::Dx12;
+    deviceConfig.platform = Pegasus::Render::DevicePlat::Dx12;
     deviceConfig.mIOManager = mIoManager;
     deviceConfig.mModuleHandle = mConfig.mModuleHandle;
 
