@@ -21,6 +21,7 @@
 #include "Dx12RDMgr.h"
 #include "Dx12Resources.h"
 #include "Dx12GpuProgram.h"
+#include "Dx12Pso.h"
 #include <dxgi1_6.h>
 #include <atlbase.h>
 #include <vector>
@@ -172,17 +173,12 @@ ResourceTableRef Dx12Device::InternalCreateResourceTable(const ResourceTableConf
 	return resTable;
 }
 
-GpuPipelineRef Dx12Device::InternalCreateGpuPipeline(const GpuPipelineConfig& config)
+GpuPipelineRef Dx12Device::InternalCreateGpuPipeline()
 {
-    return nullptr;
+    Dx12PsoRef pso  = D12_NEW(mAllocator, "Dx12Pso") Dx12Pso(this);
+    return pso;
 }
 
-
-//! platform implementation of device
-IDevice * IDevice::CreatePlatformDevice(const DeviceConfig& config, Alloc::IAllocator * allocator)
-{
-    return D12_NEW(allocator, "Dx12Device") Dx12Device(config, allocator);
-}
 
 }//namespace Render
 }//namespace Pegasus

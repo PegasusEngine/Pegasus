@@ -1,3 +1,14 @@
+/****************************************************************************************/
+/*                                                                                      */
+/*                                       Pegasus                                        */
+/*                                                                                      */
+/****************************************************************************************/
+
+//! \file   Dx12Pso.h
+//! \author Kleber Garcia
+//! \date   September 15th 2018
+//! \brief  Convenience class to create PSOs
+
 #include "Dx12Pso.h"
 #include "Dx12Device.h"
 #include <Pegasus/Utils/Memset.h>

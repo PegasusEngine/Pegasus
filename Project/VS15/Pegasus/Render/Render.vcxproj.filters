@@ -110,6 +110,9 @@
     <ClInclude Include="..\..\..\..\include\Pegasus\Render\JobBuilder.h">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\Common\ResourceStateTable.h">
+      <Filter>Source\Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.cpp">
@@ -194,6 +197,9 @@
       <Filter>Source\Common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Common\Device.cpp">
+      <Filter>Source\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Common\ResourceStateTable.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
   </ItemGroup>

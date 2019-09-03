@@ -190,7 +190,7 @@ struct RenderTargetConfig
 
 struct GpuPipelineConfig
 {
-    Io::FileBuffer fileBuffer;
+    std::string source;
     std::string mainNames[Pipeline_Max];
 };
 
@@ -215,7 +215,7 @@ public:
 protected:
     GpuPipeline(IDevice* device);
     virtual ~GpuPipeline(){}
-    virtual void InvalidateData() = 0;
+    void InvalidateData() {};
     IDevice* mDevice;
 };
 

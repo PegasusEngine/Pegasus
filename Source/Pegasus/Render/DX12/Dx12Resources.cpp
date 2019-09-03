@@ -490,5 +490,10 @@ Dx12RenderTarget::Dx12RenderTarget(const RenderTargetConfig& config, Dx12Device*
     }
 }
 
+Dx12RenderTarget::~Dx12RenderTarget()
+{
+	mRdMgr->Delete(mTable);
+}
+
 }
 }

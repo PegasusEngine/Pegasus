@@ -408,11 +408,10 @@ bool Dx12GpuProgram::Compile(const GpuPipelineConfig& desc)
         );
         if (result != S_OK)
         {
-            PG_FAILSTR("Failed compiling test shader: %s", errBlob->GetBufferPointer());
             PEGASUS_EVENT_DISPATCH(
                 this, Core::CompilerEvents::CompilationNotification,
                 Core::CompilerEvents::CompilationNotification::COMPILATION_ERROR,
-                "", 0u, ""
+                "", 0u, (const char*)errBlob->GetBufferPointer()
             );
             success = false;
         }
@@ -454,8 +453,8 @@ bool Dx12GpuProgram::Compile(const GpuPipelineConfig& desc)
         {
             Dx12ShaderBlob shaderblob; 
             bool result = compileShader(
-                shaderblob, desc.fileBuffer.GetBuffer(),
-                desc.fileBuffer.GetFileSize(), desc.mainNames[pipelineIdx].c_str(),
+                shaderblob, desc.source.c_str(),
+                (int)(desc.source.size()+1u), desc.mainNames[pipelineIdx].c_str(),
                 (Dx12PipelineType)pipelineIdx);
             if (result)
             {

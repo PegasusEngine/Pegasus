@@ -198,9 +198,6 @@ void Dx12Display::EndFrame()
     DX_VALID_DECLARE(mSwapChain->Present(1u, 0u));
 
 	mRenderContext->EndFrame();
-
-
-
 }
 
 void Dx12Display::Resize(unsigned int width, unsigned int height)
@@ -208,11 +205,6 @@ void Dx12Display::Resize(unsigned int width, unsigned int height)
     if (width != mWidth || height != mHeight)
     {
     }
-}
-
-IDisplay* IDisplay::CreatePlatformDisplay(const DisplayConfig& displayConfig, Alloc::IAllocator* alloc)
-{
-    return PG_NEW(alloc, -1, "Dx12Display", Pegasus::Alloc::PG_MEM_PERM) Dx12Display(displayConfig, alloc);
 }
 
 }

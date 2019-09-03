@@ -4,6 +4,7 @@
 /*                                                                                      */
 /****************************************************************************************/
 
+
 //! \file   IDevice.h
 //! \author Kleber Garcia
 //! \date   7th July 2014
@@ -36,9 +37,16 @@ namespace Render
 
 class ResourceStateTable;
 
+enum class DevicePlat
+{
+ //   Vulcan, TODO: not available yet
+    Dx12
+};
+
 //! Device configuration. Might vary per OS
 struct DeviceConfig
 {
+    DevicePlat platform;
     Io::IOManager* mIOManager;
     Os::ModuleHandle mModuleHandle; //! handle to the HINSTANCE if windows, handle to the proc if linux
 };
@@ -48,6 +56,8 @@ class IDevice
 public:
     //! Gets the config of this device
     const DeviceConfig& GetConfig() const { return mConfig; }
+
+    virtual ~IDevice();
     
     //! Gets the allocator of this device
     Alloc::IAllocator * GetAllocator() const { return mAllocator; }
@@ -59,7 +69,7 @@ public:
     TextureRef CreateTexture(const TextureConfig& config);
     RenderTargetRef CreateRenderTarget(const RenderTargetConfig& config);
     ResourceTableRef CreateResourceTable(const ResourceTableConfig& config);
-    GpuPipelineRef CreateGpuPipeline(const GpuPipelineConfig& config);
+    GpuPipelineRef CreateGpuPipeline();
 
     ResourceStateTable* GetResourceStateTable() const { return mResourceStateTable; }
 
@@ -68,13 +78,12 @@ protected:
     //! \param config configuration stored
     //! \param allocator the allocator for internal use
     IDevice(const DeviceConfig& config, Alloc::IAllocator * allocator);
-    virtual ~IDevice() {}
 
     virtual BufferRef InternalCreateBuffer(const BufferConfig& config) = 0;
     virtual TextureRef InternalCreateTexture(const TextureConfig& config) = 0;
     virtual RenderTargetRef InternalCreateRenderTarget(const RenderTargetConfig& config) = 0;
     virtual ResourceTableRef InternalCreateResourceTable(const ResourceTableConfig& config) = 0;
-    virtual GpuPipelineRef InternalCreateGpuPipeline(const GpuPipelineConfig& config) = 0;
+    virtual GpuPipelineRef InternalCreateGpuPipeline() = 0;
 
 private:
     Alloc::IAllocator * mAllocator;

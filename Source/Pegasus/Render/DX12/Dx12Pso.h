@@ -25,19 +25,14 @@ namespace Render
 class Dx12Device;
 class Dx12Program;
 
-struct Dx12PsoDesc
-{
-    
-};
-
 class Dx12Pso : public GpuPipeline
 {
 public:
     Dx12Pso(Dx12Device* device);
     virtual ~Dx12Pso();
 
-    virtual bool IsValid() const { return mValid; }
     virtual bool Compile(const GpuPipelineConfig& config);
+    virtual bool IsValid() const { return mValid; }
 
     bool SpaceToTableId(UINT space, Dx12ResType resType, UINT& outTableId);
 

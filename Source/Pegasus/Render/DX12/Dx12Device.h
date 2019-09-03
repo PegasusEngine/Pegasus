@@ -75,7 +75,7 @@ public:
     virtual TextureRef InternalCreateTexture(const TextureConfig& config);
     virtual RenderTargetRef InternalCreateRenderTarget(const RenderTargetConfig& config);
     virtual ResourceTableRef InternalCreateResourceTable(const ResourceTableConfig& config);
-    virtual GpuPipelineRef InternalCreateGpuPipeline(const GpuPipelineConfig& config);
+    virtual GpuPipelineRef InternalCreateGpuPipeline();
 
 private:
 

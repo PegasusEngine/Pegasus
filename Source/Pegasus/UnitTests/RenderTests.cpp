@@ -3,38 +3,45 @@
 #include "Pegasus/Allocator/Alloc.h"
 #include "Pegasus/Memory/mallocfreeallocator.h"
 #include "Pegasus/Core/Log.h"
-#include <iostream>
-
-//Dx12 includes:
 #include "Pegasus/Render/IDevice.h"
-#include "../Source/Pegasus/Render/DX12/Dx12Device.h"
-#include "../Source/Pegasus/Render/DX12/Dx12Defs.h"
+#include <Pegasus/Core/Shared/ISourceCodeProxy.h>
+#include <Pegasus/Core/Shared/CompilerEvents.h>
+#include "../Source/Pegasus/Render/Common/ResourceStateTable.h"
+#include <string>
+#include <iostream>
 
 using namespace Pegasus::Render;
 
-const char* testVs = R"(
+const char* testProgram0 = R"(
+    SamplerState gSampler : register(s0,space0);
+    Texture2D tex0 : register(t0, space0);
+
 	struct VsIn
 	{
 		float4 pos : POSITION0;
 		float3 n : NORMAL0;
 	};
 
-	cbuffer Constants : b0
+    struct VsOut
+    {
+        float4 p : SV_Position;
+        float3 normal : TEXCOORD;
+    };
+
+	cbuffer Constants : register(b0)
 	{
 		float4x4 g_viewProjTransform;
 	};
 
-	void main(VsIn vsIn, out float4 p : SV_Position, out float3 normal : TEXCOORD0)
+	void vsMain(VsIn vsIn, out VsOut vsOut)
 	{
-		p = vsIn.pos * g_viewProjTransform;
-		normal = vsIn.n;
+		vsOut.p = mul(vsIn.pos, g_viewProjTransform);
+        vsOut.normal = float3(0,0,0);//vsIn.n;
 	}
-)";
 
-const char* testPs = R"(
-	void psMain(in float3 n : TEXCOORD0, out float4 c : SV_Target0)
+	void psMain(in VsOut vsOut, out float4 c : SV_Target0)
 	{
-		c = float4(n, 1.0);
+		c = float4(tex0.Sample(gSampler, vsOut.normal.xy).rgb, 1.0);
 	}
 )";
 
@@ -57,6 +64,45 @@ static void RenderLogFn(Core::LogChannel logChannel, const char* msgStr)
     std::cout << "[" << logChnl << "]" << msgStr << std::endl;
 }
 
+static Pegasus::Core::AssertReturnCode AssertHandler(const char * testStr,
+	const char * fileStr,
+	int line,
+	const char * msgStr)
+{
+	std::cout << "ASSERT[" << fileStr << ":" << line << "] " << msgStr << std::endl;
+	return Pegasus::Core::ASSERTION_CONTINUE;
+}
+
+#if PEGASUS_USE_EVENTS
+class CompilerListener : public Pegasus::Core::CompilerEvents::ICompilerEventListener
+{
+public:
+    virtual void OnInitUserData(Pegasus::Core::IBasicSourceProxy* proxy, const char* name) override
+    {
+    }
+
+    virtual void OnDestroyUserData(Pegasus::Core::IBasicSourceProxy* proxy, const char* name)override
+    {
+    }
+    virtual void OnEvent(Pegasus::Core::IEventUserData* userData, Pegasus::Core::CompilerEvents::SourceLoadedEvent& e)  override
+    {
+    }
+    virtual void OnEvent(Pegasus::Core::IEventUserData* userData, Pegasus::Core::CompilerEvents::CompilationEvent& e)  override
+    {
+    }
+    virtual void OnEvent(Pegasus::Core::IEventUserData* userData, Pegasus::Core::CompilerEvents::CompilationNotification& e)  override
+    {
+        if (e.GetType() == Pegasus::Core::CompilerEvents::CompilationNotification::COMPILATION_ERROR)
+        {
+            std::cout << "Gpu Program Error: " << e.GetDescription() << std::endl;
+        }
+    }
+    virtual void OnEvent(Pegasus::Core::IEventUserData* userData, Pegasus::Core::CompilerEvents::LinkingEvent& e)  override
+    {
+    }
+};
+#endif
+
 class RenderHarness : public TestHarness
 {
 public:
@@ -65,12 +111,22 @@ public:
     virtual void Destroy();
     virtual const TestFunc* GetTests(int& funcSz) const;
 
-    Dx12Device* CreateDevice();
+    IDevice* CreateDevice();
     void DestroyDevice();
 
+	Pegasus::Alloc::IAllocator* GetAllocator() { return &mAllocator;  }
+
+#if PEGASUS_USE_EVENTS
+    CompilerListener& GetCompilerListener() { return mCompilerListener; }
+#endif
+
 private:
-    Dx12Device* mDevice;
+    IDevice* mDevice;
     Pegasus::Memory::MallocFreeAllocator mAllocator;
+
+#if PEGASUS_USE_EVENTS
+    CompilerListener mCompilerListener;
+#endif
 };
 
 
@@ -83,6 +139,9 @@ void RenderHarness::Initialize()
 {
 	auto* logManager = Core::Singleton<Core::LogManager>::CreateInstance(&mAllocator);
     logManager->RegisterHandler(RenderLogFn);
+
+	auto* assertMgr = Core::Singleton<Core::AssertionManager>::CreateInstance(&mAllocator);
+	assertMgr->RegisterHandler(AssertHandler);
 }
 
 void RenderHarness::Destroy()
@@ -90,14 +149,15 @@ void RenderHarness::Destroy()
     Core::Singleton<Core::LogManager>::DestroyInstance();
 }
 
-Dx12Device* RenderHarness::CreateDevice()
+IDevice* RenderHarness::CreateDevice()
 {
     if (mDevice == nullptr)
     {
         Pegasus::Render::DeviceConfig config;
+        config.platform = DevicePlat::Dx12;
         config.mModuleHandle = 0;
         config.mIOManager = nullptr;
-        mDevice = D12_NEW(&mAllocator, "TestDevice") Dx12Device(config, &mAllocator);
+        mDevice = IDevice::CreatePlatformDevice(config, &mAllocator);
     }
 
     return mDevice;
@@ -105,7 +165,7 @@ Dx12Device* RenderHarness::CreateDevice()
 
 void RenderHarness::DestroyDevice()
 {
-    D12_DELETE(&mAllocator, mDevice);
+    PG_DELETE(&mAllocator, mDevice);
     mDevice = nullptr;
 }
 
@@ -115,10 +175,26 @@ bool runCreateDevice(TestHarness* harness)
     return rh->CreateDevice() != nullptr;
 }
 
-bool runCreateShader(TestHarness* harness)
+bool runCreateSimpleGpuPipeline(TestHarness* harness)
 {
     RenderHarness* rh = static_cast<RenderHarness*>(harness);
-	return false;
+    IDevice* device = rh->CreateDevice();
+    GpuPipelineRef gpuPipeline = device->CreateGpuPipeline();
+
+#if PEGASUS_USE_EVENTS
+    gpuPipeline->SetEventListener(&rh->GetCompilerListener());
+#endif
+
+    GpuPipelineConfig gpuPipelineConfig;
+    gpuPipelineConfig.source = testProgram0;
+    gpuPipelineConfig.mainNames[Pipeline_Vertex] = "vsMain";
+    gpuPipelineConfig.mainNames[Pipeline_Pixel] = "psMain";
+
+    bool result = gpuPipeline->Compile(gpuPipelineConfig);
+    if (!result)
+        return false;
+    
+	return true;
 }
 
 bool runDestroyDevice(TestHarness* harness)
@@ -126,6 +202,54 @@ bool runDestroyDevice(TestHarness* harness)
     RenderHarness* rh = static_cast<RenderHarness*>(harness);
     rh->DestroyDevice();
     return true;
+}
+
+bool runTestResourceStateTable(TestHarness* harness)
+{
+    RenderHarness* rh = static_cast<RenderHarness*>(harness);
+    IDevice* device = rh->CreateDevice();
+    ResourceStateTable* resourceStateTable = device->GetResourceStateTable();
+
+    uintptr_t state0 = 0xdeadbeef;
+    uintptr_t state1 = 0xdeadbeea;
+    uintptr_t state2 = 0xffffffff;
+    uintptr_t state3 = 0xaaaaaaaa;
+
+    int slot0 = resourceStateTable->CreateStateSlot();
+    int slot1 = resourceStateTable->CreateStateSlot();
+    ResourceStateTable::Domain d0 = resourceStateTable->CreateDomain();
+
+    resourceStateTable->StoreState(d0, slot0, state0);
+    resourceStateTable->StoreState(d0, slot1, state1);
+
+    ResourceStateTable::Domain d1 = resourceStateTable->CreateDomain();
+    resourceStateTable->StoreState(d1, slot0, state2);
+    resourceStateTable->StoreState(d1, slot1, state3);
+
+    uintptr_t result;
+    bool success;
+    success = resourceStateTable->GetState(d0, slot0, result);
+    if (!success || result != state0)
+        return false;
+
+    success = resourceStateTable->GetState(d0, slot1, result);
+    if (!success || result != state1)
+        return false;
+
+    success = resourceStateTable->GetState(d1, slot0, result);
+    if (!success || result != state2)
+        return false;
+
+    success = resourceStateTable->GetState(d1, slot1, result);
+    if (!success || result != state3)
+        return false;
+
+	resourceStateTable->RemoveDomain(d0);
+    success = resourceStateTable->GetState(d0, slot1, result);
+    if (success)
+        return false;
+    
+	return true;
 }
 
 
@@ -136,6 +260,8 @@ TestHarness* createRenderHarness()
 
 const TestFunc gRenderTests[] = {
     DECLARE_TEST(CreateDevice),
+    DECLARE_TEST(CreateSimpleGpuPipeline),
+    DECLARE_TEST(TestResourceStateTable),
     DECLARE_TEST(DestroyDevice)
 };
 
