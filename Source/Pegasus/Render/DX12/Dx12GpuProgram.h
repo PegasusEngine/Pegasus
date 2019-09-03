@@ -30,15 +30,16 @@ namespace Render
 struct Dx12GpuProgramParams;
 struct Dx12GpuProgramData;
 
-class Dx12GpuProgram : public IProgram
+class Dx12GpuProgram
 {
 public:
+    PEGASUS_EVENT_DECLARE_DISPATCHER(Pegasus::Core::CompilerEvents::ICompilerEventListener)
+
     Dx12GpuProgram(Dx12Device* device);
     virtual ~Dx12GpuProgram();
 
-
-    virtual bool Compile(const Dx12ProgramDesc& programDesc) override;
-    virtual bool bool IsValid() const override;
+    bool Compile(const GpuPipelineConfig& desc);
+    void ClearEventData();
 
     ID3D12RootSignature* GetRootSignature() const;
     CComPtr<ID3DBlob> GetShaderByteCode(Dx12PipelineType type);
@@ -47,17 +48,13 @@ public:
     bool SpaceToTableId(UINT space, Dx12ResType resType, UINT& outTableId) const;
 
 private:
-
-    virtual void InvalidateData() override {}
-
+    void InvalidateData() {}
     void fillInInternalData();
     bool createRootSignature();
     Dx12Device* mDevice;
     Dx12GpuProgramParams* mParams;
     Dx12GpuProgramData* mData;
 };
-
-typedef Pegasus::Core::Ref<Dx12GpuProgram> Dx12GpuProgramRef;
 
 }
 }

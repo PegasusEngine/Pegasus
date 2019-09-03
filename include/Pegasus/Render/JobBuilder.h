@@ -60,6 +60,14 @@ public:
     void Dispatch(unsigned x, unsigned y, unsigned z);
 };
 
+class CopyJob
+{
+};
+
+class DisplayJob
+{
+};
+
 class JobBuilder
 {
 public:

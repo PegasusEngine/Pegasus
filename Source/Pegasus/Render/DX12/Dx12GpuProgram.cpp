@@ -359,12 +359,9 @@ bool Dx12GpuProgram::SpaceToTableId(UINT space, Dx12ResType resType, UINT& outTa
 }
 
 Dx12GpuProgram::Dx12GpuProgram(Dx12Device* device)
-    : RefCounted(device->GetAllocator()), mDevice(device), mParams(nullptr), mData(nullptr)
+    : mDevice(device), mParams(nullptr), mData(nullptr)
 {
-#if PEGASUS_USE_EVENTS
-    SetEventUserData(nullptr);
-    SetEventListener(nullptr);
-#endif
+    ClearEventData();
 }
 
 Dx12GpuProgram::~Dx12GpuProgram()
@@ -380,12 +377,15 @@ Dx12GpuProgram::~Dx12GpuProgram()
     }
 }
 
-bool Dx12GpuProgram::IsValid() const
+void Dx12GpuProgram::ClearEventData()
 {
-    return mData != nullptr && mData->rootSignature != nullptr;
+#if PEGASUS_USE_EVENTS
+    SetEventUserData(nullptr);
+    SetEventListener(nullptr);
+#endif
 }
 
-bool Dx12GpuProgram::Compile(const ProgramDesc& desc)
+bool Dx12GpuProgram::Compile(const GpuPipelineConfig& desc)
 {
     auto compileShader = [&](Dx12ShaderBlob& blob, const char* src, int srcSize, const char* mainFn, Dx12PipelineType pipelineType)
     {

@@ -10,6 +10,7 @@
 //! \brief  Concrete device interface functions
 
 #include <Pegasus/Render/IDevice.h>
+#include <Pegasus/Core/RefCounted.h>
 
 
 namespace Pegasus
@@ -58,6 +59,15 @@ IResource::IResource(IDevice* device, ResourceType resourceType)
 
 IResource::~IResource()
 {
+}
+
+GpuPipeline::GpuPipeline(IDevice* device)
+: Core::RefCounted(device->GetAllocator())
+{
+#if PEGASUS_USE_EVENTS
+    SetEventUserData(nullptr);
+    SetEventListener(nullptr);
+#endif
 }
 
 

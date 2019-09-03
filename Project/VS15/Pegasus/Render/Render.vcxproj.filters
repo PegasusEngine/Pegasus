@@ -104,11 +104,11 @@
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX12\Dx12BufferPool.h">
       <Filter>Source\DX12</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\JobBuilder.h">
-      <Filter>Include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\Common\InternalJobBuilder.h">
       <Filter>Source\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\Pegasus\Render\JobBuilder.h">
+      <Filter>Include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -29,6 +29,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\IDevice.h" />
     <ClInclude Include="..\..\..\..\include\Pegasus\Render\IDisplay.h" />
+    <ClInclude Include="..\..\..\..\include\Pegasus\Render\JobBuilder.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\MeshFactory.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\Render.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\RenderContext.h" />
@@ -55,7 +56,6 @@
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLEWStaticInclude.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLShaderReflect.h" />
-    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\JobBuilder.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Common\Device.cpp" />

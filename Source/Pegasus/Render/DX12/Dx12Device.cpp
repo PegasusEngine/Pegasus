@@ -146,12 +146,6 @@ Dx12Device::~Dx12Device()
 #endif
 }
 
-Dx12GpuProgramRef Dx12Device::CreateGpuProgram()
-{
-	Dx12GpuProgramRef prog = D12_NEW(mAllocator, "Dx12GpuProgram") Dx12GpuProgram(this);
-	return prog;
-}
-
 BufferRef Dx12Device::InternalCreateBuffer(const BufferConfig& config)
 {
 	Dx12BufferRef buff = D12_NEW(mAllocator, "Dx12Buffer") Dx12Buffer(config, this);

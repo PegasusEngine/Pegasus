@@ -63,9 +63,6 @@ private:
     unsigned int mWidth;
     unsigned int mHeight;
 
-    Dx12TextureRef mTestTexture;
-    Dx12BufferRef mTestBuffer;
-    Dx12GpuProgramRef mProgramTest;
     Dx12RenderContext* mRenderContext;
 };
 }

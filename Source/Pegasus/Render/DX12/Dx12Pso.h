@@ -30,14 +30,15 @@ struct Dx12PsoDesc
     
 };
 
-class Dx12Pso : public Core::RefCounted
+class Dx12Pso : public GpuPipeline
 {
 public:
     Dx12Pso(Dx12Device* device);
-    ~Dx12Pso();
+    virtual ~Dx12Pso();
 
-    bool IsValid() const { return mPso != nullptr; }
-    bool Compile(const Dx12PsoDesc& desc, Dx12GpuProgramRef program);
+    virtual bool IsValid() const { return mValid; }
+    virtual bool Compile(const GpuPipelineConfig& config);
+
     bool SpaceToTableId(UINT space, Dx12ResType resType, UINT& outTableId);
 
     ID3D12RootSignature* GetD3DRootSignature() const;
@@ -51,10 +52,11 @@ private:
     };
 
     ID3D12PipelineState* mPso;
-    Dx12PsoDesc mDesc;
-    Dx12GpuProgramRef mProgram;
+    GpuPipelineConfig mConfig;
+    Dx12GpuProgram mProgram;
     Type mType;
     Dx12Device* mDevice;
+    bool mValid;
 };
 
 typedef Pegasus::Core::Ref<Dx12Pso> Dx12PsoRef;

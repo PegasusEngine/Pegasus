@@ -60,7 +60,6 @@ public:
     RenderTargetRef CreateRenderTarget(const RenderTargetConfig& config);
     ResourceTableRef CreateResourceTable(const ResourceTableConfig& config);
     GpuPipelineRef CreateGpuPipeline(const GpuPipelineConfig& config);
-    ProgramRef CreateProgram();
 
     ResourceStateTable* GetResourceStateTable() const { return mResourceStateTable; }
 
@@ -69,14 +68,13 @@ protected:
     //! \param config configuration stored
     //! \param allocator the allocator for internal use
     IDevice(const DeviceConfig& config, Alloc::IAllocator * allocator);
-    virtual ~IDevice();
+    virtual ~IDevice() {}
 
     virtual BufferRef InternalCreateBuffer(const BufferConfig& config) = 0;
     virtual TextureRef InternalCreateTexture(const TextureConfig& config) = 0;
     virtual RenderTargetRef InternalCreateRenderTarget(const RenderTargetConfig& config) = 0;
     virtual ResourceTableRef InternalCreateResourceTable(const ResourceTableConfig& config) = 0;
     virtual GpuPipelineRef InternalCreateGpuPipeline(const GpuPipelineConfig& config) = 0;
-    virtual ProgramRef InternalCreateProgram(const GpuPipelineConfig& config) = 0;
 
 private:
     Alloc::IAllocator * mAllocator;

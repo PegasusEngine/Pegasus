@@ -44,6 +44,9 @@ namespace Render
 
 class ResourceStateTable;
 class IDevice;
+class Buffer;
+class Texture;
+class GpuPipeline;
 
 enum class ResourceType : int
 {
@@ -51,7 +54,6 @@ enum class ResourceType : int
     Buffer,
     ResourceTable,
     RenderTarget,
-    GpuPipeline,
     Count
 };
 
@@ -157,6 +159,13 @@ struct ResourceConfig
     ResourceUsage usage;
 };
 
+struct BufferConfig : public ResourceConfig
+{
+	unsigned int stride;
+	unsigned int elementCount;
+    BufferType bufferType;
+};
+
 struct TextureConfig : public ResourceConfig
 {
     TextureType type;
@@ -166,41 +175,11 @@ struct TextureConfig : public ResourceConfig
     unsigned int mipLevels;
 };
 
-struct BufferConfig : public ResourceConfig
-{
-	unsigned int stride;
-	unsigned int elementCount;
-    BufferType bufferType;
-};
-
 struct ResourceTableConfig
 {
     ResourceTableType type = ResourceTableType_Srv;
     std::vector< Core::Ref<IResource> > resources;
 };
-
-struct GpuPipelineConfig
-{
-    Core::Ref<IProgram> program;
-};
-
-
-template<> inline ResourceType GetResourceType<BufferConfig>() { return ResourceType::Buffer; }
-template<> inline ResourceType GetResourceType<TextureConfig>() { return ResourceType::Texture; }
-template<> inline ResourceType GetResourceType<ResourceTableConfig>() { return ResourceType::ResourceTable; }
-template<> inline ResourceType GetResourceType<GpuPipelineConfig>() { return ResourceType::GpuPipeline; }
-
-typedef BasicResource<BufferConfig>  Buffer;
-typedef BasicResource<TextureConfig>  Texture;
-typedef BasicResource<ResourceTableConfig>  ResourceTable;
-typedef BasicResource<GpuPipelineConfig>  GpuPipeline;
-
-typedef Core::Ref<IResource> IResourceRef;
-typedef Core::Ref<Buffer> BufferRef;
-typedef Core::Ref<Texture> TextureRef;
-typedef Core::Ref<ResourceTable> ResourceTableRef;
-typedef Core::Ref<GpuPipeline> GpuPipelineRef;
-
 
 struct RenderTargetConfig
 {
@@ -209,34 +188,43 @@ struct RenderTargetConfig
 	Core::Ref<Texture> depthStencil;
 };
 
-typedef BasicResource<RenderTargetConfig> RenderTarget;
-template<> inline ResourceType GetResourceType<RenderTargetConfig>() { return ResourceType::RenderTarget; }
-typedef Core::Ref<RenderTarget> RenderTargetRef;
-
-struct ProgramDesc
+struct GpuPipelineConfig
 {
     Io::FileBuffer fileBuffer;
     std::string mainNames[Pipeline_Max];
 };
 
-class IProgram : public RefCounted
+template<> inline ResourceType GetResourceType<BufferConfig>() { return ResourceType::Buffer; }
+template<> inline ResourceType GetResourceType<TextureConfig>() { return ResourceType::Texture; }
+template<> inline ResourceType GetResourceType<ResourceTableConfig>() { return ResourceType::ResourceTable; }
+template<> inline ResourceType GetResourceType<RenderTargetConfig>() { return ResourceType::RenderTarget; }
+
+class Buffer : public BasicResource<BufferConfig> { public: Buffer(IDevice* device) : BasicResource<BufferConfig>(device) {} };
+class Texture : public BasicResource<TextureConfig> { public: Texture(IDevice* device) : BasicResource<TextureConfig>(device) {} };
+class ResourceTable : public BasicResource<ResourceTableConfig> { public: ResourceTable(IDevice* device) : BasicResource<ResourceTableConfig>(device) {} };
+class RenderTarget : public BasicResource<RenderTargetConfig> { public: RenderTarget(IDevice* device) : BasicResource<RenderTargetConfig>(device) {} };
+
+class GpuPipeline : public Core::RefCounted
 {
 public:
     PEGASUS_EVENT_DECLARE_DISPATCHER(Pegasus::Core::CompilerEvents::ICompilerEventListener)
 
-    virtual bool Compile(const ProgramDesc& shaderDesc) = 0;
+    virtual bool Compile(const GpuPipelineConfig& config) = 0;
     virtual bool IsValid() const = 0;
 
 protected:
+    GpuPipeline(IDevice* device);
+    virtual ~GpuPipeline(){}
     virtual void InvalidateData() = 0;
-
-    IProgram(IDevice* device);
-    virtual ~IProgram();
-
     IDevice* mDevice;
 };
 
-typedef Pegasus::Core::Ref<IProgram> IProgramRef;
+typedef Core::Ref<IResource> IResourceRef;
+typedef Core::Ref<Buffer> BufferRef;
+typedef Core::Ref<Texture> TextureRef;
+typedef Core::Ref<ResourceTable> ResourceTableRef;
+typedef Core::Ref<RenderTarget> RenderTargetRef;
+typedef Core::Ref<GpuPipeline> GpuPipelineRef;
 
 //! Starts a new marker for gpu debugging.
 //! \param marker - the marker string, null terminated.

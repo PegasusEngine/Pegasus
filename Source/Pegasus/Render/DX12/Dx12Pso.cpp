@@ -9,8 +9,17 @@ namespace Render
 {
 
 Dx12Pso::Dx12Pso(Dx12Device* device)
-: Core::RefCounted(device->GetAllocator()), mDevice(device), mPso(nullptr), mType(PsoGraphics)
+: GpuPipeline(device),
+  mDevice(device),
+  mProgram(device),
+  mPso(nullptr),
+  mType(PsoGraphics),
+  mValid(false)
 {
+#if PEGASUS_USE_EVENTS
+    SetEventUserData(nullptr);
+    SetEventListener(nullptr);
+#endif 
 }
 
 Dx12Pso::~Dx12Pso()
@@ -23,15 +32,22 @@ Dx12Pso::~Dx12Pso()
 
 ID3D12RootSignature* Dx12Pso::GetD3DRootSignature() const
 {
-    return mProgram->GetRootSignature();
+    return mProgram.GetRootSignature();
 }
 
-bool Dx12Pso::Compile(const Dx12PsoDesc& desc, Dx12GpuProgramRef program)
+bool Dx12Pso::Compile(const GpuPipelineConfig& config)
 {
-    mDesc = desc;
-    mProgram = program;
+    mConfig = config;
+    mValid = false;
+    mProgram.ClearEventData();
 
-    if (mProgram == nullptr || !mProgram->IsValid())
+#if PEGASUS_USE_EVENTS
+    //fwd the event listerner user data and event listeners.
+    mProgram.SetEventUserData(GetEventUserData());
+    mProgram.SetEventListener(GetEventListener());
+#endif
+
+    if (!mProgram.Compile(config))
         return false;
 
     if (mPso != nullptr)
@@ -40,18 +56,18 @@ bool Dx12Pso::Compile(const Dx12PsoDesc& desc, Dx12GpuProgramRef program)
         mPso = nullptr;
     }
 
-    mType = mProgram->GetShaderByteCode(Dx12_Compute) != nullptr ? PsoCompute : PsoGraphics;
+    mType = mProgram.GetShaderByteCode(Dx12_Compute) != nullptr ? PsoCompute : PsoGraphics;
 
     if (mType == PsoGraphics)
     {
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
        // Utils::Memset8(&psoDesc, 0x0, sizeof(psoDesc));
 
-        psoDesc.pRootSignature = mProgram->GetRootSignature();
-        for (unsigned int i = 0; i < mProgram->GetShaderByteCodeCounts(); ++i)
+        psoDesc.pRootSignature = mProgram.GetRootSignature();
+        for (unsigned int i = 0; i < mProgram.GetShaderByteCodeCounts(); ++i)
         {
             Dx12PipelineType type;
-            CComPtr<ID3DBlob> blob = mProgram->GetShaderByteCodeByIndex(i, type);
+            CComPtr<ID3DBlob> blob = mProgram.GetShaderByteCodeByIndex(i, type);
             D3D12_SHADER_BYTECODE* targetByteCode = nullptr;
             switch (type)
             {
@@ -97,7 +113,10 @@ bool Dx12Pso::Compile(const Dx12PsoDesc& desc, Dx12GpuProgramRef program)
         if (result != S_OK)
             return false;
         else
+        {
+            mValid = true;
             return true; 
+        }
     }
     else
     {
@@ -107,13 +126,10 @@ bool Dx12Pso::Compile(const Dx12PsoDesc& desc, Dx12GpuProgramRef program)
 
 bool Dx12Pso::SpaceToTableId(UINT space, Dx12ResType resType, UINT& outTableId)
 {
-    if (mProgram == nullptr)
+    if (!IsValid())
         return false;
 
-    if (mPso == nullptr)
-        return false;
-    
-    return mProgram->SpaceToTableId(space, resType, outTableId);
+    return mProgram.SpaceToTableId(space, resType, outTableId);
 }
 
 }
