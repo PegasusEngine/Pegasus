@@ -169,7 +169,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\..\Lib\;$(ProjectDir)..\..\..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\..\Lib\;$(ProjectDir)..\..\..\..\Lib\Pegasus\VS17\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
       <AdditionalDependencies>Pegasus.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
     </Link>
@@ -179,7 +179,7 @@
       <Message />
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>call $(SolutionDir)..\..\Lib\Scripts\DeployApp.bat Dev $(ProjectName)  $(SolutionDir) $(SolutionDir)..\..\Bin\VS14\$(PlatformName)</Command>
+      <Command>call $(SolutionDir)..\..\Lib\Scripts\DeployApp.bat Dev $(ProjectName)  $(SolutionDir) $(SolutionDir)..\..\Bin\VS17\$(PlatformName)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">
@@ -204,12 +204,12 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\..\Lib\;$(ProjectDir)..\..\..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\..\Lib\;$(ProjectDir)..\..\..\..\Lib\Pegasus\VS17\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
       <AdditionalDependencies>Pegasus.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
     </Link>
     <PostBuildEvent>
-      <Command>call $(SolutionDir)..\..\Lib\Scripts\DeployApp.bat Dev $(ProjectName)  $(SolutionDir) $(SolutionDir)..\..\Bin\VS14\$(PlatformName)</Command>
+      <Command>call $(SolutionDir)..\..\Lib\Scripts\DeployApp.bat Dev $(ProjectName)  $(SolutionDir) $(SolutionDir)..\..\Bin\VS17\$(PlatformName)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Debug|Win32'">
@@ -232,12 +232,12 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\..\Lib\;$(ProjectDir)..\..\..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\..\Lib\;$(ProjectDir)..\..\..\..\Lib\Pegasus\VS17\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
       <AdditionalDependencies>Pegasus.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
     </Link>
     <PostBuildEvent>
-      <Command>call $(SolutionDir)..\..\Lib\Scripts\DeployApp.bat Rel $(ProjectName)  $(SolutionDir) $(SolutionDir)..\..\Bin\VS14\$(PlatformName)</Command>
+      <Command>call $(SolutionDir)..\..\Lib\Scripts\DeployApp.bat Rel $(ProjectName)  $(SolutionDir) $(SolutionDir)..\..\Bin\VS17\$(PlatformName)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Final|Win32'">
@@ -264,7 +264,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\..\Lib\;$(ProjectDir)..\..\..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\..\Lib\;$(ProjectDir)..\..\..\..\Lib\Pegasus\VS17\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
       <AdditionalDependencies>Pegasus.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
     </Link>
@@ -274,7 +274,7 @@
       <Message />
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>call $(SolutionDir)..\..\Lib\Scripts\DeployApp.bat Rel $(ProjectName)  $(SolutionDir) $(SolutionDir)..\..\Bin\VS14\$(PlatformName)</Command>
+      <Command>call $(SolutionDir)..\..\Lib\Scripts\DeployApp.bat Rel $(ProjectName)  $(SolutionDir) $(SolutionDir)..\..\Bin\VS17\$(PlatformName)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Profile|Win32'">
@@ -301,12 +301,12 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\..\Lib\;$(ProjectDir)..\..\..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\..\Lib\;$(ProjectDir)..\..\..\..\Lib\Pegasus\VS17\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
       <AdditionalDependencies>Pegasus.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
     </Link>
     <PostBuildEvent>
-      <Command>call $(SolutionDir)..\..\Lib\Scripts\DeployApp.bat Rel $(ProjectName)  $(SolutionDir) $(SolutionDir)..\..\Bin\VS14\$(PlatformName)</Command>
+      <Command>call $(SolutionDir)..\..\Lib\Scripts\DeployApp.bat Rel $(ProjectName)  $(SolutionDir) $(SolutionDir)..\..\Bin\VS17\$(PlatformName)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Rel-Small|Win32'">
@@ -333,12 +333,12 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\..\Lib\;$(ProjectDir)..\..\..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\..\Lib\;$(ProjectDir)..\..\..\..\Lib\Pegasus\VS17\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
       <AdditionalDependencies>Pegasus.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
     </Link>
     <PostBuildEvent>
-      <Command>call $(SolutionDir)..\..\Lib\Scripts\DeployApp.bat Rel $(ProjectName)  $(SolutionDir) $(SolutionDir)..\..\Bin\VS14\$(PlatformName)</Command>
+      <Command>call $(SolutionDir)..\..\Lib\Scripts\DeployApp.bat Rel $(ProjectName)  $(SolutionDir) $(SolutionDir)..\..\Bin\VS17\$(PlatformName)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

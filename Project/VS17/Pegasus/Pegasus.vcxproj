@@ -168,7 +168,7 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS17\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
       <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;Window.lib;Utils.lib;AssetLib.lib;RenderSystems.lib</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
@@ -201,7 +201,7 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS17\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
       <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;Window.lib;Utils.lib;AssetLib.lib;RenderSystems.lib</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
@@ -231,7 +231,7 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS17\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
       <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;Window.lib;Utils.lib;AssetLib.lib;RenderSystems.lib</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
@@ -265,7 +265,7 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS17\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
       <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;Window.lib;Utils.lib;AssetLib.lib;RenderSystems.lib</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
@@ -300,7 +300,7 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS17\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
       <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;Window.lib;Utils.lib;AssetLib.lib;RenderSystems.lib</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>
@@ -335,7 +335,7 @@
       <OutputFile>$(OutDir)$(TargetName).bsc</OutputFile>
     </Bscmake>
     <Lib>
-      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS14\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\..\..\Lib\Pegasus\VS17\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
       <AdditionalDependencies>Allocator.lib;Application.lib;BlockScript.lib;Core.lib;Graph.lib;Math.lib;Memory.lib;PropertyGrid.lib;Render.lib;Shader.lib;Sound.lib;Texture.lib;Mesh.lib;Timeline.lib;Window.lib;Utils.lib;AssetLib.lib;RenderSystems.lib</AdditionalDependencies>
       <TreatLibWarningAsErrors>true</TreatLibWarningAsErrors>
     </Lib>

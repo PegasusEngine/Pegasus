@@ -50,10 +50,10 @@
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'" />
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">$(SolutionDir)..\..\Bin\VS14\$(PlatformName)\Dev\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">$(SolutionDir)..\..\Bin\VS14\$(PlatformName)\Dev\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">$(SolutionDir)..\..\Build\VS14\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">$(SolutionDir)..\..\Build\VS14\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">$(SolutionDir)..\..\Bin\VS17\$(PlatformName)\Dev\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">$(SolutionDir)..\..\Bin\VS17\$(PlatformName)\Dev\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">$(SolutionDir)..\..\Build\VS17\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">$(SolutionDir)..\..\Build\VS17\Pegasus\$(ProjectName)\$(PlatformName)\$(Configuration)\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Dev-Debug|Win32'">$(ProjectName)-Debug</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Dev-Opt|Win32'">$(ProjectName)-Opt</TargetName>
   </PropertyGroup>
