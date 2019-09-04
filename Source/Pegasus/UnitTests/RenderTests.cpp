@@ -12,7 +12,7 @@
 
 using namespace Pegasus::Render;
 
-const char* testProgram0 = R"(
+const char* simpleProgram0 = R"(
     SamplerState gSampler : register(s0,space0);
     Texture2D tex0 : register(t0, space0);
 
@@ -43,6 +43,22 @@ const char* testProgram0 = R"(
 	{
 		c = float4(tex0.Sample(gSampler, vsOut.normal.xy).rgb, 1.0);
 	}
+)";
+
+const char* simpleCs0 = R"(
+    Buffer<float4> input : register(t0, space0);
+    RWBuffer<float4> output : register(u0, space0);
+
+    cbuffer Constants : register(b0)
+    {
+        uint4 gCounts;
+    };
+
+    [numthreads(32,1,1)]
+    void csMain(uint di : SV_DispatchThreadID)
+    {
+        output[di] = input[di];
+    }
 )";
 
 using namespace Pegasus::Render;
@@ -186,7 +202,7 @@ bool runCreateSimpleGpuPipeline(TestHarness* harness)
 #endif
 
     GpuPipelineConfig gpuPipelineConfig;
-    gpuPipelineConfig.source = testProgram0;
+    gpuPipelineConfig.source = simpleProgram0;
     gpuPipelineConfig.mainNames[Pipeline_Vertex] = "vsMain";
     gpuPipelineConfig.mainNames[Pipeline_Pixel] = "psMain";
 
@@ -195,6 +211,26 @@ bool runCreateSimpleGpuPipeline(TestHarness* harness)
         return false;
     
 	return true;
+}
+
+bool runTestSimpleCompute(TestHarness* harness)
+{
+    RenderHarness* rh = static_cast<RenderHarness*>(harness);
+    IDevice* device = rh->CreateDevice();
+    GpuPipelineConfig gpuPipelineConfig;
+    gpuPipelineConfig.source = simpleCs0;
+    gpuPipelineConfig.mainNames[Pipeline_Compute] = "csMain";
+
+    GpuPipelineRef gpuPipeline = device->CreateGpuPipeline();
+
+#if PEGASUS_USE_EVENTS
+    gpuPipeline->SetEventListener(&rh->GetCompilerListener());
+#endif
+    
+    if (!gpuPipeline->Compile(gpuPipelineConfig))
+        return false;
+
+    return true;
 }
 
 bool runDestroyDevice(TestHarness* harness)
@@ -261,6 +297,7 @@ TestHarness* createRenderHarness()
 const TestFunc gRenderTests[] = {
     DECLARE_TEST(CreateDevice),
     DECLARE_TEST(CreateSimpleGpuPipeline),
+    DECLARE_TEST(TestSimpleCompute),
     DECLARE_TEST(TestResourceStateTable),
     DECLARE_TEST(DestroyDevice)
 };

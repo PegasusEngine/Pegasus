@@ -67,7 +67,10 @@ bool Dx12Pso::Compile(const GpuPipelineConfig& config)
         mPso = nullptr;
     }
 
-    mType = mProgram.GetShaderByteCode(Dx12_Compute) != nullptr ? PsoCompute : PsoGraphics;
+    mType = PsoGraphics;
+
+    if (mProgram.GetShaderByteCode(Dx12_Compute) != nullptr)
+        mType = PsoCompute;
 
     if (mType == PsoGraphics)
     {
@@ -121,6 +124,31 @@ bool Dx12Pso::Compile(const GpuPipelineConfig& config)
 //#endif
         
         HRESULT result = mDevice->GetD3D()->CreateGraphicsPipelineState(&psoDesc, _uuidof(ID3D12PipelineState), reinterpret_cast<void**>(&mPso));
+        if (result != S_OK)
+            return false;
+        else
+        {
+            mValid = true;
+            return true; 
+        }
+    }
+    else if (mType == PsoCompute)
+    {
+        D3D12_COMPUTE_PIPELINE_STATE_DESC psoDesc = {};
+        for (unsigned int i = 0; i < mProgram.GetShaderByteCodeCounts(); ++i)
+        {
+            Dx12PipelineType type;
+            CComPtr<ID3DBlob> blob = mProgram.GetShaderByteCodeByIndex(i, type);
+            if (type == Dx12_Compute)
+            {
+                psoDesc.CS.pShaderBytecode = blob->GetBufferPointer();
+                psoDesc.CS.BytecodeLength = blob->GetBufferSize();
+                break;
+            }
+        }
+
+        psoDesc.pRootSignature = mProgram.GetRootSignature();
+        HRESULT result = mDevice->GetD3D()->CreateComputePipelineState(&psoDesc, _uuidof(ID3D12PipelineState), reinterpret_cast<void**>(&mPso));
         if (result != S_OK)
             return false;
         else

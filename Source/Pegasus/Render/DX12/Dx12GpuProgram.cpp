@@ -34,6 +34,8 @@ const char* pipelineToModel(Dx12PipelineType type)
         return "ps_5_1";
     case Dx12_Vertex:
         return "vs_5_1";
+    case Dx12_Compute:
+        return "cs_5_1";
     }
 
     return "";
