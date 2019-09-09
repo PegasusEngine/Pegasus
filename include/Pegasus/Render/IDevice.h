@@ -36,6 +36,7 @@ namespace Render
 {
 
 class ResourceStateTable;
+class IJobRunner;
 
 enum class DevicePlat
 {
@@ -72,6 +73,8 @@ public:
     GpuPipelineRef CreateGpuPipeline();
 
     ResourceStateTable* GetResourceStateTable() const { return mResourceStateTable; }
+
+    virtual IJobRunner* CreateJobRunner(Pegasus::Alloc::IAllocator* allocator) = 0;
 
 protected:
     //! constructor, which creates the device

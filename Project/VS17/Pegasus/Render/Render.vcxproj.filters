@@ -113,6 +113,12 @@
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\Common\ResourceStateTable.h">
       <Filter>Source\Common</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\Common\JobTreeParser.h">
+      <Filter>Source\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\Common\JobTreeVisitors.h">
+      <Filter>Source\Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.cpp">
@@ -200,6 +206,9 @@
       <Filter>Source\Common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Common\ResourceStateTable.cpp">
+      <Filter>Source\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Common\JobTreeVisitors.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
   </ItemGroup>

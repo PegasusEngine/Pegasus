@@ -147,6 +147,11 @@ Dx12Device::~Dx12Device()
 #endif
 }
 
+IJobRunner* Dx12Device::CreateJobRunner(Pegasus::Alloc::IAllocator* allocator)
+{
+    return nullptr;
+}
+
 BufferRef Dx12Device::InternalCreateBuffer(const BufferConfig& config)
 {
 	Dx12BufferRef buff = D12_NEW(mAllocator, "Dx12Buffer") Dx12Buffer(config, this);

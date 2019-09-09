@@ -28,20 +28,27 @@ class InternalJobBuilder;
 
 typedef int InternalJobHandle;
 const InternalJobHandle InvalidJobHandle = -1;
-class InternalJobBuilder;
 
 class GpuJob
 {
 public:
-    GpuJob(InternalJobHandle h, InternalJobBuilder* parent) : mParent(parent) {}
+    GpuJob(InternalJobHandle h, InternalJobBuilder* parent) : mParent(parent), mJobHandle(h) {}
     void SetGpuPipeline(GpuPipelineRef gpuPipeline);
     void SetResourceTable(unsigned spaceRegister, ResourceTableRef resourceTable);
-    void DependsOn(const GpuJob& otherJob);
+    void AddDependency(const GpuJob& otherJob);
+
+    InternalJobBuilder* GetParent() const { return mParent; }
     InternalJobHandle GetInternalJobHandle() const { return mJobHandle; }
 
 protected:
     InternalJobBuilder* mParent;
     InternalJobHandle mJobHandle;
+};
+
+class RootJob : public GpuJob
+{
+public:
+    RootJob(InternalJobHandle h, InternalJobBuilder* parent) : GpuJob(h, parent) {}
 };
 
 class DrawJob : public GpuJob
@@ -50,32 +57,55 @@ public:
     DrawJob(InternalJobHandle h, InternalJobBuilder* parent) : GpuJob(h, parent) {}
     void SetRenderTarget(RenderTargetRef renderTargets);
     void Draw();
+    DrawJob Next();
 };
 
 class ComputeJob : public GpuJob
 {
 public:
     ComputeJob(InternalJobHandle h, InternalJobBuilder* parent) : GpuJob(h, parent) {}
-    virtual void SetUavTable(unsigned spaceRegister, ResourceTableRef uavTable);
+    void SetUavTable(unsigned spaceRegister, ResourceTableRef uavTable);
     void Dispatch(unsigned x, unsigned y, unsigned z);
+    ComputeJob Next();
 };
 
-class CopyJob
+class CopyJob : public GpuJob
 {
+public:
+    CopyJob(InternalJobHandle h, InternalJobBuilder* parent) : GpuJob(h, parent) {}
+    void Set(BufferRef src, BufferRef dst);
+    void Set(TextureRef src, TextureRef dst);
+    CopyJob Next();
 };
 
-class DisplayJob
+class DisplayJob : public GpuJob
 {
+public:
+    DisplayJob(InternalJobHandle h, InternalJobBuilder* parent) : GpuJob(h, parent) {}
+};
+
+class GroupJob : public GpuJob
+{
+public:
+    GroupJob(InternalJobHandle h, InternalJobBuilder* parent) : GpuJob(h, parent) {}
+    void AddJob(const GpuJob& other);
+    void AddJobs(const GpuJob* jobs, unsigned counts);
 };
 
 class JobBuilder
 {
 public:
     JobBuilder(IDevice* device);
-    GpuJob RootJob();
-    void SubmitRootJob();
-	ComputeJob CreateComputeJob();
-	DrawJob CreateDrawJob();
+    bool Execute(RootJob rootJob);
+
+    RootJob CreateRootJob();
+    DrawJob CreateDrawJob();
+    ComputeJob CreateComputeJob();
+    CopyJob CreateCopyJob();
+    DisplayJob CreateDisplayJob();
+    GroupJob CreateGroupJob();
+
+    void Delete(RootJob rootJob);
 
 private:
     InternalJobBuilder* mImpl;

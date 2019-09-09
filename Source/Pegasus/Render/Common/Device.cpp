@@ -65,10 +65,12 @@ IResource::IResource(IDevice* device, ResourceType resourceType)
   RefCounted(device->GetAllocator()),
   mStateId(0u)
 {
+    mStateId = mResourceStateTable->CreateStateSlot();
 }
 
 IResource::~IResource()
 {
+    mResourceStateTable->RemoveStateSlot(mStateId);
 }
 
 GpuPipeline::GpuPipeline(IDevice* device)

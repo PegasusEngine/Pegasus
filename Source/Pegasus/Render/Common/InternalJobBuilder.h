@@ -12,15 +12,21 @@
 #pragma once
 
 #include <Pegasus/Render/JobBuilder.h>
+#include <vector>
+#include "ResourceStateTable.h"
 
 namespace Pegasus
 {
 namespace Render
 {
 
-struct ComputeCmdData
+class IJobRunner;
+
+struct RootCmdData
 {
-    std::vector<ResourceTableRef> uavTables;
+    ResourceStateTable::Domain jobTreeDomain;
+    bool cachedChildren = false;
+    std::vector<InternalJobHandle> cachedChildrenJobs;
 };
 
 struct DrawCmdData
@@ -28,7 +34,30 @@ struct DrawCmdData
     RenderTargetRef rt;
 };
 
-typedef std::variant<DrawCmdData, ComputeCmdData> VariantData;
+struct ComputeCmdData
+{
+    std::vector<ResourceTableRef> uavTables;
+};
+
+struct CopyCmdData
+{
+};
+
+struct DisplayCmdData
+{
+};
+
+struct GroupCmdData
+{
+};
+
+typedef std::variant<
+	    RootCmdData,
+        DrawCmdData,
+        ComputeCmdData,
+        CopyCmdData,
+        DisplayCmdData,
+        GroupCmdData> VariantData;
 
 struct JobInstance
 {
@@ -38,7 +67,7 @@ struct JobInstance
 
     std::set<InternalJobHandle> dependenciesSet;
     std::vector<InternalJobHandle> dependenciesSorted;
-    std::vector<InternalJobHandle> parentJobs;
+    std::vector<InternalJobHandle> childrenJobs;
 
     GpuPipelineRef pso;
     VariantData data;
@@ -47,13 +76,14 @@ struct JobInstance
 class InternalJobBuilder
 {
 public:
-    InternalJobBuilder(IDevice* device) : mDevice(device) {}
+    InternalJobBuilder(IDevice* device);
+    ~InternalJobBuilder();
 
-    ComputeJob CreateComputeJob()
+    RootJob CreateRootJob()
     {
         InternalJobHandle h = CreateJobInstance();
-        jobTable[h].data = ComputeCmdData();
-        return ComputeJob(h, this);
+        jobTable[h].data = RootCmdData();
+        return RootJob(h, this);
     }
 
     DrawJob CreateDrawJob()
@@ -63,17 +93,59 @@ public:
         return DrawJob(h, this);
     }
 
+    ComputeJob CreateComputeJob()
+    {
+        InternalJobHandle h = CreateJobInstance();
+        jobTable[h].data = ComputeCmdData();
+        return ComputeJob(h, this);
+    }
+
+    CopyJob CreateCopyJob()
+    {
+        InternalJobHandle h = CreateJobInstance();
+        jobTable[h].data = CopyCmdData();
+        return CopyJob(h, this);
+    }
+
+    DisplayJob CreateDisplayJob()
+    {
+        InternalJobHandle h = CreateJobInstance();
+        jobTable[h].data = DisplayCmdData();
+        return DisplayJob(h, this);
+    }
+
+    GroupJob CreateGroupJob()
+    {
+        InternalJobHandle h = CreateJobInstance();
+        jobTable[h].data = GroupCmdData();
+        return GroupJob(h, this);
+    }
+
+    void Delete(RootJob rootJob);
+
     InternalJobHandle CreateJobInstance();
 
-    void SubmitRootJob();
+    bool CompileRootJob(RootJob rootJob);
+
+    bool Execute(RootJob rootJob);
 
     std::vector<JobInstance> jobTable;
 
 private:
-
     IDevice* mDevice;
+	IJobRunner* mRunner;
+    ResourceStateTable::Domain mStateDomain;
+    std::vector<InternalJobHandle> mFreeSlots;
 };
 
+
+class IJobRunner
+{
+public:
+    virtual bool OnExecuteRootJob(
+        RootJob rootJob,
+        ResourceStateTable::Domain domain) = 0;
+};
 
 }
 }

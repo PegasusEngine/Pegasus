@@ -71,6 +71,8 @@ public:
 
 	Core::Ref<Dx12GpuProgram> CreateGpuProgram();
 
+    virtual IJobRunner* CreateJobRunner(Pegasus::Alloc::IAllocator* allocator);
+
     virtual BufferRef InternalCreateBuffer(const BufferConfig& config);
     virtual TextureRef InternalCreateTexture(const TextureConfig& config);
     virtual RenderTargetRef InternalCreateRenderTarget(const RenderTargetConfig& config);

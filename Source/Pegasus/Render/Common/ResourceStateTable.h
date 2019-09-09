@@ -24,6 +24,7 @@ public:
     struct Domain
     {
         int id = -1;
+		bool valid() const { return id != -1; }
     };
 
     ResourceStateTable();

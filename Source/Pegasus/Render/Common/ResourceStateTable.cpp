@@ -53,8 +53,7 @@ void ResourceStateTable::RemoveDomain(ResourceStateTable::Domain d)
         return;
 
     auto& info = mDomains[d.id];
-    info.valid = false;
-    info.states.clear();
+    info = DomainInfo();
     mEmptyDomains.push_back(d.id);
 }
 

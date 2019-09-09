@@ -16,6 +16,8 @@
 #include "InternalJobBuilder.h"
 #include <queue>
 
+#define PG_VERIFY_JOB_HANDLE PG_ASSERT(mJobHandle >= 0 && mJobHandle < (InternalJobHandle)mParent->jobTable.size())
+
 namespace Pegasus
 {
 namespace Render
@@ -23,14 +25,14 @@ namespace Render
 
 void GpuJob::SetGpuPipeline(GpuPipelineRef gpuPipeline)
 {
-    PG_ASSERT(mJobHandle < (InternalJobHandle)mParent->jobTable.size());
+    PG_VERIFY_JOB_HANDLE;
     auto& jobInstance = mParent->jobTable[mJobHandle];
     jobInstance.pso = gpuPipeline;
 }
 
-void GpuJob::DependsOn(const GpuJob& other)
+void GpuJob::AddDependency(const GpuJob& other)
 {
-    PG_ASSERT(mJobHandle < (InternalJobHandle)mParent->jobTable.size());
+    PG_VERIFY_JOB_HANDLE;
     auto& jobInstance = mParent->jobTable[mJobHandle];
     
     auto it = jobInstance.dependenciesSet.insert(other.mJobHandle);
@@ -39,13 +41,13 @@ void GpuJob::DependsOn(const GpuJob& other)
         jobInstance.dependenciesSorted.push_back(other.mJobHandle);
         PG_ASSERT(other.mJobHandle < (InternalJobHandle)mParent->jobTable.size());
         auto& parentJobInstance = mParent->jobTable[other.mJobHandle];
-        parentJobInstance.parentJobs.push_back(other.mJobHandle);
+        parentJobInstance.childrenJobs.push_back(other.mJobHandle);
     }
 }
 
 void GpuJob::SetResourceTable(unsigned spaceRegister, ResourceTableRef resourceTable)
 {
-    PG_ASSERT(mJobHandle < (InternalJobHandle)mParent->jobTable.size());
+    PG_VERIFY_JOB_HANDLE;
     auto& jobInstance = mParent->jobTable[mJobHandle];
     if (spaceRegister >= (unsigned)jobInstance.srvTables.size())
     {
@@ -56,7 +58,7 @@ void GpuJob::SetResourceTable(unsigned spaceRegister, ResourceTableRef resourceT
 
 void ComputeJob::SetUavTable(unsigned spaceRegister, ResourceTableRef uavTable)
 {
-    PG_ASSERT(mJobHandle < (InternalJobHandle)mParent->jobTable.size());
+    PG_VERIFY_JOB_HANDLE;
     auto& jobInstance = mParent->jobTable[mJobHandle];
     if (auto* data = std::get_if<ComputeCmdData>(&jobInstance.data))
     {
@@ -70,12 +72,23 @@ void ComputeJob::SetUavTable(unsigned spaceRegister, ResourceTableRef uavTable)
 
 void ComputeJob::Dispatch(unsigned x, unsigned y, unsigned z)
 {
-    PG_ASSERT(mJobHandle < (InternalJobHandle)mParent->jobTable.size());
+    PG_VERIFY_JOB_HANDLE;
+}
+
+ComputeJob ComputeJob::Next()
+{
+    PG_VERIFY_JOB_HANDLE;
+    const auto& jobInstance = mParent->jobTable[mJobHandle];
+    ComputeJob other = mParent->CreateComputeJob();
+    auto& otherJobInstance = mParent->jobTable[other.mJobHandle];
+    otherJobInstance.data = jobInstance.data;
+    AddDependency(other);
+    return other;
 }
 
 void DrawJob::SetRenderTarget(RenderTargetRef renderTargets)
 {
-    PG_ASSERT(mJobHandle < (InternalJobHandle)mParent->jobTable.size());
+    PG_VERIFY_JOB_HANDLE;
     auto& jobInstance = mParent->jobTable[mJobHandle];
     if (auto* data = std::get_if<DrawCmdData>(&jobInstance.data))
     {
@@ -85,7 +98,39 @@ void DrawJob::SetRenderTarget(RenderTargetRef renderTargets)
 
 void DrawJob::Draw()
 {
-    PG_ASSERT(mJobHandle < (InternalJobHandle)mParent->jobTable.size());
+    PG_VERIFY_JOB_HANDLE;
+}
+
+DrawJob DrawJob::Next()
+{
+    PG_VERIFY_JOB_HANDLE;
+    const auto& jobInstance = mParent->jobTable[mJobHandle];
+    DrawJob other = mParent->CreateDrawJob();
+    auto& otherJobInstance = mParent->jobTable[other.mJobHandle];
+    otherJobInstance.data = jobInstance.data;
+    AddDependency(other);
+    return other;
+}
+
+
+void CopyJob::Set(BufferRef src, BufferRef dst)
+{
+    PG_VERIFY_JOB_HANDLE;
+}
+
+void CopyJob::Set(TextureRef src, TextureRef dst)
+{
+    PG_VERIFY_JOB_HANDLE;
+}
+
+void GroupJob::AddJob(const GpuJob& other)
+{
+    PG_VERIFY_JOB_HANDLE;
+}
+
+void GroupJob::AddJobs(const GpuJob* jobs, unsigned count)
+{
+    PG_VERIFY_JOB_HANDLE;
 }
 
 JobBuilder::JobBuilder(IDevice* device)
@@ -95,17 +140,14 @@ JobBuilder::JobBuilder(IDevice* device)
         InternalJobBuilder(device);
 }
 
-GpuJob JobBuilder::RootJob()
+RootJob JobBuilder::CreateRootJob()
 {
-    if (mImpl->jobTable.empty())
-        mImpl->jobTable.emplace_back();
-
-    return GpuJob(0u, mImpl);
+    return mImpl->CreateRootJob();
 }
 
-void JobBuilder::SubmitRootJob()
+bool JobBuilder::Execute(RootJob rootJob)
 {
-    mImpl->SubmitRootJob();
+    return mImpl->Execute(rootJob);
 }
 
 ComputeJob JobBuilder::CreateComputeJob()
@@ -116,6 +158,21 @@ ComputeJob JobBuilder::CreateComputeJob()
 DrawJob JobBuilder::CreateDrawJob()
 {
     return mImpl->CreateDrawJob();
+}
+
+CopyJob JobBuilder::CreateCopyJob()
+{
+    return mImpl->CreateCopyJob();
+}
+
+DisplayJob JobBuilder::CreateDisplayJob()
+{
+    return mImpl->CreateDisplayJob();
+}
+
+GroupJob JobBuilder::CreateGroupJob()
+{
+    return mImpl->CreateGroupJob();
 }
 
 }
