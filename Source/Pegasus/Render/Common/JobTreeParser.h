@@ -96,6 +96,7 @@ bool ParseRootJobDFS(const GpuJob& rootJob, VisitorT& visitor)
         if (!visitor.CanProcess(state.handle, jobInstance))
         {
             visitor.OnNoProcess(state.handle, jobInstance);
+            processStack.pop();
             continue;
         }
 

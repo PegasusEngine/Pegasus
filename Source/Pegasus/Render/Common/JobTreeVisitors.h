@@ -10,6 +10,7 @@
 //! \brief  family of job tree visitors that generate il for cmd lists
 
 #include "InternalJobBuilder.h"
+#include "ResourceStateTable.h"
 #include <vector>
 #include <queue>
 #include <stack>
@@ -61,6 +62,11 @@ private:
     std::vector<bool> mVisitedTable;
 };
 
+class CanonicalResourceTransition
+{
+    //todo: resource transitions
+};
+
 class CanonicalJobPath
 {
 public:
@@ -73,7 +79,7 @@ public:
 
     void Add(InternalJobHandle handle)
     {
-        mCmdList.push_back(handle);    
+        mCmdList.push_back(handle);
     }
 
     void AddDependency(int srcListIndex, int srcListItemIndex);
@@ -89,7 +95,7 @@ private:
     {
         int srcListIndex = -1;
         int srcListItemIndex = -1;
-        int dstLitsItemIndex = -1;
+        int dstListItemIndex = -1;
     };
 
     std::vector<Dependency> mDependencies;
@@ -99,7 +105,7 @@ private:
 class CanonicalCmdListBuilder
 {
 public:
-    CanonicalCmdListBuilder(Pegasus::Alloc::IAllocator* allocator);
+    CanonicalCmdListBuilder(Pegasus::Alloc::IAllocator* allocator, ResourceStateTable& stateTable);
 
     std::vector<CanonicalJobPath>& GetCanonicalResults()
     {
@@ -108,6 +114,7 @@ public:
 
     //main
     void Build(const GpuJob& rootJob);
+    void Reset();
 
     //overrides for visitor
     void OnBegin(JobInstance* jobTable, unsigned jobCounts);
@@ -134,12 +141,6 @@ private:
         int listItemIndex = -1;
     };
 
-    struct ProcessNode
-    {
-        BuildContext context;
-        InternalJobHandle rootJobHandle;
-    };
-
     struct NodeState
     {
         BuildContext context;
@@ -151,9 +152,11 @@ private:
     BuildContext mBuildContext;
     std::stack<BuildContext> mBuildContextStack;
     std::vector<NodeState> mStateTable;
-    std::queue<ProcessNode> mProcessNodes;
     std::vector<CanonicalJobPath> mJobPaths;
+    std::vector<CanonicalResourceTransition> mResourceTransitions;
     Pegasus::Alloc::IAllocator* mAllocator;
+    ResourceStateTable& mResourceStateTable;
+    ResourceStateTable::Domain mBuildDomain;
 };
 
 }

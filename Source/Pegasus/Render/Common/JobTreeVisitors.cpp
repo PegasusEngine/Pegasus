@@ -28,8 +28,8 @@ void CanonicalJobPath::AddDependency(int srcListIndex, int srcListItemIndex, int
     mDependencies.emplace_back(dep);
 }
 
-CanonicalCmdListBuilder::CanonicalCmdListBuilder(Pegasus::Alloc::IAllocator* allocator)
-: mAllocator(allocator), mJobCounts(0u), mJobTable(nullptr)
+CanonicalCmdListBuilder::CanonicalCmdListBuilder(Pegasus::Alloc::IAllocator* allocator, ResourceStateTable& stateTable)
+: mAllocator(allocator), mJobCounts(0u), mJobTable(nullptr), mResourceStateTable(stateTable)
 {
 }
 
@@ -39,23 +39,24 @@ void CanonicalCmdListBuilder::Build(const GpuJob& rootJob)
     if (jobTable.empty())
         return;
 
+    Reset();
+
     mJobTable = jobTable.data();
     mStateTable.resize(jobTable.size());
-    
+    mBuildDomain = mResourceStateTable.CreateDomain();
+    ParseRootJobDFS(rootJob, *this);
+    mResourceStateTable.RemoveDomain(mBuildDomain);
+    mBuildDomain = ResourceStateTable::Domain();
+}
 
-    ProcessNode initNode = { BuildContext(), rootJob.GetInternalJobHandle() };
-
-    mProcessNodes.push(initNode);
-
-    while (!mProcessNodes.empty())
-    {
-        auto processNode = mProcessNodes.front();
-        mProcessNodes.pop();
-
-        mBuildContext = processNode.context;
-        GpuJob newRootNode = { processNode.rootJobHandle, rootJob.GetParent() };
-        ParseRootJobDFS(newRootNode, *this);
-    }
+void CanonicalCmdListBuilder::Reset()
+{
+    mJobPaths.clear();
+    mStateTable.clear();
+    mBuildContextStack = std::stack<BuildContext>();
+    mResourceTransitions.clear();
+    mJobTable = nullptr;
+    mJobCounts = 0u;
 }
 
 void CanonicalCmdListBuilder::OnBegin(JobInstance* jobTable, unsigned jobCounts)
@@ -66,25 +67,20 @@ void CanonicalCmdListBuilder::OnEnd()
 {
 }
 
+void CanonicalCmdListBuilder::OnNoProcess(InternalJobHandle handle, JobInstance& jobInstance)
+{
+}
+
 bool CanonicalCmdListBuilder::OnPushed(InternalJobHandle handle, JobInstance& jobInstance)
 {
+    PG_ASSERTSTR(mStateTable[handle].state != State::Popped, "Impossible state: CanProcess shouldnt let this happen. Only things that have all dependencies done can be popped."); 
+    PG_ASSERTSTR(mStateTable[handle].context.listIndex == -1, "Impossible list context: this resource has not been added yet to a list context");
+
     //handle special cases first
     if (mStateTable[handle].state == State::Pushed)
     {
         PG_LOG('_ERR', "Found circular dependency.");
         return false;
-    }
-    else if (mStateTable[handle].state == State::Popped)
-    {
-        auto& nodeContext = mStateTable[handle].context;
-        auto& nodeJobPath = mJobPaths[nodeContext.listIndex];
-        if (nodeContext.listIndex != mBuildContext.listIndex)
-        {
-            nodeJobPath.AddDependency(mBuildContext.listIndex, mBuildContext.listItemIndex, nodeContext.listItemIndex);
-        }
-
-        mBuildContextStack.push(mBuildContext);
-        return true;
     }
 
     auto createNewList = [this]()
@@ -94,22 +90,20 @@ bool CanonicalCmdListBuilder::OnPushed(InternalJobHandle handle, JobInstance& jo
         mJobPaths.emplace_back();
     };
 
-    const bool hasJobList = mBuildContext.listIndex != -1;
-    if (!hasJobList
-    || mBuildContext.listItemIndex != mJobPaths[mBuildContext.listIndex].Size())
-    {
-        auto prevBuildContext = mBuildContext;
+    bool hasCurrentList = mBuildContext.listIndex == -1;
+    if (!hasCurrentList || mJobPaths[mBuildContext.listIndex].Size() != mBuildContext.listItemIndex)
         createNewList();
-        auto& currJobPath = mJobPaths[mBuildContext.listIndex];
-        if (hasJobList)
-        {
-            currJobPath.AddDependency(prevBuildContext.listIndex, prevBuildContext.listItemIndex);
-        }
-    }
 
     AddHandleToCurrList(handle);
     mBuildContextStack.push(mBuildContext);
     mStateTable[handle] = NodeState{ mBuildContext, State::Pushed };
+    for (int depIndx = 1; depIndx < (int)jobInstance.dependenciesSorted.size(); ++depIndx)
+    {
+        auto depState = mStateTable[jobInstance.dependenciesSorted[depIndx]];
+        PG_ASSERTSTR(depState.context.listItemIndex != -1, "Resource dependency state must've been processed already.");
+        mJobPaths[handle].AddDependency(depState.context.listIndex, depState.context.listItemIndex);
+    }
+
     return true;
 }
 
@@ -123,9 +117,6 @@ bool CanonicalCmdListBuilder::OnPopped(InternalJobHandle handle, JobInstance& jo
 
 bool CanonicalCmdListBuilder::CanProcess(InternalJobHandle handle, JobInstance& jobInstance)
 {
-    if (mStateTable[handle].state == State::Popped)
-        return false;
-
     //check if all dependencies have been handled. If not, we push this into the queue
     for (InternalJobHandle parentDep : jobInstance.dependenciesSorted)
     {
@@ -134,16 +125,6 @@ bool CanonicalCmdListBuilder::CanProcess(InternalJobHandle handle, JobInstance& 
     }
     
     return true;
-}
-
-void CanonicalCmdListBuilder::OnNoProcess(InternalJobHandle handle, JobInstance& jobInstance)
-{
-    if (mStateTable[handle].state != State::Initial)
-        return; 
-
-    //this only happens when the current node's dependencies are pending
-    ProcessNode pn = { mBuildContext, handle };
-    mProcessNodes.push(pn);
 }
 
 void CanonicalCmdListBuilder::AddHandleToCurrList(InternalJobHandle handle)
