@@ -33,6 +33,8 @@ class GpuJob
 {
 public:
     GpuJob(InternalJobHandle h, InternalJobBuilder* parent) : mParent(parent), mJobHandle(h) {}
+    void SetName(const char* name);
+    const char* GetName() const;
     void SetGpuPipeline(GpuPipelineRef gpuPipeline);
     void SetResourceTable(unsigned spaceRegister, ResourceTableRef resourceTable);
     void AddDependency(const GpuJob& otherJob);
@@ -56,7 +58,7 @@ class DrawJob : public GpuJob
 public:
     DrawJob(InternalJobHandle h, InternalJobBuilder* parent) : GpuJob(h, parent) {}
     void SetRenderTarget(RenderTargetRef renderTargets);
-    void Draw();
+    void SetDrawParams();
     DrawJob Next();
 };
 
@@ -65,7 +67,7 @@ class ComputeJob : public GpuJob
 public:
     ComputeJob(InternalJobHandle h, InternalJobBuilder* parent) : GpuJob(h, parent) {}
     void SetUavTable(unsigned spaceRegister, ResourceTableRef uavTable);
-    void Dispatch(unsigned x, unsigned y, unsigned z);
+    void SetDispatchParams(unsigned x, unsigned y, unsigned z);
     ComputeJob Next();
 };
 

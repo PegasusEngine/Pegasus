@@ -13,6 +13,7 @@
 #include "ResourceStateTable.h"
 #include <vector>
 #include <queue>
+#include <unordered_set>
 #include <stack>
 
 namespace Pegasus
@@ -55,7 +56,7 @@ public:
         return !mVisitedTable[h];
     }
 
-    void OnNoProcess(InternalJobHandle h, JobInstance& jobInstance) {}
+	bool OnNoProcess(InternalJobHandle h, JobInstance& jobInstance) { return true;  }
 	
 private:
     std::vector<InternalJobHandle>& mCachedJobHandles;
@@ -102,6 +103,13 @@ private:
     std::vector<InternalJobHandle> mCmdList;
 };
 
+struct CanonicalCmdListResult
+{
+    CanonicalJobPath* cmdLists = nullptr;
+    unsigned cmdListsCounts = 0u;
+    
+};
+
 class CanonicalCmdListBuilder
 {
 public:
@@ -113,7 +121,7 @@ public:
     }
 
     //main
-    void Build(const GpuJob& rootJob);
+    void Build(const GpuJob& rootJob, CanonicalCmdListResult& result);
     void Reset();
 
     //overrides for visitor
@@ -122,7 +130,7 @@ public:
     bool OnPushed(InternalJobHandle handle, JobInstance& jobInstance);
     bool OnPopped(InternalJobHandle handle, JobInstance& jobInstance);
     bool CanProcess(InternalJobHandle handle, JobInstance& jobInstance); 
-    void OnNoProcess(InternalJobHandle handle, JobInstance& jobInstance); 
+    bool OnNoProcess(InternalJobHandle handle, JobInstance& jobInstance); 
 
 private:
 
@@ -144,6 +152,7 @@ private:
     struct NodeState
     {
         BuildContext context;
+        int parentListId = -1;
         State state = State::Initial;
     };
 
@@ -154,6 +163,7 @@ private:
     std::vector<NodeState> mStateTable;
     std::vector<CanonicalJobPath> mJobPaths;
     std::vector<CanonicalResourceTransition> mResourceTransitions;
+    std::unordered_set<InternalJobHandle> mWaitingJobs;
     Pegasus::Alloc::IAllocator* mAllocator;
     ResourceStateTable& mResourceStateTable;
     ResourceStateTable::Domain mBuildDomain;

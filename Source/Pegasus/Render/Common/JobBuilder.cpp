@@ -23,6 +23,20 @@ namespace Pegasus
 namespace Render
 {
 
+void GpuJob::SetName(const char* name)
+{
+    PG_VERIFY_JOB_HANDLE;
+    auto& jobInstance = mParent->jobTable[mJobHandle];
+    jobInstance.name = name;
+}
+
+const char* GpuJob::GetName() const
+{
+    PG_VERIFY_JOB_HANDLE;
+    auto& jobInstance = mParent->jobTable[mJobHandle];
+    return jobInstance.name.c_str();
+}
+
 void GpuJob::SetGpuPipeline(GpuPipelineRef gpuPipeline)
 {
     PG_VERIFY_JOB_HANDLE;
@@ -41,7 +55,7 @@ void GpuJob::AddDependency(const GpuJob& other)
         jobInstance.dependenciesSorted.push_back(other.mJobHandle);
         PG_ASSERT(other.mJobHandle < (InternalJobHandle)mParent->jobTable.size());
         auto& parentJobInstance = mParent->jobTable[other.mJobHandle];
-        parentJobInstance.childrenJobs.push_back(other.mJobHandle);
+        parentJobInstance.childrenJobs.push_back(mJobHandle);
     }
 }
 
@@ -70,20 +84,26 @@ void ComputeJob::SetUavTable(unsigned spaceRegister, ResourceTableRef uavTable)
     }
 }
 
-void ComputeJob::Dispatch(unsigned x, unsigned y, unsigned z)
+void ComputeJob::SetDispatchParams(unsigned x, unsigned y, unsigned z)
 {
     PG_VERIFY_JOB_HANDLE;
+}
+
+template<class JobType>
+JobType GenericNext(JobType& objectA, JobType& other, InternalJobBuilder& builder)
+{
+    const auto& jobInstance = builder.jobTable[objectA.GetInternalJobHandle()];
+    auto& otherJobInstance = builder.jobTable[other.GetInternalJobHandle()];
+    otherJobInstance.data = jobInstance.data;
+	other.AddDependency(objectA);
+    return other;
 }
 
 ComputeJob ComputeJob::Next()
 {
     PG_VERIFY_JOB_HANDLE;
-    const auto& jobInstance = mParent->jobTable[mJobHandle];
     ComputeJob other = mParent->CreateComputeJob();
-    auto& otherJobInstance = mParent->jobTable[other.mJobHandle];
-    otherJobInstance.data = jobInstance.data;
-    AddDependency(other);
-    return other;
+    return GenericNext<ComputeJob>(*this, other, *mParent);
 }
 
 void DrawJob::SetRenderTarget(RenderTargetRef renderTargets)
@@ -96,7 +116,7 @@ void DrawJob::SetRenderTarget(RenderTargetRef renderTargets)
     }
 }
 
-void DrawJob::Draw()
+void DrawJob::SetDrawParams()
 {
     PG_VERIFY_JOB_HANDLE;
 }
@@ -104,12 +124,8 @@ void DrawJob::Draw()
 DrawJob DrawJob::Next()
 {
     PG_VERIFY_JOB_HANDLE;
-    const auto& jobInstance = mParent->jobTable[mJobHandle];
     DrawJob other = mParent->CreateDrawJob();
-    auto& otherJobInstance = mParent->jobTable[other.mJobHandle];
-    otherJobInstance.data = jobInstance.data;
-    AddDependency(other);
-    return other;
+    return GenericNext<DrawJob>(*this, other, *mParent);
 }
 
 
@@ -173,6 +189,11 @@ DisplayJob JobBuilder::CreateDisplayJob()
 GroupJob JobBuilder::CreateGroupJob()
 {
     return mImpl->CreateGroupJob();
+}
+
+void JobBuilder::Delete(RootJob rootJob)
+{
+    mImpl->Delete(rootJob);
 }
 
 }

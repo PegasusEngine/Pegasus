@@ -98,6 +98,8 @@ void InternalJobBuilder::Delete(RootJob rootJob)
 
     for (auto& childJobHandle : data.cachedChildrenJobs)
     {
+		if (childJobHandle == rootJob.GetInternalJobHandle())
+			continue;
         mFreeSlots.push_back(childJobHandle);
         jobTable[childJobHandle] = JobInstance();
     }

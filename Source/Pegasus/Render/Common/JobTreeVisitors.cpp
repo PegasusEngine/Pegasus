@@ -33,7 +33,7 @@ CanonicalCmdListBuilder::CanonicalCmdListBuilder(Pegasus::Alloc::IAllocator* all
 {
 }
 
-void CanonicalCmdListBuilder::Build(const GpuJob& rootJob)
+void CanonicalCmdListBuilder::Build(const GpuJob& rootJob, CanonicalCmdListResult& result)
 {
     auto& jobTable = rootJob.GetParent()->jobTable;
     if (jobTable.empty())
@@ -47,6 +47,22 @@ void CanonicalCmdListBuilder::Build(const GpuJob& rootJob)
     ParseRootJobDFS(rootJob, *this);
     mResourceStateTable.RemoveDomain(mBuildDomain);
     mBuildDomain = ResourceStateTable::Domain();
+
+    for (InternalJobHandle waitingJobs : mWaitingJobs)
+    {
+        if (mStateTable[waitingJobs].state != State::Popped)
+        {
+            PG_LOG('_ERR', "Circular dependency found. Stale job found");
+        }
+    }
+
+    result = {};
+    if (!mJobPaths.empty())
+    {
+        result.cmdLists = mJobPaths.data();
+        result.cmdListsCounts = (unsigned)mJobPaths.size();
+    }
+    
 }
 
 void CanonicalCmdListBuilder::Reset()
@@ -67,8 +83,10 @@ void CanonicalCmdListBuilder::OnEnd()
 {
 }
 
-void CanonicalCmdListBuilder::OnNoProcess(InternalJobHandle handle, JobInstance& jobInstance)
+bool CanonicalCmdListBuilder::OnNoProcess(InternalJobHandle handle, JobInstance& jobInstance)
 {
+    mWaitingJobs.insert(handle);
+    return true;
 }
 
 bool CanonicalCmdListBuilder::OnPushed(InternalJobHandle handle, JobInstance& jobInstance)
@@ -79,7 +97,7 @@ bool CanonicalCmdListBuilder::OnPushed(InternalJobHandle handle, JobInstance& jo
     //handle special cases first
     if (mStateTable[handle].state == State::Pushed)
     {
-        PG_LOG('_ERR', "Found circular dependency.");
+        PG_LOG('_ERR', "Found direct circular dependency.");
         return false;
     }
 
@@ -90,18 +108,36 @@ bool CanonicalCmdListBuilder::OnPushed(InternalJobHandle handle, JobInstance& jo
         mJobPaths.emplace_back();
     };
 
-    bool hasCurrentList = mBuildContext.listIndex == -1;
-    if (!hasCurrentList || mJobPaths[mBuildContext.listIndex].Size() != mBuildContext.listItemIndex)
+    bool hasParentList = mStateTable[handle].parentListId != -1;
+    if (!hasParentList)
+    {
         createNewList();
+    }
+    else
+    {
+        mBuildContext.listIndex = mStateTable[handle].parentListId;
+		mBuildContext.listItemIndex = mJobPaths[mBuildContext.listIndex].Size() - 1;
+    }
 
     AddHandleToCurrList(handle);
     mBuildContextStack.push(mBuildContext);
-    mStateTable[handle] = NodeState{ mBuildContext, State::Pushed };
-    for (int depIndx = 1; depIndx < (int)jobInstance.dependenciesSorted.size(); ++depIndx)
+    mStateTable[handle].context = mBuildContext;
+    mStateTable[handle].state = State::Pushed;
+    for (int depIndx = 0; depIndx < (int)jobInstance.dependenciesSorted.size(); ++depIndx)
     {
         auto depState = mStateTable[jobInstance.dependenciesSorted[depIndx]];
-        PG_ASSERTSTR(depState.context.listItemIndex != -1, "Resource dependency state must've been processed already.");
-        mJobPaths[handle].AddDependency(depState.context.listIndex, depState.context.listItemIndex);
+        if (depState.context.listIndex != mBuildContext.listIndex)
+        {
+            PG_ASSERTSTR(depState.context.listIndex != -1, "Resource dependency state must've been processed already.");
+            PG_ASSERTSTR(depState.context.listItemIndex != -1, "Resource dependency state must've been processed already.");
+            mJobPaths[mBuildContext.listIndex].AddDependency(depState.context.listIndex, depState.context.listItemIndex);
+        }
+    }
+
+    //chose a child to pass down, lets just do for now the first child
+    if (!jobInstance.childrenJobs.empty())
+    {
+        mStateTable[jobInstance.childrenJobs[0]].parentListId = mBuildContext.listIndex;
     }
 
     return true;
@@ -117,6 +153,9 @@ bool CanonicalCmdListBuilder::OnPopped(InternalJobHandle handle, JobInstance& jo
 
 bool CanonicalCmdListBuilder::CanProcess(InternalJobHandle handle, JobInstance& jobInstance)
 {
+	if (mStateTable[handle].state == State::Popped)
+		return false;
+
     //check if all dependencies have been handled. If not, we push this into the queue
     for (InternalJobHandle parentDep : jobInstance.dependenciesSorted)
     {

@@ -39,7 +39,7 @@ ResourceStateTable::Domain ResourceStateTable::CreateDomain()
         PG_ASSERT(newDomain.id < (int)mDomains.size());
     }
 
-    auto& newInfo = mDomains.back();
+    auto& newInfo = mDomains[newDomain.id];
     PG_ASSERT(!newInfo.valid && newInfo.states.empty());
     newInfo.valid = true;
     newInfo.states.resize(mStateCounts, 0u);

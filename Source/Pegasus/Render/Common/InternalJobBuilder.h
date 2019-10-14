@@ -13,6 +13,8 @@
 
 #include <Pegasus/Render/JobBuilder.h>
 #include <vector>
+#include <string>
+#include <variant>
 #include "ResourceStateTable.h"
 
 namespace Pegasus
@@ -52,7 +54,7 @@ struct GroupCmdData
 };
 
 typedef std::variant<
-	    RootCmdData,
+		RootCmdData,
         DrawCmdData,
         ComputeCmdData,
         CopyCmdData,
@@ -63,6 +65,7 @@ struct JobInstance
 {
     InternalJobHandle handle = InvalidJobHandle;
 
+    std::string name;
     std::vector<ResourceTableRef> srvTables;
 
     std::set<InternalJobHandle> dependenciesSet;

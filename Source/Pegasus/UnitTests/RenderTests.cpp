@@ -7,6 +7,7 @@
 #include <Pegasus/Core/Shared/ISourceCodeProxy.h>
 #include <Pegasus/Core/Shared/CompilerEvents.h>
 #include "../Source/Pegasus/Render/Common/ResourceStateTable.h"
+#include "../Source/Pegasus/Render/Common/JobTreeVisitors.h"
 #include <string>
 #include <iostream>
 
@@ -288,6 +289,61 @@ bool runTestResourceStateTable(TestHarness* harness)
 	return true;
 }
 
+bool runTestCanonicalCmdListBuilder(TestHarness* harness)
+{
+    RenderHarness* rh = static_cast<RenderHarness*>(harness);
+    IDevice* device = rh->CreateDevice();
+    CanonicalCmdListBuilder cmdListBuilder(device->GetAllocator(), *device->GetResourceStateTable());
+    JobBuilder jobBuilder(device);
+    RootJob rj = jobBuilder.CreateRootJob();
+    {
+#if 0
+        DrawJob dj1 = jobBuilder.CreateDrawJob();
+        dj1.AddDependency(rj);
+        dj1.SetName("dj1");
+        DrawJob dj2 = dj1.Next();
+        dj2.SetName("dj2");
+        DrawJob dj3 = dj2.Next();
+        dj3.SetName("dj3");
+
+        ComputeJob cj1 = jobBuilder.CreateComputeJob();
+        cj1.SetName("cj1");
+        cj1.AddDependency(rj);
+        ComputeJob cj2 = cj1.Next();
+        cj2.SetName("cj2");
+        cj2.AddDependency(dj2);
+#else
+		ComputeJob cj1 = jobBuilder.CreateComputeJob();
+		cj1.SetName("cj1");
+		cj1.AddDependency(rj);
+		ComputeJob cj2 = cj1.Next();
+		cj2.SetName("cj2");
+
+		DrawJob dj1 = jobBuilder.CreateDrawJob();
+		dj1.AddDependency(rj);
+		dj1.SetName("dj1");
+		DrawJob dj2 = dj1.Next();
+		dj2.SetName("dj2");
+		DrawJob dj3 = dj2.Next();
+		dj3.SetName("dj3");
+
+		cj1.AddDependency(cj2);
+#endif
+    }
+    
+    CanonicalCmdListResult result;
+    cmdListBuilder.Build(rj, result);
+    if (result.cmdLists == nullptr)
+        return false;
+
+    if (result.cmdListsCounts == 0u)
+        return false;
+
+    jobBuilder.Delete(rj);
+    
+    return true;
+}
+
 
 TestHarness* createRenderHarness()
 {
@@ -299,6 +355,7 @@ const TestFunc gRenderTests[] = {
     DECLARE_TEST(CreateSimpleGpuPipeline),
     DECLARE_TEST(TestSimpleCompute),
     DECLARE_TEST(TestResourceStateTable),
+    DECLARE_TEST(TestCanonicalCmdListBuilder),
     DECLARE_TEST(DestroyDevice)
 };
 

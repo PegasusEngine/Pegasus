@@ -48,7 +48,8 @@ bool ParseRootJobBFS(const GpuJob& rootJob, VisitorT& visitor)
 
         if (!visitor.CanProcess(state.handle, jobInstance))
         {
-            visitor.OnNoProcess(state.handle, jobInstance);
+			if (!visitor.OnNoProcess(state.handle, jobInstance))
+				return false;
             continue;
         }
 
@@ -93,15 +94,17 @@ bool ParseRootJobDFS(const GpuJob& rootJob, VisitorT& visitor)
 		auto& state = processStack.top();
         auto& jobInstance = jobTable[state.handle];
 
-        if (!visitor.CanProcess(state.handle, jobInstance))
-        {
-            visitor.OnNoProcess(state.handle, jobInstance);
-            processStack.pop();
-            continue;
-        }
 
         if (!state.childrenProcessed)
         {
+			if (!visitor.CanProcess(state.handle, jobInstance))
+			{
+				if (!visitor.OnNoProcess(state.handle, jobInstance))
+					return false;
+				processStack.pop();
+				continue;
+			}
+
             //begin stack visit of this parent
             if (!visitor.OnPushed(state.handle, jobInstance))
                 return false;
@@ -118,7 +121,7 @@ bool ParseRootJobDFS(const GpuJob& rootJob, VisitorT& visitor)
         else
         {
             //end visit to this node.
-            if (visitor.OnPopped(state.handle, jobInstance))
+            if (!visitor.OnPopped(state.handle, jobInstance))
                 return false;
 
             processStack.pop();
