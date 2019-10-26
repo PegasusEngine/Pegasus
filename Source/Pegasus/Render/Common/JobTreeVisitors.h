@@ -107,7 +107,9 @@ struct CanonicalCmdListResult
 {
     CanonicalJobPath* cmdLists = nullptr;
     unsigned cmdListsCounts = 0u;
-    
+
+    InternalJobHandle* staleJobs = nullptr;
+    unsigned staleJobCounts = 0u;
 };
 
 class CanonicalCmdListBuilder
@@ -164,6 +166,7 @@ private:
     std::vector<CanonicalJobPath> mJobPaths;
     std::vector<CanonicalResourceTransition> mResourceTransitions;
     std::unordered_set<InternalJobHandle> mWaitingJobs;
+    std::vector<InternalJobHandle> mStaleJobs;
     Pegasus::Alloc::IAllocator* mAllocator;
     ResourceStateTable& mResourceStateTable;
     ResourceStateTable::Domain mBuildDomain;

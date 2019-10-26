@@ -293,54 +293,108 @@ bool runTestCanonicalCmdListBuilder(TestHarness* harness)
 {
     RenderHarness* rh = static_cast<RenderHarness*>(harness);
     IDevice* device = rh->CreateDevice();
-    CanonicalCmdListBuilder cmdListBuilder(device->GetAllocator(), *device->GetResourceStateTable());
+
     JobBuilder jobBuilder(device);
-    RootJob rj = jobBuilder.CreateRootJob();
+    
+    RootJob rj1 = jobBuilder.CreateRootJob();
+    rj1.SetName("rj1");
     {
-#if 0
         DrawJob dj1 = jobBuilder.CreateDrawJob();
-        dj1.AddDependency(rj);
-        dj1.SetName("dj1");
+        dj1.AddDependency(rj1);
+        dj1.SetName("R1_dj1");
         DrawJob dj2 = dj1.Next();
-        dj2.SetName("dj2");
+        dj2.SetName("R1_dj2");
         DrawJob dj3 = dj2.Next();
-        dj3.SetName("dj3");
+        dj3.SetName("R1_dj3");
 
         ComputeJob cj1 = jobBuilder.CreateComputeJob();
-        cj1.SetName("cj1");
-        cj1.AddDependency(rj);
+        cj1.SetName("R1_cj1");
+        cj1.AddDependency(rj1);
         ComputeJob cj2 = cj1.Next();
-        cj2.SetName("cj2");
+        cj2.SetName("R1_cj2");
         cj2.AddDependency(dj2);
-#else
+        ComputeJob cj2Alt = cj1.Next();
+        cj2Alt.SetName("R1_Cj2Alt");
+        cj2Alt.AddDependency(dj1);
+    }
+    
+    RootJob rj2 = jobBuilder.CreateRootJob();
+    rj2.SetName("rj2");
+    {
+		ComputeJob cj1 = jobBuilder.CreateComputeJob();
+		cj1.SetName("R2_cj1");
+		cj1.AddDependency(rj2);
+		ComputeJob cj2 = cj1.Next();
+		cj2.SetName("R2_cj2");
+
+		DrawJob dj1 = jobBuilder.CreateDrawJob();
+		dj1.AddDependency(rj2);
+		dj1.SetName("R2_dj1");
+		DrawJob dj2 = dj1.Next();
+		dj2.SetName("R2_dj2");
+		DrawJob dj3 = dj2.Next();
+		dj3.SetName("R2_dj3");
+
+        dj2.AddDependency(cj2);
+        cj1.AddDependency(dj3);
+    }
+
+    RootJob rj3 = jobBuilder.CreateRootJob();
+    rj3.SetName("rj3");
+    {
 		ComputeJob cj1 = jobBuilder.CreateComputeJob();
 		cj1.SetName("cj1");
-		cj1.AddDependency(rj);
+		cj1.AddDependency(rj3);
 		ComputeJob cj2 = cj1.Next();
 		cj2.SetName("cj2");
 
 		DrawJob dj1 = jobBuilder.CreateDrawJob();
-		dj1.AddDependency(rj);
+		dj1.AddDependency(rj3);
 		dj1.SetName("dj1");
 		DrawJob dj2 = dj1.Next();
 		dj2.SetName("dj2");
 		DrawJob dj3 = dj2.Next();
 		dj3.SetName("dj3");
-
-		cj1.AddDependency(cj2);
-#endif
+        dj3.AddDependency(cj2);
     }
-    
-    CanonicalCmdListResult result;
-    cmdListBuilder.Build(rj, result);
-    if (result.cmdLists == nullptr)
-        return false;
 
-    if (result.cmdListsCounts == 0u)
-        return false;
-
-    jobBuilder.Delete(rj);
     
+    CanonicalCmdListBuilder cmdListBuilder(device->GetAllocator(), *device->GetResourceStateTable());
+    auto evaluateJob = [&](RootJob& rj, unsigned expectedStaleJobs, unsigned expectedLists)
+    {
+        CanonicalCmdListResult result;
+        cmdListBuilder.Build(rj, result);
+        if (result.cmdListsCounts != expectedLists)
+        {
+            PG_LOG('ERR_', "Failed job result %s, expected %d got %d command lists",
+                rj.GetName(), expectedLists, result.cmdListsCounts);
+            return false;
+        }
+
+        if (result.staleJobCounts != expectedStaleJobs)
+        {
+            PG_LOG('ERR_', "Failed job result %s, expected %d got %d stale jobs",
+                rj.GetName(), expectedStaleJobs, result.staleJobCounts);
+            return false;
+        }
+
+        return true;
+    };
+    
+    unsigned errors = 0;
+    if (!evaluateJob(rj1, 0u, 3u))
+        ++errors;
+    if (!evaluateJob(rj2, 2u, 2u))
+        ++errors;
+    if (!evaluateJob(rj3, 0u, 2u))
+        ++errors;
+
+    jobBuilder.Delete(rj1);
+    jobBuilder.Delete(rj2);
+    jobBuilder.Delete(rj3);
+    
+    if (errors != 0u)
+        return false;
     return true;
 }
 

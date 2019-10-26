@@ -48,19 +48,27 @@ void CanonicalCmdListBuilder::Build(const GpuJob& rootJob, CanonicalCmdListResul
     mResourceStateTable.RemoveDomain(mBuildDomain);
     mBuildDomain = ResourceStateTable::Domain();
 
-    for (InternalJobHandle waitingJobs : mWaitingJobs)
+    mStaleJobs.reserve(mWaitingJobs.size());
+    for (InternalJobHandle waitingJob : mWaitingJobs)
     {
-        if (mStateTable[waitingJobs].state != State::Popped)
+        if (mStateTable[waitingJob].state != State::Popped)
         {
-            PG_LOG('_ERR', "Circular dependency found. Stale job found");
+            mStaleJobs.push_back(waitingJob);
         }
     }
 
     result = {};
+
     if (!mJobPaths.empty())
     {
         result.cmdLists = mJobPaths.data();
         result.cmdListsCounts = (unsigned)mJobPaths.size();
+    }
+
+    if (!mStaleJobs.empty())
+    {
+        result.staleJobs = mStaleJobs.data();
+        result.staleJobCounts = mStaleJobs.size();
     }
     
 }
@@ -69,6 +77,8 @@ void CanonicalCmdListBuilder::Reset()
 {
     mJobPaths.clear();
     mStateTable.clear();
+    mStaleJobs.clear();
+    mWaitingJobs.clear();
     mBuildContextStack = std::stack<BuildContext>();
     mResourceTransitions.clear();
     mJobTable = nullptr;
@@ -91,15 +101,8 @@ bool CanonicalCmdListBuilder::OnNoProcess(InternalJobHandle handle, JobInstance&
 
 bool CanonicalCmdListBuilder::OnPushed(InternalJobHandle handle, JobInstance& jobInstance)
 {
-    PG_ASSERTSTR(mStateTable[handle].state != State::Popped, "Impossible state: CanProcess shouldnt let this happen. Only things that have all dependencies done can be popped."); 
+    PG_ASSERTSTR(mStateTable[handle].state == State::Initial, "Impossible state: CanProcess shouldnt let this happen. Only things that have all dependencies done can be popped/pushed."); 
     PG_ASSERTSTR(mStateTable[handle].context.listIndex == -1, "Impossible list context: this resource has not been added yet to a list context");
-
-    //handle special cases first
-    if (mStateTable[handle].state == State::Pushed)
-    {
-        PG_LOG('_ERR', "Found direct circular dependency.");
-        return false;
-    }
 
     auto createNewList = [this]()
     {
