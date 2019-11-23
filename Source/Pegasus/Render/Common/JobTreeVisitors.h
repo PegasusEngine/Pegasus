@@ -14,6 +14,7 @@
 #include <vector>
 #include <queue>
 #include <unordered_set>
+#include <unordered_map>
 #include <stack>
 
 namespace Pegasus
@@ -25,6 +26,8 @@ namespace Alloc
 {
     class IAllocator;
 }
+
+class CanonicalJobPath;
 
 class ChildJobAccumulator
 {
@@ -63,15 +66,77 @@ private:
     std::vector<bool> mVisitedTable;
 };
 
-class CanonicalResourceTransition
+enum class ResourceGpuState : unsigned
 {
-    //todo: resource transitions
+    Default,
+    Uav,
+    Srv,
+    Cbv,
+    Rt,
+    Ds,
+    CopySrc,
+    CopyDst
+};
+
+struct GpuListLocation
+{
+    unsigned listId = 0xffffffff;
+    unsigned listIndex = 0xffffffff;
+};
+
+struct LocationGpuState
+{
+    GpuListLocation location;
+    ResourceGpuState gpuState = ResourceGpuState::Default;
+};
+
+struct ResourceBarrier
+{
+    unsigned resourceStateId = 0xffffffff;
+    LocationGpuState from;
+    LocationGpuState to;
+};
+
+class ResourceTransitionSet
+{
+public:
+    ResourceTransitionSet() = default;
+	ResourceTransitionSet(const ResourceTransitionSet& other) { m_barriers = other.m_barriers; }
+    void AddBarrier(unsigned resourceId, const ResourceBarrier& barrier);
+    bool GetBarrier(unsigned resourceId, ResourceBarrier& barrier);
+
+private:
+    std::unordered_map<unsigned, ResourceBarrier> m_barriers;
+};
+
+class ResourceStateBuilder
+{
+public:
+    explicit ResourceStateBuilder(ResourceStateTable& table);
+
+    ~ResourceStateBuilder();
+    
+	LocationGpuState GetResourceState(const IResource* resource) const;
+    void StoreResourceState(const LocationGpuState& gpuState, const IResource* resource);
+    void SetState(GpuListLocation listLocation, ResourceGpuState newState, const IResource* resource);
+    void SetState(GpuListLocation listLocation, ResourceGpuState newState, const ResourceTable* resourceTable);
+
+    void ApplyBarriers(const JobInstance* jobTable, const unsigned jobTableSize,
+            const CanonicalJobPath& path, unsigned beginIndex, unsigned pathCount);
+
+private:
+    std::vector<LocationGpuState> mStates;
+    std::vector<ResourceBarrier> mBarriers;
+    ResourceStateTable::Domain mDomain;
+    ResourceStateTable& mTable;
 };
 
 class CanonicalJobPath
 {
 public:
 
+    void SetId (unsigned id) { mJobPathId = id; }
+    unsigned GetId() const { return mJobPathId; }
     void Clear() { mCmdList.clear(); }
 
     bool IsEmpty() const { return mCmdList.empty(); }
@@ -91,6 +156,11 @@ public:
         return mCmdList;
     }
 
+    const std::vector<InternalJobHandle>& GetCmdList() const 
+    {
+        return mCmdList;
+    }
+
 private:
     struct Dependency
     {
@@ -99,6 +169,7 @@ private:
         int dstListItemIndex = -1;
     };
 
+    unsigned mJobPathId = 0xffffffff;
     std::vector<Dependency> mDependencies;
     std::vector<InternalJobHandle> mCmdList;
 };
@@ -137,6 +208,7 @@ public:
 private:
 
     void AddHandleToCurrList(InternalJobHandle handle);
+    void FlushGpuStates();
 
     enum class State
     {
@@ -164,12 +236,10 @@ private:
     std::stack<BuildContext> mBuildContextStack;
     std::vector<NodeState> mStateTable;
     std::vector<CanonicalJobPath> mJobPaths;
-    std::vector<CanonicalResourceTransition> mResourceTransitions;
     std::unordered_set<InternalJobHandle> mWaitingJobs;
     std::vector<InternalJobHandle> mStaleJobs;
+    ResourceStateBuilder mGpuStateBuilder;
     Pegasus::Alloc::IAllocator* mAllocator;
-    ResourceStateTable& mResourceStateTable;
-    ResourceStateTable::Domain mBuildDomain;
 };
 
 }
