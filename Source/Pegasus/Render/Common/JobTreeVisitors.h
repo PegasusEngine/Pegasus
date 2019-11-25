@@ -80,8 +80,23 @@ enum class ResourceGpuState : unsigned
 
 struct GpuListLocation
 {
-    unsigned listId = 0xffffffff;
     unsigned listIndex = 0xffffffff;
+    unsigned listItemIndex = 0xffffffff;
+    bool operator==(const GpuListLocation& other) const
+    {
+        return listIndex == other.listIndex &&
+            listItemIndex == other.listItemIndex;
+    }
+};
+
+struct GpuListLocationHasher
+{
+    uint32_t operator()(const GpuListLocation& location) const
+    {
+        uint64_t hh = location.listIndex;
+        hh |= (uint64_t(location.listItemIndex) << 32ull);
+        return std::hash<uint64_t>()(hh);
+    }
 };
 
 struct LocationGpuState
@@ -122,11 +137,58 @@ public:
     void SetState(GpuListLocation listLocation, ResourceGpuState newState, const ResourceTable* resourceTable);
 
     void ApplyBarriers(const JobInstance* jobTable, const unsigned jobTableSize,
-            const CanonicalJobPath& path, unsigned beginIndex, unsigned pathCount);
+            const CanonicalJobPath& path, unsigned beginIndex, unsigned endIndex);
+
+    void UnapplyBarriers(const CanonicalJobPath& path, unsigned beginIndex, unsigned endIndex);
 
 private:
+    struct GpuListRange
+    {
+        unsigned listIndex;
+        unsigned beginIndex;
+        unsigned endIndex;
+
+        bool operator==(const GpuListRange& other) const
+        {
+            return listIndex == other.listIndex && 
+                beginIndex == other.beginIndex &&
+                endIndex == other.endIndex;
+        }
+    };
+
+    struct GpuListHasher
+    {
+        uint32_t operator()(const GpuListRange& range) const
+        {
+            uint64_t hh = 0ull;
+            hh |= range.listIndex;
+            hh |= ((uint64_t(range.beginIndex) & 0xffffull) << 32);
+            hh |= ((uint64_t(range.endIndex) & 0xffffull) << 48);
+            return std::hash<uint64_t>()(hh);
+        };
+    };
+
+    struct SublistRecord
+    {
+        SublistRecord() {}
+
+        SublistRecord(SublistRecord&& rr)
+        {
+            range = rr.range;
+            dependencies = std::move(rr.dependencies);
+            barriers = std::move(rr.barriers);
+        }
+
+        GpuListRange range;
+        unsigned refCount = 0u;
+        std::vector<GpuListRange> dependencies;
+        std::vector<ResourceBarrier> barriers;
+    };
+
     std::vector<LocationGpuState> mStates;
     std::vector<ResourceBarrier> mBarriers;
+    std::unordered_map<GpuListRange, SublistRecord, GpuListHasher> m_records;
+    std::unordered_map<GpuListLocation, GpuListRange, GpuListLocationHasher> m_locationCache;
     ResourceStateTable::Domain mDomain;
     ResourceStateTable& mTable;
 };
@@ -148,8 +210,9 @@ public:
         mCmdList.push_back(handle);
     }
 
-    void AddDependency(int srcListIndex, int srcListItemIndex);
-    void AddDependency(int srcListIndex, int srcListItemIndex, int dstListItemIndex);
+    void AddDependency(const GpuListLocation& listLocation);
+    void AddDependency(const GpuListLocation& listLocation, int dstListItemIndex);
+    void QueryDependencies(int beginIndex, int endIndex, std::vector<GpuListLocation>& outDependencies) const;
 
     std::vector<InternalJobHandle>& GetCmdList()
     {
@@ -164,8 +227,7 @@ public:
 private:
     struct Dependency
     {
-        int srcListIndex = -1;
-        int srcListItemIndex = -1;
+        GpuListLocation srcListLocation;
         int dstListItemIndex = -1;
     };
 
@@ -208,7 +270,6 @@ public:
 private:
 
     void AddHandleToCurrList(InternalJobHandle handle);
-    void FlushGpuStates();
 
     enum class State
     {
@@ -219,14 +280,15 @@ private:
 
     struct BuildContext
     {
-        int listIndex = -1; 
-        int listItemIndex = -1;
+        GpuListLocation listLocation;
+        int sublistBaseIndex = -1;
     };
 
     struct NodeState
     {
         BuildContext context;
         int parentListId = -1;
+        bool beginOfSublist = false;
         State state = State::Initial;
     };
 

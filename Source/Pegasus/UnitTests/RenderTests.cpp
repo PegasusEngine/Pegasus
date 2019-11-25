@@ -86,7 +86,10 @@ static Pegasus::Core::AssertReturnCode AssertHandler(const char * testStr,
 	int line,
 	const char * msgStr)
 {
-	std::cout << "ASSERT[" << fileStr << ":" << line << "] " << msgStr << std::endl;
+    std::cout << "ASSERT[" << fileStr << ":" << line << "] ";
+	if (msgStr != nullptr)
+	     std::cout << "\"" << msgStr << "\"";
+    std::cout << std::endl;
 	return Pegasus::Core::ASSERTION_CONTINUE;
 }
 
