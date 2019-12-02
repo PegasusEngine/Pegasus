@@ -78,6 +78,13 @@ enum class ResourceGpuState : unsigned
     CopyDst
 };
 
+struct ResourceGpuStateDesc
+{
+    bool isRead : 1;
+    bool isWrite : 1;
+    static ResourceGpuStateDesc Get(ResourceGpuState state);
+};
+
 struct GpuListLocation
 {
     unsigned listIndex = 0xffffffff;
@@ -137,7 +144,8 @@ public:
     void SetState(GpuListLocation listLocation, ResourceGpuState newState, const ResourceTable* resourceTable);
 
     void ApplyBarriers(const JobInstance* jobTable, const unsigned jobTableSize,
-            const CanonicalJobPath& path, unsigned beginIndex, unsigned endIndex);
+            const CanonicalJobPath* jobPaths, const unsigned jobPathsSize, 
+            const GpuListLocation& initialLocation, unsigned endIndex);
 
     void UnapplyBarriers(const CanonicalJobPath& path, unsigned beginIndex, unsigned endIndex);
 
@@ -175,6 +183,7 @@ private:
         SublistRecord(SublistRecord&& rr)
         {
             range = rr.range;
+			refCount = rr.refCount;
             dependencies = std::move(rr.dependencies);
             barriers = std::move(rr.barriers);
         }
