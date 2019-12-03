@@ -457,7 +457,7 @@ void TimelineIOMessageController::OnClearMasterBlockscript()
 
 Pegasus::Timeline::ITimelineProxy* TimelineIOMessageController::ResolveTimeline(const AssetInstanceHandle& assetHandle)
 {
-    AssetLib::IRuntimeAssetObjectProxy* timelineAssetInstance = FindInstance(assetHandle);
+    Pegasus::AssetLib::IRuntimeAssetObjectProxy* timelineAssetInstance = FindInstance(assetHandle);
     if (timelineAssetInstance != nullptr)
     {
         bool isTimeline = timelineAssetInstance->GetOwnerAsset()->GetTypeDesc()->mTypeGuid == Pegasus::ASSET_TYPE_TIMELINE.mTypeGuid;
