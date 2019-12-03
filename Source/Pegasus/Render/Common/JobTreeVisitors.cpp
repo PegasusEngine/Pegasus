@@ -194,7 +194,6 @@ void ResourceStateBuilder::ApplyBarriers(
             }
             ++rangeRecord->second.refCount;
             applyResourceStatesFromDeps(rangeRecord->second.dependencies);
-            FlushResourceStates(rangeRecord->second, false);
             return;
         }
     }
