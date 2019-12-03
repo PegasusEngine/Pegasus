@@ -69,21 +69,6 @@ static bool areStatesCompatible(ResourceGpuState currentState, ResourceGpuState 
            (!inFlightDesc.isRead && !inFlightDesc.isWrite);
 }
     
-void ResourceTransitionSet::AddBarrier(unsigned resourceId, const ResourceBarrier& barrier)
-{
-    m_barriers[resourceId] = barrier;
-}
-
-bool ResourceTransitionSet::GetBarrier(unsigned resourceId, ResourceBarrier& barrier)
-{
-    auto it = m_barriers.find(resourceId);
-    if (it == m_barriers.end())
-        return false;
-
-    barrier = it->second;
-    return true;
-}
-
 ResourceStateBuilder::ResourceStateBuilder(ResourceStateTable& table)
     : mDomain(table.CreateDomain()), mTable(table)
 {
@@ -98,13 +83,16 @@ LocationGpuState ResourceStateBuilder::GetResourceState(const IResource* resourc
 {
     uintptr_t oldStateHandle = 0u;
     mTable.GetState(mDomain, resource->GetStateId(), oldStateHandle);
-	LocationGpuState gpuState;
     if (oldStateHandle != 0u)
-        gpuState = mStates[oldStateHandle];
-    return gpuState;
+        return mStates[oldStateHandle].state;
+
+    return LocationGpuState();
 }
 
-void ResourceStateBuilder::StoreResourceState(const LocationGpuState& gpuState, const IResource* resource)
+void ResourceStateBuilder::StoreResourceState(
+    const GpuListRange& parentRange,
+    const ResourceBarrier& parentBarrier,
+    const LocationGpuState& gpuState, const IResource* resource)
 {
     uintptr_t stateHandle = 0u;
     mTable.GetState(mDomain, resource->GetStateId(), stateHandle);
@@ -113,12 +101,41 @@ void ResourceStateBuilder::StoreResourceState(const LocationGpuState& gpuState, 
         stateHandle = (uintptr_t)mStates.size();
         mTable.StoreState(mDomain, resource->GetStateId(), stateHandle);
         mStates.emplace_back();
+        mStates.back().usagesRanges[parentRange] = std::move(std::vector<LocationGpuState>());
+    }
+    else
+    {
+        //validation
+        ResourceGpuStateDesc inStateDesc = ResourceGpuStateDesc::Get(gpuState.gpuState);
+        for (auto r : mStates[stateHandle].usagesRanges)
+        {
+            auto recIt = m_records.find(r.first);
+            PG_ASSERT(recIt != m_records.end());
+            if (recIt->second.refCount != 0u)//means this resource is being used by another list
+            {
+                BarrierViolation possibleViolation;
+                for (auto s : r.second)
+                {
+                    if (areStatesCompatible(gpuState.gpuState, s.gpuState))
+                        continue;
+
+                    possibleViolation.inFlightStates.push_back(s);
+                }
+        
+                if (!possibleViolation.inFlightStates.empty())
+                {
+                    possibleViolation.barrier = parentBarrier;
+                    mViolations.emplace_back(std::move(possibleViolation));
+                }
+            }
+        }
     }
 
-    mStates[stateHandle] = gpuState;
+    mStates[stateHandle].state = gpuState;
+    mStates[stateHandle].usagesRanges[parentRange].push_back(gpuState);
 }
 
-void ResourceStateBuilder::SetState(GpuListLocation listLocation, ResourceGpuState newState, const IResource* resource)
+void ResourceStateBuilder::SetState(const GpuListRange& parentRange, GpuListLocation listLocation, ResourceGpuState newState, const IResource* resource)
 {
     LocationGpuState oldGpuState = GetResourceState(resource);
 	LocationGpuState newGpuState;
@@ -127,19 +144,19 @@ void ResourceStateBuilder::SetState(GpuListLocation listLocation, ResourceGpuSta
 
     if (oldGpuState.gpuState != newGpuState.gpuState)
     {
-        StoreResourceState(newGpuState, resource);
         ResourceBarrier newBarrier;
         newBarrier.resource = resource;
         newBarrier.from = oldGpuState;
         newBarrier.to = newGpuState;
         mBarriers.emplace_back(newBarrier);
+        StoreResourceState(parentRange, newBarrier, newGpuState, resource);
     }
 }
 
-void ResourceStateBuilder::SetState(GpuListLocation listLocation, ResourceGpuState newState, const ResourceTable* resourceTable)
+void ResourceStateBuilder::SetState(const GpuListRange& parentRange, GpuListLocation listLocation, ResourceGpuState newState, const ResourceTable* resourceTable)
 {
         for (auto resRef : resourceTable->GetConfig().resources)
-            SetState(listLocation, newState, &(*resRef));
+            SetState(parentRange, listLocation, newState, &(*resRef));
 }
 
 void ResourceStateBuilder::FlushResourceStates(const SublistRecord& record, bool applyInverse)
@@ -149,7 +166,7 @@ void ResourceStateBuilder::FlushResourceStates(const SublistRecord& record, bool
         auto& gpuState = applyInverse ? barrier.from : barrier.to;
         PG_ASSERT(record.range.listIndex == gpuState.location.listIndex);
         PG_ASSERT(record.range.beginIndex == gpuState.location.listItemIndex);
-        StoreResourceState(gpuState, barrier.resource);
+        StoreResourceState(record.range, barrier, gpuState, barrier.resource);
     }
 }
 
@@ -248,12 +265,12 @@ void ResourceStateBuilder::ApplyBarriers(
         const JobInstance& instance = jobTable[handle];
         for (auto& tableRef : instance.srvTables)
         {
-            SetState(listLocation, ResourceGpuState::Srv, &(*tableRef));
+            SetState(range, listLocation, ResourceGpuState::Srv, &(*tableRef));
         }
         std::visit(overloaded {
-            [this, &listLocation](const RootCmdData& d){
+            [&](const RootCmdData& d){
             },
-            [this, &listLocation](const DrawCmdData& d){
+            [&](const DrawCmdData& d){
 				if (d.rt == nullptr)
 					return;
 
@@ -261,21 +278,21 @@ void ResourceStateBuilder::ApplyBarriers(
                 {
                     if (resource == nullptr)
                         continue;
-                    SetState(listLocation, ResourceGpuState::Rt, &(*resource));
+                    SetState(range, listLocation, ResourceGpuState::Rt, &(*resource));
                 }
 
                 if (d.rt->GetConfig().depthStencil != nullptr)
-                    SetState(listLocation, ResourceGpuState::Ds, &(*d.rt->GetConfig().depthStencil));
+                    SetState(range, listLocation, ResourceGpuState::Ds, &(*d.rt->GetConfig().depthStencil));
             },
-            [this, &listLocation](const ComputeCmdData& d){
+            [&](const ComputeCmdData& d){
                 for (auto& tableRef : d.uavTables)
-                    SetState(listLocation, ResourceGpuState::Uav, &(*tableRef));
+                    SetState(range, listLocation, ResourceGpuState::Uav, &(*tableRef));
             },
-            [this, &listLocation](const CopyCmdData& d){
+            [&](const CopyCmdData& d){
             },
-            [this, &listLocation](const DisplayCmdData& d){
+            [&](const DisplayCmdData& d){
             },
-            [this, &listLocation](const GroupCmdData& d){
+            [&](const GroupCmdData& d){
             }
         }, instance.data);
     }

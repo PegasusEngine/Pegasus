@@ -119,16 +119,18 @@ struct ResourceBarrier
     LocationGpuState to;
 };
 
-class ResourceTransitionSet
+struct BarrierViolation
 {
-public:
-    ResourceTransitionSet() = default;
-	ResourceTransitionSet(const ResourceTransitionSet& other) { m_barriers = other.m_barriers; }
-    void AddBarrier(unsigned resourceId, const ResourceBarrier& barrier);
-    bool GetBarrier(unsigned resourceId, ResourceBarrier& barrier);
+    ResourceBarrier barrier;
+    std::vector<LocationGpuState> inFlightStates;
 
-private:
-    std::unordered_map<unsigned, ResourceBarrier> m_barriers;
+    BarrierViolation() = default;
+    BarrierViolation(const BarrierViolation& other) = default;
+    BarrierViolation(BarrierViolation&& other)
+    {
+        barrier = other.barrier;
+        inFlightStates = std::move(other.inFlightStates);
+    }
 };
 
 class ResourceStateBuilder
@@ -139,9 +141,6 @@ public:
     ~ResourceStateBuilder();
     
 	LocationGpuState GetResourceState(const IResource* resource) const;
-    void StoreResourceState(const LocationGpuState& gpuState, const IResource* resource);
-    void SetState(GpuListLocation listLocation, ResourceGpuState newState, const IResource* resource);
-    void SetState(GpuListLocation listLocation, ResourceGpuState newState, const ResourceTable* resourceTable);
 	void Reset();
     void ApplyBarriers(const JobInstance* jobTable, const unsigned jobTableSize,
             const CanonicalJobPath* jobPaths, const unsigned jobPathsSize, 
@@ -195,9 +194,19 @@ private:
         std::vector<ResourceBarrier> barriers;
     };
 
+    struct GpuResourceStateRecord
+    {
+        LocationGpuState state;
+        std::unordered_map<GpuListRange, std::vector<LocationGpuState> , GpuListHasher> usagesRanges;
+    };
+
+    void SetState(const GpuListRange& parentRange, GpuListLocation listLocation, ResourceGpuState newState, const IResource* resource);
+    void SetState(const GpuListRange& parentRange, GpuListLocation listLocation, ResourceGpuState newState, const ResourceTable* resourceTable);
+    void StoreResourceState(const GpuListRange& parentRange, const ResourceBarrier& parentBarrier, const LocationGpuState& gpuState, const IResource* resource);
 	void FlushResourceStates(const SublistRecord& record, bool applyInverse);
 
-    std::vector<LocationGpuState> mStates;
+    std::vector<BarrierViolation> mViolations;
+    std::vector<GpuResourceStateRecord> mStates;
     std::vector<ResourceBarrier> mBarriers;
     std::unordered_map<GpuListRange, SublistRecord, GpuListHasher> m_records;
     std::unordered_map<GpuListLocation, GpuListRange, GpuListLocationHasher> m_locationCache;
