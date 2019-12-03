@@ -289,6 +289,8 @@ void ResourceStateBuilder::ApplyBarriers(
                     SetState(range, listLocation, ResourceGpuState::Uav, &(*tableRef));
             },
             [&](const CopyCmdData& d){
+                SetState(range, listLocation, ResourceGpuState::CopySrc, &(*d.src));
+                SetState(range, listLocation, ResourceGpuState::CopyDst, &(*d.dst));
             },
             [&](const DisplayCmdData& d){
             },

@@ -132,11 +132,23 @@ DrawJob DrawJob::Next()
 void CopyJob::Set(BufferRef src, BufferRef dst)
 {
     PG_VERIFY_JOB_HANDLE;
+    auto& jobInstance = mParent->jobTable[mJobHandle];
+    if (auto* data = std::get_if<CopyCmdData>(&jobInstance.data))
+    {
+        data->src = &(*src);
+        data->dst = &(*dst);
+    }
 }
 
 void CopyJob::Set(TextureRef src, TextureRef dst)
 {
     PG_VERIFY_JOB_HANDLE;
+    auto& jobInstance = mParent->jobTable[mJobHandle];
+    if (auto* data = std::get_if<CopyCmdData>(&jobInstance.data))
+    {
+        data->src = &(*src);
+        data->dst = &(*dst);
+    }
 }
 
 void GroupJob::AddJob(const GpuJob& other)

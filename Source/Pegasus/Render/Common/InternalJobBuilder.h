@@ -43,6 +43,8 @@ struct ComputeCmdData
 
 struct CopyCmdData
 {
+    Core::Ref<IResource> src;
+    Core::Ref<IResource> dst;
 };
 
 struct DisplayCmdData
