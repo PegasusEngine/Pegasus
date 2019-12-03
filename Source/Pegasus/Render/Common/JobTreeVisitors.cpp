@@ -58,6 +58,16 @@ ResourceGpuStateDesc ResourceGpuStateDesc::Get(ResourceGpuState state)
 
     return d;
 }
+
+static bool areStatesCompatible(ResourceGpuState currentState, ResourceGpuState inFlightState)
+{
+    auto currDesc = ResourceGpuStateDesc::Get(currentState);
+    auto inFlightDesc = ResourceGpuStateDesc::Get(currentState);
+
+    return ((currDesc.isRead && !currDesc.isWrite) && (inFlightDesc.isRead && !inFlightDesc.isWrite)) ||
+           (!currDesc.isRead && !currDesc.isWrite) ||
+           (!inFlightDesc.isRead && !inFlightDesc.isWrite);
+}
     
 void ResourceTransitionSet::AddBarrier(unsigned resourceId, const ResourceBarrier& barrier)
 {
@@ -119,7 +129,7 @@ void ResourceStateBuilder::SetState(GpuListLocation listLocation, ResourceGpuSta
     {
         StoreResourceState(newGpuState, resource);
         ResourceBarrier newBarrier;
-        newBarrier.resourceStateId = resource->GetStateId();
+        newBarrier.resource = resource;
         newBarrier.from = oldGpuState;
         newBarrier.to = newGpuState;
         mBarriers.emplace_back(newBarrier);
@@ -132,6 +142,28 @@ void ResourceStateBuilder::SetState(GpuListLocation listLocation, ResourceGpuSta
             SetState(listLocation, newState, &(*resRef));
 }
 
+void ResourceStateBuilder::FlushResourceStates(const SublistRecord& record, bool applyInverse)
+{
+    for (auto& barrier : record.barriers)
+    {
+        auto& gpuState = applyInverse ? barrier.from : barrier.to;
+        PG_ASSERT(record.range.listIndex == gpuState.location.listIndex);
+        PG_ASSERT(record.range.beginIndex == gpuState.location.listItemIndex);
+        StoreResourceState(gpuState, barrier.resource);
+    }
+}
+
+void ResourceStateBuilder::Reset()
+{
+	mStates.clear();
+	mBarriers.clear();
+	m_records.clear();
+	m_locationCache.clear();
+
+	mTable.RemoveDomain(mDomain);
+	mDomain = mTable.CreateDomain();
+}
+
 void ResourceStateBuilder::ApplyBarriers(
         const JobInstance* jobTable, const unsigned jobTableSize,
         const CanonicalJobPath* jobPaths, const unsigned jobPathsSize, 
@@ -139,21 +171,74 @@ void ResourceStateBuilder::ApplyBarriers(
 {
     const CanonicalJobPath& path = jobPaths[initialLocation.listIndex];
 
+    auto applyResourceStatesFromDeps = [&](const std::vector<GpuListRange>& dependencies)
+    {
+        for (int depIndex = (int)dependencies.size() - 1; depIndex >= 0; --depIndex )
+        {
+            auto recIt = m_records.find(dependencies[depIndex]);
+            PG_ASSERT(recIt != m_records.end());
+            FlushResourceStates(recIt->second, false);
+        }
+    };
+
     GpuListRange range = { path.GetId(), initialLocation.listItemIndex, endIndex };
     {
         auto rangeRecord = m_records.find(range);
         if (rangeRecord != m_records.end())
         {
-            ++rangeRecord->second.refCount;
             for (auto dep : rangeRecord->second.dependencies)
             {
                 auto depIt = m_records.find(dep);
                 PG_ASSERT(depIt != m_records.end());
                 ++depIt->second.refCount;
             }
+            ++rangeRecord->second.refCount;
+            applyResourceStatesFromDeps(rangeRecord->second.dependencies);
+            FlushResourceStates(rangeRecord->second, false);
             return;
         }
     }
+
+    SublistRecord sublistRecord;
+    sublistRecord.refCount = 1u;
+    sublistRecord.range = range; 
+    {
+        GpuListRange r;
+        r.listIndex = initialLocation.listIndex;
+        r.beginIndex = initialLocation.listItemIndex;
+        r.endIndex = endIndex;
+        std::unordered_set<GpuListRange, GpuListHasher> traversed;
+        std::vector<GpuListRange> pendingRanges;
+        pendingRanges.push_back(r);
+        while (!pendingRanges.empty())
+        {
+            r = pendingRanges.back();
+            pendingRanges.pop_back();
+
+            PG_ASSERT(r.listIndex < jobPathsSize);
+            std::vector<CanonicalJobPath::Dependency> outDeps;
+            jobPaths[r.listIndex].QueryDependencies(0u, r.endIndex, outDeps);
+
+            for (const auto& dep : outDeps)
+            {
+                GpuListLocation loc = dep.location;
+                loc.listItemIndex = dep.sublistIndex;
+                
+                auto rangeIt = m_locationCache.find(loc);
+                PG_ASSERT(rangeIt != m_locationCache.end());
+
+                sublistRecord.dependencies.push_back(rangeIt->second);
+                auto depIt = m_records.find(rangeIt->second);
+                PG_ASSERT(depIt != m_records.end());
+                ++depIt->second.refCount;
+
+                if (traversed.insert(rangeIt->second).second)
+                    pendingRanges.push_back(rangeIt->second);
+            }
+        }
+    }
+
+    applyResourceStatesFromDeps(sublistRecord.dependencies);
 
     GpuListLocation listLocation = initialLocation;
     for (unsigned i = initialLocation.listItemIndex; i <= endIndex; ++i)
@@ -196,49 +281,10 @@ void ResourceStateBuilder::ApplyBarriers(
         }, instance.data);
     }
 
-    SublistRecord sublistRecord;
-    sublistRecord.refCount = 1u;
-    sublistRecord.range = range; 
-    sublistRecord.barriers = std::move(mBarriers);
-
-    {
-        GpuListRange r;
-        r.listIndex = initialLocation.listIndex;
-        r.beginIndex = initialLocation.listItemIndex;
-        r.endIndex = endIndex;
-        std::unordered_set<GpuListRange, GpuListHasher> traversed;
-        std::vector<GpuListRange> pendingRanges;
-        pendingRanges.push_back(r);
-        while (!pendingRanges.empty())
-        {
-            r = pendingRanges.back();
-            pendingRanges.pop_back();
-
-            PG_ASSERT(r.listIndex < jobPathsSize);
-            std::vector<GpuListLocation> outDeps;
-            jobPaths[r.listIndex].QueryDependencies(0u, r.endIndex, outDeps);
-
-            for (const auto& loc : outDeps)
-            {
-                auto rangeIt = m_locationCache.find(loc);
-                PG_ASSERT(rangeIt != m_locationCache.end());
-
-                sublistRecord.dependencies.push_back(rangeIt->second);
-                auto depIt = m_records.find(rangeIt->second);
-                PG_ASSERT(depIt != m_records.end());
-                ++depIt->second.refCount;
-
-                auto recordIt = m_records.find(rangeIt->second);
-                PG_ASSERT(recordIt != m_records.end());
-                ++recordIt->second.refCount;
-                if (traversed.insert(rangeIt->second).second)
-                    pendingRanges.push_back(rangeIt->second);
-            }
-        }
-    }
-
+	sublistRecord.barriers = std::move(mBarriers);
     mBarriers = std::vector<ResourceBarrier>();
     m_records.insert(std::make_pair(range, std::move(sublistRecord)));
+    PG_ASSERT(m_locationCache.find(initialLocation) == m_locationCache.end());
     m_locationCache.insert(std::make_pair(initialLocation, range));
 }
 
@@ -247,16 +293,18 @@ void ResourceStateBuilder::UnapplyBarriers(const CanonicalJobPath& path, unsigne
     GpuListRange range = { path.GetId(), beginIndex, endIndex };
     auto recIt = m_records.find(range);
     PG_ASSERT(recIt != m_records.end());
+    PG_ASSERT(recIt->second.refCount != 0u);
+    --recIt->second.refCount;
+    FlushResourceStates(recIt->second, true);
+
     for (auto depRange : recIt->second.dependencies)
     {
         auto depIt = m_records.find(depRange);
         PG_ASSERT(depIt != m_records.end());
         PG_ASSERT(depIt->second.refCount != 0u);
         --depIt->second.refCount;
+        FlushResourceStates(depIt->second, true);
     }
-
-    PG_ASSERT(recIt->second.refCount != 0u);
-    --recIt->second.refCount;
 
     GpuListLocation listLocation;
     listLocation.listIndex = path.GetId();
@@ -266,24 +314,28 @@ void ResourceStateBuilder::UnapplyBarriers(const CanonicalJobPath& path, unsigne
     PG_ASSERT(m_locationCache[listLocation] == range);
 }
 
-void CanonicalJobPath::AddDependency(const GpuListLocation& listLocation)
+void CanonicalJobPath::AddDependency(const GpuListLocation& listLocation, unsigned sublistIndex)
 {
-    AddDependency(listLocation, ((int)(mCmdList.size()) - 1));
+    PG_ASSERT(!mCmdList.empty());
+    CanonicalJobPath::Dependency d;
+    d.location = listLocation;
+    d.sublistIndex = sublistIndex;
+    d.dstListItemIndex = (unsigned)(mCmdList.size()) - 1;
+    AddDependency(d);
 }
 
-void CanonicalJobPath::AddDependency(const GpuListLocation& listLocation, int dstListItemIndex)
+void CanonicalJobPath::AddDependency(const CanonicalJobPath::Dependency& dep)
 {
-    Dependency dep = { listLocation,  dstListItemIndex };
     mDependencies.emplace_back(dep);
 }
 
 
-void CanonicalJobPath::QueryDependencies(int beginIndex, int endIndex, std::vector<GpuListLocation>& outDependencies) const
+void CanonicalJobPath::QueryDependencies(int beginIndex, int endIndex, std::vector<CanonicalJobPath::Dependency>& outDependencies) const
 {
     for (const auto& dep : mDependencies)
     {
-        if (dep.dstListItemIndex >= beginIndex && dep.dstListItemIndex <= endIndex)
-            outDependencies.push_back(dep.srcListLocation);
+        if ((int)dep.dstListItemIndex >= beginIndex && (int)dep.dstListItemIndex <= endIndex)
+            outDependencies.push_back(dep);
     }
 }
 
@@ -299,7 +351,6 @@ void CanonicalCmdListBuilder::Build(const GpuJob& rootJob, CanonicalCmdListResul
         return;
 
     Reset();
-
     mJobTable = jobTable.data();
     mJobCounts = (unsigned)jobTable.size();
     mStateTable.resize(jobTable.size());
@@ -336,6 +387,7 @@ void CanonicalCmdListBuilder::Reset()
     mStateTable.clear();
     mStaleJobs.clear();
     mWaitingJobs.clear();
+	mGpuStateBuilder.Reset();
     mBuildContextStack = std::stack<BuildContext>();
     mJobTable = nullptr;
     mJobCounts = 0u;
@@ -396,7 +448,8 @@ bool CanonicalCmdListBuilder::OnPushed(InternalJobHandle handle, JobInstance& jo
         {
             PG_ASSERTSTR(depState.context.listLocation.listIndex != 0xffffffff, "Resource dependency state must've been processed already.");
             PG_ASSERTSTR(depState.context.listLocation.listItemIndex != 0xffffffff, "Resource dependency state must've been processed already.");
-            mJobPaths[mBuildContext.listLocation.listIndex].AddDependency(depState.context.listLocation);
+			PG_ASSERTSTR(depState.context.sublistBaseIndex != 0xffffffff, "Resource dependency state must've been processed already.");
+            mJobPaths[mBuildContext.listLocation.listIndex].AddDependency(depState.context.listLocation, depState.context.sublistBaseIndex);
         }
     }
 
@@ -410,8 +463,14 @@ bool CanonicalCmdListBuilder::OnPushed(InternalJobHandle handle, JobInstance& jo
             initialLocation, (unsigned)mBuildContext.listLocation.listItemIndex);
     };
 
+	unsigned availableChildJobs = 0;
+	for (auto j : jobInstance.childrenJobs)
+	{
+		availableChildJobs += CanProcess(j, mJobTable[j]) ? 1 : 0;
+	}
+
     //chose a child to pass down, lets just do for now the first child
-    if (!jobInstance.childrenJobs.empty())
+    if (availableChildJobs != 0u)
     {
         auto& nextChild = mStateTable[jobInstance.childrenJobs[0]];
         nextChild.parentListId = mBuildContext.listLocation.listIndex;

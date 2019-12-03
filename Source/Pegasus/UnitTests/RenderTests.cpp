@@ -385,7 +385,7 @@ bool runTestCanonicalCmdListBuilder(TestHarness* harness)
     };
     
     unsigned errors = 0;
-    if (!evaluateJob(rj1, 0u, 3u))
+    if (!evaluateJob(rj1, 0u, 4u))
         ++errors;
     if (!evaluateJob(rj2, 2u, 2u))
         ++errors;

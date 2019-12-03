@@ -114,7 +114,7 @@ struct LocationGpuState
 
 struct ResourceBarrier
 {
-    unsigned resourceStateId = 0xffffffff;
+    const IResource* resource = nullptr;
     LocationGpuState from;
     LocationGpuState to;
 };
@@ -142,7 +142,7 @@ public:
     void StoreResourceState(const LocationGpuState& gpuState, const IResource* resource);
     void SetState(GpuListLocation listLocation, ResourceGpuState newState, const IResource* resource);
     void SetState(GpuListLocation listLocation, ResourceGpuState newState, const ResourceTable* resourceTable);
-
+	void Reset();
     void ApplyBarriers(const JobInstance* jobTable, const unsigned jobTableSize,
             const CanonicalJobPath* jobPaths, const unsigned jobPathsSize, 
             const GpuListLocation& initialLocation, unsigned endIndex);
@@ -150,6 +150,7 @@ public:
     void UnapplyBarriers(const CanonicalJobPath& path, unsigned beginIndex, unsigned endIndex);
 
 private:
+
     struct GpuListRange
     {
         unsigned listIndex;
@@ -194,6 +195,8 @@ private:
         std::vector<ResourceBarrier> barriers;
     };
 
+	void FlushResourceStates(const SublistRecord& record, bool applyInverse);
+
     std::vector<LocationGpuState> mStates;
     std::vector<ResourceBarrier> mBarriers;
     std::unordered_map<GpuListRange, SublistRecord, GpuListHasher> m_records;
@@ -219,9 +222,16 @@ public:
         mCmdList.push_back(handle);
     }
 
-    void AddDependency(const GpuListLocation& listLocation);
-    void AddDependency(const GpuListLocation& listLocation, int dstListItemIndex);
-    void QueryDependencies(int beginIndex, int endIndex, std::vector<GpuListLocation>& outDependencies) const;
+    struct Dependency
+    {
+        GpuListLocation location;
+        unsigned sublistIndex = 0xffffffff;
+        unsigned dstListItemIndex = 0xffffffff;
+    };
+
+    void AddDependency(const GpuListLocation& location, unsigned sublistIndex);
+    void AddDependency(const Dependency& d);
+    void QueryDependencies(int beginIndex, int endIndex, std::vector<Dependency>& outDependencies) const;
 
     std::vector<InternalJobHandle>& GetCmdList()
     {
@@ -234,11 +244,6 @@ public:
     }
 
 private:
-    struct Dependency
-    {
-        GpuListLocation srcListLocation;
-        int dstListItemIndex = -1;
-    };
 
     unsigned mJobPathId = 0xffffffff;
     std::vector<Dependency> mDependencies;
@@ -277,7 +282,6 @@ public:
     bool OnNoProcess(InternalJobHandle handle, JobInstance& jobInstance); 
 
 private:
-
     void AddHandleToCurrList(InternalJobHandle handle);
 
     enum class State
