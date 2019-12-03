@@ -396,9 +396,71 @@ bool runTestCanonicalCmdListBuilder(TestHarness* harness)
     jobBuilder.Delete(rj2);
     jobBuilder.Delete(rj3);
     
-    if (errors != 0u)
-        return false;
-    return true;
+    return errors == 0u;
+}
+
+bool runTestAutomaticBarriers(TestHarness* harness)
+{
+    RenderHarness* rh = static_cast<RenderHarness*>(harness);
+    IDevice* device = rh->CreateDevice();
+
+    //resources
+	BufferConfig bufferConfig = {};
+    bufferConfig.name = "TestBufferA";
+    bufferConfig.format = Core::FORMAT_R32_UINT;
+    bufferConfig.stride = sizeof(unsigned);
+    bufferConfig.elementCount = 20u;
+    bufferConfig.bufferType = BufferType_Default;
+    bufferConfig.bindFlags = BindFlags(BindFlags_Srv | BindFlags_Uav);
+
+    BufferRef buffA = device->CreateBuffer(bufferConfig);
+    
+    bufferConfig.name = "TestBufferB";
+
+    BufferRef buffB = device->CreateBuffer(bufferConfig);
+
+    JobBuilder jobBuilder(device);
+    CanonicalCmdListBuilder cmdListBuilder(device->GetAllocator(), *device->GetResourceStateTable());
+
+    RootJob rj1 = jobBuilder.CreateRootJob();
+	rj1.SetName("Rj1");
+    {
+        auto copyAtoB = jobBuilder.CreateCopyJob();
+		copyAtoB.AddDependency(rj1);
+		copyAtoB.SetName("Rj1_A2B");
+        copyAtoB.Set(buffA, buffB);
+		
+        auto copyBtoA = copyAtoB.Next();
+		copyBtoA.SetName("Rj1_B2A");
+        copyBtoA.Set(buffB, buffA);
+    }
+
+    auto evaluateJob = [&](RootJob rj, unsigned expectedBarrierViolations, unsigned expectedCmdLists)
+    {
+        CanonicalCmdListResult result;
+        cmdListBuilder.Build(rj, result);
+        if (result.cmdListsCounts != expectedCmdLists)
+        {
+            PG_LOG('ERR_', "Failed job result %s, expected %d got %d command lists",
+                rj.GetName(), expectedCmdLists, result.cmdListsCounts);
+            return false;
+        }
+
+        if (result.barrierViolationsCount != expectedBarrierViolations)
+        {
+            PG_LOG('ERR_', "Failed job result %s, expected %d barrier violations got %d.",
+                rj.GetName(), expectedBarrierViolations, result.barrierViolationsCount);
+            return false;
+        }
+
+		return true;
+    };
+
+    unsigned errors = 0u;
+    if (!evaluateJob(rj1, 0u, 1u))
+        ++errors;
+
+    return errors == 0u;
 }
 
 
@@ -413,6 +475,7 @@ const TestFunc gRenderTests[] = {
     DECLARE_TEST(TestSimpleCompute),
     DECLARE_TEST(TestResourceStateTable),
     DECLARE_TEST(TestCanonicalCmdListBuilder),
+    DECLARE_TEST(TestAutomaticBarriers),
     DECLARE_TEST(DestroyDevice)
 };
 

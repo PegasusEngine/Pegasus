@@ -84,7 +84,7 @@ LocationGpuState ResourceStateBuilder::GetResourceState(const IResource* resourc
     uintptr_t oldStateHandle = 0u;
     mTable.GetState(mDomain, resource->GetStateId(), oldStateHandle);
     if (oldStateHandle != 0u)
-        return mStates[oldStateHandle].state;
+        return mStates[oldStateHandle - 1u].state;
 
     return LocationGpuState();
 }
@@ -99,18 +99,21 @@ void ResourceStateBuilder::StoreResourceState(
     if (stateHandle == 0u)
     {
         stateHandle = (uintptr_t)mStates.size();
-        mTable.StoreState(mDomain, resource->GetStateId(), stateHandle);
+        mTable.StoreState(mDomain, resource->GetStateId(), stateHandle + 1u);
         mStates.emplace_back();
         mStates.back().usagesRanges[parentRange] = std::move(std::vector<LocationGpuState>());
     }
     else
     {
+		stateHandle = stateHandle - 1u;
         //validation
         ResourceGpuStateDesc inStateDesc = ResourceGpuStateDesc::Get(gpuState.gpuState);
         for (auto r : mStates[stateHandle].usagesRanges)
         {
             auto recIt = m_records.find(r.first);
-            PG_ASSERT(recIt != m_records.end());
+			if (recIt == m_records.end()) //means its the current list
+				continue;
+
             if (recIt->second.refCount != 0u)//means this resource is being used by another list
             {
                 BarrierViolation possibleViolation;
@@ -164,8 +167,6 @@ void ResourceStateBuilder::FlushResourceStates(const SublistRecord& record, bool
     for (auto& barrier : record.barriers)
     {
         auto& gpuState = applyInverse ? barrier.from : barrier.to;
-        PG_ASSERT(record.range.listIndex == gpuState.location.listIndex);
-        PG_ASSERT(record.range.beginIndex == gpuState.location.listItemIndex);
         StoreResourceState(record.range, barrier, gpuState, barrier.resource);
     }
 }
@@ -396,7 +397,8 @@ void CanonicalCmdListBuilder::Build(const GpuJob& rootJob, CanonicalCmdListResul
         result.staleJobs = mStaleJobs.data();
         result.staleJobCounts = mStaleJobs.size();
     }
-    
+
+    result.barrierViolations = mGpuStateBuilder.GetBarrierViolations(result.barrierViolationsCount);
 }
 
 void CanonicalCmdListBuilder::Reset()

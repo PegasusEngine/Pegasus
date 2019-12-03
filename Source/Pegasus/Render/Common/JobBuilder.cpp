@@ -151,6 +151,13 @@ void CopyJob::Set(TextureRef src, TextureRef dst)
     }
 }
 
+CopyJob CopyJob::Next()
+{
+    PG_VERIFY_JOB_HANDLE;
+    CopyJob other = mParent->CreateCopyJob();
+    return GenericNext<CopyJob>(*this, other, *mParent);
+}
+
 void GroupJob::AddJob(const GpuJob& other)
 {
     PG_VERIFY_JOB_HANDLE;

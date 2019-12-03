@@ -148,6 +148,12 @@ public:
 
     void UnapplyBarriers(const CanonicalJobPath& path, unsigned beginIndex, unsigned endIndex);
 
+    const BarrierViolation* GetBarrierViolations(unsigned& outCount) const
+    {
+        outCount = (unsigned)mViolations.size();
+        return mViolations.data();
+    }
+
 private:
 
     struct GpuListRange
@@ -261,11 +267,14 @@ private:
 
 struct CanonicalCmdListResult
 {
-    CanonicalJobPath* cmdLists = nullptr;
+    const CanonicalJobPath* cmdLists = nullptr;
     unsigned cmdListsCounts = 0u;
 
-    InternalJobHandle* staleJobs = nullptr;
+    const InternalJobHandle* staleJobs = nullptr;
     unsigned staleJobCounts = 0u;
+    
+    const BarrierViolation* barrierViolations = nullptr;
+    unsigned barrierViolationsCount = 0u;
 };
 
 class CanonicalCmdListBuilder

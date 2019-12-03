@@ -66,6 +66,9 @@ int ResourceStateTable::CreateStateSlot()
         newStateSlot = (int)mStateCounts;
         for (DomainInfo& domain : mDomains)
         {
+			if (!domain.valid)
+				continue;
+
             PG_ASSERT((unsigned)domain.states.size() == mStateCounts);
             domain.states.emplace_back();
         }
@@ -90,6 +93,9 @@ void ResourceStateTable::RemoveStateSlot(int stateSlot)
 
     for (DomainInfo& domain : mDomains)
     {
+		if (!domain.valid)
+			continue;
+
         PG_ASSERT((unsigned)domain.states.size() == mStateCounts);
         domain.states[stateSlot] = 0;
     }
