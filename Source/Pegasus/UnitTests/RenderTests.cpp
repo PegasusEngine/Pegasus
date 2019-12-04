@@ -406,13 +406,13 @@ bool runTestAutomaticBarriers(TestHarness* harness)
 
     //resources
 	BufferConfig bufferConfig = {};
-    bufferConfig.name = "TestBufferA";
     bufferConfig.format = Core::FORMAT_R32_UINT;
     bufferConfig.stride = sizeof(unsigned);
     bufferConfig.elementCount = 20u;
     bufferConfig.bufferType = BufferType_Default;
     bufferConfig.bindFlags = BindFlags(BindFlags_Srv | BindFlags_Uav);
 
+    bufferConfig.name = "TestBufferA";
     BufferRef buffA = device->CreateBuffer(bufferConfig);
 
     bufferConfig.name = "TestBufferB";
@@ -421,6 +421,9 @@ bool runTestAutomaticBarriers(TestHarness* harness)
 
 	bufferConfig.name = "TestBufferC";
 	BufferRef buffC = device->CreateBuffer(bufferConfig);
+
+	bufferConfig.name = "TestBufferD";
+	BufferRef buffD = device->CreateBuffer(bufferConfig);
 
 
     JobBuilder jobBuilder(device);
@@ -514,6 +517,39 @@ bool runTestAutomaticBarriers(TestHarness* harness)
 		copyCtoA.Set(buffC, buffA);
 	}
 
+	RootJob rj6 = jobBuilder.CreateRootJob();
+	rj6.SetName("Rj6");
+	{
+		auto copyAtoB = jobBuilder.CreateCopyJob();
+		copyAtoB.AddDependency(rj6);
+		copyAtoB.SetName("Rj6_A2B");
+		copyAtoB.Set(buffA, buffB);
+
+		auto copyBtoA = copyAtoB.Next();
+		copyBtoA.SetName("Rj6_B2A");
+		copyBtoA.Set(buffB, buffA);
+
+		auto copyAtoB2 = copyBtoA.Next();
+		copyAtoB2.SetName("Rj6_A2B2");
+		copyAtoB2.Set(buffA, buffB);
+
+		auto copyBtoC = copyAtoB2.Next();
+		copyBtoC.SetName("Rj6_B2C");
+		copyBtoC.Set(buffB, buffC);
+
+		auto copyAtoD = jobBuilder.CreateCopyJob();
+        copyAtoD.AddDependency(rj6);
+		copyBtoA.AddDependency(copyAtoD);
+		copyAtoD.SetName("Rj6_A2D");
+		copyAtoD.Set(buffA, buffD);
+
+		auto copyDtoB = copyAtoD.Next();
+        copyAtoB2.AddDependency(copyDtoB);
+		copyDtoB.SetName("Rj6_D2B");
+		copyDtoB.Set(buffD, buffB);
+
+	}
+
     auto evaluateJob = [&](RootJob rj, unsigned expectedBarrierViolations, unsigned expectedCmdLists)
     {
         CanonicalCmdListResult result;
@@ -545,6 +581,8 @@ bool runTestAutomaticBarriers(TestHarness* harness)
 	if (!evaluateJob(rj4, 0u, 2u))
 		++errors;
 	if (!evaluateJob(rj5, 1u, 2u))
+		++errors;
+	if (!evaluateJob(rj6, 1u, 3u))
 		++errors;
 
     jobBuilder.Delete(rj1);

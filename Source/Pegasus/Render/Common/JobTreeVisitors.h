@@ -320,6 +320,7 @@ private:
     struct NodeState
     {
         BuildContext context;
+		bool flushedBarriers = false;
         int parentListId = -1;
         bool beginOfSublist = false;
         State state = State::Initial;

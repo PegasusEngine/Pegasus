@@ -480,6 +480,7 @@ bool CanonicalCmdListBuilder::OnPushed(InternalJobHandle handle, JobInstance& jo
 
     auto applyBarriers = [&]()
     {
+		mStateTable[handle].flushedBarriers = true;
         GpuListLocation initialLocation = mBuildContext.listLocation;;
         initialLocation.listItemIndex = (unsigned)mBuildContext.sublistBaseIndex;
         mGpuStateBuilder.ApplyBarriers(
@@ -498,8 +499,9 @@ bool CanonicalCmdListBuilder::OnPushed(InternalJobHandle handle, JobInstance& jo
     if (availableChildJobs != 0u)
     {
         auto& nextChild = mStateTable[jobInstance.childrenJobs[0]];
+		auto& nextChildInstance = mJobTable[jobInstance.childrenJobs[0]];
         nextChild.parentListId = mBuildContext.listLocation.listIndex;
-        if ((unsigned)jobInstance.childrenJobs.size() > 1u)
+        if ((unsigned)jobInstance.childrenJobs.size() > 1u || nextChildInstance.dependenciesSet.size() > 1u)
         {
             applyBarriers();
             nextChild.beginOfSublist = true;
@@ -516,7 +518,7 @@ bool CanonicalCmdListBuilder::OnPushed(InternalJobHandle handle, JobInstance& jo
 bool CanonicalCmdListBuilder::OnPopped(InternalJobHandle handle, JobInstance& jobInstance)
 {
     mBuildContext = mBuildContextStack.top();
-    if (jobInstance.childrenJobs.empty() || (unsigned)jobInstance.childrenJobs.size() > 1u)
+    if (mStateTable[handle].flushedBarriers)
     {
         mGpuStateBuilder.UnapplyBarriers(mJobPaths[mBuildContext.listLocation.listIndex],
             (unsigned)mBuildContext.sublistBaseIndex,
