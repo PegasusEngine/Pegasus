@@ -121,14 +121,14 @@ struct ResourceBarrier
 
 struct BarrierViolation
 {
-    ResourceBarrier barrier;
+	LocationGpuState sourceLocation;
     std::vector<LocationGpuState> inFlightStates;
 
     BarrierViolation() = default;
     BarrierViolation(const BarrierViolation& other) = default;
     BarrierViolation(BarrierViolation&& other)
     {
-        barrier = other.barrier;
+        sourceLocation = other.sourceLocation;
         inFlightStates = std::move(other.inFlightStates);
     }
 };
@@ -208,7 +208,7 @@ private:
 
     void SetState(const GpuListRange& parentRange, GpuListLocation listLocation, ResourceGpuState newState, const IResource* resource);
     void SetState(const GpuListRange& parentRange, GpuListLocation listLocation, ResourceGpuState newState, const ResourceTable* resourceTable);
-    void StoreResourceState(const GpuListRange& parentRange, const ResourceBarrier& parentBarrier, const LocationGpuState& gpuState, const IResource* resource);
+    void StoreResourceState(const GpuListRange& parentRange, const LocationGpuState& gpuState, const IResource* resource, bool checkViolation);
 	void FlushResourceStates(const SublistRecord& record, bool applyInverse);
 
     std::vector<BarrierViolation> mViolations;

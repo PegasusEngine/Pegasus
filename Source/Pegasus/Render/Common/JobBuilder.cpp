@@ -175,6 +175,11 @@ JobBuilder::JobBuilder(IDevice* device)
         InternalJobBuilder(device);
 }
 
+JobBuilder::~JobBuilder()
+{
+    PG_DELETE(mDevice->GetAllocator(), mImpl);
+}
+
 RootJob JobBuilder::CreateRootJob()
 {
     return mImpl->CreateRootJob();

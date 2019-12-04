@@ -91,8 +91,7 @@ LocationGpuState ResourceStateBuilder::GetResourceState(const IResource* resourc
 
 void ResourceStateBuilder::StoreResourceState(
     const GpuListRange& parentRange,
-    const ResourceBarrier& parentBarrier,
-    const LocationGpuState& gpuState, const IResource* resource)
+    const LocationGpuState& gpuState, const IResource* resource, bool checkViolations)
 {
     uintptr_t stateHandle = 0u;
     mTable.GetState(mDomain, resource->GetStateId(), stateHandle);
@@ -105,30 +104,33 @@ void ResourceStateBuilder::StoreResourceState(
     }
     else
     {
-		stateHandle = stateHandle - 1u;
+        stateHandle = stateHandle - 1u;
         //validation
-        ResourceGpuStateDesc inStateDesc = ResourceGpuStateDesc::Get(gpuState.gpuState);
-        for (auto r : mStates[stateHandle].usagesRanges)
+        if (checkViolations)
         {
-            auto recIt = m_records.find(r.first);
-			if (recIt == m_records.end()) //means its the current list
-				continue;
-
-            if (recIt->second.refCount != 0u)//means this resource is being used by another list
+            ResourceGpuStateDesc inStateDesc = ResourceGpuStateDesc::Get(gpuState.gpuState);
+            for (auto r : mStates[stateHandle].usagesRanges)
             {
-                BarrierViolation possibleViolation;
-                for (auto s : r.second)
-                {
-                    if (areStatesCompatible(gpuState.gpuState, s.gpuState))
-                        continue;
+                auto recIt = m_records.find(r.first);
+                if (recIt == m_records.end()) //means its the current list
+                    continue;
 
-                    possibleViolation.inFlightStates.push_back(s);
-                }
-        
-                if (!possibleViolation.inFlightStates.empty())
+                if (recIt->second.refCount == 0u)//means this resource is being used by another list
                 {
-                    possibleViolation.barrier = parentBarrier;
-                    mViolations.emplace_back(std::move(possibleViolation));
+                    BarrierViolation possibleViolation;
+                    for (auto s : r.second)
+                    {
+                        if (areStatesCompatible(gpuState.gpuState, s.gpuState))
+                            continue;
+
+                        possibleViolation.inFlightStates.push_back(s);
+                    }
+
+                    if (!possibleViolation.inFlightStates.empty())
+                    {
+                        possibleViolation.sourceLocation = gpuState;
+                        mViolations.emplace_back(std::move(possibleViolation));
+                    }
                 }
             }
         }
@@ -141,19 +143,20 @@ void ResourceStateBuilder::StoreResourceState(
 void ResourceStateBuilder::SetState(const GpuListRange& parentRange, GpuListLocation listLocation, ResourceGpuState newState, const IResource* resource)
 {
     LocationGpuState oldGpuState = GetResourceState(resource);
-	LocationGpuState newGpuState;
+    LocationGpuState newGpuState;
     newGpuState.location = listLocation;
     newGpuState.gpuState = newState;
-
+    
+    ResourceBarrier newBarrier;
+    newBarrier.resource = resource;
+    newBarrier.from = oldGpuState;
+    newBarrier.to = newGpuState;
     if (oldGpuState.gpuState != newGpuState.gpuState)
     {
-        ResourceBarrier newBarrier;
-        newBarrier.resource = resource;
-        newBarrier.from = oldGpuState;
-        newBarrier.to = newGpuState;
         mBarriers.emplace_back(newBarrier);
-        StoreResourceState(parentRange, newBarrier, newGpuState, resource);
     }
+
+    StoreResourceState(parentRange, newGpuState, resource, true);
 }
 
 void ResourceStateBuilder::SetState(const GpuListRange& parentRange, GpuListLocation listLocation, ResourceGpuState newState, const ResourceTable* resourceTable)
@@ -167,19 +170,20 @@ void ResourceStateBuilder::FlushResourceStates(const SublistRecord& record, bool
     for (auto& barrier : record.barriers)
     {
         auto& gpuState = applyInverse ? barrier.from : barrier.to;
-        StoreResourceState(record.range, barrier, gpuState, barrier.resource);
+        StoreResourceState(record.range, gpuState, barrier.resource, false);
     }
 }
 
 void ResourceStateBuilder::Reset()
 {
-	mStates.clear();
-	mBarriers.clear();
-	m_records.clear();
-	m_locationCache.clear();
+    mStates.clear();
+    mBarriers.clear();
+    m_records.clear();
+    m_locationCache.clear();
+	mViolations.clear();
 
-	mTable.RemoveDomain(mDomain);
-	mDomain = mTable.CreateDomain();
+    mTable.RemoveDomain(mDomain);
+    mDomain = mTable.CreateDomain();
 }
 
 void ResourceStateBuilder::ApplyBarriers(
@@ -272,8 +276,8 @@ void ResourceStateBuilder::ApplyBarriers(
             [&](const RootCmdData& d){
             },
             [&](const DrawCmdData& d){
-				if (d.rt == nullptr)
-					return;
+                if (d.rt == nullptr)
+                    return;
 
                 for (auto& resource :  d.rt->GetConfig().colors)
                 {
@@ -300,7 +304,7 @@ void ResourceStateBuilder::ApplyBarriers(
         }, instance.data);
     }
 
-	sublistRecord.barriers = std::move(mBarriers);
+    sublistRecord.barriers = std::move(mBarriers);
     mBarriers = std::vector<ResourceBarrier>();
     m_records.insert(std::make_pair(range, std::move(sublistRecord)));
     PG_ASSERT(m_locationCache.find(initialLocation) == m_locationCache.end());
@@ -407,7 +411,7 @@ void CanonicalCmdListBuilder::Reset()
     mStateTable.clear();
     mStaleJobs.clear();
     mWaitingJobs.clear();
-	mGpuStateBuilder.Reset();
+    mGpuStateBuilder.Reset();
     mBuildContextStack = std::stack<BuildContext>();
     mJobTable = nullptr;
     mJobCounts = 0u;
@@ -468,7 +472,7 @@ bool CanonicalCmdListBuilder::OnPushed(InternalJobHandle handle, JobInstance& jo
         {
             PG_ASSERTSTR(depState.context.listLocation.listIndex != 0xffffffff, "Resource dependency state must've been processed already.");
             PG_ASSERTSTR(depState.context.listLocation.listItemIndex != 0xffffffff, "Resource dependency state must've been processed already.");
-			PG_ASSERTSTR(depState.context.sublistBaseIndex != 0xffffffff, "Resource dependency state must've been processed already.");
+            PG_ASSERTSTR(depState.context.sublistBaseIndex != 0xffffffff, "Resource dependency state must've been processed already.");
             mJobPaths[mBuildContext.listLocation.listIndex].AddDependency(depState.context.listLocation, depState.context.sublistBaseIndex);
         }
     }
@@ -483,11 +487,11 @@ bool CanonicalCmdListBuilder::OnPushed(InternalJobHandle handle, JobInstance& jo
             initialLocation, (unsigned)mBuildContext.listLocation.listItemIndex);
     };
 
-	unsigned availableChildJobs = 0;
-	for (auto j : jobInstance.childrenJobs)
-	{
-		availableChildJobs += CanProcess(j, mJobTable[j]) ? 1 : 0;
-	}
+    unsigned availableChildJobs = 0;
+    for (auto j : jobInstance.childrenJobs)
+    {
+        availableChildJobs += CanProcess(j, mJobTable[j]) ? 1 : 0;
+    }
 
     //chose a child to pass down, lets just do for now the first child
     if (availableChildJobs != 0u)
@@ -510,7 +514,7 @@ bool CanonicalCmdListBuilder::OnPushed(InternalJobHandle handle, JobInstance& jo
 
 bool CanonicalCmdListBuilder::OnPopped(InternalJobHandle handle, JobInstance& jobInstance)
 {
-	mBuildContext = mBuildContextStack.top();
+    mBuildContext = mBuildContextStack.top();
     if (jobInstance.childrenJobs.empty() || (unsigned)jobInstance.childrenJobs.size() > 1u)
     {
         mGpuStateBuilder.UnapplyBarriers(mJobPaths[mBuildContext.listLocation.listIndex],

@@ -435,6 +435,44 @@ bool runTestAutomaticBarriers(TestHarness* harness)
         copyBtoA.Set(buffB, buffA);
     }
 
+    RootJob rj2 = jobBuilder.CreateRootJob();
+	rj2.SetName("Rj2");
+    {
+        auto copyAtoB = jobBuilder.CreateCopyJob();
+        copyAtoB.AddDependency(rj2);
+        copyAtoB.SetName("Rj2_A2B");
+        copyAtoB.Set(buffA, buffB);
+
+        auto copyAtoB2 = jobBuilder.CreateCopyJob();
+        copyAtoB2.AddDependency(rj2);
+        copyAtoB2.SetName("Rj2_A2B2");
+        copyAtoB2.Set(buffA, buffB);
+
+        auto copyBtoA = copyAtoB2.Next();
+        copyBtoA.SetName("Rj2_B2A");
+        copyBtoA.Set(buffB, buffA);
+    }
+
+	RootJob rj3 = jobBuilder.CreateRootJob();
+	rj2.SetName("Rj3");
+	{
+		auto copyAtoB = jobBuilder.CreateCopyJob();
+		copyAtoB.AddDependency(rj3);
+		copyAtoB.SetName("Rj3_A2B");
+		copyAtoB.Set(buffA, buffB);
+
+		auto copyAtoB2 = jobBuilder.CreateCopyJob();
+		copyAtoB2.AddDependency(rj3);
+		copyAtoB2.AddDependency(copyAtoB);
+		copyAtoB2.SetName("Rj3_A2B2");
+		copyAtoB2.Set(buffA, buffB);
+
+		auto copyBtoA = copyAtoB2.Next();
+		copyBtoA.AddDependency(copyAtoB);
+		copyBtoA.SetName("Rj3_B2A");
+		copyBtoA.Set(buffB, buffA);
+	}
+
     auto evaluateJob = [&](RootJob rj, unsigned expectedBarrierViolations, unsigned expectedCmdLists)
     {
         CanonicalCmdListResult result;
@@ -459,12 +497,15 @@ bool runTestAutomaticBarriers(TestHarness* harness)
     unsigned errors = 0u;
     if (!evaluateJob(rj1, 0u, 1u))
         ++errors;
+    if (!evaluateJob(rj2, 1u, 2u))
+        ++errors;
+	if (!evaluateJob(rj3, 0u, 1u))
+		++errors;
 
     jobBuilder.Delete(rj1);
 
     return errors == 0u;
 }
-
 
 TestHarness* createRenderHarness()
 {
