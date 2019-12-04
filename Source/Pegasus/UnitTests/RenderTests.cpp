@@ -414,7 +414,7 @@ bool runTestAutomaticBarriers(TestHarness* harness)
     bufferConfig.bindFlags = BindFlags(BindFlags_Srv | BindFlags_Uav);
 
     BufferRef buffA = device->CreateBuffer(bufferConfig);
-    
+
     bufferConfig.name = "TestBufferB";
 
     BufferRef buffB = device->CreateBuffer(bufferConfig);
@@ -459,6 +459,8 @@ bool runTestAutomaticBarriers(TestHarness* harness)
     unsigned errors = 0u;
     if (!evaluateJob(rj1, 0u, 1u))
         ++errors;
+
+    jobBuilder.Delete(rj1);
 
     return errors == 0u;
 }

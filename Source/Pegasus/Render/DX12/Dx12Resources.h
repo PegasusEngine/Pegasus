@@ -69,7 +69,7 @@ private:
     ResourceConfig mResConfig;
 };
 
-class Dx12Texture : public Dx12Resource, public Pegasus::Render::Texture
+class Dx12Texture : public Pegasus::Render::Texture, public Dx12Resource
 {
 public:
     Dx12Texture(const TextureConfig& desc, Dx12Device* device);
@@ -91,7 +91,7 @@ private:
     D3D12_DEPTH_STENCIL_VIEW_DESC mDsDesc;
 };
 
-class Dx12Buffer : public Dx12Resource, public Pegasus::Render::Buffer
+class Dx12Buffer : public Pegasus::Render::Buffer, public Dx12Resource
 {
 public:
     Dx12Buffer(const BufferConfig& desc, Dx12Device* device);
