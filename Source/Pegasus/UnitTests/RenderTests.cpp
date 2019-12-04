@@ -416,8 +416,12 @@ bool runTestAutomaticBarriers(TestHarness* harness)
     BufferRef buffA = device->CreateBuffer(bufferConfig);
 
     bufferConfig.name = "TestBufferB";
-
     BufferRef buffB = device->CreateBuffer(bufferConfig);
+
+
+	bufferConfig.name = "TestBufferC";
+	BufferRef buffC = device->CreateBuffer(bufferConfig);
+
 
     JobBuilder jobBuilder(device);
     CanonicalCmdListBuilder cmdListBuilder(device->GetAllocator(), *device->GetResourceStateTable());
@@ -454,7 +458,7 @@ bool runTestAutomaticBarriers(TestHarness* harness)
     }
 
 	RootJob rj3 = jobBuilder.CreateRootJob();
-	rj2.SetName("Rj3");
+	rj3.SetName("Rj3");
 	{
 		auto copyAtoB = jobBuilder.CreateCopyJob();
 		copyAtoB.AddDependency(rj3);
@@ -471,6 +475,43 @@ bool runTestAutomaticBarriers(TestHarness* harness)
 		copyBtoA.AddDependency(copyAtoB);
 		copyBtoA.SetName("Rj3_B2A");
 		copyBtoA.Set(buffB, buffA);
+	}
+
+	RootJob rj4 = jobBuilder.CreateRootJob();
+	rj4.SetName("Rj4");
+	{
+		auto copyAtoB = jobBuilder.CreateCopyJob();
+		copyAtoB.AddDependency(rj4);
+		copyAtoB.SetName("Rj4_A2B");
+		copyAtoB.Set(buffA, buffB);
+
+		auto copyAtoC = jobBuilder.CreateCopyJob();
+		copyAtoC.AddDependency(rj4);
+		copyAtoC.SetName("Rj4_A2C");
+		copyAtoC.Set(buffA, buffC);
+
+		auto copyCtoA = copyAtoB.Next();
+		copyCtoA.AddDependency(copyAtoC);
+		copyCtoA.SetName("Rj4_C2A");
+		copyCtoA.Set(buffC, buffA);
+	}
+
+	RootJob rj5 = jobBuilder.CreateRootJob();
+	rj5.SetName("Rj5");
+	{
+		auto copyAtoB = jobBuilder.CreateCopyJob();
+		copyAtoB.AddDependency(rj5);
+		copyAtoB.SetName("Rj5_A2B");
+		copyAtoB.Set(buffA, buffB);
+
+		auto copyAtoC = jobBuilder.CreateCopyJob();
+		copyAtoC.AddDependency(rj5);
+		copyAtoC.SetName("Rj5_A2C");
+		copyAtoC.Set(buffA, buffC);
+
+		auto copyCtoA = copyAtoB.Next();
+		copyCtoA.SetName("Rj5_C2A");
+		copyCtoA.Set(buffC, buffA);
 	}
 
     auto evaluateJob = [&](RootJob rj, unsigned expectedBarrierViolations, unsigned expectedCmdLists)
@@ -493,13 +534,17 @@ bool runTestAutomaticBarriers(TestHarness* harness)
 
 		return true;
     };
-
+	
     unsigned errors = 0u;
     if (!evaluateJob(rj1, 0u, 1u))
         ++errors;
     if (!evaluateJob(rj2, 1u, 2u))
         ++errors;
 	if (!evaluateJob(rj3, 0u, 1u))
+		++errors;
+	if (!evaluateJob(rj4, 0u, 2u))
+		++errors;
+	if (!evaluateJob(rj5, 1u, 2u))
 		++errors;
 
     jobBuilder.Delete(rj1);

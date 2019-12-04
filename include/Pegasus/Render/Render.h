@@ -90,8 +90,8 @@ public:
     const ConfigType& GetConfig() const { return mConfig; }
 
 protected:
-    BasicResource(IDevice* device)
-        : IResource(device, GetResourceType<ConfigType>())
+    BasicResource(IDevice* device, const ConfigType& config)
+        : IResource(device, GetResourceType<ConfigType>()), mConfig(config)
     {
     }
 
@@ -199,10 +199,10 @@ template<> inline ResourceType GetResourceType<TextureConfig>() { return Resourc
 template<> inline ResourceType GetResourceType<ResourceTableConfig>() { return ResourceType::ResourceTable; }
 template<> inline ResourceType GetResourceType<RenderTargetConfig>() { return ResourceType::RenderTarget; }
 
-class Buffer : public BasicResource<BufferConfig> { public: Buffer(IDevice* device) : BasicResource<BufferConfig>(device) {} };
-class Texture : public BasicResource<TextureConfig> { public: Texture(IDevice* device) : BasicResource<TextureConfig>(device) {} };
-class ResourceTable : public BasicResource<ResourceTableConfig> { public: ResourceTable(IDevice* device) : BasicResource<ResourceTableConfig>(device) {} };
-class RenderTarget : public BasicResource<RenderTargetConfig> { public: RenderTarget(IDevice* device) : BasicResource<RenderTargetConfig>(device) {} };
+class Buffer : public BasicResource<BufferConfig> { public: Buffer(IDevice* device, const BufferConfig& config) : BasicResource<BufferConfig>(device, config) {} };
+class Texture : public BasicResource<TextureConfig> { public: Texture(IDevice* device, const TextureConfig& config) : BasicResource<TextureConfig>(device, config) {} };
+class ResourceTable : public BasicResource<ResourceTableConfig> { public: ResourceTable(IDevice* device, const ResourceTableConfig& config) : BasicResource<ResourceTableConfig>(device, config) {} };
+class RenderTarget : public BasicResource<RenderTargetConfig> { public: RenderTarget(IDevice* device, const RenderTargetConfig& config) : BasicResource<RenderTargetConfig>(device, config) {} };
 
 class GpuPipeline : public Core::RefCounted
 {

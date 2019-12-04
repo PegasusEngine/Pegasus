@@ -226,7 +226,7 @@ const Dx12Resource* Dx12Resource::GetDx12Resource(const IResource* res)
 }
 
 Dx12Texture::Dx12Texture(const TextureConfig& desc, Dx12Device* device)
-: Texture(device), Dx12Resource(desc, device)
+: Texture(device, desc), Dx12Resource(desc, device)
 {
 
     D3D12_RESOURCE_DIMENSION dim = D3D12_RESOURCE_DIMENSION_UNKNOWN;
@@ -391,7 +391,7 @@ void Dx12Texture::init()
 }
 
 Dx12Buffer::Dx12Buffer(const BufferConfig& desc, Dx12Device* device)
-: Buffer(device), Dx12Resource(desc, device)
+: Buffer(device, desc), Dx12Resource(desc, device)
 {
     if (!!(GetConfig().bindFlags & BindFlags_Srv))
     {
@@ -440,7 +440,7 @@ void Dx12Buffer::init()
 }
 
 Dx12ResourceTable::Dx12ResourceTable(const ResourceTableConfig& desc, Dx12Device* device)
-: ResourceTable(device)
+: ResourceTable(device, desc)
 {
     PG_ASSERT(desc.type == Dx12_ResSrv || desc.type == Dx12_ResUav);
     mRdMgr = device->GetRDMgr();
@@ -463,7 +463,7 @@ Dx12ResourceTable::~Dx12ResourceTable()
 }
 
 Dx12RenderTarget::Dx12RenderTarget(const RenderTargetConfig& config, Dx12Device* device)
-: RenderTarget(device)
+: RenderTarget(device, config)
 {
     mRdMgr = device->GetRDMgr();
     Dx12RDMgr::Handle handles[RenderTargetConfig::MaxRt];

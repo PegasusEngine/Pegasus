@@ -121,6 +121,7 @@ struct ResourceBarrier
 
 struct BarrierViolation
 {
+    const IResource* resource = nullptr;
 	LocationGpuState sourceLocation;
     std::vector<LocationGpuState> inFlightStates;
 
@@ -128,6 +129,7 @@ struct BarrierViolation
     BarrierViolation(const BarrierViolation& other) = default;
     BarrierViolation(BarrierViolation&& other)
     {
+        resource = other.resource;
         sourceLocation = other.sourceLocation;
         inFlightStates = std::move(other.inFlightStates);
     }

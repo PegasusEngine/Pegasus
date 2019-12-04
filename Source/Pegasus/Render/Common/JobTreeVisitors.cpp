@@ -128,6 +128,7 @@ void ResourceStateBuilder::StoreResourceState(
 
                     if (!possibleViolation.inFlightStates.empty())
                     {
+                        possibleViolation.resource = resource;
                         possibleViolation.sourceLocation = gpuState;
                         mViolations.emplace_back(std::move(possibleViolation));
                     }
