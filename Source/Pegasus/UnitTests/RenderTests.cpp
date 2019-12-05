@@ -633,7 +633,7 @@ bool runTestAutomaticBarriers(TestHarness* harness)
         ++errors;
     if (!evaluateJob(rj6, 1u, 3u))
         ++errors;
-    if (!evaluateJob(rj7, 0u, 3u))
+    if (!evaluateJob(rj7, 2u, 3u))
         ++errors;
 
     jobBuilder.Delete(rj1);
