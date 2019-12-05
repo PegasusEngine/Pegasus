@@ -17,11 +17,11 @@ const char* simpleProgram0 = R"(
     SamplerState gSampler : register(s0,space0);
     Texture2D tex0 : register(t0, space0);
 
-	struct VsIn
-	{
-		float4 pos : POSITION0;
-		float3 n : NORMAL0;
-	};
+    struct VsIn
+    {
+        float4 pos : POSITION0;
+        float3 n : NORMAL0;
+    };
 
     struct VsOut
     {
@@ -29,21 +29,21 @@ const char* simpleProgram0 = R"(
         float3 normal : TEXCOORD;
     };
 
-	cbuffer Constants : register(b0)
-	{
-		float4x4 g_viewProjTransform;
-	};
+    cbuffer Constants : register(b0)
+    {
+        float4x4 g_viewProjTransform;
+    };
 
-	void vsMain(VsIn vsIn, out VsOut vsOut)
-	{
-		vsOut.p = mul(vsIn.pos, g_viewProjTransform);
+    void vsMain(VsIn vsIn, out VsOut vsOut)
+    {
+        vsOut.p = mul(vsIn.pos, g_viewProjTransform);
         vsOut.normal = float3(0,0,0);//vsIn.n;
-	}
+    }
 
-	void psMain(in VsOut vsOut, out float4 c : SV_Target0)
-	{
-		c = float4(tex0.Sample(gSampler, vsOut.normal.xy).rgb, 1.0);
-	}
+    void psMain(in VsOut vsOut, out float4 c : SV_Target0)
+    {
+        c = float4(tex0.Sample(gSampler, vsOut.normal.xy).rgb, 1.0);
+    }
 )";
 
 const char* simpleCs0 = R"(
@@ -74,7 +74,7 @@ static void RenderLogFn(Core::LogChannel logChannel, const char* msgStr)
     char logChnl[5];
     for (int i = 0; i < 4; ++i)
     {
-		logChnl[i] = reinterpret_cast<char*>(&logChannel)[3 - i];
+        logChnl[i] = reinterpret_cast<char*>(&logChannel)[3 - i];
     }
 
     logChnl[4] = 0;
@@ -82,15 +82,15 @@ static void RenderLogFn(Core::LogChannel logChannel, const char* msgStr)
 }
 
 static Pegasus::Core::AssertReturnCode AssertHandler(const char * testStr,
-	const char * fileStr,
-	int line,
-	const char * msgStr)
+    const char * fileStr,
+    int line,
+    const char * msgStr)
 {
     std::cout << "ASSERT[" << fileStr << ":" << line << "] ";
-	if (msgStr != nullptr)
-	     std::cout << "\"" << msgStr << "\"";
+    if (msgStr != nullptr)
+         std::cout << "\"" << msgStr << "\"";
     std::cout << std::endl;
-	return Pegasus::Core::ASSERTION_CONTINUE;
+    return Pegasus::Core::ASSERTION_CONTINUE;
 }
 
 #if PEGASUS_USE_EVENTS
@@ -134,7 +134,7 @@ public:
     IDevice* CreateDevice();
     void DestroyDevice();
 
-	Pegasus::Alloc::IAllocator* GetAllocator() { return &mAllocator;  }
+    Pegasus::Alloc::IAllocator* GetAllocator() { return &mAllocator;  }
 
 #if PEGASUS_USE_EVENTS
     CompilerListener& GetCompilerListener() { return mCompilerListener; }
@@ -157,11 +157,11 @@ RenderHarness::RenderHarness()
 
 void RenderHarness::Initialize()
 {
-	auto* logManager = Core::Singleton<Core::LogManager>::CreateInstance(&mAllocator);
+    auto* logManager = Core::Singleton<Core::LogManager>::CreateInstance(&mAllocator);
     logManager->RegisterHandler(RenderLogFn);
 
-	auto* assertMgr = Core::Singleton<Core::AssertionManager>::CreateInstance(&mAllocator);
-	assertMgr->RegisterHandler(AssertHandler);
+    auto* assertMgr = Core::Singleton<Core::AssertionManager>::CreateInstance(&mAllocator);
+    assertMgr->RegisterHandler(AssertHandler);
 }
 
 void RenderHarness::Destroy()
@@ -214,7 +214,7 @@ bool runCreateSimpleGpuPipeline(TestHarness* harness)
     if (!result)
         return false;
     
-	return true;
+    return true;
 }
 
 bool runTestSimpleCompute(TestHarness* harness)
@@ -284,12 +284,12 @@ bool runTestResourceStateTable(TestHarness* harness)
     if (!success || result != state3)
         return false;
 
-	resourceStateTable->RemoveDomain(d0);
+    resourceStateTable->RemoveDomain(d0);
     success = resourceStateTable->GetState(d0, slot1, result);
     if (success)
         return false;
     
-	return true;
+    return true;
 }
 
 bool runTestCanonicalCmdListBuilder(TestHarness* harness)
@@ -324,19 +324,19 @@ bool runTestCanonicalCmdListBuilder(TestHarness* harness)
     RootJob rj2 = jobBuilder.CreateRootJob();
     rj2.SetName("rj2");
     {
-		ComputeJob cj1 = jobBuilder.CreateComputeJob();
-		cj1.SetName("R2_cj1");
-		cj1.AddDependency(rj2);
-		ComputeJob cj2 = cj1.Next();
-		cj2.SetName("R2_cj2");
+        ComputeJob cj1 = jobBuilder.CreateComputeJob();
+        cj1.SetName("R2_cj1");
+        cj1.AddDependency(rj2);
+        ComputeJob cj2 = cj1.Next();
+        cj2.SetName("R2_cj2");
 
-		DrawJob dj1 = jobBuilder.CreateDrawJob();
-		dj1.AddDependency(rj2);
-		dj1.SetName("R2_dj1");
-		DrawJob dj2 = dj1.Next();
-		dj2.SetName("R2_dj2");
-		DrawJob dj3 = dj2.Next();
-		dj3.SetName("R2_dj3");
+        DrawJob dj1 = jobBuilder.CreateDrawJob();
+        dj1.AddDependency(rj2);
+        dj1.SetName("R2_dj1");
+        DrawJob dj2 = dj1.Next();
+        dj2.SetName("R2_dj2");
+        DrawJob dj3 = dj2.Next();
+        dj3.SetName("R2_dj3");
 
         dj2.AddDependency(cj2);
         cj1.AddDependency(dj3);
@@ -345,19 +345,19 @@ bool runTestCanonicalCmdListBuilder(TestHarness* harness)
     RootJob rj3 = jobBuilder.CreateRootJob();
     rj3.SetName("rj3");
     {
-		ComputeJob cj1 = jobBuilder.CreateComputeJob();
-		cj1.SetName("cj1");
-		cj1.AddDependency(rj3);
-		ComputeJob cj2 = cj1.Next();
-		cj2.SetName("cj2");
+        ComputeJob cj1 = jobBuilder.CreateComputeJob();
+        cj1.SetName("cj1");
+        cj1.AddDependency(rj3);
+        ComputeJob cj2 = cj1.Next();
+        cj2.SetName("cj2");
 
-		DrawJob dj1 = jobBuilder.CreateDrawJob();
-		dj1.AddDependency(rj3);
-		dj1.SetName("dj1");
-		DrawJob dj2 = dj1.Next();
-		dj2.SetName("dj2");
-		DrawJob dj3 = dj2.Next();
-		dj3.SetName("dj3");
+        DrawJob dj1 = jobBuilder.CreateDrawJob();
+        dj1.AddDependency(rj3);
+        dj1.SetName("dj1");
+        DrawJob dj2 = dj1.Next();
+        dj2.SetName("dj2");
+        DrawJob dj3 = dj2.Next();
+        dj3.SetName("dj3");
         dj3.AddDependency(cj2);
     }
 
@@ -405,7 +405,7 @@ bool runTestAutomaticBarriers(TestHarness* harness)
     IDevice* device = rh->CreateDevice();
 
     //resources
-	BufferConfig bufferConfig = {};
+    BufferConfig bufferConfig = {};
     bufferConfig.format = Core::FORMAT_R32_UINT;
     bufferConfig.stride = sizeof(unsigned);
     bufferConfig.elementCount = 20u;
@@ -419,31 +419,37 @@ bool runTestAutomaticBarriers(TestHarness* harness)
     BufferRef buffB = device->CreateBuffer(bufferConfig);
 
 
-	bufferConfig.name = "TestBufferC";
-	BufferRef buffC = device->CreateBuffer(bufferConfig);
+    bufferConfig.name = "TestBufferC";
+    BufferRef buffC = device->CreateBuffer(bufferConfig);
 
-	bufferConfig.name = "TestBufferD";
-	BufferRef buffD = device->CreateBuffer(bufferConfig);
+    bufferConfig.name = "TestBufferD";
+    BufferRef buffD = device->CreateBuffer(bufferConfig);
+
+    bufferConfig.name = "TestBufferE";
+    BufferRef buffE = device->CreateBuffer(bufferConfig);
+
+    bufferConfig.name = "TestBufferF";
+    BufferRef buffF = device->CreateBuffer(bufferConfig);
 
 
     JobBuilder jobBuilder(device);
     CanonicalCmdListBuilder cmdListBuilder(device->GetAllocator(), *device->GetResourceStateTable());
 
     RootJob rj1 = jobBuilder.CreateRootJob();
-	rj1.SetName("Rj1");
+    rj1.SetName("Rj1");
     {
         auto copyAtoB = jobBuilder.CreateCopyJob();
-		copyAtoB.AddDependency(rj1);
-		copyAtoB.SetName("Rj1_A2B");
+        copyAtoB.AddDependency(rj1);
+        copyAtoB.SetName("Rj1_A2B");
         copyAtoB.Set(buffA, buffB);
-		
+        
         auto copyBtoA = copyAtoB.Next();
-		copyBtoA.SetName("Rj1_B2A");
+        copyBtoA.SetName("Rj1_B2A");
         copyBtoA.Set(buffB, buffA);
     }
 
     RootJob rj2 = jobBuilder.CreateRootJob();
-	rj2.SetName("Rj2");
+    rj2.SetName("Rj2");
     {
         auto copyAtoB = jobBuilder.CreateCopyJob();
         copyAtoB.AddDependency(rj2);
@@ -460,95 +466,138 @@ bool runTestAutomaticBarriers(TestHarness* harness)
         copyBtoA.Set(buffB, buffA);
     }
 
-	RootJob rj3 = jobBuilder.CreateRootJob();
-	rj3.SetName("Rj3");
-	{
-		auto copyAtoB = jobBuilder.CreateCopyJob();
-		copyAtoB.AddDependency(rj3);
-		copyAtoB.SetName("Rj3_A2B");
-		copyAtoB.Set(buffA, buffB);
+    RootJob rj3 = jobBuilder.CreateRootJob();
+    rj3.SetName("Rj3");
+    {
+        auto copyAtoB = jobBuilder.CreateCopyJob();
+        copyAtoB.AddDependency(rj3);
+        copyAtoB.SetName("Rj3_A2B");
+        copyAtoB.Set(buffA, buffB);
 
-		auto copyAtoB2 = jobBuilder.CreateCopyJob();
-		copyAtoB2.AddDependency(rj3);
-		copyAtoB2.AddDependency(copyAtoB);
-		copyAtoB2.SetName("Rj3_A2B2");
-		copyAtoB2.Set(buffA, buffB);
+        auto copyAtoB2 = jobBuilder.CreateCopyJob();
+        copyAtoB2.AddDependency(rj3);
+        copyAtoB2.AddDependency(copyAtoB);
+        copyAtoB2.SetName("Rj3_A2B2");
+        copyAtoB2.Set(buffA, buffB);
 
-		auto copyBtoA = copyAtoB2.Next();
-		copyBtoA.AddDependency(copyAtoB);
-		copyBtoA.SetName("Rj3_B2A");
-		copyBtoA.Set(buffB, buffA);
-	}
+        auto copyBtoA = copyAtoB2.Next();
+        copyBtoA.AddDependency(copyAtoB);
+        copyBtoA.SetName("Rj3_B2A");
+        copyBtoA.Set(buffB, buffA);
+    }
 
-	RootJob rj4 = jobBuilder.CreateRootJob();
-	rj4.SetName("Rj4");
-	{
-		auto copyAtoB = jobBuilder.CreateCopyJob();
-		copyAtoB.AddDependency(rj4);
-		copyAtoB.SetName("Rj4_A2B");
-		copyAtoB.Set(buffA, buffB);
+    RootJob rj4 = jobBuilder.CreateRootJob();
+    rj4.SetName("Rj4");
+    {
+        auto copyAtoB = jobBuilder.CreateCopyJob();
+        copyAtoB.AddDependency(rj4);
+        copyAtoB.SetName("Rj4_A2B");
+        copyAtoB.Set(buffA, buffB);
 
-		auto copyAtoC = jobBuilder.CreateCopyJob();
-		copyAtoC.AddDependency(rj4);
-		copyAtoC.SetName("Rj4_A2C");
-		copyAtoC.Set(buffA, buffC);
+        auto copyAtoC = jobBuilder.CreateCopyJob();
+        copyAtoC.AddDependency(rj4);
+        copyAtoC.SetName("Rj4_A2C");
+        copyAtoC.Set(buffA, buffC);
 
-		auto copyCtoA = copyAtoB.Next();
-		copyCtoA.AddDependency(copyAtoC);
-		copyCtoA.SetName("Rj4_C2A");
-		copyCtoA.Set(buffC, buffA);
-	}
+        auto copyCtoA = copyAtoB.Next();
+        copyCtoA.AddDependency(copyAtoC);
+        copyCtoA.SetName("Rj4_C2A");
+        copyCtoA.Set(buffC, buffA);
+    }
 
-	RootJob rj5 = jobBuilder.CreateRootJob();
-	rj5.SetName("Rj5");
-	{
-		auto copyAtoB = jobBuilder.CreateCopyJob();
-		copyAtoB.AddDependency(rj5);
-		copyAtoB.SetName("Rj5_A2B");
-		copyAtoB.Set(buffA, buffB);
+    RootJob rj5 = jobBuilder.CreateRootJob();
+    rj5.SetName("Rj5");
+    {
+        auto copyAtoB = jobBuilder.CreateCopyJob();
+        copyAtoB.AddDependency(rj5);
+        copyAtoB.SetName("Rj5_A2B");
+        copyAtoB.Set(buffA, buffB);
 
-		auto copyAtoC = jobBuilder.CreateCopyJob();
-		copyAtoC.AddDependency(rj5);
-		copyAtoC.SetName("Rj5_A2C");
-		copyAtoC.Set(buffA, buffC);
+        auto copyAtoC = jobBuilder.CreateCopyJob();
+        copyAtoC.AddDependency(rj5);
+        copyAtoC.SetName("Rj5_A2C");
+        copyAtoC.Set(buffA, buffC);
 
-		auto copyCtoA = copyAtoB.Next();
-		copyCtoA.SetName("Rj5_C2A");
-		copyCtoA.Set(buffC, buffA);
-	}
+        auto copyCtoA = copyAtoB.Next();
+        copyCtoA.SetName("Rj5_C2A");
+        copyCtoA.Set(buffC, buffA);
+    }
 
-	RootJob rj6 = jobBuilder.CreateRootJob();
-	rj6.SetName("Rj6");
-	{
-		auto copyAtoB = jobBuilder.CreateCopyJob();
-		copyAtoB.AddDependency(rj6);
-		copyAtoB.SetName("Rj6_A2B");
-		copyAtoB.Set(buffA, buffB);
+    RootJob rj6 = jobBuilder.CreateRootJob();
+    rj6.SetName("Rj6");
+    {
+        auto copyAtoB = jobBuilder.CreateCopyJob();
+        copyAtoB.AddDependency(rj6);
+        copyAtoB.SetName("Rj6_A2B");
+        copyAtoB.Set(buffA, buffB);
 
-		auto copyBtoA = copyAtoB.Next();
-		copyBtoA.SetName("Rj6_B2A");
-		copyBtoA.Set(buffB, buffA);
+        auto copyBtoA = copyAtoB.Next();
+        copyBtoA.SetName("Rj6_B2A");
+        copyBtoA.Set(buffB, buffA);
 
-		auto copyAtoB2 = copyBtoA.Next();
-		copyAtoB2.SetName("Rj6_A2B2");
-		copyAtoB2.Set(buffA, buffB);
+        auto copyAtoB2 = copyBtoA.Next();
+        copyAtoB2.SetName("Rj6_A2B2");
+        copyAtoB2.Set(buffA, buffB);
 
-		auto copyBtoC = copyAtoB2.Next();
-		copyBtoC.SetName("Rj6_B2C");
-		copyBtoC.Set(buffB, buffC);
+        auto copyBtoC = copyAtoB2.Next();
+        copyBtoC.SetName("Rj6_B2C");
+        copyBtoC.Set(buffB, buffC);
 
-		auto copyAtoD = jobBuilder.CreateCopyJob();
+        auto copyAtoD = jobBuilder.CreateCopyJob();
         copyAtoD.AddDependency(rj6);
-		copyBtoA.AddDependency(copyAtoD);
-		copyAtoD.SetName("Rj6_A2D");
-		copyAtoD.Set(buffA, buffD);
+        copyBtoA.AddDependency(copyAtoD);
+        copyAtoD.SetName("Rj6_A2D");
+        copyAtoD.Set(buffA, buffD);
 
-		auto copyDtoB = copyAtoD.Next();
+        auto copyDtoB = copyAtoD.Next();
         copyAtoB2.AddDependency(copyDtoB);
-		copyDtoB.SetName("Rj6_D2B");
-		copyDtoB.Set(buffD, buffB);
+        copyDtoB.SetName("Rj6_D2B");
+        copyDtoB.Set(buffD, buffB);
+    }
 
-	}
+    RootJob rj7 = jobBuilder.CreateRootJob();
+    rj7.SetName("Rj7");
+    {
+        auto cAE = jobBuilder.CreateCopyJob();
+        cAE.SetName("cAE");
+        cAE.AddDependency(rj7);
+        cAE.Set(buffA, buffE);
+
+        auto cEC = cAE.Next();
+        cEC.SetName("cEC");
+        cEC.Set(buffE, buffC);
+
+        auto cBA = cAE.Next();
+        cBA.SetName("cBA");
+        cBA.Set(buffB, buffA);
+
+        auto cAB = cEC.Next();
+        cAB.SetName("cAB");
+        cAB.Set(buffA, buffB);
+        cBA.AddDependency(cAB);
+
+        auto cAB2 = cBA.Next();
+        cAB2.SetName("cAB2");
+        cAB2.Set(buffA, buffB);
+
+        auto cBC = cAB2.Next();
+        cBC.SetName("cBC");
+        cBC.Set(buffB, buffC);
+
+        auto cCD = cEC.Next();
+        cCD.SetName("cCD");
+        cCD.Set(buffC, buffD);
+
+        auto cCF = cCD.Next();
+        cCF.SetName("cCF");
+        cCF.Set(buffC, buffF);
+        cAB2.AddDependency(cCF);
+
+        auto cCD2 = cCD.Next();
+        cCD2.SetName("cCD2"); 
+        cCD2.Set(buffC, buffD);
+        
+    }
 
     auto evaluateJob = [&](RootJob rj, unsigned expectedBarrierViolations, unsigned expectedCmdLists)
     {
@@ -568,22 +617,24 @@ bool runTestAutomaticBarriers(TestHarness* harness)
             return false;
         }
 
-		return true;
+        return true;
     };
-	
+    
     unsigned errors = 0u;
     if (!evaluateJob(rj1, 0u, 1u))
         ++errors;
     if (!evaluateJob(rj2, 1u, 2u))
         ++errors;
-	if (!evaluateJob(rj3, 0u, 1u))
-		++errors;
-	if (!evaluateJob(rj4, 0u, 2u))
-		++errors;
-	if (!evaluateJob(rj5, 1u, 2u))
-		++errors;
-	if (!evaluateJob(rj6, 1u, 3u))
-		++errors;
+    if (!evaluateJob(rj3, 0u, 1u))
+        ++errors;
+    if (!evaluateJob(rj4, 0u, 2u))
+        ++errors;
+    if (!evaluateJob(rj5, 1u, 2u))
+        ++errors;
+    if (!evaluateJob(rj6, 1u, 3u))
+        ++errors;
+    if (!evaluateJob(rj7, 0u, 3u))
+        ++errors;
 
     jobBuilder.Delete(rj1);
 
