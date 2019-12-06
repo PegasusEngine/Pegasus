@@ -94,6 +94,11 @@ struct GpuListLocation
         return listIndex == other.listIndex &&
             listItemIndex == other.listItemIndex;
     }
+
+    bool isValid() const
+    {
+        return listIndex != 0xffffffff && listItemIndex != 0xffffffff;
+    }
 };
 
 struct GpuListLocationHasher
@@ -117,6 +122,28 @@ struct ResourceBarrier
     const IResource* resource = nullptr;
     LocationGpuState from;
     LocationGpuState to;
+
+    bool isSameList() const
+    {
+        return from.location.listIndex == to.location.listIndex;
+    }
+
+    unsigned GetInterestedLists(unsigned indices[2]) const
+    {
+        if (isSameList())
+        { 
+            PG_ASSERT(to.location.isValid() && from.location.isValid());
+            indices[0] = from.location.listIndex;
+            return 1;
+        }
+
+        unsigned targetCount = 0u;
+        if (from.location.isValid())
+            indices[targetCount++] = from.location.listIndex;
+        if (to.location.isValid())
+            indices[targetCount++] = to.location.listIndex;
+        return targetCount;
+    }
 };
 
 struct BarrierViolation
@@ -155,6 +182,8 @@ public:
         outCount = (unsigned)mViolations.size();
         return mViolations.data();
     }
+
+    void StoreBarriers(CanonicalJobPath* jobPaths, unsigned jobPathsSize) const;
 
 private:
 
@@ -236,7 +265,7 @@ public:
 
     void Add(InternalJobHandle handle)
     {
-        mCmdList.push_back(handle);
+        mCmdList.emplace_back(Node{ handle, {} });
     }
 
     struct Dependency
@@ -246,25 +275,58 @@ public:
         unsigned dstListItemIndex = 0xffffffff;
     };
 
+    enum class BarrierTiming
+    {
+        Begin, End, BeginAndEnd
+    };
+
+    struct GpuBarrier : public ResourceBarrier
+    {
+        BarrierTiming timing;
+    };
+
+    struct Node
+    {
+        InternalJobHandle jobHandle;
+        std::vector<unsigned> dependencyIndices;
+        std::vector<unsigned> preGpuBarrierIndices; //barriers before this node
+        std::vector<unsigned> postGpuBarrierIndices; //barriers after this node
+    };
+
     void AddDependency(const GpuListLocation& location, unsigned sublistIndex);
     void AddDependency(const Dependency& d);
+    void AddBarrier(const ResourceBarrier& barrier);
+
     void QueryDependencies(int beginIndex, int endIndex, std::vector<Dependency>& outDependencies) const;
 
-    std::vector<InternalJobHandle>& GetCmdList()
+    std::vector<Node>& GetCmdList()
     {
         return mCmdList;
     }
 
-    const std::vector<InternalJobHandle>& GetCmdList() const 
+    const std::vector<Node>& GetCmdList() const 
     {
         return mCmdList;
+    }
+
+    const Dependency* GetDependencies(unsigned& sizeOut) const
+    {
+        sizeOut = (unsigned)mDependencies.size();
+        return mDependencies.data();
+    }
+
+    const GpuBarrier* GetBarriers(unsigned& sizeOut) const
+    {
+        sizeOut = (unsigned)mBarriers.size();
+        return mBarriers.data();
     }
 
 private:
 
     unsigned mJobPathId = 0xffffffff;
     std::vector<Dependency> mDependencies;
-    std::vector<InternalJobHandle> mCmdList;
+    std::vector<GpuBarrier> mBarriers;
+    std::vector<Node> mCmdList;
 };
 
 struct CanonicalCmdListResult

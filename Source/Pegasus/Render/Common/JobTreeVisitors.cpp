@@ -266,7 +266,7 @@ void ResourceStateBuilder::ApplyBarriers(
     for (unsigned i = initialLocation.listItemIndex; i <= endIndex; ++i)
     {
         listLocation.listItemIndex = i;
-        InternalJobHandle handle = path.GetCmdList()[i];
+        InternalJobHandle handle = path.GetCmdList()[i].jobHandle;
         PG_ASSERT((unsigned)handle < jobTableSize);
         const JobInstance& instance = jobTable[handle];
         for (auto& tableRef : instance.srvTables)
@@ -338,6 +338,28 @@ void ResourceStateBuilder::UnapplyBarriers(const CanonicalJobPath& path, unsigne
     PG_ASSERT(m_locationCache[listLocation] == range);
 }
 
+void ResourceStateBuilder::StoreBarriers(CanonicalJobPath* jobPaths, unsigned jobPathsSize) const
+{
+    //only process barriers if there are no violations
+    if (!mViolations.empty())
+        return;
+
+    for (const auto& recIt : m_records)
+    {
+        for (const auto& barrier : recIt.second.barriers)
+        {
+            unsigned targetJobs[2];
+            unsigned targetJobCounts = barrier.GetInterestedLists(targetJobs);
+            for (unsigned i = 0; i < targetJobCounts; ++i)
+            {
+                unsigned jobIndex = targetJobs[i];
+                PG_ASSERT(jobIndex < jobPathsSize);
+                jobPaths[jobIndex].AddBarrier(barrier);
+            }
+        }
+    }
+}
+
 void CanonicalJobPath::AddDependency(const GpuListLocation& listLocation, unsigned sublistIndex)
 {
     PG_ASSERT(!mCmdList.empty());
@@ -350,9 +372,10 @@ void CanonicalJobPath::AddDependency(const GpuListLocation& listLocation, unsign
 
 void CanonicalJobPath::AddDependency(const CanonicalJobPath::Dependency& dep)
 {
+    PG_ASSERT(dep.dstListItemIndex < (unsigned)mCmdList.size());
+    mCmdList[dep.dstListItemIndex].dependencyIndices.push_back((unsigned)mDependencies.size());
     mDependencies.emplace_back(dep);
 }
-
 
 void CanonicalJobPath::QueryDependencies(int beginIndex, int endIndex, std::vector<CanonicalJobPath::Dependency>& outDependencies) const
 {
@@ -361,6 +384,44 @@ void CanonicalJobPath::QueryDependencies(int beginIndex, int endIndex, std::vect
         if ((int)dep.dstListItemIndex >= beginIndex && (int)dep.dstListItemIndex <= endIndex)
             outDependencies.push_back(dep);
     }
+}
+
+void CanonicalJobPath::AddBarrier(const ResourceBarrier& barrier)
+{
+    const bool hasSource = barrier.from.location.listIndex == GetId();
+    const bool hasDest = barrier.to.location.listIndex == GetId();
+    if (!hasSource && !hasDest)
+        return;
+
+    const bool isImmediate = hasSource && hasDest && barrier.from.location.listItemIndex == (barrier.to.location.listItemIndex + 1);
+	GpuBarrier newBarrier = {};
+	newBarrier.resource = barrier.resource;
+	newBarrier.to = barrier.to;	
+	newBarrier.from = barrier.from;
+
+    if (isImmediate)
+    {
+        newBarrier.timing = CanonicalJobPath::BarrierTiming::BeginAndEnd;
+        PG_ASSERT(newBarrier.to.location.listItemIndex < (unsigned)mCmdList.size());
+        mCmdList[newBarrier.to.location.listItemIndex].preGpuBarrierIndices.push_back((unsigned)mBarriers.size());
+        mBarriers.push_back(newBarrier);
+        return;
+    }
+    
+    if (hasSource)
+    {
+        newBarrier.timing = CanonicalJobPath::BarrierTiming::Begin;
+        mCmdList[newBarrier.from.location.listItemIndex].postGpuBarrierIndices.push_back((unsigned)mBarriers.size());
+		mBarriers.push_back(newBarrier);
+    }
+
+    if (hasDest)
+    {
+        newBarrier.timing = CanonicalJobPath::BarrierTiming::End;
+        mCmdList[newBarrier.to.location.listItemIndex].preGpuBarrierIndices.push_back((unsigned)mBarriers.size());
+		mBarriers.push_back(newBarrier);
+    }
+
 }
 
 CanonicalCmdListBuilder::CanonicalCmdListBuilder(Pegasus::Alloc::IAllocator* allocator, ResourceStateTable& stateTable)
@@ -388,6 +449,8 @@ void CanonicalCmdListBuilder::Build(const GpuJob& rootJob, CanonicalCmdListResul
             mStaleJobs.push_back(waitingJob);
         }
     }
+
+    mGpuStateBuilder.StoreBarriers(mJobPaths.data(), (unsigned)mJobPaths.size());
 
     result = {};
 
