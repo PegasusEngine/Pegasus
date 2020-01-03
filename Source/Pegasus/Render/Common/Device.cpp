@@ -22,42 +22,6 @@ namespace Pegasus
 namespace Render
 {
 
-IDevice::IDevice(const DeviceConfig& config, Alloc::IAllocator* allocator)
-: mAllocator(allocator), mConfig(config)
-{
-    mResourceStateTable = PG_NEW(allocator, -1, "ResourceStateTable", Pegasus::Alloc::PG_MEM_PERM) ResourceStateTable;
-}
-
-IDevice::~IDevice()
-{
-    PG_DELETE(mAllocator, mResourceStateTable);
-}
-
-BufferRef IDevice::CreateBuffer(const BufferConfig& config)
-{
-    return InternalCreateBuffer(config);
-}
-
-TextureRef IDevice::CreateTexture(const TextureConfig& config)
-{
-    return InternalCreateTexture(config);
-}
-
-RenderTargetRef IDevice::CreateRenderTarget(const RenderTargetConfig& config)
-{
-    return InternalCreateRenderTarget(config);
-}
-
-ResourceTableRef IDevice::CreateResourceTable(const ResourceTableConfig& config)
-{
-    return InternalCreateResourceTable(config);
-}
-
-GpuPipelineRef IDevice::CreateGpuPipeline()
-{
-    return InternalCreateGpuPipeline();
-}
-
 IResource::IResource(IDevice* device, ResourceType resourceType)
 : mResourceStateTable(device->GetResourceStateTable()),
   mAllocator(device->GetAllocator()),
@@ -93,18 +57,6 @@ IDevice * IDevice::CreatePlatformDevice(const DeviceConfig& config, Alloc::IAllo
 
     return nullptr;
 }
-
-IDisplay* IDisplay::CreatePlatformDisplay(const DisplayConfig& displayConfig, Alloc::IAllocator* alloc)
-{
-    if (displayConfig.device != nullptr)
-    {
-        if (displayConfig.device->GetConfig().platform == DevicePlat::Dx12)
-            return PG_NEW(alloc, -1, "Dx12Display", Pegasus::Alloc::PG_MEM_PERM) Dx12Display(displayConfig, alloc);
-    }
-    
-    return nullptr;
-}
-
 
 }
 }

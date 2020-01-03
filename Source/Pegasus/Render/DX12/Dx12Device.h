@@ -14,7 +14,7 @@
 
 #include <D3D12.h>
 #include <string>
-#include "Pegasus/Render/IDevice.h"
+#include "../Common/ADevice.h"
 #include <Pegasus/Core/Ref.h>
 
 
@@ -42,7 +42,6 @@ struct GraphicsCardInfos
     int usedIndex = 0;
 };
 
-class Dx12GpuJobBuilder;
 class Dx12QueueManager;
 class Dx12RDMgr;
 class Dx12Texture;
@@ -53,7 +52,7 @@ struct TextureDesc;
 struct Dx12ProgramDesc;
 
 //! Windows specific device for open gl graphics api
-class Dx12Device : public IDevice
+class Dx12Device : public ADevice<Dx12Device>
 {
 public:
     //! Constructor
@@ -71,13 +70,11 @@ public:
 
 	Core::Ref<Dx12GpuProgram> CreateGpuProgram();
 
-    virtual IJobRunner* CreateJobRunner(Pegasus::Alloc::IAllocator* allocator);
-
-    virtual BufferRef InternalCreateBuffer(const BufferConfig& config);
-    virtual TextureRef InternalCreateTexture(const TextureConfig& config);
-    virtual RenderTargetRef InternalCreateRenderTarget(const RenderTargetConfig& config);
-    virtual ResourceTableRef InternalCreateResourceTable(const ResourceTableConfig& config);
-    virtual GpuPipelineRef InternalCreateGpuPipeline();
+    BufferRef InternalCreateBuffer(const BufferConfig& config);
+    TextureRef InternalCreateTexture(const TextureConfig& config);
+    RenderTargetRef InternalCreateRenderTarget(const RenderTargetConfig& config);
+    ResourceTableRef InternalCreateResourceTable(const ResourceTableConfig& config);
+    GpuPipelineRef InternalCreateGpuPipeline();
 
 private:
 

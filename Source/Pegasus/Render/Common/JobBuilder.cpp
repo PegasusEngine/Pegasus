@@ -185,11 +185,6 @@ RootJob JobBuilder::CreateRootJob()
     return mImpl->CreateRootJob();
 }
 
-bool JobBuilder::Execute(RootJob rootJob)
-{
-    return mImpl->Execute(rootJob);
-}
-
 ComputeJob JobBuilder::CreateComputeJob()
 {
     return mImpl->CreateComputeJob();

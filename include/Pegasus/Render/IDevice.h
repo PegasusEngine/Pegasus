@@ -36,7 +36,6 @@ namespace Render
 {
 
 class ResourceStateTable;
-class IJobRunner;
 
 enum class DevicePlat
 {
@@ -52,46 +51,33 @@ struct DeviceConfig
     Os::ModuleHandle mModuleHandle; //! handle to the HINSTANCE if windows, handle to the proc if linux
 };
 
+struct PlatJobGraphHandle
+{
+    int id = -1;
+    operator int() const { return id; }
+    bool isValid() const { return id != -1; }
+    PlatJobGraphHandle() = default;
+	explicit PlatJobGraphHandle(PlatJobGraphHandle&& other) = default;
+    explicit PlatJobGraphHandle(const PlatJobGraphHandle& other) = default;
+	PlatJobGraphHandle& operator=(const PlatJobGraphHandle& other) = default;
+    bool operator == (const PlatJobGraphHandle& other) const { return other.id == id; }
+    bool operator != (const PlatJobGraphHandle& other) const { return !(*this == other); }
+    bool operator <= (const PlatJobGraphHandle& other) const { return id <= other.id; }    
+};
+
 class IDevice
 {
 public:
-    //! Gets the config of this device
-    const DeviceConfig& GetConfig() const { return mConfig; }
-
-    virtual ~IDevice();
-    
-    //! Gets the allocator of this device
-    Alloc::IAllocator * GetAllocator() const { return mAllocator; }
-
-    //! Global function that creats the device specific to a platform
     static IDevice * CreatePlatformDevice(const DeviceConfig& config, Alloc::IAllocator * allocator);
 
-    BufferRef CreateBuffer(const BufferConfig& config);
-    TextureRef CreateTexture(const TextureConfig& config);
-    RenderTargetRef CreateRenderTarget(const RenderTargetConfig& config);
-    ResourceTableRef CreateResourceTable(const ResourceTableConfig& config);
-    GpuPipelineRef CreateGpuPipeline();
-
-    ResourceStateTable* GetResourceStateTable() const { return mResourceStateTable; }
-
-    virtual IJobRunner* CreateJobRunner(Pegasus::Alloc::IAllocator* allocator) = 0;
-
-protected:
-    //! constructor, which creates the device
-    //! \param config configuration stored
-    //! \param allocator the allocator for internal use
-    IDevice(const DeviceConfig& config, Alloc::IAllocator * allocator);
-
-    virtual BufferRef InternalCreateBuffer(const BufferConfig& config) = 0;
-    virtual TextureRef InternalCreateTexture(const TextureConfig& config) = 0;
-    virtual RenderTargetRef InternalCreateRenderTarget(const RenderTargetConfig& config) = 0;
-    virtual ResourceTableRef InternalCreateResourceTable(const ResourceTableConfig& config) = 0;
-    virtual GpuPipelineRef InternalCreateGpuPipeline() = 0;
-
-private:
-    Alloc::IAllocator * mAllocator;
-    DeviceConfig mConfig;
-    ResourceStateTable* mResourceStateTable;
+    virtual const DeviceConfig& GetConfig() const = 0;
+    virtual Alloc::IAllocator * GetAllocator() const = 0;
+    virtual BufferRef CreateBuffer(const BufferConfig& config) = 0;
+    virtual TextureRef CreateTexture(const TextureConfig& config) = 0;
+    virtual RenderTargetRef CreateRenderTarget(const RenderTargetConfig& config) = 0;
+    virtual ResourceTableRef CreateResourceTable(const ResourceTableConfig& config) = 0;
+    virtual GpuPipelineRef CreateGpuPipeline() = 0;
+    virtual ResourceStateTable* GetResourceStateTable() const = 0;
 };
 
 }

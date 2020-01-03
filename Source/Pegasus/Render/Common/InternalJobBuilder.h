@@ -22,8 +22,6 @@ namespace Pegasus
 namespace Render
 {
 
-class IJobRunner;
-
 struct RootCmdData
 {
     ResourceStateTable::Domain jobTreeDomain;
@@ -130,26 +128,12 @@ public:
 
     InternalJobHandle CreateJobInstance();
 
-    bool CompileRootJob(RootJob rootJob);
-
-    bool Execute(RootJob rootJob);
-
     std::vector<JobInstance> jobTable;
 
 private:
     IDevice* mDevice;
-	IJobRunner* mRunner;
     ResourceStateTable::Domain mStateDomain;
     std::vector<InternalJobHandle> mFreeSlots;
-};
-
-
-class IJobRunner
-{
-public:
-    virtual bool OnExecuteRootJob(
-        RootJob rootJob,
-        ResourceStateTable::Domain domain) = 0;
 };
 
 }

@@ -43,7 +43,7 @@ int Dx12Device::sDeviceRefCounts = 0;
 GraphicsCardInfos* Dx12Device::sCardInfos = nullptr;
 
 Dx12Device::Dx12Device(const DeviceConfig& config, Alloc::IAllocator * allocator)
-	: IDevice(config, allocator), mDevice(nullptr), mAllocator(allocator)
+	: ADevice<Dx12Device>(config, allocator), mDevice(nullptr), mAllocator(allocator)
 {
     mIOManager = config.mIOManager;
 
@@ -145,11 +145,6 @@ Dx12Device::~Dx12Device()
 	}
 	mDebugLayer->Release();
 #endif
-}
-
-IJobRunner* Dx12Device::CreateJobRunner(Pegasus::Alloc::IAllocator* allocator)
-{
-    return nullptr;
 }
 
 BufferRef Dx12Device::InternalCreateBuffer(const BufferConfig& config)

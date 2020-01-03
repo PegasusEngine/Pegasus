@@ -99,7 +99,6 @@ class JobBuilder
 public:
     JobBuilder(IDevice* device);
     ~JobBuilder();
-    bool Execute(RootJob rootJob);
 
     RootJob CreateRootJob();
     DrawJob CreateDrawJob();

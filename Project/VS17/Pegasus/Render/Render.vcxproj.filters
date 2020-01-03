@@ -119,6 +119,9 @@
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\Common\JobTreeVisitors.h">
       <Filter>Source\Common</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\Common\ADevice.h">
+      <Filter>Source\Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.cpp">

@@ -36,6 +36,7 @@
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\RenderContextConfig.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\ShaderFactory.h" />
     <ClInclude Include="..\..\..\..\Include\Pegasus\Render\TextureFactory.h" />
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\Common\ADevice.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\Common\InternalJobBuilder.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\Common\JobTreeParser.h" />
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\Common\JobTreeVisitors.h" />

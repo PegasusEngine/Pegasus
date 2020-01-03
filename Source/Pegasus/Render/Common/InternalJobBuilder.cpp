@@ -27,14 +27,11 @@ InternalJobBuilder::InternalJobBuilder(IDevice* device)
 : mDevice(device)
 {
 	mStateDomain = device->GetResourceStateTable()->CreateDomain();
-    mRunner = device->CreateJobRunner(device->GetAllocator());
 }
 
 InternalJobBuilder::~InternalJobBuilder()
 {
-    
     mDevice->GetResourceStateTable()->RemoveDomain(mStateDomain);
-    PG_DELETE(mDevice->GetAllocator(), mRunner);
 }
 
 InternalJobHandle InternalJobBuilder::CreateJobInstance()
@@ -52,29 +49,6 @@ InternalJobHandle InternalJobBuilder::CreateJobInstance()
     }
 
     return newHandle;
-}
-
-bool InternalJobBuilder::CompileRootJob(RootJob rootJob)
-{
-    
-    InternalJobHandle h = rootJob.GetInternalJobHandle();
-    PG_ASSERT(h >= 0 && h < (InternalJobHandle)jobTable.size());
-    auto& jobInstance = jobTable[h];
-    auto& data = std::get<RootCmdData>(jobInstance.data);
-    if (!data.jobTreeDomain.valid())
-    {
-        data.jobTreeDomain = mDevice->GetResourceStateTable()->CreateDomain();
-    }
-
-    return true;
-}
-
-bool InternalJobBuilder::Execute(RootJob rootJob)
-{
-    if (!CompileRootJob(rootJob))
-        return false;
-
-    return mRunner->OnExecuteRootJob(rootJob, mStateDomain);
 }
 
 void InternalJobBuilder::Delete(RootJob rootJob)
