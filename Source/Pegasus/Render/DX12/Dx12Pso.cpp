@@ -108,7 +108,10 @@ bool Dx12Pso::Compile(const GpuPipelineConfig& config)
             targetByteCode->BytecodeLength = blob->GetBufferSize();
         }
         
-		D3D12_INPUT_ELEMENT_DESC inputLayoutElements[] = { { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0u, 0u, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0u } };
+		D3D12_INPUT_ELEMENT_DESC inputLayoutElements[] = {
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0u, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0u },
+			{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0u, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0u }
+		};
 		psoDesc.InputLayout = { inputLayoutElements, _countof(inputLayoutElements) };
 		psoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
 		psoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;
