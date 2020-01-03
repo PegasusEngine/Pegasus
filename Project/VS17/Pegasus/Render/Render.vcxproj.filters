@@ -214,6 +214,9 @@
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Common\JobTreeVisitors.cpp">
       <Filter>Source\Common</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Common\ADevice.cpp">
+      <Filter>Source\Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\Source\Pegasus\Render\DX11\DXPegasusFormat.inl">

@@ -62,6 +62,7 @@
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\GL\GLShaderReflect.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Common\ADevice.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Common\Device.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Common\InternalJobBuilder.cpp" />
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Common\JobTreeVisitors.cpp" />

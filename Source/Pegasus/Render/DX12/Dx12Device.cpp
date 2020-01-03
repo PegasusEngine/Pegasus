@@ -22,6 +22,7 @@
 #include "Dx12Resources.h"
 #include "Dx12GpuProgram.h"
 #include "Dx12Pso.h"
+#include "../Common/JobTreeVisitors.h"
 #include <dxgi1_6.h>
 #include <atlbase.h>
 #include <vector>
@@ -42,7 +43,7 @@ namespace Render
 int Dx12Device::sDeviceRefCounts = 0;
 GraphicsCardInfos* Dx12Device::sCardInfos = nullptr;
 
-Dx12Device::Dx12Device(const DeviceConfig& config, Alloc::IAllocator * allocator)
+Dx12Device::Dx12Device(const DeviceConfig& config, Pegasus::Alloc::IAllocator * allocator)
 	: ADevice<Dx12Device>(config, allocator), mDevice(nullptr), mAllocator(allocator)
 {
     mIOManager = config.mIOManager;
@@ -177,6 +178,11 @@ GpuPipelineRef Dx12Device::InternalCreateGpuPipeline()
 {
     Dx12PsoRef pso  = D12_NEW(mAllocator, "Dx12Pso") Dx12Pso(this);
     return pso;
+}
+
+GpuSubmitResult Dx12Device::InternalSubmit(const CanonicalCmdListResult& result)
+{
+    return { {}, GpuWorkResultCode::Success };
 }
 
 

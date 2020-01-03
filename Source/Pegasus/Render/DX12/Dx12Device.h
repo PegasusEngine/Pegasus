@@ -50,6 +50,7 @@ class Dx12Buffer;
 struct BufferDesc;
 struct TextureDesc;
 struct Dx12ProgramDesc;
+struct CanonicalCmdListResult;
 
 //! Windows specific device for open gl graphics api
 class Dx12Device : public ADevice<Dx12Device>
@@ -58,7 +59,7 @@ public:
     //! Constructor
     //! \param config the configuration needed
     //! \param render allocator for internal allocations
-    Dx12Device(const DeviceConfig& config, Alloc::IAllocator * allocator);
+    Dx12Device(const DeviceConfig& config, Pegasus::Alloc::IAllocator* allocator);
     virtual ~Dx12Device();
 
     GraphicsCardInfos* GetGraphicsCardInfos() const { return sCardInfos; }
@@ -75,6 +76,7 @@ public:
     RenderTargetRef InternalCreateRenderTarget(const RenderTargetConfig& config);
     ResourceTableRef InternalCreateResourceTable(const ResourceTableConfig& config);
     GpuPipelineRef InternalCreateGpuPipeline();
+    GpuSubmitResult InternalSubmit(const CanonicalCmdListResult& result);
 
 private:
 

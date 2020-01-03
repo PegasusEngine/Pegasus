@@ -1,6 +1,8 @@
 #include <Pegasus/Render/IDevice.h>
 #include <Pegasus/Allocator/Alloc.h>
+#include <Pegasus/Render/JobBuilder.h>
 #include "ResourceStateTable.h"
+#include <functional>
 
 #pragma once
 
@@ -8,6 +10,7 @@ namespace Pegasus
 {
 namespace Render
 {
+    struct CanonicalCmdListResult;
     class ResourceStateTable;
 }
 }
@@ -16,6 +19,25 @@ namespace Pegasus
 {
 namespace Render
 {
+
+class GpuWorkManager
+{
+public:
+    using SubmitGpuWorkFn = std::function<GpuSubmitResult(const CanonicalCmdListResult& canonicalCmdListResult)>;
+
+	GpuWorkManager(
+        Alloc::IAllocator* allocator,
+        ResourceStateTable& stateTable);
+    GpuSubmitResult Submit(const RootJob& rootJob, SubmitGpuWorkFn workFn);
+    void ReleaseWork(GpuWorkHandle workHandle);
+    bool IsFinished(GpuWorkHandle workHandle);
+    void Wait(GpuWorkHandle workHandle);
+    void GarbageCollect();
+
+private:
+    Alloc::IAllocator* mAllocator;
+    ResourceStateTable& mResourceStateTable;
+};
 
 template<class PlatDeviceT>
 class ADevice : public IDevice
@@ -32,18 +54,30 @@ public:
     virtual ResourceTableRef CreateResourceTable(const ResourceTableConfig& config) override;
     virtual GpuPipelineRef CreateGpuPipeline() override;
     virtual ResourceStateTable* GetResourceStateTable() const override { return mResourceStateTable; }
+    
+    virtual GpuSubmitResult Submit(const RootJob& rootJob) override;
+    virtual void ReleaseWork(GpuWorkHandle workHandle) override;
+    virtual bool IsFinished(GpuWorkHandle workHandle) override;
+    virtual void Wait(GpuWorkHandle workHandle) override;
+    virtual void GarbageCollect() override;
+
 
 protected:
-    Alloc::IAllocator * mAllocator;
+    Alloc::IAllocator* mAllocator;
     DeviceConfig mConfig;
     ResourceStateTable* mResourceStateTable;
+    GpuWorkManager mGpuWorkManager;
 };
 
+
 template<class PlatDeviceT>
-ADevice<PlatDeviceT>::ADevice(const DeviceConfig& config, Alloc::IAllocator* allocator)
-: mConfig(config), mAllocator(allocator)
+ADevice<PlatDeviceT>::ADevice(const DeviceConfig& config, Pegasus::Alloc::IAllocator* allocator)
+: mConfig(config)
+, mAllocator(allocator)
+, mResourceStateTable(PG_NEW(allocator, -1, "ResourceStateTable", Pegasus::Alloc::PG_MEM_PERM) ResourceStateTable)
+, mGpuWorkManager(mAllocator, *mResourceStateTable)
 {
-    mResourceStateTable = PG_NEW(allocator, -1, "ResourceStateTable", Pegasus::Alloc::PG_MEM_PERM) ResourceStateTable;
+    
 }
 
 template<class PlatDeviceT>
@@ -81,6 +115,38 @@ GpuPipelineRef ADevice<PlatDeviceT>::CreateGpuPipeline()
 {
     return static_cast<PlatDeviceT*>(this)->InternalCreateGpuPipeline();
 }
+
+template<class PlatDeviceT>
+GpuSubmitResult ADevice<PlatDeviceT>::Submit(const RootJob& rootJob)
+{
+   return mGpuWorkManager.Submit(rootJob, [this](const CanonicalCmdListResult& result){ return static_cast<PlatDeviceT*>(this)->InternalSubmit(result); });
+}
+
+template<class PlatDeviceT>
+void ADevice<PlatDeviceT>::ReleaseWork(GpuWorkHandle workHandle)
+{
+    //mGpuWorkManager.ReleaseWork(workHandle);
+}
+
+template<class PlatDeviceT>
+bool ADevice<PlatDeviceT>::IsFinished(GpuWorkHandle workHandle)
+{
+	return false;
+    //return mGpuWorkManager.IsFinished(workHandle);
+}
+
+template<class PlatDeviceT>
+void ADevice<PlatDeviceT>::Wait(GpuWorkHandle workHandle)
+{
+   // mGpuWorkManager.Wait(workHandle);
+}
+
+template<class PlatDeviceT>
+void ADevice<PlatDeviceT>::GarbageCollect()
+{
+   // mGpuWorkManager.GarbageCollect();
+}
+
 
 }
 }
