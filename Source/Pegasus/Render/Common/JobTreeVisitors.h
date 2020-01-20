@@ -271,8 +271,7 @@ public:
     struct Dependency
     {
         GpuListLocation location;
-        unsigned sublistIndex = 0xffffffff;
-        unsigned dstListItemIndex = 0xffffffff;
+        unsigned ownerNodeIndex = 0xffffffff;
     };
 
     enum class BarrierTiming
@@ -293,7 +292,7 @@ public:
         std::vector<unsigned> postGpuBarrierIndices; //barriers after this node
     };
 
-    void AddDependency(const GpuListLocation& location, unsigned sublistIndex);
+    void AddDependency(const GpuListLocation& location);
     void AddDependency(const Dependency& d);
     void AddBarrier(const ResourceBarrier& barrier);
 
@@ -376,7 +375,6 @@ private:
     struct BuildContext
     {
         GpuListLocation listLocation;
-        int sublistBaseIndex = -1;
     };
 
     struct NodeState
@@ -384,7 +382,6 @@ private:
         BuildContext context;
 		bool flushedBarriers = false;
         int parentListId = -1;
-        bool beginOfSublist = false;
         State state = State::Initial;
     };
 

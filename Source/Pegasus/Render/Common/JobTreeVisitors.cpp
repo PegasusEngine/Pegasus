@@ -244,7 +244,7 @@ void ResourceStateBuilder::ApplyBarriers(
             for (const auto& dep : outDeps)
             {
                 GpuListLocation loc = dep.location;
-                loc.listItemIndex = dep.sublistIndex;
+				loc.listItemIndex = 0u;//dep.sublistIndex;
                 
                 auto rangeIt = m_locationCache.find(loc);
                 PG_ASSERT(rangeIt != m_locationCache.end());
@@ -360,20 +360,19 @@ void ResourceStateBuilder::StoreBarriers(CanonicalJobPath* jobPaths, unsigned jo
     }
 }
 
-void CanonicalJobPath::AddDependency(const GpuListLocation& listLocation, unsigned sublistIndex)
+void CanonicalJobPath::AddDependency(const GpuListLocation& listLocation)
 {
     PG_ASSERT(!mCmdList.empty());
     CanonicalJobPath::Dependency d;
     d.location = listLocation;
-    d.sublistIndex = sublistIndex;
-    d.dstListItemIndex = (unsigned)(mCmdList.size()) - 1;
+    d.ownerNodeIndex = (unsigned)(mCmdList.size()) - 1;
     AddDependency(d);
 }
 
 void CanonicalJobPath::AddDependency(const CanonicalJobPath::Dependency& dep)
 {
-    PG_ASSERT(dep.dstListItemIndex < (unsigned)mCmdList.size());
-    mCmdList[dep.dstListItemIndex].dependencyIndices.push_back((unsigned)mDependencies.size());
+    PG_ASSERT(dep.ownerNodeIndex < (unsigned)mCmdList.size());
+    mCmdList[dep.ownerNodeIndex].dependencyIndices.push_back((unsigned)mDependencies.size());
     mDependencies.emplace_back(dep);
 }
 
@@ -381,7 +380,7 @@ void CanonicalJobPath::QueryDependencies(int beginIndex, int endIndex, std::vect
 {
     for (const auto& dep : mDependencies)
     {
-        if ((int)dep.dstListItemIndex >= beginIndex && (int)dep.dstListItemIndex <= endIndex)
+        if ((int)dep.ownerNodeIndex >= beginIndex && (int)dep.ownerNodeIndex <= endIndex)
             outDependencies.push_back(dep);
     }
 }
@@ -393,7 +392,7 @@ void CanonicalJobPath::AddBarrier(const ResourceBarrier& barrier)
     if (!hasSource && !hasDest)
         return;
 
-    const bool isImmediate = hasSource && hasDest && barrier.from.location.listItemIndex == (barrier.to.location.listItemIndex + 1);
+    const bool isImmediate = hasSource && hasDest && (barrier.from.location.listItemIndex + 1) == barrier.to.location.listItemIndex;
 	GpuBarrier newBarrier = {};
 	newBarrier.resource = barrier.resource;
 	newBarrier.to = barrier.to;	
@@ -504,7 +503,6 @@ bool CanonicalCmdListBuilder::OnPushed(InternalJobHandle handle, JobInstance& jo
     {
         mBuildContext.listLocation.listIndex = (int)mJobPaths.size();
         mBuildContext.listLocation.listItemIndex = 0u;
-        mBuildContext.sublistBaseIndex = 0u;
         mJobPaths.emplace_back();
         mJobPaths[mBuildContext.listLocation.listIndex].SetId(mBuildContext.listLocation.listIndex);
     };
@@ -518,10 +516,6 @@ bool CanonicalCmdListBuilder::OnPushed(InternalJobHandle handle, JobInstance& jo
     {
         mBuildContext.listLocation.listIndex = (unsigned)mStateTable[handle].parentListId;
         mBuildContext.listLocation.listItemIndex = (unsigned)mJobPaths[mBuildContext.listLocation.listIndex].Size();
-        if (mStateTable[handle].beginOfSublist)
-        {
-            mBuildContext.sublistBaseIndex = mBuildContext.listLocation.listItemIndex;
-        }
     }
 
     AddHandleToCurrList(handle);
@@ -536,44 +530,32 @@ bool CanonicalCmdListBuilder::OnPushed(InternalJobHandle handle, JobInstance& jo
         {
             PG_ASSERTSTR(depState.context.listLocation.listIndex != 0xffffffff, "Resource dependency state must've been processed already.");
             PG_ASSERTSTR(depState.context.listLocation.listItemIndex != 0xffffffff, "Resource dependency state must've been processed already.");
-            PG_ASSERTSTR(depState.context.sublistBaseIndex != 0xffffffff, "Resource dependency state must've been processed already.");
-            mJobPaths[mBuildContext.listLocation.listIndex].AddDependency(depState.context.listLocation, depState.context.sublistBaseIndex);
+            mJobPaths[mBuildContext.listLocation.listIndex].AddDependency(depState.context.listLocation);
         }
     }
 
     auto applyBarriers = [&]()
     {
 		mStateTable[handle].flushedBarriers = true;
-        GpuListLocation initialLocation = mBuildContext.listLocation;;
-        initialLocation.listItemIndex = (unsigned)mBuildContext.sublistBaseIndex;
+        GpuListLocation initialLocation = mBuildContext.listLocation;
+        initialLocation.listItemIndex = 0u;//(unsigned)mBuildContext.sublistBaseIndex;
         mGpuStateBuilder.ApplyBarriers(
             mJobTable, mJobCounts,
             mJobPaths.data(), (unsigned)mJobPaths.size(),
             initialLocation, (unsigned)mBuildContext.listLocation.listItemIndex);
     };
 
-    unsigned availableChildJobs = 0;
-    for (auto j : jobInstance.childrenJobs)
-    {
-        availableChildJobs += CanProcess(j, mJobTable[j]) ? 1 : 0;
-    }
-
-    //chose a child to pass down, lets just do for now the first child
-    if (availableChildJobs != 0u)
+    if (jobInstance.childrenJobs.size() == 1u && CanProcess(jobInstance.childrenJobs[0], mJobTable[jobInstance.childrenJobs[0]]) && jobInstance.dependenciesSet.size() == 1u)
     {
         auto& nextChild = mStateTable[jobInstance.childrenJobs[0]];
 		auto& nextChildInstance = mJobTable[jobInstance.childrenJobs[0]];
         nextChild.parentListId = mBuildContext.listLocation.listIndex;
-        if ((unsigned)jobInstance.childrenJobs.size() > 1u || nextChildInstance.dependenciesSet.size() > 1u)
-        {
-            applyBarriers();
-            nextChild.beginOfSublist = true;
-        }
     }
     else
     {
-            applyBarriers();
+        applyBarriers();
     }
+
 
     return true;
 }
@@ -584,7 +566,8 @@ bool CanonicalCmdListBuilder::OnPopped(InternalJobHandle handle, JobInstance& jo
     if (mStateTable[handle].flushedBarriers)
     {
         mGpuStateBuilder.UnapplyBarriers(mJobPaths[mBuildContext.listLocation.listIndex],
-            (unsigned)mBuildContext.sublistBaseIndex,
+            //(unsigned)mBuildContext.sublistBaseIndex,
+            0u,
             (unsigned)mBuildContext.listLocation.listItemIndex);
     }
 
