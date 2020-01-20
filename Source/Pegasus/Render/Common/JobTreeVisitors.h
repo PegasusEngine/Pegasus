@@ -173,9 +173,9 @@ public:
 	void Reset();
     void ApplyBarriers(const JobInstance* jobTable, const unsigned jobTableSize,
             const CanonicalJobPath* jobPaths, const unsigned jobPathsSize, 
-            const GpuListLocation& initialLocation, unsigned endIndex);
+            unsigned listId);
 
-    void UnapplyBarriers(const CanonicalJobPath& path, unsigned beginIndex, unsigned endIndex);
+    void UnapplyBarriers(const CanonicalJobPath& path);
 
     const BarrierViolation* GetBarrierViolations(unsigned& outCount) const
     {
@@ -187,66 +187,39 @@ public:
 
 private:
 
-    struct GpuListRange
+    struct ListRecord
     {
-        unsigned listIndex;
-        unsigned beginIndex;
-        unsigned endIndex;
+        ListRecord() {}
 
-        bool operator==(const GpuListRange& other) const
+        ListRecord(ListRecord&& rr)
         {
-            return listIndex == other.listIndex && 
-                beginIndex == other.beginIndex &&
-                endIndex == other.endIndex;
-        }
-    };
-
-    struct GpuListHasher
-    {
-        uint32_t operator()(const GpuListRange& range) const
-        {
-            uint64_t hh = 0ull;
-            hh |= range.listIndex;
-            hh |= ((uint64_t(range.beginIndex) & 0xffffull) << 32);
-            hh |= ((uint64_t(range.endIndex) & 0xffffull) << 48);
-            return std::hash<uint64_t>()(hh);
-        };
-    };
-
-    struct SublistRecord
-    {
-        SublistRecord() {}
-
-        SublistRecord(SublistRecord&& rr)
-        {
-            range = rr.range;
+            listId = rr.listId;
 			refCount = rr.refCount;
-            dependencies = std::move(rr.dependencies);
+            dependenciesListIds = std::move(rr.dependenciesListIds);
             barriers = std::move(rr.barriers);
         }
 
-        GpuListRange range;
+        unsigned listId = 0u;
         unsigned refCount = 0u;
-        std::vector<GpuListRange> dependencies;
+        std::vector<unsigned> dependenciesListIds;
         std::vector<ResourceBarrier> barriers;
     };
 
     struct GpuResourceStateRecord
     {
         LocationGpuState state;
-        std::unordered_map<GpuListRange, std::vector<LocationGpuState> , GpuListHasher> usagesRanges;
+        std::unordered_map<unsigned, std::vector<LocationGpuState>> usagesLists;
     };
 
-    void SetState(const GpuListRange& parentRange, GpuListLocation listLocation, ResourceGpuState newState, const IResource* resource);
-    void SetState(const GpuListRange& parentRange, GpuListLocation listLocation, ResourceGpuState newState, const ResourceTable* resourceTable);
-    void StoreResourceState(const GpuListRange& parentRange, const LocationGpuState& gpuState, const IResource* resource, bool checkViolation);
-	void FlushResourceStates(const SublistRecord& record, bool applyInverse);
+    void SetState(unsigned parentListId, GpuListLocation listLocation, ResourceGpuState newState, const IResource* resource);
+    void SetState(unsigned parentListId, GpuListLocation listLocation, ResourceGpuState newState, const ResourceTable* resourceTable);
+    void StoreResourceState(unsigned parentListId, const LocationGpuState& gpuState, const IResource* resource, bool checkViolation);
+	void FlushResourceStates(const ListRecord& record, bool applyInverse);
 
     std::vector<BarrierViolation> mViolations;
     std::vector<GpuResourceStateRecord> mStates;
     std::vector<ResourceBarrier> mBarriers;
-    std::unordered_map<GpuListRange, SublistRecord, GpuListHasher> m_records;
-    std::unordered_map<GpuListLocation, GpuListRange, GpuListLocationHasher> m_locationCache;
+    std::unordered_map<unsigned, ListRecord> m_records;
     ResourceStateTable::Domain mDomain;
     ResourceStateTable& mTable;
 };
