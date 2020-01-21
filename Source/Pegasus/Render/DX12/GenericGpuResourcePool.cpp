@@ -1,4 +1,6 @@
 #include "GenericGpuResourcePool.h"
+#include "Dx12Fence.h"
+#include "Dx12Defs.h"
 #include <algorithm>
 #include <queue>
 
@@ -17,13 +19,13 @@ public:
 		u64 initialFenceVal = 0ull;
 	};
 
-	GenericResourcePool(ID3D12Device* device, u64 initialFenceVal, GpuAllocatorType* allocator)
-	: m_d3dDevice(device)
-	, m_fence(new GpuFence(device, initialFenceVal))
-	, m_nextFenceVal(initialFenceVal)
+	GenericResourcePool(Dx12Device* device, ID3D12CommandQueue* queue, GpuAllocatorType* allocator)
+	: m_device(device)
+	, m_fence(D12_NEW(device->GetAllocator(), "Dx12Fence") Dx12Fence(device, queue))
+	, m_nextFenceVal(0ull)
 	, m_allocator(allocator)
 	{
-		FX_ASSERT(m_d3dDevice != nullptr);
+		PG_ASSERT(m_device != nullptr);
 	}
 
 	~GenericResourcePool()
@@ -31,45 +33,45 @@ public:
 		for (auto& slot : m_heaps)
 		{
 			if (!slot.ranges.empty())
-				m_fence->wait(slot.ranges.front().fenceValue);
+				m_fence->WaitOnCpu(slot.ranges.front().fenceValue);
 
-			m_allocator->destroyHeap(slot.heap);
+			m_allocator->DestroyHeap(slot.heap);
 		}
-		delete m_fence;
+		D12_DELETE(m_device->GetAllocator(), m_fence);
 	}
 
-	void beginUsage()
+	void BeginUsage()
 	{
 		m_nextFenceVal++;
 	}
 
-	void endUsage()
+	void EndUsage()
 	{
 		u64 currFenceValue = m_fence->getCompletedValue();
 		for (HeapSlot& slot : m_heaps)
 		{
 			while (!slot.ranges.empty())
 			{
-				if (slot.ranges.front().fenceValue > currFenceValue)
-					break;
+                if (slot.ranges.front().fenceValue >= m_fence->GetValue())
+                    break;
 
 				slot.capacity += slot.ranges.front().size;
 				slot.ranges.pop();
 				if (slot.ranges.empty())
 				{
-					FX_ASSERT(slot.capacity == slot.size);
+					PG_ASSERT(slot.capacity == slot.size);
 					slot.offset = 0ull;
 				}
 			}
 		}
-		m_fence->signal(m_nextFenceVal);
+		m_fence->Signal(m_nextFenceVal);
 	}
 
-	AllocationHandle allocate(const AllocDesc& desc)
+	AllocationHandle Allocate(const AllocDesc& desc)
 	{
 		AllocationHandle h;
-		if (!internalFindAlloc(desc, h))
-			internalCreateNew(desc, h);
+		if (!InternalFindAlloc(desc, h))
+			InternalCreateNew(desc, h);
 		return h;
 	}
 
@@ -90,7 +92,7 @@ protected:
 		HeapType heap;
 	};
 
-	void commitRange(HeapSlot& slot, const Range& range)
+	void CommmitRange(HeapSlot& slot, const Range& range)
 	{
 		if (slot.ranges.empty() || slot.ranges.back().fenceValue < m_nextFenceVal)
 			slot.ranges.push(range);
@@ -99,36 +101,36 @@ protected:
 			slot.ranges.back().size += range.size;
 		}
 
-		FX_ASSERT(range.size <= slot.capacity);
+		PG_ASSERT(range.size <= slot.capacity);
 		slot.capacity -= range.size;
 		slot.offset = (slot.offset + range.size) % slot.size;
 	}
 
-	void internalCreateNew(const AllocDesc& desc, AllocationHandle& outHandle)
+	void InternalCreateNew(const AllocDesc& desc, AllocationHandle& outHandle)
 	{
 		m_heaps.emplace_back();
 		HeapSlot& newSlot = m_heaps.back();
-		newSlot.heap = m_allocator->createNewHeap(desc, newSlot.size);
+		newSlot.heap = m_allocator->CreateNewHeap(desc, newSlot.size);
 		newSlot.capacity = newSlot.size;
 		Range range = {};
 
-		bool rangeResult = calculateRange(desc, newSlot, range);
+		bool rangeResult = CalculateRange(desc, newSlot, range);
 		(void)rangeResult;
-		FX_ASSERT_MSG(rangeResult, "Range result must not fail");
+		PG_ASSERTSTR(rangeResult, "Range result must not fail");
 
-		outHandle = m_allocator->allocateHandle(desc, range.offset, newSlot.heap);
-		commitRange(newSlot, range);
+		outHandle = m_allocator->AllocateHandle(desc, range.offset, newSlot.heap);
+		CommmitRange(newSlot, range);
 	}
 
-	bool calculateRange(const AllocDesc& desc, const HeapSlot& slot, Range& outRange)
+	bool CalculateRange(const AllocDesc& desc, const HeapSlot& slot, Range& outRange)
 	{
 		outRange = {};
 		outRange.fenceValue = m_nextFenceVal;
-		m_allocator->getRange(desc, slot.offset, outRange.offset, outRange.size);
+		m_allocator->GetRange(desc, slot.offset, outRange.offset, outRange.size);
 		if (outRange.offset >= slot.size)
 			return false;
 
-		FX_ASSERT(outRange.offset >= slot.offset);
+		PG_ASSERT(outRange.offset >= slot.offset);
 		u64 padding = outRange.offset - slot.offset;
 		u64 sizeLeft = slot.size - outRange.offset;
 
@@ -146,7 +148,7 @@ protected:
 		return true;
 	}
 
-	bool internalFindAlloc(const AllocDesc& desc, AllocationHandle& outHandle)
+	bool InternalFindAlloc(const AllocDesc& desc, AllocationHandle& outHandle)
 	{
 		for (HeapSlot& slot : m_heaps)
 		{
@@ -154,10 +156,10 @@ protected:
 				continue;
 
 			Range range = {};
-			if (calculateRange(desc, slot, range))
+			if (CalculateRange(desc, slot, range))
 			{
-				outHandle = m_allocator->allocateHandle(desc, range.offset, slot.heap);
-				commitRange(slot, range);
+				outHandle = m_allocator->AllocateHandle(desc, range.offset, slot.heap);
+				CommmitRange(slot, range);
 				return true;
 			}
 		}
@@ -168,8 +170,8 @@ protected:
 	GpuAllocatorType* m_allocator;
 
 	u64 m_nextFenceVal;
-	ID3D12Device* m_d3dDevice;
-	GpuFence* m_fence;
+    Dx12Device* m_device;
+	Dx12Fence* m_fence;
 };
 
 struct UploadDescDX12
@@ -194,8 +196,8 @@ class GpuUploadPoolImpl : public BaseGpuUploadPool<GpuUploadPoolImpl>
 public:
 	typedef BaseGpuUploadPool<GpuUploadPoolImpl> SuperType;
 
-	GpuUploadPoolImpl(ID3D12Device* device, u64 initialHeapSize)
-	: SuperType(device, 0ull, this), m_nextHeapSize(initialHeapSize)
+	GpuUploadPoolImpl(Dx12Device* device, ID3D12CommandQueue* queue, u64 initialHeapSize)
+	: SuperType(device, queue, this), m_nextHeapSize(initialHeapSize)
 	{
 	}
 
@@ -203,10 +205,10 @@ public:
 	{
 	}
 
-	UploadHeapDX12 createNewHeap(const UploadDescDX12& desc, u64& outHeapSize);
-	void getRange(const UploadDescDX12& desc, u64 inputOffset, u64& outputOffset, u64& outputSize) const;
-	GpuMemoryBlock allocateHandle(const UploadDescDX12& desc, u64 heapOffset, const UploadHeapDX12& heap);
-	void destroyHeap(UploadHeapDX12& heap);
+	UploadHeapDX12 CreateNewHeap(const UploadDescDX12& desc, u64& outHeapSize);
+	void GetRange(const UploadDescDX12& desc, u64 inputOffset, u64& outputOffset, u64& outputSize) const;
+	GpuMemoryBlock AllocateHandle(const UploadDescDX12& desc, u64 heapOffset, const UploadHeapDX12& heap);
+	void DestroyHeap(UploadHeapDX12& heap);
 private:
 	u64 m_nextHeapSize;
 };
@@ -231,22 +233,22 @@ class GpuDescriptorTablePoolImpl : public BaseResourceDescriptorPool<GpuDescript
 {
 public:
 	typedef BaseResourceDescriptorPool<GpuDescriptorTablePoolImpl> SuperType;
-	GpuDescriptorTablePoolImpl(ID3D12Device* device, u32 maxDescriptorCount, D3D12_DESCRIPTOR_HEAP_TYPE heapType)
-	    : SuperType(device, 0ull, this)
+	GpuDescriptorTablePoolImpl(Dx12Device* device, ID3D12CommandQueue* queue, u32 maxDescriptorCount, D3D12_DESCRIPTOR_HEAP_TYPE heapType)
+	    : SuperType(device, queue, this)
 	    , m_maxDescriptorCount(maxDescriptorCount)
 	    , m_heapType(heapType)
 	{
-		m_descriptorSize = m_d3dDevice->GetDescriptorHandleIncrementSize(heapType);
+		m_descriptorSize = m_device->GetD3D()->GetDescriptorHandleIncrementSize(heapType);
 	}
 
 	~GpuDescriptorTablePoolImpl()
 	{
 	}
 
-	DescriptorTableHeapDX12 createNewHeap(const DescriptorTableDescDX12& desc, u64& outHeapSize);
-	void getRange(const DescriptorTableDescDX12& desc, u64 inputOffset, u64& outputOffset, u64& outputSize) const;
-	DescriptorTable allocateHandle(const DescriptorTableDescDX12& desc, u64 heapOffset, const DescriptorTableHeapDX12& heap);
-	void destroyHeap(DescriptorTableHeapDX12& heap);
+	DescriptorTableHeapDX12 CreateNewHeap(const DescriptorTableDescDX12& desc, u64& outHeapSize);
+	void GetRange(const DescriptorTableDescDX12& desc, u64 inputOffset, u64& outputOffset, u64& outputSize) const;
+	DescriptorTable AllocateHandle(const DescriptorTableDescDX12& desc, u64 heapOffset, const DescriptorTableHeapDX12& heap);
+	void DestroyHeap(DescriptorTableHeapDX12& heap);
 
 private:
 	u32 m_descriptorSize;
@@ -255,7 +257,7 @@ private:
 };
 
 
-UploadHeapDX12 GpuUploadPoolImpl::createNewHeap(const UploadDescDX12& desc, u64& outHeapSize)
+UploadHeapDX12 GpuUploadPoolImpl::CreateNewHeap(const UploadDescDX12& desc, u64& outHeapSize)
 {
 	UploadHeapDX12 outHeap = {};
 
@@ -271,19 +273,19 @@ UploadHeapDX12 GpuUploadPoolImpl::createNewHeap(const UploadDescDX12& desc, u64&
 #if FLUX_CHECK_MEMORY_USAGE_ON_ALLOCATION
 //	DXGI_QUERY_VIDEO_MEMORY_INFO memInfo{};
 //	m_dxgiAdapter3->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &memInfo);
-//	FX_ASSERT_MSG(memInfo.CurrentUsage + desc.SizeInBytes <= memInfo.Budget,
-//		"Current memory budget is %u and current usage is %u, cannot allocate %u more bytes.",
+//	PG_ASSERT_MSG(memInfo.CurrentUsage + desc.SizeInBytes <= memInfo.Budget,
+//		"Current memory budget is %u and current usage is %u, cannot Allocate %u more bytes.",
 //		memInfo.Budget, memInfo.CurrentUsage, desc.SizeInBytes);
 #endif
 
-	FX_VALIDATE(m_d3dDevice->CreateHeap(&heapDesc, IID_PPV_ARGS(&outHeap.heap)));
+	FX_VALIDATE(m_device->GetD3D()->CreateHeap(&heapDesc, IID_PPV_ARGS(&outHeap.heap)));
 
 	D3D12_RESOURCE_DESC resourceDesc = {};
 	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
 	resourceDesc.Width = heapDesc.SizeInBytes;
 	resourceDesc.Height = resourceDesc.SampleDesc.Count = resourceDesc.DepthOrArraySize = resourceDesc.MipLevels = 1;
 	resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-	FX_VALIDATE(m_d3dDevice->CreatePlacedResource(outHeap.heap, 0, &resourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&outHeap.buffer)));
+	FX_VALIDATE(m_device->GetD3D()->CreatePlacedResource(outHeap.heap, 0, &resourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&outHeap.buffer)));
 	outHeap.size = heapDesc.SizeInBytes;
 	outHeap.gpuHeapBaseVA = outHeap.buffer->GetGPUVirtualAddress();
 	outHeapSize = outHeap.size;
@@ -291,16 +293,16 @@ UploadHeapDX12 GpuUploadPoolImpl::createNewHeap(const UploadDescDX12& desc, u64&
 	return outHeap;
 }
 
-void GpuUploadPoolImpl::getRange(const UploadDescDX12& desc, u64 inputOffset, u64& outOffset, u64& outSize) const
+void GpuUploadPoolImpl::GetRange(const UploadDescDX12& desc, u64 inputOffset, u64& outOffset, u64& outSize) const
 {
 	outSize = desc.requestBytes;
 	outOffset = alignUp(inputOffset, desc.alignment);
 }
 
-GpuMemoryBlock GpuUploadPoolImpl::allocateHandle(const UploadDescDX12& desc, u64 heapOffset, const UploadHeapDX12& heap)
+GpuMemoryBlock GpuUploadPoolImpl::AllocateHandle(const UploadDescDX12& desc, u64 heapOffset, const UploadHeapDX12& heap)
 {
-	FX_ASSERT((heapOffset + desc.requestBytes) <= heap.size);
-	FX_ASSERT((heapOffset % desc.alignment) == 0u);
+	PG_ASSERT((heapOffset + desc.requestBytes) <= heap.size);
+	PG_ASSERT((heapOffset % desc.alignment) == 0u);
 
 	GpuMemoryBlock block = {};
 	block.buffer = heap.buffer;
@@ -310,14 +312,17 @@ GpuMemoryBlock GpuUploadPoolImpl::allocateHandle(const UploadDescDX12& desc, u64
 	return block;
 }
 
-void GpuUploadPoolImpl::destroyHeap(UploadHeapDX12& heap)
+void GpuUploadPoolImpl::DestroyHeap(UploadHeapDX12& heap)
 {
-	safeRelease(heap.heap);
-	safeRelease(heap.buffer);
+	if (heap.heap)
+        heap.heap->Release();
+
+    if (heap.buffer)
+        heap.buffer->Release();
 }
 
 
-DescriptorTableHeapDX12 GpuDescriptorTablePoolImpl::createNewHeap(const DescriptorTableDescDX12& desc, u64& outHeapSize)
+DescriptorTableHeapDX12 GpuDescriptorTablePoolImpl::CreateNewHeap(const DescriptorTableDescDX12& desc, u64& outHeapSize)
 {
 	u32 heapTargetSize = std::max(m_maxDescriptorCount, desc.tableSize);
 	DescriptorTableHeapDX12 outHeap{};
@@ -327,7 +332,7 @@ DescriptorTableHeapDX12 GpuDescriptorTablePoolImpl::createNewHeap(const Descript
 	heapDesc.NumDescriptors = heapTargetSize;
 	heapDesc.Type = m_heapType;
 	heapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	FX_VALIDATE(m_d3dDevice->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&outHeap.heap)));
+	FX_VALIDATE(m_device->GetD3D()->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&outHeap.heap)));
 
 	outHeap.cpuHandleStart = outHeap.heap->GetCPUDescriptorHandleForHeapStart();
 	outHeap.gpuHandleStart = outHeap.heap->GetGPUDescriptorHandleForHeapStart();
@@ -336,16 +341,16 @@ DescriptorTableHeapDX12 GpuDescriptorTablePoolImpl::createNewHeap(const Descript
 	return outHeap;
 }
 
-void GpuDescriptorTablePoolImpl::getRange(const DescriptorTableDescDX12& desc, u64 inputOffset, u64& outputOffset, u64& outputSize) const
+void GpuDescriptorTablePoolImpl::GetRange(const DescriptorTableDescDX12& desc, u64 inputOffset, u64& outputOffset, u64& outputSize) const
 { 
 	outputOffset = inputOffset; //no alignment requirements
 	outputSize = desc.tableSize;
 }
 
-DescriptorTable GpuDescriptorTablePoolImpl::allocateHandle(const DescriptorTableDescDX12& desc, u64 heapOffset, const DescriptorTableHeapDX12& heap)
+DescriptorTable GpuDescriptorTablePoolImpl::AllocateHandle(const DescriptorTableDescDX12& desc, u64 heapOffset, const DescriptorTableHeapDX12& heap)
 {
-	FX_ASSERT(heapOffset < heap.descriptorCounts);
-	FX_ASSERT(desc.tableSize <= (heap.descriptorCounts - heapOffset));
+	PG_ASSERT(heapOffset < heap.descriptorCounts);
+	PG_ASSERT(desc.tableSize <= (heap.descriptorCounts - heapOffset));
 	DescriptorTable outTable{};
 	outTable.cpuHandle = { heap.cpuHandleStart.ptr + (u32)heapOffset * m_descriptorSize };
 	outTable.gpuHandle = { heap.gpuHandleStart.ptr + (u32)heapOffset * m_descriptorSize };
@@ -355,24 +360,25 @@ DescriptorTable GpuDescriptorTablePoolImpl::allocateHandle(const DescriptorTable
 	return outTable;
 }
 
-void GpuDescriptorTablePoolImpl::destroyHeap(DescriptorTableHeapDX12& heap)
+void GpuDescriptorTablePoolImpl::DestroyHeap(DescriptorTableHeapDX12& heap)
 {
-	safeRelease(heap.heap);
+	if (heap.heap)
+        heap.heap->Release();
 }
 
-GpuUploadPool::GpuUploadPool(ID3D12Device* device, u64 initialPoolSize)
+GpuUploadPool::GpuUploadPool(Dx12Device* device, ID3D12CommandQueue* queue, u64 initialPoolSize)
 {
-	m_impl = new GpuUploadPoolImpl(device, initialPoolSize);
+	m_impl = new GpuUploadPoolImpl(device, queue, initialPoolSize);
 }
 
-void GpuUploadPool::beginUsage()
+void GpuUploadPool::BeginUsage()
 {
-	m_impl->beginUsage();
+	m_impl->BeginUsage();
 }
 
-void GpuUploadPool::endUsage()
+void GpuUploadPool::EndUsage()
 {
-	m_impl->endUsage();
+	m_impl->EndUsage();
 }
 
 GpuUploadPool::~GpuUploadPool()
@@ -380,17 +386,17 @@ GpuUploadPool::~GpuUploadPool()
 	delete m_impl;
 }
 
-GpuMemoryBlock GpuUploadPool::allocUploadBlock(size_t sizeBytes)
+GpuMemoryBlock GpuUploadPool::AllocUploadBlock(size_t sizeBytes)
 {
 	UploadDescDX12 desc;
 	desc.alignment = 256ull;
 	desc.requestBytes = sizeBytes;
-	return m_impl->allocate(desc);
+	return m_impl->Allocate(desc);
 }
 
-GpuDescriptorTablePool::GpuDescriptorTablePool(ID3D12Device* device, u32 maxDescriptorCount, D3D12_DESCRIPTOR_HEAP_TYPE heapType)
+GpuDescriptorTablePool::GpuDescriptorTablePool(Dx12Device* device, ID3D12CommandQueue* queue, u32 maxDescriptorCount, D3D12_DESCRIPTOR_HEAP_TYPE heapType)
 {
-	m_impl = new GpuDescriptorTablePoolImpl(device, maxDescriptorCount, heapType);
+	m_impl = new GpuDescriptorTablePoolImpl(device, queue, maxDescriptorCount, heapType);
 }
 
 GpuDescriptorTablePool::~GpuDescriptorTablePool()
@@ -398,22 +404,22 @@ GpuDescriptorTablePool::~GpuDescriptorTablePool()
 	delete m_impl;
 }
 
-void GpuDescriptorTablePool::beginUsage()
+void GpuDescriptorTablePool::BeginUsage()
 {
-	m_impl->beginUsage();
+	m_impl->BeginUsage();
 }
 
-void GpuDescriptorTablePool::endUsage()
+void GpuDescriptorTablePool::EndUsage()
 {
-	m_impl->endUsage();
+	m_impl->EndUsage();
 }
 
-DescriptorTable GpuDescriptorTablePool::allocateTable(u32 tableSize, ID3D12GraphicsCommandList4* commandList)
+DescriptorTable GpuDescriptorTablePool::AllocateTable(u32 tableSize, ID3D12GraphicsCommandList4* commandList)
 {
-	FX_ASSERT(tableSize > 0u);
+	PG_ASSERT(tableSize > 0u);
 	DescriptorTableDescDX12 desc;
 	desc.tableSize = tableSize;
-	DescriptorTable result = m_impl->allocate(desc);
+	DescriptorTable result = m_impl->Allocate(desc);
 	m_lastTable = result;
 	commandList->SetDescriptorHeaps(1u, &result.ownerHeap);
 	return result;

@@ -25,9 +25,19 @@ Dx12Fence::~Dx12Fence()
 
 UINT64 Dx12Fence::Signal()
 {
-    ++m_fenceValue;
-    m_ownerQueue->Signal(m_fence, m_fenceValue);
+    Signal(m_fenceValue + 1);
     return m_fenceValue;
+}
+
+void Dx12Fence::Signal(UINT64 value)
+{
+    m_fenceValue = value;
+    m_ownerQueue->Signal(m_fence, value);
+}
+
+bool Dx12Fence::IsComplete(UINT64 valueToCmp)
+{
+    return (m_fence->GetCompletedValue() >= valueToCmp);
 }
 
 void Dx12Fence::WaitOnCpu(UINT64 valueToWait)

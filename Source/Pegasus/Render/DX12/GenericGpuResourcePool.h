@@ -20,12 +20,12 @@ struct GpuMemoryBlock
 class GpuUploadPool
 {
 public:
-	GpuUploadPool(ID3D12Device* device, u64 initialPoolSize);
+	GpuUploadPool(Dx12Device* device, ID3D12CommandQueue* queue, u64 initialPoolSize);
 	~GpuUploadPool();
-	void beginUsage();
-	void endUsage();
+	void BeginUsage();
+	void EndUsage();
 
-	GpuMemoryBlock allocUploadBlock(size_t sizeBytes);
+	GpuMemoryBlock AllocUploadBlock(size_t sizeBytes);
 
 private:
 	class GpuUploadPoolImpl* m_impl;
@@ -39,35 +39,35 @@ struct DescriptorTable
 	u32 descriptorCounts = 0u;
 	u32 descriptorSize = 0u;
 
-	bool isValid() const
+	bool IsValid() const
 	{
 		return cpuHandle.ptr != 0;
 	}
 
-	bool isShaderVisible() const
+	bool IsShaderVisible() const
 	{
 		return gpuHandle.ptr != 0;
 	}
 
-	D3D12_CPU_DESCRIPTOR_HANDLE getCpuHandle(u32 index = 0) const
+	D3D12_CPU_DESCRIPTOR_HANDLE GetCpuHandle(u32 index = 0) const
 	{
 		FX_ASSERT(index < descriptorCounts);
 		D3D12_CPU_DESCRIPTOR_HANDLE result = { cpuHandle.ptr + index * descriptorSize };
 		return result;
 	}
 
-	D3D12_GPU_DESCRIPTOR_HANDLE getGpuHandle(u32 index = 0) const
+	D3D12_GPU_DESCRIPTOR_HANDLE GetGpuHandle(u32 index = 0) const
 	{
 		FX_ASSERT(index < descriptorCounts);
 		D3D12_GPU_DESCRIPTOR_HANDLE result = { gpuHandle.ptr + index * descriptorSize };
 		return result;
 	}
 
-	void advance(u32 count)
+	void Advance(u32 count)
 	{
 		FX_ASSERT(count < descriptorCounts);
-		cpuHandle = getCpuHandle(count);
-		gpuHandle = getGpuHandle(count);
+		cpuHandle = GetCpuHandle(count);
+		gpuHandle = GetGpuHandle(count);
 		descriptorCounts -= count;
 	}
 
@@ -76,12 +76,12 @@ struct DescriptorTable
 class GpuDescriptorTablePool
 {
 public:
-	GpuDescriptorTablePool(ID3D12Device* device, u32 maxDescriptorCount, D3D12_DESCRIPTOR_HEAP_TYPE heapType);
+	GpuDescriptorTablePool(Dx12Device* device, ID3D12CommandQueue* queue, u32 maxDescriptorCount, D3D12_DESCRIPTOR_HEAP_TYPE heapType);
 	~GpuDescriptorTablePool();
-	void beginUsage();
-	void endUsage();
-	DescriptorTable allocateTable(u32 tableSize, ID3D12GraphicsCommandList4* commandList);
-	const DescriptorTable& lastAllocatedTable() const { return m_lastTable; }
+	void BeginUsage();
+	void EndUsage();
+	DescriptorTable AllocateTable(u32 tableSize, ID3D12GraphicsCommandList4* commandList);
+	const DescriptorTable& LastAllocatedTable() const { return m_lastTable; }
 
 private:
 	class GpuDescriptorTablePoolImpl* m_impl;
