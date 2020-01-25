@@ -12,6 +12,7 @@
 #include "Dx12QueueManager.h"
 #include "Dx12Device.h"
 #include "Dx12Defs.h"
+#include "../Common/JobTreeVisitors.h"
 
 #include <Pegasus/Allocator/IAllocator.h>
 
@@ -41,6 +42,35 @@ Dx12QueueManager::~Dx12QueueManager()
 {
     mDirectQueue->Release();
     mDevice->Release();
+}
+
+GpuWorkHandle Dx12QueueManager::AllocateWork()
+{
+    GpuWorkHandle newHandle;
+    if (!mFreeHandles.empty())
+    {
+        newHandle = mFreeHandles.back();
+        mFreeHandles.pop_back();
+    }
+    else
+    {
+        newHandle = mWork.size();
+        mWork.emplace_back();
+    }
+
+    return newHandle;
+}
+
+void Dx12QueueManager::DestroyWork(GpuWorkHandle handle)
+{
+    PG_ASSERT(handle.isValid(mWork.size()));
+    mWork[hande] = GpuWork();
+    mFreeHandles.push_back(handle);
+}
+
+GpuWorkResultCode CompileWork(GpuWorkHandle handle, const CanonicalJobPath* jobs, unsigned jobCounts)
+{
+    return GpuWorkResultCode::Success;
 }
 
 }

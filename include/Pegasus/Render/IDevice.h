@@ -58,10 +58,12 @@ struct GpuWorkHandle
     int id = -1;
     operator int() const { return id; }
     bool isValid() const { return id != -1; }
+    bool isValid(size_t maxVal) const { return isValid() && id < (int)maxVal; }
     GpuWorkHandle() = default;
 	explicit GpuWorkHandle(GpuWorkHandle&& other) = default;
     explicit GpuWorkHandle(const GpuWorkHandle& other) = default;
 	GpuWorkHandle& operator=(const GpuWorkHandle& other) = default;
+	GpuWorkHandle& operator=(size_t val) { id = (int)val; }
     bool operator == (const GpuWorkHandle& other) const { return other.id == id; }
     bool operator != (const GpuWorkHandle& other) const { return !(*this == other); }
     bool operator <= (const GpuWorkHandle& other) const { return id <= other.id; }    
