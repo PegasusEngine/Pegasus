@@ -16,13 +16,12 @@ namespace Render
 {
 
 
-Dx12Display::Dx12Display(const DisplayConfig& config, Alloc::IAllocator* alloc) 
-: IDisplay(config, alloc), mSwapChain(nullptr), mBackBufferIdx(0u)
+Dx12Display::Dx12Display(const DisplayConfig& config, Dx12Device* parentDevice) 
+: IDisplay(config, parentDevice->GetAllocator())
+, mSwapChain(nullptr)
+, mBackBufferIdx(0u) 
+, mDevice(parentDevice)
 {
-    PG_ASSERT(config.device);
-    PG_ASSERT(config.moduleHandle != NULL);
-
-    mDevice = static_cast<Dx12Device*>(config.device);
     mRenderContext = D12_NEW(mDevice->GetAllocator(), "Dx12RenderContext") Dx12RenderContext(mDevice, Buffering, mDevice->GetQueueManager()->GetDirect());
     mCmdList = mRenderContext->GetCmdList();
     mWidth = config.width;
@@ -64,7 +63,7 @@ Dx12Display::Dx12Display(const DisplayConfig& config, Alloc::IAllocator* alloc)
 
         DX_VALID_DECLARE(dXGIFactory->CreateSwapChainForHwnd(
             mDevice->GetQueueManager()->GetDirect(),
-            (HWND)config.moduleHandle,
+            (HWND)config.windowHandle,
             &swapChainDesc,
             NULL, //no fullscreen desc
             NULL,

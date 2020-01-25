@@ -9,7 +9,11 @@
 //! \date   8th July 2018
 //! \brief  Utility class encapsulating swap chain / display behaviour.
 
+#pragma once 
+
 #include <Pegasus/Core/Shared/OsDefs.h>
+#include <Pegasus/Core/RefCounted.h>
+#include <Pegasus/Core/Ref.h>
 
 namespace Pegasus { 
 namespace Alloc {
@@ -26,13 +30,12 @@ class IDevice;
 
 struct DisplayConfig
 {
-    Os::ModuleHandle moduleHandle; //! handle to the HINSTANCE if windows, handle to the proc if linux
-    IDevice* device;
+    Pegasus::Os::WindowHandle windowHandle;
     unsigned int width;
     unsigned int height;
 };
 
-class IDisplay
+class IDisplay : public Core::RefCounted
 {
 public:
     virtual ~IDisplay() {}
@@ -51,17 +54,16 @@ public:
     // Gets the config of this display
     const DisplayConfig& GetConfig() const { return mConfig; }
 
-    //Global function that creates the display specific to a platform.
-    static IDisplay* CreatePlatformDisplay(const DisplayConfig& displayConfig, Alloc::IAllocator* alloc);
-
 protected:
     IDisplay(const DisplayConfig& config, Alloc::IAllocator* alloc)
-    : mConfig(config), mAllocator(alloc) {}
+    : Pegasus::Core::RefCounted(alloc), mConfig(config), mAllocator(alloc) {}
 
 private:
     Alloc::IAllocator * mAllocator;
     DisplayConfig mConfig;
 };
+
+typedef Core::Ref<IDisplay> IDisplayRef;
 
 }
 }

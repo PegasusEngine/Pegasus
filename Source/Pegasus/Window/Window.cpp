@@ -82,13 +82,12 @@ WindowMessageHandler::~WindowMessageHandler()
 
 void WindowMessageHandler::OnCreate(Os::WindowHandle handle)
 {
-    Render::DisplayConfig displayConfig;
+    Render::DisplayConfig displayConfig = {};
 
     // Create context
-    displayConfig.moduleHandle = handle;
-    displayConfig.device = mParent->GetRenderDevice();
+    displayConfig.windowHandle = handle;
     mParent->GetDimensions(displayConfig.width, displayConfig.height);
-    mParent->mDisplay = Render::IDisplay::CreatePlatformDisplay(displayConfig, mParent->mRenderAllocator);
+    mParent->mDisplay = mParent->GetRenderDevice()->CreateDisplay(displayConfig);
     mParent->mContextCreated = true;
 }
 
@@ -109,8 +108,6 @@ void WindowMessageHandler::RequestRepaintEditorWindow()
 
 void WindowMessageHandler::OnDestroy()
 {
-     // Destroy context
-    PG_DELETE(mParent->mRenderAllocator, mParent->mDisplay);
     mParent->mDisplay = nullptr;
     mParent->mContextCreated = false;
 }

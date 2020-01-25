@@ -76,6 +76,7 @@ public:
     RenderTargetRef InternalCreateRenderTarget(const RenderTargetConfig& config);
     ResourceTableRef InternalCreateResourceTable(const ResourceTableConfig& config);
     GpuPipelineRef InternalCreateGpuPipeline();
+	IDisplayRef InternalCreateDisplayConfig(const DisplayConfig& displayConfig);
     GpuSubmitResult InternalSubmit(const CanonicalCmdListResult& result);
 
 private:

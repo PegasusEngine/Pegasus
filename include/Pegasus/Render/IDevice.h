@@ -12,6 +12,7 @@
 
 #include "Pegasus/Core/Shared/OsDefs.h"
 #include <Pegasus/Render/Render.h>
+#include <Pegasus/Render/IDisplay.h>
 
 #ifndef PEGASUS_RENDER_DEVICE
 #define PEGASUS_RENDER_DEVICE
@@ -92,7 +93,10 @@ public:
     virtual RenderTargetRef CreateRenderTarget(const RenderTargetConfig& config) = 0;
     virtual ResourceTableRef CreateResourceTable(const ResourceTableConfig& config) = 0;
     virtual GpuPipelineRef CreateGpuPipeline() = 0;
+    virtual IDisplayRef CreateDisplay(const DisplayConfig& displayConfig) = 0;
+
     virtual ResourceStateTable* GetResourceStateTable() const = 0;
+
 
     //Gpu Job Graph API
 

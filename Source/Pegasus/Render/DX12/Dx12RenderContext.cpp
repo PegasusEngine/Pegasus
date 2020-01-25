@@ -120,14 +120,14 @@ Dx12RenderContext::Dx12RenderContext(Dx12Device* device, UINT maxFrames, ID3D12C
     D3D12_DESCRIPTOR_HEAP_TYPE d3dDescHeapsTypes[] = {D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_TYPE_RTV};
     for (auto& d3dDescHeapType : d3dDescHeapsTypes)
     {
-        D3D12_DESCRIPTOR_HEAP_DESC desc;
+		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
         desc.Type = d3dDescHeapType;
         desc.NodeMask = 0;
-        desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
         switch(d3dDescHeapType)
         {
         case D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV:
             desc.NumDescriptors = 4096;
+			desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
             break;
         case D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER:
             desc.NumDescriptors = 1024;

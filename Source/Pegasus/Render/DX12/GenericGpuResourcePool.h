@@ -80,7 +80,7 @@ public:
 	~GpuDescriptorTablePool();
 	void BeginUsage();
 	void EndUsage();
-	DescriptorTable AllocateTable(uint32_t tableSize, ID3D12GraphicsCommandList4* commandList);
+	DescriptorTable AllocateTable(uint32_t tableSize, ID3D12GraphicsCommandList* commandList);
 	const DescriptorTable& LastAllocatedTable() const { return m_lastTable; }
 
 private:

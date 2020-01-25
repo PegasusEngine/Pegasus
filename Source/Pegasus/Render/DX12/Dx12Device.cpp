@@ -22,6 +22,7 @@
 #include "Dx12Resources.h"
 #include "Dx12GpuProgram.h"
 #include "Dx12Pso.h"
+#include "Dx12Display.h"
 #include "../Common/JobTreeVisitors.h"
 #include <dxgi1_6.h>
 #include <atlbase.h>
@@ -178,6 +179,12 @@ GpuPipelineRef Dx12Device::InternalCreateGpuPipeline()
 {
     Dx12PsoRef pso  = D12_NEW(mAllocator, "Dx12Pso") Dx12Pso(this);
     return pso;
+}
+
+IDisplayRef Dx12Device::InternalCreateDisplayConfig(const DisplayConfig& displayConfig)
+{
+    IDisplayRef dx12Display = D12_NEW(mAllocator, "Dx12Display") Dx12Display(displayConfig, this);
+    return dx12Display;
 }
 
 GpuSubmitResult Dx12Device::InternalSubmit(const CanonicalCmdListResult& result)

@@ -414,7 +414,7 @@ void GpuDescriptorTablePool::EndUsage()
 	m_impl->EndUsage();
 }
 
-DescriptorTable GpuDescriptorTablePool::AllocateTable(uint32_t tableSize, ID3D12GraphicsCommandList4* commandList)
+DescriptorTable GpuDescriptorTablePool::AllocateTable(uint32_t tableSize, ID3D12GraphicsCommandList* commandList)
 {
 	PG_ASSERT(tableSize > 0u);
 	DescriptorTableDescDX12 desc;

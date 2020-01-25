@@ -30,7 +30,7 @@ class Dx12Display : public IDisplay
 {
 public:
 
-    Dx12Display(const DisplayConfig& config, Alloc::IAllocator* alloc);
+    Dx12Display(const DisplayConfig& config, Dx12Device* device);
     virtual ~Dx12Display();
 
     virtual void BeginFrame() override;

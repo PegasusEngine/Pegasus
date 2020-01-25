@@ -163,7 +163,7 @@ private:
     IWindowMessageHandler* mMessageHandler; //!< Message handler object
     Core::IApplicationContext* mWindowContext; //!< Context for this window to operate in
     Render::IDevice * mDevice;
-    Render::IDisplay* mDisplay; //!< Display/Swap chain
+    Render::IDisplayRef mDisplay; //!< Display/Swap chain
     bool mContextCreated; //!< Window created flag
     unsigned int mWidth; //!< Current width
     unsigned int mHeight; //!< Current height
