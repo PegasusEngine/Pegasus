@@ -122,6 +122,9 @@
     <ClInclude Include="..\..\..\..\Source\Pegasus\Render\Common\ADevice.h">
       <Filter>Source\Common</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\Source\Pegasus\Render\DX12\GenericGpuResourcePool.h">
+      <Filter>Source\DX12</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\GL\GLExtensions.cpp">
@@ -216,6 +219,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\Source\Pegasus\Render\Common\ADevice.cpp">
       <Filter>Source\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Pegasus\Render\DX12\GenericGpuResourcePool.cpp">
+      <Filter>Source\DX12</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
