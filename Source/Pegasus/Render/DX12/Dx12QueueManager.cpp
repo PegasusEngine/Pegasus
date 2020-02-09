@@ -26,6 +26,7 @@ Dx12QueueManager::Dx12QueueManager(Alloc::IAllocator* allocator, Dx12Device* dev
 {
     mDevice->AddRef();
 
+    for (int queueIt = 0u; queueIt < (int)WorkType::WorkTypeCount; ++queueIt)
     {
         D3D12_COMMAND_QUEUE_DESC qDesc = {
             D3D12_COMMAND_LIST_TYPE_DIRECT,
@@ -34,13 +35,29 @@ Dx12QueueManager::Dx12QueueManager(Alloc::IAllocator* allocator, Dx12Device* dev
             0 /*node mask*/
         };
 
-        DX_VALID_DECLARE(mDevice->CreateCommandQueue(&qDesc, __uuidof(mDirectQueue), &((void*)mDirectQueue)));
+        WorkType workType = (WorkType)queueIt;
+        switch (queueIt)
+        {
+        case WorkType::Graphics:
+            qDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+            break;
+        case WorkType::Compute:
+            qDesc.Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+            break;
+        case WorkType::Copy:
+        defaultP:
+            qDesc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
+            break;
+        }
+        auto& qcontainer = mQueueContainers[queueIt];
+        DX_VALID_DECLARE(mDevice->CreateCommandQueue(&qDesc, __uuidof(qcontainer.queue), &((void*)qcontainer.queue)));
     }
 }
 
 Dx12QueueManager::~Dx12QueueManager()
 {
-    mDirectQueue->Release();
+    for (int queueIt = 0; queueIt < (int)WorkTypeCount; ++queueIt)
+        mQueueContainers[queueIt].queue->Release();
     mDevice->Release();
 }
 

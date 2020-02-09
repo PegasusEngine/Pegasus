@@ -13,7 +13,7 @@
 
 struct ID3D12CommandQueue;
 struct ID3D12Device2;
-struct ID3D12CommandList;
+struct ID3D12GraphicsCommandList;
 struct ID3D12CommandAllocator;
 
 namespace Pegasus
@@ -51,17 +51,17 @@ public:
     GpuWorkResultCode CompileWork(GpuWorkHandle handle, const CanonicalJobPath* jobs, unsigned jobsCount);
 
 private:
-    using Dx12CmdLists = std::vector<CComPtr<ID3D12CommandList>>;
+    using Dx12CmdLists = std::vector<CComPtr<ID3D12GraphicsCommandList>>;
     using Dx12CmdAllocators = std::vector<CComPtr<ID3D12CommandAllocator>>;
 
     struct GpuWork
     {
         Dx12CmdLists lists;
+        Dx12CmdAllocators activeAllocators;
     };
 
     struct QueueContainer
     {
-        Dx12CmdLists freeLists;
         Dx12Fence* fence = nullptr;
         ID3D12CommandQueue* queue = nullptr;
     };
@@ -70,7 +70,9 @@ private:
     std::vector<GpuWorkHandle> mFreeHandles;
 
     QueueContainer mQueueContainers[(int)WorkTypeCount];
-    Dx12CmdAllocators mCmdAllocators;
+
+    Dx12CmdLists mFreeLists;
+    Dx12CmdAllocators mFreeAllocators;
 
     Alloc::IAllocator* mAllocator;
     ID3D12CommandQueue* mDirectQueue;
