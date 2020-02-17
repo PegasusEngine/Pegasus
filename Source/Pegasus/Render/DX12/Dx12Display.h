@@ -22,7 +22,6 @@ namespace Pegasus
 namespace Render
 {
 
-class Dx12RenderContext;
 class Dx12GpuProgram;
 class Dx12Device;
 
@@ -62,8 +61,6 @@ private:
     //! target frame buffer width/height
     unsigned int mWidth;
     unsigned int mHeight;
-
-    Dx12RenderContext* mRenderContext;
 };
 }
 }

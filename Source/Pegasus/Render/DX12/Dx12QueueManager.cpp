@@ -21,13 +21,24 @@ namespace Pegasus
 namespace Render
 {
 
-Dx12QueueManager::Dx12QueueManager(Alloc::IAllocator* allocator, Dx12Device* device)
-: mDevice(device->GetD3D()), mAllocator(allocator)
+static D3D12_COMMAND_LIST_TYPE GetCmdListType(Dx12QueueManager::WorkType workType)
 {
-    mDevice->AddRef();
+    static D3D12_COMMAND_LIST_TYPE sCmdListTypes[(int)Dx12QueueManager::WorkType::Count] = {
+        D3D12_COMMAND_LIST_TYPE_DIRECT,
+        D3D12_COMMAND_LIST_TYPE_COMPUTE,
+        D3D12_COMMAND_LIST_TYPE_COPY
+    };
 
-    for (int queueIt = 0u; queueIt < (int)WorkType::WorkTypeCount; ++queueIt)
+    return sCmdListTypes[(unsigned)workType];
+}
+
+Dx12QueueManager::Dx12QueueManager(Pegasus::Alloc::IAllocator* allocator, Dx12Device* device)
+: mDevice(device), mAllocator(allocator)
+{
+    for (int queueIt = 0u; queueIt < (int)WorkType::Count; ++queueIt)
     {
+        QueueContainer& qcontainer = mQueueContainers[queueIt];
+
         D3D12_COMMAND_QUEUE_DESC qDesc = {
             D3D12_COMMAND_LIST_TYPE_DIRECT,
             D3D12_COMMAND_QUEUE_PRIORITY_NORMAL,
@@ -35,35 +46,20 @@ Dx12QueueManager::Dx12QueueManager(Alloc::IAllocator* allocator, Dx12Device* dev
             0 /*node mask*/
         };
 
-        WorkType workType = (WorkType)queueIt;
-        switch (queueIt)
-        {
-        case WorkType::Graphics:
-            qDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-            break;
-        case WorkType::Compute:
-            qDesc.Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
-            break;
-        case WorkType::Copy:
-        defaultP:
-            qDesc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
-            break;
-        }
-        auto& qcontainer = mQueueContainers[queueIt];
-        DX_VALID_DECLARE(mDevice->CreateCommandQueue(&qDesc, __uuidof(qcontainer.queue), &((void*)qcontainer.queue)));
+        qDesc.Type = GetCmdListType((Dx12QueueManager::WorkType)queueIt);
+        DX_VALID_DECLARE(mDevice->GetD3D()->CreateCommandQueue(&qDesc, __uuidof(qcontainer.queue), &((void*)qcontainer.queue)));
     }
 }
 
 Dx12QueueManager::~Dx12QueueManager()
 {
-    for (int queueIt = 0; queueIt < (int)WorkTypeCount; ++queueIt)
+    for (int queueIt = 0; queueIt < (int)WorkType::Count; ++queueIt)
         mQueueContainers[queueIt].queue->Release();
-    mDevice->Release();
 }
 
-GpuWorkHandle Dx12QueueManager::AllocateWork()
+Pegasus::Render::GpuWorkHandle Dx12QueueManager::AllocateWork()
 {
-    GpuWorkHandle newHandle;
+    Pegasus::Render::GpuWorkHandle newHandle;
     if (!mFreeHandles.empty())
     {
         newHandle = mFreeHandles.back();
@@ -81,7 +77,7 @@ GpuWorkHandle Dx12QueueManager::AllocateWork()
 void Dx12QueueManager::DestroyWork(GpuWorkHandle handle)
 {
     PG_ASSERT(handle.isValid(mWork.size()));
-    mWork[hande] = GpuWork();
+    mWork[handle] = GpuWork();
     mFreeHandles.push_back(handle);
 }
 

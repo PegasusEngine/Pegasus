@@ -10,12 +10,11 @@
 //! \date   7th July 2014
 //! \brief  Class that encapsulates a drawing device
 
+#pragma once
+
 #include "Pegasus/Core/Shared/OsDefs.h"
 #include <Pegasus/Render/Render.h>
 #include <Pegasus/Render/IDisplay.h>
-
-#ifndef PEGASUS_RENDER_DEVICE
-#define PEGASUS_RENDER_DEVICE
 
 //forward declarations
 namespace Pegasus
@@ -60,11 +59,11 @@ struct GpuWorkHandle
     bool isValid() const { return id != -1; }
     bool isValid(size_t maxVal) const { return isValid() && id < (int)maxVal; }
     GpuWorkHandle() = default;
-	explicit GpuWorkHandle(GpuWorkHandle&& other) = default;
-    explicit GpuWorkHandle(const GpuWorkHandle& other) = default;
+	GpuWorkHandle(GpuWorkHandle&& other) = default;
+    GpuWorkHandle(const GpuWorkHandle& other) = default;
 	GpuWorkHandle& operator=(const GpuWorkHandle& other) = default;
-	GpuWorkHandle& operator=(size_t val) { id = (int)val; }
-    bool operator == (const GpuWorkHandle& other) const { return other.id == id; }
+	GpuWorkHandle& operator=(size_t val) { id = (int)val; return *this;	}
+	bool operator == (const GpuWorkHandle& other) const { return other.id == id; }
     bool operator != (const GpuWorkHandle& other) const { return !(*this == other); }
     bool operator <= (const GpuWorkHandle& other) const { return id <= other.id; }    
 };
@@ -134,5 +133,3 @@ public:
 
 }
 }
-
-#endif

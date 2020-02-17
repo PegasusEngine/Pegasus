@@ -10,11 +10,10 @@
 //! \brief  Implementation of command queue shenanigans
 
 #pragma once
-
-struct ID3D12CommandQueue;
-struct ID3D12Device2;
-struct ID3D12GraphicsCommandList;
-struct ID3D12CommandAllocator;
+#include <Pegasus/Render/IDevice.h>
+#include <d3d12.h>
+#include <atlbase.h>
+#include <vector>
 
 namespace Pegasus
 {
@@ -39,16 +38,17 @@ public:
         Compute,
         Graphics,
         Copy,
-        WorkTypeCount
+        Count
     };
 
     Dx12QueueManager(Alloc::IAllocator* allocator, Dx12Device* device);
     ~Dx12QueueManager();
     
-    ID3D12CommandQueue* GetDirect() { return mDirectQueue; }
     GpuWorkHandle AllocateWork(); 
-    void DestroyWork(GpuWorkHandle handle);
+    void DestroyWork(Pegasus::Render::GpuWorkHandle handle);
     GpuWorkResultCode CompileWork(GpuWorkHandle handle, const CanonicalJobPath* jobs, unsigned jobsCount);
+
+    ID3D12CommandQueue* GetDirect() { return mQueueContainers[(int)WorkType::Graphics].queue; }
 
 private:
     using Dx12CmdLists = std::vector<CComPtr<ID3D12GraphicsCommandList>>;
@@ -69,14 +69,13 @@ private:
     std::vector<GpuWork> mWork;
     std::vector<GpuWorkHandle> mFreeHandles;
 
-    QueueContainer mQueueContainers[(int)WorkTypeCount];
+    QueueContainer mQueueContainers[(int)WorkType::Count];
 
     Dx12CmdLists mFreeLists;
     Dx12CmdAllocators mFreeAllocators;
 
     Alloc::IAllocator* mAllocator;
-    ID3D12CommandQueue* mDirectQueue;
-    ID3D12Device2* mDevice;
+    Dx12Device* mDevice;
 };
 
 }

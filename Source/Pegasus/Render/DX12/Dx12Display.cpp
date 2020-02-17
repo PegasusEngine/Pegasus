@@ -5,7 +5,6 @@
 #include "Dx12Fence.h"
 #include "Dx12GpuProgram.h"
 #include "Dx12Pso.h"
-#include "Dx12RenderContext.h"
 #include <dxgi1_6.h>
 #include <Pegasus/Allocator/IAllocator.h>
 #include <Pegasus/Core/Formats.h>
@@ -22,8 +21,6 @@ Dx12Display::Dx12Display(const DisplayConfig& config, Dx12Device* parentDevice)
 , mBackBufferIdx(0u) 
 , mDevice(parentDevice)
 {
-    mRenderContext = D12_NEW(mDevice->GetAllocator(), "Dx12RenderContext") Dx12RenderContext(mDevice, Buffering, mDevice->GetQueueManager()->GetDirect());
-    mCmdList = mRenderContext->GetCmdList();
     mWidth = config.width;
     mHeight = config.height;
     
@@ -88,7 +85,6 @@ Dx12Display::Dx12Display(const DisplayConfig& config, Dx12Device* parentDevice)
 
 void Dx12Display::Flush()
 {
-    mRenderContext->Flush();
 }
 
 Dx12Display::~Dx12Display()
@@ -104,12 +100,11 @@ Dx12Display::~Dx12Display()
     {
         mSwapChain->Release();
     }	
-    
-    D12_DELETE(mDevice->GetAllocator(), mRenderContext);
 }
 
 void Dx12Display::BeginFrame()
 {
+#if 0
     //update to next frame
     mRenderContext->BeginFrame();
 
@@ -174,10 +169,12 @@ void Dx12Display::BeginFrame()
     }
 #endif
 
+#endif
 }
 
 void Dx12Display::EndFrame()
 {
+#if 0
     Dx12QueueManager* qManager = mDevice->GetQueueManager();
     ID3D12CommandQueue* directQueue = qManager->GetDirect();
 
@@ -197,6 +194,7 @@ void Dx12Display::EndFrame()
     DX_VALID_DECLARE(mSwapChain->Present(1u, 0u));
 
 	mRenderContext->EndFrame();
+#endif 0
 }
 
 void Dx12Display::Resize(unsigned int width, unsigned int height)
