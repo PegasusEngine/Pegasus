@@ -11,6 +11,7 @@
 
 #pragma once
 #include <Pegasus/Render/IDevice.h>
+#include "../Common/ResourceStateTable.h"
 #include <d3d12.h>
 #include <atlbase.h>
 #include <vector>
@@ -35,8 +36,8 @@ class Dx12QueueManager
 public:
     enum class WorkType : unsigned
     {
-        Compute,
         Graphics,
+        Compute,
         Copy,
         Count
     };
@@ -51,31 +52,44 @@ public:
     ID3D12CommandQueue* GetDirect() { return mQueueContainers[(int)WorkType::Graphics].queue; }
 
 private:
+    
+    struct GpuList 
+    {
+        UINT64 fenceVal = 0ull;
+        WorkType type = WorkType::Graphics;
+        CComPtr<ID3D12GraphicsCommandList> list = nullptr;
+        CComPtr<ID3D12CommandAllocator> allocator = nullptr;
+    };
+
+    using Dx12GpuLists = std::vector<GpuList>;
     using Dx12CmdLists = std::vector<CComPtr<ID3D12GraphicsCommandList>>;
     using Dx12CmdAllocators = std::vector<CComPtr<ID3D12CommandAllocator>>;
 
     struct GpuWork
     {
-        Dx12CmdLists lists;
-        Dx12CmdAllocators activeAllocators;
+        std::vector<GpuList> gpuLists;
     };
 
     struct QueueContainer
     {
         Dx12Fence* fence = nullptr;
         ID3D12CommandQueue* queue = nullptr;
+        Dx12CmdLists freeLists;
+        Dx12CmdAllocators freeAllocators;
     };
 
-    std::vector<GpuWork> mWork;
+    void AllocateList(WorkType workType, GpuWork& work);
+    void TranspileList(const CanonicalJobPath& job, GpuList& gpuList);
+
+    std::vector<GpuWork> mWorks;
     std::vector<GpuWorkHandle> mFreeHandles;
 
     QueueContainer mQueueContainers[(int)WorkType::Count];
 
-    Dx12CmdLists mFreeLists;
-    Dx12CmdAllocators mFreeAllocators;
-
     Alloc::IAllocator* mAllocator;
     Dx12Device* mDevice;
+
+    ResourceStateTable::Domain mGlobalResourceStateDomain;
 };
 
 }

@@ -37,6 +37,7 @@ class Dx12Resource
 public:
     Dx12Resource(const ResourceConfig& desc, Dx12Device* device);
     virtual ~Dx12Resource();
+    ID3D12Resource* GetD3D() const { return mData.resource; }
     ID3D12Resource* GetD3D() { return mData.resource; }
     D3D12_RESOURCE_STATES GetState (UINT subresourceIdx) const;
     void SetState(UINT subresourceIdx, D3D12_RESOURCE_STATES state);

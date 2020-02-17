@@ -85,10 +85,12 @@ struct ResourceGpuStateDesc
     static ResourceGpuStateDesc Get(ResourceGpuState state);
 };
 
+const unsigned InvalidIndex = 0xffffffff;
+
 struct GpuListLocation
 {
-    unsigned listIndex = 0xffffffff;
-    unsigned listItemIndex = 0xffffffff;
+    unsigned listIndex = InvalidIndex;
+    unsigned listItemIndex = InvalidIndex;
     bool operator==(const GpuListLocation& other) const
     {
         return listIndex == other.listIndex &&
@@ -97,7 +99,7 @@ struct GpuListLocation
 
     bool isValid() const
     {
-        return listIndex != 0xffffffff && listItemIndex != 0xffffffff;
+        return listIndex != InvalidIndex && listItemIndex != InvalidIndex;
     }
 };
 
@@ -244,7 +246,7 @@ public:
     struct Dependency
     {
         GpuListLocation location;
-        unsigned ownerNodeIndex = 0xffffffff;
+        unsigned ownerNodeIndex = InvalidIndex;
     };
 
     enum class BarrierTiming
@@ -295,7 +297,7 @@ public:
 
 private:
 
-    unsigned mJobPathId = 0xffffffff;
+    unsigned mJobPathId = InvalidIndex;
     std::vector<Dependency> mDependencies;
     std::vector<GpuBarrier> mBarriers;
     std::vector<Node> mCmdList;

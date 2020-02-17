@@ -476,7 +476,7 @@ bool CanonicalCmdListBuilder::OnNoProcess(InternalJobHandle handle, JobInstance&
 bool CanonicalCmdListBuilder::OnPushed(InternalJobHandle handle, JobInstance& jobInstance)
 {
     PG_ASSERTSTR(mStateTable[handle].state == State::Initial, "Impossible state: CanProcess shouldnt let this happen. Only things that have all dependencies done can be popped/pushed."); 
-    PG_ASSERTSTR(mStateTable[handle].context.listLocation.listIndex == 0xffffffff, "Impossible list context: this resource has not been added yet to a list context");
+    PG_ASSERTSTR(mStateTable[handle].context.listLocation.listIndex == InvalidIndex, "Impossible list context: this resource has not been added yet to a list context");
 
     auto createNewList = [this]()
     {
@@ -507,8 +507,8 @@ bool CanonicalCmdListBuilder::OnPushed(InternalJobHandle handle, JobInstance& jo
         auto depState = mStateTable[jobInstance.dependenciesSorted[depIndx]];
         if (depState.context.listLocation.listIndex != mBuildContext.listLocation.listIndex)
         {
-            PG_ASSERTSTR(depState.context.listLocation.listIndex != 0xffffffff, "Resource dependency state must've been processed already.");
-            PG_ASSERTSTR(depState.context.listLocation.listItemIndex != 0xffffffff, "Resource dependency state must've been processed already.");
+            PG_ASSERTSTR(depState.context.listLocation.listIndex != InvalidIndex, "Resource dependency state must've been processed already.");
+            PG_ASSERTSTR(depState.context.listLocation.listItemIndex != InvalidIndex, "Resource dependency state must've been processed already.");
             mJobPaths[mBuildContext.listLocation.listIndex].AddDependency(depState.context.listLocation);
         }
     }

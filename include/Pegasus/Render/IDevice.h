@@ -71,6 +71,7 @@ struct GpuWorkHandle
 enum class GpuWorkResultCode
 {
     Success,
+    InvalidArgs,
     CompileError,
     CompileError_Dependencies,
     CompileError_StaleJobs
