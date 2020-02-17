@@ -39,8 +39,6 @@ public:
     virtual ~Dx12Resource();
     ID3D12Resource* GetD3D() const { return mData.resource; }
     ID3D12Resource* GetD3D() { return mData.resource; }
-    D3D12_RESOURCE_STATES GetState (UINT subresourceIdx) const;
-    void SetState(UINT subresourceIdx, D3D12_RESOURCE_STATES state);
     virtual void init();
 
     static Dx12Resource* GetDx12Resource(IResource* res);
@@ -48,6 +46,7 @@ public:
 
     const ResourceConfig& GetResConfig() const { return mResConfig; }
     
+    D3D12_RESOURCE_STATES GetDefaultState() const { return D3D12_RESOURCE_STATE_COMMON; }
 
 protected:
     Dx12RDMgr::Handle mSrvHandle;
@@ -64,7 +63,6 @@ protected:
     } mData;
 
     Dx12Device* mDevice;
-    std::vector<D3D12_RESOURCE_STATES> mStates;
 
 private:
     ResourceConfig mResConfig;

@@ -137,12 +137,10 @@ void Dx12Resource::init()
 {
     DX_VALID_DECLARE(mDevice->GetD3D()->CreateCommittedResource(
         &mData.heapProps, mData.heapFlags, &mData.resDesc,
-        D3D12_RESOURCE_STATE_COMMON, nullptr,
+        GetDefaultState(), nullptr,
         __uuidof(ID3D12Resource),
         reinterpret_cast<void**>(&mData.resource)
     ));
-
-    mStates.resize(mData.resDesc.DepthOrArraySize * mData.resDesc.MipLevels, D3D12_RESOURCE_STATE_COMMON);
 
     if (!!(mResConfig.bindFlags & BindFlags_Srv))
     {
@@ -171,18 +169,6 @@ void Dx12Resource::init()
 	}
 	mData.resource->SetName(wname.c_str());
 #endif
-}
-
-D3D12_RESOURCE_STATES Dx12Resource::GetState(UINT subresourceIdx) const
-{
-    PG_ASSERT(subresourceIdx < mStates.size());
-    return mStates[subresourceIdx];
-}
-
-void Dx12Resource::SetState(UINT subresourceIdx, D3D12_RESOURCE_STATES state)
-{
-    PG_ASSERT(subresourceIdx < mStates.size());
-    mStates[subresourceIdx] = state;
 }
 
 Dx12Resource* Dx12Resource::GetDx12Resource(IResource* res)

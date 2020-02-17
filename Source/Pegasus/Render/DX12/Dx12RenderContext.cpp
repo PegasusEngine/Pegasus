@@ -200,6 +200,7 @@ bool Dx12RenderContext::allocateGpuTable(const Dx12RDMgr::Table& table, Resource
 
 void Dx12RenderContext::flushDrawState()
 {
+#if 0
     auto* state = CurrFrame().state;
 
     if (state->pso == nullptr)
@@ -247,6 +248,7 @@ void Dx12RenderContext::flushDrawState()
 
         mCmdList->SetGraphicsRootDescriptorTable(tableId, rd.gpuHandle);
     }
+#endif
 }
 
 Dx12RenderContext::~Dx12RenderContext()

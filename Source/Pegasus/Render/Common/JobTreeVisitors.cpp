@@ -40,9 +40,6 @@ ResourceGpuStateDesc ResourceGpuStateDesc::Get(ResourceGpuState state)
         case ResourceGpuState::Cbv:
             d = { true, false };
             break;
-        case ResourceGpuState::Rt:
-            d = { false, true };
-            break;
         case ResourceGpuState::Ds:
             d = { false, true };
             break;
@@ -82,9 +79,8 @@ ResourceStateBuilder::~ResourceStateBuilder()
 LocationGpuState ResourceStateBuilder::GetResourceState(const IResource* resource) const
 {
     uintptr_t oldStateHandle = 0u;
-    mTable.GetState(mDomain, resource->GetStateId(), oldStateHandle);
-    if (oldStateHandle != 0u)
-        return mStates[oldStateHandle - 1u].state;
+    if (mTable.GetState(mDomain, resource->GetStateId(), oldStateHandle))
+        return mStates[oldStateHandle].state;
 
     return LocationGpuState();
 }
@@ -94,17 +90,15 @@ void ResourceStateBuilder::StoreResourceState(
     const LocationGpuState& gpuState, const IResource* resource, bool checkViolations)
 {
     uintptr_t stateHandle = 0u;
-    mTable.GetState(mDomain, resource->GetStateId(), stateHandle);
-    if (stateHandle == 0u)
+    if (!mTable.GetState(mDomain, resource->GetStateId(), stateHandle))
     {
         stateHandle = (uintptr_t)mStates.size();
-        mTable.StoreState(mDomain, resource->GetStateId(), stateHandle + 1u);
+        mTable.StoreState(mDomain, resource->GetStateId(), stateHandle);
         mStates.emplace_back();
         mStates.back().usagesLists[parentListId] = std::move(std::vector<LocationGpuState>());
     }
     else
     {
-        stateHandle = stateHandle - 1u;
         //validation
         if (checkViolations)
         {

@@ -33,8 +33,42 @@ static D3D12_COMMAND_LIST_TYPE GetCmdListType(Dx12QueueManager::WorkType workTyp
     return sCmdListTypes[(unsigned)workType];
 }
 
-static void getD3DBarrier(const CanonicalJobPath::GpuBarrier& b, D3D12_RESOURCE_BARRIER& dx12Barrier)
+D3D12_RESOURCE_STATES Dx12QueueManager::GetD3D12State(const LocationGpuState& state, unsigned stateId, const Dx12Resource* dx12Resource) const
 {
+    //TODO: handle global states across works
+    static D3D12_RESOURCE_STATES sDx12States[(int)ResourceGpuState::Count] =
+    {
+        D3D12_RESOURCE_STATE_COMMON, //Default,
+        D3D12_RESOURCE_STATE_UNORDERED_ACCESS,//Uav,
+        D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,//Srv,
+        D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,//Cbv,
+        D3D12_RESOURCE_STATE_RENDER_TARGET,//Rt,
+        D3D12_RESOURCE_STATE_DEPTH_WRITE,//Ds,
+        D3D12_RESOURCE_STATE_COPY_SOURCE,//CopySrc,
+        D3D12_RESOURCE_STATE_COPY_DEST//CopyDst,
+    };
+
+    ResourceGpuState resState = state.gpuState;
+
+    if (!state.location.isValid())
+    {
+        unsigned globalStateIndex = 0u;
+        if (mGlobalResourceStateTable->GetState(mGlobalResourceStateDomain, stateId, globalStateIndex))
+        {
+            resState = mGlobalGpuStates[globalStateIndex];
+        }
+        else
+        {
+            return dx12Resource->GetDefaultState();
+        }
+    }
+
+    return sDx12States[(int)resState];
+}
+
+void Dx12QueueManager::GetD3DBarrier(const CanonicalJobPath::GpuBarrier& b, D3D12_RESOURCE_BARRIER& dx12Barrier) const
+{
+    //TODO: handle UAV barriers
     dx12Barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 
     switch (b.timing)
@@ -55,6 +89,9 @@ static void getD3DBarrier(const CanonicalJobPath::GpuBarrier& b, D3D12_RESOURCE_
     auto& transitionBarrier = dx12Barrier.Transition;
     const Dx12Resource* dx12Resource = Dx12Resource::GetDx12Resource(b.resource);
     transitionBarrier.pResource = dx12Resource->GetD3D();
+    transitionBarrier.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+    transitionBarrier.StateBefore = GetD3D12State(b.from, b.resource->GetStateId(), dx12Resource);
+    transitionBarrier.StateAfter = GetD3D12State(b.to, b.resource->GetStateId(), dx12Resource);
 }
 
 Dx12QueueManager::Dx12QueueManager(Pegasus::Alloc::IAllocator* allocator, Dx12Device* device)
@@ -75,7 +112,8 @@ Dx12QueueManager::Dx12QueueManager(Pegasus::Alloc::IAllocator* allocator, Dx12De
         DX_VALID_DECLARE(mDevice->GetD3D()->CreateCommandQueue(&qDesc, __uuidof(qcontainer.queue), &((void*)qcontainer.queue)));
     }
 
-    mGlobalResourceStateDomain = mDevice->GetResourceStateTable()->CreateDomain();
+    mGlobalResourceStateTable = mDevice->GetResourceStateTable();
+    mGlobalResourceStateDomain = mGlobalResourceStateTable->CreateDomain();
 }
 
 Dx12QueueManager::~Dx12QueueManager()
@@ -83,7 +121,7 @@ Dx12QueueManager::~Dx12QueueManager()
     for (int queueIt = 0; queueIt < (int)WorkType::Count; ++queueIt)
         mQueueContainers[queueIt].queue->Release();
 
-    mDevice->GetResourceStateTable()->RemoveDomain(mGlobalResourceStateDomain);
+    mGlobalResourceStateTable->RemoveDomain(mGlobalResourceStateDomain);
 }
 
 Pegasus::Render::GpuWorkHandle Dx12QueueManager::AllocateWork()
@@ -161,20 +199,29 @@ void Dx12QueueManager::TranspileList(const CanonicalJobPath& job, GpuList& gpuLi
     unsigned barriersCount = 0u;
     const CanonicalJobPath::GpuBarrier* barriers = job.GetBarriers(barriersCount);
 
-    auto applyBarriers = [&](const unsigned*  indices, unsigned counts)
+    auto applyBarriers = [&](const unsigned*  indices, unsigned counts, std::vector<D3D12_RESOURCE_BARRIER>& outBarriers)
     {
+        outBarriers.resize(counts);
         for (unsigned i = 0u; i < counts; ++i)
         {
-            const CanonicalJobPath::GpuBarrier& b = barriers[indices[i]];
-            D3D12_RESOURCE_BARRIER dx12Barrier;
-            getD3DBarrier(b, dx12Barrier);
+            GetD3DBarrier(barriers[indices[i]], outBarriers[i]);
         }
     };
 
     for (const CanonicalJobPath::Node& n : job.GetCmdList())
     {
-        applyBarriers(n.preGpuBarrierIndices.data(), (unsigned)n.preGpuBarrierIndices.size());
-        applyBarriers(n.postGpuBarrierIndices.data(), (unsigned)n.postGpuBarrierIndices.size());
+        std::vector<D3D12_RESOURCE_BARRIER> preDx12Barriers;
+        applyBarriers(n.preGpuBarrierIndices.data(), (unsigned)n.preGpuBarrierIndices.size(), preDx12Barriers);
+        
+        std::vector<D3D12_RESOURCE_BARRIER> postDx12Barriers;
+        applyBarriers(n.postGpuBarrierIndices.data(), (unsigned)n.postGpuBarrierIndices.size(), postDx12Barriers);
+
+    
+        gpuList.list->ResourceBarrier((UINT)preDx12Barriers.size(), preDx12Barriers.data());
+
+        //TODO: generate here command list transpilation
+
+        gpuList.list->ResourceBarrier((UINT)postDx12Barriers.size(), postDx12Barriers.data());
     }
     
 }

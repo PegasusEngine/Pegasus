@@ -9,6 +9,8 @@
 //! \date  september 8th
 //! \brief  family of job tree visitors that generate il for cmd lists
 
+#pragma once
+
 #include "InternalJobBuilder.h"
 #include "ResourceStateTable.h"
 #include <vector>
@@ -19,14 +21,14 @@
 
 namespace Pegasus
 {
-namespace Render
-{
 
 namespace Alloc
 {
-    class IAllocator;
+	class IAllocator;
 }
 
+namespace Render
+{
 class CanonicalJobPath;
 
 class ChildJobAccumulator
@@ -75,7 +77,8 @@ enum class ResourceGpuState : unsigned
     Rt,
     Ds,
     CopySrc,
-    CopyDst
+    CopyDst,
+    Count
 };
 
 struct ResourceGpuStateDesc

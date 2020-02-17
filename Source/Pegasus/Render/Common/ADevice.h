@@ -43,11 +43,11 @@ template<class PlatDeviceT>
 class ADevice : public IDevice
 {
 public:
-    ADevice(const DeviceConfig& config, Alloc::IAllocator* allocator);
+    ADevice(const DeviceConfig& config, Pegasus::Alloc::IAllocator* allocator);
     virtual ~ADevice();
 
     virtual const DeviceConfig& GetConfig() const override { return mConfig; }
-    virtual Alloc::IAllocator * GetAllocator() const override { return mAllocator; }
+    virtual Pegasus::Alloc::IAllocator * GetAllocator() const override { return mAllocator; }
     virtual BufferRef CreateBuffer(const BufferConfig& config) override;
     virtual TextureRef CreateTexture(const TextureConfig& config) override;
     virtual RenderTargetRef CreateRenderTarget(const RenderTargetConfig& config) override;
@@ -64,7 +64,7 @@ public:
 
 
 protected:
-    Alloc::IAllocator* mAllocator;
+    Pegasus::Alloc::IAllocator* mAllocator;
     DeviceConfig mConfig;
     ResourceStateTable* mResourceStateTable;
     GpuWorkManager mGpuWorkManager;

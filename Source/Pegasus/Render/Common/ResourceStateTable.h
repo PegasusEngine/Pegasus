@@ -37,13 +37,19 @@ public:
     void RemoveStateSlot(int stateSlot);
 
     void StoreState(Domain d, int stateSlot, uintptr_t state);
-    bool GetState(Domain d, int stateSlot, uintptr_t& outState);
+    bool GetState(Domain d, int stateSlot, uintptr_t& outState) const;
 
 private: 
+    struct StateSlot
+    {
+        bool valid;
+        unsigned data;
+    };
+
     struct DomainInfo
     {
         bool valid = false;
-        std::vector<uintptr_t> states;
+        std::vector<StateSlot> states;
     }; 
 
     unsigned mStateCounts;

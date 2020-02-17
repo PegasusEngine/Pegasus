@@ -12,6 +12,7 @@
 #pragma once
 #include <Pegasus/Render/IDevice.h>
 #include "../Common/ResourceStateTable.h"
+#include "../Common/JobTreeVisitors.h"
 #include <d3d12.h>
 #include <atlbase.h>
 #include <vector>
@@ -29,6 +30,7 @@ namespace Render
 
 class Dx12Device;
 class Dx12Fence;
+class Dx12Resource;
 class CanonicalJobPath;
 
 class Dx12QueueManager
@@ -42,7 +44,7 @@ public:
         Count
     };
 
-    Dx12QueueManager(Alloc::IAllocator* allocator, Dx12Device* device);
+    Dx12QueueManager(Pegasus::Alloc::IAllocator* allocator, Dx12Device* device);
     ~Dx12QueueManager();
     
     GpuWorkHandle AllocateWork(); 
@@ -80,6 +82,8 @@ private:
 
     void AllocateList(WorkType workType, GpuWork& work);
     void TranspileList(const CanonicalJobPath& job, GpuList& gpuList);
+    void GetD3DBarrier(const CanonicalJobPath::GpuBarrier& b, D3D12_RESOURCE_BARRIER& dx12Barrier) const;
+    D3D12_RESOURCE_STATES GetD3D12State(const LocationGpuState& state, unsigned stateId, const Dx12Resource* dx12Resource) const;
 
     std::vector<GpuWork> mWorks;
     std::vector<GpuWorkHandle> mFreeHandles;
@@ -90,6 +94,8 @@ private:
     Dx12Device* mDevice;
 
     ResourceStateTable::Domain mGlobalResourceStateDomain;
+    ResourceStateTable* mGlobalResourceStateTable;
+    std::vector<ResourceGpuState> mGlobalGpuStates;
 };
 
 }

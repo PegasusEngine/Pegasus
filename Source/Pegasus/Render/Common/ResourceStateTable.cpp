@@ -42,7 +42,7 @@ ResourceStateTable::Domain ResourceStateTable::CreateDomain()
     auto& newInfo = mDomains[newDomain.id];
     PG_ASSERT(!newInfo.valid && newInfo.states.empty());
     newInfo.valid = true;
-    newInfo.states.resize(mStateCounts, 0u);
+    newInfo.states.resize(mStateCounts, StateSlot{false, 0u});
     return newDomain;
 }
 
@@ -78,7 +78,7 @@ int ResourceStateTable::CreateStateSlot()
     else
     {
         newStateSlot = mEmptyStateSlotIdx.back();
-        mEmptyStateSlotIdx.pop_back();
+		mEmptyStateSlotIdx.pop_back();
     } 
 
     return newStateSlot;
@@ -97,7 +97,7 @@ void ResourceStateTable::RemoveStateSlot(int stateSlot)
 			continue;
 
         PG_ASSERT((unsigned)domain.states.size() == mStateCounts);
-        domain.states[stateSlot] = 0;
+        domain.states[stateSlot] = {false, 0u};
     }
 
     mEmptyStateSlotIdx.push_back(stateSlot);
@@ -112,10 +112,10 @@ void ResourceStateTable::StoreState(Domain d, int stateSlot, uintptr_t state)
     if (!domainExists || !stateSlotExists)
         return;
     
-    mDomains[d.id].states[stateSlot] = state;
+    mDomains[d.id].states[stateSlot] = StateSlot{ true, state };
 }
 
-bool ResourceStateTable::GetState(Domain d, int stateSlot, uintptr_t& outState)
+bool ResourceStateTable::GetState(Domain d, int stateSlot, uintptr_t& outState) const
 {
     const bool domainExists = d.id >= 0 && d.id < (int)mDomains.size();
     const bool stateSlotExists = stateSlot >= 0 && stateSlot < (int)mStateCounts;
@@ -126,7 +126,11 @@ bool ResourceStateTable::GetState(Domain d, int stateSlot, uintptr_t& outState)
 	if (!inf.valid)
 		return false;
 
-    outState = inf.states[stateSlot];
+    const StateSlot& ss = inf.states[stateSlot];
+    if (!ss.valid)
+        return false;
+
+    outState = ss.data;
     return true;
 }
 
