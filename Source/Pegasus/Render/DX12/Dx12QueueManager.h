@@ -32,6 +32,9 @@ class Dx12Device;
 class Dx12Fence;
 class Dx12Resource;
 class CanonicalJobPath;
+class GpuDescriptorTablePool;
+class RootJob;
+struct JobInstance;
 
 class Dx12QueueManager
 {
@@ -49,7 +52,8 @@ public:
     
     GpuWorkHandle AllocateWork(); 
     void DestroyWork(Pegasus::Render::GpuWorkHandle handle);
-    GpuWorkResultCode CompileWork(GpuWorkHandle handle, const CanonicalJobPath* jobs, unsigned jobsCount);
+    GpuWorkResultCode CompileWork(GpuWorkHandle handle, const RootJob& rootJob, const CanonicalJobPath* jobs, unsigned jobsCount);
+    void SubmitWork(GpuWorkHandle handle);
 
     ID3D12CommandQueue* GetDirect() { return mQueueContainers[(int)WorkType::Graphics].queue; }
 
@@ -69,21 +73,26 @@ private:
 
     struct GpuWork
     {
+        bool submitted = false;
+        InternalJobBuilder* jobBuilder = nullptr;
         std::vector<GpuList> gpuLists;
+        std::vector<ResourceBarrier> statesEndpoint;
     };
 
     struct QueueContainer
     {
         Dx12Fence* fence = nullptr;
         ID3D12CommandQueue* queue = nullptr;
+        GpuDescriptorTablePool* descTablePool = nullptr;
         Dx12CmdLists freeLists;
         Dx12CmdAllocators freeAllocators;
     };
 
     void AllocateList(WorkType workType, GpuWork& work);
-    void TranspileList(const CanonicalJobPath& job, GpuList& gpuList);
+    void TranspileList(const JobInstance* jobTable, const CanonicalJobPath& job, GpuList& gpuList);
     void GetD3DBarrier(const CanonicalJobPath::GpuBarrier& b, D3D12_RESOURCE_BARRIER& dx12Barrier) const;
     D3D12_RESOURCE_STATES GetD3D12State(const LocationGpuState& state, unsigned stateId, const Dx12Resource* dx12Resource) const;
+    void FlushEndpointBarriers(const CanonicalJobPath& job, GpuWork& work);
 
     std::vector<GpuWork> mWorks;
     std::vector<GpuWorkHandle> mFreeHandles;
@@ -95,7 +104,6 @@ private:
 
     ResourceStateTable::Domain mGlobalResourceStateDomain;
     ResourceStateTable* mGlobalResourceStateTable;
-    std::vector<ResourceGpuState> mGlobalGpuStates;
 };
 
 }

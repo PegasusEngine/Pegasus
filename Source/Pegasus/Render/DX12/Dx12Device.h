@@ -51,6 +51,7 @@ struct BufferDesc;
 struct TextureDesc;
 struct Dx12ProgramDesc;
 struct CanonicalCmdListResult;
+class RootJob;
 
 //! Windows specific device for open gl graphics api
 class Dx12Device : public ADevice<Dx12Device>
@@ -77,7 +78,7 @@ public:
     ResourceTableRef InternalCreateResourceTable(const ResourceTableConfig& config);
     GpuPipelineRef InternalCreateGpuPipeline();
 	IDisplayRef InternalCreateDisplayConfig(const DisplayConfig& displayConfig);
-    GpuSubmitResult InternalSubmit(const CanonicalCmdListResult& result);
+    GpuSubmitResult InternalSubmit(const RootJob& rootJob, const CanonicalCmdListResult& result);
 
 private:
 

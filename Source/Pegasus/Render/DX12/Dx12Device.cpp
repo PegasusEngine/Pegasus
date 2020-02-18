@@ -187,7 +187,7 @@ IDisplayRef Dx12Device::InternalCreateDisplayConfig(const DisplayConfig& display
     return dx12Display;
 }
 
-GpuSubmitResult Dx12Device::InternalSubmit(const CanonicalCmdListResult& result)
+GpuSubmitResult Dx12Device::InternalSubmit(const RootJob& rootJob, const CanonicalCmdListResult& result)
 {
     return { {}, GpuWorkResultCode::Success };
 }

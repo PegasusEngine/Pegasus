@@ -13,6 +13,8 @@
 #include "Dx12Device.h"
 #include "Dx12Defs.h"
 #include "Dx12Resources.h"
+#include "GenericGpuResourcePool.h"
+#include "../Common/InternalJobBuilder.h"
 #include "../Common/JobTreeVisitors.h"
 
 #include <Pegasus/Allocator/IAllocator.h>
@@ -35,7 +37,6 @@ static D3D12_COMMAND_LIST_TYPE GetCmdListType(Dx12QueueManager::WorkType workTyp
 
 D3D12_RESOURCE_STATES Dx12QueueManager::GetD3D12State(const LocationGpuState& state, unsigned stateId, const Dx12Resource* dx12Resource) const
 {
-    //TODO: handle global states across works
     static D3D12_RESOURCE_STATES sDx12States[(int)ResourceGpuState::Count] =
     {
         D3D12_RESOURCE_STATE_COMMON, //Default,
@@ -52,10 +53,10 @@ D3D12_RESOURCE_STATES Dx12QueueManager::GetD3D12State(const LocationGpuState& st
 
     if (!state.location.isValid())
     {
-        unsigned globalStateIndex = 0u;
-        if (mGlobalResourceStateTable->GetState(mGlobalResourceStateDomain, stateId, globalStateIndex))
+        unsigned globalState = 0u;
+        if (mGlobalResourceStateTable->GetState(mGlobalResourceStateDomain, stateId, globalState))
         {
-            resState = mGlobalGpuStates[globalStateIndex];
+            resState = (ResourceGpuState)globalState;
         }
         else
         {
@@ -148,19 +149,61 @@ void Dx12QueueManager::DestroyWork(GpuWorkHandle handle)
     mFreeHandles.push_back(handle);
 }
 
-GpuWorkResultCode Dx12QueueManager::CompileWork(GpuWorkHandle handle, const CanonicalJobPath* jobs, unsigned jobCounts)
+GpuWorkResultCode Dx12QueueManager::CompileWork(GpuWorkHandle handle, const RootJob& rootJob, const CanonicalJobPath* jobs, unsigned jobCounts)
 {
     if (!handle.isValid(mWorks.size()))
         return GpuWorkResultCode::InvalidArgs;
 
     GpuWork& work = mWorks[handle];
-    for (unsigned i = 0; i < jobCounts; ++i)
-        AllocateList(WorkType::Graphics, work);
+    work.jobBuilder = rootJob.GetParent();
 
     for (unsigned i = 0; i < jobCounts; ++i)
-        TranspileList(jobs[i], work.gpuLists[i]);
+    {
+        AllocateList(WorkType::Graphics, work);
+        FlushEndpointBarriers(jobs[i], work);
+    }
+
+    for (unsigned i = 0; i < jobCounts; ++i)
+        TranspileList(work.jobBuilder->jobTable.data(), jobs[i], work.gpuLists[i]);
 
     return GpuWorkResultCode::Success;
+}
+
+void Dx12QueueManager::SubmitWork(GpuWorkHandle handle)
+{
+    PG_ASSERT(!handle.isValid(mWorks.size()));
+    if (!handle.isValid(mWorks.size()))
+        return;
+
+    GpuWork& work = mWorks[handle];
+    PG_ASSERT(!work.submitted);
+
+    if (!work.submitted)   
+        return;
+
+    auto& queueContainer = mQueueContainers[(int)WorkType::Graphics];
+    std::vector<ID3D12CommandList*> submitList;
+    submitList.reserve(work.gpuLists.size());
+    work.submitted = true;
+    for (auto gpuList : work.gpuLists)
+    {
+        submitList.push_back(gpuList.list);
+        
+        //free up pending lists right after submission
+        queueContainer.freeLists.push_back(gpuList.list);
+    }
+
+    for (auto b : work.statesEndpoint)
+    {
+        mGlobalResourceStateTable->StoreState(
+            mGlobalResourceStateDomain, b.resource->GetStateId(),
+           (unsigned)b.to.gpuState);
+    }
+
+    queueContainer.queue->ExecuteCommandLists(
+        (UINT)submitList.size(),
+        submitList.data()
+    );
 }
 
 void Dx12QueueManager::AllocateList(WorkType workType, Dx12QueueManager::GpuWork& work)
@@ -194,7 +237,23 @@ void Dx12QueueManager::AllocateList(WorkType workType, Dx12QueueManager::GpuWork
     work.gpuLists.push_back(newGpuList);
 }
 
-void Dx12QueueManager::TranspileList(const CanonicalJobPath& job, GpuList& gpuList)
+void Dx12QueueManager::FlushEndpointBarriers(const CanonicalJobPath& job, GpuWork& work)
+{
+    unsigned barriersSz = 0u;
+    const CanonicalJobPath::GpuBarrier* barriers = job.GetBarriers(barriersSz);
+    for (unsigned i = 0; i < barriersSz; ++i)
+    {
+        const CanonicalJobPath::GpuBarrier& b = barriers[i];
+        if ( (b.timing == CanonicalJobPath::BarrierTiming::End || b.timing == CanonicalJobPath::BarrierTiming::BeginAndEnd) &&
+            b.to.location.isValid()
+            )
+        {
+            work.statesEndpoint.push_back(b);
+        }
+    }
+}
+
+void Dx12QueueManager::TranspileList(const JobInstance* jobTable, const CanonicalJobPath& job, GpuList& gpuList)
 {
     unsigned barriersCount = 0u;
     const CanonicalJobPath::GpuBarrier* barriers = job.GetBarriers(barriersCount);
@@ -217,12 +276,37 @@ void Dx12QueueManager::TranspileList(const CanonicalJobPath& job, GpuList& gpuLi
         applyBarriers(n.postGpuBarrierIndices.data(), (unsigned)n.postGpuBarrierIndices.size(), postDx12Barriers);
 
     
-        gpuList.list->ResourceBarrier((UINT)preDx12Barriers.size(), preDx12Barriers.data());
+        if (!preDx12Barriers.empty())
+            gpuList.list->ResourceBarrier((UINT)preDx12Barriers.size(), preDx12Barriers.data());
 
-        //TODO: generate here command list transpilation
+        const JobInstance& instance = jobTable[n.jobHandle];
+        
+        std::visit(JobVisitor::overloaded {
+            [&](const RootCmdData& d){
+            },
+            [&](const DrawCmdData& d){
+            },
+            [&](const ComputeCmdData& d){
+            },
+            [&](const CopyCmdData& d){
+                const Dx12Resource* srcRes = Dx12Resource::GetDx12Resource(d.src);
+                const Dx12Resource* dstRes = Dx12Resource::GetDx12Resource(d.dst);
+                if (srcRes != nullptr && dstRes != nullptr)
+                {
+                    gpuList.list->CopyResource(srcRes->GetD3D(), dstRes->GetD3D());
+                }
+            },
+            [&](const DisplayCmdData& d){
+            },
+            [&](const GroupCmdData& d){
+            }
+        }, instance.data);
 
-        gpuList.list->ResourceBarrier((UINT)postDx12Barriers.size(), postDx12Barriers.data());
+        if (!postDx12Barriers.empty())
+            gpuList.list->ResourceBarrier((UINT)postDx12Barriers.size(), postDx12Barriers.data());
     }
+
+    gpuList.list->Close();
     
 }
 

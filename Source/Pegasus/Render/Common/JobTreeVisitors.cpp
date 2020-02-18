@@ -13,10 +13,6 @@
 #include "JobTreeParser.h"
 #include <variant>
 
-// helper type for visitor
-template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
-
 namespace Pegasus
 {
 namespace Render
@@ -256,7 +252,7 @@ void ResourceStateBuilder::ApplyBarriers(
         {
             SetState(listId, listLocation, ResourceGpuState::Srv, &(*tableRef));
         }
-        std::visit(overloaded {
+        std::visit(JobVisitor::overloaded {
             [&](const RootCmdData& d){
             },
             [&](const DrawCmdData& d){

@@ -126,7 +126,7 @@ IDisplayRef ADevice<PlatDeviceT>::CreateDisplay(const DisplayConfig& displayConf
 template<class PlatDeviceT>
 GpuSubmitResult ADevice<PlatDeviceT>::Submit(const RootJob& rootJob)
 {
-   return mGpuWorkManager.Submit(rootJob, [this](const CanonicalCmdListResult& result){ return static_cast<PlatDeviceT*>(this)->InternalSubmit(result); });
+   return mGpuWorkManager.Submit(rootJob, [this, &rootJob](const CanonicalCmdListResult& result){ return static_cast<PlatDeviceT*>(this)->InternalSubmit(rootJob, result); });
 }
 
 template<class PlatDeviceT>
