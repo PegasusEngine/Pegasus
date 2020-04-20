@@ -189,9 +189,25 @@ IDisplayRef Dx12Device::InternalCreateDisplayConfig(const DisplayConfig& display
 
 GpuSubmitResult Dx12Device::InternalSubmit(const RootJob& rootJob, const CanonicalCmdListResult& result)
 {
-    return { {}, GpuWorkResultCode::Success };
+    GpuWorkHandle workHandle = mQueueManager->AllocateWork();
+    GpuWorkResultCode compileResult = mQueueManager->CompileWork(workHandle, rootJob, result.cmdLists, result.cmdListsCounts);
+    if (compileResult == GpuWorkResultCode::Success)
+    {
+        mQueueManager->SubmitWork(workHandle);
+    }
+    else
+    {
+        workHandle = {};
+        mQueueManager->DestroyWork(workHandle);
+    }
+
+    return { workHandle, compileResult };
 }
 
+void Dx12Device::InternalWait(GpuWorkHandle workHandle)
+{
+    mQueueManager->WaitOnCpu(workHandle);   
+}
 
 }//namespace Render
 }//namespace Pegasus

@@ -86,6 +86,7 @@ struct GpuSubmitResult
 class IDevice
 {
 public:
+	virtual ~IDevice() {}
     static IDevice * CreatePlatformDevice(const DeviceConfig& config, Alloc::IAllocator * allocator);
 
     virtual const DeviceConfig& GetConfig() const = 0;

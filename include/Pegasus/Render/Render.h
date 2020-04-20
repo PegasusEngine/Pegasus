@@ -65,6 +65,7 @@ public:
     unsigned GetStateId() const { return mStateId; }
     virtual ~IResource();
 
+    virtual void* GetGpuPtr() { return nullptr; }
     ResourceType GetType() const { return mResourceType; }
 
 protected:
@@ -122,7 +123,7 @@ enum ResourceUsage
 {
     ResourceUsage_Static,
     ResourceUsage_Dynamic,
-    ResourceUsage_Staging
+    ResourceUsage_Staging,
 };
 
 enum TextureType

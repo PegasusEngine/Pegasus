@@ -31,7 +31,6 @@ public:
     GpuSubmitResult Submit(const RootJob& rootJob, SubmitGpuWorkFn workFn);
     void ReleaseWork(GpuWorkHandle workHandle);
     bool IsFinished(GpuWorkHandle workHandle);
-    void Wait(GpuWorkHandle workHandle);
     void GarbageCollect();
 
 private:
@@ -145,7 +144,7 @@ bool ADevice<PlatDeviceT>::IsFinished(GpuWorkHandle workHandle)
 template<class PlatDeviceT>
 void ADevice<PlatDeviceT>::Wait(GpuWorkHandle workHandle)
 {
-   // mGpuWorkManager.Wait(workHandle);
+   static_cast<PlatDeviceT*>(this)->InternalWait(workHandle);
 }
 
 template<class PlatDeviceT>

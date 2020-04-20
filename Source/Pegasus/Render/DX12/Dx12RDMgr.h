@@ -109,9 +109,6 @@ private:
         D3D12_DESCRIPTOR_HEAP_DESC desc;
         CComPtr<ID3D12DescriptorHeap> heap;
         std::vector<Table> freeSpots;
-
-        D3D12_DESCRIPTOR_HEAP_DESC gpuLinearHeapDesc;
-        CComPtr<ID3D12DescriptorHeap> gpuLinearHeap;
     };
 
     UINT mNextTableGuid;

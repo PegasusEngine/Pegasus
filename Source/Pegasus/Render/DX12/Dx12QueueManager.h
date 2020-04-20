@@ -54,6 +54,7 @@ public:
     void DestroyWork(Pegasus::Render::GpuWorkHandle handle);
     GpuWorkResultCode CompileWork(GpuWorkHandle handle, const RootJob& rootJob, const CanonicalJobPath* jobs, unsigned jobsCount);
     void SubmitWork(GpuWorkHandle handle);
+    void WaitOnCpu(GpuWorkHandle handle);
 
     ID3D12CommandQueue* GetDirect() { return mQueueContainers[(int)WorkType::Graphics].queue; }
 
@@ -77,6 +78,8 @@ private:
         InternalJobBuilder* jobBuilder = nullptr;
         std::vector<GpuList> gpuLists;
         std::vector<ResourceBarrier> statesEndpoint;
+        Dx12Fence* parentFence = nullptr;
+        UINT64 fenceVal = 0ull;
     };
 
     struct QueueContainer
@@ -90,7 +93,7 @@ private:
 
     void AllocateList(WorkType workType, GpuWork& work);
     void TranspileList(const JobInstance* jobTable, const CanonicalJobPath& job, GpuList& gpuList);
-    void GetD3DBarrier(const CanonicalJobPath::GpuBarrier& b, D3D12_RESOURCE_BARRIER& dx12Barrier) const;
+    bool GetD3DBarrier(const CanonicalJobPath::GpuBarrier& b, D3D12_RESOURCE_BARRIER& dx12Barrier) const;
     D3D12_RESOURCE_STATES GetD3D12State(const LocationGpuState& state, unsigned stateId, const Dx12Resource* dx12Resource) const;
     void FlushEndpointBarriers(const CanonicalJobPath& job, GpuWork& work);
 

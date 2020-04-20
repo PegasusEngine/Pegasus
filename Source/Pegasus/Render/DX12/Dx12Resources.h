@@ -46,7 +46,8 @@ public:
 
     const ResourceConfig& GetResConfig() const { return mResConfig; }
     
-    D3D12_RESOURCE_STATES GetDefaultState() const { return D3D12_RESOURCE_STATE_COMMON; }
+    D3D12_RESOURCE_STATES GetDefaultState() const { return mDefaultResourceState; }
+    void* GetDx12ResourceGpuPtr();
 
 protected:
     Dx12RDMgr::Handle mSrvHandle;
@@ -60,9 +61,12 @@ protected:
         D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc;
         D3D12_HEAP_FLAGS heapFlags;
         ID3D12Resource* resource;
+        void* mappedMemory;
+        D3D12_GPU_VIRTUAL_ADDRESS gpuVirtualAddress;
     } mData;
 
     Dx12Device* mDevice;
+    D3D12_RESOURCE_STATES mDefaultResourceState;
 
 private:
     ResourceConfig mResConfig;
@@ -96,6 +100,7 @@ public:
     Dx12Buffer(const BufferConfig& desc, Dx12Device* device);
     virtual ~Dx12Buffer();
     virtual void init();
+    virtual void* GetGpuPtr() { return GetDx12ResourceGpuPtr(); }
 };
 
 class Dx12ResourceTable : public Pegasus::Render::ResourceTable

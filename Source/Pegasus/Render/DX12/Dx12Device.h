@@ -79,6 +79,7 @@ public:
     GpuPipelineRef InternalCreateGpuPipeline();
 	IDisplayRef InternalCreateDisplayConfig(const DisplayConfig& displayConfig);
     GpuSubmitResult InternalSubmit(const RootJob& rootJob, const CanonicalCmdListResult& result);
+    void InternalWait(GpuWorkHandle workHandle);
 
 private:
 

@@ -640,6 +640,62 @@ namespace Pegasus
 			return errors == 0u;
 		}
 
+		bool runTestGpuMemoryLoop(TestHarness* harness)
+		{
+			RenderHarness* rh = static_cast<RenderHarness*>(harness);
+			IDevice* device = rh->CreateDevice();
+			Render::BufferConfig bufferConfig = {};
+			bufferConfig.bufferType = BufferType_Default;
+			bufferConfig.elementCount = 16;
+			bufferConfig.stride = 4;
+			bufferConfig.format = Pegasus::Core::FORMAT_R32_UINT;
+
+			bufferConfig.name = "TestUpload";
+			bufferConfig.usage = Render::ResourceUsage_Dynamic;
+			Render::BufferRef uploadBuff = device->CreateBuffer(bufferConfig);
+
+			bufferConfig.name = "TestGpu";
+			bufferConfig.usage = Render::ResourceUsage_Static;
+			Render::BufferRef gpuBuffer = device->CreateBuffer(bufferConfig);
+			Render::BufferRef gpuBuffer2 = device->CreateBuffer(bufferConfig);
+
+			bufferConfig.name = "TestReadback";
+			bufferConfig.usage = Render::ResourceUsage_Staging;
+			Render::BufferRef resultBuffer = device->CreateBuffer(bufferConfig);
+
+			if (uploadBuff->GetGpuPtr() == nullptr)
+				return false;
+
+			unsigned* integers = static_cast<unsigned*>(uploadBuff->GetGpuPtr());
+			for (unsigned i = 0; i < bufferConfig.elementCount; ++i)
+				integers[i] = i;
+
+			if (resultBuffer->GetGpuPtr() == nullptr)
+				return false;
+
+			JobBuilder jb(device);
+			RootJob rj = jb.CreateRootJob();
+			CopyJob cj = jb.CreateCopyJob();
+			cj.AddDependency(rj);
+			cj.Set(uploadBuff, gpuBuffer);
+			cj = cj.Next();
+			cj.Set(gpuBuffer, gpuBuffer2);
+			cj = cj.Next();
+			cj.Set(gpuBuffer2, resultBuffer);
+			Render::GpuSubmitResult result = device->Submit(rj);
+			if (result.resultCode != Render::GpuWorkResultCode::Success)
+				return false;
+
+			device->Wait(result.handle);
+
+			unsigned* resultBufferData = static_cast<unsigned*>(resultBuffer->GetGpuPtr());
+			for (unsigned i = 0; i < bufferConfig.elementCount; ++i)
+				if (i != resultBufferData[i])
+					return false;
+			device->ReleaseWork(result.handle);
+			return true;
+		}
+
 		TestHarness* createRenderHarness()
 		{
 			return new RenderHarness();
@@ -652,6 +708,7 @@ namespace Pegasus
 			DECLARE_TEST(TestResourceStateTable),
 			DECLARE_TEST(TestCanonicalCmdListBuilder),
 			DECLARE_TEST(TestAutomaticBarriers),
+			DECLARE_TEST(TestGpuMemoryLoop),
 			DECLARE_TEST(DestroyDevice)
 		};
 

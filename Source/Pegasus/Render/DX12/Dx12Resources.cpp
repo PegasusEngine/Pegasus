@@ -105,13 +105,29 @@ Dx12Resource::Dx12Resource(const ResourceConfig& resConfig, Dx12Device* device)
         }
     }
 
-    PG_ASSERTSTR(GetResConfig().usage != ResourceUsage_Dynamic, "Dynamic resources not supported yet.");
-    mData.heapProps.Type = GetResConfig().usage == ResourceUsage_Static ? D3D12_HEAP_TYPE_DEFAULT : D3D12_HEAP_TYPE_READBACK;
-    mData.heapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+    mDefaultResourceState = D3D12_RESOURCE_STATE_COMMON;
+	mData.heapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+    auto apiUsage = GetResConfig().usage;
+    if (apiUsage == ResourceUsage_Static)
+    {
+        mData.heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
+    }
+    else if (apiUsage == ResourceUsage_Dynamic)
+    {
+		mDefaultResourceState = D3D12_RESOURCE_STATE_GENERIC_READ;
+        mData.heapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
+    }
+    else if (apiUsage == ResourceUsage_Staging)
+    {
+		mDefaultResourceState = D3D12_RESOURCE_STATE_COPY_DEST;
+        mData.heapProps.Type = D3D12_HEAP_TYPE_READBACK;
+    }
+    
     mData.heapProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
     mData.heapProps.CreationNodeMask = 0u;
     mData.heapProps.VisibleNodeMask = 0u;
-
+    mData.mappedMemory = nullptr;
+    mData.gpuVirtualAddress = {};
 }
 
 Dx12Resource::~Dx12Resource()
@@ -133,11 +149,16 @@ Dx12Resource::~Dx12Resource()
     }
 }
 
+void* Dx12Resource::GetDx12ResourceGpuPtr()
+{
+    return mData.mappedMemory;
+}
+
 void Dx12Resource::init()
 {
     DX_VALID_DECLARE(mDevice->GetD3D()->CreateCommittedResource(
         &mData.heapProps, mData.heapFlags, &mData.resDesc,
-        GetDefaultState(), nullptr,
+		GetDefaultState(), nullptr,
         __uuidof(ID3D12Resource),
         reinterpret_cast<void**>(&mData.resource)
     ));
@@ -423,6 +444,14 @@ Dx12Buffer::~Dx12Buffer()
 void Dx12Buffer::init()
 {
     Dx12Resource::init();
+
+	auto apiUsage = GetResConfig().usage;
+	if (apiUsage == ResourceUsage_Dynamic || apiUsage == ResourceUsage_Staging)
+	{
+		D3D12_RANGE range = { (SIZE_T)0, (SIZE_T)mData.resDesc.Width };
+		DX_VALID_DECLARE(mData.resource->Map(0u, &range, &mData.mappedMemory));
+		mData.gpuVirtualAddress = mData.resource->GetGPUVirtualAddress();
+	}
 }
 
 Dx12ResourceTable::Dx12ResourceTable(const ResourceTableConfig& desc, Dx12Device* device)

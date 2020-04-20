@@ -35,10 +35,6 @@ bool GpuWorkManager::IsFinished(GpuWorkHandle workHandle)
 	return false;
 }
 
-void GpuWorkManager::Wait(GpuWorkHandle workHandle)
-{
-}
-
 void GpuWorkManager::GarbageCollect()
 {
 }

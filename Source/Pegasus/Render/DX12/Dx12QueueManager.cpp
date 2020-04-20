@@ -13,6 +13,7 @@
 #include "Dx12Device.h"
 #include "Dx12Defs.h"
 #include "Dx12Resources.h"
+#include "Dx12Fence.h"
 #include "GenericGpuResourcePool.h"
 #include "../Common/InternalJobBuilder.h"
 #include "../Common/JobTreeVisitors.h"
@@ -67,7 +68,7 @@ D3D12_RESOURCE_STATES Dx12QueueManager::GetD3D12State(const LocationGpuState& st
     return sDx12States[(int)resState];
 }
 
-void Dx12QueueManager::GetD3DBarrier(const CanonicalJobPath::GpuBarrier& b, D3D12_RESOURCE_BARRIER& dx12Barrier) const
+bool Dx12QueueManager::GetD3DBarrier(const CanonicalJobPath::GpuBarrier& b, D3D12_RESOURCE_BARRIER& dx12Barrier) const
 {
     //TODO: handle UAV barriers
     dx12Barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
@@ -93,6 +94,7 @@ void Dx12QueueManager::GetD3DBarrier(const CanonicalJobPath::GpuBarrier& b, D3D1
     transitionBarrier.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
     transitionBarrier.StateBefore = GetD3D12State(b.from, b.resource->GetStateId(), dx12Resource);
     transitionBarrier.StateAfter = GetD3D12State(b.to, b.resource->GetStateId(), dx12Resource);
+    return transitionBarrier.StateBefore != transitionBarrier.StateAfter;
 }
 
 Dx12QueueManager::Dx12QueueManager(Pegasus::Alloc::IAllocator* allocator, Dx12Device* device)
@@ -111,6 +113,8 @@ Dx12QueueManager::Dx12QueueManager(Pegasus::Alloc::IAllocator* allocator, Dx12De
 
         qDesc.Type = GetCmdListType((Dx12QueueManager::WorkType)queueIt);
         DX_VALID_DECLARE(mDevice->GetD3D()->CreateCommandQueue(&qDesc, __uuidof(qcontainer.queue), &((void*)qcontainer.queue)));
+
+		qcontainer.fence = D12_NEW(allocator, "queuFence") Dx12Fence(device, qcontainer.queue);
     }
 
     mGlobalResourceStateTable = mDevice->GetResourceStateTable();
@@ -119,8 +123,14 @@ Dx12QueueManager::Dx12QueueManager(Pegasus::Alloc::IAllocator* allocator, Dx12De
 
 Dx12QueueManager::~Dx12QueueManager()
 {
-    for (int queueIt = 0; queueIt < (int)WorkType::Count; ++queueIt)
-        mQueueContainers[queueIt].queue->Release();
+	for (int queueIt = 0; queueIt < (int)WorkType::Count; ++queueIt)
+	{
+		auto& qcontainer = mQueueContainers[queueIt];
+		qcontainer.fence->WaitOnCpu(qcontainer.fence->GetValue());
+		qcontainer.queue->Release();
+		D12_DELETE(mAllocator, qcontainer.fence);
+		
+	}
 
     mGlobalResourceStateTable->RemoveDomain(mGlobalResourceStateDomain);
 }
@@ -171,14 +181,14 @@ GpuWorkResultCode Dx12QueueManager::CompileWork(GpuWorkHandle handle, const Root
 
 void Dx12QueueManager::SubmitWork(GpuWorkHandle handle)
 {
-    PG_ASSERT(!handle.isValid(mWorks.size()));
+    PG_ASSERT(handle.isValid(mWorks.size()));
     if (!handle.isValid(mWorks.size()))
         return;
 
     GpuWork& work = mWorks[handle];
     PG_ASSERT(!work.submitted);
 
-    if (!work.submitted)   
+    if (work.submitted)   
         return;
 
     auto& queueContainer = mQueueContainers[(int)WorkType::Graphics];
@@ -204,6 +214,21 @@ void Dx12QueueManager::SubmitWork(GpuWorkHandle handle)
         (UINT)submitList.size(),
         submitList.data()
     );
+
+	work.parentFence = queueContainer.fence;
+    work.fenceVal = queueContainer.fence->Signal();
+}
+
+void Dx12QueueManager::WaitOnCpu(GpuWorkHandle handle)
+{
+    PG_ASSERT(handle.isValid(mWorks.size()));
+    if (!handle.isValid(mWorks.size()))
+        return;
+
+    GpuWork& work = mWorks[handle];
+    PG_ASSERT(work.submitted);
+
+    work.parentFence->WaitOnCpu(work.fenceVal);
 }
 
 void Dx12QueueManager::AllocateList(WorkType workType, Dx12QueueManager::GpuWork& work)
@@ -260,10 +285,12 @@ void Dx12QueueManager::TranspileList(const JobInstance* jobTable, const Canonica
 
     auto applyBarriers = [&](const unsigned*  indices, unsigned counts, std::vector<D3D12_RESOURCE_BARRIER>& outBarriers)
     {
-        outBarriers.resize(counts);
+        outBarriers.reserve(counts);
         for (unsigned i = 0u; i < counts; ++i)
         {
-            GetD3DBarrier(barriers[indices[i]], outBarriers[i]);
+            D3D12_RESOURCE_BARRIER b;
+            if (GetD3DBarrier(barriers[indices[i]], b))
+                outBarriers.emplace_back(std::move(b));
         }
     };
 
@@ -293,7 +320,7 @@ void Dx12QueueManager::TranspileList(const JobInstance* jobTable, const Canonica
                 const Dx12Resource* dstRes = Dx12Resource::GetDx12Resource(d.dst);
                 if (srcRes != nullptr && dstRes != nullptr)
                 {
-                    gpuList.list->CopyResource(srcRes->GetD3D(), dstRes->GetD3D());
+                    gpuList.list->CopyResource(dstRes->GetD3D(), srcRes->GetD3D());
                 }
             },
             [&](const DisplayCmdData& d){
@@ -306,7 +333,7 @@ void Dx12QueueManager::TranspileList(const JobInstance* jobTable, const Canonica
             gpuList.list->ResourceBarrier((UINT)postDx12Barriers.size(), postDx12Barriers.data());
     }
 
-    gpuList.list->Close();
+    DX_VALID_DECLARE(gpuList.list->Close());
     
 }
 
