@@ -11,6 +11,8 @@ Source/tags
 *.sdf
 tags
 .vs
+.tundra2.*
+t2-output/*
 fmod.log
 Build/VS17/*
 Lib/Pegasus/*
