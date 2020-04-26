@@ -1,7 +1,12 @@
 Build
 {
     Units = {
+        "Build/tundra/pegasus.framework.lua",
         "Build/tundra/pegasus.units.lua"
+    },
+
+    Passes = {
+        CodeGeneration = { Name = "Code Generation" , BuildOrder = 1 }
     },
 
     Configs = {
@@ -17,6 +22,10 @@ Build
     
     Env = {
         SRC_DIR = "Source",
+        BISON = "win_bison.exe",
+        BISONOPT = { "-d" },
+        FLEX = "win_flex.exe",
+        FLEXOPT = { "--wincompat " },
         CXXOPTS = {
             {
                 { "/std:c++17", "/WX", "/W3" },

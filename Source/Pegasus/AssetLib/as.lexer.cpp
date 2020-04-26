@@ -1,6 +1,6 @@
-#line 2 "as.lexer.cpp"
+#line 2 "Source\\Pegasus\\AssetLib/as.lexer.cpp"
 
-#line 4 "as.lexer.cpp"
+#line 4 "Source\\Pegasus\\AssetLib/as.lexer.cpp"
 
 #define  YY_INT_ALIGNED short int
 
@@ -450,7 +450,7 @@ static yyconst flex_int16_t yy_chk[59] =
 #define yymore() yymore_used_but_not_detected
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
-#line 1 "as.l"
+#line 1 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 /****************************************************************************************/
 /*                                                                                      */
 /*                                       Pegasus                                        */
@@ -464,7 +464,7 @@ static yyconst flex_int16_t yy_chk[59] =
            This file contains a regex lexer description of the AssetScript data/scripting language.
            This grammar gets parsed and becomes a cpp file containing the necesary functions for lexing
 */
-#line 21 "as.l"
+#line 21 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
     #define YY_EXTRA_TYPE class AsCompilerState*
 
     #include "Pegasus/Core/Assertion.h" 
@@ -522,7 +522,7 @@ static yyconst flex_int16_t yy_chk[59] =
 
 
 
-#line 526 "as.lexer.cpp"
+#line 526 "Source\\Pegasus\\AssetLib/as.lexer.cpp"
 
 #define INITIAL 0
 #define STRING_BLOCK 1
@@ -759,9 +759,9 @@ YY_DECL
 	register int yy_act;
     struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
 
-#line 81 "as.l"
+#line 81 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 
-#line 765 "as.lexer.cpp"
+#line 765 "Source\\Pegasus\\AssetLib/as.lexer.cpp"
 
     yylval = yylval_param;
 
@@ -848,14 +848,14 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 84 "as.l"
+#line 84 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 {
         END_CAPTURE_STRING(IDENTIFIER)
     }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 87 "as.l"
+#line 87 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 {
         CAPTURE_CHAR
     }
@@ -866,12 +866,12 @@ YY_RULE_SETUP
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
-#line 94 "as.l"
+#line 94 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 { BEGIN(INITIAL); }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 95 "as.l"
+#line 95 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 ;
 	YY_BREAK
 
@@ -879,14 +879,14 @@ YY_RULE_SETUP
 
 case 5:
 YY_RULE_SETUP
-#line 100 "as.l"
+#line 100 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 {
         END_CAPTURE_STRING(ASSET_PATH_REFERENCE)
     }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 103 "as.l"
+#line 103 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 {
         CAPTURE_CHAR
     }
@@ -896,27 +896,27 @@ YY_RULE_SETUP
 
 case 7:
 YY_RULE_SETUP
-#line 110 "as.l"
+#line 110 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 { yyextra->mStringAccumulatorPos = 0; BEGIN(STRING_BLOCK); }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 111 "as.l"
+#line 111 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 ;
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 112 "as.l"
+#line 112 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 { AS_FLOAT(I_FLOAT); }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 113 "as.l"
+#line 113 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 { AS_INT(I_INT); }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 114 "as.l"
+#line 114 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 { const char* txt = yyextra->mBuilder->CopyString(yytext); 
                    if (txt == nullptr)
                    {
@@ -930,61 +930,61 @@ YY_RULE_SETUP
 case 12:
 /* rule 12 can match eol */
 YY_RULE_SETUP
-#line 123 "as.l"
+#line 123 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 { yyextra->mBuilder->IncLine(); }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 124 "as.l"
+#line 124 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 { AS_TOKEN(K_LEFT_LACE); }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 125 "as.l"
+#line 125 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 { AS_TOKEN(K_RIGHT_LACE); }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 126 "as.l"
+#line 126 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 { yyextra->mStringAccumulatorPos = 0; BEGIN(ASSET_POINTER); }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 127 "as.l"
+#line 127 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 { AS_TOKEN(K_LEFT_BRAC); }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 128 "as.l"
+#line 128 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 { AS_TOKEN(K_RIGHT_BRAC); } 
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 129 "as.l"
+#line 129 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 { BEGIN(LINE_COMMENT); }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 130 "as.l"
+#line 130 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 { AS_TOKEN(K_COMMA); }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 131 "as.l"
+#line 131 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 { AS_TOKEN(K_COLON); } 
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 132 "as.l"
+#line 132 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 ;
 	YY_BREAK
 
 case 22:
 YY_RULE_SETUP
-#line 134 "as.l"
+#line 134 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 ECHO;
 	YY_BREAK
-#line 988 "as.lexer.cpp"
+#line 988 "Source\\Pegasus\\AssetLib/as.lexer.cpp"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(STRING_BLOCK):
 case YY_STATE_EOF(LINE_COMMENT):
@@ -2151,7 +2151,7 @@ void AS_free (void * ptr , yyscan_t yyscanner)
 
 #define YYTABLES_NAME "yytables"
 
-#line 133 "as.l"
+#line 133 "F:\\Pegasus\\Source\\Pegasus\\AssetLib\\as.l"
 
 
 
