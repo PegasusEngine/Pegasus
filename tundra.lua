@@ -22,10 +22,26 @@ Build
     
     Env = {
         SRC_DIR = "Source",
-        BISON = "win_bison.exe",
+        TOOLS_DIR = "Tools",
+        BISON = {
+            {
+                "$(TOOLS_DIR)$(SEP)FlexAndBison$(SEP)Win32$(SEP)win_bison.exe";
+                Config = "win32-*-*"
+            }
+        },
         BISONOPT = { "-d" },
-        FLEX = "win_flex.exe",
-        FLEXOPT = { "--wincompat " },
+        FLEX = {
+            {
+                "$(TOOLS_DIR)$(SEP)FlexAndBison$(SEP)Win32$(SEP)win_flex.exe";
+                Config = "win32-*-*"
+            }
+        },
+        FLEXOPT = {
+            {
+                "--wincompat ";
+                Config = "win32-*-*"
+            }
+        },
         CXXOPTS = {
             {
                 { "/std:c++17", "/WX", "/W3" },

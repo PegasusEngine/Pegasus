@@ -19,7 +19,7 @@ DefRule {
 
   Blueprint = {
     Source           = { Required = true, Type = "string" },
-    OutputCFile      = { Required = false, Type = "string" },
+    OutputCFile      = { Required = true, Type = "string" },
     Prefix           = { Required = true, Type  = "string" },
     OutputHeaderFile = { Required = false, Type = "string" },
     Pass             = { Required = true, Type = "pass", }
@@ -28,8 +28,8 @@ DefRule {
   Setup = function (env, data)
     local src = data.Source
     local base_name = path.drop_suffix(src)
-    local gen_c = data.OutputCFile or ('$(OBJECTROOT)$(SEP)flexgen_' .. base_name .. '.c')
-    local gen_h = data.OutputHeaderFile or ('$(OBJECTROOT)$(SEP)flexgen_' .. base_name .. '.h')
+    local gen_c = "$(OBJECTROOT)$(SEP)"..data.OutputCFile
+    local gen_h = "$(OBJECTROOT)$(SEP)"..data.OutputHeaderFile
     return {
       InputFiles = { src },
       OutputFiles = { gen_c, gen_h },
@@ -110,6 +110,8 @@ local function BuildPegasusLib(name, srcFolder, srcFolderIsRecursive, deps, code
             }
     }
 
+    local includes = { "Include" }
+
     if codegens then
         local flexSources = Glob {
             Dir = SourceDir,
@@ -131,8 +133,8 @@ local function BuildPegasusLib(name, srcFolder, srcFolderIsRecursive, deps, code
         for i,flexSrc in ipairs(flexSources) do
             sources[#sources + 1] = PegasusFlex {
                 Source = flexSrc,
-                OutputCFile = flexOutput[i],
-                OutputHeaderFile = flexHeaders[i],
+                OutputCFile = "flexgen$(SEP)"..flexOutput[i],
+                OutputHeaderFile = "flexgen$(SEP)" .. flexHeaders[i],
                 Prefix = prefix,
                 Pass = "CodeGeneration"
             }
@@ -141,16 +143,19 @@ local function BuildPegasusLib(name, srcFolder, srcFolderIsRecursive, deps, code
         for i,bisonSrc in ipairs(bisonSources) do
             sources[#sources + 1] = PegasusBison {
                 Source = bisonSrc,
-                OutputFile = bisonOutput[i],
+                OutputFile = "bisongen$(SEP)" .. bisonOutput[i],
                 Prefix = prefix,
                 Pass = "CodeGeneration"
             }
         end
+
+        includes[#includes + 1] = "$(OBJECTROOT)$(SEP)bisongen/Source/"
+        includes[#includes + 1] = "$(OBJECTROOT)$(SEP)flexgen/Source/"
     end
 
     return StaticLibrary {
         Name = name,
-        Includes = { "Include" },
+        Includes = includes,
         Sources = sources,
         Depends = deps,
         Env = envs
