@@ -1,7 +1,7 @@
 Build
 {
     Units = {
-        "Build/tundra/pegasus.lua"
+        "Build/tundra/pegasus.units.lua"
     },
 
     Configs = {
