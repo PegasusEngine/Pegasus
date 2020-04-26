@@ -15,6 +15,7 @@
 #include <QDockWidget>
 #include <QPlainTextEdit>
 #include <QColor>
+#include <Pegasus/Core/Shared/LogChannel.h>
 
 class QMenu;
 

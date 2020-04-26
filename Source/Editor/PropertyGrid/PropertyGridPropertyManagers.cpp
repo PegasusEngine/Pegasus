@@ -12,41 +12,6 @@
 #include "PropertyGrid/PropertyGridPropertyManagers.h"
 
 
-class PropertyGridVec2PropertyManagerPrivate
-{
-public:
-
-    //! Slot called when the value of a vector component has changed
-    //! \param property Property that has changed
-    //! \param value New value of the vector component
-    void slotDoubleChanged(QtProperty * property, double value);
-
-    //! Slot called when a component property is destroyed
-    //! \param property Component property being destroyed
-    void slotPropertyDestroyed(QtProperty * property);
-
-    typedef QMap<const QtProperty *, Vec2Property> PropertyValueMap;
-    
-    //! Map between properties and their corresponding values
-    PropertyValueMap m_values;
-
-    //! Manager used for individual components
-    QtDoublePropertyManager * m_doublePropertyManager;
-
-    //! Map between properties and component subproperties
-    QMap<const QtProperty *, QtProperty *> m_propertyToComponent[2];
-
-    //! Map between component properties and subproperties
-    QMap<const QtProperty *, QtProperty *> m_componentToProperty[2];
-
-private:
-
-    //! Manager owning this private implementation
-    PropertyGridVec2PropertyManager * q_ptr;
-
-    Q_DECLARE_PUBLIC(PropertyGridVec2PropertyManager)
-};
-
 //----------------------------------------------------------------------------------------
 
 void PropertyGridVec2PropertyManagerPrivate::slotDoubleChanged(QtProperty * property, double value)
@@ -193,41 +158,6 @@ void PropertyGridVec2PropertyManager::uninitializeProperty(QtProperty * property
 }
 
 //----------------------------------------------------------------------------------------
-
-class PropertyGridVec3PropertyManagerPrivate
-{
-public:
-
-    //! Slot called when the value of a vector component has changed
-    //! \param property Property that has changed
-    //! \param value New value of the vector component
-    void slotDoubleChanged(QtProperty * property, double value);
-
-    //! Slot called when a component property is destroyed
-    //! \param property Component property being destroyed
-    void slotPropertyDestroyed(QtProperty * property);
-
-    typedef QMap<const QtProperty *, Vec3Property> PropertyValueMap;
-    
-    //! Map between properties and their corresponding values
-    PropertyValueMap m_values;
-
-    //! Manager used for individual components
-    QtDoublePropertyManager * m_doublePropertyManager;
-
-    //! Map between properties and component subproperties
-    QMap<const QtProperty *, QtProperty *> m_propertyToComponent[3];
-
-    //! Map between component properties and subproperties
-    QMap<const QtProperty *, QtProperty *> m_componentToProperty[3];
-
-private:
-
-    //! Manager owning this private implementation
-    PropertyGridVec3PropertyManager * q_ptr;
-
-    Q_DECLARE_PUBLIC(PropertyGridVec3PropertyManager)
-};
 
 //----------------------------------------------------------------------------------------
 
@@ -377,41 +307,6 @@ void PropertyGridVec3PropertyManager::uninitializeProperty(QtProperty * property
 
 //----------------------------------------------------------------------------------------
 
-class PropertyGridVec4PropertyManagerPrivate
-{
-public:
-
-    //! Slot called when the value of a vector component has changed
-    //! \param property Property that has changed
-    //! \param value New value of the vector component
-    void slotDoubleChanged(QtProperty * property, double value);
-
-    //! Slot called when a component property is destroyed
-    //! \param property Component property being destroyed
-    void slotPropertyDestroyed(QtProperty * property);
-
-    typedef QMap<const QtProperty *, Vec4Property> PropertyValueMap;
-    
-    //! Map between properties and their corresponding values
-    PropertyValueMap m_values;
-
-    //! Manager used for individual components
-    QtDoublePropertyManager * m_doublePropertyManager;
-
-    //! Map between properties and component subproperties
-    QMap<const QtProperty *, QtProperty *> m_propertyToComponent[4];
-
-    //! Map between component properties and subproperties
-    QMap<const QtProperty *, QtProperty *> m_componentToProperty[4];
-
-private:
-
-    //! Manager owning this private implementation
-    PropertyGridVec4PropertyManager * q_ptr;
-
-    Q_DECLARE_PUBLIC(PropertyGridVec4PropertyManager)
-};
-
 //----------------------------------------------------------------------------------------
 
 void PropertyGridVec4PropertyManagerPrivate::slotDoubleChanged(QtProperty * property, double value)
@@ -560,7 +455,3 @@ void PropertyGridVec4PropertyManager::uninitializeProperty(QtProperty * property
 }
 
 //----------------------------------------------------------------------------------------
-
-// MOC included here because it needs access to the private implementation.
-// The MOC files for debug and opt are excluded from compilation manually in the project
-#include "moc_propertygridpropertymanagers.cpp"

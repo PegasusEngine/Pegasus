@@ -47,8 +47,9 @@
 QT_BEGIN_NAMESPACE
 
 class QTreeWidgetItem;
+class QtTreePropertyBrowser;
 class QtTreePropertyBrowserPrivate;
-
+class QtPropertyEditorView;
 class QtTreePropertyBrowser : public QtAbstractPropertyBrowser
 {
     Q_OBJECT
@@ -128,6 +129,64 @@ private:
     Q_PRIVATE_SLOT(d_func(), void slotCurrentTreeItemChanged(QTreeWidgetItem *, QTreeWidgetItem *))
 
 };
+
+class QtTreePropertyBrowserPrivate
+{
+    QtTreePropertyBrowser *q_ptr;
+    Q_DECLARE_PUBLIC(QtTreePropertyBrowser)
+
+public:
+    QtTreePropertyBrowserPrivate();
+    void init(QWidget *parent);
+
+    void propertyInserted(QtBrowserItem *index, QtBrowserItem *afterIndex);
+    void propertyRemoved(QtBrowserItem *index);
+    void propertyChanged(QtBrowserItem *index);
+    QWidget *createEditor(QtProperty *property, QWidget *parent) const
+        { return q_ptr->createEditor(property, parent); }
+    QtProperty *indexToProperty(const QModelIndex &index) const;
+    QTreeWidgetItem *indexToItem(const QModelIndex &index) const;
+    QtBrowserItem *indexToBrowserItem(const QModelIndex &index) const;
+    bool lastColumn(int column) const;
+    void disableItem(QTreeWidgetItem *item) const;
+    void enableItem(QTreeWidgetItem *item) const;
+    bool hasValue(QTreeWidgetItem *item) const;
+
+    void slotCollapsed(const QModelIndex &index);
+    void slotExpanded(const QModelIndex &index);
+
+    QColor calculatedBackgroundColor(QtBrowserItem *item) const;
+
+    QtPropertyEditorView *treeWidget() const { return m_treeWidget; }
+    bool markPropertiesWithoutValue() const { return m_markPropertiesWithoutValue; }
+
+    QtBrowserItem *currentItem() const;
+    void setCurrentItem(QtBrowserItem *browserItem, bool block);
+    void editItem(QtBrowserItem *browserItem);
+
+    void slotCurrentBrowserItemChanged(QtBrowserItem *item);
+    void slotCurrentTreeItemChanged(QTreeWidgetItem *newItem, QTreeWidgetItem *);
+
+    QTreeWidgetItem *editedItem() const;
+
+private:
+    void updateItem(QTreeWidgetItem *item);
+
+    QMap<QtBrowserItem *, QTreeWidgetItem *> m_indexToItem;
+    QMap<QTreeWidgetItem *, QtBrowserItem *> m_itemToIndex;
+
+    QMap<QtBrowserItem *, QColor> m_indexToBackgroundColor;
+
+    QtPropertyEditorView *m_treeWidget;
+
+    bool m_headerVisible;
+    QtTreePropertyBrowser::ResizeMode m_resizeMode;
+    class QtPropertyEditorDelegate *m_delegate;
+    bool m_markPropertiesWithoutValue;
+    bool m_browserChangedBlocked;
+    QIcon m_expandIcon;
+};
+
 
 QT_END_NAMESPACE
 

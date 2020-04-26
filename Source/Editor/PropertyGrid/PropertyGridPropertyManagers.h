@@ -27,7 +27,42 @@ typedef QtStringPropertyManager     PropertyGridString64PropertyManager;
 typedef QtEnumPropertyManager       PropertyGridEnumPropertyManager;
 
 
-class PropertyGridVec2PropertyManagerPrivate;
+class PropertyGridVec2PropertyManager;
+class PropertyGridVec2PropertyManagerPrivate
+{
+public:
+
+    //! Slot called when the value of a vector component has changed
+    //! \param property Property that has changed
+    //! \param value New value of the vector component
+    void slotDoubleChanged(QtProperty * property, double value);
+
+    //! Slot called when a component property is destroyed
+    //! \param property Component property being destroyed
+    void slotPropertyDestroyed(QtProperty * property);
+
+    typedef QMap<const QtProperty *, Vec2Property> PropertyValueMap;
+    
+    //! Map between properties and their corresponding values
+    PropertyValueMap m_values;
+
+    //! Manager used for individual components
+    QtDoublePropertyManager * m_doublePropertyManager;
+
+    //! Map between properties and component subproperties
+    QMap<const QtProperty *, QtProperty *> m_propertyToComponent[2];
+
+    //! Map between component properties and subproperties
+    QMap<const QtProperty *, QtProperty *> m_componentToProperty[2];
+
+private:
+
+    //! Manager owning this private implementation
+    PropertyGridVec2PropertyManager * q_ptr;
+
+    Q_DECLARE_PUBLIC(PropertyGridVec2PropertyManager)
+};
+
 
 class PropertyGridVec2PropertyManager : public QtAbstractPropertyManager
 {
@@ -89,8 +124,42 @@ private:
 };
 
 //----------------------------------------------------------------------------------------
+class PropertyGridVec3PropertyManager;
+class PropertyGridVec3PropertyManagerPrivate
+{
+public:
 
-class PropertyGridVec3PropertyManagerPrivate;
+    //! Slot called when the value of a vector component has changed
+    //! \param property Property that has changed
+    //! \param value New value of the vector component
+    void slotDoubleChanged(QtProperty * property, double value);
+
+    //! Slot called when a component property is destroyed
+    //! \param property Component property being destroyed
+    void slotPropertyDestroyed(QtProperty * property);
+
+    typedef QMap<const QtProperty *, Vec3Property> PropertyValueMap;
+    
+    //! Map between properties and their corresponding values
+    PropertyValueMap m_values;
+
+    //! Manager used for individual components
+    QtDoublePropertyManager * m_doublePropertyManager;
+
+    //! Map between properties and component subproperties
+    QMap<const QtProperty *, QtProperty *> m_propertyToComponent[3];
+
+    //! Map between component properties and subproperties
+    QMap<const QtProperty *, QtProperty *> m_componentToProperty[3];
+
+private:
+
+    //! Manager owning this private implementation
+    PropertyGridVec3PropertyManager * q_ptr;
+
+    Q_DECLARE_PUBLIC(PropertyGridVec3PropertyManager)
+};
+
 
 class PropertyGridVec3PropertyManager : public QtAbstractPropertyManager
 {
@@ -153,7 +222,42 @@ private:
 
 //----------------------------------------------------------------------------------------
 
-class PropertyGridVec4PropertyManagerPrivate;
+class PropertyGridVec4PropertyManager;
+class PropertyGridVec4PropertyManagerPrivate
+{
+public:
+
+    //! Slot called when the value of a vector component has changed
+    //! \param property Property that has changed
+    //! \param value New value of the vector component
+    void slotDoubleChanged(QtProperty * property, double value);
+
+    //! Slot called when a component property is destroyed
+    //! \param property Component property being destroyed
+    void slotPropertyDestroyed(QtProperty * property);
+
+    typedef QMap<const QtProperty *, Vec4Property> PropertyValueMap;
+    
+    //! Map between properties and their corresponding values
+    PropertyValueMap m_values;
+
+    //! Manager used for individual components
+    QtDoublePropertyManager * m_doublePropertyManager;
+
+    //! Map between properties and component subproperties
+    QMap<const QtProperty *, QtProperty *> m_propertyToComponent[4];
+
+    //! Map between component properties and subproperties
+    QMap<const QtProperty *, QtProperty *> m_componentToProperty[4];
+
+private:
+
+    //! Manager owning this private implementation
+    PropertyGridVec4PropertyManager * q_ptr;
+
+    Q_DECLARE_PUBLIC(PropertyGridVec4PropertyManager)
+};
+
 
 class PropertyGridVec4PropertyManager : public QtAbstractPropertyManager
 {

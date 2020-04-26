@@ -13,6 +13,7 @@
 #define EDITOR_CODETEXTEDITORWIDGET_H
 #include <QPlainTextEdit>
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
+#include <MessageControllers/MsgDefines.h>
 
 class QEvent;
 class QSyntaxHighlighter;
