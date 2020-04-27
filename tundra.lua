@@ -1,3 +1,4 @@
+local msvc_version = "msvc-vs2017"
 Build
 {
     Units = {
@@ -12,8 +13,7 @@ Build
     Configs = {
         {
             Name="win32-msvc",
-            --Tools = { "msvc-vs2019" }
-            Tools = { { "msvc-vs2017"; TargetArch="x86" } },
+            Tools = { { msvc_version; TargetArch="x86" } },
             SupportedHosts = { "windows" },
             DefaultOnHost = "windows",
             Includes = "CPPPATH",
@@ -48,5 +48,32 @@ Build
                 Config = "win32-msvc-*"
             }
         },
+    },
+
+    IdeGenerationHints = {
+        Msvc = {
+          -- Remap config names to MSVC platform names (affects things like header scanning & debugging)
+          PlatformMappings = {
+            ['win32-msvc'] = 'Win32',
+          },
+          -- Remap variant names to MSVC friendly names
+          VariantMappings = {
+            ['release']    = 'Release',
+            ['debug']      = 'Debug',
+            ['production'] = 'Production',
+          },
+        },
+        
+        -- Override solutions to generate and what units to put where.
+        MsvcSolutions = {
+          ['Pegasus.sln'] = {},          -- receives all the units due to empty set
+        },
+        
+        -- Cause all projects to have "Build" ticked on them inside the MSVC Configuration Manager.
+        -- As a result of this, you can choose a project as the "Startup Project",
+        -- and when hitting "Debug" or "Run", the IDE will build that project before running it.
+        -- You will want to avoid pressing "Build Solution" with this option turned on, because MSVC
+        -- will kick off all project builds simultaneously.
+        BuildAllByDefault = true,
     }
 }

@@ -158,7 +158,12 @@ local function BuildPegasusLib(name, srcFolder, srcFolderIsRecursive, deps, code
         Includes = includes,
         Sources = sources,
         Depends = deps,
-        Env = envs
+        Env = envs,
+        IdeGenerationHints = {
+            Msvc = {
+                SolutionFolder = "Pegasus",
+            }
+        },
     }
 end
 
