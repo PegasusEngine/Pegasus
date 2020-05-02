@@ -72,3 +72,5 @@ _G.BuildPegasusLibs(
 _G.BuildPegasusLauncher()
 
 _G.BuildPegasusApps(pegasus_apps, pegasus_modules)
+
+_G.BuildEditor()

@@ -1,6 +1,9 @@
 require 'tundra.syntax.glob'
 require 'tundra.syntax.bison'
 require 'tundra.syntax.flex'
+require 'tundra.syntax.qt'
+
+local scanner = require "tundra.scanner"
 local npath = require 'tundra.native.path'
 local path     = require "tundra.path"
 
@@ -37,6 +40,7 @@ local function ChangeExtension(fileList, newExtension)
     end
     return outList
 end
+
 
 DefRule {
   Name = "PegasusFlex",
@@ -100,6 +104,61 @@ DefRule {
       Command = "$(BISON) $(BISONOPT) -p " ..data.Prefix .. " " .. defopt .. " --output-file=$(@:[1]) $(<)",
       InputFiles = { src },
       OutputFiles = outputs,
+    }
+  end,
+}
+
+DefRule {
+  Name = "PegasusQtMoc",
+  Command = "",
+  Blueprint = {
+    Source = { Required = true, Type = "string" },
+  },
+
+  Setup = function (env, data)
+    local src = data.Source
+    -- We follow these conventions:
+    --   If the source file is a header, we do a traditional header moc:
+    --     - input: foo.h, output: moc_foo.cpp
+    --     - moc_foo.cpp is then compiled separately together with (presumably) foo.cpp
+    --   If the source file is a cpp file, we do things a little differently:
+    --     - input: foo.cpp, output foo.moc
+    --     - foo.moc is then manually included at the end of foo.cpp
+    local base_name = path.get_filename_base(src) 
+    local pfx = 'moc_'
+    local ext = '.cpp'
+    print("Preping SRC")
+    print(src)
+    if path.get_extension(src) == ".cpp" then
+      pfx = ''
+      ext = '.moc'
+    end
+    local outputFileName = "$(OBJECTDIR)$(SEP)" .. pfx .. base_name .. ext
+    return {
+      InputFiles = { src },
+      OutputFiles = { outputFileName },
+      Command = "$(QTMOCCMD) " .. src .. " > "..outputFileName,
+    }
+  end,
+}
+
+DefRule {
+  Name = "PegasusQtUic",
+  Command = "",
+  Blueprint = {
+    Source = { Required = true, Type = "string" },
+  },
+
+  Setup = function (env, data)
+    local src = data.Source
+    local base_name = path.get_filename_base(src) 
+    local pfx = 'ui_'
+    local ext = '.h'
+    local outputFileName = "$(OBJECTDIR)$(SEP)" .. pfx .. base_name .. ext
+    return {
+      InputFiles = { src },
+      OutputFiles = { outputFileName },
+      Command = "$(QTUICCMD) "..src.." > "..outputFileName
     }
   end,
 }
@@ -283,4 +342,71 @@ function _G.BuildPegasusApps(pegasus_apps, pegasus_modules)
         Default(appName)
         Default(appName .. "_Standalone")
     end
+end
+
+
+function _G.BuildEditor()
+    local editorName = "Editor";
+    local editorRootSrc = "Source/Editor";
+
+    local includes = {
+        "include",
+        "Source/Editor",
+        ".",
+        "$(QT_INCLUDE)",
+        "$(QT_INCLUDE)QtCore",
+        "$(QT_INCLUDE)QtWidgets",
+        "$(QT_INCLUDE)QtGui"
+     }
+    local sources = {
+        Glob {
+                Dir = editorRootSrc,
+                Extensions = { ".cpp", ".h" }
+        }
+    }
+
+    local mocInputs = Glob {
+        Dir = editorRootSrc,
+        Extensions = { ".h", ".cpp" }
+    }
+
+    for _, v in ipairs(mocInputs) do
+        sources[#sources + 1] = PegasusQtMoc { Pass = "CodeGeneration", Source = v }
+    end
+
+    local uiInputs = Glob {
+        Dir = editorRootSrc,
+        Extensions = { ".ui" }
+    }
+
+    for _, v in ipairs(uiInputs) do
+        sources[#sources + 1] = PegasusQtUic { Pass = "CodeGeneration", Source = v }
+    end
+
+    Program {
+        Name = editorName,
+        Pass = "BuildCode",
+        Sources = sources,
+        Includes = includes,
+        Config = "*-*-debug-dev",
+        Defines = {
+            "UNICODE"
+        },
+        Env = {
+            CPPPATH = {
+                "$(QT_INCLUDE)",
+                editorRootSrc,
+                "Source$(SEP)Editor$(SEP)Debug$(SEP)PropertyGridClasses$(SEP)",
+                "$(OBJECTROOT)", "$(OBJECTDIR)"
+            },
+            CXXOPTS = {
+                "/Zc:wchar_t-",
+                "/FISource/Editor/Assertion.h",
+                "/FISource/Editor/Log.h"
+            }
+        },
+        IdeGenerationHints = GenRootIdeHints(editorName)
+    }
+
+    Default(editorName)
 end

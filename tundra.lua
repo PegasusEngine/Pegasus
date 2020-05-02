@@ -1,4 +1,6 @@
 local msvc_version = "msvc-vs2017"
+local qt_version = "5.8"
+
 Build
 {
     Units = {
@@ -7,7 +9,7 @@ Build
     },
 
     Passes = {
-        CodeGeneration = { Name = "Code Generation" , BuildOrder = 1 },
+        CodeGeneration = { Name = "CodeGeneration" , BuildOrder = 1 },
         BuildCode = { Name = "BuildCode", BuildOrder = 2 },
         Deploy = { Name = "Deploy", BuildOrder = 3 }
     },
@@ -75,6 +77,39 @@ Build
                 Config = "win32-msvc-*-*"
             }
         },
+
+        QT_VER = qt_version,
+        QT_ROOT = {
+            {
+                "Lib$(SEP)Qt$(SEP)$(QT_VER)$(SEP)",
+                Config = "win32-*-*-*"
+            }
+        },
+        QTMOCCMD = {
+            {
+                "$(QT_ROOT)bin$(SEP)moc.exe",
+                Config = "win32-*-*-*"
+            }
+        },
+        QTUICCMD = {
+            {
+                "$(QT_ROOT)$(SEP)bin$(SEP)uic.exe",
+                Config = "win32-*-*-*"
+            }
+        },
+        QTRCCCMD  = {
+            {
+                "$(QT_ROOT)$(SEP)bin$(SEP)rcc.exe",
+                Config = "win32-*-*-*"
+            }
+        },
+        QT_INCLUDE = {
+            {
+                "$(QT_ROOT)$(SEP)include$(SEP)",
+                Config = "win32-*-*-*"
+            }
+        },
+
         GENERATE_PDB = "1"
     },
 

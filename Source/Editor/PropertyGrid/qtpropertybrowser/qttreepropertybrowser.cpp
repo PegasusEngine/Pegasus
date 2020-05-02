@@ -55,7 +55,7 @@
 QT_BEGIN_NAMESPACE
 
 class QtPropertyEditorView;
-
+class QtTreePropertyBrowser; 
 class QtTreePropertyBrowserPrivate
 {
     QtTreePropertyBrowser *q_ptr;
