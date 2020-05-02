@@ -28,32 +28,51 @@ Build
         BISON = {
             {
                 "$(TOOLS_DIR)$(SEP)FlexAndBison$(SEP)Win32$(SEP)win_bison.exe";
-                Config = "win32-*-*"
+                Config = "win32-*-*-*"
             }
         },
         BISONOPT = { "-d" },
         FLEX = {
             {
                 "$(TOOLS_DIR)$(SEP)FlexAndBison$(SEP)Win32$(SEP)win_flex.exe";
-                Config = "win32-*-*"
+                Config = "win32-*-*-*"
             }
         },
         FLEXOPT = {
             {
                 "--wincompat ";
-                Config = "win32-*-*"
+                Config = "win32-*-*-*"
             }
         },
+
+        CXXOPTS_OPT = { "" },
         CXXOPTS = {
             {
                 { "/std:c++17", "/WX", "/W3" },
-                Config = "win32-msvc-*"
+                Config = "win32-msvc-*-*"
             }
         },
+
+        CPPDEFS_OPT = { "_PEGASUS_OPT" },
+        CPPDEFS = {
+            {
+                Config = "*-*-*-dev",
+                { "_PEGASUS_DEV", "_PEGASUSAPP_DLL" }
+            },
+            {
+                Config = "*-*-*-rel",
+                { "_PEGASUS_REL" }
+            },
+            {
+                Config = "*-*-debug-*",
+                { "_PEGASUS_DEBUG" }
+            },
+        },
+
         LD = {
             {
                 { "/MACHINE:x86", "/SUBSYSTEM:WINDOWS", "/LIBPATH:Lib" },
-                Config = "win32-msvc-*"
+                Config = "win32-msvc-*-*"
             }
         },
         GENERATE_PDB = "1"
@@ -67,9 +86,10 @@ Build
           },
           -- Remap variant names to MSVC friendly names
           VariantMappings = {
-            ['release']    = 'Release',
-            ['debug']      = 'Debug',
-            ['production'] = 'Production',
+            ['opt-dev']    = 'opt-dev',
+            ['debug-dev']  = 'debug-dev',
+            ['opt-rel']    = 'opt-rel',
+            ['debug-rel']  = 'debug-rel'
           },
         },
         
@@ -84,5 +104,9 @@ Build
         -- You will want to avoid pressing "Build Solution" with this option turned on, because MSVC
         -- will kick off all project builds simultaneously.
         BuildAllByDefault = true,
-    }
+    },
+
+    Variants = { "debug", "opt" },
+    SubVariants = { "dev", "rel" }
+    
 }

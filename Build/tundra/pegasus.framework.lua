@@ -10,7 +10,7 @@ local HeaderRootFolder = "Include/Pegasus/"
 local RootEnvs = {
     CXXOPTS = {
       {
-          Config = "win32-msvc-*",
+          Config = "win32-msvc-*-*",
           {
             "/FIPegasus/Preprocessor.h",
             "/FIPegasus/PegasusInternal.h",
@@ -185,7 +185,6 @@ local function BuildPegasusLib(name, srcFolder, srcFolderIsRecursive, deps, code
         Includes = includes,
         Sources = sources,
         Depends = deps,
-        Defines = { "_PEGASUS_DEV", "_PEGASUS_DEBUG" },
         Env = envs,
         IdeGenerationHints = GenRootIdeHints("Pegasus")
     }
@@ -221,7 +220,18 @@ function _G.BuildPegasusApp(appName, pegasus_modules)
         Includes = includes,
         Depends = pegasus_modules,
         Env = RootEnvs,
-        Defines = { "_PEGASUS_DEV", "_PEGASUS_DEBUG", "_PEGASUSAPP_DLL" },
+        Config = "*-*-*-dev",
+        IdeGenerationHints = GenRootIdeHints("Apps")
+    }
+
+    Program {
+        Name = appName .. "_Standalone",
+        Pass = "BuildCode",
+        Sources = sources,
+        Includes = includes,
+        Depends = pegasus_modules,
+        Env = RootEnvs,
+        Config = "*-*-*-rel",
         IdeGenerationHints = GenRootIdeHints("Apps")
     }
 end
@@ -259,8 +269,8 @@ function _G.BuildPegasusLauncher()
         Pass = "BuildCode",
         Sources = sources,
         Includes = "Include",
-        Defines = { "_PEGASUS_DEV", "_PEGASUS_DEBUG" },
         Libs = { "user32.lib" },
+        Config = "*-*-*-dev",
         Env = RootEnvs,
         IdeGenerationHints = GenRootIdeHints("Launcher") 
     }
@@ -271,5 +281,6 @@ function _G.BuildPegasusApps(pegasus_apps, pegasus_modules)
     for i, appName in ipairs(pegasus_apps) do
         BuildPegasusApp(appName, pegasus_modules)
         Default(appName)
+        Default(appName .. "_Standalone")
     end
 end
