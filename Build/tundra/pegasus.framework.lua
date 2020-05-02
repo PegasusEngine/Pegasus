@@ -4,6 +4,38 @@ require 'tundra.syntax.flex'
 local npath = require 'tundra.native.path'
 local path     = require "tundra.path"
 
+local SourceRootFolder = "Source/Pegasus/"
+local HeaderRootFolder = "Include/Pegasus/"
+
+local RootEnvs = {
+    CXXOPTS = {
+      {
+          Config = "win32-msvc-*",
+          {
+            "/FIPegasus/Preprocessor.h",
+            "/FIPegasus/PegasusInternal.h",
+            "/EHsc",
+            "/wd5033", --ignore register keyword deprecation warning
+            "/wd4514", -- ignore unreferenced symbols warning
+          }
+      },
+    },
+}
+
+local function GenRootIdeHints(rootFolder)
+   return {
+        Msvc = {
+            SolutionFolder = rootFolder
+        }
+    }
+end
+
+local DefaultAppDependencies = {
+    Config = "win32-*-*",
+    { "Lib/FMOD/Win32/fmod_vc.lib" }
+}
+
+
 local function ChangeExtension(fileList, newExtension)
     local outList = {}
     for i, v in ipairs(fileList) do
@@ -123,22 +155,10 @@ end
 
 local function BuildPegasusLib(name, srcFolder, srcFolderIsRecursive, deps, codegens)
 
-    local SourceDir = "Source/Pegasus/" .. srcFolder
-    local HeaderDir = "Include/Pegasus/" .. srcFolder
-    local envs = {
-            CXXOPTS = {
-              {
-                  Config = "win32-msvc-*",
-                  {
-                      "/FIPegasus/Preprocessor.h",
-                      "/FIPegasus/PegasusInternal.h",
-                      "/EHsc",
-                      "/wd5033", --ignore register keyword deprecation warning
-                      "/wd4514", -- ignore unreferenced symbols warning
-                  }
-              },
-            },
-        }
+    local SourceDir = SourceRootFolder .. srcFolder
+    local HeaderDir = HeaderRootFolder .. srcFolder
+
+    local envs = RootEnvs
 
     local sources = {
             Glob {
@@ -171,11 +191,41 @@ local function BuildPegasusLib(name, srcFolder, srcFolderIsRecursive, deps, code
         Sources = sources,
         Depends = deps,
         Env = envs,
-        IdeGenerationHints = {
-            Msvc = {
-                SolutionFolder = "Pegasus",
-            }
-        },
+        IdeGenerationHints = GenRootIdeHints("Pegasus")
+    }
+end
+
+
+function _G.BuildPegasusApp(appName, pegasus_modules)
+
+    local sources = Glob {
+        Dir = "Source/Apps/" .. appName,
+        Extensions = { ".cpp", ".h" }
+    }
+
+    local sourcesHeaders = Glob {
+        Dir = "Include/Apps/" .. appName,
+        Extensions = { ".h" }
+    }
+
+    for _, v in ipairs(sourcesHeaders) do
+        sources[#sources + 1] = v
+    end
+
+    local includes = {
+        "include/",
+        "include/Pegasus/",
+        "include/Apps/" .. appName
+    }
+
+    SharedLibrary {
+        Name = appName,
+        Sources = sources,
+        Includes = includes,
+        Libs = DefaultAppDependencies,
+        Depends = pegasus_modules,
+        Env = RootEnvs,
+        IdeGenerationHints = GenRootIdeHints("Apps")
     }
 end
 
@@ -200,3 +250,28 @@ function _G.BuildPegasusLibs(
     end
 end
 
+function _G.BuildPegasusLauncher()
+    local sources = Glob {
+          Dir = "Source/Launcher/",
+          Extensions = { ".cpp", ".h" },
+          Recursive = true
+    }
+    
+    Program {
+        Name = "Launcher",
+        Sources = sources,
+        Includes = "Include",
+        Defines = { "_PEGASUS_DEV", "_PEGASUS_DEBUG" },
+        Libs = { "user32.lib" },
+        Env = RootEnvs,
+        IdeGenerationHints = GenRootIdeHints("Launcher") 
+    }
+    Default("Launcher")
+end
+
+function _G.BuildPegasusApps(pegasus_apps, pegasus_modules)
+    for i, appName in ipairs(pegasus_apps) do
+        BuildPegasusApp(appName, pegasus_modules)
+        Default(appName)
+    end
+end

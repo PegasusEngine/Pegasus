@@ -58,8 +58,17 @@ local pegasus_modules_codegens = {
     }
 }
 
+-- default applications
+local pegasus_apps = {
+    "TestApp1"
+}
+
 _G.BuildPegasusLibs(
     pegasus_modules,
     pegasus_modules_dependencies,
     pegasus_modules_src_folders,
     pegasus_modules_codegens)
+
+_G.BuildPegasusLauncher()
+
+_G.BuildPegasusApps(pegasus_apps, pegasus_modules)
