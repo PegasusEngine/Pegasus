@@ -13,7 +13,7 @@ Build
     Configs = {
         {
             Name="win32-msvc",
-            Tools = { { msvc_version; TargetArch="x86" } },
+            Tools = { { msvc_version; TargetArch="x86", HostArch="x86" } },
             SupportedHosts = { "windows" },
             DefaultOnHost = "windows",
             Includes = "CPPPATH",
@@ -48,6 +48,13 @@ Build
                 Config = "win32-msvc-*"
             }
         },
+        LD = {
+            {
+                { "/MACHINE:x86" },
+                Config = "win32-msvc-*"
+            }
+        },
+        GENERATE_PDB = "1"
     },
 
     IdeGenerationHints = {
