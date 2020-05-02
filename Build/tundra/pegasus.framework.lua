@@ -181,6 +181,7 @@ local function BuildPegasusLib(name, srcFolder, srcFolderIsRecursive, deps, code
 
     return StaticLibrary {
         Name = name,
+        Pass = "BuildCode",
         Includes = includes,
         Sources = sources,
         Depends = deps,
@@ -215,6 +216,7 @@ function _G.BuildPegasusApp(appName, pegasus_modules)
 
     SharedLibrary {
         Name = appName,
+        Pass = "BuildCode",
         Sources = sources,
         Includes = includes,
         Depends = pegasus_modules,
@@ -254,6 +256,7 @@ function _G.BuildPegasusLauncher()
     
     Program {
         Name = "Launcher",
+        Pass = "BuildCode",
         Sources = sources,
         Includes = "Include",
         Defines = { "_PEGASUS_DEV", "_PEGASUS_DEBUG" },

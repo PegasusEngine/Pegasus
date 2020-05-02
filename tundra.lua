@@ -7,7 +7,9 @@ Build
     },
 
     Passes = {
-        CodeGeneration = { Name = "Code Generation" , BuildOrder = 1 }
+        CodeGeneration = { Name = "Code Generation" , BuildOrder = 1 },
+        BuildCode = { Name = "BuildCode", BuildOrder = 2 },
+        Deploy = { Name = "Deploy", BuildOrder = 3 }
     },
 
     Configs = {
