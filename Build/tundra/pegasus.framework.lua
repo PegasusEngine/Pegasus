@@ -30,12 +30,6 @@ local function GenRootIdeHints(rootFolder)
     }
 end
 
-local DefaultAppDependencies = {
-    Config = "win32-*-*",
-    { "Lib/FMOD/Win32/fmod_vc.lib" }
-}
-
-
 local function ChangeExtension(fileList, newExtension)
     local outList = {}
     for i, v in ipairs(fileList) do
@@ -190,6 +184,7 @@ local function BuildPegasusLib(name, srcFolder, srcFolderIsRecursive, deps, code
         Includes = includes,
         Sources = sources,
         Depends = deps,
+        Defines = { "_PEGASUS_DEV", "_PEGASUS_DEBUG" },
         Env = envs,
         IdeGenerationHints = GenRootIdeHints("Pegasus")
     }
@@ -222,9 +217,9 @@ function _G.BuildPegasusApp(appName, pegasus_modules)
         Name = appName,
         Sources = sources,
         Includes = includes,
-        Libs = DefaultAppDependencies,
         Depends = pegasus_modules,
         Env = RootEnvs,
+        Defines = { "_PEGASUS_DEV", "_PEGASUS_DEBUG", "_PEGASUSAPP_DLL" },
         IdeGenerationHints = GenRootIdeHints("Apps")
     }
 end

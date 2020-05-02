@@ -50,7 +50,7 @@ Build
         },
         LD = {
             {
-                { "/MACHINE:x86" },
+                { "/MACHINE:x86", "/SUBSYSTEM:WINDOWS", "/LIBPATH:Lib" },
                 Config = "win32-msvc-*"
             }
         },
