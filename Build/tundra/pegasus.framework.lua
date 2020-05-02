@@ -78,6 +78,49 @@ DefRule {
   end,
 }
 
+local function BisonFlexCodeGen(SourceDir, srcFolderIsRecursive, codegens)
+    local flexSources = Glob {
+          Dir = SourceDir,
+          Extensions = { ".l" },
+          Recursive = srcFolderIsRecursive
+    }
+    local flexOutput = ChangeExtension (flexSources, "lexer.cpp")
+    local flexHeaders = ChangeExtension (flexSources, "lexer.hpp")
+ 
+    local bisonSources = Glob {
+        Dir = SourceDir,
+        Extensions = { ".y" },
+        Recursive = srcFolderIsRecursive
+    }
+    local bisonOutput = ChangeExtension (bisonSources, "parser.cpp")
+ 
+    local prefix = codegens["prefix"]
+
+    local sources = {}
+    for i,flexSrc in ipairs(flexSources) do
+        sources[#sources + 1] = PegasusFlex {
+            Source = flexSrc,
+            OutputCFile = "flexgen$(SEP)"..flexOutput[i],
+            OutputHeaderFile = "flexgen$(SEP)" .. flexHeaders[i],
+            Prefix = prefix,
+            Pass = "CodeGeneration"
+        }
+    end
+    
+    for i,bisonSrc in ipairs(bisonSources) do
+        sources[#sources + 1] = PegasusBison {
+            Source = bisonSrc,
+            OutputFile = "bisongen$(SEP)" .. bisonOutput[i],
+            Prefix = prefix,
+            Pass = "CodeGeneration"
+        }
+    end
+    
+    local includes = {"$(OBJECTROOT)$(SEP)bisongen/Source/", "$(OBJECTROOT)$(SEP)flexgen/Source/"}
+
+    return { includesList = includes, sourcesList = sources }
+end
+
 local function BuildPegasusLib(name, srcFolder, srcFolderIsRecursive, deps, codegens)
 
     local SourceDir = "Source/Pegasus/" .. srcFolder
@@ -113,44 +156,13 @@ local function BuildPegasusLib(name, srcFolder, srcFolderIsRecursive, deps, code
     local includes = { "Include" }
 
     if codegens then
-        local flexSources = Glob {
-            Dir = SourceDir,
-            Extensions = { ".l" },
-            Recursive = srcFolderIsRecursive
-        }
-        local flexOutput = ChangeExtension (flexSources, "lexer.cpp")
-        local flexHeaders = ChangeExtension (flexSources, "lexer.hpp")
-
-        local bisonSources = Glob {
-            Dir = SourceDir,
-            Extensions = { ".y" },
-            Recursive = srcFolderIsRecursive
-        }
-        local bisonOutput = ChangeExtension (bisonSources, "parser.cpp")
-
-        local prefix = codegens["prefix"]
-
-        for i,flexSrc in ipairs(flexSources) do
-            sources[#sources + 1] = PegasusFlex {
-                Source = flexSrc,
-                OutputCFile = "flexgen$(SEP)"..flexOutput[i],
-                OutputHeaderFile = "flexgen$(SEP)" .. flexHeaders[i],
-                Prefix = prefix,
-                Pass = "CodeGeneration"
-            }
+        local bisonFlexResult = BisonFlexCodeGen(SourceDir, srcFolderIsRecursive, codegens)
+        for _, v in ipairs(bisonFlexResult.includesList) do
+            includes[#includes + 1] = v
         end
-
-        for i,bisonSrc in ipairs(bisonSources) do
-            sources[#sources + 1] = PegasusBison {
-                Source = bisonSrc,
-                OutputFile = "bisongen$(SEP)" .. bisonOutput[i],
-                Prefix = prefix,
-                Pass = "CodeGeneration"
-            }
+        for _, v in ipairs(bisonFlexResult.sourcesList) do
+            sources[#sources + 1] = v
         end
-
-        includes[#includes + 1] = "$(OBJECTROOT)$(SEP)bisongen/Source/"
-        includes[#includes + 1] = "$(OBJECTROOT)$(SEP)flexgen/Source/"
     end
 
     return StaticLibrary {
