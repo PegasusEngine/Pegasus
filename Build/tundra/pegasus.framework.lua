@@ -45,7 +45,6 @@ end
 DefRule {
   Name = "PegasusFlex",
   Command = "",
-  ConfigInvariant = true,
 
   Blueprint = {
     Source           = { Required = true, Type = "string" },
@@ -58,8 +57,8 @@ DefRule {
   Setup = function (env, data)
     local src = data.Source
     local base_name = path.drop_suffix(src)
-    local gen_c = "$(OBJECTROOT)$(SEP)"..data.OutputCFile
-    local gen_h = "$(OBJECTROOT)$(SEP)"..data.OutputHeaderFile
+    local gen_c = "$(OBJECTDIR)$(SEP)"..data.OutputCFile
+    local gen_h = "$(OBJECTDIR)$(SEP)"..data.OutputHeaderFile
     return {
       InputFiles = { src },
       OutputFiles = { gen_c, gen_h },
@@ -72,7 +71,6 @@ DefRule {
 DefRule {
   Name = "PegasusBison",
   Command = "", -- Replaced on a per-instance basis.
-  ConfigInvariant = true,
 
   Blueprint = {
     Source       = { Required = true, Type  = "string" },
@@ -86,9 +84,9 @@ DefRule {
     local src = data.Source
     local out_src
     if data.OutputFile then
-      out_src = "$(OBJECTROOT)$(SEP)" .. data.OutputFile
+      out_src = "$(OBJECTDIR)$(SEP)" .. data.OutputFile
     else
-      local targetbase = "$(OBJECTROOT)$(SEP)bisongen_" .. path.get_filename_base(src)
+      local targetbase = "$(OBJECTDIR)$(SEP)bisongen_" .. path.get_filename_base(src)
       out_src = targetbase .. ".c"
     end
     local defopt = ""
@@ -113,6 +111,7 @@ DefRule {
   Command = "",
   Blueprint = {
     Source = { Required = true, Type = "string" },
+    DestFolder = { Required = true, Type = "string" }
   },
 
   Setup = function (env, data)
@@ -125,15 +124,15 @@ DefRule {
     --     - input: foo.cpp, output foo.moc
     --     - foo.moc is then manually included at the end of foo.cpp
     local base_name = path.get_filename_base(src) 
+    local base_path = npath.get_filename_dir(src)
     local pfx = 'moc_'
     local ext = '.cpp'
-    print("Preping SRC")
     print(src)
     if path.get_extension(src) == ".cpp" then
       pfx = ''
       ext = '.moc'
     end
-    local outputFileName = "$(OBJECTDIR)$(SEP)" .. pfx .. base_name .. ext
+    local outputFileName = "$(OBJECTDIR)$(SEP)" .. data.DestFolder .. "$(SEP)" .. base_path .. "$(SEP)" .. pfx .. base_name .. ext
     return {
       InputFiles = { src },
       OutputFiles = { outputFileName },
@@ -147,14 +146,16 @@ DefRule {
   Command = "",
   Blueprint = {
     Source = { Required = true, Type = "string" },
+    DestFolder = { Required = true, Type = "string" }
   },
 
   Setup = function (env, data)
     local src = data.Source
     local base_name = path.get_filename_base(src) 
+    local base_path = npath.get_filename_dir(src)
     local pfx = 'ui_'
     local ext = '.h'
-    local outputFileName = "$(OBJECTDIR)$(SEP)" .. pfx .. base_name .. ext
+    local outputFileName = "$(OBJECTDIR)$(SEP)" .. data.DestFolder .. "$(SEP)" .. base_path .. "$(SEP)" .. pfx .. base_name .. ext
     return {
       InputFiles = { src },
       OutputFiles = { outputFileName },
@@ -201,7 +202,7 @@ local function BisonFlexCodeGen(SourceDir, srcFolderIsRecursive, codegens)
         }
     end
     
-    local includes = {"$(OBJECTROOT)$(SEP)bisongen/Source/", "$(OBJECTROOT)$(SEP)flexgen/Source/"}
+    local includes = {"$(OBJECTDIR)$(SEP)bisongen/Source/", "$(OBJECTDIR)$(SEP)flexgen/Source/"}
 
     return { includesList = includes, sourcesList = sources }
 end
@@ -348,11 +349,14 @@ end
 function _G.BuildEditor()
     local editorName = "Editor";
     local editorRootSrc = "Source/Editor";
+    local genDirSrc = "$(OBJECTDIR)$(SEP)qtgen$(SEP)"
 
     local includes = {
-        "include",
-        "Source/Editor",
         ".",
+        "include",
+        editorRootSrc,
+        genDirSrc,
+        genDirSrc .. "$(SEP)Source",
         "$(QT_INCLUDE)",
         "$(QT_INCLUDE)QtCore",
         "$(QT_INCLUDE)QtWidgets",
@@ -371,7 +375,8 @@ function _G.BuildEditor()
     }
 
     for _, v in ipairs(mocInputs) do
-        sources[#sources + 1] = PegasusQtMoc { Pass = "CodeGeneration", Source = v }
+        sources[#sources + 1] = PegasusQtMoc { Pass = "CodeGeneration", DestFolder = "qtgen", Source = v }
+        includes[#includes + 1] = genDirSrc .. "$(SEP)" .. npath.get_filename_dir(v)
     end
 
     local uiInputs = Glob {
@@ -380,7 +385,8 @@ function _G.BuildEditor()
     }
 
     for _, v in ipairs(uiInputs) do
-        sources[#sources + 1] = PegasusQtUic { Pass = "CodeGeneration", Source = v }
+        sources[#sources + 1] = PegasusQtUic { Pass = "CodeGeneration", DestFolder = "qtgen", Source = v }
+        includes[#includes + 1] = genDirSrc .. "$(SEP)" .. npath.get_filename_dir(v)
     end
 
     Program {
@@ -388,17 +394,11 @@ function _G.BuildEditor()
         Pass = "BuildCode",
         Sources = sources,
         Includes = includes,
-        Config = "*-*-debug-dev",
+        Config = "*-*-*-dev",
         Defines = {
             "UNICODE"
         },
         Env = {
-            CPPPATH = {
-                "$(QT_INCLUDE)",
-                editorRootSrc,
-                "Source$(SEP)Editor$(SEP)Debug$(SEP)PropertyGridClasses$(SEP)",
-                "$(OBJECTROOT)", "$(OBJECTDIR)"
-            },
             CXXOPTS = {
                 "/Zc:wchar_t-",
                 "/FISource/Editor/Assertion.h",
