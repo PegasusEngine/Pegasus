@@ -109,6 +109,12 @@ Build
                 Config = "win32-*-*-*"
             }
         },
+        QT_LIBS = {
+            {
+                "$(QT_ROOT)$(SEP)lib$(SEP)",
+                Config = "win32-*-*-*"
+            }
+        },
 
         GENERATE_PDB = "1"
     },

@@ -43,8 +43,102 @@
 #define QTEDITORFACTORY_H
 
 #include "qtpropertymanager.h"
+#include "qtpropertybrowserutils_p.h"
+#include <QObject>
+#include <QtWidgets/QSpinBox>
+#include <QtWidgets/QScrollBar>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QSlider>
+#include <QtWidgets/QDateTimeEdit>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QMenu>
+#include <QtGui/QKeyEvent>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QToolButton>
+#include <QtWidgets/QColorDialog>
+#include <QtWidgets/QFontDialog>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QSpacerItem>
 
 QT_BEGIN_NAMESPACE
+
+class QtCharEdit : public QWidget
+{
+    Q_OBJECT
+public:
+    QtCharEdit(QWidget *parent = 0);
+
+    QChar value() const;
+    bool eventFilter(QObject *o, QEvent *e);
+public Q_SLOTS:
+    void setValue(const QChar &value);
+Q_SIGNALS:
+    void valueChanged(const QChar &value);
+protected:
+    void focusInEvent(QFocusEvent *e);
+    void focusOutEvent(QFocusEvent *e);
+    void keyPressEvent(QKeyEvent *e);
+    void keyReleaseEvent(QKeyEvent *e);
+    bool event(QEvent *e);
+private slots:
+    void slotClearChar();
+private:
+    void handleKeyEvent(QKeyEvent *e);
+
+    QChar m_value;
+    QLineEdit *m_lineEdit;
+};
+
+// QtFontEditWidget
+class QtFontEditWidget : public QWidget {
+    Q_OBJECT
+
+public:
+    QtFontEditWidget(QWidget *parent);
+
+    bool eventFilter(QObject *obj, QEvent *ev);
+
+public Q_SLOTS:
+    void setValue(const QFont &value);
+
+private Q_SLOTS:
+    void buttonClicked();
+
+Q_SIGNALS:
+    void valueChanged(const QFont &value);
+
+private:
+    QFont m_font;
+    QLabel *m_pixmapLabel;
+    QLabel *m_label;
+    QToolButton *m_button;
+};
+class QtColorEditWidget : public QWidget {
+    Q_OBJECT
+
+public:
+    QtColorEditWidget(QWidget *parent);
+
+    bool eventFilter(QObject *obj, QEvent *ev);
+
+public Q_SLOTS:
+    void setValue(const QColor &value);
+
+private Q_SLOTS:
+    void buttonClicked();
+
+Q_SIGNALS:
+    void valueChanged(const QColor &value);
+
+private:
+    QColor m_color;
+    QLabel *m_pixmapLabel;
+    QLabel *m_label;
+    QToolButton *m_button;
+};
+
+
 
 // ---------- EditorFactoryPrivate :
 // Base class for editor factory private classes. Manages mapping of properties to editors and vice versa.
@@ -65,6 +159,44 @@ public:
     PropertyToEditorListMap  m_createdEditors;
     EditorToPropertyMap m_editorToProperty;
 };
+
+template <class Editor>
+Editor *EditorFactoryPrivate<Editor>::createEditor(QtProperty *property, QWidget *parent)
+{
+    Editor *editor = new Editor(parent);
+    initializeEditor(property, editor);
+    return editor;
+}
+
+template <class Editor>
+void EditorFactoryPrivate<Editor>::initializeEditor(QtProperty *property, Editor *editor)
+{
+    typename PropertyToEditorListMap::iterator it = m_createdEditors.find(property);
+    if (it == m_createdEditors.end())
+        it = m_createdEditors.insert(property, EditorList());
+    it.value().append(editor);
+    m_editorToProperty.insert(editor, property);
+}
+
+template <class Editor>
+void EditorFactoryPrivate<Editor>::slotEditorDestroyed(QObject *object)
+{
+    const typename EditorToPropertyMap::iterator ecend = m_editorToProperty.end();
+    for (typename EditorToPropertyMap::iterator itEditor = m_editorToProperty.begin(); itEditor !=  ecend; ++itEditor) {
+        if (itEditor.key() == object) {
+            Editor *editor = itEditor.key();
+            QtProperty *property = itEditor.value();
+            const typename PropertyToEditorListMap::iterator pit = m_createdEditors.find(property);
+            if (pit != m_createdEditors.end()) {
+                pit.value().removeAll(editor);
+                if (pit.value().empty())
+                    m_createdEditors.erase(pit);
+            }
+            m_editorToProperty.erase(itEditor);
+            return;
+        }
+    }
+}
 
 class QtSpinBoxFactory;
 class QSpinBox;

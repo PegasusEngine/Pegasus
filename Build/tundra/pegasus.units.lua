@@ -58,6 +58,12 @@ local pegasus_modules_codegens = {
     }
 }
 
+local qt_modules = {
+    "Core",
+    "Widgets",
+    "Gui"
+}
+
 -- default applications
 local pegasus_apps = {
     "TestApp1"
@@ -73,4 +79,4 @@ _G.BuildPegasusLauncher()
 
 _G.BuildPegasusApps(pegasus_apps, pegasus_modules)
 
-_G.BuildEditor()
+_G.BuildQtApp("Editor", "Source/Editor", qt_modules, pegasus_modules)

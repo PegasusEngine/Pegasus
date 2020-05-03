@@ -76,44 +76,6 @@ static inline void setupTreeViewEditorMargin(QLayout *lt)
         lt->setContentsMargins(0, 0, DecorationMargin, 0);
 }
 
-template <class Editor>
-Editor *EditorFactoryPrivate<Editor>::createEditor(QtProperty *property, QWidget *parent)
-{
-    Editor *editor = new Editor(parent);
-    initializeEditor(property, editor);
-    return editor;
-}
-
-template <class Editor>
-void EditorFactoryPrivate<Editor>::initializeEditor(QtProperty *property, Editor *editor)
-{
-    typename PropertyToEditorListMap::iterator it = m_createdEditors.find(property);
-    if (it == m_createdEditors.end())
-        it = m_createdEditors.insert(property, EditorList());
-    it.value().append(editor);
-    m_editorToProperty.insert(editor, property);
-}
-
-template <class Editor>
-void EditorFactoryPrivate<Editor>::slotEditorDestroyed(QObject *object)
-{
-    const typename EditorToPropertyMap::iterator ecend = m_editorToProperty.end();
-    for (typename EditorToPropertyMap::iterator itEditor = m_editorToProperty.begin(); itEditor !=  ecend; ++itEditor) {
-        if (itEditor.key() == object) {
-            Editor *editor = itEditor.key();
-            QtProperty *property = itEditor.value();
-            const typename PropertyToEditorListMap::iterator pit = m_createdEditors.find(property);
-            if (pit != m_createdEditors.end()) {
-                pit.value().removeAll(editor);
-                if (pit.value().empty())
-                    m_createdEditors.erase(pit);
-            }
-            m_editorToProperty.erase(itEditor);
-            return;
-        }
-    }
-}
-
 // ------------ QtSpinBoxFactory
 
 void QtSpinBoxFactoryPrivate::slotPropertyChanged(QtProperty *property, int value)
@@ -1377,33 +1339,6 @@ void QtKeySequenceEditorFactory::disconnectPropertyManager(QtKeySequenceProperty
 
 // QtCharEdit
 
-class QtCharEdit : public QWidget
-{
-    Q_OBJECT
-public:
-    QtCharEdit(QWidget *parent = 0);
-
-    QChar value() const;
-    bool eventFilter(QObject *o, QEvent *e);
-public Q_SLOTS:
-    void setValue(const QChar &value);
-Q_SIGNALS:
-    void valueChanged(const QChar &value);
-protected:
-    void focusInEvent(QFocusEvent *e);
-    void focusOutEvent(QFocusEvent *e);
-    void keyPressEvent(QKeyEvent *e);
-    void keyReleaseEvent(QKeyEvent *e);
-    bool event(QEvent *e);
-private slots:
-    void slotClearChar();
-private:
-    void handleKeyEvent(QKeyEvent *e);
-
-    QChar m_value;
-    QLineEdit *m_lineEdit;
-};
-
 QtCharEdit::QtCharEdit(QWidget *parent)
     : QWidget(parent),  m_lineEdit(new QLineEdit(this))
 {
@@ -1952,30 +1887,6 @@ void QtCursorEditorFactory::disconnectPropertyManager(QtCursorPropertyManager *m
 
 // QtColorEditWidget
 
-class QtColorEditWidget : public QWidget {
-    Q_OBJECT
-
-public:
-    QtColorEditWidget(QWidget *parent);
-
-    bool eventFilter(QObject *obj, QEvent *ev);
-
-public Q_SLOTS:
-    void setValue(const QColor &value);
-
-private Q_SLOTS:
-    void buttonClicked();
-
-Q_SIGNALS:
-    void valueChanged(const QColor &value);
-
-private:
-    QColor m_color;
-    QLabel *m_pixmapLabel;
-    QLabel *m_label;
-    QToolButton *m_button;
-};
-
 QtColorEditWidget::QtColorEditWidget(QWidget *parent) :
     QWidget(parent),
     m_pixmapLabel(new QLabel),
@@ -2136,30 +2047,6 @@ void QtColorEditorFactory::disconnectPropertyManager(QtColorPropertyManager *man
     disconnect(manager, SIGNAL(valueChanged(QtProperty*,QColor)), this, SLOT(slotPropertyChanged(QtProperty*,QColor)));
 }
 
-// QtFontEditWidget
-class QtFontEditWidget : public QWidget {
-    Q_OBJECT
-
-public:
-    QtFontEditWidget(QWidget *parent);
-
-    bool eventFilter(QObject *obj, QEvent *ev);
-
-public Q_SLOTS:
-    void setValue(const QFont &value);
-
-private Q_SLOTS:
-    void buttonClicked();
-
-Q_SIGNALS:
-    void valueChanged(const QFont &value);
-
-private:
-    QFont m_font;
-    QLabel *m_pixmapLabel;
-    QLabel *m_label;
-    QToolButton *m_button;
-};
 
 QtFontEditWidget::QtFontEditWidget(QWidget *parent) :
     QWidget(parent),

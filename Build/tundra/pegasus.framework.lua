@@ -346,31 +346,33 @@ function _G.BuildPegasusApps(pegasus_apps, pegasus_modules)
 end
 
 
-function _G.BuildEditor()
-    local editorName = "Editor";
-    local editorRootSrc = "Source/Editor";
+function _G.BuildQtApp(appName, appSrcRoot, qt_modules, dependencies)
     local genDirSrc = "$(OBJECTDIR)$(SEP)qtgen$(SEP)"
 
     local includes = {
         ".",
         "include",
-        editorRootSrc,
+        appSrcRoot,
         genDirSrc,
         genDirSrc .. "$(SEP)Source",
-        "$(QT_INCLUDE)",
-        "$(QT_INCLUDE)QtCore",
-        "$(QT_INCLUDE)QtWidgets",
-        "$(QT_INCLUDE)QtGui"
-     }
+        "$(QT_INCLUDE)"
+    }
+    local libs = { }
+
+    for _, v in ipairs(qt_modules) do
+        includes[#includes + 1] = "$(QT_INCLUDE)Qt"..v
+        libs[#libs + 1] = "$(QT_LIBS)Qt5"..v..".lib"
+    end
+
     local sources = {
         Glob {
-                Dir = editorRootSrc,
+                Dir = appSrcRoot,
                 Extensions = { ".cpp", ".h" }
         }
     }
 
     local mocInputs = Glob {
-        Dir = editorRootSrc,
+        Dir = appSrcRoot,
         Extensions = { ".h", ".cpp" }
     }
 
@@ -380,7 +382,7 @@ function _G.BuildEditor()
     end
 
     local uiInputs = Glob {
-        Dir = editorRootSrc,
+        Dir = appSrcRoot,
         Extensions = { ".ui" }
     }
 
@@ -390,11 +392,13 @@ function _G.BuildEditor()
     end
 
     Program {
-        Name = editorName,
+        Name = appName,
         Pass = "BuildCode",
         Sources = sources,
         Includes = includes,
         Config = "*-*-*-dev",
+        Depends = dependencies,
+        Libs = libs,
         Defines = {
             "UNICODE"
         },
@@ -405,8 +409,14 @@ function _G.BuildEditor()
                 "/FISource/Editor/Log.h"
             }
         },
-        IdeGenerationHints = GenRootIdeHints(editorName)
+        ReplaceEnv = {
+            LD = {
+                "link", "/MACHINE:x86", "/SUBSYSTEM:CONSOLE", "/LIBPATH:Lib",
+            },
+            Config = "win32-msvc-*-*"
+        },
+        IdeGenerationHints = GenRootIdeHints(appName)
     }
 
-    Default(editorName)
+    Default(appName)
 end
