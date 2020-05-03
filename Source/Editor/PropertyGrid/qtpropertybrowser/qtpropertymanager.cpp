@@ -4681,34 +4681,6 @@ void QtEnumPropertyManager::uninitializeProperty(QtProperty *property)
     d_ptr->m_values.remove(property);
 }
 
-// QtFlagPropertyManager
-
-class QtFlagPropertyManagerPrivate
-{
-    QtFlagPropertyManager *q_ptr;
-    Q_DECLARE_PUBLIC(QtFlagPropertyManager)
-public:
-
-    void slotBoolChanged(QtProperty *property, bool value);
-    void slotPropertyDestroyed(QtProperty *property);
-
-    struct Data
-    {
-        Data() : val(-1) {}
-        int val;
-        QStringList flagNames;
-    };
-
-    typedef QMap<const QtProperty *, Data> PropertyValueMap;
-    PropertyValueMap m_values;
-
-    QtBoolPropertyManager *m_boolPropertyManager;
-
-    QMap<const QtProperty *, QList<QtProperty *> > m_propertyToFlags;
-
-    QMap<const QtProperty *, QtProperty *> m_flagToProperty;
-};
-
 void QtFlagPropertyManagerPrivate::slotBoolChanged(QtProperty *property, bool value)
 {
     QtProperty *prop = m_flagToProperty.value(property, 0);
@@ -5008,37 +4980,6 @@ void QtFlagPropertyManager::uninitializeProperty(QtProperty *property)
 
     d_ptr->m_values.remove(property);
 }
-
-// QtSizePolicyPropertyManager
-
-class QtSizePolicyPropertyManagerPrivate
-{
-    QtSizePolicyPropertyManager *q_ptr;
-    Q_DECLARE_PUBLIC(QtSizePolicyPropertyManager)
-public:
-
-    QtSizePolicyPropertyManagerPrivate();
-
-    void slotIntChanged(QtProperty *property, int value);
-    void slotEnumChanged(QtProperty *property, int value);
-    void slotPropertyDestroyed(QtProperty *property);
-
-    typedef QMap<const QtProperty *, QSizePolicy> PropertyValueMap;
-    PropertyValueMap m_values;
-
-    QtIntPropertyManager *m_intPropertyManager;
-    QtEnumPropertyManager *m_enumPropertyManager;
-
-    QMap<const QtProperty *, QtProperty *> m_propertyToHPolicy;
-    QMap<const QtProperty *, QtProperty *> m_propertyToVPolicy;
-    QMap<const QtProperty *, QtProperty *> m_propertyToHStretch;
-    QMap<const QtProperty *, QtProperty *> m_propertyToVStretch;
-
-    QMap<const QtProperty *, QtProperty *> m_hPolicyToProperty;
-    QMap<const QtProperty *, QtProperty *> m_vPolicyToProperty;
-    QMap<const QtProperty *, QtProperty *> m_hStretchToProperty;
-    QMap<const QtProperty *, QtProperty *> m_vStretchToProperty;
-};
 
 QtSizePolicyPropertyManagerPrivate::QtSizePolicyPropertyManagerPrivate()
 {
