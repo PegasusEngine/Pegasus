@@ -58,10 +58,17 @@ local pegasus_modules_codegens = {
     }
 }
 
-local qt_modules = {
+local qt_dynamic_modules = {
     "Core",
     "Widgets",
-    "Gui"
+    "Gui",
+    "Concurrent",
+    "Xml",
+    "XmlPatterns"
+}
+
+local qt_static_modules = {
+    "qtmain",
 }
 
 -- default applications
@@ -79,4 +86,4 @@ _G.BuildPegasusLauncher()
 
 _G.BuildPegasusApps(pegasus_apps, pegasus_modules)
 
-_G.BuildQtApp("Editor", "Source/Editor", qt_modules, pegasus_modules)
+_G.BuildQtApp("Editor", "Source/Editor", qt_static_modules, qt_dynamic_modules, pegasus_modules)

@@ -71,6 +71,13 @@ Build
             },
         },
 
+        CP_CMD = {
+            {
+                "cp",
+                Config = "win32-*-*-*"
+            }
+        },
+
         LD = {
             {
                 { "/MACHINE:x86", "/SUBSYSTEM:WINDOWS", "/LIBPATH:Lib" },
@@ -85,33 +92,39 @@ Build
                 Config = "win32-*-*-*"
             }
         },
+        QT_LIBS = {
+            {
+                "$(QT_ROOT)$(SEP)lib$(SEP)",
+                Config = "win32-*-*-*"
+            }
+        },
+        QT_BINS = {
+            {
+                "$(QT_ROOT)$(SEP)bin$(SEP)",
+                Config = "win32-*-*-*"
+            }
+        },
         QTMOCCMD = {
             {
-                "$(QT_ROOT)bin$(SEP)moc.exe",
+                "$(QT_BINS)moc.exe",
                 Config = "win32-*-*-*"
             }
         },
         QTUICCMD = {
             {
-                "$(QT_ROOT)$(SEP)bin$(SEP)uic.exe",
+                "$(QT_BINS)uic.exe",
                 Config = "win32-*-*-*"
             }
         },
         QTRCCCMD  = {
             {
-                "$(QT_ROOT)$(SEP)bin$(SEP)rcc.exe",
+                "$(QT_BINS)rcc.exe",
                 Config = "win32-*-*-*"
             }
         },
         QT_INCLUDE = {
             {
                 "$(QT_ROOT)$(SEP)include$(SEP)",
-                Config = "win32-*-*-*"
-            }
-        },
-        QT_LIBS = {
-            {
-                "$(QT_ROOT)$(SEP)lib$(SEP)",
                 Config = "win32-*-*-*"
             }
         },

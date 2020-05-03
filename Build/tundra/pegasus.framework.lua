@@ -2,6 +2,7 @@ require 'tundra.syntax.glob'
 require 'tundra.syntax.bison'
 require 'tundra.syntax.flex'
 require 'tundra.syntax.qt'
+require 'tundra.syntax.files'
 
 local scanner = require "tundra.scanner"
 local npath = require 'tundra.native.path'
@@ -40,7 +41,6 @@ local function ChangeExtension(fileList, newExtension)
     end
     return outList
 end
-
 
 DefRule {
   Name = "PegasusFlex",
@@ -346,7 +346,7 @@ function _G.BuildPegasusApps(pegasus_apps, pegasus_modules)
 end
 
 
-function _G.BuildQtApp(appName, appSrcRoot, qt_modules, dependencies)
+function _G.BuildQtApp(appName, appSrcRoot, qt_static_modules, qt_dynamic_modules, dependencies)
     local genDirSrc = "$(OBJECTDIR)$(SEP)qtgen$(SEP)"
 
     local includes = {
@@ -357,11 +357,24 @@ function _G.BuildQtApp(appName, appSrcRoot, qt_modules, dependencies)
         genDirSrc .. "$(SEP)Source",
         "$(QT_INCLUDE)"
     }
-    local libs = { }
+    local libs = {
+        {
+            { "user32.lib", "kernel32.lib", "comdlg32.lib", "shell32.lib", "ole32.lib", "oleaut32.lib" },
+            Config = "win32-*-*-*"
+        }
+    }
+    local dllLibs = {}
+    local dllDest = {}
 
-    for _, v in ipairs(qt_modules) do
+    for _, v in ipairs(qt_static_modules) do
+        libs[#libs + 1] = "$(QT_LIBS)"..v..".lib"
+    end
+
+    for _, v in ipairs(qt_dynamic_modules) do
         includes[#includes + 1] = "$(QT_INCLUDE)Qt"..v
         libs[#libs + 1] = "$(QT_LIBS)Qt5"..v..".lib"
+        dllLibs[#dllLibs + 1] = "$(QT_BINS)Qt5"..v..".dll"
+        dllDest[#dllDest + 1] = "$(OBJECTDIR)$(SEP)Qt5"..v..".dll"
     end
 
     local sources = {
@@ -391,6 +404,12 @@ function _G.BuildQtApp(appName, appSrcRoot, qt_modules, dependencies)
         includes[#includes + 1] = genDirSrc .. "$(SEP)" .. npath.get_filename_dir(v)
     end
 
+    for i, v in ipairs(dllLibs) do
+        print("COPY TO:" .. dllDest[i])
+        local dllDeployed = CopyFile { Source = v, Target = dllDest[i], Pass="BuildCode" }
+        dependencies[#dependencies + 1] = dllDeployed
+    end
+
     Program {
         Name = appName,
         Pass = "BuildCode",
@@ -400,23 +419,24 @@ function _G.BuildQtApp(appName, appSrcRoot, qt_modules, dependencies)
         Depends = dependencies,
         Libs = libs,
         Defines = {
-            "UNICODE"
+            "UNICODE", "WIN32"
         },
         Env = {
             CXXOPTS = {
-                "/Zc:wchar_t-",
-                "/FISource/Editor/Assertion.h",
-                "/FISource/Editor/Log.h"
+                {
+                    Config = "win32-*-*-*",
+                    {
+                        "/MD",
+                        "/Zc:wchar_t-",
+                        "/FISource/Editor/Assertion.h",
+                        "/FISource/Editor/Log.h"
+                    }
+                }
             }
-        },
-        ReplaceEnv = {
-            LD = {
-                "link", "/MACHINE:x86", "/SUBSYSTEM:CONSOLE", "/LIBPATH:Lib",
-            },
-            Config = "win32-msvc-*-*"
         },
         IdeGenerationHints = GenRootIdeHints(appName)
     }
 
     Default(appName)
+
 end
