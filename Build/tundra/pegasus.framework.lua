@@ -142,6 +142,28 @@ DefRule {
 }
 
 DefRule {
+  Name = "PegasusQtRcc",
+  Command = "",
+  Blueprint = {
+    Source = { Required = true, Type = "string" },
+    DestFolder = { Required = true, Type = "string" }
+  },
+
+  Setup = function (env, data)
+    local src = data.Source
+    local base_name = path.get_filename_base(src) 
+    local pfx = 'qrc_'
+    local ext = '.cpp'
+    local outputFile = "$(OBJECTDIR)$(SEP)" .. data.DestFolder .. "$(SEP)" .. pfx .. base_name .. ext
+    return {
+      InputFiles = { src },
+      OutputFiles = { outputFile },
+      Command = "$(QTRCCCMD) "..src.." -o "..outputFile
+    }
+  end,
+}
+
+DefRule {
   Name = "PegasusQtUic",
   Command = "",
   Blueprint = {
@@ -347,6 +369,17 @@ end
 
 
 function _G.BuildQtApp(appName, appSrcRoot, qt_static_modules, qt_dynamic_modules, dependencies)
+
+    local qt_static_modules_d = {}
+    for _, v in ipairs(qt_static_modules) do
+        qt_static_modules_d[#qt_static_modules_d + 1] = v .. "d"
+    end
+
+    local qt_dynamic_modules_d = {}
+    for _, v in ipairs(qt_dynamic_modules) do
+        qt_dynamic_modules_d[#qt_dynamic_modules_d + 1] = v .. "d"
+    end
+
     local genDirSrc = "$(OBJECTDIR)$(SEP)qtgen$(SEP)"
 
     local includes = {
@@ -363,18 +396,31 @@ function _G.BuildQtApp(appName, appSrcRoot, qt_static_modules, qt_dynamic_module
             Config = "win32-*-*-*"
         }
     }
+    local qtLibs = {}
+    local qtLibsd = {}
     local dllLibs = {}
+    local dllLibsd = {}
     local dllDest = {}
+    local dllDestd = {}
 
     for _, v in ipairs(qt_static_modules) do
-        libs[#libs + 1] = "$(QT_LIBS)"..v..".lib"
+        qtLibs[#qtLibs + 1] = "$(QT_LIBS)"..v..".lib"
+    end
+    for _, v in ipairs(qt_static_modules_d) do
+        qtLibsd[#qtLibsd + 1] = "$(QT_LIBS)"..v..".lib"
     end
 
     for _, v in ipairs(qt_dynamic_modules) do
         includes[#includes + 1] = "$(QT_INCLUDE)Qt"..v
-        libs[#libs + 1] = "$(QT_LIBS)Qt5"..v..".lib"
+        qtLibs[#qtLibs + 1] = "$(QT_LIBS)Qt5"..v..".lib"
         dllLibs[#dllLibs + 1] = "$(QT_BINS)Qt5"..v..".dll"
         dllDest[#dllDest + 1] = "$(OBJECTDIR)$(SEP)Qt5"..v..".dll"
+    end
+
+    for _, v in ipairs(qt_dynamic_modules_d) do
+        qtLibsd[#qtLibsd + 1] = "$(QT_LIBS)Qt5"..v..".lib"
+        dllLibsd[#dllLibsd + 1] = "$(QT_BINS)Qt5"..v..".dll"
+        dllDestd[#dllDestd + 1] = "$(OBJECTDIR)$(SEP)Qt5"..v..".dll"
     end
 
     local sources = {
@@ -388,7 +434,6 @@ function _G.BuildQtApp(appName, appSrcRoot, qt_static_modules, qt_dynamic_module
         Dir = appSrcRoot,
         Extensions = { ".h", ".cpp" }
     }
-
     for _, v in ipairs(mocInputs) do
         sources[#sources + 1] = PegasusQtMoc { Pass = "CodeGeneration", DestFolder = "qtgen", Source = v }
         includes[#includes + 1] = genDirSrc .. "$(SEP)" .. npath.get_filename_dir(v)
@@ -398,16 +443,28 @@ function _G.BuildQtApp(appName, appSrcRoot, qt_static_modules, qt_dynamic_module
         Dir = appSrcRoot,
         Extensions = { ".ui" }
     }
-
     for _, v in ipairs(uiInputs) do
         sources[#sources + 1] = PegasusQtUic { Pass = "CodeGeneration", DestFolder = "qtgen", Source = v }
         includes[#includes + 1] = genDirSrc .. "$(SEP)" .. npath.get_filename_dir(v)
     end
 
+    local qrcInputs = Glob {
+        Dir = appSrcRoot,
+        Extensions = { ".qrc" },
+    }
+    for _, v in ipairs(qrcInputs) do
+        sources[#sources + 1] = PegasusQtRcc { Pass = "CodeGeneration", DestFolder = "qtgenrc", Source = v }
+    end
+
+    local deployDlls = {}
     for i, v in ipairs(dllLibs) do
-        print("COPY TO:" .. dllDest[i])
         local dllDeployed = CopyFile { Source = v, Target = dllDest[i], Pass="BuildCode" }
-        dependencies[#dependencies + 1] = dllDeployed
+        deployDlls[#deployDlls + 1] = dllDeployed
+    end
+    local deployDllsd = {}
+    for i, v in ipairs(dllLibsd) do
+        local dllDeployed = CopyFile { Source = v, Target = dllDest[i], Pass="BuildCode" }
+        deployDllsd[#deployDllsd + 1] = dllDeployed
     end
 
     Program {
@@ -416,8 +473,16 @@ function _G.BuildQtApp(appName, appSrcRoot, qt_static_modules, qt_dynamic_module
         Sources = sources,
         Includes = includes,
         Config = "*-*-*-dev",
-        Depends = dependencies,
-        Libs = libs,
+        Depends = {
+            dependencies,
+            { deployDllsd, Config = "*-*-debug-*" },
+            { deployDlls,  Config = "*-*-opt-*" },
+        },
+        Libs = {
+            libs,
+            { qtLibsd, Config="*-*-debug-*" },
+            { qtLibs,  Config="*-*-opt-*" }
+        },
         Defines = {
             "UNICODE", "WIN32"
         },
@@ -426,7 +491,6 @@ function _G.BuildQtApp(appName, appSrcRoot, qt_static_modules, qt_dynamic_module
                 {
                     Config = "win32-*-*-*",
                     {
-                        "/MD",
                         "/Zc:wchar_t-",
                         "/FISource/Editor/Assertion.h",
                         "/FISource/Editor/Log.h"

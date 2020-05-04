@@ -47,14 +47,22 @@ Build
             }
         },
 
-        CXXOPTS_OPT = { "" },
+        CXXOPTS_OPT = {
+            {
+                { "/O2", "/MD" },
+                Config = "win32-msvc-*-*"
+            }
+        },
         CXXOPTS = {
             {
                 { "/std:c++17", "/WX", "/W3" },
                 Config = "win32-msvc-*-*"
+            },
+            {
+                { "/Od", "/MDd" },
+                Config = "win32-msvc-debug-*"
             }
         },
-
         CPPDEFS_OPT = { "_PEGASUS_OPT" },
         CPPDEFS = {
             {
@@ -67,7 +75,7 @@ Build
             },
             {
                 Config = "*-*-debug-*",
-                { "_PEGASUS_DEBUG" }
+                { "_PEGASUS_DEBUG", "_DEBUG"  }
             },
         },
 
