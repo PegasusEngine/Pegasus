@@ -305,6 +305,7 @@ GpuMemoryBlock GpuUploadPoolImpl::AllocateHandle(const UploadDescDX12& desc, uin
 	PG_ASSERT((heapOffset % desc.alignment) == 0u);
 
 	GpuMemoryBlock block = {};
+    block.uploadSize = (size_t)desc.requestBytes;
 	block.buffer = heap.buffer;
 	block.mappedBuffer = static_cast<void*>(static_cast<char*>(heap.mappedMemory) + heapOffset);
 	block.gpuVA  = heap.gpuHeapBaseVA + heapOffset;
@@ -414,14 +415,13 @@ void GpuDescriptorTablePool::EndUsage()
 	m_impl->EndUsage();
 }
 
-DescriptorTable GpuDescriptorTablePool::AllocateTable(uint32_t tableSize, ID3D12GraphicsCommandList* commandList)
+DescriptorTable GpuDescriptorTablePool::AllocateTable(uint32_t tableSize)
 {
 	PG_ASSERT(tableSize > 0u);
 	DescriptorTableDescDX12 desc;
 	desc.tableSize = tableSize;
 	DescriptorTable result = m_impl->Allocate(desc);
 	m_lastTable = result;
-	commandList->SetDescriptorHeaps(1u, &result.ownerHeap);
 	return result;
 }
 

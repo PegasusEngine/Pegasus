@@ -30,6 +30,7 @@ namespace Render
 
 class Dx12Device;
 class Dx12Resource;
+struct GpuMemoryBlock;
 
 class Dx12Resource
 {
@@ -47,6 +48,7 @@ public:
     const ResourceConfig& GetResConfig() const { return mResConfig; }
     
     D3D12_RESOURCE_STATES GetDefaultState() const { return mDefaultResourceState; }
+    D3D12_GPU_VIRTUAL_ADDRESS GetVA() const { return mData.gpuVirtualAddress; }
     void* GetDx12ResourceGpuPtr();
 
 protected:
@@ -98,18 +100,24 @@ class Dx12Buffer : public Pegasus::Render::Buffer, public Dx12Resource
 {
 public:
     Dx12Buffer(const BufferConfig& desc, Dx12Device* device);
+    Dx12Buffer(const GpuMemoryBlock& uploadBuffer, Dx12Device* device);
     virtual ~Dx12Buffer();
     virtual void init();
     virtual void* GetGpuPtr() { return GetDx12ResourceGpuPtr(); }
+    size_t GetUploadSz() const { return m_uploadBufferSize; }
+
+private:
+    bool m_uploadBuffer = false;
+    size_t m_uploadBufferSize = 0u;
 };
 
 class Dx12ResourceTable : public Pegasus::Render::ResourceTable
 {
 public:
-    friend class Dx12RenderContext;
     Dx12ResourceTable(const ResourceTableConfig& desc, Dx12Device* device);
     ~Dx12ResourceTable();
     const std::vector< Core::Ref<IResource> >& GetResources() { return GetConfig().resources; }
+    const Dx12RDMgr::Table& GetTable() const { return mTable; }
 
 private:
     Dx12RDMgr::Table mTable;   

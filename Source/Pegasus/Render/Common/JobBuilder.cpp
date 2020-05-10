@@ -67,20 +67,30 @@ void GpuJob::SetResourceTable(unsigned spaceRegister, ResourceTableRef resourceT
     {
         jobInstance.srvTables.resize(spaceRegister + 1, nullptr);
     }
-    
+    jobInstance.srvTables[spaceRegister] = resourceTable;
 }
 
-void ComputeJob::SetUavTable(unsigned spaceRegister, ResourceTableRef uavTable)
+void GpuJob::SetUavTable(unsigned spaceRegister, ResourceTableRef uavTable)
+{
+    PG_VERIFY_JOB_HANDLE;
+    auto& jobInstance = mParent->jobTable[mJobHandle];
+    if (spaceRegister >= (unsigned)jobInstance.uavTables.size())
+    {
+        jobInstance.uavTables.resize(spaceRegister + 1, nullptr);
+    }
+    jobInstance.uavTables[spaceRegister] = uavTable;
+}
+
+
+void ComputeJob::SetConstantBuffer(unsigned registerId, BufferRef buffer)
 {
     PG_VERIFY_JOB_HANDLE;
     auto& jobInstance = mParent->jobTable[mJobHandle];
     if (auto* data = std::get_if<ComputeCmdData>(&jobInstance.data))
     {
-        if (spaceRegister >= (unsigned)data->uavTables.size())
-        {
-            data->uavTables.resize(spaceRegister + 1, nullptr);
-        }
-        data->uavTables[spaceRegister] = uavTable;
+        if ((unsigned)data->cbuffer.size() <= registerId)
+            data->cbuffer.resize(registerId + 1, nullptr);
+        data->cbuffer[registerId] = buffer;
     }
 }
 
@@ -104,6 +114,18 @@ ComputeJob ComputeJob::Next()
     PG_VERIFY_JOB_HANDLE;
     ComputeJob other = mParent->CreateComputeJob();
     return GenericNext<ComputeJob>(*this, other, *mParent);
+}
+
+void DrawJob::SetConstantBuffer(unsigned registerId, BufferRef buffer)
+{
+    PG_VERIFY_JOB_HANDLE;
+    auto& jobInstance = mParent->jobTable[mJobHandle];
+    if (auto* data = std::get_if<DrawCmdData>(&jobInstance.data))
+    {
+        if ((unsigned)data->cbuffer.size() <= registerId)
+            data->cbuffer.resize(registerId + 1, nullptr);
+        data->cbuffer[registerId] = buffer;
+    }
 }
 
 void DrawJob::SetRenderTarget(RenderTargetRef renderTargets)

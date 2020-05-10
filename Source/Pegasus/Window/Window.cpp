@@ -18,6 +18,7 @@
 #include "Pegasus/RenderSystems/System/RenderSystemManager.h"
 #include "Pegasus/RenderSystems/System/RenderSystem.h"
 #include "Pegasus/Window/WindowComponentState.h"
+#include "Pegasus/Render/IDevice.h"
 
 
 #if PEGASUS_ENABLE_PROXIES

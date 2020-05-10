@@ -37,6 +37,7 @@ public:
     const char* GetName() const;
     void SetGpuPipeline(GpuPipelineRef gpuPipeline);
     void SetResourceTable(unsigned spaceRegister, ResourceTableRef resourceTable);
+    void SetUavTable(unsigned spaceRegister, ResourceTableRef uavTable);
     void AddDependency(const GpuJob& otherJob);
 
     InternalJobBuilder* GetParent() const { return mParent; }
@@ -57,6 +58,7 @@ class DrawJob : public GpuJob
 {
 public:
     DrawJob(InternalJobHandle h, InternalJobBuilder* parent) : GpuJob(h, parent) {}
+    void SetConstantBuffer(unsigned registerId, BufferRef buffer);
     void SetRenderTarget(RenderTargetRef renderTargets);
     void SetDrawParams();
     DrawJob Next();
@@ -66,7 +68,7 @@ class ComputeJob : public GpuJob
 {
 public:
     ComputeJob(InternalJobHandle h, InternalJobBuilder* parent) : GpuJob(h, parent) {}
-    void SetUavTable(unsigned spaceRegister, ResourceTableRef uavTable);
+    void SetConstantBuffer(unsigned registerId, BufferRef buffer);
     void SetDispatchParams(unsigned x, unsigned y, unsigned z);
     ComputeJob Next();
 };

@@ -92,11 +92,21 @@ public:
     virtual const DeviceConfig& GetConfig() const = 0;
     virtual Alloc::IAllocator * GetAllocator() const = 0;
     virtual BufferRef CreateBuffer(const BufferConfig& config) = 0;
+
+    virtual BufferRef CreateUploadBuffer(size_t sz) = 0;
+
+    template<typename T>
+    T* CreateUploadBuffer(BufferRef& outRef) {
+        outRef =  CreateUploadBuffer(sizeof(T));
+        return static_cast<T*>(b->GetGpuPtr());
+    }
+
     virtual TextureRef CreateTexture(const TextureConfig& config) = 0;
     virtual RenderTargetRef CreateRenderTarget(const RenderTargetConfig& config) = 0;
     virtual ResourceTableRef CreateResourceTable(const ResourceTableConfig& config) = 0;
     virtual GpuPipelineRef CreateGpuPipeline() = 0;
     virtual IDisplayRef CreateDisplay(const DisplayConfig& displayConfig) = 0;
+
 
     virtual ResourceStateTable* GetResourceStateTable() const = 0;
 

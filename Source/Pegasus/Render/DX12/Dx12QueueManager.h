@@ -33,6 +33,7 @@ class Dx12Fence;
 class Dx12Resource;
 class CanonicalJobPath;
 class GpuDescriptorTablePool;
+class GpuUploadPool;
 class RootJob;
 struct JobInstance;
 
@@ -55,8 +56,11 @@ public:
     GpuWorkResultCode CompileWork(GpuWorkHandle handle, const RootJob& rootJob, const CanonicalJobPath* jobs, unsigned jobsCount);
     void SubmitWork(GpuWorkHandle handle);
     void WaitOnCpu(GpuWorkHandle handle);
+    void GarbageCollect();
 
     ID3D12CommandQueue* GetDirect() { return mQueueContainers[(int)WorkType::Graphics].queue; }
+    GpuUploadPool* GetUploadPool() { return mQueueContainers[(int)WorkType::Graphics].uploadPool; }
+    GpuDescriptorTablePool* GetTablePool() { return mQueueContainers[(int)WorkType::Graphics].descTablePool; }
 
 private:
     
@@ -84,6 +88,8 @@ private:
 
     struct QueueContainer
     {
+        GpuDescriptorTablePool* tablePool = nullptr;
+        GpuUploadPool* uploadPool = nullptr;
         Dx12Fence* fence = nullptr;
         ID3D12CommandQueue* queue = nullptr;
         GpuDescriptorTablePool* descTablePool = nullptr;

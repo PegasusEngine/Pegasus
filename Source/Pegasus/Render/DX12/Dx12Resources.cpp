@@ -12,6 +12,7 @@
 #include "Dx12Resources.h"
 #include "Dx12RDMgr.h"
 #include "Dx12Defs.h"
+#include "GenericGpuResourcePool.h"
 
 
 namespace Pegasus
@@ -437,12 +438,25 @@ Dx12Buffer::Dx12Buffer(const BufferConfig& desc, Dx12Device* device)
     mData.resDesc.SampleDesc.Quality = 0u;
 }
 
+Dx12Buffer::Dx12Buffer(const GpuMemoryBlock& uploadBuffer, Dx12Device* device)
+: Buffer(device, BufferConfig{}), Dx12Resource(BufferConfig{}, device)
+{
+    m_uploadBuffer = true;
+    m_uploadBufferSize = uploadBuffer.uploadSize;
+    mData.mappedMemory = uploadBuffer.buffer;
+    mData.gpuVirtualAddress = uploadBuffer.gpuVA;
+}
+
 Dx12Buffer::~Dx12Buffer()
 {
 }
 
 void Dx12Buffer::init()
 {
+    //skip any resource initialization if this is an upload buffer
+    if (m_uploadBuffer)
+        return;
+
     Dx12Resource::init();
 
 	auto apiUsage = GetResConfig().usage;

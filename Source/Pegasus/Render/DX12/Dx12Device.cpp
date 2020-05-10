@@ -28,6 +28,7 @@
 #include <atlbase.h>
 #include <vector>
 #include <string>
+#include "GenericGpuResourcePool.h"
 
 #if PEGASUS_DEBUG
 #include <dxgidebug.h>
@@ -152,6 +153,15 @@ Dx12Device::~Dx12Device()
 BufferRef Dx12Device::InternalCreateBuffer(const BufferConfig& config)
 {
 	Dx12BufferRef buff = D12_NEW(mAllocator, "Dx12Buffer") Dx12Buffer(config, this);
+	buff->init();
+	return buff;
+}
+
+BufferRef Dx12Device::InternalCreateUploadBuffer(size_t sz)
+{
+    GpuUploadPool* uploadPool = mQueueManager->GetUploadPool();
+    GpuMemoryBlock memBlock = uploadPool->AllocUploadBlock(sz);
+	Dx12BufferRef buff = D12_NEW(mAllocator, "Dx12Buffer") Dx12Buffer(memBlock, this);
 	buff->init();
 	return buff;
 }

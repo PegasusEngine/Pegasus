@@ -12,16 +12,22 @@
 #ifndef PEGASUS_WND_WINDOWCONFIG_H
 #define PEGASUS_WND_WINDOWCONFIG_H
 
-#include "Pegasus/Render/IDevice.h"
+#include <Pegasus/Core/Shared/OsDefs.h>
 
 // Forward declarations
 namespace Pegasus {
     namespace App {
         class Application;
     }
+	namespace Alloc {
+		class IAllocator;
+	}
     namespace Core {
         class IApplicationContext;
     }
+	namespace Render {
+		class IDevice;
+	}
 }
 
 //----------------------------------------------------------------------------------------

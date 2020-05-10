@@ -24,19 +24,19 @@ namespace Render
 
 struct RootCmdData
 {
-    ResourceStateTable::Domain jobTreeDomain;
     bool cachedChildren = false;
     std::vector<InternalJobHandle> cachedChildrenJobs;
 };
 
 struct DrawCmdData
 {
+    std::vector<BufferRef> cbuffer;
     RenderTargetRef rt;
 };
 
 struct ComputeCmdData
 {
-    std::vector<ResourceTableRef> uavTables;
+    std::vector<BufferRef> cbuffer;
 };
 
 struct CopyCmdData
@@ -67,6 +67,7 @@ struct JobInstance
 
     std::string name;
     std::vector<ResourceTableRef> srvTables;
+    std::vector<ResourceTableRef> uavTables;
 
     std::set<InternalJobHandle> dependenciesSet;
     std::vector<InternalJobHandle> dependenciesSorted;

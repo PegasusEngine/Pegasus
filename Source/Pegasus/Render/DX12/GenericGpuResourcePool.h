@@ -11,6 +11,7 @@ namespace Render
 
 struct GpuMemoryBlock
 {
+    size_t uploadSize = 0ull;
 	void* mappedBuffer = nullptr;
 	uint64_t offset = 0ull;
 	ID3D12Resource* buffer = nullptr;
@@ -70,7 +71,6 @@ struct DescriptorTable
 		gpuHandle = GetGpuHandle(count);
 		descriptorCounts -= count;
 	}
-
 };
 
 class GpuDescriptorTablePool
@@ -80,7 +80,7 @@ public:
 	~GpuDescriptorTablePool();
 	void BeginUsage();
 	void EndUsage();
-	DescriptorTable AllocateTable(uint32_t tableSize, ID3D12GraphicsCommandList* commandList);
+	DescriptorTable AllocateTable(uint32_t tableSize);
 	const DescriptorTable& LastAllocatedTable() const { return m_lastTable; }
 
 private:

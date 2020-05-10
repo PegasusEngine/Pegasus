@@ -252,6 +252,12 @@ void ResourceStateBuilder::ApplyBarriers(
         {
             SetState(listId, listLocation, ResourceGpuState::Srv, &(*tableRef));
         }
+    
+        for (auto& tableRef : instance.uavTables)
+        {
+            SetState(listId, listLocation, ResourceGpuState::Uav, &(*tableRef));
+        }
+
         std::visit(JobVisitor::overloaded {
             [&](const RootCmdData& d){
             },
@@ -270,8 +276,6 @@ void ResourceStateBuilder::ApplyBarriers(
                     SetState(listId, listLocation, ResourceGpuState::Ds, &(*d.rt->GetConfig().depthStencil));
             },
             [&](const ComputeCmdData& d){
-                for (auto& tableRef : d.uavTables)
-                    SetState(listId, listLocation, ResourceGpuState::Uav, &(*tableRef));
             },
             [&](const CopyCmdData& d){
                 SetState(listId, listLocation, ResourceGpuState::CopySrc, &(*d.src));

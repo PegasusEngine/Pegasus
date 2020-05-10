@@ -57,11 +57,6 @@ void InternalJobBuilder::Delete(RootJob rootJob)
     PG_ASSERT(h >= 0 && h < (InternalJobHandle)jobTable.size());
     auto& jobInstance = jobTable[h];
     auto& data = std::get<RootCmdData>(jobInstance.data);
-    if (data.jobTreeDomain.valid())
-    {
-        mDevice->GetResourceStateTable()->RemoveDomain(data.jobTreeDomain);
-        data.jobTreeDomain = ResourceStateTable::Domain();
-    }
 
     if (!data.cachedChildren)
     {

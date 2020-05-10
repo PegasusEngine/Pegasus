@@ -73,6 +73,7 @@ public:
 	Core::Ref<Dx12GpuProgram> CreateGpuProgram();
 
     BufferRef InternalCreateBuffer(const BufferConfig& config);
+    BufferRef InternalCreateUploadBuffer(size_t sz);
     TextureRef InternalCreateTexture(const TextureConfig& config);
     RenderTargetRef InternalCreateRenderTarget(const RenderTargetConfig& config);
     ResourceTableRef InternalCreateResourceTable(const ResourceTableConfig& config);

@@ -13,57 +13,6 @@
 
 using namespace Pegasus::Render;
 
-const char* simpleProgram0 = R"(
-    SamplerState gSampler : register(s0,space0);
-    Texture2D tex0 : register(t0, space0);
-
-    struct VsIn
-    {
-        float4 pos : POSITION0;
-        float3 n : NORMAL0;
-    };
-
-    struct VsOut
-    {
-        float4 p : SV_Position;
-        float3 normal : TEXCOORD;
-    };
-
-    cbuffer Constants : register(b0)
-    {
-        float4x4 g_viewProjTransform;
-    };
-
-    void vsMain(VsIn vsIn, out VsOut vsOut)
-    {
-        vsOut.p = mul(vsIn.pos, g_viewProjTransform);
-        vsOut.normal = float3(0,0,0);//vsIn.n;
-    }
-
-    void psMain(in VsOut vsOut, out float4 c : SV_Target0)
-    {
-        c = float4(tex0.Sample(gSampler, vsOut.normal.xy).rgb, 1.0);
-    }
-)";
-
-const char* simpleCs0 = R"(
-    Buffer<float4> input : register(t0, space0);
-    RWBuffer<float4> output : register(u0, space0);
-
-    cbuffer Constants : register(b0)
-    {
-        uint4 gCounts;
-    };
-
-    [numthreads(32,1,1)]
-    void csMain(uint di : SV_DispatchThreadID)
-    {
-        output[di] = input[di];
-    }
-)";
-
-using namespace Pegasus::Render;
-
 namespace Pegasus
 {
 	namespace Tests
@@ -197,6 +146,39 @@ namespace Pegasus
 
 		bool runCreateSimpleGpuPipeline(TestHarness* harness)
 		{
+            static const char* simpleProgram0 = R"(
+                SamplerState gSampler : register(s0,space0);
+                Texture2D tex0 : register(t0, space0);
+            
+                struct VsIn
+                {
+                    float4 pos : POSITION0;
+                    float3 n : NORMAL0;
+                };
+            
+                struct VsOut
+                {
+                    float4 p : SV_Position;
+                    float3 normal : TEXCOORD;
+                };
+            
+                cbuffer Constants : register(b0)
+                {
+                    float4x4 g_viewProjTransform;
+                };
+            
+                void vsMain(VsIn vsIn, out VsOut vsOut)
+                {
+                    vsOut.p = mul(vsIn.pos, g_viewProjTransform);
+                    vsOut.normal = float3(0,0,0);//vsIn.n;
+                }
+            
+                void psMain(in VsOut vsOut, out float4 c : SV_Target0)
+                {
+                    c = float4(tex0.Sample(gSampler, vsOut.normal.xy).rgb, 1.0);
+                }
+            )";
+
 			RenderHarness* rh = static_cast<RenderHarness*>(harness);
 			IDevice* device = rh->CreateDevice();
 			GpuPipelineRef gpuPipeline = device->CreateGpuPipeline();
@@ -219,6 +201,22 @@ namespace Pegasus
 
 		bool runTestSimpleCompute(TestHarness* harness)
 		{
+            const char* simpleCs0 = R"(
+                Buffer<float4> input : register(t0, space0);
+                RWBuffer<float4> output : register(u0, space0);
+            
+                cbuffer Constants : register(b0)
+                {
+                    uint4 gCounts;
+                };
+            
+                [numthreads(32,1,1)]
+                void csMain(uint di : SV_DispatchThreadID)
+                {
+                    output[di] = input[di];
+                }
+            )";
+
 			RenderHarness* rh = static_cast<RenderHarness*>(harness);
 			IDevice* device = rh->CreateDevice();
 			GpuPipelineConfig gpuPipelineConfig;

@@ -47,6 +47,7 @@ public:
 
     virtual const DeviceConfig& GetConfig() const override { return mConfig; }
     virtual Pegasus::Alloc::IAllocator * GetAllocator() const override { return mAllocator; }
+    virtual BufferRef CreateUploadBuffer(size_t sz) override;
     virtual BufferRef CreateBuffer(const BufferConfig& config) override;
     virtual TextureRef CreateTexture(const TextureConfig& config) override;
     virtual RenderTargetRef CreateRenderTarget(const RenderTargetConfig& config) override;
@@ -90,6 +91,12 @@ template<class PlatDeviceT>
 BufferRef ADevice<PlatDeviceT>::CreateBuffer(const BufferConfig& config)
 {
     return static_cast<PlatDeviceT*>(this)->InternalCreateBuffer(config);
+}
+
+template<class PlatDeviceT>
+BufferRef ADevice<PlatDeviceT>::CreateUploadBuffer(size_t sz)
+{
+    return static_cast<PlatDeviceT*>(this)->InternalCreateUploadBuffer(sz);
 }
 
 template<class PlatDeviceT>

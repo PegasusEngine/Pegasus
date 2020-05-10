@@ -14,9 +14,11 @@
 #include "Dx12Defs.h"
 #include "Dx12Resources.h"
 #include "Dx12Fence.h"
+#include "Dx12RDMgr.h"
 #include "GenericGpuResourcePool.h"
 #include "../Common/InternalJobBuilder.h"
 #include "../Common/JobTreeVisitors.h"
+#include "GenericGpuResourcePool.h"
 
 #include <Pegasus/Allocator/IAllocator.h>
 
@@ -115,6 +117,10 @@ Dx12QueueManager::Dx12QueueManager(Pegasus::Alloc::IAllocator* allocator, Dx12De
         DX_VALID_DECLARE(mDevice->GetD3D()->CreateCommandQueue(&qDesc, __uuidof(qcontainer.queue), &((void*)qcontainer.queue)));
 
 		qcontainer.fence = D12_NEW(allocator, "queuFence") Dx12Fence(device, qcontainer.queue);
+        qcontainer.uploadPool = D12_NEW(allocator, "uploadPool") GpuUploadPool(device, qcontainer.queue, 32 * 1024 * 1024);
+        qcontainer.tablePool = D12_NEW(allocator, "tablePool") GpuDescriptorTablePool(device, qcontainer.queue, 2000u, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        qcontainer.uploadPool->BeginUsage();
+        qcontainer.tablePool->BeginUsage();
     }
 
     mGlobalResourceStateTable = mDevice->GetResourceStateTable();
@@ -129,7 +135,8 @@ Dx12QueueManager::~Dx12QueueManager()
 		qcontainer.fence->WaitOnCpu(qcontainer.fence->GetValue());
 		qcontainer.queue->Release();
 		D12_DELETE(mAllocator, qcontainer.fence);
-		
+        D12_DELETE(mAllocator, qcontainer.uploadPool);
+        D12_DELETE(mAllocator, qcontainer.tablePool);
 	}
 
     mGlobalResourceStateTable->RemoveDomain(mGlobalResourceStateDomain);
@@ -278,6 +285,79 @@ void Dx12QueueManager::FlushEndpointBarriers(const CanonicalJobPath& job, GpuWor
     }
 }
 
+template<typename GenericCmdData>
+static void GetCbvSrvUavTables(
+    Dx12Device* device,
+    const JobInstance& jobInstance,
+    const GenericCmdData& cmdData,
+    GpuDescriptorTablePool& tablePool,
+    DescriptorTable& cbv,
+    DescriptorTable& srvs,
+    DescriptorTable& uavs)
+{
+    unsigned cbvCounts = (unsigned)cmdData.cbuffer.size();
+
+    unsigned uavCounts = 0u;
+    for (ResourceTableRef t : jobInstance.uavTables)
+    {
+        uavCounts += t != nullptr ? (unsigned)t->GetConfig().resources.size() : 0u;
+    }
+
+    unsigned srvCounts = 0u;
+    for (ResourceTableRef t : jobInstance.srvTables)
+        srvCounts += t != nullptr ? (unsigned)t->GetConfig().resources.size() : 0u;
+
+    DescriptorTable tables = tablePool.AllocateTable(cbvCounts + uavCounts + srvCounts);
+
+    cbv = {};
+    if (cbvCounts)
+    {
+        cbv = tables; 
+        cbv.descriptorCounts = cbvCounts;
+        for (unsigned it = 0; it < (unsigned)cmdData.cbuffer.size(); ++it)
+        {
+            if (cmdData.cbuffer[it] == nullptr)
+                continue;
+
+            const auto* dx12Buffer = static_cast<const Dx12Buffer*>(&(*cmdData.cbuffer[it]));
+            D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
+            cbvDesc.BufferLocation = dx12Buffer->GetVA();
+            cbvDesc.SizeInBytes = dx12Buffer->GetUploadSz();
+            device->GetD3D()->CreateConstantBufferView(&cbvDesc, cbv.GetCpuHandle(it));
+        }
+        tables.Advance(cbv.descriptorCounts);
+    }
+    
+    auto submitResDesc = [&](unsigned elementCounts, const std::vector<ResourceTableRef>& resTables, DescriptorTable& destTable)
+    {
+        destTable = {};
+        if (elementCounts == 0u)
+            return;
+    
+        destTable = tables;
+        destTable.descriptorCounts = elementCounts;
+        for (ResourceTableRef t : resTables)
+        {
+            if (t == nullptr)
+                continue;
+
+            const auto* dx12Table = static_cast<const Dx12ResourceTable*>(&(*t));
+            const Dx12RDMgr::Table& precomputedTable = dx12Table->GetTable();
+            device->GetD3D()->CopyDescriptorsSimple(
+                precomputedTable.count,
+                tables.cpuHandle,
+                precomputedTable.baseHandle,
+                D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
+            );
+
+            tables.Advance(precomputedTable.count);
+        }
+    };
+
+    submitResDesc(uavCounts, jobInstance.uavTables, uavs);
+    submitResDesc(srvCounts, jobInstance.srvTables, srvs);
+}
+
 void Dx12QueueManager::TranspileList(const JobInstance* jobTable, const CanonicalJobPath& job, GpuList& gpuList)
 {
     unsigned barriersCount = 0u;
@@ -314,6 +394,8 @@ void Dx12QueueManager::TranspileList(const JobInstance* jobTable, const Canonica
             [&](const DrawCmdData& d){
             },
             [&](const ComputeCmdData& d){
+                DescriptorTable cbv, uav, srv;
+                GetCbvSrvUavTables(mDevice, instance, d, *GetTablePool(), cbv, srv, uav);
             },
             [&](const CopyCmdData& d){
                 const Dx12Resource* srcRes = Dx12Resource::GetDx12Resource(d.src);
@@ -335,6 +417,18 @@ void Dx12QueueManager::TranspileList(const JobInstance* jobTable, const Canonica
 
     DX_VALID_DECLARE(gpuList.list->Close());
     
+}
+
+void Dx12QueueManager::GarbageCollect()
+{
+	for (int queueIt = 0; queueIt < (int)WorkType::Count; ++queueIt)
+	{
+        mQueueContainers[queueIt].uploadPool->EndUsage();
+        mQueueContainers[queueIt].uploadPool->BeginUsage();
+
+        mQueueContainers[queueIt].tablePool->EndUsage();
+        mQueueContainers[queueIt].tablePool->BeginUsage();
+    }
 }
 
 }

@@ -15,6 +15,7 @@
 #include "Pegasus/Utils/Vector.h"
 #include "Pegasus/Window/Shared/WindowConfig.h"
 #include "Pegasus/Window/IWindowComponent.h"
+#include "Pegasus/Render/IDisplay.h"
 
 // Forward declarations
 namespace Pegasus {

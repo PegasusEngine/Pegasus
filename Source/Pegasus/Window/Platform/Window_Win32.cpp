@@ -15,6 +15,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include "Pegasus/Window/IWindowComponent.h"
+#include "Pegasus/Render/IDevice.h"
 
 namespace Pegasus {
 namespace Wnd {
