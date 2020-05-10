@@ -93,6 +93,8 @@ Build
             }
         },
 
+        RUNTIMELIBS_ROOT = "Lib$(SEP)RuntimeLibs$(SEP)",
+
         QT_VER = qt_version,
         QT_ROOT = {
             {

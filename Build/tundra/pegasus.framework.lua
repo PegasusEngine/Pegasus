@@ -158,7 +158,7 @@ DefRule {
     return {
       InputFiles = { src },
       OutputFiles = { outputFile },
-      Command = "$(QTRCCCMD) "..src.." -o "..outputFile
+      Command = "$(QTRCCCMD) -no-compress -name "..base_name.. " "..src.." -o "..outputFile
     }
   end,
 }
@@ -182,6 +182,23 @@ DefRule {
       InputFiles = { src },
       OutputFiles = { outputFileName },
       Command = "$(QTUICCMD) "..src.." > "..outputFileName
+    }
+  end,
+}
+
+DefRule {
+  Name = "PegasusCopyDir",
+  Command = "",
+  Blueprint = {
+    Source = { Required = true, Type = "string" },
+    Target = { Required = true, Type = "string" }
+  },
+
+  Setup = function (env, data)
+    return {
+      InputFiles  = { data.Source },
+      OutputFiles = { data.Target },
+      Command = "robocopy "..data.Source.." "..data.Target .. " /MIR"
     }
   end,
 }
@@ -295,12 +312,39 @@ function _G.BuildPegasusApp(appName, pegasus_modules)
         "include/Apps/" .. appName
     }
 
+    local librariesDeps = {
+            {
+                {
+                    CopyFile {
+                        Source = "$(RUNTIMELIBS_ROOT)Dev$(SEP)d3dcompiler_46.dll",
+                        Target="$(OBJECTDIR)$(SEP)d3dcompiler_46.dll", Pass="BuildCode"
+                    },
+                    CopyFile {
+                        Source = "$(RUNTIMELIBS_ROOT)Dev$(SEP)fmodL.dll",
+                        Target="$(OBJECTDIR)$(SEP)fmodL.dll", Pass="BuildCode"
+                    },
+                    Config = "win32-msvc-*-dev"
+                },
+                {
+                    CopyFile {
+                        Source = "$(RUNTIMELIBS_ROOT)Rel$(SEP)d3dcompiler_46.dll",
+                        Target="$(OBJECTDIR)$(SEP)d3dcompiler_46.dll", Pass="BuildCode"
+                    },
+                    CopyFile {
+                        Source = "$(RUNTIMELIBS_ROOT)Rel$(SEP)fmod.dll",
+                        Target="$(OBJECTDIR)$(SEP)fmod.dll", Pass="BuildCode"
+                    },
+                    Config = "win32-msvc-*-rel"
+                },
+            },
+    }
+
     SharedLibrary {
         Name = appName,
         Pass = "BuildCode",
         Sources = sources,
         Includes = includes,
-        Depends = pegasus_modules,
+        Depends = { pegasus_modules, librariesDeps },
         Env = RootEnvs,
         Config = "*-*-*-dev",
         IdeGenerationHints = GenRootIdeHints("Apps")
@@ -311,7 +355,7 @@ function _G.BuildPegasusApp(appName, pegasus_modules)
         Pass = "BuildCode",
         Sources = sources,
         Includes = includes,
-        Depends = pegasus_modules,
+        Depends = { pegasus_modules, librariesDeps },
         Env = RootEnvs,
         Config = "*-*-*-rel",
         IdeGenerationHints = GenRootIdeHints("Apps")
@@ -463,9 +507,30 @@ function _G.BuildQtApp(appName, appSrcRoot, qt_static_modules, qt_dynamic_module
     end
     local deployDllsd = {}
     for i, v in ipairs(dllLibsd) do
-        local dllDeployed = CopyFile { Source = v, Target = dllDest[i], Pass="BuildCode" }
+        local dllDeployed = CopyFile { Source = v, Target = dllDestd[i], Pass="BuildCode" }
         deployDllsd[#deployDllsd + 1] = dllDeployed
     end
+
+    local qtPluginsd = CopyFile { Source = "$(QT_ROOT)plugins$(SEP)platforms$(SEP)qwindowsd.dll", Target="$(OBJECTDIR)$(SEP)platforms$(SEP)qwindowsd.dll", Pass="BuildCode" }
+    local qtPlugins  = CopyFile { Source = "$(QT_ROOT)plugins$(SEP)platforms$(SEP)qwindows.dll", Target="$(OBJECTDIR)$(SEP)platforms$(SEP)qwindows.dll", Pass="BuildCode" }
+
+    local winResources = Glob {
+        Dir = appSrcRoot,
+        Extensions = { ".rc" }
+    }
+    
+    local winResourcesLibName = appName .. "_res"
+    local winResourcesLib = ObjGroup {
+        Name = winResourcesLibName,
+        Pass = "BuildCode",
+        Sources = winResources,
+        IdeGenerationHints = GenRootIdeHints(winResourcesLibName),
+        Env = {
+            RCOPTS = {
+                { "/I", "0x0409" }
+            }
+        }
+    }
 
     Program {
         Name = appName,
@@ -475,8 +540,11 @@ function _G.BuildQtApp(appName, appSrcRoot, qt_static_modules, qt_dynamic_module
         Config = "*-*-*-dev",
         Depends = {
             dependencies,
+            { winResourcesLib, Config="win32-msvc-*-*" },
             { deployDllsd, Config = "*-*-debug-*" },
             { deployDlls,  Config = "*-*-opt-*" },
+            { qtPluginsd,  Config = "win32-msvc-debug-*" },
+            { qtPlugins ,  Config = "win32-msvc-opt-*" },
         },
         Libs = {
             libs,
