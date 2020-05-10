@@ -362,6 +362,33 @@ function _G.BuildPegasusApp(appName, pegasus_modules)
     }
 end
 
+function _G.BuildPegasusUtility(appName, pegasus_modules)
+    local sources = Glob {
+        Dir = "Source/Pegasus/"..appName ,
+        Extensions = { ".cpp", ".h" }
+    }
+    local includes = {
+        "include/",
+        "include/Pegasus/"..appName,
+    }
+    Program {
+        Name = appName,
+        Pass = "BuildCode",
+        Sources = sources,
+        Includes = includes,
+        Depends = pegasus_modules,
+        Env = RootEnvs,
+        ReplaceEnv = {
+            LD = { "link", "/SUBSYSTEM:CONSOLE", "/MACHINE:x86" },
+            Config="win32-msvc-*-*"
+        },
+        Config = "*-*-*-dev",
+        IdeGenerationHints = GenRootIdeHints("Pegasus")
+    }
+
+    Default(appName)
+end
+
 function _G.BuildPegasusLibs(
     pegasus_modules, pegasus_modules_dependencies,
     pegasus_modules_src_folders, pegasus_modules_codegens)

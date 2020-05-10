@@ -86,4 +86,8 @@ _G.BuildPegasusLauncher()
 
 _G.BuildPegasusApps(pegasus_apps, pegasus_modules)
 
+_G.BuildPegasusUtility("BlockScriptCLI", { "BlockScript", "Core", "Memory", "Utils", "Math", "Allocator" } )
+_G.BuildPegasusUtility("BlockScriptTests", { "BlockScript", "Core", "Memory", "Utils", "Math", "Allocator" } )
+_G.BuildPegasusUtility("UnitTests", pegasus_modules )
+
 _G.BuildQtApp("Editor", "Source/Editor", qt_static_modules, qt_dynamic_modules, pegasus_modules)
