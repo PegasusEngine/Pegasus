@@ -551,7 +551,7 @@ function _G.BuildQtApp(appName, appSrcRoot, qt_static_modules, qt_dynamic_module
         Name = winResourcesLibName,
         Pass = "BuildCode",
         Sources = winResources,
-        IdeGenerationHints = GenRootIdeHints(winResourcesLibName),
+        IdeGenerationHints = GenRootIdeHints(appName),
         Env = {
             RCOPTS = {
                 { "/I", "0x0409" }
@@ -591,7 +591,7 @@ function _G.BuildQtApp(appName, appSrcRoot, qt_static_modules, qt_dynamic_module
                         "/FISource/Editor/Log.h"
                     }
                 }
-            }
+            },
         },
         IdeGenerationHints = GenRootIdeHints(appName)
     }
