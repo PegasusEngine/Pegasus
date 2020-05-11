@@ -299,9 +299,7 @@ static void GetCbvSrvUavTables(
 
     unsigned uavCounts = 0u;
     for (ResourceTableRef t : jobInstance.uavTables)
-    {
         uavCounts += t != nullptr ? (unsigned)t->GetConfig().resources.size() : 0u;
-    }
 
     unsigned srvCounts = 0u;
     for (ResourceTableRef t : jobInstance.srvTables)
