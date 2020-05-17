@@ -71,7 +71,7 @@ Application::Application(const ApplicationConfig& config) : mConfig(config)
 	// Set up IO manager
 	// This must be done here because of the GetAppName virtual
 	char rootPath[Io::IOManager::MAX_FILEPATH_LENGTH];
-	sprintf_s(rootPath, Io::IOManager::MAX_FILEPATH_LENGTH - 1, "%s\\Imported\\", mConfig.mBasePath); // Hardcode imported for now
+	sprintf_s(rootPath, Io::IOManager::MAX_FILEPATH_LENGTH - 1, "%s\\Data\\", mConfig.mBasePath); // Hardcode imported for now
 	mIoManager = PG_NEW(coreAlloc, -1, "IOManager", Pegasus::Alloc::PG_MEM_PERM) Io::IOManager(rootPath);
 
     Alloc::IAllocator* renderAlloc = Memory::GetRenderAllocator();
