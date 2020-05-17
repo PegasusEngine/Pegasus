@@ -203,6 +203,23 @@ DefRule {
   end,
 }
 
+DefRule {
+  Name = "PegasusMakeLink",
+  Command = "",
+  Blueprint = {
+    Source = { Required = true, Type = "string" },
+    Target = { Required = true, Type = "string" }
+  },
+
+  Setup = function (env, data)
+    return {
+      InputFiles  = { data.Source },
+      OutputFiles = { data.Target },
+      Command = "mklink /J "..data.Target.." "..data.Source
+    }
+  end,
+}
+
 local function BisonFlexCodeGen(SourceDir, srcFolderIsRecursive, codegens)
     local flexSources = Glob {
           Dir = SourceDir,
@@ -436,6 +453,9 @@ function _G.BuildPegasusApps(pegasus_apps, pegasus_modules)
         Default(appName)
         Default(appName .. "_Standalone")
     end
+
+    local DataFolder = PegasusMakeLink { Source = "Data", Target = "$(OBJECTDIR)$(SEP)Data", Pass="Deploy" }
+    Default(DataFolder)
 end
 
 

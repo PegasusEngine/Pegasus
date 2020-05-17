@@ -21,6 +21,7 @@
 #include "Pegasus/Timeline/Shared/ILaneProxy.h"
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
+#include "Pegasus/AssetLib/Shared/IAssetProxy.h"
 #include "Pegasus/PegasusAssetTypes.h"
  
 #include "ui_TimelineDockWidget.h"
@@ -627,10 +628,6 @@ void TimelineDockWidget::OnReceiveAssetIoMessage(AssetIOMCMessage::IoResponseMes
 
 void TimelineDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* applicationProxy)
 {
-    //HACK: for now force open the timeline when the UI is ready.
-    AssetIOMCMessage msg(AssetIOMCMessage::OPEN_ASSET); 
-    msg.SetString(QString("Timeline/mainTimeline.pas"));
-    SendAssetIoMessage(msg);
     mIsCursorQueued = false;
     mApplication = applicationProxy;
 
@@ -638,6 +635,19 @@ void TimelineDockWidget::OnUIForAppLoaded(Pegasus::App::IApplicationProxy* appli
 
     Pegasus::Timeline::ITimelineManagerProxy* t = applicationProxy->GetTimelineManagerProxy();
     mAvailableBlocksNamesCount = t->GetRegisteredBlockNames(mAvailableBlocksClassNames, mAvailableBlocksEditorNames);
+	
+	Pegasus::Timeline::ITimelineProxy* currTimeline = t->GetCurrentTimeline();
+	if (currTimeline != nullptr)
+	{
+		Pegasus::AssetLib::IAssetProxy* asset = currTimeline->GetOwnerAsset();
+		if (asset != nullptr)
+		{
+			AssetIOMCMessage openTimelineMsg;
+			openTimelineMsg.SetString(QString(asset->GetPath()));
+			openTimelineMsg.SetMessageType(AssetIOMCMessage::OPEN_ASSET);
+			SendAssetIoMessage(openTimelineMsg);
+		}
+	}
 
     for (unsigned indx = 0; indx < mAvailableBlocksNamesCount; ++indx)
     {
