@@ -45,6 +45,9 @@ ResourceGpuStateDesc ResourceGpuStateDesc::Get(ResourceGpuState state)
         case ResourceGpuState::CopyDst:
             d = { false, true };
             break;
+        case ResourceGpuState::UavWrite:
+            d = { true, true };
+            break;
         default:
             PG_FAILSTR("Invalid ResourceGpuState %d", state);
     }
@@ -286,6 +289,11 @@ void ResourceStateBuilder::ApplyBarriers(
             [&](const GroupCmdData& d){
             }
         }, instance.data);
+
+        for (auto& tableRef : instance.uavTables)
+        {
+            SetState(listId, listLocation, ResourceGpuState::UavWrite, &(*tableRef));
+        }
     }
 
     listRecord.barriers = std::move(mBarriers);

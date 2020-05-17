@@ -45,6 +45,7 @@ D3D12_RESOURCE_STATES Dx12QueueManager::GetD3D12State(const LocationGpuState& st
     {
         D3D12_RESOURCE_STATE_COMMON, //Default,
         D3D12_RESOURCE_STATE_UNORDERED_ACCESS,//Uav,
+        D3D12_RESOURCE_STATE_UNORDERED_ACCESS,//UavWrite, unused
         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,//Srv,
         D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,//Cbv,
         D3D12_RESOURCE_STATE_RENDER_TARGET,//Rt,
@@ -73,8 +74,7 @@ D3D12_RESOURCE_STATES Dx12QueueManager::GetD3D12State(const LocationGpuState& st
 
 bool Dx12QueueManager::GetD3DBarrier(const CanonicalJobPath::GpuBarrier& b, D3D12_RESOURCE_BARRIER& dx12Barrier) const
 {
-    //TODO: handle UAV barriers
-    dx12Barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	dx12Barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
 
     switch (b.timing)
     {
@@ -84,20 +84,31 @@ bool Dx12QueueManager::GetD3DBarrier(const CanonicalJobPath::GpuBarrier& b, D3D1
     case CanonicalJobPath::BarrierTiming::End:
         dx12Barrier.Flags |= D3D12_RESOURCE_BARRIER_FLAG_END_ONLY;
         break;
-
 	case CanonicalJobPath::BarrierTiming::BeginAndEnd:
     default:
 		break;
     };
 
-    dx12Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    auto& transitionBarrier = dx12Barrier.Transition;
     const Dx12Resource* dx12Resource = Dx12Resource::GetDx12Resource(b.resource);
-    transitionBarrier.pResource = dx12Resource->GetD3D();
-    transitionBarrier.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-    transitionBarrier.StateBefore = GetD3D12State(b.from, b.resource->GetStateId(), dx12Resource);
-    transitionBarrier.StateAfter = GetD3D12State(b.to, b.resource->GetStateId(), dx12Resource);
-    return transitionBarrier.StateBefore != transitionBarrier.StateAfter;
+    if (b.to.gpuState == ResourceGpuState::UavWrite &&
+        (b.timing == CanonicalJobPath::BarrierTiming::End || b.timing == CanonicalJobPath::BarrierTiming::BeginAndEnd))
+    {
+        dx12Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+        dx12Barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+        auto& uavBarrier = dx12Barrier.UAV;
+        uavBarrier.pResource = dx12Resource->GetD3D();
+		return true;
+    }
+    else
+    {
+        dx12Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        auto& transitionBarrier = dx12Barrier.Transition;
+        transitionBarrier.pResource = dx12Resource->GetD3D();
+        transitionBarrier.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+        transitionBarrier.StateBefore = GetD3D12State(b.from, b.resource->GetStateId(), dx12Resource);
+        transitionBarrier.StateAfter = GetD3D12State(b.to, b.resource->GetStateId(), dx12Resource);
+		return (transitionBarrier.StateBefore != transitionBarrier.StateAfter);
+    }
 }
 
 Dx12QueueManager::Dx12QueueManager(Pegasus::Alloc::IAllocator* allocator, Dx12Device* device)
@@ -433,8 +444,8 @@ void Dx12QueueManager::TranspileList(const JobInstance* jobTable, const Canonica
         for (unsigned i = 0u; i < counts; ++i)
         {
             D3D12_RESOURCE_BARRIER b;
-            if (GetD3DBarrier(barriers[indices[i]], b))
-                outBarriers.emplace_back(std::move(b));
+			if (GetD3DBarrier(barriers[indices[i]], b))
+				outBarriers.emplace_back(std::move(b));
         }
     };
 

@@ -80,6 +80,7 @@ enum class ResourceGpuState : unsigned
 {
     Default,
     Uav,
+    UavWrite,
     Srv,
     Cbv,
     Rt,
