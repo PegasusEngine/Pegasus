@@ -10,7 +10,6 @@
 //! \brief	Geometry test
 
 #include "Apps/TestApp1/TimelineBlocks/GeometryTestBlock.h"
-#include "../Source/Pegasus/Render/GL/GLEWStaticInclude.h"
 #include "Pegasus/Mesh/MeshManager.h"
 
 #include "Pegasus/Math/Quaternion.h"
