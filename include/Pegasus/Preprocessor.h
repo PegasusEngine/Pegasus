@@ -195,30 +195,16 @@
 // Graphics API
 #if PEGASUS_PLATFORM_WINDOWS
 
-#define PEGASUS_GAPI_GL             0
-#define PEGASUS_GAPI_GLES           0
-#define PEGASUS_GAPI_DX11           0 
-#define PEGASUS_GAPI_DX12           1
-
+#define PEGASUS_GAPI_DX12  1
+#define PEGASUS_ENABLE_RENDER_API 0
 
 #else
 
-#define PEGASUS_GAPI_GL             1
-#define PEGASUS_GAPI_GLES           0
-#define PEGASUS_GAPI_DX11           0
-#define PEGASUS_GAPI_DX12           0
+#error "Platform other than windows not supported."
 
 #endif
 
-#define PEGASUS_GAPI_DX  (PEGASUS_GAPI_DX11 || PEGASUS_GAPI_DX12)
-#define PEGASUS_ENABLE_RENDER_API   0
-#define PEGASUS_ENABLE_RENDER_API2  1 
-
-#if PEGASUS_ENABLE_RENDER_API
-#if PEGASUS_GAPI_DX12
-#error "Pegasus dx12 only works on Render2 Api"
-#endif
-#endif
+#define PEGASUS_GAPI_DX PEGASUS_GAPI_DX12
 
 //----------------------------------------------------------------------------------------
 
