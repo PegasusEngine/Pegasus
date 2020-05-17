@@ -189,10 +189,38 @@ struct RenderTargetConfig
 	Core::Ref<Texture> depthStencil;
 };
 
+struct GpuRasterStateConfig
+{
+    struct Element
+    {
+        std::string semantic;
+        Core::Format format;
+        bool perInstance = false;
+
+        unsigned semanticIndex = 0u;
+        unsigned streamId = 0u;
+        unsigned byteOffset = 0u;
+        unsigned instanceStepRate = 0u;
+    };
+
+    std::vector<Element> elements;
+    Core::Format rtFormats[RenderTargetConfig::MaxRt];
+    bool rtEnabled[RenderTargetConfig::MaxRt];
+};
+
+class GpuRasterState : public Core::RefCounted
+{
+protected:
+    GpuRasterState(IDevice* device);
+    virtual ~GpuRasterState();
+    IDevice* mDevice;
+};
+
 struct GpuPipelineConfig
 {
     std::string source;
     std::string mainNames[Pipeline_Max];
+    Core::Ref<GpuRasterState> rasterState;
 };
 
 template<> inline ResourceType GetResourceType<BufferConfig>() { return ResourceType::Buffer; }
@@ -226,6 +254,7 @@ typedef Core::Ref<Texture> TextureRef;
 typedef Core::Ref<ResourceTable> ResourceTableRef;
 typedef Core::Ref<RenderTarget> RenderTargetRef;
 typedef Core::Ref<GpuPipeline> GpuPipelineRef;
+typedef Core::Ref<GpuRasterState> GpuRasterStateRef;
 
 //! Starts a new marker for gpu debugging.
 //! \param marker - the marker string, null terminated.

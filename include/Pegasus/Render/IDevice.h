@@ -105,6 +105,7 @@ public:
     virtual RenderTargetRef CreateRenderTarget(const RenderTargetConfig& config) = 0;
     virtual ResourceTableRef CreateResourceTable(const ResourceTableConfig& config) = 0;
     virtual GpuPipelineRef CreateGpuPipeline() = 0;
+    virtual GpuRasterStateRef CreateRasterState(const GpuRasterStateConfig& config) = 0;
     virtual IDisplayRef CreateDisplay(const DisplayConfig& displayConfig) = 0;
 
 
