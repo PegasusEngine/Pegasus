@@ -60,7 +60,7 @@ public:
 
     ID3D12CommandQueue* GetDirect() { return mQueueContainers[(int)WorkType::Graphics].queue; }
     GpuUploadPool* GetUploadPool() { return mQueueContainers[(int)WorkType::Graphics].uploadPool; }
-    GpuDescriptorTablePool* GetTablePool() { return mQueueContainers[(int)WorkType::Graphics].descTablePool; }
+    GpuDescriptorTablePool* GetTablePool() { return mQueueContainers[(int)WorkType::Graphics].tablePool; }
 
 private:
     
@@ -92,7 +92,6 @@ private:
         GpuUploadPool* uploadPool = nullptr;
         Dx12Fence* fence = nullptr;
         ID3D12CommandQueue* queue = nullptr;
-        GpuDescriptorTablePool* descTablePool = nullptr;
         Dx12CmdLists freeLists;
         Dx12CmdAllocators freeAllocators;
     };

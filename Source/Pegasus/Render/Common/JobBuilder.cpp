@@ -97,6 +97,13 @@ void ComputeJob::SetConstantBuffer(unsigned registerId, BufferRef buffer)
 void ComputeJob::SetDispatchParams(unsigned x, unsigned y, unsigned z)
 {
     PG_VERIFY_JOB_HANDLE;
+    auto& jobInstance = mParent->jobTable[mJobHandle];
+    if (auto* data = std::get_if<ComputeCmdData>(&jobInstance.data))
+    {
+        data->x = x;
+        data->y = y;
+        data->z = z;
+    }
 }
 
 template<class JobType>

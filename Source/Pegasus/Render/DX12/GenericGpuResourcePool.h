@@ -66,7 +66,8 @@ struct DescriptorTable
 
 	void Advance(uint32_t count)
 	{
-		PG_ASSERT(count < descriptorCounts);
+		if (count >= descriptorCounts)
+			return;
 		cpuHandle = GetCpuHandle(count);
 		gpuHandle = GetGpuHandle(count);
 		descriptorCounts -= count;

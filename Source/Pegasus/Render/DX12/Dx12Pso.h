@@ -34,7 +34,7 @@ public:
     virtual bool Compile(const GpuPipelineConfig& config);
     virtual bool IsValid() const { return mValid; }
 
-    bool SpaceToTableId(UINT space, Dx12ResType resType, UINT& outTableId);
+    bool SpaceToTableId(UINT space, Dx12ResType resType, UINT& outTableId) const;
 
     ID3D12RootSignature* GetD3DRootSignature() const;
     ID3D12PipelineState* GetD3DPso() const { return mPso; }

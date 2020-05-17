@@ -443,7 +443,7 @@ Dx12Buffer::Dx12Buffer(const GpuMemoryBlock& uploadBuffer, Dx12Device* device)
 {
     m_uploadBuffer = true;
     m_uploadBufferSize = uploadBuffer.uploadSize;
-    mData.mappedMemory = uploadBuffer.buffer;
+    mData.mappedMemory = uploadBuffer.mappedBuffer;
     mData.gpuVirtualAddress = uploadBuffer.gpuVA;
 }
 
@@ -471,7 +471,7 @@ void Dx12Buffer::init()
 Dx12ResourceTable::Dx12ResourceTable(const ResourceTableConfig& desc, Dx12Device* device)
 : ResourceTable(device, desc)
 {
-    PG_ASSERT(desc.type == Dx12_ResSrv || desc.type == Dx12_ResUav);
+    PG_ASSERT(desc.type == ResourceTableType_Srv || desc.type == ResourceTableType_Uav);
     mRdMgr = device->GetRDMgr();
     std::vector<Dx12RDMgr::Handle> handles;
     handles.reserve(desc.resources.size());

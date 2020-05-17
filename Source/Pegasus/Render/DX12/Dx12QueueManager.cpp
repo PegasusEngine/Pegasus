@@ -15,6 +15,7 @@
 #include "Dx12Resources.h"
 #include "Dx12Fence.h"
 #include "Dx12RDMgr.h"
+#include "Dx12Pso.h"
 #include "GenericGpuResourcePool.h"
 #include "../Common/InternalJobBuilder.h"
 #include "../Common/JobTreeVisitors.h"
@@ -135,6 +136,8 @@ Dx12QueueManager::~Dx12QueueManager()
 		qcontainer.fence->WaitOnCpu(qcontainer.fence->GetValue());
 		qcontainer.queue->Release();
 		D12_DELETE(mAllocator, qcontainer.fence);
+		qcontainer.uploadPool->EndUsage();
+		qcontainer.tablePool->EndUsage();
         D12_DELETE(mAllocator, qcontainer.uploadPool);
         D12_DELETE(mAllocator, qcontainer.tablePool);
 	}
@@ -285,16 +288,23 @@ void Dx12QueueManager::FlushEndpointBarriers(const CanonicalJobPath& job, GpuWor
     }
 }
 
-template<typename GenericCmdData>
-static void GetCbvSrvUavTables(
+template<typename GenericCmdData, bool IsCompute>
+static void SetDx12ResourceTables(
     Dx12Device* device,
     const JobInstance& jobInstance,
     const GenericCmdData& cmdData,
     GpuDescriptorTablePool& tablePool,
-    DescriptorTable& cbv,
-    DescriptorTable& srvs,
-    DescriptorTable& uavs)
+    ID3D12GraphicsCommandList* list)
 {
+    if (jobInstance.pso == nullptr)
+        return;
+
+    const Dx12Pso* dx12Pso = static_cast<const Dx12Pso*>(&(*jobInstance.pso));
+        
+    DescriptorTable cbv = {};
+    DescriptorTable srvs = {};
+    DescriptorTable uavs = {};
+
     unsigned cbvCounts = (unsigned)cmdData.cbuffer.size();
 
     unsigned uavCounts = 0u;
@@ -305,12 +315,11 @@ static void GetCbvSrvUavTables(
     for (ResourceTableRef t : jobInstance.srvTables)
         srvCounts += t != nullptr ? (unsigned)t->GetConfig().resources.size() : 0u;
 
-    DescriptorTable tables = tablePool.AllocateTable(cbvCounts + uavCounts + srvCounts);
+    DescriptorTable cbvSrvUavTables = tablePool.AllocateTable(cbvCounts + uavCounts + srvCounts);
 
-    cbv = {};
     if (cbvCounts)
     {
-        cbv = tables; 
+        cbv = cbvSrvUavTables; 
         cbv.descriptorCounts = cbvCounts;
         for (unsigned it = 0; it < (unsigned)cmdData.cbuffer.size(); ++it)
         {
@@ -323,16 +332,15 @@ static void GetCbvSrvUavTables(
             cbvDesc.SizeInBytes = dx12Buffer->GetUploadSz();
             device->GetD3D()->CreateConstantBufferView(&cbvDesc, cbv.GetCpuHandle(it));
         }
-        tables.Advance(cbv.descriptorCounts);
+        cbvSrvUavTables.Advance(cbv.descriptorCounts);
     }
     
-    auto submitResDesc = [&](unsigned elementCounts, const std::vector<ResourceTableRef>& resTables, DescriptorTable& destTable)
+    auto buildResDesc = [&](unsigned elementCounts, const std::vector<ResourceTableRef>& resTables, DescriptorTable& destTable)
     {
-        destTable = {};
         if (elementCounts == 0u)
             return;
     
-        destTable = tables;
+        destTable = cbvSrvUavTables;
         destTable.descriptorCounts = elementCounts;
         for (ResourceTableRef t : resTables)
         {
@@ -343,17 +351,75 @@ static void GetCbvSrvUavTables(
             const Dx12RDMgr::Table& precomputedTable = dx12Table->GetTable();
             device->GetD3D()->CopyDescriptorsSimple(
                 precomputedTable.count,
-                tables.cpuHandle,
+                cbvSrvUavTables.cpuHandle,
                 precomputedTable.baseHandle,
                 D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV
             );
 
-            tables.Advance(precomputedTable.count);
+            cbvSrvUavTables.Advance(precomputedTable.count);
         }
     };
 
-    submitResDesc(uavCounts, jobInstance.uavTables, uavs);
-    submitResDesc(srvCounts, jobInstance.srvTables, srvs);
+    buildResDesc(uavCounts, jobInstance.uavTables, uavs);
+    buildResDesc(srvCounts, jobInstance.srvTables, srvs);
+
+    ID3D12DescriptorHeap* descHeaps[4] = {}; //heaps for srv/uav/cbv/sampler/rtv
+    unsigned descHeapsCount = 0u;
+    
+    if (cbvCounts || uavCounts || srvCounts)
+    {
+        descHeaps[descHeapsCount++] = cbvSrvUavTables.ownerHeap;
+    }
+
+    //TODO: add sampler support here
+
+    PG_ASSERT(descHeapsCount <= sizeof(descHeaps)/sizeof(descHeaps[0]));
+    list->SetDescriptorHeaps(descHeapsCount, descHeaps);
+
+    auto setTable = [&](UINT tableId, D3D12_GPU_DESCRIPTOR_HANDLE h)
+    {
+        if (IsCompute)
+            list->SetComputeRootDescriptorTable(tableId, h);
+        else
+            list->SetGraphicsRootDescriptorTable(tableId, h);
+    };
+
+    //setting now srv/uav and cbv tables based on root signature
+    UINT outCbvTableId = 0u;
+    if (cbvCounts && dx12Pso->SpaceToTableId(0u, Dx12_ResCbv, outCbvTableId))
+    {
+        setTable(outCbvTableId, cbv.gpuHandle);
+    }
+
+    auto setManyTables = [&](unsigned elementCounts, Dx12ResType resType, const std::vector<ResourceTableRef>& resTables, DescriptorTable& descTable)
+    {
+        if (elementCounts == 0u)
+            return;
+    
+        unsigned spaceId = 0u;
+        unsigned resourceIt = 0u;
+        for (ResourceTableRef t : resTables)
+        {
+            if (t != nullptr)
+            {
+                const auto* dx12Table = static_cast<const Dx12ResourceTable*>(&(*t));
+                const Dx12RDMgr::Table& precomputedTable = dx12Table->GetTable();
+
+                unsigned tableId = 0u;
+                if (precomputedTable.count > 0u && dx12Pso->SpaceToTableId(spaceId, resType, tableId))
+                {
+                    setTable(tableId, descTable.GetGpuHandle(resourceIt));
+                }
+
+                resourceIt += precomputedTable.count;
+            }
+
+            ++spaceId;
+        }
+    };
+
+    setManyTables(srvCounts, Dx12_ResSrv, jobInstance.srvTables, srvs);
+    setManyTables(uavCounts, Dx12_ResUav, jobInstance.uavTables, uavs);
 }
 
 void Dx12QueueManager::TranspileList(const JobInstance* jobTable, const CanonicalJobPath& job, GpuList& gpuList)
@@ -390,10 +456,25 @@ void Dx12QueueManager::TranspileList(const JobInstance* jobTable, const Canonica
             [&](const RootCmdData& d){
             },
             [&](const DrawCmdData& d){
+                SetDx12ResourceTables<DrawCmdData, false>(
+                    mDevice, instance, d,
+                    *GetTablePool(), gpuList.list);
             },
             [&](const ComputeCmdData& d){
-                DescriptorTable cbv, uav, srv;
-                GetCbvSrvUavTables(mDevice, instance, d, *GetTablePool(), cbv, srv, uav);
+                if (instance.pso != nullptr)
+                {
+                    const Dx12Pso* pso = static_cast<const Dx12Pso*>(*(&instance.pso));
+                    if (pso->GetD3DRootSignature() != nullptr && pso->GetD3DPso() != nullptr)
+                    {
+                        gpuList.list->SetComputeRootSignature(pso->GetD3DRootSignature());
+                        gpuList.list->SetPipelineState(pso->GetD3DPso());
+                        SetDx12ResourceTables<ComputeCmdData, true>(
+                            mDevice, instance, d,
+                            *GetTablePool(), gpuList.list);
+						gpuList.list->Dispatch(d.x, d.y, d.z);
+                    }
+                }
+                    
             },
             [&](const CopyCmdData& d){
                 const Dx12Resource* srcRes = Dx12Resource::GetDx12Resource(d.src);

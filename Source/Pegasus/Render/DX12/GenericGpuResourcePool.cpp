@@ -2,6 +2,7 @@
 #include "Dx12Fence.h"
 #include "Dx12Defs.h"
 #include <algorithm>
+#include <atlbase.h>
 #include <queue>
 
 namespace Pegasus
@@ -182,8 +183,8 @@ struct UploadDescDX12
 
 struct UploadHeapDX12
 {
-	ID3D12Heap* heap = nullptr;
-	ID3D12Resource* buffer = nullptr;
+	ID3D12Heap* heap;
+	ID3D12Resource* buffer;
 	void* mappedMemory = nullptr;
 	D3D12_GPU_VIRTUAL_ADDRESS gpuHeapBaseVA = 0;
 	uint64_t size = 0;
@@ -295,7 +296,7 @@ UploadHeapDX12 GpuUploadPoolImpl::CreateNewHeap(const UploadDescDX12& desc, uint
 
 void GpuUploadPoolImpl::GetRange(const UploadDescDX12& desc, uint64_t inputOffset, uint64_t& outOffset, uint64_t& outSize) const
 {
-	outSize = desc.requestBytes;
+	outSize = AlignByte(desc.requestBytes, desc.alignment);
 	outOffset = AlignByte(inputOffset, desc.alignment);
 }
 
@@ -305,7 +306,7 @@ GpuMemoryBlock GpuUploadPoolImpl::AllocateHandle(const UploadDescDX12& desc, uin
 	PG_ASSERT((heapOffset % desc.alignment) == 0u);
 
 	GpuMemoryBlock block = {};
-    block.uploadSize = (size_t)desc.requestBytes;
+	block.uploadSize = (size_t)AlignByte(desc.requestBytes, desc.alignment);
 	block.buffer = heap.buffer;
 	block.mappedBuffer = static_cast<void*>(static_cast<char*>(heap.mappedMemory) + heapOffset);
 	block.gpuVA  = heap.gpuHeapBaseVA + heapOffset;
@@ -315,11 +316,14 @@ GpuMemoryBlock GpuUploadPoolImpl::AllocateHandle(const UploadDescDX12& desc, uin
 
 void GpuUploadPoolImpl::DestroyHeap(UploadHeapDX12& heap)
 {
+	if (heap.buffer)
+	{
+		heap.buffer->Unmap(0u, nullptr);
+		heap.buffer->Release();
+	}
+
 	if (heap.heap)
         heap.heap->Release();
-
-    if (heap.buffer)
-        heap.buffer->Release();
 }
 
 

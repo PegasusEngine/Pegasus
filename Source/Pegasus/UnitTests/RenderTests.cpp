@@ -694,6 +694,132 @@ namespace Pegasus
 			return true;
 		}
 
+		bool runTestComputeProgram(TestHarness* harness)
+		{
+			RenderHarness* rh = static_cast<RenderHarness*>(harness);
+			IDevice* device = rh->CreateDevice();
+
+
+            static const char* simpleCsInitialize = R"(
+                RWBuffer<uint4> outputBuffer : register(u0);
+                cbuffer Constants : register(b0)
+                {
+                    uint g_count;
+                    uint g_multiplier;
+                }
+
+                [numthreads(32, 1, 1)]
+                void csMain(uint dti : SV_DispatchThreadID)
+                {
+                    if (dti.x >= g_count)
+                        return;
+
+                    outputBuffer[dti.x] = g_multiplier * dti.x;
+                }
+            )";
+
+            static const char* simpleCsModify = R"(
+                Buffer<uint4> input1 : register(t0, space0);
+                Buffer<uint4> input2 : register(t1, space0);
+                Buffer<uint4> input3 : register(t0, space1);
+                RWBuffer<uint4> output : register(u0, space0);
+                cbuffer Constants : register(b0)
+                {
+                    uint g_counts;
+                    uint g_offset;
+                    uint pad0;
+                    uint pad1;
+                };
+            
+                [numthreads(32,1,1)]
+                void csMain(uint di : SV_DispatchThreadID)
+                {
+                    if (di.x < g_counts)
+                        output[di.x] = g_offset + input1[di.x] + input2[di.x] + input3[di.x];
+                }
+            )";
+
+			GpuPipelineConfig gpuPipelineConfig;
+			GpuPipelineRef initializeBufferPipeline = device->CreateGpuPipeline();
+#if PEGASUS_USE_EVENTS
+			initializeBufferPipeline->SetEventListener(&rh->GetCompilerListener());
+#endif
+
+			gpuPipelineConfig.source = simpleCsInitialize;
+			gpuPipelineConfig.mainNames[Pipeline_Compute] = "csMain";
+			bool result = initializeBufferPipeline->Compile(gpuPipelineConfig);
+			if (!result)
+				return false;
+
+            unsigned elementCounts = 20u;
+			BufferConfig bufferConfig = {};
+            bufferConfig.name = "inputBuffer";
+			bufferConfig.format = Core::FORMAT_RGBA_32_UINT;
+			bufferConfig.stride = sizeof(unsigned) * 4;
+			bufferConfig.elementCount = elementCounts;
+			bufferConfig.bufferType = BufferType_Default;
+			bufferConfig.bindFlags = BindFlags(BindFlags_Srv | BindFlags_Uav);
+            BufferRef inputBuffer = device->CreateBuffer(bufferConfig);
+
+            ResourceTableConfig initTableConfig;
+            initTableConfig.type = ResourceTableType_Uav;
+
+            //u0
+            initTableConfig.resources.push_back(inputBuffer);
+            ResourceTableRef initTable = device->CreateResourceTable(initTableConfig);
+
+            JobBuilder jobBuilder(device);
+            RootJob r = jobBuilder.CreateRootJob();
+            r.SetName("ComputeTest");
+            ComputeJob initializeJob = jobBuilder.CreateComputeJob();
+            initializeJob.SetName("initializeJob");
+            initializeJob.SetUavTable(0u, initTable);
+            initializeJob.SetGpuPipeline(initializeBufferPipeline);
+
+            BufferRef cbufferRef;
+            struct InitializeCbuffer
+            {
+                unsigned count;
+                unsigned multiplier;
+            };
+
+			unsigned multiplier = 2u;
+            auto* initializeCbuffer = device->CreateUploadBuffer<InitializeCbuffer>(cbufferRef);
+            initializeCbuffer->count = elementCounts;
+            initializeCbuffer->multiplier = multiplier;
+            initializeJob.SetConstantBuffer(0u, cbufferRef);
+            initializeJob.SetDispatchParams((elementCounts + 31u)/ 32u, 1u, 1u);
+            initializeJob.AddDependency(r);
+
+            
+			BufferConfig resultBufferConfig = bufferConfig;
+			resultBufferConfig.name = "TestReadback";
+			resultBufferConfig.usage = Render::ResourceUsage_Staging;
+			resultBufferConfig.bindFlags = 0u;
+			Render::BufferRef resultBuffer = device->CreateBuffer(resultBufferConfig);
+
+            CopyJob resultJob = jobBuilder.CreateCopyJob();
+            resultJob.SetName("CopyResultJob");
+            resultJob.Set(inputBuffer, resultBuffer);
+			resultJob.AddDependency(initializeJob);
+
+            GpuSubmitResult jobResult = device->Submit(r);
+            if (jobResult.resultCode != GpuWorkResultCode::Success)
+                return false;
+
+            device->Wait(jobResult.handle);
+			for (unsigned el = 0; el < elementCounts; ++el)
+			{
+				struct V { unsigned x, y, z, w;  };
+				auto& v = ((V*)resultBuffer->GetGpuPtr())[el];
+				unsigned expected = multiplier * el;
+				if (expected != v.x || expected != v.y || expected != v.z || expected != v.w)
+					return false;
+			}
+
+			return true;
+		}
+
 		TestHarness* createRenderHarness()
 		{
 			return new RenderHarness();
@@ -707,6 +833,7 @@ namespace Pegasus
 			DECLARE_TEST(TestCanonicalCmdListBuilder),
 			DECLARE_TEST(TestAutomaticBarriers),
 			DECLARE_TEST(TestGpuMemoryLoop),
+			DECLARE_TEST(TestComputeProgram),
 			DECLARE_TEST(DestroyDevice)
 		};
 

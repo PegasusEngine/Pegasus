@@ -166,7 +166,7 @@ bool Dx12Pso::Compile(const GpuPipelineConfig& config)
     }
 }
 
-bool Dx12Pso::SpaceToTableId(UINT space, Dx12ResType resType, UINT& outTableId)
+bool Dx12Pso::SpaceToTableId(UINT space, Dx12ResType resType, UINT& outTableId) const
 {
     if (!IsValid())
         return false;

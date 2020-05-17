@@ -36,6 +36,7 @@ struct DrawCmdData
 
 struct ComputeCmdData
 {
+    unsigned x = 0u, y = 0u, z = 0u;
     std::vector<BufferRef> cbuffer;
 };
 

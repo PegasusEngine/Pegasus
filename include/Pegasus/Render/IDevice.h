@@ -98,7 +98,7 @@ public:
     template<typename T>
     T* CreateUploadBuffer(BufferRef& outRef) {
         outRef =  CreateUploadBuffer(sizeof(T));
-        return static_cast<T*>(b->GetGpuPtr());
+        return static_cast<T*>(outRef->GetGpuPtr());
     }
 
     virtual TextureRef CreateTexture(const TextureConfig& config) = 0;
