@@ -456,7 +456,6 @@ void Dx12QueueManager::TranspileList(const JobInstance* jobTable, const Canonica
         
         std::vector<D3D12_RESOURCE_BARRIER> postDx12Barriers;
         applyBarriers(n.postGpuBarrierIndices.data(), (unsigned)n.postGpuBarrierIndices.size(), postDx12Barriers);
-
     
         if (!preDx12Barriers.empty())
             gpuList.list->ResourceBarrier((UINT)preDx12Barriers.size(), preDx12Barriers.data());
@@ -485,7 +484,6 @@ void Dx12QueueManager::TranspileList(const JobInstance* jobTable, const Canonica
 						gpuList.list->Dispatch(d.x, d.y, d.z);
                     }
                 }
-                    
             },
             [&](const CopyCmdData& d){
                 const Dx12Resource* srcRes = Dx12Resource::GetDx12Resource(d.src);
