@@ -78,7 +78,7 @@ public:
     RenderTargetRef InternalCreateRenderTarget(const RenderTargetConfig& config);
     ResourceTableRef InternalCreateResourceTable(const ResourceTableConfig& config);
     GpuPipelineRef InternalCreateGpuPipeline();
-    GpuRasterStateRef InternalCreateRasterState(const GpuRasterStateConfig& config);
+    GpuStateRef InternalCreateGpuState(const GpuStateConfig& config);
 	IDisplayRef InternalCreateDisplayConfig(const DisplayConfig& displayConfig);
     GpuSubmitResult InternalSubmit(const RootJob& rootJob, const CanonicalCmdListResult& result);
     void InternalWait(GpuWorkHandle workHandle);

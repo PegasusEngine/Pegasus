@@ -53,7 +53,7 @@ public:
     virtual RenderTargetRef CreateRenderTarget(const RenderTargetConfig& config) override;
     virtual ResourceTableRef CreateResourceTable(const ResourceTableConfig& config) override;
     virtual GpuPipelineRef CreateGpuPipeline() override;
-    virtual GpuRasterStateRef CreateRasterState(const GpuRasterStateConfig& config) override;
+    virtual GpuStateRef CreateGpuState(const GpuStateConfig& config) override;
     virtual IDisplayRef CreateDisplay(const DisplayConfig& displayConfig);
     virtual ResourceStateTable* GetResourceStateTable() const override { return mResourceStateTable; }
     
@@ -125,9 +125,9 @@ GpuPipelineRef ADevice<PlatDeviceT>::CreateGpuPipeline()
 }
 
 template<class PlatDeviceT>
-GpuRasterStateRef ADevice<PlatDeviceT>::CreateRasterState(const GpuRasterStateConfig& config)
+GpuStateRef ADevice<PlatDeviceT>::CreateGpuState(const GpuStateConfig& config)
 {
-    return static_cast<PlatDeviceT*>(this)->InternalCreateRasterState(config);
+    return static_cast<PlatDeviceT*>(this)->InternalCreateGpuState(config);
 }
 
 

@@ -68,6 +68,10 @@ namespace Pegasus
 			}
 			virtual void OnEvent(Pegasus::Core::IEventUserData* userData, Pegasus::Core::CompilerEvents::LinkingEvent& e)  override
 			{
+                if (e.GetEventType() == Pegasus::Core::CompilerEvents::LinkingEvent::LINKING_FAIL)
+                {
+                    std::cout << e.GetLog() << std::endl;
+                }
 			}
 		};
 #endif
@@ -181,6 +185,15 @@ namespace Pegasus
 
 			RenderHarness* rh = static_cast<RenderHarness*>(harness);
 			IDevice* device = rh->CreateDevice();
+
+            GpuStateConfig gpuConfig;
+            gpuConfig.elementCounts = 2;
+            gpuConfig.elements[0].semantic = "POSITION";
+            gpuConfig.elements[0].format = Core::FORMAT_RGBA_32_FLOAT;
+			gpuConfig.elements[1].semantic = "NORMAL";
+			gpuConfig.elements[1].format = Core::FORMAT_RGBA_32_FLOAT;
+            GpuStateRef gpuState = device->CreateGpuState(gpuConfig);
+
 			GpuPipelineRef gpuPipeline = device->CreateGpuPipeline();
 
 #if PEGASUS_USE_EVENTS
@@ -188,6 +201,7 @@ namespace Pegasus
 #endif
 
 			GpuPipelineConfig gpuPipelineConfig;
+            gpuPipelineConfig.graphicsState = gpuState;
 			gpuPipelineConfig.source = simpleProgram0;
 			gpuPipelineConfig.mainNames[Pipeline_Vertex] = "vsMain";
 			gpuPipelineConfig.mainNames[Pipeline_Pixel] = "psMain";

@@ -191,9 +191,10 @@ GpuPipelineRef Dx12Device::InternalCreateGpuPipeline()
     return pso;
 }
 
-GpuRasterStateRef Dx12Device::InternalCreateRasterState(const GpuRasterStateConfig& config)
+GpuStateRef Dx12Device::InternalCreateGpuState(const GpuStateConfig& config)
 {
-    return nullptr;
+    GpuStateRef stateRef = D12_NEW(mAllocator, "Dx12GpuState")  Dx12GpuState(config, this);
+    return stateRef;
 }
 
 IDisplayRef Dx12Device::InternalCreateDisplayConfig(const DisplayConfig& displayConfig)

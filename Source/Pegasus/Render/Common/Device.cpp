@@ -46,6 +46,8 @@ GpuPipeline::GpuPipeline(IDevice* device)
 #endif
 }
 
+GpuState::GpuState(const GpuStateConfig& config, IDevice* device)
+: Core::RefCounted(device->GetAllocator()), mConfig(config) {}
 
 //! platform implementation of device
 IDevice * IDevice::CreatePlatformDevice(const DeviceConfig& config, Alloc::IAllocator * allocator)

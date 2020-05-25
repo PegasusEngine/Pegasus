@@ -25,6 +25,18 @@ namespace Render
 class Dx12Device;
 class Dx12Program;
 
+class Dx12GpuState : public GpuState
+{
+public:
+    Dx12GpuState(const GpuStateConfig& config, Dx12Device* device);
+    virtual ~Dx12GpuState();
+    const D3D12_GRAPHICS_PIPELINE_STATE_DESC& GetGraphicsPsoTemplate() const { return mGraphicsStateTemplate; }
+private:
+    void Translate();
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC mGraphicsStateTemplate;
+    D3D12_INPUT_ELEMENT_DESC mElementInputLayoutList[(unsigned)GpuStateConfig::MaxElements];
+};
+
 class Dx12Pso : public GpuPipeline
 {
 public:

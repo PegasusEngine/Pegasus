@@ -189,38 +189,116 @@ struct RenderTargetConfig
 	Core::Ref<Texture> depthStencil;
 };
 
-struct GpuRasterStateConfig
+enum class DepthComparisonFunc
+{
+    Never,
+    Less,
+    Equal,
+    LessEqual,
+    Greater,
+    NotEqual,
+    GreaterEqual,
+    Always
+};
+
+enum class BlendVal
+{
+    Zero,
+    One,
+    SrcColor,
+    InvSrcColor,
+    SrcAlpha,
+    InvSrcAlpha,
+    DestAlpha,
+    InvDestAlpha,
+    DestColor,
+    InvDestColor
+};
+
+enum class BlendOp
+{
+    Add, Subtract, Min, Max
+};
+
+enum class CullMode
+{
+    None, Ccw, Cw
+};
+
+struct GpuStateConfig
 {
     struct Element
     {
         std::string semantic;
-        Core::Format format;
+        Core::Format format = Core::FORMAT_RGBA_8_UNORM;
         bool perInstance = false;
 
         unsigned semanticIndex = 0u;
         unsigned streamId = 0u;
-        unsigned byteOffset = 0u;
         unsigned instanceStepRate = 0u;
+        int byteOffset = -1; //negative means we append
     };
 
-    std::vector<Element> elements;
-    Core::Format rtFormats[RenderTargetConfig::MaxRt];
-    bool rtEnabled[RenderTargetConfig::MaxRt];
+    enum
+    {
+        MaxElements = 32
+    };
+
+    enum ColorBits
+    {
+        None   = 0,
+        Red    = 1,
+        Green  = 2,
+        Blue   = 4,
+        Alpha  = 8,
+        All    = (ColorBits)( (int)Red | (int)Green | (int)Blue | (int)Alpha )
+    };
+
+    unsigned elementCounts = 1;
+    Element elements[MaxElements];
+
+    struct RenderTargetInfo
+    {
+        bool enableBlending = false;
+        BlendVal blendSrc = BlendVal::SrcColor;
+        BlendVal blendDest = BlendVal::Zero;
+        BlendOp  blendOp = BlendOp::Add;
+        BlendVal blendSrcAlpha = BlendVal::SrcAlpha;
+        BlendVal blendDestAlpha = BlendVal::Zero;
+        BlendOp  blendOpAlpha = BlendOp::Add;
+        ColorBits colorBits = All;
+        Core::Format format = Core::FORMAT_RGBA_8_UNORM;
+    };
+
+    struct DepthStencilDesc
+    {
+        bool depthEnable = true;
+        Core::Format format = Core::FORMAT_R32_FLOAT;
+        DepthComparisonFunc depthFunc = DepthComparisonFunc::LessEqual;
+    };
+
+    bool enableWireFrame = false;
+    unsigned activeRenderTargets = 1;
+    CullMode cullMode = CullMode::None;
+    RenderTargetInfo renderTargetInfo[RenderTargetConfig::MaxRt];
+    DepthStencilDesc dsDesc;
 };
 
-class GpuRasterState : public Core::RefCounted
+class GpuState : public Core::RefCounted
 {
+public:
+    const GpuStateConfig& GetConfig() const { return mConfig; }
+
 protected:
-    GpuRasterState(IDevice* device);
-    virtual ~GpuRasterState();
-    IDevice* mDevice;
+    GpuState(const GpuStateConfig& config, IDevice* device);
+    GpuStateConfig mConfig;
 };
 
 struct GpuPipelineConfig
 {
     std::string source;
     std::string mainNames[Pipeline_Max];
-    Core::Ref<GpuRasterState> rasterState;
+    Core::Ref<GpuState> graphicsState;
 };
 
 template<> inline ResourceType GetResourceType<BufferConfig>() { return ResourceType::Buffer; }
@@ -254,7 +332,7 @@ typedef Core::Ref<Texture> TextureRef;
 typedef Core::Ref<ResourceTable> ResourceTableRef;
 typedef Core::Ref<RenderTarget> RenderTargetRef;
 typedef Core::Ref<GpuPipeline> GpuPipelineRef;
-typedef Core::Ref<GpuRasterState> GpuRasterStateRef;
+typedef Core::Ref<GpuState> GpuStateRef;
 
 //! Starts a new marker for gpu debugging.
 //! \param marker - the marker string, null terminated.

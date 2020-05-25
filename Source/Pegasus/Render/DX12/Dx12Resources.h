@@ -32,6 +32,8 @@ class Dx12Device;
 class Dx12Resource;
 struct GpuMemoryBlock;
 
+DXGI_FORMAT GetDxFormat(Pegasus::Core::Format format);
+
 class Dx12Resource
 {
     friend class Dx12ResourceTable;
