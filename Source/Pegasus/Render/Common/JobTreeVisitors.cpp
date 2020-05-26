@@ -159,6 +159,17 @@ void ResourceStateBuilder::SetState(unsigned parentListId, GpuListLocation listL
             SetState(parentListId, listLocation, newState, &(*resRef));
 }
 
+void ResourceStateBuilder::SetState(unsigned parentListId, GpuListLocation listLocation, ResourceGpuState newState, const RenderTarget* rt)
+{
+    for (unsigned i = 0; i < rt->GetConfig().colorCount; ++i)
+    {
+        if (rt->GetConfig().colors[i] != nullptr)
+            SetState(parentListId, listLocation, newState, &(*rt->GetConfig().colors[i]));
+    }
+    if (rt->GetConfig().depthStencil != nullptr)
+        SetState(parentListId, listLocation, newState, &(*rt->GetConfig().depthStencil));
+}
+
 void ResourceStateBuilder::FlushResourceStates(const ListRecord& record, bool applyInverse)
 {
     for (auto& barrier : record.barriers)
@@ -267,16 +278,7 @@ void ResourceStateBuilder::ApplyBarriers(
             [&](const DrawCmdData& d){
                 if (d.rt == nullptr)
                     return;
-
-                for (auto& resource :  d.rt->GetConfig().colors)
-                {
-                    if (resource == nullptr)
-                        continue;
-                    SetState(listId, listLocation, ResourceGpuState::Rt, &(*resource));
-                }
-
-                if (d.rt->GetConfig().depthStencil != nullptr)
-                    SetState(listId, listLocation, ResourceGpuState::Ds, &(*d.rt->GetConfig().depthStencil));
+                SetState(listId, listLocation, ResourceGpuState::Rt, &(*d.rt));
             },
             [&](const ComputeCmdData& d){
             },
@@ -284,7 +286,17 @@ void ResourceStateBuilder::ApplyBarriers(
                 SetState(listId, listLocation, ResourceGpuState::CopySrc, &(*d.src));
                 SetState(listId, listLocation, ResourceGpuState::CopyDst, &(*d.dst));
             },
+            [&](const ClearRenderTargetCmdData& d){
+                if (d.rt == nullptr)
+                    return;
+                SetState(listId, listLocation, ResourceGpuState::Rt, &(*d.rt));
+            },
             [&](const DisplayCmdData& d){
+                TextureRef t = d.display != nullptr ? const_cast<DisplayCmdData&>(d).display->GetTexture() : nullptr;
+                if (t != nullptr)
+                {
+                    SetState(listId, listLocation, ResourceGpuState::Presentable, &(*t));
+                }
             },
             [&](const GroupCmdData& d){
             }

@@ -185,6 +185,7 @@ struct ResourceTableConfig
 struct RenderTargetConfig
 {
 	enum { MaxRt = 8 };
+    unsigned colorCount = 1u;
 	Core::Ref<Texture> colors[RenderTargetConfig::MaxRt];
 	Core::Ref<Texture> depthStencil;
 };

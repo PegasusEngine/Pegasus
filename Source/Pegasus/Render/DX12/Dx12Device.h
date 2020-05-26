@@ -81,7 +81,10 @@ public:
     GpuStateRef InternalCreateGpuState(const GpuStateConfig& config);
 	IDisplayRef InternalCreateDisplayConfig(const DisplayConfig& displayConfig);
     GpuSubmitResult InternalSubmit(const RootJob& rootJob, const CanonicalCmdListResult& result);
+    void InternalReleaseWork(GpuWorkHandle workHandle);
     void InternalWait(GpuWorkHandle workHandle);
+    bool InternalIsFinished(GpuWorkHandle workHandle);
+    void InternalGarbageCollect();
 
 private:
 

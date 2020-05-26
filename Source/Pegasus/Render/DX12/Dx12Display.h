@@ -16,12 +16,14 @@
 #include "Dx12RDMgr.h"
 #include "Dx12Resources.h"
 #include "Dx12GpuProgram.h"
+#include <vector>
 
 namespace Pegasus
 {
 namespace Render
 {
 
+class Dx12Fence;
 class Dx12GpuProgram;
 class Dx12Device;
 
@@ -32,35 +34,24 @@ public:
     Dx12Display(const DisplayConfig& config, Dx12Device* device);
     virtual ~Dx12Display();
 
-    virtual void BeginFrame() override;
-    virtual void EndFrame() override;
     virtual void Resize(unsigned int width, unsigned int height) override;
-    UINT GetBuffering() const { return Buffering; }
-    void Flush();
+    virtual Texture* GetTexture() override;
+    virtual RenderTarget* GetRenderTarget() override;
+    
+    UINT64 GetFenceVal() const;
+    void Present(Dx12Fence* fence);
 
 private:
-
-    enum
-    {
-        Buffering = 2 //double buffered
-    };
-
     //! the swap chain
     IDXGISwapChain4*     mSwapChain;
 
     //cached dx12 device
     Dx12Device* mDevice;
 
-    Dx12RDMgr::Handle mRtvBuffers[Buffering];
-    CComPtr<ID3D12Resource> mColorResources[Buffering];
- 
-    UINT mBackBufferIdx;
-
-    CComPtr<ID3D12GraphicsCommandList> mCmdList;
-
-    //! target frame buffer width/height
-    unsigned int mWidth;
-    unsigned int mHeight;
+    std::vector<UINT64> mFenceVals;
+    std::vector<Dx12TextureRef> mTextures;
+    std::vector<Dx12RenderTargetRef> mRts;
 };
+
 }
 }

@@ -5,9 +5,10 @@
 #include "Dx12Fence.h"
 #include "Dx12GpuProgram.h"
 #include "Dx12Pso.h"
+#include "Dx12Resources.h"
+#include "Dx12Fence.h"
 #include <dxgi1_6.h>
 #include <Pegasus/Allocator/IAllocator.h>
-#include <Pegasus/Core/Formats.h>
 
 namespace Pegasus
 {
@@ -18,12 +19,8 @@ namespace Render
 Dx12Display::Dx12Display(const DisplayConfig& config, Dx12Device* parentDevice) 
 : IDisplay(config, parentDevice->GetAllocator())
 , mSwapChain(nullptr)
-, mBackBufferIdx(0u) 
 , mDevice(parentDevice)
 {
-    mWidth = config.width;
-    mHeight = config.height;
-    
     {          
 		IDXGIFactory4* dXGIFactory = mDevice->GetGraphicsCardInfos()->dxgiFactory;
 
@@ -34,18 +31,18 @@ Dx12Display::Dx12Display(const DisplayConfig& config, Dx12Device* parentDevice)
         swapChainDesc.BufferCount = 2;
 
         // Set the width and height of the back buffer.
-        swapChainDesc.Width = mWidth;
-        swapChainDesc.Height = mHeight;
+        swapChainDesc.Width = mConfig.width;
+        swapChainDesc.Height = mConfig.height;
 
         // Set regular 32-bit surface for the back buffer.
-        swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        swapChainDesc.Format = GetDxFormat(mConfig.format);
         swapChainDesc.Stereo = FALSE;
 
         // Turn multisampling off.
         swapChainDesc.SampleDesc.Count = 1;
         swapChainDesc.SampleDesc.Quality = 0;
         swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        swapChainDesc.BufferCount = GetBuffering();
+        swapChainDesc.BufferCount = mConfig.buffering;
         swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
         swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
         
@@ -69,137 +66,72 @@ Dx12Display::Dx12Display(const DisplayConfig& config, Dx12Device* parentDevice)
 
 		DX_VALID(swapChain1->QueryInterface(&mSwapChain));
 
-        for (int i = 0; i < (int)GetBuffering(); ++i)
+        TextureConfig surfaceConfig; 
+        surfaceConfig.type = TextureType_2d;
+        surfaceConfig.width = mConfig.width;
+        surfaceConfig.height = mConfig.height;
+        surfaceConfig.depth = 1;
+        surfaceConfig.mipLevels = 1;
+        surfaceConfig.name = "DisplayBuffer";
+        surfaceConfig.format = mConfig.format;
+        surfaceConfig.bindFlags = BindFlags_Rt;
+        surfaceConfig.usage = ResourceUsage_Static;
+
+        for (int i = 0; i < (int)mConfig.buffering; ++i)
         {
+            ID3D12Resource* resource = nullptr;
             //Record RTVs
-            DX_VALID(mSwapChain->GetBuffer(i, __uuidof(ID3D12Resource), reinterpret_cast<void**>(&mColorResources[i])));
-            
-            mRtvBuffers[i] = mDevice->GetRDMgr()->AllocateRenderTarget();
-            mDevice->GetD3D()->CreateRenderTargetView(mColorResources[i], nullptr, mRtvBuffers[i].handle);
+            DX_VALID(mSwapChain->GetBuffer(i, __uuidof(ID3D12Resource), reinterpret_cast<void**>(&resource)));
 
+            Dx12TextureRef t = D12_NEW(parentDevice->GetAllocator(), "DisplayBufferAlloc") Dx12Texture(surfaceConfig, parentDevice);
+            t->AcquireD3D12Resource(resource);
+            t->init();
+            mTextures.push_back(t);
+    
+            RenderTargetConfig rtConfig;
+            rtConfig.colorCount = 1u;
+            rtConfig.colors[0] = &(*t);
+            Dx12RenderTargetRef rt = D12_NEW(parentDevice->GetAllocator(), "DisplayBufferRt") Dx12RenderTarget(rtConfig, parentDevice);
+            mRts.push_back(rt);
+
+            mFenceVals.push_back(0ull);
         }
-
-        mBackBufferIdx = mSwapChain->GetCurrentBackBufferIndex();
     }
-}
-
-void Dx12Display::Flush()
-{
 }
 
 Dx12Display::~Dx12Display()
 {
-    Flush();
-
-    for (int i = 0; i < (int)GetBuffering(); ++i)
-    {
-        mDevice->GetRDMgr()->Delete(mRtvBuffers[i]);
-    } 
-
     if (mSwapChain)
     {
         mSwapChain->Release();
     }	
 }
 
-void Dx12Display::BeginFrame()
+Texture* Dx12Display::GetTexture()
 {
-#if 0
-    //update to next frame
-    mRenderContext->BeginFrame();
-
-    Dx12QueueManager* qManager = mDevice->GetQueueManager();
-    ID3D12CommandQueue* directQueue = qManager->GetDirect();
-    
-
-	mBackBufferIdx = mSwapChain->GetCurrentBackBufferIndex();
-    PG_ASSERT(mBackBufferIdx == mRenderContext->GetFrameId());
-
-
-    D3D12_RESOURCE_BARRIER barrierDesc;
-    barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    barrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-    barrierDesc.Transition.pResource = mColorResources[mBackBufferIdx];
-    barrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-    barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-    barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-    mCmdList->ResourceBarrier(1, &barrierDesc);
-
-    mCmdList->OMSetRenderTargets(1, &mRtvBuffers[mBackBufferIdx].handle, false, nullptr);
-    FLOAT clearColor[] = { 0.0f, 0.0f, 1.0f, 1.0f };
-    mCmdList->ClearRenderTargetView(mRtvBuffers[mBackBufferIdx].handle, clearColor, 0, nullptr);
-    
-#if 0
-    if (mProgramTest == nullptr)
-    {
-        Dx12ProgramDesc desc;
-        desc.filename = "Shaders/hlsl/Dx12Test.hlsl";
-        desc.mainNames[Dx12_Vertex] = "vsMain";
-        desc.mainNames[Dx12_Pixel] = "psMain";
-        mProgramTest = mDevice->CreateGpuProgram();
-		mProgramTest->Compile(desc);
-    }
-	
-    if (mTestTexture == nullptr)
-    {
-        TextureDesc desc;
-        desc.name = "TestTexture";
-        desc.type = TextureType_2d;
-        desc.width = 256;
-        desc.height = 256;
-        desc.depth = 1;
-        desc.mipLevels = 1;
-        desc.format = Core::FORMAT_RGBA_8_UNORM;
-        desc.bindFlags = BindFlags_Srv | BindFlags_Rt | BindFlags_Uav;
-        desc.usage = ResourceUsage_Static;
-        mTestTexture = mDevice->CreateTexture(desc);
-    }
-
-    if (mTestBuffer == nullptr)
-    {
-        BufferDesc desc;
-        desc.name = "TestBuffer";
-        desc.stride = sizeof(float);
-        desc.elementCount = 34;
-		desc.bindFlags = BindFlags_Srv | BindFlags_Uav;
-        desc.bufferType = BufferType_Default;
-		desc.usage = ResourceUsage_Static;
-		desc.format = Core::FORMAT_R32_FLOAT;
-        mTestBuffer = mDevice->CreateBuffer(desc);
-    }
-#endif
-
-#endif
+    return &(*(mTextures[mSwapChain->GetCurrentBackBufferIndex()]));
 }
 
-void Dx12Display::EndFrame()
+RenderTarget* Dx12Display::GetRenderTarget()
 {
-#if 0
-    Dx12QueueManager* qManager = mDevice->GetQueueManager();
-    ID3D12CommandQueue* directQueue = qManager->GetDirect();
+    return &(*(mRts[mSwapChain->GetCurrentBackBufferIndex()]));
+}
 
-    D3D12_RESOURCE_BARRIER barrierDesc;
-    barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    barrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-    barrierDesc.Transition.pResource = mColorResources[mBackBufferIdx];
-    barrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-    barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-    barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-    mCmdList->ResourceBarrier(1, &barrierDesc);
+UINT64 Dx12Display::GetFenceVal() const
+{
+    return mFenceVals[mSwapChain->GetCurrentBackBufferIndex()];
+}
 
-	mCmdList->Close();
-
-	ID3D12CommandList* lists[] = { mCmdList };
-    directQueue->ExecuteCommandLists(1, lists);
+void Dx12Display::Present(Dx12Fence* fence)
+{
+    auto bufferIndex = mSwapChain->GetCurrentBackBufferIndex();
     DX_VALID_DECLARE(mSwapChain->Present(1u, 0u));
-
-	mRenderContext->EndFrame();
-#endif 0
+    mFenceVals[bufferIndex] = fence->Signal();
 }
 
 void Dx12Display::Resize(unsigned int width, unsigned int height)
 {
-    if (width != mWidth || height != mHeight)
+    if (width != mConfig.width || height != mConfig.height)
     {
     }
 }

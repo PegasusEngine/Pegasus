@@ -26,18 +26,5 @@ GpuSubmitResult GpuWorkManager::Submit(const RootJob& rootJob, GpuWorkManager::S
     return platformWorkFn(result);
 }
 
-void GpuWorkManager::ReleaseWork(GpuWorkHandle workHandle)
-{
-}
-
-bool GpuWorkManager::IsFinished(GpuWorkHandle workHandle)
-{
-	return false;
-}
-
-void GpuWorkManager::GarbageCollect()
-{
-}
-
 }
 }

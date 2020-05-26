@@ -220,9 +220,24 @@ GpuSubmitResult Dx12Device::InternalSubmit(const RootJob& rootJob, const Canonic
     return { workHandle, compileResult };
 }
 
+void Dx12Device::InternalReleaseWork(GpuWorkHandle workHandle)
+{
+    mQueueManager->DestroyWork(workHandle);   
+}
+
 void Dx12Device::InternalWait(GpuWorkHandle workHandle)
 {
     mQueueManager->WaitOnCpu(workHandle);   
+}
+
+bool Dx12Device::InternalIsFinished(GpuWorkHandle workHandle)
+{
+    return mQueueManager->IsFinished(workHandle);
+}
+
+void Dx12Device::InternalGarbageCollect()
+{
+    mQueueManager->GarbageCollect();
 }
 
 }//namespace Render

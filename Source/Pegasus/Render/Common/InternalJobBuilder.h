@@ -46,8 +46,15 @@ struct CopyCmdData
     Core::Ref<IResource> dst;
 };
 
+struct ClearRenderTargetCmdData
+{
+    RenderTargetRef rt;
+    float color[4];
+};
+
 struct DisplayCmdData
 {
+    IDisplayRef display;
 };
 
 struct GroupCmdData
@@ -59,6 +66,7 @@ typedef std::variant<
         DrawCmdData,
         ComputeCmdData,
         CopyCmdData,
+        ClearRenderTargetCmdData,
         DisplayCmdData,
         GroupCmdData> VariantData;
 
@@ -110,6 +118,13 @@ public:
         InternalJobHandle h = CreateJobInstance();
         jobTable[h].data = CopyCmdData();
         return CopyJob(h, this);
+    }
+
+    ClearRenderTargetJob CreateClearRenderTargetJob()
+    {
+        InternalJobHandle h = CreateJobInstance();
+        jobTable[h].data = ClearRenderTargetCmdData();
+        return ClearRenderTargetJob(h, this);
     }
 
     DisplayJob CreateDisplayJob()

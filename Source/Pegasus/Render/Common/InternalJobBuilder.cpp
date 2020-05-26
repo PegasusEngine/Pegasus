@@ -41,13 +41,14 @@ InternalJobHandle InternalJobBuilder::CreateJobInstance()
     {
         newHandle = (InternalJobHandle)jobTable.size();
         jobTable.emplace_back();
-        jobTable[newHandle].handle = newHandle;
     }
     else
     {
         newHandle = mFreeSlots.back();
+        mFreeSlots.pop_back();
     }
 
+    jobTable[newHandle].handle = newHandle;
     return newHandle;
 }
 
@@ -65,10 +66,9 @@ void InternalJobBuilder::Delete(RootJob rootJob)
         data.cachedChildren = true;
     }
 
-    for (auto& childJobHandle : data.cachedChildrenJobs)
+	auto cachedChildJobs = data.cachedChildrenJobs;
+    for (auto& childJobHandle : cachedChildJobs)
     {
-		if (childJobHandle == rootJob.GetInternalJobHandle())
-			continue;
         mFreeSlots.push_back(childJobHandle);
         jobTable[childJobHandle] = JobInstance();
     }

@@ -13,6 +13,7 @@
 #pragma once
 
 #include <Pegasus/Render/Render.h>
+#include <Pegasus/Render/IDisplay.h>
 #include <vector>
 #include <variant>
 #include <map>
@@ -82,10 +83,18 @@ public:
     CopyJob Next();
 };
 
+class ClearRenderTargetJob : public GpuJob
+{
+public: 
+    ClearRenderTargetJob(InternalJobHandle h, InternalJobBuilder* parent) : GpuJob(h, parent) {}
+    void Set(RenderTargetRef rt, float color[4]); 
+};
+
 class DisplayJob : public GpuJob
 {
 public:
     DisplayJob(InternalJobHandle h, InternalJobBuilder* parent) : GpuJob(h, parent) {}
+    void SetPresentable(IDisplayRef display);
 };
 
 class GroupJob : public GpuJob
@@ -107,6 +116,7 @@ public:
     ComputeJob CreateComputeJob();
     CopyJob CreateCopyJob();
     DisplayJob CreateDisplayJob();
+    ClearRenderTargetJob CreateClearRenderTargetJob();
     GroupJob CreateGroupJob();
 
     void Delete(RootJob rootJob);

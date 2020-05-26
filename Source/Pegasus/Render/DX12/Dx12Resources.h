@@ -40,6 +40,7 @@ class Dx12Resource
 public:
     Dx12Resource(const ResourceConfig& desc, Dx12Device* device);
     virtual ~Dx12Resource();
+    void AcquireD3D12Resource(const ID3D12Resource* resource);
     ID3D12Resource* GetD3D() const { return mData.resource; }
     ID3D12Resource* GetD3D() { return mData.resource; }
     virtual void init();
@@ -65,12 +66,16 @@ protected:
         D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc;
         D3D12_HEAP_FLAGS heapFlags;
         ID3D12Resource* resource;
+        const ID3D12Resource* externResource;
         void* mappedMemory;
         D3D12_GPU_VIRTUAL_ADDRESS gpuVirtualAddress;
     } mData;
 
     Dx12Device* mDevice;
     D3D12_RESOURCE_STATES mDefaultResourceState;
+
+    bool mOwnsResource;
+    bool mResolveGpuAddress;
 
 private:
     ResourceConfig mResConfig;
@@ -106,11 +111,11 @@ public:
     virtual ~Dx12Buffer();
     virtual void init();
     virtual void* GetGpuPtr() { return GetDx12ResourceGpuPtr(); }
-    size_t GetUploadSz() const { return m_uploadBufferSize; }
+    size_t GetUploadSz() const { return mUploadBufferSize; }
+    void SetUploadBufferSize(size_t newSz) { mUploadBufferSize = newSz; }
 
 private:
-    bool m_uploadBuffer = false;
-    size_t m_uploadBufferSize = 0u;
+    size_t mUploadBufferSize = 0u;
 };
 
 class Dx12ResourceTable : public Pegasus::Render::ResourceTable
@@ -132,7 +137,7 @@ public:
     friend class Dx12RenderContext;
     Dx12RenderTarget(const RenderTargetConfig& desc, Dx12Device* device);
     ~Dx12RenderTarget();
-
+    Dx12RDMgr::Table& GetTable() { return mTable; }
 private:
     Dx12RDMgr::Table mTable;   
     Dx12RDMgr::Handle mDepthStencilHandle;

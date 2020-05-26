@@ -16,6 +16,8 @@
 #include "Dx12Fence.h"
 #include "Dx12RDMgr.h"
 #include "Dx12Pso.h"
+#include "Dx12Display.h"
+#include "Dx12RDMgr.h"
 #include "GenericGpuResourcePool.h"
 #include "../Common/InternalJobBuilder.h"
 #include "../Common/JobTreeVisitors.h"
@@ -51,7 +53,8 @@ D3D12_RESOURCE_STATES Dx12QueueManager::GetD3D12State(const LocationGpuState& st
         D3D12_RESOURCE_STATE_RENDER_TARGET,//Rt,
         D3D12_RESOURCE_STATE_DEPTH_WRITE,//Ds,
         D3D12_RESOURCE_STATE_COPY_SOURCE,//CopySrc,
-        D3D12_RESOURCE_STATE_COPY_DEST//CopyDst,
+        D3D12_RESOURCE_STATE_COPY_DEST,//CopyDst,
+        D3D12_RESOURCE_STATE_PRESENT
     };
 
     ResourceGpuState resState = state.gpuState;
@@ -231,13 +234,34 @@ void Dx12QueueManager::SubmitWork(GpuWorkHandle handle)
            (unsigned)b.to.gpuState);
     }
 
+	work.parentFence = queueContainer.fence;
+
+    for (auto gpuList : work.gpuLists)
+    {
+        for (IDisplayRef d : gpuList.presentables)
+        {
+            auto d12Display = static_cast<Dx12Display*>(&(*d));
+            work.parentFence->WaitOnCpu(d12Display->GetFenceVal());
+        }
+    }
+
     queueContainer.queue->ExecuteCommandLists(
         (UINT)submitList.size(),
         submitList.data()
     );
 
-	work.parentFence = queueContainer.fence;
     work.fenceVal = queueContainer.fence->Signal();
+
+    for (auto gpuList : work.gpuLists)
+    {
+        for (IDisplayRef d : gpuList.presentables)
+        {
+            auto d12Display = static_cast<Dx12Display*>(&(*d));
+            d12Display->Present(work.parentFence);
+        }
+
+        queueContainer.pendingAllocators.push_back(std::pair<CComPtr<ID3D12CommandAllocator>, UINT64>(gpuList.allocator, work.fenceVal));
+    }
 }
 
 void Dx12QueueManager::WaitOnCpu(GpuWorkHandle handle)
@@ -250,6 +274,18 @@ void Dx12QueueManager::WaitOnCpu(GpuWorkHandle handle)
     PG_ASSERT(work.submitted);
 
     work.parentFence->WaitOnCpu(work.fenceVal);
+}
+
+bool Dx12QueueManager::IsFinished(GpuWorkHandle handle)
+{
+    PG_ASSERT(handle.isValid(mWorks.size()));
+    if (!handle.isValid(mWorks.size()))
+        return false;
+
+    GpuWork& work = mWorks[handle];
+    PG_ASSERT(work.submitted);
+
+    return work.parentFence->IsComplete(work.fenceVal);
 }
 
 void Dx12QueueManager::AllocateList(WorkType workType, Dx12QueueManager::GpuWork& work)
@@ -493,7 +529,16 @@ void Dx12QueueManager::TranspileList(const JobInstance* jobTable, const Canonica
                     gpuList.list->CopyResource(dstRes->GetD3D(), srcRes->GetD3D());
                 }
             },
+            [&](const ClearRenderTargetCmdData& d){
+                if (d.rt == nullptr)
+                    return;
+                Dx12RenderTarget* d12Rt = static_cast<Dx12RenderTarget*>(&(*const_cast<ClearRenderTargetCmdData&>(d).rt));
+                gpuList.list->ClearRenderTargetView(
+                    d12Rt->GetTable().baseHandle, d.color, 0u, nullptr);
+            },
             [&](const DisplayCmdData& d){
+                if (d.display != nullptr)  
+                    gpuList.presentables.push_back(d.display);
             },
             [&](const GroupCmdData& d){
             }
@@ -511,11 +556,25 @@ void Dx12QueueManager::GarbageCollect()
 {
 	for (int queueIt = 0; queueIt < (int)WorkType::Count; ++queueIt)
 	{
-        mQueueContainers[queueIt].uploadPool->EndUsage();
-        mQueueContainers[queueIt].uploadPool->BeginUsage();
+        auto& c = mQueueContainers[queueIt];
+        c.uploadPool->EndUsage();
+        c.uploadPool->BeginUsage();
 
-        mQueueContainers[queueIt].tablePool->EndUsage();
-        mQueueContainers[queueIt].tablePool->BeginUsage();
+        c.tablePool->EndUsage();
+        c.tablePool->BeginUsage();
+
+#if 0
+        //TODO PROCESS THIS LIST
+        for (unsigned i = 0; i <  (unsigned)c.pendingAllocators.size(); ++i)
+        {
+            auto p = c.pendingAllocators[i];
+            if (c.fence->IsComplete(p.second))
+            {
+                p.freeAllocators.push_bacK(p.first);
+                c.pendingAllocators[[
+            }
+        }
+#endif
     }
 }
 

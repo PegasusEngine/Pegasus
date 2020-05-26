@@ -80,6 +80,9 @@ DXGI_FORMAT GetDxFormat(Pegasus::Core::Format format)
 Dx12Resource::Dx12Resource(const ResourceConfig& resConfig, Dx12Device* device)
 : mResConfig(resConfig), mDevice(device)
 {
+    mOwnsResource = true;
+    mResolveGpuAddress = true;
+
     {
         mData.srvDesc = {};
         mData.resDesc = {};
@@ -131,6 +134,13 @@ Dx12Resource::Dx12Resource(const ResourceConfig& resConfig, Dx12Device* device)
     mData.gpuVirtualAddress = {};
 }
 
+void Dx12Resource::AcquireD3D12Resource(const ID3D12Resource* d3dResource)
+{
+    mOwnsResource = false;
+    mResolveGpuAddress = false;
+    mData.resource = const_cast<ID3D12Resource*>(d3dResource);
+}
+
 Dx12Resource::~Dx12Resource()
 {
     if (!!(mResConfig.bindFlags & BindFlags_Srv))
@@ -143,11 +153,11 @@ Dx12Resource::~Dx12Resource()
         mDevice->GetRDMgr()->Delete(mUavHandle);
     }
 
-    if (mData.resource != nullptr)
+    if (mOwnsResource && mData.resource != nullptr)
     {
 		mData.resource->Release();
-        mData.resource = nullptr;
     }
+    mData.resource = nullptr;
 }
 
 void* Dx12Resource::GetDx12ResourceGpuPtr()
@@ -157,12 +167,15 @@ void* Dx12Resource::GetDx12ResourceGpuPtr()
 
 void Dx12Resource::init()
 {
-    DX_VALID_DECLARE(mDevice->GetD3D()->CreateCommittedResource(
-        &mData.heapProps, mData.heapFlags, &mData.resDesc,
-		GetDefaultState(), nullptr,
-        __uuidof(ID3D12Resource),
-        reinterpret_cast<void**>(&mData.resource)
-    ));
+    if (mOwnsResource)
+    {
+        DX_VALID_DECLARE(mDevice->GetD3D()->CreateCommittedResource(
+            &mData.heapProps, mData.heapFlags, &mData.resDesc,
+	    	GetDefaultState(), nullptr,
+            __uuidof(ID3D12Resource),
+            reinterpret_cast<void**>(&mData.resource)
+        ));
+    }
 
     if (!!(mResConfig.bindFlags & BindFlags_Srv))
     {
@@ -177,19 +190,22 @@ void Dx12Resource::init()
     }
 
 #if PEGASUS_DEBUG
-	std::wstring wname;
-	if (!mResConfig.name.empty())
-	{
-		// determine required length of new string
-		size_t reqLength = ::MultiByteToWideChar(CP_UTF8, 0, mResConfig.name.c_str(), (int)mResConfig.name.length(), 0, 0);
+    if (mOwnsResource)
+    {
+	    std::wstring wname;
+	    if (!mResConfig.name.empty())
+	    {
+	    	// determine required length of new string
+	    	size_t reqLength = ::MultiByteToWideChar(CP_UTF8, 0, mResConfig.name.c_str(), (int)mResConfig.name.length(), 0, 0);
 
-		// construct new string of required length
-		wname = std::wstring(reqLength, L'\0');
+	    	// construct new string of required length
+	    	wname = std::wstring(reqLength, L'\0');
 
-		// convert old string to new string
-		::MultiByteToWideChar(CP_UTF8, 0, mResConfig.name.c_str(), (int)mResConfig.name.length(), &wname[0], (int)wname.length());
-	}
-	mData.resource->SetName(wname.c_str());
+	    	// convert old string to new string
+	    	::MultiByteToWideChar(CP_UTF8, 0, mResConfig.name.c_str(), (int)mResConfig.name.length(), &wname[0], (int)wname.length());
+	    }
+	    mData.resource->SetName(wname.c_str());
+    }
 #endif
 }
 
@@ -394,8 +410,6 @@ void Dx12Texture::init()
     {
         mDevice->GetD3D()->CreateDepthStencilView(mData.resource, &mDsDesc, mDsHandle.handle);
     }
-
-
 }
 
 Dx12Buffer::Dx12Buffer(const BufferConfig& desc, Dx12Device* device)
@@ -441,8 +455,8 @@ Dx12Buffer::Dx12Buffer(const BufferConfig& desc, Dx12Device* device)
 Dx12Buffer::Dx12Buffer(const GpuMemoryBlock& uploadBuffer, Dx12Device* device)
 : Buffer(device, BufferConfig{}), Dx12Resource(BufferConfig{}, device)
 {
-    m_uploadBuffer = true;
-    m_uploadBufferSize = uploadBuffer.uploadSize;
+    AcquireD3D12Resource(uploadBuffer.buffer);
+    mUploadBufferSize = uploadBuffer.uploadSize;
     mData.mappedMemory = uploadBuffer.mappedBuffer;
     mData.gpuVirtualAddress = uploadBuffer.gpuVA;
 }
@@ -453,14 +467,10 @@ Dx12Buffer::~Dx12Buffer()
 
 void Dx12Buffer::init()
 {
-    //skip any resource initialization if this is an upload buffer
-    if (m_uploadBuffer)
-        return;
-
     Dx12Resource::init();
 
 	auto apiUsage = GetResConfig().usage;
-	if (apiUsage == ResourceUsage_Dynamic || apiUsage == ResourceUsage_Staging)
+	if (mResolveGpuAddress && (apiUsage == ResourceUsage_Dynamic || apiUsage == ResourceUsage_Staging))
 	{
 		D3D12_RANGE range = { (SIZE_T)0, (SIZE_T)mData.resDesc.Width };
 		DX_VALID_DECLARE(mData.resource->Map(0u, &range, &mData.mappedMemory));
@@ -496,20 +506,20 @@ Dx12RenderTarget::Dx12RenderTarget(const RenderTargetConfig& config, Dx12Device*
 {
     mRdMgr = device->GetRDMgr();
     Dx12RDMgr::Handle handles[RenderTargetConfig::MaxRt];
-    for (int i = 0; i < (int)RenderTargetConfig::MaxRt; ++i)
+    for (unsigned i = 0; i < config.colorCount; ++i)
     {
-        auto* dx12Texture = static_cast<const Dx12Texture*>(&(*config.colors[i]));
-        if (dx12Texture == nullptr)
-        {
-            handles[i] = { 0 };
-            continue;
-        }
+		if (config.colors[i] == nullptr)
+		{
+			handles[i] = { 0 };
+			continue;
+		}
 
+        auto* dx12Texture = static_cast<const Dx12Texture*>(&(*config.colors[i]));
         PG_ASSERT((dx12Texture->GetConfig().bindFlags & BindFlags_Rt) != 0);
         handles[i] = dx12Texture->GetRtvHandle();
     }
 
-    mTable = mRdMgr->AllocateTable(Dx12RDMgr::TableTypeRtv, handles, RenderTargetConfig::MaxRt);
+    mTable = mRdMgr->AllocateTable(Dx12RDMgr::TableTypeRtv, handles, config.colorCount);
 
     if (config.depthStencil != nullptr)
     {

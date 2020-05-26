@@ -187,6 +187,27 @@ CopyJob CopyJob::Next()
     return GenericNext<CopyJob>(*this, other, *mParent);
 }
 
+void ClearRenderTargetJob::Set(RenderTargetRef rt, float color[4])
+{
+    PG_VERIFY_JOB_HANDLE;
+    auto& jobInstance = mParent->jobTable[mJobHandle];
+    if (auto* data = std::get_if<ClearRenderTargetCmdData>(&jobInstance.data))
+    {
+        data->rt = rt;
+        memcpy(data->color, color, sizeof(color));
+    }
+}
+
+void DisplayJob::SetPresentable(IDisplayRef display)
+{
+    PG_VERIFY_JOB_HANDLE;
+    auto& jobInstance = mParent->jobTable[mJobHandle];
+    if (auto* data = std::get_if<DisplayCmdData>(&jobInstance.data))
+    {
+        data->display = display;
+    }
+}
+
 void GroupJob::AddJob(const GpuJob& other)
 {
     PG_VERIFY_JOB_HANDLE;
@@ -227,6 +248,11 @@ DrawJob JobBuilder::CreateDrawJob()
 CopyJob JobBuilder::CreateCopyJob()
 {
     return mImpl->CreateCopyJob();
+}
+
+ClearRenderTargetJob JobBuilder::CreateClearRenderTargetJob()
+{
+    return mImpl->CreateClearRenderTargetJob();
 }
 
 DisplayJob JobBuilder::CreateDisplayJob()

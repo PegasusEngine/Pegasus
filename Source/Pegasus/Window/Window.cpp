@@ -19,6 +19,8 @@
 #include "Pegasus/RenderSystems/System/RenderSystem.h"
 #include "Pegasus/Window/WindowComponentState.h"
 #include "Pegasus/Render/IDevice.h"
+#include "Pegasus/Render/Render.h"
+#include "Pegasus/Render/JobBuilder.h"
 
 
 #if PEGASUS_ENABLE_PROXIES
@@ -236,14 +238,27 @@ void Window::RemoveComponents()
 
 void Window::Draw()
 {
+    using namespace Pegasus::Render;
 #if PEGASUS_ENABLE_PROXIES
     if (!mEnableDraw) return;
 #endif
     if (mDisplay != nullptr)
     {
-        //Use this context on this thread.
-        mDisplay->BeginFrame();
-        
+        JobBuilder jb(mDevice);
+        {
+            RenderTargetRef displayRt = mDisplay->GetRenderTarget();
+            RootJob rootJob = jb.CreateRootJob();
+            rootJob.SetName("Clear Rt");
+            ClearRenderTargetJob clearJob = jb.CreateClearRenderTargetJob();
+            float clearCol[] = { 1.0f, 0.0f, 0.0f, 0.0f };
+            clearJob.Set(displayRt, clearCol);
+            clearJob.AddDependency(rootJob);
+            GpuSubmitResult result = mDevice->Submit(rootJob);
+            PG_ASSERT(result.resultCode == GpuWorkResultCode::Success);
+            jb.Delete(rootJob);
+            mDevice->ReleaseWork(result.handle);
+        }
+
         ComponentContext ctx = { mWindowContext, this };
 
         RenderSystems::RenderSystemManager* renderSystemManager = mWindowContext->GetRenderSystemManager();
@@ -272,8 +287,17 @@ void Window::Draw()
             }
         }
 
-        //Double buffer / end frame update.
-        mDisplay->EndFrame();
+        {
+            RootJob rootJob = jb.CreateRootJob();
+            rootJob.SetName("Present Rt");
+            DisplayJob displayJob = jb.CreateDisplayJob();
+            displayJob.SetPresentable(mDisplay);
+            displayJob.AddDependency(rootJob);
+            GpuSubmitResult result = mDevice->Submit(rootJob);
+            PG_ASSERT(result.resultCode == GpuWorkResultCode::Success);
+            jb.Delete(rootJob);
+            mDevice->ReleaseWork(result.handle);
+        }
     }
     else
     {

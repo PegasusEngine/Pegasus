@@ -87,6 +87,7 @@ enum class ResourceGpuState : unsigned
     Ds,
     CopySrc,
     CopyDst,
+    Presentable,
     Count
 };
 
@@ -227,6 +228,7 @@ private:
 
     void SetState(unsigned parentListId, GpuListLocation listLocation, ResourceGpuState newState, const IResource* resource);
     void SetState(unsigned parentListId, GpuListLocation listLocation, ResourceGpuState newState, const ResourceTable* resourceTable);
+    void SetState(unsigned parentListId, GpuListLocation listLocation, ResourceGpuState newState, const RenderTarget* resourceTable);
     void StoreResourceState(unsigned parentListId, const LocationGpuState& gpuState, const IResource* resource, bool checkViolation);
 	void FlushResourceStates(const ListRecord& record, bool applyInverse);
 

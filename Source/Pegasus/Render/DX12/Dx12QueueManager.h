@@ -11,6 +11,7 @@
 
 #pragma once
 #include <Pegasus/Render/IDevice.h>
+#include <Pegasus/Render/IDisplay.h>
 #include "../Common/ResourceStateTable.h"
 #include "../Common/JobTreeVisitors.h"
 #include <d3d12.h>
@@ -56,6 +57,7 @@ public:
     GpuWorkResultCode CompileWork(GpuWorkHandle handle, const RootJob& rootJob, const CanonicalJobPath* jobs, unsigned jobsCount);
     void SubmitWork(GpuWorkHandle handle);
     void WaitOnCpu(GpuWorkHandle handle);
+    bool IsFinished(GpuWorkHandle handle);
     void GarbageCollect();
 
     ID3D12CommandQueue* GetDirect() { return mQueueContainers[(int)WorkType::Graphics].queue; }
@@ -70,6 +72,7 @@ private:
         WorkType type = WorkType::Graphics;
         CComPtr<ID3D12GraphicsCommandList> list = nullptr;
         CComPtr<ID3D12CommandAllocator> allocator = nullptr;
+        std::vector<IDisplayRef> presentables;
     };
 
     using Dx12GpuLists = std::vector<GpuList>;
@@ -94,6 +97,7 @@ private:
         ID3D12CommandQueue* queue = nullptr;
         Dx12CmdLists freeLists;
         Dx12CmdAllocators freeAllocators;
+        std::vector<std::pair<CComPtr<ID3D12CommandAllocator>, UINT64>> pendingAllocators;
     };
 
     void AllocateList(WorkType workType, GpuWork& work);

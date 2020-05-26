@@ -29,9 +29,6 @@ public:
         Alloc::IAllocator* allocator,
         ResourceStateTable& stateTable);
     GpuSubmitResult Submit(const RootJob& rootJob, SubmitGpuWorkFn workFn);
-    void ReleaseWork(GpuWorkHandle workHandle);
-    bool IsFinished(GpuWorkHandle workHandle);
-    void GarbageCollect();
 
 private:
     Alloc::IAllocator* mAllocator;
@@ -146,14 +143,13 @@ GpuSubmitResult ADevice<PlatDeviceT>::Submit(const RootJob& rootJob)
 template<class PlatDeviceT>
 void ADevice<PlatDeviceT>::ReleaseWork(GpuWorkHandle workHandle)
 {
-    //mGpuWorkManager.ReleaseWork(workHandle);
+   static_cast<PlatDeviceT*>(this)->InternalReleaseWork(workHandle);
 }
 
 template<class PlatDeviceT>
 bool ADevice<PlatDeviceT>::IsFinished(GpuWorkHandle workHandle)
 {
-	return false;
-    //return mGpuWorkManager.IsFinished(workHandle);
+    return static_cast<PlatDeviceT*>(this)->InternalIsFinished(workHandle);
 }
 
 template<class PlatDeviceT>
@@ -165,7 +161,7 @@ void ADevice<PlatDeviceT>::Wait(GpuWorkHandle workHandle)
 template<class PlatDeviceT>
 void ADevice<PlatDeviceT>::GarbageCollect()
 {
-   // mGpuWorkManager.GarbageCollect();
+   static_cast<PlatDeviceT*>(this)->InternalGarbageCollect();
 }
 
 
