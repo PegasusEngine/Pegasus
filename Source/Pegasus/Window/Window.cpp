@@ -303,6 +303,8 @@ void Window::Draw()
     {
         PG_FAILSTR("Trying to refresh a window but its render context is undefined");
     }
+
+	mDevice->GarbageCollect();
 }
 
 //----------------------------------------------------------------------------------------

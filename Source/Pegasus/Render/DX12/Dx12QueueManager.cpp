@@ -185,6 +185,7 @@ void Dx12QueueManager::DestroyWork(GpuWorkHandle handle)
 
 GpuWorkResultCode Dx12QueueManager::CompileWork(GpuWorkHandle handle, const RootJob& rootJob, const CanonicalJobPath* jobs, unsigned jobCounts)
 {
+
     if (!handle.isValid(mWorks.size()))
         return GpuWorkResultCode::InvalidArgs;
 
@@ -205,6 +206,7 @@ GpuWorkResultCode Dx12QueueManager::CompileWork(GpuWorkHandle handle, const Root
 
 void Dx12QueueManager::SubmitWork(GpuWorkHandle handle)
 {
+
     PG_ASSERT(handle.isValid(mWorks.size()));
     if (!handle.isValid(mWorks.size()))
         return;
@@ -262,6 +264,8 @@ void Dx12QueueManager::SubmitWork(GpuWorkHandle handle)
 
         queueContainer.pendingAllocators.push_back(std::pair<CComPtr<ID3D12CommandAllocator>, UINT64>(gpuList.allocator, work.fenceVal));
     }
+
+
 }
 
 void Dx12QueueManager::WaitOnCpu(GpuWorkHandle handle)
@@ -563,18 +567,17 @@ void Dx12QueueManager::GarbageCollect()
         c.tablePool->EndUsage();
         c.tablePool->BeginUsage();
 
-#if 0
-        //TODO PROCESS THIS LIST
-        for (unsigned i = 0; i <  (unsigned)c.pendingAllocators.size(); ++i)
+        for (auto it = c.pendingAllocators.begin(); it != c.pendingAllocators.end();)
         {
-            auto p = c.pendingAllocators[i];
-            if (c.fence->IsComplete(p.second))
+            if (c.fence->IsComplete(it->second))
             {
-                p.freeAllocators.push_bacK(p.first);
-                c.pendingAllocators[[
+				DX_VALID_DECLARE(it->first->Reset());
+                c.freeAllocators.push_back(it->first);
+                it = c.pendingAllocators.erase(it);
             }
+            else
+                it++;
         }
-#endif
     }
 }
 
