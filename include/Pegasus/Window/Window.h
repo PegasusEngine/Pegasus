@@ -137,6 +137,8 @@ public:
 
     IWindowMessageHandler* GetMessageHandler() { return mMessageHandler; }
 
+    Render::IDisplay* GetDisplay() { return &(*mDisplay); }
+
 protected:
 
     //! Gets the window context for this window

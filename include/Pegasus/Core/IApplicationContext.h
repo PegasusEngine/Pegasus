@@ -48,6 +48,9 @@ namespace Pegasus {
     namespace PropertyGrid {
         class PropertyGridManager;
     }
+    namespace Render {
+        class IDevice;
+    }
     namespace RenderSystems {
         class RenderSystemManager;
     }
@@ -118,6 +121,8 @@ public:
     //! Returns a reference to the symbol table / bs functions of the render api
     //! \return render API block library
     virtual BlockScript::BlockLib* GetRenderBsApi() const = 0;
+
+    virtual Render::IDevice* GetRenderDevice() const = 0;
 
 #if PEGASUS_ENABLE_BS_REFLECTION_INFO
     //! Returns the reflection information from blockscript.

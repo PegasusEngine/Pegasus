@@ -19,6 +19,7 @@
 #include "Pegasus/Timeline/TimelineScript.h"
 #include "Pegasus/Timeline/TimelineScriptRunner.h"
 #include "Pegasus/Core/RefCounted.h"
+#include "Pegasus/Render/Render.h"
 
 #if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
 #include "Pegasus/AssetLib/Category.h"
@@ -81,6 +82,7 @@ struct RenderInfo
     float viewportHeightF;//the viewport height as a float
     float aspect;         //the aspect ratio (height / width)
     float aspectInv;      // the inverse aspect ratio
+    Render::RenderTargetRef displayRenderTarget; //render display render target
 
     RenderInfo(
         float pBeat
@@ -91,6 +93,7 @@ struct RenderInfo
        ,float pViewportHeightF
        ,float pAspect
        ,float pAspectInv
+       ,Render::RenderTargetRef pDisplayRenderTarget //render display render target
        )
      : beat(pBeat)
      ,windowId(pWindowId)
@@ -101,6 +104,7 @@ struct RenderInfo
      ,aspect(pAspect)
      ,aspectInv(pAspectInv)
      ,relativeBeat(0.0f) //compute as we pass it down to blocks to recycle memory
+     ,displayRenderTarget(pDisplayRenderTarget)
     {
     }
 };

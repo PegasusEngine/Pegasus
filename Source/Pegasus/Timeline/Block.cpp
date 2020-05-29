@@ -44,6 +44,7 @@ Block::Block(Alloc::IAllocator * allocator, Core::IApplicationContext * appConte
     ,&mCategory
 #endif
     )
+,   mDevice(appContext->GetRenderDevice())
 #if PEGASUS_ENABLE_PROXIES
 ,   mProxy(this)
 #endif  // PEGASUS_ENABLE_PROXIES

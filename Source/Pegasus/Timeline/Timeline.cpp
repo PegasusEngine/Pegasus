@@ -24,6 +24,7 @@
 #include "Pegasus/Window/Window.h"
 #include "Pegasus/Utils/Memset.h"
 #include "Pegasus/Sound/Sound.h"
+#include "Pegasus/Render/IDisplay.h"
 
 namespace Pegasus {
 namespace Timeline {
@@ -399,6 +400,7 @@ void Timeline::Render(int windowIndex, Wnd::Window* window)
           ,static_cast<float>(window->GetHeight())
           ,window->GetRatio()
           ,window->GetRatioInv()
+          ,window->GetDisplay() ? window->GetDisplay()->GetRenderTarget() : nullptr
         );
 
         Render::BeginMarker("MasterScript");

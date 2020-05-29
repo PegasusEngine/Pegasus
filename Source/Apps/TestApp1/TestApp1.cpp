@@ -16,6 +16,7 @@
 #include "TimelineBlocks/FractalCubeBlock.h"
 #include "TimelineBlocks/FractalCube2Block.h"
 #include "TimelineBlocks/TextureTestBlock.h"
+#include "TimelineBlocks/SimpleTriangleBlock.h"
 #include "Pegasus/AssetLib/AssetLib.h"
 #include "Pegasus/AssetLib/Asset.h"
 #include "TimelineBlocks/GeometryTestBlock.h"
@@ -204,6 +205,7 @@ void TestApp1::InitializeApp()
     REGISTER_TIMELINE_BLOCK(TextureTestBlock);
     REGISTER_TIMELINE_BLOCK(GeometryTestBlock);
 #endif
+    REGISTER_TIMELINE_BLOCK(SimpleTriangleBlock);
     // load the timeline. For now gets unloaded at destruction of timeline manager.
     Pegasus::Timeline::TimelineManager * const timelineManager = GetTimelineManager();
     //Pegasus::Timeline::TimelineRef timeline = timelineManager->LoadTimeline("Common/Timeline/mainTimeline.pas");

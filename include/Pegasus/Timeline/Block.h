@@ -38,6 +38,11 @@ namespace Pegasus {
         struct RenderInfo;
     }
 
+    namespace Render
+    {
+        class IDevice;
+    }
+
     namespace Wnd {
         class Window;
     }
@@ -175,7 +180,9 @@ protected:
 
     //! Get the timeline
     //! \return Global timeline
-    inline TimelineManager * GetTimelineManager() const { return mAppContext->GetTimelineManager(); }
+    inline TimelineManager*  GetTimelineManager() const { return mAppContext->GetTimelineManager(); }
+
+    inline Render::IDevice* GetDevice() const { return mDevice; }
 
     //! Callback that reads from an asset root and populates properties / creates objects based on such.
     //! \param lib the asset library.
@@ -241,6 +248,8 @@ private:
 #if PEGASUS_ASSETLIB_ENABLE_CATEGORIES
     AssetLib::Category mCategory; 
 #endif
+
+    Render::IDevice* mDevice;
 
 #if PEGASUS_ENABLE_PROXIES
     unsigned mGuid;

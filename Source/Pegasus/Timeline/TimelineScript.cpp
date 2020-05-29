@@ -107,11 +107,14 @@ void TimelineScript::RegisterTypes(Pegasus::BlockScript::BlockLib* lib)
     lib->CreateStructTypes(descriptionList, sizeof(descriptionList)/sizeof(descriptionList[0]));
 #if PEGASUS_ENABLE_PROXIES
 
+#if 0
+    //TODO: blockscript is not working atm. Will have to revise this.
     //Sanity check, that the programmer has not forgotten to update the blockscript meta types
     const Pegasus::BlockScript::TypeDesc* updateTypeDesc = lib->GetSymbolTable()->GetTypeTable()->GetTypeByName("UpdateInfo");
     const Pegasus::BlockScript::TypeDesc* renderTypeDesc = lib->GetSymbolTable()->GetTypeTable()->GetTypeByName("RenderInfo");
     PG_ASSERT(updateTypeDesc != nullptr && updateTypeDesc->GetByteSize() == sizeof(UpdateInfo));
     PG_ASSERT(renderTypeDesc != nullptr && renderTypeDesc->GetByteSize() == sizeof(RenderInfo));
+#endif
 #endif
 }
 

@@ -122,6 +122,7 @@ public:
     virtual PropertyGrid::PropertyGridManager*              GetPropertyGridManager()     const { return mPropertyGridManager;     }
     virtual RenderSystems::RenderSystemManager*             GetRenderSystemManager()     const { return mRenderSystemManager;     }
     virtual BlockScript::BlockLib*                          GetRenderBsApi()             const { return mRenderApiScript;         }
+    virtual Render::IDevice*                                GetRenderDevice()            const { return mDevice;                  }
 #if PEGASUS_ENABLE_BS_REFLECTION_INFO
     //! Returns the reflection information from blockscript.
     virtual App::AppBsReflectionInfo*                       GetBsReflectionInfo() const { return mBsReflectionInfo; }
