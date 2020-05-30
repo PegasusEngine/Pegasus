@@ -50,7 +50,7 @@ void SimpleTriangleBlock::Initialize()
 
         void psMain(in VsOut vsIn,  out float4 output : SV_Target0)
         {
-            output = float4(vsIn.color, 1.0);
+            output = float4(1,1,1,1);//float4(vsIn.color, 1.0);
         }
     )";
 
