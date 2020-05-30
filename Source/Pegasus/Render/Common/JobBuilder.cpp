@@ -152,7 +152,7 @@ void DrawJob::SetVertexBuffers(BufferRef buffers[], unsigned int count)
     if (auto* data = std::get_if<DrawCmdData>(&jobInstance.data))
     {
         data->vb.clear();
-        data->vb.insert(data->vb.end(), &buffers[0], &buffers[count - 1]);
+        data->vb.insert(data->vb.end(), buffers, buffers + count);
     }
 }
 
@@ -222,7 +222,7 @@ void ClearRenderTargetJob::Set(RenderTargetRef rt, float color[4])
     if (auto* data = std::get_if<ClearRenderTargetCmdData>(&jobInstance.data))
     {
         data->rt = rt;
-        memcpy(data->color, color, sizeof(color));
+        memcpy(data->color, color, (size_t)(4.0)*sizeof(float));
     }
 }
 

@@ -369,7 +369,11 @@ static void SetDx12ResourceTables(
     for (ResourceTableRef t : jobInstance.srvTables)
         srvCounts += t != nullptr ? (unsigned)t->GetConfig().resources.size() : 0u;
 
-    DescriptorTable cbvSrvUavTables = tablePool.AllocateTable(cbvCounts + uavCounts + srvCounts);
+	unsigned totalTableSize = cbvCounts + uavCounts + srvCounts;
+	if (totalTableSize == 0u)
+		return;
+
+    DescriptorTable cbvSrvUavTables = tablePool.AllocateTable(totalTableSize);
 
     if (cbvCounts)
     {
@@ -512,6 +516,7 @@ static void SetDx12Rt(
         true,
         nullptr);
 
+    D3D12_RECT pScissors[RenderTargetConfig::MaxRt];
     D3D12_VIEWPORT pViewports[RenderTargetConfig::MaxRt];
     for (unsigned i = 0; i < cmdData.rt->GetConfig().colorCount; ++i)
     {
@@ -526,11 +531,18 @@ static void SetDx12Rt(
         pViewports[i].Width = (float)w;
         pViewports[i].Height = (float)h;
         pViewports[i].MaxDepth = 1.0f;
+
+        pScissors[i] = {};
+        pScissors[i].right = (LONG)w;
+        pScissors[i].bottom = (LONG)w;
     }
 
     list->RSSetViewports(
         cmdData.rt->GetConfig().colorCount,
         pViewports);
+    list->RSSetScissorRects(
+        cmdData.rt->GetConfig().colorCount,
+        pScissors);
 }
 
 void Dx12QueueManager::TranspileList(const JobInstance* jobTable, const CanonicalJobPath& job, GpuList& gpuList)

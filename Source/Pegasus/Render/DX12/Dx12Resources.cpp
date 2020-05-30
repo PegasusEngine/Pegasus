@@ -477,6 +477,10 @@ void Dx12Buffer::init()
 	{
 		D3D12_RANGE range = { (SIZE_T)0, (SIZE_T)mData.resDesc.Width };
 		DX_VALID_DECLARE(mData.resource->Map(0u, &range, &mData.mappedMemory));
+	}
+
+	if (mResolveGpuAddress)
+	{
 		mData.gpuVirtualAddress = mData.resource->GetGPUVirtualAddress();
 	}
 }

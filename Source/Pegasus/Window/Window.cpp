@@ -250,7 +250,7 @@ void Window::Draw()
             RootJob rootJob = jb.CreateRootJob();
             rootJob.SetName("Clear Rt");
             ClearRenderTargetJob clearJob = jb.CreateClearRenderTargetJob();
-            float clearCol[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+            float clearCol[] = { 0.0f, 0.0f, 0.0f, 0.0f };
             clearJob.Set(displayRt, clearCol); 
             clearJob.AddDependency(rootJob);
             GpuSubmitResult result = mDevice->Submit(rootJob);

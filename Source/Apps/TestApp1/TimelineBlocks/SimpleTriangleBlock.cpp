@@ -50,7 +50,7 @@ void SimpleTriangleBlock::Initialize()
 
         void psMain(in VsOut vsIn,  out float4 output : SV_Target0)
         {
-            output = float4(1,1,1,1);//float4(vsIn.color, 1.0);
+            output = float4(vsIn.color, 1.0);
         }
     )";
 
@@ -83,9 +83,9 @@ void SimpleTriangleBlock::Initialize()
 
     BufferRef tmpBuffer;
     Vertex* v = device->CreateUploadBuffer<Vertex>(tmpBuffer, vertCount);
-    v[0] = { { 0.0f, 1.0f, 0.1f, 1.0f},  { 1.0f, 0.0f, 0.0f } };
-    v[1] = { { -1.0f, 0.0f, 0.1f, 1.0f}, { 0.0f, 1.0f, 0.0f } };
-    v[2] = { { 1.0f, 0.0f, 0.1f, 1.0f},  { 0.0f, 0.0f, 1.0f } };
+    v[0] = { { 0.0f, 1.0f, 0.1f, 1.0f},   { 1.0f, 0.0f, 0.0f } };
+    v[1] = { { -1.0f, -1.0f, 0.1f, 1.0f}, { 0.0f, 1.0f, 0.0f } };
+    v[2] = { { 1.0f, -1.0f, 0.1f, 1.0f},  { 0.0f, 0.0f, 1.0f } };
     {
         JobBuilder jb(device); 
         RootJob rj = jb.CreateRootJob();
@@ -114,6 +114,7 @@ void SimpleTriangleBlock::Render(const Pegasus::Timeline::RenderInfo& renderInfo
     RootJob rj = jb.CreateRootJob();
     DrawJob dj = jb.CreateDrawJob();
     dj.AddDependency(rj);
+    dj.SetGpuPipeline(mPso);
     dj.SetVertexBuffers(&mVb, 1u);
     dj.SetRenderTarget(renderInfo.displayRenderTarget);
     DrawJob::NonIndexedParams p;
