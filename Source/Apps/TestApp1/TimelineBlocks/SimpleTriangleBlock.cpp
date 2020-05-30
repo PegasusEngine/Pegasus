@@ -86,6 +86,7 @@ void SimpleTriangleBlock::Initialize()
     v[0] = { { 0.0f, 1.0f, 0.1f, 1.0f},   { 1.0f, 0.0f, 0.0f } };
     v[1] = { { -1.0f, -1.0f, 0.1f, 1.0f}, { 0.0f, 1.0f, 0.0f } };
     v[2] = { { 1.0f, -1.0f, 0.1f, 1.0f},  { 0.0f, 0.0f, 1.0f } };
+    //TODO: simplify this boiler plate, and instead have supprot for init a resource from the description.
     {
         JobBuilder jb(device); 
         RootJob rj = jb.CreateRootJob();
@@ -95,6 +96,8 @@ void SimpleTriangleBlock::Initialize()
         cj.Set(tmpBuffer, mVb);
         auto result = device->Submit(rj);
         PG_ASSERT(result.resultCode == GpuWorkResultCode::Success);
+        //For now block CPU, until i can get GPU side fences working for the queues
+        //that use resources that have not been initialized.
         device->Wait(result.handle);
         device->ReleaseWork(result.handle);
     }
@@ -123,4 +126,7 @@ void SimpleTriangleBlock::Render(const Pegasus::Timeline::RenderInfo& renderInfo
 
     auto result = GetDevice()->Submit(rj);
     PG_ASSERT(result.resultCode == GpuWorkResultCode::Success);
+    
+    //TODO: should work on garbage collection
+    GetDevice()->ReleaseWork(result.handle);
 }
