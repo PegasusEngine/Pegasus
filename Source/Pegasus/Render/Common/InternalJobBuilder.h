@@ -30,7 +30,13 @@ struct RootCmdData
 
 struct DrawCmdData
 {
+    std::vector<BufferRef> vb;
     std::vector<BufferRef> cbuffer;
+
+    enum Type { None, Indexed, NonIndexed };
+    Type drawType = None;
+    DrawJob::NonIndexedParams nonIndexed;
+    DrawJob::IndexedParams    indexed;
     RenderTargetRef rt;
 };
 

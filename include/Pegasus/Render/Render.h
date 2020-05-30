@@ -96,8 +96,7 @@ protected:
     {
     }
 
-private:
-    ConfigType mConfig;
+	ConfigType mConfig;
 };
 
 

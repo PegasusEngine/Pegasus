@@ -85,6 +85,8 @@ enum class ResourceGpuState : unsigned
     Cbv,
     Rt,
     Ds,
+    Vertex,
+    Index,
     CopySrc,
     CopyDst,
     Presentable,

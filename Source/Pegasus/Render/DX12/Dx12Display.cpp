@@ -114,7 +114,8 @@ Texture* Dx12Display::GetTexture()
 
 RenderTarget* Dx12Display::GetRenderTarget()
 {
-    return &(*(mRts[mSwapChain->GetCurrentBackBufferIndex()]));
+	auto rtId = mSwapChain->GetCurrentBackBufferIndex();
+    return &(*(mRts[rtId]));
 }
 
 UINT64 Dx12Display::GetFenceVal() const

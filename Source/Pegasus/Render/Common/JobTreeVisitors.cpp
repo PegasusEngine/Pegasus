@@ -278,6 +278,10 @@ void ResourceStateBuilder::ApplyBarriers(
             [&](const DrawCmdData& d){
                 if (d.rt == nullptr)
                     return;
+                for (const BufferRef v : d.vb)
+                {
+                    SetState(listId, listLocation, ResourceGpuState::Vertex, &(*v));
+                }
                 SetState(listId, listLocation, ResourceGpuState::Rt, &(*d.rt));
             },
             [&](const ComputeCmdData& d){

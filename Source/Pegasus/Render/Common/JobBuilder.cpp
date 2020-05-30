@@ -145,9 +145,37 @@ void DrawJob::SetRenderTarget(RenderTargetRef renderTargets)
     }
 }
 
-void DrawJob::SetDrawParams()
+void DrawJob::SetVertexBuffers(BufferRef buffers[], unsigned int count)
 {
     PG_VERIFY_JOB_HANDLE;
+    auto& jobInstance = mParent->jobTable[mJobHandle];
+    if (auto* data = std::get_if<DrawCmdData>(&jobInstance.data))
+    {
+        data->vb.clear();
+        data->vb.insert(data->vb.end(), &buffers[0], &buffers[count - 1]);
+    }
+}
+
+void DrawJob::SetDrawParams(const NonIndexedParams& args)
+{
+    PG_VERIFY_JOB_HANDLE;
+    auto& jobInstance = mParent->jobTable[mJobHandle];
+    if (auto* data = std::get_if<DrawCmdData>(&jobInstance.data))
+    {
+        data->drawType = DrawCmdData::NonIndexed;
+        data->nonIndexed = args;
+    }
+}
+
+void DrawJob::SetDrawParams(const IndexedParams& args)
+{
+    PG_VERIFY_JOB_HANDLE;
+    auto& jobInstance = mParent->jobTable[mJobHandle];
+    if (auto* data = std::get_if<DrawCmdData>(&jobInstance.data))
+    {
+        data->drawType = DrawCmdData::Indexed;
+        data->indexed = args;
+    }
 }
 
 DrawJob DrawJob::Next()

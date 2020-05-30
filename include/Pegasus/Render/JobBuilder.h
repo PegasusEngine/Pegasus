@@ -58,10 +58,30 @@ public:
 class DrawJob : public GpuJob
 {
 public:
+
+    struct NonIndexedParams
+    {
+        unsigned vertexCountPerInstance = 0u;
+        unsigned instanceCount = 1u;
+        unsigned vertexOffset = 0u;
+        unsigned instanceOffset = 0u;
+    };
+
+    struct IndexedParams
+    {
+        unsigned indexCountPerInstance = 0u;
+        unsigned instanceCount = 1u;
+        unsigned indexOffset = 0u;
+        unsigned vertexOffset = 0u;
+        unsigned instanceOffset = 0u;
+    };
+
     DrawJob(InternalJobHandle h, InternalJobBuilder* parent) : GpuJob(h, parent) {}
+    void SetVertexBuffers(BufferRef buffers[], unsigned int count);
     void SetConstantBuffer(unsigned registerId, BufferRef buffer);
     void SetRenderTarget(RenderTargetRef renderTargets);
-    void SetDrawParams();
+    void SetDrawParams(const NonIndexedParams& args);
+    void SetDrawParams(const IndexedParams& args);
     DrawJob Next();
 };
 

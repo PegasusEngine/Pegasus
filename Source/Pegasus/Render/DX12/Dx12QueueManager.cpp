@@ -24,6 +24,7 @@
 #include "GenericGpuResourcePool.h"
 
 #include <Pegasus/Allocator/IAllocator.h>
+#include <algorithm>
 
 namespace Pegasus
 {
@@ -51,6 +52,8 @@ D3D12_RESOURCE_STATES Dx12QueueManager::GetD3D12State(const LocationGpuState& st
         D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,//Srv,
         D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER,//Cbv,
         D3D12_RESOURCE_STATE_RENDER_TARGET,//Rt,
+        D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, //Vb
+        D3D12_RESOURCE_STATE_INDEX_BUFFER, //Ib
         D3D12_RESOURCE_STATE_DEPTH_WRITE,//Ds,
         D3D12_RESOURCE_STATE_COPY_SOURCE,//CopySrc,
         D3D12_RESOURCE_STATE_COPY_DEST,//CopyDst,
@@ -473,6 +476,63 @@ static void SetDx12ResourceTables(
     setManyTables(uavCounts, Dx12_ResUav, jobInstance.uavTables, uavs);
 }
 
+static void SetDx12Vb(
+    const DrawCmdData& cmdData,
+    ID3D12GraphicsCommandList* list)
+{
+    const unsigned MaxD12VbSlots = 8;
+    D3D12_VERTEX_BUFFER_VIEW vb[MaxD12VbSlots] = {};
+    unsigned viewCount = min((unsigned)cmdData.vb.size(), MaxD12VbSlots);
+    for (unsigned i = 0; i < viewCount; ++i)
+    {
+        vb[i] = {};
+        const BufferRef inputBuffer = cmdData.vb[i];
+        if (inputBuffer == nullptr)
+            continue;
+
+        auto* d12vb = static_cast<const Dx12Buffer*>(&(*inputBuffer));
+        vb[i].BufferLocation = d12vb->GetVA();
+        vb[i].SizeInBytes = d12vb->GetConfig().stride*d12vb->GetConfig().elementCount;
+        vb[i].StrideInBytes = d12vb->GetConfig().stride;
+    }
+
+    list->IASetVertexBuffers(0u, viewCount, vb);
+}
+
+static void SetDx12Rt(
+    const DrawCmdData& cmdData,
+    ID3D12GraphicsCommandList* list)
+{
+    if (cmdData.rt == nullptr)
+        return;
+    auto* dx12Rt = static_cast<const Dx12RenderTarget*>(&(*cmdData.rt));
+    list->OMSetRenderTargets(
+        dx12Rt->GetTable().count,
+        &dx12Rt->GetTable().baseHandle,
+        true,
+        nullptr);
+
+    D3D12_VIEWPORT pViewports[RenderTargetConfig::MaxRt];
+    for (unsigned i = 0; i < cmdData.rt->GetConfig().colorCount; ++i)
+    {
+        const TextureRef t = cmdData.rt->GetConfig().colors[i];
+        if (t == nullptr)
+            continue;
+
+        auto* dx12T = static_cast<const Dx12Texture*>(&(*t));
+        unsigned w = dx12T->GetConfig().width ; 
+        unsigned h = dx12T->GetConfig().height;
+        pViewports[i] = {};
+        pViewports[i].Width = (float)w;
+        pViewports[i].Height = (float)h;
+        pViewports[i].MaxDepth = 1.0f;
+    }
+
+    list->RSSetViewports(
+        cmdData.rt->GetConfig().colorCount,
+        pViewports);
+}
+
 void Dx12QueueManager::TranspileList(const JobInstance* jobTable, const CanonicalJobPath& job, GpuList& gpuList)
 {
     unsigned barriersCount = 0u;
@@ -506,9 +566,29 @@ void Dx12QueueManager::TranspileList(const JobInstance* jobTable, const Canonica
             [&](const RootCmdData& d){
             },
             [&](const DrawCmdData& d){
+                if (instance.pso == nullptr)
+                    return;
+                const Dx12Pso* pso = static_cast<const Dx12Pso*>(*(&instance.pso));
+                if (pso->GetD3DRootSignature() == nullptr && pso->GetD3DPso() == nullptr)
+                    return;
+                gpuList.list->SetGraphicsRootSignature(pso->GetD3DRootSignature());
+                gpuList.list->SetPipelineState(pso->GetD3DPso());
+                SetDx12Rt(d, gpuList.list);
                 SetDx12ResourceTables<DrawCmdData, false>(
                     mDevice, instance, d,
                     *GetTablePool(), gpuList.list);
+                SetDx12Vb(d, gpuList.list);
+                gpuList.list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+                if (d.drawType == DrawCmdData::NonIndexed)
+                {
+                    const auto& i = d.nonIndexed;
+                    gpuList.list->DrawInstanced(i.vertexCountPerInstance, i.instanceCount, i.vertexOffset, i.instanceOffset);
+                }
+                else if (d.drawType == DrawCmdData::Indexed)
+                {
+                    const auto& i = d.indexed;
+                    gpuList.list->DrawIndexedInstanced(i.indexCountPerInstance, i.instanceCount, i.indexOffset, i.vertexOffset, i.instanceOffset);
+                }
             },
             [&](const ComputeCmdData& d){
                 if (instance.pso != nullptr)
@@ -528,7 +608,17 @@ void Dx12QueueManager::TranspileList(const JobInstance* jobTable, const Canonica
             [&](const CopyCmdData& d){
                 const Dx12Resource* srcRes = Dx12Resource::GetDx12Resource(d.src);
                 const Dx12Resource* dstRes = Dx12Resource::GetDx12Resource(d.dst);
-                if (srcRes != nullptr && dstRes != nullptr)
+
+                //TODO: maybe this should be its own command?
+                if (d.src->GetType() == ResourceType::Buffer && static_cast<const Dx12Buffer*>(srcRes)->GetUploadSz() > 0ull)
+                {
+					auto d12DstBuffer = static_cast<const Dx12Buffer*>(dstRes);
+                    auto d12SrcBuffer = static_cast<const Dx12Buffer*>(srcRes);
+                    gpuList.list->CopyBufferRegion(
+						dstRes->GetD3D(), 0ull, d12SrcBuffer->GetD3D(), 
+						d12SrcBuffer->GetMemoryOffset(), min(d12SrcBuffer->GetUploadSz(), d12DstBuffer->GetConfig().stride*d12DstBuffer->GetConfig().elementCount));
+                }
+                else if (srcRes != nullptr && dstRes != nullptr)
                 {
                     gpuList.list->CopyResource(dstRes->GetD3D(), srcRes->GetD3D());
                 }

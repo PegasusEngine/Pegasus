@@ -66,6 +66,7 @@ protected:
         D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc;
         D3D12_HEAP_FLAGS heapFlags;
         ID3D12Resource* resource;
+        uint64_t memoryOffset;
         const ID3D12Resource* externResource;
         void* mappedMemory;
         D3D12_GPU_VIRTUAL_ADDRESS gpuVirtualAddress;
@@ -111,8 +112,11 @@ public:
     virtual ~Dx12Buffer();
     virtual void init();
     virtual void* GetGpuPtr() { return GetDx12ResourceGpuPtr(); }
+
+    //TODO: get rid of this. Instead use the proper resource data width.
     size_t GetUploadSz() const { return mUploadBufferSize; }
     void SetUploadBufferSize(size_t newSz) { mUploadBufferSize = newSz; }
+    uint64_t GetMemoryOffset() const { return mData.memoryOffset; }
 
 private:
     size_t mUploadBufferSize = 0u;
@@ -137,7 +141,8 @@ public:
     friend class Dx12RenderContext;
     Dx12RenderTarget(const RenderTargetConfig& desc, Dx12Device* device);
     ~Dx12RenderTarget();
-    Dx12RDMgr::Table& GetTable() { return mTable; }
+    const Dx12RDMgr::Table& GetTable() const { return mTable; }
+    Dx12RDMgr::Handle GetDepthStencilHandle() const { return mDepthStencilHandle; }
 private:
     Dx12RDMgr::Table mTable;   
     Dx12RDMgr::Handle mDepthStencilHandle;

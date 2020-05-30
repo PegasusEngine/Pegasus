@@ -33,5 +33,6 @@ public:
 private:
     Pegasus::Render::GpuStateRef mGpuState;
     Pegasus::Render::GpuPipelineRef mPso;
+    Pegasus::Render::BufferRef mVb;
 };
 

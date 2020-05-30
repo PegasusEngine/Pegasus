@@ -88,6 +88,7 @@ Dx12Resource::Dx12Resource(const ResourceConfig& resConfig, Dx12Device* device)
         mData.resDesc = {};
         mData.resDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 		mData.heapFlags = D3D12_HEAP_FLAG_NONE;
+        mData.memoryOffset = 0ull;
         mData.resource = nullptr;
 
         //Core resource setup
@@ -190,7 +191,6 @@ void Dx12Resource::init()
     }
 
 #if PEGASUS_DEBUG
-    if (mOwnsResource)
     {
 	    std::wstring wname;
 	    if (!mResConfig.name.empty())
@@ -455,10 +455,13 @@ Dx12Buffer::Dx12Buffer(const BufferConfig& desc, Dx12Device* device)
 Dx12Buffer::Dx12Buffer(const GpuMemoryBlock& uploadBuffer, Dx12Device* device)
 : Buffer(device, BufferConfig{}), Dx12Resource(BufferConfig{}, device)
 {
+	mDefaultResourceState = D3D12_RESOURCE_STATE_GENERIC_READ;
+    mConfig.name = "TmpUploadBuffer";
     AcquireD3D12Resource(uploadBuffer.buffer);
     mUploadBufferSize = uploadBuffer.uploadSize;
     mData.mappedMemory = uploadBuffer.mappedBuffer;
     mData.gpuVirtualAddress = uploadBuffer.gpuVA;
+    mData.memoryOffset = uploadBuffer.offset;
 }
 
 Dx12Buffer::~Dx12Buffer()

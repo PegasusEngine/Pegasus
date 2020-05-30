@@ -96,8 +96,8 @@ public:
     virtual BufferRef CreateUploadBuffer(size_t sz) = 0;
 
     template<typename T>
-    T* CreateUploadBuffer(BufferRef& outRef) {
-        outRef =  CreateUploadBuffer(sizeof(T));
+    T* CreateUploadBuffer(BufferRef& outRef, size_t arrayCount = 1) {
+        outRef =  CreateUploadBuffer(sizeof(T)*arrayCount);
         return static_cast<T*>(outRef->GetGpuPtr());
     }
 
