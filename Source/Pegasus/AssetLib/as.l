@@ -52,7 +52,7 @@
 
     bool AS_HasNext(void* ptr);
 
-    int AS_readInput(struct yyguts_t* yyg, char * buffer, yy_size_t& result, int maxToRead);
+    int AS_readInput(struct yyguts_t* yyg, char * buffer, yy_size_t& result, size_t maxToRead);
 
     #define END_CAPTURE_STRING(STRING_TYPE) \
         PG_ASSERT(yyextra->mStringAccumulatorPos < 512);\
@@ -139,11 +139,12 @@ bool AS_HasNext(void* ptr)
     return yyextra->mBufferPosition < yyextra->mFileBuffer->GetFileSize();
 }
 
-int AS_readInput(struct yyguts_t* yyg, char * buffer, yy_size_t& result, int maxToRead)
+int AS_readInput(struct yyguts_t* yyg, char * buffer, yy_size_t& result, size_t maxToRead)
 {
-    int bytesLeft = yyextra->mFileBuffer->GetFileSize() - yyextra->mBufferPosition;
-    int bytesRead = maxToRead > bytesLeft ? bytesLeft : maxToRead;
-    Pegasus::Utils::Memcpy(buffer, yyextra->mFileBuffer->GetBuffer() + yyextra->mBufferPosition, bytesRead);
+    size_t bytesLeft = yyextra->mFileBuffer->GetFileSize() - yyextra->mBufferPosition;
+    size_t bytesRead = maxToRead > bytesLeft ? bytesLeft : maxToRead;
+    //Pegasus::Utils::Memcpy(buffer, yyextra->mFileBuffer->GetBuffer() + yyextra->mBufferPosition, bytesRead);
+    memcpy(buffer, yyextra->mFileBuffer->GetBuffer() + yyextra->mBufferPosition, bytesRead);
     yyextra->mBufferPosition += bytesRead;
     result = static_cast<yy_size_t>(bytesRead);
     return 0;//always correct

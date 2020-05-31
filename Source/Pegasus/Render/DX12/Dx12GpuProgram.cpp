@@ -18,27 +18,29 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <dxcapi.h>
 
 #pragma comment(lib, "d3dcompiler")
+#pragma comment(lib, "dxcompiler")
 
 namespace Pegasus
 {
 namespace Render
 {
 
-const char* pipelineToModel(Dx12PipelineType type)
+const wchar_t* pipelineToModel(Dx12PipelineType type)
 {
     switch(type)
     {
     case Dx12_Pixel:
-        return "ps_5_1";
+        return L"ps_6_0";
     case Dx12_Vertex:
-        return "vs_5_1";
+        return L"vs_6_0";
     case Dx12_Compute:
-        return "cs_5_1";
+        return L"cs_6_0";
     }
 
-    return "";
+    return L"";
 }
 
 D3D12_SHADER_VISIBILITY pipelineToVis(Dx12PipelineType type)
@@ -391,25 +393,44 @@ bool Dx12GpuProgram::Compile(const GpuPipelineConfig& desc)
 {
     auto compileShader = [&](Dx12ShaderBlob& blob, const char* src, int srcSize, const char* mainFn, Dx12PipelineType pipelineType)
     {
+        IDxcCompiler* compiler = nullptr;
+        IDxcOperationResult* operationResult = nullptr;
+        DxcCreateInstance(CLSID_DxcCompiler, __uuidof(IDxcCompiler), &((void*)compiler));
+
+		IDxcLibrary* pLibrary = nullptr;
+		DxcCreateInstance(CLSID_DxcLibrary, __uuidof(IDxcLibrary), &((void*)pLibrary));
+    
+		IDxcBlobEncoding* pSource = nullptr;
+		pLibrary->CreateBlobWithEncodingFromPinned(src, srcSize, CP_UTF8, &pSource);
         ID3DBlob* errBlob = nullptr;
 
-        bool success = true;
+	    std::wstring mainFnName;
+	    {
+	    	// determine required length of new string
+	    	size_t reqLength = ::MultiByteToWideChar(CP_UTF8, 0, mainFn, (int)strlen(mainFn), 0, 0);
 
-        HRESULT result = D3DCompile(
-            (LPCVOID)src,
-            (SIZE_T)srcSize,
-            "", //No name
-            NULL, //no defines
-            NULL, //No include handler
-            mainFn,
+	    	// construct new string of required length
+	    	mainFnName = std::wstring(reqLength, L'\0');
+
+	    	// convert old string to new string
+	    	::MultiByteToWideChar(CP_UTF8, 0, mainFn, (int)strlen(mainFn), &mainFnName[0], (int)mainFnName.length());
+	    }
+
+        bool success = true;
+        HRESULT result = compiler->Compile(
+            pSource,
+            L"", //no name
+            mainFnName.c_str(),
             pipelineToModel(pipelineType),
-            D3DCOMPILE_IEEE_STRICTNESS | D3DCOMPILE_OPTIMIZATION_LEVEL3 | D3DCOMPILE_WARNINGS_ARE_ERRORS | D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_ENABLE_UNBOUNDED_DESCRIPTOR_TABLES,
-            0,
-            &blob.byteCode,
-            &errBlob
-        );
-        if (result != S_OK)
+            NULL, 0u, NULL, 0u, NULL,
+            &operationResult);
+            
+		HRESULT hrCompilation;
+		result = operationResult->GetStatus(&hrCompilation);
+
+        if (result != S_OK || hrCompilation != S_OK)
         {
+            operationResult->GetErrorBuffer((IDxcBlobEncoding**)&errBlob);
             PEGASUS_EVENT_DISPATCH(
                 this, Core::CompilerEvents::CompilationNotification,
                 Core::CompilerEvents::CompilationNotification::COMPILATION_ERROR,
@@ -419,21 +440,67 @@ bool Dx12GpuProgram::Compile(const GpuPipelineConfig& desc)
         }
         else
         {
-            result = D3DReflect(blob.byteCode->GetBufferPointer(), blob.byteCode->GetBufferSize(), __uuidof(ID3D12ShaderReflection), reinterpret_cast<void**>(&blob.reflectionInfo));
-            blob.pipelineType = pipelineType;
+            result = operationResult->GetResult(reinterpret_cast<IDxcBlob**>(&blob.byteCode));
             if (result != S_OK)
             {
                 PEGASUS_EVENT_DISPATCH(
                     this, Core::CompilerEvents::CompilationNotification,
                     Core::CompilerEvents::CompilationNotification::COMPILATION_ERROR,
-                    "", 0u, "Failed generating reflection for shader"
+                    "", 0u, "Failed extracting byte code of shader."
                 );
+            
+                success = false;
+            }
+            else
+            {
+                blob.pipelineType = pipelineType;
+                IDxcContainerReflection* pReflection = nullptr;
+                DxcCreateInstance(CLSID_DxcContainerReflection, __uuidof(IDxcContainerReflection), &((void*)pReflection));
+                pReflection->Load(reinterpret_cast<IDxcBlob*>(&(*blob.byteCode)));
+                UINT32 shaderIdx;
+				UINT32 dxilType = ((UINT32)'D') | ((UINT32)'X' << 8) | ((UINT32)'I' << 16) | ((UINT32)'L' << 24);
+                result = pReflection->FindFirstPartKind(dxilType/*hlsl::DFCC_DXIL*/, &shaderIdx);
+
+                if (result != S_OK)
+                {
+                    PEGASUS_EVENT_DISPATCH(
+                        this, Core::CompilerEvents::CompilationNotification,
+                        Core::CompilerEvents::CompilationNotification::COMPILATION_ERROR,
+                        "", 0u, "Failed extracting shader id of shader."
+                    );
+                    success = false;
+                }
+                else
+                {
+                    result = pReflection->GetPartReflection(shaderIdx, __uuidof(ID3D12ShaderReflection), reinterpret_cast<void**>(&blob.reflectionInfo));
+                    if (result != S_OK)
+                    {
+                        PEGASUS_EVENT_DISPATCH(
+                            this, Core::CompilerEvents::CompilationNotification,
+                            Core::CompilerEvents::CompilationNotification::COMPILATION_ERROR,
+                            "", 0u, "Failed extracting reflection info of shader."
+                        );
+                        success = false;
+                    }
+                }
             }
         }
 
         if (errBlob != nullptr)
             errBlob->Release();
     
+        if (compiler != nullptr)
+            compiler->Release();
+
+        if (operationResult != nullptr)
+            operationResult->Release();
+
+		if (pLibrary != nullptr)
+			pLibrary->Release();
+
+		if (pSource != nullptr)
+			pSource->Release();
+
         return success;
     };
 

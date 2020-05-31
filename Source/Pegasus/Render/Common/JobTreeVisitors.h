@@ -124,7 +124,7 @@ struct GpuListLocationHasher
     {
         uint64_t hh = location.listIndex;
         hh |= (uint64_t(location.listItemIndex) << 32ull);
-        return std::hash<uint64_t>()(hh);
+        return (uint32_t)std::hash<uint64_t>()(hh);
     }
 };
 

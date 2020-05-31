@@ -45,14 +45,14 @@ namespace BlockScript
     public:
         struct DefineBufferEl
         {
-            int  mBufferPosition;
+            size_t  mBufferPosition;
             void* mLexerBufferId;
             const BlockScript::Preprocessor::Definition* mDef;
         };
 
         BlockScript::Preprocessor mPreprocessor;
         BlockScript::BlockScriptBuilder* mBuilder;
-        int mBufferPosition;
+        size_t mBufferPosition;
         const Io::FileBuffer* mFileBuffer;
         char mStringAccumulator[512];
         int  mStringAccumulatorPos;

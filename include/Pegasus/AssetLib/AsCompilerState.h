@@ -33,7 +33,7 @@ namespace AssetLib
     class AsCompilerState
     {
     public:
-        int mBufferPosition;
+        size_t mBufferPosition;
         const Io::FileBuffer* mFileBuffer;
         AssetBuilder*  mBuilder;
         char mStringAccumulator[512];

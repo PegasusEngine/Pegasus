@@ -56,7 +56,7 @@
 
     bool BS_HasNext(void* ptr);
 
-    int BS_readInput(struct yyguts_t* yyg, char * buffer, yy_size_t& result, int maxToRead);
+    int BS_readInput(struct yyguts_t* yyg, char * buffer, yy_size_t& result, size_t maxToRead);
 %}
 
 %x IN_LINE_COMMENT
@@ -527,7 +527,7 @@ bool BS_HasNext(void* ptr)
     return yyextra->mBufferPosition < yyextra->mFileBuffer->GetFileSize();
 }
 
-int BS_readInput(struct yyguts_t* yyg, char * buffer, yy_size_t& result, int maxToRead)
+int BS_readInput(struct yyguts_t* yyg, char * buffer, yy_size_t& result, size_t maxToRead)
 {
     if (yyextra->GetDefineStackCount() > 0)
     {
@@ -541,9 +541,10 @@ int BS_readInput(struct yyguts_t* yyg, char * buffer, yy_size_t& result, int max
             }
             else
             {
-				int bytesLeft = def->mBufferSize - bufferEl->mBufferPosition;
-                int bytesRead = maxToRead > bytesLeft ? bytesLeft : maxToRead;
-                Pegasus::Utils::Memcpy(buffer, def->mValue + bufferEl->mBufferPosition, bytesRead);
+				size_t bytesLeft = def->mBufferSize - bufferEl->mBufferPosition;
+                size_t bytesRead = maxToRead > bytesLeft ? bytesLeft : maxToRead;
+                //Pegasus::Utils::Memcpy(buffer, def->mValue + bufferEl->mBufferPosition, bytesRead);
+                memcpy(buffer, def->mValue + bufferEl->mBufferPosition, bytesRead);
                 bufferEl->mBufferPosition += bytesRead;
                 result = static_cast<yy_size_t>(bytesRead);
 
@@ -560,9 +561,10 @@ int BS_readInput(struct yyguts_t* yyg, char * buffer, yy_size_t& result, int max
     }
     else
     {
-        int bytesLeft = yyextra->mFileBuffer->GetFileSize() - yyextra->mBufferPosition;
-        int bytesRead = maxToRead > bytesLeft ? bytesLeft : maxToRead;
-        Pegasus::Utils::Memcpy(buffer, yyextra->mFileBuffer->GetBuffer() + yyextra->mBufferPosition, bytesRead);
+        size_t bytesLeft = yyextra->mFileBuffer->GetFileSize() - yyextra->mBufferPosition;
+        size_t bytesRead = maxToRead > bytesLeft ? bytesLeft : maxToRead;
+        //Pegasus::Utils::Memcpy(buffer, yyextra->mFileBuffer->GetBuffer() + yyextra->mBufferPosition, bytesRead);
+        memcpy(buffer, yyextra->mFileBuffer->GetBuffer() + yyextra->mBufferPosition, bytesRead);
         yyextra->mBufferPosition += bytesRead;
         result = static_cast<yy_size_t>(bytesRead);
     }

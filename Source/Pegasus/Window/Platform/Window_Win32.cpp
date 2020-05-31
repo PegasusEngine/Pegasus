@@ -223,13 +223,13 @@ LRESULT CALLBACK WindowImpl_Win32::WndProc(HWND hwnd, UINT message, WPARAM wPara
         {
             // Set up the window handle
             pThis->mHWND = (HWND)hwnd;
-            SetWindowLongPtr(pThis->mHWND, GWL_USERDATA, (LONG_PTR)pThis);
+            //SetWindowLongPtr(pThis->mHWND, GWL_USERDATA, (LONG_PTR)pThis);
 
             PG_LOG('WNDW', "Firing CBT Hook");
         }
     }
 
-    WindowImpl_Win32* pWnd = (WindowImpl_Win32*)GetWindowLongPtr(hwnd, GWL_USERDATA);
+    WindowImpl_Win32* pWnd = nullptr;//(WindowImpl_Win32*)GetWindowLongPtr(hwnd, GWL_USERDATA);
     if (pWnd != nullptr)
     {
         // Call 

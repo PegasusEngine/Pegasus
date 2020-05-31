@@ -459,7 +459,7 @@ void CanonicalCmdListBuilder::Build(const GpuJob& rootJob, CanonicalCmdListResul
     if (!mStaleJobs.empty())
     {
         result.staleJobs = mStaleJobs.data();
-        result.staleJobCounts = mStaleJobs.size();
+        result.staleJobCounts = (unsigned)mStaleJobs.size();
     }
 
     result.barrierViolations = mGpuStateBuilder.GetBarrierViolations(result.barrierViolationsCount);

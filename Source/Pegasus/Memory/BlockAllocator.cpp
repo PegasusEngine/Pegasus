@@ -51,8 +51,8 @@ void* BlockAllocator::Alloc(
 {
     int size = static_cast<int>(tsize);
     PG_ASSERTSTR(size < mPageSize, "Cannot allocate size greater than the page size! Memory trashing to follow.");
-    int newMemSize = mMemorySize + size;
-	int targetPage = newMemSize / mPageSize;
+    size_t newMemSize = mMemorySize + size;
+	size_t targetPage = newMemSize / mPageSize;
     if (targetPage >= mMemoryPageListCount)
     {
         PG_ASSERT(targetPage == mMemoryPageListCount);
@@ -76,11 +76,11 @@ void* BlockAllocator::Alloc(
     }
 
 	
-    int prevPage = (mMemorySize / mPageSize);
+    size_t prevPage = (mMemorySize / mPageSize);
 	bool isUnaligned = (((mMemorySize + size) % mPageSize) != 0) && (prevPage != targetPage);
-    int currentOffset = mMemorySize % mPageSize;
-    int offset = isUnaligned ? 0 : currentOffset ;
-	int actualPage = isUnaligned ? targetPage : prevPage;
+    size_t currentOffset = mMemorySize % mPageSize;
+    size_t offset = isUnaligned ? 0 : currentOffset ;
+	size_t actualPage = isUnaligned ? targetPage : prevPage;
     mMemorySize = newMemSize + (isUnaligned ? mPageSize - currentOffset : 0);
     return mMemoryPages[actualPage] + offset;
 }

@@ -31,7 +31,7 @@ void* MallocFreeAllocator::Alloc(size_t size, Alloc::Flags flags, Alloc::Categor
 {
     //! \todo Platform-specific allocs
     // Grab the chunk with an extra int at the front for the allocator ID
-    unsigned int chunkSize = size + sizeof(unsigned int);
+    uintptr_t chunkSize = size + sizeof(unsigned int);
     void* chunk = malloc(chunkSize);
     void* ret = ((unsigned int*) chunk) + 1;
 
@@ -47,7 +47,7 @@ void* MallocFreeAllocator::AllocAlign(size_t size, Alloc::Alignment align, Alloc
 {
     //! \todo Platform-specific allocs
     // Grab the chunk with an extra int at the front for the allocator ID
-    unsigned int chunkSize = size + sizeof(unsigned int);
+    uintptr_t chunkSize = size + sizeof(unsigned int);
     void* chunk = malloc(chunkSize);
     void* ret = ((unsigned int*) chunk) + 1;
 

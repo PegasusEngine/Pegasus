@@ -294,6 +294,7 @@ local function BuildPegasusLib(name, srcFolder, srcFolderIsRecursive, deps, code
             sources[#sources + 1] = v
         end
     end
+    includes[#includes + 1] = "Lib$(SEP)Dxc$(SEP)"
 
     return StaticLibrary {
         Name = name,
@@ -330,30 +331,34 @@ function _G.BuildPegasusApp(appName, pegasus_modules)
     }
 
     local librariesDeps = {
-            {
-                {
-                    CopyFile {
-                        Source = "$(RUNTIMELIBS_ROOT)Dev$(SEP)d3dcompiler_46.dll",
-                        Target="$(OBJECTDIR)$(SEP)d3dcompiler_46.dll", Pass="BuildCode"
-                    },
-                    CopyFile {
-                        Source = "$(RUNTIMELIBS_ROOT)Dev$(SEP)fmodL.dll",
-                        Target="$(OBJECTDIR)$(SEP)fmodL.dll", Pass="BuildCode"
-                    },
-                    Config = "win32-msvc-*-dev"
-                },
-                {
-                    CopyFile {
-                        Source = "$(RUNTIMELIBS_ROOT)Rel$(SEP)d3dcompiler_46.dll",
-                        Target="$(OBJECTDIR)$(SEP)d3dcompiler_46.dll", Pass="BuildCode"
-                    },
-                    CopyFile {
-                        Source = "$(RUNTIMELIBS_ROOT)Rel$(SEP)fmod.dll",
-                        Target="$(OBJECTDIR)$(SEP)fmod.dll", Pass="BuildCode"
-                    },
-                    Config = "win32-msvc-*-rel"
-                },
+        {
+            CopyFile {
+                Source = "$(LIB)$(SEP)Dxc$(SEP)dxcompiler.dll",
+                Target="$(OBJECTDIR)$(SEP)dxcompiler.dll", Pass="BuildCode"
             },
+            {
+                CopyFile {
+                    Source = "$(RUNTIMELIBS_ROOT)Dev$(SEP)d3dcompiler_46.dll",
+                    Target="$(OBJECTDIR)$(SEP)d3dcompiler_46.dll", Pass="BuildCode"
+                },
+                CopyFile {
+                    Source = "$(RUNTIMELIBS_ROOT)Dev$(SEP)fmodL.dll",
+                    Target="$(OBJECTDIR)$(SEP)fmodL.dll", Pass="BuildCode"
+                },
+                Config = "win32-msvc-*-dev"
+            },
+            {
+                CopyFile {
+                    Source = "$(RUNTIMELIBS_ROOT)Rel$(SEP)d3dcompiler_46.dll",
+                    Target="$(OBJECTDIR)$(SEP)d3dcompiler_46.dll", Pass="BuildCode"
+                },
+                CopyFile {
+                    Source = "$(RUNTIMELIBS_ROOT)Rel$(SEP)fmod.dll",
+                    Target="$(OBJECTDIR)$(SEP)fmod.dll", Pass="BuildCode"
+                },
+                Config = "win32-msvc-*-rel"
+            },
+        },
     }
 
     SharedLibrary {
@@ -396,7 +401,7 @@ function _G.BuildPegasusUtility(appName, pegasus_modules)
         Depends = pegasus_modules,
         Env = RootEnvs,
         ReplaceEnv = {
-            LD = { "link", "/SUBSYSTEM:CONSOLE", "/MACHINE:x86" },
+            LD = { "link", "/SUBSYSTEM:CONSOLE", "/MACHINE:x64" },
             Config="win32-msvc-*-*"
         },
         Config = "*-*-*-dev",

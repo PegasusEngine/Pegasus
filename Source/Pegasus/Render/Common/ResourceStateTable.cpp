@@ -112,7 +112,7 @@ void ResourceStateTable::StoreState(Domain d, int stateSlot, uintptr_t state)
     if (!domainExists || !stateSlotExists)
         return;
     
-    mDomains[d.id].states[stateSlot] = StateSlot{ true, state };
+    mDomains[d.id].states[stateSlot] = StateSlot{ true, (unsigned)state };
 }
 
 bool ResourceStateTable::GetState(Domain d, int stateSlot, uintptr_t& outState) const

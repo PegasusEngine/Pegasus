@@ -93,7 +93,7 @@ public:
     char** const GetMemoryPagesConst() const { return mMemoryPages; }
 
     //! \return gets the memory size
-    int GetMemorySize() const { return mMemorySize; }
+    int GetMemorySize() const { return (int)mMemorySize; }
 
     int GetPageSize() const { return mPageSize; }
 

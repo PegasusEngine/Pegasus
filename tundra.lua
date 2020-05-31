@@ -17,7 +17,7 @@ Build
     Configs = {
         {
             Name="win32-msvc",
-            Tools = { { msvc_version; TargetArch="x86", HostArch="x86" } },
+            Tools = { { msvc_version; TargetArch="x64", HostArch="x64" } },
             SupportedHosts = { "windows" },
             DefaultOnHost = "windows",
             Includes = "CPPPATH",
@@ -88,7 +88,7 @@ Build
 
         LD = {
             {
-                { "/MACHINE:x86", "/SUBSYSTEM:WINDOWS", "/LIBPATH:Lib" },
+                { "/MACHINE:x64", "/SUBSYSTEM:WINDOWS", "/LIBPATH:Lib" },
                 Config = "win32-msvc-*-*"
             }
         },

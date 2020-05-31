@@ -338,7 +338,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
             DispatchMessage(&curMsg);
         }
     }
-    retVal = curMsg.wParam;
+    retVal = (int)curMsg.wParam;
 
     // Tear down windows
     application->DetachWindow(appWindow);

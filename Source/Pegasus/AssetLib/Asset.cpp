@@ -362,7 +362,7 @@ void Asset::SetPath(const char* path)
     const char * nameString = nameString1 > nameString2 ? nameString1 : nameString2;
     if (nameString != nullptr)
     {
-        fullLen = fullLen - (nameString - mPathString + 1);
+        fullLen = (int)(fullLen - (nameString - mPathString + 1));
         Pegasus::Utils::Memcpy(mName, nameString + 1, fullLen);
         mName[fullLen] = '\0';
     }

@@ -64,7 +64,7 @@ D3D12_RESOURCE_STATES Dx12QueueManager::GetD3D12State(const LocationGpuState& st
 
     if (!state.location.isValid())
     {
-        unsigned globalState = 0u;
+        uintptr_t globalState = 0u;
         if (mGlobalResourceStateTable->GetState(mGlobalResourceStateDomain, stateId, globalState))
         {
             resState = (ResourceGpuState)globalState;
@@ -387,7 +387,7 @@ static void SetDx12ResourceTables(
             const auto* dx12Buffer = static_cast<const Dx12Buffer*>(&(*cmdData.cbuffer[it]));
             D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
             cbvDesc.BufferLocation = dx12Buffer->GetVA();
-            cbvDesc.SizeInBytes = dx12Buffer->GetUploadSz();
+            cbvDesc.SizeInBytes = (UINT)dx12Buffer->GetUploadSz();
             device->GetD3D()->CreateConstantBufferView(&cbvDesc, cbv.GetCpuHandle(it));
         }
         cbvSrvUavTables.Advance(cbv.descriptorCounts);
