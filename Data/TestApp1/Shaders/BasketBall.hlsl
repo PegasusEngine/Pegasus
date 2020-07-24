@@ -106,7 +106,7 @@ void scene(float3 pos, float3 localPos, float3 view, float3 normal, float2 uv, o
 }
 
 void vsMain(
-	in float4 p : POSITION0,
+	in float4 p  : POSITION0,
 	in float4 localPos : POSITION1,
 	in float3 n : NORMAL0,
 	in float2 t : TEXTURE0,
