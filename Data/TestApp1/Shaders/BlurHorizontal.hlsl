@@ -27,7 +27,7 @@ float3 lowPass(float3 inp)
 	float lum = dot(float3(0.2126,0.7152,0.0722),inp);
 	return pow(inp*(1 + lum*lum*lum),2.0);
 }
-void main(float4 p : POSITION0, out float4 color : SV_Target)
+void psMain(float4 p : POSITION0, out float4 color : SV_Target)
 {
 	float2 uv = p.xy * 0.5 + 0.5;
 	float3 col = float3(0,0,0);

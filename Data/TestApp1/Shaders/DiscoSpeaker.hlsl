@@ -1,12 +1,23 @@
-//
-// DiscoSpeaker ps, by Kleber Garcia 2014
-//
-
 cbuffer uniformState
 {
 float time;
 float glitteIntensity;
 float2 glitterRepetition;
+}
+
+struct VS_OUT
+{
+	float4 p : POSITION0;
+};
+VS_OUT main(
+	in float4 p0 : POSITION0,
+	out float4 pos : SV_POSITION
+)
+{
+	VS_OUT vo;
+    pos=float4(p0.x,p0.y,0.01,1.0);
+	vo.p = pos;
+	return vo;
 }
 
 static const float E = 2.7182818284;

@@ -1,3 +1,6 @@
+
+#include "RenderSystems/Camera/Common.h"
+
 cbuffer pixelUniformState
 {
 	float4 uCameraPos_beat;
@@ -100,10 +103,9 @@ void scene(float3 pos, float3 localPos, float3 view, float3 normal, float2 uv, o
         col =  alb*(occ*diffuse + amb) + occ*specForce*(spec+camSpec)*fresnel;//spec + alb * (clamp(dot(normal, lightDir),0.0,1.0) + occ*AMB) + occ*0.4*pow((1.0 - clamp(dot(normal, -ray), 0.0, 1.0)), 9.0);
 
     }
-    
 }
 
-void main(
+void vsMain(
 	in float4 p : POSITION0,
 	in float4 localPos : POSITION1,
 	in float3 n : NORMAL0,
@@ -117,4 +119,37 @@ void main(
     scene(p.xyz, localPos.xyz, view, normal, t, col);
    
 	color = float4(col, 1.0);
+}
+
+cbuffer uniformState
+{
+	float4x4 uWorld;
+	float4x4 uProj;
+};
+
+struct VS_OUT
+{
+	float4 p : POSITION;
+	float4 localPos : POSITION1;
+	float3 normal : NORMAL0;
+	float2 t : TEXTURE0;
+
+};
+
+VS_OUT  psMain(
+	in float4 p0 : POSITION0,
+	in float2 t0 : TEXCOORD0,
+	in float3 n0 : NORMAL0,
+	out float4 pos : SV_Position
+)
+{
+	VS_OUT vo;
+	float4x4 worldView = mul(uWorld,gView);
+	vo.p =  mul(p0, worldView);
+	vo.localPos = p0;
+	vo.normal = mul(float4(n0,0.0),uWorld).xyz;
+	vo.t = t0;
+	pos = mul(vo.p,gProj);
+	return vo;
+
 }
