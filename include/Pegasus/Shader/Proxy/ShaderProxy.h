@@ -14,7 +14,7 @@
 
 #if PEGASUS_ENABLE_PROXIES
 
-#include "Pegasus/Shader/Shared/IShaderProxy.h"
+#include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 
 namespace Pegasus
 {
@@ -25,14 +25,11 @@ class ShaderSource;
 class IUserData;
 
 //! Shader proxy implementation
-class ShaderProxy : public IShaderProxy
+class ShaderProxy : public Pegasus::Core::ISourceCodeProxy
 {
 public:
     explicit ShaderProxy(ShaderSource * object);
     virtual ~ShaderProxy(){}
-
-    //! \return gets the shader type
-    virtual ShaderType GetStageType() const;
 
     //! \return gets the name of this shader
     virtual const char * GetName() const;

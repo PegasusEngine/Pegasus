@@ -14,7 +14,6 @@
 #include "Pegasus/Allocator/Alloc.h"
 #include "Pegasus/PropertyGrid/PropertyGridObject.h"
 #include "Pegasus/Shader/ShaderManager.h"
-#include "Pegasus/Shader/ShaderStage.h"
 #include "Pegasus/Core/IApplicationContext.h"
 #include "Pegasus/Mesh/MeshManager.h"
 #include "Pegasus/Window/Window.h"
@@ -86,7 +85,7 @@ void TextureViewComponent::DestroyState(const Wnd::ComponentContext& context, Wn
 
 void TextureViewComponent::Load(Core::IApplicationContext* appContext)
 {
-#if PEGASUS_ENABLE_RENDER_API
+#if 0 
     //! Shader declarations
     const char textureVsShader[] = 
         "void main(in float3 p0 : POSITION0,"
@@ -221,7 +220,7 @@ void GridComponent::DestroyState(const Wnd::ComponentContext& context, Wnd::Wind
 
 void GridComponent::Load(Core::IApplicationContext* appContext)
 {
-#if PEGASUS_ENABLE_RENDER_API
+#if 0 
     //! Shader declarations
     const char gridVsShader[] = 
         "#include \"RenderSystems/Camera/Common.h\"\n"
@@ -465,6 +464,7 @@ void CameraDebugComponent::DestroyState(const Wnd::ComponentContext& context, Wn
 
 void CameraDebugComponent::Load(Core::IApplicationContext* appContext)
 {
+#if 0
     //! Shader declarations
     const char vsShader[] = 
         "#include \"RenderSystems/Camera/Common.h\"\n"
@@ -563,6 +563,7 @@ void CameraDebugComponent::Load(Core::IApplicationContext* appContext)
 
     GetUniformLocation(mCamDebugProgram, "TargetCamState",mCamUniform);
     mCamUniformBuffer = CreateUniformBuffer(sizeof(Mat44));
+#endif
 }
 
 void CameraDebugComponent::Render(const Wnd::ComponentContext& context, Wnd::WindowComponentState* state)
@@ -656,6 +657,7 @@ void LightingDebugComponent::DestroyState(const Wnd::ComponentContext& context, 
 
 void LightingDebugComponent::Load(Core::IApplicationContext* appContext)
 {
+#if 0
     //locator program
     mLocatorProgram = appContext->GetShaderManager()->CreateProgram();
     {
@@ -928,6 +930,7 @@ void LightingDebugComponent::Load(Core::IApplicationContext* appContext)
     BlendingConfig blendConfig;
     blendConfig.mBlendingOperator = BlendingConfig::NONE_BO;
     mBlendState = CreateBlendingState(blendConfig);
+#endif
 }
 
 void LightingDebugComponent::Update(Core::IApplicationContext* appContext)

@@ -107,13 +107,7 @@ bool SourceIOMessageController::IsRuntimeObjectValid(Pegasus::AssetLib::IRuntime
 const Pegasus::PegasusAssetTypeDesc** SourceIOMessageController::GetTypeList() const
 {
     static const Pegasus::PegasusAssetTypeDesc* gTypes[] = {
-             &Pegasus::ASSET_TYPE_H_SHADER    
-            ,&Pegasus::ASSET_TYPE_VS_SHADER   
-            ,&Pegasus::ASSET_TYPE_PS_SHADER   
-            ,&Pegasus::ASSET_TYPE_GS_SHADER   
-            ,&Pegasus::ASSET_TYPE_TCS_SHADER  
-            ,&Pegasus::ASSET_TYPE_TES_SHADER  
-            ,&Pegasus::ASSET_TYPE_CS_SHADER   
+             &Pegasus::ASSET_TYPE_SHADER_SRC    
             ,&Pegasus::ASSET_TYPE_BLOCKSCRIPT  
             ,&Pegasus::ASSET_TYPE_H_BLOCKSCRIPT
             ,nullptr

@@ -4,7 +4,6 @@
 #include "Pegasus/AssetLib/AssetRuntimeFactory.h"
 #include "Pegasus/Shader/ProgramLinkage.h"
 #include "Pegasus/Shader/ShaderSource.h"
-#include "Pegasus/Shader/ShaderStage.h"
 #include "Pegasus/Shader/Proxy/ShaderManagerProxy.h"
 
 namespace Pegasus {
@@ -29,8 +28,6 @@ namespace Pegasus
 namespace Shader
 {
 
-class IShaderFactory;
-
 //! ShaderManager, manages and keeps up with shader data
 class ShaderManager : public AssetLib::AssetRuntimeFactory
 {
@@ -38,35 +35,26 @@ public:
     //! Constructor
     //! \param nodeManager - the node manager
     //! \param the shader factory
-    ShaderManager(Graph::NodeManager * nodeManager, IShaderFactory * factory);
+    ShaderManager(Graph::NodeManager * nodeManager);
 
     //! Destructor
     virtual ~ShaderManager();
-
-    //! Load a shader stage from a file.
-    //! \return null on error, stage on success 
-    ShaderStageReturn LoadShader(const char* filename);
-
-    //! Load a shader header file, from a file.
-    //! \param filename
-    //! \return null on error, source on success 
-    ShaderSourceReturn LoadHeader(const char* filename);
 
     //! Loads a program from a file asset
     //! \param program on success, otherwise null
     ProgramLinkageRef LoadProgram(const char * filename);
 
-    //! Creates a new shader node.
-    //! \return new shader node.
-    ShaderStageReturn CreateShader();
-
-    //! Creates a new shader header file.
-    //! \return new header file.
-    ShaderSourceReturn CreateHeader();
+    //! Loads a program from a file asset
+    //! \param program on success, otherwise null
+    ShaderSourceRef LoadShaderSrc(const char * filename);
 
     //! Creates a new program.
     //! \return new program.
     ProgramLinkageReturn CreateProgram();
+
+    //! Creates a new shader source.
+    //! \return new source.
+    ShaderSourceReturn CreateShaderSrc();
 
 #if PEGASUS_ENABLE_PROXIES
 

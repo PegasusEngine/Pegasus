@@ -45,6 +45,7 @@ void ProgramIOMessageController::OnRenderThreadProcessMessage(const ProgramIOMCM
 
 void ProgramIOMessageController::OnRenderThreadRemoveShader(AssetInstanceHandle handle, Pegasus::Shader::ShaderType shaderType)
 {
+#if 0
     Pegasus::Shader::IProgramProxy* program = static_cast<Pegasus::Shader::IProgramProxy*>(FindInstance(handle));
 
     for (int i = 0; i < program->GetShaderCount(); ++i)
@@ -58,10 +59,12 @@ void ProgramIOMessageController::OnRenderThreadRemoveShader(AssetInstanceHandle 
             break;
         }
     }
+#endif
 }
 
 void ProgramIOMessageController::OnRenderThreadModifyShader(AssetInstanceHandle handle, const QString& path)
 {
+#if 0
     Pegasus::Shader::IProgramProxy* program = static_cast<Pegasus::Shader::IProgramProxy*>(FindInstance(handle));
 
     Pegasus::AssetLib::IAssetLibProxy* assetLib = mApp->GetAssetLibProxy();
@@ -87,6 +90,7 @@ void ProgramIOMessageController::OnRenderThreadModifyShader(AssetInstanceHandle 
     {
         //todo: else emit loading error
     }
+#endif
 }
 
 QVariant ProgramIOMessageController::TranslateToQt(AssetInstanceHandle handle, Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
@@ -101,6 +105,7 @@ QVariant ProgramIOMessageController::TranslateToQt(AssetInstanceHandle handle, P
     //! send messages back to the widgets
     codeUserData->SetHandle(handle);
 
+#if 0
     QVariantList shaders;
     for (int i = 0; i < program->GetShaderCount(); ++i)
     {
@@ -115,9 +120,10 @@ QVariant ProgramIOMessageController::TranslateToQt(AssetInstanceHandle handle, P
         shaderInfo.insert("Type", program->GetShader(i)->GetStageType());
         shaders.push_back(shaderInfo);
     }
+#endif
 
     QVariantMap programInfo;
-    programInfo.insert("Shaders", shaders);
+    //programInfo.insert("Shaders", shaders);
     programInfo.insert("Name", program->GetName());
     return programInfo;
 }

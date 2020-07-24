@@ -13,7 +13,6 @@
 #define PEGASUS_SHADER_SOURCE_H
 
 #include "Pegasus/Core/SourceCode.h"
-#include "Pegasus/Shader/Shared/ShaderDefs.h"
 #include "Pegasus/Shader/Proxy/ShaderProxy.h"
 #include "Pegasus/Graph/GeneratorNode.h"
 
@@ -46,10 +45,6 @@ public:
 
     //! destructor
     virtual ~ShaderSource();
-
-    //! Return the stage type
-    //! \return the shader type
-    virtual ShaderType GetStageType() const { return SHADER_STAGE_INVALID; }
 
     //! Return the class instance name for this serializable object
     virtual const char* GetClassInstanceName() const { return "ShaderSource"; }

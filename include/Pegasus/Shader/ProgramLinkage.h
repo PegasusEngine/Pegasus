@@ -12,7 +12,6 @@
 #define PEGASUS_SHADER_PROGRAM_LINKAGE_H
 
 #include "Pegasus/Graph/OperatorNode.h"
-#include "Pegasus/Shader/ShaderStage.h"
 #include "Pegasus/Shader/Proxy/ProgramProxy.h"
 #include "Pegasus/AssetLib/RuntimeAssetObject.h"
 
@@ -68,10 +67,6 @@ public:
     //! Destructor
     virtual ~ProgramLinkage();
 
-    //! Set program stage 
-    //! \param shaderStage the shader stage to be added
-    void SetShaderStage(Pegasus::Shader::ShaderStageIn shaderStage);   
-
     //! Return the class instance name for this serializable object
     virtual const char* GetClassInstanceName() const { return "ProgramLinkage"; }
 
@@ -81,29 +76,12 @@ public:
 
     //! Maximum number of input nodes
     //! \return the maximum number of input nodes
-    virtual unsigned int GetMaxNumInputNodes() const { return static_cast<unsigned int>(Pegasus::Shader::SHADER_STAGES_COUNT);}
+    virtual unsigned int GetMaxNumInputNodes() const { return 1u;}
 
     //! Static function that creates a program linkage
     //! nodeAllocator node allocator
     //! nodeDataAllocator node data allocator
     static Graph::NodeReturn CreateNode(Graph::NodeManager* nodeManager, Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
-
-    //! Returns a shader stage node
-    //! \param type the type to be queried
-    //! \return the shader stage smart reference
-    ShaderStageReturn FindShaderStage(Pegasus::Shader::ShaderType type) const;
-
-    //! Returns a shader stage node by its input id.
-    //! Get the max number of inputs with the GetNumInputs
-    //! \param the id of the shader stage
-    //! \return the shader stage smart reference
-    ShaderStageReturn FindShaderStageInput(int i) const { return GetInput(i); }
-
-    //! Removes and returns a shader stage node. To be called only by the shader manager
-    //! \param type the type to be queried
-    //! \return the shader stage smart reference, null if it did not find it
-    ShaderStageReturn RemoveShaderStage(Pegasus::Shader::ShaderType type);
-
 
     //! Sets the factory, which contains the render library implementation of shader
     //! compilation and linkage
@@ -138,20 +116,11 @@ protected:
     //! overrides, do not use
     virtual void AddInput(Pegasus::Graph::NodeIn node);
     
-    //! Get the particular shader stage
-    //! \param tyoe the type to get from this program
-    //! \return the shader stage reference
-    Pegasus::Shader::ShaderStageRef GetShaderStage(Pegasus::Shader::ShaderType type) const;
-
     //! shader compilation logic
     virtual void GenerateData();
 
     //! allocation of node data
     virtual Pegasus::Graph::NodeData* AllocateData() const;
-
-    //! event listening of input removal 
-    //! \param index callback when input is removed
-    virtual void OnRemoveInput(unsigned int index);
 
     virtual bool OnReadAsset(Pegasus::AssetLib::AssetLib* lib, const Pegasus::AssetLib::Asset* asset) override;
 

@@ -15,7 +15,6 @@
 #if PEGASUS_ENABLE_PROXIES
 
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
-#include "Pegasus/Shader/Proxy/ShaderProxy.h"
 
 namespace Pegasus
 {
@@ -35,23 +34,6 @@ class ProgramProxy : public IProgramProxy
 public:
     ProgramProxy(ProgramLinkage * object);
     virtual ~ProgramProxy() {}
-
-    //! returns the number of shaders this program holds.
-    //! \return number of shaders this program holds.
-    virtual int GetShaderCount() const; 
-
-    //! Gets the shader proxy by id.
-    //! \param i the index of the shader proxy child
-    //! \return null if shader is not found, otherwise a pointer to its proxy
-    virtual IShaderProxy * GetShader(unsigned i);
-
-    //! Sets the shader stage
-    //! \param the shader to set
-    virtual void SetShader(IShaderProxy* shader);
-
-    //! Removes a shader from the shader list of this program
-    //! \param the position (index) of such shader
-    virtual void RemoveShader(unsigned i);
 
     //! \return Gets the name of this shader program
     virtual const char * GetName() const;

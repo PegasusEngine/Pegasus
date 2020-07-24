@@ -34,23 +34,6 @@ public:
     //! Destructor
     virtual ~IProgramProxy(){}
 
-    //! Gets the count of shaders this program has linked to itself
-    //! \return count of shaders it has
-    virtual int GetShaderCount() const = 0; 
-
-    //! Returns shader proxy item, the i is the id going from 0 to ShaderCount
-    //! \param i index position of shader requested
-    //! \return shader proxy item
-    virtual IShaderProxy * GetShader(unsigned i) = 0;
-    
-    //! Removes a shader from the shader list of this program
-    //! \param the position (index) of such shader
-    virtual void RemoveShader(unsigned i) = 0;
-
-    //! Sets the shader for this pipeline stage
-    //! \param the pipeline stage
-    virtual void SetShader(IShaderProxy* shader) = 0;
-
     //! Gets the shader name
     //! \return gets the shader name
     virtual const char * GetName() const = 0;

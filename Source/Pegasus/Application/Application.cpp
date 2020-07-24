@@ -22,7 +22,6 @@
 #include "Pegasus/Graph/NodeManager.h"
 #include "Pegasus/Memory/MemoryManager.h"
 #include "Pegasus/Render/IDevice.h"
-#include "Pegasus/Render/ShaderFactory.h"
 #include "Pegasus/Render/TextureFactory.h"
 #include "Pegasus/Render/MeshFactory.h"
 #include "Pegasus/Shader/ShaderManager.h"
@@ -102,27 +101,14 @@ Application::Application(const ApplicationConfig& config) : mConfig(config)
     // Set up node managers
     mNodeManager = PG_NEW(nodeAlloc, -1, "NodeManager", Alloc::PG_MEM_PERM) Graph::NodeManager(nodeAlloc, nodeDataAlloc);
 
-#if PEGASUS_ENABLE_RENDER_API
-    Pegasus::Shader::IShaderFactory * shaderFactory = Pegasus::Render::GetRenderShaderFactory();
-    Pegasus::Mesh::IMeshFactory * meshFactory = Pegasus::Render::GetRenderMeshFactory();
-    Pegasus::Texture::ITextureFactory * textureFactory = Pegasus::Render::GetRenderTextureFactory();
-
-    //! TODO - we probably need to use a render specific allocator for this
-    shaderFactory->Initialize(nodeDataAlloc);
-    meshFactory->Initialize(nodeDataAlloc);
-    textureFactory->Initialize(nodeDataAlloc);
-#else
-    Pegasus::Shader::IShaderFactory * shaderFactory = nullptr;
     Pegasus::Mesh::IMeshFactory * meshFactory = nullptr;
     Pegasus::Texture::ITextureFactory * textureFactory = nullptr;
-
-#endif
 
     
     // Set up asset library
     mAssetLib = PG_NEW(nodeAlloc, -1, "AssetLib", Alloc::PG_MEM_PERM) AssetLib::AssetLib(nodeAlloc, nullptr);
 
-    mShaderManager = PG_NEW(nodeAlloc, -1, "ShaderManager", Alloc::PG_MEM_PERM) Shader::ShaderManager(mNodeManager, shaderFactory);
+    mShaderManager = PG_NEW(nodeAlloc, -1, "ShaderManager", Alloc::PG_MEM_PERM) Shader::ShaderManager(mNodeManager);
     mTextureManager = PG_NEW(nodeAlloc, -1, "TextureManager", Alloc::PG_MEM_PERM) Texture::TextureManager(mNodeManager, textureFactory);
     mMeshManager = PG_NEW(nodeAlloc, -1, "MeshManager", Alloc::PG_MEM_PERM) Mesh::MeshManager(mNodeManager, meshFactory);
     mBlockScriptManager = PG_NEW(timelineAlloc, -1, "BlockScript Manager", Alloc::PG_MEM_PERM) BlockScript::BlockScriptManager(timelineAlloc);
@@ -136,11 +122,6 @@ Application::Application(const ApplicationConfig& config) : mConfig(config)
     mRenderCollectionFactory = PG_NEW(nodeAlloc, -1, "RenderCollectionFactory", Alloc::PG_MEM_PERM) Pegasus::Application::RenderCollectionFactory(this, nodeAlloc);
 #if PEGASUS_ENABLE_BS_REFLECTION_INFO
     mBsReflectionInfo = PG_NEW(nodeAlloc, -1, "Bs Reflection Info", Alloc::PG_MEM_PERM) App::AppBsReflectionInfo(nodeAlloc);
-#endif
-
-#if PEGASUS_ENABLE_RENDER_API
-    //register shader manager into factory, so factory can handle includes
-    shaderFactory->RegisterShaderManager(mShaderManager);
 #endif
 
     // Register the entire render api
@@ -228,7 +209,6 @@ void Application::Load()
     RegisterCustomRenderSystems(mRenderSystemManager);
     
     //register per system shader constants to shader factory
-    Pegasus::Shader::IShaderFactory * shaderFactory = Pegasus::Render::GetRenderShaderFactory();
     for (unsigned int i = 0; i < mRenderSystemManager->GetSystemCount(); ++i)
     {
         Utils::Vector<RenderSystems::RenderSystem::ShaderGlobalConstantDesc> descs;

@@ -20,11 +20,6 @@ Pegasus::Shader::ShaderProxy::ShaderProxy(Pegasus::Shader::ShaderSource * object
 {
 }
 
-Pegasus::Shader::ShaderType Pegasus::Shader::ShaderProxy::GetStageType() const
-{
-    return mObject->GetStageType(); 
-}
-
 const char * Pegasus::Shader::ShaderProxy::GetName() const
 {
     return mObject->GetDisplayName();

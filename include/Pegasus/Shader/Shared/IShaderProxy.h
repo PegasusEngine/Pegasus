@@ -29,10 +29,6 @@ class IShaderProxy : public Core::ISourceCodeProxy
     public:
         //! Destructor
         virtual ~IShaderProxy(){}
-
-        //! Gets the shader stage type
-        //! \return returs the enum for the type of this shader
-        virtual ShaderType GetStageType() const = 0;
 };
 
 }
