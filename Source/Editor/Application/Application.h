@@ -130,6 +130,14 @@ public:
     }
 
     //------------------------------------------------------------------------------------
+
+    //! Handler for log messages coming from the application itself
+    //! \warning This is a static function, so it cannot emit any signal.
+    //!          We have to call a member function, \a EmitLogFromApplication,
+    //!          running in the application thread
+    //! \param logChannel Log channel that receives the message
+    //! \param msgStr String of the message to log
+    static void LogHandler(Pegasus::Core::LogChannel logChannel, const char * msgStr);
     
 signals:
 
@@ -182,14 +190,6 @@ private slots:
     //------------------------------------------------------------------------------------
 
 private:
-
-    //! Handler for log messages coming from the application itself
-    //! \warning This is a static function, so it cannot emit any signal.
-    //!          We have to call a member function, \a EmitLogFromApplication,
-    //!          running in the application thread
-    //! \param logChannel Log channel that receives the message
-    //! \param msgStr String of the message to log
-    static void LogHandler(Pegasus::Core::LogChannel logChannel, const char * msgStr);
 
     //! Handler for assertion errors coming from the application itself
     //! \warning This is a static function, so it cannot emit any signal.

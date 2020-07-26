@@ -72,9 +72,11 @@ Graph::NodeData* ProgramLinkage::AllocateData() const
     return PG_NEW(GetNodeDataAllocator(), -1, "ProgramData", Alloc::PG_MEM_TEMP) ProgramLinkagePsoData(GetNodeDataAllocator(), mManager->GetRenderDevice());
 }
 
-void ProgramLinkage::Compile()
+bool ProgramLinkage::Compile()
 {
-    Node::GetUpdatedData();
+    Graph::NodeDataReturn nodeData = Node::GetUpdatedData();
+    auto* programData = (ProgramLinkagePsoData*)&(*nodeData);
+    return programData->GetGpuPipeline()->IsValid();
 }
 
 void ProgramLinkage::GenerateData()
@@ -103,7 +105,7 @@ void ProgramLinkage::GenerateData()
     auto* programData = static_cast<ProgramLinkagePsoData*>(GetData());
     
 #if PEGASUS_USE_EVENTS
-	programData->GetGpuPipeline()->SetEventUserData(mShaderSource->GetEventUserData());
+	programData->GetGpuPipeline()->SetEventUserData(GetEventUserData());
     programData->GetGpuPipeline()->SetEventListener(GetEventListener());
 #endif
 
@@ -128,13 +130,16 @@ void ProgramLinkage::GenerateData()
 void ProgramLinkage::SetSourceCode(ShaderSourceRef& source)
 {
     InvalidateData();
-    if (source == nullptr && mShaderSource != nullptr)
-    {
+	if (source == mShaderSource)
+		return;
+
+    if (mShaderSource != nullptr)
         mShaderSource->UnregisterParent(this);
-    }
 
     mShaderSource = source;
-    mShaderSource->RegisterParent(this);
+
+	if (mShaderSource != nullptr)
+		mShaderSource->RegisterParent(this);
 }
 
 void ProgramLinkage::AddInput(Graph::NodeIn node)

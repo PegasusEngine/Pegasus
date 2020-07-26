@@ -32,6 +32,9 @@ void ProgramIOMessageController::OnRenderThreadProcessMessage(const ProgramIOMCM
 {
     switch(msg.GetMessageType())
     {
+    case ProgramIOMCMessage::COMPILE:
+        OnRenderThreadCompile(msg.GetProgram());
+        break;
     case ProgramIOMCMessage::REMOVE_SHADER:
         OnRenderThreadRemoveShader(msg.GetProgram());
         break;
@@ -77,6 +80,13 @@ void ProgramIOMessageController::OnRenderThreadRemoveShader(AssetInstanceHandle 
     program->SetSourceCode(nullptr);
 
     emit SignalUpdateProgramView();
+    emit SignalRedrawViewports();
+}
+
+void ProgramIOMessageController::OnRenderThreadCompile(AssetInstanceHandle handle)
+{
+    Pegasus::Shader::IProgramProxy* program = static_cast<Pegasus::Shader::IProgramProxy*>(FindInstance(handle));
+    program->Compile();
     emit SignalRedrawViewports();
 }
 

@@ -43,6 +43,8 @@ public:
     virtual void SetSourceCode(Pegasus::Core::ISourceCodeProxy* sourceCode) = 0;
     virtual Pegasus::Core::ISourceCodeProxy* GetSourceCode() const = 0;
 
+    virtual bool Compile() = 0;
+
     //! Gets the user data for this particular program 
     //! \return user data reference
     virtual Pegasus::Core::IEventUserData * GetUserData() const = 0;

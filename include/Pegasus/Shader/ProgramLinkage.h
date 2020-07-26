@@ -92,7 +92,7 @@ public:
 
     const Pegasus::Core::Ref<ShaderSource>& GetSourceCode() const { return mShaderSource; }
 
-    void Compile();
+    bool Compile();
 
 #if PEGASUS_ENABLE_PROXIES
     //! returns the name of this program.

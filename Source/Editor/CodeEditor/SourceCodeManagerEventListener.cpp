@@ -8,9 +8,10 @@
 //! \author Kleber Garcia
 //! \date   4rth April 2014
 //! \brief  Pegasus Source Code Manager Event Listener	
-#include "CodeEditor/SourceCodeManagerEventListener.h"
-#include "Pegasus/Shader/Shared/IProgramProxy.h"
-#include "Pegasus/AssetLib/Shared/IAssetProxy.h"
+#include <Application/Application.h>
+#include <CodeEditor/SourceCodeManagerEventListener.h>
+#include <Pegasus/Shader/Shared/IProgramProxy.h>
+#include <Pegasus/AssetLib/Shared/IAssetProxy.h>
 #include <QTextDocument>
 #include <string.h>
 
@@ -18,6 +19,7 @@ CodeUserData::CodeUserData(Pegasus::Core::ISourceCodeProxy * code)
 : mIsValid(true) 
 {
     mData.mSourceCode = code;
+	mData.mBasicAsset = code;
     mIsProgram = false;
 }
 
@@ -25,6 +27,7 @@ CodeUserData::CodeUserData(Pegasus::Shader::IProgramProxy * program)
 : mIsValid(true)
 {
     mData.mProgram = program;
+	mData.mBasicAsset = program;
     mIsProgram = true;
 }
 
@@ -114,23 +117,52 @@ void SourceCodeManagerEventListener::OnEvent(Pegasus::Core::IEventUserData * use
     //TODO: unused event, this should be removed at some point
 }
 
+static AssetInstanceHandle GetCodeHandle(CodeUserData* userData)
+{
+    if (userData->IsProgram())
+    {
+		Pegasus::Shader::IProgramProxy* program = userData->GetProgram();
+        if (!program)
+            return AssetInstanceHandle();
+
+        Pegasus::Core::ISourceCodeProxy* codeProxy = program->GetSourceCode();
+        if (!codeProxy)
+            return AssetInstanceHandle();
+
+        CodeUserData* codeUserData = static_cast<CodeUserData*>(codeProxy->GetUserData());
+        return codeUserData->GetHandle();
+    }
+    else
+    {
+        return userData->GetHandle();
+    }
+}
+
 void SourceCodeManagerEventListener::OnEvent(Pegasus::Core::IEventUserData * userData, Pegasus::Core::CompilerEvents::CompilationNotification& e)
 {
     ED_ASSERT(userData != nullptr);
     CodeUserData * codeUserData = static_cast<CodeUserData*>(userData);
     if (codeUserData->GetHandle().IsValid())
     {
-        
+		AssetInstanceHandle childHandle = GetCodeHandle(codeUserData);
+		auto* assetProxy = codeUserData->GetBasicAsset()->GetOwnerAsset();
+
         if (e.GetType() == Pegasus::Core::CompilerEvents::CompilationNotification::COMPILATION_BEGIN)
         {
-            emit( OnCompilationBegin(codeUserData->GetHandle()) ) ;
+            emit( OnCompilationBegin(childHandle) ) ;
         }
-        else
-        {        
+        else if (e.GetType() == Pegasus::Core::CompilerEvents::CompilationNotification::COMPILATION_ERROR || e.GetType() == Pegasus::Core::CompilerEvents::CompilationNotification::COMPILATION_WARNING)
+        {
+			if (assetProxy)
+			{
+				QString fullError = tr("%1 >> %2").arg(tr(assetProxy->GetPath()), tr(e.GetDescription()));
+				Application::LogHandler('ERR_', fullError.toLocal8Bit().constData());
+			}
+
             //notify the code editor:
             emit(
                 OnCompilationError(
-                    codeUserData->GetHandle(),
+					childHandle,
                     e.GetRow(),
                     QString(e.GetDescription())
                 )

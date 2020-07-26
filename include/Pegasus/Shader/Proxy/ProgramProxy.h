@@ -42,6 +42,8 @@ public:
 
     virtual Pegasus::Core::ISourceCodeProxy* GetSourceCode() const override;
 
+    virtual bool Compile() override;
+
     //! Sets the user data for this particular program
     //! \param userData. the user data to retrieve
     virtual void SetUserData(Pegasus::Core::IEventUserData * userData) override;

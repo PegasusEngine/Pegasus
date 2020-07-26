@@ -246,6 +246,7 @@ bool Dx12Pso::Compile(const GpuPipelineConfig& config)
     if (mProgram.GetShaderByteCode(Dx12_Compute) != nullptr)
         mType = PsoCompute;
 
+    HRESULT result = S_OK;
     if (mType == PsoGraphics)
     {
         PG_ASSERTSTR(config.graphicsState != nullptr, "Graphics state not set for PSO");
@@ -288,22 +289,7 @@ bool Dx12Pso::Compile(const GpuPipelineConfig& config)
 //        psoDesc.Flags |= D3D12_PIPELINE_STATE_FLAG_TOOL_DEBUG;
 //#endif
         
-        HRESULT result = mDevice->GetD3D()->CreateGraphicsPipelineState(&psoDesc, _uuidof(ID3D12PipelineState), reinterpret_cast<void**>(&mPso));
-        if (result != S_OK)
-        {
-            PEGASUS_EVENT_DISPATCH(
-                this, Core::CompilerEvents::LinkingEvent,
-                Core::CompilerEvents::LinkingEvent::LINKING_FAIL, "Failed creating PSO. Check API logs for reason.");
-            return false;
-        }
-        else
-        {
-            PEGASUS_EVENT_DISPATCH(
-                this, Core::CompilerEvents::LinkingEvent,
-                Core::CompilerEvents::LinkingEvent::LINKING_SUCCESS, "");
-            mValid = true;
-            return true; 
-        }
+        result = mDevice->GetD3D()->CreateGraphicsPipelineState(&psoDesc, _uuidof(ID3D12PipelineState), reinterpret_cast<void**>(&mPso));
     }
     else if (mType == PsoCompute)
     {
@@ -321,18 +307,30 @@ bool Dx12Pso::Compile(const GpuPipelineConfig& config)
         }
 
         psoDesc.pRootSignature = mProgram.GetRootSignature();
-        HRESULT result = mDevice->GetD3D()->CreateComputePipelineState(&psoDesc, _uuidof(ID3D12PipelineState), reinterpret_cast<void**>(&mPso));
-        if (result != S_OK)
-            return false;
-        else
-        {
-            mValid = true;
-            return true; 
-        }
+        result = mDevice->GetD3D()->CreateComputePipelineState(&psoDesc, _uuidof(ID3D12PipelineState), reinterpret_cast<void**>(&mPso));
     }
     else
     {
+        PEGASUS_EVENT_DISPATCH(
+            this, Core::CompilerEvents::LinkingEvent,
+            Core::CompilerEvents::LinkingEvent::LINKING_FAIL, "Unknown type of PSO.");
         return false;
+    }
+
+    if (result != S_OK)
+    {
+        PEGASUS_EVENT_DISPATCH(
+            this, Core::CompilerEvents::LinkingEvent,
+            Core::CompilerEvents::LinkingEvent::LINKING_FAIL, "Failed creating PSO. Check API logs for reason.");
+        return false;
+    }
+    else
+    {
+        PEGASUS_EVENT_DISPATCH(
+            this, Core::CompilerEvents::LinkingEvent,
+            Core::CompilerEvents::LinkingEvent::LINKING_SUCCESS, "");
+        mValid = true;
+        return true; 
     }
 }
 

@@ -46,7 +46,6 @@ void Pegasus::Shader::ShaderSource::UnregisterParent(ProgramLinkage* programLink
     if (mLockParentArray)
         return;
 
-    mProgramParents.PushEmpty() = programLinkage;
     for (unsigned int i = 0; i < mProgramParents.GetSize(); ++i)
     {
         if (mProgramParents[i] == programLinkage)

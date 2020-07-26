@@ -61,6 +61,7 @@ signals:
 
 private:
     void OnRenderThreadModifyShader(AssetInstanceHandle handle, const QString& path);
+    void OnRenderThreadCompile(AssetInstanceHandle handle);
     void OnRenderThreadRemoveShader(AssetInstanceHandle handle);
 
     //! Called when a shader is requested for opening from the render thread

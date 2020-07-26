@@ -449,6 +449,13 @@ bool Dx12GpuProgram::Compile(const GpuPipelineConfig& desc)
     mParams = new Dx12GpuProgramParams();
     mData = new Dx12GpuProgramData();
 
+    PEGASUS_EVENT_DISPATCH(
+        this, Core::CompilerEvents::CompilationNotification,
+        Core::CompilerEvents::CompilationNotification::COMPILATION_BEGIN,
+        "", 0u, ""
+    );
+
+    bool success = true;
     for (unsigned pipelineIdx = 0; pipelineIdx < Dx12_PipelineMax; ++pipelineIdx)
     {
         if (desc.mainNames[pipelineIdx] != nullptr)
@@ -464,13 +471,20 @@ bool Dx12GpuProgram::Compile(const GpuPipelineConfig& desc)
             }
             else
             {
-                return false;
+                success = false;
+                break;
             }
         }
     }
 
     fillInInternalData();
-    return createRootSignature();
+    success = success && createRootSignature();
+
+    PEGASUS_EVENT_DISPATCH(
+        this, Core::CompilerEvents::CompilationEvent,
+        success, success ? "Compilation Succeeded." : "Compilation Failed.");
+    
+    return success;
 }
 
 }

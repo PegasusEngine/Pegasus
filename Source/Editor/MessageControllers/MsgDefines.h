@@ -447,6 +447,7 @@ public:
     enum MessageType
     {
         INVALID = -1,
+        COMPILE,
         REMOVE_SHADER,
         MODIFY_SHADER
     };

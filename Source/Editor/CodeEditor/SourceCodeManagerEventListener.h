@@ -45,6 +45,10 @@ public:
     //! \return the program
     Pegasus::Shader::IProgramProxy * GetProgram() const { return mData.mProgram; }
 
+	//! gets the program that owns this user data
+	//! \return the program
+	Pegasus::Core::IBasicSourceProxy * GetBasicAsset() const { return mData.mBasicAsset; }
+
     //! true if this holds a program, false if it holds a source code
     bool IsProgram() const { return mIsProgram; }
 
@@ -71,6 +75,7 @@ private:
     union {
         Pegasus::Shader::IProgramProxy* mProgram;
         Pegasus::Core::ISourceCodeProxy* mSourceCode;
+		Pegasus::Core::IBasicSourceProxy* mBasicAsset;
     } mData;
     
 };

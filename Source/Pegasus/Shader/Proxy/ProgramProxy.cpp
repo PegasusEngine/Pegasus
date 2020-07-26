@@ -50,6 +50,11 @@ void Pegasus::Shader::ProgramProxy::SetUserData(Pegasus::Core::IEventUserData  *
 #endif
 }
 
+bool Pegasus::Shader::ProgramProxy::Compile()
+{
+    return mObject->Compile();
+}
+
 Pegasus::Core::IEventUserData * Pegasus::Shader::ProgramProxy::GetUserData() const
 {
 #if PEGASUS_USE_EVENTS

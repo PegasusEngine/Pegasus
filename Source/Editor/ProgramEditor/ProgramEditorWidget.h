@@ -87,6 +87,8 @@ public:
     void SetShader(const QString& shaderPath);
     QString ProgramEditorWidget::GetCurrentShaderPath();
 
+    void CompileCurrentProgram();
+
 public slots:
 
     //! Closes a program.

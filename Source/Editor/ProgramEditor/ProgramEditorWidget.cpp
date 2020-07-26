@@ -198,6 +198,17 @@ void ProgramEditorWidget::SignalSaveCurrentProgram()
     SignalSaveTab(idx);
 }
 
+void ProgramEditorWidget::CompileCurrentProgram()
+{
+    if (!mCurrentProgram.IsValid())
+        return;
+
+    ProgramIOMCMessage msg;
+    msg.SetMessageType(ProgramIOMCMessage::COMPILE);
+    msg.SetProgram(mCurrentProgram);
+    emit SendProgramIoMessage(msg);
+}
+
 void ProgramEditorWidget::SignalSaveTab(int tabId)
 {
     if (tabId < 0 || tabId >= mTabBar->GetTabCount()) return;
@@ -210,6 +221,7 @@ void ProgramEditorWidget::SignalSaveTab(int tabId)
         msg.SetMessageType(AssetIOMCMessage::SAVE_ASSET);
         msg.SetObject(handle);
         SendAssetIoMessage(msg);
+        CompileCurrentProgram();
     }
 }
 
@@ -220,6 +232,7 @@ void ProgramEditorWidget::SignalDiscardObjectChanges(AssetInstanceHandle object)
         AssetIOMCMessage msg(AssetIOMCMessage::RELOAD_FROM_ASSET);
         msg.SetObject(object);
         SendAssetIoMessage(msg);
+        CompileCurrentProgram();
     }
 }
     
@@ -244,6 +257,7 @@ void ProgramEditorWidget::OnOpenObject(AssetInstanceHandle handle, const QString
 
     QUndoStack* programUndoStack = new QUndoStack(this);
     mTabBar->Open(handle, displayName, programUndoStack);
+    CompileCurrentProgram();
 }
 
 void ProgramEditorWidget::SyncUiToProgram()
@@ -336,6 +350,8 @@ void ProgramEditorWidget::SetShader(const QString& shaderPath)
     msg.SetProgram(mCurrentProgram);
     msg.SetShaderPath(shaderPath);
     emit SendProgramIoMessage(msg);
+
+    CompileCurrentProgram();
 }
 
 void ProgramEditorWidget::OnUIForAppClosed()
