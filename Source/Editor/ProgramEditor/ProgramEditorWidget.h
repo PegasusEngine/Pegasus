@@ -13,10 +13,8 @@
 #define EDITOR_PROGRAM_EDITOR_WIDGET_H
 
 #include "Widgets/PegasusDockWidget.h"
-#include "Pegasus/Shader/Shared/ShaderDefs.h"
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
 #include "MessageControllers/MsgDefines.h"
-#include "Pegasus/Shader/Shared/ShaderDefs.h"
 
 #include <QDockWidget>
 
@@ -86,6 +84,9 @@ public:
     //! Asset types that get this type association, will be the ones passed through OnOpenRequest function 
     virtual const Pegasus::PegasusAssetTypeDesc*const* GetTargetAssetTypes() const ; 
 
+    void SetShader(const QString& shaderPath);
+    QString ProgramEditorWidget::GetCurrentShaderPath();
+
 public slots:
 
     //! Closes a program.
@@ -116,27 +117,6 @@ signals:
     void SendProgramIoMessage(ProgramIOMCMessage msg);
 
 private:
-
-    //! Call to set the shader of the current program being edited
-    //! \param path asset of the shader to set, empty string means remove the current shader
-    //! \param shaderType the target shader type to modify
-    void SetShader(const QString& shaderFile, Pegasus::Shader::ShaderType shaderType);
-
-    //! Gets the current shader path stored for this type
-    //! \return the current path stored for this shader. If no shader pipeline set, then this is the empty string
-    QString GetCurrentShaderPath(Pegasus::Shader::ShaderType type);
-
-    //! Ui struct describing a slot
-    struct ShaderSlots
-    {
-        QLabel      *mSlotName;      
-        QLabel      *mAsset;
-        QToolButton *mLoadButton;
-        QToolButton *mDeleteButton;
-        QString      mFullAssetPath;
-        bool         mActive;
-    } mShaderSlots[Pegasus::Shader::SHADER_STAGES_COUNT];
-
     //! Enables/Disables the UI
     //! \param enable if true activates the UI, if false deactivates it. Use this to figure out
     //!        looks of UI when there is no program opened
@@ -145,20 +125,21 @@ private:
     //! Clears the ui to a default state.
     void ClearUi();
 
-    QSignalMapper* mAddShaderMapper;
-    QSignalMapper* mRemoveShaderMapper;
     QWidget*       mMainWidget;
     QAction*       mSaveAction;
     QStatusBar*    mStatusBar;
     QString        mStatusBarMessage;
+    QToolButton* mLoadShaderButton;
+    QToolButton* mRemoveShaderButton;
+    QLabel*      mShaderName;
     NodeFileTabBar* mTabBar;
 
 protected slots:
     //! Triggered when a shader has been added / modified
-    void OnAddShader(int stageId);
+    void OnLoadShader();
 
     //! Triggered when a shader has been removed
-    void OnRemoveShader(int stageId);
+    void OnRemoveShader();
 
     //! Triggered when a program has been viewd
     void OnViewProgram(AssetInstanceHandle);
@@ -166,11 +147,10 @@ protected slots:
 private:
     //! Pointer to the current program opened
     AssetInstanceHandle mCurrentProgram;
-    typedef QMap<Pegasus::Shader::ShaderType, QString> ShaderMap;
 
     struct ProgramData {
         QString name;
-        ShaderMap shaders;
+        QString sourcePath;
     };
     
     QMap<AssetInstanceHandle, ProgramData> mProgramData;

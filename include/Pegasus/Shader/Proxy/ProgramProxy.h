@@ -36,15 +36,19 @@ public:
     virtual ~ProgramProxy() {}
 
     //! \return Gets the name of this shader program
-    virtual const char * GetName() const;
+    virtual const char * GetName() const override;
+
+    virtual void SetSourceCode(Pegasus::Core::ISourceCodeProxy* sourceCode) override;
+
+    virtual Pegasus::Core::ISourceCodeProxy* GetSourceCode() const override;
 
     //! Sets the user data for this particular program
     //! \param userData. the user data to retrieve
-    virtual void SetUserData(Pegasus::Core::IEventUserData * userData);
+    virtual void SetUserData(Pegasus::Core::IEventUserData * userData) override;
 
     //! Gets the user data for this particular program 
     //! \return user data reference
-    virtual Pegasus::Core::IEventUserData * GetUserData() const;
+    virtual Pegasus::Core::IEventUserData * GetUserData() const override;
 
     //! \return the object that belongs to this proxy
     ProgramLinkage* GetObject() { return mObject; }

@@ -33,7 +33,7 @@ void ProgramIOMessageController::OnRenderThreadProcessMessage(const ProgramIOMCM
     switch(msg.GetMessageType())
     {
     case ProgramIOMCMessage::REMOVE_SHADER:
-        OnRenderThreadRemoveShader(msg.GetProgram(), msg.GetShaderType());
+        OnRenderThreadRemoveShader(msg.GetProgram());
         break;
     case ProgramIOMCMessage::MODIFY_SHADER:
         OnRenderThreadModifyShader(msg.GetProgram(), msg.GetShaderPath());
@@ -43,28 +43,8 @@ void ProgramIOMessageController::OnRenderThreadProcessMessage(const ProgramIOMCM
     }
 }
 
-void ProgramIOMessageController::OnRenderThreadRemoveShader(AssetInstanceHandle handle, Pegasus::Shader::ShaderType shaderType)
-{
-#if 0
-    Pegasus::Shader::IProgramProxy* program = static_cast<Pegasus::Shader::IProgramProxy*>(FindInstance(handle));
-
-    for (int i = 0; i < program->GetShaderCount(); ++i)
-    {
-        Pegasus::Shader::IShaderProxy* shader = program->GetShader(i);
-        if (shader->GetStageType() == shaderType)
-        {
-            program->RemoveShader(i);
-            emit SignalUpdateProgramView();
-            emit SignalRedrawViewports();
-            break;
-        }
-    }
-#endif
-}
-
 void ProgramIOMessageController::OnRenderThreadModifyShader(AssetInstanceHandle handle, const QString& path)
 {
-#if 0
     Pegasus::Shader::IProgramProxy* program = static_cast<Pegasus::Shader::IProgramProxy*>(FindInstance(handle));
 
     Pegasus::AssetLib::IAssetLibProxy* assetLib = mApp->GetAssetLibProxy();
@@ -75,8 +55,8 @@ void ProgramIOMessageController::OnRenderThreadModifyShader(AssetInstanceHandle 
 
     if ( object != nullptr )
     {
-        Pegasus::Shader::IShaderProxy* openedShader = static_cast<Pegasus::Shader::IShaderProxy*>(object);
-        program->SetShader(openedShader);                            
+        auto* openedShader = static_cast<Pegasus::Core::ISourceCodeProxy*>(object);
+        program->SetSourceCode(openedShader);                            
         
         if (isNew) //only close if this shader was never open to avoid destroying memory
         {
@@ -84,13 +64,20 @@ void ProgramIOMessageController::OnRenderThreadModifyShader(AssetInstanceHandle 
         }
         emit SignalUpdateProgramView();
         emit SignalRedrawViewports();
-
     }
     else
     {
         //todo: else emit loading error
     }
-#endif
+}
+
+void ProgramIOMessageController::OnRenderThreadRemoveShader(AssetInstanceHandle handle)
+{
+    Pegasus::Shader::IProgramProxy* program = static_cast<Pegasus::Shader::IProgramProxy*>(FindInstance(handle));
+    program->SetSourceCode(nullptr);
+
+    emit SignalUpdateProgramView();
+    emit SignalRedrawViewports();
 }
 
 QVariant ProgramIOMessageController::TranslateToQt(AssetInstanceHandle handle, Pegasus::AssetLib::IRuntimeAssetObjectProxy* object)
@@ -105,25 +92,15 @@ QVariant ProgramIOMessageController::TranslateToQt(AssetInstanceHandle handle, P
     //! send messages back to the widgets
     codeUserData->SetHandle(handle);
 
-#if 0
-    QVariantList shaders;
-    for (int i = 0; i < program->GetShaderCount(); ++i)
-    {
-        QVariantMap shaderInfo;
-        QString shaderPath = "<no asset>";
-        
-        if (program->GetShader(i)->GetOwnerAsset() != nullptr)
-        {
-            shaderPath = program->GetShader(i)->GetOwnerAsset()->GetPath();
-        }
-        shaderInfo.insert("Path", shaderPath);
-        shaderInfo.insert("Type", program->GetShader(i)->GetStageType());
-        shaders.push_back(shaderInfo);
-    }
-#endif
-
     QVariantMap programInfo;
-    //programInfo.insert("Shaders", shaders);
+    Pegasus::Core::ISourceCodeProxy* shaderSource = program->GetSourceCode(); 
+    if (shaderSource != nullptr)
+    {
+        QVariantMap shaderObject;
+        shaderObject.insert("Path", shaderSource->GetOwnerAsset()->GetPath());
+        programInfo.insert("Shader", shaderObject);
+    }
+
     programInfo.insert("Name", program->GetName());
     return programInfo;
 }

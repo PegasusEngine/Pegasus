@@ -13,7 +13,6 @@
 #define PROGRAM_IO_MESSAGE_CONTROLLER
 
 #include <QObject>
-#include "Pegasus/Shader/Shared/ShaderDefs.h"
 #include "MessageControllers/AssetIOMessageController.h"
 
 //forward declarations
@@ -61,10 +60,8 @@ signals:
     void SignalRedrawViewports();
 
 private:
-
-    void OnRenderThreadRemoveShader(AssetInstanceHandle handle, Pegasus::Shader::ShaderType shaderType);
-    
     void OnRenderThreadModifyShader(AssetInstanceHandle handle, const QString& path);
+    void OnRenderThreadRemoveShader(AssetInstanceHandle handle);
 
     //! Called when a shader is requested for opening from the render thread
     Pegasus::App::IApplicationProxy* mApp;

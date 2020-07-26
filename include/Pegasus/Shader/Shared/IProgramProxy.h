@@ -25,8 +25,6 @@ namespace Graph
 namespace Shader
 {
 
-class IShaderProxy;
-
 //! shader program proxy interface
 class IProgramProxy : public Pegasus::Core::IBasicSourceProxy
 {
@@ -41,6 +39,9 @@ public:
     //! Sets the user data for this particular program
     //! \param userData. the user data to retrieve
     virtual void SetUserData(Pegasus::Core::IEventUserData * userData) = 0;
+
+    virtual void SetSourceCode(Pegasus::Core::ISourceCodeProxy* sourceCode) = 0;
+    virtual Pegasus::Core::ISourceCodeProxy* GetSourceCode() const = 0;
 
     //! Gets the user data for this particular program 
     //! \return user data reference

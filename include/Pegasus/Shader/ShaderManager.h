@@ -20,6 +20,10 @@ namespace Pegasus {
     namespace AssetLib {
         class AssetLib;
     }
+
+    namespace Render {
+        class IDevice;
+    }
 }
 
 namespace Pegasus
@@ -35,7 +39,7 @@ public:
     //! Constructor
     //! \param nodeManager - the node manager
     //! \param the shader factory
-    ShaderManager(Graph::NodeManager * nodeManager);
+    ShaderManager(Graph::NodeManager * nodeManager, Render::IDevice* device);
 
     //! Destructor
     virtual ~ShaderManager();
@@ -55,6 +59,8 @@ public:
     //! Creates a new shader source.
     //! \return new source.
     ShaderSourceReturn CreateShaderSrc();
+
+    Render::IDevice* GetRenderDevice() { return mRenderDevice; }
 
 #if PEGASUS_ENABLE_PROXIES
 
@@ -89,9 +95,6 @@ private:
     //! Reference to the global node manager. Use it to allocate node data.
     Graph::NodeManager * mNodeManager;
 
-    //! Reference to the GPU factory. Passed to every node generated from this manager.
-    IShaderFactory * mFactory;
-
 #if PEGASUS_ENABLE_PROXIES
 
     //! Proxy associated with the shader manager
@@ -101,6 +104,8 @@ private:
 #if PEGASUS_USE_EVENTS
     Pegasus::Core::CompilerEvents::ICompilerEventListener * mEventListener;
 #endif
+
+    Render::IDevice* mRenderDevice;
 };
 
 }//namespace Shader

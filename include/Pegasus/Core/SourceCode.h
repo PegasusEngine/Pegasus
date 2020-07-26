@@ -78,6 +78,7 @@ public:
 
     
 protected:
+    bool mLockParentArray;
     Io::FileBuffer             mFileBuffer; //! buffer structure containing shader source
     Alloc::IAllocator* mAllocator;
     Utils::Vector<SourceCode*> mParents; //references to parents
@@ -86,10 +87,6 @@ protected:
 
     virtual void OnWriteAsset(Pegasus::AssetLib::AssetLib* lib, Pegasus::AssetLib::Asset* asset) override;
 
-private:
-
-
-    bool mLockParentArray;
 };
 
 }

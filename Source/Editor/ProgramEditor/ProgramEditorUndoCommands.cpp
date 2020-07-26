@@ -6,11 +6,9 @@ static char gUniqueId = 'P';
 ProgramEditorModifyShaderCmd::ProgramEditorModifyShaderCmd(
         ProgramEditorWidget* owner,         
         const QString& newShader, 
-        const QString& previousShader,
-        Pegasus::Shader::ShaderType shaderType) 
+        const QString& previousShader)
 : mPrevShader(previousShader),
   mNewShader(newShader),
-  mShaderType(shaderType),
   mWidget(owner)
 {
     setText("Changing shader.");
@@ -22,12 +20,12 @@ ProgramEditorModifyShaderCmd::~ProgramEditorModifyShaderCmd()
 
 void ProgramEditorModifyShaderCmd::undo()
 {
-    mWidget->SetShader(mPrevShader, mShaderType);
+    mWidget->SetShader(mPrevShader);
 }
 
 void ProgramEditorModifyShaderCmd::redo()
 {
-    mWidget->SetShader(mNewShader, mShaderType);
+    mWidget->SetShader(mNewShader);
 }
 
 int ProgramEditorModifyShaderCmd::id() const
@@ -41,7 +39,6 @@ bool ProgramEditorModifyShaderCmd::mergeWith(const QUndoCommand * command)
     {
         const ProgramEditorModifyShaderCmd* peCmd = static_cast<const ProgramEditorModifyShaderCmd*>(command);
         return (
-                mShaderType == peCmd->mShaderType &&
                 mNewShader  == peCmd->mNewShader
                );
     }

@@ -18,7 +18,6 @@
 #include "Pegasus/PegasusAssetTypes.h"
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
-#include "Pegasus/Shader/Shared/ShaderDefs.h"
 #include "Pegasus/Shader/Shared/IProgramProxy.h"
 #include "Pegasus/AssetLib/Shared/IRuntimeAssetObjectProxy.h"
 #include "Pegasus/Timeline/Shared/IBlockProxy.h"

@@ -344,7 +344,7 @@ bool Dx12GpuProgram::createRootSignature()
 ID3D12RootSignature* Dx12GpuProgram::GetRootSignature() const
 {
     PG_ASSERT(mData != nullptr);
-    return &(*mData->rootSignature);
+    return mData->rootSignature;
 }
 
 bool Dx12GpuProgram::SpaceToTableId(UINT space, Dx12ResType resType, UINT& outTableId) const
@@ -389,7 +389,7 @@ void Dx12GpuProgram::ClearEventData()
 
 bool Dx12GpuProgram::Compile(const GpuPipelineConfig& desc)
 {
-    auto compileShader = [&](Dx12ShaderBlob& blob, const char* src, int srcSize, const char* mainFn, Dx12PipelineType pipelineType)
+    auto compileShader = [&](Dx12ShaderBlob& blob, const char* src, unsigned srcSize, const char* mainFn, Dx12PipelineType pipelineType)
     {
         ID3DBlob* errBlob = nullptr;
 
@@ -451,12 +451,12 @@ bool Dx12GpuProgram::Compile(const GpuPipelineConfig& desc)
 
     for (unsigned pipelineIdx = 0; pipelineIdx < Dx12_PipelineMax; ++pipelineIdx)
     {
-        if (!desc.mainNames[pipelineIdx].empty())
+        if (desc.mainNames[pipelineIdx] != nullptr)
         {
             Dx12ShaderBlob shaderblob; 
             bool result = compileShader(
-                shaderblob, desc.source.c_str(),
-                (int)(desc.source.size()+1u), desc.mainNames[pipelineIdx].c_str(),
+                shaderblob, desc.source,
+                desc.sourceSize, desc.mainNames[pipelineIdx],
                 (Dx12PipelineType)pipelineIdx);
             if (result)
             {

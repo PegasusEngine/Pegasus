@@ -216,6 +216,13 @@ ID3D12RootSignature* Dx12Pso::GetD3DRootSignature() const
 bool Dx12Pso::Compile(const GpuPipelineConfig& config)
 {
     mConfig = config;
+
+    //clear all tmp strings
+    mConfig.source = nullptr;
+    mConfig.sourceSize = 0u;
+    for (auto& mainPtr : mConfig.mainNames)
+        mainPtr = nullptr;
+
     mValid = false;
     mProgram.ClearEventData();
 

@@ -15,6 +15,7 @@
 #include "Pegasus/Core/SourceCode.h"
 #include "Pegasus/Shader/Proxy/ShaderProxy.h"
 #include "Pegasus/Graph/GeneratorNode.h"
+#include "Pegasus/Utils/Vector.h"
 
 //fwd declarations
 namespace Pegasus {
@@ -29,6 +30,10 @@ namespace Pegasus {
     
     namespace Graph {
         class NodeManager;
+    }
+
+    namespace Shader {
+        class ProgramLinkage;
     }
 }
 
@@ -47,19 +52,25 @@ public:
     virtual ~ShaderSource();
 
     //! Return the class instance name for this serializable object
-    virtual const char* GetClassInstanceName() const { return "ShaderSource"; }
+    virtual const char* GetClassInstanceName() const override { return "ShaderSource"; }
 
     static Graph::NodeReturn CreateNode(Graph::NodeManager* nodeManager, Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
-    virtual void InvalidateData();
-
 #if PEGASUS_ENABLE_PROXIES
-    virtual AssetLib::IRuntimeAssetObjectProxy * GetProxy() { return &mProxy; }
-    virtual const AssetLib::IRuntimeAssetObjectProxy * GetProxy() const { return &mProxy; }
+    virtual AssetLib::IRuntimeAssetObjectProxy * GetProxy() override { return &mProxy; }
+    virtual const AssetLib::IRuntimeAssetObjectProxy * GetProxy() const override { return &mProxy; }
 #endif
 
+    void RegisterParent(ProgramLinkage* programLinkage);
+
+    void UnregisterParent(ProgramLinkage* programLinkage);
+
+    virtual void Compile() override;
 
 protected:
+
+    virtual void InvalidateData() override { mIsDirty = true; }
+
     Alloc::IAllocator* mAllocator;
 
     //! override that generates data. This will generate the shader GPU data using the factory
@@ -75,6 +86,9 @@ private:
     ShaderProxy mProxy;
 
 #endif
+    
+    Utils::Vector<ProgramLinkage*> mProgramParents; //references to parents
+    bool mIsDirty;
 };
 
 typedef Pegasus::Core::Ref<ShaderSource> ShaderSourceRef;

@@ -57,6 +57,7 @@ void SimpleTriangleBlock::Initialize()
     GpuPipelineConfig pipelineConfig;
     pipelineConfig.graphicsState = mGpuState;
     pipelineConfig.source = simepleTriProgram;
+	pipelineConfig.sourceSize = strlen(simepleTriProgram);
     pipelineConfig.mainNames[Pipeline_Vertex] = "vsMain";
     pipelineConfig.mainNames[Pipeline_Pixel]  = "psMain";
     mPso = device->CreateGpuPipeline();

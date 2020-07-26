@@ -24,7 +24,7 @@ using namespace Pegasus;
 
 #define REGISTER_SHADER_NODE(className) mNodeManager->RegisterNode(#className, className::CreateNode);
 
-Pegasus::Shader::ShaderManager::ShaderManager(Pegasus::Graph::NodeManager * nodeManager)
+Pegasus::Shader::ShaderManager::ShaderManager(Pegasus::Graph::NodeManager * nodeManager, Render::IDevice* device)
 :   mNodeManager(nodeManager)
 #if PEGASUS_ENABLE_PROXIES
 ,   mProxy(this)
@@ -32,6 +32,7 @@ Pegasus::Shader::ShaderManager::ShaderManager(Pegasus::Graph::NodeManager * node
 #if PEGASUS_USE_EVENTS
 ,   mEventListener(nullptr)
 #endif
+,   mRenderDevice(device)
 {
     if (nodeManager != nullptr)
     {

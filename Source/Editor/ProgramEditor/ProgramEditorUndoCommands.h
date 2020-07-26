@@ -13,7 +13,6 @@
 #define EDITOR_PROGRAMEDITORUNDOCOMMANDS_H
 
 #include <QUndoCommand>
-#include "Pegasus/Shader/Shared/ShaderDefs.h"
 
 class ProgramEditorWidget;
 
@@ -28,8 +27,7 @@ public:
     ProgramEditorModifyShaderCmd(
         ProgramEditorWidget* owner,
         const QString& previousShader, 
-        const QString& newShader,
-        Pegasus::Shader::ShaderType
+        const QString& newShader
     );
 
     virtual ~ProgramEditorModifyShaderCmd();
@@ -52,7 +50,6 @@ private:
     ProgramEditorWidget* mWidget;
     QString mPrevShader;
     QString mNewShader;
-    Pegasus::Shader::ShaderType mShaderType;
 };
 
 #endif

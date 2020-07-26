@@ -296,8 +296,9 @@ protected:
 
 struct GpuPipelineConfig
 {
-    std::string source;
-    std::string mainNames[Pipeline_Max];
+    const char* source = nullptr;
+    unsigned sourceSize = 0u; 
+    const char* mainNames[Pipeline_Max] = {};
     Core::Ref<GpuState> graphicsState;
 };
 

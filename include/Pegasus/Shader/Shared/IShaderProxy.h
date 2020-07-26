@@ -11,7 +11,6 @@
 #ifndef PEGASUS_ISHADERPROXY_H
 #define PEGASUS_ISHADERPROXY_H
 
-#include "Pegasus/Shader/Shared/ShaderDefs.h"
 #include "Pegasus/Core/Shared/ISourceCodeProxy.h"
 #include "Pegasus/AssetLib/Shared/IRuntimeAssetObjectProxy.h"
 

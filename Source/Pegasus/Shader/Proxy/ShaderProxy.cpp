@@ -13,7 +13,6 @@
 
 #include "Pegasus/Shader/Proxy/ShaderProxy.h"
 #include "Pegasus/Shader/ShaderSource.h"
-#include "Pegasus/Shader/Shared/ShaderDefs.h"
 
 Pegasus::Shader::ShaderProxy::ShaderProxy(Pegasus::Shader::ShaderSource * object)
 : mObject(object)

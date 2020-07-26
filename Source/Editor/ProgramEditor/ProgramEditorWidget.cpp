@@ -14,7 +14,6 @@
 #include "Pegasus/AssetLib/Shared/IAssetProxy.h"
 #include "Pegasus/Shader/Shared/IShaderProxy.h"
 #include "Pegasus/Shader/Shared/IShaderManagerProxy.h"
-#include "Pegasus/Shader/Shared/ShaderDefs.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
 #include "Pegasus/PegasusAssetTypes.h"
 #include "ProgramEditor/ProgramEditorWidget.h"
@@ -37,15 +36,6 @@
 #include <QSignalMapper>
 #include "AssetLibrary/AssetLibraryWidget.h"
 
-const char* gShaderStageNames[Pegasus::Shader::SHADER_STAGES_COUNT] = {
-    "vertex",
-    "fragment",
-    "tesselation control",
-    "tesselation evaluation",
-    "geometry",
-    "compute"
-};
-
 ProgramEditorWidget::ProgramEditorWidget(QWidget* parent, Editor* editor)
     : PegasusDockWidget(parent, editor)
 {
@@ -61,10 +51,6 @@ void ProgramEditorWidget::SetupUi()
     QVBoxLayout * mainLayout = new QVBoxLayout();
     mMainWidget->setLayout(mainLayout);
     setWidget(mMainWidget);
-
-    mAddShaderMapper = new QSignalMapper(mMainWidget);
-
-    mRemoveShaderMapper = new QSignalMapper(mMainWidget);
 
     QIcon saveIcon(tr(":/CodeEditor/save.png"));
     QToolBar* toolBar = new QToolBar(mMainWidget);
@@ -102,138 +88,71 @@ void ProgramEditorWidget::SetupUi()
 
     mainLayout->addWidget(mTabBar);
 
-    for (int i = 0; i < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT); ++i)
-    {
-        ProgramEditorWidget::ShaderSlots& uiSlot = mShaderSlots[i];
+    QHBoxLayout* vertLayout = new QHBoxLayout();
+    mainLayout->addItem(vertLayout);
+    vertLayout->addWidget(new QLabel(tr("Source:"), mMainWidget));
 
-        QHBoxLayout* vertLayout = new QHBoxLayout();
-        mainLayout->addItem(vertLayout);
+    mShaderName = new QLabel(tr("<none>"), mMainWidget);
+    vertLayout->addWidget(mShaderName);
+    
+    mLoadShaderButton = new QToolButton(mMainWidget);
+    mLoadShaderButton->setIcon(addIcon);
+    mLoadShaderButton->setToolTip(tr("Browse shader source asset"));
+    vertLayout->addWidget(mLoadShaderButton);
 
-        uiSlot.mSlotName = new QLabel(tr(gShaderStageNames[i]), mMainWidget);
-        vertLayout->addWidget(uiSlot.mSlotName);
-
-        uiSlot.mLoadButton = new QToolButton(mMainWidget);
-        uiSlot.mLoadButton->setIcon(addIcon);
-        uiSlot.mLoadButton->setToolTip(tr("Browse shader asset"));
-        vertLayout->addWidget(uiSlot.mLoadButton);
-
-        uiSlot.mDeleteButton = new QToolButton(mMainWidget);
-        uiSlot.mDeleteButton->setIcon(delIcon);
-        uiSlot.mDeleteButton->setToolTip(tr("Remove current shader"));
-        vertLayout->addWidget(uiSlot.mDeleteButton);
-
-        uiSlot.mActive = false;
-
-        uiSlot.mAsset = new QLabel(tr("<none>"), mMainWidget);
-        vertLayout->addWidget(uiSlot.mAsset);
-
-        //connect signals
-        mAddShaderMapper->setMapping(uiSlot.mLoadButton, i);
-        connect(uiSlot.mLoadButton, SIGNAL(clicked(bool)),
-                mAddShaderMapper, SLOT(map()));
-
-        mRemoveShaderMapper->setMapping(uiSlot.mDeleteButton, i);
-        connect(uiSlot.mDeleteButton, SIGNAL(clicked(bool)),
-                mRemoveShaderMapper, SLOT(map()));
-    }
+    mRemoveShaderButton = new QToolButton(mMainWidget);
+    mRemoveShaderButton->setIcon(delIcon);
+    mRemoveShaderButton->setToolTip(tr("Remove current shader asset"));
+    vertLayout->addWidget(mRemoveShaderButton);
 
     mStatusBar = new QStatusBar(mMainWidget);
     mainLayout->addWidget(mStatusBar);
 
-    connect(mAddShaderMapper, SIGNAL(mapped(int)),
-            this, SLOT(OnAddShader(int)));
+    connect(mLoadShaderButton, SIGNAL(clicked(bool)),
+            this, SLOT(OnLoadShader()));
 
-    connect(mRemoveShaderMapper, SIGNAL(mapped(int)),
-            this, SLOT(OnRemoveShader(int)));
+    connect(mRemoveShaderButton, SIGNAL(clicked(bool)),
+            this, SLOT(OnRemoveShader()));
     EnableUi(false);
 }
 
-QString ProgramEditorWidget::GetCurrentShaderPath(Pegasus::Shader::ShaderType type)
-{
-    if (mCurrentProgram.IsValid())
-    {
-        ProgramData& pd = mProgramData[mCurrentProgram];
-        ShaderMap::iterator it = pd.shaders.find(type);
-        if (it != pd.shaders.end())
-        {
-            return it.value();
-        }
-    }
-    return tr("");
-}
-
-void ProgramEditorWidget::OnAddShader(int id)
+void ProgramEditorWidget::OnLoadShader()
 {
     Pegasus::App::IApplicationProxy* app = GetEditor()->GetApplicationManager().GetApplication()->GetApplicationProxy();
-    if (app != nullptr)
-    {
-        QString rootFolder = app->GetAssetsRoot();
-        QDir qd(rootFolder);
-        QString fileExtension = tr("%1 Shader (*.%2)").arg(Pegasus::Shader::gShaderTypeNames[id], Pegasus::Shader::gShaderExtensions[id]);
-        QString shaderAsset = QFileDialog::getOpenFileName(this, tr("Open shader."), rootFolder, fileExtension);
-        QString filePath = qd.path();
-        if (shaderAsset.startsWith(filePath))
-        {
-            QString path = shaderAsset.right(shaderAsset.size() - filePath.size() - 1);
-            Pegasus::Shader::ShaderType shaderType = static_cast<Pegasus::Shader::ShaderType>(id);
-            QString previousPath = GetCurrentShaderPath(shaderType);
-            ProgramEditorModifyShaderCmd* cmd = new ProgramEditorModifyShaderCmd(
-                this,
-                path,
-                previousPath,
-                shaderType
-            );
-            GetCurrentUndoStack()->push(cmd);
-        }
-        else if (shaderAsset.length() > 0)
-        { 
-            QMessageBox::warning(this, tr("Can't load asset."), tr("Asset must be loaded into the root directory only of the project. ")+rootFolder, QMessageBox::Ok);
-        }
-    }
-}
+    if (app == nullptr)
+        return;
 
-void ProgramEditorWidget::SetShader(const QString& shaderFile, Pegasus::Shader::ShaderType shaderType)
-{
-    if (mCurrentProgram.IsValid())
+    QString rootFolder = app->GetAssetsRoot();
+    QDir qd(rootFolder);
+    QString fileExtension = tr("%1 Shader (*.%2)").arg(tr("Shader File"), tr("hlsl"));
+    QString shaderAsset = QFileDialog::getOpenFileName(this, tr("Open shader."), rootFolder, fileExtension);
+    QString filePath = qd.path();
+    if (shaderAsset.startsWith(filePath))
     {
-        ProgramData& pd = mProgramData[mCurrentProgram];
-        mTabBar->MarkCurrentAsDirty();
-        if (shaderFile == "")
-        {
-            
-            pd.shaders.remove(shaderType);
-            mTabBar->MarkCurrentAsDirty();
-            ProgramIOMCMessage msg;
-            msg.SetMessageType(ProgramIOMCMessage::REMOVE_SHADER);
-            msg.SetShaderType(shaderType);
-            msg.SetProgram(mCurrentProgram);
-            emit SendProgramIoMessage(msg);
-        }
-        else
-        {
-            pd.shaders[shaderType] = shaderFile;
-            ProgramIOMCMessage msg;
-            msg.SetMessageType(ProgramIOMCMessage::MODIFY_SHADER);
-            msg.SetShaderPath(shaderFile);
-            msg.SetProgram(mCurrentProgram);
-            emit SendProgramIoMessage(msg);
-        }
-    }
-}
-
-void ProgramEditorWidget::OnRemoveShader(int id)
-{
-    if (mCurrentProgram.IsValid())
-    {
-        Pegasus::Shader::ShaderType shaderType = static_cast<Pegasus::Shader::ShaderType>(id);
-        GetCurrentUndoStack()->push( new ProgramEditorModifyShaderCmd (
-                this,
-                tr(""),
-                GetCurrentShaderPath(shaderType),
-                shaderType
-            )
+        QString path = shaderAsset.right(shaderAsset.size() - filePath.size() - 1);
+        QString previousPath = GetCurrentShaderPath();
+        ProgramEditorModifyShaderCmd* cmd = new ProgramEditorModifyShaderCmd(
+            this,
+            path,
+            previousPath
         );
+        GetCurrentUndoStack()->push(cmd);
     }
+    else if (shaderAsset.length() > 0)
+    { 
+        QMessageBox::warning(this, tr("Can't load asset."), tr("Asset must be loaded into the root directory only of the project. ")+rootFolder, QMessageBox::Ok);
+    }
+    
+}
+
+void ProgramEditorWidget::OnRemoveShader()
+{
+    GetCurrentUndoStack()->push( new ProgramEditorModifyShaderCmd (
+            this,
+            tr(""),
+            GetCurrentShaderPath()
+        )
+    );
 }
 
 void ProgramEditorWidget::PostStatusBarMessage(const QString& msg)
@@ -311,16 +230,14 @@ void ProgramEditorWidget::OnOpenObject(AssetInstanceHandle handle, const QString
     activateWindow();
     QVariantMap map = initData.toMap();
     QString name = map["Name"].toString();
-    QVariantList shaders = map["Shaders"].toList();
 
     ProgramData pd;
 
-    for (QVariant v : shaders)
+    auto shaderIt = map.find("Shader");
+    if (shaderIt != map.end())
     {
-        QVariantMap s = v.toMap();
-        QString shaderPath = s["Path"].toString();
-        Pegasus::Shader::ShaderType shaderType = static_cast<Pegasus::Shader::ShaderType>(s["Type"].toInt());
-        pd.shaders.insert(shaderType, shaderPath);
+        QVariantMap shader = shaderIt.value().toMap();
+        pd.sourcePath = shader["Path"].toString();
     }
 
     mProgramData.insert(handle, pd); 
@@ -332,42 +249,22 @@ void ProgramEditorWidget::OnOpenObject(AssetInstanceHandle handle, const QString
 void ProgramEditorWidget::SyncUiToProgram()
 {
     ClearUi();
-    if (mCurrentProgram.IsValid())
-    {
-        ProgramData pd = mProgramData[mCurrentProgram];
+    if (!mCurrentProgram.IsValid())
+        return;
 
-        ShaderMap::iterator it = pd.shaders.begin();
-        for (; it != pd.shaders.end(); ++it)
-        {
-            Pegasus::Shader::ShaderType shaderType = it.key();
-            if (shaderType >= Pegasus::Shader::SHADER_STAGES_BEGIN && shaderType < Pegasus::Shader::SHADER_STAGES_COUNT)
-            {
-                ProgramEditorWidget::ShaderSlots& slot = mShaderSlots[shaderType];
-                slot.mAsset->setText(it.value());
-                slot.mActive = true;
-            }
-        }
-    }
+    ProgramData pd = mProgramData[mCurrentProgram];
+    mShaderName->setText(pd.sourcePath);
 }
 
 void ProgramEditorWidget::EnableUi(bool enableUi)
 {
-    for (int i = 0; i < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT); ++i)
-    {
-        mShaderSlots[i].mLoadButton->setEnabled(enableUi);
-        mShaderSlots[i].mDeleteButton->setEnabled(enableUi);
-    }
+    mLoadShaderButton->setEnabled(enableUi);
+    mRemoveShaderButton->setEnabled(enableUi);
 }
 
 void ProgramEditorWidget::ClearUi()
 {
-    for (int i = 0; i < static_cast<int>(Pegasus::Shader::SHADER_STAGES_COUNT); ++i)
-    {
-        ProgramEditorWidget::ShaderSlots& uiSlot = mShaderSlots[i];
-        uiSlot.mFullAssetPath = "";
-        uiSlot.mActive = false;
-        uiSlot.mAsset->setText(tr("<none>"));
-    }
+    mShaderName->setText(tr("<none>"));
 }
 
 void ProgramEditorWidget::OnViewProgram(AssetInstanceHandle handle)
@@ -413,6 +310,32 @@ QUndoStack* ProgramEditorWidget::GetCurrentUndoStack() const
         return static_cast<QUndoStack*>(mTabBar->GetExtraData(index));
     }
     return nullptr;
+}
+
+QString ProgramEditorWidget::GetCurrentShaderPath()
+{
+    if (!mCurrentProgram.IsValid())
+        return tr("");
+
+    ProgramData& pd = mProgramData[mCurrentProgram];
+    return pd.sourcePath;
+}
+
+
+void ProgramEditorWidget::SetShader(const QString& shaderPath)
+{
+    if (!mCurrentProgram.IsValid())
+        return;
+
+    ProgramData& pd = mProgramData[mCurrentProgram];
+    mTabBar->MarkCurrentAsDirty();
+    pd.sourcePath = shaderPath;
+
+    ProgramIOMCMessage msg;
+    msg.SetMessageType(shaderPath == "" ? ProgramIOMCMessage::REMOVE_SHADER : ProgramIOMCMessage::MODIFY_SHADER);
+    msg.SetProgram(mCurrentProgram);
+    msg.SetShaderPath(shaderPath);
+    emit SendProgramIoMessage(msg);
 }
 
 void ProgramEditorWidget::OnUIForAppClosed()

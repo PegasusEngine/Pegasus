@@ -203,6 +203,7 @@ namespace Pegasus
 			GpuPipelineConfig gpuPipelineConfig;
             gpuPipelineConfig.graphicsState = gpuState;
 			gpuPipelineConfig.source = simpleProgram0;
+            gpuPipelineConfig.sourceSize = strlen(simpleProgram0);
 			gpuPipelineConfig.mainNames[Pipeline_Vertex] = "vsMain";
 			gpuPipelineConfig.mainNames[Pipeline_Pixel] = "psMain";
 
@@ -235,6 +236,7 @@ namespace Pegasus
 			IDevice* device = rh->CreateDevice();
 			GpuPipelineConfig gpuPipelineConfig;
 			gpuPipelineConfig.source = simpleCs0;
+            gpuPipelineConfig.sourceSize = strlen(simpleCs0);
 			gpuPipelineConfig.mainNames[Pipeline_Compute] = "csMain";
 
 			GpuPipelineRef gpuPipeline = device->CreateGpuPipeline();
@@ -739,6 +741,7 @@ namespace Pegasus
 #endif
 
 				gpuPipelineConfig.source = simpleCsInitialize;
+				gpuPipelineConfig.sourceSize = strlen(simpleCsInitialize);
 				gpuPipelineConfig.mainNames[Pipeline_Compute] = "csMain";
 				bool result = initializeBufferPipeline->Compile(gpuPipelineConfig);
 				if (!result)
@@ -808,6 +811,7 @@ namespace Pegasus
 				)";
 
 				gpuPipelineConfig.source = simpleCsModify;
+				gpuPipelineConfig.sourceSize = strlen(simpleCsModify);
 				gpuPipelineConfig.mainNames[Pipeline_Compute] = "csMain";
 				bool result = modifyBufferPipeline->Compile(gpuPipelineConfig);
 				if (!result)

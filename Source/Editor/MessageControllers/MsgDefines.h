@@ -13,7 +13,6 @@
 #define PEGASUS_EDITOR_IOMSGDEFINES_H
 
 #include "Pegasus/Application/Shared/ApplicationConfig.h"
-#include "Pegasus/Shader/Shared/ShaderDefs.h"
 #include "Pegasus/PropertyGrid/Shared/PropertyDefs.h"
 #include "Pegasus/PegasusAssetTypes.h"
 #include <QVariant>
@@ -452,11 +451,6 @@ public:
         MODIFY_SHADER
     };
 
-    //!Constructor
-    ProgramIOMCMessage() : mMessageType(INVALID), mShaderType(Pegasus::Shader::SHADER_STAGE_INVALID)
-    {
-    }
-
     //! Destructor
     ~ProgramIOMCMessage()
     {
@@ -464,22 +458,18 @@ public:
 
     //Getters
     MessageType GetMessageType() const { return mMessageType; }
-    const QString& GetShaderPath() const { return mShaderPath; }
     AssetInstanceHandle GetProgram() const { return mProgram; }
-    Pegasus::Shader::ShaderType GetShaderType() const { return mShaderType; }
-    
+    const QString& GetShaderPath() const { return mShaderPath; }
 
     //Setters
     void SetMessageType(MessageType t) { mMessageType = t; }
     void SetShaderPath(const QString& shader) { mShaderPath = shader; }
     void SetProgram(AssetInstanceHandle handle) { mProgram = handle; }
-    void SetShaderType(Pegasus::Shader::ShaderType type) { mShaderType = type; }
 
 private:
     MessageType mMessageType;
     QString mShaderPath;
     AssetInstanceHandle mProgram;
-    Pegasus::Shader::ShaderType mShaderType;
 };
 
 class SourceIOMCMessage

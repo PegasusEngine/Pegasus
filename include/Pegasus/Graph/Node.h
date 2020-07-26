@@ -98,6 +98,8 @@ public:
     //! \warning The \a updated output parameter must be set to false by the first caller
     virtual NodeDataReturn GetUpdatedData(bool & updated);
 
+    inline NodeDataReturn GetUpdatedData() { bool unusedBool = false; return GetUpdatedData(unusedBool); };
+
     //! Deallocate the data of the current node and ask the input nodes to do the same.
     //! Typically used when keeping the graph in memory but not the associated data,
     //! to save memory and to be able to restore the data later

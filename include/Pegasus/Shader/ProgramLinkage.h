@@ -30,6 +30,10 @@ namespace Pegasus {
     namespace Graph {
         class NodeManager;
     }
+
+    namespace Render {
+        class IDevice;
+    }
 }
 
 namespace Pegasus
@@ -39,11 +43,10 @@ namespace Shader
 
 
 // forward declarations
-class IShaderFactory;
 class IProgramProxy;
 class ProgramProxy;
 class ShaderManager;
-
+class ShaderSource;
 
 //! Program linkage class. Represents a set of linked shader stages
 class ProgramLinkage : public Pegasus::Graph::OperatorNode, public Pegasus::AssetLib::RuntimeAssetObject
@@ -83,20 +86,13 @@ public:
     //! nodeDataAllocator node data allocator
     static Graph::NodeReturn CreateNode(Graph::NodeManager* nodeManager, Alloc::IAllocator* nodeAllocator, Alloc::IAllocator* nodeDataAllocator);
 
-    //! Sets the factory, which contains the render library implementation of shader
-    //! compilation and linkage
-    //! \param factory the shader GPU factory to be used internally for compilation process.
-    void SetFactory (IShaderFactory * factory) { mFactory = factory; }
-
-    //! Deallocate the data of the current node and ask the input nodes to do the same.
-    //! Typically used when keeping the graph in memory but not the associated data,
-    //! to save memory and to be able to restore the data later
-    virtual void ReleaseDataAndPropagate();
-
-    //! Invalidates internally the data holding the program, to force relinking
-    virtual void InvalidateData();
-        
     void SetManager(ShaderManager* manager) { mManager = manager; }
+
+    void SetSourceCode(Pegasus::Core::Ref<ShaderSource>& shaderSource);
+
+    const Pegasus::Core::Ref<ShaderSource>& GetSourceCode() const { return mShaderSource; }
+
+    void Compile();
 
 #if PEGASUS_ENABLE_PROXIES
     //! returns the name of this program.
@@ -111,6 +107,8 @@ public:
     virtual AssetLib::IRuntimeAssetObjectProxy * GetProxy() { return &mProxy; }
     virtual const AssetLib::IRuntimeAssetObjectProxy * GetProxy() const { return &mProxy; }
 #endif
+
+    virtual void InvalidateData() { Pegasus::Graph::OperatorNode::InvalidateData(); }
 
 protected:
     //! overrides, do not use
@@ -128,16 +126,11 @@ protected:
 
 private:    
     PG_DISABLE_COPY(ProgramLinkage);    
-    //! pointer to shader factory
-    IShaderFactory * mFactory;
-    
-    //! bit mask describing the contents of this node.
-    //! this allows this node to behave like a set with a static
-    //! topology.
-    unsigned char mStageFlags;
 
     //! Manager, required to load shaders correctly
     ShaderManager* mManager;
+
+    Pegasus::Core::Ref<ShaderSource> mShaderSource;
 
 #if PEGASUS_ENABLE_PROXIES
     ProgramProxy mProxy;    
