@@ -67,6 +67,8 @@ public:
     //! Disconnect the asset event listener
     void DisconnectAssetEventListeners();
 
+    void ConnectDockWidget(PegasusDockWidget* dockWidget);
+
 private slots:
 
     //! Request the redraw of the content of the main viewport

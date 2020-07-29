@@ -18,6 +18,7 @@
 #include "Pegasus/AssetLib/Shared/IAssetProxy.h"
 
 
+#include  "Application/ApplicationInterface.h"
 #include  "Console/ConsoleDockWidget.h"
 #include  "History/HistoryDockWidget.h"
 #include  "Timeline/TimelineDockWidget.h"
@@ -26,6 +27,7 @@
 #include  "Graph/GraphEditorDockWidget.h"
 #include  "Graph/TextureGraphEditorViewStrategy.h"
 #include  "Graph/MeshGraphEditorViewStrategy.h"
+#include  "PropertyGridEditor/PropertyGridEditor.h"
 #include  "Debug/PropertyGridClasses/PropertyGridClassesDockWidget.h"
 #include  "Debug/BlockScriptLibraries/BlockScriptLibraryDockWidget.h"
 #include  "ProgramEditor/ProgramEditorWidget.h"
@@ -124,6 +126,13 @@ Editor::Editor(QApplication * parentApplication)
 }
 
 //----------------------------------------------------------------------------------------
+QMessageBox::StandardButton Editor::AskSaveQuestion(QWidget* parent)
+{
+    return QMessageBox::question(
+       parent, "Unsaved changes in file.",
+       "The current asset has unsaved changes. Would you like to save before closing?",
+       QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel);
+}
 
 Editor::~Editor()
 {
@@ -152,7 +161,6 @@ Editor::~Editor()
 
 void Editor::RegisterWidget(PegasusDockWidget* widget, Qt::DockWidgetArea area)
 {
-    widget->Initialize();
     mDockWidgets.push_back(widget);
 
     addDockWidget(area, widget);
@@ -186,6 +194,8 @@ void Editor::RegisterWidget(PegasusDockWidget* widget, Qt::DockWidgetArea area)
         }
         ++types;
     }
+
+    widget->Initialize();
 }
 
 //----------------------------------------------------------------------------------------
@@ -535,7 +545,6 @@ void Editor::CreateDockWidgets()
     mBsLibWidget->hide();
     mBsLibWidget->setFloating(true);
 
-
     //from ui to ui
     connect(mAssetLibraryWidget, SIGNAL(OnHighlightBlock(unsigned)),
             mTimelineDockWidget, SLOT(OnFocusBlock(unsigned)));
@@ -658,7 +667,6 @@ void Editor::CloseApp()
 
 void Editor::Quit()
 {
-    //! \todo Properly quit the editor
 }
 
 //----------------------------------------------------------------------------------------
@@ -847,8 +855,33 @@ void Editor::OnOpenObject(AssetInstanceHandle handle, QString displayName, int t
     }
     else
     {
-        ED_LOG("No editor found for asset.");
+        auto propEditorIt = mAssetToPropGridEditors.find(handle);
+        if (propEditorIt == mAssetToPropGridEditors.end()) 
+        {
+            auto newPropWidget = new PropertyGridEditor(this, this, displayName, handle);
+            mAssetToPropGridEditors[handle] = newPropWidget;
+			mApplicationManager->GetApplication()->Interface()->ConnectDockWidget(newPropWidget);
+            RegisterWidget(newPropWidget, Qt::BottomDockWidgetArea);
+            newPropWidget->show();
+            newPropWidget->setFloating(true);
+            mDockWidgets.push_back(newPropWidget);
+        }
+		else
+		{
+			propEditorIt.value()->setFocus();
+		}
     }
+}
+
+void Editor::ClosePropertyGridAsset(AssetInstanceHandle object)
+{
+    auto proEditorIt = mAssetToPropGridEditors.find(object);
+    if (proEditorIt == mAssetToPropGridEditors.end())
+        return;
+
+    mDockWidgets.removeOne(proEditorIt.value());
+    delete proEditorIt.value();
+    mAssetToPropGridEditors.erase(proEditorIt);
 }
 
 //----------------------------------------------------------------------------------------

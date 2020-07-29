@@ -17,6 +17,7 @@
 #include "MessageControllers/MsgDefines.h"
 
 #include <QtWidgets/QMainWindow>
+#include <QtWidgets/qmessagebox.h>
 #include <QMap>
 #include <QSet>
 
@@ -42,6 +43,7 @@ class TextureGraphEditorViewStrategy;
 class MeshGraphEditorViewStrategy;
 class PropertyGridClassesDockWidget;
 class BlockScriptLibraryDockWidget;
+class PropertyGridEditor;
 class ProgramEditorWidget;
 class ViewportDockWidget;
 class ViewportWidget;
@@ -72,6 +74,8 @@ public:
     //! Test if the application manager has been created yet
     //! \return True if the application manager has been created
     inline bool IsApplicationManagerAvailable() const { return mApplicationManager != nullptr; }
+
+    static QMessageBox::StandardButton AskSaveQuestion(QWidget* parent);
 
     //------------------------------------------------------------------------------------
 
@@ -153,6 +157,8 @@ public:
     inline const QVector<ViewportDockWidget*>& GetViewportDockWidget() const { return mViewportDockWidgets; }
 
     //----------------------------------------------------------------------------------------
+
+    void ClosePropertyGridAsset(AssetInstanceHandle object);
 
 private:
 
@@ -392,7 +398,9 @@ private:
     ProgramEditorWidget     * mProgramEditorWidget;
     PropertyGridClassesDockWidget * mPropertyGridClassesDockWidget;
     BlockScriptLibraryDockWidget*       mBsLibWidget;
+    QMap<AssetInstanceHandle, PropertyGridEditor*> mAssetToPropGridEditors;
     //@}
+
 
     //@{
     //! View strategies for graph editors

@@ -75,29 +75,7 @@ ApplicationInterface::ApplicationInterface(Application * application)
     for (int i = 0; i < dockWidgets.size(); ++i)
     {
         PegasusDockWidget* dockWidget = dockWidgets[i];
-
-        connect(dockWidget, SIGNAL(OnSendAssetIoMessage(PegasusDockWidget*, AssetIOMCMessage)),
-                this, SLOT(ForwardAssetIoMessage(PegasusDockWidget*, AssetIOMCMessage)),
-                Qt::QueuedConnection);
-    
-        connect(mAssetIoMessageController, SIGNAL(SignalPostMessage(PegasusDockWidget*, AssetIOMCMessage::IoResponseMessage)),
-                dockWidget, SLOT(ReceiveAssetIoMessage(PegasusDockWidget*, AssetIOMCMessage::IoResponseMessage)),
-                Qt::QueuedConnection);
-        
-        connect(dockWidget, SIGNAL(OnSendGraphIoMessage(GraphIOMCMessage)),
-                this, SLOT(ForwardGraphIoMessage(GraphIOMCMessage)),
-                Qt::QueuedConnection);
-
-        connect(dockWidget, SIGNAL(OnSendPropertyGridIoMessage(PropertyGridIOMCMessage)),
-                this,   SLOT(ForwardPropertyGridIoMessage(PropertyGridIOMCMessage)),
-				Qt::QueuedConnection);
-
-        connect(dockWidget, SIGNAL(OnSendTimelineIoMessage(TimelineIOMCMessage)),
-                this,   SLOT(ForwardTimelineIoMessage(TimelineIOMCMessage)),
-				Qt::QueuedConnection);
-
-        connect(dockWidget, SIGNAL(OnRequestRedrawAllViewports()),
-                this, SLOT(RedrawAllViewports()));
+        ConnectDockWidget(dockWidget);
     }
 
     //connect messages for viewports
@@ -195,6 +173,34 @@ ApplicationInterface::ApplicationInterface(Application * application)
 
     connect(mSourceCodeEventListener, SIGNAL(OnTagValidity(QString, bool)),
             mAssetIoMessageController, SLOT(OnTagValidity(QString, bool)), Qt::QueuedConnection);
+}
+
+//----------------------------------------------------------------------------------------
+
+void ApplicationInterface::ConnectDockWidget(PegasusDockWidget* dockWidget)
+{
+        connect(dockWidget, SIGNAL(OnSendAssetIoMessage(PegasusDockWidget*, AssetIOMCMessage)),
+                this, SLOT(ForwardAssetIoMessage(PegasusDockWidget*, AssetIOMCMessage)),
+                Qt::QueuedConnection);
+    
+        connect(mAssetIoMessageController, SIGNAL(SignalPostMessage(PegasusDockWidget*, AssetIOMCMessage::IoResponseMessage)),
+                dockWidget, SLOT(ReceiveAssetIoMessage(PegasusDockWidget*, AssetIOMCMessage::IoResponseMessage)),
+                Qt::QueuedConnection);
+        
+        connect(dockWidget, SIGNAL(OnSendGraphIoMessage(GraphIOMCMessage)),
+                this, SLOT(ForwardGraphIoMessage(GraphIOMCMessage)),
+                Qt::QueuedConnection);
+
+        connect(dockWidget, SIGNAL(OnSendPropertyGridIoMessage(PropertyGridIOMCMessage)),
+                this,   SLOT(ForwardPropertyGridIoMessage(PropertyGridIOMCMessage)),
+				Qt::QueuedConnection);
+
+        connect(dockWidget, SIGNAL(OnSendTimelineIoMessage(TimelineIOMCMessage)),
+                this,   SLOT(ForwardTimelineIoMessage(TimelineIOMCMessage)),
+				Qt::QueuedConnection);
+
+        connect(dockWidget, SIGNAL(OnRequestRedrawAllViewports()),
+                this, SLOT(RedrawAllViewports()));
 }
 
 //----------------------------------------------------------------------------------------

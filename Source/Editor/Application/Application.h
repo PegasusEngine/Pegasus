@@ -138,6 +138,8 @@ public:
     //! \param logChannel Log channel that receives the message
     //! \param msgStr String of the message to log
     static void LogHandler(Pegasus::Core::LogChannel logChannel, const char * msgStr);
+
+    ApplicationInterface* Interface() { return mApplicationInterface; }
     
 signals:
 

@@ -114,6 +114,8 @@ void ProgramEditorWidget::SetupUi()
     connect(mRemoveShaderButton, SIGNAL(clicked(bool)),
             this, SLOT(OnRemoveShader()));
     EnableUi(false);
+
+
 }
 
 void ProgramEditorWidget::OnLoadShader()

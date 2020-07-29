@@ -1,6 +1,7 @@
 #include "Widgets/NodeFileTabBar.h"
 #include "Widgets/PegasusDockWidget.h"
 
+#include <Editor.h>
 #include <QVBoxLayout>
 #include <QMessageBox>
 
@@ -94,11 +95,7 @@ void NodeFileTabBar::ReceiveTabClosedRequested(int tabId)
     NodeFileTabBar::FileTabContainer c = mContainerList[tabId];
     if (c.mIsDirty)
     {
-        QMessageBox::StandardButton reply = QMessageBox::question(
-                                       this, "Unsaved changes in file.",
-                                      "The current asset has unsaved changes. Would you like to save before closing?",
-                                       QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel);
-
+        QMessageBox::StandardButton reply = Editor::AskSaveQuestion(this);
         if (reply == QMessageBox::Cancel)
         {
             return;
