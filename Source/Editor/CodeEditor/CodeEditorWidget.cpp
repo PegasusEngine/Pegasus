@@ -132,7 +132,7 @@ void CodeEditorWidget::SetupUi()
     setWindowTitle(tr("Code Editor"));
     setObjectName("CodeEditor");
 
-    mUi.mTabWidget = new NodeFileTabBar(this);
+    mUi.mTabWidget = CreateNodeFileTabBar();
     
     connect(
         mUi.mTabWidget, SIGNAL(RuntimeObjectRemoved(AssetInstanceHandle, QObject*)),

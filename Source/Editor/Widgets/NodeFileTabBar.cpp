@@ -89,11 +89,17 @@ int NodeFileTabBar::FindIndex(AssetInstanceHandle object) const
     return -1;
 }
 
+static bool sSetEnableSaveCloseSafety = true;
+void NodeFileTabBar::SetEnableSaveCloseSafety(bool enable)
+{
+    sSetEnableSaveCloseSafety = enable;
+}
+
 void NodeFileTabBar::ReceiveTabClosedRequested(int tabId)
 {
     ED_ASSERT(tabId >= 0 && tabId < mTabBar->count());
     NodeFileTabBar::FileTabContainer c = mContainerList[tabId];
-    if (c.mIsDirty)
+    if (c.mIsDirty && sSetEnableSaveCloseSafety)
     {
         QMessageBox::StandardButton reply = Editor::AskSaveQuestion(this);
         if (reply == QMessageBox::Cancel)

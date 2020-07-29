@@ -179,10 +179,12 @@ private:
    
     //! closes the application using a pump event pattern (to allow for operating system window events to 
     //! be handled
-    void InternalCloseAndPumpEvents();
+    bool InternalCloseAndPumpEvents();
 
     //! Registers a pegasus dock widget, and registers all its common functions
     void RegisterWidget( PegasusDockWidget* widget, Qt::DockWidgetArea area);
+
+    bool internalClose();
 
     //------------------------------------------------------------------------------------
 
@@ -193,6 +195,9 @@ protected:
     //! Function called when the main window is asked to be closed
     //! \param event Description of the event
     void closeEvent(QCloseEvent * event);
+
+    
+    bool InternalCloseApp(bool handleAsAsyncClose = true);
     
     //------------------------------------------------------------------------------------
 
@@ -202,7 +207,7 @@ private slots:
     //! Slots for the actions of the File menu
     void OpenApp();
     void ReloadApp();
-    void CloseApp();
+    bool CloseApp();
     void Quit();
     //@}
 

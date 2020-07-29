@@ -64,7 +64,7 @@ void ProgramEditorWidget::SetupUi()
     QIcon addIcon(tr(":/TimelineToolbar/Add16.png"));
     QIcon delIcon(tr(":/TimelineToolbar/Remove16.png"));
 
-    mTabBar = new NodeFileTabBar(this);
+    mTabBar = CreateNodeFileTabBar();
 
     connect(
         mTabBar, SIGNAL(RuntimeObjectRemoved(AssetInstanceHandle, QObject*)),

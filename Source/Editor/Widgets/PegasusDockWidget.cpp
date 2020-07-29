@@ -14,6 +14,8 @@
 #include "Application/Application.h"
 #include "Application/ApplicationManager.h"
 #include "Pegasus/Application/Shared/IApplicationProxy.h"
+#include "Widgets/NodeFileTabBar.h"
+#include "MessageControllers/MsgDefines.h"
 
 #include <QFocusEvent>
 
@@ -82,5 +84,16 @@ void PegasusDockWidget::SendGraphIoMessage(const GraphIOMCMessage& msg)
 void PegasusDockWidget::SendTimelineIoMessage(const TimelineIOMCMessage& msg)
 {
     emit(OnSendTimelineIoMessage(msg));
+}
+
+
+NodeFileTabBar* PegasusDockWidget::CreateNodeFileTabBar()
+{
+    auto tabBar = new NodeFileTabBar(this);
+    connect(tabBar, SIGNAL(RegisterDirtyObject(AssetInstanceHandle)),
+        GetEditor(), SLOT(OnRegisterDirtyObject(AssetInstanceHandle)));
+    connect(tabBar, SIGNAL(UnregisterDirtyObject(AssetInstanceHandle)),
+        GetEditor(), SLOT(OnUnregisterDirtyObject(AssetInstanceHandle)));
+    return tabBar;
 }
 

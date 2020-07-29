@@ -33,6 +33,7 @@
 #include  "ProgramEditor/ProgramEditorWidget.h"
 #include  "Viewport/ViewportDockWidget.h"
 #include  "Viewport/ViewportWidget.h"
+#include  "Widgets/NodeFileTabBar.h"
 
 #include <QUndoStack>
 #include <QSplashScreen>
@@ -560,15 +561,23 @@ void Editor::CreateStatusBar()
 
 //----------------------------------------------------------------------------------------
 
-void Editor::InternalCloseAndPumpEvents()
-{
-   mApplicationManager->CloseApplication(false);
-   while (!mApplicationManager->PollApplicationThreadIsDone())
-   {
-       //let the operating system process any extra events internally, such as detection of destruction of child windows
-       mQtApplication->processEvents();
-   }
-   mApplicationManager->OnApplicationFinished();
+bool Editor::InternalCloseAndPumpEvents()
+{  
+    NodeFileTabBar::SetEnableSaveCloseSafety(false);
+    if (!InternalCloseApp(false/*close synchroneously*/))
+    {
+        NodeFileTabBar::SetEnableSaveCloseSafety(true);
+        return false;
+    }
+    while (!mApplicationManager->PollApplicationThreadIsDone())
+    {
+        //let the operating system process any extra events internally, such as detection of destruction of child windows
+        mQtApplication->processEvents();
+    }
+
+    mApplicationManager->OnApplicationFinished();
+    NodeFileTabBar::SetEnableSaveCloseSafety(true);
+    return true;
 }
 
 //----------------------------------------------------------------------------------------
@@ -580,7 +589,11 @@ void Editor::closeEvent(QCloseEvent * event)
     {
         if (mApplicationManager->IsApplicationOpened())
         {
-            InternalCloseAndPumpEvents();
+            if (!InternalCloseAndPumpEvents()) 
+            {
+                event->ignore();
+                return;
+            }
         }
     }
  
@@ -634,7 +647,7 @@ void Editor::ReloadApp()
     const QString appFileName = mApplicationManager->GetApplication()->GetFileName();
 
     // Close the current app
-    InternalCloseAndPumpEvents();
+    if (!InternalCloseAndPumpEvents()) return;
 
     // Open the app again with the cached file name
     mApplicationManager->OpenApplication(appFileName);
@@ -642,7 +655,12 @@ void Editor::ReloadApp()
 
 //----------------------------------------------------------------------------------------
 
-void Editor::CloseApp()
+bool Editor::CloseApp()
+{
+    return InternalCloseApp();
+}
+
+bool Editor::InternalCloseApp(bool handleAsAsyncClose)
 {
     bool performClosing = true;
     if (mDirtyAssets.size() > 0)
@@ -658,9 +676,11 @@ void Editor::CloseApp()
     {
         if (mApplicationManager->IsApplicationOpened())
         {
-            mApplicationManager->CloseApplication();
+            mApplicationManager->CloseApplication(handleAsAsyncClose);
         }
     }
+
+    return performClosing;
 }
 
 //----------------------------------------------------------------------------------------
@@ -849,7 +869,7 @@ void Editor::OnDockFocus(PegasusDockWidget* target)
 void Editor::OnOpenObject(AssetInstanceHandle handle, QString displayName, int typeGuid, QVariant initData)
 {
     QMap<int,PegasusDockWidget*>::iterator it = mTypeGuidWidgetMapping.find(typeGuid);
-    if (it != mTypeGuidWidgetMapping.end())
+    if (it != mTypeGuidWidgetMapping.end() && typeGuid != Pegasus::ASSET_TYPE_TEXTURE.mTypeGuid)
     {
         (*it)->ReceiveOpenRequest(handle, displayName, initData);
     }

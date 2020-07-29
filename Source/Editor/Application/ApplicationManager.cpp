@@ -131,6 +131,9 @@ void ApplicationManager::OnLoadingSucceeded()
 
 void ApplicationManager::OnApplicationFinished()
 {
+	if (mApplication == nullptr)
+		return;
+
     mApplication->wait();        
     delete mApplication;
     mApplication = nullptr;
@@ -140,6 +143,8 @@ void ApplicationManager::OnApplicationFinished()
 
 bool ApplicationManager::PollApplicationThreadIsDone()
 {
+	if (mApplication == nullptr)
+		return true;
     mApplication->wait(1);
     return mApplication->isFinished();
 }

@@ -73,6 +73,8 @@ public:
     //! Finds the index of the object passed, returns -1 if it doesnt exist
     int FindIndex(AssetInstanceHandle object) const;
 
+    static void SetEnableSaveCloseSafety(bool enable);
+
 signals:
     //signal fired when a runtime object is displayed
     void DisplayRuntimeObject(AssetInstanceHandle object);

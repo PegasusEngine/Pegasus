@@ -26,6 +26,7 @@ namespace Pegasus {
 class Editor;
 class QUndoStack;
 class QFocusEvent;
+class NodeFileTabBar;
 
 class PegasusDockWidget : public QDockWidget
 {
@@ -99,6 +100,8 @@ public:
 
     //! Refocus this widget
     void PerformFocus();
+
+    NodeFileTabBar* CreateNodeFileTabBar();
 
 signals:
 
